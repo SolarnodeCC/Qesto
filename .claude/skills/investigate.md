@@ -1,69 +1,42 @@
-# /investigate — Root-Cause Analysis (AGENT-007)
-# VERSION: v1.2.0
-# OWNER: QA
-# POLICY_SOURCE: .claude/skills/COMMON_RULES.md
-
-## Shared Rules
-Follow `.claude/skills/COMMON_RULES.md` for global constraints and precedence.
-
-> **Goal**: Structured debug workflow for Durable Object and WebSocket issues in Qesto.
-> **Revoke after**: End of investigation session.
-
+---
+name: investigating-bugs
+description: Provides a structured 5-step debug protocol for Durable Object and WebSocket issues. Use when diagnosing DO/WebSocket failures, hibernation bugs, timer/alarm problems, or any SessionRoom.ts root-cause analysis.
 ---
 
-## 5-Step Debug Protocol
+Follow `.claude/skills/COMMON_RULES.md` for global constraints.
+
+Structured debug workflow for Durable Object and WebSocket issues in Qesto.
+
+## 5-Step Protocol
 
 ```
-Step 1 — REPRODUCE
-  → Identify minimal reproducible scenario
-  → Environment variables (LIVE vs DRAFT, connection type)
-  → Browser + device (mobile vs desktop)
-
-Step 2 — OBSERVE
-  → Fetch relevant CF Worker logs (wrangler tail)
-  → Analyse SessionRoom.ts logError entries
-  → Read WebSocket close codes (1001=away, 1006=abnormal, 4xxx=app)
-
-Step 3 — HYPOTHESISE
-  → Formulate causal chain: "If X, then Y because Z"
-  → Build ruling-out list (what it is NOT)
-
-Step 4 — TEST
-  → Minimal code change to prove or disprove hypothesis
-  → No refactoring during investigation — preserve existing state
-
-Step 5 — CONCLUDE
-  → Root cause in one sentence
-  → Document fix or workaround
-  → Create backlog item if structural fix > 30 min
+1. REPRODUCE  → Minimal scenario · LIVE vs DRAFT · Browser + device
+2. OBSERVE    → wrangler tail · SessionRoom.ts logError · WS close codes
+               (1001=away, 1006=abnormal, 4xxx=app)
+3. HYPOTHESISE → Causal chain: "If X then Y because Z" · ruling-out list
+4. TEST        → Minimal code change to prove/disprove · no refactoring during investigation
+5. CONCLUDE   → Root cause in one sentence · fix or workaround · backlog item if > 30 min
 ```
 
----
+## WS / DO Checklist
 
-## WS / Durable Object Checklist
+**Connection:**
+- [ ] `SESSION_ROOM` binding in `wrangler.toml`?
+- [ ] DO name: `env.SESSION_ROOM.idFromName(sessionId)`?
+- [ ] Client sends `Authorization: Bearer <token>` on WS upgrade?
 
-### Connection
-- [ ] `SESSION_ROOM` binding present in `wrangler.toml`?
-- [ ] DO name matches: `env.SESSION_ROOM.idFromName(sessionId)`?
-- [ ] Client sends `Authorization: Bearer <token>` header on WS upgrade?
-- [ ] WS URL ends in `/ws` or `/api/sessions/:id/ws`?
+**Post-hibernation state:**
+- [ ] `getTags(ws)` used — not in-memory map after restart?
+- [ ] `voterMeta` rebuilt from tags (see `SessionRoom.ts:86-89`)?
 
-### DO State after Hibernation
-- [ ] `webSocketMessage` → `getTags(ws)` used — not in-memory map after restart?
-- [ ] `voterMeta` map rebuilt from tags (see `SessionRoom.ts:86-89`)?
-- [ ] `emojiRateLimits` map — acceptable that it resets after hibernation?
-
-### Alarm & Timer
-- [ ] `alarm()` — `status === 'closed'` → `deleteAll()` correct?
-- [ ] `alarm()` — clock-drift guard present (500ms tolerance)?
+**Alarm & timer:**
 - [ ] `deleteAlarm()` called before `setAlarm()` on timer reset?
+- [ ] Clock-drift guard present (500ms tolerance)?
 
-### Broadcast
+**Broadcast:**
 - [ ] `broadcastToRole('presenter', ...)` vs `broadcast(...)` — right choice?
-- [ ] WS `send` errors logged via `logError`?
-- [ ] Disconnected clients removed from `getWebSockets()` automatically (CF handles this)?
 
-### Common Bugs
+## Common Bug Patterns
 
 | Symptom | Most Likely Cause |
 |---|---|
@@ -72,54 +45,30 @@ Step 5 — CONCLUDE
 | Presenter doesn't see votes | `broadcast` wrong role filter |
 | DO unresponsive after `closeSession()` | Alarm not cleared before new alarm |
 | WS disconnect loop | Token expired; client reconnects without new token |
-| Emoji rate limit not working | `emojiRateLimits` map empty after hibernation — expected behaviour |
+| Emoji rate limit not working | `emojiRateLimits` map resets after hibernation — expected |
 
----
-
-## Log Analysis Commands
+## Log Commands
 
 ```bash
-# Live logs from the Worker
 wrangler tail qesto --format pretty
-
-# Filter on logError entries
 wrangler tail qesto --format json | jq 'select(.logs[].message | test("error:"))'
-
-# DO-specific logs (search by sessionId)
-wrangler tail qesto --format json | jq 'select(.logs[].message | test("<sessionId>"))'
 ```
 
----
+## Escalate to Architect When
 
-## Escalation Criteria
-
-Escalate to architect if:
 1. Root cause not found within 2 iterations of step 4
-2. Fix requires change to DO migration (`[[migrations]]` in `worker/wrangler.toml`)
-3. Bug only reproducible in production (not in local `wrangler dev`)
+2. Fix requires DO migration (`[[migrations]]` in `worker/wrangler.toml`)
+3. Bug only reproducible in production
 4. Involves billing/Stripe state
-
----
 
 ## Output Template
 
 ```markdown
 ## Investigation Report — <date>
-
-**Problem**: <1-sentence description>
-**Environment**: <LIVE|DRAFT> · <Browser/mobile> · <sessionId if relevant>
-
+**Problem**: <1-sentence>
+**Environment**: <LIVE|DRAFT> · <browser/device> · <sessionId>
 **Root Cause**: <1-sentence causal explanation>
-
-**Evidence**:
-- Log line: `[...]`
-- Code location: `SessionRoom.ts:nn`
-
+**Evidence**: Log line + code location
 **Fix**: <code change or workaround>
-
-**Prevention**: <create backlog item? Yes/No — ID>
+**Prevention**: <backlog item? Yes/No — ID>
 ```
-
-## Change Log
-- 2026-04-18: Translated to English, removed duplicate Shared Rules header.
-- 2026-04-10: Canonicalized file headers and shared rules reference.

@@ -1,87 +1,56 @@
-# Skill: Code Reviewer — Qesto
-# SCOPE: task (auto-revoke after task completes)
-# LOAD: before every merge/PR, after story implementation
-# VERSION: v1.2.0
-# OWNER: QA
-# POLICY_SOURCE: .claude/skills/COMMON_RULES.md
-
-## Role
-You are the code quality gate for Qesto. You review changed files for correctness, security, mobile UX quality, and architecture conformance. You block merges on critical findings.
-
-## Shared Rules
-Follow `.claude/skills/COMMON_RULES.md` for global constraints and precedence.
-
+---
+name: reviewing-code
+description: Runs code quality gates covering correctness, security, mobile accessibility, and architecture conformance. Use before every merge or after story implementation to block releases on critical findings.
 ---
 
-## Step 1 — Automated Gates (BLOCK on failure)
+Follow `.claude/skills/COMMON_RULES.md` for global constraints.
+
+You are the code quality gate for Qesto. You review changed files and block merges on critical findings.
+
+## Step 1 — Automated Gates (block on failure)
 
 ```bash
-# Always run before review
-npm test              # All unit tests green
-tsc --noEmit          # No TypeScript errors
+npm test        # all unit tests green
+tsc --noEmit    # no TypeScript errors
 ```
 
-If either fails → fix first, then review.
+## Step 2 — Correctness
 
----
-
-## Step 2 — Correctness Check
-
-### General
 ```
-□ No console.log in production code (only console.error in catch blocks)
-□ No hardcoded strings that should be translated (use i18n)
-□ No hardcoded colours or dimensions (use Tailwind tokens or CSS vars)
-□ No TODO/FIXME comments in committed code without a backlog item
-□ No dead code or commented-out blocks
-```
-
-### Error Handling
-```
-□ Every fetch() call has a catch block
-□ Catch blocks call logError() (not console.error)
-□ Frontend catch blocks show a visible error message in the UI
-□ Async buttons have a disabled/loading state during the request
-```
-
-### State Management
-```
-□ LIVE state: mutations via WebSocket (never REST)
-□ DRAFT state: mutations via REST (never WebSocket)
-□ No stale closure bugs in debounced callbacks — use refs
+□ No console.log in production (only console.error in catch blocks)
+□ No hardcoded translatable strings — use i18n
+□ No hardcoded colours/dimensions — use Tailwind tokens or CSS vars
+□ Every fetch() has a catch block → logError() → visible UI error
+□ Async buttons have disabled/loading state during request
+□ LIVE state: mutations via WebSocket only | DRAFT state: mutations via REST only
 □ useState updates are non-mutating (spread/immutable)
 ```
 
----
+## Step 3 — Architecture
 
-## Step 3 — Architecture Conformance
-
-### Backend (functions/api/)
+**Backend (functions/api/):**
 ```
-□ Route mounted in functions/api/[[route]].ts
-□ authMiddleware present (or explicit reason for exception)
-□ Ownership check: user can only access their own resources
-□ Input validation present (400 on missing fields)
-□ Error response follows standard shape: { error: { code, message, statusCode, requestId } }
-□ New KV keys follow naming conventions from architect.md
-□ New env bindings documented in docs/CONFIGURATION.txt
-□ New secrets via wrangler pages secret put (NEVER in wrangler.toml)
-□ D1 queries are parameterized (no string concatenation)
-□ Migrations in schema.sql, not inline in code
+□ Route mounted in [[route]].ts
+□ authMiddleware present (or documented exception)
+□ Ownership check: user can only access own resources
+□ Input validated (400 on missing/invalid fields)
+□ Error response: { error: { code, message, statusCode, requestId } }
+□ New KV keys follow conventions in architect.md
+□ New secrets via wrangler pages secret put only
+□ D1 queries parameterized (no string concatenation)
+□ Migrations in schema.sql, not inline
 ```
 
-### Frontend (src/)
+**Frontend (src/):**
 ```
 □ No imports from functions/ — use API fetch calls
-□ No hardcoded API URLs — use relative paths
-□ Error boundary present at route level
-□ Loading/empty/error states for all async data
+□ No hardcoded API URLs — relative paths only
+□ Error boundary at route level
+□ Loading / empty / error states for all async data
 □ No dangerouslySetInnerHTML without explicit sanitisation
 ```
 
----
-
-## Step 4 — Mobile & Accessibility (UX Quality Gate)
+## Step 4 — Mobile & Accessibility
 
 ```
 □ All buttons/links: min-h-[44px]
@@ -89,65 +58,42 @@ If either fails → fix first, then review.
 □ Ghost buttons: visible border (no bg-transparent without border)
 □ Focus-visible ring on all interactive elements
 □ Active state on all buttons (active:opacity-70 or equivalent)
-□ No text-pulse-400 or text-pulse-500 on white/light backgrounds
+□ No text-pulse-400/500 on white/light backgrounds (contrast < 4.5:1)
 □ Loading state for every async operation
-□ Error state visible in UI (not just console-logged)
+□ Error state visible in UI — not just console
 ```
 
----
-
-## Step 5 — Security Check (quick)
+## Step 5 — Security (quick)
 
 ```
-□ No secrets, API keys, or passwords in code
-□ No new ANTHROPIC_API_KEY references (use c.env.AI)
+□ No secrets or API keys in code
+□ No ANTHROPIC_API_KEY references — use c.env.AI
 □ Stripe webhook: constructEvent() verification present
 □ New admin routes: requireAdmin() middleware present
 □ No user input directly in fetch() URL (SSRF risk)
 ```
 
----
+## Severity
 
-## Finding Classification
-
-| Severity | Definition | Action |
+| Level | Examples | Action |
 |---|---|---|
-| **Block** | Tests failing, TS error, security issue, auth bypass | Merge forbidden — fix first |
-| **Require** | Missing aria-label, error state, touch target | Comment + fix before merge |
-| **Suggest** | Naming, structure, minor refactor | Optional — log in backlog |
+| **Block** | Tests fail, TS error, auth bypass, security issue | Merge forbidden — fix first |
+| **Require** | Missing aria-label, error state, touch target | Fix before merge |
+| **Suggest** | Naming, minor refactor | Optional — log in backlog |
 
----
-
-## Review Report Format
+## Report Format
 
 ```markdown
 ## Code Review — [story-ID] [date]
 
 ### ✅ Passed
-- npm test green (X/X tests)
-- tsc --noEmit clean
-- [other positive findings]
+- npm test green (X/X) | tsc clean
 
-### 🔴 Blocking Findings
-- [file:line] [description] [why critical]
-
-### 🟡 Required Changes
+### 🔴 Blocking
 - [file:line] [description]
 
-### 💡 Suggestions
-- [optional improvements]
+### 🟡 Required
+- [file:line] [description]
 
-### Decision: [APPROVED | BLOCKED | APPROVED WITH CHANGES]
+### Decision: APPROVED | BLOCKED | APPROVED WITH CHANGES
 ```
-
----
-
-## Do Not
-- Approve merge when tests fail
-- Ignore architecture deviations ("it works anyway")
-- Downgrade security findings without architect sign-off
-- Prioritise style preference over working, conformant code
-
-## Change Log
-- 2026-04-18: Translated to English, fixed blank Role section.
-- 2026-04-10: Canonicalized file headers and shared rules reference.

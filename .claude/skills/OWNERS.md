@@ -19,6 +19,8 @@
 - analytics.md — Analytics Lead
 - architect.md — Architect
 - backend-dev.md — Architect
+- backend-integrations.md — Architect
+- backend-perf.md — Architect
 - cso.md — CSO
 - devops.md — DevOps
 - frontend-dev.md — Frontend Lead
