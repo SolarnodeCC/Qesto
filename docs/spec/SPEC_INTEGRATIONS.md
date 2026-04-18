@@ -1,5 +1,19 @@
 # SPEC_INTEGRATIONS — Payments, AI, Auth, Webhooks
 
+## Doc contract
+Flows + env names = **integration intent**; **vendor docs + code** win on API version/payload details.
+
+## Readers (multi-lens · **Architect** = **Primary** for trust)
+
+| Role | Use this doc to… |
+|------|------------------|
+| **Architect** | **Primary** — secrets, webhook **idempotency**, SSO trust, least-privilege OAuth scopes. |
+| **Backend Developer** | **Lead** — Stripe/Resend/OAuth handlers; verify signatures **before** body parse where possible. |
+| **Frontend Developer** | Return URLs, billing handoffs, “Connect Slack” flows → [[SPEC_FRONTEND.md]]. |
+| **UI specialist** | Post-checkout states, connected badges, payment failure / retry copy. |
+| **Cloudflare specialist** | Workers AI binding + model IDs; rate limits; Vectorize ops tied to decisions search. |
+| **API & middleware specialist** | `STR` webhooks, OAuth state/PKCE tables, align errors with [[SPEC_BACKEND.md]]. |
+
 ## Overview
 Qesto integrates with **Stripe** (payments), **Workers AI** (LLM), **OAuth/SAML** (auth), **Resend** (email), **Slack/Teams/Zoom** (sharing), and **Vectorize** (semantic search).
 

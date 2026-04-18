@@ -1,5 +1,19 @@
 # SPEC_REALTIME — WebSocket, Durable Objects, Live Sessions
 
+## Doc contract
+Message `type` strings + roles = **wire contract**; **SessionRoom.ts** wins on extra fields until spec updated.
+
+## Readers (multi-lens · **Architect** = **Primary** for consistency)
+
+| Role | Use this doc to… |
+|------|------------------|
+| **Architect** | **Primary** — single-writer **DO**, fan-out, dedup/fraud posture, session **modes** matrix. |
+| **Backend Developer** | **Lead** — `SessionRoom` state machine, handlers, DO admin HTTP, debounce/broadcast. |
+| **Frontend Developer** | `useSession` ↔ wire `type`s; reconnect backoff; presenter subprotocol JWT. |
+| **UI specialist** | Timer + results tick UX; respect `prefers-reduced-motion` on live animations. |
+| **Cloudflare specialist** | DO storage + alarms, WS limits/hibernation, regional placement assumptions. |
+| **API & middleware specialist** | `GET …/ws` upgrade, close codes, emoji rate limits; no REST mutations in LIVE. |
+
 ## Overview
 Real-time live sessions powered by **Durable Objects** (SessionRoom). One DO per session in LIVE state. WebSocket protocol defines message contracts. Voter deduplication prevents fraud.
 

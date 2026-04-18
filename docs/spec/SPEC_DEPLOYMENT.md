@@ -1,5 +1,19 @@
 # SPEC_DEPLOYMENT — Build, Config, Secrets, CI/CD, Monitoring
 
+## Doc contract
+Commands + `wrangler` excerpts = **targets**; **wrangler.toml + CI YAML in repo** win on exact keys/paths.
+
+## Readers (multi-lens · **Architect** = **Primary** for blast radius)
+
+| Role | Use this doc to… |
+|------|------------------|
+| **Architect** | **Primary** — env matrix, rollback, secret blast radius, who can deploy, observability depth. |
+| **Backend Developer** | `pages dev`, D1 migrate order, `.dev.vars` ↔ Pages secrets parity, post-deploy smoke. |
+| **Frontend Developer** | `npm run dev` / `vite` ports, `dist/` output; E2E timing vs deploy job. |
+| **UI specialist** | CI gates: `test:a11y`, `i18n:validate`; perf checks if present in workflows. |
+| **Cloudflare specialist** | **Lead** — Wrangler projects, bindings, routes, `wrangler pages deploy`, `d1 migrations`. |
+| **API & middleware specialist** | Trace/log shipping, admin `/health`, rate-limit dashboards/alerts wiring. |
+
 ## Overview
 Qesto deploys to **Cloudflare Pages** with **D1 database**, **KV stores**, **Durable Objects**, and **Workers AI**. Build pipeline: Vite (frontend) + Wrangler (Functions) → Pages deployment.
 
@@ -75,12 +89,12 @@ routes = [
 # Production environment
 [env.production]
 routes = [
-  {pattern = "qesto.com", zone_name = "qesto.com"}
+  {pattern = "qesto.cc", zone_name = "qesto.cc"}
 ]
 
 # Variables (non-sensitive, public)
 [env.production.vars]
-APP_URL = "https://qesto.com"
+APP_URL = "https://qesto.cc"
 AI_GATEWAY = "qesto-ai-gateway"
 STRIPE_PUBLIC_KEY = "pk_live_..."
 STRIPE_PUBLISHABLE_KEY = "pk_live_..."
@@ -309,7 +323,7 @@ jobs:
       - name: Run E2E tests (post-deploy)
         run: npm run test:e2e
         env:
-          BASE_URL: https://qesto.com
+          BASE_URL: https://qesto.cc
 ```
 
 ### 2. Performance Monitoring
@@ -337,7 +351,7 @@ jobs:
       - name: Run load test
         run: npm run perf:realtime
         env:
-          BASE_URL: https://qesto.com
+          BASE_URL: https://qesto.cc
           PERF_THRESHOLD_P95: 150  # ms
       
       - name: Check WebSocket latency
@@ -424,7 +438,7 @@ jobs:
 # Deploy to staging branch
 git push origin main:staging
 
-# Wrangler routes staging to staging.qesto.com
+# Wrangler routes staging to staging.qesto.cc
 # Uses qesto-staging D1 database
 # KV prefixed with staging-*
 ```
@@ -432,9 +446,9 @@ git push origin main:staging
 **Staging Configuration** (wrangler.toml):
 ```toml
 [env.staging]
-routes = [{pattern = "staging.qesto.com", zone_name = "qesto.com"}]
+routes = [{pattern = "staging.qesto.cc", zone_name = "qesto.cc"}]
 vars = {
-  APP_URL = "https://staging.qesto.com",
+  APP_URL = "https://staging.qesto.cc",
   LOG_LEVEL = "debug"
 }
 

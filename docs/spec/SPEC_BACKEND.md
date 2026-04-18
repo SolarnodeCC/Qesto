@@ -1,485 +1,419 @@
 # SPEC_BACKEND — API Routes, Services, Middleware
 
-## Overview
-Qesto backend is **Hono on Cloudflare Pages Functions**. All routes mounted at `/api/[[route]].ts`. 80+ endpoints organized by domain (auth, sessions, decisions, admin, etc.). Middleware stack handles auth, rate limiting, error handling, logging.
+## Contract header (read first)
+
+| Item | Value |
+|------|--------|
+| **Runtime** | Hono on Cloudflare Pages Functions |
+| **HTTP prefix** | `/api` (all rows below are under `/api` unless noted) |
+| **Entry file (not a URL)** | `functions/api/[[route]].ts` |
+| **DRAFT vs LIVE** | DRAFT: REST only. LIVE: WebSocket + DO only — see [[SPEC_CORE.md#session-state-machine]], [[SPEC_REALTIME.md]] |
+| **Normative rule** | If this doc conflicts with **code**, **code wins** until the spec is updated |
+
+### AuthZ legend (use in route tables)
+
+| Code | Meaning |
+|------|--------|
+| `A` | Anonymous (no JWT required on wire) |
+| `J` | Valid JWT |
+| `JO` | JWT + **owns** session/team resource |
+| `JM` | JWT + team **member** |
+| `JP` | JWT + **plan** allows feature (middleware) |
+| `JMP` | JWT + member + plan feature |
+| `JOP` | JWT + session owner + **presenter** role (see handler) |
+| `ADM` | JWT + admin role |
+| `STR` | Stripe-only (signature verification), not user JWT |
+| `DEV` | Development environment only |
+| `WSP` | WebSocket **presenter**: `Sec-WebSocket-Protocol: qesto.bearer.<jwt>` |
+| `WSV` | WebSocket **voter**: anonymous path; dedup via IP+fingerprint — [[SPEC_REALTIME.md#voter-deduplication-psm-007]] |
+
+### Response envelope
+
+| Kind | Shape |
+|------|--------|
+| **JSON success** | `{ data, meta? }` with `meta.requestId` / `meta.timestamp` when applicable |
+| **JSON error** | `{ error: { code, message, statusCode, requestId, timestamp } }` |
+| **Stream / SSE** | No `{data}` wrapper; chunks per route (e.g. `/ai/*` stream) |
+| **Binary** | `export`, `export.csv`, HTML report — raw body |
+
+**Route inventory tables below are authoritative** (no row counts maintained in prose).
+
+## Readers (multi-lens · **Architect** = **Primary** for tradeoffs)
+
+| Role | Use this doc to… |
+|------|------------------|
+| **Architect** | **Primary** — **AuthZ** model, **public-write** risk, **DRAFT vs LIVE** HTTP ban, plan gates. |
+| **Backend Developer** | Map **mount → handler**; Zod + D1; honor `A*` / `STR` rows in code reviews. |
+| **Frontend Developer** | `fetch` paths + payloads; **WS** → [[SPEC_REALTIME.md]] + `WSP` subprotocol. |
+| **UI specialist** | `error.code` → toasts; `JP` / `JMP` routes → upgrade affordances. |
+| **Cloudflare specialist** | Pages Functions entry, KV-backed session check, R2 log pipeline hooks. |
+| **API & middleware specialist** | **Lead** — legend, **middleware order**, envelopes, stream vs JSON bodies. |
 
 ---
 
-## Endpoint Directory (80+ Routes)
+## 1. Auth — mount `/auth` — typical `functions/api/auth.routes.ts` or `auth.ts`
 
-### 1. Authentication Routes (12 endpoints)
-**Mount**: `/auth` | **File**: `functions/api/auth.routes.ts`
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/auth/request` | A | `{ok}` | Magic link request |
+| GET | `/auth/verify?token=` | A | `{token,user,plan}` | OTT consume |
+| GET | `/auth/me` | J | `{user,plan,hasPassword}` | |
+| PATCH | `/auth/me` | J | `{user}` | |
+| POST | `/auth/logout` | J | `{ok}` | |
+| POST | `/auth/signup` | A | `{token,user}` | |
+| POST | `/auth/login` | A | `{token,user}` | |
+| POST | `/auth/password/set` | J | `{ok}` | OAuth users set password |
+| POST | `/auth/password/reset` | A | `{ok}` | |
+| POST | `/auth/password/confirm` | A | `{ok,token}` | OTT confirm |
+| POST | `/auth/sso/init` | A | `{authorize_url}` | OAuth PKCE start |
+| POST | `/auth/sso/exchange` | A | `{token,user}` | OAuth code exchange |
+| GET | `/auth/sso/saml/login` | A | redirect | |
+| POST | `/auth/sso/saml/acs` | A | redirect/set-cookie | Assertion |
+| GET | `/auth/sso/saml/metadata` | A | XML | IdP config |
 
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/auth/request` | No | `{ok: bool}` | Request magic link |
-| `GET` | `/auth/verify?token=X` | No | `{token, user, plan}` | Magic link callback |
-| `GET` | `/auth/me` | **JWT** | `{user, plan, hasPassword}` | Current user + plan |
-| `PATCH` | `/auth/me` | **JWT** | `{user}` | Update name/language |
-| `POST` | `/auth/logout` | **JWT** | `{ok}` | Logout (revoke token) |
-| `POST` | `/auth/signup` | No | `{token, user}` | Password signup |
-| `POST` | `/auth/login` | No | `{token, user}` | Password login |
-| `POST` | `/auth/password/set` | **JWT** | `{ok}` | Set password (for OAuth users) |
-| `POST` | `/auth/password/reset` | No | `{ok}` | Request password reset |
-| `POST` | `/auth/password/confirm` | No | `{ok, token}` | Confirm reset via OTT |
-| `POST` | `/auth/sso/init` | No | `{authorize_url}` | OAuth start (Microsoft, Google) |
-| `POST` | `/auth/sso/exchange` | No | `{token, user}` | OAuth code → token |
-| `GET` | `/auth/sso/saml/login` | No | — | SAML login redirect |
-| `POST` | `/auth/sso/saml/acs` | No | — | SAML assertion consumer |
-| `GET` | `/auth/sso/saml/metadata` | No | XML | SAML metadata |
-
----
-
-### 2. Sessions Routes (25+ endpoints)
-**Mount**: `/sessions` | **Files**: `functions/api/routes/sessions-*.routes.ts`
-
-#### CRUD Operations
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/sessions` | **JWT** | `{session}` | Create draft session |
-| `GET` | `/sessions/:id` | **JWT+plan** | `{session}` | Get session metadata |
-| `PATCH` | `/sessions/:id` | **JWT+owner** | `{session}` | Update session (DRAFT only) |
-| `DELETE` | `/sessions/:id` | **JWT+owner** | `{ok}` | Delete session |
-
-#### Questions (DRAFT API)
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/sessions/:id/questions` | **JWT+owner** | `{questions: []}` | List questions |
-| `POST` | `/sessions/:id/questions` | **JWT+owner** | `{question}` | Add question |
-| `PATCH` | `/sessions/:id/questions/:qid` | **JWT+owner** | `{question}` | Update question |
-| `DELETE` | `/sessions/:id/questions/:qid` | **JWT+owner** | `{ok}` | Delete question |
-
-#### Session Lifecycle
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/sessions/:id/start` | **JWT+owner** | `{session, do_url}` | Draft → Live (init DO) |
-| `POST` | `/sessions/:id/close` | **JWT+owner** | `{session}` | Live → Closed |
-| `POST` | `/sessions/:id/go-live` | **JWT+owner** | `{ok}` | Lobby → Live |
-
-#### Join & Public Access
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/sessions/by-code/:code` | No | `{session, do_url}` | Lookup by 4-digit code |
-| `GET` | `/sessions/by-invite/:code` | No | `{session}` | Lookup by guest invite |
-| `POST` | `/sessions/:id/invite/guest` | **JWT+owner** | `{invite_code}` | Create guest invite |
-| `GET` | `/sessions/:id/ws` | No | WebSocket | Upgrade to DO WebSocket |
-
-#### Results & Export
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/sessions/:id/results` | **JWT+owner+presenter** | JSON | Results for presenter |
-| `GET` | `/sessions/:id/results/public` | No | JSON | Shareable results |
-| `POST` | `/sessions/:id/export` | **JWT+owner** | Excel file | Download results |
-| `GET` | `/sessions/:id/export.csv` | **JWT+owner** | CSV file | CSV export |
-
-#### Async Voting (Enterprise feature)
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `PATCH` | `/sessions/:id/enable-async-poll` | **JWT+plan** | `{ok}` | Enable async voting |
-| `POST` | `/sessions/:id/async-vote` | No | `{ok}` | Record async vote |
-
-#### AI & Analytics
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/sessions/:id/ai-summary` | **JWT+owner** | `{summary}` | Generate AI recap |
-| `GET` | `/sessions/:id/decisions` | **JWT** | `{decisions: []}` | List session decisions |
+Details: [[SPEC_CORE.md#authentication]], [[SPEC_INTEGRATIONS.md#authentication-flows]]
 
 ---
 
-### 3. Decisions Routes (8+ endpoints)
-**Mount**: `/` | **File**: `functions/api/routes/decisions.routes.ts`
+## 2. Sessions — mount `/sessions` — typical `functions/api/routes/sessions-*.routes.ts`
 
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/sessions/:id/decisions` | No | `{decision}` | Record decision |
-| `GET` | `/sessions/:id/decisions` | **JWT** | `{decisions: []}` | List session decisions |
-| `POST` | `/sessions/:id/decisions/:decisionId/lock` | **JWT+owner** | `{decision}` | Lock decision |
-| `GET` | `/teams/:id/decisions` | **JWT+member** | `{decisions: []}` | Paginated team decisions |
-| `GET` | `/teams/:id/decisions/search` | **JWT+member** | `{decisions: []}` | Full-text search |
-| `GET` | `/teams/:id/decisions/semantic-search` | **JWT+member+plan** | `{decisions: []}` | Vector search (Vectorize) |
-| `POST` | `/sessions/:id/decisions/:decisionId/actions` | **JWT** | `{action}` | Add action item |
-| `GET` | `/sessions/:id/decisions/:decisionId/actions` | **JWT** | `{actions: []}` | List actions |
-| `PATCH` | `/sessions/:id/decisions/:decisionId/actions/:actionId` | **JWT** | `{action}` | Update action |
-| `POST` | `/decisions/bulk-tag` | **JWT** | `{ok}` | Tag multiple decisions |
-
----
-
-### 4. AI Routes (9+ endpoints)
-**Mount**: `/ai` | **File**: `functions/api/routes/ai.routes.ts`
-
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/ai/suggest-questions` | **JWT+plan** | Stream | Generate questions (LLM) |
-| `GET` | `/ai/settings` | **JWT** | JSON | AI settings |
-| `PATCH` | `/ai/settings` | **JWT** | JSON | Update AI settings |
-| `POST` | `/ai/questions/suggest` | **JWT** | `{suggestions: []}` | Suggest questions |
-| `POST` | `/ai/slides/recommend` | **JWT** | `{recommendations: []}` | Recommend slide types |
-| `POST` | `/ai/rephrase` | **JWT** | `{rephrased}` | Improve question wording |
-| `POST` | `/ai/creator` | **JWT** | Stream | Build session from chat |
-| `POST` | `/ai/generate-answers` | **JWT** | `{answers: []}` | Generate answer options |
-| `POST` | `/ai/generate-trivia` | **JWT** | `{trivia: []}` | Generate trivia questions |
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/sessions` | J | `{session}` | Create DRAFT |
+| GET | `/sessions/:id` | JP | `{session}` | JWT + plan gate as deployed |
+| PATCH | `/sessions/:id` | JO | `{session}` | DRAFT only |
+| DELETE | `/sessions/:id` | JO | `{ok}` | |
+| GET | `/sessions/:id/questions` | JO | `{questions}` | |
+| POST | `/sessions/:id/questions` | JO | `{question}` | |
+| PATCH | `/sessions/:id/questions/:qid` | JO | `{question}` | |
+| DELETE | `/sessions/:id/questions/:qid` | JO | `{ok}` | |
+| POST | `/sessions/:id/start` | JO | `{session,do_url}` | Init DO |
+| POST | `/sessions/:id/close` | JO | `{session}` | |
+| POST | `/sessions/:id/go-live` | JO | `{ok}` | Lobby→live |
+| GET | `/sessions/by-code/:code` | A | `{session,do_url}` | Join code |
+| GET | `/sessions/by-invite/:code` | A | `{session}` | Guest invite |
+| POST | `/sessions/:id/invite/guest` | JO | `{invite_code}` | |
+| GET | `/sessions/:id/ws` | **WSP\|WSV** | WS 101 | **GET** Upgrade; JSON text frames — [[SPEC_REALTIME.md#websocket-protocol]] |
+| GET | `/sessions/:id/results` | JOP | JSON | Presenter results |
+| GET | `/sessions/:id/results/public` | A | JSON | Share token/link as implemented |
+| POST | `/sessions/:id/export` | JO | xlsx | |
+| GET | `/sessions/:id/export.csv` | JO | csv | |
+| PATCH | `/sessions/:id/enable-async-poll` | JP | `{ok}` | Enterprise async |
+| POST | `/sessions/:id/async-vote` | A | `{ok}` | Async vote; abuse controls in handler |
+| POST | `/sessions/:id/ai-summary` | JO | `{summary}` | |
 
 ---
 
-### 5. Teams Routes (10 endpoints)
-**Mount**: `/teams` | **File**: `functions/api/routes/teams.routes.ts`
+## 3. Decisions — mount `/` — typical `functions/api/routes/decisions.routes.ts`
 
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/teams` | **JWT** | `{team}` | Create team |
-| `GET` | `/teams` | **JWT** | `{teams: []}` | List user's teams |
-| `GET` | `/teams/:id` | **JWT+member** | `{team}` | Get team details |
-| `PATCH` | `/teams/:id` | **JWT+owner** | `{team}` | Update team |
-| `POST` | `/teams/:id/invite` | **JWT+owner** | `{invite_token}` | Send team invite |
-| `GET` | `/teams/:id/members` | **JWT+member** | `{members: []}` | List members |
-| `DELETE` | `/teams/:id/members/:userId` | **JWT+owner** | `{ok}` | Remove member |
-| `GET` | `/team/accept` | **JWT** | `{team}` | Accept team invite |
-| `POST` | `/teams/:id/session-roles` | **JWT+owner** | `{ok}` | Assign session roles |
-| `GET` | `/teams/:id/sessions` | **JWT+member** | `{sessions: []}` | List team sessions |
+### Public write contract — `POST /sessions/:id/decisions`
 
----
+| Rule | Text |
+|------|------|
+| **AuthZ cell** | `A` = no JWT on wire **only if** handler enforces **session-scoped** authorization (e.g. live/async capability, join state, rate limits). |
+| **If code requires JWT** | Treat AuthZ as **`J`** — **verify in route handler** before relying on this row. |
+| **Threat** | Spam / forged decisions without session binding — **must** be mitigated in code (not repeated here). |
 
-### 6. Templates Routes (7 endpoints)
-**Mount**: `/templates` | **File**: `functions/api/routes/templates.routes.ts`
-
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/templates` | **JWT** | `{template}` | Create template |
-| `GET` | `/templates` | **JWT** | `{templates: []}` | List user's templates |
-| `GET` | `/templates/:id` | **JWT** | `{template}` | Get template |
-| `PATCH` | `/templates/:id` | **JWT+owner** | `{template}` | Update template |
-| `DELETE` | `/templates/:id` | **JWT+owner** | `{ok}` | Delete template |
-| `POST` | `/templates/:id/branding` | **JWT+owner** | `{template}` | Update branding |
-| `GET` | `/templates/system` | No | `{templates: []}` | Get built-in templates |
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/sessions/:id/decisions` | A* | `{decision}` | *See public write contract above |
+| GET | `/sessions/:id/decisions` | J | `{decisions}` | Canonical list row (not duplicated under §2) |
+| POST | `/sessions/:id/decisions/:decisionId/lock` | JO | `{decision}` | |
+| GET | `/teams/:id/decisions` | JM | `{decisions}` | Paginated |
+| GET | `/teams/:id/decisions/search` | JM | `{decisions}` | FTS |
+| GET | `/teams/:id/decisions/semantic-search` | JMP | `{decisions}` | Vectorize |
+| POST | `/sessions/:id/decisions/:decisionId/actions` | J | `{action}` | |
+| GET | `/sessions/:id/decisions/:decisionId/actions` | J | `{actions}` | |
+| PATCH | `/sessions/:id/decisions/:decisionId/actions/:actionId` | J | `{action}` | |
+| POST | `/decisions/bulk-tag` | J | `{ok}` | |
 
 ---
 
-### 7. Admin Routes (30+ endpoints)
-**Mount**: `/admin` | **Files**: `functions/api/routes/admin-*.routes.ts`
+## 4. AI — mount `/ai` — typical `functions/api/routes/ai.routes.ts`
 
-#### Users Management
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/admin/me` | **Admin** | `{admin}` | Current admin info |
-| `POST` | `/admin/bootstrap` | No (first time) | `{ok}` | Create first super_admin |
-| `GET` | `/admin/users` | **Admin** | `{users: []}` | List users |
-| `GET` | `/admin/users/:id` | **Admin** | `{user}` | User details |
-| `POST` | `/admin/users` | **Admin** | `{user}` | Create user |
-| `PATCH` | `/admin/users/:id` | **Admin** | `{user}` | Update user |
-| `POST` | `/admin/users/:id/suspend` | **Admin** | `{ok}` | Suspend account |
-| `POST` | `/admin/users/:id/restore` | **Admin** | `{ok}` | Restore account |
-| `POST` | `/admin/roles` | **Admin** | `{ok}` | Assign role |
-| `DELETE` | `/admin/roles/:userId` | **Admin** | `{ok}` | Revoke role |
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/ai/suggest-questions` | JP | stream | |
+| GET | `/ai/settings` | J | JSON | |
+| PATCH | `/ai/settings` | J | JSON | |
+| POST | `/ai/questions/suggest` | J | `{suggestions}` | |
+| POST | `/ai/slides/recommend` | J | `{recommendations}` | |
+| POST | `/ai/rephrase` | J | `{rephrased}` | |
+| POST | `/ai/creator` | J | stream | |
+| POST | `/ai/generate-answers` | J | `{answers}` | |
+| POST | `/ai/generate-trivia` | J | `{trivia}` | |
 
-#### Analytics & Monitoring
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/admin/kpis` | **Admin** | `{kpis}` | KPIs (active users, ARPU) |
-| `GET` | `/admin/stats` | **Admin** | `{stats}` | System statistics |
-| `GET` | `/admin/metrics` | **Admin** | `{metrics}` | Detailed metrics |
-| `GET` | `/admin/health` | **Admin** | `{services: []}` | Health check |
-
-#### Audit & Compliance
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/admin/audit` | **Admin** | `{logs: []}` | Audit log |
-| `GET` | `/admin/audit-logs` | **Admin** | `{logs: []}` | Filtered audit log |
-
-#### Issues & Alerts
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/admin/issues` | **Admin** | `{issues: []}` | Error tracking |
-| `POST` | `/admin/issues/report` | **JWT** | `{issue}` | Report issue |
-| `GET` | `/admin/alerts` | **Admin** | `{alerts: []}` | Active alerts |
-| `GET` | `/admin/alert-rules` | **Admin** | `{rules: []}` | Alert rules |
-| `POST` | `/admin/alert-rules` | **Admin** | `{rule}` | Create rule |
-| `PUT` | `/admin/alert-rules/:id` | **Admin** | `{rule}` | Update rule |
-| `DELETE` | `/admin/alert-rules/:id` | **Admin** | `{ok}` | Delete rule |
-
-#### Operations
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/admin/ops/summary` | **Admin** | Stream | Live ops summary |
-| `POST` | `/admin/stream-ticket` | **Admin** | `{ticket}` | Create live stream ticket |
-
-#### Runbooks
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/admin/runbooks` | **Admin** | `{runbooks: []}` | List runbooks |
-| `GET` | `/admin/runbooks/:category` | **Admin** | `{runbook}` | Get runbook |
-| `PUT` | `/admin/runbooks/:category` | **Admin** | `{runbook}` | Update runbook |
-| `DELETE` | `/admin/runbooks/:category` | **Admin** | `{ok}` | Delete runbook |
+Limits: [[SPEC_INTEGRATIONS.md#rate-limiting]], [[SPEC_CORE.md#critical-constraints-hard-rules]]
 
 ---
 
-### 8. Integrations Routes (15+ endpoints)
-**Mount**: `/integrations` | **File**: `functions/api/routes/integrations.routes.ts`
+## 5. Teams — mount `/teams` (+ `/team/accept`) — typical `functions/api/routes/teams.routes.ts`
 
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/integrations/powerpoint/embed` | **JWT+plan** | `{slide_url}` | Embed PowerPoint |
-| `POST` | `/integrations/powerpoint/duplicate` | **JWT** | `{slide}` | Duplicate slide |
-| `PATCH` | `/integrations/powerpoint/slides/:slideId` | **JWT** | `{slide}` | Update slide |
-| `GET` | `/integrations/:provider/authorize` | **JWT** | — | OAuth authorize (Slack, Teams, etc.) |
-| `GET` | `/integrations/:provider/callback` | No | — | OAuth callback |
-| `POST` | `/integrations/slack/disconnect` | **JWT** | `{ok}` | Disconnect Slack |
-| `POST` | `/integrations/slack/send` | **JWT** | `{ok}` | Send Slack message |
-| `POST` | `/integrations/:provider/share` | **JWT+owner** | `{ok}` | Share to Teams/Zoom/Webex/Hopin |
-
----
-
-### 9. Billing Routes (7 endpoints)
-**Mount**: `/billing` | **File**: `functions/api/routes/billing.routes.ts`
-
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/billing/checkout` | **JWT** | `{session_url}` | Create Stripe checkout |
-| `POST` | `/billing/portal` | **JWT** | `{portal_url}` | Stripe customer portal |
-| `GET` | `/billing/plan` | **JWT** | `{plan}` | User's current plan |
-| `GET` | `/billing/status` | **JWT** | `{plan, usage}` | Plan + usage limits |
-| `POST` | `/billing/webhook/stripe` | No (Stripe) | `{received}` | Stripe webhook |
-| `GET` | `/billing/referral` | **JWT** | `{code, stats}` | Referral code + stats |
-| `POST` | `/billing/referral/apply` | No | `{ok}` | Apply referral code |
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/teams` | J | `{team}` | |
+| GET | `/teams` | J | `{teams}` | |
+| GET | `/teams/:id` | JM | `{team}` | |
+| PATCH | `/teams/:id` | JO | `{team}` | Team owner |
+| POST | `/teams/:id/invite` | JO | `{invite_token}` | |
+| GET | `/teams/:id/members` | JM | `{members}` | |
+| DELETE | `/teams/:id/members/:userId` | JO | `{ok}` | |
+| GET | `/team/accept` | J | `{team}` | Invite accept (path typo-tolerant mount) |
+| POST | `/teams/:id/session-roles` | JO | `{ok}` | |
+| GET | `/teams/:id/sessions` | JM | `{sessions}` | |
 
 ---
 
-### 10. Collaboration Routes (12+ endpoints)
-**Mount**: `/` | **File**: `functions/api/routes/collaboration.routes.ts`
+## 6. Templates — mount `/templates` — typical `functions/api/routes/templates.routes.ts`
 
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `GET` | `/workspaces/:id/collaborators` | **JWT** | `{collaborators: []}` | List workspace members |
-| `PUT` | `/workspaces/:id/collaborators` | **JWT** | `{ok}` | Set collaborators |
-| `POST` | `/workspaces/:id/collaborators/invite` | **JWT** | `{invite_token}` | Invite collaborators |
-| `POST` | `/workspaces/:id/collaborators/invites/:token/accept` | **JWT** | `{ok}` | Accept invite |
-| `GET` | `/sessions/:id/collaborators` | **JWT** | `{collaborators: []}` | List session collaborators |
-| `PUT` | `/sessions/:id/collaborators` | **JWT+owner** | `{ok}` | Update collaborators |
-| `POST` | `/sessions/:id/collaborators/invite` | **JWT+owner** | `{invite_token}` | Invite collaborators |
-| `GET` | `/notifications` | **JWT** | `{notifications: []}` | List notifications |
-| `POST` | `/notifications/:id/read` | **JWT** | `{ok}` | Mark as read |
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/templates` | J | `{template}` | |
+| GET | `/templates` | J | `{templates}` | |
+| GET | `/templates/:id` | J | `{template}` | |
+| PATCH | `/templates/:id` | JO | `{template}` | Owner |
+| DELETE | `/templates/:id` | JO | `{ok}` | |
+| POST | `/templates/:id/branding` | JO | `{template}` | |
+| GET | `/templates/system` | A | `{templates}` | Built-in |
 
 ---
 
-### 11. Miscellaneous Routes (8+ endpoints)
-**Mount**: `/` | **File**: `functions/api/routes/misc.routes.ts`
+## 7. Admin — mount `/admin` — typical `functions/api/routes/admin-*.routes.ts`
 
-| Method | Path | Protected | Response | Purpose |
-|--------|------|-----------|----------|---------|
-| `POST` | `/mcp/token` | **JWT** | `{token, expires}` | Create MCP API token |
-| `DELETE` | `/mcp/token/:token` | **JWT** | `{ok}` | Revoke MCP token |
-| `GET` | `/sessions/:id/report` | **JWT** | HTML | Session report (HTML) |
-| `GET` | `/me/data` | **JWT** | JSON | Export user data (GDPR) |
-| `POST` | `/contact` | No | `{ok}` | Enterprise contact form |
-| `GET` | `/dev/seed` | Dev only | `{ok}` | Seed dev database |
+**Sensitive**: `/admin/bootstrap` (first-run), `/admin/stream-ticket`, `/admin/ops/summary` — require **ADM** + treat as **high risk**; enforce extra controls in code (audit, rate limits).
+
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| GET | `/admin/me` | ADM | `{admin}` | |
+| POST | `/admin/bootstrap` | A | `{ok}` | First super_admin only; lock down after |
+| GET | `/admin/users` | ADM | `{users}` | |
+| GET | `/admin/users/:id` | ADM | `{user}` | |
+| POST | `/admin/users` | ADM | `{user}` | |
+| PATCH | `/admin/users/:id` | ADM | `{user}` | |
+| POST | `/admin/users/:id/suspend` | ADM | `{ok}` | |
+| POST | `/admin/users/:id/restore` | ADM | `{ok}` | |
+| POST | `/admin/roles` | ADM | `{ok}` | |
+| DELETE | `/admin/roles/:userId` | ADM | `{ok}` | |
+| GET | `/admin/kpis` | ADM | `{kpis}` | |
+| GET | `/admin/stats` | ADM | `{stats}` | |
+| GET | `/admin/metrics` | ADM | `{metrics}` | |
+| GET | `/admin/health` | ADM | `{services}` | |
+| GET | `/admin/audit` | ADM | `{logs}` | |
+| GET | `/admin/audit-logs` | ADM | `{logs}` | |
+| GET | `/admin/issues` | ADM | `{issues}` | |
+| POST | `/admin/issues/report` | J | `{issue}` | |
+| GET | `/admin/alerts` | ADM | `{alerts}` | |
+| GET | `/admin/alert-rules` | ADM | `{rules}` | |
+| POST | `/admin/alert-rules` | ADM | `{rule}` | |
+| PUT | `/admin/alert-rules/:id` | ADM | `{rule}` | |
+| DELETE | `/admin/alert-rules/:id` | ADM | `{ok}` | |
+| GET | `/admin/ops/summary` | ADM | stream | |
+| POST | `/admin/stream-ticket` | ADM | `{ticket}` | |
+| GET | `/admin/runbooks` | ADM | `{runbooks}` | |
+| GET | `/admin/runbooks/:category` | ADM | `{runbook}` | |
+| PUT | `/admin/runbooks/:category` | ADM | `{runbook}` | |
+| DELETE | `/admin/runbooks/:category` | ADM | `{ok}` | |
 
 ---
 
-## Middleware Stack
+## 8. Integrations — mount `/integrations` — typical `functions/api/routes/integrations.routes.ts`
 
-**Execution Order** (in `functions/api/[[route]].ts`):
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/integrations/powerpoint/embed` | JP | `{slide_url}` | |
+| POST | `/integrations/powerpoint/duplicate` | J | `{slide}` | |
+| PATCH | `/integrations/powerpoint/slides/:slideId` | J | `{slide}` | |
+| GET | `/integrations/:provider/authorize` | J | redirect | OAuth start |
+| GET | `/integrations/:provider/callback` | A | redirect | **State/PKCE** verified server-side — [[SPEC_INTEGRATIONS.md#authentication-flows]] |
+| POST | `/integrations/slack/disconnect` | J | `{ok}` | |
+| POST | `/integrations/slack/send` | J | `{ok}` | |
+| POST | `/integrations/:provider/share` | JO | `{ok}` | Teams/Zoom/Webex/Hopin |
 
-```
-1. CORS Header Check (if OPTIONS, return early)
-2. Trace ID Correlation (OBS-001)
-   └─ Set c.set('traceId', uuid)
-   
-3. Security Headers (skip WebSocket 101)
-   └─ CSP, HSTS, X-Frame-Options, etc.
-   
-4. Global Error Handler (errorHandlerMiddleware)
-   └─ Catch errors from downstream, return JSON
-   
-5. IP-Based Rate Limit (ARCH-001)
-   └─ 30 req/60s anonymous, 10 req/60s auth endpoints
-   
-6. Auth Extraction (extractToken)
-   └─ Bearer JWT from Authorization header → c.set('user')
-   
-7. Session Validation (validateSession)
-   └─ Lookup token in USERS_KV, check TTL
-   
-8. Per-Plan Rate Limit (ARCH-022)
-   └─ Free: 60 req/60s, Pro: 300 req/60s
-   
-9. Structured Logging (ARCH-020)
-   └─ JSON log to R2 bucket + console
-   
-10. Route Handlers (individual endpoint logic)
-```
+---
 
-**Error Handling Middleware**:
+## 9. Billing — mount `/billing` — typical `functions/api/routes/billing.routes.ts`
+
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/billing/checkout` | J | `{session_url}` | Stripe Checkout |
+| POST | `/billing/portal` | J | `{portal_url}` | |
+| GET | `/billing/plan` | J | `{plan}` | |
+| GET | `/billing/status` | J | `{plan,usage}` | |
+| POST | `/billing/webhook/stripe` | STR | `{received}` | Idempotent — [[SPEC_INTEGRATIONS.md#webhook-handler-idempotent]] |
+| GET | `/billing/referral` | J | `{code,stats}` | |
+| POST | `/billing/referral/apply` | A | `{ok}` | **Abuse**: rate limit / validation in handler — verify code |
+
+---
+
+## 10. Collaboration — mount `/` — typical `functions/api/routes/collaboration.routes.ts`
+
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| GET | `/workspaces/:id/collaborators` | J | `{collaborators}` | |
+| PUT | `/workspaces/:id/collaborators` | J | `{ok}` | |
+| POST | `/workspaces/:id/collaborators/invite` | J | `{invite_token}` | |
+| POST | `/workspaces/:id/collaborators/invites/:token/accept` | J | `{ok}` | |
+| GET | `/sessions/:id/collaborators` | J | `{collaborators}` | |
+| PUT | `/sessions/:id/collaborators` | JO | `{ok}` | |
+| POST | `/sessions/:id/collaborators/invite` | JO | `{invite_token}` | |
+| GET | `/notifications` | J | `{notifications}` | |
+| POST | `/notifications/:id/read` | J | `{ok}` | |
+
+---
+
+## 11. Misc — mount `/` — typical `functions/api/routes/misc.routes.ts`
+
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| POST | `/mcp/token` | J | `{token,expires}` | |
+| DELETE | `/mcp/token/:token` | J | `{ok}` | |
+| GET | `/sessions/:id/report` | J | HTML | |
+| GET | `/me/data` | J | JSON | GDPR export |
+| POST | `/contact` | A | `{ok}` | Enterprise contact |
+| GET | `/dev/seed` | DEV | `{ok}` | Never prod |
+
+---
+
+## Middleware stack (order)
+
+Executed in **`functions/api/[[route]].ts`** (or current router entry — search repo for `Hono` + middleware registration).
+
+1. CORS — `OPTIONS` early exit  
+2. Trace ID → `c.set('traceId', uuid)`  
+3. Security headers — skip WebSocket 101  
+4. Global error boundary  
+5. IP rate limit — **numeric values are targets; verify in middleware implementation** (search `rate`, `ARCH-001`)  
+6. `extractToken` — Bearer → `c.set('user')`  
+7. `validateSession` — `USERS_KV` / TTL  
+8. Plan rate limit — **verify constants in code** (`ARCH-022`)  
+9. Structured logging — R2 / console  
+10. Route handlers  
+
+**`onError` (illustrative pseudocode only)** — production maps **typed** errors / stable codes, not `err.message` keys:
+
 ```typescript
-app.onError((err, c) => {
-  const traceId = c.get('traceId')
-  const statusCode = err.status || 500
-  const code = errorCodeMap[err.message] || 'INTERNAL_ERROR'
-  
-  return c.json({
-    error: {
-      code,
-      message: err.message,
-      statusCode,
-      requestId: traceId,
-      timestamp: Date.now(),
-    },
-  }, statusCode)
-})
+// ILLUSTRATIVE — do not copy verbatim
+app.onError((err, c) => c.json({
+  error: {
+    code: mapErrorToCode(err), // typed / HTTPException / Zod
+    message: err.message,
+    statusCode: err.status ?? 500,
+    requestId: c.get('traceId'),
+    timestamp: Date.now(),
+  },
+}, err.status ?? 500))
 ```
 
 ---
 
-## Service Layer
+## Service layer
 
-Services handle business logic, separate from routes:
+Typical paths (if your checkout differs, **search by symbol**):
 
-| Service | File | Purpose |
-|---------|------|---------|
-| `sessionLifecycle` | `functions/api/services/sessionLifecycle.ts` | Draft state management, DO init |
-| `sessionOrchestration` | `functions/api/services/sessionOrchestration.ts` | Live session state sync |
-| `session-start` | `functions/api/services/session-start.ts` | Transition orchestration |
-| `auth` | `functions/api/auth.ts` | JWT signing, OAuth flows |
-| `billing` | `functions/api/billing.ts` | Plan enforcement, usage tracking |
-| `stripe` | `functions/api/stripe.ts` | Stripe API client |
-| `ai` | `functions/api/ai.ts` | Workers AI gateway |
-| `db` | `functions/api/db.ts` | D1 query helpers |
-| `kv` | `functions/api/kv.ts` | KV operations (bulk, TTL) |
-| `observability` | `functions/api/observability.ts` | Tracing, logging |
-| `decisions` | `functions/api/services/decisions.ts` | Decision logic, tagging |
-
----
-
-## Standard Response Format
-
-**Success**:
-```json
-{
-  "data": {...},
-  "meta": {
-    "timestamp": 1712000000000,
-    "requestId": "uuid-here"
-  }
-}
-```
-
-**Error**:
-```json
-{
-  "error": {
-    "code": "NOT_FOUND",
-    "message": "Session not found",
-    "statusCode": 404,
-    "requestId": "uuid-here",
-    "timestamp": 1712000000000
-  }
-}
-```
+| Svc | Path | Role |
+|-----|------|------|
+| sessionLifecycle | `functions/api/services/sessionLifecycle.ts` | DRAFT + DO init |
+| sessionOrchestration | `functions/api/services/sessionOrchestration.ts` | LIVE sync |
+| session-start | `functions/api/services/session-start.ts` | Transitions |
+| auth | `functions/api/auth.ts` | JWT, OAuth |
+| billing | `functions/api/billing.ts` | Plans |
+| stripe | `functions/api/stripe.ts` | Stripe client |
+| ai | `functions/api/ai.ts` | Workers AI |
+| db | `functions/api/db.ts` | D1 helpers |
+| kv | `functions/api/kv.ts` | KV helpers |
+| observability | `functions/api/observability.ts` | Logs/trace |
+| decisions | `functions/api/services/decisions.ts` | Decisions + tags |
 
 ---
 
-## Error Codes
+## Validation (Zod) — example aligned with [[SPEC_DATAMODEL.md]]
 
-| Code | Status | Meaning | Retry? |
-|------|--------|---------|--------|
-| `UNAUTHORIZED` | 401 | Missing/expired JWT | No |
-| `FORBIDDEN` | 403 | User lacks permission | No |
-| `NOT_FOUND` | 404 | Resource doesn't exist | No |
-| `CONFLICT` | 409 | State violation (e.g., REST during LIVE) | No |
-| `UNPROCESSABLE` | 422 | Invalid input (Zod) | No |
-| `RATE_LIMIT` | 429 | Too many requests | **Yes** (with backoff) |
-| `INTERNAL_ERROR` | 500 | Unexpected error | **Yes** (with backoff) |
-| `SERVICE_UNAVAILABLE` | 503 | Dependency down | **Yes** (with backoff) |
-
----
-
-## Validation Patterns
-
-All input validated with **Zod** before handler logic:
+`teamId` is an **opaque string** (D1 `TEXT`); not necessarily UUID.
 
 ```typescript
 const CreateSessionSchema = z.object({
   title: z.string().min(3).max(200),
-  teamId: z.string().uuid(),
+  teamId: z.string().min(2).max(128),
   anonymityMode: z.enum(['none', 'partial', 'full']).optional(),
   timerDefault: z.number().min(10).max(300).optional(),
 })
-
-app.post('/sessions', async (c) => {
-  const body = await c.req.json()
-  const validated = CreateSessionSchema.parse(body)  // Throws if invalid
-  // ...
-})
 ```
 
 ---
 
-## Database Operations
+## D1 access pattern
 
-**D1 Query Pattern**:
 ```typescript
-// Safe queries with parameters (prevent SQL injection)
-const session = await c.env.DB.prepare(
-  'SELECT * FROM sessions WHERE id = ? AND team_id = ?'
-).bind(sessionId, teamId).first()
-
-// Bulk insert
-await c.env.DB.prepare(`
-  INSERT INTO decisions (id, session_id, selected_option)
-  VALUES (?, ?, ?)
-`).bind(decisionId, sessionId, option).run()
+await c.env.DB.prepare('SELECT * FROM sessions WHERE id = ?').bind(id).first()
+await c.env.DB.prepare('INSERT INTO decisions (id,session_id,selected_option) VALUES (?,?,?)')
+  .bind(decisionId, sessionId, option).run()
 ```
 
 ---
 
-## Request/Response Examples
+## Examples
 
-### Create Session
-```bash
+**Create session (REST)**
+
+```http
 POST /api/sessions
-Authorization: Bearer ${JWT}
+Authorization: Bearer <jwt>
 Content-Type: application/json
 
-{
-  "title": "Q1 Planning",
-  "teamId": "team_xyz",
-  "anonymityMode": "full",
-  "timerDefault": 60
-}
-
-Response 201:
-{
-  "data": {
-    "id": "sess_abc123",
-    "code": "1234",
-    "status": "draft",
-    "createdAt": 1712000000000
-  }
-}
+{"title":"Q1 Planning","teamId":"team_xyz","anonymityMode":"full","timerDefault":60}
 ```
 
-### Vote (during LIVE session)
-```bash
-POST /api/sessions/sess_abc123/ws (WebSocket upgrade)
+→ `201` `{ "data": { "id":"sess_abc123","code":"1234","status":"draft","createdAt":1712000000000 } }`
 
-// After connection
-{
-  "type": "vote",
-  "data": {"questionId": "q1", "selectedIndex": 2},
-  "timestamp": 1712000000000
-}
+**Live vote (WebSocket)**
 
-Response from server:
-{
-  "type": "results",
-  "data": {"results": {"0": 5, "1": 3, "2": 8}, "total": 16},
-  "timestamp": 1712000000100
-}
+1. Client: **`GET wss://host/api/sessions/:id/ws`** with Upgrade headers; presenter adds `Sec-WebSocket-Protocol: qesto.bearer.<jwt>`.  
+2. After open: send JSON text frames per [[SPEC_REALTIME.md#websocket-messages]].
+
+```json
+{"type":"vote","data":{"questionId":"q1","selectedIndex":2},"timestamp":1712000000000}
+```
+
+Server may broadcast:
+
+```json
+{"type":"results","data":{"results":{"0":5,"1":3,"2":8},"total":16},"timestamp":1712000000100}
 ```
 
 ---
 
-## Related References
+## Error codes (common)
 
-- [[SPEC_CORE.md#authentication]] — Auth flow details
-- [[SPEC_DATAMODEL.md]] — Database schema
-- [[SPEC_REALTIME.md]] — WebSocket protocol
-- [[SPEC_INTEGRATIONS.md]] — Stripe, AI, OAuth details
+| Code | HTTP | Retry? |
+|------|------|--------|
+| UNAUTHORIZED | 401 | No |
+| FORBIDDEN | 403 | No |
+| NOT_FOUND | 404 | No |
+| CONFLICT | 409 | No |
+| UNPROCESSABLE | 422 | No |
+| RATE_LIMIT | 429 | Yes backoff |
+| INTERNAL_ERROR | 500 | Yes backoff |
+| SERVICE_UNAVAILABLE | 503 | Yes backoff |
+
+Full semantics: [[SPEC_CORE.md#error-handling-strategy]]
+
+---
+
+## Related
+
+- [[SPEC_CORE.md]] — architecture, auth overview, constraints  
+- [[SPEC_DATAMODEL.md]] — schema, KV keys  
+- [[SPEC_REALTIME.md]] — WS messages, DO  
+- [[SPEC_INTEGRATIONS.md]] — Stripe, OAuth, AI  
+
+---
+
+## AI usage recipe (copy)
+
+1. “Implement route X: open **SPEC_BACKEND §N table row** + **AuthZ legend**.”  
+2. “LIVE voting: ignore REST for mutations; use **§Examples WebSocket** + **SPEC_REALTIME**.”  
+3. “Public `A` rows: read **Public write contract** + confirm handler in repo.”  
+4. “Middleware order: **§Middleware stack**; numbers: **verify in code**.”  
+5. “Responses: **Contract header → Response envelope**.”  
+
+**Checklist before trusting this file:** Zod matches examples • no duplicate paths • `GET` Upgrade for WS • `A` write rows have contract text • rate limits verified in code.

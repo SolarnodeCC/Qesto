@@ -1,5 +1,19 @@
 # SPEC_CORE — System Architecture & Design
 
+## Doc contract
+Diagrams + constraint list = **intent**; **code wins** on conflict until a spec PR updates this file.
+
+## Readers (multi-lens · **Architect** = **Primary** for system design)
+
+| Role | Use this doc to… |
+|------|------------------|
+| **Architect** | **Primary** — state machine, **DRAFT/LIVE** split, hard constraints, trust zones, NFRs. |
+| **Backend Developer** | **Lead** — where truth lives (D1/KV/DO), lifecycle hooks, async `waitUntil` patterns. |
+| **Frontend Developer** | JWT vs public journeys; plan tiers → gating (detail [[SPEC_FRONTEND.md]]). |
+| **UI specialist** | Modes (present/vote/results) + plan limits → skeletons, upsell, disabled tools. |
+| **Cloudflare specialist** | Binding map: Pages, D1, 7×KV, DO `SessionRoom`, Workers AI, Vectorize, R2, Analytics. |
+| **API & middleware specialist** | Rationale for routes; concrete paths + AuthZ in [[SPEC_BACKEND.md]]. |
+
 ## Overview
 Qesto is a real-time interactive session platform (Mentimeter-style) built on Cloudflare Workers, D1, and Durable Objects. Teams create question-driven sessions with AI-powered insights. **Core insight**: Stateless DRAFT API → stateful LIVE WebSocket via Durable Objects.
 
@@ -48,9 +62,9 @@ Qesto is a real-time interactive session platform (Mentimeter-style) built on Cl
 
 | Layer | Technology | Version | Binding | Purpose |
 |-------|------------|---------|---------|---------|
-| **Frontend** | React | 18.3.1 | — | UI framework |
-| | TypeScript | 5.5 | — | Type safety |
-| | Vite | 5.2 | — | Bundle/dev server |
+| **Frontend** | React | 19 | — | UI framework |
+| | TypeScript | 5.7 | — | Type safety |
+| | Vite | 8 | — | Bundle/dev server |
 | | Tailwind CSS | 4.2 | — | Styling |
 | | i18next | 26.0.4 | — | i18n (5 langs) |
 | **Runtime** | Cloudflare Pages | — | — | Static + Functions |
@@ -303,7 +317,7 @@ Results Access:
 - `UNPROCESSABLE` (422): Invalid input (Zod validation)
 - `INTERNAL_ERROR` (500): Unexpected server error
 
-See [[SPEC_BACKEND.md#error-codes]] for complete list.
+See [[SPEC_BACKEND.md#error-codes-common]] for the shared table.
 
 ---
 

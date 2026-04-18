@@ -1,5 +1,19 @@
 # SPEC_DATAMODEL — Database Schema, KV Patterns, Types
 
+## Doc contract
+SQL + key patterns = **persistence contract**; **migrations + code** win on column/null quirks until spec updated.
+
+## Readers (multi-lens · **Architect** = **Primary** for integrity)
+
+| Role | Use this doc to… |
+|------|------------------|
+| **Architect** | **Primary** — FK/ownership, TTL/retention (KV vs D1), PII in `audit_log` / tokens / webhooks. |
+| **Backend Developer** | **Lead** — SQL + KV writes, Zod, indexes for hot paths. |
+| **Frontend Developer** | DTO shapes, enums for selects; readonly views of decisions/sessions. |
+| **UI specialist** | Tags/status badges; truncate `ai_summary`; show `locked_at` / consent states clearly. |
+| **Cloudflare specialist** | D1 tables, 7×KV TTL grid, Vectorize binding + dims vs embedding model. |
+| **API & middleware specialist** | Request/response fields ↔ columns; webhook dedup rows (`stripe_webhook_events`). |
+
 ## Overview
 Qesto uses **D1 (SQLite)** for persistent data and **7 KV namespaces** for caching, session state, and rate limiting. All types are TypeScript-first with runtime validation via Zod.
 

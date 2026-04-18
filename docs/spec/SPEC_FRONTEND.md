@@ -1,5 +1,19 @@
 # SPEC_FRONTEND — React Architecture, Routing, Hooks, Components
 
+## Doc contract
+Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names until spec PR merges.
+
+## Readers (multi-lens · **Architect** = **Primary** for surfaces)
+
+| Role | Use this doc to… |
+|------|------------------|
+| **Architect** | **Primary** — public **vote/present/join** vs gated **dashboard/admin**; i18n/a11y as system bars. |
+| **Backend Developer** | Page → **REST path** map (see [[SPEC_BACKEND.md]]); WS client → [[SPEC_REALTIME.md]]. |
+| **Frontend Developer** | **Lead** — `App.tsx` routes, hooks (`useAuth`, `useSession`, …), lazy chunks. |
+| **UI specialist** | **Lead** — `src/ui/tokens`, motion, charts, energizers; loading/empty/error parity. |
+| **Cloudflare specialist** | Static asset path + cache hints; link out to [[SPEC_DEPLOYMENT.md]] for CDN/Pages. |
+| **API & middleware specialist** | Presenter `Sec-WebSocket-Protocol`; typed `error` envelope in API client. |
+
 ## Overview
 Qesto frontend is **React 18 + Vite** with TypeScript, Tailwind CSS, and real-time WebSocket via `useSession` hook. Architecture: pages (routing) → components (UI) → hooks (state) → lib (utilities).
 
@@ -79,7 +93,6 @@ pages/
 │   ├── TemplatesTab.tsx        Saved templates
 │   └── TeamsTab.tsx            Team management
 ├── SessionConfig.tsx           Edit draft session (protected)
-├── AICreator.tsx               AI question helper (protected)
 ├── AdminPanel.tsx              Admin router (protected)
 │   ├── AdminDashboard.tsx      KPIs dashboard
 │   ├── AdminUsers.tsx          User management

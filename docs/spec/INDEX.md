@@ -2,13 +2,14 @@
 
 ## Overview
 
-This directory contains **7 consolidated specification documents** that comprehensively document Qesto's architecture, codebase, and operations. **Total: ~23K tokens** (vs. 45K+ in scattered existing docs).
+This directory contains **7 consolidated specification documents** that comprehensively document Qesto's architecture, codebase, and operations.
 
 All specs are optimized for:
 - ✅ **AI Reconstruction**: Complete enough for GPT to rebuild any feature
 - ✅ **Token Efficiency**: Structured (tables, code) > prose
 - ✅ **Discoverability**: Cross-linked, hierarchical TOC
 - ✅ **Maintainability**: Single source of truth per domain
+- ✅ **Readers ladder**: Each `SPEC_*.md` opens with **Doc contract** + **Readers** table — **Architect** row is always **Primary** for tradeoffs; **Backend**, **Frontend**, **UI**, **Cloudflare**, **API/middleware** rows say what to skim first
 
 ---
 
@@ -17,11 +18,13 @@ All specs are optimized for:
 ### 🏗️ **SPEC_CORE.md** — Architecture & Design Fundamentals
 **Purpose**: Top-level system overview, design decisions, constraints.
 
+**Readers**: Architect (Primary) + five role lenses — see doc header in [SPEC_CORE.md](SPEC_CORE.md).
+
 **Key Sections**:
 - System architecture diagram (browser → Pages Functions → D1/KV/DO)
 - Tech stack with versions & bindings
 - Session state machine (DRAFT → LIVE → CLOSED → ARCHIVED)
-- 5 critical constraints (no Anthropic API, secrets never in config, etc.)
+- 5 critical constraints (secrets never in config, etc.)
 - Authentication & authorization overview
 - Real-time architecture intro
 - Data lifecycle
@@ -37,11 +40,13 @@ All specs are optimized for:
 ### 💾 **SPEC_DATAMODEL.md** — Database, KV, Types
 **Purpose**: Complete data model, schema, persistence patterns, type system.
 
+**Readers**: Architect (Primary) + Backend/KV/D1 focus — see doc header.
+
 **Key Sections**:
 - D1 schema (7 tables: sessions, decisions, actions, audit_log, etc.)
 - KV namespaces (7 stores with key patterns, TTLs, examples)
 - Core TypeScript types (User, SessionState, Question, Decision, etc.)
-- User plan limits (free/starter/team/enterprise)
+- User plan limits (free/starter/team)
 - Database indices & optimization
 - Validation patterns (Zod schemas)
 - Migration pattern
@@ -54,6 +59,8 @@ All specs are optimized for:
 
 ### 🖥️ **SPEC_FRONTEND.md** — React Architecture, Routing, State
 **Purpose**: Frontend architecture, component tree, hooks, WebSocket client, design system.
+
+**Readers**: Architect (Primary surfaces) + Frontend/UI **Lead** rows — see doc header.
 
 **Key Sections**:
 - Route table (30+ routes with auth requirements)
@@ -73,10 +80,13 @@ All specs are optimized for:
 ---
 
 ### 🔌 **SPEC_BACKEND.md** — API Routes, Services, Middleware
-**Purpose**: All 80+ API endpoints, service layer, middleware stack, error handling.
+**Purpose**: Route inventory (tables authoritative), middleware order, envelopes, AuthZ legend.
+
+**Readers**: Architect (Primary) + API/middleware **Lead** — see doc header in [SPEC_BACKEND.md](SPEC_BACKEND.md).
 
 **Key Sections**:
-- **Endpoint directory**: 80+ routes organized by domain:
+- **Contract header** + **AuthZ legend** (`A` … `WSV`) + **Readers** table
+- **Endpoint directory**: routes by domain (no stale counts):
   - Auth (12 endpoints: magic link, OAuth, SAML, password)
   - Sessions (25+ endpoints: CRUD, lifecycle, realtime, export)
   - Decisions (8 endpoints: create, lock, search, actions)
@@ -105,6 +115,8 @@ All specs are optimized for:
 ### ⚡ **SPEC_REALTIME.md** — WebSocket, Durable Objects, Live Sessions
 **Purpose**: Real-time communication, SessionRoom DO internals, WebSocket protocol, session modes.
 
+**Readers**: Architect (Primary) + DO/WebSocket lenses — see doc header in [SPEC_REALTIME.md](SPEC_REALTIME.md).
+
 **Key Sections**:
 - WebSocket protocol (connection URL, handshake, close codes)
 - ClientMessage types (vote, feedback, emoji, advance, timer, etc.)
@@ -129,6 +141,8 @@ All specs are optimized for:
 ### 🔗 **SPEC_INTEGRATIONS.md** — Payments, AI, Auth, Email, Chat
 **Purpose**: Third-party service integrations (Stripe, Workers AI, OAuth, SAML, email, Slack, Teams, etc.).
 
+**Readers**: Architect (Primary) + vendor integration leads — see doc header in [SPEC_INTEGRATIONS.md](SPEC_INTEGRATIONS.md).
+
 **Key Sections**:
 - **Stripe**: Checkout, customer portal, webhook handlers (idempotent), subscription states
 - **Workers AI**: Model gateway, use cases (questions, recap, rephrase, chat), rate limits
@@ -151,6 +165,8 @@ All specs are optimized for:
 
 ### 🚀 **SPEC_DEPLOYMENT.md** — Build, Config, Secrets, CI/CD, Monitoring
 **Purpose**: Build pipeline, Cloudflare configuration, secrets management, CI/CD, monitoring.
+
+**Readers**: Architect (Primary) + Cloudflare **Lead** — see doc header in [SPEC_DEPLOYMENT.md](SPEC_DEPLOYMENT.md).
 
 **Key Sections**:
 - **Build Process**: Local development (npm run dev), production build (Vite + Wrangler)
@@ -261,6 +277,7 @@ docs/spec/
 5. **New hook or component**: Update SPEC_FRONTEND.md
 6. **New message type**: Update SPEC_REALTIME.md WebSocket section
 7. **Architecture decision**: Update SPEC_CORE.md & reference relevant spec
+8. **Role ownership shifts** (e.g. WS-only mutation policy): tweak the **Readers** table in the affected `SPEC_*.md` (Architect row stays Primary unless governance changes)
 
 ### Update Frequency
 - **Endpoints**: Within 1 day of merge
