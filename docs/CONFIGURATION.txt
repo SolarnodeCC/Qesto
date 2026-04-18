@@ -1,0 +1,13 @@
+Qesto Configuration Notes (current)
+
+Last verified: 2026-04-05 (UTC)
+
+- Frontend build: Vite (`npm run build`)
+- API runtime: Cloudflare Pages Functions with Hono
+- Worker runtime: `worker/` with separate wrangler configuration
+- Secrets: manage with Wrangler secret commands; do not store in repository configs
+- AI runtime: Workers AI via `c.env.AI.run()`
+- Recommended pre-release checks:
+  1) npm run type-check
+  2) npm test
+  3) npm run check

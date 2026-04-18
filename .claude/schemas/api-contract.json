@@ -1,0 +1,203 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "API Contract Schema",
+  "description": "Format for defining API contracts before implementation (for PO↔Frontend↔Backend handoff)",
+  "type": "object",
+  "required": ["endpoint", "method", "auth", "request", "response"],
+  "properties": {
+    "endpoint": {
+      "type": "string",
+      "pattern": "^/api/[a-z0-9/_:-]+$",
+      "description": "Full API path (e.g., /api/sessions/:id/results)"
+    },
+    "method": {
+      "type": "string",
+      "enum": ["GET", "POST", "PATCH", "PUT", "DELETE"],
+      "description": "HTTP method"
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "One-line description of what this endpoint does"
+    },
+    "auth": {
+      "type": "string",
+      "enum": ["required", "optional", "none"],
+      "description": "Authentication requirement"
+    },
+    "auth_method": {
+      "type": "string",
+      "enum": ["bearer_token", "api_key", "session_cookie"],
+      "description": "How authentication is provided"
+    },
+    "plan_gate": {
+      "type": "string",
+      "enum": ["free", "pro", "enterprise"],
+      "description": "Minimum plan required to access"
+    },
+    "rate_limit": {
+      "type": "object",
+      "properties": {
+        "requests": {"type": "integer"},
+        "per_seconds": {"type": "integer"}
+      },
+      "description": "Rate limiting (e.g., 100 requests per 60 seconds)"
+    },
+    "request": {
+      "type": "object",
+      "properties": {
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["type", "description"],
+            "properties": {
+              "type": {"type": "string"},
+              "description": {"type": "string"},
+              "required": {"type": "boolean", "default": true}
+            }
+          }
+        },
+        "query": {
+          "type": "object",
+          "description": "Query string parameters"
+        },
+        "body": {
+          "type": "object",
+          "description": "Request body schema"
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "required": ["200"],
+      "properties": {
+        "200": {
+          "type": "object",
+          "description": "Success response (HTTP 200)"
+        },
+        "400": {
+          "type": "object",
+          "description": "Bad request (invalid input)"
+        },
+        "401": {
+          "type": "object",
+          "description": "Unauthorized (missing/invalid auth)"
+        },
+        "403": {
+          "type": "object",
+          "description": "Forbidden (insufficient permissions or plan)"
+        },
+        "404": {
+          "type": "object",
+          "description": "Not found"
+        },
+        "409": {
+          "type": "object",
+          "description": "Conflict (state mismatch)"
+        },
+        "500": {
+          "type": "object",
+          "description": "Server error"
+        }
+      }
+    },
+    "latency": {
+      "type": "object",
+      "properties": {
+        "p50_ms": {"type": "number"},
+        "p95_ms": {"type": "number"},
+        "p99_ms": {"type": "number"}
+      },
+      "description": "Expected latency percentiles"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes or gotchas"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "approved", "implemented"],
+      "description": "Approval status"
+    },
+    "approved_by": {
+      "type": "object",
+      "properties": {
+        "frontend": {"type": "string"},
+        "backend": {"type": "string"},
+        "approved_date": {"type": "string", "format": "date"}
+      }
+    }
+  },
+  "example": {
+    "endpoint": "/api/sessions/:id/results",
+    "method": "GET",
+    "summary": "Get live or closed session results with vote tallies",
+    "auth": "required",
+    "auth_method": "bearer_token",
+    "plan_gate": "pro",
+    "rate_limit": {
+      "requests": 100,
+      "per_seconds": 60
+    },
+    "request": {
+      "params": {
+        "id": {
+          "type": "string (UUID)",
+          "description": "Session ID",
+          "required": true
+        }
+      },
+      "query": {
+        "include_metadata": {
+          "type": "boolean",
+          "description": "Include session title and objective",
+          "required": false
+        }
+      }
+    },
+    "response": {
+      "200": {
+        "type": "object",
+        "properties": {
+          "session_id": {"type": "string"},
+          "status": {"type": "string", "enum": ["live", "closed"]},
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {"type": "string"},
+                "text": {"type": "string"},
+                "type": {"type": "string"},
+                "results": {"type": "object"}
+              }
+            }
+          }
+        }
+      },
+      "403": {
+        "type": "object",
+        "properties": {
+          "error": {"type": "string"},
+          "code": {"enum": ["PLAN_REQUIRED", "UNAUTHORIZED"]}
+        }
+      },
+      "404": {
+        "error": "Session not found or user unauthorized"
+      }
+    },
+    "latency": {
+      "p50_ms": 80,
+      "p95_ms": 200,
+      "p99_ms": 500
+    },
+    "notes": "Results only visible after session closes or if ≥2 responses (privacy threshold)",
+    "status": "approved",
+    "approved_by": {
+      "frontend": "Alice (alice@team.dev)",
+      "backend": "Bob (bob@team.dev)",
+      "approved_date": "2026-04-10"
+    }
+  }
+}

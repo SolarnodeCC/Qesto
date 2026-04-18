@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Architecture Decision Record (ADR) Schema",
+  "description": "Format for recording architecture decisions (ADR-001, ADR-002, etc.) in docs/ARCHITECTURE.md",
+  "type": "object",
+  "required": ["number", "title", "date", "status", "context", "decision", "consequences"],
+  "properties": {
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "ADR sequence number (e.g., 1 for ADR-001)"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 150,
+      "description": "Descriptive title"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Decision date (YYYY-MM-DD)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Proposed", "Accepted", "Superseded", "Rejected"],
+      "description": "Current status"
+    },
+    "context": {
+      "type": "string",
+      "description": "Problem statement, constraints, and background"
+    },
+    "decision": {
+      "type": "string",
+      "description": "What we decided and why"
+    },
+    "consequences": {
+      "type": "object",
+      "required": ["positive", "negative"],
+      "properties": {
+        "positive": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Benefits and positive outcomes"
+        },
+        "negative": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Drawbacks and trade-offs"
+        },
+        "risks": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Potential risks if this breaks"
+        }
+      }
+    },
+    "alternatives_considered": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "reason_rejected"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "reason_rejected": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Other options evaluated and why they were rejected"
+    },
+    "related_adr": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "description": "Related ADR numbers (e.g., [2, 5])"
+    },
+    "supersedes": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "If this supersedes another ADR, its number"
+    }
+  },
+  "example": {
+    "number": 1,
+    "title": "Use Durable Objects for session state",
+    "date": "2026-01-15",
+    "status": "Accepted",
+    "context": "We need real-time session updates for live polling. WebSockets + KV alone can't handle concurrent writes consistently.",
+    "decision": "Use Cloudflare Durable Objects (DO) to maintain single-threaded session state. One DO per session (keyed by session code).",
+    "consequences": {
+      "positive": [
+        "Guaranteed consistency (single-threaded)",
+        "Reduced KV write conflicts",
+        "Simplified realtime message ordering"
+      ],
+      "negative": [
+        "DO startup latency (~50-100ms cold)",
+        "DO cost per active session",
+        "Harder to test (requires Miniflare)"
+      ],
+      "risks": [
+        "DO eviction on idle (30min) → must handle gracefully",
+        "DO memory limit (128MB) → large sessions may fail",
+        "Buggy DO logic locks the whole session"
+      ]
+    },
+    "alternatives_considered": [
+      {
+        "name": "Redis for session state",
+        "reason_rejected": "Third-party cost, not Cloudflare-native, adds complexity"
+      },
+      {
+        "name": "D1 + polling",
+        "reason_rejected": "Polling latency too high, D1 not optimized for realtime"
+      }
+    ],
+    "related_adr": [2],
+    "supersedes": null
+  }
+}
