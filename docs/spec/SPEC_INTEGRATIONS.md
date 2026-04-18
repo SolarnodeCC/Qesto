@@ -3,6 +3,8 @@
 ## Doc contract
 Flows + env names = **integration intent**; **vendor docs + code** win on API version/payload details.
 
+**Pre-build:** Stripe + webhook gates → [includes/PREBUILD_AND_DELIVERY.md#pre-production-gates](includes/PREBUILD_AND_DELIVERY.md#pre-production-gates).
+
 ## Readers (multi-lens · **Architect** = **Primary** for trust)
 
 | Role | Use this doc to… |
@@ -105,15 +107,11 @@ Response:
 | `charge.dispute.created` | `escalateIssue()` | Alert admin, flag user for review |
 | `invoice.payment_failed` | `invoiceFailure()` | Notify user (email via Resend) |
 
-**Webhook Signature Verification**:
+**Webhook Signature Verification** (illustrative — **use Stripe SDK** `constructWebhookEvent` / official CF Worker example; **not** Node `crypto`):
+
 ```typescript
-function verifyStripeSignature(body: string, sig: string, secret: string): bool {
-  const hash = crypto.createHmac('sha256', secret)
-    .update(body)
-    .digest('hex')
-  
-  return `t=${Math.floor(Date.now() / 1000)},v1=${hash}`.startsWith(sig)
-}
+// ILLUSTRATIVE — replace with Stripe webhook helper in Workers runtime
+// stripe.webhooks.constructEvent(body, sigHeader, STRIPE_WEBHOOK_SECRET)
 ```
 
 **Idempotency** (prevent duplicate processing):
@@ -249,7 +247,8 @@ Response:
 - **Pro plan**: 50 requests/min per user
 - **Enterprise**: Custom
 
-Enforced via in-memory cache:
+Enforced via in-memory cache (illustrative — **DO NOT** rely on global `Map` alone in multi-isolate production without Durable Object / KV coordination):
+
 ```typescript
 const aiRateLimit = new Map<userId, {count: number, resetAt: number}>()
 
@@ -309,8 +308,10 @@ All future requests: Authorization: Bearer ${JWT}
 
 ### 2. OAuth 2.0 Flow (Microsoft/Google)
 
+**HTTP verbs** align with [[SPEC_BACKEND.md]] §1 (`POST /auth/sso/init`, `POST /auth/sso/exchange`).
+
 ```
-GET /auth/sso/init?provider=microsoft
+POST /auth/sso/init?provider=microsoft
   ↓
 Backend:
   1. Generate random 32-char state
@@ -330,7 +331,7 @@ User logs in to Microsoft
   ↓
 Redirect back: /auth/sso/callback?code=X&state=Y
   ↓
-Backend:
+Backend (then `POST /auth/sso/exchange` or handler wired from callback):
   1. Verify state (must match stored state)
   2. Exchange code for token (POST to Microsoft)
   3. Verify token signature (JWT)
@@ -450,7 +451,7 @@ Events triggering emails:
 ```
 User clicks "Connect Slack"
   ↓
-GET /integrations/slack/authorize
+GET /integrations/slack/authorize   ← or `/integrations/:provider/authorize` per [[SPEC_BACKEND.md]] §8
   ↓
 Backend:
   1. Generate random state
@@ -596,23 +597,14 @@ Binding: DECISIONS_VECTORIZE
 ### Embed Decision
 
 ```typescript
-async function embedDecision(decision: Decision, ai) {
-  // Generate embedding for decision text
-  const text = `${decision.selectedOption} ${decision.motivation}`
-  
-  const embedding = await ai.run('@cf/mistral/mistral-7b-instruct-v0.1', {
-    messages: [{role: 'user', content: text}]
-  })
-  
-  // Insert into Vectorize
-  await c.env.DECISIONS_VECTORIZE.insert([{
+// Pseudocode — use official Workers AI embedding model → number[768] per Vectorize index
+async function embedDecision(decision: Decision, env: Env) {
+  const text = `${decision.selectedOption} ${decision.motivation ?? ''}`
+  const vector: number[] = await runEmbeddingModel(env.AI, text) // 768 dims
+  await env.DECISIONS_VECTORIZE.insert([{
     id: decision.id,
-    values: embedding,
-    metadata: {
-      teamId: decision.teamId,
-      sessionId: decision.sessionId,
-      createdAt: decision.createdAt
-    }
+    values: vector,
+    metadata: { teamId: decision.teamId, sessionId: decision.sessionId, createdAt: decision.createdAt },
   }])
 }
 ```
@@ -664,9 +656,17 @@ APP_URL = "https://qesto.com"
 
 ---
 
+## AI usage recipe (copy)
+
+1. “Stripe change” → **Webhook Handler** + D1 `stripe_webhook_events` in [[SPEC_DATAMODEL.md]].  
+2. “OAuth bug” → **Authentication Flows** + [[SPEC_BACKEND.md]] §1 verbs.  
+3. “AI quota” → **Rate Limiting** + [[SPEC_CORE.md#critical-constraints-hard-rules]].  
+
+**Checklist:** No Node `crypto` snippets as prod code • OAuth **POST** init • embedding model matches **768** dims • Slack path matches parameterized integrations table.
+
+---
+
 ## Related References
 
-- [[SPEC_BACKEND.md#billing-routes]] — Billing API endpoints
-- [[SPEC_BACKEND.md#integrations-routes]] — Integration endpoints
-- [[SPEC_BACKEND.md#ai-routes]] — AI routes
+- [[SPEC_BACKEND.md]] — **§9 Billing**, **§8 Integrations**, **§4 AI**
 - [[SPEC_CORE.md#authentication]] — Auth overview

@@ -3,6 +3,8 @@
 ## Doc contract
 Commands + `wrangler` excerpts = **targets**; **wrangler.toml + CI YAML in repo** win on exact keys/paths.
 
+**Pre-build:** environments matrix, CI gates, golden local path, and prod blockers are summarized in **[includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md)** (link from [INDEX.md](INDEX.md) “Before you start building”).
+
 ## Readers (multi-lens · **Architect** = **Primary** for blast radius)
 
 | Role | Use this doc to… |
@@ -357,8 +359,10 @@ jobs:
       - name: Check WebSocket latency
         run: npm run perf:websocket
         env:
-          BASE_URL: wss://qesto.com
+          BASE_URL: "wss://REPLACE_WITH_DEPLOY_HOST"
 ```
+
+(Set `BASE_URL` to the same host you deploy API + WS to; avoid mixing hostnames across jobs.)
 
 ### 3. Secret Scanning
 
@@ -518,7 +522,7 @@ wrangler d1 migrations undo qesto-prod --remote --steps 1
 ### Health Check Endpoint
 
 ```bash
-GET https://qesto.com/api/admin/health
+GET ${APP_URL}/api/admin/health
 
 Response:
 {
@@ -649,8 +653,18 @@ wrangler tail --format pretty
 
 ---
 
+## AI usage recipe (copy)
+
+1. “First deploy” → **Build Process** + **Secret Management** + **Deployment Checklist**.  
+2. “D1 broke” → **Common Deploy Issues** + [[SPEC_DATAMODEL.md#migration-pattern]].  
+3. “Rollback” → **Rollback Procedure** + `wrangler rollback`.  
+
+**Checklist:** `BASE_URL` in CI matches real host • health URL uses `APP_URL` • no secrets in example TOML blocks.
+
+---
+
 ## Related References
 
 - [[SPEC_CORE.md#deployment-targets]] — Deployment environments
 - [[SPEC_DATAMODEL.md#migration-pattern]] — Database migrations
-- [[SPEC_INTEGRATIONS.md#stripe-webhook]] — Webhook deployment
+- [[SPEC_INTEGRATIONS.md]] — **§ Webhook Handler (Idempotent)** for Stripe deploy notes

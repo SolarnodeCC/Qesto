@@ -14,6 +14,18 @@ Diagrams + constraint list = **intent**; **code wins** on conflict until a spec 
 | **Cloudflare specialist** | Binding map: Pages, D1, 7×KV, DO `SessionRoom`, Workers AI, Vectorize, R2, Analytics. |
 | **API & middleware specialist** | Rationale for routes; concrete paths + AuthZ in [[SPEC_BACKEND.md]]. |
 
+## Invariant strip (non-negotiable)
+
+| ID | Rule |
+|----|------|
+| I1 | **LIVE** session mutations via **WebSocket only** — no REST that changes live vote/question state ([[SPEC_REALTIME.md]]). |
+| I2 | **DRAFT** session config via **REST** (`PATCH /sessions/:id`, questions CRUD) — [[SPEC_BACKEND.md]]. |
+| I3 | **AI** via **`c.env.AI.run` only** — no third-party LLM API keys in repo ([[SPEC_INTEGRATIONS.md]]). |
+| I4 | **Secrets** not in `wrangler.toml` / git — Pages secrets + CI ([[SPEC_DEPLOYMENT.md]]). |
+| I5 | **Numeric rate limits** in prose are **targets** — verify in middleware code. |
+
+**Pre-build (scope, spike, gates):** canonical tables live in **[includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md)** — read before expanding surface area beyond one vertical slice.
+
 ## Overview
 Qesto is a real-time interactive session platform (Mentimeter-style) built on Cloudflare Workers, D1, and Durable Objects. Teams create question-driven sessions with AI-powered insights. **Core insight**: Stateless DRAFT API → stateful LIVE WebSocket via Durable Objects.
 
@@ -128,7 +140,7 @@ KEY RULE:
 
 1. **No Anthropic API Key**
    - Use only `c.env.AI.run()` (Workers AI)
-   - Rate limit: 10 req/min per user (free), 50 req/min (pro)
+   - Rate limit: 10 req/min per user (free), 50 req/min (pro) — **verify constants in code**
    - Model: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`
 
 2. **Secrets Never in wrangler.toml**
@@ -159,21 +171,17 @@ KEY RULE:
 Magic Link Flow:
   1. POST /auth/request {email}
      → Email sent (via Resend)
-     → Token stored in USERS_KV (15min TTL)
+     → OTT row in D1 `one_time_tokens` (~15m); optional KV cache per implementation
   2. GET /auth/verify?token=X
-     → Verify OTT from DB (USERS_KV)
-     → Issue JWT (signed with SECRET)
-     → Return JWT in response (browser stores in localStorage)
+     → Verify OTT (D1), consume, issue JWT
+     → Return JWT (browser stores in localStorage)
   3. All protected requests: Authorization: Bearer JWT
 
-OAuth Flow (Microsoft/Google):
-  1. GET /auth/sso/init?provider=microsoft
-     → Generate PKCE state, save to KV
-     → Redirect to OAuth provider
-  2. GET /auth/sso/exchange?code=X&state=Y
-     → Verify state, exchange code for token
-     → Lookup/create user
-     → Issue JWT
+OAuth Flow (Microsoft/Google) — **verbs per** [[SPEC_BACKEND.md]]:
+  1. POST /auth/sso/init?provider=microsoft
+     → PKCE state in KV, redirect to IdP
+  2. POST /auth/sso/exchange (body/query per handler) with code + state
+     → Verify state, exchange code, issue JWT
 
 SAML Flow (Enterprise):
   1. GET /auth/sso/saml/login
@@ -285,10 +293,10 @@ Session Close (LIVE → CLOSED):
   5. Audit log entry
 
 Results Access:
-  1. GET /sessions/:id/results → presenter only
-  2. GET /sessions/:id/results/public → shareable link (no auth)
-  3. GET /sessions/:id/decisions → list decisions
-  4. GET /sessions/:id/export → Excel export
+  1. GET /sessions/:id/results → presenter (AuthZ `JOP` — see [[SPEC_BACKEND.md]])
+  2. GET /sessions/:id/results/public → shareable link
+  3. GET /sessions/:id/decisions → list (canonical row in [[SPEC_BACKEND.md]] §3)
+  4. `POST /sessions/:id/export` (xlsx) + `GET …/export.csv` — [[SPEC_BACKEND.md]] §2
 ```
 
 ---
@@ -353,19 +361,21 @@ See [[SPEC_DEPLOYMENT.md]] for secrets, CI/CD, monitoring.
 
 ## Key Files Reference
 
-| File | Purpose | Lines |
-|------|---------|-------|
-| `src/App.tsx` | React router, Auth wrapper | 150 |
-| `functions/api/[[route]].ts` | Main API router + middleware | 200 |
-| `functions/api/SessionRoom.ts` | Durable Object for live sessions | 800 |
-| `src/hooks/useSession.ts` | WebSocket state reducer | 600 |
-| `src/hooks/useAuth.tsx` | Auth context + user state | 400 |
-| `functions/api/db.ts` | D1 query helpers | 150 |
-| `functions/api/auth.ts` | Auth routes + JWT signing | 300 |
-| `functions/api/billing.ts` | Stripe integration | 250 |
-| `functions/api/ai.ts` | Workers AI gateway | 200 |
-| `src/lib/api.ts` | WebSocket client + fetch wrapper | 180 |
-| `CLAUDE.md` | Project context (this file) | 200 |
+| File | Purpose |
+|------|---------|
+| `src/App.tsx` | React router, Auth wrapper |
+| `functions/api/[[route]].ts` | Main API router + middleware |
+| `functions/api/SessionRoom.ts` | Durable Object for live sessions |
+| `src/hooks/useSession.ts` | WebSocket client state reducer |
+| `src/hooks/useAuth.tsx` | Auth context + user state |
+| `functions/api/db.ts` | D1 query helpers |
+| `functions/api/auth.ts` | Auth routes + JWT signing |
+| `functions/api/billing.ts` | Stripe integration |
+| `functions/api/ai.ts` | Workers AI gateway |
+| `src/lib/api.ts` | WebSocket client + fetch wrapper |
+| `CLAUDE.md` | Project context for contributors |
+
+Line counts omitted — **search repo** for current size.
 
 ---
 
@@ -405,3 +415,14 @@ c.env.OAUTH_*_SECRET        // OAuth client secrets
 4. Review [[SPEC_REALTIME.md]] for WebSocket + DO details
 5. Review [[SPEC_INTEGRATIONS.md]] for 3rd-party APIs
 6. Review [[SPEC_DEPLOYMENT.md]] for build + deploy
+
+---
+
+## AI usage recipe (copy)
+
+1. “Explain **DRAFT vs LIVE**” → **Invariant strip** + **Session State Machine**.  
+2. “Where does X live?” → **System Architecture** + [[SPEC_DATAMODEL.md]].  
+3. “Auth flow” → **Authentication** + [[SPEC_INTEGRATIONS.md#authentication-flows]].  
+4. “REST path for Y” → [[SPEC_BACKEND.md]] route tables.  
+
+**Checklist:** OAuth verbs match BACKEND • OTT = D1 • no line-count promises in Key Files • rate limits marked verify-in-code.

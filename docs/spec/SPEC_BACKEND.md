@@ -38,6 +38,8 @@
 
 **Route inventory tables below are authoritative** (no row counts maintained in prose).
 
+**Pre-build abuse surface:** design-time checklist for `A` / public routes → [includes/PREBUILD_AND_DELIVERY.md#abuse-and-public-endpoints](includes/PREBUILD_AND_DELIVERY.md#abuse-and-public-endpoints) (details remain in this file’s route tables + public-write contracts).
+
 ## Readers (multi-lens · **Architect** = **Primary** for tradeoffs)
 
 | Role | Use this doc to… |
@@ -405,6 +407,9 @@ Full semantics: [[SPEC_CORE.md#error-handling-strategy]]
 - [[SPEC_DATAMODEL.md]] — schema, KV keys  
 - [[SPEC_REALTIME.md]] — WS messages, DO  
 - [[SPEC_INTEGRATIONS.md]] — Stripe, OAuth, AI  
+- [[SPEC_DEPLOYMENT.md]] — secrets, CI, `wrangler`  
+
+Sibling specs each end with an **AI usage recipe** + checklist — same pattern as this file.
 
 ---
 

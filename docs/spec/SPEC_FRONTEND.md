@@ -3,6 +3,8 @@
 ## Doc contract
 Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names until spec PR merges.
 
+**Pre-build:** what UI to build first follows product slice in [includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md).
+
 ## Readers (multi-lens · **Architect** = **Primary** for surfaces)
 
 | Role | Use this doc to… |
@@ -15,7 +17,17 @@ Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names un
 | **API & middleware specialist** | Presenter `Sec-WebSocket-Protocol`; typed `error` envelope in API client. |
 
 ## Overview
-Qesto frontend is **React 18 + Vite** with TypeScript, Tailwind CSS, and real-time WebSocket via `useSession` hook. Architecture: pages (routing) → components (UI) → hooks (state) → lib (utilities).
+Qesto frontend is **React 19 + Vite** with TypeScript, Tailwind CSS, and real-time WebSocket via `useSession`. Stack versions: align with [[SPEC_CORE.md#tech-stack]] (code wins if different).
+
+## Route AuthZ (parallel to [[SPEC_BACKEND.md]] legend)
+
+| UI col “Auth” | Maps to |
+|---------------|---------|
+| — | `A` anonymous |
+| JWT | `J` |
+| JWT + owner | `JO` |
+| JWT + team member | `JM` |
+| Admin | `ADM` |
 
 ---
 
@@ -430,7 +442,7 @@ export const ANIMATIONS = {
 
 ## WebSocket Protocol
 
-**Connection**: `wss://qesto.com/api/sessions/:sessionId/ws`
+**Connection**: **`GET` Upgrade** to `wss://<app-host>/api/sessions/:sessionId/ws` (host from deploy env, not hard-coded).
 
 **Subprotocol Authentication** (presenter):
 ```
@@ -562,9 +574,19 @@ window.addEventListener('unhandledrejection', (e) => captureError(e.reason))
 
 ---
 
+## AI usage recipe (copy)
+
+1. “New page” → **Routes & Pages** + lazy route in `App.tsx`.  
+2. “Live UI” → **Hooks API** `useSession` + [[SPEC_REALTIME.md#wire-format-normative]].  
+3. “Call API X” → grep path in [[SPEC_BACKEND.md]] route tables.  
+
+**Checklist:** Presenter WS uses **subprotocol** • host placeholder not prod-only • Related links avoid dead `#anchors`.
+
+---
+
 ## Related References
 
 - [[SPEC_CORE.md#authentication]] — Auth flow
-- [[SPEC_REALTIME.md]] — WebSocket protocol
-- [[SPEC_BACKEND.md#api-routes]] — Endpoints called from frontend
-- [[SPEC_INTEGRATIONS.md#oauth-flows]] — OAuth/SAML flows
+- [[SPEC_REALTIME.md]] — WebSocket protocol + wire format
+- [[SPEC_BACKEND.md]] — HTTP routes (`/api/...`) + AuthZ codes
+- [[SPEC_INTEGRATIONS.md#authentication-flows]] — OAuth/SAML flows

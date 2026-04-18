@@ -10,6 +10,23 @@ All specs are optimized for:
 - ✅ **Discoverability**: Cross-linked, hierarchical TOC
 - ✅ **Maintainability**: Single source of truth per domain
 - ✅ **Readers ladder**: Each `SPEC_*.md` opens with **Doc contract** + **Readers** table — **Architect** row is always **Primary** for tradeoffs; **Backend**, **Frontend**, **UI**, **Cloudflare**, **API/middleware** rows say what to skim first
+- ✅ **AI usage recipe**: Each domain spec ends with copy-paste prompt lines + a short **trust checklist** (anchors, verbs, hostnames)
+- ✅ **Pre-build include**: [includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md) — scope, LIVE spike, gates, abuse reminders, retention intent, golden path, ADR index
+
+---
+
+## Before you start building
+
+Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md)**.
+
+| Question | Jump to |
+|----------|---------|
+| What do we ship first? | [Vertical slice](includes/PREBUILD_AND_DELIVERY.md#vertical-slice-v1-scope) · [Principles](includes/PREBUILD_AND_DELIVERY.md#pre-build-and-delivery-principles) |
+| When is LIVE “proven enough”? | [LIVE spike acceptance](includes/PREBUILD_AND_DELIVERY.md#live-spike-acceptance) + [SPEC_REALTIME.md](SPEC_REALTIME.md) |
+| Environments, CI, secrets, health? | [Pre-production gates](includes/PREBUILD_AND_DELIVERY.md#pre-production-gates) + [SPEC_DEPLOYMENT.md](SPEC_DEPLOYMENT.md) |
+| Public / anonymous abuse surface? | [Abuse table](includes/PREBUILD_AND_DELIVERY.md#abuse-and-public-endpoints) + [SPEC_BACKEND.md](SPEC_BACKEND.md) |
+| Data retention / TTL intent? | [Retention](includes/PREBUILD_AND_DELIVERY.md#retention-and-deletion-intent) + [SPEC_DATAMODEL.md](SPEC_DATAMODEL.md) |
+| One local dev path? | [Golden path](includes/PREBUILD_AND_DELIVERY.md#golden-path-local) |
 
 ---
 
@@ -242,6 +259,8 @@ All specs are optimized for:
 ```
 docs/spec/
 ├── INDEX.md (this file)
+├── includes/
+│   └── PREBUILD_AND_DELIVERY.md   ← scope, gates, spike, golden path (canonical)
 ├── SPEC_CORE.md
 ├── SPEC_DATAMODEL.md
 ├── SPEC_FRONTEND.md
@@ -278,6 +297,7 @@ docs/spec/
 6. **New message type**: Update SPEC_REALTIME.md WebSocket section
 7. **Architecture decision**: Update SPEC_CORE.md & reference relevant spec
 8. **Role ownership shifts** (e.g. WS-only mutation policy): tweak the **Readers** table in the affected `SPEC_*.md` (Architect row stays Primary unless governance changes)
+9. **Pre-build / sequencing policy changes** (v1 slice, spike criteria, prod gates): update [includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md) and keep **INDEX → Before you start building** links valid
 
 ### Update Frequency
 - **Endpoints**: Within 1 day of merge

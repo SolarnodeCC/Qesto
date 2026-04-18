@@ -3,6 +3,8 @@
 ## Doc contract
 SQL + key patterns = **persistence contract**; **migrations + code** win on column/null quirks until spec updated.
 
+**Retention intent (pre-build):** [includes/PREBUILD_AND_DELIVERY.md#retention-and-deletion-intent](includes/PREBUILD_AND_DELIVERY.md#retention-and-deletion-intent) — align TTLs and purge jobs with this table.
+
 ## Readers (multi-lens · **Architect** = **Primary** for integrity)
 
 | Role | Use this doc to… |
@@ -17,11 +19,13 @@ SQL + key patterns = **persistence contract**; **migrations + code** win on colu
 ## Overview
 Qesto uses **D1 (SQLite)** for persistent data and **7 KV namespaces** for caching, session state, and rate limiting. All types are TypeScript-first with runtime validation via Zod.
 
+**Schema note:** Tables reference `teams(id)` / `users(id)` as FKs — ensure matching `CREATE TABLE users/teams` exists in repo migrations (not repeated here to avoid drift).
+
 ---
 
 ## D1 Database Schema
 
-**Database**: `qesto-prod` (Cloudflare D1)
+**Database**: `qesto-prod` (Cloudflare D1) — name may differ per env; see [[SPEC_DEPLOYMENT.md]].
 
 ### Table: `sessions`
 ```sql
@@ -395,7 +399,7 @@ interface User {
 }
 ```
 
-### UserPlan
+### UserPlan (KV `plan:${userId}` + optional API projection)
 ```typescript
 interface UserPlan {
   planId: 'free' | 'starter' | 'team' | 'enterprise'
@@ -405,6 +409,11 @@ interface UserPlan {
   currentPeriodEnd?: number  // Unix ms
   cancelAtPeriodEnd?: boolean
   updatedAt: number
+  status?: 'active' | 'past_due' | 'canceled' | 'unpaid'
+  // Optional denormalized limits (cache / `/billing/status` response)
+  sessionsPerMonth?: number
+  maxParticipants?: number
+  features?: string[]
 }
 ```
 
@@ -505,19 +514,7 @@ interface Action {
 }
 ```
 
-### UserPlan (billing)
-```typescript
-interface UserPlan {
-  planId: 'free' | 'starter' | 'team' | 'enterprise'
-  sessionsPerMonth: number
-  maxParticipants: number
-  features: string[]  // ['integrations', 'ai', 'sso']
-  stripeSubId?: string
-  currentPeriodEnd?: number
-}
-```
-
-**Plan Limits**:
+**Plan Limits** (product matrix; enforce in middleware + billing):
 | Plan | Sessions/mo | Max Participants | Features |
 |---|---|---|---|
 | **Free** | 5 | 50 | Basic polling |
@@ -529,24 +526,7 @@ interface UserPlan {
 
 ## Indices & Performance
 
-**D1 Query Optimization**:
-```sql
--- Fast session lookup
-CREATE INDEX idx_sessions_team ON sessions(team_id);
-CREATE INDEX idx_sessions_owner ON sessions(owner_id);
-CREATE INDEX idx_sessions_created ON sessions(created_at DESC);
-
--- Fast decision queries
-CREATE INDEX idx_decisions_session ON decisions(session_id);
-CREATE INDEX idx_decisions_created ON decisions(created_at DESC);
-
--- Fast audit queries
-CREATE INDEX idx_audit_team ON audit_log(team_id);
-CREATE INDEX idx_audit_created ON audit_log(created_at DESC);
-
--- Token cleanup
-CREATE INDEX idx_ott_expires ON one_time_tokens(expires_at);
-```
+Indexes are declared **inline** in each `CREATE TABLE` above. Additional indexes ship via `/migrations/*.sql` — **repo is source of truth** for any new `CREATE INDEX`.
 
 ---
 
@@ -558,13 +538,13 @@ All user input validated via **Zod** schemas before DB writes:
 // Example: Create session schema
 const CreateSessionSchema = z.object({
   title: z.string().min(3).max(200),
-  teamId: z.string().uuid(),
+  teamId: z.string().min(2).max(128), // opaque id, aligns with D1 TEXT + examples
   anonymityMode: z.enum(['none', 'partial', 'full']).optional(),
   timerDefault: z.number().min(10).max(300).optional(),
 })
 ```
 
-See [[SPEC_BACKEND.md#validation]] for all schemas.
+See **Validation** section in [[SPEC_BACKEND.md]] (create-session Zod mirrors this `teamId` rule).
 
 ---
 
@@ -585,5 +565,15 @@ Applied on deploy: `wrangler d1 migrations apply qesto-prod --remote`
 ## Related References
 
 - [[SPEC_CORE.md#session-state-machine]] — Session lifecycle
-- [[SPEC_REALTIME.md#session-room-do]] — DO state structure
-- [[SPEC_BACKEND.md#database-operations]] — Query patterns
+- [[SPEC_REALTIME.md#sessionroom-durable-object]] — DO state structure
+- [[SPEC_BACKEND.md]] — **§ D1 access pattern** for query snippets
+
+---
+
+## AI usage recipe (copy)
+
+1. “Column for X?” → search **D1 Database Schema** tables.  
+2. “Cache key?” → **KV Namespaces** grid (`meta:`, `plan:`, …).  
+3. “DTO for UI?” → **Core TypeScript Types** + [[SPEC_FRONTEND.md]].  
+
+**Checklist:** one `UserPlan` interface • `teamId` not forced UUID • Related links use real `##` anchors • FK note points to migrations.

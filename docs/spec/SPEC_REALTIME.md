@@ -3,6 +3,8 @@
 ## Doc contract
 Message `type` strings + roles = **wire contract**; **SessionRoom.ts** wins on extra fields until spec updated.
 
+**LIVE spike (pre-build):** acceptance checklist → [includes/PREBUILD_AND_DELIVERY.md#live-spike-acceptance](includes/PREBUILD_AND_DELIVERY.md#live-spike-acceptance).
+
 ## Readers (multi-lens · **Architect** = **Primary** for consistency)
 
 | Role | Use this doc to… |
@@ -17,11 +19,17 @@ Message `type` strings + roles = **wire contract**; **SessionRoom.ts** wins on e
 ## Overview
 Real-time live sessions powered by **Durable Objects** (SessionRoom). One DO per session in LIVE state. WebSocket protocol defines message contracts. Voter deduplication prevents fraud.
 
+## Wire format (normative)
+
+- Transport: **`GET` WebSocket Upgrade** to `/api/sessions/:id/ws` (see [[SPEC_BACKEND.md]] §2).
+- Payload: **JSON text frames**, one object per message.
+- `type` values: **lowercase strings** as in examples (`vote`, `advance`, `results_updated`). TypeScript `enum` labels below are a **taxonomy** — wire strings match the **example JSON**, not necessarily the enum *member names*.
+
 ---
 
 ## WebSocket Protocol
 
-**Connection URL**: `wss://qesto.com/api/sessions/:sessionId/ws`
+**Connection URL** (replace host with `APP_URL` / deployment): `wss://<host>/api/sessions/:sessionId/ws`
 
 **Handshake**:
 ```http
@@ -260,13 +268,13 @@ class SessionRoom {
     timestamp: number
   }
   
-  debounceTimer?: NodeJS.Timeout   // Batch crowd input
+  debounceTimer?: ReturnType<typeof setTimeout>   // Workers: timer/alarm pattern per implementation
 }
 ```
 
 ### HTTP Endpoints (Internal)
 
-**Usage**: Called from Functions to init/close DO.
+**Usage**: Called from Functions to init/close DO. Paths are **relative to the DO routing stub** in your Worker — **search `SessionRoom` + `fetch` in repo** for exact URLs (avoid hard-coding `/api/do-sessions/...` unless code matches).
 
 | Method | Path | Purpose | Request | Response |
 |--------|------|---------|---------|----------|
@@ -492,7 +500,7 @@ Results available immediately
 
 **Async Voting Flow**:
 ```
-1. POST /sessions/:id/enable-async-poll {durationHours: 24}
+1. PATCH /sessions/:id/enable-async-poll {durationHours: 24}   ← align [[SPEC_BACKEND.md]] §2
    → Session transitions to async mode
    → Generate public link
    
@@ -588,7 +596,7 @@ function getFingerprint(request: Request): string {
     // ... more
   ]
   
-  return sha256(components.join('|')).substring(0, 12).toBase36()
+  return encodeBase36(sha256(components.join('|')).slice(0, 12)) // pseudocode: use project crypto helpers
 }
 
 function getVoterId(request: Request, auth?: Auth): string {
@@ -658,8 +666,18 @@ ws.addEventListener('close', () => {
 
 ---
 
+## AI usage recipe (copy)
+
+1. “New `ClientMessage` type” → add to **WebSocket Messages** + `useSession` reducer in [[SPEC_FRONTEND.md]].  
+2. “Dedup bug” → **Voter Deduplication** + SESSIONS_KV keys in [[SPEC_DATAMODEL.md]].  
+3. “DO crash” → **Close codes** + **SessionRoom** persisted state.  
+
+**Checklist:** `GET` upgrade stated • async enable = **PATCH** • no `toBase36` without helper • Related links = file + § not fake anchors.
+
+---
+
 ## Related References
 
 - [[SPEC_CORE.md#real-time-architecture]] — Architecture overview
-- [[SPEC_BACKEND.md#sessions-routes]] — Session lifecycle endpoints
-- [[SPEC_FRONTEND.md#useSession-hook]] — Client-side state management
+- [[SPEC_BACKEND.md]] — **§2 Sessions** lifecycle + `/ws` row
+- [[SPEC_FRONTEND.md#hooks-api]] — `useSession` client contract
