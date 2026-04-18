@@ -1,153 +1,99 @@
-# Skill: Code Reviewer — Qesto
-# SCOPE: task (auto-revoke after task completes)
-# LOAD: vóór elke merge/PR, na implementatie van een story
-# VERSION: v1.1.0
-# OWNER: QA
-# POLICY_SOURCE: .claude/skills/COMMON_RULES.md
-
-## Rol
-
-## Shared Rules
-Follow `.claude/skills/COMMON_RULES.md` for global constraints and precedence.
-
-Je bent de code quality gate voor Qesto. Je reviewt gewijzigde bestanden op correctheid, veiligheid, mobiele UX-kwaliteit en architectuurconformiteit. Je blokkeert merges bij kritieke bevindingen.
-
+---
+name: reviewing-code
+description: Runs code quality gates covering correctness, security, mobile accessibility, and architecture conformance. Use before every merge or after story implementation to block releases on critical findings.
 ---
 
-## Stap 1 — Automatische gates (BLOKKEREN bij falen)
+Follow `.claude/skills/COMMON_RULES.md` for global constraints.
+
+You are the code quality gate for Qesto. You review changed files and block merges on critical findings.
+
+## Step 1 — Automated Gates (block on failure)
 
 ```bash
-# Voer altijd uit vóór review
-npm test              # Alle unit tests groen
-tsc --noEmit          # Geen TypeScript-fouten
+npm test        # all unit tests green
+tsc --noEmit    # no TypeScript errors
 ```
 
-Als één van deze faalt → fix eerst, dan pas review.
-
----
-
-## Stap 2 — Correctheidscheck
-
-### Algemeen
-```
-□ Geen console.log in productie-code (alleen console.error in catch-blokken)
-□ Geen hardcoded strings die vertaald moeten worden (gebruik i18n)
-□ Geen hardcoded kleuren of afmetingen (gebruik Tailwind tokens of CSS vars)
-□ Geen TODO/FIXME-commentaar in gecommitte code zonder backlog-item
-□ Geen dode code of uitgecommentarieerde blokken
-```
-
-### Foutafhandeling
-```
-□ Elke fetch()-aanroep heeft een catch-blok
-□ Catch-blokken roepen logError() aan (niet console.error)
-□ Frontend catch-blokken tonen een zichtbare foutmelding in de UI
-□ Async knoppen hebben een disabled/loading state tijdens het verzoek
-```
-
-### State management
-```
-□ LIVE state: mutaties via WebSocket (nooit REST)
-□ DRAFT state: mutaties via REST (nooit WebSocket)
-□ Geen stale closure bugs bij debounced callbacks — gebruik refs
-□ useState-updates zijn niet-muterend (spread/immutable)
-```
-
----
-
-## Stap 3 — Architectuurconformiteit
-
-### Backend (functions/api/)
-```
-□ Route gemount in functions/api/[[route]].ts
-□ authMiddleware aanwezig (of expliciete reden voor uitzondering)
-□ Eigendomscheck: gebruiker kan alleen zijn eigen resources benaderen
-□ Inputvalidatie aanwezig (400 bij ontbrekende velden)
-□ Foutresponse volgt standaard shape: { error: string, code?: string }
-□ Nieuwe KV-sleutels volgen naamconventies uit architect.md
-□ Nieuwe env-bindings gedocumenteerd in CONFIGURATION.txt
-□ Nieuwe secrets via wrangler pages secret put (NOOIT in wrangler.toml)
-□ D1-queries zijn parameterized (geen string concatenatie)
-□ Migraties in schema.sql, niet inline in code
-```
-
-### Frontend (src/)
-```
-□ Geen imports uit functions/ — gebruik API fetch-aanroepen
-□ Geen hardcoded API-URLs — gebruik relatieve paden
-□ Foutboundary aanwezig op route-niveau
-□ Loading/empty/error states voor alle async data
-□ Geen dangerouslySetInnerHTML zonder expliciete sanitatie
-```
-
----
-
-## Stap 4 — Mobile & Accessibility (UX-kwaliteitsgate)
+## Step 2 — Correctness
 
 ```
-□ Alle knoppen/links: min-h-[44px]
-□ Icon-only knoppen: aria-label aanwezig
-□ Ghost-knoppen: zichtbare border (geen bg-transparent zonder border)
-□ Focus-visible ring op alle interactieve elementen
-□ Active state op alle knoppen (active:opacity-70 of gelijkwaardig)
-□ Geen text-pulse-400 of text-pulse-500 op witte/lichte achtergrond
-□ Laadtoestand bij elke async operatie
-□ Foutstaat zichtbaar in UI (niet alleen geconsole-logged)
+□ No console.log in production (only console.error in catch blocks)
+□ No hardcoded translatable strings — use i18n
+□ No hardcoded colours/dimensions — use Tailwind tokens or CSS vars
+□ Every fetch() has a catch block → logError() → visible UI error
+□ Async buttons have disabled/loading state during request
+□ LIVE state: mutations via WebSocket only | DRAFT state: mutations via REST only
+□ useState updates are non-mutating (spread/immutable)
 ```
 
----
+## Step 3 — Architecture
 
-## Stap 5 — Veiligheidscheck (snel)
+**Backend (functions/api/):**
+```
+□ Route mounted in [[route]].ts
+□ authMiddleware present (or documented exception)
+□ Ownership check: user can only access own resources
+□ Input validated (400 on missing/invalid fields)
+□ Error response: { error: { code, message, statusCode, requestId } }
+□ New KV keys follow conventions in architect.md
+□ New secrets via wrangler pages secret put only
+□ D1 queries parameterized (no string concatenation)
+□ Migrations in schema.sql, not inline
+```
+
+**Frontend (src/):**
+```
+□ No imports from functions/ — use API fetch calls
+□ No hardcoded API URLs — relative paths only
+□ Error boundary at route level
+□ Loading / empty / error states for all async data
+□ No dangerouslySetInnerHTML without explicit sanitisation
+```
+
+## Step 4 — Mobile & Accessibility
 
 ```
-□ Geen secrets, API-sleutels of wachtwoorden in code
-□ Geen nieuwe ANTHROPIC_API_KEY referenties (gebruik c.env.AI)
-□ Stripe webhook: constructEvent() verificatie aanwezig
-□ Nieuwe admin-routes: requireAdmin() middleware aanwezig
-□ Geen gebruikersinput direct in fetch()-URL (SSRF-risico)
+□ All buttons/links: min-h-[44px]
+□ Icon-only buttons: aria-label present
+□ Ghost buttons: visible border (no bg-transparent without border)
+□ Focus-visible ring on all interactive elements
+□ Active state on all buttons (active:opacity-70 or equivalent)
+□ No text-pulse-400/500 on white/light backgrounds (contrast < 4.5:1)
+□ Loading state for every async operation
+□ Error state visible in UI — not just console
 ```
 
----
+## Step 5 — Security (quick)
 
-## Bevindingen Classificeren
+```
+□ No secrets or API keys in code
+□ No ANTHROPIC_API_KEY references — use c.env.AI
+□ Stripe webhook: constructEvent() verification present
+□ New admin routes: requireAdmin() middleware present
+□ No user input directly in fetch() URL (SSRF risk)
+```
 
-| Ernst | Definitie | Actie |
+## Severity
+
+| Level | Examples | Action |
 |---|---|---|
-| **Blokkeer** | Tests falen, TS-fout, security issue, auth-bypass | Merge verboden — fix eerst |
-| **Vereis** | Ontbrekende aria-label, error state, touch target | Commentaar + fix vóór merge |
-| **Suggestie** | Naamgeving, structuur, kleine refactor | Optioneel — documenteer in backlog |
+| **Block** | Tests fail, TS error, auth bypass, security issue | Merge forbidden — fix first |
+| **Require** | Missing aria-label, error state, touch target | Fix before merge |
+| **Suggest** | Naming, minor refactor | Optional — log in backlog |
 
----
-
-## Review Rapport Formaat
+## Report Format
 
 ```markdown
-## Code Review — [story-ID] [datum]
+## Code Review — [story-ID] [date]
 
-### ✅ Geslaagd
-- npm test groen (X/X tests)
-- tsc --noEmit schoon
-- [andere positieve bevindingen]
+### ✅ Passed
+- npm test green (X/X) | tsc clean
 
-### 🔴 Blokkerende bevindingen
-- [bestand:regel] [beschrijving] [waarom kritiek]
+### 🔴 Blocking
+- [file:line] [description]
 
-### 🟡 Vereiste aanpassingen
-- [bestand:regel] [beschrijving]
+### 🟡 Required
+- [file:line] [description]
 
-### 💡 Suggesties
-- [optionele verbeteringen]
-
-### Beslissing: [GOEDGEKEURD | GEBLOKKEERD | GOEDGEKEURD MET AANPASSINGEN]
+### Decision: APPROVED | BLOCKED | APPROVED WITH CHANGES
 ```
-
----
-
-## Do Not
-- Merge goedkeuren als tests falen
-- Architectuurafwijkingen negeren ("werkt toch")
-- Security-bevindingen downgraden zonder architect-akkoord
-- Stijlvoorkeur boven werkende, conforme code stellen
-
-## Change Log
-- 2026-04-10: Canonicalized file headers and shared rules reference.

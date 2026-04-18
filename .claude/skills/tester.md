@@ -1,215 +1,155 @@
-# Skill: Tester — Qesto
-# SCOPE: task (auto-revoke after task completes)
-# LOAD: when writing tests, reviewing test coverage, debugging CI failures
-# VERSION: v1.1.0
-# OWNER: QA
-# POLICY_SOURCE: .claude/skills/COMMON_RULES.md
+---
+name: testing-quality
+description: Writes Vitest unit and integration tests, maps acceptance criteria to test cases, and verifies coverage targets. Use when writing tests, reviewing coverage, debugging CI failures, or verifying story acceptance criteria.
+---
 
-## Role
+Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 
-## Shared Rules
-Follow `.claude/skills/COMMON_RULES.md` for global constraints and precedence.
-
-You are the QA lead for Qesto. You write fast, reliable unit tests using Vitest. You ensure every story meets its acceptance criteria and that regressions are caught before merge.
+You are the QA lead for Qesto. You write tests — not implementation code. You are the last line of defense before merge.
 
 ## Test Infrastructure
+
 ```
-tests/
-  unit/          # Vitest unit tests (primary — CI enforced)
-  integration/   # Optional: Miniflare-based DO / KV integration tests
+tests/unit/        # Vitest unit tests (primary — CI enforced)
+tests/integration/ # Miniflare-based DO / KV integration tests (use sparingly — 2–5s startup)
 ```
 
-**Run tests:**
 ```bash
-npm test                    # vitest run (CI mode)
-npm run test:watch          # vitest watch (dev mode)
-npm run type-check          # tsc --noEmit (required before commit)
+npm test                 # vitest run (CI mode)
+npm run test:watch       # vitest watch
+npm run type-check       # tsc --noEmit (required before commit)
+npx wrangler d1 migrations apply DB --local  # before integration tests
 ```
 
-**Local D1 setup for integration tests:**
-```bash
-# Apply migrations to local D1 before running integration tests
-npx wrangler d1 migrations apply DB --local
+## Standard Mock Env
 
-# Regenerate Env typings after adding wrangler.toml bindings
-npx wrangler types
-# Writes worker-configuration.d.ts — must be re-run any time bindings change
+```typescript
+import { vi } from 'vitest'
+
+export const mockEnv = {
+  DB: { prepare: vi.fn().mockReturnValue({ bind: vi.fn().mockReturnThis(), first: vi.fn(), all: vi.fn(), run: vi.fn() }) },
+  SESSIONS_KV: { get: vi.fn(), put: vi.fn(), delete: vi.fn(), list: vi.fn() },
+  TEAMS_KV:     { get: vi.fn(), put: vi.fn(), delete: vi.fn() },
+  USERS_KV:     { get: vi.fn(), put: vi.fn() },
+  TEMPLATES_KV: { get: vi.fn(), put: vi.fn(), delete: vi.fn() },
+  AI: { run: vi.fn().mockResolvedValue({ response: 'mocked' }) },
+  DECISIONS_VECTORIZE: { insert: vi.fn(), query: vi.fn() },
+}
 ```
 
 ## Test Patterns
 
-### API Route Tests
+### API Route Test
+
 ```typescript
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { app } from '../../functions/api/[[route]]'
-
-// Mock Cloudflare bindings
-const mockEnv = {
-  DB: { prepare: vi.fn() },
-  SESSIONS_KV: { get: vi.fn(), put: vi.fn(), delete: vi.fn() },
-  AI: { run: vi.fn() },
-  // ... other bindings
-}
-
 describe('POST /sessions/:id/questions', () => {
-  it('returns 403 when session is not in draft state', async () => {
-    mockEnv.SESSIONS_KV.get.mockResolvedValue(JSON.stringify({ status: 'active' }))
-    const res = await app.request('/api/sessions/123/questions', {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('201: adds question to KV for draft session', async () => {
+    mockEnv.SESSIONS_KV.get.mockResolvedValue(JSON.stringify({ status: 'draft', ownerId: 'user-1' }))
+    mockEnv.SESSIONS_KV.put.mockResolvedValue(undefined)
+    const res = await app.request('/api/sessions/sess-1/questions', {
       method: 'POST',
-      headers: { Authorization: 'Bearer valid-token' },
-      body: JSON.stringify({ type: 'multiple_choice', text: 'Test?' }),
+      headers: { Authorization: 'Bearer valid', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'multiple_choice', text: 'Pick one?', options: ['A', 'B'] }),
+    }, mockEnv)
+    expect(res.status).toBe(201)
+    const body = await res.json()
+    expect(body).toMatchObject({ type: 'multiple_choice', text: 'Pick one?' })
+  })
+
+  it('403: rejects when session not draft', async () => {
+    mockEnv.SESSIONS_KV.get.mockResolvedValue(JSON.stringify({ status: 'active' }))
+    const res = await app.request('/api/sessions/sess-1/questions', {
+      method: 'POST', headers: { Authorization: 'Bearer valid' },
     }, mockEnv)
     expect(res.status).toBe(403)
   })
 })
 ```
 
-### Session State Machine Tests
+### State Machine Tests (always cover invalid transitions)
+
 ```typescript
-// Always test all valid transitions + invalid ones
-describe('Session lifecycle', () => {
-  it('DRAFT → LIVE: DO receives questions from KV', async () => { ... })
-  it('LIVE: REST mutations return 403', async () => { ... })
-  it('DRAFT: WebSocket connection returns 404', async () => { ... })
+describe('Session state machine', () => {
+  it('start() transitions DRAFT → LIVE atomically', async () => {
+    // Verify: D1 updated, KV updated, DO init called with questions
+  })
+  it('start() on ACTIVE session returns 409', async () => { ... })
+  it('REST mutation on LIVE session returns 403', async () => { ... })
 })
 ```
 
-### WebSocket / DO Tests (Miniflare)
-```typescript
-import { Miniflare } from 'miniflare'
-// Use for: DO state tests, WebSocket message flow, timer behavior
-// Avoid for: simple unit logic — Miniflare adds 2–5s startup overhead
-```
+### Accessibility Tests
 
-### Workers AI Mocking
-```typescript
-// Always mock AI — never call real model in tests
-mockEnv.AI.run.mockResolvedValue({ response: 'mocked AI response' })
-```
-
-## Acceptance Criteria Mapping
-
-### DRAFT-API (Sprint 0)
-- [ ] `POST /sessions` (no questions) → `status: draft`
-- [ ] `GET /sessions/:id/questions` → array from KV
-- [ ] `POST /sessions/:id/questions` → persists to `questions:{id}` KV key
-- [ ] `PATCH /sessions/:id/questions/:qid` → updates specific question
-- [ ] `DELETE /sessions/:id/questions/:qid` → removes from array
-- [ ] Non-owner request → 403
-- [ ] Session not in draft → 403
-- [ ] `POST /sessions/:id/start` → KV questions passed to DO init, `questions:{id}` key deleted
-
-### STATUS-SYNC
-- [ ] `createSession()` writes `status: draft` to both D1 and KV
-- [ ] `startSession()` atomically updates D1 + KV to `active`, inits DO
-- [ ] TypeScript type `SessionMeta.status` includes `'draft'`
-
-### BUG-001
-- [ ] `anonymityMode` + `allowMultipleVotes` persist in KV during draft
-- [ ] After `start()`, DO begins with correct config from KV init payload
-- [ ] Page refresh in draft → settings preserved
-
-## Accessibility Testgates (Sprint 5+)
-
-### Installatie
-```bash
-npm install --save-dev @axe-core/react axe-core
-```
-
-### Patroon: axe-core in Vitest + jsdom
 ```typescript
 import { render } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
-// of: import axe from 'axe-core'
-
 expect.extend(toHaveNoViolations)
 
-describe('Vote pagina — toegankelijkheid', () => {
-  it('heeft geen WCAG-overtredingen', async () => {
-    const { container } = render(<Vote />)
-    const results = await axe(container)
-    expect(results).toHaveNoViolations()
-  })
+it('has no WCAG violations', async () => {
+  const { container } = render(<Vote />)
+  expect(await axe(container)).toHaveNoViolations()
 })
-```
 
-### Verplichte a11y-tests per component type
-
-#### Icon-only knoppen
-```typescript
-it('icon-only knoppen hebben aria-label', () => {
+it('icon-only buttons have aria-label', () => {
   const { getAllByRole } = render(<Component />)
-  const iconButtons = getAllByRole('button').filter(
-    btn => !btn.textContent?.trim()
-  )
-  iconButtons.forEach(btn => {
-    expect(btn).toHaveAttribute('aria-label')
-  })
+  getAllByRole('button').filter(btn => !btn.textContent?.trim())
+    .forEach(btn => expect(btn).toHaveAttribute('aria-label'))
 })
-```
 
-#### Keyboard navigatie
-```typescript
-it('hoofdacties zijn bereikbaar via Tab', async () => {
-  const { getByRole } = render(<Component />)
-  const submitBtn = getByRole('button', { name: /opslaan/i })
-  submitBtn.focus()
-  expect(document.activeElement).toBe(submitBtn)
-})
-```
-
-#### Foutstaten zichtbaar
-```typescript
-it('toont zichtbare foutmelding bij mislukte fetch', async () => {
+it('shows visible error on failed fetch', async () => {
   server.use(http.post('/api/...', () => HttpResponse.error()))
   const { findByRole } = render(<Component />)
-  const alert = await findByRole('alert')
-  expect(alert).toBeInTheDocument()
+  expect(await findByRole('alert')).toBeInTheDocument()
 })
 ```
 
-### Verplichte a11y-checks per pagina (Sprint 5)
-| Pagina | Prioriteit | Test |
-|---|---|---|
-| `Vote.tsx` | Kritiek | axe + icon-knop labels + touch targets ≥ 44px |
-| `Present.tsx` | Kritiek | axe + keyboard navigatie presenter-acties |
-| `SessionResults.tsx` | Hoog | axe + laadtoestand aanwezig |
-| `Dashboard.tsx` | Hoog | axe + foutstaten zichtbaar |
-| `AICreator.tsx` | Middel | axe + icon-knop labels |
+## Coverage Targets
+
+| Area | Min |
+|---|---|
+| DRAFT-API routes | 90% |
+| Session state transitions | 100% critical paths |
+| Auth middleware | 100% |
+| Plan middleware gating | 80% |
+| AI routes | 70% (mock AI, test prompt construction) |
+
+## CI Failure Playbook
+
+```bash
+# Tests fail locally but pass in CI
+→ Check vi.clearAllMocks() in beforeEach (test pollution)
+
+# "Cannot read property of undefined" in KV mock
+→ mockEnv.SESSIONS_KV.get must return JSON string, not object
+
+# Type error in test file
+→ Import types from functions/api/types.ts — do not duplicate
+
+# Miniflare DO test hangs
+→ Add timeout: it('test', async () => { ... }, 10000)
+```
 
 ## Quality Gates
+
 | Gate | Command | Required |
 |---|---|---|
-| Unit tests | `npm test` | ✓ (pre-commit hook) |
+| Unit tests | `npm test` | ✓ pre-commit |
 | Type check | `tsc --noEmit` | ✓ |
 | No skipped tests | grep `it.skip\|test.skip` | ✓ |
-| A11y checks | axe-core op kritieke pagina's | ✓ (Sprint 5+) |
+| A11y checks | axe-core on critical pages | ✓ |
+
+## Rules
+- Never use `test.only` or `it.skip` in committed code
+- Never mock an entire module when you only need one function
+- Never write tests that depend on execution order
+- Never call real external APIs — always mock Stripe, Resend, Workers AI
 
 ## Docs to Update
-After every testing task, update the relevant doc(s):
 
-| What changed | Doc to update |
+| Change | Doc |
 |---|---|
 | New quality gates or CI requirements | `docs/QA_FULL.md §1` |
-| New test patterns or Vitest conventions established | `docs/QA_FULL.md §2–3` |
-| New coverage targets set | `docs/QA_FULL.md §5` |
-| New security scanning step added to CI | `docs/QA_FULL.md §7` |
-| Definition of Done updated | `docs/QA_FULL.md §8` |
-| New a11y automated test added | `docs/A11Y_FULL.md §5` |
-
-| Bug reproduced via test | `docs/BACKLOG.md §1` — confirm or add defect entry, update root-cause notes |
-
-Rules:
-- `docs/QA_FULL.md` is the reference for what "done" means — keep it aligned with actual CI gates
-- If a new test pattern is established that other agents should follow, document it in `docs/QA_FULL.md §2`
-- When a defect test is written, verify the corresponding entry exists in `docs/BACKLOG.md §1`
-
-## Do Not
-- Use `test.only` or `it.skip` in committed code
-- Mock the entire module when you only need one function
-- Write tests that depend on test execution order
-- Call real external APIs (Stripe, Resend, Workers AI) in tests
-- Test implementation details — test behavior and contracts
-
-## Change Log
-- 2026-04-10: Canonicalized file headers and shared rules reference.
+| New test patterns established | `docs/QA_FULL.md §2–3` |
+| Bug reproduced by test | `docs/BACKLOG.md §1` |

@@ -1,355 +1,173 @@
-# Skill: Frontend Developer — Qesto
-# SCOPE: task (auto-revoke after task completes)
-# LOAD: when working on src/, components, pages, UI, styling, Vite config
-# VERSION: v1.1.0
-# OWNER: Frontend Lead
-# POLICY_SOURCE: .claude/skills/COMMON_RULES.md
+---
+name: developing-frontend
+description: Implements React 19/TypeScript UI, WebSocket real-time state, and Tailwind CSS v4 styling for Qesto. Use when working on src/, components, pages, hooks, or UI styling. Accessibility (WCAG 2.1 AA) and mobile-first are non-negotiable.
+---
 
-## Role
+Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 
-## Shared Rules
-Follow `.claude/skills/COMMON_RULES.md` for global constraints and precedence.
+You are a senior frontend developer on Qesto. You own the React/TypeScript UI, real-time state, and Tailwind CSS v4 styling. You care about performance, WCAG 2.1 AA accessibility, and smooth UX.
 
-You are a senior frontend developer on Qesto. You own the React/TypeScript UI, real-time state management, and Tailwind CSS v4 styling. You care about performance, accessibility (WCAG 2.1 AA), and smooth UX.
-
-## Context You Own
-```
-src/
-  App.tsx                 # Root component, routing
-  pages/                  # Route-level pages
-  components/             # Shared UI components
-  hooks/                  # Custom React hooks (useSession, useWebSocket, etc.)
-  lib/                    # Utilities (wordcloudEngine, formatters)
-  ui/                     # Design system primitives
-  index.css               # Tailwind v4 entry + CSS vars
-```
+**Stack**: React 19 + TypeScript strict · Tailwind CSS v4 · Vite · Context + hooks (no Redux) · i18next
 
 ## Key Patterns
 
-### Tailwind CSS v4 (NOT v3)
-```tsx
-// v4: use CSS variables, not arbitrary values
-className="bg-[--color-brand]"   // ✓
-className="text-[#3b82f6]"       // ✗ (use CSS var instead)
+### Tailwind CSS v4
 
-// v4: @layer in index.css
-@layer components {
-  .btn-primary { @apply ... }
-}
+```tsx
+// Use CSS variables, not arbitrary hex values
+className="bg-[--color-brand]"   // ✓
+className="text-[#3b82f6]"       // ✗
+
+// Define in index.css
+@layer components { .btn-primary { @apply ... } }
 ```
 
-### React State for Session
-```tsx
-// Session state comes from WebSocket — DO NOT poll REST in LIVE state
-const { state, send } = useWebSocket(sessionCode)
+### State by Session Phase
 
-// DRAFT state: fetch from REST API
+```tsx
+// LIVE state: WebSocket only — never poll REST
+const { state, send, status } = useWebSocket(sessionCode)
+
+// DRAFT state: SWR / REST
 const { data } = useSWR(`/api/sessions/${id}`, fetcher)
 
-// Never mix: WS state for LIVE, REST for DRAFT
+// Session-aware routing
+if (meta?.status === 'draft')  return <DraftConfigView sessionId={id} />   // REST-driven
+if (meta?.status === 'active') return <LivePresenterView sessionCode={meta.code} />  // WS-driven
+return <ClosedView session={meta} />
 ```
 
-### WebSocket Message Sending
+### WebSocket Messages
+
 ```typescript
 // ClientMessage types from functions/api/types.ts
 send({ type: 'next_question' })
 send({ type: 'submit_answer', answer: selectedOption })
 send({ type: 'close_session' })
-```
 
-### Realtime Visualizations
-- **Multiple choice**: horizontal bar chart (smooth animate on update)
-- **Open**: wordcloud via `lib/wordcloudEngine`
-- **Ranking**: sorted list with position scores
-- **Point allocation**: normalized bar distribution
-- **Consent**: yes/no/objection counters
-- Privacy threshold: show results only after ≥2 votes
-
-### Session Status Rendering
-```tsx
-const statusConfig = {
-  draft:    { label: 'Concept',     color: 'gray' },
-  active:   { label: 'Actief',      color: 'green' },
-  closed:   { label: 'Afgelopen',   color: 'blue' },
-  archived: { label: 'Gearchiveerd', color: 'gray' },
+// Reconnect with exponential backoff
+const BACKOFF = [2000, 4000, 8000]
+let attempt = 0
+function reconnect() {
+  if (attempt >= BACKOFF.length) { setError('Connection failed. Please reload.'); return }
+  setTimeout(connect, BACKOFF[attempt++])
 }
-// Badges must be consistent: overview, session card, breadcrumb, admin dashboard
 ```
 
-### Autosave Pattern (SES-002)
+### Autosave Pattern
+
 ```tsx
 const debouncedSave = useDebouncedCallback(async (data) => {
-  await fetch(`/api/sessions/${id}/config`, {
-    method: 'PATCH', body: JSON.stringify(data)
-  })
+  await fetch(`/api/sessions/${id}/config`, { method: 'PATCH', body: JSON.stringify(data) })
   setStatus('saved')
-}, 3000)  // 3s inactivity
+}, 3000)
 ```
 
-## VERPLICHT: Mobile & Accessibility
+## Accessibility (non-negotiable — every PR is reviewed on this)
 
-> Deze regels zijn niet-onderhandelbaar. Elke PR wordt hierop gereviewed.
+### Touch Targets (WCAG 2.5.5)
 
-### 1. Touch Targets (KRITISCH)
 ```tsx
-// MINIMUM 44px voor ALLE interactieve elementen
-// ✓ Correct
+// ✓ All interactive elements ≥ 44×44px
 <button className="min-h-[44px] px-4 py-3">Label</button>
-<button className="w-[44px] h-[44px] flex items-center justify-center">
-  <Icon />
+<button className="w-[44px] h-[44px] flex items-center justify-center" aria-label="Delete">
+  <TrashIcon />
 </button>
-
-// ✗ VERBODEN
-<button className="h-8 px-2">Te klein</button>
-<button style={{ padding: 4 }}>Te klein</button>
+// ✗ FORBIDDEN
+<button className="h-8 px-2">Too small</button>
 ```
 
-### 2. Kleurcontrast (KRITISCH — WCAG 2.1 AA)
-```
-VERBODEN combinaties in Qesto:
-  ✗ text-pulse-400 op witte achtergrond  (contrast < 4.5:1)
-  ✗ text-pulse-400 op #EFF6FF / #F0FDF4  (contrast < 4.5:1)
-  ✗ text-pulse-500 op witte achtergrond
+### Colour Contrast (WCAG 2.1 AA — 4.5:1 min)
 
-VEILIGE alternatieven:
-  ✓ text-pulse-700 op wit      (> 9:1)
-  ✓ text-pulse-600 op wit      (> 5:1)
-  ✓ text-white op donkere achtergronden
-```
-
-### 3. Knopzichtbaarheid (VERPLICHT)
-```tsx
-// ✓ Primary: solid achtergrond
-<button className="bg-teal-600 text-white min-h-[44px] rounded-lg px-4">
-  Opslaan
-</button>
-
-// ✓ Secondary: zichtbare achtergrond
-<button className="bg-pulse-100 text-pulse-800 min-h-[44px] rounded-lg px-4">
-  Annuleren
-</button>
-
-// ✓ Ghost: ALTIJD een zichtbare border
-<button className="border border-pulse-300 text-pulse-700 min-h-[44px] rounded-lg px-4">
-  Overslaan
-</button>
-
-// ✗ VERBODEN: transparant zonder border
-<button className="bg-transparent text-pulse-600">Onzichtbaar</button>
-```
-
-### 4. Aria-labels (VERPLICHT op icon-only knoppen)
-```tsx
-// ✓ Knop met alleen een icon
-<button
-  aria-label="Sluiten"
-  className="w-[44px] h-[44px] flex items-center justify-center"
->
-  <XIcon />
-</button>
-
-// ✓ Knop met alleen emoji/symbool
-<button aria-label="Vorig scherm">←</button>
-
-// ✗ VERBODEN: icon zonder label
-<button><XIcon /></button>
-<button>✕</button>
-```
-
-### 5. Focus & Actief-states (VERPLICHT)
-```tsx
-// ✓ Elke klikbare element heeft focus-visible én active state
-<button className="
-  min-h-[44px] px-4
-  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2
-  active:opacity-70
-  transition-opacity
-">
-  Label
-</button>
-```
-
-### Anti-patronen (NOOIT DOEN)
-```
-✗ h-8, h-10 op knoppen — gebruik min-h-[44px]
-✗ bg-transparent zonder border op knoppen
-✗ Alleen kleur als enige state-indicator (gebruik ook icon/tekst)
-✗ focus:outline-none zonder focus-visible alternatief
-✗ Icon-knop zonder aria-label
-✗ Foutmelding alleen in console.error — toon het in de UI
-✗ Async knop zonder disabled/loading state
-```
-
-### Premium Feel Checklist (voor elke PR)
-```
-□ Alle knoppen ≥ 44px hoogte
-□ Icon-only knoppen hebben aria-label
-□ Ghost-knoppen hebben zichtbare border
-□ Focus-ring zichtbaar bij Tab-navigatie
-□ Active state zichtbaar op mobiel (active:opacity-70)
-□ Laadtoestand aanwezig bij async operaties
-□ Foutstaat zichtbaar in UI (niet alleen console)
-□ Getest op 375px viewport (iPhone SE)
-```
-
-## Performance Budgets (Required)
-
-> Frontend performance directly impacts session engagement. Measure before/after. If metrics worsen, flag in PR.
-
-### Core Web Vitals Targets
-| Metric | Target | Definition | How to Measure |
-|---|---|---|---|
-| **LCP** | < 2.5s (75th %ile) | Largest Contentful Paint | `npm run perf` or Web Vitals library |
-| **CLS** | < 0.1 | Cumulative Layout Shift | Monitor during interactions |
-| **FID/INP** | < 100ms | First Input Delay / Interaction to Next Paint | User interactions |
-
-### Bundle & Asset Targets
-| Target | Limit | Notes |
+| Class | On white | Status |
 |---|---|---|
-| Total JS (gzipped) | < 200KB | Session page only |
-| CSS bundle | < 50KB | Tailwind v4 optimized |
-| Initial HTML | < 20KB | Main + routing structure |
-| Single route chunk | < 100KB | Lazy-loaded pages |
+| `text-pulse-400` | 3.1:1 | ❌ Forbidden for text |
+| `text-pulse-600` | 6.1:1 | ✅ Safe |
+| `text-teal-600` | 5.3:1 | ✅ Safe |
+| `text-slate-400` | 3.0:1 | ❌ Forbidden placeholder |
+| `text-slate-500` | 4.6:1 | ✅ Minimum placeholder |
 
-### Loading & Interaction Targets
-| Scenario | Target |
+### Aria Labels & Focus
+
+```tsx
+// Icon-only buttons MUST have aria-label
+<button aria-label="Close session"><XIcon /></button>
+
+// Modal focus trap
+<div role="dialog" aria-modal="true" aria-labelledby="modal-title">...</div>
+
+// Live regions for real-time vote counts
+<div aria-live="polite">{voterCount} voters</div>
+
+// Ghost buttons MUST have visible border
+<button className="border border-pulse-300 text-pulse-700 min-h-[44px]">Skip</button>
+// ✗ FORBIDDEN: bg-transparent without border
+```
+
+### Loading & Error States
+
+```tsx
+// ✓ Skeleton loader
+{loading ? (
+  <div aria-busy="true" aria-label="Loading" className="flex flex-col gap-3">
+    {[1,2,3].map(i => <div key={i} className="bg-slate-200 rounded-xl h-16 animate-pulse" />)}
+  </div>
+) : <ActualContent />}
+
+// ✓ Error with role="alert"
+{error && <p role="alert" className="text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm">{error}</p>}
+
+// ✓ Async button state
+<button disabled={loading} aria-disabled={loading}>
+  {loading ? 'Saving…' : 'Save'}
+</button>
+```
+
+## Performance Budgets
+
+| Metric | Target |
 |---|---|
-| Text input response | < 50ms |
-| Button click → API call | < 200ms (perceived as instant) |
-| Answer submission | < 3s (show spinner) |
-| Question transition | < 1s (smooth animation) |
-| Chart rerender (new votes) | < 500ms |
+| LCP | < 2.5s (75th %ile) |
+| CLS | < 0.1 |
+| FID/INP | < 100ms |
+| Total session JS (gzipped) | < 200KB |
 
-### Measurement & Monitoring
-
-**Local testing**:
-```bash
-# Build production bundle
-npm run build
-
-# Check bundle size
-npx vite-bundle-visualizer dist/
-
-# Measure Core Web Vitals locally (via lighthouse in browser DevTools)
-```
-
-**In code**:
-```typescript
-import { getCLS, getLCP } from 'web-vitals'
-
-getCLS(metric => {
-  console.log('CLS:', metric.value)
-  if (metric.value > 0.1) console.warn('⚠️ Layout shift detected')
-})
-
-getLCP(metric => {
-  console.log('LCP:', metric.value)
-  if (metric.value > 2500) console.warn('⚠️ Slow paint')
-})
-```
-
-**PR Review Checklist**:
-```markdown
-## Performance
-
-- [ ] No unused imports (tree-shake check)
-- [ ] No console.log or debugging code
-- [ ] Large lists use virtualization (if >50 items)
-- [ ] Images are optimized (WebP, lazy load)
-- [ ] Web Vitals same or better than baseline
-- [ ] No new external dependencies (or approved)
-```
-
-### Common Performance Pitfalls
-
-**❌ Causes rerender of entire component**:
+**Common pitfalls:**
 ```tsx
-// WRONG — creates new function every render
-const [items, setItems] = useState([])
-useEffect(() => {
-  fetch('/api/items').then(data => setItems(data))
-}, [])
+// ❌ New function every render → use useCallback
+items.map((item, i) => <Card key={i} onClick={() => console.log(item)} />)
 
-return items.map((item, i) => (
-  <ItemCard key={i} onClick={() => console.log(item)} />  // new fn each render
-))
-```
-
-**✅ Optimize with useMemo/useCallback**:
-```tsx
+// ✅
 const handleClick = useCallback((item) => console.log(item), [])
-return items.map((item) => (
-  <ItemCard key={item.id} onClick={() => handleClick(item)} />
-))
+
+// ❌ Fetches on every keystroke → debounce
+useEffect(() => { fetch(`/api/search?q=${query}`) }, [query])
+
+// ✅
+const debouncedSearch = useDebouncedCallback((q) => fetch(`/api/search?q=${q}`), 300)
 ```
 
-**❌ Re-fetches on every keystroke**:
-```tsx
-const [query, setQuery] = useState('')
-useEffect(() => {
-  fetch(`/api/search?q=${query}`)  // Runs on every keystroke!
-}, [query])
+## PR Checklist
+
 ```
-
-**✅ Debounce the search**:
-```tsx
-const debouncedSearch = useDebouncedCallback((q) => {
-  fetch(`/api/search?q=${q}`)
-}, 300)
-
-const handleChange = (e) => {
-  setQuery(e.target.value)
-  debouncedSearch(e.target.value)
-}
+□ npm run type-check passes
+□ All buttons ≥ 44px height (min-h-[44px])
+□ Icon-only buttons have aria-label
+□ Ghost buttons have visible border
+□ Focus ring visible on Tab navigation
+□ Active state on mobile (active:opacity-70)
+□ Loading + error states for all async data
+□ Tested at 375px viewport (iPhone SE)
+□ No hardcoded colours — use CSS vars or Tailwind tokens
+□ WebSocket errors handled with exponential backoff
+□ Bundle size impact < 10% increase
 ```
-
-**❌ Large component trees**:
-```tsx
-// WRONG — renders 1000 items immediately
-{items.map(item => <ExpensiveComponent item={item} />)}
-```
-
-**✅ Virtualize long lists**:
-```tsx
-import { FixedSizeList } from 'react-window'
-<FixedSizeList height={600} itemCount={items.length} itemSize={50}>
-  {({index, style}) => <div style={style}>{items[index]}</div>}
-</FixedSizeList>
-```
-
-## Checklist Before Submitting
-- [ ] `npm run type-check` passes (no TS errors)
-- [ ] No hardcoded colors — use CSS variables or Tailwind tokens
-- [ ] Keyboard navigable (tab order, focus rings)
-- [ ] Mobile responsive ≥375px viewport
-- [ ] No direct DOM manipulation — use React refs if needed
-- [ ] WebSocket errors handled with exponential backoff (2s, 4s, 8s)
-- [ ] Loading / empty / error states for all async data
-- [ ] Bundle size impact < 10% increase (check `npm run build`)
-- [ ] Web Vitals: LCP < 2.5s, CLS < 0.1 (measure before/after)
 
 ## Docs to Update
-After every frontend task, update the relevant doc(s) before finishing:
 
-| What changed | Doc to update |
+| Change | Doc |
 |---|---|
 | New aria-live regions, focus management, keyboard interactions | `docs/A11Y_FULL.md` |
-| New accessible component patterns or WCAG fixes | `docs/A11Y_FULL.md` |
-| New a11y gaps or known issues found during implementation | `docs/A11Y_FULL.md §6` |
-| New session status rendering or UI state logic | `docs/SPEC.md` (if it changes product behaviour) |
-
-| New UI bug found during implementation | `docs/BACKLOG.md §1` (P0 Defects) — add with WSJF scored |
-
-Rules:
-- Any new interactive component must be documented in `docs/A11Y_FULL.md §4` (feature-specific guidance) if it has non-trivial keyboard or screen reader behaviour
-- Keep the quick checklist in `docs/A11Y_FULL.md §7` up to date — it's used in PR reviews
-- If you discover a UI defect while implementing, add it to `docs/BACKLOG.md §1` — don't fix undocumented bugs silently
-
-## Do Not
-- Call `c.env.AI` — that's backend only
-- Import from `functions/` — use API fetch calls
-- Use `!important` in CSS
-- Store session state in localStorage (only for non-sensitive UI prefs)
-
-## Change Log
-- 2026-04-10: Canonicalized file headers and shared rules reference.
+| New accessible component patterns | `docs/A11Y_FULL.md §4` |
+| A11y gaps found | `docs/A11Y_FULL.md §6` |
+| UI bug discovered | `docs/BACKLOG.md §1` |
