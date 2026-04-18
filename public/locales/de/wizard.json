@@ -1,0 +1,148 @@
+{
+  "nav": {
+    "next":   "Weiter",
+    "back":   "Zurück",
+    "close":  "Schließen",
+    "launch": "Sitzung starten"
+  },
+  "steps": {
+    "1": "Grundlagen",
+    "2": "Fragen",
+    "3": "Energizer",
+    "4": "Einstellungen",
+    "5": "Übersicht"
+  },
+  "step1": {
+    "title":             "Was ist die Sitzung?",
+    "label_title":       "Sitzungstitel",
+    "label_goal":        "Ziel der Sitzung",
+    "placeholder_title": "z.B. Teamreflexion Q2",
+    "placeholder_goal":  "z.B. Einblick in das Teamerleben des Sprints gewinnen..."
+  },
+  "question_types": {
+    "multiple-choice": "Multiple Choice",
+    "ranking":         "Ranking",
+    "open":            "Offen",
+    "wordcloud":       "Wortwolke"
+  },
+  "step2": {
+    "mode_title":       "Wie möchtest du Fragen hinzufügen?",
+    "manual":           { "label": "Selbst schreiben", "desc": "Schreibe und verwalte deine eigenen Fragen" },
+    "ai":               { "label": "KI generieren",    "desc": "Gib einen Prompt, wir generieren Fragen" },
+    "template":         { "label": "Aus Vorlage",      "desc": "Wähle aus bewährten Fragesets" },
+    "back":             "← Andere Methode wählen",
+    "manual_add":       "Frage hinzufügen",
+    "manual_placeholder": "Gib deine Frage ein...",
+    "manual_max":       "Maximum von 20 Fragen erreicht",
+    "manual_delete":    "Frage löschen",
+    "multiple_choice_option_placeholder": "Antwortoption {{n}}",
+    "multiple_choice_add_option": "Antwortoption hinzufügen",
+    "multiple_choice_remove_option": "Antwortoption entfernen",
+    "multiple_choice_validation_hint": "Multiple Choice benötigt mindestens 2 Antworten (3–5 empfohlen).",
+    "multiple_choice_validation_error": "Mindestens eine Multiple-Choice-Frage hat weniger als 2 Antworten.",
+    "ai_greeting":      "Ich sehe Sitzung \"{{title}}\" mit Ziel: \"{{goal}}\". Sag mir, worauf du dich konzentrieren möchtest, oder klicke 'Sofort generieren'.",
+    "ai_greeting_empty": "Erkläre mir, worum es in der Sitzung geht, oder klicke 'Sofort generieren'.",
+    "ai_generate_cta":  "✨ Sofort generieren",
+    "ai_generating":    "Generiere...",
+    "ai_placeholder":   "Fokus verfeinern...",
+    "ai_send":          "Senden",
+    "ai_questions_label": "Generierte Fragen",
+    "ai_consent":       "Ich stimme zu, dass mein Sitzungstitel und Ziel von der KI verarbeitet werden",
+    "ai_consent_required": "Bitte stimme der KI-Verarbeitung zu, um Fragen zu generieren",
+    "ai_error":         "Generierung fehlgeschlagen. Bitte erneut versuchen.",
+    "ai_review_cta":    "Fragen bearbeiten →",
+    "ai_review_title":  "Fragen bearbeiten",
+    "ai_review_subtitle": "Fragen oder Typen anpassen, bevor du weiter gehst",
+    "ai_generated_badge": "✨ KI-generierter Inhalt — vollständig bearbeitbar",
+    "ai_review_back":   "← Zurück zum Chat",
+    "ai_regenerate_confirm": "Neu generieren ersetzt deine bearbeiteten Fragen. Fortfahren?",
+    "review_add_question": "Frage hinzufügen",
+    "template_loading": "Vorlagen laden...",
+    "template_error":   "Vorlagen konnten nicht geladen werden",
+    "template_empty":   "Keine Vorlagen verfügbar",
+    "template_retry":   "Erneut versuchen",
+    "template_select":  "Auswählen",
+    "template_selected": "✓ Ausgewählt",
+    "template_questions": "{{count}} Fragen"
+  },
+  "step3": {
+    "title":       "Energizer hinzufügen?",
+    "yes":         "Ja, gerne!",
+    "no":          "Nein, überspringen",
+    "pick_format": "Format wählen",
+    "formats": {
+      "emoji-poll":     { "name": "Emoji-Abstimmung", "desc": "Schnelle Stimmungskontrolle per Emoji" },
+      "snelste-vinger": { "name": "Schnellste Finger", "desc": "Wer ist am schnellsten mit der richtigen Antwort?" },
+      "team-quiz":      { "name": "Team-Quiz",         "desc": "Kurzes Wettbewerbsquiz zum Aufwärmen" },
+      "woordenwolk":    { "name": "Wortwolke",          "desc": "Teilnehmer tippen ein Wort, gemeinsam sichtbar" }
+    }
+  },
+  "step4": {
+    "title": "Sitzungseinstellungen",
+    "anonymity": {
+      "label":   "Anonymität",
+      "full":    "Vollständig anonym",
+      "partial": "Teilweise",
+      "none":    "Nicht anonym"
+    },
+    "votePolicy": {
+      "label": "Abstimmungsrichtlinie",
+      "once":  "Eine Stimme",
+      "multi": "Mehrere Stimmen",
+      "react": "Reaktionen"
+    },
+    "mode": {
+      "label":            "Sitzungsmodus",
+      "reflection_title": "Reflexionsmodus"
+    }
+  },
+  "step5": {
+    "title":             "Übersicht & starten",
+    "edit":              "Bearbeiten",
+    "section_basis":     "Grundlagen",
+    "section_questions": "Fragen",
+    "template_selected": "Vorlage ausgewählt",
+    "more_questions":    "+ {{count}} weitere",
+    "no_questions":      "Keine Fragen hinzugefügt",
+    "section_energizer": "Energizer",
+    "no_energizer":      "Kein Energizer",
+    "section_settings":  "Einstellungen",
+    "consent_text":      "Mit dem Starten der Sitzung stimmst du der Datenschutzerklärung zu. Antworten werden gemäß deinen Anonymitätseinstellungen verarbeitet.",
+    "launch_error":      "Sitzung starten fehlgeschlagen. Bitte erneut versuchen.",
+    "launching":         "Starten..."
+  },
+  "draft": {
+    "banner":  "Du hast einen gespeicherten Entwurf. Möchtest du weitermachen?",
+    "restore": "Wiederherstellen",
+    "dismiss": "Verwerfen"
+  },
+  "trigger": {
+    "cta": "+ Neue Sitzung"
+  },
+  "a11y": {
+    "modal_label":    "Neue Sitzung erstellen",
+    "progress_label": "Schritt {{current}} von {{total}}",
+    "close_label":    "Assistent schließen"
+  },
+  "auth_gate": {
+    "title":       "Einloggen, um loszulegen",
+    "subtitle":    "Du benötigst ein Konto, um eine Sitzung zu erstellen",
+    "email_label": "E-Mail-Adresse",
+    "cta":         "Magic Link senden",
+    "sent":        "Posteingang prüfen — wir haben einen Link an {{email}} gesendet"
+  },
+  "edit_mode": {
+    "modal_label":            "Sitzung bearbeiten",
+    "banner":                 "Du bearbeitest eine bestehende Sitzung",
+    "save_cta":               "Änderungen speichern",
+    "saving":                 "Speichern...",
+    "active_session_warning": "Fragen können nicht geändert werden, solange die Sitzung aktiv ist"
+  },
+  "present": {
+    "header": {
+      "questions_count": "{{n}} Fragen",
+      "energizer":       "Energizer",
+      "edit":            "Bearbeiten"
+    }
+  }
+}

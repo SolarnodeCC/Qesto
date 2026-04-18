@@ -1,0 +1,9 @@
+{
+  "generic": "Er is iets misgegaan. Probeer opnieuw.",
+  "network": "Netwerkfout. Controleer je verbinding.",
+  "unauthorized": "Je bent niet bevoegd om deze actie uit te voeren.",
+  "notFound": "Niet gevonden.",
+  "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
+  "rateLimited": "Te veel verzoeken. Wacht even.",
+  "serverError": "Serverfout. Probeer het later opnieuw."
+}

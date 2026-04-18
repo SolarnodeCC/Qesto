@@ -1,0 +1,9 @@
+{
+  "generic": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+  "network": "Netzwerkfehler. Überprüfe deine Verbindung.",
+  "unauthorized": "Du bist nicht berechtigt, diese Aktion durchzuführen.",
+  "notFound": "Nicht gefunden.",
+  "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+  "rateLimited": "Zu viele Anfragen. Bitte warte einen Moment.",
+  "serverError": "Serverfehler. Bitte versuche es später erneut."
+}

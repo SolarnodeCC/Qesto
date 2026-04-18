@@ -1,0 +1,148 @@
+{
+  "nav": {
+    "next":   "Suivant",
+    "back":   "Retour",
+    "close":  "Fermer",
+    "launch": "Démarrer la session"
+  },
+  "steps": {
+    "1": "Bases",
+    "2": "Questions",
+    "3": "Énergiseur",
+    "4": "Paramètres",
+    "5": "Aperçu"
+  },
+  "step1": {
+    "title":             "Qu'est-ce que la session ?",
+    "label_title":       "Titre de la session",
+    "label_goal":        "Objectif de la session",
+    "placeholder_title": "ex. Réflexion d'équipe Q2",
+    "placeholder_goal":  "ex. Comprendre comment l'équipe a vécu le sprint..."
+  },
+  "question_types": {
+    "multiple-choice": "Choix multiple",
+    "ranking":         "Classement",
+    "open":            "Ouverte",
+    "wordcloud":       "Nuage de mots"
+  },
+  "step2": {
+    "mode_title":       "Comment voulez-vous ajouter des questions ?",
+    "manual":           { "label": "Écrire soi-même", "desc": "Écrivez et gérez vos propres questions" },
+    "ai":               { "label": "Générer par IA",  "desc": "Donnez une invite, nous générons des questions" },
+    "template":         { "label": "À partir d'un modèle", "desc": "Choisissez parmi des ensembles de questions éprouvés" },
+    "back":             "← Choisir une autre méthode",
+    "manual_add":       "Ajouter une question",
+    "manual_placeholder": "Tapez votre question...",
+    "manual_max":       "Maximum de 20 questions atteint",
+    "manual_delete":    "Supprimer la question",
+    "multiple_choice_option_placeholder": "Option de réponse {{n}}",
+    "multiple_choice_add_option": "Ajouter une option de réponse",
+    "multiple_choice_remove_option": "Supprimer l’option de réponse",
+    "multiple_choice_validation_hint": "Le choix multiple nécessite au moins 2 réponses (3 à 5 recommandé).",
+    "multiple_choice_validation_error": "Une ou plusieurs questions à choix multiple ont moins de 2 réponses.",
+    "ai_greeting":      "Je vois la session \"{{title}}\" avec l'objectif : \"{{goal}}\". Dites-moi sur quel aspect vous souhaitez vous concentrer, ou cliquez sur 'Générer maintenant'.",
+    "ai_greeting_empty": "Dites-moi de quoi parle la session, ou cliquez sur 'Générer maintenant'.",
+    "ai_generate_cta":  "✨ Générer maintenant",
+    "ai_generating":    "Génération...",
+    "ai_placeholder":   "Affiner le focus...",
+    "ai_send":          "Envoyer",
+    "ai_questions_label": "Questions générées",
+    "ai_consent":       "J'accepte que le titre et l'objectif de ma session soient traités par l'IA",
+    "ai_consent_required": "Veuillez consentir au traitement par IA pour générer des questions",
+    "ai_error":         "La génération a échoué. Veuillez réessayer.",
+    "ai_review_cta":    "Modifier les questions →",
+    "ai_review_title":  "Modifier vos questions",
+    "ai_review_subtitle": "Ajustez les questions ou les types avant de continuer",
+    "ai_generated_badge": "✨ Contenu généré par IA — entièrement modifiable",
+    "ai_review_back":   "← Retour au chat",
+    "ai_regenerate_confirm": "Régénérer remplacera vos questions modifiées. Continuer ?",
+    "review_add_question": "Ajouter une question",
+    "template_loading": "Chargement des modèles...",
+    "template_error":   "Impossible de charger les modèles",
+    "template_empty":   "Aucun modèle disponible",
+    "template_retry":   "Réessayer",
+    "template_select":  "Sélectionner",
+    "template_selected": "✓ Sélectionné",
+    "template_questions": "{{count}} questions"
+  },
+  "step3": {
+    "title":       "Ajouter un énergiseur ?",
+    "yes":         "Oui, avec plaisir !",
+    "no":          "Non, passer",
+    "pick_format": "Choisir un format",
+    "formats": {
+      "emoji-poll":     { "name": "Sondage Emoji",    "desc": "Vérification rapide de l'humeur par emoji" },
+      "snelste-vinger": { "name": "Doigt le plus rapide", "desc": "Qui répond le plus vite correctement ?" },
+      "team-quiz":      { "name": "Quiz d'équipe",    "desc": "Court quiz compétitif pour se mettre en route" },
+      "woordenwolk":    { "name": "Nuage de mots",    "desc": "Les participants tapent un mot, visible ensemble" }
+    }
+  },
+  "step4": {
+    "title": "Paramètres de session",
+    "anonymity": {
+      "label":   "Anonymat",
+      "full":    "Entièrement anonyme",
+      "partial": "Partiel",
+      "none":    "Pas anonyme"
+    },
+    "votePolicy": {
+      "label": "Politique de vote",
+      "once":  "Un vote",
+      "multi": "Plusieurs votes",
+      "react": "Réactions"
+    },
+    "mode": {
+      "label":            "Mode de session",
+      "reflection_title": "Mode Réflexion"
+    }
+  },
+  "step5": {
+    "title":             "Aperçu et lancement",
+    "edit":              "Modifier",
+    "section_basis":     "Bases",
+    "section_questions": "Questions",
+    "template_selected": "Modèle sélectionné",
+    "more_questions":    "+ {{count}} de plus",
+    "no_questions":      "Aucune question ajoutée",
+    "section_energizer": "Énergiseur",
+    "no_energizer":      "Pas d'énergiseur",
+    "section_settings":  "Paramètres",
+    "consent_text":      "En lançant la session, vous acceptez la déclaration de confidentialité. Les réponses sont traitées conformément à vos paramètres d'anonymat.",
+    "launch_error":      "Échec du lancement de la session. Veuillez réessayer.",
+    "launching":         "Lancement..."
+  },
+  "draft": {
+    "banner":  "Vous avez un brouillon enregistré. Voulez-vous continuer ?",
+    "restore": "Restaurer",
+    "dismiss": "Ignorer"
+  },
+  "trigger": {
+    "cta": "+ Nouvelle session"
+  },
+  "a11y": {
+    "modal_label":    "Créer une nouvelle session",
+    "progress_label": "Étape {{current}} sur {{total}}",
+    "close_label":    "Fermer l'assistant"
+  },
+  "auth_gate": {
+    "title":       "Connectez-vous pour commencer",
+    "subtitle":    "Vous avez besoin d'un compte pour créer une session",
+    "email_label": "Adresse e-mail",
+    "cta":         "Envoyer le Magic Link",
+    "sent":        "Vérifiez votre boîte — nous avons envoyé un lien à {{email}}"
+  },
+  "edit_mode": {
+    "modal_label":            "Modifier la session",
+    "banner":                 "Vous modifiez une session existante",
+    "save_cta":               "Enregistrer les modifications",
+    "saving":                 "Enregistrement...",
+    "active_session_warning": "Les questions ne peuvent pas être modifiées pendant que la session est active"
+  },
+  "present": {
+    "header": {
+      "questions_count": "{{n}} questions",
+      "energizer":       "Énergiseur",
+      "edit":            "Modifier"
+    }
+  }
+}

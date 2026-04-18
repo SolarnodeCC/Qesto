@@ -1,0 +1,9 @@
+{
+  "generic": "Une erreur est survenue. Veuillez réessayer.",
+  "network": "Erreur réseau. Vérifiez votre connexion.",
+  "unauthorized": "Vous n'êtes pas autorisé à effectuer cette action.",
+  "notFound": "Introuvable.",
+  "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+  "rateLimited": "Trop de requêtes. Veuillez patienter un moment.",
+  "serverError": "Erreur serveur. Veuillez réessayer plus tard."
+}

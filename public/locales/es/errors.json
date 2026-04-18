@@ -1,0 +1,9 @@
+{
+  "generic": "Algo salió mal. Inténtalo de nuevo.",
+  "network": "Error de red. Verifica tu conexión.",
+  "unauthorized": "No estás autorizado para realizar esta acción.",
+  "notFound": "No encontrado.",
+  "sessionExpired": "Tu sesión ha expirado. Vuelve a iniciar sesión.",
+  "rateLimited": "Demasiadas solicitudes. Espera un momento.",
+  "serverError": "Error del servidor. Inténtalo más tarde."
+}
