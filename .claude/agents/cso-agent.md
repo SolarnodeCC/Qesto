@@ -61,16 +61,10 @@ At the start of every task, load `.claude/skills/cso.md` — it contains the ful
 | **Medium** | Missing rate limit, weak validation, info disclosure | P2/P3 with WSJF score |
 | **Low** | Best-practice deviation, hardcoded non-secret value | Backlog note, low priority |
 
-## Active Open Vulnerabilities (Sprint 10)
+## Active Open Vulnerabilities
 
-| ID | Issue | File | Status |
-|---|---|---|---|
-| BUG-012 | `Math.random()` session codes — brute-forceable | `sessions.routes.ts:35`, `helpers.ts:9` | 🔴 Sprint 10 |
-| BUG-014 | Webhook URL not validated — SSRF via localhost | `sessions.routes.ts:135,495` | 🔴 Sprint 10 |
-| BUG-018 | Stripe webhook non-idempotent — double plan upgrade | `billing.routes.ts:75` | 🔴 Sprint 10 |
-| ARCH-023 | `/sessions/by-code/:code` no rate limit — brute-forceable | `sessions.routes.ts:429` | 🔴 Sprint 10 |
-| BUG-017 | HTML injection in misc report — SVG/CSS possible | `misc.routes.ts:96-102` | 🔴 Sprint 11 |
-| BUG-019 | Workers AI no timeout — DoS via slow AI | `ai.ts:80-94` | 🔴 Sprint 11 |
+Check `docs/BACKLOG.md §1` (P0 Defects) for the current open security vulnerabilities.
+Each entry includes: ID, issue description, file:line, severity, and sprint target.
 
 ## Docs to Update
 
@@ -90,4 +84,5 @@ For every audit, produce:
 4. **Backlog updated**: list items added or closed in `docs/BACKLOG.md`
 
 ## Change Log
+- 2026-04-18: Removed stale Sprint 10 vulnerability table; now references docs/BACKLOG.md.
 - 2026-04-10: Canonicalized file headers and shared rules reference.

@@ -28,4 +28,3 @@
 - product-owner.md — Product Owner
 - review.md — QA Lead
 - tester.md — QA Lead
-- ui-mobile.md — Frontend Lead

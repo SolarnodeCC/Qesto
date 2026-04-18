@@ -532,16 +532,26 @@ myRoutes.post('/feature', authMiddleware, requirePlan('pro'), handler)
 
 ## Error Response Contract
 ```typescript
-// All errors use this shape — no exceptions
-return c.json({ error: 'human readable message', code?: 'MACHINE_CODE' }, statusCode)
+// All errors use this shape — no exceptions (see SPEC_CORE.md)
+return c.json({
+  error: {
+    code: 'MACHINE_CODE',
+    message: 'Human readable message',
+    statusCode: 403,
+    requestId: c.get('traceId'),
+    timestamp: Date.now(),
+  }
+}, statusCode)
 
 // Standard codes
-400 — bad input / validation
-401 — not authenticated
-403 — forbidden (wrong role, wrong plan, wrong state)
-404 — not found
-409 — conflict (e.g. session already active)
-500 — unexpected (log with console.error)
+400 — UNPROCESSABLE: bad input / Zod validation failure
+401 — UNAUTHORIZED: not authenticated
+403 — FORBIDDEN: wrong role, wrong plan, wrong session state
+404 — NOT_FOUND: resource not found
+409 — CONFLICT: session state violation (e.g. REST during LIVE)
+422 — UNPROCESSABLE: semantic validation failure
+429 — RATE_LIMIT: too many requests
+500 — INTERNAL_ERROR: unexpected (log with logError)
 ```
 
 ## DRAFT State Guard (use in every DRAFT-API route)
@@ -593,4 +603,5 @@ Rules:
 - Import from `src/` — backend has no knowledge of the frontend
 
 ## Change Log
+- 2026-04-18: Updated error response contract to structured envelope per SPEC_CORE.md.
 - 2026-04-10: Canonicalized file headers and shared rules reference.

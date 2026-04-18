@@ -118,5 +118,7 @@ This project uses a layered AI agent framework:
 /security       → loads cso.md skill pack           (OWASP Top 10, STRIDE, GDPR, Stripe, SAML audits)
 /analytics      → loads analytics.md skill pack     (AE queries, conversion funnel, platform metrics)
 /i18n           → loads i18n.md skill pack          (translations, key extraction, EN/NL/ES/DE/FR)
+/review         → loads review.md skill pack        (code review gates, correctness, security, mobile/a11y)
+/investigate    → loads investigate.md skill pack   (DO/WebSocket root-cause analysis, 5-step debug protocol)
 ```
 Knowledge packs auto-revoke at end of task — do not carry state between roles.

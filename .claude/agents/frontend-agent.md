@@ -29,7 +29,7 @@ You are a senior frontend developer for Qesto.
 - **Never touch**: `functions/api/`, `worker/`, `schema.sql`, `wrangler.toml`
 
 ## Tech Stack (your domain)
-- React 18 + TypeScript strict mode
+- React 19 + TypeScript strict mode
 - Tailwind CSS v4 (CSS variables, `@layer`, no v3 utilities)
 - Vite (bundler + dev server)
 - No Redux — use React context + custom hooks + SWR for server state
@@ -109,4 +109,5 @@ When done with a task:
 4. **Docs updated** — list which `docs/` files were updated and what changed
 
 ## Change Log
+- 2026-04-18: Updated React version to 19 per SPEC_CORE.md.
 - 2026-04-10: Canonicalized file headers and shared rules reference.

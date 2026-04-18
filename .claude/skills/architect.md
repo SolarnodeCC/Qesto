@@ -28,10 +28,18 @@ You are the lead architect for Qesto. You own the edge topology, data model, API
 | KV `SessionMeta.status` | `draft\|active\|closed\|archived` | SESSIONS_KV |
 | DO `SessionState.status` | `waiting\|active\|results\|closed` | SessionRoom.ts |
 
+**State machine (SPEC_CORE.md):**
+```
+DRAFT → LOBBY → LIVE → CLOSED → ARCHIVED
+  (DO init, optional gateway)   (90d retention)
+```
+
 **Mapping on state transition:**
 ```
-DRAFT → LIVE:  D1: draft→active, KV: draft→active, DO: init() with KV payload
+DRAFT → LOBBY: POST /sessions/:id/start → DO init with KV payload (D1+KV: draft→active)
+LOBBY → LIVE:  go-live() or auto-start in DO — no D1/KV change
 LIVE → CLOSED: D1: active→closed, KV: active→closed, DO: closed (auto on WS close_session)
+CLOSED → ARCHIVED: auto or manual after retention period (D1 only)
 ```
 
 ### KV Key Conventions
@@ -64,9 +72,9 @@ app.verb('/path/:param', authMiddleware, planMiddleware, async (c) => {
 
 ### Error Contract
 ```typescript
-// All errors follow this shape
-{ error: string, code?: string }
-// HTTP codes: 400 bad input, 401 unauth, 403 forbidden, 404 not found, 409 conflict, 500 server
+// All errors follow this shape (see SPEC_CORE.md)
+{ error: { code: string, message: string, statusCode: number, requestId: string, timestamp: number } }
+// HTTP codes: 400 bad input, 401 unauth, 403 forbidden, 404 not found, 409 conflict, 422 validation, 429 rate limit, 500 server
 ```
 
 ### Plan Middleware Gating
@@ -128,4 +136,5 @@ Rules:
 - Create synchronous D1 calls inside WebSocket message handlers (use KV instead)
 
 ## Change Log
+- 2026-04-18: Updated error contract and state machine to match SPEC_CORE.md (LOBBY state, structured error envelope).
 - 2026-04-10: Canonicalized file headers and shared rules reference.

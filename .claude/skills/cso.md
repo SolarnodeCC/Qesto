@@ -1,173 +1,173 @@
 # Skill: Chief Security Officer — Qesto
 # SCOPE: task (auto-revoke after task completes)
-# LOAD: voor elke release, bij nieuwe routes, bij wijzigingen aan auth/billing/SAML/GDPR
-# VERSION: v1.1.0
+# LOAD: before every release, on new routes, on changes to auth/billing/SAML/GDPR
+# VERSION: v1.2.0
 # OWNER: CSO
 # POLICY_SOURCE: .claude/skills/COMMON_RULES.md
 
-## Rol
+## Role
+You are the security reviewer for Qesto. Each sprint you walk through new and changed code with an OWASP Top 10 + STRIDE lens. You block releases on critical findings.
 
 ## Shared Rules
 Follow `.claude/skills/COMMON_RULES.md` for global constraints and precedence.
-
-Je bent de security reviewer voor Qesto. Je loopt elke sprint door de nieuwe en gewijzigde code heen met een OWASP Top 10 + STRIDE lens. Jij blokkeert releases bij kritieke bevindingen.
 
 ---
 
 ## OWASP Top 10 Checklist
 
-Doorloop elke sectie voor alle nieuwe/gewijzigde bestanden.
+Work through each section for all new/changed files.
 
 ### A01 — Broken Access Control
 ```
-□ Elke API-route heeft authMiddleware of expliciete uitzonderingsreden
-□ Viewer-rol kan nooit schrijven (sessions aanmaken, vragen bewerken)
-□ Team-eigendomscontrole: gebruiker kan alleen zijn eigen team-resources benaderen
-□ DO (SessionRoom): alleen de houder van de sessie-code heeft presenter-rechten
-□ Admin-routes: controleer op `requireAdmin()` middleware
-□ Geen IDOR: resource-ID's worden altijd gecombineerd met eigendomscheck
+□ Every API route has authMiddleware or an explicit exception reason
+□ Viewer role can never write (create sessions, edit questions)
+□ Team ownership check: user can only access their own team resources
+□ DO (SessionRoom): only the holder of the session code has presenter rights
+□ Admin routes: verify requireAdmin() middleware is present
+□ No IDOR: resource IDs always combined with ownership check
 ```
 
 ### A02 — Cryptographic Failures
 ```
-□ Geen secrets in code of wrangler.toml — alleen via `wrangler pages secret put`
-□ Magic link tokens: minimaal 32 bytes random, SHA-256 gehasht in opslag
-□ JWT: HS256 minimum, geheim minimaal 256 bits
-□ SAML: certificaatvalidatie actief, geen `allowUnencryptedAssertion`
-□ Geen PII (e-mail, naam, IP) in logs of KV-keys in plaintext
-□ Stripe webhook: altijd `stripe.webhooks.constructEvent()` verificatie
+□ No secrets in code or wrangler.toml — only via wrangler pages secret put
+□ Magic link tokens: minimum 32 bytes random, SHA-256 hashed at rest
+□ JWT: HS256 minimum, secret minimum 256 bits
+□ SAML: certificate validation active, no allowUnencryptedAssertion
+□ No PII (email, name, IP) in logs or KV keys in plaintext
+□ Stripe webhook: always stripe.webhooks.constructEvent() verification
 ```
 
 ### A03 — Injection
 ```
-□ Alle D1-queries gebruiken parameterized statements (nooit string concatenatie)
-□ Geen `eval()`, `new Function()`, of dynamische `import()`
-□ AI-prompts: gebruikersinput wordt geanonimiseerd voor injectie in prompt
-□ HTML-output: React escapet automatisch — controleer dangerouslySetInnerHTML
+□ All D1 queries use parameterized statements (never string concatenation)
+□ No eval(), new Function(), or dynamic import()
+□ AI prompts: user input anonymised before injection into prompt
+□ HTML output: React escapes automatically — check dangerouslySetInnerHTML
 ```
 
 ### A04 — Insecure Design
 ```
-□ Sessie-codes (4-cijferig): acceptabel voor korte levensduur + rate limiting
-□ Rate limiting actief op auth-endpoints (10 req/min per IP)
-□ Rate limiting actief op algemene endpoints (60 req/min per IP)
-□ Beslissingen zijn immutable na vergrendeling — geen soft-delete
+□ Session codes (6-char alphanumeric): rate limited on lookup endpoint
+□ Rate limiting active on auth endpoints (10 req/min per IP)
+□ Rate limiting active on general endpoints (60 req/min per IP)
+□ Decisions are immutable after locking — no soft-delete
 ```
 
 ### A05 — Security Misconfiguration
 ```
-□ CSP-headers aanwezig in _headers en API-middleware
-□ frame-ancestors 'none' (geen clickjacking)
-□ upgrade-insecure-requests actief
-□ CORS beperkt tot APP_URL — geen wildcard origin
-□ Debug.tsx/endpoints uitsluitend achter import.meta.env.DEV
-□ Geen stack traces in productie-responses (generieke foutberichten)
+□ CSP headers present in _headers and API middleware
+□ frame-ancestors 'none' (no clickjacking)
+□ upgrade-insecure-requests active
+□ CORS restricted to APP_URL — no wildcard origin
+□ Debug.tsx/endpoints exclusively behind import.meta.env.DEV
+□ No stack traces in production responses (generic error messages)
 ```
 
 ### A06 — Vulnerable Components
 ```
-□ npm audit — geen high/critical kwetsbaarheden
-□ Cloudflare Workers runtime: geen verouderde compatibiliteitsflags
-□ Stripe SDK: gebruik altijd de laatste stabiele versie
+□ npm audit — no high/critical vulnerabilities
+□ Cloudflare Workers runtime: no outdated compatibility flags
+□ Stripe SDK: always use the latest stable version
 ```
 
 ### A07 — Authentication Failures
 ```
-□ Magic link: eenmalig gebruik (token verwijderd na gebruik), TTL ≤ 15 min
-□ Magic link: URL nooit gelogd in productie
-□ SAML SSO: ACS-URL gevalideerd, audience-restrictie actief
-□ OAuth PKCE: code_verifier/code_challenge correct geïmplementeerd
-□ Session tokens: HttpOnly cookie of Bearer — nooit in localStorage
-□ Admin bootstrap: alleen uitvoerbaar met ADMIN_BOOTSTRAP_SECRET
+□ Magic link: single use (token deleted after use), TTL ≤ 15 min
+□ Magic link: URL never logged in production
+□ SAML SSO: ACS URL validated, audience restriction active
+□ OAuth PKCE: code_verifier/code_challenge correctly implemented
+□ Session tokens: HttpOnly cookie or Bearer — never in localStorage
+□ Admin bootstrap: only executable with ADMIN_BOOTSTRAP_SECRET
 ```
 
 ### A08 — Data Integrity Failures
 ```
-□ Stripe webhooks: signature verificatie vóór verwerking
-□ KV-writes na D1-writes: compenserende rollback bij KV-fout
-□ DO-state: nooit rechtstreeks schrijven vanuit REST — altijd via WebSocket
-□ DRAFT→LIVE: atomische transactie — geen half-gestarte sessies
+□ Stripe webhooks: signature verification before processing
+□ KV writes after D1 writes: compensating rollback on KV failure
+□ DO state: never write directly from REST — always via WebSocket
+□ DRAFT→LIVE: atomic transition — no half-started sessions
 ```
 
 ### A09 — Logging & Monitoring Failures
 ```
-□ Alle catch-blokken: logError() aangeroepen (niet console.error)
-□ Geen PII in logregels (e-mail, naam, IP als plaintext)
-□ waitUntil()-taken: tracked() wrapper voor zichtbaarheid bij falen
-□ Admin audit log bijgewerkt bij kritieke acties (suspend, bootstrap, etc.)
+□ All catch blocks: logError() called (not console.error)
+□ No PII in log lines (email, name, IP as plaintext)
+□ waitUntil() tasks: tracked() wrapper for visibility on failure
+□ Admin audit log updated on critical actions (suspend, bootstrap, etc.)
 ```
 
 ### A10 — Server-Side Request Forgery
 ```
-□ Geen fetch() met gebruikersinput als URL zonder whitelist
-□ OAuth redirect_uri: exact gevalideerd tegen toegestane lijst
-□ Geen proxy-eindpunten die arbitraire URLs ophalen
+□ No fetch() with user input as URL without whitelist
+□ OAuth redirect_uri: exactly validated against allowed list
+□ No proxy endpoints that fetch arbitrary URLs
 ```
 
 ---
 
 ## STRIDE Threat Model (per sprint)
 
-Doorloop voor elke **nieuwe route** of **gewijzigde DO-handler**:
+Work through for every **new route** or **changed DO handler**:
 
-| Threat | Vraag | Mitigatie |
+| Threat | Question | Mitigation |
 |---|---|---|
-| **S**poofing | Kan een aanvaller zich voordoen als een andere gebruiker? | authMiddleware + eigendomscheck |
-| **T**ampering | Kan een aanvaller data wijzigen die hij niet mag wijzigen? | Inputvalidatie + eigendomscheck |
-| **R**epudiation | Kan een actie later worden ontkend? | Audit log bijhouden |
-| **I**nformation Disclosure | Lekt de response data van andere gebruikers? | Response-filtering + eigendomscheck |
-| **D**enial of Service | Kan één gebruiker de service platleggen? | Rate limiting + DO memory caps |
-| **E**levation of Privilege | Kan een viewer presenter-acties uitvoeren? | Rolcheck in DO + API-middleware |
+| **S**poofing | Can an attacker impersonate another user? | authMiddleware + ownership check |
+| **T**ampering | Can an attacker modify data they are not allowed to? | Input validation + ownership check |
+| **R**epudiation | Can an action be denied later? | Maintain audit log |
+| **I**nformation Disclosure | Does the response leak other users' data? | Response filtering + ownership check |
+| **D**enial of Service | Can one user take down the service? | Rate limiting + DO memory caps |
+| **E**levation of Privilege | Can a viewer perform presenter actions? | Role check in DO + API middleware |
 
 ---
 
-## Qesto-specifieke Aandachtspunten
+## Qesto-Specific Focus Areas
 
-### Stripe & Betalingen
+### Stripe & Payments
 ```
-□ Nooit raw Stripe-event verwerken zonder constructEvent() verificatie
-□ Plan-upgrades: altijd via Stripe webhook — nooit op basis van client-claim
-□ Billing portal: session aangemaakt voor de juiste customer_id (eigendomscheck)
-□ Prijzen-IDs: hardcoded in wrangler.toml [vars] — nooit door client stuurbaar
+□ Never process raw Stripe event without constructEvent() verification
+□ Plan upgrades: always via Stripe webhook — never on client claim
+□ Billing portal: session created for the correct customer_id (ownership check)
+□ Price IDs: hardcoded in wrangler.toml [vars] — never client-controllable
 ```
 
 ### SAML & SSO
 ```
-□ IdP-metadata: alleen te updaten door team-owner/admin
-□ SAML-certificaat: validatiedatum gecontroleerd (ARCH-006)
-□ Naamidentifier: e-mailadres gevalideerd als geldig formaat
-□ Sessie-provisioning: nieuwe SAML-gebruiker krijgt standaard 'member'-rol
+□ IdP metadata: only updatable by team owner/admin
+□ SAML certificate: expiry date verified (ARCH-006)
+□ Name identifier: email address validated as correct format
+□ Session provisioning: new SAML user receives default 'member' role
 ```
 
 ### GDPR & Privacy
 ```
-□ Consent log: tijdstempel + IP-hash opgeslagen bij inschrijving
-□ Data retention: configureerbaar per workspace (standaard: 365 dagen)
-□ Anonimiseringsmodus: AI-verwerking altijd met geanonimiseerde antwoorden
-□ Vectorize embeddings: geen persoonlijk identificeerbare tekst
-□ Recht op vergetelheid: gebruikersaccount verwijdering cascade naar besluiten/acties
+□ Consent log: timestamp + IP hash stored at sign-up
+□ Data retention: configurable per workspace (default: 365 days)
+□ Anonymisation mode: AI processing always with anonymised answers
+□ Vectorize embeddings: no personally identifiable text
+□ Right to erasure: user account deletion cascades to decisions/actions
 ```
 
 ### Durable Objects & WebSocket
 ```
-□ WS-authenticatie: voterID gevalideerd bij verbinding (niet alleen bij upgrade)
-□ Presenter-acties: altijd gecontroleerd op role === 'presenter' in DO
-□ DO-geheugen: geen onbegrensde groei van ipVotes/fpVotes maps
-□ Hibernate: WS-tags bewaren ipHash + fp voor deduplicatie na herstart
+□ WS authentication: voterId validated on connection (not only on upgrade)
+□ Presenter actions: always checked for role === 'presenter' in DO
+□ DO memory: no unbounded growth of ipVotes/fpVotes maps
+□ Hibernation: WS tags preserve ipHash + fp for deduplication after restart
 ```
 
 ---
 
-## Bevindingen Rapporteren
+## Reporting Findings
 
-| Ernst | Definitie | Actie |
+| Severity | Definition | Action |
 |---|---|---|
-| **Kritiek** | Directe datadiefstal, authenticatie-bypass, betaalfraude | Blokkeert release — P0 in backlog, TC=13 |
-| **Hoog** | Privilege escalation, PII-lek, CSRF | P0 in backlog, volgende sprint |
-| **Middel** | Rate limiting ontbreekt, zwakke validatie | P2/P3 in backlog met WSJF |
-| **Laag** | Best-practice afwijking, hardcoded waarden | Noteer in backlog, lage prioriteit |
+| **Critical** | Direct data theft, auth bypass, payment fraud | Blocks release — P0 in backlog, TC=13 |
+| **High** | Privilege escalation, PII leak, CSRF | P0 in backlog, next sprint |
+| **Medium** | Missing rate limit, weak validation | P2/P3 in backlog with WSJF |
+| **Low** | Best-practice deviation, hardcoded values | Note in backlog, low priority |
 
-Voeg bevindingen toe aan `docs/BACKLOG.md §1` (P0) of `§4 Security` (ARCH-xxx).
+Add findings to `docs/BACKLOG.md §1` (P0) or `§4 Security` (ARCH-xxx).
 
 ## Change Log
+- 2026-04-18: Translated to English, fixed blank Role section.
 - 2026-04-10: Canonicalized file headers and shared rules reference.

@@ -1,153 +1,153 @@
 # Skill: Code Reviewer — Qesto
 # SCOPE: task (auto-revoke after task completes)
-# LOAD: vóór elke merge/PR, na implementatie van een story
-# VERSION: v1.1.0
+# LOAD: before every merge/PR, after story implementation
+# VERSION: v1.2.0
 # OWNER: QA
 # POLICY_SOURCE: .claude/skills/COMMON_RULES.md
 
-## Rol
+## Role
+You are the code quality gate for Qesto. You review changed files for correctness, security, mobile UX quality, and architecture conformance. You block merges on critical findings.
 
 ## Shared Rules
 Follow `.claude/skills/COMMON_RULES.md` for global constraints and precedence.
 
-Je bent de code quality gate voor Qesto. Je reviewt gewijzigde bestanden op correctheid, veiligheid, mobiele UX-kwaliteit en architectuurconformiteit. Je blokkeert merges bij kritieke bevindingen.
-
 ---
 
-## Stap 1 — Automatische gates (BLOKKEREN bij falen)
+## Step 1 — Automated Gates (BLOCK on failure)
 
 ```bash
-# Voer altijd uit vóór review
-npm test              # Alle unit tests groen
-tsc --noEmit          # Geen TypeScript-fouten
+# Always run before review
+npm test              # All unit tests green
+tsc --noEmit          # No TypeScript errors
 ```
 
-Als één van deze faalt → fix eerst, dan pas review.
+If either fails → fix first, then review.
 
 ---
 
-## Stap 2 — Correctheidscheck
+## Step 2 — Correctness Check
 
-### Algemeen
+### General
 ```
-□ Geen console.log in productie-code (alleen console.error in catch-blokken)
-□ Geen hardcoded strings die vertaald moeten worden (gebruik i18n)
-□ Geen hardcoded kleuren of afmetingen (gebruik Tailwind tokens of CSS vars)
-□ Geen TODO/FIXME-commentaar in gecommitte code zonder backlog-item
-□ Geen dode code of uitgecommentarieerde blokken
-```
-
-### Foutafhandeling
-```
-□ Elke fetch()-aanroep heeft een catch-blok
-□ Catch-blokken roepen logError() aan (niet console.error)
-□ Frontend catch-blokken tonen een zichtbare foutmelding in de UI
-□ Async knoppen hebben een disabled/loading state tijdens het verzoek
+□ No console.log in production code (only console.error in catch blocks)
+□ No hardcoded strings that should be translated (use i18n)
+□ No hardcoded colours or dimensions (use Tailwind tokens or CSS vars)
+□ No TODO/FIXME comments in committed code without a backlog item
+□ No dead code or commented-out blocks
 ```
 
-### State management
+### Error Handling
 ```
-□ LIVE state: mutaties via WebSocket (nooit REST)
-□ DRAFT state: mutaties via REST (nooit WebSocket)
-□ Geen stale closure bugs bij debounced callbacks — gebruik refs
-□ useState-updates zijn niet-muterend (spread/immutable)
+□ Every fetch() call has a catch block
+□ Catch blocks call logError() (not console.error)
+□ Frontend catch blocks show a visible error message in the UI
+□ Async buttons have a disabled/loading state during the request
+```
+
+### State Management
+```
+□ LIVE state: mutations via WebSocket (never REST)
+□ DRAFT state: mutations via REST (never WebSocket)
+□ No stale closure bugs in debounced callbacks — use refs
+□ useState updates are non-mutating (spread/immutable)
 ```
 
 ---
 
-## Stap 3 — Architectuurconformiteit
+## Step 3 — Architecture Conformance
 
 ### Backend (functions/api/)
 ```
-□ Route gemount in functions/api/[[route]].ts
-□ authMiddleware aanwezig (of expliciete reden voor uitzondering)
-□ Eigendomscheck: gebruiker kan alleen zijn eigen resources benaderen
-□ Inputvalidatie aanwezig (400 bij ontbrekende velden)
-□ Foutresponse volgt standaard shape: { error: string, code?: string }
-□ Nieuwe KV-sleutels volgen naamconventies uit architect.md
-□ Nieuwe env-bindings gedocumenteerd in CONFIGURATION.txt
-□ Nieuwe secrets via wrangler pages secret put (NOOIT in wrangler.toml)
-□ D1-queries zijn parameterized (geen string concatenatie)
-□ Migraties in schema.sql, niet inline in code
+□ Route mounted in functions/api/[[route]].ts
+□ authMiddleware present (or explicit reason for exception)
+□ Ownership check: user can only access their own resources
+□ Input validation present (400 on missing fields)
+□ Error response follows standard shape: { error: { code, message, statusCode, requestId } }
+□ New KV keys follow naming conventions from architect.md
+□ New env bindings documented in docs/CONFIGURATION.txt
+□ New secrets via wrangler pages secret put (NEVER in wrangler.toml)
+□ D1 queries are parameterized (no string concatenation)
+□ Migrations in schema.sql, not inline in code
 ```
 
 ### Frontend (src/)
 ```
-□ Geen imports uit functions/ — gebruik API fetch-aanroepen
-□ Geen hardcoded API-URLs — gebruik relatieve paden
-□ Foutboundary aanwezig op route-niveau
-□ Loading/empty/error states voor alle async data
-□ Geen dangerouslySetInnerHTML zonder expliciete sanitatie
+□ No imports from functions/ — use API fetch calls
+□ No hardcoded API URLs — use relative paths
+□ Error boundary present at route level
+□ Loading/empty/error states for all async data
+□ No dangerouslySetInnerHTML without explicit sanitisation
 ```
 
 ---
 
-## Stap 4 — Mobile & Accessibility (UX-kwaliteitsgate)
+## Step 4 — Mobile & Accessibility (UX Quality Gate)
 
 ```
-□ Alle knoppen/links: min-h-[44px]
-□ Icon-only knoppen: aria-label aanwezig
-□ Ghost-knoppen: zichtbare border (geen bg-transparent zonder border)
-□ Focus-visible ring op alle interactieve elementen
-□ Active state op alle knoppen (active:opacity-70 of gelijkwaardig)
-□ Geen text-pulse-400 of text-pulse-500 op witte/lichte achtergrond
-□ Laadtoestand bij elke async operatie
-□ Foutstaat zichtbaar in UI (niet alleen geconsole-logged)
-```
-
----
-
-## Stap 5 — Veiligheidscheck (snel)
-
-```
-□ Geen secrets, API-sleutels of wachtwoorden in code
-□ Geen nieuwe ANTHROPIC_API_KEY referenties (gebruik c.env.AI)
-□ Stripe webhook: constructEvent() verificatie aanwezig
-□ Nieuwe admin-routes: requireAdmin() middleware aanwezig
-□ Geen gebruikersinput direct in fetch()-URL (SSRF-risico)
+□ All buttons/links: min-h-[44px]
+□ Icon-only buttons: aria-label present
+□ Ghost buttons: visible border (no bg-transparent without border)
+□ Focus-visible ring on all interactive elements
+□ Active state on all buttons (active:opacity-70 or equivalent)
+□ No text-pulse-400 or text-pulse-500 on white/light backgrounds
+□ Loading state for every async operation
+□ Error state visible in UI (not just console-logged)
 ```
 
 ---
 
-## Bevindingen Classificeren
+## Step 5 — Security Check (quick)
 
-| Ernst | Definitie | Actie |
+```
+□ No secrets, API keys, or passwords in code
+□ No new ANTHROPIC_API_KEY references (use c.env.AI)
+□ Stripe webhook: constructEvent() verification present
+□ New admin routes: requireAdmin() middleware present
+□ No user input directly in fetch() URL (SSRF risk)
+```
+
+---
+
+## Finding Classification
+
+| Severity | Definition | Action |
 |---|---|---|
-| **Blokkeer** | Tests falen, TS-fout, security issue, auth-bypass | Merge verboden — fix eerst |
-| **Vereis** | Ontbrekende aria-label, error state, touch target | Commentaar + fix vóór merge |
-| **Suggestie** | Naamgeving, structuur, kleine refactor | Optioneel — documenteer in backlog |
+| **Block** | Tests failing, TS error, security issue, auth bypass | Merge forbidden — fix first |
+| **Require** | Missing aria-label, error state, touch target | Comment + fix before merge |
+| **Suggest** | Naming, structure, minor refactor | Optional — log in backlog |
 
 ---
 
-## Review Rapport Formaat
+## Review Report Format
 
 ```markdown
-## Code Review — [story-ID] [datum]
+## Code Review — [story-ID] [date]
 
-### ✅ Geslaagd
-- npm test groen (X/X tests)
-- tsc --noEmit schoon
-- [andere positieve bevindingen]
+### ✅ Passed
+- npm test green (X/X tests)
+- tsc --noEmit clean
+- [other positive findings]
 
-### 🔴 Blokkerende bevindingen
-- [bestand:regel] [beschrijving] [waarom kritiek]
+### 🔴 Blocking Findings
+- [file:line] [description] [why critical]
 
-### 🟡 Vereiste aanpassingen
-- [bestand:regel] [beschrijving]
+### 🟡 Required Changes
+- [file:line] [description]
 
-### 💡 Suggesties
-- [optionele verbeteringen]
+### 💡 Suggestions
+- [optional improvements]
 
-### Beslissing: [GOEDGEKEURD | GEBLOKKEERD | GOEDGEKEURD MET AANPASSINGEN]
+### Decision: [APPROVED | BLOCKED | APPROVED WITH CHANGES]
 ```
 
 ---
 
 ## Do Not
-- Merge goedkeuren als tests falen
-- Architectuurafwijkingen negeren ("werkt toch")
-- Security-bevindingen downgraden zonder architect-akkoord
-- Stijlvoorkeur boven werkende, conforme code stellen
+- Approve merge when tests fail
+- Ignore architecture deviations ("it works anyway")
+- Downgrade security findings without architect sign-off
+- Prioritise style preference over working, conformant code
 
 ## Change Log
+- 2026-04-18: Translated to English, fixed blank Role section.
 - 2026-04-10: Canonicalized file headers and shared rules reference.
