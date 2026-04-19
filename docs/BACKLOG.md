@@ -1,11 +1,8 @@
 # Qesto — Product Backlog (Epic-Based)
 
 _Last updated: 2026-04-19 (UTC)_
-<<<<<<< Updated upstream
-=======
 _Sprint 17 Completion Sync: 2026-04-11_
 _Website Design Wave added: 2026-04-19 — see §12_
->>>>>>> Stashed changes
 
 ## Overview
 
@@ -279,7 +276,6 @@ This backlog organizes all product work across 6 core epics, each with supportin
 
 ---
 
-<<<<<<< Updated upstream
 ### BILL-06: Billing Portal & Invoice History
 
 **Size**: 5 pts | **Sprint**: 5 | **Priority**: P1
@@ -809,7 +805,7 @@ If migrating from old Sprint A/B/C structure:
 - Old ID 1 (Hotspot refactor) → New CORE-01/02/04
 - Old ID 31 (Template foundation) → Moved to future sprint (post-Sprint 5)
 - All old IDs phased out; epic-based numbering is canonical
-=======
+
 ---
 
 ## 12) Website Design Wave — AI Visibility + Dashboard Insights (2026-04-19)
@@ -888,9 +884,8 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 
 **See also**:
 - `SPRINT_PLAN.md` — current sprint goals + exit criteria
-- `ARCHITECTURE.md` — system design + data model  
+- `ARCHITECTURE.md` — system design + data model
 - `ROADMAP_FULL.md` — release timeline + version targets
 - `CLAUDE.md` — L1 project context + hard rules
 - `specs/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
 - `specs/design-tokens.json` — design-token source of truth
->>>>>>> Stashed changes

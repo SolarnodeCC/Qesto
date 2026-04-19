@@ -261,6 +261,20 @@ This plan details 5 consecutive 2-week sprints starting 2026-04-19. Each sprint 
 
 ---
 
+## Website Design Wave (Sprints A / B / C)
+
+The Website Design Wave runs concurrently with (or immediately after) the 5-sprint feature arc above. It is governed by [`docs/specs/WEBSITE_DESIGN_SPEC.md`](./specs/WEBSITE_DESIGN_SPEC.md) and its machine-readable companion [`docs/specs/design-tokens.json`](./specs/design-tokens.json). Full item list, KPIs, and exit criteria are in [`docs/BACKLOG.md §12`](./BACKLOG.md).
+
+| Sprint | Focus | Key items | Gate |
+|---|---|---|---|
+| **Sprint A** | Layout + token foundation | `LAYOUT-GRID-01`, `LAYOUT-SKELETON-01`, `LAYOUT-A11Y-01`, `DESIGN-TOK-01`, `AI-VIS-03`, `DX-INSIGHTS-01`, `I18N-BUG-01`, `I18N-BUG-02` | Layout primitives must land before any consuming surface ships |
+| **Sprint B** | Narrative + wizard + launchpad + density | `AI-VIS-01`, `AI-VIS-02`, `DX-INSIGHTS-02`, `WIZ-AI-01`, `WIZ-AI-02`, `WIZ-OVERVIEW-01`, `LAUNCHPAD-01`, `LAYOUT-DENSITY-01`, `LAYOUT-MOTION-01`, `DESIGN-TYP-01` | LAUNCHPAD-01 requires WIZ-OVERVIEW-01 (commits DRAFT, routes to Launchpad) |
+| **Sprint C** | Polish | `DESIGN-POLISH-01`, `DESIGN-POLISH-02`, `LAUNCHPAD-02` | Brand sign-off on logo; 0 a11y regressions |
+
+**Critical path:** `DESIGN-TOK-01` (Sprint A) unblocks `DESIGN-TYP-01`, `DESIGN-POLISH-01`, `LAYOUT-GRID-01`, and `AI-VIS-03`. Do not start consuming surfaces until the token generator CI step is green.
+
+---
+
 ## Cross-Sprint Themes
 
 ### Quality Gates (All Sprints)
