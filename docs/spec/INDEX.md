@@ -1,5 +1,7 @@
 # Qesto Specification Documents — Complete Reference
 
+**Repository documentation hub:** [`../README.md`](../README.md) (how `docs/` fits together, truth hierarchy, reading order).
+
 ## Overview
 
 This directory contains **7 consolidated specification documents** that comprehensively document Qesto's architecture, codebase, and operations.
@@ -291,7 +293,8 @@ docs/spec/
 
 docs/specs/                        ← Design specs (separate from technical specs)
 ├── WEBSITE_DESIGN_SPEC.md         ← Visual design, component specs, KPIs (source of truth for UI)
-└── design-tokens.json             ← Machine-readable tokens → generates src/ui/tokens.ts
+├── design-tokens.json             ← Machine-readable tokens → generates src/ui/tokens.ts
+└── design-tokens.README.md        ← How tokens fit the doc set + engineering rules (start here for tokens)
 ```
 
 ---
@@ -310,6 +313,8 @@ docs/specs/                        ← Design specs (separate from technical spe
 ---
 
 ## Maintenance & Updates
+
+When navigation or **planning truth hierarchy** changes, update **[`../README.md`](../README.md)** in the same PR so contributors still land on a single map.
 
 ### When to Update Specs
 

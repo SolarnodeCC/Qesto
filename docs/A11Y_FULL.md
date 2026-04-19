@@ -1,5 +1,7 @@
 # Qesto — Accessibility Baseline (Current)
 
+_Hub: [Documentation map](./README.md)._
+
 _Last verified: 2026-04-05 (UTC)_
 
 ## 1. Scope

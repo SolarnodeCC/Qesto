@@ -1,5 +1,7 @@
 # Database Governance Policy (Sprint 18 - ID 6)
 
+_Hub: [Documentation map](./README.md)._
+
 ## Overview
 
 Establishes query performance budgets, indexing strategy, and optimization standards for D1 (SQLite on Cloudflare).

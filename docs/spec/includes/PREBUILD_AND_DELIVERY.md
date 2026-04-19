@@ -1,5 +1,7 @@
 # PREBUILD_AND_DELIVERY — Scope, gates, sequencing (canonical include)
 
+_Repository hub: [Documentation map](../../README.md)._
+
 **Purpose:** Single place for “before and while you scale building” rules. Other specs **link here**; avoid copying long tables into multiple files.
 
 ## Doc contract

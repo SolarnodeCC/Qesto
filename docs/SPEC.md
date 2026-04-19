@@ -1,5 +1,7 @@
 # Qesto — Product Specification (Current)
 
+_Hub: [Documentation map](./README.md)._
+
 _Last verified: 2026-04-06 (UTC)_
 
 ## 1. Product lifecycle
@@ -62,7 +64,7 @@ _Last verified: 2026-04-06 (UTC)_
 - Speed Round generation is part of the session API surface and uses Workers AI with JSON sanitation and per-session rate limiting.
 - Wizard step-2 validity now explicitly requires at least two options for multiple-choice questions (manual/AI), and tests were aligned with that contract.
 
-See: `ROADMAP_FULL.md`, `BACKLOG.md`, `SPRINT_PLAN.md`.
+See: [`README.md`](./README.md) (documentation map), `ROADMAP_FULL.md`, `BACKLOG.md`, `SPRINT_PLAN.md`.
 ### 5.4 Test-set coverage (required)
 - Functional UI test coverage includes a dedicated template-catalogue check for:
   - required topic IDs in the Dashboard filter list;
