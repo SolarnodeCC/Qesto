@@ -1,178 +1,325 @@
-# Qesto — Sprint Plan (Latest)
+# Qesto — Sprint Plan (5-Sprint Roadmap)
 
-_Last updated: 2026-04-12 (UTC)_
-
-## Current Reality Snapshot
-
-- Platform is running on release line **v2.0.0**
-- Multiple core epics implemented; remaining work focuses on hardening, enterprise depth, and operational polish
-- **Backlog consolidated**: See `BACKLOG.md` for full 36-item product + architecture roadmap (P0/P1 prioritized, Sprint A/B/C allocated)
-- **Historical sprints** (15, 16, 16v2, 17): See `ARCHIVED_SPRINTS.md` for completion summaries
+_Last updated: 2026-04-19 (UTC)_
 
 ---
 
-## Completed Sprints Reference
+## Overview
 
-Sprints 15, 16, and 17 have been successfully completed. For historical details:
-
-| Sprint | Status | Focus | Outcome |
-|---|---|---|---|
-| **Sprint 15** | ✅ Complete | Enterprise + i18n foundation | Base capabilities established |
-| **Sprint 16** | ✅ Complete | Architecture, AI, a11y, backlog convergence | Architecture finalized, backlog consolidated |
-| **Sprint 16 v2** | ❌ Not Executed | Conditional stabilization (contingency) | Not needed; sufficient quality confidence |
-| **Sprint 17** | ✅ Complete | Enterprise ops + reliability | 6/6 items shipped, 0 regressions |
-
-**See `ARCHIVED_SPRINTS.md` for full historical context.**
+This plan details 5 consecutive 2-week sprints starting 2026-04-19. Each sprint focuses on delivering a coherent slice of functionality across one or more epics. The 5-sprint arc builds Qesto from auth + core session foundation → realtime + payments → enterprise + SSO → i18n + gamification → hardening + advanced features.
 
 ---
 
-## Backlog Overview
+## Sprint 1: Foundation (2026-04-19 to 2026-05-02)
 
-The consolidated backlog (`BACKLOG.md`) organizes all remaining work into:
-- **36 backlog items** (IDs 1-36) prioritized by WSJF
-- **Sprint A** (14 items): Critical foundation + trust baseline
-- **Sprint B** (14 items): Robustness + scale
-- **Sprint C** (8 items): Maturity + optimization
+**Goal**: Build auth + session CRUD foundation, unblock all downstream work.
 
----
+**Epics**: EPIC-AUTH (partial), EPIC-CORE (partial), EPIC-BILLING (partial)
 
-## Active Sprint
+**Committed Items** (8 stories, ~43 pts):
 
-### Sprint 18 — Critical Foundation + Trust (Sprint A)
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---|---|---|---|
+| AUTH-01: Magic Link Email | 8 | AUTH | Ready | Email delivery working, token generation verified |
+| AUTH-02: JWT Session Mgmt | 5 | AUTH | Ready | JWT creation, validation, refresh tested |
+| AUTH-05: Auth Middleware | 5 | AUTH | Ready | Protected routes return 401 without JWT |
+| CORE-01: Session Creation | 8 | CORE | Ready | D1 `sessions` table, DRAFT state working |
+| CORE-02: Session Lifecycle | 8 | CORE | Ready | State transitions (DRAFT→LIVE→CLOSED→ARCHIVED) |
+| CORE-03: Question Types | 5 | CORE | Ready | Poll/ranking/consent/open types defined |
+| BILL-01: Plan Definition | 5 | BILL | Ready | Free/Pro/Enterprise plans in D1 + wrangler.toml |
 
-**Status**: IN PLANNING — Ready for Kickoff  
-**Dates**: 2026-04-12 to 2026-04-26 (2-week sprint)  
-**Objective**: Establish idempotent core, unblock enterprise security, and set warm UX baseline.
-
-**Committed Items**: 14 items (Sprint A allocation from backlog)
-
-**Item Breakdown by Category**:
-1. **Refactoring & Maintainability** (4 items)
-   - ID 1: Split hotspot API orchestration (P0)
-   - ID 2: Shared session lifecycle service (P0)
-   - ID 5: Idempotent write handlers (P0)
-   - ID 3: Typed error taxonomy (P1)
-
-2. **Cloudflare Integration** (6 items)
-   - ID 6: D1 query governance + index audit (P0)
-   - ID 9: Webhook idempotency ledger (P0)
-   - ID 14: Dead-letter + replay flow (P0)
-   - ID 7: KV key/TTL standard (P1)
-   - ID 8: DO resilience checks (P1)
-   - ID 10: Vectorize benchmarkset (P1)
-
-3. **UI/UX & Accessibility** (2 items)
-   - ID 18: A11y hardening critical flows (P0)
-   - ID 20: Error UX standardization (P0)
-
-4. **Security & Compliance** (1 item)
-   - ID 24: Secret governance automation (P0)
-
-5. **Testing & Observability** (1 item)
-   - ID 27: Test pyramid + CI quality gates (P0)
-
-6. **Templates & Warm UX** (4 items)
-   - ID 31: Template foundation pack (P0)
-   - ID 34: Template preview→confirm→wizard flow (P0)
-   - ID 35: Warm welcome journey (P0)
-   - ID 36: Participant trust kit (P0)
-
-**KPI Targets**:
-- +25% time-to-first-session
-- +10% participant join completion rate
-- -15% early drop-off (first 60s)
-- 0 secret leak incidents
-- <5% escaped defects
+**Key Dependencies**:
+- AUTH-01 → AUTH-02 (JWT needed for sessions)
+- AUTH-02 → AUTH-05 (middleware needs JWT validation)
+- CORE-01 → CORE-02 (lifecycle needs session records)
+- BILL-01 is foundational (no deps)
 
 **Definition of Done**:
-- Feature implemented + route/UI tests updated
-- Observability event coverage included for each new flow
-- Product + architecture docs updated in same PR
-- KPI measurement events live + tracked
-
-**Detailed Implementation Plan**: See `SPRINT_18_IMPLEMENTATION.md`
-
----
-
-## Planned Sprints
-
-### Sprint 19 — Robustness + Scale (Sprint B)
-
-**Status**: PLANNED  
-**Dates**: 2026-04-26 to 2026-05-10 (2-week sprint)  
-**Scope**: 14 items (Sprint B allocation from backlog)
-
-**Focus**: Harden enterprise grade, integrate resilience, refine template lifecycle
-
-**Phase Breakdown**:
-1. **Phase 1 (Integration Hardening)**: IDs 3, 4, 7, 8, 12, 13
-   - Typed error taxonomy, config validation, KV standards, DO resilience, contract tests, retry policies
-   
-2. **Phase 2 (Enterprise Safeguards)**: IDs 15, 16, 22, 23, 25
-   - Health dashboard, multi-tenant isolation, auth threat modeling, SAML hardening, audit logs
-   
-3. **Phase 3 (Template Maturity)**: IDs 28, 32, 33
-   - Synthetic monitoring, metadata standardization, versioning + deprecation
+- All routes tested (unit + integration)
+- Middleware auth checks on all protected CORE/BILL routes
+- No TypeScript errors, all tests green
+- Observability: user login + session creation events logged
+- API docs updated for new routes
 
 **KPI Targets**:
-- -40% transient integration failures impact
-- -30% SSO onboarding issues
-- MTTR -25% on integration incidents
-- 100% template metadata completeness
-- >80% incident pre-detection
+- 0 authentication failures in happy path
+- <100ms JWT validation latency
+- 0 state transition errors
 
-**Effort**: 37-39 story points (1-2 dev team)
+**Release**: v0.1.0 (Auth + Session Foundation)
 
-**Release Target**: v2.1.0 (enterprise-grade integrations)
-
-**Detailed Implementation Plan**: See [`SPRINT_19_IMPLEMENTATION.md`](SPRINT_19_IMPLEMENTATION.md)
+**Risk Mitigation**:
+- JWT secret management: use wrangler env secrets, never in code
+- D1 schema: test migrations in local first
+- Email delivery: mock Resend in tests, use real in staging
 
 ---
 
-### Sprint 20 — Maturity + Optimization (Sprint C)
+## Sprint 2: Realtime + Payments (2026-05-02 to 2026-05-16)
 
-**Status**: PLANNED  
-**Dates**: 2026-05-10 to 2026-05-24 (2-week sprint)  
-**Scope**: 8 items (Sprint C allocation from backlog)
+**Goal**: Activate live sessions with realtime voting, integrate Stripe for monetization.
 
-**Focus**: Optimize AI quality, dashboard maturity, design/performance polish
+**Epics**: EPIC-CORE (remaining), EPIC-BILLING (remaining)
 
-**Phase Breakdown**:
-1. **Phase 1 (AI + Design)**: IDs 10, 11, 17, 19
-   - Vectorize benchmarking, AI guardrails, design tokens, performance budgets
-   
-2. **Phase 2 (Compliance + Ops)**: IDs 21, 26, 29, 30
-   - i18n quality wave 2, GDPR erase verification, SLO dashboard, evidence governance
+**Committed Items** (7 stories, ~48 pts):
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---|---|---|---|
+| CORE-04: WebSocket DO | 13 | CORE | Ready | 100+ concurrent connections, <500ms p99 latency |
+| CORE-05: Vote Submission | 8 | CORE | Ready | Votes recorded in D1, idempotency verified |
+| CORE-06: Presenter Controls | 8 | CORE | Ready | Next/show results/hide broadcast to all |
+| CORE-07: Participant Join | 8 | CORE | Ready | Join flow working, WebSocket upgrade verified |
+| BILL-02: Stripe Checkout | 8 | BILL | Ready | Checkout session creation, success/cancel flows |
+| BILL-03: Webhook Idempotency | 8 | BILL | Ready | Duplicate events ignored, all Stripe events processed |
+| BILL-04: Plan Middleware | 5 | BILL | Ready | 403 on premium routes for Free users |
+
+**Key Dependencies**:
+- CORE-04 is blocking all other CORE items (DO is the realtime backbone)
+- BILL-02 → BILL-03 (webhooks process checkout results)
+- BILL-04 blocks both BILL-02 and BILL-03 (feature gating needed)
+
+**Definition of Done**:
+- WebSocket stress testing (concurrent connections, broadcast latency)
+- Stripe integration tested with mock Stripe SDK
+- Idempotency ledger tested (duplicate key handling)
+- All votes persisted to D1
+- Presenter actions broadcast within 100ms
 
 **KPI Targets**:
-- +15% retrieval quality (precision@k)
-- >99% SLO compliance critical services
-- 0 missing i18n keys + eliminate text truncation
-- -20% visual inconsistency defects
-- 100% backlog evidence traceability
+- 0 WebSocket disconnections on hold (graceful reconnect on resume)
+- 100% vote idempotency (no duplicates under concurrent load)
+- 0 double-charges (webhook idempotency verified)
+- <500ms e2e latency (vote submission to results update)
 
-**Effort**: 66-91 story points (can be phased)
+**Release**: v0.2.0 (Realtime Sessions + Stripe Foundation)
 
-**Release Target**: v2.2.0 (platform maturity + optimization)
-
-**Detailed Implementation Plan**: See [`SPRINT_20_IMPLEMENTATION.md`](SPRINT_20_IMPLEMENTATION.md)
-
----
-
-## Release & Version Timeline
-
-| Release | Sprints | Target Date | Focus |
-|---|---|---|---|
-| **v2.0.0** | Sprint 18 | 2026-04-26 | Critical foundation + trust |
-| **v2.1.0** | Sprint 19 | 2026-05-10 | Robustness + scale |
-| **v2.2.0** | Sprint 20 | 2026-05-24 | Maturity + optimization |
+**Risk Mitigation**:
+- DO state machine: test all transitions offline before deployment
+- Stripe webhooks: use test mode, verify signature validation
+- WebSocket: implement heartbeat + reconnect logic early
+- Load testing: simulate 100+ participants before shipping
 
 ---
 
-## Related Documentation
+## Sprint 3: Enterprise + SSO (2026-05-16 to 2026-05-30)
 
-- `ARCHIVED_SPRINTS.md` — Historical context for Sprints 15-17
-- `BACKLOG.md` — Complete 36-item roadmap with dependencies
-- `SPRINT_18_IMPLEMENTATION.md` — Phase-by-phase execution plan (active)
-- `CLAUDE.md` — Hard rules, sprint planning policies
-- `ARCHITECTURE.md` — System design and data model
+**Goal**: Add SAML auth, enterprise features (teams, roles, audit, multi-tenant).
+
+**Epics**: EPIC-AUTH (SAML), EPIC-ENT (all)
+
+**Committed Items** (6 stories, ~46 pts):
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---|---|---|---|
+| AUTH-03: SAML SSO | 8 | AUTH | Ready | SAML assertion validation + auto-account creation |
+| AUTH-04: SAML Config | 5 | AUTH | Ready | Metadata fetch/parse, IdP config in D1 |
+| ENT-01: Team Management | 8 | ENT | Ready | Create/invite/remove, role assignment |
+| ENT-02: RBAC Model | 8 | ENT | Ready | 5 roles with permission matrix enforced |
+| ENT-03: Audit Logging | 8 | ENT | Ready | All mutations logged, queryable by date/action/user |
+| ENT-05: Multi-Tenant Isolation | 8 | ENT | Ready | Cross-team access blocked, data isolation verified |
+
+**Key Dependencies**:
+- AUTH-03 → AUTH-04 (SAML config enables SAML auth)
+- ENT-02 is blocking all other ENT items (roles underpin all permissions)
+- ENT-03 (audit) depends on all mutation routes (created in Sprints 1-2)
+- ENT-05 (isolation) applies to all routes (global safeguard)
+
+**Definition of Done**:
+- SAML assertion validation tested with real IdP (or Keycloak mock)
+- All routes return 403 on cross-team access
+- Audit table queried by owner for full visibility
+- Role permissions enforced on all endpoints
+- Security review sign-off on SAML + multi-tenant
+
+**KPI Targets**:
+- 0 cross-tenant data leaks (security testing)
+- <5% SAML auth failures (valid IdP assertions succeed)
+- 100% audit coverage (all mutations logged)
+
+**Release**: v0.3.0 (Enterprise + SAML)
+
+**Risk Mitigation**:
+- SAML: partner with IT team for IdP testing (Okta sandbox)
+- Audit logging: ensure no PII in logs (hash PII fields)
+- Role enforcement: add integration tests for each (Owner, Admin, Member, Presenter, Viewer)
+- Multi-tenant: add data isolation tests on high-sensitivity routes (billing, audit)
+
+---
+
+## Sprint 4: i18n + Gamification Base (2026-05-30 to 2026-06-13)
+
+**Goal**: Add multi-language support and base engagement features.
+
+**Epics**: EPIC-I18N (partial), EPIC-GAM (base), EPIC-CORE (partial)
+
+**Committed Items** (8 stories, ~54 pts):
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---|---|---|---|
+| I18N-01: Locale Bundles | 8 | I18N | Ready | 5 locales (EN/NL/ES/DE/FR), 8 namespaces |
+| I18N-02: Language Detection | 5 | I18N | Ready | Browser lang detection, user selector working |
+| I18N-03: CI Key Validation | 8 | I18N | Ready | CI fails on untranslated keys, warns on orphaned |
+| CORE-08: Results Export | 5 | CORE | Ready | CSV export of votes, all questions included |
+| GAM-01: Energizers | 8 | GAM | Ready | Speed round + trivia with scoring |
+| GAM-02: Leaderboard | 8 | GAM | Ready | Live ranking, realtime updates via WebSocket |
+| GAM-03: Badge System | 8 | GAM | Ready | 8+ badge types, automatic award criteria |
+
+**Key Dependencies**:
+- I18N-01 → I18N-02 → I18N-03 (bundles, then UI, then CI)
+- GAM-01 → GAM-02 → GAM-03 (energizers, then leaderboard, then badges)
+- CORE-08 (export) depends on CORE-05 (votes in D1)
+- GAM items depend on DO (broadcast for realtime scoring)
+
+**Definition of Done**:
+- All UI text extracted and translated (EN source truth)
+- CI enforces key coverage (pre-merge)
+- Energizers tested with scoring logic
+- Leaderboard broadcasts scores in realtime
+- Badges awarded automatically on vote
+- CSV export includes all columns, sample generated
+
+**KPI Targets**:
+- 100% key coverage (no untranslated strings)
+- 0 missing translations (CI blocks PRs)
+- <100ms leaderboard update latency
+- Energizer engagement 20% higher than standard questions (measured in follow-up)
+
+**Release**: v0.4.0 (i18n + Gamification Base)
+
+**Risk Mitigation**:
+- i18n: hire translator for all 5 languages (or use professional service like Lokalise)
+- CI key extraction: test regex patterns against real codebase first
+- Gamification: test scoring logic with edge cases (ties, speed, zero scores)
+- Leaderboard: ensure WebSocket broadcasts scale (load test with 100+ participants)
+
+---
+
+## Sprint 5: Hardening + Advanced Features (2026-06-13 to 2026-06-27)
+
+**Goal**: Polish auth, billing, enterprise, i18n, gamification with advanced scenarios and quality hardening.
+
+**Epics**: EPIC-AUTH (complete), EPIC-BILL (complete), EPIC-ENT (complete), EPIC-I18N (complete), EPIC-GAM (complete)
+
+**Committed Items** (9 stories, ~58 pts):
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---|---|---|---|
+| AUTH-06: Token Refresh + Revocation | 5 | AUTH | Ready | Refresh route working, revocation tested |
+| BILL-05: Subscription Management | 8 | BILL | Ready | Upgrade/downgrade/cancel flows, prorated charges |
+| BILL-06: Billing Portal | 5 | BILL | Ready | Stripe portal redirect, invoice history view |
+| ENT-04: Admin Dashboard | 8 | ENT | Ready | Metrics displayed, CSV export working |
+| ENT-06: Role Delegation | 5 | ENT | Ready | Delegation grant/revoke, time-limited permissions |
+| I18N-04: Plurals + Interpolation | 8 | I18N | Ready | Plural forms, variable substitution all languages |
+| I18N-05: RTL Support | 5 | I18N | Ready | CSS logical props, RTL dir attribute (future-proofing) |
+| I18N-06: Locale-Aware Formatting | 5 | I18N | Ready | Dates, numbers formatted per locale |
+| GAM-04: Referral Mechanics | 5 | GAM | Ready | Link generation, credit tracking, application |
+| GAM-05: Advanced Energizers | 8 | GAM | Ready | Battle royale + bracket tournaments |
+| GAM-06: Gamification Analytics | 5 | GAM | Ready | Badge breakdown, engagement metrics, CSV export |
+
+**Key Dependencies**:
+- AUTH-06 (token revocation) stands alone
+- BILL-05 → BILL-06 (subscription mgmt enables portal)
+- ENT-04/06 depend on earlier ENT work (teams, roles, audit)
+- I18N-04/05/06 depend on I18N-01/02/03
+- GAM-05/06 depend on GAM-01/02/03
+
+**Definition of Done**:
+- All routes tested (happy path + error cases)
+- Subscription changes reflected immediately in KV cache
+- Plurals/interpolation tested in all 5 languages
+- Advanced energizers tested with tournament logic
+- Analytics queries optimized (indexed)
+- Docs updated: API routes, data model, config
+
+**KPI Targets**:
+- 0 failed token refreshes
+- 0 subscription state inconsistencies
+- 100% plural/interpolation accuracy across languages
+- <1s analytics query latency (p95)
+- Referral conversion rate 10%+ (measured post-launch)
+
+**Release**: v0.5.0 (Complete + Hardened Feature Set)
+
+**Risk Mitigation**:
+- Subscription logic: test all upgrade/downgrade paths (Free→Pro, Pro→Enterprise, downgrade edge cases)
+- i18n: validate plural forms in context (e.g., 0, 1, 2+ participants)
+- Gamification: test bracket logic with edge cases (odd # participants, ties)
+- Load testing: admin dashboard with 10k+ metrics
+- Security: audit token refresh flow for reuse attacks
+
+---
+
+## Release Timeline
+
+| Release | Version | Sprint | Date | Focus |
+|---|---|---|---|---|
+| Foundation | v0.1.0 | 1 | 2026-05-02 | Auth + Session CRUD |
+| Realtime | v0.2.0 | 2 | 2026-05-16 | WebSocket + Stripe |
+| Enterprise | v0.3.0 | 3 | 2026-05-30 | SAML + RBAC + Audit |
+| Engagement | v0.4.0 | 4 | 2026-06-13 | i18n + Gamification |
+| Complete | v0.5.0 | 5 | 2026-06-27 | Hardening + Advanced |
+
+---
+
+## Cross-Sprint Themes
+
+### Quality Gates (All Sprints)
+- `npm test` must pass (unit + integration)
+- `tsc --noEmit` must pass (no TS errors)
+- Manual testing on 2 browsers (Chrome + Safari)
+- 0 P0 bugs at sprint end
+
+### Observability (Ongoing)
+- Structured logging for all routes (request/response, latency)
+- Metrics: latency, error rates, concurrent connections
+- Alerts: >500ms latency, >5% error rate, DO crashes
+
+### Docs (Sprint Completion)
+- README sections for new features
+- API route docs (endpoint, auth, params, response)
+- Data model updates (D1 schema changes)
+
+### Security (Ongoing)
+- Every route reviewed for injection, auth, data exposure
+- Secrets never in code (env vars only)
+- No PII in logs or metrics
+
+---
+
+## Sprint Retrospective Template
+
+**End of each sprint, discuss**:
+1. **Velocity**: Points completed vs. committed (adjust estimates if needed)
+2. **Blockers**: Any unresolved technical issues to carry forward
+3. **Improvements**: One thing to improve next sprint
+4. **Quality**: Any regressions or bugs found late?
+5. **Team feedback**: Pace sustainable? Scope realistic?
+
+---
+
+## Appendix: Definition of Ready / Done
+
+### Definition of Ready
+- Story has clear acceptance criteria (Given/When/Then)
+- Size estimated (5/8/13 pts)
+- Security/privacy/a11y impact assessed
+- Linked to backlog item (CORE-01, AUTH-01, etc.)
+- Dependencies identified + sequenced
+
+### Definition of Done
+- Code merged to main
+- Tests pass (unit + integration, >80% coverage)
+- Observability events added (logs, metrics)
+- Docs updated (API, data model, if applicable)
+- Acceptance criteria demonstrated in PR review
+- No regressions in related features
+
+---
+
+## Notes for Future Sprints (Sprint 6+)
+
+Once v0.5.0 is shipped:
+- Monitor KPI targets (auth success rate, engagement, churn)
+- Gather user feedback on UX (onboarding, feature discovery)
+- Plan feature sprints around highest-value user requests
+- Possible epics: advanced templates, AI insights, mobile app, API integrations
