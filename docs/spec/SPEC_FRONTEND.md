@@ -16,6 +16,17 @@ Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names un
 | **Cloudflare specialist** | Static asset path + cache hints; link out to [[SPEC_DEPLOYMENT.md]] for CDN/Pages. |
 | **API & middleware specialist** | Presenter `Sec-WebSocket-Protocol`; typed `error` envelope in API client. |
 
+## Design System Reference
+
+> **All visual decisions — colour tokens, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, AI sparkle mark iconography, and acceptance KPIs — are governed by [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md).** Machine-readable tokens live in [`docs/specs/design-tokens.json`](../specs/design-tokens.json). These files are the source of truth and take precedence over any inline values in this spec.
+>
+> The `docs/specs/` directory is separate from this `docs/spec/` directory. Key entry points:
+> - §4 Colour, typography, spacing, radius/elevation/motion, AI surface rules
+> - §5 Layout system + component specs (§5.1 Hero · §5.2 Insights tab · §5.3 Sessions list · §5.4 "+New session" button · §5.5 AIBadge · §5.6 Session Creation Wizard · §5.7 Session Launchpad)
+> - §7 Instrumented events and 30-day KPI targets
+>
+> `src/ui/tokens.ts` is **generated** from `design-tokens.json` (backlog item `DESIGN-TOK-01`) — do not hand-edit it.
+
 ## Overview
 Qesto frontend is **React 19 + Vite** with TypeScript, Tailwind CSS, and real-time WebSocket via `useSession`. Stack versions: align with [[SPEC_CORE.md#tech-stack]] (code wins if different).
 

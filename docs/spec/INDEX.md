@@ -27,6 +27,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 | Public / anonymous abuse surface? | [Abuse table](includes/PREBUILD_AND_DELIVERY.md#abuse-and-public-endpoints) + [SPEC_BACKEND.md](SPEC_BACKEND.md) |
 | Data retention / TTL intent? | [Retention](includes/PREBUILD_AND_DELIVERY.md#retention-and-deletion-intent) + [SPEC_DATAMODEL.md](SPEC_DATAMODEL.md) |
 | One local dev path? | [Golden path](includes/PREBUILD_AND_DELIVERY.md#golden-path-local) |
+| **Build UI / apply design system?** | [WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) (colour, typography, spacing, component specs, motion, KPIs) · [design-tokens.json](../specs/design-tokens.json) (machine-readable tokens) |
 
 ---
 
@@ -71,6 +72,24 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 **When to Read**: Second — foundation for understanding all data flows.
 
 **Size**: ~2.1K tokens
+
+---
+
+### 🎨 **Design Specs** — Visual Design System & Tokens
+
+**Location**: [`docs/specs/`](../specs/)
+
+**Files**:
+- [`WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) — colour language, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, accessibility as layout, KPIs.
+- [`design-tokens.json`](../specs/design-tokens.json) — machine-readable design tokens; source of truth for `src/ui/tokens.ts` and Tailwind config (see backlog item `DESIGN-TOK-01`).
+
+**Key Sections in WEBSITE_DESIGN_SPEC.md**:
+- §4 Design language — colour tokens, gradients, AI surface rules, typography, spacing, radius/elevation/motion, iconography (AI sparkle mark)
+- §5 Layout system — 4px baseline grid, responsive column grid, density tiers, page templates (T1–T6), skeleton/empty/error parity
+- §5.1–5.7 Component specs — Hero, Insights tab, Sessions list, "+New session" button, AIBadge primitive, Session Creation Wizard, Session Launchpad
+- §7 Measurement — instrumented events and 30-day KPI targets for the Website Design Wave
+
+**When to Read**: Before building any public-facing or dashboard UI component. These files are the source of truth for all visual decisions — they take precedence over any inline values in technical specs.
 
 ---
 
@@ -213,6 +232,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 |------|-----------|-----------|-------|
 | **Understand system** | SPEC_CORE | SPEC_DATAMODEL | Mental model of architecture |
 | **Build UI component** | SPEC_FRONTEND | SPEC_REALTIME (if live) | Hooks, routing, state mgmt |
+| **Apply design system / UI** | [WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) | [design-tokens.json](../specs/design-tokens.json) · SPEC_FRONTEND | Colour, typography, spacing, component specs |
 | **Add API endpoint** | SPEC_BACKEND | SPEC_CORE | Middleware, validation patterns |
 | **Implement real-time feature** | SPEC_REALTIME | SPEC_FRONTEND | WebSocket protocol, DO internals |
 | **Integrate new service** | SPEC_INTEGRATIONS | SPEC_DEPLOYMENT | Auth flows, secrets management |
@@ -268,6 +288,10 @@ docs/spec/
 ├── SPEC_REALTIME.md
 ├── SPEC_INTEGRATIONS.md
 └── SPEC_DEPLOYMENT.md
+
+docs/specs/                        ← Design specs (separate from technical specs)
+├── WEBSITE_DESIGN_SPEC.md         ← Visual design, component specs, KPIs (source of truth for UI)
+└── design-tokens.json             ← Machine-readable tokens → generates src/ui/tokens.ts
 ```
 
 ---
@@ -298,6 +322,7 @@ docs/spec/
 7. **Architecture decision**: Update SPEC_CORE.md & reference relevant spec
 8. **Role ownership shifts** (e.g. WS-only mutation policy): tweak the **Readers** table in the affected `SPEC_*.md` (Architect row stays Primary unless governance changes)
 9. **Pre-build / sequencing policy changes** (v1 slice, spike criteria, prod gates): update [includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md) and keep **INDEX → Before you start building** links valid
+10. **Design token or visual change**: Update [docs/specs/WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) and [docs/specs/design-tokens.json](../specs/design-tokens.json) — never hand-edit `src/ui/tokens.ts` directly (see `DESIGN-TOK-01`)
 
 ### Update Frequency
 - **Endpoints**: Within 1 day of merge
@@ -361,6 +386,7 @@ Each spec includes links to critical source files:
 - **Deploy process?** → SPEC_DEPLOYMENT.md
 - **Integrate a service?** → SPEC_INTEGRATIONS.md
 - **Build UI?** → SPEC_FRONTEND.md
+- **Design system / colours / tokens?** → [WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) + [design-tokens.json](../specs/design-tokens.json)
 
 ---
 
