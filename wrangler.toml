@@ -1,0 +1,8 @@
+name = "qesto"
+compatibility_date = "2026-04-19"
+
+# Sprint 1+ will add: main = "worker/index.ts" for the API Worker
+# Pages Functions (functions/api/) are deployed via `wrangler pages deploy ./dist`
+
+[assets]
+directory = "./public"
