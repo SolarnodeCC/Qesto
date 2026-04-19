@@ -1,6 +1,11 @@
 # Qesto — Product Backlog (Epic-Based)
 
 _Last updated: 2026-04-19 (UTC)_
+<<<<<<< Updated upstream
+=======
+_Sprint 17 Completion Sync: 2026-04-11_
+_Website Design Wave added: 2026-04-19 — see §12_
+>>>>>>> Stashed changes
 
 ## Overview
 
@@ -274,6 +279,7 @@ This backlog organizes all product work across 6 core epics, each with supportin
 
 ---
 
+<<<<<<< Updated upstream
 ### BILL-06: Billing Portal & Invoice History
 
 **Size**: 5 pts | **Sprint**: 5 | **Priority**: P1
@@ -803,3 +809,88 @@ If migrating from old Sprint A/B/C structure:
 - Old ID 1 (Hotspot refactor) → New CORE-01/02/04
 - Old ID 31 (Template foundation) → Moved to future sprint (post-Sprint 5)
 - All old IDs phased out; epic-based numbering is canonical
+=======
+---
+
+## 12) Website Design Wave — AI Visibility + Dashboard Insights (2026-04-19)
+
+### Background
+
+An external design review of the public website and dashboard rated Qesto 7.5/10. Strengths: minimalism, hierarchy, colour strategy, accessibility. Gaps: AI is invisible, dashboard feels transactional, typography reads system-default, and the primary CTA lacks polish. This wave translates the review into eight named items and introduces a design-token source-of-truth artefact.
+
+**Spec:** `docs/specs/WEBSITE_DESIGN_SPEC.md` · **Tokens:** `docs/specs/design-tokens.json`
+
+### Items
+
+| ID | Item | Pri | Owner | KPI | Dependencies |
+|---|---|---|---|---|---|
+| AI-VIS-01 | Landing AI narrative — subhead + 3-up feature strip on `/` | P1 | Frontend + Marketing + PO | +20% visitor→signup conversion on `/` | Copy sign-off; i18n keys in 5 locales |
+| AI-VIS-02 | Inline AI suggestions in "+ New session" wizard (accept / edit / dismiss chips) | P1 | Frontend + Backend + AI | ≥30% acceptance rate on AI-suggested questions | Workers AI endpoint; AI-VIS-03 |
+| AI-VIS-03 | `<AIBadge>` primitive (assisted / generated / analyzed variants) + sparkle icon mark | P1 | Frontend | 100% of AI surfaces carry badge + tooltip | DESIGN-TOK-01 |
+| DX-INSIGHTS-01 | Dashboard **Insights** tab scaffold (tab + route + empty states) | P1 | Frontend + PO | ≥40% of hosts open Insights tab in first 7 days post-signup | Dashboard tab framework |
+| DX-INSIGHTS-02 | Top-themes card + confidence chip + 30-day trend spark (team-scoped `useInsights`) | P1 | Frontend + Backend + AI | Themes rendered within 2s p95 on team with ≥3 closed sessions | DX-INSIGHTS-01; Workers AI summariser; Vectorize |
+| DESIGN-TYP-01 | Typography refresh: DM Sans → Inter body; preload + Tailwind config update | P2 | Frontend | -20% visual inconsistency defects on top flows | DESIGN-TOK-01 |
+| DESIGN-POLISH-01 | Primary CTA hover state (scale 1.02 + `shadow.teal`, 120ms `motion.fast`) | P2 | Frontend | Hover state visible on Vote/Join/Landing CTAs; 0 a11y regressions | DESIGN-TOK-01 |
+| DESIGN-POLISH-02 | Logo optical weight bump + sparkle mark | P2 | Frontend + Brand | Logo approved by stakeholders; used across all surfaces | Brand sign-off |
+| DESIGN-TOK-01 | Design-token source of truth — `docs/specs/design-tokens.json` → generated `src/ui/tokens.ts` + Tailwind theme | P1 | Frontend + Architect | 0 drift between JSON tokens and runtime CSS; CI check green | Build pipeline + token generator |
+| WIZ-AI-01 | Session wizard AI sub-flow — consent gate, grounding echo, `Generate now` + refine prompt, streaming skeleton, Workers AI wiring | P0 | Frontend + Backend + AI | ≥50% AI question acceptance rate (rows kept at step 5); ≥65% wizard completion rate | AI-VIS-03; Workers AI endpoint; DRAFT-API (Sprint 0 enabler) |
+| WIZ-AI-02 | Per-question editor with type switcher (MC 3–5, Ranking 3–8, Wordcloud) + validation that gates `Next` | P0 | Frontend + Backend | 0 invalid sessions reach LIVE; `Next` disabled-click rate ≤8% per step | WIZ-AI-01 |
+| WIZ-OVERVIEW-01 | Step 5 overview — read-only summary of 4 prior steps with pencil edit-jump that preserves state | P1 | Frontend + PO | +10% wizard completion rate vs. baseline; 0 state-loss bugs | WIZ-AI-02 |
+| I18N-BUG-01 | Fix missing `step4.mode.fun_title` / `step4.mode.fun_desc` in `wizard.json` across EN/NL/DE/FR/ES (keys rendering raw in UI) | P0 | i18n + Frontend | 0 raw i18n keys visible; CI missing-key gate catches regressions | `scripts/i18n-check` (existing) |
+| LAYOUT-GRID-01 | Responsive 12/8/4-column grid primitive + Tailwind config + 4px baseline lint rule | P0 | Frontend + Architect | 100% of new surfaces declare column span per breakpoint; 0 non-4-multiple vertical measurements in merged code | DESIGN-TOK-01 |
+| LAYOUT-DENSITY-01 | Density tiers (Compact / Comfortable / Spacious) on list + table surfaces with per-workspace persistence | P1 | Frontend + PO | ≥3 list surfaces switchable without page-rhythm shift; host-level preference persisted in USERS_KV | LAYOUT-GRID-01 |
+| LAYOUT-SKELETON-01 | Skeleton + empty + error state parity on every async surface (dashboard sessions/templates/teams, Insights, results, AI generate, decisions search, admin tables) | P0 | Frontend + Tester | 0 layout-shift regressions (CLS < 0.05 p95); every async surface has all 4 states with geometric parity | LAYOUT-GRID-01 |
+| LAYOUT-A11Y-01 | Landmark regions, skip-link, focus order audit + WCAG 2.2 SC 2.4.11 (Focus Not Obscured) conformance on all sticky regions | P0 | Frontend + Security + Tester | 0 axe-core violations on top flows; keyboard-only traversal possible on every template | A11y suite |
+| LAYOUT-MOTION-01 | Motion choreography tokens applied: page/modal entry, list stagger (40ms/20ms rules), spring on drag/chip accept; `prefers-reduced-motion` honoured globally | P1 | Frontend | 0 motion regressions with `prefers-reduced-motion: reduce`; stagger rendered on ≥5 list surfaces | LAYOUT-GRID-01 |
+| LAUNCHPAD-01 | Session Launchpad (pre-live) — T6 template, left action rail (Share + Presenter remote + Open lobby primary + Back to questions), right content rail (identity + questions + danger zone), pre-flight strip, responsive rules | P0 | Frontend + Backend | ≥99.5% DRAFT→LIVE transition success from this page; median time-on-Launchpad 20–60s; Open lobby visible without scroll at every breakpoint | LAYOUT-GRID-01; wizard step 5 reconciliation (WIZ-OVERVIEW-01) |
+| LAUNCHPAD-02 | Launchpad state preservation + inline editor: Back-to-questions returns to wizard step 2 with edits intact; `+ Add question` inline editor (single question, not full wizard); drag-to-reorder via `PUT /api/sessions/:id/questions/reorder` | P1 | Frontend + Backend | ≥15% of hosts add ≥1 question on Launchpad; 0 state-loss bugs on wizard-round-trip; reorder persists with 0 desync | LAUNCHPAD-01 |
+| I18N-BUG-02 | Fix Dutch/English mixing on Launchpad (`Deelnamecode`, QR helper "Scan de QR-code of ga naar qesto.cc en voer de code in") — move hard-coded strings into `launchpad.json` namespace across 5 locales; extend CI i18n check to detect non-keyed literals | P0 | i18n + Frontend | 0 non-keyed literals detected in CI on launchpad components; 0 Dutch strings shown to non-NL user | `scripts/i18n-check` extension |
+
+### Sprint allocation
+
+- **Sprint A (next committed) — layout + token foundation:** **LAYOUT-GRID-01**, **LAYOUT-SKELETON-01**, **LAYOUT-A11Y-01**, DESIGN-TOK-01, AI-VIS-03, DX-INSIGHTS-01, **I18N-BUG-01**, **I18N-BUG-02** (both P0 fix-forward). Layout primitives must land before any consuming surface ships.
+- **Sprint B — narrative + wizard + launchpad + density:** AI-VIS-01, AI-VIS-02, DX-INSIGHTS-02, DESIGN-TYP-01, **WIZ-AI-01**, **WIZ-AI-02**, **WIZ-OVERVIEW-01**, **LAUNCHPAD-01**, **LAYOUT-DENSITY-01**, **LAYOUT-MOTION-01**.
+- **Sprint C — polish:** DESIGN-POLISH-01, DESIGN-POLISH-02, **LAUNCHPAD-02**.
+
+**Critical path note:** WIZ-OVERVIEW-01 ships in Sprint B (promoted from C) because it now commits DRAFT and routes to the Launchpad — LAUNCHPAD-01 depends on it. DRAFT→LIVE transition moves from the wizard's "Start session" to the Launchpad's "Open lobby" CTA.
+
+### KPIs (measured 30 days post-ship of the wave)
+
+- +20% visitor-to-signup conversion on `/`.
+- ≥40% of hosts open the Insights tab at least once in their first 7 days post-signup.
+- ≥30% acceptance rate on AI-suggested questions in wizard.
+- **≥65% wizard completion rate (open → `Start session`).**
+- **Median time-to-start ≤90s (AI path) / ≤180s (Write-yourself path).**
+- **0 invalid sessions reach LIVE (MC 3–5 / Ranking 3–8 rules enforced).**
+- 0 drift between design-token JSON and runtime CSS (CI-enforced).
+- **0 raw i18n keys visible across 5 locales.**
+- **Layout review score ≥ 9.5/10 on next external design audit** (up from 7.5). Proxy KPIs below.
+- **Cumulative Layout Shift p95 < 0.05** on top flows (Home, Dashboard, Wizard, Results).
+- **100% of new surfaces declare column span per breakpoint** (enforced via review checklist §5.0.13).
+- **0 axe-core a11y violations** on top flows; **0 WCAG 2.2 SC 2.4.11 violations** on sticky regions.
+- **Every async surface has skeleton + empty + error** states at geometric parity (§5.0.8).
+- **Session Launchpad DRAFT→LIVE success rate ≥99.5%**; `Open lobby` reachable within 4 tab stops of page top; 0 raw Dutch strings shown to non-NL users.
+
+### Exit criteria
+
+- All eight items shipped with instrumentation live (events in §7 of `WEBSITE_DESIGN_SPEC.md`).
+- WCAG AA maintained on every affected surface (re-run a11y suite; update `docs/ACCESSIBILITY_GUIDE.md` if patterns change).
+- i18n keys populated in EN/NL/DE/FR/ES for every new user-facing string.
+- Design-token JSON is the source; `src/ui/tokens.ts` regenerated, no hand-edits.
+
+### Open questions (resolve before Sprint A)
+
+- Does "AI analyzed" require on-device inference, or is Workers AI acceptable with explicit consent? (Security + AI strategy)
+- Plan-gating for Insights tab (free = 7d window, team = 30d + themes)? (PO)
+- Dark-mode pass in this wave or deferred? (Frontend)
+
+---
+
+**See also**:
+- `SPRINT_PLAN.md` — current sprint goals + exit criteria
+- `ARCHITECTURE.md` — system design + data model  
+- `ROADMAP_FULL.md` — release timeline + version targets
+- `CLAUDE.md` — L1 project context + hard rules
+- `specs/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
+- `specs/design-tokens.json` — design-token source of truth
+>>>>>>> Stashed changes
