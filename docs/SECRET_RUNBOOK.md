@@ -1,5 +1,7 @@
 # Secret Governance Runbook (Sprint 18 - ID 24)
 
+_Hub: [Documentation map](./README.md)._
+
 Emergency procedures for managing secret leaks, rotations, and access control.
 
 ---

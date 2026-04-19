@@ -1,5 +1,7 @@
 # SPEC_CORE — System Architecture & Design
 
+_Repository hub: [Documentation map](../README.md)._
+
 ## Doc contract
 Diagrams + constraint list = **intent**; **code wins** on conflict until a spec PR updates this file.
 

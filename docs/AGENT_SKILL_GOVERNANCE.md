@@ -1,5 +1,7 @@
 # Agent & Skill Governance
 
+_Hub: [Documentation map](./README.md)._
+
 ## Versioning model
 - Semantic versioning for prompt assets:
   - MAJOR: breaking behavior or structure change.

@@ -1,5 +1,7 @@
 # Testing Pyramid & CI Quality Gates
 
+_Hub: [Documentation map](./README.md)._
+
 ## Overview
 
 Qesto uses a structured testing pyramid to ensure comprehensive coverage while maintaining fast feedback loops. Tests are classified into three levels: Unit, Integration, and E2E, with target distributions and performance gates.

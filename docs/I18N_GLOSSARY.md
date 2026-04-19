@@ -1,5 +1,7 @@
 # Qesto — i18n Terminology Glossary
 
+_Hub: [Documentation map](./README.md)._
+
 _Sprint 17 · I18N-QA-02_
 
 This glossary defines the canonical translations for domain-specific terms across all 5 supported languages (EN, NL, ES, DE, FR). Translators must use these terms consistently — no synonyms.

@@ -1,5 +1,7 @@
 # Error Patterns & UX Treatment (Sprint 18 - ID 20)
 
+_Hub: [Documentation map](./README.md)._
+
 ## Overview
 
 All API errors follow a standardized format that maps error codes to user-friendly messages, icons, and suggested actions. This ensures consistent error communication across the platform and reduces support tickets.

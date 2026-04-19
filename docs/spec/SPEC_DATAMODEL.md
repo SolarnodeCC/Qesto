@@ -1,5 +1,7 @@
 # SPEC_DATAMODEL — Database Schema, KV Patterns, Types
 
+_Repository hub: [Documentation map](../README.md)._
+
 ## Doc contract
 SQL + key patterns = **persistence contract**; **migrations + code** win on column/null quirks until spec updated.
 

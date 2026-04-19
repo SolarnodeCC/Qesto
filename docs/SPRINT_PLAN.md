@@ -1,12 +1,16 @@
 # Qesto — Sprint Plan (5-Sprint Roadmap)
 
+_Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](./BACKLOG.md) (including §12) and [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
+
 _Last updated: 2026-04-19 (UTC)_
 
 ---
 
 ## Overview
 
-This plan details 5 consecutive 2-week sprints starting 2026-04-19. Each sprint focuses on delivering a coherent slice of functionality across one or more epics. The 5-sprint arc builds Qesto from auth + core session foundation → realtime + payments → enterprise + SSO → i18n + gamification → hardening + advanced features.
+This plan details **five consecutive reference sprints** (example calendar anchors starting **2026-04-19**) that layer a teaching story onto an **already-shipped** baseline. Each sprint focuses on a coherent slice across one or more epics. The arc walks **auth + core session → realtime + payments → enterprise + SSO → i18n + gamification → hardening + advanced features** as a **pedagogical path**, not a claim that the product is pre-v1.
+
+**Do not** read the dates below as “project start”; they illustrate a **dependency-ordered template** aligned to [`BACKLOG.md`](./BACKLOG.md) story IDs.
 
 ---
 

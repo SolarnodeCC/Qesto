@@ -1,5 +1,7 @@
 # SPEC_FRONTEND — React Architecture, Routing, Hooks, Components
 
+_Repository hub: [Documentation map](../README.md)._
+
 ## Doc contract
 Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names until spec PR merges.
 

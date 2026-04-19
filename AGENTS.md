@@ -1,5 +1,7 @@
 # Qesto — Codex Project Guide
 
+**Documentation map:** [`docs/README.md`](docs/README.md) — how `docs/`, `docs/spec/`, and planning files connect (truth hierarchy, reading order).
+
 ## Stack
 
 - **Frontend**: React + TypeScript, Vite, Tailwind CSS v4

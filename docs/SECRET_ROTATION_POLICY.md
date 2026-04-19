@@ -1,5 +1,7 @@
 # Secret Rotation Policy (Sprint 18 - ID 24)
 
+_Hub: [Documentation map](./README.md)._
+
 ## Overview
 
 This policy ensures cryptographic secrets (API keys, database passwords, signing keys, OAuth tokens) are rotated regularly to minimize blast radius if a secret is compromised.

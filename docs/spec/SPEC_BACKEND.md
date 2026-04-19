@@ -1,5 +1,7 @@
 # SPEC_BACKEND — API Routes, Services, Middleware
 
+_Repository hub: [Documentation map](../README.md)._
+
 ## Contract header (read first)
 
 | Item | Value |

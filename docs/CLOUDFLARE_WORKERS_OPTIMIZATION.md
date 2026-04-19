@@ -1,5 +1,7 @@
 # Cloudflare Workers Optimization Guide
 
+_Hub: [Documentation map](./README.md)._
+
 **Qesto** runs on Cloudflare Workers with strict platform limits. This document outlines optimization strategies to maximize performance while staying within limits.
 
 ## Platform Limits (Reference)

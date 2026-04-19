@@ -1,5 +1,7 @@
 # SPEC_DEPLOYMENT — Build, Config, Secrets, CI/CD, Monitoring
 
+_Repository hub: [Documentation map](../README.md)._
+
 ## Doc contract
 Commands + `wrangler` excerpts = **targets**; **wrangler.toml + CI YAML in repo** win on exact keys/paths.
 
