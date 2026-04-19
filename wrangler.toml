@@ -6,7 +6,13 @@ compatibility_date = "2026-04-19"
 
 [vars]
 # Cloudflare Access — validate CF-Access-JWT-Assertion header in auth middleware
+# Production: qesto2-github.oostelaar.workers.dev
 CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
+CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+
+# Preview deployments: *-qesto2-github.oostelaar.workers.dev
+[env.preview.vars]
+CF_ACCESS_AUDIENCE = "5d61bf4270afa071f2ced03549ffb70998c2dd7506d5ec00d658e74ea234dda2"
 CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
 
 [assets]
