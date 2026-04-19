@@ -87,6 +87,8 @@ All routes in `src/App.tsx` via React Router v6. Protected routes use `<Protecte
 
 ## Component Hierarchy
 
+> **Component specs:** Detailed visual and interaction specifications for the Hero (§5.1), Insights tab (§5.2), Sessions list (§5.3), "+New session" button (§5.4), AIBadge primitive (§5.5), Session Creation Wizard (§5.6), and Session Launchpad (§5.7) are in [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) §5.1–5.7. The layout system, responsive grid, density tiers, and page templates (T1–T6) are in §5.0.
+
 ### Core Layout
 ```
 App.tsx (Router)
@@ -190,6 +192,8 @@ components/
 ```
 
 ### Design System (src/ui/)
+
+> **Source of truth for tokens:** `src/ui/tokens.ts` is **generated** from [`docs/specs/design-tokens.json`](../specs/design-tokens.json) — do not hand-edit it (see backlog item `DESIGN-TOK-01`). For colour tokens, typography scale, spacing grid, radius/elevation/motion rules, and the AI sparkle mark iconography standard, see [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) §4.
 
 ```
 ui/
@@ -496,6 +500,8 @@ See [[SPEC_REALTIME.md#websocket-messages]] for complete message reference.
 ---
 
 ## i18n & Localization
+
+> **Design KPI:** "0 raw i18n keys visible" across all 5 locales is a release gate for the Website Design Wave — see [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) §7 KPI targets and backlog items `I18N-BUG-01` / `I18N-BUG-02`.
 
 **Configuration**: `src/lib/i18n.ts`
 

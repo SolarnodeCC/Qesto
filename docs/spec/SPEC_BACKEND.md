@@ -53,6 +53,8 @@
 
 ---
 
+> **Visual contract for public-facing routes:** The landing page (`/`), pricing (`/pricing`), login (`/login`, `/auth/callback`), and solutions (`/solutions/*`) routes back onto public-facing surfaces whose visual and interaction contract is specified in [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) §2 (Surfaces in scope). API responses from these routes (auth tokens, session URLs, error codes) must conform to the error envelope above; the frontend rendering of those responses follows the design spec.
+
 ## 1. Auth — mount `/auth` — typical `functions/api/auth.routes.ts` or `auth.ts`
 
 | M | Path | AuthZ | Ret | Notes |
