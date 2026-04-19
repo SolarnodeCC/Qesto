@@ -85,12 +85,10 @@ wrangler pages deploy  # Deploy to Cloudflare Pages (qesto project)
 ```
 
 ## Active Sprint Context
-See `docs/SPRINT_PLAN.md` for current sprint scope and exit criteria.
-See `docs/BACKLOG.md` for the full WSJF-scored product + architecture backlog.
+See `docs/SPRINT_PLAN.md` for current sprint scope and exit criteria (5-sprint roadmap: v0.1 → v0.5).
+See `docs/BACKLOG.md` for the full epic-based product backlog (6 epics: Core, Billing, Auth, Enterprise, i18n, Gamification).
 
-Current priority: DRAFT-API + STATUS-SYNC (Sprint 0 enablers — block all lifecycle stories).
-
-**Sprint planning rule**: P0 defects (TC=13) always enter the sprint first. Then P1 enablers. Then P2/P3 sorted by WSJF descending. Stories > 13pt must be split before sprint start.
+**Sprint planning rule**: P0 items always enter the sprint first. Then P1. All stories must be <= 13pts (split larger items before sprint start). Aim for 40-50 pts committed per 2-week sprint.
 
 ---
 
