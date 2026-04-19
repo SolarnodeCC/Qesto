@@ -4,6 +4,11 @@ compatibility_date = "2026-04-19"
 # Sprint 1+ will add: main = "worker/index.ts" for the API Worker
 # Pages Functions (functions/api/) are deployed via `wrangler pages deploy ./dist`
 
+[vars]
+# Cloudflare Access — validate CF-Access-JWT-Assertion header in auth middleware
+CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
+CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+
 [assets]
 directory = "./public"
 
