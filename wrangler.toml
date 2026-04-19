@@ -1,4 +1,4 @@
-name = "qesto"
+name = "qesto2-github"
 compatibility_date = "2026-04-19"
 
 # Sprint 1+ will add: main = "worker/index.ts" for the API Worker
@@ -17,6 +17,7 @@ CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/ce
 
 [assets]
 directory = "./public"
+not_found_handling = "single-page-application"
 
 [observability]
 enabled = false
