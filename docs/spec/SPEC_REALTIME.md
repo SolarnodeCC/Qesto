@@ -1,5 +1,7 @@
 # SPEC_REALTIME — WebSocket, Durable Objects, Live Sessions
 
+_Repository hub: [Documentation map](../README.md)._
+
 ## Doc contract
 Message `type` strings + roles = **wire contract**; **SessionRoom.ts** wins on extra fields until spec updated.
 

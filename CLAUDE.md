@@ -85,10 +85,13 @@ wrangler pages deploy  # Deploy to Cloudflare Pages (qesto project)
 ```
 
 ## Active Sprint Context
-See `docs/SPRINT_PLAN.md` for current sprint scope and exit criteria (5-sprint roadmap: v0.1 → v0.5).
-See `docs/BACKLOG.md` for the full epic-based product backlog (6 epics: Core, Billing, Auth, Enterprise, i18n, Gamification).
+**Documentation map:** [`docs/README.md`](docs/README.md) — which planning files describe **shipped v2.x** versus **reference sequencing**.
 
-**Sprint planning rule**: P0 items always enter the sprint first. Then P1. All stories must be <= 13pts (split larger items before sprint start). Aim for 40-50 pts committed per 2-week sprint.
+- **Shipped / roadmap truth:** [`docs/ROADMAP_FULL.md`](docs/ROADMAP_FULL.md), [`docs/SPEC.md`](docs/SPEC.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+- **Incremental committed work:** [`docs/BACKLOG.md`](docs/BACKLOG.md) (including Website Design Wave §12), [`docs/ARCHIVED_SPRINTS.md`](docs/ARCHIVED_SPRINTS.md).
+- **Reference five-sprint arc (v0.1 → v0.5):** [`docs/SPRINT_PLAN.md`](docs/SPRINT_PLAN.md) — teaching and dependency template aligned to backlog IDs; **not** a literal greenfield schedule.
+
+**Sprint planning rule:** P0 items first, then P1; stories ≤ 13 pts; aim ~40–50 pts per two-week sprint when using the reference arc for estimation drills.
 
 ---
 

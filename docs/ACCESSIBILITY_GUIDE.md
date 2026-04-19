@@ -1,5 +1,7 @@
 # Accessibility (A11y) Implementation Guide
 
+_Hub: [Documentation map](./README.md)._
+
 ## Overview
 
 This guide documents accessibility patterns and WCAG AA compliance standards for the Qesto application. All critical flows (Join, Vote, Solutions) follow these patterns to ensure inclusive access for all users, including those using assistive technologies like screen readers.

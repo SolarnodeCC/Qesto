@@ -1,5 +1,7 @@
 # ADR — Workers AI Capabilities for Qesto
 
+_Hub: [Documentation map](./README.md)._
+
 _Status: Active reference (updated 2026-04-05)_
 
 ## Decision summary

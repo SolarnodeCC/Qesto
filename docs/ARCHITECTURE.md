@@ -1,5 +1,7 @@
 # Qesto — Architecture (Current)
 
+_Hub: [Documentation map](./README.md)._
+
 _Last verified: 2026-04-06 (UTC)_
 
 ## 1. Runtime architecture
@@ -32,3 +34,7 @@ _Last verified: 2026-04-06 (UTC)_
 ## 6. 2026-04-06 architecture review addendum
 - Route-module extraction increased dependency sensitivity: helper/service imports in `sessions.routes.ts` are now a critical integrity point for API correctness.
 - Existing architecture remains production-capable; near-term risk is regressions from refactors in oversized modules rather than platform limitations.
+
+## 7. Where to go next
+- **[`README.md`](./README.md)** — how `docs/` fits together (truth hierarchy, reading order).
+- **[`spec/INDEX.md`](./spec/INDEX.md)** — domain specifications for implementation detail.

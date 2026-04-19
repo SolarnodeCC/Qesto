@@ -1,5 +1,7 @@
 # Qesto — API & Realtime Specification (Current)
 
+_Hub: [Documentation map](./README.md)._
+
 _Last verified: 2026-04-06 (UTC)_
 
 ## 1. API conventions

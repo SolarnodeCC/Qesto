@@ -1,5 +1,7 @@
 # Step-by-step implementation per agent and skill
 
+_Hub: [Documentation map](./README.md)._
+
 _Date_: 2026-04-10
 
 ## Implementation status summary

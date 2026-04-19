@@ -1,5 +1,7 @@
 # Plan & Entitlement Audit (Pricing vs Enforcement)
 
+_Hub: [Documentation map](./README.md)._
+
 Date: 2026-04-05
 
 ## Executive summary
@@ -64,14 +66,6 @@ Legend:
 - Team analytics → ⚠️ Analytics routes are available; no Team+ gate detected on core analytics endpoint.
 - MCP API (read-only) → ❌ `mcpAccess` exists in plan model, but MCP token creation/usage routes do not enforce read-only or tier.
 
-### Enterprise
-
-- Onbeperkte facilitators → ❌ Depends on missing facilitator limit enforcement.
-- SSO/SAML & SCIM → ⚠️ SSO/SAML flows exist, but no enterprise entitlement gate detected; SCIM endpoints not found.
-- Dedicated EU tenant → ❌ Not found as enforceable runtime capability in routes/services.
-- Decision Quality Analytics → ❌ Not found as a distinct feature/endpoint.
-- Volledige MCP API → ❌ No enforcement split found between Team read-only and Enterprise full.
-- SLA 99.9% / Customer Success Manager → ❌ Commercial/operational commitments, not enforceable in code.
 
 ## Risks
 
@@ -101,11 +95,7 @@ Legend:
    - Store token scope (`readonly|full`) based on plan at issuance time.
    - Block write/administrative MCP tools for non-enterprise plans.
 
-5. **Enterprise-only controls**
-   - Gate SAML/SSO setup operations by enterprise entitlement.
-   - Implement (or remove from pricing) SCIM, dedicated tenant behaviors, decision quality analytics.
-
-6. **Automated verification**
+5. **Automated verification**
    - Add entitlement contract tests that map each pricing-row claim to at least one protected API behavior.
 
 ## Bottom line

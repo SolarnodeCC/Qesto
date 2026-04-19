@@ -1,25 +1,35 @@
 # Qesto — Product Backlog (Epic-Based)
 
+_Hub: [Documentation map](./README.md)._
+
 _Last updated: 2026-04-19 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-11_
 _Website Design Wave added: 2026-04-19 — see §12_
 
 ## Overview
 
-This backlog organizes all product work across 6 core epics, each with supporting user stories. All items are prioritized by WSJF and allocated to the next 5 sprints. Each story includes clear acceptance criteria in Given/When/Then format.
+This backlog holds **durable user stories** with acceptance criteria (Given / When / Then), grouped under six epics. Items are prioritised with WSJF-style weighting and mapped to a **reference five-sprint sequence** in [`SPRINT_PLAN.md`](./SPRINT_PLAN.md) for dependency ordering and onboarding.
+
+**Shipped baseline:** The repository already ships **v2.x** capabilities summarised in [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md). Many stories describe behaviour that is **already implemented**; they remain as **regression contracts**, refinement targets, and narrative for new contributors.
+
+**Planning truth:** Use [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) for release-level status. Use this file for **incremental committed work** (including §12 Website Design Wave) and story-level acceptance criteria. Use [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md) for historical sprint summaries. For technical build truth, start at [`spec/INDEX.md`](./spec/INDEX.md) (code wins until specs are updated deliberately).
+
+**Sprint field on stories:** The **Sprint: 1–5** metadata on each story refers to the **reference arc** in [`SPRINT_PLAN.md`](./SPRINT_PLAN.md), not to the calendar sprint counter in [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). Treat those numbers as **ordering and pedagogy**, not “we are still in Sprint 1.”
 
 ---
 
 ## Epic Catalog
 
-| Epic | Status | Focus | Completion |
+Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md)). This table is **not** a greenfield completion percentage.
+
+| Epic | Status | Focus | Notes |
 |---|---|---|---|
-| **EPIC-CORE** | Planned | Session lifecycle, realtime voting, presenter controls | 0% (Sprints 1-2) |
-| **EPIC-BILLING** | Planned | Stripe integration, plan middleware, subscriptions | 0% (Sprints 2, 5) |
-| **EPIC-AUTH** | Planned | Magic link, SAML SSO, JWT management | 0% (Sprints 1, 3, 5) |
-| **EPIC-ENT** | Planned | Audit logging, RBAC, admin dashboard, multi-tenant | 0% (Sprints 3-5) |
-| **EPIC-I18N** | Planned | Locale bundles, key validation, translation QA | 0% (Sprints 4-5) |
-| **EPIC-GAM** | Planned | Energizers, leaderboard, badges, referrals | 0% (Sprints 4-5) |
+| **EPIC-CORE** | Shipped (baseline) | Session lifecycle, realtime voting, presenter controls | Core v2.0 platform live; stories remain AC / hardening references |
+| **EPIC-BILLING** | Shipped (baseline) | Stripe, plan middleware, subscriptions | Follow-on items may still use BILL-* IDs |
+| **EPIC-AUTH** | Shipped (baseline) | Magic link, SAML SSO, JWT | Advanced token / edge cases may remain in backlog |
+| **EPIC-ENT** | In progress | Audit, RBAC depth, admin, multi-tenant | Enterprise / compliance completion per roadmap |
+| **EPIC-I18N** | In progress | Locales, key validation, translation QA | Bundles shipped; CI and QA hardening ongoing |
+| **EPIC-GAM** | In progress | Energizers, leaderboard, badges, referrals | Base gamification live; depth and analytics queued |
 
 ---
 
@@ -883,7 +893,8 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 ---
 
 **See also**:
-- `SPRINT_PLAN.md` — current sprint goals + exit criteria
+- `README.md` — documentation map (truth hierarchy, reading order)
+- `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
 - `ARCHITECTURE.md` — system design + data model
 - `ROADMAP_FULL.md` — release timeline + version targets
 - `CLAUDE.md` — L1 project context + hard rules

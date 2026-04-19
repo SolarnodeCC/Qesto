@@ -1,5 +1,7 @@
 # Qesto — QA & Test Strategy (Current)
 
+_Hub: [Documentation map](./README.md)._
+
 _Last verified: 2026-04-06 (UTC)_
 
 ## 1. Test layers in repository

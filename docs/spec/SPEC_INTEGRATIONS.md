@@ -1,5 +1,7 @@
 # SPEC_INTEGRATIONS — Payments, AI, Auth, Webhooks
 
+_Repository hub: [Documentation map](../README.md)._
+
 ## Doc contract
 Flows + env names = **integration intent**; **vendor docs + code** win on API version/payload details.
 
