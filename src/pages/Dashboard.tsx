@@ -97,7 +97,13 @@ export default function Dashboard() {
               <li key={s.id} className="p-4 flex items-center justify-between gap-4">
                 <div>
                   <Link
-                    to={`/sessions/${s.id}`}
+                    to={
+                      s.status === 'live'
+                        ? `/sessions/${s.id}/present`
+                        : s.status === 'closed' || s.status === 'archived'
+                        ? `/sessions/${s.id}/results`
+                        : `/sessions/${s.id}`
+                    }
                     className="font-medium text-pulse-800 hover:text-teal-600"
                   >
                     {s.title}

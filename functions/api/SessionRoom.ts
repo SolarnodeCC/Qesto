@@ -48,7 +48,9 @@ type Meta = {
 }
 
 type Counts = Record<string, number>
-type VoterSet = Record<string, true> // { voterId: true } — JSON-friendly Set
+// Per-voter vote history: voterId → optionId. Counts are derived, but kept
+// as a denormalised cache so broadcasts don't recompute every tick.
+type Votes = Record<string, string>
 
 // ── Per-connection attachment stored on each WebSocket ──────────────────────
 type Attachment = {
@@ -131,7 +133,7 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_META, meta)
     await this.ctx.storage.put(K_STATUS, 'live')
     await this.ctx.storage.put(K_COUNTS, {} as Counts)
-    await this.ctx.storage.put(K_VOTERS, {} as VoterSet)
+    await this.ctx.storage.put(K_VOTERS, {} as Votes)
     if (body.question) await this.ctx.storage.put(K_QUESTION, body.question)
     return this.jsonOk({ initialised: true })
   }
@@ -143,6 +145,7 @@ export class SessionRoom implements DurableObject {
       return this.jsonError(409, 'not_live', 'Session is not LIVE')
     }
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    const votes = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const msg = serverMessage({
       type: 'session_closed',
@@ -158,7 +161,9 @@ export class SessionRoom implements DurableObject {
       }
     }
     await this.ctx.storage.put(K_STATUS, 'closed')
-    return this.jsonOk({ counts, total })
+    const questionId = (await this.ctx.storage.get<LiveQuestion>(K_QUESTION))?.id ?? null
+    const voteList = Object.entries(votes).map(([voterId, optionId]) => ({ voterId, optionId }))
+    return this.jsonOk({ counts, total, votes: voteList, questionId })
   }
 
   // ── /state (debug/test) ───────────────────────────────────────────────────
@@ -166,7 +171,7 @@ export class SessionRoom implements DurableObject {
     const meta = await this.ctx.storage.get<Meta>(K_META)
     const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    const voters = (await this.ctx.storage.get<VoterSet>(K_VOTERS)) ?? {}
+    const voters = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
     const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? 'uninitialised'
     return this.jsonOk({
       meta: meta ?? null,
@@ -328,13 +333,14 @@ export class SessionRoom implements DurableObject {
       return
     }
 
-    // Per-voter dedupe on current question.
-    const voters = (await this.ctx.storage.get<VoterSet>(K_VOTERS)) ?? {}
+    // Per-voter dedupe on current question. Value is the chosen optionId so
+    // the close route can persist vote rows to D1.
+    const voters = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
     if (voters[att.voterId]) {
       ws.send(errorMessage('duplicate', 'You already voted on this question'))
       return
     }
-    voters[att.voterId] = true
+    voters[att.voterId] = optionId
     await this.ctx.storage.put(K_VOTERS, voters)
 
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}

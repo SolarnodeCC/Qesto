@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import SessionConfig from './pages/SessionConfig'
 import Present from './pages/Present'
 import JoinPage from './pages/JoinPage'
+import Results from './pages/Results'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />
         <Route path="/sessions/:id/present" element={<Present />} />
+        <Route path="/sessions/:id/results" element={<Results />} />
         <Route path="/j/:code" element={<JoinPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

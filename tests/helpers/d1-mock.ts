@@ -44,14 +44,30 @@ type QuestionRow = {
   created_at: number
 }
 
+type VoteRow = {
+  id: string
+  session_id: string
+  question_id: string
+  voter_id: string
+  option_id: string
+  submitted_at: number
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
   readonly sessions = new Map<string, SessionRow>()
   readonly questions = new Map<string, QuestionRow>()
+  readonly votes = new Map<string, VoteRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
+  }
+
+  async batch(statements: D1PreparedStatementMock[]): Promise<Array<{ meta: { changes: number } }>> {
+    const out: Array<{ meta: { changes: number } }> = []
+    for (const s of statements) out.push(await s.run())
+    return out
   }
 }
 
@@ -144,6 +160,48 @@ export class D1PreparedStatementMock {
       row.title = title
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith("UPDATE sessions SET status = 'live'")) {
+      const [started_at, id, owner_id] = this.args as [number, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.status = 'live'
+      row.started_at = started_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith("UPDATE sessions SET status = 'draft'")) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.status = 'draft'
+      row.started_at = null
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith("UPDATE sessions SET status = 'closed'")) {
+      const [closed_at, id, owner_id] = this.args as [number, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.status = 'closed'
+      row.closed_at = closed_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT OR IGNORE INTO votes')) {
+      const [id, session_id, question_id, voter_id, option_id, submitted_at] = this.args as [
+        string,
+        string,
+        string,
+        string,
+        string,
+        number,
+      ]
+      // UNIQUE(question_id, voter_id) — ignore replay.
+      for (const v of this.db.votes.values()) {
+        if (v.question_id === question_id && v.voter_id === voter_id) {
+          return { meta: { changes: 0 } }
+        }
+      }
+      this.db.votes.set(id, { id, session_id, question_id, voter_id, option_id, submitted_at })
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith('DELETE FROM questions')) {
       const [session_id] = this.args as [string]
       let changes = 0
@@ -220,6 +278,16 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.questions.values()]
         .filter((q) => q.session_id === session_id)
         .sort((a, b) => a.position - b.position)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT option_id, COUNT(*)')) {
+      const [session_id] = this.args as [string]
+      const tally = new Map<string, number>()
+      for (const v of this.db.votes.values()) {
+        if (v.session_id !== session_id) continue
+        tally.set(v.option_id, (tally.get(v.option_id) ?? 0) + 1)
+      }
+      const rows = [...tally.entries()].map(([option_id, n]) => ({ option_id, n }))
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

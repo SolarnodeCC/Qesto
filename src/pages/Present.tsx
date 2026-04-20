@@ -113,6 +113,14 @@ export default function Present() {
         >
           {state.session?.status === 'closed' ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
         </button>
+        {id && state.session?.status === 'closed' ? (
+          <Link
+            to={`/sessions/${id}/results`}
+            className="text-sm text-teal-600 hover:underline"
+          >
+            View results →
+          </Link>
+        ) : null}
         {closeError ? <span className="text-sm text-red-600">{closeError}</span> : null}
       </div>
     </main>

@@ -483,10 +483,34 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const stub = await doStub(c.env, id)
     const doRes = await stub.fetch('https://do.internal/close', { method: 'POST' })
     const parsed = (await doRes.json().catch(() => null)) as
-      | { ok: true; data: { counts: Record<string, number>; total: number } }
+      | {
+          ok: true
+          data: {
+            counts: Record<string, number>
+            total: number
+            votes: Array<{ voterId: string; optionId: string }>
+            questionId: string | null
+          }
+        }
       | null
     const counts = parsed?.ok ? parsed.data.counts : {}
     const total = parsed?.ok ? parsed.data.total : 0
+    const voteList = parsed?.ok ? parsed.data.votes : []
+    const questionId = parsed?.ok ? parsed.data.questionId : null
+
+    // Persist per-voter rows to D1. UNIQUE(question_id, voter_id) guards
+    // against replay.
+    if (questionId && voteList.length > 0) {
+      const stmt = c.env.DB.prepare(
+        `INSERT OR IGNORE INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+      )
+      const ts = Date.now()
+      const batch = voteList.map((v) =>
+        stmt.bind(ulid(), id, questionId, v.voterId, v.optionId, ts),
+      )
+      await c.env.DB.batch(batch)
+    }
 
     const closedAt = Date.now()
     await c.env.DB
@@ -499,6 +523,70 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     return c.json({
       ok: true,
       data: { session, results: { counts, total } },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  // GET /api/sessions/:id/results — aggregate persisted totals (CLOSED) or the
+  // live DO snapshot (LIVE). DRAFT sessions have no results to show.
+  app.get('/:id/results', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status === 'draft') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Draft sessions have no results yet' },
+          trace_id: c.get('trace_id'),
+        },
+        409,
+      )
+    }
+    const questions = await fetchQuestions(c.env.DB, id)
+    const question = questions[0] ?? null
+
+    if (session.status === 'live') {
+      // Live: pull current snapshot from the DO.
+      const stub = await doStub(c.env, id)
+      const snap = await stub.fetch('https://do.internal/state')
+      const body = (await snap.json().catch(() => null)) as
+        | { ok: true; data: { counts: Record<string, number>; voterCount: number } }
+        | null
+      const counts = body?.ok ? body.data.counts : {}
+      const total = Object.values(counts).reduce((a, b) => a + b, 0)
+      return c.json({
+        ok: true,
+        data: { session, question, results: { counts, total, source: 'live' as const } },
+        trace_id: c.get('trace_id'),
+      })
+    }
+
+    // Closed: aggregate from D1 votes table.
+    const { results } = await c.env.DB
+      .prepare(
+        `SELECT option_id, COUNT(*) AS n
+           FROM votes
+          WHERE session_id = ?1
+          GROUP BY option_id`,
+      )
+      .bind(id)
+      .all<{ option_id: string; n: number }>()
+    const counts: Record<string, number> = {}
+    let total = 0
+    for (const row of results ?? []) {
+      counts[row.option_id] = row.n
+      total += row.n
+    }
+    return c.json({
+      ok: true,
+      data: { session, question, results: { counts, total, source: 'persisted' as const } },
       trace_id: c.get('trace_id'),
     })
   })
