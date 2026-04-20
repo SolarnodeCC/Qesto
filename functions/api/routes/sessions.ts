@@ -231,16 +231,28 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         'x-qesto-ip-hash': identity.ipHash,
       },
     })
-    // Echo back the selected subprotocol (Sec-WebSocket-Protocol) if the
-    // client requested one — browsers require it on the 101 response.
-    if (upgraded.status === 101 && bearerToken) {
-      const headers = new Headers(upgraded.headers)
-      headers.set('sec-websocket-protocol', `qesto.bearer.${bearerToken}`)
-      return new Response(upgraded.body, {
-        status: 101,
-        headers,
-        webSocket: (upgraded as unknown as { webSocket?: WebSocket }).webSocket,
-      } as ResponseInit)
+    // Respond with a fixed subprotocol identifier. Browsers require the 101
+    // response to echo *one* of the offered subprotocols, but we must NEVER
+    // reflect `qesto.bearer.<JWT>` back — that would leak the bearer token in
+    // response headers (visible to proxies, browser devtools, logs).
+    // Instead, advertise a stable protocol name that the client offers
+    // alongside the bearer token: `qesto-v1`.
+    if (upgraded.status === 101) {
+      const offered = subprotoHeader
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+      const hasV1 = offered.includes('qesto-v1')
+      const hasBearer = offered.some((p) => p.startsWith('qesto.bearer.'))
+      if (hasV1 || hasBearer) {
+        const headers = new Headers(upgraded.headers)
+        headers.set('sec-websocket-protocol', 'qesto-v1')
+        return new Response(upgraded.body, {
+          status: 101,
+          headers,
+          webSocket: (upgraded as unknown as { webSocket?: WebSocket }).webSocket,
+        } as ResponseInit)
+      }
     }
     return upgraded
   })
