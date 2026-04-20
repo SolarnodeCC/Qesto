@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSession, type PollOption } from '../hooks/useSessions'
+import { api } from '../api/client'
 
 function newOptionId(): string {
   return `opt_${crypto.randomUUID().slice(0, 8)}`
@@ -9,6 +10,7 @@ function newOptionId(): string {
 
 export default function SessionConfig() {
   const auth = useAuth()
+  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { data, error, loading, patch } = useSession(id)
 
@@ -18,6 +20,8 @@ export default function SessionConfig() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [starting, setStarting] = useState(false)
+  const [startError, setStartError] = useState<string | null>(null)
 
   // Hydrate form once the session loads.
   useEffect(() => {
@@ -223,13 +227,46 @@ export default function SessionConfig() {
           </button>
           <button
             type="button"
-            disabled
-            title="LIVE start lands in Phase 3"
-            className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-500 px-4 py-2 font-medium cursor-not-allowed"
+            disabled={starting || data.session.status !== 'draft' || data.questions.length === 0}
+            onClick={async () => {
+              if (!id) return
+              setStarting(true)
+              setStartError(null)
+              const res = await api<{ session: unknown; question: unknown }>(
+                `/api/sessions/${encodeURIComponent(id)}/start`,
+                { method: 'POST' },
+              )
+              setStarting(false)
+              if (!res.ok) {
+                setStartError(res.error.message)
+                return
+              }
+              navigate(`/sessions/${id}/present`)
+            }}
+            className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 hover:bg-teal-50 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Go live (soon)
+            {data.session.status === 'live'
+              ? 'Already live'
+              : data.session.status === 'closed'
+              ? 'Session closed'
+              : starting
+              ? 'Starting…'
+              : 'Go live'}
           </button>
+          {data.session.status === 'live' ? (
+            <Link
+              to={`/sessions/${id}/present`}
+              className="text-sm text-teal-600 hover:underline"
+            >
+              Open presenter view →
+            </Link>
+          ) : null}
         </div>
+        {startError ? (
+          <p role="alert" className="text-sm text-red-600">
+            {startError}
+          </p>
+        ) : null}
       </form>
     </main>
   )

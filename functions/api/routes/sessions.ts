@@ -15,13 +15,16 @@ import { Hono } from 'hono'
 import { ulid } from '../lib/ulid'
 import { generateJoinCode } from '../lib/code'
 import { withIdempotency } from '../lib/idempotency'
-import { authMiddleware, type AuthVariables } from '../middleware/auth'
+import { deriveVoterIdentity } from '../lib/voter'
+import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
+import { verifyJwt } from '../lib/jwt'
 import {
   CreateSessionSchema,
   PatchSessionSchema,
   type PollQuestionInput,
 } from '../lib/validation'
+import type { LiveQuestion } from '../realtime'
 import type { Env, PollOption, Question, Session } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -104,8 +107,145 @@ async function upsertPollQuestion(
   }
 }
 
+async function fetchSessionByCode(db: D1Database, code: string): Promise<Session | null> {
+  const row = await db
+    .prepare(
+      `SELECT id, owner_id, code, title, status, anonymity,
+              created_at, started_at, closed_at, archived_at
+         FROM sessions
+        WHERE code = ?1`,
+    )
+    .bind(code)
+    .first<SessionRow>()
+  return row ?? null
+}
+
+function questionToLive(q: Question): LiveQuestion {
+  return { id: q.id, kind: 'poll', prompt: q.prompt, options: q.options }
+}
+
+async function doStub(env: Env, sessionId: string): Promise<DurableObjectStub> {
+  const id = env.SESSION_ROOM.idFromName(sessionId)
+  return env.SESSION_ROOM.get(id)
+}
+
+async function postDO(env: Env, sessionId: string, path: string, body: unknown): Promise<Response> {
+  const stub = await doStub(env, sessionId)
+  return stub.fetch(`https://do.internal${path}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+}
+
 export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
+  const pub = new Hono<{ Bindings: Env; Variables: Vars }>()
+
+  // Public endpoints (no auth): voter join-by-code lookup + WebSocket upgrade.
+  pub.get('/by-code/:code', async (c) => {
+    const code = c.req.param('code').toUpperCase()
+    if (!/^[0-9A-Z]{6}$/.test(code)) {
+      return c.json(
+        { ok: false, error: { code: 'bad_code', message: 'Invalid join code' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const session = await fetchSessionByCode(c.env.DB, code)
+    if (!session || session.status !== 'live') {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'No live session for that code' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    return c.json({
+      ok: true,
+      data: { id: session.id, title: session.title, code: session.code },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  pub.get('/:id/ws', async (c) => {
+    if (c.req.header('upgrade')?.toLowerCase() !== 'websocket') {
+      return c.json(
+        { ok: false, error: { code: 'bad_request', message: 'Expected WebSocket upgrade' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const id = c.req.param('id')
+    const session = await c.env.DB
+      .prepare(
+        `SELECT id, owner_id, code, title, status, anonymity,
+                created_at, started_at, closed_at, archived_at
+           FROM sessions
+          WHERE id = ?1`,
+      )
+      .bind(id)
+      .first<SessionRow>()
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'live') {
+      return c.json(
+        { ok: false, error: { code: 'not_live', message: 'Session is not LIVE' }, trace_id: c.get('trace_id') },
+        409,
+      )
+    }
+
+    // Presenter detection: JWT in subprotocol OR qesto_session cookie.
+    let role: 'presenter' | 'voter' = 'voter'
+    const subprotoHeader = c.req.header('sec-websocket-protocol') ?? ''
+    const bearerToken = subprotoHeader
+      .split(',')
+      .map((s) => s.trim())
+      .find((s) => s.startsWith('qesto.bearer.'))
+      ?.replace('qesto.bearer.', '')
+    const cookieHeader = c.req.header('cookie') ?? ''
+    const cookieToken = cookieHeader
+      .split(';')
+      .map((s) => s.trim())
+      .find((s) => s.startsWith(`${SESSION_COOKIE}=`))
+      ?.substring(SESSION_COOKIE.length + 1)
+    const token = bearerToken ?? cookieToken
+    let presenterUserId: string | null = null
+    if (token) {
+      const claims = await verifyJwt(token, c.env.JWT_SECRET)
+      if (claims && claims.sub === session.owner_id) {
+        role = 'presenter'
+        presenterUserId = claims.sub
+      }
+    }
+
+    const identity = await deriveVoterIdentity(c.req.raw)
+    const voterId = role === 'presenter' && presenterUserId ? `host_${presenterUserId}` : identity.voterId
+
+    const stub = await doStub(c.env, id)
+    const upgraded = await stub.fetch('https://do.internal/ws', {
+      headers: {
+        upgrade: 'websocket',
+        'x-qesto-role': role,
+        'x-qesto-voter': voterId,
+        'x-qesto-ip-hash': identity.ipHash,
+      },
+    })
+    // Echo back the selected subprotocol (Sec-WebSocket-Protocol) if the
+    // client requested one — browsers require it on the 101 response.
+    if (upgraded.status === 101 && bearerToken) {
+      const headers = new Headers(upgraded.headers)
+      headers.set('sec-websocket-protocol', `qesto.bearer.${bearerToken}`)
+      return new Response(upgraded.body, {
+        status: 101,
+        headers,
+        webSocket: (upgraded as unknown as { webSocket?: WebSocket }).webSocket,
+      } as ResponseInit)
+    }
+    return upgraded
+  })
+
+  parent.route('/api/sessions', pub)
 
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
@@ -245,6 +385,122 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
 
     return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') })
+  })
+
+  // POST /api/sessions/:id/start — DRAFT → LIVE
+  app.post('/:id/start', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Only DRAFT sessions can be started' },
+          trace_id: c.get('trace_id'),
+        },
+        409,
+      )
+    }
+    const questions = await fetchQuestions(c.env.DB, id)
+    if (questions.length === 0 || questions[0].kind !== 'poll') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'no_question', message: 'Session has no poll question yet' },
+          trace_id: c.get('trace_id'),
+        },
+        409,
+      )
+    }
+    const now = Date.now()
+    await c.env.DB
+      .prepare(
+        `UPDATE sessions SET status = 'live', started_at = ?1 WHERE id = ?2 AND owner_id = ?3`,
+      )
+      .bind(now, id, user.sub)
+      .run()
+    session.status = 'live'
+    session.started_at = now
+
+    const liveQ = questionToLive(questions[0])
+    const doRes = await postDO(c.env, id, '/init', {
+      sessionId: session.id,
+      ownerId: session.owner_id,
+      code: session.code,
+      title: session.title,
+      question: liveQ,
+    })
+    if (doRes.status !== 200) {
+      // Best-effort rollback — DO rejected init.
+      await c.env.DB
+        .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
+        .bind(id)
+        .run()
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'do_init_failed', message: `DurableObject refused init (${doRes.status})` },
+          trace_id: c.get('trace_id'),
+        },
+        500,
+      )
+    }
+    return c.json({
+      ok: true,
+      data: { session, question: liveQ },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  // POST /api/sessions/:id/close — LIVE → CLOSED, persist totals.
+  app.post('/:id/close', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'live') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Only LIVE sessions can be closed' },
+          trace_id: c.get('trace_id'),
+        },
+        409,
+      )
+    }
+    const stub = await doStub(c.env, id)
+    const doRes = await stub.fetch('https://do.internal/close', { method: 'POST' })
+    const parsed = (await doRes.json().catch(() => null)) as
+      | { ok: true; data: { counts: Record<string, number>; total: number } }
+      | null
+    const counts = parsed?.ok ? parsed.data.counts : {}
+    const total = parsed?.ok ? parsed.data.total : 0
+
+    const closedAt = Date.now()
+    await c.env.DB
+      .prepare(`UPDATE sessions SET status = 'closed', closed_at = ?1 WHERE id = ?2 AND owner_id = ?3`)
+      .bind(closedAt, id, user.sub)
+      .run()
+    session.status = 'closed'
+    session.closed_at = closedAt
+
+    return c.json({
+      ok: true,
+      data: { session, results: { counts, total } },
+      trace_id: c.get('trace_id'),
+    })
   })
 
   parent.route('/api/sessions', app)
