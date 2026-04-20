@@ -85,48 +85,7 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Preview (Cloudflare Pages PR previews — *.pages.dev)
-# ─────────────────────────────────────────────────────────────────────────────
-
-[env.preview.vars]
-ENV = "preview"
-APP_URL = "https://preview.qesto2-github.oostelaar.workers.dev"
-CF_ACCESS_AUDIENCE = "5d61bf4270afa071f2ced03549ffb70998c2dd7506d5ec00d658e74ea234dda2"
-CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
-
-# Preview D1 / KV — uncomment once provisioned (see docs/DEPLOY_BOOTSTRAP.md).
-# [[env.preview.d1_databases]]
-# binding = "DB"
-# database_name = "qesto-preview"
-# database_id = "<paste>"
-# migrations_dir = "migrations"
-#
-# [[env.preview.kv_namespaces]]
-# binding = "USERS_KV"
-# id = "<paste>"
-# [[env.preview.kv_namespaces]]
-# binding = "SESSIONS_KV"
-# id = "<paste>"
-# [[env.preview.kv_namespaces]]
-# binding = "TEAMS_KV"
-# id = "<paste>"
-# [[env.preview.kv_namespaces]]
-# binding = "TEMPLATES_KV"
-# id = "<paste>"
-# [[env.preview.kv_namespaces]]
-# binding = "DECISIONS_KV"
-# id = "<paste>"
-# [[env.preview.kv_namespaces]]
-# binding = "AUDIT_KV"
-# id = "<paste>"
-# [[env.preview.kv_namespaces]]
-# binding = "ACTIONS_KV"
-# id = "<paste>"
-
-[[env.preview.durable_objects.bindings]]
-name = "SESSION_ROOM"
-class_name = "SessionRoom"
-
-[env.preview.ai]
-binding = "AI"
+# Preview env is intentionally not defined. Will be re-added in Phase 5 once
+# the staging D1/KV resources are provisioned (docs/DEPLOY_BOOTSTRAP.md).
+# Having a [env.preview] block today would make `wrangler versions upload`
+# warn about an ambiguous target.
