@@ -1,13 +1,13 @@
 name = "qesto2-github"
+main = "worker/index.ts"
 compatibility_date = "2026-04-19"
 compatibility_flags = ["nodejs_compat"]
 
-# Cloudflare Pages deployment: `wrangler pages deploy ./dist`
-# Functions live under ./functions and bind to this config.
-# Secrets: `wrangler pages secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
+# Cloudflare Worker with static assets. Build outputs go to ./dist via `npm run build`.
+# Secrets: `wrangler secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
 
 [assets]
-directory = "./public"
+directory = "./dist"
 not_found_handling = "single-page-application"
 
 [observability]
@@ -17,13 +17,7 @@ head_sampling_rate = 1
 [observability.logs]
 enabled = true
 head_sampling_rate = 1
-persist = true
 invocation_logs = true
-
-[observability.traces]
-enabled = true
-persist = true
-head_sampling_rate = 1
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Production (default)
