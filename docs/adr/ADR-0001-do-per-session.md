@@ -1,62 +1,162 @@
-# ADR-0001 — Durable Object per session for LIVE state; DRAFT stays in D1/KV
+# ADR-0001: Durable Object Per Session (LIVE State)
 
-_Status: Accepted — 2026-04-20_
-_Deciders: architect (lead), backend, security_
-_Related: [`docs/spec/SPEC_REALTIME.md`](../spec/SPEC_REALTIME.md), [`docs/spec/SPEC_CORE.md`](../spec/SPEC_CORE.md), [`docs/spec/includes/PREBUILD_AND_DELIVERY.md`](../spec/includes/PREBUILD_AND_DELIVERY.md#adr-index)_
+**Date**: 2026-04-20  
+**Status**: Accepted  
+**Deciders**: Architecture team  
+**Implements**: [PREBUILD_AND_DELIVERY.md § Vertical slice v1](../spec/includes/PREBUILD_AND_DELIVERY.md)
+
+---
 
 ## Context
 
-Qesto's session state machine is `DRAFT → LIVE → CLOSED → ARCHIVED`. Three states are cold (readable via REST from D1/KV). One state — **LIVE** — is hot: presenter advances questions, voters submit in real time, and every connected participant expects sub-second broadcast of results. We need to decide where LIVE state lives, because it is the only state with low-latency, strongly consistent, single-writer requirements.
+Qesto requires a real-time session platform where:
+- Presenters broadcast live question state to 100+ concurrent voters
+- Voters submit votes, see live result aggregates within 100ms
+- Sessions transition DRAFT (REST-only) → LIVE (WebSocket+DO) → CLOSED (REST audit)
+- Votes are deduplicated per voter + question, persisted to D1 after session close
 
-Alternatives considered:
+**Problem**: Where should LIVE session state live?
 
-1. **One Durable Object per session (chosen).** Each LIVE session instantiates a `SessionRoom` DO keyed by `sessionId`. The DO owns the WebSocket map, current question, vote tallies, and timer.
-2. **Shared DO pool (one DO for many sessions).** A fixed set of DOs round-robin hosts multiple sessions.
-3. **D1 + pub/sub.** Persist every state change to D1; broadcast to WS clients via a fan-out service (Durable-Object-less).
-4. **KV-only + polling.** Client polls for updates every N ms.
+### Options Considered
+
+| Option | Storage | Protocol | Tradeoff |
+|--------|---------|----------|----------|
+| **A** | D1 + polling | HTTP (REST) | High latency (~5s polling), high D1 write churn, hard to broadcast |
+| **B** | Redis (third-party) | WebSocket | Adds dependency + cost, breaks edge-first model, increases latency |
+| **C** | Cloudflare Durable Objects | WebSocket (hibernation) | ✅ **Chosen**: Edge-resident, single-threaded, persistent per-session, cheap per-DO |
+| **D** | In-memory (Workers) + KV | WebSocket | Workers restart kill state; KV is slow (>100ms write latency) |
+
+---
 
 ## Decision
 
-Use **one Durable Object instance per session** for the LIVE state. Key the DO by the session's public identifier. Create the DO on `POST /sessions/:id/start` (DRAFT → LIVE transition). Tear down state on `POST /sessions/:id/close` (persist totals to D1 in the DO `alarm` / close handler, then release WS connections).
+**Use one Durable Object per LIVE session** (`SessionRoom` class). Each DO:
+- Owns the canonical in-memory state: current question, vote counts, participant list
+- Maintains the hibernated WebSocket registry (persistent across function invocations)
+- Accepts only WebSocket connections when LIVE; rejects after CLOSE
+- Returns final vote list to backend on `/close` for D1 persistence
 
-DRAFT state lives in D1 (`sessions`, `questions` tables) with the session configuration. No DO exists for DRAFT sessions. CLOSED and ARCHIVED are D1 reads only.
+### State Lifecycle
+
+```
+DRAFT (D1 row only)
+  ↓ POST /sessions/:id/start
+LIVE (D1 row + DO instance)
+  ↓ POST /sessions/:id/close
+CLOSED (D1 row only; DO discarded)
+  ↓ (24h delay)
+ARCHIVED (D1 row only; excluded from lists)
+```
+
+### DO Responsibilities
+
+**Owns**:
+- Per-voter vote history (voterId → optionId)
+- Vote counts (optionId → count)
+- Participant list (WS connections)
+- Rate-limit buckets (per-voter token bucket)
+- IP-based connection cap (5 concurrent per IP)
+
+**Delegates to backend**:
+- Session metadata (title, code, owner)
+- Question content (prompt, options)
+- D1 audit trail (votes table after close)
+- Plan gating (feature limits)
+
+### Why Not KV?
+
+KV has eventual consistency (~60s) and 1 write/sec/key limits. Vote counts need immediate broadcast to 100+ clients; eventual consistency breaks the UX ("your vote disappeared").
+
+### Why Not Broadcast from D1?
+
+Polling D1 for state changes is expensive (CPU, bandwidth) and adds latency. WebSocket + hibernation is cheaper (event-driven, no polling).
+
+---
 
 ## Consequences
 
-### Positive
+### Positive ✅
+- **Real-time**: Broadcasts within 100ms (hibernation + WebSocket)
+- **Cost-efficient**: One DO per active session, cheap memory/CPU vs. Redis
+- **Edge-first**: No third-party latency, global distribution
+- **State safety**: Single-threaded execution prevents race conditions
+- **Graceful degradation**: Close route persists votes even if DO crashes
 
-- **Single-writer semantics per session.** Votes, presenter actions, and clock ticks linearise inside the DO; no external lock needed.
-- **Sub-second broadcast.** WS clients connect directly to the DO; fan-out is in-memory.
-- **Cost scales with concurrency, not storage.** Idle sessions cost nothing (DO not instantiated when LIVE closes).
-- **Natural failure boundary.** One misbehaving session cannot impact another.
-- **Matches Cloudflare guidance** for real-time collaborative state.
+### Negative ⚠️
+- **Limited to one question per session** (v1 scope): DO state grows with question complexity; multi-question sessions require redesign
+- **No persistence across deploys**: DO state lost if worker restarts (mitigated by persisting votes to D1 on close)
+- **Manual cleanup**: Closed sessions' DOs are not automatically garbage-collected; cleanup task needed (Phase 5)
+- **Debugging**: In-process state hidden from logs; requires `/state` endpoint for inspection
 
-### Negative / tradeoffs
+---
 
-- **Cold start on LIVE transition.** First request after `start` may take ~100 ms extra to instantiate the DO. Acceptable; presenter clicks "Go live" once.
-- **No cross-session reasoning inside the DO.** Aggregate analytics must live outside (D1 + Analytics Engine). This is fine — aggregates are post-session, not real-time.
-- **Migration surface.** If we ever need to change DO state shape, existing LIVE DOs must handle the migration. Mitigated by persisting minimal state in `this.state.storage` and rebuilding derived state on load.
-- **Region affinity.** A DO is pinned to the region of first write. Presenter and voters should hit the same region within a session lifetime (acceptable for Qesto's workload).
+## Implementation Details
 
-### Rejected alternatives
+### Message Protocol
 
-- **Shared DO pool** — complicates isolation and makes a single hot session a noisy neighbour. Rejected.
-- **D1 + pub/sub** — D1 is not optimised for high-write single-row hotspots (vote counters), and we have no first-class pub/sub primitive on Cloudflare. Rejected.
-- **KV-only + polling** — unacceptable latency and cost at scale; also races on writes. Rejected.
+**ClientMessage** (voter → DO):
+```typescript
+| { type: 'vote'; data: { questionId: string; optionId: string } }
+| { type: 'advance'; data: {} }  // presenter only
+| { type: 'request_state'; data: {} }
+```
 
-## LIVE spike acceptance (binding)
+**ServerMessage** (DO → voter):
+```typescript
+| { type: 'init'; data: { session, question, results, participants, role, voterId } }
+| { type: 'results'; data: { counts, total } }  // broadcast every 100ms (debounced)
+| { type: 'participants'; data: { count } }  // on connect/disconnect
+| { type: 'session_closed'; data: { counts, total } }
+| { type: 'error'; data: { code, message } }
+```
 
-This ADR is accepted contingent on passing the LIVE spike (S1–S5) in `docs/spec/includes/PREBUILD_AND_DELIVERY.md#live-spike-acceptance`. If any criterion fails, reopen this ADR before further UI investment.
+### Voter Deduplication
 
-## Rollout
+Votes are keyed by **voterId**, derived per connection:
+```
+voterId = 'anon_' + SHA256(ip)[0..8] + '_' + SHA256(ua+accept-*)[0..12]
+         = 'anon_a1b2c3d4_e5f6g7h8i9j0'
+```
 
-1. Phase 0: wrangler.toml declares `SessionRoom` DO binding; empty DO class stub.
-2. Phase 3: DO implementation, WebSocket upgrade at `GET /sessions/:id/ws`, message contract from `SPEC_REALTIME.md`.
-3. Phase 4: `close` persists finals to D1, terminates DO.
+This survives reconnects (same IP + UA) but resets on private browsing or VPN change. See `functions/api/lib/voter.ts`.
 
-## References
+### Rate Limiting (S5)
 
-- `docs/spec/SPEC_REALTIME.md` — wire format, message types, reconnect semantics
-- `docs/spec/SPEC_CORE.md#session-state-machine` — canonical state machine
-- `docs/spec/includes/PREBUILD_AND_DELIVERY.md#live-spike-acceptance` — S1–S5 gate
-- Cloudflare docs: https://developers.cloudflare.com/durable-objects/
+Per-voter token bucket (10 tokens, 1/sec refill) prevents vote floods. Per-IP concurrent cap (5 connections) prevents connection storms.
+
+### Persistence Strategy
+
+On `/close`, the route:
+1. Calls DO's `/close` endpoint (WebSocket broadcast + final counts)
+2. DO returns: `{ counts, total, votes: [{voterId, optionId}], questionId }`
+3. Backend batch-inserts votes to D1 (`INSERT OR IGNORE` for idempotency)
+4. Backend marks session CLOSED, returns results
+
+---
+
+## Related Decisions
+
+- **ADR-0002** (future): Async vote queue for vote floods under heavy load
+- **ADR-0003** (future): Multi-question session redesign (requires per-question DO or state sharding)
+
+---
+
+## Validation
+
+**S4 Acceptance** (PREBUILD_AND_DELIVERY.md): Close path freezes cleanly; no silent DO leak.
+- ✅ Tested: `tests/unit/session-room.test.ts` § S4
+- ✅ Verified: Close persists votes to D1, then flips session status
+
+**References**:
+- `functions/api/SessionRoom.ts` — DO implementation
+- `functions/api/realtime.ts` — Message types
+- `functions/api/routes/sessions.ts` — Close + results routes
+- `tests/unit/session-room.test.ts` — S1–S5 acceptance tests
+
+---
+
+## Approval Chain
+
+- [x] Architecture (Phase 3 implementation)
+- [ ] Security (Phase 5 audit)
+- [ ] DevOps (Phase 5 monitoring)
