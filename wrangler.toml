@@ -1,26 +1,17 @@
 name = "qesto2-github"
 compatibility_date = "2026-04-19"
+compatibility_flags = ["nodejs_compat"]
 
-# Sprint 1+ will add: main = "worker/index.ts" for the API Worker
-# Pages Functions (functions/api/) are deployed via `wrangler pages deploy ./dist`
-
-[vars]
-# Cloudflare Access — validate CF-Access-JWT-Assertion header in auth middleware
-# Production: qesto2-github.oostelaar.workers.dev
-CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
-CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
-
-# Preview deployments: *-qesto2-github.oostelaar.workers.dev
-[env.preview.vars]
-CF_ACCESS_AUDIENCE = "5d61bf4270afa071f2ced03549ffb70998c2dd7506d5ec00d658e74ea234dda2"
-CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+# Cloudflare Pages deployment: `wrangler pages deploy ./dist`
+# Functions live under ./functions and bind to this config.
+# Secrets: `wrangler pages secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
 
 [assets]
 directory = "./public"
 not_found_handling = "single-page-application"
 
 [observability]
-enabled = false
+enabled = true
 head_sampling_rate = 1
 
 [observability.logs]
@@ -33,3 +24,98 @@ invocation_logs = true
 enabled = true
 persist = true
 head_sampling_rate = 1
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Production (default)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[vars]
+ENV = "production"
+APP_URL = "https://qesto2-github.oostelaar.workers.dev"
+# Cloudflare Access (optional admin surface). Public user auth = magic link (Phase 1).
+CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
+CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "qesto-prod"
+database_id = "REPLACE_WITH_WRANGLER_D1_CREATE_OUTPUT"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[kv_namespaces]]
+binding = "TEAMS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[kv_namespaces]]
+binding = "TEMPLATES_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[kv_namespaces]]
+binding = "DECISIONS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[kv_namespaces]]
+binding = "AUDIT_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[kv_namespaces]]
+binding = "ACTIONS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+
+[[durable_objects.bindings]]
+name = "SESSION_ROOM"
+class_name = "SessionRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SessionRoom"]
+
+[ai]
+binding = "AI"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Preview (Cloudflare Pages PR previews — *.pages.dev)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[env.preview.vars]
+ENV = "preview"
+APP_URL = "https://preview.qesto2-github.oostelaar.workers.dev"
+CF_ACCESS_AUDIENCE = "5d61bf4270afa071f2ced03549ffb70998c2dd7506d5ec00d658e74ea234dda2"
+CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "qesto-preview"
+database_id = "REPLACE_WITH_WRANGLER_D1_CREATE_OUTPUT"
+migrations_dir = "migrations"
+
+[[env.preview.kv_namespaces]]
+binding = "USERS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[env.preview.kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[env.preview.kv_namespaces]]
+binding = "TEAMS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[env.preview.kv_namespaces]]
+binding = "TEMPLATES_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[env.preview.kv_namespaces]]
+binding = "DECISIONS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[env.preview.kv_namespaces]]
+binding = "AUDIT_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+[[env.preview.kv_namespaces]]
+binding = "ACTIONS_KV"
+id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+
+[[env.preview.durable_objects.bindings]]
+name = "SESSION_ROOM"
+class_name = "SessionRoom"
+
+[env.preview.ai]
+binding = "AI"

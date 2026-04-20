@@ -1,7 +1,7 @@
 ---
 name: qesto-frontend
 description: Senior frontend developer for Qesto. Implements React 19/TypeScript UI, WebSocket real-time state, and Tailwind CSS v4 styling. Invoke when working on src/, React components, pages, hooks, or UI styling. Accessibility (WCAG 2.1 AA) and mobile-first are non-negotiable.
-model: haiku
+model: sonnet
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

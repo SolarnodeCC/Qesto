@@ -1,0 +1,5 @@
+# .dev.vars — local-only secrets for `wrangler pages dev`.
+# Copy to .dev.vars and fill. NEVER commit. See CLAUDE.md hard rule 2.
+
+JWT_SECRET=change-me-to-32-plus-random-bytes
+RESEND_API_KEY=re_test_xxx_placeholder
