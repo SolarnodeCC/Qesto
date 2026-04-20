@@ -1,9 +1,11 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { mountAuthRoutes } from './routes/auth'
+import { authMiddleware, type AuthVariables } from './middleware/auth'
 import type { Env } from './types'
 
 export function createApp() {
-  const app = new Hono<{ Bindings: Env; Variables: { trace_id: string } }>()
+  const app = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
 
   // ──────────────────────────────────────────────────────────────────────────
   // Middleware stack (order matters — SPEC_BACKEND.md)
@@ -69,13 +71,13 @@ export function createApp() {
     }),
   )
 
-  // Placeholder for phased routes. Real handlers land in Phase 1+.
-  app.get('/api/me', (c) =>
-    c.json(
-      { ok: false, error: { code: 'unauthenticated', message: 'Not implemented until Phase 1' }, trace_id: c.get('trace_id')! },
-      401,
-    ),
-  )
+  // Authenticated identity probe.
+  app.get('/api/me', authMiddleware, (c) => {
+    const user = c.get('user')
+    return c.json({ ok: true, data: { id: user.sub, email: user.email }, trace_id: c.get('trace_id') })
+  })
+
+  mountAuthRoutes(app)
 
   return app
 }

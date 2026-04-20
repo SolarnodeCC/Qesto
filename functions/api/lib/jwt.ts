@@ -1,0 +1,78 @@
+// HS256 JWT sign/verify via WebCrypto. No third-party dependency —
+// runs on Cloudflare Workers and in Vitest (Node 20+).
+//
+// Claim shape is intentionally small for v1:
+//   { sub: userId, email, iat, exp }
+// Extend in Phase 2+ only when routes actually need new claims.
+
+const ALG = 'HS256'
+const HEADER = { alg: ALG, typ: 'JWT' }
+const HEADER_B64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(HEADER)))
+
+export type AuthClaims = {
+  sub: string
+  email: string
+  iat: number
+  exp: number
+}
+
+export async function signJwt(claims: Omit<AuthClaims, 'iat' | 'exp'>, secret: string, ttlSeconds: number): Promise<string> {
+  const now = Math.floor(Date.now() / 1000)
+  const full: AuthClaims = { ...claims, iat: now, exp: now + ttlSeconds }
+  const payloadB64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(full)))
+  const data = `${HEADER_B64}.${payloadB64}`
+  const sig = await hmacSign(secret, data)
+  return `${data}.${sig}`
+}
+
+export async function verifyJwt(token: string, secret: string): Promise<AuthClaims | null> {
+  const parts = token.split('.')
+  if (parts.length !== 3) return null
+  const [headerB64, payloadB64, sig] = parts
+  if (headerB64 !== HEADER_B64) return null
+  const expected = await hmacSign(secret, `${headerB64}.${payloadB64}`)
+  if (!timingSafeEqual(sig, expected)) return null
+  let claims: AuthClaims
+  try {
+    claims = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64))) as AuthClaims
+  } catch {
+    return null
+  }
+  const now = Math.floor(Date.now() / 1000)
+  if (typeof claims.exp !== 'number' || claims.exp < now) return null
+  if (typeof claims.sub !== 'string' || typeof claims.email !== 'string') return null
+  return claims
+}
+
+async function hmacSign(secret: string, data: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  )
+  const mac = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))
+  return base64UrlEncode(new Uint8Array(mac))
+}
+
+function base64UrlEncode(bytes: Uint8Array): string {
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function base64UrlDecode(s: string): Uint8Array {
+  const padded = s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4)
+  const bin = atob(padded)
+  const out = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
+  return out
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false
+  let diff = 0
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
+  return diff === 0
+}
