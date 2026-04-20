@@ -14,7 +14,7 @@
 import { Hono } from 'hono'
 import { ulid } from '../lib/ulid'
 import { generateJoinCode } from '../lib/code'
-import { withIdempotency } from '../lib/idempotency'
+import { IdempotencyInFlightError, withIdempotency } from '../lib/idempotency'
 import { deriveVoterIdentity } from '../lib/voter'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -231,16 +231,28 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         'x-qesto-ip-hash': identity.ipHash,
       },
     })
-    // Echo back the selected subprotocol (Sec-WebSocket-Protocol) if the
-    // client requested one — browsers require it on the 101 response.
-    if (upgraded.status === 101 && bearerToken) {
-      const headers = new Headers(upgraded.headers)
-      headers.set('sec-websocket-protocol', `qesto.bearer.${bearerToken}`)
-      return new Response(upgraded.body, {
-        status: 101,
-        headers,
-        webSocket: (upgraded as unknown as { webSocket?: WebSocket }).webSocket,
-      } as ResponseInit)
+    // Respond with a fixed subprotocol identifier. Browsers require the 101
+    // response to echo *one* of the offered subprotocols, but we must NEVER
+    // reflect `qesto.bearer.<JWT>` back — that would leak the bearer token in
+    // response headers (visible to proxies, browser devtools, logs).
+    // Instead, advertise a stable protocol name that the client offers
+    // alongside the bearer token: `qesto-v1`.
+    if (upgraded.status === 101) {
+      const offered = subprotoHeader
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
+      const hasV1 = offered.includes('qesto-v1')
+      const hasBearer = offered.some((p) => p.startsWith('qesto.bearer.'))
+      if (hasV1 || hasBearer) {
+        const headers = new Headers(upgraded.headers)
+        headers.set('sec-websocket-protocol', 'qesto-v1')
+        return new Response(upgraded.body, {
+          status: 101,
+          headers,
+          webSocket: (upgraded as unknown as { webSocket?: WebSocket }).webSocket,
+        } as ResponseInit)
+      }
     }
     return upgraded
   })
@@ -268,41 +280,59 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const user = c.get('user')
     const idemKey = c.req.header('idempotency-key') ?? undefined
 
-    const { status, body: payload, replayed } = await withIdempotency(
-      c.env.ACTIONS_KV,
-      user.sub,
-      idemKey,
-      async () => {
-        const id = ulid()
-        const code = generateJoinCode()
-        const now = Date.now()
-        await c.env.DB.prepare(
-          `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, created_at)
-           VALUES (?1, ?2, ?3, ?4, 'draft', 'anonymous', ?5)`,
+    let result: { status: number; body: { ok: true; data: { session: Session; questions: Question[] } }; replayed: boolean }
+    try {
+      result = await withIdempotency(
+        c.env.ACTIONS_KV,
+        user.sub,
+        idemKey,
+        async () => {
+          const id = ulid()
+          const code = generateJoinCode()
+          const now = Date.now()
+          await c.env.DB.prepare(
+            `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, created_at)
+             VALUES (?1, ?2, ?3, ?4, 'draft', 'anonymous', ?5)`,
+          )
+            .bind(id, user.sub, code, parsed.data.title, now)
+            .run()
+          const session: Session = {
+            id,
+            owner_id: user.sub,
+            code,
+            title: parsed.data.title,
+            status: 'draft',
+            anonymity: 'anonymous',
+            created_at: now,
+            started_at: null,
+            closed_at: null,
+            archived_at: null,
+          }
+          return {
+            status: 201,
+            body: { ok: true as const, data: { session, questions: [] as Question[] } },
+          }
+        },
+      )
+    } catch (err) {
+      if (err instanceof IdempotencyInFlightError) {
+        return c.json(
+          {
+            ok: false,
+            error: {
+              code: 'idem_in_flight',
+              message: 'A previous request with this Idempotency-Key is still in flight. Retry shortly.',
+            },
+            trace_id: c.get('trace_id'),
+          },
+          409,
         )
-          .bind(id, user.sub, code, parsed.data.title, now)
-          .run()
-        const session: Session = {
-          id,
-          owner_id: user.sub,
-          code,
-          title: parsed.data.title,
-          status: 'draft',
-          anonymity: 'anonymous',
-          created_at: now,
-          started_at: null,
-          closed_at: null,
-          archived_at: null,
-        }
-        return {
-          status: 201,
-          body: { ok: true, data: { session, questions: [] as Question[] } },
-        }
-      },
-    )
+      }
+      throw err
+    }
 
-    if (replayed) c.header('idempotent-replay', 'true')
-    return c.json({ ...payload, trace_id: c.get('trace_id') }, status as 201 | 200)
+    if (result.replayed) c.header('idempotent-replay', 'true')
+    return c.json({ ...result.body, trace_id: c.get('trace_id') }, result.status as 201 | 200)
   })
 
   // GET /api/sessions — list caller's sessions (DRAFT + LIVE + CLOSED, not ARCHIVED)
