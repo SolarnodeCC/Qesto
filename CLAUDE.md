@@ -123,3 +123,15 @@ This project uses a layered AI agent framework:
 /investigate    → loads investigate.md skill pack   (DO/WebSocket root-cause analysis, 5-step debug protocol)
 ```
 Knowledge packs auto-revoke at end of task — do not carry state between roles.
+
+### Model tiering (per-agent, per-work-type)
+
+Agent `model:` frontmatter is the source of truth. Main-agent dispatch should match work complexity to model.
+
+| Tier | Model | Agents | Work types |
+|---|---|---|---|
+| High | **opus** | `qesto-architect`, `qesto-backend`, `qesto-security`, `qesto-ai-strategy` | System design, ADRs, schema migrations, Durable Object / WebSocket protocol, auth flows, OWASP/STRIDE audits, abuse-surface review |
+| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries |
+| Low | **haiku** | `qesto-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
+
+When the main agent needs a model not matching any sub-agent, invoke the sub-agent whose tier matches. Prefer Opus for anything touching edge runtime correctness (DO lifecycle, JWT, rate limits, multi-tenant isolation); prefer Haiku for template-heavy mechanical work.

@@ -1,35 +1,90 @@
 name = "qesto2-github"
+main = "worker/index.ts"
 compatibility_date = "2026-04-19"
+compatibility_flags = ["nodejs_compat"]
 
-# Sprint 1+ will add: main = "worker/index.ts" for the API Worker
-# Pages Functions (functions/api/) are deployed via `wrangler pages deploy ./dist`
-
-[vars]
-# Cloudflare Access — validate CF-Access-JWT-Assertion header in auth middleware
-# Production: qesto2-github.oostelaar.workers.dev
-CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
-CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
-
-# Preview deployments: *-qesto2-github.oostelaar.workers.dev
-[env.preview.vars]
-CF_ACCESS_AUDIENCE = "5d61bf4270afa071f2ced03549ffb70998c2dd7506d5ec00d658e74ea234dda2"
-CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+# Cloudflare Worker with static assets. Build outputs go to ./dist via `npm run build`.
+# Secrets: `wrangler secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
+#
+# ──────────────────────────────────────────────────────────────────────────────
+# BOOTSTRAP: D1 + KV bindings are commented out because their IDs are per-account.
+# Follow docs/DEPLOY_BOOTSTRAP.md once to provision the resources, paste the IDs
+# back in below, and uncomment the blocks. Until then, only [assets], [build],
+# [observability], [ai], and the SessionRoom DO deploy — /api/admin/health works
+# but /api/auth/* (which needs `DB`) will 500 until D1 is wired.
+# ──────────────────────────────────────────────────────────────────────────────
 
 [assets]
-directory = "./public"
+directory = "./dist"
 not_found_handling = "single-page-application"
 
+# Run `npm run build` (tokens:build + vite build) before every upload so the
+# [assets] directory exists in CI where the deploy command is just
+# `wrangler versions upload`.
+[build]
+command = "npm run build"
+
 [observability]
-enabled = false
+enabled = true
 head_sampling_rate = 1
 
 [observability.logs]
 enabled = true
 head_sampling_rate = 1
-persist = true
 invocation_logs = true
 
-[observability.traces]
-enabled = true
-persist = true
-head_sampling_rate = 1
+# ─────────────────────────────────────────────────────────────────────────────
+# Production (default)
+# ─────────────────────────────────────────────────────────────────────────────
+
+[vars]
+ENV = "production"
+APP_URL = "https://qesto2-github.oostelaar.workers.dev"
+# Cloudflare Access (optional admin surface). Public user auth = magic link (Phase 1).
+CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
+CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "qesto_2_db"
+database_id = "45b8f13f-7ba1-416b-bf95-1747fa9d4c12"
+migrations_dir = "migrations"
+
+# KV — uncomment after `wrangler kv namespace create <BINDING>` for each and paste each id.
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "59ace5d056a340098f1ceaf8990eca4b"
+[[kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "88275458e15e4ce6ae097535ead3bcb4"
+[[kv_namespaces]]
+binding = "TEAMS_KV"
+id = "987c025856de4b21a5e606af16c73d94"
+[[kv_namespaces]]
+binding = "TEMPLATES_KV"
+id = "5406a5484688421f9a60f3ab683827e2"
+[[kv_namespaces]]
+binding = "DECISIONS_KV"
+id = "50b43d826334455980bb84b2e0f442b7"
+[[kv_namespaces]]
+binding = "AUDIT_KV"
+id = "8a418acd50924c89a6fb8d19a7777d31"
+[[kv_namespaces]]
+binding = "ACTIONS_KV"
+id = "59680ad5a348400f89f36c148dbc72ef"
+
+[[durable_objects.bindings]]
+name = "SESSION_ROOM"
+class_name = "SessionRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SessionRoom"]
+
+[ai]
+binding = "AI"
+
+# Preview env is intentionally not defined. Will be re-added in Phase 5 once
+# the staging D1/KV resources are provisioned (docs/DEPLOY_BOOTSTRAP.md).
+# Having a [env.preview] block today would make `wrangler versions upload`
+# warn about an ambiguous target.

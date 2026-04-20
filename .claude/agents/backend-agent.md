@@ -1,6 +1,7 @@
 ---
 name: qesto-backend
 description: Senior backend developer for Qesto. Implements Hono API routes, KV/D1 patterns, Durable Objects, and external integrations on Cloudflare Workers. Invoke when working on functions/api/, worker/, schema.sql, KV/D1 access patterns, or external service integrations.
+model: opus
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

@@ -93,7 +93,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ### CORE-04: WebSocket Live Session Room (Durable Object)
 
-**Size**: 13 pts | **Sprint**: 2 | **Priority**: P0
+**Size**: 13 pts | **Sprint**: 2 | **Priority**: P0 | **Status**: ✅ Shipped (Phase 3)
 
 **Story**: As the platform, I need a Durable Object SessionRoom that maintains realtime state and broadcasts updates to all connected participants.
 
@@ -112,7 +112,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ### CORE-05: Realtime Vote Submission
 
-**Size**: 8 pts | **Sprint**: 2 | **Priority**: P0
+**Size**: 8 pts | **Sprint**: 2 | **Priority**: P0 | **Status**: ✅ Shipped (Phase 3)
 
 **Story**: As a participant, I can submit my vote in realtime and see it recorded, so I can participate in the session.
 
@@ -152,7 +152,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ### CORE-07: Participant Join Flow
 
-**Size**: 8 pts | **Sprint**: 2 | **Priority**: P0
+**Size**: 8 pts | **Sprint**: 2 | **Priority**: P0 | **Status**: ✅ Shipped (Phase 3)
 
 **Story**: As a participant, I can join a LIVE session via a shareable link and see the current question.
 
@@ -171,7 +171,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ### CORE-08: Session Results Export
 
-**Size**: 5 pts | **Sprint**: 4 | **Priority**: P1
+**Size**: 5 pts | **Sprint**: 4 | **Priority**: P1 | **Status**: ✅ Shipped (Phase 4)
 
 **Story**: As a session owner, I can export all votes and responses as CSV after a session closes, so I can analyze results offline.
 

@@ -108,9 +108,7 @@ Single sequence the team agrees on (adjust commands to match `package.json` in r
 
 | ADR | Title | Status | Link |
 |-----|-------|--------|------|
-| — | *(add first ADR when you lock DO-per-session, auth vendor, etc.)* | Proposed | `docs/adr/0001-…md` or PR link |
-
-Replace placeholder when the first architecture decision is recorded.
+| ADR-0001 | Durable Object Per Session (LIVE State) | Accepted | [`docs/adr/ADR-0001-do-per-session.md`](../../adr/ADR-0001-do-per-session.md) |
 
 ---
 
