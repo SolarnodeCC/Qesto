@@ -4,6 +4,8 @@ import { mountAuthRoutes } from './routes/auth'
 import { mountSessionRoutes } from './routes/sessions'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import type { PlanVariables } from './middleware/plan'
+import { loggerMiddleware } from './middleware/logger'
+import { rateLimit } from './middleware/rate-limit'
 import type { Env } from './types'
 
 type Vars = AuthVariables & PlanVariables
@@ -38,6 +40,19 @@ export function createApp() {
     }),
   )
 
+  // Structured JSON log line per request (silent in dev).
+  app.use('*', loggerMiddleware)
+
+  // Per-route rate limits (KV-backed, fail-open).
+  app.use('/api/auth/request', rateLimit<Vars>({ namespace: 'auth', limit: 5, windowSec: 600 }))
+  app.use('/api/sessions', async (c, next) => {
+    if (c.req.method === 'POST') {
+      return rateLimit<Vars>({ namespace: 'session-create', limit: 30, windowSec: 3600 })(c, next)
+    }
+    await next()
+  })
+  app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
+
   app.onError((err, c) => {
     const trace_id = c.get('trace_id') ?? 'unknown'
     const maybeStatus = (err as unknown as { status?: number }).status
@@ -70,6 +85,7 @@ export function createApp() {
         env: c.env.ENV,
         ts: Date.now(),
         region: (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null,
+        commit: c.env.COMMIT_SHA ?? 'unknown',
       },
       trace_id: c.get('trace_id')!,
     }),

@@ -1,0 +1,15 @@
+{
+  "loading": "Loading…",
+  "noResults": "No results available",
+  "resultsTitle": "Session results",
+  "question": "Question {number}",
+  "responses": "{count} responses",
+  "insights": "AI insights",
+  "generateInsights": "Generate insights",
+  "generatingInsights": "Generating insights…",
+  "sentiment": "Sentiment",
+  "themes": "Key themes",
+  "back": "Back to dashboard",
+  "export": "Export results",
+  "exporting": "Exporting…"
+}

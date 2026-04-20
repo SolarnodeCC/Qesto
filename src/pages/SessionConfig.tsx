@@ -120,9 +120,9 @@ export default function SessionConfig() {
   }
 
   return (
-    <main className="min-h-screen max-w-2xl mx-auto p-8 space-y-6">
+    <main id="main" className="min-h-screen max-w-2xl mx-auto p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline">
+        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
           ← Dashboard
         </Link>
         <span className="text-xs uppercase tracking-wider rounded-full px-2 py-0.5 bg-pulse-100 text-pulse-600">
@@ -132,7 +132,7 @@ export default function SessionConfig() {
 
       <header>
         <p className="text-sm uppercase tracking-widest text-teal-600">Session</p>
-        <h1 className="text-3xl font-semibold">Configure</h1>
+        <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Configure</h1>
         <p className="text-sm text-pulse-500">Join code: <code className="font-mono">{data.session.code}</code></p>
       </header>
 
@@ -221,7 +221,7 @@ export default function SessionConfig() {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -243,7 +243,7 @@ export default function SessionConfig() {
               }
               navigate(`/sessions/${id}/present`)
             }}
-            className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 hover:bg-teal-50 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 hover:bg-teal-50 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
           >
             {data.session.status === 'live'
               ? 'Already live'
@@ -256,7 +256,7 @@ export default function SessionConfig() {
           {data.session.status === 'live' ? (
             <Link
               to={`/sessions/${id}/present`}
-              className="text-sm text-teal-600 hover:underline"
+              className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
             >
               Open presenter view →
             </Link>

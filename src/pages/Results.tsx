@@ -111,9 +111,9 @@ export default function Results() {
   }
 
   return (
-    <main className="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+    <main id="main" className="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline">
+        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
           ← Dashboard
         </Link>
         <span
@@ -132,7 +132,7 @@ export default function Results() {
 
       <header className="space-y-1">
         <p className="text-sm uppercase tracking-widest text-teal-600">Results</p>
-        <h1 className="text-3xl font-semibold">{session.title}</h1>
+        <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{session.title}</h1>
         <p className="text-sm text-pulse-500">
           Join code <code className="font-mono">{session.code}</code>
           {session.closed_at
@@ -169,7 +169,11 @@ export default function Results() {
                       {r.count} ({pct}%)
                     </span>
                   </div>
-                  <div className="h-3 bg-pulse-100 rounded-full overflow-hidden">
+                  <div
+                    role="img"
+                    aria-label={`${r.label}: ${r.count} votes, ${pct}%`}
+                    className="h-3 bg-pulse-100 rounded-full overflow-hidden"
+                  >
                     <div
                       className={
                         'h-full transition-[width] duration-500 ' +
@@ -195,14 +199,14 @@ export default function Results() {
           type="button"
           onClick={handleExport}
           disabled={!question || results.total === 0}
-          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
         >
           Export CSV
         </button>
         <button
           type="button"
           onClick={() => void load()}
-          className="text-sm text-teal-600 hover:underline"
+          className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
         >
           Refresh
         </button>

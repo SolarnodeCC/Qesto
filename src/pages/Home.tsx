@@ -5,10 +5,10 @@ export default function Home() {
   const auth = useAuth()
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
+    <main id="main" className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
       <div className="max-w-xl space-y-6">
         <p className="text-sm uppercase tracking-widest text-teal-600">Qesto</p>
-        <h1 className="text-4xl md:text-6xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent">
+        <h1 tabIndex={-1} className="text-4xl md:text-6xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none">
           Feel the pulse of the room — AI amplifies it.
         </h1>
         <p className="text-lg text-pulse-600">
@@ -19,7 +19,7 @@ export default function Home() {
             <div className="flex flex-col items-center gap-2">
               <Link
                 to="/dashboard"
-                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110"
+                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
                 Go to dashboard
               </Link>
@@ -28,7 +28,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => void auth.logout()}
-                  className="ml-2 text-teal-600 hover:underline"
+                  className="ml-2 text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                 >
                   Sign out
                 </button>
@@ -39,7 +39,7 @@ export default function Home() {
           ) : (
             <Link
               to="/login"
-              className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110"
+              className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             >
               Sign in
             </Link>

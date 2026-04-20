@@ -20,7 +20,7 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
+    <main id="main" className="min-h-screen flex items-center justify-center p-6">
       <section
         aria-labelledby="login-title"
         className="w-full max-w-md space-y-6 rounded-2xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-8 shadow-sm"
@@ -28,7 +28,8 @@ export default function Login() {
         <div className="space-y-2 text-center">
           <h1
             id="login-title"
-            className="text-3xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
+            tabIndex={-1}
+            className="text-3xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none"
           >
             Sign in to Qesto
           </h1>

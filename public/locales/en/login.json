@@ -1,0 +1,16 @@
+{
+  "title": "Sign in to Qesto",
+  "subtitle": "We'll email you a one-time sign-in link.",
+  "errorInvalid": "That sign-in link was invalid. Please request a new one.",
+  "errorExpired": "Your sign-in link has expired or was already used. Request a new one below.",
+  "emailLabel": "Email address",
+  "emailPlaceholder": "you@example.com",
+  "emailInvalid": "Please enter a valid email address.",
+  "emailRequired": "Email is required.",
+  "submitButton": "Send sign-in link",
+  "sending": "Sending…",
+  "successTitle": "Check your email",
+  "successMessage": "We've sent a sign-in link to {email}. It expires in 24 hours.",
+  "successHint": "Didn't receive it? Check your spam folder or try again.",
+  "tryAgain": "Try again"
+}

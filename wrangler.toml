@@ -43,6 +43,8 @@ APP_URL = "https://qesto2-github.oostelaar.workers.dev"
 # Cloudflare Access (optional admin surface). Public user auth = magic link (Phase 1).
 CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
 CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+# CI overrides COMMIT_SHA at deploy time with the actual git SHA.
+COMMIT_SHA = "dev"
 
 [[d1_databases]]
 binding = "DB"
