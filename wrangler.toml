@@ -5,6 +5,14 @@ compatibility_flags = ["nodejs_compat"]
 
 # Cloudflare Worker with static assets. Build outputs go to ./dist via `npm run build`.
 # Secrets: `wrangler secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
+#
+# ──────────────────────────────────────────────────────────────────────────────
+# BOOTSTRAP: D1 + KV bindings are commented out because their IDs are per-account.
+# Follow docs/DEPLOY_BOOTSTRAP.md once to provision the resources, paste the IDs
+# back in below, and uncomment the blocks. Until then, only [assets], [build],
+# [observability], [ai], and the SessionRoom DO deploy — /api/admin/health works
+# but /api/auth/* (which needs `DB`) will 500 until D1 is wired.
+# ──────────────────────────────────────────────────────────────────────────────
 
 [assets]
 directory = "./dist"
@@ -36,33 +44,35 @@ APP_URL = "https://qesto2-github.oostelaar.workers.dev"
 CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
 CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "qesto-prod"
-database_id = "REPLACE_WITH_WRANGLER_D1_CREATE_OUTPUT"
-migrations_dir = "migrations"
+# D1 — uncomment after `wrangler d1 create qesto-prod` and paste the id.
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "qesto-prod"
+# database_id = "<paste from wrangler d1 create>"
+# migrations_dir = "migrations"
 
-[[kv_namespaces]]
-binding = "USERS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[kv_namespaces]]
-binding = "SESSIONS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[kv_namespaces]]
-binding = "TEAMS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[kv_namespaces]]
-binding = "TEMPLATES_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[kv_namespaces]]
-binding = "DECISIONS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[kv_namespaces]]
-binding = "AUDIT_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[kv_namespaces]]
-binding = "ACTIONS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+# KV — uncomment after `wrangler kv namespace create <BINDING>` for each and paste each id.
+# [[kv_namespaces]]
+# binding = "USERS_KV"
+# id = "<paste>"
+# [[kv_namespaces]]
+# binding = "SESSIONS_KV"
+# id = "<paste>"
+# [[kv_namespaces]]
+# binding = "TEAMS_KV"
+# id = "<paste>"
+# [[kv_namespaces]]
+# binding = "TEMPLATES_KV"
+# id = "<paste>"
+# [[kv_namespaces]]
+# binding = "DECISIONS_KV"
+# id = "<paste>"
+# [[kv_namespaces]]
+# binding = "AUDIT_KV"
+# id = "<paste>"
+# [[kv_namespaces]]
+# binding = "ACTIONS_KV"
+# id = "<paste>"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
@@ -85,33 +95,34 @@ APP_URL = "https://preview.qesto2-github.oostelaar.workers.dev"
 CF_ACCESS_AUDIENCE = "5d61bf4270afa071f2ced03549ffb70998c2dd7506d5ec00d658e74ea234dda2"
 CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
 
-[[env.preview.d1_databases]]
-binding = "DB"
-database_name = "qesto-preview"
-database_id = "REPLACE_WITH_WRANGLER_D1_CREATE_OUTPUT"
-migrations_dir = "migrations"
-
-[[env.preview.kv_namespaces]]
-binding = "USERS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[env.preview.kv_namespaces]]
-binding = "SESSIONS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[env.preview.kv_namespaces]]
-binding = "TEAMS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[env.preview.kv_namespaces]]
-binding = "TEMPLATES_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[env.preview.kv_namespaces]]
-binding = "DECISIONS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[env.preview.kv_namespaces]]
-binding = "AUDIT_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
-[[env.preview.kv_namespaces]]
-binding = "ACTIONS_KV"
-id = "REPLACE_WITH_WRANGLER_KV_CREATE_OUTPUT"
+# Preview D1 / KV — uncomment once provisioned (see docs/DEPLOY_BOOTSTRAP.md).
+# [[env.preview.d1_databases]]
+# binding = "DB"
+# database_name = "qesto-preview"
+# database_id = "<paste>"
+# migrations_dir = "migrations"
+#
+# [[env.preview.kv_namespaces]]
+# binding = "USERS_KV"
+# id = "<paste>"
+# [[env.preview.kv_namespaces]]
+# binding = "SESSIONS_KV"
+# id = "<paste>"
+# [[env.preview.kv_namespaces]]
+# binding = "TEAMS_KV"
+# id = "<paste>"
+# [[env.preview.kv_namespaces]]
+# binding = "TEMPLATES_KV"
+# id = "<paste>"
+# [[env.preview.kv_namespaces]]
+# binding = "DECISIONS_KV"
+# id = "<paste>"
+# [[env.preview.kv_namespaces]]
+# binding = "AUDIT_KV"
+# id = "<paste>"
+# [[env.preview.kv_namespaces]]
+# binding = "ACTIONS_KV"
+# id = "<paste>"
 
 [[env.preview.durable_objects.bindings]]
 name = "SESSION_ROOM"
