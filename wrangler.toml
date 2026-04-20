@@ -44,12 +44,11 @@ APP_URL = "https://qesto2-github.oostelaar.workers.dev"
 CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
 CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
 
-# D1 — uncomment after `wrangler d1 create qesto-prod` and paste the id.
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "qesto-prod"
-# database_id = "<paste from wrangler d1 create>"
-# migrations_dir = "migrations"
+[[d1_databases]]
+binding = "DB"
+database_name = "qesto_2_db"
+database_id = "45b8f13f-7ba1-416b-bf95-1747fa9d4c12"
+migrations_dir = "migrations"
 
 # KV — uncomment after `wrangler kv namespace create <BINDING>` for each and paste each id.
 [[kv_namespaces]]
