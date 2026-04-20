@@ -16,16 +16,24 @@ export default function Home() {
         </p>
         <div className="flex items-center justify-center gap-3">
           {auth.status === 'authenticated' ? (
-            <span className="text-sm text-pulse-600">
-              Signed in as <strong>{auth.user.email}</strong>.
-              <button
-                type="button"
-                onClick={() => void auth.logout()}
-                className="ml-2 text-teal-600 hover:underline"
+            <div className="flex flex-col items-center gap-2">
+              <Link
+                to="/dashboard"
+                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110"
               >
-                Sign out
-              </button>
-            </span>
+                Go to dashboard
+              </Link>
+              <span className="text-xs text-pulse-500">
+                Signed in as <strong>{auth.user.email}</strong>.
+                <button
+                  type="button"
+                  onClick={() => void auth.logout()}
+                  className="ml-2 text-teal-600 hover:underline"
+                >
+                  Sign out
+                </button>
+              </span>
+            </div>
           ) : auth.status === 'loading' ? (
             <span className="text-sm text-pulse-500">Loading…</span>
           ) : (

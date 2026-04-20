@@ -1,6 +1,7 @@
 // Lightweight in-memory D1 stub covering the exact SQL statements used by
-// the Phase 1 auth routes. Not a general-purpose D1 implementation — the
-// query strings are pattern-matched literally. Extend it as new queries land.
+// the v1 auth + session routes. Not a general-purpose D1 implementation —
+// the query strings are pattern-matched literally. Extend it as new queries
+// land.
 
 type MagicLink = {
   token_hash: string
@@ -20,9 +21,34 @@ type User = {
   plan: 'free' | 'starter' | 'team'
 }
 
+type SessionRow = {
+  id: string
+  owner_id: string
+  code: string
+  title: string
+  status: 'draft' | 'live' | 'closed' | 'archived'
+  anonymity: 'anonymous' | 'identified'
+  created_at: number
+  started_at: number | null
+  closed_at: number | null
+  archived_at: number | null
+}
+
+type QuestionRow = {
+  id: string
+  session_id: string
+  position: number
+  kind: 'poll' | 'ranking' | 'consent' | 'open'
+  prompt: string
+  options_json: string
+  created_at: number
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
+  readonly sessions = new Map<string, SessionRow>()
+  readonly questions = new Map<string, QuestionRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -86,6 +112,69 @@ export class D1PreparedStatementMock {
       row.last_login_at = last_login_at
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO sessions')) {
+      const [id, owner_id, code, title, created_at] = this.args as [
+        string,
+        string,
+        string,
+        string,
+        number,
+      ]
+      if ([...this.db.sessions.values()].some((s) => s.code === code)) {
+        throw new Error('UNIQUE constraint failed: sessions.code')
+      }
+      this.db.sessions.set(id, {
+        id,
+        owner_id,
+        code,
+        title,
+        status: 'draft',
+        anonymity: 'anonymous',
+        created_at,
+        started_at: null,
+        closed_at: null,
+        archived_at: null,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET title')) {
+      const [title, id, owner_id] = this.args as [string, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.title = title
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM questions')) {
+      const [session_id] = this.args as [string]
+      let changes = 0
+      for (const [qid, row] of this.db.questions) {
+        if (row.session_id === session_id) {
+          this.db.questions.delete(qid)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('INSERT INTO questions')) {
+      const [id, session_id, kind, prompt, options_json, created_at] = this.args as [
+        string,
+        string,
+        'poll' | 'ranking' | 'consent' | 'open',
+        string,
+        string,
+        number,
+      ]
+      this.db.questions.set(id, {
+        id,
+        session_id,
+        position: 0,
+        kind,
+        prompt,
+        options_json,
+        created_at,
+      })
+      return { meta: { changes: 1 } }
+    }
     throw new Error(`d1-mock: unsupported run(): ${this.sql}`)
   }
 
@@ -93,7 +182,9 @@ export class D1PreparedStatementMock {
     if (this.sql.startsWith('SELECT email, expires_at, consumed_at FROM magic_links')) {
       const [token_hash] = this.args as [string]
       const row = this.db.magicLinks.get(token_hash)
-      return (row ? { email: row.email, expires_at: row.expires_at, consumed_at: row.consumed_at } : null) as T | null
+      return (row
+        ? { email: row.email, expires_at: row.expires_at, consumed_at: row.consumed_at }
+        : null) as T | null
     }
     if (this.sql.startsWith('SELECT id FROM users WHERE email')) {
       const [email] = this.args as [string]
@@ -102,10 +193,35 @@ export class D1PreparedStatementMock {
       }
       return null
     }
+    if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
+      // Single-row lookup: WHERE id = ?1 AND owner_id = ?2
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      return (row && row.owner_id === owner_id ? (row as unknown as T) : null)
+    }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
 
   async all<T = unknown>(): Promise<{ results: T[] }> {
+    if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
+      // List form: WHERE owner_id = ?1 AND status != 'archived'
+      const [owner_id] = this.args as [string]
+      const rows = [...this.db.sessions.values()]
+        .filter((s) => s.owner_id === owner_id && s.status !== 'archived')
+        .sort((a, b) => b.created_at - a.created_at)
+      return { results: rows as unknown as T[] }
+    }
+    if (
+      this.sql.startsWith(
+        'SELECT id, session_id, position, kind, prompt, options_json, created_at',
+      )
+    ) {
+      const [session_id] = this.args as [string]
+      const rows = [...this.db.questions.values()]
+        .filter((q) => q.session_id === session_id)
+        .sort((a, b) => a.position - b.position)
+      return { results: rows as unknown as T[] }
+    }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)
   }
 }

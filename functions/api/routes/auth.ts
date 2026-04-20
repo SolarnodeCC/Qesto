@@ -6,13 +6,16 @@ import { generateMagicLinkToken, hashMagicLinkToken } from '../lib/tokens'
 import { magicLinkEmail, sendEmail } from '../lib/email'
 import { ulid } from '../lib/ulid'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
+import type { PlanVariables } from '../middleware/plan'
 import type { Env } from '../types'
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000        // 15 min
 const JWT_TTL_SECONDS = 14 * 24 * 60 * 60       // 14 days
 
-export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: AuthVariables }>) {
-  const app = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
+type Vars = AuthVariables & PlanVariables
+
+export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
+  const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
   const requestSchema = z.object({ email: z.string().email().max(254) })
 

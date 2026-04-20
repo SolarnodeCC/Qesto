@@ -1,11 +1,15 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { mountAuthRoutes } from './routes/auth'
+import { mountSessionRoutes } from './routes/sessions'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
+import type { PlanVariables } from './middleware/plan'
 import type { Env } from './types'
 
+type Vars = AuthVariables & PlanVariables
+
 export function createApp() {
-  const app = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
+  const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
   // ──────────────────────────────────────────────────────────────────────────
   // Middleware stack (order matters — SPEC_BACKEND.md)
@@ -78,6 +82,7 @@ export function createApp() {
   })
 
   mountAuthRoutes(app)
+  mountSessionRoutes(app)
 
   return app
 }
