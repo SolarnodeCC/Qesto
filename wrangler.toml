@@ -10,6 +10,12 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./dist"
 not_found_handling = "single-page-application"
 
+# Run `npm run build` (tokens:build + vite build) before every upload so the
+# [assets] directory exists in CI where the deploy command is just
+# `wrangler versions upload`.
+[build]
+command = "npm run build"
+
 [observability]
 enabled = true
 head_sampling_rate = 1
