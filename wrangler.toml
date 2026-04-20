@@ -52,27 +52,27 @@ CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/ce
 # migrations_dir = "migrations"
 
 # KV — uncomment after `wrangler kv namespace create <BINDING>` for each and paste each id.
-# [[kv_namespaces]]
-# binding = "USERS_KV"
-# id = "<paste>"
-# [[kv_namespaces]]
-# binding = "SESSIONS_KV"
-# id = "<paste>"
-# [[kv_namespaces]]
-# binding = "TEAMS_KV"
-# id = "<paste>"
-# [[kv_namespaces]]
-# binding = "TEMPLATES_KV"
-# id = "<paste>"
-# [[kv_namespaces]]
-# binding = "DECISIONS_KV"
-# id = "<paste>"
-# [[kv_namespaces]]
-# binding = "AUDIT_KV"
-# id = "<paste>"
-# [[kv_namespaces]]
-# binding = "ACTIONS_KV"
-# id = "<paste>"
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "59ace5d056a340098f1ceaf8990eca4b"
+[[kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "88275458e15e4ce6ae097535ead3bcb4"
+[[kv_namespaces]]
+binding = "TEAMS_KV"
+id = "987c025856de4b21a5e606af16c73d94"
+[[kv_namespaces]]
+binding = "TEMPLATES_KV"
+id = "5406a5484688421f9a60f3ab683827e2"
+[[kv_namespaces]]
+binding = "DECISIONS_KV"
+id = "50b43d826334455980bb84b2e0f442b7"
+[[kv_namespaces]]
+binding = "AUDIT_KV"
+id = "8a418acd50924c89a6fb8d19a7777d31"
+[[kv_namespaces]]
+binding = "ACTIONS_KV"
+id = "59680ad5a348400f89f36c148dbc72ef"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
