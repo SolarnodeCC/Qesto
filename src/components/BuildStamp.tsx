@@ -26,7 +26,11 @@ export default function BuildStamp() {
   }, [])
 
   const mismatch = useMemo(
-    () => apiCommit !== 'unknown' && BUILD_INFO.frontendCommit !== 'unknown' && apiCommit !== BUILD_INFO.frontendCommit,
+    () =>
+      apiCommit !== 'unknown' &&
+      apiCommit !== 'dev' &&
+      BUILD_INFO.frontendCommit !== 'unknown' &&
+      apiCommit !== BUILD_INFO.frontendCommit,
     [apiCommit],
   )
 
