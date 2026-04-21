@@ -4,7 +4,10 @@
 export type Env = {
   // Vars
   ENV: 'production' | 'preview' | 'dev' | 'staging'
-  APP_URL: string
+  /** Pages origin — used for CORS allowed-origin and CSRF check. */
+  PAGES_URL: string
+  /** Worker's own URL — used for OAuth redirect_uri and email magic-link base. */
+  API_URL: string
   CF_ACCESS_AUDIENCE?: string
   CF_ACCESS_CERTS_URL?: string
   COMMIT_SHA?: string
@@ -12,6 +15,11 @@ export type Env = {
   // Secrets (wrangler pages secret put ...)
   JWT_SECRET: string
   RESEND_API_KEY?: string
+  GOOGLE_CLIENT_ID?: string
+  GOOGLE_CLIENT_SECRET?: string
+  MICROSOFT_CLIENT_ID?: string
+  MICROSOFT_CLIENT_SECRET?: string
+  MICROSOFT_TENANT_ID?: string
 
   // Bindings
   DB: D1Database

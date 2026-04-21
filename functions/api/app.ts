@@ -17,7 +17,7 @@ import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import type { Env } from './types'
 
-type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & RbacVariables
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
 
 export function createApp() {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -32,6 +32,7 @@ export function createApp() {
     const trace_id = incoming && /^[a-zA-Z0-9_-]{8,128}$/.test(incoming) ? incoming : crypto.randomUUID()
     c.set('trace_id', trace_id)
     c.header('x-trace-id', trace_id)
+    c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
     await next()
   })
 
@@ -39,11 +40,17 @@ export function createApp() {
     '*',
     cors({
       origin: (origin, c) => {
-        const allowed = c.env.APP_URL
-        return origin === allowed ? origin : allowed
+        const allowed = c.env.PAGES_URL
+        if (!origin) return null
+        if (origin === allowed) return origin
+        // Allow Cloudflare Pages preview deployments (<hash>.qesto.pages.dev).
+        if (/^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(origin)) return origin
+        // Allow localhost in dev (Vite dev server).
+        if (c.env.ENV === 'dev' && origin.startsWith('http://localhost:')) return origin
+        return null
       },
       allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['content-type', 'authorization', 'x-trace-id'],
+      allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'idempotency-key'],
       credentials: true,
       maxAge: 600,
     }),
@@ -93,6 +100,18 @@ export function createApp() {
       { ok: false, error: { code: 'not_found', message: 'Route not found' }, trace_id: c.get('trace_id') ?? 'unknown' },
       404,
     ),
+  )
+
+  // Public deploy/version probe for parity checks.
+  app.get('/api/version', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        env: c.env.ENV,
+        commit: c.env.COMMIT_SHA ?? 'unknown',
+      },
+      trace_id: c.get('trace_id')!,
+    }),
   )
 
   // Health — no auth, cheap, always on.

@@ -141,8 +141,11 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     closedByClientRef.current = false
     dispatch({ kind: 'connecting' })
 
-    const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const url = `${scheme}://${window.location.host}/api/sessions/${encodeURIComponent(sessionId)}/ws${
+    const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
+    const wsBase = apiBase
+      ? apiBase.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://')
+      : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`
+    const url = `${wsBase}/api/sessions/${encodeURIComponent(sessionId)}/ws${
       fingerprint ? `?fp=${encodeURIComponent(fingerprint)}` : ''
     }`
     const subprotocols = presenterToken ? [`qesto.bearer.${presenterToken}`] : undefined

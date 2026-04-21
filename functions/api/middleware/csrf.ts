@@ -1,17 +1,18 @@
 // CSRF defense-in-depth: validate the Origin header for state-changing,
 // cookie-authenticated requests.
 //
-// SameSite=Lax already blocks cross-site form submits in modern browsers, but
-// we reject mismatched Origins as belt-and-braces mitigation against:
-//   • legacy UAs without SameSite support
-//   • sub-origin / sibling-domain attacks not covered by SameSite
-//   • the "method=GET → form submit" edge cases that slip past Lax
+// The session cookie uses SameSite=None to support cross-origin requests from
+// Cloudflare Pages (frontend) to the Worker (API). This means the browser WILL
+// send the cookie on cross-site requests, so Origin-header checking is the
+// primary CSRF defence. We reject mismatched Origins to mitigate:
+//   • CSRF from attacker pages that can trigger credentialed cross-origin fetches
+//   • sub-origin / sibling-domain attacks not covered by SameSite=None
 //
 // Applies to POST / PATCH / PUT / DELETE. GET / HEAD / OPTIONS are skipped
 // because they must remain safe and CORS-preflightable.
 //
 // Scope:
-//   • Expects Origin (or falls back to Referer) to match c.env.APP_URL exactly
+//   • Expects Origin (or falls back to Referer) to match c.env.PAGES_URL exactly
 //     (scheme + host + port).
 //   • Exempts the WebSocket upgrade path (`/api/sessions/:id/ws`) — browsers
 //     do NOT send Origin for same-origin WS upgrades in a cross-site
@@ -47,7 +48,7 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // explicit in case future refactors change the verb.
   if (c.req.header('upgrade')?.toLowerCase() === 'websocket') return next()
 
-  const expected = normaliseOrigin(c.env.APP_URL)
+  const expected = normaliseOrigin(c.env.PAGES_URL)
   if (!expected) {
     // Misconfigured deploy — fail closed.
     return c.json(
@@ -67,11 +68,12 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // If neither Origin nor Referer is present, the request is not coming from
   // a browser that exposes cross-site context (e.g. curl, a CLI, or a
   // same-origin fetch where the UA chose to omit the header). Since the
-  // session cookie is HttpOnly + SameSite=Lax, cross-site attackers cannot
+  // session cookie is HttpOnly + SameSite=None, cross-site attackers cannot
   // forge a fetch *without* sending an Origin. Be permissive for this case
   // to avoid breaking non-browser integrations; reject only when a header is
   // present and mismatched.
-  if (candidate && candidate !== expected) {
+  const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
+  if (candidate && candidate !== expected && !isPreview) {
     return c.json(
       {
         ok: false,

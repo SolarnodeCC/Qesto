@@ -74,7 +74,7 @@ export function checkAlert(
 /** Convenience wrapper that also accepts the AlertInput shape. */
 export function checkAlertInput(input: AlertInput): AlertResult {
   return checkAlert(input.route, input.p95_latency, input.error_rate, {
-    do_crash: input.do_crash,
-    request_count: input.request_count,
+    ...(typeof input.do_crash === 'boolean' ? { do_crash: input.do_crash } : {}),
+    ...(typeof input.request_count === 'number' ? { request_count: input.request_count } : {}),
   })
 }

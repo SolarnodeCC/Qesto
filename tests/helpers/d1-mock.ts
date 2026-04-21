@@ -110,11 +110,25 @@ export class D1PreparedStatementMock {
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO users')) {
-      const [id, email, created_at] = this.args as [string, string, number]
+      // Two call shapes (both now use distinct ?N indices — no D1 parameter reuse):
+      //   magic-link (4 args): id, email, created_at, last_login_at
+      //   password signup (5 args): id, email, display_name, created_at, last_login_at
+      const args = this.args as [string, string, string | number | null, number, number?]
+      const [id, email] = args
+      let display_name: string | null = null
+      let created_at: number
+      if (args.length >= 5) {
+        // password signup: (id, email, display_name, created_at, last_login_at)
+        display_name = (typeof args[2] === 'string' || args[2] === null) ? (args[2] as string | null) : null
+        created_at = args[3] as number
+      } else {
+        // magic-link: (id, email, created_at, last_login_at)
+        created_at = args[2] as number
+      }
       this.db.users.set(id, {
         id,
         email,
-        display_name: null,
+        display_name,
         created_at,
         last_login_at: created_at,
         plan: 'free',

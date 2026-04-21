@@ -5,7 +5,8 @@ import type { Env } from '../../functions/api/types'
 function fakeEnv(): Env {
   return {
     ENV: 'dev',
-    APP_URL: 'http://local',
+    PAGES_URL: 'http://local',
+    API_URL: 'http://local',
     JWT_SECRET: 'test-secret',
   } as unknown as Env
 }

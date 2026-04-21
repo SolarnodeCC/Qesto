@@ -1,127 +1,85 @@
-import { useEffect, useState } from 'react'
-
 type LocaleMap = Record<string, Record<string, string>>
+
+const NAMESPACES = ['common', 'home', 'login', 'auth', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard']
 
 let cachedLocales: LocaleMap = {}
 let currentLanguage = 'en'
+let initPromise: Promise<void> | null = null
 
-/**
- * Detect user language preference
- * Matches navigator.language against available languages
- * Falls back to 'en' if no match found
- */
 export function detectLanguage(): string {
   const browserLang = navigator.language.slice(0, 2)
-  const availableLanguages = ['en', 'nl', 'es', 'de', 'fr']
-  return availableLanguages.includes(browserLang) ? browserLang : 'en'
+  const available = ['en', 'nl', 'es', 'de', 'fr']
+  return available.includes(browserLang) ? browserLang : 'en'
 }
 
-/**
- * Load all translation files for a given language
- */
-async function loadLocales(language: string): Promise<LocaleMap> {
-  const locales: LocaleMap = {}
-  const namespaces = ['common', 'home', 'login', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard']
-
+async function fetchNamespace(language: string, namespace: string): Promise<[string, Record<string, string>]> {
   try {
-    for (const namespace of namespaces) {
-      const url = `/locales/${language}/${namespace}.json`
-      const response = await fetch(url)
-      if (response.ok) {
-        locales[namespace] = await response.json()
-      } else {
-        console.warn(`[i18n] Failed to load ${namespace} for ${language}`)
-        // Fallback to English if translation missing
-        if (language !== 'en') {
-          const enResponse = await fetch(`/locales/en/${namespace}.json`)
-          if (enResponse.ok) {
-            locales[namespace] = await enResponse.json()
-          }
-        }
+    const res = await fetch(`/locales/${language}/${namespace}.json`)
+    if (res.ok) {
+      const data = await res.json() as Record<string, string>
+      // Guard against Pages returning index.html (SPA fallback) instead of JSON.
+      if (typeof data === 'object' && data !== null) return [namespace, data]
+    }
+    // Fallback to English
+    if (language !== 'en') {
+      const enRes = await fetch(`/locales/en/${namespace}.json`)
+      if (enRes.ok) {
+        const enData = await enRes.json() as Record<string, string>
+        if (typeof enData === 'object' && enData !== null) return [namespace, enData]
       }
     }
-  } catch (error) {
-    console.error('[i18n] Error loading locales:', error)
+  } catch {
+    // Network error or JSON parse failure (e.g. Pages served HTML fallback).
   }
-
-  return locales
+  console.warn(`[i18n] Failed to load namespace '${namespace}' for '${language}'`)
+  return [namespace, {}]
 }
 
-/**
- * Translate a key with optional variable interpolation
- * Variables are replaced in format: {varName}
- * Falls back to key itself if not found (surfaces missing translations in dev)
- */
-function translate(
-  namespace: string,
-  key: string,
-  vars?: Record<string, string | number>
-): string {
+// Call once before rendering the React app to avoid showing raw keys on first paint.
+export async function initI18n(): Promise<void> {
+  if (initPromise) return initPromise
+  initPromise = (async () => {
+    const language = detectLanguage()
+    currentLanguage = language
+    try {
+      const entries = await Promise.all(NAMESPACES.map((ns) => fetchNamespace(language, ns)))
+      cachedLocales = Object.fromEntries(entries)
+    } catch (err) {
+      console.error('[i18n] Failed to load translations, UI will show keys as fallback:', err)
+    }
+  })()
+  return initPromise
+}
+
+function translate(namespace: string, key: string, vars?: Record<string, string | number>): string {
   const ns = cachedLocales[namespace]
   if (!ns) {
     console.warn(`[i18n] Namespace '${namespace}' not loaded`)
     return key
   }
-
   let value = ns[key]
   if (!value) {
     console.warn(`[i18n] Missing key '${namespace}.${key}'`)
     return key
   }
-
-  // Simple variable interpolation: replace {var} with vars[var]
   if (vars) {
-    Object.entries(vars).forEach(([varKey, varValue]) => {
-      value = value.replace(`{${varKey}}`, String(varValue))
+    Object.entries(vars).forEach(([k, v]) => {
+      value = value.replace(`{{${k}}}`, String(v)).replace(`{${k}}`, String(v))
     })
   }
-
   return value
 }
 
-/**
- * Hook to get translation function for a namespace
- * Loads translations on mount
- * Usage:
- *   const t = useT('home')
- *   t('title') // returns translated string
- *   t('welcome', { name: 'John' }) // with variables
- */
+// Synchronous after initI18n() has resolved — no per-hook loading state needed.
 export function useT(namespace: string) {
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  useEffect(() => {
-    async function init() {
-      if (Object.keys(cachedLocales).length === 0) {
-        const detected = detectLanguage()
-        currentLanguage = detected
-        cachedLocales = await loadLocales(detected)
-      }
-      setIsLoaded(true)
-    }
-
-    init()
-  }, [])
-
-  return (key: string, vars?: Record<string, string | number>): string => {
-    if (!isLoaded) {
-      console.warn(`[i18n] Translations not yet loaded for key '${namespace}.${key}'`)
-      return key
-    }
-    return translate(namespace, key, vars)
-  }
+  return (key: string, vars?: Record<string, string | number>): string =>
+    translate(namespace, key, vars)
 }
 
-/**
- * Get all currently loaded locales (for testing/debugging)
- */
 export function getLoadedLocales(): LocaleMap {
   return cachedLocales
 }
 
-/**
- * Get current language
- */
 export function getCurrentLanguage(): string {
   return currentLanguage
 }

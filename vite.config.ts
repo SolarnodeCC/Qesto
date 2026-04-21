@@ -3,9 +3,28 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 import { theme as generatedTheme } from './src/ui/tailwind-theme'
+import { execSync } from 'node:child_process'
+
+function getFrontendCommit(): string {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 12)
+  try {
+    return execSync('git rev-parse --short=12 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim()
+  } catch {
+    return 'unknown'
+  }
+}
+
+const frontendCommit = getFrontendCommit()
+const frontendBuildTime = new Date().toISOString()
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  define: {
+    __QESTO_FRONTEND_COMMIT__: JSON.stringify(frontendCommit),
+    __QESTO_FRONTEND_BUILD_TIME__: JSON.stringify(frontendBuildTime),
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -44,7 +63,11 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:8788',
+      '/api': {
+        target: 'http://localhost:8787',
+        changeOrigin: false,
+        ws: true,
+      },
     },
   },
   test: {

@@ -22,7 +22,7 @@ const TTL_SECONDS = 24 * 60 * 60
 // PENDING sentinels are short-lived so a crashed handler releases the lock.
 // Must comfortably exceed the worst-case handler latency — 30s covers D1 +
 // DO init on a cold edge.
-const PENDING_TTL_SECONDS = 30
+const PENDING_TTL_SECONDS = 60
 const PENDING_MARKER = '__qesto_pending__' as const
 
 type StoredValue =

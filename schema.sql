@@ -8,7 +8,7 @@
 PRAGMA foreign_keys = ON;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- users — magic-link authenticated hosts
+-- users — authenticated hosts (magic-link, password, or OAuth)
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,                                         -- ulid
