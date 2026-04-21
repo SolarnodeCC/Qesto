@@ -35,6 +35,27 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     target: 'es2022',
+    rollupOptions: {
+      output: {
+        // Code-split vendor libraries for caching (Phase 10 Step 1)
+        manualChunks: (id) => {
+          // Split vendor libraries into separate chunks
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) {
+              return 'react-vendor'
+            }
+            if (id.includes('@tailwindcss') || id.includes('tailwindcss')) {
+              return 'tailwind'
+            }
+            return 'vendor'
+          }
+        },
+        // Optimize chunk size (>50kb triggers a warning)
+        chunkFileNames: 'chunks/[name]-[hash].js',
+        entryFileNames: '[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
+    },
   },
   server: {
     port: 5173,

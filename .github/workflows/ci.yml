@@ -34,6 +34,9 @@ jobs:
         run: git diff --exit-code src/ui/tailwind-theme.ts
         continue-on-error: false
 
+      - name: Check design token usage (check-design-tokens)
+        run: npm run check:design-tokens
+
       - name: i18n validation (check-i18n)
         run: npm run check:i18n
 

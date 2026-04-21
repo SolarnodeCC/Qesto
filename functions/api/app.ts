@@ -5,6 +5,9 @@ import { mountSessionRoutes } from './routes/sessions'
 import { mountBillingRoutes } from './routes/billing'
 import { mountInsightsRoutes } from './routes/insights'
 import { mountAdminRoutes } from './routes/admin'
+import { mountEnergizerRoutes } from './routes/energizers'
+import { mountGamificationRoutes } from './routes/gamification'
+import { mountAIInsightsRoutes } from './routes/ai-insights'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
@@ -136,6 +139,9 @@ export function createApp() {
   mountBillingRoutes(app)
   mountInsightsRoutes(app)
   mountAdminRoutes(app)
+  mountEnergizerRoutes(app)
+  mountGamificationRoutes(app)
+  mountAIInsightsRoutes(app)
 
   return app
 }
