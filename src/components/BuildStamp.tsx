@@ -1,13 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import { api } from '../api/client'
 import { BUILD_INFO } from '../buildInfo'
 
-type HealthResponse = {
-  ok: boolean
-  data?: {
-    commit?: string
-    env?: string
-  }
-}
+type HealthData = { commit?: string; env?: string }
 
 export default function BuildStamp() {
   const [apiCommit, setApiCommit] = useState<string>('unknown')
@@ -17,16 +12,10 @@ export default function BuildStamp() {
     let cancelled = false
 
     async function loadHealth() {
-      try {
-        const res = await fetch('/api/admin/health')
-        if (!res.ok) return
-        const body = (await res.json()) as HealthResponse
-        if (!cancelled && body.ok) {
-          setApiCommit(body.data?.commit ?? 'unknown')
-          setApiEnv(body.data?.env ?? 'unknown')
-        }
-      } catch {
-        // Keep defaults when health endpoint is unreachable.
+      const result = await api<HealthData>('/api/admin/health')
+      if (!cancelled && result.ok) {
+        setApiCommit(result.data.commit ?? 'unknown')
+        setApiEnv(result.data.env ?? 'unknown')
       }
     }
 
@@ -36,9 +25,10 @@ export default function BuildStamp() {
     }
   }, [])
 
-  const mismatch = useMemo(() => {
-    return apiCommit !== 'unknown' && BUILD_INFO.frontendCommit !== 'unknown' && apiCommit !== BUILD_INFO.frontendCommit
-  }, [apiCommit])
+  const mismatch = useMemo(
+    () => apiCommit !== 'unknown' && BUILD_INFO.frontendCommit !== 'unknown' && apiCommit !== BUILD_INFO.frontendCommit,
+    [apiCommit],
+  )
 
   return (
     <p className="text-[11px] text-pulse-500 text-center">
