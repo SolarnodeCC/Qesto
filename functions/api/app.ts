@@ -45,7 +45,7 @@ export function createApp() {
         return null
       },
       allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['content-type', 'authorization', 'x-trace-id'],
+      allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'idempotency-key'],
       credentials: true,
       maxAge: 600,
     }),
