@@ -101,3 +101,40 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit_log(ts);
 CREATE INDEX IF NOT EXISTS idx_audit_subject ON audit_log(subject_type, subject_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- user_roles — RBAC role assignments (Phase 8)
+-- Roles: owner, admin, member, viewer, guest
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_roles (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member', 'viewer', 'guest')),
+  created_at INTEGER NOT NULL,
+  UNIQUE(user_id, role)
+);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- audit_events — comprehensive audit trail with before/after snapshots (Phase 8)
+-- Captures all state mutations with full change tracking for compliance
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS audit_events (
+  id TEXT PRIMARY KEY,
+  ts INTEGER NOT NULL,                                           -- unix ms
+  actor_id TEXT REFERENCES users(id),                            -- who performed the action
+  actor_ip TEXT,                                                 -- source IP
+  action TEXT NOT NULL,                                          -- e.g. 'session.start', 'user.role_change'
+  subject_type TEXT,                                             -- 'session', 'user', 'team'
+  subject_id TEXT,                                               -- target resource ID
+  before_snapshot TEXT,                                          -- JSON of state before
+  after_snapshot TEXT,                                           -- JSON of state after
+  trace_id TEXT,                                                 -- request correlation ID
+  idempotency_key TEXT,                                          -- deduplication key for retries
+  UNIQUE(trace_id, action, subject_id)                           -- prevent duplicate logging
+);
+CREATE INDEX IF NOT EXISTS idx_audit_events_ts ON audit_events(ts DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_events_actor ON audit_events(actor_id);
+CREATE INDEX IF NOT EXISTS idx_audit_events_subject ON audit_events(subject_type, subject_id);
+CREATE INDEX IF NOT EXISTS idx_audit_events_action ON audit_events(action);

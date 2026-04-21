@@ -14,6 +14,7 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
+import { queryAuditEvents } from '../lib/audit'
 import type { Env } from '../types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -335,6 +336,26 @@ export function mountAdminRoutes(parent: any) {
       }
       throw err
     }
+  })
+
+  // ── GET /api/admin/audit ────────────────────────────────────────────────────
+  // Query audit events with filtering by actor, action, date range.
+  // p95 target: < 1 s.
+  app.get('/audit', async (c) => {
+    const trace_id = c.get('trace_id')
+    const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 100
+    const offset = c.req.query('offset') ? parseInt(c.req.query('offset')!) : 0
+
+    const opts: any = { limit, offset }
+    if (c.req.query('actor_id')) opts.actor_id = c.req.query('actor_id')
+    if (c.req.query('action')) opts.action = c.req.query('action')
+    if (c.req.query('subject_type')) opts.subject_type = c.req.query('subject_type')
+    if (c.req.query('since_ts')) opts.since_ts = parseInt(c.req.query('since_ts')!)
+    if (c.req.query('until_ts')) opts.until_ts = parseInt(c.req.query('until_ts')!)
+
+    const result = await queryAuditEvents(c, opts)
+
+    return c.json({ ok: true, data: result, trace_id }, 200)
   })
 
   parent.route('/api/admin', app)
