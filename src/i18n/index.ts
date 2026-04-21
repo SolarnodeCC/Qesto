@@ -13,14 +13,25 @@ export function detectLanguage(): string {
 }
 
 async function fetchNamespace(language: string, namespace: string): Promise<[string, Record<string, string>]> {
-  const res = await fetch(`/locales/${language}/${namespace}.json`)
-  if (res.ok) return [namespace, await res.json() as Record<string, string>]
-  // Fallback to English
-  if (language !== 'en') {
-    const enRes = await fetch(`/locales/en/${namespace}.json`)
-    if (enRes.ok) return [namespace, await enRes.json() as Record<string, string>]
+  try {
+    const res = await fetch(`/locales/${language}/${namespace}.json`)
+    if (res.ok) {
+      const data = await res.json() as Record<string, string>
+      // Guard against Pages returning index.html (SPA fallback) instead of JSON.
+      if (typeof data === 'object' && data !== null) return [namespace, data]
+    }
+    // Fallback to English
+    if (language !== 'en') {
+      const enRes = await fetch(`/locales/en/${namespace}.json`)
+      if (enRes.ok) {
+        const enData = await enRes.json() as Record<string, string>
+        if (typeof enData === 'object' && enData !== null) return [namespace, enData]
+      }
+    }
+  } catch {
+    // Network error or JSON parse failure (e.g. Pages served HTML fallback).
   }
-  console.warn(`[i18n] Failed to load ${namespace} for ${language}`)
+  console.warn(`[i18n] Failed to load namespace '${namespace}' for '${language}'`)
   return [namespace, {}]
 }
 
