@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
 CREATE INDEX IF NOT EXISTS idx_sessions_code ON sessions(code);
+-- Phase 10 Step 2: Compound index for listing sessions by owner + status
+CREATE INDEX IF NOT EXISTS idx_sessions_owner_status ON sessions(owner_id, status, created_at DESC);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- questions — v1 slice supports 'poll' only. Other types reserved for future.
@@ -69,6 +71,8 @@ CREATE TABLE IF NOT EXISTS questions (
   UNIQUE(session_id, position)
 );
 CREATE INDEX IF NOT EXISTS idx_questions_session ON questions(session_id);
+-- Phase 10 Step 2: Compound index for ordered question fetching
+CREATE INDEX IF NOT EXISTS idx_questions_session_position ON questions(session_id, position);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- votes — persisted after session close (LIVE state stays in the DO)
@@ -85,6 +89,8 @@ CREATE TABLE IF NOT EXISTS votes (
 );
 CREATE INDEX IF NOT EXISTS idx_votes_session ON votes(session_id);
 CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
+-- Phase 10 Step 2: Compound index for vote aggregation by question
+CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_log — append-only trail for security, GDPR, ops
@@ -138,6 +144,8 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_ts ON audit_events(ts DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_events_actor ON audit_events(actor_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_subject ON audit_events(subject_type, subject_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_action ON audit_events(action);
+-- Phase 10 Step 2: Compound index for audit queries by actor + timestamp
+CREATE INDEX IF NOT EXISTS idx_audit_events_actor_ts ON audit_events(actor_id, ts DESC);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- badges — auto-awarded achievement tracking (Phase 9)
@@ -165,7 +173,9 @@ CREATE TABLE IF NOT EXISTS energizers (
   options_json TEXT NOT NULL DEFAULT '[]',
   config_json TEXT NOT NULL DEFAULT '{}',
   position INTEGER NOT NULL,
+  state TEXT NOT NULL DEFAULT 'draft' CHECK (state IN ('draft', 'active', 'completed')),
   created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(session_id, position)
 );
 CREATE INDEX IF NOT EXISTS idx_energizers_session ON energizers(session_id);

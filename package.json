@@ -14,7 +14,9 @@
     "test:coverage": "vitest run --coverage && node scripts/measure-coverage.mjs",
     "test:flaky-check": "node scripts/detect-flaky.mjs",
     "typecheck": "tsc --noEmit",
-    "check:i18n": "node scripts/check-i18n.mjs"
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "check:design-tokens": "node scripts/check-design-tokens.mjs",
+    "perf:audit": "node scripts/perf-audit.mjs"
   },
   "dependencies": {
     "hono": "^4.6.0",

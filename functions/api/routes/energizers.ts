@@ -12,6 +12,9 @@ import {
   initializeBattleRoyale,
   initializeBracket,
   advanceBattleRoyaleRound,
+  advanceBracketRound,
+  getBattleRoyaleWinner,
+  getBracketWinner,
   determineBadgesAwarded,
 } from '../lib/gamification'
 import { recordAuditEvent } from '../lib/audit'
@@ -56,11 +59,12 @@ export function mountEnergizerRoutes(parent: any) {
         : initializeBracket(body.participants, body.bracket_size ?? 8)
 
       // Insert energizer
+      const now = Date.now()
       await (c.env.DB.prepare as any)(
-        `INSERT INTO energizers (id, session_id, kind, prompt, config_json, position, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
+        `INSERT INTO energizers (id, session_id, kind, prompt, config_json, position, state, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`,
       )
-        .bind(energizerId, sessionId, body.kind, body.prompt, JSON.stringify(config), 0, Date.now())
+        .bind(energizerId, sessionId, body.kind, body.prompt, JSON.stringify(config), 0, 'draft', now, now)
         .run()
 
       // Audit
@@ -76,6 +80,168 @@ export function mountEnergizerRoutes(parent: any) {
     } catch (err) {
       console.error('[energizers] create failed:', err)
       return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+    }
+  })
+
+  // POST /sessions/:sessionId/energizers/:energizerId/advance
+  app.post('/sessions/:sessionId/energizers/:energizerId/advance', async (c) => {
+    const trace_id = c.get('trace_id')
+    const sessionId = c.req.param('sessionId')
+    const energizerId = c.req.param('energizerId')
+
+    try {
+      const body = await c.req.json<{
+        scores: Record<string, number> // participant_id -> score
+        round: number // current round number
+      }>()
+
+      // Fetch energizer config
+      const energizer = await (c.env.DB.prepare as any)(
+        `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`
+      )
+        .bind(energizerId, sessionId)
+        .first()
+
+      if (!energizer) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Energizer not found' }, trace_id },
+          404
+        )
+      }
+
+      const config = JSON.parse(energizer.config_json)
+      let nextState = energizer.state
+      let winners = null
+      let nextRound = null
+
+      if (energizer.kind === 'battle_royale') {
+        const { advancing, eliminated, scaledScores } = advanceBattleRoyaleRound(
+          config.participants,
+          body.scores,
+          config.elimination_threshold ?? 0.5,
+          config.scoring_multiplier ?? 1
+        )
+
+        // Check if competition is over
+        if (advancing.length === 1) {
+          nextState = 'completed'
+          winners = { champion: advancing[0], scores: scaledScores }
+        } else {
+          nextRound = { round: body.round + 1, participants: advancing, scores: scaledScores }
+          config.participants = advancing
+        }
+      } else if (energizer.kind === 'bracket') {
+        const winnerIds = Object.entries(body.scores)
+          .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
+          .slice(0, Object.keys(body.scores).length / 2)
+          .map(([id]) => id)
+
+        const nextMatches = advanceBracketRound(winnerIds)
+
+        // Check if bracket is over (only 1 winner)
+        if (nextMatches.length === 0 || winnerIds.length === 1) {
+          nextState = 'completed'
+          winners = { champion: winnerIds[0], scores: body.scores }
+        } else {
+          nextRound = { round: body.round + 1, matches: nextMatches }
+        }
+      }
+
+      // Update energizer state
+      await (c.env.DB.prepare as any)(
+        `UPDATE energizers SET state = ?1, config_json = ?2, updated_at = ?3 WHERE id = ?4`
+      )
+        .bind(nextState, JSON.stringify(config), Date.now(), energizerId)
+        .run()
+
+      // Award badges if competition completed
+      if (nextState === 'completed' && winners) {
+        const user = c.get('user')
+        const badges = determineBadgesAwarded(user.sub, {
+          leaderboard_rank: winners.champion === user.sub ? 1 : undefined,
+        })
+
+        if (badges.length > 0) {
+          for (const badge of badges) {
+            await (c.env.DB.prepare as any)(
+              `INSERT OR IGNORE INTO badges (user_id, badge_type, session_id, awarded_at)
+               VALUES (?1, ?2, ?3, ?4)`
+            )
+              .bind(user.sub, badge, sessionId, Date.now())
+              .run()
+          }
+        }
+      }
+
+      // Audit
+      await recordAuditEvent(c, {
+        action: 'energizer.advance',
+        subject_type: 'energizer',
+        subject_id: energizerId,
+        after_snapshot: { round: body.round + 1, state: nextState, winners },
+        trace_id,
+      })
+
+      return c.json(
+        {
+          ok: true,
+          data: { state: nextState, nextRound, winners },
+          trace_id,
+        },
+        200
+      )
+    } catch (err) {
+      console.error('[energizers] advance failed:', err)
+      return c.json(
+        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        500
+      )
+    }
+  })
+
+  // GET /sessions/:sessionId/energizers/:energizerId
+  app.get('/sessions/:sessionId/energizers/:energizerId', async (c) => {
+    const trace_id = c.get('trace_id')
+    const sessionId = c.req.param('sessionId')
+    const energizerId = c.req.param('energizerId')
+
+    try {
+      const result = await (c.env.DB.prepare as any)(
+        `SELECT id, kind, prompt, config_json, state, position, created_at FROM energizers
+         WHERE id = ?1 AND session_id = ?2`
+      )
+        .bind(energizerId, sessionId)
+        .first()
+
+      if (!result) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Energizer not found' }, trace_id },
+          404
+        )
+      }
+
+      return c.json(
+        {
+          ok: true,
+          data: {
+            id: result.id,
+            kind: result.kind,
+            prompt: result.prompt,
+            config: JSON.parse(result.config_json),
+            state: result.state,
+            position: result.position,
+            created_at: result.created_at,
+          },
+          trace_id,
+        },
+        200
+      )
+    } catch (err) {
+      console.error('[energizers] get failed:', err)
+      return c.json(
+        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        500
+      )
     }
   })
 

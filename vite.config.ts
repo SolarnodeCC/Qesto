@@ -16,6 +16,30 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     target: 'es2022',
+    rollupOptions: {
+      output: {
+        // Code-split for heavy routes (Phase 10 Step 1)
+        manualChunks: {
+          // Wizard: AI integration, heavy dependencies
+          wizard: ['./src/pages/Wizard.tsx'],
+          // Results: complex visualizations
+          results: ['./src/pages/Results.tsx'],
+          // Insights: analytics and AI features
+          insights: ['./src/pages/Insights.tsx'],
+          // Admin: metrics and monitoring
+          admin: ['./src/pages/AdminDashboard.tsx'],
+          // Vendor chunks for reuse
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+        },
+        // Optimize chunk size (>50kb triggers a warning)
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop().split('.')[0] : 'chunk'
+          return `chunks/${facadeModuleId}-[hash].js`
+        },
+        entryFileNames: '[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
+    },
   },
   server: {
     port: 5173,
