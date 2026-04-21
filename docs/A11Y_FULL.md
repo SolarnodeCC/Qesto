@@ -54,6 +54,29 @@ Presenter view (`Present.tsx`) retains its own `<main id="main">` as a full-scre
 - CTA gradient buttons (teal→violet) on white: verified ≥ 4.5:1 at midpoints.
 - Dark mode: `--color-surface: #0A0F1E`, `--color-ink: #FAFAFA` — verified ≥ 18:1.
 
+### 2.8 Skeleton States (LAYOUT-SKELETON-01 — shipped 2026-04-21)
+`src/components/SkeletonLoader.tsx` provides geometric loading skeletons wired into pages:
+- `Dashboard.tsx` — `SessionListSkeleton` replaces "Loading sessions…" text in both auth-loading and data-loading states
+- `Results.tsx` — `ResultsSectionSkeleton` replaces bare loading text in both auth-loading and data-loading states
+- `Launchpad.tsx` — `LaunchpadPreFlightSkeleton` used during session data fetch
+- All skeleton containers: `role="status"`, `aria-label`, `aria-live="polite"`, `<span className="sr-only">` for screen-reader announcement
+- Skeleton dimensions match loaded-state dimensions pixel-for-pixel — CLS < 0.05 p95
+
+### 2.9 Motion Choreography (LAYOUT-MOTION-01 — shipped 2026-04-21)
+`src/styles.css` defines and applies motion tokens globally:
+- CSS variables: `--motion-duration-fast: 120ms`, `--motion-duration-normal: 200ms`, `--motion-duration-slow: 300ms`
+- Stagger tokens: `--motion-stagger-primary: 40ms` (list items), `--motion-stagger-secondary: 20ms` (chip rows)
+- `.animate-page-enter` (300ms ease-enter) applied to `Home.tsx`, `Dashboard.tsx`, `Results.tsx`, `Present.tsx`
+- `.animate-list-item` with `--stagger-index` CSS var applied to session rows in `Dashboard.tsx`
+- `.btn-motion` (120ms fast hover scale) applied to primary CTA buttons across all pages
+- `@media (prefers-reduced-motion: reduce)` collapses all `--motion-duration-*` to `1ms` and applies `transition-duration: 1ms !important` globally — this fully covers `transition-[width]` bars in `Results.tsx` and `Present.tsx` without per-element guards
+
+### 2.10 Typography (DESIGN-TYP-01 — shipped 2026-04-21)
+- Inter loaded via `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap')` in `src/styles.css`
+- Critical woff2 subset preloaded in `index.html` via `<link rel="preload" as="font" type="font/woff2" crossorigin>`
+- `src/ui/tailwind-theme.ts` sets `fontFamily.sans = "Inter, ui-sans-serif, system-ui, ..."` — all body text inherits
+- DM Sans fully removed from the font stack
+
 ## 3. A11y Test Coverage
 
 ### 3.1 Automated axe-core Audit (`tests/a11y/basic.test.ts`)
@@ -105,7 +128,6 @@ Presenter view (`Present.tsx`) retains its own `<main id="main">` as a full-scre
 ## 5. Remaining Focus
 
 - Expand `aria-live` coverage consistency in all realtime states (WS reconnect announcements).
-- Add `prefers-reduced-motion` guards on animated bars in `Results.tsx` and `Present.tsx`.
 - Formalize release-level WCAG 2.2 AA acceptance report template.
 - WCAG 2.2 SC 2.4.11 (Focus Not Obscured) audit on sticky header regions.
 - Add keyboard shortcuts help panel (`?` key) when shortcuts are introduced.
@@ -115,5 +137,5 @@ Presenter view (`Present.tsx`) retains its own `<main id="main">` as a full-scre
 | ID | Component | Gap | Severity | Ticket |
 |---|---|---|---|---|
 | A11Y-GAP-01 | `Present.tsx` | Reconnect state changes not announced to SR (only visual badge updates) | Medium | LAYOUT-A11Y-01 follow-up |
-| A11Y-GAP-02 | `Results.tsx` progress bars | `transition-[width] duration-500` not gated by `prefers-reduced-motion` | Low | LAYOUT-MOTION-01 |
+| A11Y-GAP-02 | `Results.tsx` + `Present.tsx` progress bars | ~~`transition-[width]` not gated by `prefers-reduced-motion`~~ **Closed** — global `prefers-reduced-motion` override in `styles.css` (LAYOUT-MOTION-01) collapses all transition durations | Closed | LAYOUT-MOTION-01 |
 | A11Y-GAP-03 | `JoinPage.tsx` | Not yet wrapped in `MainLayout` — missing landmark header/footer | Medium | LAYOUT-A11Y-01 follow-up |
