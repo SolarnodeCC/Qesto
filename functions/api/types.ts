@@ -12,6 +12,11 @@ export type Env = {
   // Secrets (wrangler pages secret put ...)
   JWT_SECRET: string
   RESEND_API_KEY?: string
+  GOOGLE_CLIENT_ID?: string
+  GOOGLE_CLIENT_SECRET?: string
+  MICROSOFT_CLIENT_ID?: string
+  MICROSOFT_CLIENT_SECRET?: string
+  MICROSOFT_TENANT_ID?: string
 
   // Bindings
   DB: D1Database
