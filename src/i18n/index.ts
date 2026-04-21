@@ -21,7 +21,7 @@ export function detectLanguage(): string {
  */
 async function loadLocales(language: string): Promise<LocaleMap> {
   const locales: LocaleMap = {}
-  const namespaces = ['common', 'home', 'login', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard']
+  const namespaces = ['common', 'home', 'login', 'auth', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard']
 
   try {
     for (const namespace of namespaces) {
@@ -69,9 +69,10 @@ function translate(
     return key
   }
 
-  // Simple variable interpolation: replace {var} with vars[var]
+  // Variable interpolation: supports both {var} and {{var}} formats
   if (vars) {
     Object.entries(vars).forEach(([varKey, varValue]) => {
+      value = value.replace(`{{${varKey}}}`, String(varValue))
       value = value.replace(`{${varKey}}`, String(varValue))
     })
   }

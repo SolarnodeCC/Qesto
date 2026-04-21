@@ -9,6 +9,8 @@ type AuthState =
 
 type AuthApi = AuthState & {
   requestMagicLink: (email: string) => Promise<'sent' | 'invalid' | 'error'>
+  loginWithPassword: (email: string, password: string) => Promise<'ok' | 'invalid_credentials' | 'error'>
+  signupWithPassword: (email: string, password: string, name?: string) => Promise<'ok' | 'email_taken' | 'error'>
   refresh: () => Promise<void>
   logout: () => Promise<void>
 }
@@ -53,12 +55,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const loginWithPassword = useCallback(
+    async (email: string, password: string): Promise<'ok' | 'invalid_credentials' | 'error'> => {
+      try {
+        const res = await fetch('/api/auth/password/login', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include',
+        })
+        if (res.status === 200) {
+          await refresh()
+          return 'ok'
+        }
+        if (res.status === 401) return 'invalid_credentials'
+        return 'error'
+      } catch {
+        return 'error'
+      }
+    },
+    [refresh],
+  )
+
+  const signupWithPassword = useCallback(
+    async (email: string, password: string, name?: string): Promise<'ok' | 'email_taken' | 'error'> => {
+      try {
+        const res = await fetch('/api/auth/password/signup', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email, password, name }),
+          credentials: 'include',
+        })
+        if (res.status === 201) {
+          await refresh()
+          return 'ok'
+        }
+        if (res.status === 409) return 'email_taken'
+        return 'error'
+      } catch {
+        return 'error'
+      }
+    },
+    [refresh],
+  )
+
   const logout = useCallback(async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
     setState({ status: 'anonymous' })
   }, [])
 
-  const value = useMemo<AuthApi>(() => ({ ...state, requestMagicLink, refresh, logout }), [state, requestMagicLink, refresh, logout])
+  const value = useMemo<AuthApi>(
+    () => ({ ...state, requestMagicLink, loginWithPassword, signupWithPassword, refresh, logout }),
+    [state, requestMagicLink, loginWithPassword, signupWithPassword, refresh, logout],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
