@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
+import MainLayout from '../layouts/MainLayout'
 
 export default function Dashboard() {
   const auth = useAuth()
@@ -12,9 +13,9 @@ export default function Dashboard() {
 
   if (auth.status === 'loading') {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
         Loading…
-      </main>
+      </MainLayout>
     )
   }
   if (auth.status === 'anonymous') {
@@ -36,24 +37,22 @@ export default function Dashboard() {
     setTitle('')
   }
 
+  const navSlot = (
+    <button
+      type="button"
+      onClick={() => void auth.logout()}
+      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+    >
+      Sign out
+    </button>
+  )
+
   return (
-    <main id="main" className="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-sm uppercase tracking-widest text-teal-600">Qesto</p>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Your sessions</h1>
-          <p className="text-sm text-pulse-500">Signed in as {auth.user.email}.</p>
-        </div>
-        <nav aria-label="Account">
-          <button
-            type="button"
-            onClick={() => void auth.logout()}
-            className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
-          >
-            Sign out
-          </button>
-        </nav>
-      </header>
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
+      <div>
+        <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Your sessions</h1>
+        <p className="text-sm text-pulse-500">Signed in as {auth.user.email}.</p>
+      </div>
 
       <form onSubmit={handleCreate} className="flex flex-col gap-3 rounded-xl border border-pulse-200 p-5">
         <label htmlFor="new-session-title" className="text-sm font-medium">
@@ -131,6 +130,6 @@ export default function Dashboard() {
           </ul>
         )}
       </section>
-    </main>
+    </MainLayout>
   )
 }

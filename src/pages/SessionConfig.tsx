@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSession, type PollOption } from '../hooks/useSessions'
 import { api } from '../api/client'
+import MainLayout from '../layouts/MainLayout'
 
 function newOptionId(): string {
   return `opt_${crypto.randomUUID().slice(0, 8)}`
@@ -42,9 +43,9 @@ export default function SessionConfig() {
 
   if (auth.status === 'loading') {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
         Loading…
-      </main>
+      </MainLayout>
     )
   }
   if (auth.status === 'anonymous') {
@@ -53,21 +54,21 @@ export default function SessionConfig() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
         Loading session…
-      </main>
+      </MainLayout>
     )
   }
   if (error || !data) {
     return (
-      <main className="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
         <p role="alert" className="text-red-600">
           {error?.message ?? 'Session not found'}
         </p>
         <Link to="/dashboard" className="text-teal-600 hover:underline">
           ← Back to dashboard
         </Link>
-      </main>
+      </MainLayout>
     )
   }
 
@@ -119,22 +120,26 @@ export default function SessionConfig() {
     else setSaveError(res.error.message)
   }
 
+  const navSlot = (
+    <Link
+      to="/dashboard"
+      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+    >
+      ← Dashboard
+    </Link>
+  )
+
   return (
-    <main id="main" className="min-h-screen max-w-2xl mx-auto p-8 space-y-6">
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
-          ← Dashboard
-        </Link>
+        <div>
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Configure</h1>
+          <p className="text-sm text-pulse-500">Join code: <code className="font-mono">{data.session.code}</code></p>
+        </div>
         <span className="text-xs uppercase tracking-wider rounded-full px-2 py-0.5 bg-pulse-100 text-pulse-600">
           {data.session.status}
         </span>
       </div>
-
-      <header>
-        <p className="text-sm uppercase tracking-widest text-teal-600">Session</p>
-        <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Configure</h1>
-        <p className="text-sm text-pulse-500">Join code: <code className="font-mono">{data.session.code}</code></p>
-      </header>
 
       <form onSubmit={handleSave} className="space-y-5">
         <div className="space-y-2">
