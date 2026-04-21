@@ -16,7 +16,6 @@ type User = {
   id: string
   email: string
   display_name: string | null
-  password_hash: string | null
   created_at: number
   last_login_at: number | null
   plan: 'free' | 'starter' | 'team'
@@ -111,37 +110,19 @@ export class D1PreparedStatementMock {
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO users')) {
-      if (this.sql.includes('password_hash')) {
-        // Password signup: bind args are (id, email, display_name, password_hash, created_at)
-        const [id, email, display_name, password_hash, created_at] = this.args as [
-          string,
-          string,
-          string | null,
-          string,
-          number,
-        ]
-        this.db.users.set(id, {
-          id,
-          email,
-          display_name,
-          password_hash,
-          created_at,
-          last_login_at: created_at,
-          plan: 'free',
-        })
-      } else {
-        // Magic-link / OAuth upsert: bind args are (id, email, created_at)
-        const [id, email, created_at] = this.args as [string, string, number]
-        this.db.users.set(id, {
-          id,
-          email,
-          display_name: null,
-          password_hash: null,
-          created_at,
-          last_login_at: created_at,
-          plan: 'free',
-        })
-      }
+      // Handles both magic-link (3 args: id, email, created_at) and password
+      // signup (4 args: id, email, display_name, created_at). display_name is
+      // ignored by the mock since it isn't needed for auth assertions.
+      const [id, email, arg3, arg4] = this.args as [string, string, string | number | null, number | undefined]
+      const created_at = (typeof arg4 === 'number' ? arg4 : typeof arg3 === 'number' ? arg3 : Date.now())
+      this.db.users.set(id, {
+        id,
+        email,
+        display_name: typeof arg3 === 'string' || arg3 === null ? (arg3 as string | null) : null,
+        created_at,
+        last_login_at: created_at,
+        plan: 'free',
+      })
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE users SET last_login_at')) {
@@ -273,18 +254,6 @@ export class D1PreparedStatementMock {
         if (u.email === email) return { id: u.id } as T
       }
       return null
-    }
-    if (this.sql.startsWith('SELECT id, password_hash FROM users WHERE email')) {
-      const [email] = this.args as [string]
-      for (const u of this.db.users.values()) {
-        if (u.email === email) return { id: u.id, password_hash: u.password_hash } as T
-      }
-      return null
-    }
-    if (this.sql.startsWith('SELECT email FROM users WHERE id')) {
-      const [id] = this.args as [string]
-      const u = this.db.users.get(id)
-      return (u ? { email: u.email } : null) as T
     }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
       // Single-row lookup: WHERE id = ?1 AND owner_id = ?2

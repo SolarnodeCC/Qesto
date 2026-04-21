@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,                                         -- ulid
   email TEXT NOT NULL UNIQUE,
   display_name TEXT,
-  password_hash TEXT,                                          -- NULL for magic-link/OAuth-only users
   created_at INTEGER NOT NULL,                                 -- unix ms
   last_login_at INTEGER,
   plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','starter','team'))
@@ -33,34 +32,6 @@ CREATE TABLE IF NOT EXISTS magic_links (
   requester_ip TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_magic_links_email_expires ON magic_links(email, expires_at);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- password_reset_tokens — one-time tokens emailed for password reset
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS password_reset_tokens (
-  token_hash TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  created_at INTEGER NOT NULL,
-  expires_at INTEGER NOT NULL,
-  consumed_at INTEGER,
-  requester_ip TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_prt_user_expires ON password_reset_tokens(user_id, expires_at);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- oauth_accounts — link OAuth provider identities to Qesto users
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS oauth_accounts (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  provider TEXT NOT NULL CHECK (provider IN ('google', 'microsoft')),
-  provider_user_id TEXT NOT NULL,
-  provider_email TEXT NOT NULL,
-  created_at INTEGER NOT NULL,
-  last_used_at INTEGER NOT NULL,
-  UNIQUE(provider, provider_user_id)
-);
-CREATE INDEX IF NOT EXISTS idx_oauth_user ON oauth_accounts(user_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- sessions — session lifecycle state is the source of truth for DRAFT/CLOSED/ARCHIVED

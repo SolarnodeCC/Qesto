@@ -21,7 +21,7 @@ import {
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000        // 15 min
 const JWT_TTL_SECONDS = 14 * 24 * 60 * 60       // 14 days
-const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000    // 1 hour
+const PASSWORD_RESET_TTL_SECONDS = 60 * 60      // 1 hour
 
 // Magic-link request rate limits (abuse + cost control for Resend).
 //   • Per-IP:    max 10 requests per 15 min window
@@ -30,6 +30,20 @@ const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000    // 1 hour
 const MAGIC_LINK_WINDOW_SECONDS = 15 * 60
 const MAGIC_LINK_MAX_PER_IP = 10
 const MAGIC_LINK_MAX_PER_EMAIL = 5
+
+// KV key helpers — all credential/identity data lives in KV, never in D1,
+// so no schema migrations are required.
+//
+//   USERS_KV:
+//     pwd:{userId}                  → { hash: string }
+//     oauth:{provider}:{sub}        → { userId: string; email: string }
+//
+//   ACTIONS_KV:
+//     pwd-reset:{tokenHash}         → { userId: string; email: string }
+//                                     (written with expirationTtl = 3600)
+const pwdKey  = (userId: string) => `pwd:${userId}`
+const oauthKey = (provider: string, sub: string) => `oauth:${provider}:${sub}`
+const resetKey = (tokenHash: string) => `pwd-reset:${tokenHash}`
 
 type Vars = AuthVariables & PlanVariables
 
@@ -55,10 +69,6 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const email = parsed.data.email.toLowerCase().trim()
     const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null
 
-    // Rate-limit per-IP first (cheap abuse vector), then per-email (prevents
-    // targeted inbox flooding). Both checks return 202 even on rejection so
-    // the response shape doesn't leak enumeration info — but we skip the DB
-    // insert and email send so the attacker gets nothing useful.
     if (ip) {
       const ipGate = await rateLimit(c.env.ACTIONS_KV, `ip:${ip}`, {
         max: MAGIC_LINK_MAX_PER_IP,
@@ -82,7 +92,6 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       prefix: 'auth-req',
     })
     if (!emailGate.allowed) {
-      // Silently succeed to avoid leaking which addresses are being attacked.
       return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') }, 202)
     }
 
@@ -101,7 +110,6 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     try {
       await sendEmail(c.env.RESEND_API_KEY, { to: email, subject, text, html })
     } catch (err) {
-      // Delivery failure is logged but not leaked back to the client.
       console.error(`[auth] email delivery failed: ${(err as Error).message}`)
     }
 
@@ -110,7 +118,6 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
   // ─────────────────────────────────────────────────────────────────────────
   // GET /api/auth/callback?token=...
-  // Exchange the OTT for a 14-day JWT cookie and redirect to "/".
   // ─────────────────────────────────────────────────────────────────────────
   app.get('/callback', async (c) => {
     const raw = c.req.query('token')
@@ -128,7 +135,6 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       return c.redirect('/login?error=expired', 302)
     }
 
-    // Mark the token as consumed atomically before issuing the JWT.
     const consumed = await c.env.DB.prepare(
       `UPDATE magic_links SET consumed_at = ?1 WHERE token_hash = ?2 AND consumed_at IS NULL`,
     )
@@ -138,7 +144,6 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       return c.redirect('/login?error=expired', 302)
     }
 
-    // Upsert the user.
     const existing = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
       .bind(row.email)
       .first<{ id: string }>()
@@ -169,7 +174,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   })
 
   // ─────────────────────────────────────────────────────────────────────────
-  // GET /api/auth/me — read-only, requires auth
+  // GET /api/auth/me
   // ─────────────────────────────────────────────────────────────────────────
   app.get('/me', authMiddleware, (c) => {
     const user = c.get('user')
@@ -177,7 +182,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   })
 
   // ─────────────────────────────────────────────────────────────────────────
-  // POST /api/auth/logout — always returns 200, clears cookie
+  // POST /api/auth/logout
   // ─────────────────────────────────────────────────────────────────────────
   app.post('/logout', (c) => {
     deleteCookie(c, SESSION_COOKIE, { path: '/' })
@@ -186,6 +191,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
   // ─────────────────────────────────────────────────────────────────────────
   // PASSWORD AUTH ROUTES
+  // Password hashes live in USERS_KV under pwd:{userId} — no D1 changes.
   // ─────────────────────────────────────────────────────────────────────────
 
   const passwordSchema = z.object({
@@ -220,15 +226,20 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       )
     }
 
-    const passwordHash = await hashPassword(password)
     const userId = ulid()
     const now = Date.now()
+
+    // Create the user row — same INSERT as magic-link (no password_hash column).
     await c.env.DB.prepare(
-      `INSERT INTO users (id, email, display_name, password_hash, created_at, last_login_at, plan)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?5, 'free')`,
+      `INSERT INTO users (id, email, display_name, created_at, last_login_at, plan)
+       VALUES (?1, ?2, ?3, ?4, ?4, 'free')`,
     )
-      .bind(userId, normalEmail, name ?? null, passwordHash, now)
+      .bind(userId, normalEmail, name ?? null, now)
       .run()
+
+    // Store password hash in KV, not D1.
+    const passwordHash = await hashPassword(password)
+    await c.env.USERS_KV.put(pwdKey(userId), JSON.stringify({ hash: passwordHash }))
 
     const jwt = await signJwt({ sub: userId, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
@@ -254,15 +265,16 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const { email, password } = parsed.data
     const normalEmail = email.toLowerCase().trim()
 
-    const user = await c.env.DB.prepare(
-      `SELECT id, password_hash FROM users WHERE email = ?1`,
-    )
+    const user = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
       .bind(normalEmail)
-      .first<{ id: string; password_hash: string | null }>()
+      .first<{ id: string }>()
 
-    // Always run verifyPassword (with a dummy hash) to prevent timing attacks.
-    const storedHash = user?.password_hash ?? 'dummy:dummy'
-    const valid = user?.password_hash ? await verifyPassword(password, storedHash) : false
+    // Look up the password hash from KV (null = user exists but has no password).
+    const credRaw = user ? await c.env.USERS_KV.get(pwdKey(user.id)) : null
+    const cred = credRaw ? (JSON.parse(credRaw) as { hash: string }) : null
+
+    // Always run verifyPassword with a dummy hash to prevent timing attacks.
+    const valid = cred ? await verifyPassword(password, cred.hash) : false
 
     if (!valid) {
       return c.json(
@@ -297,9 +309,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       )
     }
     const email = parsed.data.email.toLowerCase().trim()
-    const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null
 
-    // Always return 202 to avoid leaking whether the email is registered.
     const user = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
       .bind(email)
       .first<{ id: string }>()
@@ -307,13 +317,13 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     if (user) {
       const raw = generateMagicLinkToken()
       const tokenHash = await hashMagicLinkToken(raw)
-      const now = Date.now()
-      await c.env.DB.prepare(
-        `INSERT INTO password_reset_tokens (token_hash, user_id, created_at, expires_at, requester_ip)
-         VALUES (?1, ?2, ?3, ?4, ?5)`,
+
+      // Store reset token in ACTIONS_KV with 1-hour TTL — no D1 table needed.
+      await c.env.ACTIONS_KV.put(
+        resetKey(tokenHash),
+        JSON.stringify({ userId: user.id, email }),
+        { expirationTtl: PASSWORD_RESET_TTL_SECONDS },
       )
-        .bind(tokenHash, user.id, now, now + PASSWORD_RESET_TTL_MS, ip)
-        .run()
 
       const resetUrl = `${c.env.APP_URL}/reset-password?token=${raw}`
       try {
@@ -328,6 +338,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       }
     }
 
+    // Always 202 to avoid leaking whether the email is registered.
     return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') }, 202)
   })
 
@@ -345,42 +356,28 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     }
     const { token, password } = parsed.data
     const tokenHash = await hashMagicLinkToken(token)
+    const kvKey = resetKey(tokenHash)
 
-    const row = await c.env.DB.prepare(
-      `SELECT user_id, expires_at, consumed_at FROM password_reset_tokens WHERE token_hash = ?1`,
-    )
-      .bind(tokenHash)
-      .first<{ user_id: string; expires_at: number; consumed_at: number | null }>()
-
-    if (!row || row.consumed_at || row.expires_at < Date.now()) {
+    const raw = await c.env.ACTIONS_KV.get(kvKey)
+    if (!raw) {
       return c.json(
         { ok: false, error: { code: 'invalid_token', message: 'Reset link invalid or expired' }, trace_id: c.get('trace_id') },
         400,
       )
     }
+    const { userId, email } = JSON.parse(raw) as { userId: string; email: string }
 
-    const consumed = await c.env.DB.prepare(
-      `UPDATE password_reset_tokens SET consumed_at = ?1 WHERE token_hash = ?2 AND consumed_at IS NULL`,
-    )
-      .bind(Date.now(), tokenHash)
-      .run()
-    if (consumed.meta.changes !== 1) {
-      return c.json(
-        { ok: false, error: { code: 'invalid_token', message: 'Reset link already used' }, trace_id: c.get('trace_id') },
-        400,
-      )
-    }
+    // Consume the token immediately — delete before updating password.
+    await c.env.ACTIONS_KV.delete(kvKey)
 
     const passwordHash = await hashPassword(password)
-    await c.env.DB.prepare(`UPDATE users SET password_hash = ?1, last_login_at = ?2 WHERE id = ?3`)
-      .bind(passwordHash, Date.now(), row.user_id)
+    await c.env.USERS_KV.put(pwdKey(userId), JSON.stringify({ hash: passwordHash }))
+
+    await c.env.DB.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`)
+      .bind(Date.now(), userId)
       .run()
 
-    const user = await c.env.DB.prepare(`SELECT email FROM users WHERE id = ?1`)
-      .bind(row.user_id)
-      .first<{ email: string }>()
-
-    const jwt = await signJwt({ sub: row.user_id, email: user!.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
+    const jwt = await signJwt({ sub: userId, email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
       secure: c.env.ENV !== 'dev',
@@ -393,6 +390,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
   // ─────────────────────────────────────────────────────────────────────────
   // GOOGLE OAUTH ROUTES
+  // OAuth identities stored in USERS_KV under oauth:{provider}:{sub}.
   // ─────────────────────────────────────────────────────────────────────────
 
   app.get('/google', async (c) => {
@@ -409,26 +407,27 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const state = c.req.query('state')
     const error = c.req.query('error')
 
-    if (error || !code || !state) {
-      return c.redirect('/login?error=sso_failed', 302)
-    }
+    if (error || !code || !state) return c.redirect('/login?error=sso_failed', 302)
     if (!c.env.GOOGLE_CLIENT_ID || !c.env.GOOGLE_CLIENT_SECRET) {
       return c.redirect('/login?error=provider_not_configured', 302)
     }
-    const stateValid = await consumeOAuthState(c.env.ACTIONS_KV, state)
-    if (!stateValid) {
+    if (!(await consumeOAuthState(c.env.ACTIONS_KV, state))) {
       return c.redirect('/login?error=sso_failed', 302)
     }
 
     let providerUser: { email: string; sub: string }
     try {
-      const redirectUri = `${c.env.APP_URL}/api/auth/google/callback`
-      providerUser = await exchangeGoogleCode(code, redirectUri, c.env.GOOGLE_CLIENT_ID, c.env.GOOGLE_CLIENT_SECRET)
+      providerUser = await exchangeGoogleCode(
+        code,
+        `${c.env.APP_URL}/api/auth/google/callback`,
+        c.env.GOOGLE_CLIENT_ID,
+        c.env.GOOGLE_CLIENT_SECRET,
+      )
     } catch {
       return c.redirect('/login?error=sso_failed', 302)
     }
 
-    const userId = await upsertOAuthUser(c.env.DB, 'google', providerUser.sub, providerUser.email)
+    const userId = await upsertOAuthUser(c.env.DB, c.env.USERS_KV, 'google', providerUser.sub, providerUser.email)
     const jwt = await signJwt({ sub: userId, email: providerUser.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
@@ -459,27 +458,29 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const state = c.req.query('state')
     const error = c.req.query('error')
 
-    if (error || !code || !state) {
-      return c.redirect('/login?error=sso_failed', 302)
-    }
+    if (error || !code || !state) return c.redirect('/login?error=sso_failed', 302)
     if (!c.env.MICROSOFT_CLIENT_ID || !c.env.MICROSOFT_CLIENT_SECRET) {
       return c.redirect('/login?error=provider_not_configured', 302)
     }
-    const stateValid = await consumeOAuthState(c.env.ACTIONS_KV, state)
-    if (!stateValid) {
+    if (!(await consumeOAuthState(c.env.ACTIONS_KV, state))) {
       return c.redirect('/login?error=sso_failed', 302)
     }
 
     let providerUser: { email: string; sub: string }
     try {
-      const redirectUri = `${c.env.APP_URL}/api/auth/microsoft/callback`
       const tenantId = c.env.MICROSOFT_TENANT_ID ?? 'common'
-      providerUser = await exchangeMicrosoftCode(code, redirectUri, c.env.MICROSOFT_CLIENT_ID, c.env.MICROSOFT_CLIENT_SECRET, tenantId)
+      providerUser = await exchangeMicrosoftCode(
+        code,
+        `${c.env.APP_URL}/api/auth/microsoft/callback`,
+        c.env.MICROSOFT_CLIENT_ID,
+        c.env.MICROSOFT_CLIENT_SECRET,
+        tenantId,
+      )
     } catch {
       return c.redirect('/login?error=sso_failed', 302)
     }
 
-    const userId = await upsertOAuthUser(c.env.DB, 'microsoft', providerUser.sub, providerUser.email)
+    const userId = await upsertOAuthUser(c.env.DB, c.env.USERS_KV, 'microsoft', providerUser.sub, providerUser.email)
     const jwt = await signJwt({ sub: userId, email: providerUser.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
@@ -494,35 +495,25 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   parent.route('/api/auth', app)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared helper: upsert user + oauth_account for a given OAuth provider login.
-// Returns the Qesto user ID.
-// ─────────────────────────────────────────────────────────────────────────────
+// Upsert a user from an OAuth provider login.
+// Identity link stored in USERS_KV, not a D1 table.
 async function upsertOAuthUser(
   db: D1Database,
+  kv: KVNamespace,
   provider: 'google' | 'microsoft',
-  providerUserId: string,
+  providerSub: string,
   email: string,
 ): Promise<string> {
   const now = Date.now()
+  const key = oauthKey(provider, providerSub)
 
-  // Check if we already have an oauth_account for this provider identity.
-  const existing = await db
-    .prepare(`SELECT user_id FROM oauth_accounts WHERE provider = ?1 AND provider_user_id = ?2`)
-    .bind(provider, providerUserId)
-    .first<{ user_id: string }>()
-
-  if (existing) {
-    await db.prepare(`UPDATE oauth_accounts SET last_used_at = ?1 WHERE provider = ?2 AND provider_user_id = ?3`)
-      .bind(now, provider, providerUserId)
-      .run()
-    await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`)
-      .bind(now, existing.user_id)
-      .run()
-    return existing.user_id
+  const stored = await kv.get(key)
+  if (stored) {
+    const { userId } = JSON.parse(stored) as { userId: string }
+    await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, userId).run()
+    return userId
   }
 
-  // No oauth_account yet — find or create the user by email, then link the account.
   const emailNorm = email.toLowerCase().trim()
   let userId: string
 
@@ -538,13 +529,6 @@ async function upsertOAuthUser(
       .run()
   }
 
-  await db
-    .prepare(
-      `INSERT INTO oauth_accounts (id, user_id, provider, provider_user_id, provider_email, created_at, last_used_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)`,
-    )
-    .bind(ulid(), userId, provider, providerUserId, emailNorm, now)
-    .run()
-
+  await kv.put(key, JSON.stringify({ userId, email: emailNorm }))
   return userId
 }
