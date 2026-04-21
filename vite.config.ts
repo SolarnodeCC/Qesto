@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
+import { theme as generatedTheme } from './src/ui/tailwind-theme'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -31,4 +32,8 @@ export default defineConfig({
       exclude: ['dist/**', 'node_modules/**', 'scripts/**'],
     },
   },
+  // Extend Tailwind config with auto-generated theme from design tokens
+  // This is only used for CSS generation and does not affect the vite config directly,
+  // but we import it here to ensure it's generated before build
+  __generatedTheme: generatedTheme,
 })

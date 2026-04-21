@@ -93,7 +93,9 @@
     },
     "mode": {
       "label":            "Session mode",
-      "reflection_title": "Reflection Mode"
+      "reflection_title": "Reflection Mode",
+      "fun_title":        "Quick Mode",
+      "fun_desc":         "Speed up with automatic question timing"
     }
   },
   "step5": {

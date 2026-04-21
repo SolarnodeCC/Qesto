@@ -93,7 +93,9 @@
     },
     "mode": {
       "label":            "Sitzungsmodus",
-      "reflection_title": "Reflexionsmodus"
+      "reflection_title": "Reflexionsmodus",
+      "fun_title":        "Schnellmodus",
+      "fun_desc":         "Beschleunigen Sie mit automatischer Fragenerstellung"
     }
   },
   "step5": {

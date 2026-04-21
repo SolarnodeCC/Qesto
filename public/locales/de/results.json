@@ -1,0 +1,20 @@
+{
+  "loading": "Wird geladen…",
+  "noResults": "Keine Ergebnisse verfügbar",
+  "resultsTitle": "Sitzungsergebnisse",
+  "question": "Frage {number}",
+  "responses": "{count} Antworten",
+  "insights": "KI-Erkenntnisse",
+  "generateInsights": "Erkenntnisse generieren",
+  "generatingInsights": "Erkenntnisse werden generiert…",
+  "sentiment": "Stimmung",
+  "themes": "Wichtigste Themen",
+  "back": "Zurück zum Dashboard",
+  "export": "Ergebnisse exportieren",
+  "exporting": "Exportieren…",
+  "csv": {
+    "option": "Option",
+    "votes": "Stimmen",
+    "percent": "Prozentsatz der Gesamtzahl"
+  }
+}

@@ -38,6 +38,7 @@ const K_QUESTION = 'question'
 const K_COUNTS = 'counts'
 const K_VOTERS = 'voters'
 const K_STATUS = 'status'
+const K_IP_RATE_LIMIT = 'ip_rate_limit' // Maps ipHash → timestamps[] for per-minute rate limiting
 
 type Meta = {
   sessionId: string
@@ -201,6 +202,12 @@ export class SessionRoom implements DurableObject {
       const existing = this.ctx.getWebSockets(`ip:${ipHash}`)
       if (existing.length >= PER_IP_CONCURRENT_CAP) {
         return new Response('Too many connections from this IP', { status: 429 })
+      }
+
+      // Per-IP per-minute rate limiting (SEC-01).
+      const rateLimitExceeded = await this.checkIpRateLimit(ipHash)
+      if (rateLimitExceeded) {
+        return new Response('Rate limit exceeded for this IP', { status: 429 })
       }
     }
 
@@ -387,6 +394,31 @@ export class SessionRoom implements DurableObject {
         timestamp: now(),
       }),
     )
+  }
+
+  private async checkIpRateLimit(ipHash: string): Promise<boolean> {
+    // Per-IP per-minute rate limiting (SEC-01): max 5 connections per minute.
+    const limits = (await this.ctx.storage.get<Record<string, number[]>>(K_IP_RATE_LIMIT)) ?? {}
+    const nowMs = now()
+    const windowMs = 60 * 1000 // 1 minute window
+    const cutoffMs = nowMs - windowMs
+
+    // Get timestamps for this IP
+    const timestamps = limits[ipHash] ?? []
+    // Remove old timestamps outside the window
+    const recentTimestamps = timestamps.filter((ts) => ts > cutoffMs)
+
+    // Check if limit exceeded
+    const limitExceeded = recentTimestamps.length >= 5
+
+    if (!limitExceeded) {
+      // Record this connection attempt
+      recentTimestamps.push(nowMs)
+      limits[ipHash] = recentTimestamps
+      await this.ctx.storage.put(K_IP_RATE_LIMIT, limits)
+    }
+
+    return limitExceeded
   }
 
   private async broadcastParticipants(): Promise<void> {

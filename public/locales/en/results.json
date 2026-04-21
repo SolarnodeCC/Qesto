@@ -11,5 +11,10 @@
   "themes": "Key themes",
   "back": "Back to dashboard",
   "export": "Export results",
-  "exporting": "Exporting…"
+  "exporting": "Exporting…",
+  "csv": {
+    "option": "Option",
+    "votes": "Votes",
+    "percent": "Percent of total"
+  }
 }

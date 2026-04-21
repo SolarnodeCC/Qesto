@@ -1,5 +1,8 @@
 @import 'tailwindcss';
+@import './styles/grid.css';
 
+/* Design token CSS variables — auto-generated from design-tokens.json */
+/* These support the @theme block and component CSS below. */
 @theme {
   --color-teal-50:  #F0FDFA;
   --color-teal-100: #CCFBF1;
@@ -36,6 +39,42 @@
 
   --color-surface: #FFFFFF;
   --color-ink: var(--color-pulse-900);
+
+  /* Spacing scale — see design-tokens.json::space */
+  --spacing-0: 0;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 24px;
+  --spacing-6: 32px;
+  --spacing-8: 48px;
+  --spacing-10: 64px;
+  --spacing-12: 96px;
+
+  /* Border radius — see design-tokens.json::radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 9999px;
+
+  /* Shadows — see design-tokens.json::shadow */
+  --shadow-card: 0 2px 8px rgba(10,15,30,0.06);
+  --shadow-elevated: 0 8px 24px rgba(10,15,30,0.10);
+  --shadow-teal: 0 4px 20px rgba(20,184,166,0.25);
+  --shadow-ai: 0 4px 20px rgba(139,92,246,0.25);
+  --shadow-focus-ring: 0 0 0 3px rgba(20,184,166,0.4);
+
+  /* Typography — see design-tokens.json::typography */
+  --font-family-display: Syne, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-family-body: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-family-mono: JetBrains Mono, ui-monospace, SFMono-Regular, monospace;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
 }
 
 @media (prefers-color-scheme: dark) {

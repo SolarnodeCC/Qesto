@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useT } from '../i18n'
 import { api, type ApiError } from '../api/client'
 
 type PollOption = { id: string; label: string }
@@ -38,6 +39,7 @@ function toCsv(rows: string[][]): string {
 
 export default function Results() {
   const auth = useAuth()
+  const t = useT('results')
   const { id } = useParams<{ id: string }>()
   const [state, setState] = useState<State>({ status: 'loading' })
 
@@ -94,7 +96,7 @@ export default function Results() {
 
   function handleExport() {
     if (!question) return
-    const header = ['Option', 'Votes', 'Percent of total']
+    const header = [t('csv.option'), t('csv.votes'), t('csv.percent')]
     const body = rows.map((r) => [
       r.label,
       String(r.count),

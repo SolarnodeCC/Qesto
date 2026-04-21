@@ -1,0 +1,20 @@
+{
+  "loading": "Laden…",
+  "noResults": "Geen resultaten beschikbaar",
+  "resultsTitle": "Sessieresultaten",
+  "question": "Vraag {number}",
+  "responses": "{count} reacties",
+  "insights": "AI-inzichten",
+  "generateInsights": "Inzichten genereren",
+  "generatingInsights": "Inzichten genereren…",
+  "sentiment": "Sentiment",
+  "themes": "Belangrijkste thema's",
+  "back": "Terug naar dashboard",
+  "export": "Resultaten exporteren",
+  "exporting": "Exporteren…",
+  "csv": {
+    "option": "Optie",
+    "votes": "Stemmen",
+    "percent": "Percentage van totaal"
+  }
+}

@@ -93,7 +93,9 @@
     },
     "mode": {
       "label":            "Modo de sesión",
-      "reflection_title": "Modo Reflexión"
+      "reflection_title": "Modo Reflexión",
+      "fun_title":        "Modo Rápido",
+      "fun_desc":         "Acelera con temporización automática de preguntas"
     }
   },
   "step5": {

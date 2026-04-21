@@ -93,7 +93,9 @@
     },
     "mode": {
       "label":            "Sessiemodus",
-      "reflection_title": "Reflectie Mode"
+      "reflection_title": "Reflectie Mode",
+      "fun_title":        "Snelle Modus",
+      "fun_desc":         "Versnelling met automatische vraagvoering"
     }
   },
   "step5": {

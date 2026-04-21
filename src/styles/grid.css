@@ -1,0 +1,99 @@
+/*
+ * grid.css — Responsive CSS Grid System
+ *
+ * Class: .grid-container
+ *
+ * Breakpoints and column counts:
+ *   Default / mobile (≥ 320px):   4  columns, 16px gutter
+ *   Tablet           (≥ 640px):   8  columns, 24px gutter
+ *   Desktop          (≥ 1024px): 12  columns, 24px gutter
+ *   Wide             (≥ 1440px): 12  columns, 32px gutter
+ *
+ * Usage:
+ *   <div class="grid-container">
+ *     <!-- Direct children auto-placed on the grid -->
+ *   </div>
+ *
+ *   Or span columns explicitly:
+ *   <div class="grid-container">
+ *     <div style="grid-column: span 6;">...</div>
+ *   </div>
+ *
+ * Design-token variables (defined here so the grid is self-contained):
+ *   --grid-cols, --grid-gutter, --grid-max-width, --grid-padding
+ */
+
+@layer base {
+  :root {
+    /* Mobile-first defaults (320px+) */
+    --grid-cols: 4;
+    --grid-gutter: 16px;
+    --grid-max-width: 100%;
+    --grid-padding: 16px;
+  }
+
+  /* Tablet (640px+) */
+  @media (min-width: 640px) {
+    :root {
+      --grid-cols: 8;
+      --grid-gutter: 24px;
+      --grid-padding: 24px;
+    }
+  }
+
+  /* Desktop (1024px+) */
+  @media (min-width: 1024px) {
+    :root {
+      --grid-cols: 12;
+      --grid-gutter: 24px;
+      --grid-padding: 32px;
+    }
+  }
+
+  /* Wide (1440px+) */
+  @media (min-width: 1440px) {
+    :root {
+      --grid-cols: 12;
+      --grid-gutter: 32px;
+      --grid-max-width: 1440px;
+      --grid-padding: 40px;
+    }
+  }
+}
+
+@layer components {
+  /**
+   * .grid-container
+   * A centred, max-width constrained CSS grid that adapts columns and gutter
+   * at each breakpoint using the custom properties above.
+   */
+  .grid-container {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+    gap: var(--grid-gutter);
+    max-width: var(--grid-max-width);
+    margin-inline: auto;
+    padding-inline: var(--grid-padding);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /**
+   * Span helpers — col-span-{n}
+   * Cover the range 1–12 so components can declare spans declaratively.
+   * Unused spans collapse gracefully when cols < n.
+   */
+  .col-span-1  { grid-column: span 1; }
+  .col-span-2  { grid-column: span 2; }
+  .col-span-3  { grid-column: span 3; }
+  .col-span-4  { grid-column: span 4; }
+  .col-span-5  { grid-column: span 5; }
+  .col-span-6  { grid-column: span 6; }
+  .col-span-7  { grid-column: span 7; }
+  .col-span-8  { grid-column: span 8; }
+  .col-span-9  { grid-column: span 9; }
+  .col-span-10 { grid-column: span 10; }
+  .col-span-11 { grid-column: span 11; }
+  .col-span-12 { grid-column: span 12; }
+  .col-span-full { grid-column: 1 / -1; }
+}

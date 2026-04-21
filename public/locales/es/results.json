@@ -1,0 +1,20 @@
+{
+  "loading": "Cargando…",
+  "noResults": "No hay resultados disponibles",
+  "resultsTitle": "Resultados de la sesión",
+  "question": "Pregunta {number}",
+  "responses": "{count} respuestas",
+  "insights": "Información de IA",
+  "generateInsights": "Generar información",
+  "generatingInsights": "Generando información…",
+  "sentiment": "Sentimiento",
+  "themes": "Temas clave",
+  "back": "Volver al dashboard",
+  "export": "Exportar resultados",
+  "exporting": "Exportando…",
+  "csv": {
+    "option": "Opción",
+    "votes": "Votos",
+    "percent": "Porcentaje del total"
+  }
+}
