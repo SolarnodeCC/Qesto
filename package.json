@@ -11,6 +11,8 @@
     "tokens:build": "node scripts/build-tokens.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage && node scripts/measure-coverage.mjs",
+    "test:flaky-check": "node scripts/detect-flaky.mjs",
     "typecheck": "tsc --noEmit",
     "check:i18n": "node scripts/check-i18n.mjs"
   },

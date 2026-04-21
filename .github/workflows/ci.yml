@@ -43,5 +43,21 @@ jobs:
       - name: Unit tests (vitest)
         run: npm test
 
+      - name: Coverage gates (measure-coverage)
+        run: npm run test:coverage
+        if: always()
+
+      - name: Flaky test detection
+        run: npm run test:flaky-check
+        if: always()
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
       - name: Vite build
         run: npm run build

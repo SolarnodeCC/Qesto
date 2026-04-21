@@ -32,8 +32,24 @@ export default defineConfig({
       ['tests/a11y/**', 'jsdom'],
     ],
     coverage: {
-      reporter: ['text', 'html'],
-      exclude: ['dist/**', 'node_modules/**', 'scripts/**'],
+      provider: 'v8',
+      reporter: ['json', 'text', 'html'],
+      include: ['functions/**/*.ts', 'src/**/*.tsx'],
+      exclude: ['dist/**', 'node_modules/**', 'scripts/**', 'tests/**', '**/*.test.ts', '**/*.test.tsx'],
+      lines: 85,
+      functions: 85,
+      branches: 75,
+      statements: 85,
+      // Category-specific thresholds
+      all: {
+        lines: 85,
+        functions: 85,
+        branches: 75,
+        statements: 85,
+      },
+      // Thresholds by path pattern
+      perFile: true,
+      skipFull: true,
     },
   },
   // Extend Tailwind config with auto-generated theme from design tokens
