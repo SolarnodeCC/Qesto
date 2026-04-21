@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
+import BuildStamp from '../components/BuildStamp'
 
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
@@ -342,6 +343,7 @@ export default function Login() {
             {t('continueWithoutAccount')}
           </a>
         </p>
+        <BuildStamp />
       </section>
     </main>
   )

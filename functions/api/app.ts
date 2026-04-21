@@ -29,6 +29,7 @@ export function createApp() {
     const trace_id = incoming && /^[a-zA-Z0-9_-]{8,128}$/.test(incoming) ? incoming : crypto.randomUUID()
     c.set('trace_id', trace_id)
     c.header('x-trace-id', trace_id)
+    c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
     await next()
   })
 
