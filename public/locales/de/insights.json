@@ -1,0 +1,12 @@
+{
+  "tabLabel": "Einblicke",
+  "emptyState": "Noch keine Sitzungen abgeschlossen. Schließen Sie eine Sitzung, um Einblicke zu sehen.",
+  "themes": {
+    "title": "Hauptthemen",
+    "description": "Von der KI identifizierte Schlüsselthemen aus offenen Antworten"
+  },
+  "trend": {
+    "title": "30-Tage-Trend"
+  },
+  "loadError": "Einblicke konnten nicht geladen werden"
+}

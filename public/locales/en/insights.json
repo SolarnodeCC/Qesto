@@ -1,0 +1,12 @@
+{
+  "tabLabel": "Insights",
+  "emptyState": "No sessions closed yet. Close a session to see insights.",
+  "themes": {
+    "title": "Top themes",
+    "description": "AI-identified key themes from open responses"
+  },
+  "trend": {
+    "title": "30-day trend"
+  },
+  "loadError": "Failed to load insights"
+}

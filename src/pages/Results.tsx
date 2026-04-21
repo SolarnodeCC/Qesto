@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { api, type ApiError } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
+import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 
 type PollOption = { id: string; label: string }
 
@@ -58,8 +59,8 @@ export default function Results() {
 
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
-        Loading…
+      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+        <ResultsSectionSkeleton bars={4} />
       </MainLayout>
     )
   }
@@ -67,8 +68,9 @@ export default function Results() {
 
   if (state.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
-        Loading results…
+      /* LAYOUT-SKELETON-01: geometric skeleton prevents layout shift while data loads */
+      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+        <ResultsSectionSkeleton bars={4} />
       </MainLayout>
     )
   }
@@ -124,6 +126,8 @@ export default function Results() {
 
   return (
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+      {/* animate-page-enter: content fades in on load (LAYOUT-MOTION-01) */}
+      <div className="animate-page-enter space-y-6">
       <header className="space-y-1">
         <div className="flex items-center justify-between">
           <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{session.title}</h1>
@@ -206,7 +210,7 @@ export default function Results() {
           type="button"
           onClick={handleExport}
           disabled={!question || results.total === 0}
-          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
         >
           Export CSV
         </button>
@@ -218,6 +222,7 @@ export default function Results() {
           Refresh
         </button>
       </div>
+      </div>{/* end animate-page-enter */}
     </MainLayout>
   )
 }

@@ -49,6 +49,12 @@
     "ai_questions_label": "Generierte Fragen",
     "ai_consent":       "Ich stimme zu, dass mein Sitzungstitel und Ziel von der KI verarbeitet werden",
     "ai_consent_required": "Bitte stimme der KI-Verarbeitung zu, um Fragen zu generieren",
+    "ai_consent_v2": {
+      "title":       "KI-gestützte Generierung",
+      "description": "Wir verwenden KI, um Fragen basierend auf deinem Sitzungsziel vorzuschlagen",
+      "checkbox":    "Ich stimme der KI-Verarbeitung meines Sitzungstitel und Ziels zu",
+      "error":       "Bitte stimmen Sie der KI-Verarbeitung zu"
+    },
     "ai_error":         "Generierung fehlgeschlagen. Bitte erneut versuchen.",
     "ai_review_cta":    "Fragen bearbeiten →",
     "ai_review_title":  "Fragen bearbeiten",

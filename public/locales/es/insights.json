@@ -1,0 +1,12 @@
+{
+  "tabLabel": "Información",
+  "emptyState": "Sin sesiones cerradas aún. Cierra una sesión para ver la información.",
+  "themes": {
+    "title": "Temas principales",
+    "description": "Temas clave identificados por IA a partir de respuestas abiertas"
+  },
+  "trend": {
+    "title": "Tendencia de 30 días"
+  },
+  "loadError": "No se pudo cargar la información"
+}

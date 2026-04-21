@@ -49,6 +49,12 @@
     "ai_questions_label": "Generated questions",
     "ai_consent":       "I agree that my session title and goal will be processed by AI",
     "ai_consent_required": "Please consent to AI processing to generate questions",
+    "ai_consent_v2": {
+      "title":       "AI-Powered Generation",
+      "description": "We'll use AI to suggest questions based on your session goal",
+      "checkbox":    "I consent to AI processing my session title and goal",
+      "error":       "Please consent to AI processing"
+    },
     "ai_error":         "Generation failed. Please try again.",
     "ai_review_cta":    "Edit questions →",
     "ai_review_title":  "Edit your questions",

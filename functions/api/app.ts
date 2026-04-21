@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { mountAuthRoutes } from './routes/auth'
 import { mountSessionRoutes } from './routes/sessions'
 import { mountBillingRoutes } from './routes/billing'
+import { mountInsightsRoutes } from './routes/insights'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
@@ -107,6 +108,7 @@ export function createApp() {
   mountAuthRoutes(app)
   mountSessionRoutes(app)
   mountBillingRoutes(app)
+  mountInsightsRoutes(app)
 
   return app
 }

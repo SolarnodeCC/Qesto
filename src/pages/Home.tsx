@@ -28,7 +28,8 @@ export default function Home() {
 
   return (
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen flex flex-col items-center justify-center p-8 text-center">
-      <div className="max-w-xl space-y-6">
+      {/* animate-page-enter: hero fades + slides up on load (LAYOUT-MOTION-01) */}
+      <div className="animate-page-enter max-w-xl space-y-6">
         <h1 tabIndex={-1} className="text-4xl md:text-6xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none">
           Feel the pulse of the room — AI amplifies it.
         </h1>
@@ -40,7 +41,7 @@ export default function Home() {
             <div className="flex flex-col items-center gap-2">
               <Link
                 to="/dashboard"
-                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
               >
                 Go to dashboard
               </Link>
@@ -53,7 +54,7 @@ export default function Home() {
           ) : (
             <Link
               to="/login"
-              className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
             >
               Sign in
             </Link>

@@ -1,0 +1,12 @@
+{
+  "title": "Sessie gereed",
+  "share_button": "Delen met deelnemers",
+  "open_lobby_button": "Open lobby en start",
+  "checklist_title": "Pre-flight checklist",
+  "validation": {
+    "title_required": "Sessietitel is vereist",
+    "question_required": "Minimaal één vraag is vereist",
+    "consent_required": "AI-toestemming is vereist"
+  },
+  "time_remaining": "{{minutes}} minuten tot automatische start"
+}

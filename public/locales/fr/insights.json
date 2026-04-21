@@ -1,0 +1,12 @@
+{
+  "tabLabel": "Perspectives",
+  "emptyState": "Aucune session fermée pour le moment. Fermez une session pour voir les perspectives.",
+  "themes": {
+    "title": "Thèmes principaux",
+    "description": "Thèmes clés identifiés par l'IA à partir des réponses ouvertes"
+  },
+  "trend": {
+    "title": "Tendance sur 30 jours"
+  },
+  "loadError": "Impossible de charger les perspectives"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Sitzung bereit",
+  "share_button": "Mit Teilnehmern teilen",
+  "open_lobby_button": "Lobby öffnen und starten",
+  "checklist_title": "Pre-Flight-Checkliste",
+  "validation": {
+    "title_required": "Sitzungstitel ist erforderlich",
+    "question_required": "Mindestens eine Frage ist erforderlich",
+    "consent_required": "KI-Zustimmung ist erforderlich"
+  },
+  "time_remaining": "{{minutes}} Minuten bis zum automatischen Start"
+}

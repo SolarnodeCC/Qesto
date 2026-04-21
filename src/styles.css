@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @import './styles/grid.css';
 
+/* ─── Google Fonts — Inter ─────────────────────────────────────────────────── */
+/* Loaded here so the CSS bundle owns the import; the <link preload> in        */
+/* index.html provides the critical woff2 preload for LCP.                     */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /* Design token CSS variables — auto-generated from design-tokens.json */
 /* These support the @theme block and component CSS below. */
 @theme {
@@ -87,4 +92,186 @@
 html, body {
   background: var(--color-surface);
   color: var(--color-ink);
+  /* DESIGN-TYP-01: Inter as body font */
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* ─── Motion tokens (LAYOUT-MOTION-01) ────────────────────────────────────── */
+/*                                                                              */
+/* Durations and easing are exposed as CSS custom properties so they can be    */
+/* consumed by both Tailwind utility classes (via @theme) and arbitrary inline  */
+/* styles / keyframe animations.                                                */
+/*                                                                              */
+/* Token map:                                                                   */
+/*   --motion-duration-fast   120ms  quick interactions (hover, chip accept)   */
+/*   --motion-duration-normal 200ms  standard transitions (tab, toggle)        */
+/*   --motion-duration-slow   300ms  page / modal enter                        */
+/*   --motion-ease-fast       cubic-bezier(0.2, 0, 0.4, 1)                    */
+/*   --motion-ease-normal     cubic-bezier(0.2, 0, 0, 1)                      */
+/*   --motion-ease-slow       cubic-bezier(0.0, 0, 0.2, 1)                    */
+/*   --motion-stagger-primary  40ms  primary list stagger                      */
+/*   --motion-stagger-secondary 20ms secondary list stagger                    */
+
+:root {
+  --motion-duration-fast:      120ms;
+  --motion-duration-normal:    200ms;
+  --motion-duration-slow:      300ms;
+  --motion-ease-fast:          cubic-bezier(0.2, 0, 0.4, 1);
+  --motion-ease-normal:        cubic-bezier(0.2, 0, 0, 1);
+  --motion-ease-slow:          cubic-bezier(0.0, 0, 0.2, 1);
+  --motion-stagger-primary:    40ms;
+  --motion-stagger-secondary:  20ms;
+}
+
+/* ─── prefers-reduced-motion global override ───────────────────────────────── */
+/* When the user has requested reduced motion, collapse all motion tokens to   */
+/* near-instant and remove scroll behaviours.                                  */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast:   1ms;
+    --motion-duration-normal: 1ms;
+    --motion-duration-slow:   1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration:        1ms !important;
+    animation-iteration-count: 1  !important;
+    transition-duration:       1ms !important;
+    scroll-behavior:           auto !important;
+  }
+}
+
+/* ─── Page enter animation ─────────────────────────────────────────────────── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter var(--motion-duration-slow) var(--motion-ease-slow) both;
+}
+
+/* ─── Modal open animation ─────────────────────────────────────────────────── */
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-enter {
+  animation: modal-enter var(--motion-duration-normal) var(--motion-ease-slow) both;
+}
+
+/* Backdrop fade */
+@keyframes backdrop-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-backdrop-enter {
+  animation: backdrop-enter var(--motion-duration-normal) var(--motion-ease-normal) both;
+}
+
+/* ─── List stagger ─────────────────────────────────────────────────────────── */
+/* Apply .animate-list-item to each li/card; set --stagger-index inline.       */
+@keyframes list-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-list-item {
+  animation:
+    list-item-enter
+    var(--motion-duration-normal)
+    var(--motion-ease-slow)
+    both;
+  animation-delay: calc(var(--stagger-index, 0) * var(--motion-stagger-primary));
+}
+
+/* Secondary stagger (tighter, e.g. chip rows) */
+.animate-list-item-secondary {
+  animation:
+    list-item-enter
+    var(--motion-duration-fast)
+    var(--motion-ease-slow)
+    both;
+  animation-delay: calc(var(--stagger-index, 0) * var(--motion-stagger-secondary));
+}
+
+/* ─── Button hover (fast) ──────────────────────────────────────────────────── */
+/* Applied via Tailwind in components; defined here as a reusable layer.       */
+@layer components {
+  .btn-motion {
+    transition:
+      transform  var(--motion-duration-fast)  var(--motion-ease-fast),
+      box-shadow var(--motion-duration-fast)  var(--motion-ease-fast),
+      filter     var(--motion-duration-fast)  var(--motion-ease-fast);
+  }
+
+  .btn-motion:hover:not(:disabled) {
+    transform: scale(1.02);
+  }
+
+  .btn-motion:active:not(:disabled) {
+    transform: scale(0.98);
+    transition-duration: 80ms;
+  }
+}
+
+/* ─── Tab / toggle transition ──────────────────────────────────────────────── */
+@layer components {
+  .tab-transition {
+    transition:
+      color      var(--motion-duration-normal) var(--motion-ease-normal),
+      border-color var(--motion-duration-normal) var(--motion-ease-normal),
+      background-color var(--motion-duration-normal) var(--motion-ease-normal);
+  }
+}
+
+/* ─── Skeleton shimmer (LAYOUT-SKELETON-01) ───────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--color-pulse-200) 25%,
+    var(--color-pulse-100) 50%,
+    var(--color-pulse-200) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s var(--motion-ease-normal) infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      #1e293b 25%,
+      #334155 50%,
+      #1e293b 75%
+    );
+    background-size: 800px 100%;
+  }
 }

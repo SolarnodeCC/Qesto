@@ -1,0 +1,12 @@
+{
+  "title": "Session Ready",
+  "share_button": "Share with participants",
+  "open_lobby_button": "Open lobby & start",
+  "checklist_title": "Pre-flight checklist",
+  "validation": {
+    "title_required": "Session title is required",
+    "question_required": "At least one question is required",
+    "consent_required": "AI consent is required"
+  },
+  "time_remaining": "{{minutes}} minutes until automatic start"
+}

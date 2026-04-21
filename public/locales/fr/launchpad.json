@@ -1,0 +1,12 @@
+{
+  "title": "Séance prête",
+  "share_button": "Partager avec les participants",
+  "open_lobby_button": "Ouvrir le hall d'attente et démarrer",
+  "checklist_title": "Liste de contrôle préalable",
+  "validation": {
+    "title_required": "Le titre de la séance est obligatoire",
+    "question_required": "Au moins une question est requise",
+    "consent_required": "Le consentement à l'IA est requis"
+  },
+  "time_remaining": "{{minutes}} minutes jusqu'au démarrage automatique"
+}

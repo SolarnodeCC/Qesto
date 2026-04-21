@@ -2,7 +2,7 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last verified: 2026-04-21 (UTC)_
+_Last verified: 2026-04-21 (UTC) — Phase 7 (LAYOUT-SKELETON-01, LAYOUT-MOTION-01, DESIGN-TYP-01) applied_
 
 ## 1. Scope
 - Dashboard, wizard, presenter and voter flows.

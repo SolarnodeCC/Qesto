@@ -49,6 +49,12 @@
     "ai_questions_label": "Gegenereerde vragen",
     "ai_consent":       "Ik ga akkoord dat mijn sessietitel en doel worden verwerkt door de AI",
     "ai_consent_required": "Geef toestemming voor AI-verwerking om vragen te genereren",
+    "ai_consent_v2": {
+      "title":       "AI-aangedreven generatie",
+      "description": "We gebruiken AI om vragen voor te stellen op basis van je sessiedoel",
+      "checkbox":    "Ik geef toestemming voor AI-verwerking van mijn sessietitel en doel",
+      "error":       "Geef toestemming voor AI-verwerking"
+    },
     "ai_error":         "Genereren mislukt. Probeer het opnieuw.",
     "ai_review_cta":    "Bewerk vragen →",
     "ai_review_title":  "Bewerk je vragen",
