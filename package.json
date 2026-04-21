@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
-    "perf:audit": "node scripts/perf-audit.mjs"
+    "perf:audit": "node scripts/perf-audit.mjs",
+    "verify:deploy": "node scripts/verify-deploy.mjs"
   },
   "dependencies": {
     "hono": "^4.6.0",
