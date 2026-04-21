@@ -30,8 +30,12 @@ export async function initI18n(): Promise<void> {
   initPromise = (async () => {
     const language = detectLanguage()
     currentLanguage = language
-    const entries = await Promise.all(NAMESPACES.map((ns) => fetchNamespace(language, ns)))
-    cachedLocales = Object.fromEntries(entries)
+    try {
+      const entries = await Promise.all(NAMESPACES.map((ns) => fetchNamespace(language, ns)))
+      cachedLocales = Object.fromEntries(entries)
+    } catch (err) {
+      console.error('[i18n] Failed to load translations, UI will show keys as fallback:', err)
+    }
   })()
   return initPromise
 }

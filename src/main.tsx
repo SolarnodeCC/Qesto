@@ -8,9 +8,11 @@ import './styles.css'
 const root = document.getElementById('root')
 if (!root) throw new Error('Missing #root')
 
-// Pre-load all translation namespaces in parallel before first paint so
-// components never see raw i18n keys.
-initI18n().then(() => {
+async function mount() {
+  // Pre-load translations before first paint so components never see raw i18n keys.
+  // The try/catch inside initI18n ensures a fetch failure degrades to showing keys,
+  // never a blank page.
+  await initI18n()
   createRoot(root).render(
     <StrictMode>
       <BrowserRouter>
@@ -18,4 +20,6 @@ initI18n().then(() => {
       </BrowserRouter>
     </StrictMode>,
   )
-})
+}
+
+void mount()
