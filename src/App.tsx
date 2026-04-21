@@ -29,13 +29,7 @@ function RouteAnnouncer() {
 export default function App() {
   return (
     <AuthProvider>
-      {/* Skip link — visible only on focus, targets #main */}
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-teal-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-      >
-        Skip to main content
-      </a>
+      {/* Skip link is rendered by MainLayout on each page that uses it. */}
       <RouteAnnouncer />
       <Routes>
         <Route path="/" element={<Home />} />
