@@ -16,8 +16,6 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import type { Env } from '../types'
 
-type Vars = AuthVariables & AdminVariables
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type LiveMetrics = {
@@ -141,8 +139,8 @@ function rowToCsv(row: MetricsSummaryRow): string {
 
 // ─── Route mount ──────────────────────────────────────────────────────────────
 
-export function mountAdminRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
-  const app = new Hono<{ Bindings: Env; Variables: Vars }>()
+export function mountAdminRoutes(parent: any) {
+  const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
 
   // All admin routes require auth + admin role.
   app.use('*', authMiddleware)
@@ -249,12 +247,12 @@ export function mountAdminRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }
       }
 
       const { results } = await stmt.all<MetricsSummaryRow>()
-      return c.json({ ok: true, data: { buckets: results }, trace_id }, 200)
+      return c.json({ ok: true, data: results, trace_id }, 200)
     } catch (err) {
       // Table doesn't exist yet (Step 1 not shipped).
       const msg = (err as Error).message ?? ''
       if (msg.includes('no such table')) {
-        return c.json({ ok: true, data: { buckets: [], stub: true }, trace_id }, 200)
+        return c.json({ ok: true, data: [], stub: true, trace_id }, 200)
       }
       throw err
     }
@@ -264,8 +262,9 @@ export function mountAdminRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }
   // Streams D1 metrics_summary as CSV.  Max 10 000 rows, <5 MB.
   app.post('/metrics/export', async (c) => {
     const trace_id = c.get('trace_id')
-    const startParam = c.req.query('start')
-    const endParam = c.req.query('end')
+    const body = await c.req.json<{ start?: string; end?: string }>()
+    const startParam = body.start
+    const endParam = body.end
 
     if (!startParam || !endParam) {
       return c.json(

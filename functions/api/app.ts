@@ -8,11 +8,12 @@ import { mountAdminRoutes } from './routes/admin'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
+import type { AdminVariables } from './middleware/admin'
 import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import type { Env } from './types'
 
-type Vars = AuthVariables & PlanVariables
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables>
 
 export function createApp() {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -110,6 +111,7 @@ export function createApp() {
   mountSessionRoutes(app)
   mountBillingRoutes(app)
   mountInsightsRoutes(app)
+  mountAdminRoutes(app)
 
   return app
 }

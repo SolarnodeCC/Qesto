@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import SessionConfig from './pages/SessionConfig'
 import Launchpad from './pages/Launchpad'
+import AdminDashboard from './pages/AdminDashboard'
 import Present from './pages/Present'
 import JoinPage from './pages/JoinPage'
 import Results from './pages/Results'
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />
         <Route path="/sessions/:id/launchpad" element={<Launchpad />} />
         <Route path="/sessions/:id/present" element={<Present />} />
