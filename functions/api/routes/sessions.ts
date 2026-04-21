@@ -19,11 +19,21 @@ import { deriveVoterIdentity } from '../lib/voter'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { verifyJwt } from '../lib/jwt'
+import { incrementSessionQuota } from '../lib/quota'
 import {
   CreateSessionSchema,
+  GenerateQuestionsSchema,
   PatchSessionSchema,
+  ReorderQuestionsSchema,
   type PollQuestionInput,
 } from '../lib/validation'
+import {
+  WizardAIError,
+  WizardValidationError,
+  generateQuestions,
+} from '../lib/ai-wizard'
+import { rateLimit } from '../lib/rate-limit'
+import { sanitizeError } from '../lib/error-handler'
 import type { LiveQuestion } from '../realtime'
 import type { Env, PollOption, Question, Session } from '../types'
 
@@ -278,7 +288,34 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
 
     const user = c.get('user')
+    const plan = c.get('plan')
+    const quotas = c.get('planQuotas')
     const idemKey = c.req.header('idempotency-key') ?? undefined
+
+    // Check quota before proceeding (BILL-04)
+    const { allowed, remaining } = await incrementSessionQuota(
+      c.env.SESSIONS_KV,
+      user.sub,
+      quotas.maxSessionsPerMonth,
+    )
+    if (!allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'quota_exceeded',
+            message: `Session quota exceeded for your ${plan} plan this month`,
+            details: {
+              plan,
+              limit: quotas.maxSessionsPerMonth,
+              upgrade_url: '/billing/upgrade',
+            },
+          },
+          trace_id: c.get('trace_id'),
+        },
+        429,
+      )
+    }
 
     let result: { status: number; body: { ok: true; data: { session: Session; questions: Question[] } }; replayed: boolean }
     try {
@@ -310,7 +347,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
           }
           return {
             status: 201,
-            body: { ok: true as const, data: { session, questions: [] as Question[] } },
+            body: { ok: true as const, data: { session, questions: [] as Question[], quota_remaining: remaining } },
           }
         },
       )
@@ -617,6 +654,204 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     return c.json({
       ok: true,
       data: { session, question, results: { counts, total, source: 'persisted' as const } },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // WIZ-AI-01/02: POST /api/sessions/:id/questions/generate
+  // Uses Workers AI (Llama-3.3) to draft 3–5 questions from a prompt. The
+  // caller must own a DRAFT session (matches the editing model). Draft
+  // questions are *not* auto-persisted — the frontend surfaces them in a
+  // review step so the host can tweak labels before save.
+  // Rate-limited per-user: 20 generations / hour.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.post('/:id/questions/generate', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
+      max: 20,
+      windowSeconds: 3600,
+      prefix: 'ai-wizard',
+    })
+    if (!rl.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'rate_limited',
+            message: 'Too many AI generations. Try again in an hour.',
+            details: { reset_at: rl.resetAt, limit: 20 },
+          },
+          trace_id: c.get('trace_id'),
+        },
+        429,
+      )
+    }
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Only DRAFT sessions can generate questions' },
+          trace_id: c.get('trace_id'),
+        },
+        409,
+      )
+    }
+
+    const body = (await c.req.json().catch(() => null)) as unknown
+    const parsed = GenerateQuestionsSchema.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'validation', message: 'Invalid generation payload', details: parsed.error.flatten() },
+          trace_id: c.get('trace_id'),
+        },
+        400,
+      )
+    }
+
+    try {
+      const result = await generateQuestions(c.env.AI, parsed.data)
+      return c.json({
+        ok: true,
+        data: { questions: result.questions, confidence: result.confidence },
+        trace_id: c.get('trace_id'),
+      })
+    } catch (err) {
+      if (err instanceof WizardValidationError) {
+        return c.json(
+          {
+            ok: false,
+            error: {
+              code: 'ai_output_invalid',
+              message: 'AI returned an output that failed validation',
+              details: err.details,
+            },
+            trace_id: c.get('trace_id'),
+          },
+          400,
+        )
+      }
+      if (err instanceof WizardAIError) {
+        const sanitized = sanitizeError(err, c.env.ENV, 500)
+        return c.json(
+          {
+            ok: false,
+            error: { ...sanitized, code: 'ai_failed' },
+            trace_id: c.get('trace_id'),
+          },
+          500,
+        )
+      }
+      throw err
+    }
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // LAUNCHPAD-01: PUT /api/sessions/:id/questions/reorder
+  // Idempotent reorder of the DRAFT session's questions. Accepts a full list
+  // of existing question ids; validates that the set matches exactly (no
+  // additions, no deletions) and then rewrites `position` in a single D1
+  // batch. Repeating the same call is a no-op.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.put('/:id/questions/reorder', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Only DRAFT sessions can be reordered' },
+          trace_id: c.get('trace_id'),
+        },
+        409,
+      )
+    }
+
+    const body = (await c.req.json().catch(() => null)) as unknown
+    const parsed = ReorderQuestionsSchema.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'validation', message: 'Invalid reorder payload', details: parsed.error.flatten() },
+          trace_id: c.get('trace_id'),
+        },
+        400,
+      )
+    }
+
+    const existing = await fetchQuestions(c.env.DB, id)
+    const existingIds = new Set(existing.map((q) => q.id))
+    const inputIds = parsed.data.questionIds
+    // Dedup and exact-set check.
+    const dedup = new Set(inputIds)
+    if (dedup.size !== inputIds.length) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'validation', message: 'questionIds contains duplicates' },
+          trace_id: c.get('trace_id'),
+        },
+        400,
+      )
+    }
+    if (dedup.size !== existingIds.size || inputIds.some((qid) => !existingIds.has(qid))) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'validation',
+            message: 'questionIds must match the current set of question ids exactly',
+            details: {
+              expected: [...existingIds],
+              received: inputIds,
+            },
+          },
+          trace_id: c.get('trace_id'),
+        },
+        400,
+      )
+    }
+
+    // Two-phase update: shift all positions to a high offset, then set final.
+    // Avoids tripping UNIQUE(session_id, position) during reassignment.
+    const OFFSET = 10_000
+    const shiftBatch = existing.map((q, idx) =>
+      c.env.DB
+        .prepare(`UPDATE questions SET position = ?1 WHERE id = ?2 AND session_id = ?3`)
+        .bind(OFFSET + idx, q.id, id),
+    )
+    const finalBatch = inputIds.map((qid, idx) =>
+      c.env.DB
+        .prepare(`UPDATE questions SET position = ?1 WHERE id = ?2 AND session_id = ?3`)
+        .bind(idx, qid, id),
+    )
+    await c.env.DB.batch([...shiftBatch, ...finalBatch])
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    return c.json({
+      ok: true,
+      data: { session, questions },
       trace_id: c.get('trace_id'),
     })
   })

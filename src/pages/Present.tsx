@@ -36,7 +36,9 @@ export default function Present() {
 
   return (
     <main id="main" className="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
-      <div className="flex items-center justify-between">
+      {/* animate-page-enter: presenter surface fades in (LAYOUT-MOTION-01) */}
+      <div className="animate-page-enter space-y-6">
+        <div className="flex items-center justify-between">
         <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
           ← Dashboard
         </Link>
@@ -113,7 +115,7 @@ export default function Present() {
           type="button"
           onClick={handleClose}
           disabled={closing || state.session?.status === 'closed'}
-          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-red-400 hover:text-red-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-red-400 hover:text-red-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
         >
           {state.session?.status === 'closed' ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
         </button>
@@ -127,6 +129,7 @@ export default function Present() {
         ) : null}
         {closeError ? <span className="text-sm text-red-600">{closeError}</span> : null}
       </div>
+      </div>{/* end animate-page-enter */}
     </main>
   )
 }

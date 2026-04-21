@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useT } from '../i18n'
 import { api, type ApiError } from '../api/client'
+import MainLayout from '../layouts/MainLayout'
+import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 
 type PollOption = { id: string; label: string }
 
@@ -38,6 +41,7 @@ function toCsv(rows: string[][]): string {
 
 export default function Results() {
   const auth = useAuth()
+  const t = useT('results')
   const { id } = useParams<{ id: string }>()
   const [state, setState] = useState<State>({ status: 'loading' })
 
@@ -55,30 +59,31 @@ export default function Results() {
 
   if (auth.status === 'loading') {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">
-        Loading…
-      </main>
+      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+        <ResultsSectionSkeleton bars={4} />
+      </MainLayout>
     )
   }
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
 
   if (state.status === 'loading') {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">
-        Loading results…
-      </main>
+      /* LAYOUT-SKELETON-01: geometric skeleton prevents layout shift while data loads */
+      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+        <ResultsSectionSkeleton bars={4} />
+      </MainLayout>
     )
   }
   if (state.status === 'error') {
     return (
-      <main className="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
         <p role="alert" className="text-sm text-red-600">
           {state.error.message}
         </p>
         <Link to="/dashboard" className="text-teal-600 hover:underline">
           ← Back to dashboard
         </Link>
-      </main>
+      </MainLayout>
     )
   }
 
@@ -94,7 +99,7 @@ export default function Results() {
 
   function handleExport() {
     if (!question) return
-    const header = ['Option', 'Votes', 'Percent of total']
+    const header = [t('csv.option'), t('csv.votes'), t('csv.percent')]
     const body = rows.map((r) => [
       r.label,
       String(r.count),
@@ -110,29 +115,35 @@ export default function Results() {
     URL.revokeObjectURL(url)
   }
 
-  return (
-    <main id="main" className="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
-          ← Dashboard
-        </Link>
-        <span
-          className={
-            'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
-            (session.status === 'live'
-              ? 'bg-teal-100 text-teal-700'
-              : session.status === 'closed'
-              ? 'bg-violet-100 text-violet-700'
-              : 'bg-pulse-100 text-pulse-600')
-          }
-        >
-          {session.status}
-        </span>
-      </div>
+  const navSlot = (
+    <Link
+      to="/dashboard"
+      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+    >
+      ← Dashboard
+    </Link>
+  )
 
+  return (
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+      {/* animate-page-enter: content fades in on load (LAYOUT-MOTION-01) */}
+      <div className="animate-page-enter space-y-6">
       <header className="space-y-1">
-        <p className="text-sm uppercase tracking-widest text-teal-600">Results</p>
-        <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{session.title}</h1>
+        <div className="flex items-center justify-between">
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{session.title}</h1>
+          <span
+            className={
+              'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
+              (session.status === 'live'
+                ? 'bg-teal-100 text-teal-700'
+                : session.status === 'closed'
+                ? 'bg-violet-100 text-violet-700'
+                : 'bg-pulse-100 text-pulse-600')
+            }
+          >
+            {session.status}
+          </span>
+        </div>
         <p className="text-sm text-pulse-500">
           Join code <code className="font-mono">{session.code}</code>
           {session.closed_at
@@ -199,7 +210,7 @@ export default function Results() {
           type="button"
           onClick={handleExport}
           disabled={!question || results.total === 0}
-          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
         >
           Export CSV
         </button>
@@ -211,6 +222,7 @@ export default function Results() {
           Refresh
         </button>
       </div>
-    </main>
+      </div>{/* end animate-page-enter */}
+    </MainLayout>
   )
 }

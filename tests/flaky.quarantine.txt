@@ -1,0 +1,13 @@
+# Flaky Test Quarantine List
+# Format: one regex pattern per line
+# Matches are excluded from the "new flaky" report and treated as expected flakiness
+# Owner: backend-dev team — update weekly post-fix
+
+# WebSocket reconnection tests often have timing variance
+^.*WebSocket.*reconnect.*$
+
+# AI insights timeout tests can be slow depending on model load
+^.*ai-insights.*timeout.*$
+
+# Session state transition tests with async cleanup
+^.*session.*state.*transition.*$

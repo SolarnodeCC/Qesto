@@ -5,6 +5,8 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import SessionConfig from './pages/SessionConfig'
+import Launchpad from './pages/Launchpad'
+import AdminDashboard from './pages/AdminDashboard'
 import Present from './pages/Present'
 import JoinPage from './pages/JoinPage'
 import Results from './pages/Results'
@@ -29,19 +31,15 @@ function RouteAnnouncer() {
 export default function App() {
   return (
     <AuthProvider>
-      {/* Skip link — visible only on focus, targets #main */}
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-teal-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-      >
-        Skip to main content
-      </a>
+      {/* Skip link is rendered by MainLayout on each page that uses it. */}
       <RouteAnnouncer />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />
+        <Route path="/sessions/:id/launchpad" element={<Launchpad />} />
         <Route path="/sessions/:id/present" element={<Present />} />
         <Route path="/sessions/:id/results" element={<Results />} />
         <Route path="/j/:code" element={<JoinPage />} />

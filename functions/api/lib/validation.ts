@@ -35,7 +35,44 @@ export const PatchSessionSchema = z
     message: 'at least one of { title, question } must be provided',
   })
 
+// WIZ-AI-01/02: AI-assisted question generation input.
+export const GenerateQuestionsSchema = z.object({
+  sessionTitle: trimmed(1, 160),
+  sessionGoal: trimmed(1, 400),
+  focusArea: trimmed(1, 160).optional(),
+})
+
+// WIZ-AI validator for parsed AI output. Options default to generated ids if
+// the model omits them, so we accept a looser shape here and normalise in the
+// handler.
+export const AIQuestionSchema = z.object({
+  kind: z.enum(['poll', 'ranking', 'consent', 'open']),
+  prompt: trimmed(3, 240),
+  options: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(32).optional(),
+        label: trimmed(1, 160),
+      }),
+    )
+    .min(3)
+    .max(5),
+})
+
+export const AIQuestionsOutputSchema = z.object({
+  questions: z.array(AIQuestionSchema).min(3).max(5),
+})
+
+// LAUNCHPAD-01: reorder input.
+export const ReorderQuestionsSchema = z.object({
+  questionIds: z.array(z.string().min(1).max(64)).min(1).max(50),
+})
+
 export type PollOptionInput = z.infer<typeof PollOptionSchema>
 export type PollQuestionInput = z.infer<typeof PollQuestionSchema>
 export type CreateSessionInput = z.infer<typeof CreateSessionSchema>
 export type PatchSessionInput = z.infer<typeof PatchSessionSchema>
+export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsSchema>
+export type AIQuestionInput = z.infer<typeof AIQuestionSchema>
+export type AIQuestionsOutput = z.infer<typeof AIQuestionsOutputSchema>
+export type ReorderQuestionsInput = z.infer<typeof ReorderQuestionsSchema>

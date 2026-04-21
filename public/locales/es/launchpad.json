@@ -1,0 +1,12 @@
+{
+  "title": "Sesión lista",
+  "share_button": "Compartir con participantes",
+  "open_lobby_button": "Abrir sala de espera e iniciar",
+  "checklist_title": "Lista de verificación previa",
+  "validation": {
+    "title_required": "El título de la sesión es obligatorio",
+    "question_required": "Se requiere al menos una pregunta",
+    "consent_required": "Se requiere consentimiento de IA"
+  },
+  "time_remaining": "{{minutes}} minutos hasta el inicio automático"
+}

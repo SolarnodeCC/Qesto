@@ -2,14 +2,19 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { mountAuthRoutes } from './routes/auth'
 import { mountSessionRoutes } from './routes/sessions'
+import { mountBillingRoutes } from './routes/billing'
+import { mountInsightsRoutes } from './routes/insights'
+import { mountAdminRoutes } from './routes/admin'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
+import type { AdminVariables } from './middleware/admin'
+import { rbacMiddleware, type RbacVariables } from './middleware/rbac'
 import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import type { Env } from './types'
 
-type Vars = AuthVariables & PlanVariables
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & RbacVariables
 
 export function createApp() {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -59,6 +64,10 @@ export function createApp() {
   })
   app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
 
+  // RBAC enforcement — role-based access control for all API routes (Phase 8).
+  // Checks user roles against permission matrix; defaults to viewer if no explicit role.
+  app.use('/api/*', rbacMiddleware)
+
   app.onError((err, c) => {
     const trace_id = c.get('trace_id') ?? 'unknown'
     const maybeStatus = (err as unknown as { status?: number }).status
@@ -105,6 +114,9 @@ export function createApp() {
 
   mountAuthRoutes(app)
   mountSessionRoutes(app)
+  mountBillingRoutes(app)
+  mountInsightsRoutes(app)
+  mountAdminRoutes(app)
 
   return app
 }

@@ -1,0 +1,12 @@
+{
+  "tabLabel": "Inzichten",
+  "emptyState": "Nog geen sessies gesloten. Sluit een sessie om inzichten te zien.",
+  "themes": {
+    "title": "Belangrijkste thema's",
+    "description": "Door AI geïdentificeerde belangrijkste thema's uit open antwoorden"
+  },
+  "trend": {
+    "title": "30-daagse trend"
+  },
+  "loadError": "Inzichten konden niet worden geladen"
+}

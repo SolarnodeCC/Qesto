@@ -21,7 +21,7 @@ export function detectLanguage(): string {
  */
 async function loadLocales(language: string): Promise<LocaleMap> {
   const locales: LocaleMap = {}
-  const namespaces = ['common', 'home', 'login', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found']
+  const namespaces = ['common', 'home', 'login', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard']
 
   try {
     for (const namespace of namespaces) {

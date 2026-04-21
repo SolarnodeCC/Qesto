@@ -49,6 +49,12 @@
     "ai_questions_label": "Preguntas generadas",
     "ai_consent":       "Acepto que el título y objetivo de mi sesión sean procesados por IA",
     "ai_consent_required": "Por favor acepta el procesamiento por IA para generar preguntas",
+    "ai_consent_v2": {
+      "title":       "Generación con tecnología de IA",
+      "description": "Usaremos IA para sugerir preguntas basadas en el objetivo de tu sesión",
+      "checkbox":    "Acepto el procesamiento por IA de mi título y objetivo de sesión",
+      "error":       "Por favor acepta el procesamiento por IA"
+    },
     "ai_error":         "La generación falló. Por favor inténtalo de nuevo.",
     "ai_review_cta":    "Editar preguntas →",
     "ai_review_title":  "Editar tus preguntas",
@@ -93,7 +99,9 @@
     },
     "mode": {
       "label":            "Modo de sesión",
-      "reflection_title": "Modo Reflexión"
+      "reflection_title": "Modo Reflexión",
+      "fun_title":        "Modo Rápido",
+      "fun_desc":         "Acelera con temporización automática de preguntas"
     }
   },
   "step5": {

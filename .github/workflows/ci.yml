@@ -24,14 +24,40 @@ jobs:
 
       - run: npm ci
 
+      - name: npm audit (SEC-03)
+        run: npm audit --audit-level=moderate
+
       - name: Generate design tokens
         run: npm run tokens:build
+
+      - name: Check for design token drift
+        run: git diff --exit-code src/ui/tailwind-theme.ts
+        continue-on-error: false
+
+      - name: i18n validation (check-i18n)
+        run: npm run check:i18n
 
       - name: TypeScript (tsc --noEmit)
         run: npm run typecheck
 
       - name: Unit tests (vitest)
         run: npm test
+
+      - name: Coverage gates (measure-coverage)
+        run: npm run test:coverage
+        if: always()
+
+      - name: Flaky test detection
+        run: npm run test:flaky-check
+        if: always()
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
 
       - name: Vite build
         run: npm run build
