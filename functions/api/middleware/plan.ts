@@ -2,22 +2,23 @@
 // Downstream routes use c.get('plan') to check feature availability.
 
 import type { MiddlewareHandler } from 'hono'
-import type { Env, PlanTier, PLAN_QUOTAS } from '../types'
+import type { Env, PlanTier } from '../types'
 import { PLAN_QUOTAS as QUOTAS_MAP } from '../types'
+import type { AuthVariables } from './auth'
 
 export type PlanVariables = {
   plan: PlanTier
   planQuotas: (typeof QUOTAS_MAP)[PlanTier]
 }
 
-export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: PlanVariables }> = async (
+export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthVariables & PlanVariables }> = async (
   c,
   next,
 ) => {
   const user = c.get('user')
   if (!user) {
     // Auth middleware should have run first; if no user, auth failed elsewhere
-    return c.status(401).json({ ok: false, error: { code: 'unauthorized', message: 'Not authenticated' } })
+    return c.json({ ok: false, error: { code: 'unauthorized', message: 'Not authenticated' } }, 401)
   }
 
   // Fetch user's plan from D1

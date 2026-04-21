@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import MainLayout from '../layouts/MainLayout'
+import BuildStamp from '../components/BuildStamp'
 
 export default function Home() {
   const auth = useAuth()
@@ -60,6 +61,7 @@ export default function Home() {
             </Link>
           )}
         </div>
+        <BuildStamp />
       </div>
     </MainLayout>
   )

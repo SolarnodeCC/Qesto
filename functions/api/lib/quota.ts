@@ -1,8 +1,6 @@
 // Plan quota tracking using KV (idempotent, monthly window).
 // Quotas tracked per user per month; KV TTL handles month-end rollover.
 
-import type { KVNamespace } from '@cloudflare/workers-types'
-
 export interface QuotaRecord {
   user_id: string
   month: string // YYYY-MM

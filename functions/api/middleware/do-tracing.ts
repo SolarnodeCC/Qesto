@@ -19,7 +19,11 @@ export async function fetchWithTracing<T>(
 
   const response = await recordSpan(operation, async () => {
     return stub.fetch(url, { ...fetchOpts, headers })
-  }, { trace_id: traceId, user_id: userId, kv: c.env.SESSIONS_KV })
+  }, {
+    trace_id: traceId,
+    ...(userId ? { user_id: userId } : {}),
+    kv: c.env.SESSIONS_KV,
+  })
 
   if (!response.ok) {
     throw new Error(`DO fetch failed: ${response.status} ${response.statusText}`)

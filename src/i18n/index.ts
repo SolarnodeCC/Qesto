@@ -106,7 +106,7 @@ export function useT(namespace: string) {
 
   return (key: string, vars?: Record<string, string | number>): string => {
     if (!isLoaded) {
-      console.warn(`[i18n] Translations not yet loaded for key '${namespace}.${key}'`)
+      // Avoid console-noise during initial render before locale bundles resolve.
       return key
     }
     return translate(namespace, key, vars)

@@ -55,6 +55,16 @@ wrangler secret put JWT_SECRET     --env preview
 wrangler secret put RESEND_API_KEY --env preview
 ```
 
+For password + Google/Microsoft SSO login, also configure OAuth provider secrets:
+
+```bash
+wrangler secret put GOOGLE_CLIENT_ID
+wrangler secret put GOOGLE_CLIENT_SECRET
+wrangler secret put MICROSOFT_CLIENT_ID
+wrangler secret put MICROSOFT_CLIENT_SECRET
+wrangler secret put MICROSOFT_TENANT_ID   # optional; defaults to "common"
+```
+
 ## 4. Verify
 
 ```bash
@@ -67,6 +77,17 @@ wrangler deploy
 
 Then hit `https://qesto2-github.oostelaar.workers.dev/api/admin/health` →
 expect `{ "ok": true, "data": { "env": "production", … } }`.
+
+Also verify that the deployed API commit matches your local checkout:
+
+```bash
+npm run verify:deploy -- https://qesto2-github.oostelaar.workers.dev
+```
+
+Expected result: `Result       : match`
+
+If Cloudflare Access is enabled, allow unauthenticated GET access to
+`/api/version` so commit parity checks can run from CI and local scripts.
 
 ## Why bindings are commented out by default
 

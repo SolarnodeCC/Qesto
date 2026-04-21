@@ -36,7 +36,7 @@ describe('Metrics KV — Time-Series Bucketing', () => {
       )
 
       expect(mockKV.put).toHaveBeenCalled()
-      const [key, value] = mockKV.put.mock.calls[0]
+      const [key] = mockKV.put.mock.calls[0]
       expect(key).toContain('metrics:')
       expect(key).toContain('GET_/api/sessions') // route slug
     })

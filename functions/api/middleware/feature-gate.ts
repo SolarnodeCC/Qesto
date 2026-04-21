@@ -2,6 +2,7 @@
 
 import type { MiddlewareHandler } from 'hono'
 import type { Env, PlanQuotas } from '../types'
+import type { PlanVariables } from './plan'
 
 export type FeatureKey = keyof PlanQuotas['featuresUnlocked']
 
@@ -10,7 +11,7 @@ export type FeatureKey = keyof PlanQuotas['featuresUnlocked']
  *
  * Usage: `app.post('/export', requireFeature('resultsExport'), async (c) => { ... })`
  */
-export function requireFeature(feature: FeatureKey): MiddlewareHandler<{ Bindings: Env }> {
+export function requireFeature(feature: FeatureKey): MiddlewareHandler<{ Bindings: Env; Variables: PlanVariables & { trace_id: string } }> {
   return async (c, next) => {
     const plan = c.get('plan')
     const quotas = c.get('planQuotas')

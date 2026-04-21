@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(__dirname, '../..')
+const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const TOKENS_JSON = resolve(ROOT, 'docs/specs/design-tokens.json')
 
 describe('design tokens source of truth', () => {

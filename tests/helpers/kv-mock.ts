@@ -27,4 +27,8 @@ export class KVMock {
   getRaw(key: string): string | undefined {
     return this.store.get(key)
   }
+
+  keys(): string[] {
+    return [...this.store.keys()]
+  }
 }

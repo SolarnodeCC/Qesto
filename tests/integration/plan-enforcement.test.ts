@@ -3,65 +3,24 @@ import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
+import { KVMock } from '../helpers/kv-mock'
 
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 
-// Simple in-memory KV mock for quota testing
-class KVMock implements KVNamespace {
-  private store = new Map<string, string>()
-
-  async get(key: string): Promise<string | null> {
-    return this.store.get(key) ?? null
-  }
-
-  async put(key: string, value: string): Promise<void> {
-    this.store.set(key, value)
-  }
-
-  async delete(key: string): Promise<void> {
-    this.store.delete(key)
-  }
-
-  // Unused but required by interface
-  async list(): Promise<KVNamespaceListResult<unknown>> {
-    throw new Error('Not implemented')
-  }
-
-  async getWithMetadata(): Promise<KVNamespaceGetWithMetadataResult<unknown>> {
-    throw new Error('Not implemented')
-  }
-
-  async getBuffer(): Promise<ArrayBuffer | null> {
-    throw new Error('Not implemented')
-  }
-
-  async getBufferWithMetadata(): Promise<KVNamespaceGetWithMetadataResult<ArrayBuffer>> {
-    throw new Error('Not implemented')
-  }
-
-  async getJSON(): Promise<unknown> {
-    throw new Error('Not implemented')
-  }
-
-  async getJSONWithMetadata(): Promise<KVNamespaceGetWithMetadataResult<unknown>> {
-    throw new Error('Not implemented')
-  }
-}
-
-function makeEnv(db: D1Mock, kv: KVNamespace): Env {
+function makeEnv(db: D1Mock, kv: KVMock): Env {
   return {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
     JWT_SECRET: SECRET,
     DB: db as unknown as D1Database,
-    SESSIONS_KV: kv,
-    USERS_KV: new KVMock(),
-    TEAMS_KV: new KVMock(),
-    TEMPLATES_KV: new KVMock(),
-    DECISIONS_KV: new KVMock(),
-    AUDIT_KV: new KVMock(),
-    ACTIONS_KV: new KVMock(),
+    SESSIONS_KV: kv as unknown as KVNamespace,
+    USERS_KV: new KVMock() as unknown as KVNamespace,
+    TEAMS_KV: new KVMock() as unknown as KVNamespace,
+    TEMPLATES_KV: new KVMock() as unknown as KVNamespace,
+    DECISIONS_KV: new KVMock() as unknown as KVNamespace,
+    AUDIT_KV: new KVMock() as unknown as KVNamespace,
+    ACTIONS_KV: new KVMock() as unknown as KVNamespace,
   } as unknown as Env
 }
 
@@ -72,7 +31,7 @@ async function cookieFor(userId: string, email: string): Promise<string> {
 
 describe('Plan Enforcement (BILL-04)', () => {
   let db: D1Mock
-  let kv: KVNamespace
+  let kv: KVMock
   let app: ReturnType<typeof createApp>
   let env: Env
 
