@@ -138,3 +138,119 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_ts ON audit_events(ts DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_events_actor ON audit_events(actor_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_subject ON audit_events(subject_type, subject_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_action ON audit_events(action);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- badges — auto-awarded achievement tracking (Phase 9)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS badges (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  badge_type TEXT NOT NULL CHECK (badge_type IN ('first_answer', 'speedster', 'perfect_trivia', 'engagement', 'leaderboard', 'streak', 'consensus', 'comeback')),
+  session_id TEXT REFERENCES sessions(id) ON DELETE CASCADE,
+  awarded_at INTEGER NOT NULL,
+  UNIQUE(user_id, badge_type, session_id)
+);
+CREATE INDEX IF NOT EXISTS idx_badges_user ON badges(user_id);
+CREATE INDEX IF NOT EXISTS idx_badges_session ON badges(session_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- energizers — gamification energizer templates (Phase 9)
+-- Supported types: poll, ranking, consent, open, battle_royale, bracket
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS energizers (
+  id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('poll', 'ranking', 'consent', 'open', 'battle_royale', 'bracket')),
+  prompt TEXT NOT NULL,
+  options_json TEXT NOT NULL DEFAULT '[]',
+  config_json TEXT NOT NULL DEFAULT '{}',
+  position INTEGER NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(session_id, position)
+);
+CREATE INDEX IF NOT EXISTS idx_energizers_session ON energizers(session_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- battle_royale_rounds — multi-round elimination energizer state (Phase 9)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS battle_royale_rounds (
+  id TEXT PRIMARY KEY,
+  energizer_id TEXT NOT NULL REFERENCES energizers(id) ON DELETE CASCADE,
+  round_number INTEGER NOT NULL,
+  participants_json TEXT NOT NULL,
+  winner_id TEXT,
+  scores_json TEXT NOT NULL DEFAULT '{}',
+  state TEXT NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'active', 'completed')),
+  created_at INTEGER NOT NULL,
+  UNIQUE(energizer_id, round_number)
+);
+CREATE INDEX IF NOT EXISTS idx_br_rounds_energizer ON battle_royale_rounds(energizer_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- bracket_matches — bracket competition match tracking (Phase 9)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS bracket_matches (
+  id TEXT PRIMARY KEY,
+  energizer_id TEXT NOT NULL REFERENCES energizers(id) ON DELETE CASCADE,
+  round_number INTEGER NOT NULL,
+  match_number INTEGER NOT NULL,
+  participant_a_id TEXT NOT NULL,
+  participant_b_id TEXT NOT NULL,
+  winner_id TEXT,
+  score_a INTEGER DEFAULT 0,
+  score_b INTEGER DEFAULT 0,
+  state TEXT NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'active', 'completed')),
+  created_at INTEGER NOT NULL,
+  UNIQUE(energizer_id, round_number, match_number)
+);
+CREATE INDEX IF NOT EXISTS idx_bracket_matches_energizer ON bracket_matches(energizer_id);
+CREATE INDEX IF NOT EXISTS idx_bracket_matches_round ON bracket_matches(round_number);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- leaderboard_entries — session leaderboard snapshots (Phase 9)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS leaderboard_entries (
+  id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL,
+  rank INTEGER NOT NULL,
+  score INTEGER NOT NULL,
+  accuracy REAL DEFAULT 0,
+  speed_avg_ms INTEGER,
+  badge_count INTEGER DEFAULT 0,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(session_id, user_id)
+);
+CREATE INDEX IF NOT EXISTS idx_leaderboard_session ON leaderboard_entries(session_id);
+CREATE INDEX IF NOT EXISTS idx_leaderboard_rank ON leaderboard_entries(session_id, rank);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- referral_codes — referral link generation + tracking (Phase 9)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS referral_codes (
+  id TEXT PRIMARY KEY,
+  creator_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code TEXT NOT NULL UNIQUE,
+  credit_value_cents INTEGER NOT NULL DEFAULT 1000,
+  used_count INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_referral_codes_creator ON referral_codes(creator_id);
+CREATE INDEX IF NOT EXISTS idx_referral_codes_code ON referral_codes(code);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- referral_signups — signup attribution to referral codes (Phase 9)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS referral_signups (
+  id TEXT PRIMARY KEY,
+  referred_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  referrer_user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  referral_code_id TEXT NOT NULL REFERENCES referral_codes(id) ON DELETE CASCADE,
+  credit_applied INTEGER DEFAULT 0,
+  credited_at INTEGER,
+  created_at INTEGER NOT NULL,
+  UNIQUE(referred_user_id, referral_code_id)
+);
+CREATE INDEX IF NOT EXISTS idx_referral_signups_referred ON referral_signups(referred_user_id);
+CREATE INDEX IF NOT EXISTS idx_referral_signups_referrer ON referral_signups(referrer_user_id);
