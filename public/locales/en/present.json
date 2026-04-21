@@ -1,0 +1,16 @@
+{
+  "loading": "Loading…",
+  "sessionNotFound": "Session not found",
+  "sessionClosed": "This session is closed",
+  "currentQuestion": "Question {count}",
+  "of": "of {total}",
+  "responses": "{count} responses",
+  "nextQuestion": "Next question",
+  "previousQuestion": "Previous question",
+  "closeSession": "Close session",
+  "endPresentation": "End presentation",
+  "closing": "Closing…",
+  "back": "Back to dashboard",
+  "liveParticipants": "Live participants",
+  "resultsReady": "Results ready"
+}

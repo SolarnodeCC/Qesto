@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
 import { AuthProvider } from './hooks/useAuth'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -9,9 +10,33 @@ import JoinPage from './pages/JoinPage'
 import Results from './pages/Results'
 import NotFound from './pages/NotFound'
 
+function RouteAnnouncer() {
+  const location = useLocation()
+  const h1Ref = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    // Move focus to the first h1 on route change so keyboard/SR users land at page top
+    const h1 = document.querySelector<HTMLElement>('h1[tabindex="-1"]')
+    if (h1) {
+      h1Ref.current = h1
+      h1.focus()
+    }
+  }, [location.pathname])
+
+  return null
+}
+
 export default function App() {
   return (
     <AuthProvider>
+      {/* Skip link — visible only on focus, targets #main */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-teal-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+      >
+        Skip to main content
+      </a>
+      <RouteAnnouncer />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

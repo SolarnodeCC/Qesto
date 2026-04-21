@@ -37,20 +37,22 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
+    <main id="main" className="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
       <header className="flex items-center justify-between">
         <div>
           <p className="text-sm uppercase tracking-widest text-teal-600">Qesto</p>
-          <h1 className="text-3xl font-semibold">Your sessions</h1>
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Your sessions</h1>
           <p className="text-sm text-pulse-500">Signed in as {auth.user.email}.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => void auth.logout()}
-          className="text-sm text-teal-600 hover:underline"
-        >
-          Sign out
-        </button>
+        <nav aria-label="Account">
+          <button
+            type="button"
+            onClick={() => void auth.logout()}
+            className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+          >
+            Sign out
+          </button>
+        </nav>
       </header>
 
       <form onSubmit={handleCreate} className="flex flex-col gap-3 rounded-xl border border-pulse-200 p-5">
@@ -75,7 +77,7 @@ export default function Dashboard() {
         <button
           type="submit"
           disabled={creating || title.trim().length === 0}
-          className="self-start inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="self-start inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
         >
           {creating ? 'Creating…' : 'Create draft'}
         </button>
@@ -104,7 +106,7 @@ export default function Dashboard() {
                         ? `/sessions/${s.id}/results`
                         : `/sessions/${s.id}`
                     }
-                    className="font-medium text-pulse-800 hover:text-teal-600"
+                    className="font-medium text-pulse-800 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
                     {s.title}
                   </Link>

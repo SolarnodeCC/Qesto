@@ -3,10 +3,11 @@
 
 export type Env = {
   // Vars
-  ENV: 'production' | 'preview' | 'dev'
+  ENV: 'production' | 'preview' | 'dev' | 'staging'
   APP_URL: string
   CF_ACCESS_AUDIENCE?: string
   CF_ACCESS_CERTS_URL?: string
+  COMMIT_SHA?: string
 
   // Secrets (wrangler pages secret put ...)
   JWT_SECRET: string

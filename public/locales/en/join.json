@@ -1,0 +1,12 @@
+{
+  "heading": "Join a session",
+  "subtitle": "Enter the code shown by the presenter",
+  "codeLabel": "Session code",
+  "codePlaceholder": "XXXX",
+  "codeInvalid": "Please enter a 4-digit code",
+  "codeNotFound": "Session not found. Check the code and try again.",
+  "joinButton": "Join",
+  "joining": "Joining…",
+  "back": "Back home",
+  "error": "Failed to join session. Please try again."
+}

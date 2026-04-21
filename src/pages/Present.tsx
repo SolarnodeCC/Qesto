@@ -35,9 +35,9 @@ export default function Present() {
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
 
   return (
-    <main className="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+    <main id="main" className="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline">
+        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
           ← Dashboard
         </Link>
         <span
@@ -62,7 +62,7 @@ export default function Present() {
       {state.session ? (
         <header>
           <p className="text-sm uppercase tracking-widest text-teal-600">Presenter</p>
-          <h1 className="text-3xl font-semibold">{state.session.title}</h1>
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{state.session.title}</h1>
           <p className="text-sm text-pulse-500">
             Join code <code className="font-mono">{state.session.code}</code> · {state.participants}{' '}
             {state.participants === 1 ? 'participant' : 'participants'}
@@ -84,7 +84,11 @@ export default function Present() {
                     <span>{o.label}</span>
                     <span className="font-medium">{o.count}</span>
                   </div>
-                  <div className="h-2 bg-pulse-100 rounded-full overflow-hidden">
+                  <div
+                    role="img"
+                    aria-label={`${o.label}: ${o.count} votes`}
+                    className="h-2 bg-pulse-100 rounded-full overflow-hidden"
+                  >
                     <div
                       className="h-full bg-gradient-to-r from-teal-500 to-violet-500 transition-[width] duration-300"
                       style={{ width: `${pct}%` }}
@@ -94,7 +98,7 @@ export default function Present() {
               )
             })}
           </ul>
-          <p className="text-xs text-pulse-500">Total votes: {state.results.total}</p>
+          <p aria-live="polite" className="text-xs text-pulse-500">Total votes: {state.results.total}</p>
         </section>
       ) : null}
 
@@ -109,14 +113,14 @@ export default function Present() {
           type="button"
           onClick={handleClose}
           disabled={closing || state.session?.status === 'closed'}
-          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-red-400 hover:text-red-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-red-400 hover:text-red-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
         >
           {state.session?.status === 'closed' ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
         </button>
         {id && state.session?.status === 'closed' ? (
           <Link
             to={`/sessions/${id}/results`}
-            className="text-sm text-teal-600 hover:underline"
+            className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
           >
             View results →
           </Link>

@@ -1,0 +1,18 @@
+{
+  "loading": "Loading…",
+  "sessionTitle": "Session configuration",
+  "titleLabel": "Session title",
+  "promptLabel": "Question prompt",
+  "optionsLabel": "Options",
+  "addOption": "Add option",
+  "removeOption": "Remove",
+  "saveChanges": "Save changes",
+  "saving": "Saving…",
+  "saveSuccess": "Changes saved",
+  "saveError": "Failed to save changes",
+  "startSession": "Start session",
+  "starting": "Starting…",
+  "startError": "Failed to start session",
+  "backToDashboard": "Back to dashboard",
+  "optionPlaceholder": "Option text"
+}

@@ -41,7 +41,7 @@ export default function JoinPage() {
   }
   if (lookup.status === 'error') {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-3">
+      <main id="main" className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-3">
         <p className="text-lg font-medium">Can&rsquo;t find that session.</p>
         <p className="text-sm text-pulse-500">{lookup.message}</p>
       </main>
@@ -55,10 +55,10 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const hasVoted = !!state.lastVote
 
   return (
-    <main className="min-h-screen max-w-lg mx-auto p-6 flex flex-col gap-6">
+    <main id="main" className="min-h-screen max-w-lg mx-auto p-6 flex flex-col gap-6">
       <header className="space-y-1">
         <p className="text-xs uppercase tracking-widest text-teal-600">Qesto · Voter</p>
-        <h1 className="text-2xl font-semibold">{title}</h1>
+        <h1 tabIndex={-1} className="text-2xl font-semibold focus:outline-none">{title}</h1>
         <p className="text-xs text-pulse-500">
           {state.connection === 'open'
             ? `Live · ${state.participants} in the room`
@@ -85,7 +85,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                     onClick={() => sendVote(o.id)}
                     disabled={hasVoted || state.connection !== 'open' || state.session?.status === 'closed'}
                     className={
-                      'w-full text-left rounded-xl border px-4 py-3 font-medium transition ' +
+                      'w-full text-left rounded-xl border px-4 py-3 font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ' +
                       (voted
                         ? 'border-teal-500 bg-teal-50 text-teal-800'
                         : 'border-pulse-300 bg-white hover:border-teal-500 hover:bg-teal-50 disabled:opacity-60 disabled:cursor-not-allowed')
