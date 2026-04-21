@@ -63,9 +63,11 @@ export function useAdminMetrics() {
   }, [])
 
   const exportCSV = useCallback(async (startDate: Date, endDate: Date) => {
+    const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
     try {
-      const res = await fetch('/api/admin/metrics/export', {
+      const res = await fetch(`${apiBase}/api/admin/metrics/export`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           start: startDate.toISOString(),
