@@ -70,42 +70,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const requestPasswordReset = useCallback(async (email: string): Promise<'sent' | 'invalid' | 'error'> => {
-    try {
-      const res = await fetch('/api/auth/password/reset-request', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-      if (res.status === 202) return 'sent'
-      if (res.status === 400) return 'invalid'
-      return 'error'
-    } catch {
-      return 'error'
-    }
+    const result = await api('/api/auth/password/reset-request', { method: 'POST', body: { email } })
+    if (result.ok) return 'sent'
+    if (result.status === 400) return 'invalid'
+    return 'error'
   }, [])
 
   const confirmPasswordReset = useCallback(
     async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'error'> => {
-      try {
-        const res = await fetch('/api/auth/password/reset-confirm', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ token, password }),
-          credentials: 'include',
-        })
-        if (res.status === 200) {
-          await refresh()
-          return 'ok'
-        }
-        if (res.status === 400) {
-          const body = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
-          if (body?.error?.code === 'invalid_token') return 'invalid_token'
-          return 'invalid'
-        }
-        return 'error'
-      } catch {
-        return 'error'
+      const result = await api<{ id: string }>('/api/auth/password/reset-confirm', { method: 'POST', body: { token, password } })
+      if (result.ok) {
+        await refresh()
+        return 'ok'
       }
+      if (result.status === 400) {
+        if (!result.ok && result.error?.code === 'invalid_token') return 'invalid_token'
+        return 'invalid'
+      }
+      return 'error'
     },
     [refresh],
   )
