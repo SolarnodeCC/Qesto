@@ -155,10 +155,11 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         .run()
     } else {
       userId = ulid()
+      const now = Date.now()
       await c.env.DB.prepare(
-        `INSERT INTO users (id, email, created_at, last_login_at, plan) VALUES (?1, ?2, ?3, ?3, 'free')`,
+        `INSERT INTO users (id, email, created_at, last_login_at, plan) VALUES (?1, ?2, ?3, ?4, 'free')`,
       )
-        .bind(userId, row.email, Date.now())
+        .bind(userId, row.email, now, now)
         .run()
     }
 
@@ -232,9 +233,9 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     // Create the user row — same INSERT as magic-link (no password_hash column).
     await c.env.DB.prepare(
       `INSERT INTO users (id, email, display_name, created_at, last_login_at, plan)
-       VALUES (?1, ?2, ?3, ?4, ?4, 'free')`,
+       VALUES (?1, ?2, ?3, ?4, ?5, 'free')`,
     )
-      .bind(userId, normalEmail, name ?? null, now)
+      .bind(userId, normalEmail, name ?? null, now, now)
       .run()
 
     // Store password hash in KV, not D1.
