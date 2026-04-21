@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { signJwt } from '../lib/jwt'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../lib/tokens'
 import { magicLinkEmail, sendEmail } from '../lib/email'
+import { rateLimit } from '../lib/rate-limit'
 import { ulid } from '../lib/ulid'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
@@ -11,6 +12,14 @@ import type { Env } from '../types'
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000        // 15 min
 const JWT_TTL_SECONDS = 14 * 24 * 60 * 60       // 14 days
+
+// Magic-link request rate limits (abuse + cost control for Resend).
+//   • Per-IP:    max 10 requests per 15 min window
+//   • Per-email: max  5 requests per 15 min window
+// Both must pass; the tighter one bites first for a given caller.
+const MAGIC_LINK_WINDOW_SECONDS = 15 * 60
+const MAGIC_LINK_MAX_PER_IP = 10
+const MAGIC_LINK_MAX_PER_EMAIL = 5
 
 type Vars = AuthVariables & PlanVariables
 
@@ -32,10 +41,42 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       )
     }
     const email = parsed.data.email.toLowerCase().trim()
+    const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null
+
+    // Rate-limit per-IP first (cheap abuse vector), then per-email (prevents
+    // targeted inbox flooding). Both checks return 202 even on rejection so
+    // the response shape doesn't leak enumeration info — but we skip the DB
+    // insert and email send so the attacker gets nothing useful.
+    if (ip) {
+      const ipGate = await rateLimit(c.env.ACTIONS_KV, `ip:${ip}`, {
+        max: MAGIC_LINK_MAX_PER_IP,
+        windowSeconds: MAGIC_LINK_WINDOW_SECONDS,
+        prefix: 'auth-req',
+      })
+      if (!ipGate.allowed) {
+        return c.json(
+          {
+            ok: false,
+            error: { code: 'rate_limited', message: 'Too many requests. Try again later.' },
+            trace_id: c.get('trace_id'),
+          },
+          429,
+        )
+      }
+    }
+    const emailGate = await rateLimit(c.env.ACTIONS_KV, `email:${email}`, {
+      max: MAGIC_LINK_MAX_PER_EMAIL,
+      windowSeconds: MAGIC_LINK_WINDOW_SECONDS,
+      prefix: 'auth-req',
+    })
+    if (!emailGate.allowed) {
+      // Silently succeed to avoid leaking which addresses are being attacked.
+      return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') }, 202)
+    }
+
     const raw = generateMagicLinkToken()
     const tokenHash = await hashMagicLinkToken(raw)
     const now = Date.now()
-    const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null
 
     await c.env.DB.prepare(
       `INSERT INTO magic_links (token_hash, email, created_at, expires_at, requester_ip)

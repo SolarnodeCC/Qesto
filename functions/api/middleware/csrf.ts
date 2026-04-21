@@ -1,0 +1,86 @@
+// CSRF defense-in-depth: validate the Origin header for state-changing,
+// cookie-authenticated requests.
+//
+// SameSite=Lax already blocks cross-site form submits in modern browsers, but
+// we reject mismatched Origins as belt-and-braces mitigation against:
+//   • legacy UAs without SameSite support
+//   • sub-origin / sibling-domain attacks not covered by SameSite
+//   • the "method=GET → form submit" edge cases that slip past Lax
+//
+// Applies to POST / PATCH / PUT / DELETE. GET / HEAD / OPTIONS are skipped
+// because they must remain safe and CORS-preflightable.
+//
+// Scope:
+//   • Expects Origin (or falls back to Referer) to match c.env.APP_URL exactly
+//     (scheme + host + port).
+//   • Exempts the WebSocket upgrade path (`/api/sessions/:id/ws`) — browsers
+//     do NOT send Origin for same-origin WS upgrades in a cross-site
+//     predictable way, and the DO performs its own auth via subprotocol token
+//     / cookie after upgrade.
+//   • Exempts `/api/auth/callback` — it's a top-level GET redirect from email
+//     (not covered here because GET is already skipped, but documented).
+//
+// The check is cheap (string compare) and happens before route handlers, so
+// attacker requests are rejected before any DB/KV work.
+
+import type { MiddlewareHandler } from 'hono'
+import type { Env } from '../types'
+
+const UNSAFE_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
+
+function normaliseOrigin(url: string | null | undefined): string | null {
+  if (!url) return null
+  try {
+    const u = new URL(url)
+    // origin covers scheme + host + port; strips path/query/fragment.
+    return u.origin
+  } catch {
+    return null
+  }
+}
+
+export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
+  const method = c.req.method.toUpperCase()
+  if (!UNSAFE_METHODS.has(method)) return next()
+
+  // Skip WebSocket upgrade — the upgrade request is a GET anyway, but be
+  // explicit in case future refactors change the verb.
+  if (c.req.header('upgrade')?.toLowerCase() === 'websocket') return next()
+
+  const expected = normaliseOrigin(c.env.APP_URL)
+  if (!expected) {
+    // Misconfigured deploy — fail closed.
+    return c.json(
+      {
+        ok: false,
+        error: { code: 'misconfigured', message: 'Server origin not configured' },
+        trace_id: (c.get('trace_id' as never) as string | undefined) ?? 'unknown',
+      },
+      500,
+    )
+  }
+
+  const originHeader = c.req.header('origin')
+  const refererHeader = c.req.header('referer')
+  const candidate = normaliseOrigin(originHeader) ?? normaliseOrigin(refererHeader)
+
+  // If neither Origin nor Referer is present, the request is not coming from
+  // a browser that exposes cross-site context (e.g. curl, a CLI, or a
+  // same-origin fetch where the UA chose to omit the header). Since the
+  // session cookie is HttpOnly + SameSite=Lax, cross-site attackers cannot
+  // forge a fetch *without* sending an Origin. Be permissive for this case
+  // to avoid breaking non-browser integrations; reject only when a header is
+  // present and mismatched.
+  if (candidate && candidate !== expected) {
+    return c.json(
+      {
+        ok: false,
+        error: { code: 'forbidden_origin', message: 'Cross-origin request blocked' },
+        trace_id: (c.get('trace_id' as never) as string | undefined) ?? 'unknown',
+      },
+      403,
+    )
+  }
+
+  return next()
+}

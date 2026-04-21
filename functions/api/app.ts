@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { mountAuthRoutes } from './routes/auth'
 import { mountSessionRoutes } from './routes/sessions'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
+import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
 import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
@@ -42,6 +43,11 @@ export function createApp() {
 
   // Structured JSON log line per request (silent in dev).
   app.use('*', loggerMiddleware)
+
+  // CSRF defense-in-depth: reject cross-origin state-changing requests. Runs
+  // AFTER the CORS handler so the CORS response for OPTIONS preflight is
+  // preserved, and BEFORE auth so attacker requests never touch route logic.
+  app.use('*', csrfMiddleware)
 
   // Per-route rate limits (KV-backed, fail-open).
   app.use('/api/auth/request', rateLimit<Vars>({ namespace: 'auth', limit: 5, windowSec: 600 }))
