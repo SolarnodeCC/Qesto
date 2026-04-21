@@ -51,7 +51,7 @@ describe('ai-wizard/generateQuestions', () => {
   it('strips markdown fences before parsing', async () => {
     const ai = mockAi({
       response:
-        '```json\n{\n  "questions": [\n    {"kind":"poll","prompt":"A","options":[{"label":"x"},{"label":"y"},{"label":"z"}]},\n    {"kind":"poll","prompt":"B","options":[{"label":"x"},{"label":"y"},{"label":"z"}]},\n    {"kind":"poll","prompt":"C","options":[{"label":"x"},{"label":"y"},{"label":"z"}]}\n  ]\n}\n```',
+        '```json\n{\n  "questions": [\n    {"kind":"poll","prompt":"First question?","options":[{"label":"x"},{"label":"y"},{"label":"z"}]},\n    {"kind":"poll","prompt":"Second question?","options":[{"label":"x"},{"label":"y"},{"label":"z"}]},\n    {"kind":"poll","prompt":"Third question?","options":[{"label":"x"},{"label":"y"},{"label":"z"}]}\n  ]\n}\n```',
     })
 
     const result = await generateQuestions(ai, {
@@ -74,9 +74,9 @@ describe('ai-wizard/generateQuestions', () => {
     const ai = mockAi({
       response: JSON.stringify({
         questions: [
-          { kind: 'poll', prompt: 'A', options: [{ label: 'x' }, { label: 'y' }] },
-          { kind: 'poll', prompt: 'B', options: [{ label: 'x' }, { label: 'y' }] },
-          { kind: 'poll', prompt: 'C', options: [{ label: 'x' }, { label: 'y' }] },
+          { kind: 'poll', prompt: 'Question A', options: [{ label: 'x' }, { label: 'y' }] },
+          { kind: 'poll', prompt: 'Question B', options: [{ label: 'x' }, { label: 'y' }] },
+          { kind: 'poll', prompt: 'Question C', options: [{ label: 'x' }, { label: 'y' }] },
         ],
       }),
     })
