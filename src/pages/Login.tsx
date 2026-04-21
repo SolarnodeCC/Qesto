@@ -6,7 +6,7 @@ import { useT } from '../i18n'
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
 type LoginStatus = 'idle' | 'submitting' | 'invalid_credentials' | 'error'
-type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_mismatch' | 'error'
+type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_too_short' | 'error'
 
 export default function Login() {
   const { requestMagicLink, loginWithPassword, signupWithPassword } = useAuth()
@@ -49,6 +49,10 @@ export default function Login() {
 
   async function onSignupSubmit(e: FormEvent) {
     e.preventDefault()
+    if (signupPassword.length < 8) {
+      setSignupStatus('password_too_short')
+      return
+    }
     setSignupStatus('submitting')
     const result = await signupWithPassword(signupEmail, signupPassword, signupName || undefined)
     if (result === 'ok') return
@@ -302,10 +306,15 @@ export default function Login() {
                   type="password"
                   autoComplete="new-password"
                   required
+                  minLength={8}
                   value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
+                  onChange={(e) => { setSignupPassword(e.target.value); if (signupStatus === 'password_too_short') setSignupStatus('idle') }}
+                  aria-invalid={signupStatus === 'password_too_short'}
                   className={inputClass}
                 />
+                {signupStatus === 'password_too_short' && (
+                  <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('passwordMin8')}</p>
+                )}
               </div>
               {signupStatus === 'error' && (
                 <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
