@@ -75,13 +75,13 @@ wrangler deploy
 # First real upload.
 ```
 
-Then hit `https://qesto2-github.oostelaar.workers.dev/api/admin/health` →
+Then hit `https://qesto-api.oostelaar.workers.dev/api/admin/health` →
 expect `{ "ok": true, "data": { "env": "production", … } }`.
 
 Also verify that the deployed API commit matches your local checkout:
 
 ```bash
-npm run verify:deploy -- https://qesto2-github.oostelaar.workers.dev
+npm run verify:deploy -- https://qesto-api.oostelaar.workers.dev
 ```
 
 Expected result: `Result       : match`

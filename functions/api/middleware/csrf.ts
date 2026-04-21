@@ -1,11 +1,12 @@
 // CSRF defense-in-depth: validate the Origin header for state-changing,
 // cookie-authenticated requests.
 //
-// SameSite=Lax already blocks cross-site form submits in modern browsers, but
-// we reject mismatched Origins as belt-and-braces mitigation against:
-//   • legacy UAs without SameSite support
-//   • sub-origin / sibling-domain attacks not covered by SameSite
-//   • the "method=GET → form submit" edge cases that slip past Lax
+// The session cookie uses SameSite=None to support cross-origin requests from
+// Cloudflare Pages (frontend) to the Worker (API). This means the browser WILL
+// send the cookie on cross-site requests, so Origin-header checking is the
+// primary CSRF defence. We reject mismatched Origins to mitigate:
+//   • CSRF from attacker pages that can trigger credentialed cross-origin fetches
+//   • sub-origin / sibling-domain attacks not covered by SameSite=None
 //
 // Applies to POST / PATCH / PUT / DELETE. GET / HEAD / OPTIONS are skipped
 // because they must remain safe and CORS-preflightable.
