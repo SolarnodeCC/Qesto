@@ -14,7 +14,7 @@ import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import type { Env } from './types'
 
-type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & RbacVariables
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
 
 export function createApp() {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -91,6 +91,18 @@ export function createApp() {
       { ok: false, error: { code: 'not_found', message: 'Route not found' }, trace_id: c.get('trace_id') ?? 'unknown' },
       404,
     ),
+  )
+
+  // Public deploy/version probe for parity checks.
+  app.get('/api/version', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        env: c.env.ENV,
+        commit: c.env.COMMIT_SHA ?? 'unknown',
+      },
+      trace_id: c.get('trace_id')!,
+    }),
   )
 
   // Health — no auth, cheap, always on.

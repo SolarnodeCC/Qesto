@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { testHonoApp } from './setup'
 
 describe('Admin Routes — Phase 8 Step 2', () => {

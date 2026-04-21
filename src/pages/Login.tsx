@@ -8,9 +8,10 @@ type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
 type LoginStatus = 'idle' | 'submitting' | 'invalid_credentials' | 'error'
 type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_too_short' | 'error'
+type ResetStatus = 'idle' | 'submitting' | 'sent' | 'invalid' | 'error'
 
 export default function Login() {
-  const { requestMagicLink, loginWithPassword, signupWithPassword } = useAuth()
+  const { requestMagicLink, loginWithPassword, signupWithPassword, requestPasswordReset } = useAuth()
   const [search] = useSearchParams()
   const t = useT('auth')
 
@@ -24,6 +25,9 @@ export default function Login() {
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
   const [loginStatus, setLoginStatus] = useState<LoginStatus>('idle')
+  const [showResetForm, setShowResetForm] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetStatus, setResetStatus] = useState<ResetStatus>('idle')
 
   // Signup state
   const [signupEmail, setSignupEmail] = useState('')
@@ -58,6 +62,13 @@ export default function Login() {
     const result = await signupWithPassword(signupEmail, signupPassword, signupName || undefined)
     if (result === 'ok') return
     setSignupStatus(result === 'email_taken' ? 'email_taken' : 'error')
+  }
+
+  async function onResetSubmit(e: FormEvent) {
+    e.preventDefault()
+    setResetStatus('submitting')
+    const result = await requestPasswordReset(resetEmail)
+    setResetStatus(result === 'sent' ? 'sent' : result === 'invalid' ? 'invalid' : 'error')
   }
 
   const tabClass = (active: boolean) =>
@@ -200,65 +211,116 @@ export default function Login() {
         {/* Password login tab */}
         {tab === 'login' && (
           <div role="tabpanel">
-            <form onSubmit={onLoginSubmit} className="space-y-4" noValidate>
-              <div className="space-y-1.5">
-                <label htmlFor="login-email" className="block text-sm font-medium">
-                  {t('emailLabel')}
-                </label>
-                <input
-                  id="login-email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
-                  className={inputClass}
-                  placeholder={t('emailPlaceholder')}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label htmlFor="login-password" className="block text-sm font-medium">
-                  {t('passwordLabel2')}
-                </label>
-                <input
-                  id="login-password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
-                  className={inputClass}
-                />
-                <div className="text-right">
-                  <button
-                    type="button"
-                    className="text-sm text-teal-600 dark:text-teal-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
-                    onClick={() => {/* TODO: reset password flow */}}
-                  >
-                    {t('forgotPassword')}
-                  </button>
-                </div>
-              </div>
-              {loginStatus === 'invalid_credentials' && (
-                <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('loginFailed')}</p>
-              )}
-              {loginStatus === 'error' && (
-                <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
-              )}
-              <button type="submit" disabled={loginStatus === 'submitting'} className={primaryBtn}>
-                {loginStatus === 'submitting' ? t('loggingIn') : t('login')}
-              </button>
-              <p className="text-center text-sm text-pulse-500">
-                {t('noPassword')}{' '}
+            {showResetForm ? (
+              <form onSubmit={onResetSubmit} className="space-y-4" noValidate>
+                {resetStatus === 'sent' ? (
+                  <div className="rounded-lg bg-teal-50 dark:bg-teal-900/30 p-4 text-sm text-teal-800 dark:text-teal-100">
+                    {t('passwordResetSentDesc', { email: resetEmail })}
+                    <p className="mt-1 text-xs opacity-80">{t('passwordResetExpiry')}</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <label htmlFor="reset-email" className="block text-sm font-medium">
+                        {t('emailLabel')}
+                      </label>
+                      <input
+                        id="reset-email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        className={inputClass}
+                        placeholder={t('emailPlaceholder')}
+                      />
+                    </div>
+                    {resetStatus === 'invalid' && (
+                      <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('errorInvalidEmail')}</p>
+                    )}
+                    {resetStatus === 'error' && (
+                      <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
+                    )}
+                    <button type="submit" disabled={resetStatus === 'submitting'} className={primaryBtn}>
+                      {resetStatus === 'submitting' ? t('sending') : t('requestNewLink')}
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
-                  className="text-teal-600 dark:text-teal-400 hover:underline"
-                  onClick={() => setTab('magic')}
+                  className="text-sm text-teal-600 dark:text-teal-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                  onClick={() => {
+                    setShowResetForm(false)
+                    setResetStatus('idle')
+                  }}
                 >
-                  {t('useMagicLink')}
+                  {t('backToLogin')}
                 </button>
-              </p>
-            </form>
+              </form>
+            ) : (
+              <form onSubmit={onLoginSubmit} className="space-y-4" noValidate>
+                <div className="space-y-1.5">
+                  <label htmlFor="login-email" className="block text-sm font-medium">
+                    {t('emailLabel')}
+                  </label>
+                  <input
+                    id="login-email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    className={inputClass}
+                    placeholder={t('emailPlaceholder')}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label htmlFor="login-password" className="block text-sm font-medium">
+                    {t('passwordLabel2')}
+                  </label>
+                  <input
+                    id="login-password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    className={inputClass}
+                  />
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      className="text-sm text-teal-600 dark:text-teal-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                      onClick={() => {
+                        setResetEmail(loginEmail)
+                        setShowResetForm(true)
+                      }}
+                    >
+                      {t('forgotPassword')}
+                    </button>
+                  </div>
+                </div>
+                {loginStatus === 'invalid_credentials' && (
+                  <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('loginFailed')}</p>
+                )}
+                {loginStatus === 'error' && (
+                  <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('genericError')}</p>
+                )}
+                <button type="submit" disabled={loginStatus === 'submitting'} className={primaryBtn}>
+                  {loginStatus === 'submitting' ? t('loggingIn') : t('login')}
+                </button>
+                <p className="text-center text-sm text-pulse-500">
+                  {t('noPassword')}{' '}
+                  <button
+                    type="button"
+                    className="text-teal-600 dark:text-teal-400 hover:underline"
+                    onClick={() => setTab('magic')}
+                  >
+                    {t('useMagicLink')}
+                  </button>
+                </p>
+              </form>
+            )}
           </div>
         )}
 
