@@ -27,6 +27,10 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+    environmentMatchGlobs: [
+      // a11y tests run in jsdom so axe-core can access a real DOM API
+      ['tests/a11y/**', 'jsdom'],
+    ],
     coverage: {
       reporter: ['text', 'html'],
       exclude: ['dist/**', 'node_modules/**', 'scripts/**'],
