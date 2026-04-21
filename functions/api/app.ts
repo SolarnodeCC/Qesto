@@ -40,6 +40,8 @@ export function createApp() {
         const allowed = c.env.PAGES_URL
         if (!origin) return null
         if (origin === allowed) return origin
+        // Allow Cloudflare Pages preview deployments (<hash>.qesto.pages.dev).
+        if (/^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(origin)) return origin
         // Allow localhost in dev (Vite dev server).
         if (c.env.ENV === 'dev' && origin.startsWith('http://localhost:')) return origin
         return null
