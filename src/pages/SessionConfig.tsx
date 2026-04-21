@@ -273,6 +273,6 @@ export default function SessionConfig() {
           </p>
         ) : null}
       </form>
-    </main>
+    </MainLayout>
   )
 }

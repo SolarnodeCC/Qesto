@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { api, type ApiError } from '../api/client'
+import MainLayout from '../layouts/MainLayout'
 
 type PollOption = { id: string; label: string }
 
@@ -57,30 +58,30 @@ export default function Results() {
 
   if (auth.status === 'loading') {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
         Loading…
-      </main>
+      </MainLayout>
     )
   }
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
 
   if (state.status === 'loading') {
     return (
-      <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
         Loading results…
-      </main>
+      </MainLayout>
     )
   }
   if (state.status === 'error') {
     return (
-      <main className="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
         <p role="alert" className="text-sm text-red-600">
           {state.error.message}
         </p>
         <Link to="/dashboard" className="text-teal-600 hover:underline">
           ← Back to dashboard
         </Link>
-      </main>
+      </MainLayout>
     )
   }
 
@@ -112,29 +113,33 @@ export default function Results() {
     URL.revokeObjectURL(url)
   }
 
-  return (
-    <main id="main" className="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
-          ← Dashboard
-        </Link>
-        <span
-          className={
-            'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
-            (session.status === 'live'
-              ? 'bg-teal-100 text-teal-700'
-              : session.status === 'closed'
-              ? 'bg-violet-100 text-violet-700'
-              : 'bg-pulse-100 text-pulse-600')
-          }
-        >
-          {session.status}
-        </span>
-      </div>
+  const navSlot = (
+    <Link
+      to="/dashboard"
+      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+    >
+      ← Dashboard
+    </Link>
+  )
 
+  return (
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
       <header className="space-y-1">
-        <p className="text-sm uppercase tracking-widest text-teal-600">Results</p>
-        <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{session.title}</h1>
+        <div className="flex items-center justify-between">
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{session.title}</h1>
+          <span
+            className={
+              'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
+              (session.status === 'live'
+                ? 'bg-teal-100 text-teal-700'
+                : session.status === 'closed'
+                ? 'bg-violet-100 text-violet-700'
+                : 'bg-pulse-100 text-pulse-600')
+            }
+          >
+            {session.status}
+          </span>
+        </div>
         <p className="text-sm text-pulse-500">
           Join code <code className="font-mono">{session.code}</code>
           {session.closed_at
@@ -213,6 +218,6 @@ export default function Results() {
           Refresh
         </button>
       </div>
-    </main>
+    </MainLayout>
   )
 }
