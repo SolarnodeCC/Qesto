@@ -11,7 +11,7 @@
 // because they must remain safe and CORS-preflightable.
 //
 // Scope:
-//   • Expects Origin (or falls back to Referer) to match c.env.APP_URL exactly
+//   • Expects Origin (or falls back to Referer) to match c.env.PAGES_URL exactly
 //     (scheme + host + port).
 //   • Exempts the WebSocket upgrade path (`/api/sessions/:id/ws`) — browsers
 //     do NOT send Origin for same-origin WS upgrades in a cross-site
@@ -47,7 +47,7 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // explicit in case future refactors change the verb.
   if (c.req.header('upgrade')?.toLowerCase() === 'websocket') return next()
 
-  const expected = normaliseOrigin(c.env.APP_URL)
+  const expected = normaliseOrigin(c.env.PAGES_URL)
   if (!expected) {
     // Misconfigured deploy — fail closed.
     return c.json(
@@ -67,7 +67,7 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // If neither Origin nor Referer is present, the request is not coming from
   // a browser that exposes cross-site context (e.g. curl, a CLI, or a
   // same-origin fetch where the UA chose to omit the header). Since the
-  // session cookie is HttpOnly + SameSite=Lax, cross-site attackers cannot
+  // session cookie is HttpOnly + SameSite=None, cross-site attackers cannot
   // forge a fetch *without* sending an Origin. Be permissive for this case
   // to avoid breaking non-browser integrations; reject only when a header is
   // present and mismatched.

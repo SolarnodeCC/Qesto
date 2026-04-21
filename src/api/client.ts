@@ -2,6 +2,8 @@
 // (ApiSuccess / ApiError per SPEC_BACKEND.md) so pages and hooks don't
 // hand-roll error handling.
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
+
 export type ApiError = {
   code: string
   message: string
@@ -32,7 +34,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
 
   let res: Response
   try {
-    res = await fetch(path, init)
+    res = await fetch(`${API_BASE}${path}`, init)
   } catch (err) {
     return {
       ok: false,

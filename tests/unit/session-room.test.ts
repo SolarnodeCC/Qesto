@@ -18,7 +18,8 @@ import {
 function makeEnv(): Env {
   return {
     ENV: 'dev',
-    APP_URL: 'http://local',
+    PAGES_URL: 'http://local',
+    API_URL: 'http://local',
     JWT_SECRET: 'irrelevant-for-do-tests',
   } as unknown as Env
 }
