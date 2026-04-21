@@ -3,6 +3,8 @@
 // State tokens are stored in ACTIONS_KV with a 10-minute TTL.
 
 const STATE_TTL_SECONDS = 10 * 60
+const DEFAULT_JWKS_TTL_MS = 5 * 60 * 1000
+const jwksCache = new Map<string, { keys: JsonWebKey[]; expiresAt: number }>()
 
 export function buildGoogleAuthUrl(state: string, redirectUri: string, clientId: string): string {
   const params = new URLSearchParams({
@@ -35,15 +37,18 @@ export async function exchangeGoogleCode(
     }),
   })
   if (!tokenRes.ok) throw new Error(`Google token exchange failed: ${tokenRes.status}`)
-  const tokens = (await tokenRes.json()) as { access_token: string }
+  const tokens = (await tokenRes.json()) as { id_token?: string }
+  if (!tokens.id_token) throw new Error('Google token response missing id_token')
 
-  const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: { authorization: `Bearer ${tokens.access_token}` },
-  })
-  if (!infoRes.ok) throw new Error(`Google userinfo failed: ${infoRes.status}`)
-  const info = (await infoRes.json()) as { email: string; sub: string }
-  if (!info.email || !info.sub) throw new Error('Google userinfo missing email or sub')
-  return { email: info.email, sub: info.sub }
+  const payload = await verifyJwtWithJwks(tokens.id_token, {
+    audience: clientId,
+    issuer: (iss) => iss === 'https://accounts.google.com' || iss === 'accounts.google.com',
+    jwksUri: 'https://www.googleapis.com/oauth2/v3/certs',
+  }) as { email?: string; sub?: string; email_verified?: boolean }
+
+  if (!payload.email || !payload.sub) throw new Error('Google id_token missing email or sub')
+  if (payload.email_verified === false) throw new Error('Google id_token email not verified')
+  return { email: payload.email, sub: payload.sub }
 }
 
 export function buildMicrosoftAuthUrl(
@@ -88,16 +93,16 @@ export async function exchangeMicrosoftCode(
   const tokens = (await tokenRes.json()) as { id_token: string }
   if (!tokens.id_token) throw new Error('Microsoft token response missing id_token')
 
-  // Decode payload from the id_token JWT (no signature verification needed here —
-  // the code exchange itself authenticates the response).
-  const payload = JSON.parse(
-    new TextDecoder().decode(
-      Uint8Array.from(
-        atob(tokens.id_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')),
-        (c) => c.charCodeAt(0),
-      ),
-    ),
-  ) as { email?: string; preferred_username?: string; oid: string }
+  const payload = await verifyJwtWithJwks(tokens.id_token, {
+    audience: clientId,
+    issuer: (iss) => iss.startsWith('https://login.microsoftonline.com/') && iss.endsWith('/v2.0'),
+    jwksUri: `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`,
+  }) as {
+    aud?: string
+    email?: string
+    preferred_username?: string
+    oid?: string
+  }
 
   const email = payload.email ?? payload.preferred_username
   if (!email || !payload.oid) throw new Error('Microsoft id_token missing email or oid')
@@ -116,4 +121,101 @@ export async function consumeOAuthState(kv: KVNamespace, state: string): Promise
   if (!val) return false
   await kv.delete(`oauth:state:${state}`)
   return true
+}
+
+type JwtHeader = {
+  alg?: string
+  kid?: string
+}
+
+async function verifyJwtWithJwks(
+  token: string,
+  opts: {
+    audience: string
+    issuer: ((iss: string) => boolean) | string
+    jwksUri: string
+  },
+): Promise<Record<string, unknown>> {
+  const parts = token.split('.')
+  if (parts.length !== 3) throw new Error('Invalid JWT format')
+  const [headerB64, payloadB64, sigB64] = parts
+
+  const header = decodePart<JwtHeader>(headerB64)
+  if (header.alg !== 'RS256') throw new Error(`Unsupported JWT alg: ${header.alg ?? 'unknown'}`)
+  if (!header.kid) throw new Error('JWT header missing kid')
+
+  const payload = decodePart<Record<string, unknown>>(payloadB64)
+  const aud = payload.aud
+  const exp = payload.exp
+  const iss = payload.iss
+
+  const audienceValid = typeof aud === 'string'
+    ? aud === opts.audience
+    : Array.isArray(aud) && aud.includes(opts.audience)
+  if (!audienceValid) throw new Error('JWT audience mismatch')
+
+  if (typeof exp !== 'number' || exp * 1000 < Date.now()) throw new Error('JWT expired')
+  if (typeof iss !== 'string') throw new Error('JWT issuer missing')
+  if (typeof opts.issuer === 'string') {
+    if (iss !== opts.issuer) throw new Error('JWT issuer mismatch')
+  } else if (!opts.issuer(iss)) {
+    throw new Error('JWT issuer mismatch')
+  }
+
+  const keys = await getJwks(opts.jwksUri)
+  const jwk = keys.find((k) => (k as { kid?: string }).kid === header.kid)
+  if (!jwk) throw new Error('No matching JWK key')
+  if (jwk.kty !== 'RSA') throw new Error(`Unsupported JWK kty: ${String(jwk.kty)}`)
+
+  const key = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify'],
+  )
+
+  const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`)
+  const sig = base64UrlToBytes(sigB64)
+  const valid = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    key,
+    sig as unknown as BufferSource,
+    data as unknown as BufferSource,
+  )
+  if (!valid) throw new Error('Invalid JWT signature')
+
+  return payload
+}
+
+async function getJwks(uri: string): Promise<JsonWebKey[]> {
+  const cached = jwksCache.get(uri)
+  const now = Date.now()
+  if (cached && cached.expiresAt > now) return cached.keys
+
+  const res = await fetch(uri, { headers: { accept: 'application/json' } })
+  if (!res.ok) throw new Error(`JWKS fetch failed: ${res.status}`)
+  const data = (await res.json()) as { keys?: JsonWebKey[] }
+  if (!Array.isArray(data.keys) || data.keys.length === 0) throw new Error('JWKS response missing keys')
+
+  const cacheControl = res.headers.get('cache-control') ?? ''
+  const maxAgeSec = cacheControl.match(/max-age=(\d+)/)?.[1]
+  const ttl = maxAgeSec ? Number(maxAgeSec) * 1000 : DEFAULT_JWKS_TTL_MS
+  jwksCache.set(uri, { keys: data.keys, expiresAt: now + ttl })
+  return data.keys
+}
+
+function decodePart<T>(part: string): T {
+  return JSON.parse(bytesToString(base64UrlToBytes(part))) as T
+}
+
+function base64UrlToBytes(value: string): Uint8Array {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+  const raw = atob(padded)
+  return Uint8Array.from(raw, (c) => c.charCodeAt(0))
+}
+
+function bytesToString(bytes: Uint8Array): string {
+  return new TextDecoder().decode(bytes)
 }

@@ -11,6 +11,7 @@ import Present from './pages/Present'
 import JoinPage from './pages/JoinPage'
 import Results from './pages/Results'
 import NotFound from './pages/NotFound'
+import ResetPassword from './pages/ResetPassword'
 
 function RouteAnnouncer() {
   const location = useLocation()
@@ -36,6 +37,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />

@@ -300,5 +300,80 @@ describe('password signup + login', () => {
   })
 })
 
+describe('password reset flow', () => {
+  it('accepts reset-request and writes a reset token for existing users', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const actionsKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv, actions: actionsKv })
+
+    await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'resetme@example.com', password: 'hunter12345' }),
+      }),
+      env,
+    )
+
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/reset-request', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'resetme@example.com' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(202)
+    expect(actionsKv.keys().some((k) => k.startsWith('pwd-reset:'))).toBe(true)
+  })
+
+  it('resets password with a valid token and consumes the reset token', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const actionsKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv, actions: actionsKv })
+
+    const signupRes = await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'reset2@example.com', password: 'oldpassword123' }),
+      }),
+      env,
+    )
+    const signupBody = (await signupRes.json()) as { ok: boolean; data: { id: string } }
+    const userId = signupBody.data.id
+
+    const { hashMagicLinkToken } = await import('../../functions/api/lib/tokens')
+    const raw = 'a'.repeat(64)
+    const tokenHash = await hashMagicLinkToken(raw)
+    await actionsKv.put(`pwd-reset:${tokenHash}`, JSON.stringify({ userId, email: 'reset2@example.com' }))
+
+    const resetRes = await app.fetch(
+      new Request('http://local/api/auth/password/reset-confirm', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token: raw, password: 'newpassword123' }),
+      }),
+      env,
+    )
+    expect(resetRes.status).toBe(200)
+    expect(actionsKv.has(`pwd-reset:${tokenHash}`)).toBe(false)
+
+    const loginRes = await app.fetch(
+      new Request('http://local/api/auth/password/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'reset2@example.com', password: 'newpassword123' }),
+      }),
+      env,
+    )
+    expect(loginRes.status).toBe(200)
+  })
+})
+
 // Silence console noise from email fallback during tests.
 vi.spyOn(console, 'log').mockImplementation(() => {})
