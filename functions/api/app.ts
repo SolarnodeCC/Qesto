@@ -36,8 +36,12 @@ export function createApp() {
     '*',
     cors({
       origin: (origin, c) => {
-        const allowed = c.env.APP_URL
-        return origin === allowed ? origin : allowed
+        const allowed = c.env.PAGES_URL
+        if (!origin) return null
+        if (origin === allowed) return origin
+        // Allow localhost in dev (Vite dev server).
+        if (c.env.ENV === 'dev' && origin.startsWith('http://localhost:')) return origin
+        return null
       },
       allowMethods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
       allowHeaders: ['content-type', 'authorization', 'x-trace-id'],

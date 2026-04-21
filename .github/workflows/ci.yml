@@ -61,3 +61,5 @@ jobs:
 
       - name: Vite build
         run: npm run build
+        env:
+          VITE_API_BASE_URL: https://qesto-api.oostelaar.workers.dev

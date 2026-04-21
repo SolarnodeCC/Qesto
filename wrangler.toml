@@ -1,28 +1,18 @@
-name = "qesto2-github"
+name = "qesto-api"
 main = "worker/index.ts"
 compatibility_date = "2026-04-19"
 compatibility_flags = ["nodejs_compat"]
 
-# Cloudflare Worker with static assets. Build outputs go to ./dist via `npm run build`.
+# Cloudflare Worker — API only. Static frontend is deployed separately to Cloudflare Pages.
 # Secrets: `wrangler secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
 #
 # ──────────────────────────────────────────────────────────────────────────────
 # BOOTSTRAP: D1 + KV bindings are commented out because their IDs are per-account.
 # Follow docs/DEPLOY_BOOTSTRAP.md once to provision the resources, paste the IDs
-# back in below, and uncomment the blocks. Until then, only [assets], [build],
-# [observability], [ai], and the SessionRoom DO deploy — /api/admin/health works
-# but /api/auth/* (which needs `DB`) will 500 until D1 is wired.
+# back in below, and uncomment the blocks. Until then, only [observability], [ai],
+# and the SessionRoom DO deploy — /api/admin/health works but /api/auth/* (which
+# needs `DB`) will 500 until D1 is wired.
 # ──────────────────────────────────────────────────────────────────────────────
-
-[assets]
-directory = "./dist"
-not_found_handling = "single-page-application"
-
-# Run `npm run build` (tokens:build + vite build) before every upload so the
-# [assets] directory exists in CI where the deploy command is just
-# `wrangler versions upload`.
-[build]
-command = "npm run build"
 
 [observability]
 enabled = true
@@ -39,7 +29,10 @@ invocation_logs = true
 
 [vars]
 ENV = "production"
-APP_URL = "https://qesto2-github.oostelaar.workers.dev"
+# PAGES_URL: Cloudflare Pages origin — used for CORS allowed-origin and CSRF check.
+PAGES_URL = "https://qesto.pages.dev"
+# API_URL: this Worker's own URL — used for OAuth redirect_uri and email magic-link base.
+API_URL = "https://qesto-api.oostelaar.workers.dev"
 # Cloudflare Access (optional admin surface). Public user auth = magic link (Phase 1).
 CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
 CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"

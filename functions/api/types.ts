@@ -4,7 +4,10 @@
 export type Env = {
   // Vars
   ENV: 'production' | 'preview' | 'dev' | 'staging'
-  APP_URL: string
+  /** Pages origin — used for CORS allowed-origin and CSRF check. */
+  PAGES_URL: string
+  /** Worker's own URL — used for OAuth redirect_uri and email magic-link base. */
+  API_URL: string
   CF_ACCESS_AUDIENCE?: string
   CF_ACCESS_CERTS_URL?: string
   COMMIT_SHA?: string

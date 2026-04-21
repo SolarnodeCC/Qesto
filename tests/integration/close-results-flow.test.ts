@@ -18,7 +18,8 @@ const SECRET = 'integration-test-secret-at-least-32-bytes!'
 function makeEnv(db: D1Mock): Env {
   const env = {
     ENV: 'dev',
-    APP_URL: 'http://local',
+    PAGES_URL: 'http://local',
+    API_URL: 'http://local',
     JWT_SECRET: SECRET,
     DB: db as unknown as D1Database,
   } as unknown as Env

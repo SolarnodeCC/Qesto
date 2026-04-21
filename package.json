@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:worker": "wrangler pages dev ./dist --d1 DB --kv USERS_KV --kv SESSIONS_KV --kv TEAMS_KV --kv TEMPLATES_KV --kv DECISIONS_KV --kv AUDIT_KV --kv ACTIONS_KV",
+    "dev:api": "wrangler dev --port 8787",
     "build": "npm run tokens:build && vite build",
     "preview": "vite preview",
+    "deploy:api": "wrangler deploy",
+    "deploy:frontend": "npm run build && wrangler pages deploy dist --project-name qesto",
     "tokens:build": "node scripts/build-tokens.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

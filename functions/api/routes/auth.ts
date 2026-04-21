@@ -106,7 +106,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       .bind(tokenHash, email, now, now + MAGIC_LINK_TTL_MS, ip)
       .run()
 
-    const { subject, text, html } = magicLinkEmail(c.env.APP_URL, raw)
+    const { subject, text, html } = magicLinkEmail(c.env.API_URL, raw)
     try {
       await sendEmail(c.env.RESEND_API_KEY, { to: email, subject, text, html })
     } catch (err) {
@@ -122,7 +122,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   app.get('/callback', async (c) => {
     const raw = c.req.query('token')
     if (!raw || raw.length !== 64) {
-      return c.redirect('/login?error=invalid', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=invalid`, 302)
     }
     const tokenHash = await hashMagicLinkToken(raw)
     const row = await c.env.DB.prepare(
@@ -132,7 +132,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       .first<{ email: string; expires_at: number; consumed_at: number | null }>()
 
     if (!row || row.consumed_at || row.expires_at < Date.now()) {
-      return c.redirect('/login?error=expired', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=expired`, 302)
     }
 
     const consumed = await c.env.DB.prepare(
@@ -141,7 +141,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       .bind(Date.now(), tokenHash)
       .run()
     if (consumed.meta.changes !== 1) {
-      return c.redirect('/login?error=expired', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=expired`, 302)
     }
 
     const existing = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
@@ -166,12 +166,12 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const jwt = await signJwt({ sub: userId, email: row.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
-      secure: c.env.ENV !== 'dev',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
-    return c.redirect('/', 302)
+    return c.redirect(`${c.env.PAGES_URL}/`, 302)
   })
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -245,8 +245,8 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const jwt = await signJwt({ sub: userId, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
-      secure: c.env.ENV !== 'dev',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
@@ -291,8 +291,8 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const jwt = await signJwt({ sub: user!.id, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
-      secure: c.env.ENV !== 'dev',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
@@ -326,7 +326,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         { expirationTtl: PASSWORD_RESET_TTL_SECONDS },
       )
 
-      const resetUrl = `${c.env.APP_URL}/reset-password?token=${raw}`
+      const resetUrl = `${c.env.PAGES_URL}/reset-password?token=${raw}`
       try {
         await sendEmail(c.env.RESEND_API_KEY, {
           to: email,
@@ -381,8 +381,8 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const jwt = await signJwt({ sub: userId, email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
-      secure: c.env.ENV !== 'dev',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
@@ -396,10 +396,10 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
   app.get('/google', async (c) => {
     if (!c.env.GOOGLE_CLIENT_ID) {
-      return c.redirect('/login?error=provider_not_configured', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=provider_not_configured`, 302)
     }
     const state = await generateOAuthState(c.env.ACTIONS_KV)
-    const redirectUri = `${c.env.APP_URL}/api/auth/google/callback`
+    const redirectUri = `${c.env.API_URL}/api/auth/google/callback`
     return c.redirect(buildGoogleAuthUrl(state, redirectUri, c.env.GOOGLE_CLIENT_ID), 302)
   })
 
@@ -408,36 +408,36 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const state = c.req.query('state')
     const error = c.req.query('error')
 
-    if (error || !code || !state) return c.redirect('/login?error=sso_failed', 302)
+    if (error || !code || !state) return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
     if (!c.env.GOOGLE_CLIENT_ID || !c.env.GOOGLE_CLIENT_SECRET) {
-      return c.redirect('/login?error=provider_not_configured', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=provider_not_configured`, 302)
     }
     if (!(await consumeOAuthState(c.env.ACTIONS_KV, state))) {
-      return c.redirect('/login?error=sso_failed', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
     }
 
     let providerUser: { email: string; sub: string }
     try {
       providerUser = await exchangeGoogleCode(
         code,
-        `${c.env.APP_URL}/api/auth/google/callback`,
+        `${c.env.API_URL}/api/auth/google/callback`,
         c.env.GOOGLE_CLIENT_ID,
         c.env.GOOGLE_CLIENT_SECRET,
       )
     } catch {
-      return c.redirect('/login?error=sso_failed', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
     }
 
     const userId = await upsertOAuthUser(c.env.DB, c.env.USERS_KV, 'google', providerUser.sub, providerUser.email)
     const jwt = await signJwt({ sub: userId, email: providerUser.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
-      secure: c.env.ENV !== 'dev',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
-    return c.redirect('/', 302)
+    return c.redirect(`${c.env.PAGES_URL}/`, 302)
   })
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -446,10 +446,10 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
   app.get('/microsoft', async (c) => {
     if (!c.env.MICROSOFT_CLIENT_ID) {
-      return c.redirect('/login?error=provider_not_configured', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=provider_not_configured`, 302)
     }
     const state = await generateOAuthState(c.env.ACTIONS_KV)
-    const redirectUri = `${c.env.APP_URL}/api/auth/microsoft/callback`
+    const redirectUri = `${c.env.API_URL}/api/auth/microsoft/callback`
     const tenantId = c.env.MICROSOFT_TENANT_ID ?? 'common'
     return c.redirect(buildMicrosoftAuthUrl(state, redirectUri, c.env.MICROSOFT_CLIENT_ID, tenantId), 302)
   })
@@ -459,12 +459,12 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const state = c.req.query('state')
     const error = c.req.query('error')
 
-    if (error || !code || !state) return c.redirect('/login?error=sso_failed', 302)
+    if (error || !code || !state) return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
     if (!c.env.MICROSOFT_CLIENT_ID || !c.env.MICROSOFT_CLIENT_SECRET) {
-      return c.redirect('/login?error=provider_not_configured', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=provider_not_configured`, 302)
     }
     if (!(await consumeOAuthState(c.env.ACTIONS_KV, state))) {
-      return c.redirect('/login?error=sso_failed', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
     }
 
     let providerUser: { email: string; sub: string }
@@ -472,25 +472,25 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       const tenantId = c.env.MICROSOFT_TENANT_ID ?? 'common'
       providerUser = await exchangeMicrosoftCode(
         code,
-        `${c.env.APP_URL}/api/auth/microsoft/callback`,
+        `${c.env.API_URL}/api/auth/microsoft/callback`,
         c.env.MICROSOFT_CLIENT_ID,
         c.env.MICROSOFT_CLIENT_SECRET,
         tenantId,
       )
     } catch {
-      return c.redirect('/login?error=sso_failed', 302)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
     }
 
     const userId = await upsertOAuthUser(c.env.DB, c.env.USERS_KV, 'microsoft', providerUser.sub, providerUser.email)
     const jwt = await signJwt({ sub: userId, email: providerUser.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
-      secure: c.env.ENV !== 'dev',
-      sameSite: 'Lax',
+      secure: true,
+      sameSite: 'None',
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
-    return c.redirect('/', 302)
+    return c.redirect(`${c.env.PAGES_URL}/`, 302)
   })
 
   parent.route('/api/auth', app)

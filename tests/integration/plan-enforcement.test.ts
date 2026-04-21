@@ -51,7 +51,8 @@ class KVMock implements KVNamespace {
 function makeEnv(db: D1Mock, kv: KVNamespace): Env {
   return {
     ENV: 'dev',
-    APP_URL: 'http://local',
+    PAGES_URL: 'http://local',
+    API_URL: 'http://local',
     JWT_SECRET: SECRET,
     DB: db as unknown as D1Database,
     SESSIONS_KV: kv,

@@ -8,7 +8,8 @@ import { KVMock } from '../helpers/kv-mock'
 function makeEnv(db: D1Mock, kv?: { users?: KVMock; actions?: KVMock }): Env {
   return {
     ENV: 'dev',
-    APP_URL: 'http://local',
+    PAGES_URL: 'http://local',
+    API_URL: 'http://local',
     JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
     DB: db as unknown as D1Database,
     USERS_KV: (kv?.users ?? new KVMock()) as unknown as KVNamespace,
@@ -68,12 +69,12 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
       env,
     )
     expect(cbRes.status).toBe(302)
-    expect(cbRes.headers.get('location')).toBe('/')
+    expect(cbRes.headers.get('location')).toBe('http://local/')
     const setCookie = cbRes.headers.get('set-cookie')
     expect(setCookie).toBeTruthy()
     expect(setCookie).toContain('qesto_session=')
     expect(setCookie).toContain('HttpOnly')
-    expect(setCookie).toContain('SameSite=Lax')
+    expect(setCookie).toContain('SameSite=None')
 
     // Token is now consumed.
     expect(db.magicLinks.get(hash)?.consumed_at).not.toBeNull()
@@ -101,7 +102,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
       env,
     )
     expect(replay.status).toBe(302)
-    expect(replay.headers.get('location')).toBe('/login?error=expired')
+    expect(replay.headers.get('location')).toBe('http://local/login?error=expired')
   })
 
   it('rejects invalid emails with 400', async () => {
@@ -150,7 +151,7 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
       makeEnv(db),
     )
     expect(res.status).toBe(302)
-    expect(res.headers.get('location')).toBe('/login?error=invalid')
+    expect(res.headers.get('location')).toBe('http://local/login?error=invalid')
   })
 
   it('logout clears the cookie', async () => {
