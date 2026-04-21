@@ -72,7 +72,8 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // forge a fetch *without* sending an Origin. Be permissive for this case
   // to avoid breaking non-browser integrations; reject only when a header is
   // present and mismatched.
-  if (candidate && candidate !== expected) {
+  const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
+  if (candidate && candidate !== expected && !isPreview) {
     return c.json(
       {
         ok: false,
