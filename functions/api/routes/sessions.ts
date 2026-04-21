@@ -19,6 +19,7 @@ import { deriveVoterIdentity } from '../lib/voter'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { verifyJwt } from '../lib/jwt'
+import { incrementSessionQuota } from '../lib/quota'
 import {
   CreateSessionSchema,
   PatchSessionSchema,
@@ -278,7 +279,34 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
 
     const user = c.get('user')
+    const plan = c.get('plan')
+    const quotas = c.get('planQuotas')
     const idemKey = c.req.header('idempotency-key') ?? undefined
+
+    // Check quota before proceeding (BILL-04)
+    const { allowed, remaining } = await incrementSessionQuota(
+      c.env.SESSIONS_KV,
+      user.sub,
+      quotas.maxSessionsPerMonth,
+    )
+    if (!allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'quota_exceeded',
+            message: `Session quota exceeded for your ${plan} plan this month`,
+            details: {
+              plan,
+              limit: quotas.maxSessionsPerMonth,
+              upgrade_url: '/billing/upgrade',
+            },
+          },
+          trace_id: c.get('trace_id'),
+        },
+        429,
+      )
+    }
 
     let result: { status: number; body: { ok: true; data: { session: Session; questions: Question[] } }; replayed: boolean }
     try {
@@ -310,7 +338,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
           }
           return {
             status: 201,
-            body: { ok: true as const, data: { session, questions: [] as Question[] } },
+            body: { ok: true as const, data: { session, questions: [] as Question[], quota_remaining: remaining } },
           }
         },
       )

@@ -61,6 +61,60 @@ export type User = {
   plan: 'free' | 'starter' | 'team'
 }
 
+export type PlanTier = User['plan']
+
+export interface PlanQuotas {
+  maxSessionsPerMonth: number
+  maxParticipantsPerSession: number
+  featuresUnlocked: {
+    resultsExport: boolean
+    semanticSearch: boolean
+    insightsAI: boolean
+    customBranding: boolean
+    consentMode: boolean
+    rankingQuestions: boolean
+  }
+}
+
+export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
+  free: {
+    maxSessionsPerMonth: 5,
+    maxParticipantsPerSession: 50,
+    featuresUnlocked: {
+      resultsExport: false,
+      semanticSearch: false,
+      insightsAI: false,
+      customBranding: false,
+      consentMode: false,
+      rankingQuestions: false,
+    },
+  },
+  starter: {
+    maxSessionsPerMonth: 50,
+    maxParticipantsPerSession: 500,
+    featuresUnlocked: {
+      resultsExport: true,
+      semanticSearch: true,
+      insightsAI: false,
+      customBranding: true,
+      consentMode: true,
+      rankingQuestions: true,
+    },
+  },
+  team: {
+    maxSessionsPerMonth: 500, // effectively unlimited
+    maxParticipantsPerSession: 5000,
+    featuresUnlocked: {
+      resultsExport: true,
+      semanticSearch: true,
+      insightsAI: true,
+      customBranding: true,
+      consentMode: true,
+      rankingQuestions: true,
+    },
+  },
+}
+
 // Standard response envelopes (SPEC_BACKEND.md).
 export type ApiSuccess<T> = { ok: true; data: T; trace_id: string }
 export type ApiError = {
