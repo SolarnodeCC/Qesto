@@ -65,7 +65,7 @@ wrangler deploy
 # First real upload.
 ```
 
-Then hit `https://qesto2-github.oostelaar.workers.dev/api/admin/health` →
+Then hit `https://qesto-api.oostelaar.workers.dev/api/admin/health` →
 expect `{ "ok": true, "data": { "env": "production", … } }`.
 
 ## Why bindings are commented out by default

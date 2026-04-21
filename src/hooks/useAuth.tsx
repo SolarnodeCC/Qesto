@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { api } from '../api/client'
 
 export type AuthUser = { id: string; email: string }
 
@@ -21,17 +22,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({ status: 'loading' })
 
   const refresh = useCallback(async () => {
-    try {
-      const res = await fetch('/api/auth/me', { credentials: 'include' })
-      if (res.status === 200) {
-        const body = (await res.json()) as { ok: boolean; data: AuthUser }
-        if (body.ok) {
-          setState({ status: 'authenticated', user: body.data })
-          return
-        }
-      }
-      setState({ status: 'anonymous' })
-    } catch {
+    const result = await api<AuthUser>('/api/auth/me')
+    if (result.ok) {
+      setState({ status: 'authenticated', user: result.data })
+    } else {
       setState({ status: 'anonymous' })
     }
   }, [])
@@ -41,66 +35,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh])
 
   const requestMagicLink = useCallback(async (email: string): Promise<'sent' | 'invalid' | 'error'> => {
-    try {
-      const res = await fetch('/api/auth/request', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-      if (res.status === 202) return 'sent'
-      if (res.status === 400) return 'invalid'
-      return 'error'
-    } catch {
-      return 'error'
-    }
+    const result = await api('/api/auth/request', { method: 'POST', body: { email } })
+    if (result.ok) return 'sent'
+    if (result.status === 400) return 'invalid'
+    return 'error'
   }, [])
 
   const loginWithPassword = useCallback(
     async (email: string, password: string): Promise<'ok' | 'invalid_credentials' | 'error'> => {
-      try {
-        const res = await fetch('/api/auth/password/login', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-          credentials: 'include',
-        })
-        if (res.status === 200) {
-          await refresh()
-          return 'ok'
-        }
-        if (res.status === 401) return 'invalid_credentials'
-        return 'error'
-      } catch {
-        return 'error'
+      const result = await api('/api/auth/password/login', { method: 'POST', body: { email, password } })
+      if (result.ok) {
+        await refresh()
+        return 'ok'
       }
+      if (result.status === 401) return 'invalid_credentials'
+      return 'error'
     },
     [refresh],
   )
 
   const signupWithPassword = useCallback(
     async (email: string, password: string, name?: string): Promise<'ok' | 'email_taken' | 'error'> => {
-      try {
-        const res = await fetch('/api/auth/password/signup', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email, password, name }),
-          credentials: 'include',
-        })
-        if (res.status === 201) {
-          await refresh()
-          return 'ok'
-        }
-        if (res.status === 409) return 'email_taken'
-        return 'error'
-      } catch {
-        return 'error'
+      const result = await api('/api/auth/password/signup', { method: 'POST', body: { email, password, name } })
+      if (result.ok) {
+        await refresh()
+        return 'ok'
       }
+      if (result.status === 409) return 'email_taken'
+      return 'error'
     },
     [refresh],
   )
 
   const logout = useCallback(async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    await api('/api/auth/logout', { method: 'POST' })
     setState({ status: 'anonymous' })
   }, [])
 
