@@ -3,13 +3,16 @@ import { createApp } from '../../functions/api/app'
 import { verifyJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
+import { KVMock } from '../helpers/kv-mock'
 
-function makeEnv(db: D1Mock): Env {
+function makeEnv(db: D1Mock, kv?: { users?: KVMock; actions?: KVMock }): Env {
   return {
     ENV: 'dev',
     APP_URL: 'http://local',
     JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
     DB: db as unknown as D1Database,
+    USERS_KV: (kv?.users ?? new KVMock()) as unknown as KVNamespace,
+    ACTIONS_KV: (kv?.actions ?? new KVMock()) as unknown as KVNamespace,
   } as unknown as Env
 }
 
@@ -161,6 +164,138 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     const setCookie = res.headers.get('set-cookie') ?? ''
     expect(setCookie).toContain('qesto_session=')
     expect(setCookie).toMatch(/Max-Age=0|expires=Thu, 01 Jan 1970/i)
+  })
+})
+
+describe('password signup + login', () => {
+  it('signs up a new user and returns 201 with a session cookie', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv })
+
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'alice@example.com', password: 'hunter12345', name: 'Alice' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(201)
+    const body = (await res.json()) as { ok: boolean }
+    expect(body.ok).toBe(true)
+    expect(db.users.size).toBe(1)
+    const [user] = [...db.users.values()]
+    expect(user.email).toBe('alice@example.com')
+    expect(user.display_name).toBe('Alice')
+    expect(usersKv.has(`pwd:${user.id}`)).toBe(true)
+    const cookie = res.headers.get('set-cookie') ?? ''
+    expect(cookie).toContain('qesto_session=')
+  })
+
+  it('rejects duplicate email with 409', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv })
+
+    const body = JSON.stringify({ email: 'bob@example.com', password: 'hunter12345' })
+    const headers = { 'content-type': 'application/json' }
+    await app.fetch(new Request('http://local/api/auth/password/signup', { method: 'POST', headers, body }), env)
+    const res2 = await app.fetch(new Request('http://local/api/auth/password/signup', { method: 'POST', headers, body }), env)
+    expect(res2.status).toBe(409)
+    const resp = (await res2.json()) as { ok: boolean; error: { code: string } }
+    expect(resp.ok).toBe(false)
+    expect(resp.error.code).toBe('email_taken')
+  })
+
+  it('rejects passwords shorter than 8 chars with 400', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'carol@example.com', password: 'short' }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as { ok: boolean; error: { code: string } }
+    expect(body.error.code).toBe('validation')
+  })
+
+  it('logs in with correct password and returns 200 with cookie', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv })
+
+    // Sign up first.
+    await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'dave@example.com', password: 'correcthorse' }),
+      }),
+      env,
+    )
+
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'dave@example.com', password: 'correcthorse' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { ok: boolean }
+    expect(body.ok).toBe(true)
+    expect(res.headers.get('set-cookie')).toContain('qesto_session=')
+  })
+
+  it('rejects wrong password with 401', async () => {
+    const db = new D1Mock()
+    const usersKv = new KVMock()
+    const app = createApp()
+    const env = makeEnv(db, { users: usersKv })
+
+    await app.fetch(
+      new Request('http://local/api/auth/password/signup', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'eve@example.com', password: 'rightpassword' }),
+      }),
+      env,
+    )
+
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'eve@example.com', password: 'wrongpassword' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(401)
+    const body = (await res.json()) as { ok: boolean; error: { code: string } }
+    expect(body.error.code).toBe('invalid_credentials')
+  })
+
+  it('returns 401 for unknown email on login', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const res = await app.fetch(
+      new Request('http://local/api/auth/password/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'ghost@example.com', password: 'doesnotmatter' }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(401)
   })
 })
 

@@ -110,11 +110,15 @@ export class D1PreparedStatementMock {
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO users')) {
-      const [id, email, created_at] = this.args as [string, string, number]
+      // Handles both magic-link (3 args: id, email, created_at) and password
+      // signup (4 args: id, email, display_name, created_at). display_name is
+      // ignored by the mock since it isn't needed for auth assertions.
+      const [id, email, arg3, arg4] = this.args as [string, string, string | number | null, number | undefined]
+      const created_at = (typeof arg4 === 'number' ? arg4 : typeof arg3 === 'number' ? arg3 : Date.now())
       this.db.users.set(id, {
         id,
         email,
-        display_name: null,
+        display_name: typeof arg3 === 'string' || arg3 === null ? (arg3 as string | null) : null,
         created_at,
         last_login_at: created_at,
         plan: 'free',
