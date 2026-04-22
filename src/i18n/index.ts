@@ -6,10 +6,21 @@ let cachedLocales: LocaleMap = {}
 let currentLanguage = 'en'
 let initPromise: Promise<void> | null = null
 
+export const SUPPORTED_LANGUAGES = ['en', 'nl', 'es', 'de', 'fr'] as const
+export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
+
+const LANG_STORAGE_KEY = 'qesto_lang'
+
 export function detectLanguage(): string {
+  const stored = localStorage.getItem(LANG_STORAGE_KEY)
+  if (stored && SUPPORTED_LANGUAGES.includes(stored as SupportedLanguage)) return stored
   const browserLang = navigator.language.slice(0, 2)
-  const available = ['en', 'nl', 'es', 'de', 'fr']
-  return available.includes(browserLang) ? browserLang : 'en'
+  return SUPPORTED_LANGUAGES.includes(browserLang as SupportedLanguage) ? browserLang : 'en'
+}
+
+export function setLanguage(lang: SupportedLanguage): void {
+  localStorage.setItem(LANG_STORAGE_KEY, lang)
+  window.location.reload()
 }
 
 async function fetchNamespace(language: string, namespace: string): Promise<[string, Record<string, string>]> {

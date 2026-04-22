@@ -5,6 +5,7 @@ import TeamSwitcher from '../components/TeamSwitcher'
 import { useT } from '../i18n'
 import JoinBar from '../components/JoinBar'
 import { useAuth } from '../hooks/useAuth'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 function NavDropdown({ label, links }: { label: string; links: Array<{ label: string; href: string }> }) {
   const location = useLocation()
@@ -163,6 +164,7 @@ export default function MainLayout({
                   </Link>
                 </>
               )}
+              <LanguageSwitcher />
               {navSlot}
             </nav>
           </div>
