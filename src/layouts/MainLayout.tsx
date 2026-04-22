@@ -41,8 +41,20 @@ export default function MainLayout({
         <div className="grid-container flex items-center justify-between py-3 px-4 md:px-6">
           <a
             href="/"
-            className="text-sm font-semibold uppercase tracking-widest text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+            className="inline-flex items-center gap-1 text-sm font-bold uppercase tracking-widest text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
           >
+            {/* Sparkle mark — DESIGN-POLISH-02 */}
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="text-violet-500 flex-shrink-0"
+            >
+              <path d="M12 2l1.8 5.4 5.7 0-4.6 3.4 1.8 5.4L12 13l-4.7 3.2 1.8-5.4L4.5 7.4l5.7 0z" />
+            </svg>
             Qesto
           </a>
 

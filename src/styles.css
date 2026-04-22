@@ -229,6 +229,7 @@ html, body {
 
   .btn-motion:hover:not(:disabled) {
     transform: scale(1.02);
+    box-shadow: var(--shadow-teal);
   }
 
   .btn-motion:active:not(:disabled) {
