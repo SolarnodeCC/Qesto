@@ -8,7 +8,7 @@ import { api } from '../api/client'
 export default function Present() {
   const auth = useAuth()
   const { id } = useParams<{ id: string }>()
-  const { state } = useLiveSession(id, { enabled: !!id })
+  const { state, sendAdvance } = useLiveSession(id, { enabled: !!id })
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
 
@@ -122,7 +122,18 @@ export default function Present() {
         </p>
       ) : null}
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
+        <button
+          type="button"
+          onClick={() => sendAdvance()}
+          disabled={state.connection !== 'open' || state.session?.status === 'closed'}
+          className="inline-flex items-center gap-2 rounded-lg bg-teal-600 text-white px-4 py-2 font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+        >
+          Next question
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
         <button
           type="button"
           onClick={handleClose}

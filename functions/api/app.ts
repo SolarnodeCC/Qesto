@@ -74,7 +74,7 @@ export function createApp() {
     }
     await next()
   })
-  app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
+  app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 20, windowSec: 60 }))
 
   // RBAC enforcement — role-based access control for all API routes (Phase 8).
   // Checks user roles against permission matrix; defaults to viewer if no explicit role.
