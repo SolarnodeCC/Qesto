@@ -58,6 +58,24 @@ export default function NonprofitPage() {
             role: t('nonprofit.proof.testimonial.role'),
           },
       }}
+      playbook={{
+          heading: 'A transparent governance workflow members can trust',
+          intro: 'Design every vote and consultation so participation is inclusive, rationale is visible, and records are audit-ready.',
+          steps: [
+            {
+              title: 'Frame the decision clearly',
+              desc: 'Share options and criteria up front so members understand what is being decided and why it matters now.',
+            },
+            {
+              title: 'Collect broad, safe participation',
+              desc: 'Use anonymity and multilingual support to ensure quieter and remote members can contribute without friction.',
+            },
+            {
+              title: 'Archive decision evidence instantly',
+              desc: 'Store outcomes, objections, and consent logs in one place for board reporting and member transparency.',
+            },
+          ],
+        }}
       scenarios={{
           heading: t('nonprofit.scenarios.heading'),
           items: [

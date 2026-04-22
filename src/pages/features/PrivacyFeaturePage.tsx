@@ -67,6 +67,24 @@ export default function PrivacyFeaturePage() {
           },
         ],
       }}
+      deepDive={{
+        heading: 'Privacy patterns for high-trust participation',
+        intro: 'Privacy is not one setting—it is a set of choices teams make based on sensitivity, follow-up needs, and governance obligations.',
+        pillars: [
+          {
+            title: 'Choose the right anonymity mode',
+            desc: 'Match session sensitivity with full anonymous, cohort, or identified participation models.',
+          },
+          {
+            title: 'Capture defensible consent history',
+            desc: 'Maintain time-stamped records that support internal reviews, external audits, and policy conversations.',
+          },
+          {
+            title: 'Keep safeguards visible to participants',
+            desc: 'Show clear privacy controls up front to reduce hesitation and increase honest participation.',
+          },
+        ],
+      }}
       proof={{
         heading: t('features.privacy.proof.heading'),
         metrics: [

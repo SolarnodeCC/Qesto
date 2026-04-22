@@ -48,6 +48,11 @@ export interface RelatedLink {
   desc: string
 }
 
+export interface PlaybookStep {
+  title: string
+  desc: string
+}
+
 export interface SolutionPageProps {
   hero: {
     badge?: string
@@ -71,6 +76,11 @@ export interface SolutionPageProps {
   scenarios: {
     heading: string
     items: SolutionScenario[]
+  }
+  playbook?: {
+    heading: string
+    intro: string
+    steps: PlaybookStep[]
   }
   proof?: {
     heading: string
@@ -100,6 +110,7 @@ export default function SolutionPageTemplate({
   painPoints,
   features,
   scenarios,
+  playbook,
   proof,
   related,
   faq,
@@ -312,6 +323,39 @@ export default function SolutionPageTemplate({
                   </footer>
                 </blockquote>
               )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Playbook */}
+      {playbook && (
+        <section aria-labelledby="playbook-heading" className="py-16 md:py-20 border-b border-pulse-200">
+          <div className="grid-container px-4 md:px-6">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
+              <div className="text-center max-w-3xl mx-auto space-y-3">
+                <h2
+                  id="playbook-heading"
+                  className="text-heading-l font-semibold"
+                  style={{ fontFamily: 'var(--font-family-display)' }}
+                >
+                  {playbook.heading}
+                </h2>
+                <p className="text-body-l text-pulse-600">{playbook.intro}</p>
+              </div>
+              <ol className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
+                {playbook.steps.map((step, i) => (
+                  <li
+                    key={step.title}
+                    className="animate-list-item rounded-xl border border-teal-100 bg-gradient-to-br from-teal-50 to-violet-50 p-6 space-y-3"
+                    style={{ '--stagger-index': i } as React.CSSProperties}
+                  >
+                    <p className="text-caption font-semibold text-teal-700">Step {i + 1}</p>
+                    <h3 className="text-heading-s font-semibold">{step.title}</h3>
+                    <p className="text-caption text-pulse-600 leading-relaxed">{step.desc}</p>
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         </section>

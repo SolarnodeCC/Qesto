@@ -58,6 +58,24 @@ export default function ConsultingPage() {
             role: t('consulting.proof.testimonial.role'),
           },
       }}
+      playbook={{
+          heading: 'A consultant playbook for faster client alignment',
+          intro: 'Move from exploration to commitment with a facilitation flow that surfaces disagreement early and leaves teams with implementable outcomes.',
+          steps: [
+            {
+              title: 'Capture divergent input at scale',
+              desc: 'Collect ideas and concerns in parallel so senior voices do not dominate the discovery phase.',
+            },
+            {
+              title: 'Converge with visible prioritization',
+              desc: 'Use rankings and consent checks to reveal where alignment is strong and where unresolved risk remains.',
+            },
+            {
+              title: 'Deliver a same-day evidence pack',
+              desc: 'Export structured decisions, rationale, and next actions so clients can execute immediately.',
+            },
+          ],
+        }}
       scenarios={{
           heading: t('consulting.scenarios.heading'),
           items: [

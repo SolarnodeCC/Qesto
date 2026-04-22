@@ -92,6 +92,24 @@ export default function EventsPage() {
             role: t('events.proof.testimonial.role'),
           },
       }}
+      playbook={{
+          heading: 'A high-impact event flow in three moves',
+          intro: 'Use this facilitation pattern to increase participation and capture sponsor-ready intelligence in every session block.',
+          steps: [
+            {
+              title: 'Prime the room in minute one',
+              desc: 'Open with a context-setting poll to map audience expectations and tailor speaker framing in real time.',
+            },
+            {
+              title: 'Convert questions into priorities',
+              desc: 'Run ranked Q&A during the talk so the most valuable questions rise early instead of getting lost at the end.',
+            },
+            {
+              title: 'Close with actionable pulse data',
+              desc: 'End each session with a quick confidence check and export the insights for sponsors, producers, and speakers.',
+            },
+          ],
+        }}
       scenarios={{
           heading: t('events.scenarios.heading'),
           items: [

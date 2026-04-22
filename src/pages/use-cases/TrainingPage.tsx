@@ -58,6 +58,24 @@ export default function TrainingPage() {
             role: t('useCases.training.proof.testimonial.role'),
           },
       }}
+      playbook={{
+          heading: 'A live-learning feedback loop for trainers',
+          intro: 'Keep learners engaged and on track by embedding short checks that reveal misunderstandings while there is still time to adapt.',
+          steps: [
+            {
+              title: 'Checkpoint comprehension mid-module',
+              desc: 'Run quick formative checks before moving to harder material so gaps are found early.',
+            },
+            {
+              title: 'Measure confidence, not just correctness',
+              desc: 'Use confidence scales to detect hidden uncertainty that multiple-choice accuracy alone can miss.',
+            },
+            {
+              title: 'Adapt and recap in the same session',
+              desc: 'Re-teach where needed and capture a structured summary for learners and stakeholders immediately.',
+            },
+          ],
+        }}
       scenarios={{
           heading: t('useCases.training.scenarios.heading'),
           items: [
