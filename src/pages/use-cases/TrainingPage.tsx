@@ -22,6 +22,10 @@ export default function TrainingPage() {
           secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
           imageUrl: '/images/solutions/photo-1434030216411-0b793f4b4173.avif',
           imageAlt: t('useCases.training.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1524178232363-1fb2b075b655.avif', alt: 'Learners participating in an interactive session' },
+            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Trainers collecting rapid feedback in real time' },
+          ],
       }}
       painPoints={{
           heading: t('useCases.training.painPoints.heading'),

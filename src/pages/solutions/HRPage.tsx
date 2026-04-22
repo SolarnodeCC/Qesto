@@ -22,6 +22,10 @@ export default function HRPage() {
           secondaryCta: { label: t('cta.startFree'), href: '/login' },
           imageUrl: '/images/solutions/photo-1543269865-cbf427effbad.avif',
           imageAlt: t('hr.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1521737604893-d14cc237f11d.avif', alt: 'HR leaders reviewing employee feedback themes' },
+            { src: '/images/solutions/photo-1551434678-e076c223a692.avif', alt: 'Cross-functional team in a trust-building session' },
+          ],
       }}
       painPoints={{
           heading: t('hr.painPoints.heading'),

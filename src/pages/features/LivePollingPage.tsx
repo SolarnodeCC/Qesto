@@ -11,6 +11,7 @@ export default function LivePollingPage() {
         title={t('features.livePolling.seo.title')}
         description={t('features.livePolling.seo.description')}
         canonicalPath="/features/live-polling"
+        ogImage="/images/solutions/photo-1572021335469-31706a17aaef.avif"
       />
       <FeaturePageTemplate
         hero={{
@@ -19,6 +20,12 @@ export default function LivePollingPage() {
           subheadline: t('features.livePolling.subheadline'),
           primaryCta: { label: t('cta.tryItFree'), href: '/login' },
           secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+          imageUrl: '/images/solutions/photo-1572021335469-31706a17aaef.avif',
+          imageAlt: 'Audience responding to a live poll during an event',
+          gallery: [
+            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Workshop participants ranking ideas in real time' },
+            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Large session with instant pulse checks' },
+          ],
       }}
       howItWorks={{
         heading: t('features.livePolling.howItWorks.heading'),

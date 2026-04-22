@@ -22,6 +22,10 @@ export default function WorkshopsPage() {
           secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
           imageUrl: '/images/solutions/photo-1704652070195-61e76e1466db.avif',
           imageAlt: t('useCases.workshops.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1552664730-d307ca884978.avif', alt: 'Facilitated workshop with collaborative boards' },
+            { src: '/images/solutions/photo-1572021335469-31706a17aaef.avif', alt: 'Participants voting on workshop priorities' },
+          ],
       }}
       painPoints={{
           heading: t('useCases.workshops.painPoints.heading'),

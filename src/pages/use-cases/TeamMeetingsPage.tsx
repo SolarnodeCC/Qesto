@@ -22,6 +22,10 @@ export default function TeamMeetingsPage() {
           secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
           imageUrl: '/images/solutions/photo-1551434678-e076c223a692.avif',
           imageAlt: t('useCases.teamMeetings.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1543269865-cbf427effbad.avif', alt: 'Weekly team sync with shared decisions' },
+            { src: '/images/solutions/photo-1521737604893-d14cc237f11d.avif', alt: 'Team leaders aligning on next sprint goals' },
+          ],
       }}
       painPoints={{
           heading: t('useCases.teamMeetings.painPoints.heading'),
