@@ -67,6 +67,24 @@ export default function LivePollingPage() {
           },
         ],
       }}
+      deepDive={{
+        heading: 'How teams use Live Polling to steer the room',
+        intro: 'Live Polling works best when teams treat it as a facilitation control layer, not a one-off interaction gimmick.',
+        pillars: [
+          {
+            title: 'Real-time room diagnostics',
+            desc: 'Spot confusion, confidence dips, and priority shifts while the session is still live.',
+          },
+          {
+            title: 'Inclusive participation at scale',
+            desc: 'Enable equal contribution from in-room and remote attendees with low-friction join flows.',
+          },
+          {
+            title: 'Faster closure on decisions',
+            desc: 'Use ranking and consent formats to align groups visibly before moving to execution.',
+          },
+        ],
+      }}
       proof={{
         heading: t('features.livePolling.proof.heading'),
         metrics: [

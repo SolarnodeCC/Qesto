@@ -58,6 +58,24 @@ export default function TeamMeetingsPage() {
             role: t('useCases.teamMeetings.proof.testimonial.role'),
           },
       }}
+      playbook={{
+          heading: 'A 20-minute decision meeting structure',
+          intro: 'Use this lightweight cadence to reduce circular debate and increase visible commitment on next steps.',
+          steps: [
+            {
+              title: 'Start with a blocker pulse',
+              desc: 'Identify where confidence or clarity is low before discussing the full agenda.',
+            },
+            {
+              title: 'Rank what matters now',
+              desc: 'Prioritize issues as a group so meeting time goes to the highest-impact decisions first.',
+            },
+            {
+              title: 'Confirm consent and owners',
+              desc: 'Close with a consent check and assign owners while rationale is still fresh in the room.',
+            },
+          ],
+        }}
       scenarios={{
           heading: t('useCases.teamMeetings.scenarios.heading'),
           items: [

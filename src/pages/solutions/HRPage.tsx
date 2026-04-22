@@ -58,6 +58,24 @@ export default function HRPage() {
             role: t('hr.proof.testimonial.role'),
           },
       }}
+      playbook={{
+          heading: 'A repeatable people-listening operating rhythm',
+          intro: 'Keep trust high and response quality strong by running short, intentional listening loops instead of sporadic long surveys.',
+          steps: [
+            {
+              title: 'Launch focused weekly pulses',
+              desc: 'Ask one to three high-signal questions tied to current organizational moments so teams can answer quickly.',
+            },
+            {
+              title: 'Synthesize themes, not noise',
+              desc: 'Cluster open comments into actionable themes and route each theme to owners who can respond visibly.',
+            },
+            {
+              title: 'Close the loop publicly',
+              desc: 'Share what was heard, what decisions were made, and what will happen next to reinforce employee trust.',
+            },
+          ],
+        }}
       scenarios={{
           heading: t('hr.scenarios.heading'),
           items: [

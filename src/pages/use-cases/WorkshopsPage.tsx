@@ -58,6 +58,24 @@ export default function WorkshopsPage() {
             role: t('useCases.workshops.proof.testimonial.role'),
           },
       }}
+      playbook={{
+          heading: 'A workshop blueprint that drives execution',
+          intro: 'Design collaborative sessions that feel creative in the room and produce concrete artifacts teams can use right away.',
+          steps: [
+            {
+              title: 'Open with parallel idea generation',
+              desc: 'Collect broad perspectives quickly so every participant contributes before groupthink sets in.',
+            },
+            {
+              title: 'Converge with transparent scoring',
+              desc: 'Apply live prioritization to reveal which ideas deserve deeper investment.',
+            },
+            {
+              title: 'Ship a structured handoff',
+              desc: 'Export the final themes, ranked priorities, and action owners as your post-workshop deliverable.',
+            },
+          ],
+        }}
       scenarios={{
           heading: t('useCases.workshops.scenarios.heading'),
           items: [

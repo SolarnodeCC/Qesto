@@ -41,6 +41,11 @@ export interface FaqItem {
   answer: string
 }
 
+export interface DeepDivePillar {
+  title: string
+  desc: string
+}
+
 export interface FeaturePageProps {
   hero: {
     badge?: string
@@ -60,6 +65,11 @@ export interface FeaturePageProps {
   outcomes: {
     heading: string
     items: FeatureOutcome[]
+  }
+  deepDive?: {
+    heading: string
+    intro: string
+    pillars: DeepDivePillar[]
   }
   related: {
     heading: string
@@ -87,6 +97,7 @@ export default function FeaturePageTemplate({
   hero,
   howItWorks,
   outcomes,
+  deepDive,
   related,
   proof,
   faq,
@@ -113,7 +124,7 @@ export default function FeaturePageTemplate({
       {/* Hero */}
       <section className="animate-page-enter py-20 md:py-28 border-b border-pulse-200">
         <div className="grid-container px-4 md:px-6">
-          <div className={hasHeroImage ? 'max-w-[1120px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center' : 'max-w-[680px] mx-auto text-center'}>
+          <div className={hasHeroImage ? 'col-span-full max-w-[1120px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center' : 'col-span-full max-w-[680px] mx-auto text-center'}>
             <div className="space-y-6">
               <div className={hasHeroImage ? 'flex items-center gap-2' : 'flex items-center justify-center gap-2'}>
               {hero.ai && <AIBadge variant="analyzed" label="AI-powered" />}
@@ -190,7 +201,7 @@ export default function FeaturePageTemplate({
       {proof && (
         <section aria-labelledby="feature-proof-heading" className="py-16 md:py-20 border-b border-pulse-200">
           <div className="grid-container px-4 md:px-6">
-            <div className="max-w-[1120px] mx-auto space-y-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
               <h2
                 id="feature-proof-heading"
                 className="text-heading-l font-semibold text-center"
@@ -246,7 +257,7 @@ export default function FeaturePageTemplate({
       {/* How it works */}
       <section aria-labelledby="how-it-works-heading" className="py-16 md:py-20 border-b border-pulse-200">
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[1120px] mx-auto space-y-12">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-12">
             <h2
               id="how-it-works-heading"
               className="text-heading-l font-semibold text-center"
@@ -284,7 +295,7 @@ export default function FeaturePageTemplate({
         className="py-16 md:py-20 bg-gradient-to-br from-teal-50/50 to-violet-50/50 border-b border-pulse-200"
       >
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[1120px] mx-auto space-y-10">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
             <h2
               id="outcomes-heading"
               className="text-heading-l font-semibold text-center"
@@ -311,10 +322,42 @@ export default function FeaturePageTemplate({
         </div>
       </section>
 
+      {/* Deep dive */}
+      {deepDive && (
+        <section aria-labelledby="deep-dive-heading" className="py-16 md:py-20 border-b border-pulse-200">
+          <div className="grid-container px-4 md:px-6">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
+              <div className="text-center space-y-3 max-w-3xl mx-auto">
+                <h2
+                  id="deep-dive-heading"
+                  className="text-heading-l font-semibold"
+                  style={{ fontFamily: 'var(--font-family-display)' }}
+                >
+                  {deepDive.heading}
+                </h2>
+                <p className="text-body-l text-pulse-600">{deepDive.intro}</p>
+              </div>
+              <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
+                {deepDive.pillars.map((pillar, i) => (
+                  <li
+                    key={pillar.title}
+                    className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-6 space-y-3 shadow-card"
+                    style={{ '--stagger-index': i } as React.CSSProperties}
+                  >
+                    <h3 className="text-heading-s font-semibold text-teal-700">{pillar.title}</h3>
+                    <p className="text-caption text-pulse-600 leading-relaxed">{pillar.desc}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Related pages */}
       <section aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200">
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[1120px] mx-auto space-y-8">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
             <h2
               id="related-heading"
               className="text-heading-l font-semibold text-center"
@@ -343,7 +386,7 @@ export default function FeaturePageTemplate({
       {faq && (
         <section aria-labelledby="feature-faq-heading" className="py-16 md:py-20 border-b border-pulse-200">
           <div className="grid-container px-4 md:px-6">
-            <div className="max-w-[900px] mx-auto space-y-8">
+            <div className="col-span-full max-w-[900px] mx-auto space-y-8">
               <h2
                 id="feature-faq-heading"
                 className="text-heading-l font-semibold text-center"
@@ -376,7 +419,7 @@ export default function FeaturePageTemplate({
       {/* Bottom CTA */}
       <section aria-labelledby="feature-cta-heading" className="py-16 md:py-24">
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
+          <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
             <h2
               id="feature-cta-heading"
               className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"

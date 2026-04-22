@@ -68,6 +68,24 @@ export default function AIInsightsPage() {
           },
         ],
       }}
+      deepDive={{
+        heading: 'Where AI Insights creates the biggest leverage',
+        intro: 'Teams use AI Insights when they need to move quickly from qualitative input to strategic action without sacrificing nuance.',
+        pillars: [
+          {
+            title: 'Faster preparation cycles',
+            desc: 'Generate strong first-draft question sets from a short brief and reduce session design bottlenecks.',
+          },
+          {
+            title: 'Higher-quality synthesis',
+            desc: 'Turn hundreds of comments into coherent themes with tensions, outliers, and recurring signals surfaced early.',
+          },
+          {
+            title: 'Decision-ready outputs',
+            desc: 'Translate insight clusters into stakeholder narratives, priorities, and next-step recommendations.',
+          },
+        ],
+      }}
       proof={{
         heading: t('features.aiInsights.proof.heading'),
         metrics: [
