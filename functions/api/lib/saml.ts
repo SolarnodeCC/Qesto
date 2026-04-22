@@ -75,18 +75,24 @@ export function buildAuthnRequest(entityId: string, acsUrl: string, _idpSsoUrl: 
  * Returns `{ email, nameId }` on success; throws on malformed / audience-mismatch.
  */
 export function parseAssertion(samlResponse: string, expectedAudience: string): SamlAssertion {
-  // Cloudflare Workers IdPs may POST either the raw base64 or form-url-encoded.
-  const decodedOnce = decodeURIComponent(samlResponse.replace(/\+/g, ' '))
-  const xml = new TextDecoder().decode(base64Decode(decodedOnce))
+  // Tolerate both raw base64 AND URL-encoded base64. If the payload looks
+  // URL-encoded (contains %XX), decode once. We deliberately do NOT convert
+  // `+` → ` ` because standard base64 uses `+` as a character; form-urlencoded
+  // senders MUST double-encode it to %2B before POST, which decodeURIComponent
+  // correctly restores below.
+  const input = /%[0-9A-Fa-f]{2}/.test(samlResponse)
+    ? decodeURIComponent(samlResponse)
+    : samlResponse
+  const xml = new TextDecoder().decode(base64Decode(input))
 
   // Validate audience first — cheap reject for cross-tenant confusion.
-  const audienceMatch = xml.match(/<saml:?Audience[^>]*>([^<]+)<\/saml:?Audience>/)
+  const audienceMatch = xml.match(/<(?:saml:)?Audience[^>]*>([^<]+)<\/(?:saml:)?Audience>/)
   if (!audienceMatch || audienceMatch[1].trim() !== expectedAudience) {
     throw new Error('saml: audience mismatch')
   }
 
   // NameID — either <saml:NameID> or <NameID> (namespace-unprefixed form).
-  const nameIdMatch = xml.match(/<saml:?NameID[^>]*>([^<]+)<\/saml:?NameID>/)
+  const nameIdMatch = xml.match(/<(?:saml:)?NameID[^>]*>([^<]+)<\/(?:saml:)?NameID>/)
   if (!nameIdMatch) throw new Error('saml: missing NameID')
   const nameId = decodeXmlEntities(nameIdMatch[1].trim())
 
