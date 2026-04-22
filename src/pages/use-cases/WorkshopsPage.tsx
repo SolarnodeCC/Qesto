@@ -1,87 +1,112 @@
 import SolutionPageTemplate from '../../components/SolutionPageTemplate'
+import PageSeo from '../../components/PageSeo'
+import { useT } from '../../i18n'
 
 export default function WorkshopsPage() {
+  const t = useT('solutions')
+
   return (
-    <SolutionPageTemplate
-      hero={{
-        badge: 'Use case: Workshops & Facilitation',
-        headline: 'Facilitate without the sticky notes.',
-        subheadline:
-          'Real-time structured input replaces physical props and messy whiteboards. Run ideation, prioritisation, and consent rounds from a single session link — and leave with exportable results.',
-        primaryCta: { label: 'Get started free', href: '/login' },
-        secondaryCta: { label: 'See pricing', href: '/pricing' },
-        imageUrl: '/images/solutions/photo-1704652070195-61e76e1466db.avif',
-        imageAlt: 'Workshop participants collaborating on a shared activity',
+    <>
+      <PageSeo
+        title={t('useCases.workshops.seo.title')}
+        description={t('useCases.workshops.seo.description')}
+        canonicalPath="/use-cases/workshops"
+        ogImage="/images/solutions/photo-1704652070195-61e76e1466db.avif"
+      />
+      <SolutionPageTemplate
+        hero={{
+          badge: t('useCases.workshops.badge'),
+          headline: t('useCases.workshops.headline'),
+          subheadline: t('useCases.workshops.subheadline'),
+          primaryCta: { label: t('cta.startFree'), href: '/login' },
+          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+          imageUrl: '/images/solutions/photo-1704652070195-61e76e1466db.avif',
+          imageAlt: t('useCases.workshops.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1552664730-d307ca884978.avif', alt: 'Facilitated workshop with collaborative boards' },
+            { src: '/images/solutions/photo-1572021335469-31706a17aaef.avif', alt: 'Participants voting on workshop priorities' },
+          ],
       }}
       painPoints={{
-        heading: 'What slows workshops down',
-        items: [
-          {
-            icon: '📌',
-            title: 'Physical facilitation props',
-            desc: 'Sticky notes, voting dots, and flip charts take time to set up and produce data you can\'t easily analyse or share.',
-          },
-          {
-            icon: '🌐',
-            title: 'Distributed participants',
-            desc: 'Remote participants can\'t stick notes on a board. Hybrid workshops leave online attendees as passive observers.',
-          },
-          {
-            icon: '📄',
-            title: 'Results that disappear',
-            desc: 'A photo of a whiteboard isn\'t a deliverable. Clients expect structured output; manual transcription takes hours.',
-          },
-        ],
+          heading: t('useCases.workshops.painPoints.heading'),
+          items: [
+            { icon: '📌', title: t('useCases.workshops.painPoints.props.title'), desc: t('useCases.workshops.painPoints.props.desc') },
+            { icon: '🌐', title: t('useCases.workshops.painPoints.distributed.title'), desc: t('useCases.workshops.painPoints.distributed.desc') },
+            { icon: '📄', title: t('useCases.workshops.painPoints.results.title'), desc: t('useCases.workshops.painPoints.results.desc') },
+          ],
       }}
       features={{
-        heading: 'One session link for every workshop format',
-        items: [
-          {
-            icon: '💡',
-            title: 'Open idea collection',
-            desc: 'Capture everyone\'s ideas in parallel — no groupthink, no waiting for turns. Responses arrive simultaneously.',
+          heading: t('useCases.workshops.features.heading'),
+          items: [
+            { icon: '💡', title: t('useCases.workshops.features.ideas.title'), desc: t('useCases.workshops.features.ideas.desc') },
+            { icon: '🏆', title: t('useCases.workshops.features.voting.title'), desc: t('useCases.workshops.features.voting.desc') },
+            { icon: '🤖', title: t('useCases.workshops.features.ai.title'), desc: t('useCases.workshops.features.ai.desc'), ai: true },
+            { icon: '📈', title: t('useCases.workshops.features.results.title'), desc: t('useCases.workshops.features.results.desc') },
+          ],
+        }}
+        proof={{
+          heading: t('useCases.workshops.proof.heading'),
+          metrics: [
+            { value: t('useCases.workshops.proof.metric1.value'), label: t('useCases.workshops.proof.metric1.label'), note: t('useCases.workshops.proof.metric1.note') },
+            { value: t('useCases.workshops.proof.metric2.value'), label: t('useCases.workshops.proof.metric2.label'), note: t('useCases.workshops.proof.metric2.note') },
+            { value: t('useCases.workshops.proof.metric3.value'), label: t('useCases.workshops.proof.metric3.label'), note: t('useCases.workshops.proof.metric3.note') },
+          ],
+          badges: [{ label: t('useCases.workshops.proof.badge1') }, { label: t('useCases.workshops.proof.badge2') }, { label: t('useCases.workshops.proof.badge3') }],
+          testimonial: {
+            quote: t('useCases.workshops.proof.testimonial.quote'),
+            author: t('useCases.workshops.proof.testimonial.author'),
+            role: t('useCases.workshops.proof.testimonial.role'),
           },
-          {
-            icon: '🏆',
-            title: 'Live dot voting',
-            desc: 'Ranking questions let participants prioritise ideas in real time. Results update live on the presenter screen.',
-          },
-          {
-            icon: '🤖',
-            title: 'AI response clustering',
-            desc: 'Open responses are automatically grouped into labelled themes. The facilitator reviews a summary, not 50 raw answers.',
-            ai: true,
-          },
-          {
-            icon: '📈',
-            title: 'Shareable results',
-            desc: 'Every session generates a results report you can share as a link or export. The deliverable writes itself.',
-          },
-        ],
       }}
+      playbook={{
+          heading: 'A workshop blueprint that drives execution',
+          intro: 'Design collaborative sessions that feel creative in the room and produce concrete artifacts teams can use right away.',
+          steps: [
+            {
+              title: 'Open with parallel idea generation',
+              desc: 'Collect broad perspectives quickly so every participant contributes before groupthink sets in.',
+            },
+            {
+              title: 'Converge with transparent scoring',
+              desc: 'Apply live prioritization to reveal which ideas deserve deeper investment.',
+            },
+            {
+              title: 'Ship a structured handoff',
+              desc: 'Export the final themes, ranked priorities, and action owners as your post-workshop deliverable.',
+            },
+          ],
+        }}
       scenarios={{
-        heading: 'Workshop formats that use Qesto',
-        items: [
-          {
-            title: 'Design thinking ideation',
-            desc: 'Use open questions for divergent thinking, then ranking for convergent selection. AI groups similar ideas so the team sees patterns, not a pile of text.',
-          },
-          {
-            title: 'Values and principles session',
-            desc: 'Collect what matters most to each person anonymously, then run a ranking to find genuine shared values — not just the CEO\'s personal list.',
-          },
-          {
-            title: 'Hybrid team offsite',
-            desc: 'In-room and remote participants engage identically — everyone on their own device, voting together in real time.',
-          },
-        ],
+          heading: t('useCases.workshops.scenarios.heading'),
+          items: [
+            { title: t('useCases.workshops.scenarios.design.title'), desc: t('useCases.workshops.scenarios.design.desc') },
+            { title: t('useCases.workshops.scenarios.values.title'), desc: t('useCases.workshops.scenarios.values.desc') },
+            { title: t('useCases.workshops.scenarios.hybrid.title'), desc: t('useCases.workshops.scenarios.hybrid.desc') },
+          ],
+        }}
+        related={{
+          heading: t('useCases.workshops.related.heading'),
+          links: [
+            { label: t('useCases.workshops.related.link1.label'), href: '/consulting', desc: t('useCases.workshops.related.link1.desc') },
+            { label: t('useCases.workshops.related.link2.label'), href: '/features/ai-insights', desc: t('useCases.workshops.related.link2.desc') },
+            { label: t('useCases.workshops.related.link3.label'), href: '/features/live-polling', desc: t('useCases.workshops.related.link3.desc') },
+          ],
+        }}
+        faq={{
+          heading: t('useCases.workshops.faq.heading'),
+          items: [
+            { question: t('useCases.workshops.faq.q1.question'), answer: t('useCases.workshops.faq.q1.answer') },
+            { question: t('useCases.workshops.faq.q2.question'), answer: t('useCases.workshops.faq.q2.answer') },
+            { question: t('useCases.workshops.faq.q3.question'), answer: t('useCases.workshops.faq.q3.answer') },
+          ],
       }}
       bottomCta={{
-        heading: 'Great facilitation leaves evidence.',
-        subheading: 'Qesto turns workshop conversations into structured, shareable results.',
-        primaryCta: { label: 'Start for free', href: '/login' },
-        secondaryCta: { label: 'View pricing', href: '/pricing' },
-      }}
-    />
+          heading: t('useCases.workshops.bottomCta.heading'),
+          subheading: t('useCases.workshops.bottomCta.subheading'),
+          primaryCta: { label: t('cta.startFree'), href: '/login' },
+          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+        }}
+      />
+    </>
   )
 }

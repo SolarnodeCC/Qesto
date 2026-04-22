@@ -35,6 +35,18 @@ const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage')
 const WorkshopsPage = lazy(() => import('./pages/use-cases/WorkshopsPage'))
 const TrainingPage = lazy(() => import('./pages/use-cases/TrainingPage'))
 
+function LazyRouteFallback() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="min-h-[30vh] flex items-center justify-center text-sm text-pulse-500"
+    >
+      Loading page...
+    </div>
+  )
+}
+
 function RouteAnnouncer() {
   const location = useLocation()
   const h1Ref = useRef<HTMLElement | null>(null)
@@ -60,25 +72,25 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/privacy" element={<Suspense fallback={<div>Loading...</div>}><Privacy /></Suspense>} />
-        <Route path="/terms" element={<Suspense fallback={<div>Loading...</div>}><Terms /></Suspense>} />
-        <Route path="/pricing" element={<Suspense fallback={<div>Loading...</div>}><Pricing /></Suspense>} />
+        <Route path="/privacy" element={<Suspense fallback={<LazyRouteFallback />}><Privacy /></Suspense>} />
+        <Route path="/terms" element={<Suspense fallback={<LazyRouteFallback />}><Terms /></Suspense>} />
+        <Route path="/pricing" element={<Suspense fallback={<LazyRouteFallback />}><Pricing /></Suspense>} />
 
         {/* Solution verticals */}
-        <Route path="/events" element={<Suspense fallback={<div>Loading...</div>}><EventsPage /></Suspense>} />
-        <Route path="/hr" element={<Suspense fallback={<div>Loading...</div>}><HRPage /></Suspense>} />
-        <Route path="/nonprofit" element={<Suspense fallback={<div>Loading...</div>}><NonprofitPage /></Suspense>} />
-        <Route path="/consulting" element={<Suspense fallback={<div>Loading...</div>}><ConsultingPage /></Suspense>} />
+        <Route path="/events" element={<Suspense fallback={<LazyRouteFallback />}><EventsPage /></Suspense>} />
+        <Route path="/hr" element={<Suspense fallback={<LazyRouteFallback />}><HRPage /></Suspense>} />
+        <Route path="/nonprofit" element={<Suspense fallback={<LazyRouteFallback />}><NonprofitPage /></Suspense>} />
+        <Route path="/consulting" element={<Suspense fallback={<LazyRouteFallback />}><ConsultingPage /></Suspense>} />
 
         {/* Feature pages */}
-        <Route path="/features/ai-insights" element={<Suspense fallback={<div>Loading...</div>}><AIInsightsPage /></Suspense>} />
-        <Route path="/features/live-polling" element={<Suspense fallback={<div>Loading...</div>}><LivePollingPage /></Suspense>} />
-        <Route path="/features/privacy" element={<Suspense fallback={<div>Loading...</div>}><PrivacyFeaturePage /></Suspense>} />
+        <Route path="/features/ai-insights" element={<Suspense fallback={<LazyRouteFallback />}><AIInsightsPage /></Suspense>} />
+        <Route path="/features/live-polling" element={<Suspense fallback={<LazyRouteFallback />}><LivePollingPage /></Suspense>} />
+        <Route path="/features/privacy" element={<Suspense fallback={<LazyRouteFallback />}><PrivacyFeaturePage /></Suspense>} />
 
         {/* Use-case pages */}
-        <Route path="/use-cases/team-meetings" element={<Suspense fallback={<div>Loading...</div>}><TeamMeetingsPage /></Suspense>} />
-        <Route path="/use-cases/workshops" element={<Suspense fallback={<div>Loading...</div>}><WorkshopsPage /></Suspense>} />
-        <Route path="/use-cases/training" element={<Suspense fallback={<div>Loading...</div>}><TrainingPage /></Suspense>} />
+        <Route path="/use-cases/team-meetings" element={<Suspense fallback={<LazyRouteFallback />}><TeamMeetingsPage /></Suspense>} />
+        <Route path="/use-cases/workshops" element={<Suspense fallback={<LazyRouteFallback />}><WorkshopsPage /></Suspense>} />
+        <Route path="/use-cases/training" element={<Suspense fallback={<LazyRouteFallback />}><TrainingPage /></Suspense>} />
 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />

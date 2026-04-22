@@ -1,6 +1,6 @@
 type LocaleMap = Record<string, Record<string, string>>
 
-const NAMESPACES = ['common', 'home', 'login', 'auth', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard', 'launchpad']
+const NAMESPACES = ['common', 'home', 'login', 'auth', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard', 'launchpad', 'solutions']
 
 let cachedLocales: LocaleMap = {}
 let currentLanguage = 'en'
@@ -13,24 +13,36 @@ export function detectLanguage(): string {
 }
 
 async function fetchNamespace(language: string, namespace: string): Promise<[string, Record<string, string>]> {
+  let localizedData: Record<string, string> | null = null
   try {
     const res = await fetch(`/locales/${language}/${namespace}.json`)
     if (res.ok) {
       const data = await res.json() as Record<string, string>
       // Guard against Pages returning index.html (SPA fallback) instead of JSON.
-      if (typeof data === 'object' && data !== null) return [namespace, data]
-    }
-    // Fallback to English
-    if (language !== 'en') {
-      const enRes = await fetch(`/locales/en/${namespace}.json`)
-      if (enRes.ok) {
-        const enData = await enRes.json() as Record<string, string>
-        if (typeof enData === 'object' && enData !== null) return [namespace, enData]
-      }
+      if (typeof data === 'object' && data !== null) localizedData = data
     }
   } catch {
     // Network error or JSON parse failure (e.g. Pages served HTML fallback).
   }
+
+  // Use English as baseline and overlay locale keys to prevent raw-key rendering
+  // when locale files are incomplete.
+  if (language !== 'en') {
+    try {
+      const enRes = await fetch(`/locales/en/${namespace}.json`)
+      if (enRes.ok) {
+        const enData = await enRes.json() as Record<string, string>
+        if (typeof enData === 'object' && enData !== null) {
+          return [namespace, localizedData ? { ...enData, ...localizedData } : enData]
+        }
+      }
+    } catch {
+      // Ignore fallback failure and continue to best effort below.
+    }
+  }
+
+  if (localizedData) return [namespace, localizedData]
+
   console.warn(`[i18n] Failed to load namespace '${namespace}' for '${language}'`)
   return [namespace, {}]
 }
