@@ -1,0 +1,165 @@
+{
+  "nav": {
+    "solutions": "Solutions",
+    "features": "Features",
+    "useCases": "Use cases"
+  },
+  "cta": {
+    "getStartedFree": "Get started free",
+    "seePricing": "See pricing",
+    "startFree": "Start for free",
+    "viewPricing": "View pricing",
+    "tryItFree": "Try it free"
+  },
+  "events": {
+    "badge": "For Events & Conferences",
+    "headline": "Turn every keynote into a conversation.",
+    "subheadline": "Run live polls, Q&A rankings, and sentiment checks across hundreds of participants — Qesto keeps your audience engaged from opening remarks to closing session.",
+    "painPoints": {
+      "heading": "The challenges every event organiser knows",
+      "passiveAudiences": { "title": "Passive audiences", "desc": "Attendees scroll their phones while speakers talk to a quiet room. Engagement drops off after the first 10 minutes." },
+      "slowFeedback": { "title": "Slow feedback loops", "desc": "Post-event surveys arrive too late to act on. You only find out what went wrong after people have left." },
+      "silentMajority": { "title": "Silent majority", "desc": "Only the loudest voices get heard in open Q&A. Most attendees never feel safe enough to share their real opinions." }
+    },
+    "features": {
+      "heading": "Everything you need to run a live event people remember"
+    },
+    "scenarios": {
+      "heading": "How event teams use Qesto"
+    },
+    "bottomCta": {
+      "heading": "Your next event starts here.",
+      "subheading": "Set up in under 5 minutes, no app install required for attendees."
+    }
+  },
+  "hr": {
+    "badge": "For HR & People Teams",
+    "headline": "Feel the pulse of your people — not just the data.",
+    "subheadline": "Run anonymous pulse surveys, onboarding check-ins, and engagement sessions that employees actually respond to. AI surfaces what your team is really thinking.",
+    "painPoints": {
+      "heading": "The gaps annual surveys can't fill"
+    },
+    "features": {
+      "heading": "A better way to listen at scale"
+    },
+    "scenarios": {
+      "heading": "How people teams use Qesto"
+    },
+    "bottomCta": {
+      "heading": "Build a culture where everyone has a voice.",
+      "subheading": "Start free — no HR software integration required."
+    }
+  },
+  "nonprofit": {
+    "badge": "For Nonprofits & Communities",
+    "headline": "Give every member a voice that counts.",
+    "subheadline": "Run transparent votes, consent checks, and community feedback sessions that keep your members engaged and your board accountable — all on a privacy-first platform.",
+    "painPoints": {
+      "heading": "What gets in the way of real community voice"
+    },
+    "features": {
+      "heading": "Tools built for transparent, inclusive decisions"
+    },
+    "scenarios": {
+      "heading": "How nonprofits and communities use Qesto"
+    },
+    "bottomCta": {
+      "heading": "Democracy starts with being heard.",
+      "subheading": "Free plan available. No credit card required."
+    }
+  },
+  "consulting": {
+    "badge": "For Consultants & Facilitators",
+    "headline": "Workshops that actually move the room.",
+    "subheadline": "Replace sticky notes and show-of-hands with structured real-time data. Qesto helps facilitators surface alignment, expose hidden disagreements, and close workshops with clear decisions.",
+    "painPoints": {
+      "heading": "What slows workshops down"
+    },
+    "features": {
+      "heading": "Every tool a facilitator needs, in one session link"
+    },
+    "scenarios": {
+      "heading": "Facilitation formats that use Qesto"
+    },
+    "bottomCta": {
+      "heading": "Run better workshops, close with data.",
+      "subheading": "Set up your first session in under 5 minutes."
+    }
+  },
+  "features": {
+    "aiInsights": {
+      "badge": "AI-powered",
+      "headline": "AI Insights — questions written in seconds, patterns found automatically.",
+      "subheadline": "Qesto's on-device AI generates question sets from a brief, detects themes across sessions, and surfaces what your team is really thinking — without a single byte leaving your infrastructure.",
+      "howItWorks": { "heading": "How AI Insights works" },
+      "outcomes": { "heading": "What teams experience" },
+      "related": { "heading": "See AI Insights in context" },
+      "bottomCta": {
+        "heading": "Stop staring at a blank question list.",
+        "subheading": "Let AI draft it. You refine it. Your team answers it."
+      }
+    },
+    "livePolling": {
+      "badge": "Core feature",
+      "headline": "Live polling that moves at the speed of your room.",
+      "subheadline": "Multiple choice, scales, rankings, open questions, and consent votes — all updating in real time on every participant's device and your presenter screen simultaneously.",
+      "howItWorks": { "heading": "From question to result in under 10 seconds" },
+      "outcomes": { "heading": "Why teams switch to Qesto" },
+      "related": { "heading": "See live polling in action" },
+      "bottomCta": {
+        "heading": "Your audience is waiting to be heard.",
+        "subheading": "No app install. No waiting. Just join and vote."
+      }
+    },
+    "privacy": {
+      "badge": "Privacy by default",
+      "headline": "Your team's responses stay yours — always.",
+      "subheadline": "Anonymity modes, GDPR consent logging, and on-device AI inference mean participants can speak honestly and you can prove it. No third-party model providers ever see your data.",
+      "howItWorks": { "heading": "Privacy is architecture, not a checkbox" },
+      "outcomes": { "heading": "What privacy-first means in practice" },
+      "related": { "heading": "Privacy matters most here" },
+      "bottomCta": {
+        "heading": "Honest responses start with trusted infrastructure.",
+        "subheading": "Privacy is on by default — you never have to turn it on."
+      }
+    }
+  },
+  "useCases": {
+    "teamMeetings": {
+      "badge": "Use case: Team Meetings",
+      "headline": "Meetings where everyone contributes, not just the loudest.",
+      "subheadline": "Replace silent nodding with structured input. Qesto makes standups, retrospectives, and decision meetings faster, more inclusive, and actually useful.",
+      "painPoints": { "heading": "What makes team meetings frustrating" },
+      "features": { "heading": "Qesto tools for better team meetings" },
+      "scenarios": { "heading": "Meeting formats that work well with Qesto" },
+      "bottomCta": {
+        "heading": "Turn your next meeting into a real conversation.",
+        "subheading": "Join codes work on any device — no app install for participants."
+      }
+    },
+    "workshops": {
+      "badge": "Use case: Workshops & Facilitation",
+      "headline": "Facilitate without the sticky notes.",
+      "subheadline": "Real-time structured input replaces physical props and messy whiteboards. Run ideation, prioritisation, and consent rounds from a single session link — and leave with exportable results.",
+      "painPoints": { "heading": "What slows workshops down" },
+      "features": { "heading": "One session link for every workshop format" },
+      "scenarios": { "heading": "Workshop formats that use Qesto" },
+      "bottomCta": {
+        "heading": "Great facilitation leaves evidence.",
+        "subheading": "Qesto turns workshop conversations into structured, shareable results."
+      }
+    },
+    "training": {
+      "badge": "Use case: Training & Learning",
+      "headline": "Check understanding while you still have the room.",
+      "subheadline": "Run formative knowledge checks, confidence surveys, and reflection questions mid-session. Find out what participants actually understood — not what they said they understood.",
+      "painPoints": { "heading": "Why training assessments usually fail" },
+      "features": { "heading": "Qesto tools for training sessions" },
+      "scenarios": { "heading": "Training scenarios where Qesto helps" },
+      "bottomCta": {
+        "heading": "Train smarter — check understanding while it matters.",
+        "subheading": "No app required. Participants join by code on any device."
+      }
+    }
+  }
+}

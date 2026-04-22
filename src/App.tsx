@@ -19,6 +19,22 @@ const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
 
+// Solution verticals
+const EventsPage = lazy(() => import('./pages/solutions/EventsPage'))
+const HRPage = lazy(() => import('./pages/solutions/HRPage'))
+const NonprofitPage = lazy(() => import('./pages/solutions/NonprofitPage'))
+const ConsultingPage = lazy(() => import('./pages/solutions/ConsultingPage'))
+
+// Feature pages
+const AIInsightsPage = lazy(() => import('./pages/features/AIInsightsPage'))
+const LivePollingPage = lazy(() => import('./pages/features/LivePollingPage'))
+const PrivacyFeaturePage = lazy(() => import('./pages/features/PrivacyFeaturePage'))
+
+// Use-case pages
+const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage'))
+const WorkshopsPage = lazy(() => import('./pages/use-cases/WorkshopsPage'))
+const TrainingPage = lazy(() => import('./pages/use-cases/TrainingPage'))
+
 function RouteAnnouncer() {
   const location = useLocation()
   const h1Ref = useRef<HTMLElement | null>(null)
@@ -47,6 +63,23 @@ export default function App() {
         <Route path="/privacy" element={<Suspense fallback={<div>Loading...</div>}><Privacy /></Suspense>} />
         <Route path="/terms" element={<Suspense fallback={<div>Loading...</div>}><Terms /></Suspense>} />
         <Route path="/pricing" element={<Suspense fallback={<div>Loading...</div>}><Pricing /></Suspense>} />
+
+        {/* Solution verticals */}
+        <Route path="/events" element={<Suspense fallback={<div>Loading...</div>}><EventsPage /></Suspense>} />
+        <Route path="/hr" element={<Suspense fallback={<div>Loading...</div>}><HRPage /></Suspense>} />
+        <Route path="/nonprofit" element={<Suspense fallback={<div>Loading...</div>}><NonprofitPage /></Suspense>} />
+        <Route path="/consulting" element={<Suspense fallback={<div>Loading...</div>}><ConsultingPage /></Suspense>} />
+
+        {/* Feature pages */}
+        <Route path="/features/ai-insights" element={<Suspense fallback={<div>Loading...</div>}><AIInsightsPage /></Suspense>} />
+        <Route path="/features/live-polling" element={<Suspense fallback={<div>Loading...</div>}><LivePollingPage /></Suspense>} />
+        <Route path="/features/privacy" element={<Suspense fallback={<div>Loading...</div>}><PrivacyFeaturePage /></Suspense>} />
+
+        {/* Use-case pages */}
+        <Route path="/use-cases/team-meetings" element={<Suspense fallback={<div>Loading...</div>}><TeamMeetingsPage /></Suspense>} />
+        <Route path="/use-cases/workshops" element={<Suspense fallback={<div>Loading...</div>}><WorkshopsPage /></Suspense>} />
+        <Route path="/use-cases/training" element={<Suspense fallback={<div>Loading...</div>}><TrainingPage /></Suspense>} />
+
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />
