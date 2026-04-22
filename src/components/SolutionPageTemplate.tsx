@@ -57,6 +57,7 @@ export interface SolutionPageProps {
     secondaryCta?: { label: string; href: string }
     imageUrl: string
     imageAlt: string
+    gallery?: Array<{ src: string; alt: string }>
   }
   painPoints: {
     heading: string
@@ -125,7 +126,7 @@ export default function SolutionPageTemplate({
       {/* Hero */}
       <section className="animate-page-enter bg-gradient-to-br from-teal-50 to-violet-50 border-b border-pulse-200">
         <div className="grid-container px-4 md:px-6 py-16 md:py-24">
-          <div className="max-w-[1120px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="col-span-full max-w-[1120px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               {hero.badge && (
                 <span className="inline-flex items-center rounded-pill px-3 py-1 text-caption font-medium bg-teal-100 text-teal-700 border border-teal-200">
@@ -159,16 +160,34 @@ export default function SolutionPageTemplate({
                 )}
               </div>
             </div>
-            <div className="rounded-xl overflow-hidden shadow-elevated">
-              <img
-                src={hero.imageUrl}
-                alt={hero.imageAlt}
-                className="w-full h-64 lg:h-80 object-cover"
-                loading="eager"
-                fetchPriority="high"
-                width="640"
-                height="320"
-              />
+            <div className="space-y-4">
+              <div className="rounded-xl overflow-hidden shadow-elevated ring-1 ring-teal-100">
+                <img
+                  src={hero.imageUrl}
+                  alt={hero.imageAlt}
+                  className="w-full h-64 lg:h-80 object-cover"
+                  loading="eager"
+                  fetchPriority="high"
+                  width="640"
+                  height="320"
+                />
+              </div>
+              {hero.gallery && hero.gallery.length > 0 && (
+                <ul className="grid grid-cols-2 gap-3" role="list">
+                  {hero.gallery.slice(0, 2).map((image) => (
+                    <li key={image.src} className="rounded-lg overflow-hidden ring-1 ring-pulse-200 shadow-card">
+                      <img
+                        src={image.src}
+                        alt={image.alt}
+                        className="w-full h-24 object-cover"
+                        loading="lazy"
+                        width="320"
+                        height="96"
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>
@@ -177,7 +196,7 @@ export default function SolutionPageTemplate({
       {/* Pain points */}
       <section aria-labelledby="pain-points-heading" className="py-16 md:py-20 border-b border-pulse-200">
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[1120px] mx-auto space-y-10">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
             <h2
               id="pain-points-heading"
               className="text-heading-l font-semibold text-center"
@@ -208,7 +227,7 @@ export default function SolutionPageTemplate({
         className="py-16 md:py-20 bg-gradient-to-br from-teal-50/50 to-violet-50/50 border-b border-pulse-200"
       >
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[1120px] mx-auto space-y-10">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
             <div className="text-center space-y-3">
               <h2
                 id="features-heading"
@@ -245,7 +264,7 @@ export default function SolutionPageTemplate({
       {proof && (
         <section aria-labelledby="proof-heading" className="py-16 md:py-20 border-b border-pulse-200">
           <div className="grid-container px-4 md:px-6">
-            <div className="max-w-[1120px] mx-auto space-y-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
               <h2
                 id="proof-heading"
                 className="text-heading-l font-semibold text-center"
@@ -301,7 +320,7 @@ export default function SolutionPageTemplate({
       {/* Scenarios */}
       <section aria-labelledby="scenarios-heading" className="py-16 md:py-20 border-b border-pulse-200">
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[1120px] mx-auto space-y-10">
+          <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
             <h2
               id="scenarios-heading"
               className="text-heading-l font-semibold text-center"
@@ -329,7 +348,7 @@ export default function SolutionPageTemplate({
       {related && (
         <section aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200">
           <div className="grid-container px-4 md:px-6">
-            <div className="max-w-[1120px] mx-auto space-y-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
               <h2
                 id="related-heading"
                 className="text-heading-l font-semibold text-center"
@@ -359,7 +378,7 @@ export default function SolutionPageTemplate({
       {faq && (
         <section aria-labelledby="faq-heading" className="py-16 md:py-20 border-b border-pulse-200">
           <div className="grid-container px-4 md:px-6">
-            <div className="max-w-[900px] mx-auto space-y-8">
+            <div className="col-span-full max-w-[900px] mx-auto space-y-8">
               <h2
                 id="faq-heading"
                 className="text-heading-l font-semibold text-center"
@@ -392,7 +411,7 @@ export default function SolutionPageTemplate({
       {/* Bottom CTA */}
       <section aria-labelledby="cta-heading" className="py-16 md:py-24">
         <div className="grid-container px-4 md:px-6">
-          <div className="max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
+          <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
             <h2
               id="cta-heading"
               className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"

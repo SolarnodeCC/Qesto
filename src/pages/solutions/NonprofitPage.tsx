@@ -22,6 +22,10 @@ export default function NonprofitPage() {
           secondaryCta: { label: t('cta.startFree'), href: '/login' },
           imageUrl: '/images/solutions/photo-1681949103006-70066fb25dfe.avif',
           imageAlt: t('nonprofit.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1572021335469-31706a17aaef.avif', alt: 'Community members participating in an open forum' },
+            { src: '/images/solutions/photo-1524178232363-1fb2b075b655.avif', alt: 'Volunteers collaborating in a planning meeting' },
+          ],
       }}
       painPoints={{
           heading: t('nonprofit.painPoints.heading'),
