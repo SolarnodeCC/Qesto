@@ -170,7 +170,7 @@ export const rbacMiddleware: MiddlewareHandler<{
   c.set('userRoles', userRoles)
 
   // Seed admin always has full access
-  if (user.email === 'qesto@example.com') {
+  if (c.env.SEED_ADMIN_EMAIL && user.email === c.env.SEED_ADMIN_EMAIL) {
     c.set('userRoles', ['owner', 'admin', 'member', 'viewer'])
     c.set('canAccess', true)
     await next()

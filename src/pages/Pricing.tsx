@@ -1,74 +1,23 @@
 import { Heading, Body, Section, Card, Button, Badge } from '../ui/components'
 import MainLayout from '../layouts/MainLayout'
+import { PLANS, CHECKOUT_URL } from '../config/plans'
+
+const featureRows = [
+  { key: 'sessionsPerMonth', label: 'Sessions per month' },
+  { key: 'participantsPerSession', label: 'Participants per session' },
+  { key: 'resultsExport', label: 'Results export (CSV)' },
+  { key: 'semanticSearch', label: 'Semantic search' },
+  { key: 'consentMode', label: 'Consent voting' },
+  { key: 'rankingQuestions', label: 'Ranking questions' },
+  { key: 'customBranding', label: 'Custom branding' },
+  { key: 'insightsAI', label: 'AI Insights & analysis' },
+]
+
+function checkoutHref(planName: string) {
+  return `${CHECKOUT_URL}?plan=${planName.toLowerCase()}`
+}
 
 export default function Pricing() {
-  const plans = [
-    {
-      name: 'Free',
-      description: 'Get started with interactive sessions',
-      price: 0,
-      cta: 'Get Started',
-      ctaVariant: 'secondary' as const,
-      features: {
-        sessionsPerMonth: 5,
-        participantsPerSession: 50,
-        resultsExport: false,
-        semanticSearch: false,
-        insightsAI: false,
-        customBranding: false,
-        consentMode: false,
-        rankingQuestions: false,
-      },
-    },
-    {
-      name: 'Starter',
-      description: 'For growing teams and increased engagement',
-      price: 29,
-      cta: 'Start Free Trial',
-      ctaVariant: 'primary' as const,
-      badge: null,
-      features: {
-        sessionsPerMonth: 50,
-        participantsPerSession: 500,
-        resultsExport: true,
-        semanticSearch: true,
-        insightsAI: false,
-        customBranding: true,
-        consentMode: true,
-        rankingQuestions: true,
-      },
-    },
-    {
-      name: 'Team',
-      description: 'Full power — AI insights, unlimited scale',
-      price: 99,
-      cta: 'Start Free Trial',
-      ctaVariant: 'primary' as const,
-      badge: 'Most Popular',
-      features: {
-        sessionsPerMonth: 500,
-        participantsPerSession: 5000,
-        resultsExport: true,
-        semanticSearch: true,
-        insightsAI: true,
-        customBranding: true,
-        consentMode: true,
-        rankingQuestions: true,
-      },
-    },
-  ]
-
-  const featureRows = [
-    { key: 'sessionsPerMonth', label: 'Sessions per month' },
-    { key: 'participantsPerSession', label: 'Participants per session' },
-    { key: 'resultsExport', label: 'Results export (CSV)' },
-    { key: 'semanticSearch', label: 'Semantic search' },
-    { key: 'consentMode', label: 'Consent voting' },
-    { key: 'rankingQuestions', label: 'Ranking questions' },
-    { key: 'customBranding', label: 'Custom branding' },
-    { key: 'insightsAI', label: 'AI Insights & analysis' },
-  ]
-
   return (
     <MainLayout>
       <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-12 space-y-12">
@@ -87,7 +36,7 @@ export default function Pricing() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
-          {plans.map((plan) => (
+          {PLANS.map((plan) => (
             <Card
               key={plan.name}
               className={`flex flex-col relative ${
@@ -125,7 +74,7 @@ export default function Pricing() {
                     type="button"
                     className="w-full mb-space-6 inline-flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium btn-motion focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                     onClick={() => {
-                      window.location.href = `https://checkout.qesto.cc?plan=${plan.name.toLowerCase()}`
+                      window.location.href = checkoutHref(plan.name)
                     }}
                   >
                     {plan.cta}
@@ -135,10 +84,7 @@ export default function Pricing() {
                     variant={plan.ctaVariant}
                     className="w-full mb-space-6 btn-motion"
                     onClick={() => {
-                      window.location.href =
-                        plan.price === 0
-                          ? '/login'
-                          : `https://checkout.qesto.cc?plan=${plan.name.toLowerCase()}`
+                      window.location.href = plan.price === 0 ? '/login' : checkoutHref(plan.name)
                     }}
                   >
                     {plan.cta}
@@ -147,7 +93,7 @@ export default function Pricing() {
 
                 {/* Quick feature list */}
                 <div className="space-y-2 border-t border-pulse-200 pt-space-4">
-                  {plan.name === 'Free' ? (
+                  {plan.id === 'free' ? (
                     <>
                       <Body size="s">
                         <strong>{plan.features.sessionsPerMonth}</strong> sessions/month
@@ -201,7 +147,7 @@ export default function Pricing() {
                 {featureRows.map((row) => (
                   <tr key={row.key} className="hover:bg-pulse-50">
                     <td className="py-3 px-4 font-medium text-pulse-900">{row.label}</td>
-                    {plans.map((plan) => {
+                    {PLANS.map((plan) => {
                       const value = plan.features[row.key as keyof typeof plan.features]
                       return (
                         <td key={plan.name} className="text-center py-3 px-4">
@@ -276,7 +222,11 @@ export default function Pricing() {
               </Heading>
               <Body size="m">
                 Subscription payments are non-refundable. You can cancel your subscription at any time, and you
-                won't be charged after the current billing cycle. See our <a href="/terms" className="text-teal-600 hover:underline">Terms of Service</a> for details.
+                won't be charged after the current billing cycle. See our{' '}
+                <a href="/terms" className="text-teal-600 hover:underline">
+                  Terms of Service
+                </a>{' '}
+                for details.
               </Body>
             </Card>
           </div>
@@ -284,9 +234,7 @@ export default function Pricing() {
 
         {/* CTA Footer */}
         <div className="max-w-3xl mx-auto text-center pt-6 border-t border-pulse-200 space-y-4">
-          <Heading level="m">
-            Ready to get started?
-          </Heading>
+          <Heading level="m">Ready to get started?</Heading>
           <Body size="m" className="text-pulse-600">
             Join thousands of teams running interactive sessions with Qesto.
           </Body>
@@ -298,7 +246,10 @@ export default function Pricing() {
             Start Your Free Session
           </button>
           <Body size="s" className="text-pulse-500">
-            Have questions? <a href="mailto:sales@qesto.cc" className="text-teal-600 hover:underline">Contact our team</a>
+            Have questions?{' '}
+            <a href="mailto:sales@qesto.cc" className="text-teal-600 hover:underline">
+              Contact our team
+            </a>
           </Body>
         </div>
       </div>

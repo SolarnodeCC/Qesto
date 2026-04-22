@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-
-const SUPERUSER_EMAIL = 'oostelaar@hotmail.com'
 import { useAdminMetrics } from '../hooks/useAdminMetrics'
+
+const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import { Heading, Body, Caption, Button, Card, MetricCard, Section, SkeletonCard } from '../ui/components'
