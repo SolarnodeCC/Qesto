@@ -47,6 +47,13 @@ export default function Launchpad() {
   const [aiGenerating, setAiGenerating] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
 
+  // Inline add-question state
+  const [addingQuestion, setAddingQuestion] = useState(false)
+  const [addPrompt, setAddPrompt] = useState('')
+  const [addKind, setAddKind] = useState<Question['kind']>('poll')
+  const [addSaving, setAddSaving] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
+
   // Count-up timer — starts when started_at is available (LAUNCHPAD-02)
   useEffect(() => {
     const startedAt = data?.session.started_at ?? null
@@ -231,6 +238,25 @@ export default function Launchpad() {
       return
     }
     setAiTopic('')
+    await reload()
+  }
+
+  async function handleAddQuestion() {
+    if (!id || !addPrompt.trim() || addSaving) return
+    setAddSaving(true)
+    setAddError(null)
+    const res = await api<unknown>(`/api/sessions/${encodeURIComponent(id)}/questions`, {
+      method: 'POST',
+      body: { kind: addKind, prompt: addPrompt.trim() },
+    })
+    setAddSaving(false)
+    if (!res.ok) {
+      setAddError(t('edit_error'))
+      return
+    }
+    setAddPrompt('')
+    setAddKind('poll')
+    setAddingQuestion(false)
     await reload()
   }
 
@@ -608,6 +634,63 @@ export default function Launchpad() {
                     </li>
                   ))}
                 </ul>
+              )}
+
+              {/* Inline add-question form */}
+              {addingQuestion ? (
+                <div className="mt-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-teal-50/40 dark:bg-teal-900/10 p-3 space-y-3">
+                  <div className="space-y-1">
+                    <label htmlFor="add-prompt" className="text-caption text-pulse-500">{t('edit_prompt_label')}</label>
+                    <textarea
+                      id="add-prompt"
+                      value={addPrompt}
+                      onChange={(e) => setAddPrompt(e.target.value)}
+                      rows={2}
+                      autoFocus
+                      className="w-full rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label htmlFor="add-kind" className="text-caption text-pulse-500">{t('edit_kind_label')}</label>
+                    <select
+                      id="add-kind"
+                      value={addKind}
+                      onChange={(e) => setAddKind(e.target.value as Question['kind'])}
+                      className="rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    >
+                      <option value="poll">Poll</option>
+                      <option value="ranking">Ranking</option>
+                      <option value="open">Open</option>
+                    </select>
+                  </div>
+                  {addError && <p role="alert" className="text-sm text-red-600">{addError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void handleAddQuestion()}
+                      disabled={addSaving || addPrompt.trim().length === 0}
+                      className="px-3 py-1.5 rounded-md bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    >
+                      {addSaving ? '…' : t('save_question')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAddingQuestion(false); setAddPrompt(''); setAddError(null) }}
+                      disabled={addSaving}
+                      className="px-3 py-1.5 rounded-md border border-pulse-300 dark:border-pulse-600 text-sm text-pulse-700 dark:text-pulse-300 hover:bg-pulse-50 dark:hover:bg-pulse-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    >
+                      {t('cancel_edit')}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAddingQuestion(true)}
+                  className="mt-3 text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                >
+                  {t('add_question_inline')}
+                </button>
               )}
             </section>
           </div>

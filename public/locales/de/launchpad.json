@@ -41,5 +41,6 @@
   "ai_generate_heading": "Fragen mit KI generieren",
   "ai_generate_button": "Fragen generieren",
   "ai_generating": "Generierung…",
-  "ai_topic_placeholder": "Thema oder Ziel (Standard: \"{{title}}\")"
+  "ai_topic_placeholder": "Thema oder Ziel (Standard: \"{{title}}\")",
+  "add_question_inline": "+ Frage hinzufügen"
 }

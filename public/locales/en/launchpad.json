@@ -41,5 +41,6 @@
   "ai_generate_heading": "Generate questions with AI",
   "ai_generate_button": "Generate questions",
   "ai_generating": "Generating…",
-  "ai_topic_placeholder": "Topic or goal (default: \"{{title}}\")"
+  "ai_topic_placeholder": "Topic or goal (default: \"{{title}}\")",
+  "add_question_inline": "+ Add question"
 }

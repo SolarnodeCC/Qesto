@@ -25,6 +25,7 @@ import {
   GenerateQuestionsSchema,
   PatchSessionSchema,
   ReorderQuestionsSchema,
+  AddQuestionSchema,
   type PollQuestionInput,
 } from '../lib/validation'
 import {
@@ -761,6 +762,57 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       }
       throw err
     }
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // LAUNCHPAD-02: POST /api/sessions/:id/questions
+  // Appends a new question to a DRAFT session without replacing existing ones.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.post('/:id/questions', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        { ok: false, error: { code: 'conflict', message: 'Only DRAFT sessions can be edited via REST' }, trace_id: c.get('trace_id') },
+        409,
+      )
+    }
+
+    const body = await c.req.json().catch(() => null)
+    const parsed = AddQuestionSchema.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'Invalid question payload', details: parsed.error.flatten() }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+
+    const existing = await fetchQuestions(c.env.DB, id)
+    const nextPosition = existing.length
+    const qid = ulid()
+    const now = Date.now()
+    const rawOptions = parsed.data.options ?? []
+    const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
+    const optionsJson = JSON.stringify(options)
+
+    await c.env.DB
+      .prepare(
+        `INSERT INTO questions (id, session_id, position, kind, prompt, options_json, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
+      )
+      .bind(qid, id, nextPosition, parsed.data.kind, parsed.data.prompt, optionsJson, now)
+      .run()
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') }, 201)
   })
 
   // ──────────────────────────────────────────────────────────────────────────

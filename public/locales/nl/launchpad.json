@@ -41,5 +41,6 @@
   "ai_generate_heading": "Vragen genereren met AI",
   "ai_generate_button": "Vragen genereren",
   "ai_generating": "Genereren…",
-  "ai_topic_placeholder": "Onderwerp of doel (standaard: \"{{title}}\")"
+  "ai_topic_placeholder": "Onderwerp of doel (standaard: \"{{title}}\")",
+  "add_question_inline": "+ Vraag toevoegen"
 }
