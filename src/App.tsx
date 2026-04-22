@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, lazy, Suspense } from 'react'
 import { AuthProvider } from './hooks/useAuth'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -12,6 +12,10 @@ import JoinPage from './pages/JoinPage'
 import Results from './pages/Results'
 import NotFound from './pages/NotFound'
 import ResetPassword from './pages/ResetPassword'
+
+const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
+const Pricing = lazy(() => import('./pages/Pricing'))
 
 function RouteAnnouncer() {
   const location = useLocation()
@@ -38,6 +42,9 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/privacy" element={<Suspense fallback={<div>Loading...</div>}><Privacy /></Suspense>} />
+        <Route path="/terms" element={<Suspense fallback={<div>Loading...</div>}><Terms /></Suspense>} />
+        <Route path="/pricing" element={<Suspense fallback={<div>Loading...</div>}><Pricing /></Suspense>} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />

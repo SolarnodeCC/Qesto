@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
 
 interface MainLayoutProps {
@@ -76,20 +77,28 @@ export default function MainLayout({
             <nav aria-label="Footer navigation">
               <ul className="flex items-center gap-4">
                 <li>
-                  <a
-                    href="https://qesto.io/privacy"
+                  <Link
+                    to="/privacy"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
                     Privacy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="https://qesto.io/terms"
+                  <Link
+                    to="/terms"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
                     Terms
-                  </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/pricing"
+                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                  >
+                    Pricing
+                  </Link>
                 </li>
               </ul>
             </nav>
