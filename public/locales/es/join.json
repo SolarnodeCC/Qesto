@@ -1,0 +1,12 @@
+{
+  "heading": "[TODO] Join a session",
+  "subtitle": "[TODO] Enter the code shown by the presenter",
+  "codeLabel": "[TODO] Session code",
+  "codePlaceholder": "[TODO] XXXX",
+  "codeInvalid": "[TODO] Please enter a 4-digit code",
+  "codeNotFound": "[TODO] Session not found. Check the code and try again.",
+  "joinButton": "[TODO] Join",
+  "joining": "[TODO] Joining…",
+  "back": "[TODO] Back home",
+  "error": "[TODO] Failed to join session. Please try again."
+}

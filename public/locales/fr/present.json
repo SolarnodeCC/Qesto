@@ -1,0 +1,16 @@
+{
+  "loading": "[TODO] Loading…",
+  "sessionNotFound": "[TODO] Session not found",
+  "sessionClosed": "[TODO] This session is closed",
+  "currentQuestion": "[TODO] Question {count}",
+  "of": "[TODO] of {total}",
+  "responses": "[TODO] {count} responses",
+  "nextQuestion": "[TODO] Next question",
+  "previousQuestion": "[TODO] Previous question",
+  "closeSession": "[TODO] Close session",
+  "endPresentation": "[TODO] End presentation",
+  "closing": "[TODO] Closing…",
+  "back": "[TODO] Back to dashboard",
+  "liveParticipants": "[TODO] Live participants",
+  "resultsReady": "[TODO] Results ready"
+}

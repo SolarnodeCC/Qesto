@@ -41,6 +41,10 @@ CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf
 CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
 # CI overrides COMMIT_SHA at deploy time with the actual git SHA.
 COMMIT_SHA = "dev"
+# SAML Service Provider configuration (non-secret; the IdP's certificate is
+# per-team and stored in TEAMS_KV, not here). See functions/api/lib/saml.ts.
+SAML_SP_ENTITY_ID = "https://app.qesto.io"
+SAML_ACS_URL = "https://qesto-api.oostelaar.workers.dev/api/auth/saml/callback"
 
 [[d1_databases]]
 binding = "DB"

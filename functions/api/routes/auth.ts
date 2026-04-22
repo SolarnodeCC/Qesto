@@ -18,6 +18,14 @@ import {
   generateOAuthState,
   consumeOAuthState,
 } from '../lib/oauth'
+import {
+  buildAuthnRequest,
+  buildSpMetadata,
+  consumeSamlState,
+  generateSamlState,
+  parseAssertion,
+} from '../lib/saml'
+import { attachUserToTeam, loadTeam } from './teams'
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000        // 15 min
 const JWT_TTL_SECONDS = 14 * 24 * 60 * 60       // 14 days
@@ -483,6 +491,106 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
     const userId = await upsertOAuthUser(c.env.DB, c.env.USERS_KV, 'microsoft', providerUser.sub, providerUser.email)
     const jwt = await signJwt({ sub: userId, email: providerUser.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
+    setCookie(c, SESSION_COOKIE, jwt, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      path: '/',
+      maxAge: JWT_TTL_SECONDS,
+    })
+    return c.redirect(`${c.env.PAGES_URL}/`, 302)
+  })
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SAML SSO ROUTES
+  // Service Provider-initiated login against a team's configured IdP.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // GET /api/auth/saml/metadata — SP metadata XML for upload to IdPs.
+  app.get('/saml/metadata', (c) => {
+    const entityId = c.env.SAML_SP_ENTITY_ID ?? `${c.env.API_URL}`
+    const acsUrl = c.env.SAML_ACS_URL ?? `${c.env.API_URL}/api/auth/saml/callback`
+    const xml = buildSpMetadata(entityId, acsUrl)
+    return new Response(xml, {
+      status: 200,
+      headers: {
+        'content-type': 'application/samlmetadata+xml; charset=utf-8',
+        'x-trace-id': c.get('trace_id'),
+      },
+    })
+  })
+
+  // GET /api/auth/saml/init?team_id=... — redirect to IdP with AuthnRequest.
+  app.get('/saml/init', async (c) => {
+    const teamId = c.req.query('team_id')
+    if (!teamId) {
+      return c.redirect(`${c.env.PAGES_URL}/login?error=saml_team_required`, 302)
+    }
+    const team = await loadTeam(c.env.TEAMS_KV, teamId)
+    if (!team || !team.samlConfig) {
+      return c.redirect(`${c.env.PAGES_URL}/login?error=saml_not_configured`, 302)
+    }
+
+    const entityId = c.env.SAML_SP_ENTITY_ID ?? `${c.env.API_URL}`
+    const acsUrl = c.env.SAML_ACS_URL ?? `${c.env.API_URL}/api/auth/saml/callback`
+    const idpSsoUrl = team.samlConfig.idpSsoUrl
+
+    // Store state token in ACTIONS_KV (5 min TTL, single-use) so the callback
+    // can look up which team the response belongs to.
+    const relayState = await generateSamlState(c.env.ACTIONS_KV, teamId, idpSsoUrl)
+    const samlRequest = buildAuthnRequest(entityId, acsUrl, idpSsoUrl)
+
+    const sep = idpSsoUrl.includes('?') ? '&' : '?'
+    const redirect = `${idpSsoUrl}${sep}SAMLRequest=${samlRequest}&RelayState=${encodeURIComponent(relayState)}`
+    return c.redirect(redirect, 302)
+  })
+
+  // POST /api/auth/saml/callback — parse assertion, upsert user, issue JWT.
+  app.post('/saml/callback', async (c) => {
+    const form = await c.req.formData().catch(() => null)
+    if (!form) return c.redirect(`${c.env.PAGES_URL}/login?error=saml_failed`, 302)
+
+    const samlResponse = form.get('SAMLResponse')
+    const relayState = form.get('RelayState')
+    if (typeof samlResponse !== 'string' || typeof relayState !== 'string') {
+      return c.redirect(`${c.env.PAGES_URL}/login?error=saml_failed`, 302)
+    }
+
+    const state = await consumeSamlState(c.env.ACTIONS_KV, relayState)
+    if (!state) return c.redirect(`${c.env.PAGES_URL}/login?error=saml_replay`, 302)
+
+    const expectedAudience = c.env.SAML_SP_ENTITY_ID ?? `${c.env.API_URL}`
+    let assertion: { email: string; nameId: string }
+    try {
+      assertion = parseAssertion(samlResponse, expectedAudience)
+    } catch (err) {
+      console.error(`[auth:saml] assertion parse failed: ${(err as Error).message}`)
+      return c.redirect(`${c.env.PAGES_URL}/login?error=saml_invalid`, 302)
+    }
+
+    const email = assertion.email
+    const now = Date.now()
+
+    // Upsert user in D1 (same pattern as magic-link / OAuth callback).
+    const existing = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
+      .bind(email)
+      .first<{ id: string }>()
+    let userId: string
+    if (existing) {
+      userId = existing.id
+      await c.env.DB.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, userId).run()
+    } else {
+      userId = ulid()
+      await c.env.DB
+        .prepare(`INSERT INTO users (id, email, created_at, last_login_at, plan) VALUES (?1, ?2, ?3, ?3, 'team')`)
+        .bind(userId, email, now)
+        .run()
+    }
+
+    // Attach to the team that initiated the SAML flow.
+    await attachUserToTeam(c.env.TEAMS_KV, c.env.DB, state.teamId, userId, email, 'member')
+
+    const jwt = await signJwt({ sub: userId, email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
     setCookie(c, SESSION_COOKIE, jwt, {
       httpOnly: true,
       secure: true,
