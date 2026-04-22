@@ -47,7 +47,7 @@ export default function Launchpad() {
   if (auth.status === 'loading') {
     return (
       <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
-        Loading…
+        {t('loading')}
       </MainLayout>
     )
   }
@@ -65,10 +65,10 @@ export default function Launchpad() {
     return (
       <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
         <p role="alert" className="text-red-600">
-          {error?.message ?? 'Session not found'}
+          {error?.message ?? t('session_not_found')}
         </p>
         <Link to="/dashboard" className="text-teal-600 hover:underline">
-          ← Back to dashboard
+          {t('back_link')}
         </Link>
       </MainLayout>
     )
@@ -78,10 +78,10 @@ export default function Launchpad() {
     return (
       <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
         <p role="alert" className="text-sm text-amber-600">
-          Session is already {data.session.status}. Return to dashboard.
+          {t('session_already', { status: data.session.status })}
         </p>
         <Link to="/dashboard" className="text-teal-600 hover:underline">
-          ← Back to dashboard
+          {t('back_link')}
         </Link>
       </MainLayout>
     )
@@ -98,18 +98,18 @@ export default function Launchpad() {
   const preFlightItems: PreFlightItem[] = [
     {
       key: 'title',
-      label: 'Session title',
+      label: t('preflight_title'),
       valid: hasTitle,
     },
     {
       key: 'question',
-      label: 'At least one question',
+      label: t('preflight_question'),
       valid: data.questions.length > 0,
     },
     {
       key: 'consent',
-      label: 'AI consent acknowledged',
-      valid: true, // can be made optional or from session state
+      label: t('preflight_consent'),
+      valid: true,
     },
   ]
 
@@ -157,10 +157,8 @@ export default function Launchpad() {
         // Cancelled by user
       }
     } else {
-      // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(url)
-        // Could show toast here
       } catch {
         // Fallback to showing the URL
       }
@@ -173,7 +171,7 @@ export default function Launchpad() {
       to="/dashboard"
       className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
     >
-      ← Dashboard
+      {t('back_to_dashboard')}
     </Link>
   )
 
@@ -192,7 +190,7 @@ export default function Launchpad() {
         className="rounded-lg border border-pulse-200 bg-pulse-50 p-space-5 space-y-space-4 shadow-card dark:bg-pulse-800 dark:border-pulse-700"
       >
         <h2 id="join-code-heading" className="text-caption font-medium text-pulse-500 uppercase tracking-wider dark:text-pulse-400">
-          Join code
+          {t('join_code_heading')}
         </h2>
 
         <div className="flex flex-col sm:flex-row items-center gap-space-5">
@@ -201,23 +199,21 @@ export default function Launchpad() {
             <div className="flex items-center gap-space-3">
               <code
                 className="text-5xl font-mono font-bold tracking-widest text-pulse-900 dark:text-pulse-50 select-all"
-                aria-label={`Join code: ${data.session.code}`}
+                aria-label={`${t('join_code_heading')}: ${data.session.code}`}
               >
                 {data.session.code}
               </code>
               <button
                 type="button"
                 onClick={handleCopyCode}
-                aria-label={codeCopied ? 'Copied!' : 'Copy join code to clipboard'}
+                aria-label={codeCopied ? t('join_code_copied_label') : t('join_code_copy_label')}
                 className="inline-flex items-center justify-center w-11 h-11 rounded-md border border-pulse-300 text-pulse-500 hover:border-teal-500 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors dark:border-pulse-600 dark:text-pulse-400 dark:hover:border-teal-500 dark:hover:text-teal-400"
               >
                 {codeCopied ? (
-                  /* Checkmark icon */
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-teal-600">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 ) : (
-                  /* Copy icon */
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" />
                     <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
@@ -227,22 +223,22 @@ export default function Launchpad() {
             </div>
             {codeCopied && (
               <p role="status" aria-live="polite" className="text-caption text-teal-600 dark:text-teal-400 font-medium">
-                Code copied to clipboard!
+                {t('join_code_copied_toast')}
               </p>
             )}
             <p className="text-body-s text-pulse-500">
-              Participants go to <strong>qesto.app/join</strong> and enter this code.
+              {t('join_hint')}
             </p>
 
             {/* Elapsed timer — visible once session is live (LAUNCHPAD-02) */}
             {data.session.started_at !== null && (
               <div className="flex flex-col gap-space-1 pt-space-2 border-t border-pulse-100">
-                <p className="text-caption text-pulse-500 uppercase tracking-wider">Session live for</p>
+                <p className="text-caption text-pulse-500 uppercase tracking-wider">{t('timer_label')}</p>
                 <p
                   className="font-mono text-2xl font-semibold text-teal-600"
                   aria-live="polite"
                   aria-atomic="true"
-                  aria-label={`Session live for ${formatElapsed(elapsed)}`}
+                  aria-label={`${t('timer_label')} ${formatElapsed(elapsed)}`}
                 >
                   {formatElapsed(elapsed)}
                 </p>
@@ -253,7 +249,7 @@ export default function Launchpad() {
           {/* QR code placeholder */}
           <div
             role="img"
-            aria-label="QR code placeholder — will link directly to this session"
+            aria-label={t('qr_aria_label')}
             className="flex-shrink-0 w-32 h-32 rounded-lg border-2 border-dashed border-pulse-300 dark:border-pulse-600 bg-pulse-100 dark:bg-pulse-700 flex flex-col items-center justify-center gap-space-1 text-pulse-400 dark:text-pulse-500"
           >
             <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -264,7 +260,7 @@ export default function Launchpad() {
               <path d="M14 18h3M18 14v3" />
               <path d="M5 5h3v3H5zM16 5h3v3h-3zM5 16h3v3H5z" />
             </svg>
-            <span className="text-caption text-center leading-tight px-space-2">QR Code</span>
+            <span className="text-caption text-center leading-tight px-space-2">{t('qr_label')}</span>
           </div>
         </div>
       </section>
@@ -272,7 +268,9 @@ export default function Launchpad() {
       {/* Questions preview */}
       {data.questions.length > 0 && (
         <section className="space-y-space-3">
-          <h2 className="text-heading-s font-semibold dark:text-pulse-100">Questions ({data.questions.length})</h2>
+          <h2 className="text-heading-s font-semibold dark:text-pulse-100">
+            {t('questions_count', { count: data.questions.length })}
+          </h2>
           <ul className="space-y-space-2">
             {data.questions.map((q) => (
               <li
@@ -315,7 +313,6 @@ export default function Launchpad() {
 
       {/* Action buttons */}
       <div className="space-y-space-3">
-        {/* Prominent Go Live button */}
         <button
           type="button"
           onClick={handleStart}
@@ -328,27 +325,25 @@ export default function Launchpad() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Starting…
+              {t('starting')}
             </>
           ) : (
             <>
-              {/* Play icon */}
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7L8 5z" />
               </svg>
-              Go Live
+              {t('start_button')}
             </>
           )}
         </button>
 
-        {/* Secondary share action */}
         <button
           type="button"
           onClick={handleShare}
           disabled={sharing}
           className="w-full inline-flex items-center justify-center rounded-md border border-pulse-300 dark:border-pulse-600 text-pulse-700 dark:text-pulse-300 hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 px-space-4 py-space-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
         >
-          {sharing ? 'Sharing…' : t('share_button')}
+          {sharing ? t('sharing') : t('share_button')}
         </button>
       </div>
 
