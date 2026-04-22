@@ -51,6 +51,7 @@ export interface FeaturePageProps {
     secondaryCta?: { label: string; href: string }
     imageUrl?: string
     imageAlt?: string
+    gallery?: Array<{ src: string; alt: string }>
   }
   howItWorks: {
     heading: string
@@ -151,16 +152,34 @@ export default function FeaturePageTemplate({
             </div>
 
             {hasHeroImage && (
-              <div className="rounded-xl overflow-hidden shadow-elevated">
-                <img
-                  src={hero.imageUrl}
-                  alt={hero.imageAlt}
-                  className="w-full h-64 lg:h-80 object-cover"
-                  loading="eager"
-                  fetchPriority="high"
-                  width="640"
-                  height="320"
-                />
+              <div className="space-y-4">
+                <div className="rounded-xl overflow-hidden shadow-elevated ring-1 ring-teal-100">
+                  <img
+                    src={hero.imageUrl}
+                    alt={hero.imageAlt}
+                    className="w-full h-64 lg:h-80 object-cover"
+                    loading="eager"
+                    fetchPriority="high"
+                    width="640"
+                    height="320"
+                  />
+                </div>
+                {hero.gallery && hero.gallery.length > 0 && (
+                  <ul className="grid grid-cols-2 gap-3" role="list">
+                    {hero.gallery.slice(0, 2).map((image) => (
+                      <li key={image.src} className="rounded-lg overflow-hidden ring-1 ring-pulse-200 shadow-card">
+                        <img
+                          src={image.src}
+                          alt={image.alt}
+                          className="w-full h-24 object-cover"
+                          loading="lazy"
+                          width="320"
+                          height="96"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             )}
           </div>

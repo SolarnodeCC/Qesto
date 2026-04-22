@@ -11,6 +11,7 @@ export default function PrivacyFeaturePage() {
         title={t('features.privacy.seo.title')}
         description={t('features.privacy.seo.description')}
         canonicalPath="/features/privacy"
+        ogImage="/images/solutions/photo-1543269865-cbf427effbad.avif"
       />
       <FeaturePageTemplate
         hero={{
@@ -19,6 +20,12 @@ export default function PrivacyFeaturePage() {
           subheadline: t('features.privacy.subheadline'),
           primaryCta: { label: t('cta.talkToSales'), href: '/pricing' },
           secondaryCta: { label: t('features.privacy.hero.secondaryCta'), href: '/privacy' },
+          imageUrl: '/images/solutions/photo-1543269865-cbf427effbad.avif',
+          imageAlt: 'People collaborating with privacy-first feedback controls',
+          gallery: [
+            { src: '/images/solutions/photo-1681949103006-70066fb25dfe.avif', alt: 'Community discussion with anonymous participation' },
+            { src: '/images/solutions/photo-1551434678-e076c223a692.avif', alt: 'HR team reviewing secure engagement results' },
+          ],
       }}
       howItWorks={{
         heading: t('features.privacy.howItWorks.heading'),

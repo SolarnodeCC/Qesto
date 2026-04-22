@@ -22,6 +22,10 @@ export default function ConsultingPage() {
           secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
           imageUrl: '/images/solutions/photo-1552664730-d307ca884978.avif',
           imageAlt: t('consulting.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Consultants facilitating strategic prioritization' },
+            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Stakeholders in a design sprint workshop' },
+          ],
       }}
       painPoints={{
           heading: t('consulting.painPoints.heading'),
