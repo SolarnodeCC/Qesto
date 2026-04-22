@@ -71,10 +71,10 @@ export default function Pricing() {
 
   return (
     <MainLayout>
-      <div className="grid-container px-4 md:px-6 py-12">
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-12 space-y-12">
         {/* Header */}
-        <div className="max-w-3xl mx-auto text-center mb-space-12">
-          <Heading level="l" className="mb-space-4">
+        <div className="max-w-3xl mx-auto text-center space-y-4">
+          <Heading level="l">
             Simple, Transparent Pricing
           </Heading>
           <Body size="l" className="text-pulse-600">
@@ -83,7 +83,7 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-space-6 max-w-6xl mx-auto mb-space-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
           {plans.map((plan) => (
             <Card
               key={plan.name}
@@ -168,8 +168,8 @@ export default function Pricing() {
         </div>
 
         {/* Feature Comparison Table */}
-        <Section className="max-w-6xl mx-auto">
-          <Heading level="m" className="text-center mb-space-6">
+        <Section className="space-y-6">
+          <Heading level="m" className="text-center">
             Detailed Feature Comparison
           </Heading>
 
@@ -211,12 +211,12 @@ export default function Pricing() {
         </Section>
 
         {/* FAQ Section */}
-        <Section className="max-w-3xl mx-auto mt-space-12">
-          <Heading level="m" className="text-center mb-space-6">
+        <Section className="max-w-3xl mx-auto space-y-6">
+          <Heading level="m" className="text-center">
             Frequently Asked Questions
           </Heading>
 
-          <div className="space-y-space-6">
+          <div className="space-y-6">
             <Card>
               <Heading level="s" className="mb-space-2">
                 Can I upgrade or downgrade my plan?
@@ -279,17 +279,17 @@ export default function Pricing() {
         </Section>
 
         {/* CTA Footer */}
-        <div className="max-w-3xl mx-auto text-center mt-space-12 pt-space-6 border-t border-pulse-200">
-          <Heading level="m" className="mb-space-4">
+        <div className="max-w-3xl mx-auto text-center pt-6 border-t border-pulse-200 space-y-4">
+          <Heading level="m">
             Ready to get started?
           </Heading>
-          <Body size="m" className="mb-space-6 text-pulse-600">
+          <Body size="m" className="text-pulse-600">
             Join thousands of teams running interactive sessions with Qesto.
           </Body>
           <Button variant="primary" onClick={() => (window.location.href = '/login')}>
             Start Your Free Session
           </Button>
-          <Body size="s" className="mt-space-4 text-pulse-500">
+          <Body size="s" className="text-pulse-500">
             Have questions? <a href="mailto:sales@qesto.cc" className="text-teal-600 hover:underline">Contact our team</a>
           </Body>
         </div>

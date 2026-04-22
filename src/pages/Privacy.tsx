@@ -4,21 +4,21 @@ import MainLayout from '../layouts/MainLayout'
 export default function Privacy() {
   return (
     <MainLayout>
-      <div className="grid-container max-w-4xl px-4 md:px-6 py-12">
-        <Heading level="l" className="mb-space-6">
+      <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-8">
+        <Heading level="l">
           Privacy Policy
         </Heading>
 
-        <Body size="m" className="mb-space-8 text-pulse-600">
+        <Body size="m" className="text-pulse-600">
           Effective date: April 1, 2024. Qesto is committed to protecting your privacy while enabling
           collaborative, real-time interactive sessions.
         </Body>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             1. Information We Collect
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             When you create an account or run a session, we collect:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -39,11 +39,11 @@ export default function Privacy() {
           </ul>
         </Section>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             2. How We Use Your Data
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             We use collected data to:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -57,7 +57,7 @@ export default function Privacy() {
           </ul>
         </Section>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             3. Data Retention
           </Heading>
@@ -82,11 +82,11 @@ export default function Privacy() {
           </Card>
         </Section>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             4. Your Rights
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             Under GDPR (EU), CCPA (California), and other privacy laws, you have the right to:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -112,11 +112,11 @@ export default function Privacy() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             5. Third-Party Integrations
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             We use the following third parties on your behalf:
           </Body>
           <Card className="mt-space-4">
@@ -156,11 +156,11 @@ export default function Privacy() {
           </Card>
         </Section>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             6. Security
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             We implement industry-standard security practices:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -184,7 +184,7 @@ export default function Privacy() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             7. Cookies & Tracking
           </Heading>
@@ -194,7 +194,7 @@ export default function Privacy() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             8. Contact & Questions
           </Heading>

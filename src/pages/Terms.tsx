@@ -4,17 +4,17 @@ import MainLayout from '../layouts/MainLayout'
 export default function Terms() {
   return (
     <MainLayout>
-      <div className="grid-container max-w-4xl px-4 md:px-6 py-12">
-        <Heading level="l" className="mb-space-6">
+      <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-8">
+        <Heading level="l">
           Terms of Service
         </Heading>
 
-        <Body size="m" className="mb-space-8 text-pulse-600">
+        <Body size="m" className="text-pulse-600">
           Effective date: April 1, 2024. By using Qesto, you agree to these Terms of Service. Please read them
           carefully.
         </Body>
 
-        <Section className="mb-space-8">
+        <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">
             1. Acceptance of Terms
           </Heading>
@@ -25,11 +25,11 @@ export default function Terms() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             2. Service Description
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             Qesto is a real-time interactive session platform that enables teams to create, host, and analyze
             collaborative sessions (polls, rankings, consent votes, open questions) with live participant
             engagement and AI-powered post-session insights.
@@ -40,11 +40,11 @@ export default function Terms() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             3. User Eligibility
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             By using Qesto, you confirm that you:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -55,11 +55,11 @@ export default function Terms() {
           </ul>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             4. User Responsibilities
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             You are responsible for:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -79,11 +79,11 @@ export default function Terms() {
           </ul>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             5. Intellectual Property
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             <strong>Qesto intellectual property:</strong> We retain ownership of all Qesto trademarks, code,
             designs, and documentation. You may not reverse-engineer, copy, or modify Qesto without permission.
           </Body>
@@ -94,11 +94,11 @@ export default function Terms() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             6. Plan Quotas & Feature Gating
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             Access to features and quotas depends on your plan tier:
           </Body>
           <Card className="mt-space-4">
@@ -135,11 +135,11 @@ export default function Terms() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             7. Prohibited Uses
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             You may not use Qesto to:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -155,11 +155,11 @@ export default function Terms() {
           </ul>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             8. Content Moderation & Termination
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             We reserve the right to:
           </Body>
           <ul className="list-disc list-inside space-y-2 ml-4">
@@ -173,8 +173,8 @@ export default function Terms() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             9. Refund Policy
           </Heading>
           <Body size="m">
@@ -188,8 +188,8 @@ export default function Terms() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             10. Limitation of Liability
           </Heading>
           <Card className="mt-space-4 border-amber-200 bg-amber-50">
@@ -217,8 +217,8 @@ export default function Terms() {
           </Card>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             11. Indemnification
           </Heading>
           <Body size="m">
@@ -234,8 +234,8 @@ export default function Terms() {
           </ul>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             12. Governing Law & Jurisdiction
           </Heading>
           <Body size="m">
@@ -245,11 +245,11 @@ export default function Terms() {
           </Body>
         </Section>
 
-        <Section className="mb-space-8">
-          <Heading level="m" className="mb-space-4">
+        <Section className="space-y-4">
+          <Heading level="m">
             13. Contact & Changes
           </Heading>
-          <Body size="m" className="mb-space-4">
+          <Body size="m">
             For questions about these Terms, contact <strong>support@qesto.cc</strong>.
           </Body>
           <Body size="m">
