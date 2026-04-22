@@ -12,6 +12,8 @@ import JoinPage from './pages/JoinPage'
 import Results from './pages/Results'
 import NotFound from './pages/NotFound'
 import ResetPassword from './pages/ResetPassword'
+import TeamSettings from './pages/TeamSettings'
+import TeamInvite from './pages/TeamInvite'
 
 function RouteAnnouncer() {
   const location = useLocation()
@@ -45,6 +47,9 @@ export default function App() {
         <Route path="/sessions/:id/present" element={<Present />} />
         <Route path="/sessions/:id/results" element={<Results />} />
         <Route path="/j/:code" element={<JoinPage />} />
+        <Route path="/teams/:id/settings" element={<TeamSettings />} />
+        <Route path="/teams/invite/:token" element={<TeamInvite />} />
+        <Route path="/teams/accept" element={<TeamInvite />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>

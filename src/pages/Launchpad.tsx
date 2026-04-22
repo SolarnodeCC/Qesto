@@ -271,17 +271,17 @@ export default function Launchpad() {
 
       {/* Questions preview */}
       {data.questions.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Questions ({data.questions.length})</h2>
-          <ul className="space-y-2">
+        <section className="space-y-space-3">
+          <h2 className="text-heading-s font-semibold dark:text-pulse-100">Questions ({data.questions.length})</h2>
+          <ul className="space-y-space-2">
             {data.questions.map((q) => (
               <li
                 key={q.id}
-                className="rounded-lg border border-pulse-200 p-3 flex items-center justify-between gap-3"
+                className="rounded-md border border-pulse-200 dark:border-pulse-700 dark:bg-pulse-800 p-space-3 flex items-center justify-between gap-space-3"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-pulse-900 truncate">{q.prompt}</p>
-                  <p className="text-xs text-pulse-500 mt-0.5">{q.kind}</p>
+                  <p className="text-body-s font-medium text-pulse-900 dark:text-pulse-100 truncate">{q.prompt}</p>
+                  <p className="text-caption text-pulse-500 dark:text-pulse-400 mt-0.5">{q.kind}</p>
                 </div>
               </li>
             ))}
@@ -290,22 +290,22 @@ export default function Launchpad() {
       )}
 
       {/* Pre-flight checklist */}
-      <section className="rounded-xl border border-pulse-200 p-5 space-y-3">
-        <h2 className="font-semibold">{t('checklist_title')}</h2>
-        <ul className="space-y-2">
+      <section className="rounded-lg border border-pulse-200 dark:border-pulse-700 dark:bg-pulse-800 p-space-4 space-y-space-3 shadow-card">
+        <h2 className="font-semibold dark:text-pulse-100">{t('checklist_title')}</h2>
+        <ul className="space-y-space-2">
           {preFlightItems.map((item) => (
-            <li key={item.key} className="flex items-center gap-3">
+            <li key={item.key} className="flex items-center gap-space-3">
               <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                className={`w-5 h-5 rounded-pill border-2 flex items-center justify-center flex-shrink-0 ${
                   item.valid
-                    ? 'bg-teal-100 border-teal-500'
-                    : 'bg-red-50 border-red-300'
+                    ? 'bg-teal-100 border-teal-500 dark:bg-teal-900/40 dark:border-teal-500'
+                    : 'bg-red-50 border-red-300 dark:bg-red-900/30 dark:border-red-500'
                 }`}
               >
-                {item.valid && <div className="w-2.5 h-2.5 bg-teal-600 rounded-full" />}
+                {item.valid && <div className="w-2.5 h-2.5 bg-teal-600 dark:bg-teal-400 rounded-pill" />}
                 {!item.valid && <div className="w-2 h-2.5 bg-red-400" />}
               </div>
-              <span className={item.valid ? 'text-pulse-900' : 'text-red-600'}>
+              <span className={item.valid ? 'text-pulse-900 dark:text-pulse-100' : 'text-red-600 dark:text-red-400'}>
                 {item.label}
               </span>
             </li>
@@ -314,13 +314,13 @@ export default function Launchpad() {
       </section>
 
       {/* Action buttons */}
-      <div className="space-y-3">
+      <div className="space-y-space-3">
         {/* Prominent Go Live button */}
         <button
           type="button"
           onClick={handleStart}
           disabled={!allValid || starting}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3.5 text-base font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-md transition-all"
+          className="w-full inline-flex items-center justify-center gap-space-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-space-5 py-space-3 text-body-m font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
         >
           {starting ? (
             <>
@@ -346,7 +346,7 @@ export default function Launchpad() {
           type="button"
           onClick={handleShare}
           disabled={sharing}
-          className="w-full inline-flex items-center justify-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2.5 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+          className="w-full inline-flex items-center justify-center rounded-md border border-pulse-300 dark:border-pulse-600 text-pulse-700 dark:text-pulse-300 hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 px-space-4 py-space-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
         >
           {sharing ? 'Sharing…' : t('share_button')}
         </button>
