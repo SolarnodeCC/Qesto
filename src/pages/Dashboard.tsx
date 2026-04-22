@@ -48,6 +48,8 @@ export default function Dashboard() {
   const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions)
   const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'live'>('all')
   const [templates, setTemplates] = useState<Template[]>([])
   const [templatesLoading, setTemplatesLoading] = useState(true)
   const [modal, setModal] = useState<TemplateModalState>({ open: false, template: null })
@@ -242,7 +244,6 @@ export default function Dashboard() {
                 <DensitySwitcher density={density} onChange={setDensity} />
               </div>
               {state.status === 'loading' ? (
-                /* LAYOUT-SKELETON-01: replace text placeholder with geometric skeleton */
                 <SessionListSkeleton rows={3} />
               ) : state.status === 'error' ? (
                 <p role="alert" className="text-sm text-red-600">
@@ -250,47 +251,94 @@ export default function Dashboard() {
                 </p>
               ) : state.sessions.length === 0 ? (
                 <p className="text-sm text-pulse-500">No sessions yet. Create your first one above.</p>
-              ) : (
-                <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
-                  {state.sessions.map((s, i) => (
-                    <li
-                      key={s.id}
-                      className={`animate-list-item flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}
-                      style={{ '--stagger-index': i } as React.CSSProperties}
-                    >
-                      <div>
-                        <Link
-                          to={
-                            s.status === 'live'
-                              ? `/sessions/${s.id}/present`
-                              : s.status === 'closed' || s.status === 'archived'
-                              ? `/sessions/${s.id}/results`
-                              : `/sessions/${s.id}`
-                          }
-                          className="font-medium text-pulse-800 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
-                        >
-                          {s.title}
-                        </Link>
-                        <p className="text-xs text-pulse-500">
-                          code {s.code} · {new Date(s.created_at).toLocaleString()}
-                        </p>
+              ) : (() => {
+                const q = search.trim().toLowerCase()
+                const filtered = state.sessions.filter((s) => {
+                  if (statusFilter !== 'all' && s.status !== statusFilter) return false
+                  if (!q) return true
+                  return (
+                    s.title.toLowerCase().includes(q) ||
+                    s.code.toLowerCase().includes(q) ||
+                    new Date(s.created_at).toLocaleString().toLowerCase().includes(q)
+                  )
+                })
+                return (
+                  <div className="space-y-2">
+                    {/* Search + filter bar */}
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pulse-400">
+                          <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+                        </svg>
+                        <input
+                          type="search"
+                          aria-label="Search sessions"
+                          placeholder="Search by title, code or date…"
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          className="w-full rounded-lg border border-pulse-200 bg-white py-2 pl-9 pr-3 text-sm text-pulse-800 placeholder:text-pulse-400 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+                        />
                       </div>
-                      <span
-                        className={
-                          'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
-                          (s.status === 'draft'
-                            ? 'bg-pulse-100 text-pulse-600'
-                            : s.status === 'live'
-                            ? 'bg-teal-100 text-teal-700'
-                            : 'bg-violet-100 text-violet-700')
-                        }
+                      <select
+                        aria-label="Filter by status"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as 'all' | 'draft' | 'live')}
+                        className="rounded-lg border border-pulse-200 bg-white px-3 py-2 text-sm text-pulse-800 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
                       >
-                        {s.status}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                        <option value="all">All statuses</option>
+                        <option value="draft">Draft</option>
+                        <option value="live">Live</option>
+                      </select>
+                    </div>
+                    <p className="text-xs text-pulse-400">
+                      {filtered.length} of {state.sessions.length} session{state.sessions.length !== 1 ? 's' : ''} visible
+                    </p>
+                    {filtered.length === 0 ? (
+                      <p className="text-sm text-pulse-500 py-4 text-center">No sessions match your search.</p>
+                    ) : (
+                      <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
+                        {filtered.map((s, i) => (
+                          <li
+                            key={s.id}
+                            className={`animate-list-item flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}
+                            style={{ '--stagger-index': i } as React.CSSProperties}
+                          >
+                            <div>
+                              <Link
+                                to={
+                                  s.status === 'live'
+                                    ? `/sessions/${s.id}/present`
+                                    : s.status === 'closed' || s.status === 'archived'
+                                    ? `/sessions/${s.id}/results`
+                                    : `/sessions/${s.id}`
+                                }
+                                className="font-medium text-pulse-800 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                              >
+                                {s.title}
+                              </Link>
+                              <p className="text-xs text-pulse-500">
+                                code {s.code} · {new Date(s.created_at).toLocaleString()}
+                              </p>
+                            </div>
+                            <span
+                              className={
+                                'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
+                                (s.status === 'draft'
+                                  ? 'bg-pulse-100 text-pulse-600'
+                                  : s.status === 'live'
+                                  ? 'bg-teal-100 text-teal-700'
+                                  : 'bg-violet-100 text-violet-700')
+                              }
+                            >
+                              {s.status}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })()}
             </section>
           </div>
         )}
