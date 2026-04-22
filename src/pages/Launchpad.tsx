@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import QRCode from 'react-qr-code'
 import { useAuth } from '../hooks/useAuth'
 import { useSession, type Question, type PollOption } from '../hooks/useSessions'
 import { useT } from '../i18n'
@@ -236,7 +237,7 @@ export default function Launchpad() {
   async function handleShare() {
     if (!data) return
     setSharing(true)
-    const url = `${window.location.origin}/join/${data.session.code}`
+    const url = `${window.location.origin}/j/${data.session.code}`
     if (navigator.share) {
       try {
         await navigator.share({
@@ -337,21 +338,16 @@ export default function Launchpad() {
             )}
           </div>
 
-          {/* QR code placeholder */}
+          {/* QR code — scan to join */}
           <div
-            role="img"
             aria-label={t('qr_aria_label')}
-            className="flex-shrink-0 w-32 h-32 rounded-lg border-2 border-dashed border-pulse-300 dark:border-pulse-600 bg-pulse-100 dark:bg-pulse-700 flex flex-col items-center justify-center gap-space-1 text-pulse-400 dark:text-pulse-500"
+            className="flex-shrink-0 rounded-lg border border-pulse-200 dark:border-pulse-600 bg-white dark:bg-white p-2 shadow-sm"
           >
-            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-              <rect x="14" y="14" width="3" height="3" />
-              <path d="M14 18h3M18 14v3" />
-              <path d="M5 5h3v3H5zM16 5h3v3h-3zM5 16h3v3H5z" />
-            </svg>
-            <span className="text-caption text-center leading-tight px-space-2">{t('qr_label')}</span>
+            <QRCode
+              value={`${window.location.origin}/j/${data.session.code}`}
+              size={120}
+              style={{ display: 'block' }}
+            />
           </div>
         </div>
       </section>

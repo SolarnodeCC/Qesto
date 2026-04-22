@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import QRCode from 'react-qr-code'
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { api } from '../api/client'
@@ -62,13 +63,24 @@ export default function Present() {
       </div>
 
       {state.session ? (
-        <header>
-          <p className="text-sm uppercase tracking-widest text-teal-600">Presenter</p>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{state.session.title}</h1>
-          <p className="text-sm text-pulse-500">
-            Join code <code className="font-mono">{state.session.code}</code> · {state.participants}{' '}
-            {state.participants === 1 ? 'participant' : 'participants'}
-          </p>
+        <header className="flex items-start gap-5">
+          <div className="flex-1 space-y-1">
+            <p className="text-sm uppercase tracking-widest text-teal-600">Presenter</p>
+            <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{state.session.title}</h1>
+            <p className="text-sm text-pulse-500">
+              Join code{' '}
+              <code className="font-mono font-bold text-pulse-900">{state.session.code}</code>
+              {' '}· {state.participants}{' '}
+              {state.participants === 1 ? 'participant' : 'participants'}
+            </p>
+          </div>
+          <div className="flex-shrink-0 rounded-lg border border-pulse-200 bg-white p-1.5 shadow-sm" aria-label="QR code to join session">
+            <QRCode
+              value={`${window.location.origin}/j/${state.session.code}`}
+              size={72}
+              style={{ display: 'block' }}
+            />
+          </div>
         </header>
       ) : (
         <p className="text-sm text-pulse-500">Connecting to live room…</p>

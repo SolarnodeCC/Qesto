@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
 import TeamSwitcher from '../components/TeamSwitcher'
+import JoinBar from '../components/JoinBar'
 
 const SOLUTION_LINKS = [
   { label: 'Business', href: '/business' },
@@ -89,12 +90,17 @@ interface MainLayoutProps {
  *
  * WCAG 1.3.6 Identify Purpose, 2.4.1 Bypass Blocks, 2.4.6 Headings and Labels
  */
+const HIDE_JOIN_BAR_PATTERNS = [/^\/j\//, /\/present$/, /\/present\//]
+
 export default function MainLayout({
   children,
   mainClassName = '',
   navSlot,
   noFooter = false,
 }: MainLayoutProps) {
+  const location = useLocation()
+  const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
+
   return (
     <>
       <SkipLink />
@@ -137,6 +143,8 @@ export default function MainLayout({
           </div>
         </div>
       </header>
+
+      {showJoinBar && <JoinBar />}
 
       <main
         id="main"
