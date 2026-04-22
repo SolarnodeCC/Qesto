@@ -4,6 +4,8 @@ import SkipLink from '../components/SkipLink'
 import TeamSwitcher from '../components/TeamSwitcher'
 import { useT } from '../i18n'
 import JoinBar from '../components/JoinBar'
+import { useAuth } from '../hooks/useAuth'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
 function NavDropdown({ label, links }: { label: string; links: Array<{ label: string; href: string }> }) {
   const location = useLocation()
@@ -98,6 +100,9 @@ export default function MainLayout({
   noFooter = false,
 }: MainLayoutProps) {
   const location = useLocation()
+  const auth = useAuth()
+  const isHome = location.pathname === '/'
+  const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 
   const t = useT('solutions')
@@ -144,17 +149,22 @@ export default function MainLayout({
           </Link>
 
           <div className="flex items-center gap-3">
-            <TeamSwitcher />
+            {showTeamSwitcher && <TeamSwitcher />}
             <nav aria-label="Site navigation" className="flex items-center gap-1">
-              <NavDropdown label={t('nav.solutions')} links={solutionLinks} />
-              <NavDropdown label={t('nav.features')} links={featureLinks} />
-              <NavDropdown label={t('nav.useCases')} links={useCaseLinks} />
-              <Link
-                to="/pricing"
-                className="text-sm font-medium text-pulse-600 hover:text-teal-600 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-              >
-                {t('footer.pricing')}
-              </Link>
+              {isHome && (
+                <>
+                  <NavDropdown label={t('nav.solutions')} links={solutionLinks} />
+                  <NavDropdown label={t('nav.features')} links={featureLinks} />
+                  <NavDropdown label={t('nav.useCases')} links={useCaseLinks} />
+                  <Link
+                    to="/pricing"
+                    className="text-sm font-medium text-pulse-600 hover:text-teal-600 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    {t('footer.pricing')}
+                  </Link>
+                </>
+              )}
+              <LanguageSwitcher />
               {navSlot}
             </nav>
           </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+
+const SUPERUSER_EMAIL = 'oostelaar@hotmail.com'
 import { useAdminMetrics } from '../hooks/useAdminMetrics'
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
@@ -22,6 +24,7 @@ export default function AdminDashboard() {
   }
 
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
+  if (auth.user?.email !== SUPERUSER_EMAIL) return <Navigate to="/dashboard" replace />
 
   const navSlot = (
     <div className="flex items-center gap-2">

@@ -4,13 +4,16 @@ import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useDensity, type Density } from '../hooks/useDensity'
 import { useInsights } from '../hooks/useInsights'
+import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
 import AINarrative from '../components/AINarrative'
 import SessionWizard from '../components/SessionWizard'
 
-type DashboardTab = 'sessions' | 'insights'
+const SUPERUSER_EMAIL = 'oostelaar@hotmail.com'
+
+type DashboardTab = 'sessions' | 'insights' | 'teams' | 'templates'
 
 interface Template {
   id: string
@@ -46,25 +49,28 @@ export default function Dashboard() {
   const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions)
   const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'live'>('all')
   const [templates, setTemplates] = useState<Template[]>([])
   const [templatesLoading, setTemplatesLoading] = useState(true)
   const [modal, setModal] = useState<TemplateModalState>({ open: false, template: null })
   const [creatingFromTemplate, setCreatingFromTemplate] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [teams, setTeams] = useState<Array<{ id: string; name: string; plan: string }>>([])
+  const [teamsLoading, setTeamsLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch templates
     fetch('/api/templates')
       .then((res) => res.json() as Promise<TemplateResponse>)
-      .then((data) => {
-        if (data.ok) {
-          setTemplates(data.data.templates)
-        }
-      })
-      .catch(() => {
-        // Silently fail — templates are optional
-      })
+      .then((data) => { if (data.ok) setTemplates(data.data.templates) })
+      .catch(() => {})
       .finally(() => setTemplatesLoading(false))
+  }, [])
+
+  useEffect(() => {
+    void api<{ teams: Array<{ id: string; name: string; plan: string }> }>('/api/teams')
+      .then((res) => { if (res.ok) setTeams(res.data.teams) })
+      .finally(() => setTeamsLoading(false))
   }, [])
 
   if (auth.status === 'loading') {
@@ -109,23 +115,46 @@ export default function Dashboard() {
     }
   }
 
+  const isSuperuser = auth.user.email === SUPERUSER_EMAIL
+
+  const activeTeamId = localStorage.getItem('activeTeamId')
+  const activePlan = (teams.find((t) => t.id === activeTeamId)?.plan ?? (teams[0]?.plan)) as string | undefined
+
   const navSlot = (
-    <button
-      type="button"
-      onClick={() => void auth.logout()}
-      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
-    >
-      Sign out
-    </button>
+    <div className="flex items-center gap-3">
+      {isSuperuser && (
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-1.5 text-sm font-medium text-violet-700 hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 min-h-[44px]"
+        >
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0">
+            <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+          </svg>
+          Admin panel
+        </Link>
+      )}
+      <button
+        type="button"
+        onClick={() => void auth.logout()}
+        className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+      >
+        Sign out
+      </button>
+    </div>
   )
 
   return (
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
       {/* animate-page-enter: entire content fades + slides up on mount (LAYOUT-MOTION-01) */}
       <div className="animate-page-enter space-y-8">
-        <div>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Your sessions</h1>
-          <p className="text-sm text-pulse-500">Signed in as {auth.user.email}.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">
+              Goedendag, {auth.user.email.split('@')[0]} 👋
+            </h1>
+            <p className="text-sm text-pulse-500">{auth.user.email}</p>
+          </div>
+          {activePlan && <PlanBadge plan={activePlan} />}
         </div>
 
         {/* Tab bar */}
@@ -134,40 +163,31 @@ export default function Dashboard() {
           aria-label="Dashboard sections"
           className="flex gap-1 border-b border-pulse-200 dark:border-pulse-700"
         >
-          <button
-            role="tab"
-            id="tab-sessions"
-            aria-controls="tabpanel-sessions"
-            aria-selected={activeTab === 'sessions'}
-            onClick={() => setActiveTab('sessions')}
-            className={[
-              'px-space-4 py-space-2 text-body-s font-medium rounded-t-md -mb-px border border-b-0',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
-              'tab-transition',
-              activeTab === 'sessions'
-                ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
-                : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
-            ].join(' ')}
-          >
-            Sessions
-          </button>
-          <button
-            role="tab"
-            id="tab-insights"
-            aria-controls="tabpanel-insights"
-            aria-selected={activeTab === 'insights'}
-            onClick={() => setActiveTab('insights')}
-            className={[
-              'px-space-4 py-space-2 text-body-s font-medium rounded-t-md -mb-px border border-b-0',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
-              'tab-transition',
-              activeTab === 'insights'
-                ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
-                : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
-            ].join(' ')}
-          >
-            Insights
-          </button>
+          {([
+            { id: 'sessions', label: 'Sessions' },
+            { id: 'insights', label: 'Insights' },
+            { id: 'teams',    label: 'Teams' },
+            { id: 'templates', label: 'Templates' },
+          ] as const).map(({ id, label }) => (
+            <button
+              key={id}
+              role="tab"
+              id={`tab-${id}`}
+              aria-controls={`tabpanel-${id}`}
+              aria-selected={activeTab === id}
+              onClick={() => setActiveTab(id)}
+              className={[
+                'px-5 py-3 text-sm font-medium rounded-t-md -mb-px border border-b-0 min-h-[44px]',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+                'tab-transition',
+                activeTab === id
+                  ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
+                  : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
+              ].join(' ')}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Sessions tab */}
@@ -190,42 +210,12 @@ export default function Dashboard() {
               + New session
             </button>
 
-            {/* Templates section */}
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Start from a template</h2>
-              {templatesLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-32 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
-                  ))}
-                </div>
-              ) : templates.length === 0 ? (
-                <p className="text-sm text-pulse-500">Templates loading…</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {templates.map((tmpl) => (
-                    <button
-                      key={tmpl.id}
-                      type="button"
-                      onClick={() => setModal({ open: true, template: tmpl })}
-                      className="text-left p-4 rounded-xl border border-pulse-200 hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
-                    >
-                      <h3 className="font-medium text-pulse-900">{tmpl.name}</h3>
-                      <p className="text-sm text-pulse-500 mt-1">{tmpl.description}</p>
-                      <p className="text-xs text-pulse-400 mt-2">{tmpl.questions.length} questions</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </section>
-
             <section className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold">Draft &amp; live</h2>
                 <DensitySwitcher density={density} onChange={setDensity} />
               </div>
               {state.status === 'loading' ? (
-                /* LAYOUT-SKELETON-01: replace text placeholder with geometric skeleton */
                 <SessionListSkeleton rows={3} />
               ) : state.status === 'error' ? (
                 <p role="alert" className="text-sm text-red-600">
@@ -233,47 +223,94 @@ export default function Dashboard() {
                 </p>
               ) : state.sessions.length === 0 ? (
                 <p className="text-sm text-pulse-500">No sessions yet. Create your first one above.</p>
-              ) : (
-                <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
-                  {state.sessions.map((s, i) => (
-                    <li
-                      key={s.id}
-                      className={`animate-list-item flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}
-                      style={{ '--stagger-index': i } as React.CSSProperties}
-                    >
-                      <div>
-                        <Link
-                          to={
-                            s.status === 'live'
-                              ? `/sessions/${s.id}/present`
-                              : s.status === 'closed' || s.status === 'archived'
-                              ? `/sessions/${s.id}/results`
-                              : `/sessions/${s.id}`
-                          }
-                          className="font-medium text-pulse-800 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
-                        >
-                          {s.title}
-                        </Link>
-                        <p className="text-xs text-pulse-500">
-                          code {s.code} · {new Date(s.created_at).toLocaleString()}
-                        </p>
+              ) : (() => {
+                const q = search.trim().toLowerCase()
+                const filtered = state.sessions.filter((s) => {
+                  if (statusFilter !== 'all' && s.status !== statusFilter) return false
+                  if (!q) return true
+                  return (
+                    s.title.toLowerCase().includes(q) ||
+                    s.code.toLowerCase().includes(q) ||
+                    new Date(s.created_at).toLocaleString().toLowerCase().includes(q)
+                  )
+                })
+                return (
+                  <div className="space-y-2">
+                    {/* Search + filter bar */}
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pulse-400">
+                          <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clipRule="evenodd" />
+                        </svg>
+                        <input
+                          type="search"
+                          aria-label="Search sessions"
+                          placeholder="Search by title, code or date…"
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          className="w-full rounded-lg border border-pulse-200 bg-white py-2 pl-9 pr-3 text-sm text-pulse-800 placeholder:text-pulse-400 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+                        />
                       </div>
-                      <span
-                        className={
-                          'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
-                          (s.status === 'draft'
-                            ? 'bg-pulse-100 text-pulse-600'
-                            : s.status === 'live'
-                            ? 'bg-teal-100 text-teal-700'
-                            : 'bg-violet-100 text-violet-700')
-                        }
+                      <select
+                        aria-label="Filter by status"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as 'all' | 'draft' | 'live')}
+                        className="rounded-lg border border-pulse-200 bg-white px-3 py-2 text-sm text-pulse-800 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
                       >
-                        {s.status}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                        <option value="all">All statuses</option>
+                        <option value="draft">Draft</option>
+                        <option value="live">Live</option>
+                      </select>
+                    </div>
+                    <p className="text-xs text-pulse-400">
+                      {filtered.length} of {state.sessions.length} session{state.sessions.length !== 1 ? 's' : ''} visible
+                    </p>
+                    {filtered.length === 0 ? (
+                      <p className="text-sm text-pulse-500 py-4 text-center">No sessions match your search.</p>
+                    ) : (
+                      <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
+                        {filtered.map((s, i) => (
+                          <li
+                            key={s.id}
+                            className={`animate-list-item flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}
+                            style={{ '--stagger-index': i } as React.CSSProperties}
+                          >
+                            <div>
+                              <Link
+                                to={
+                                  s.status === 'live'
+                                    ? `/sessions/${s.id}/present`
+                                    : s.status === 'closed' || s.status === 'archived'
+                                    ? `/sessions/${s.id}/results`
+                                    : `/sessions/${s.id}`
+                                }
+                                className="font-medium text-pulse-800 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                              >
+                                {s.title}
+                              </Link>
+                              <p className="text-xs text-pulse-500">
+                                code {s.code} · {new Date(s.created_at).toLocaleString()}
+                              </p>
+                            </div>
+                            <span
+                              className={
+                                'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
+                                (s.status === 'draft'
+                                  ? 'bg-pulse-100 text-pulse-600'
+                                  : s.status === 'live'
+                                  ? 'bg-teal-100 text-teal-700'
+                                  : 'bg-violet-100 text-violet-700')
+                              }
+                            >
+                              {s.status}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })()}
             </section>
           </div>
         )}
@@ -360,6 +397,80 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Teams tab */}
+        {activeTab === 'teams' && (
+          <div
+            role="tabpanel"
+            id="tabpanel-teams"
+            aria-labelledby="tab-teams"
+            className="space-y-4"
+          >
+            <h2 className="text-xl font-semibold">Your teams</h2>
+            {teamsLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-16 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
+                ))}
+              </div>
+            ) : teams.length === 0 ? (
+              <p className="text-sm text-pulse-500">You don't belong to any team yet.</p>
+            ) : (
+              <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
+                {teams.map((team) => (
+                  <li key={team.id} className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="font-medium text-pulse-800">{team.name}</p>
+                      <p className="text-xs text-pulse-400 mt-0.5 capitalize">{team.plan} plan</p>
+                    </div>
+                    <Link
+                      to={`/teams/${team.id}`}
+                      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    >
+                      Settings →
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {/* Templates tab */}
+        {activeTab === 'templates' && (
+          <div
+            role="tabpanel"
+            id="tabpanel-templates"
+            aria-labelledby="tab-templates"
+            className="space-y-4"
+          >
+            <h2 className="text-xl font-semibold">Start from a template</h2>
+            {templatesLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-32 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
+                ))}
+              </div>
+            ) : templates.length === 0 ? (
+              <p className="text-sm text-pulse-500">No templates available.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {templates.map((tmpl) => (
+                  <button
+                    key={tmpl.id}
+                    type="button"
+                    onClick={() => setModal({ open: true, template: tmpl })}
+                    className="text-left p-4 rounded-xl border border-pulse-200 hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+                  >
+                    <h3 className="font-medium text-pulse-900">{tmpl.name}</h3>
+                    <p className="text-sm text-pulse-500 mt-1">{tmpl.description}</p>
+                    <p className="text-xs text-pulse-400 mt-2">{tmpl.questions.length} questions</p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Template confirmation modal */}
         {modal.open && modal.template && (
           <div
@@ -403,6 +514,26 @@ export default function Dashboard() {
         onSessionCreated={() => { void refresh() }}
       />
     </MainLayout>
+  )
+}
+
+function PlanBadge({ plan }: { plan: string }) {
+  const styles: Record<string, { dot: string; bg: string; text: string }> = {
+    free:    { dot: 'bg-pulse-400',   bg: 'bg-pulse-100',   text: 'text-pulse-600' },
+    starter: { dot: 'bg-teal-500',    bg: 'bg-teal-50',     text: 'text-teal-700' },
+    team:    { dot: 'bg-violet-500',  bg: 'bg-violet-50',   text: 'text-violet-700' },
+  }
+  const style = styles[plan] ?? styles.free
+  const label = plan.charAt(0).toUpperCase() + plan.slice(1)
+  return (
+    <Link
+      to="/pricing"
+      className={`inline-flex items-center gap-1.5 rounded-full border border-transparent px-3 py-1.5 text-sm font-medium ${style.bg} ${style.text} hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2`}
+      title="View pricing plans"
+    >
+      <span className={`h-2 w-2 rounded-full shrink-0 ${style.dot}`} aria-hidden="true" />
+      {label}
+    </Link>
   )
 }
 
