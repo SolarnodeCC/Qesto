@@ -163,7 +163,7 @@ export default function Dashboard() {
         <div
           role="tablist"
           aria-label="Dashboard sections"
-          className="flex gap-1 border-b border-pulse-200"
+          className="flex gap-1 border-b border-pulse-200 dark:border-pulse-700"
         >
           <button
             role="tab"
@@ -172,11 +172,12 @@ export default function Dashboard() {
             aria-selected={activeTab === 'sessions'}
             onClick={() => setActiveTab('sessions')}
             className={[
-              'px-4 py-2 text-sm font-medium rounded-t-lg -mb-px border border-b-0',
+              'px-space-4 py-space-2 text-body-s font-medium rounded-t-md -mb-px border border-b-0',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+              'tab-transition',
               activeTab === 'sessions'
-                ? 'border-pulse-200 bg-white text-pulse-900'
-                : 'border-transparent text-pulse-500 hover:text-pulse-800',
+                ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
+                : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
             ].join(' ')}
           >
             Sessions
@@ -188,11 +189,12 @@ export default function Dashboard() {
             aria-selected={activeTab === 'insights'}
             onClick={() => setActiveTab('insights')}
             className={[
-              'px-4 py-2 text-sm font-medium rounded-t-lg -mb-px border border-b-0',
+              'px-space-4 py-space-2 text-body-s font-medium rounded-t-md -mb-px border border-b-0',
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+              'tab-transition',
               activeTab === 'insights'
-                ? 'border-pulse-200 bg-white text-pulse-900'
-                : 'border-transparent text-pulse-500 hover:text-pulse-800',
+                ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
+                : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
             ].join(' ')}
           >
             Insights
@@ -330,11 +332,11 @@ export default function Dashboard() {
           >
             <AINarrative />
 
-            <section aria-labelledby="insight-themes-heading" className="space-y-3">
-              <h2 id="insight-themes-heading" className="text-xl font-semibold">
+            <section aria-labelledby="insight-themes-heading" className="space-y-space-3">
+              <h2 id="insight-themes-heading" className="text-heading-s font-semibold dark:text-pulse-100">
                 Top themes
               </h2>
-              <p className="text-sm text-pulse-500">
+              <p className="text-body-s text-pulse-500 dark:text-pulse-400">
                 AI-identified themes across your closed sessions. Close more sessions to see
                 richer patterns.
               </p>
