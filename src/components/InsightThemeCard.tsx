@@ -1,18 +1,17 @@
-/**
- * InsightThemeCard — displays a single AI-identified insight theme.
- *
- * Used in the Dashboard Insights tab. Each card shows:
- *  - theme title
- *  - brief description
- *  - count of sessions the theme applies to
- *
- * Includes a hover state and a visual affordance for future drill-down linking.
- */
+import type { InsightConfidence } from '../hooks/useInsights'
+
+const CONFIDENCE_STYLES: Record<InsightConfidence, { chip: string; label: string }> = {
+  high:   { chip: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',   label: 'High' },
+  medium: { chip: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300', label: 'Med' },
+  low:    { chip: 'bg-pulse-100 text-pulse-600 dark:bg-pulse-700 dark:text-pulse-400',    label: 'Low' },
+}
 
 interface InsightThemeCardProps {
   title: string
   description: string
   sessionCount: number
+  /** AI-derived confidence level for this theme */
+  confidence?: InsightConfidence
   /** Optional click handler for future drill-down navigation */
   onClick?: () => void
 }
@@ -21,6 +20,7 @@ export default function InsightThemeCard({
   title,
   description,
   sessionCount,
+  confidence,
   onClick,
 }: InsightThemeCardProps) {
   const Tag = onClick ? 'button' : 'div'
@@ -43,7 +43,14 @@ export default function InsightThemeCard({
     >
       {/* Title row */}
       <div className="flex items-start justify-between gap-space-3">
-        <h3 className="text-body-s font-semibold text-pulse-900 dark:text-pulse-100 leading-snug">{title}</h3>
+        <div className="flex items-center gap-2 flex-wrap">
+          <h3 className="text-body-s font-semibold text-pulse-900 dark:text-pulse-100 leading-snug">{title}</h3>
+          {confidence && (
+            <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${CONFIDENCE_STYLES[confidence].chip}`}>
+              {CONFIDENCE_STYLES[confidence].label}
+            </span>
+          )}
+        </div>
         {/* Drill-down chevron — only when clickable */}
         {onClick && (
           <svg

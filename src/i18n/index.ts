@@ -1,6 +1,6 @@
 type LocaleMap = Record<string, Record<string, string>>
 
-const NAMESPACES = ['common', 'home', 'login', 'auth', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard']
+const NAMESPACES = ['common', 'home', 'login', 'auth', 'dashboard', 'session-config', 'present', 'join', 'results', 'not-found', 'wizard', 'launchpad']
 
 let cachedLocales: LocaleMap = {}
 let currentLanguage = 'en'
@@ -51,23 +51,33 @@ export async function initI18n(): Promise<void> {
   return initPromise
 }
 
+function resolveDotPath(obj: Record<string, unknown>, key: string): string | undefined {
+  if (key in obj) return obj[key] as string | undefined
+  const parts = key.split('.')
+  let cur: unknown = obj
+  for (const part of parts) {
+    if (cur === null || typeof cur !== 'object') return undefined
+    cur = (cur as Record<string, unknown>)[part]
+  }
+  return typeof cur === 'string' ? cur : undefined
+}
+
 function translate(namespace: string, key: string, vars?: Record<string, string | number>): string {
-  const ns = cachedLocales[namespace]
+  const ns = cachedLocales[namespace] as Record<string, unknown> | undefined
   if (!ns) {
     console.warn(`[i18n] Namespace '${namespace}' not loaded`)
     return key
   }
-  let value = ns[key]
-  if (!value) {
+  const resolved = resolveDotPath(ns, key)
+  if (!resolved) {
     console.warn(`[i18n] Missing key '${namespace}.${key}'`)
     return key
   }
-  if (vars) {
-    Object.entries(vars).forEach(([k, v]) => {
-      value = value.replace(`{{${k}}}`, String(v)).replace(`{${k}}`, String(v))
-    })
-  }
-  return value
+  if (!vars) return resolved
+  return Object.entries(vars).reduce(
+    (acc, [k, v]) => acc.replace(`{{${k}}}`, String(v)).replace(`{${k}}`, String(v)),
+    resolved,
+  )
 }
 
 // Synchronous after initI18n() has resolved — no per-hook loading state needed.
