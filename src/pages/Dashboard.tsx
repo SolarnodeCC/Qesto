@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+
+const SUPERUSER_EMAIL = 'oostelaar@hotmail.com'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useDensity, type Density } from '../hooks/useDensity'
@@ -109,14 +111,29 @@ export default function Dashboard() {
     }
   }
 
+  const isSuperuser = auth.user.email === SUPERUSER_EMAIL
+
   const navSlot = (
-    <button
-      type="button"
-      onClick={() => void auth.logout()}
-      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
-    >
-      Sign out
-    </button>
+    <div className="flex items-center gap-3">
+      {isSuperuser && (
+        <Link
+          to="/admin"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-1.5 text-sm font-medium text-violet-700 hover:bg-violet-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 min-h-[44px]"
+        >
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0">
+            <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+          </svg>
+          Admin panel
+        </Link>
+      )}
+      <button
+        type="button"
+        onClick={() => void auth.logout()}
+        className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+      >
+        Sign out
+      </button>
+    </div>
   )
 
   return (
