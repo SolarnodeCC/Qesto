@@ -10,6 +10,8 @@ export interface AggregatedTheme {
   description: string
   sessionCount: number
   confidence: InsightConfidence
+  /** Weekly session counts over the last 30 days, oldest → newest (4 buckets) */
+  trend30d: number[]
 }
 
 interface RawInsights {
@@ -33,23 +35,36 @@ function deriveConfidence(sessionCount: number): InsightConfidence {
   return 'low'
 }
 
+function buildTrend30d(timestamps: number[]): number[] {
+  const now = Date.now()
+  const buckets = [0, 0, 0, 0]
+  for (const ts of timestamps) {
+    const daysAgo = (now - ts) / 86400000
+    if (daysAgo <= 7) buckets[3]++
+    else if (daysAgo <= 14) buckets[2]++
+    else if (daysAgo <= 21) buckets[1]++
+    else if (daysAgo <= 30) buckets[0]++
+  }
+  return buckets
+}
+
 function makeTitle(raw: string): string {
   const trimmed = raw.trim()
   return trimmed.length > 64 ? trimmed.slice(0, 61) + '…' : trimmed
 }
 
 function aggregateThemes(perSession: Map<string, RawInsights>): AggregatedTheme[] {
-  // Count how many sessions mention a "similar" theme (exact normalized string match).
-  const counts = new Map<string, { sessionIds: Set<string>; raw: string }>()
+  const counts = new Map<string, { sessionIds: Set<string>; raw: string; timestamps: number[] }>()
 
   for (const [sessionId, insights] of perSession) {
     for (const theme of insights.themes) {
-      const key = theme.toLowerCase().slice(0, 48) // normalize for grouping
+      const key = theme.toLowerCase().slice(0, 48)
       const existing = counts.get(key)
       if (existing) {
         existing.sessionIds.add(sessionId)
+        existing.timestamps.push(insights.generated_at)
       } else {
-        counts.set(key, { sessionIds: new Set([sessionId]), raw: theme })
+        counts.set(key, { sessionIds: new Set([sessionId]), raw: theme, timestamps: [insights.generated_at] })
       }
     }
   }
@@ -57,12 +72,13 @@ function aggregateThemes(perSession: Map<string, RawInsights>): AggregatedTheme[
   return Array.from(counts.values())
     .sort((a, b) => b.sessionIds.size - a.sessionIds.size)
     .slice(0, 5)
-    .map(({ raw, sessionIds }, idx) => ({
+    .map(({ raw, sessionIds, timestamps }, idx) => ({
       id: String(idx),
       title: makeTitle(raw),
       description: raw,
       sessionCount: sessionIds.size,
       confidence: deriveConfidence(sessionIds.size),
+      trend30d: buildTrend30d(timestamps),
     }))
 }
 
