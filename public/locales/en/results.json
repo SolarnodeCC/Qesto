@@ -16,5 +16,7 @@
     "option": "Option",
     "votes": "Votes",
     "percent": "Percent of total"
-  }
+  },
+  "no_question": "This session has no question attached.",
+  "no_votes": "No votes were recorded."
 }

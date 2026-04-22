@@ -16,5 +16,7 @@
     "option": "Option",
     "votes": "Votes",
     "percent": "Pourcentage du total"
-  }
+  },
+  "no_question": "Cette séance n'a pas de question associée.",
+  "no_votes": "Aucun vote n'a été enregistré."
 }

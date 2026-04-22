@@ -398,14 +398,14 @@ export default function Launchpad() {
                 <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-violet-500 flex-shrink-0">
                   <path d="M12 2l1.8 5.4 5.7 0-4.6 3.4 1.8 5.4L12 13l-4.7 3.2 1.8-5.4L4.5 7.4l5.7 0z" />
                 </svg>
-                <p className="text-sm font-semibold text-violet-800 dark:text-violet-200">Generate questions with AI</p>
+                <p className="text-sm font-semibold text-violet-800 dark:text-violet-200">{t('ai_generate_heading')}</p>
               </div>
               <form onSubmit={(e) => void handleAIGenerate(e)} className="space-y-space-2">
                 <input
                   type="text"
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
-                  placeholder={`Topic or goal (default: "${data.session.title}")`}
+                  placeholder={t('ai_topic_placeholder', { title: data.session.title })}
                   maxLength={160}
                   disabled={aiGenerating}
                   className="w-full rounded-md border border-violet-300 dark:border-violet-700 dark:bg-pulse-800 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-60 placeholder:text-pulse-400"
@@ -424,10 +424,15 @@ export default function Launchpad() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      Generating…
+                      {t('ai_generating')}
                     </>
                   ) : (
-                    <>✨ Generate questions</>
+                    <>
+                      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z" />
+                      </svg>
+                      {t('ai_generate_button')}
+                    </>
                   )}
                 </button>
               </form>

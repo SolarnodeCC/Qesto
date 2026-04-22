@@ -69,7 +69,9 @@
     "template_retry":   "Erneut versuchen",
     "template_select":  "Auswählen",
     "template_selected": "✓ Ausgewählt",
-    "template_questions": "{{count}} Fragen"
+    "template_questions": "{{count}} Fragen",
+    "all_dismissed": "Alle Fragen verworfen. Gehen Sie zurück, um neu zu generieren.",
+    "template_coming_soon": "Vorlagenauswahl kommt bald."
   },
   "step3": {
     "title":       "Energizer hinzufügen?",

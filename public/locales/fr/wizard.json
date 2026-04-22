@@ -69,7 +69,9 @@
     "template_retry":   "Réessayer",
     "template_select":  "Sélectionner",
     "template_selected": "✓ Sélectionné",
-    "template_questions": "{{count}} questions"
+    "template_questions": "{{count}} questions",
+    "all_dismissed": "Toutes les questions supprimées. Revenez pour régénérer.",
+    "template_coming_soon": "La sélection de modèles arrive bientôt."
   },
   "step3": {
     "title":       "Ajouter un énergiseur ?",

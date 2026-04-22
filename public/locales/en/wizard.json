@@ -69,7 +69,9 @@
     "template_retry":   "Try again",
     "template_select":  "Select",
     "template_selected": "✓ Selected",
-    "template_questions": "{{count}} questions"
+    "template_questions": "{{count}} questions",
+    "all_dismissed": "All questions dismissed. Go back to regenerate.",
+    "template_coming_soon": "Template selection coming soon."
   },
   "step3": {
     "title":       "Add an energizer?",

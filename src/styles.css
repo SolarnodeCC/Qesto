@@ -96,6 +96,17 @@ html, body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
+/* LAYOUT-A11Y-01: WCAG 2.2 SC 2.4.11 (Focus Not Obscured)
+ * Reserves 64px at the top so keyboard-focused elements are never hidden
+ * behind a sticky header. Adjust --header-height if the header grows. */
+:root {
+  --header-height: 56px;
+}
+
+html {
+  scroll-padding-top: calc(var(--header-height) + 8px);
+}
+
 /* ─── Motion tokens (LAYOUT-MOTION-01) ────────────────────────────────────── */
 /*                                                                              */
 /* Durations and easing are exposed as CSS custom properties so they can be    */

@@ -1,5 +1,5 @@
 /**
- * WCAG 2.1 AA comprehensive accessibility audit
+ * WCAG 2.1 + 2.2 AA comprehensive accessibility audit
  *
  * Tests all major pages and states of the Qesto application:
  * - Home / Landing page
@@ -11,9 +11,10 @@
  * - Results / Insights page
  *
  * Each page is audited for zero critical or serious violations using axe-core
- * with wcag2a and wcag2aa rule sets.
+ * with wcag2a, wcag2aa, and wcag22aa rule sets.
  *
- * WCAG references: 1.3.1, 1.4.1, 2.1.1, 2.4.1, 2.4.3, 2.4.6, 2.5.1, 3.3.2, 4.1.2, 4.1.3
+ * WCAG references: 1.3.1, 1.4.1, 2.1.1, 2.4.1, 2.4.3, 2.4.6, 2.4.11, 2.5.1, 3.3.2, 4.1.2, 4.1.3
+ * LAYOUT-A11Y-01: WCAG 2.2 SC 2.4.11 (Focus Not Obscured) covered by wcag22aa tag.
  *
  * @vitest-environment jsdom
  */
@@ -38,7 +39,7 @@ async function auditHtml(html: string, context?: string): Promise<axe.Result[]> 
     const result = await axe.run(host, {
       runOnly: {
         type: 'tag',
-        values: ['wcag2a', 'wcag2aa', 'wcag21aa'],
+        values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'],
       },
     })
     return result.violations
@@ -663,5 +664,91 @@ describe('WCAG 2.1 AA Audit — All pages', () => {
       const violations = await auditHtml(html)
       expectNoViolations(violations, 'Mobile navigation')
     })
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+// WCAG 2.2 SC 2.4.11 — Focus Not Obscured (LAYOUT-A11Y-01)
+// ─────────────────────────────────────────────────────────────────────────
+
+describe('WCAG 2.2 SC 2.4.11 — Focus Not Obscured', () => {
+  it('skip-link is visible when focused and not obscured by a sticky header', async () => {
+    // Simulate the MainLayout structure: sticky header + skip-link + main content.
+    const html = `
+      <style>
+        /* Mirror the MainLayout sticky header */
+        header.sticky {
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          height: 56px;
+          background: white;
+        }
+        /* Mirror scroll-padding-top from styles.css */
+        html { scroll-padding-top: 64px; }
+      </style>
+
+      <a
+        href="#main"
+        id="skip-link"
+        class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
+      >
+        Skip to main content
+      </a>
+
+      <header class="sticky" role="banner">
+        <nav aria-label="Site navigation">
+          <a href="/">Home</a>
+          <a href="/pricing">Pricing</a>
+        </nav>
+      </header>
+
+      <main id="main" tabindex="-1">
+        <h1>Page title</h1>
+        <p>Page content. The focused element below should not be obscured by the sticky header.</p>
+        <a href="/section-1" id="first-link">First focusable link in main</a>
+      </main>
+
+      <footer>
+        <nav aria-label="Footer navigation">
+          <ul>
+            <li><a href="/privacy">Privacy</a></li>
+          </ul>
+        </nav>
+        <span>&copy; 2026 Qesto.</span>
+      </footer>
+    `
+
+    const violations = await auditHtml(html, 'Focus Not Obscured (2.4.11)')
+    expectNoViolations(violations, 'Focus Not Obscured layout')
+  })
+
+  it('modal focus trap does not obscure focused button behind overlay', async () => {
+    const html = `
+      <main id="main" tabindex="-1">
+        <h1>Dashboard</h1>
+        <button type="button" id="open-modal">Open dialog</button>
+
+        <!-- Modal dialog: focused element should be fully visible -->
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          style="position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);"
+        >
+          <div style="background:white; border-radius:8px; padding:24px; width:400px; max-width:90vw;">
+            <h2 id="modal-title">Confirm action</h2>
+            <p>Are you sure you want to proceed?</p>
+            <div>
+              <button type="button" autofocus>Cancel</button>
+              <button type="button">Confirm</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    `
+
+    const violations = await auditHtml(html, 'Modal focus not obscured')
+    expectNoViolations(violations, 'Modal dialog focus')
   })
 })

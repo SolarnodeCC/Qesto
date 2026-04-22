@@ -69,7 +69,9 @@
     "template_retry":   "Reintentar",
     "template_select":  "Seleccionar",
     "template_selected": "✓ Seleccionado",
-    "template_questions": "{{count}} preguntas"
+    "template_questions": "{{count}} preguntas",
+    "all_dismissed": "Todas las preguntas descartadas. Vuelve para regenerar.",
+    "template_coming_soon": "La selección de plantillas estará disponible pronto."
   },
   "step3": {
     "title":       "¿Añadir un energizador?",

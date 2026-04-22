@@ -655,7 +655,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                         )}
                       </div>
                       {activeQuestions.length === 0 && (
-                        <p className="text-caption text-amber-600">All questions dismissed. Go back to regenerate.</p>
+                        <p className="text-caption text-amber-600">{t('step2.all_dismissed')}</p>
                       )}
                     </div>
                   )}
@@ -704,7 +704,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                   >
                     {t('step2.back')}
                   </button>
-                  <p className="text-sm text-pulse-500">Template selection coming in Sprint C.</p>
+                  <p className="text-sm text-pulse-500">{t('step2.template_coming_soon')}</p>
                 </div>
               )}
             </div>

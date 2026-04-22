@@ -155,11 +155,11 @@ export default function Results() {
       </header>
 
       {!question ? (
-        <p className="text-sm text-pulse-500">This session has no question attached.</p>
+        <p className="text-sm text-pulse-500">{t('no_question')}</p>
       ) : results.total === 0 ? (
         <section className="rounded-xl border border-pulse-200 p-5 space-y-3">
           <h2 className="text-xl font-semibold">{question.prompt}</h2>
-          <p className="text-sm text-pulse-500">No votes were recorded.</p>
+          <p className="text-sm text-pulse-500">{t('no_votes')}</p>
         </section>
       ) : (
         <section className="rounded-xl border border-pulse-200 p-5 space-y-4">

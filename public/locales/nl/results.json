@@ -16,5 +16,7 @@
     "option": "Optie",
     "votes": "Stemmen",
     "percent": "Percentage van totaal"
-  }
+  },
+  "no_question": "Deze sessie heeft geen vraag gekoppeld.",
+  "no_votes": "Er zijn geen stemmen geregistreerd."
 }
