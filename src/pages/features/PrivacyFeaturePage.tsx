@@ -1,70 +1,97 @@
 import FeaturePageTemplate from '../../components/FeaturePageTemplate'
+import PageSeo from '../../components/PageSeo'
+import { useT } from '../../i18n'
 
 export default function PrivacyFeaturePage() {
+  const t = useT('solutions')
+
   return (
-    <FeaturePageTemplate
-      hero={{
-        badge: 'Privacy by default',
-        headline: 'Your team\'s responses stay yours — always.',
-        subheadline:
-          'Anonymity modes, GDPR consent logging, and on-device AI inference mean participants can speak honestly and you can prove it. No third-party model providers ever see your data.',
-        primaryCta: { label: 'Get started free', href: '/login' },
-        secondaryCta: { label: 'Read our privacy policy', href: '/privacy' },
+    <>
+      <PageSeo
+        title={t('features.privacy.seo.title')}
+        description={t('features.privacy.seo.description')}
+        canonicalPath="/features/privacy"
+      />
+      <FeaturePageTemplate
+        hero={{
+          badge: t('features.privacy.badge'),
+          headline: t('features.privacy.headline'),
+          subheadline: t('features.privacy.subheadline'),
+          primaryCta: { label: t('cta.talkToSales'), href: '/pricing' },
+          secondaryCta: { label: t('features.privacy.hero.secondaryCta'), href: '/privacy' },
       }}
       howItWorks={{
-        heading: 'Privacy is architecture, not a checkbox',
+        heading: t('features.privacy.howItWorks.heading'),
         steps: [
           {
             number: 1,
-            title: 'AI runs on the edge',
-            desc: 'All AI inference — question generation, theme detection, semantic search — uses Cloudflare Workers AI. Your session data never leaves the edge.',
+              title: t('features.privacy.howItWorks.step1.title'),
+              desc: t('features.privacy.howItWorks.step1.desc'),
           },
           {
             number: 2,
-            title: 'Anonymity is configurable per session',
-            desc: 'Choose from three levels: individual (responses linked to participant), cohort (aggregated by group), or full (no linkage possible). Participants see their anonymity level before joining.',
+              title: t('features.privacy.howItWorks.step2.title'),
+              desc: t('features.privacy.howItWorks.step2.desc'),
           },
           {
             number: 3,
-            title: 'Consent votes are logged immutably',
-            desc: 'Every consent decision is recorded with a cryptographic timestamp at the Cloudflare edge — audit-ready for GDPR, ISO 27001, or internal governance requirements.',
+              title: t('features.privacy.howItWorks.step3.title'),
+              desc: t('features.privacy.howItWorks.step3.desc'),
           },
         ],
       }}
       outcomes={{
-        heading: 'What privacy-first means in practice',
+        heading: t('features.privacy.outcomes.heading'),
         items: [
           {
             icon: '🔒',
-            metric: 'Zero third-party AI',
-            desc: 'No OpenAI, no Anthropic, no Google. Workers AI only — your data stays on Cloudflare\'s infrastructure.',
+              metric: t('features.privacy.outcomes.item1.metric'),
+              desc: t('features.privacy.outcomes.item1.desc'),
           },
           {
             icon: '📋',
-            metric: 'GDPR-ready logs',
-            desc: 'Consent records are exportable for data subject access requests or regulatory audits in seconds.',
+              metric: t('features.privacy.outcomes.item2.metric'),
+              desc: t('features.privacy.outcomes.item2.desc'),
           },
           {
             icon: '🛡️',
-            metric: 'Anonymous by default',
-            desc: 'New sessions start in full-anonymity mode. Hosts must actively choose to enable individual linking.',
+              metric: t('features.privacy.outcomes.item3.metric'),
+              desc: t('features.privacy.outcomes.item3.desc'),
           },
         ],
       }}
+      proof={{
+        heading: t('features.privacy.proof.heading'),
+        metrics: [
+          { value: t('features.privacy.proof.metric1.value'), label: t('features.privacy.proof.metric1.label'), note: t('features.privacy.proof.metric1.note') },
+          { value: t('features.privacy.proof.metric2.value'), label: t('features.privacy.proof.metric2.label'), note: t('features.privacy.proof.metric2.note') },
+          { value: t('features.privacy.proof.metric3.value'), label: t('features.privacy.proof.metric3.label'), note: t('features.privacy.proof.metric3.note') },
+        ],
+        badges: [{ label: t('features.privacy.proof.badge1') }, { label: t('features.privacy.proof.badge2') }, { label: t('features.privacy.proof.badge3') }],
+      }}
       related={{
-        heading: 'Privacy matters most here',
+        heading: t('features.privacy.related.heading'),
         links: [
-          { label: 'Qesto for Enterprise', href: '/enterprise', desc: 'SAML SSO, GDPR DPA, and team-level audit logs for regulated industries.' },
-          { label: 'Qesto for HR', href: '/hr', desc: 'Anonymous pulse surveys your employees will actually trust.' },
-          { label: 'Qesto for Nonprofits', href: '/nonprofit', desc: 'Consent-first community voting with tamper-evident audit trails.' },
+            { label: t('features.privacy.related.link1.label'), href: '/consulting', desc: t('features.privacy.related.link1.desc') },
+            { label: t('features.privacy.related.link2.label'), href: '/hr', desc: t('features.privacy.related.link2.desc') },
+            { label: t('features.privacy.related.link3.label'), href: '/nonprofit', desc: t('features.privacy.related.link3.desc') },
+        ],
+      }}
+      faq={{
+        heading: t('features.privacy.faq.heading'),
+        items: [
+          { question: t('features.privacy.faq.q1.question'), answer: t('features.privacy.faq.q1.answer') },
+          { question: t('features.privacy.faq.q2.question'), answer: t('features.privacy.faq.q2.answer') },
+          { question: t('features.privacy.faq.q3.question'), answer: t('features.privacy.faq.q3.answer') },
         ],
       }}
       bottomCta={{
-        heading: 'Honest responses start with trusted infrastructure.',
-        subheading: 'Privacy is on by default — you never have to turn it on.',
-        primaryCta: { label: 'Start for free', href: '/login' },
-        secondaryCta: { label: 'Read our privacy policy', href: '/privacy' },
-      }}
-    />
+          heading: t('features.privacy.bottomCta.heading'),
+          subheading: t('features.privacy.bottomCta.subheading'),
+          primaryCta: { label: t('cta.talkToSales'), href: '/pricing' },
+          secondaryCta: { label: t('features.privacy.hero.secondaryCta'), href: '/privacy' },
+        }}
+      />
+    </>
   )
 }
