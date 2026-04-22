@@ -112,20 +112,27 @@ function scoreConfidence(raw: string, cleaned: string, count: number): number {
   return Math.max(0, Math.min(1, Number(score.toFixed(2))))
 }
 
+const MAX_TOKENS = 1024
+
 export async function generateQuestions(
   ai: Ai,
   input: GenerateInput,
   model = '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
 ): Promise<GenerateResult> {
+  const userPrompt = buildUserPrompt(input)
+  const approxInputChars = SYSTEM_PROMPT.length + userPrompt.length
+  const t0 = Date.now()
   let raw: string
   try {
     const res = (await ai.run(model, {
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: buildUserPrompt(input) },
+        { role: 'user', content: userPrompt },
       ],
+      max_tokens: MAX_TOKENS,
     })) as { response?: string } | string
 
+    const latencyMs = Date.now() - t0
     raw =
       typeof res === 'string'
         ? res
@@ -133,10 +140,13 @@ export async function generateQuestions(
           ? res.response
           : ''
     if (!raw || raw.trim() === '') {
+      console.log(JSON.stringify({ event: 'ai.wizard.empty', model, latencyMs, approxInputChars }))
       throw new WizardAIError('AI returned empty response')
     }
+    console.log(JSON.stringify({ event: 'ai.wizard.ok', model, latencyMs, approxInputChars, outputChars: raw.length }))
   } catch (err) {
     if (err instanceof WizardAIError) throw err
+    console.log(JSON.stringify({ event: 'ai.wizard.error', model, latencyMs: Date.now() - t0, approxInputChars, error: err instanceof Error ? err.message : String(err) }))
     throw new WizardAIError(
       `AI invocation failed: ${err instanceof Error ? err.message : String(err)}`,
     )

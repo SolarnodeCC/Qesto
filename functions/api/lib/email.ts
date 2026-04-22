@@ -13,20 +13,28 @@ export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs)
     console.log(`[email:dev] to=${args.to} subject=${args.subject}\n${args.text}`)
     return { delivered: false }
   }
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      from: 'Qesto <login@qesto.app>',
-      to: [args.to],
-      subject: args.subject,
-      html: args.html,
-      text: args.text,
-    }),
-  })
+  const ac = new AbortController()
+  const timeout = setTimeout(() => ac.abort(), 10_000)
+  let res: Response
+  try {
+    res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: 'Qesto <login@qesto.app>',
+        to: [args.to],
+        subject: args.subject,
+        html: args.html,
+        text: args.text,
+      }),
+      signal: ac.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
   if (!res.ok) {
     const body = await res.text()
     throw new Error(`resend ${res.status}: ${body}`)

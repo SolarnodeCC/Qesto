@@ -25,17 +25,25 @@ export async function exchangeGoogleCode(
   clientId: string,
   clientSecret: string,
 ): Promise<{ email: string; sub: string }> {
-  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      code,
-      client_id: clientId,
-      client_secret: clientSecret,
-      redirect_uri: redirectUri,
-      grant_type: 'authorization_code',
-    }),
-  })
+  const googleAc = new AbortController()
+  const googleTimeout = setTimeout(() => googleAc.abort(), 10_000)
+  let tokenRes: Response
+  try {
+    tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }),
+      signal: googleAc.signal,
+    })
+  } finally {
+    clearTimeout(googleTimeout)
+  }
   if (!tokenRes.ok) throw new Error(`Google token exchange failed: ${tokenRes.status}`)
   const tokens = (await tokenRes.json()) as { id_token?: string }
   if (!tokens.id_token) throw new Error('Google token response missing id_token')
@@ -75,20 +83,28 @@ export async function exchangeMicrosoftCode(
   clientSecret: string,
   tenantId = 'common',
 ): Promise<{ email: string; sub: string }> {
-  const tokenRes = await fetch(
-    `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
-    {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        code,
-        client_id: clientId,
-        client_secret: clientSecret,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code',
-      }),
-    },
-  )
+  const msAc = new AbortController()
+  const msTimeout = setTimeout(() => msAc.abort(), 10_000)
+  let tokenRes: Response
+  try {
+    tokenRes = await fetch(
+      `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code',
+        }),
+        signal: msAc.signal,
+      },
+    )
+  } finally {
+    clearTimeout(msTimeout)
+  }
   if (!tokenRes.ok) throw new Error(`Microsoft token exchange failed: ${tokenRes.status}`)
   const tokens = (await tokenRes.json()) as { id_token: string }
   if (!tokens.id_token) throw new Error('Microsoft token response missing id_token')
@@ -193,7 +209,14 @@ async function getJwks(uri: string): Promise<JsonWebKey[]> {
   const now = Date.now()
   if (cached && cached.expiresAt > now) return cached.keys
 
-  const res = await fetch(uri, { headers: { accept: 'application/json' } })
+  const jwksAc = new AbortController()
+  const jwksTimeout = setTimeout(() => jwksAc.abort(), 10_000)
+  let res: Response
+  try {
+    res = await fetch(uri, { headers: { accept: 'application/json' }, signal: jwksAc.signal })
+  } finally {
+    clearTimeout(jwksTimeout)
+  }
   if (!res.ok) throw new Error(`JWKS fetch failed: ${res.status}`)
   const data = (await res.json()) as { keys?: JsonWebKey[] }
   if (!Array.isArray(data.keys) || data.keys.length === 0) throw new Error('JWKS response missing keys')

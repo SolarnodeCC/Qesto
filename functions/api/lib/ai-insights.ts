@@ -99,6 +99,8 @@ function extractJson(raw: string): string {
   return body.slice(firstBrace, lastBrace + 1)
 }
 
+const MAX_TOKENS = 768
+
 export async function extractThemes(
   ai: Ai,
   input: InsightsInput,
@@ -112,15 +114,20 @@ export async function extractThemes(
     return { themes: [] }
   }
 
+  const userPrompt = buildUserPrompt(input)
+  const approxInputChars = THEME_SYSTEM_PROMPT.length + userPrompt.length
+  const t0 = Date.now()
   let raw: string
   try {
     const res = (await ai.run(model, {
       messages: [
         { role: 'system', content: THEME_SYSTEM_PROMPT },
-        { role: 'user', content: buildUserPrompt(input) },
+        { role: 'user', content: userPrompt },
       ],
+      max_tokens: MAX_TOKENS,
     })) as { response?: string } | string
 
+    const latencyMs = Date.now() - t0
     raw =
       typeof res === 'string'
         ? res
@@ -128,10 +135,13 @@ export async function extractThemes(
           ? res.response
           : ''
     if (!raw || raw.trim() === '') {
+      console.log(JSON.stringify({ event: 'ai.insights.empty', model, latencyMs, approxInputChars }))
       throw new InsightsAIError('AI returned empty response')
     }
+    console.log(JSON.stringify({ event: 'ai.insights.ok', model, latencyMs, approxInputChars, outputChars: raw.length }))
   } catch (err) {
     if (err instanceof InsightsAIError) throw err
+    console.log(JSON.stringify({ event: 'ai.insights.error', model, latencyMs: Date.now() - t0, approxInputChars, error: err instanceof Error ? err.message : String(err) }))
     throw new InsightsAIError(
       `AI invocation failed: ${err instanceof Error ? err.message : String(err)}`,
     )
