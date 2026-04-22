@@ -1,0 +1,16 @@
+{
+  "title": "Se connecter à Qesto",
+  "subtitle": "Nous vous enverrons un lien de connexion unique par courrier électronique.",
+  "errorInvalid": "Ce lien de connexion était invalide. Demandez-en un nouveau.",
+  "errorExpired": "Votre lien de connexion a expiré ou a déjà été utilisé. Demandez-en un nouveau ci-dessous.",
+  "emailLabel": "Adresse e-mail",
+  "emailPlaceholder": "vous@exemple.fr",
+  "emailInvalid": "Veuillez entrer une adresse e-mail valide.",
+  "emailRequired": "Le courrier électronique est requis.",
+  "submitButton": "Envoyer le lien de connexion",
+  "sending": "Envoi…",
+  "successTitle": "Vérifiez votre courrier",
+  "successMessage": "Nous avons envoyé un lien de connexion à {email}. Il expire dans 24 heures.",
+  "successHint": "Ne l'avez-vous pas reçu ? Vérifiez votre dossier spam ou réessayez.",
+  "tryAgain": "Réessayez"
+}

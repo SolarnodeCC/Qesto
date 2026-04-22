@@ -2,6 +2,7 @@
 //
 // Routes:
 //   GET  /api/plans/:userId/usage    fetch quota usage for a user
+//   POST /api/billing/portal         create a Stripe billing portal session
 
 import { Hono } from 'hono'
 import { getQuotaUsage } from '../lib/quota'
@@ -10,6 +11,46 @@ import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
+
+// KV key for Stripe customer ID — stored in USERS_KV alongside password/oauth data.
+const stripeCustomerKey = (userId: string) => `stripe:customer:${userId}`
+
+/**
+ * Minimal Stripe API client using fetch.
+ * The stripe npm package is not available in the edge runtime budget,
+ * so we call the REST API directly. Only the methods used here are implemented.
+ */
+function makeStripeClient(secretKey: string) {
+  async function post<T>(path: string, body: Record<string, string>): Promise<T> {
+    const params = new URLSearchParams(body).toString()
+    const res = await fetch(`https://api.stripe.com/v1${path}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params,
+    })
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
+        error?: { message?: string }
+      }
+      throw new Error(err?.error?.message ?? 'Stripe API error')
+    }
+    return res.json() as Promise<T>
+  }
+  return {
+    billingPortal: {
+      sessions: {
+        create: (params: { customer: string; return_url: string }) =>
+          post<{ url: string }>('/billing_portal/sessions', {
+            customer: params.customer,
+            return_url: params.return_url,
+          }),
+      },
+    },
+  }
+}
 
 export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -57,6 +98,38 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       },
       trace_id: c.get('trace_id'),
     })
+  })
+
+  // POST /api/billing/portal — create a Stripe billing portal session
+  // Returns { url } for the frontend to redirect to.
+  app.post('/billing/portal', authMiddleware, async (c) => {
+    const user = c.get('user')
+
+    if (!c.env.STRIPE_SECRET_KEY) {
+      return c.json(
+        { ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+
+    // Look up Stripe customer ID stored in USERS_KV
+    const raw = await c.env.USERS_KV.get(stripeCustomerKey(user.sub))
+    const record = raw ? (JSON.parse(raw) as { customerId: string }) : null
+
+    if (!record?.customerId) {
+      return c.json(
+        { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+
+    const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
+    const session = await stripe.billingPortal.sessions.create({
+      customer: record.customerId,
+      return_url: c.env.PAGES_URL + '/dashboard',
+    })
+
+    return c.json({ ok: true, data: { url: session.url }, trace_id: c.get('trace_id') })
   })
 
   parent.route('/api', app)

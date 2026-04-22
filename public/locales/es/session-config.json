@@ -1,0 +1,18 @@
+{
+  "loading": "Cargando…",
+  "sessionTitle": "Configuración de sesión",
+  "titleLabel": "Título de sesión",
+  "promptLabel": "Indicación de pregunta",
+  "optionsLabel": "Opciones",
+  "addOption": "Añadir opción",
+  "removeOption": "Quitar",
+  "saveChanges": "Guardar cambios",
+  "saving": "Guardando…",
+  "saveSuccess": "Cambios guardados",
+  "saveError": "No se pudieron guardar los cambios",
+  "startSession": "Iniciar sesión",
+  "starting": "Iniciando…",
+  "startError": "No se pudo iniciar la sesión",
+  "backToDashboard": "Volver al panel",
+  "optionPlaceholder": "Texto de opción"
+}

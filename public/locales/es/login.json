@@ -1,0 +1,16 @@
+{
+  "title": "Iniciar sesión en Qesto",
+  "subtitle": "Te enviaremos un enlace de inicio de sesión de una sola vez por correo.",
+  "errorInvalid": "Ese enlace de inicio de sesión era inválido. Solicita uno nuevo.",
+  "errorExpired": "Tu enlace de inicio de sesión ha expirado o ya fue utilizado. Solicita uno nuevo abajo.",
+  "emailLabel": "Dirección de correo",
+  "emailPlaceholder": "tu@ejemplo.com",
+  "emailInvalid": "Ingresa una dirección de correo válida.",
+  "emailRequired": "El correo es obligatorio.",
+  "submitButton": "Enviar enlace de inicio de sesión",
+  "sending": "Enviando…",
+  "successTitle": "Revisa tu correo",
+  "successMessage": "Hemos enviado un enlace de inicio de sesión a {email}. Vence en 24 horas.",
+  "successHint": "¿No lo recibiste? Revisa tu carpeta de spam o intenta de nuevo.",
+  "tryAgain": "Intenta de nuevo"
+}

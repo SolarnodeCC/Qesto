@@ -1,0 +1,12 @@
+{
+  "heading": "An einer Sitzung teilnehmen",
+  "subtitle": "Geben Sie den vom Präsentator angezeigten Code ein",
+  "codeLabel": "Sitzungscode",
+  "codePlaceholder": "XXXX",
+  "codeInvalid": "Bitte geben Sie einen 4-stelligen Code ein",
+  "codeNotFound": "Sitzung nicht gefunden. Überprüfen Sie den Code und versuchen Sie es erneut.",
+  "joinButton": "Teilnehmen",
+  "joining": "Tritt bei…",
+  "back": "Zurück zur Startseite",
+  "error": "Konnte nicht an der Sitzung teilnehmen. Bitte versuchen Sie es erneut."
+}

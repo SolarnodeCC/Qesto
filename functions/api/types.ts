@@ -11,10 +11,15 @@ export type Env = {
   CF_ACCESS_AUDIENCE?: string
   CF_ACCESS_CERTS_URL?: string
   COMMIT_SHA?: string
+  /** SAML SP entity ID (e.g. `https://app.qesto.io`). Vars, not secret. */
+  SAML_SP_ENTITY_ID?: string
+  /** SAML Assertion Consumer Service URL (e.g. `https://api.qesto.app/api/auth/saml/callback`). */
+  SAML_ACS_URL?: string
 
   // Secrets (wrangler pages secret put ...)
   JWT_SECRET: string
   RESEND_API_KEY?: string
+  STRIPE_SECRET_KEY?: string
   GOOGLE_CLIENT_ID?: string
   GOOGLE_CLIENT_SECRET?: string
   MICROSOFT_CLIENT_ID?: string

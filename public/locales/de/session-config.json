@@ -1,0 +1,18 @@
+{
+  "loading": "Wird geladen…",
+  "sessionTitle": "Sitzungskonfiguration",
+  "titleLabel": "Sitzungstitel",
+  "promptLabel": "Frageeingabe",
+  "optionsLabel": "Optionen",
+  "addOption": "Option hinzufügen",
+  "removeOption": "Entfernen",
+  "saveChanges": "Änderungen speichern",
+  "saving": "Wird gespeichert…",
+  "saveSuccess": "Änderungen gespeichert",
+  "saveError": "Änderungen konnten nicht gespeichert werden",
+  "startSession": "Sitzung starten",
+  "starting": "Wird gestartet…",
+  "startError": "Sitzung konnte nicht gestartet werden",
+  "backToDashboard": "Zurück zum Dashboard",
+  "optionPlaceholder": "Optionstext"
+}

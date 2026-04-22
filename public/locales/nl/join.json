@@ -1,0 +1,12 @@
+{
+  "heading": "Deelnemen aan een sessie",
+  "subtitle": "Voer de code in die door de presentator wordt getoond",
+  "codeLabel": "Sessiecode",
+  "codePlaceholder": "XXXX",
+  "codeInvalid": "Voer alstublieft een code van 4 cijfers in",
+  "codeNotFound": "Sessie niet gevonden. Controleer de code en probeer opnieuw.",
+  "joinButton": "Deelnemen",
+  "joining": "Deelnemen…",
+  "back": "Terug naar huis",
+  "error": "Kon niet deelnemen aan sessie. Probeer alstublieft opnieuw."
+}

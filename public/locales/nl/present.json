@@ -1,0 +1,16 @@
+{
+  "loading": "Laden…",
+  "sessionNotFound": "Sessie niet gevonden",
+  "sessionClosed": "Deze sessie is gesloten",
+  "currentQuestion": "Vraag {count}",
+  "of": "van {total}",
+  "responses": "{count} antwoorden",
+  "nextQuestion": "Volgende vraag",
+  "previousQuestion": "Vorige vraag",
+  "closeSession": "Sessie sluiten",
+  "endPresentation": "Presentatie beëindigen",
+  "closing": "Sluiten…",
+  "back": "Terug naar dashboard",
+  "liveParticipants": "Live deelnemers",
+  "resultsReady": "Resultaten gereed"
+}

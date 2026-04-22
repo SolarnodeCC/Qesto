@@ -1,0 +1,18 @@
+{
+  "loading": "Laden…",
+  "sessionTitle": "Sessieopstelling",
+  "titleLabel": "Sessietitel",
+  "promptLabel": "Vraagprompt",
+  "optionsLabel": "Opties",
+  "addOption": "Optie toevoegen",
+  "removeOption": "Verwijderen",
+  "saveChanges": "Wijzigingen opslaan",
+  "saving": "Opslaan…",
+  "saveSuccess": "Wijzigingen opgeslagen",
+  "saveError": "Kan wijzigingen niet opslaan",
+  "startSession": "Sessie starten",
+  "starting": "Starten…",
+  "startError": "Kan sessie niet starten",
+  "backToDashboard": "Terug naar dashboard",
+  "optionPlaceholder": "Optietekst"
+}

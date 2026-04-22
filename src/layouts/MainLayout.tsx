@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import SkipLink from '../components/SkipLink'
+import TeamSwitcher from '../components/TeamSwitcher'
 
 interface MainLayoutProps {
   /** Content rendered inside `<main id="main">` */
@@ -44,12 +45,15 @@ export default function MainLayout({
             Qesto
           </a>
 
-          {navSlot ? (
-            <nav aria-label="Site navigation">{navSlot}</nav>
-          ) : (
-            /* Always render a nav landmark — SR users expect it */
-            <nav aria-label="Site navigation" />
-          )}
+          <div className="flex items-center gap-3">
+            <TeamSwitcher />
+            {navSlot ? (
+              <nav aria-label="Site navigation">{navSlot}</nav>
+            ) : (
+              /* Always render a nav landmark — SR users expect it */
+              <nav aria-label="Site navigation" />
+            )}
+          </div>
         </div>
       </header>
 

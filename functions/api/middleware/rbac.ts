@@ -40,13 +40,17 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'GET /api/sessions/:id/insights': new Set(['owner', 'admin', 'member']),
 
   // Team/User management
-  'POST /api/teams': new Set(['owner', 'admin']),
+  // NOTE: The RBAC matrix gates routes by the caller's *global* user_roles
+  // role; team-scoped ownership (is-this-user-the-owner-of-THIS-team?) is
+  // enforced inside routes/teams.ts against the TEAMS_KV membership data.
+  'POST /api/teams': new Set(['owner', 'admin', 'member', 'viewer']), // any authed user can create a team
   'GET /api/teams': new Set(['owner', 'admin', 'member', 'viewer']),
-  'PATCH /api/teams/:id': new Set(['owner', 'admin']),
-  'DELETE /api/teams/:id': new Set(['owner']),
+  'GET /api/teams/:id': new Set(['owner', 'admin', 'member', 'viewer']),
+  'PATCH /api/teams/:id': new Set(['owner', 'admin', 'member']),
+  'DELETE /api/teams/:id': new Set(['owner', 'admin']),
 
   // User role management
-  'POST /api/teams/:id/members': new Set(['owner', 'admin']),
+  'POST /api/teams/:id/members': new Set(['owner', 'admin', 'member']),
   'GET /api/teams/:id/members': new Set(['owner', 'admin', 'member']),
   'PATCH /api/teams/:id/members/:userId': new Set(['owner', 'admin']),
   'DELETE /api/teams/:id/members/:userId': new Set(['owner', 'admin']),
@@ -66,20 +70,47 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
 // ─── Utility Functions ────────────────────────────────────────────────────────
 
 /**
- * Normalize route pattern: /api/sessions/:id → GET /api/sessions/:id
+ * Normalize a concrete request path to its matrix pattern.
+ * Request paths contain literal IDs (ULIDs, UUIDs, ints, user emails); the
+ * matrix keys use `:id` / `:userId` placeholders. Convert by treating any
+ * segment that looks like an identifier as a placeholder.
+ *
+ * Matches:
+ *   GET /api/teams/01HXYZ... → GET /api/teams/:id
+ *   DELETE /api/teams/01HXYZ.../members/01HAAA... → DELETE /api/teams/:id/members/:userId
  */
 function getRouteKey(method: string, path: string): string | null {
   const pattern = `${method} ${path}`
   if (PERMISSION_MATRIX[pattern]) return pattern
 
-  // Try wildcard patterns
-  const wildcardPattern = path
-    .split('/')
-    .map((segment) => (segment.match(/^:[a-z_]+$/i) ? ':id' : segment))
-    .join('/')
-  const wildcardKey = `${method} ${wildcardPattern}`
-  if (PERMISSION_MATRIX[wildcardKey]) return wildcardKey
+  // Split path and substitute identifier-shaped segments.
+  const segments = path.split('/')
+  const isIdLike = (seg: string): boolean => {
+    if (!seg) return false
+    // ULID (26 char Crockford), UUID, hex, numeric, or any long opaque token.
+    if (/^[0-9A-HJKMNP-TV-Z]{26}$/i.test(seg)) return true
+    if (/^[0-9a-f-]{8,}$/i.test(seg) && seg.length >= 8) return true
+    if (/^\d+$/.test(seg)) return true
+    return false
+  }
 
+  // Try both `:id` and `:userId` substitution variants. Last numeric/ULID
+  // segment becomes :userId when the previous meaningful segment is 'members'.
+  const variants: string[] = []
+  // Variant A: replace all id-shaped segments with :id
+  variants.push(segments.map((s) => (isIdLike(s) ? ':id' : s)).join('/'))
+  // Variant B: if path ends in /members/<id>, use :userId for the trailing id.
+  const b = [...segments]
+  for (let i = 0; i < b.length; i++) {
+    if (b[i] === 'members' && isIdLike(b[i + 1] ?? '')) b[i + 1] = ':userId'
+    else if (isIdLike(b[i] ?? '')) b[i] = ':id'
+  }
+  variants.push(b.join('/'))
+
+  for (const v of variants) {
+    const key = `${method} ${v}`
+    if (PERMISSION_MATRIX[key]) return key
+  }
   return null
 }
 

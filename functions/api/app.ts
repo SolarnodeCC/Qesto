@@ -8,6 +8,8 @@ import { mountAdminRoutes } from './routes/admin'
 import { mountEnergizerRoutes } from './routes/energizers'
 import { mountGamificationRoutes } from './routes/gamification'
 import { mountAIInsightsRoutes } from './routes/ai-insights'
+import { mountTemplateRoutes } from './routes/templates'
+import { mountTeamRoutes } from './routes/teams'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
@@ -136,6 +138,8 @@ export function createApp() {
 
   mountAuthRoutes(app)
   mountSessionRoutes(app)
+  mountTemplateRoutes(app)
+  mountTeamRoutes(app)
   mountBillingRoutes(app)
   mountInsightsRoutes(app)
   mountAdminRoutes(app)
