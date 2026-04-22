@@ -117,6 +117,9 @@ export default function Dashboard() {
 
   const isSuperuser = auth.user.email === SUPERUSER_EMAIL
 
+  const activeTeamId = localStorage.getItem('activeTeamId')
+  const activePlan = (teams.find((t) => t.id === activeTeamId)?.plan ?? (teams[0]?.plan)) as string | undefined
+
   const navSlot = (
     <div className="flex items-center gap-3">
       {isSuperuser && (
@@ -144,9 +147,12 @@ export default function Dashboard() {
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
       {/* animate-page-enter: entire content fades + slides up on mount (LAYOUT-MOTION-01) */}
       <div className="animate-page-enter space-y-8">
-        <div>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Your sessions</h1>
-          <p className="text-sm text-pulse-500">Signed in as {auth.user.email}.</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Your sessions</h1>
+            <p className="text-sm text-pulse-500">Signed in as {auth.user.email}.</p>
+          </div>
+          {activePlan && <PlanBadge plan={activePlan} />}
         </div>
 
         {/* Tab bar */}
@@ -506,6 +512,26 @@ export default function Dashboard() {
         onSessionCreated={() => { void refresh() }}
       />
     </MainLayout>
+  )
+}
+
+function PlanBadge({ plan }: { plan: string }) {
+  const styles: Record<string, { dot: string; bg: string; text: string }> = {
+    free:    { dot: 'bg-pulse-400',   bg: 'bg-pulse-100',   text: 'text-pulse-600' },
+    starter: { dot: 'bg-teal-500',    bg: 'bg-teal-50',     text: 'text-teal-700' },
+    team:    { dot: 'bg-violet-500',  bg: 'bg-violet-50',   text: 'text-violet-700' },
+  }
+  const style = styles[plan] ?? styles.free
+  const label = plan.charAt(0).toUpperCase() + plan.slice(1)
+  return (
+    <Link
+      to="/pricing"
+      className={`inline-flex items-center gap-1.5 rounded-full border border-transparent px-3 py-1.5 text-sm font-medium ${style.bg} ${style.text} hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2`}
+      title="View pricing plans"
+    >
+      <span className={`h-2 w-2 rounded-full shrink-0 ${style.dot}`} aria-hidden="true" />
+      {label}
+    </Link>
   )
 }
 
