@@ -5,14 +5,18 @@ export default function Terms() {
   return (
     <MainLayout>
       <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-8">
-        <Heading level="l">
-          Terms of Service
-        </Heading>
-
-        <Body size="m" className="text-pulse-600">
-          Effective date: April 1, 2024. By using Qesto, you agree to these Terms of Service. Please read them
-          carefully.
-        </Body>
+        <div className="animate-page-enter max-w-3xl mx-auto text-center space-y-4 py-8 px-6 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50">
+          <h1
+            className="text-display-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
+            style={{ fontFamily: 'var(--font-family-display)' }}
+          >
+            Terms of Service
+          </h1>
+          <Body size="l" className="text-pulse-600">
+            Effective date: April 22, 2026. By using Qesto, you agree to these Terms of Service. Please read them
+            carefully.
+          </Body>
+        </div>
 
         <Section className="space-y-4">
           <Heading level="m" className="mb-space-4">

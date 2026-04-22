@@ -5,14 +5,18 @@ export default function Privacy() {
   return (
     <MainLayout>
       <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-8">
-        <Heading level="l">
-          Privacy Policy
-        </Heading>
-
-        <Body size="m" className="text-pulse-600">
-          Effective date: April 1, 2024. Qesto is committed to protecting your privacy while enabling
-          collaborative, real-time interactive sessions.
-        </Body>
+        <div className="animate-page-enter max-w-3xl mx-auto text-center space-y-4 py-8 px-6 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50">
+          <h1
+            className="text-display-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
+            style={{ fontFamily: 'var(--font-family-display)' }}
+          >
+            Privacy Policy
+          </h1>
+          <Body size="l" className="text-pulse-600">
+            Effective date: April 22, 2026. Qesto is committed to protecting your privacy while enabling
+            collaborative, real-time interactive sessions.
+          </Body>
+        </div>
 
         <Section className="space-y-4">
           <Heading level="m">
@@ -134,7 +138,7 @@ export default function Privacy() {
               <div>
                 <strong className="text-body-m block mb-space-2">Cloudflare Workers AI (Optional)</strong>
                 <Body size="s">
-                  When you enable AI Insights (Pro/Team only), Qesto runs inference on Cloudflare Workers AI
+                  When you enable AI Insights (Team plan only), Qesto runs inference on Cloudflare Workers AI
                   (not Anthropic). Prompts are run in-region and not stored for training. See{' '}
                   <a href="https://www.cloudflare.com/privacy/" className="text-teal-600 hover:underline">
                     Cloudflare's privacy policy
@@ -168,7 +172,7 @@ export default function Privacy() {
               <strong>Transport:</strong> All data transmitted over HTTPS (TLS 1.3)
             </li>
             <li className="text-body-m">
-              <strong>Authentication:</strong> JWT-based magic-link auth; optional SAML SSO (Enterprise)
+              <strong>Authentication:</strong> JWT-based magic-link auth; optional SAML SSO (Team plan)
             </li>
             <li className="text-body-m">
               <strong>Database:</strong> Encrypted at rest on Cloudflare D1; access restricted to authorized
