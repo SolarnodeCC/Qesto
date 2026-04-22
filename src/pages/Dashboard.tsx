@@ -149,8 +149,10 @@ export default function Dashboard() {
       <div className="animate-page-enter space-y-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Your sessions</h1>
-            <p className="text-sm text-pulse-500">Signed in as {auth.user.email}.</p>
+            <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">
+              Goedendag, {auth.user.email.split('@')[0]} 👋
+            </h1>
+            <p className="text-sm text-pulse-500">{auth.user.email}</p>
           </div>
           {activePlan && <PlanBadge plan={activePlan} />}
         </div>
