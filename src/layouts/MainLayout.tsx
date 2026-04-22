@@ -1,36 +1,28 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
 import TeamSwitcher from '../components/TeamSwitcher'
-
-const SOLUTION_LINKS = [
-  { label: 'Business', href: '/business' },
-  { label: 'Education', href: '/education' },
-  { label: 'Enterprise', href: '/enterprise' },
-  { label: 'Events', href: '/events' },
-  { label: 'HR & People', href: '/hr' },
-  { label: 'Nonprofits', href: '/nonprofit' },
-  { label: 'Consulting', href: '/consulting' },
-]
-
-const FEATURE_LINKS = [
-  { label: 'AI Insights', href: '/features/ai-insights' },
-  { label: 'Live Polling', href: '/features/live-polling' },
-  { label: 'Privacy', href: '/features/privacy' },
-]
-
-const USE_CASE_LINKS = [
-  { label: 'Team Meetings', href: '/use-cases/team-meetings' },
-  { label: 'Workshops', href: '/use-cases/workshops' },
-  { label: 'Training', href: '/use-cases/training' },
-]
+import { useT } from '../i18n'
 
 function NavDropdown({ label, links }: { label: string; links: Array<{ label: string; href: string }> }) {
   const location = useLocation()
   const isActive = links.some(l => location.pathname === l.href)
+  const [isOpen, setIsOpen] = useState(false)
+  const menuId = useId()
+
+  useEffect(() => {
+    setIsOpen(false)
+  }, [location.pathname])
 
   return (
-    <div className="relative group">
+    <div
+      className="relative"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') setIsOpen(false)
+      }}
+    >
       <button
         type="button"
         className={[
@@ -39,6 +31,9 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
           isActive ? 'text-teal-600' : 'text-pulse-600',
         ].join(' ')}
         aria-haspopup="true"
+        aria-expanded={isOpen}
+        aria-controls={menuId}
+        onClick={() => setIsOpen(open => !open)}
       >
         {label}
         <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-px">
@@ -46,8 +41,12 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
         </svg>
       </button>
       <ul
+        id={menuId}
         role="menu"
-        className="absolute left-0 top-full mt-1 hidden group-hover:block group-focus-within:block z-50 min-w-[160px] rounded-lg border border-pulse-200 bg-white dark:bg-pulse-900 shadow-elevated py-1"
+        className={[
+          'absolute left-0 top-full mt-1 z-50 min-w-[160px] rounded-lg border border-pulse-200 bg-white dark:bg-pulse-900 shadow-elevated py-1',
+          isOpen ? 'block' : 'hidden',
+        ].join(' ')}
       >
         {links.map(link => (
           <li key={link.href} role="none">
@@ -95,14 +94,32 @@ export default function MainLayout({
   navSlot,
   noFooter = false,
 }: MainLayoutProps) {
+  const t = useT('solutions')
+  const solutionLinks = [
+    { label: t('navLinks.events'), href: '/events' },
+    { label: t('navLinks.hr'), href: '/hr' },
+    { label: t('navLinks.nonprofit'), href: '/nonprofit' },
+    { label: t('navLinks.consulting'), href: '/consulting' },
+  ]
+  const featureLinks = [
+    { label: t('navLinks.aiInsights'), href: '/features/ai-insights' },
+    { label: t('navLinks.livePolling'), href: '/features/live-polling' },
+    { label: t('navLinks.featurePrivacy'), href: '/features/privacy' },
+  ]
+  const useCaseLinks = [
+    { label: t('navLinks.teamMeetings'), href: '/use-cases/team-meetings' },
+    { label: t('navLinks.workshops'), href: '/use-cases/workshops' },
+    { label: t('navLinks.training'), href: '/use-cases/training' },
+  ]
+
   return (
     <>
       <SkipLink />
 
       <header className="border-b border-pulse-200 bg-[var(--color-surface)]">
         <div className="grid-container flex items-center justify-between py-3 px-4 md:px-6">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="inline-flex items-center gap-1 text-sm font-bold uppercase tracking-widest text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
           >
             {/* Sparkle mark — DESIGN-POLISH-02 */}
@@ -118,19 +135,19 @@ export default function MainLayout({
               <path d="M12 2l1.8 5.4 5.7 0-4.6 3.4 1.8 5.4L12 13l-4.7 3.2 1.8-5.4L4.5 7.4l5.7 0z" />
             </svg>
             Qesto
-          </a>
+          </Link>
 
           <div className="flex items-center gap-3">
             <TeamSwitcher />
             <nav aria-label="Site navigation" className="flex items-center gap-1">
-              <NavDropdown label="Solutions" links={SOLUTION_LINKS} />
-              <NavDropdown label="Features" links={FEATURE_LINKS} />
-              <NavDropdown label="Use cases" links={USE_CASE_LINKS} />
+              <NavDropdown label={t('nav.solutions')} links={solutionLinks} />
+              <NavDropdown label={t('nav.features')} links={featureLinks} />
+              <NavDropdown label={t('nav.useCases')} links={useCaseLinks} />
               <Link
                 to="/pricing"
                 className="text-sm font-medium text-pulse-600 hover:text-teal-600 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
-                Pricing
+                {t('footer.pricing')}
               </Link>
               {navSlot}
             </nav>
@@ -165,7 +182,7 @@ export default function MainLayout({
                     to="/pricing"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    Pricing
+                    {t('footer.pricing')}
                   </Link>
                 </li>
                 <li>
@@ -173,7 +190,7 @@ export default function MainLayout({
                     to="/events"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    Events
+                    {t('footer.events')}
                   </Link>
                 </li>
                 <li>
@@ -181,7 +198,7 @@ export default function MainLayout({
                     to="/hr"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    HR
+                    {t('footer.hr')}
                   </Link>
                 </li>
                 <li>
@@ -189,7 +206,7 @@ export default function MainLayout({
                     to="/nonprofit"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    Nonprofits
+                    {t('footer.nonprofit')}
                   </Link>
                 </li>
                 <li>
@@ -197,7 +214,7 @@ export default function MainLayout({
                     to="/consulting"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    Consulting
+                    {t('footer.consulting')}
                   </Link>
                 </li>
                 <li>
@@ -205,7 +222,23 @@ export default function MainLayout({
                     to="/features/ai-insights"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    AI Insights
+                    {t('footer.aiInsights')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/features/live-polling"
+                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                  >
+                    {t('footer.livePolling')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/features/privacy"
+                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                  >
+                    {t('footer.featurePrivacy')}
                   </Link>
                 </li>
                 <li>
@@ -213,7 +246,7 @@ export default function MainLayout({
                     to="/privacy"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    Privacy
+                    {t('footer.privacyPolicy')}
                   </Link>
                 </li>
                 <li>
@@ -221,7 +254,7 @@ export default function MainLayout({
                     to="/terms"
                     className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                   >
-                    Terms
+                    {t('footer.terms')}
                   </Link>
                 </li>
               </ul>

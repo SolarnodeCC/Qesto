@@ -1,88 +1,137 @@
 import SolutionPageTemplate from '../../components/SolutionPageTemplate'
+import PageSeo from '../../components/PageSeo'
+import { useT } from '../../i18n'
 
 export default function EventsPage() {
+  const t = useT('solutions')
+
   return (
-    <SolutionPageTemplate
-      hero={{
-        badge: 'For Events & Conferences',
-        headline: 'Turn every keynote into a conversation.',
-        subheadline:
-          'Run live polls, Q&A rankings, and sentiment checks across hundreds of participants — Qesto keeps your audience engaged from opening remarks to closing session.',
-        primaryCta: { label: 'Get started free', href: '/login' },
-        secondaryCta: { label: 'See pricing', href: '/pricing' },
-        imageUrl: '/images/solutions/photo-1572021335469-31706a17aaef.avif',
-        imageAlt: 'Speaker presenting at a conference with engaged audience',
+    <>
+      <PageSeo
+        title={t('events.seo.title')}
+        description={t('events.seo.description')}
+        canonicalPath="/events"
+        ogImage="/images/solutions/photo-1572021335469-31706a17aaef.avif"
+      />
+      <SolutionPageTemplate
+        hero={{
+          badge: t('events.badge'),
+          headline: t('events.headline'),
+          subheadline: t('events.subheadline'),
+          primaryCta: { label: t('cta.startFree'), href: '/login' },
+          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+          imageUrl: '/images/solutions/photo-1572021335469-31706a17aaef.avif',
+          imageAlt: t('events.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Workshop participants co-creating in groups' },
+            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Presenter engaging a crowd during a keynote' },
+          ],
       }}
       painPoints={{
-        heading: 'The challenges every event organiser knows',
-        items: [
-          {
-            icon: '😶',
-            title: 'Passive audiences',
-            desc: 'Attendees scroll their phones while speakers talk to a quiet room. Engagement drops off after the first 10 minutes.',
-          },
-          {
-            icon: '🐢',
-            title: 'Slow feedback loops',
-            desc: 'Post-event surveys arrive too late to act on. You only find out what went wrong after people have left.',
-          },
-          {
-            icon: '🔇',
-            title: 'Silent majority',
-            desc: 'Only the loudest voices get heard in open Q&A. Most attendees never feel safe enough to share their real opinions.',
-          },
-        ],
+          heading: t('events.painPoints.heading'),
+          items: [
+            {
+              icon: '😶',
+              title: t('events.painPoints.passive.title'),
+              desc: t('events.painPoints.passive.desc'),
+            },
+            {
+              icon: '🐢',
+              title: t('events.painPoints.feedback.title'),
+              desc: t('events.painPoints.feedback.desc'),
+            },
+            {
+              icon: '🔇',
+              title: t('events.painPoints.silent.title'),
+              desc: t('events.painPoints.silent.desc'),
+            },
+          ],
       }}
       features={{
-        heading: 'Everything you need to run a live event people remember',
-        subheading: 'From pre-session warm-ups to post-keynote debrief, Qesto has a question type for every moment.',
-        items: [
-          {
-            icon: '📊',
-            title: 'Live polls',
-            desc: 'Instant multiple-choice and scale questions that update in real time on the big screen.',
+          heading: t('events.features.heading'),
+          subheading: t('events.features.subheading'),
+          items: [
+            {
+              icon: '📊',
+              title: t('events.features.livePolls.title'),
+              desc: t('events.features.livePolls.desc'),
+            },
+            {
+              icon: '🏆',
+              title: t('events.features.ranking.title'),
+              desc: t('events.features.ranking.desc'),
+            },
+            {
+              icon: '💬',
+              title: t('events.features.openQuestions.title'),
+              desc: t('events.features.openQuestions.desc'),
+              ai: true,
+            },
+            {
+              icon: '✅',
+              title: t('events.features.consent.title'),
+              desc: t('events.features.consent.desc'),
+            },
+          ],
+        }}
+        proof={{
+          heading: t('events.proof.heading'),
+          metrics: [
+            { value: t('events.proof.metric1.value'), label: t('events.proof.metric1.label'), note: t('events.proof.metric1.note') },
+            { value: t('events.proof.metric2.value'), label: t('events.proof.metric2.label'), note: t('events.proof.metric2.note') },
+            { value: t('events.proof.metric3.value'), label: t('events.proof.metric3.label'), note: t('events.proof.metric3.note') },
+          ],
+          badges: [
+            { label: t('events.proof.badge1') },
+            { label: t('events.proof.badge2') },
+            { label: t('events.proof.badge3') },
+          ],
+          testimonial: {
+            quote: t('events.proof.testimonial.quote'),
+            author: t('events.proof.testimonial.author'),
+            role: t('events.proof.testimonial.role'),
           },
-          {
-            icon: '🏆',
-            title: 'Priority ranking',
-            desc: 'Let audiences vote on session topics, speaker questions, or workshop themes — results surface the crowd consensus.',
-          },
-          {
-            icon: '💬',
-            title: 'Open questions',
-            desc: 'Collect free-text responses anonymously. AI clusters similar answers so speakers see themes, not noise.',
-            ai: true,
-          },
-          {
-            icon: '✅',
-            title: 'Consent checks',
-            desc: 'Run audience agreement polls before sensitive topics — see live consensus without putting anyone on the spot.',
-          },
-        ],
       }}
       scenarios={{
-        heading: 'How event teams use Qesto',
-        items: [
-          {
-            title: 'Keynote warm-up poll',
-            desc: "Open with a fun question to prime the audience. Energy spikes, phones come down, and you get instant data on who's in the room.",
-          },
-          {
-            title: 'Live speaker Q&A ranking',
-            desc: 'Attendees submit and upvote questions in real time. Speakers answer the ones that matter most — no awkward microphone relay needed.',
-          },
-          {
-            title: 'Post-session pulse check',
-            desc: 'A 60-second scale question at the end of each talk tells you what landed and what to adjust for the afternoon programme.',
-          },
-        ],
+          heading: t('events.scenarios.heading'),
+          items: [
+            {
+              title: t('events.scenarios.warmup.title'),
+              desc: t('events.scenarios.warmup.desc'),
+            },
+            {
+              title: t('events.scenarios.qa.title'),
+              desc: t('events.scenarios.qa.desc'),
+            },
+            {
+              title: t('events.scenarios.pulse.title'),
+              desc: t('events.scenarios.pulse.desc'),
+            },
+          ],
+        }}
+        related={{
+          heading: t('events.related.heading'),
+          links: [
+            { label: t('events.related.link1.label'), href: '/features/live-polling', desc: t('events.related.link1.desc') },
+            { label: t('events.related.link2.label'), href: '/features/ai-insights', desc: t('events.related.link2.desc') },
+            { label: t('events.related.link3.label'), href: '/use-cases/workshops', desc: t('events.related.link3.desc') },
+          ],
+        }}
+        faq={{
+          heading: t('events.faq.heading'),
+          items: [
+            { question: t('events.faq.q1.question'), answer: t('events.faq.q1.answer') },
+            { question: t('events.faq.q2.question'), answer: t('events.faq.q2.answer') },
+            { question: t('events.faq.q3.question'), answer: t('events.faq.q3.answer') },
+          ],
       }}
       bottomCta={{
-        heading: 'Your next event starts here.',
-        subheading: 'Set up in under 5 minutes, no app install required for attendees.',
-        primaryCta: { label: 'Start for free', href: '/login' },
-        secondaryCta: { label: 'View pricing', href: '/pricing' },
-      }}
-    />
+          heading: t('events.bottomCta.heading'),
+          subheading: t('events.bottomCta.subheading'),
+          primaryCta: { label: t('cta.startFree'), href: '/login' },
+          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+        }}
+      />
+    </>
   )
 }

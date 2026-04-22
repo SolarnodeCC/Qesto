@@ -1,87 +1,94 @@
 import SolutionPageTemplate from '../../components/SolutionPageTemplate'
+import PageSeo from '../../components/PageSeo'
+import { useT } from '../../i18n'
 
 export default function ConsultingPage() {
+  const t = useT('solutions')
+
   return (
-    <SolutionPageTemplate
-      hero={{
-        badge: 'For Consultants & Facilitators',
-        headline: 'Workshops that actually move the room.',
-        subheadline:
-          'Replace sticky notes and show-of-hands with structured real-time data. Qesto helps facilitators surface alignment, expose hidden disagreements, and close workshops with clear decisions.',
-        primaryCta: { label: 'Get started free', href: '/login' },
-        secondaryCta: { label: 'See pricing', href: '/pricing' },
-        imageUrl: '/images/solutions/photo-1552664730-d307ca884978.avif',
-        imageAlt: 'Facilitator leading a collaborative workshop session',
+    <>
+      <PageSeo
+        title={t('consulting.seo.title')}
+        description={t('consulting.seo.description')}
+        canonicalPath="/consulting"
+        ogImage="/images/solutions/photo-1552664730-d307ca884978.avif"
+      />
+      <SolutionPageTemplate
+        hero={{
+          badge: t('consulting.badge'),
+          headline: t('consulting.headline'),
+          subheadline: t('consulting.subheadline'),
+          primaryCta: { label: t('cta.startFree'), href: '/login' },
+          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+          imageUrl: '/images/solutions/photo-1552664730-d307ca884978.avif',
+          imageAlt: t('consulting.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Consultants facilitating strategic prioritization' },
+            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Stakeholders in a design sprint workshop' },
+          ],
       }}
       painPoints={{
-        heading: 'What slows workshops down',
-        items: [
-          {
-            icon: '🤔',
-            title: 'False consensus',
-            desc: "Groups nod along in the room but disagree privately. You leave thinking alignment was reached — it wasn't.",
-          },
-          {
-            icon: '🗓️',
-            title: 'No data to debrief with',
-            desc: 'After the session, you have photos of whiteboards and a vague memory of what was said. Clients want evidence.',
-          },
-          {
-            icon: '⏱️',
-            title: 'Time lost to logistics',
-            desc: 'Sticky notes, anonymous voting cards, and counting hands eat up facilitation time that should go into thinking.',
-          },
-        ],
+          heading: t('consulting.painPoints.heading'),
+          items: [
+            { icon: '🤔', title: t('consulting.painPoints.consensus.title'), desc: t('consulting.painPoints.consensus.desc') },
+            { icon: '🗓️', title: t('consulting.painPoints.debrief.title'), desc: t('consulting.painPoints.debrief.desc') },
+            { icon: '⏱️', title: t('consulting.painPoints.logistics.title'), desc: t('consulting.painPoints.logistics.desc') },
+          ],
       }}
       features={{
-        heading: 'Every tool a facilitator needs, in one session link',
-        items: [
-          {
-            icon: '🏆',
-            title: 'Priority ranking',
-            desc: 'Surface what the group actually values most — not what the most senior person in the room says they value.',
+          heading: t('consulting.features.heading'),
+          items: [
+            { icon: '🏆', title: t('consulting.features.ranking.title'), desc: t('consulting.features.ranking.desc') },
+            { icon: '⚖️', title: t('consulting.features.consent.title'), desc: t('consulting.features.consent.desc') },
+            { icon: '💬', title: t('consulting.features.open.title'), desc: t('consulting.features.open.desc'), ai: true },
+            { icon: '📈', title: t('consulting.features.export.title'), desc: t('consulting.features.export.desc') },
+          ],
+        }}
+        proof={{
+          heading: t('consulting.proof.heading'),
+          metrics: [
+            { value: t('consulting.proof.metric1.value'), label: t('consulting.proof.metric1.label'), note: t('consulting.proof.metric1.note') },
+            { value: t('consulting.proof.metric2.value'), label: t('consulting.proof.metric2.label'), note: t('consulting.proof.metric2.note') },
+            { value: t('consulting.proof.metric3.value'), label: t('consulting.proof.metric3.label'), note: t('consulting.proof.metric3.note') },
+          ],
+          badges: [{ label: t('consulting.proof.badge1') }, { label: t('consulting.proof.badge2') }, { label: t('consulting.proof.badge3') }],
+          testimonial: {
+            quote: t('consulting.proof.testimonial.quote'),
+            author: t('consulting.proof.testimonial.author'),
+            role: t('consulting.proof.testimonial.role'),
           },
-          {
-            icon: '⚖️',
-            title: 'Consent rounds',
-            desc: 'Run structured consent checks at decision points. See objections in real time so you can address them before leaving the room.',
-          },
-          {
-            icon: '💬',
-            title: 'Anonymous open questions',
-            desc: 'Collect honest responses without social pressure. AI clusters themes so you can share a clean summary at the end.',
-            ai: true,
-          },
-          {
-            icon: '📈',
-            title: 'Exportable results',
-            desc: 'Every session produces a shareable results report. Send clients the evidence of what their team decided.',
-          },
-        ],
       }}
       scenarios={{
-        heading: 'Facilitation formats that use Qesto',
-        items: [
-          {
-            title: 'Strategy alignment workshop',
-            desc: 'Use ranking to prioritise strategic options, then run consent rounds on the top two. Leave with a documented decision, not a vague mandate.',
-          },
-          {
-            title: 'Retrospective with distributed teams',
-            desc: 'Run anonymous open questions across timezones in async mode. AI surfaces the top 5 themes for a synchronous debrief.',
-          },
-          {
-            title: 'Design thinking ideation',
-            desc: 'Use open questions to generate ideas, then ranking to prioritise them. The team sees live aggregated results on their own devices.',
-          },
-        ],
+          heading: t('consulting.scenarios.heading'),
+          items: [
+            { title: t('consulting.scenarios.strategy.title'), desc: t('consulting.scenarios.strategy.desc') },
+            { title: t('consulting.scenarios.retro.title'), desc: t('consulting.scenarios.retro.desc') },
+            { title: t('consulting.scenarios.design.title'), desc: t('consulting.scenarios.design.desc') },
+          ],
+        }}
+        related={{
+          heading: t('consulting.related.heading'),
+          links: [
+            { label: t('consulting.related.link1.label'), href: '/use-cases/workshops', desc: t('consulting.related.link1.desc') },
+            { label: t('consulting.related.link2.label'), href: '/features/ai-insights', desc: t('consulting.related.link2.desc') },
+            { label: t('consulting.related.link3.label'), href: '/features/live-polling', desc: t('consulting.related.link3.desc') },
+          ],
+        }}
+        faq={{
+          heading: t('consulting.faq.heading'),
+          items: [
+            { question: t('consulting.faq.q1.question'), answer: t('consulting.faq.q1.answer') },
+            { question: t('consulting.faq.q2.question'), answer: t('consulting.faq.q2.answer') },
+            { question: t('consulting.faq.q3.question'), answer: t('consulting.faq.q3.answer') },
+          ],
       }}
       bottomCta={{
-        heading: 'Run better workshops, close with data.',
-        subheading: 'Set up your first session in under 5 minutes.',
-        primaryCta: { label: 'Start for free', href: '/login' },
-        secondaryCta: { label: 'View pricing', href: '/pricing' },
-      }}
-    />
+          heading: t('consulting.bottomCta.heading'),
+          subheading: t('consulting.bottomCta.subheading'),
+          primaryCta: { label: t('cta.startFree'), href: '/login' },
+          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+        }}
+      />
+    </>
   )
 }

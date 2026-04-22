@@ -1,87 +1,94 @@
 import SolutionPageTemplate from '../../components/SolutionPageTemplate'
+import PageSeo from '../../components/PageSeo'
+import { useT } from '../../i18n'
 
 export default function HRPage() {
+  const t = useT('solutions')
+
   return (
-    <SolutionPageTemplate
-      hero={{
-        badge: 'For HR & People Teams',
-        headline: 'Feel the pulse of your people — not just the data.',
-        subheadline:
-          'Run anonymous pulse surveys, onboarding check-ins, and engagement sessions that employees actually respond to. AI surfaces what your team is really thinking.',
-        primaryCta: { label: 'Get started free', href: '/login' },
-        secondaryCta: { label: 'See pricing', href: '/pricing' },
-        imageUrl: '/images/solutions/photo-1543269865-cbf427effbad.avif',
-        imageAlt: 'HR team in a collaborative discussion',
+    <>
+      <PageSeo
+        title={t('hr.seo.title')}
+        description={t('hr.seo.description')}
+        canonicalPath="/hr"
+        ogImage="/images/solutions/photo-1543269865-cbf427effbad.avif"
+      />
+      <SolutionPageTemplate
+        hero={{
+          badge: t('hr.badge'),
+          headline: t('hr.headline'),
+          subheadline: t('hr.subheadline'),
+          primaryCta: { label: t('cta.talkToSales'), href: '/pricing' },
+          secondaryCta: { label: t('cta.startFree'), href: '/login' },
+          imageUrl: '/images/solutions/photo-1543269865-cbf427effbad.avif',
+          imageAlt: t('hr.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1521737604893-d14cc237f11d.avif', alt: 'HR leaders reviewing employee feedback themes' },
+            { src: '/images/solutions/photo-1551434678-e076c223a692.avif', alt: 'Cross-functional team in a trust-building session' },
+          ],
       }}
       painPoints={{
-        heading: "The gaps annual surveys can't fill",
-        items: [
-          {
-            icon: '📅',
-            title: 'Stale once-a-year data',
-            desc: 'Annual engagement surveys tell you how people felt six months ago. By the time results are ready, the moment to act has passed.',
-          },
-          {
-            icon: '🤐',
-            title: 'Fear of speaking up',
-            desc: "Employees self-censor when they think responses aren't truly anonymous. Honest feedback stays locked inside people's heads.",
-          },
-          {
-            icon: '📋',
-            title: 'Survey fatigue',
-            desc: 'Long questionnaires get abandoned halfway through. Completion rates drop every quarter as people learn nothing will change.',
-          },
-        ],
+          heading: t('hr.painPoints.heading'),
+          items: [
+            { icon: '📅', title: t('hr.painPoints.stale.title'), desc: t('hr.painPoints.stale.desc') },
+            { icon: '🤐', title: t('hr.painPoints.fear.title'), desc: t('hr.painPoints.fear.desc') },
+            { icon: '📋', title: t('hr.painPoints.fatigue.title'), desc: t('hr.painPoints.fatigue.desc') },
+          ],
       }}
       features={{
-        heading: 'A better way to listen at scale',
-        items: [
-          {
-            icon: '🔒',
-            title: 'Anonymity modes',
-            desc: 'Three levels of anonymity — individual, cohort, and full — so employees share honestly without fear.',
+          heading: t('hr.features.heading'),
+          items: [
+            { icon: '🔒', title: t('hr.features.anonymity.title'), desc: t('hr.features.anonymity.desc') },
+            { icon: '⚡', title: t('hr.features.pulse.title'), desc: t('hr.features.pulse.desc') },
+            { icon: '🤖', title: t('hr.features.ai.title'), desc: t('hr.features.ai.desc'), ai: true },
+            { icon: '📊', title: t('hr.features.gdpr.title'), desc: t('hr.features.gdpr.desc') },
+          ],
+        }}
+        proof={{
+          heading: t('hr.proof.heading'),
+          metrics: [
+            { value: t('hr.proof.metric1.value'), label: t('hr.proof.metric1.label'), note: t('hr.proof.metric1.note') },
+            { value: t('hr.proof.metric2.value'), label: t('hr.proof.metric2.label'), note: t('hr.proof.metric2.note') },
+            { value: t('hr.proof.metric3.value'), label: t('hr.proof.metric3.label'), note: t('hr.proof.metric3.note') },
+          ],
+          badges: [{ label: t('hr.proof.badge1') }, { label: t('hr.proof.badge2') }, { label: t('hr.proof.badge3') }],
+          testimonial: {
+            quote: t('hr.proof.testimonial.quote'),
+            author: t('hr.proof.testimonial.author'),
+            role: t('hr.proof.testimonial.role'),
           },
-          {
-            icon: '⚡',
-            title: 'Pulse sessions in minutes',
-            desc: 'Run a focused 5-question check-in after any all-hands or team event. No survey tool licence needed.',
-          },
-          {
-            icon: '🤖',
-            title: 'AI theme detection',
-            desc: 'Qesto clusters open-text responses across sessions so HR can see patterns before they become problems.',
-            ai: true,
-          },
-          {
-            icon: '📊',
-            title: 'GDPR consent log',
-            desc: 'Every consent vote is cryptographically logged at the edge. Audit-ready from day one.',
-          },
-        ],
       }}
       scenarios={{
-        heading: 'How people teams use Qesto',
-        items: [
-          {
-            title: 'All-hands pulse check',
-            desc: 'Follow every company meeting with a quick three-question session. Track sentiment trends across quarters without asking people to log into yet another tool.',
-          },
-          {
-            title: 'New hire onboarding check-in',
-            desc: 'Run a 30-day and 90-day anonymous check-in for new starters. AI flags themes early so you can intervene before churn.',
-          },
-          {
-            title: 'Manager effectiveness survey',
-            desc: 'Collect upward feedback anonymously. Teams speak candidly; managers get aggregated themes, not individual accusations.',
-          },
-        ],
+          heading: t('hr.scenarios.heading'),
+          items: [
+            { title: t('hr.scenarios.allHands.title'), desc: t('hr.scenarios.allHands.desc') },
+            { title: t('hr.scenarios.onboarding.title'), desc: t('hr.scenarios.onboarding.desc') },
+            { title: t('hr.scenarios.manager.title'), desc: t('hr.scenarios.manager.desc') },
+          ],
+        }}
+        related={{
+          heading: t('hr.related.heading'),
+          links: [
+            { label: t('hr.related.link1.label'), href: '/features/privacy', desc: t('hr.related.link1.desc') },
+            { label: t('hr.related.link2.label'), href: '/features/ai-insights', desc: t('hr.related.link2.desc') },
+            { label: t('hr.related.link3.label'), href: '/use-cases/team-meetings', desc: t('hr.related.link3.desc') },
+          ],
+        }}
+        faq={{
+          heading: t('hr.faq.heading'),
+          items: [
+            { question: t('hr.faq.q1.question'), answer: t('hr.faq.q1.answer') },
+            { question: t('hr.faq.q2.question'), answer: t('hr.faq.q2.answer') },
+            { question: t('hr.faq.q3.question'), answer: t('hr.faq.q3.answer') },
+          ],
       }}
       bottomCta={{
-        heading: 'Build a culture where everyone has a voice.',
-        subheading: 'Start free — no HR software integration required.',
-        primaryCta: { label: 'Start for free', href: '/login' },
-        secondaryCta: { label: 'View pricing', href: '/pricing' },
-      }}
-    />
+          heading: t('hr.bottomCta.heading'),
+          subheading: t('hr.bottomCta.subheading'),
+          primaryCta: { label: t('cta.talkToSales'), href: '/pricing' },
+          secondaryCta: { label: t('cta.startFree'), href: '/login' },
+        }}
+      />
+    </>
   )
 }
