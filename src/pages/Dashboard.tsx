@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-
-const SUPERUSER_EMAIL = 'oostelaar@hotmail.com'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useDensity, type Density } from '../hooks/useDensity'
 import { useInsights } from '../hooks/useInsights'
+import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
 import AINarrative from '../components/AINarrative'
 import SessionWizard from '../components/SessionWizard'
 
-type DashboardTab = 'sessions' | 'insights'
+const SUPERUSER_EMAIL = 'oostelaar@hotmail.com'
+
+type DashboardTab = 'sessions' | 'insights' | 'teams' | 'templates'
 
 interface Template {
   id: string
@@ -55,20 +56,21 @@ export default function Dashboard() {
   const [modal, setModal] = useState<TemplateModalState>({ open: false, template: null })
   const [creatingFromTemplate, setCreatingFromTemplate] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [teams, setTeams] = useState<Array<{ id: string; name: string; plan: string }>>([])
+  const [teamsLoading, setTeamsLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch templates
     fetch('/api/templates')
       .then((res) => res.json() as Promise<TemplateResponse>)
-      .then((data) => {
-        if (data.ok) {
-          setTemplates(data.data.templates)
-        }
-      })
-      .catch(() => {
-        // Silently fail — templates are optional
-      })
+      .then((data) => { if (data.ok) setTemplates(data.data.templates) })
+      .catch(() => {})
       .finally(() => setTemplatesLoading(false))
+  }, [])
+
+  useEffect(() => {
+    void api<{ teams: Array<{ id: string; name: string; plan: string }> }>('/api/teams')
+      .then((res) => { if (res.ok) setTeams(res.data.teams) })
+      .finally(() => setTeamsLoading(false))
   }, [])
 
   if (auth.status === 'loading') {
@@ -153,40 +155,31 @@ export default function Dashboard() {
           aria-label="Dashboard sections"
           className="flex gap-1 border-b border-pulse-200 dark:border-pulse-700"
         >
-          <button
-            role="tab"
-            id="tab-sessions"
-            aria-controls="tabpanel-sessions"
-            aria-selected={activeTab === 'sessions'}
-            onClick={() => setActiveTab('sessions')}
-            className={[
-              'px-space-4 py-space-2 text-body-s font-medium rounded-t-md -mb-px border border-b-0',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
-              'tab-transition',
-              activeTab === 'sessions'
-                ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
-                : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
-            ].join(' ')}
-          >
-            Sessions
-          </button>
-          <button
-            role="tab"
-            id="tab-insights"
-            aria-controls="tabpanel-insights"
-            aria-selected={activeTab === 'insights'}
-            onClick={() => setActiveTab('insights')}
-            className={[
-              'px-space-4 py-space-2 text-body-s font-medium rounded-t-md -mb-px border border-b-0',
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
-              'tab-transition',
-              activeTab === 'insights'
-                ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
-                : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
-            ].join(' ')}
-          >
-            Insights
-          </button>
+          {([
+            { id: 'sessions', label: 'Sessions' },
+            { id: 'insights', label: 'Insights' },
+            { id: 'teams',    label: 'Teams' },
+            { id: 'templates', label: 'Templates' },
+          ] as const).map(({ id, label }) => (
+            <button
+              key={id}
+              role="tab"
+              id={`tab-${id}`}
+              aria-controls={`tabpanel-${id}`}
+              aria-selected={activeTab === id}
+              onClick={() => setActiveTab(id)}
+              className={[
+                'px-5 py-3 text-sm font-medium rounded-t-md -mb-px border border-b-0 min-h-[44px]',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+                'tab-transition',
+                activeTab === id
+                  ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
+                  : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
+              ].join(' ')}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Sessions tab */}
@@ -208,35 +201,6 @@ export default function Dashboard() {
               </svg>
               + New session
             </button>
-
-            {/* Templates section */}
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Start from a template</h2>
-              {templatesLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-32 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
-                  ))}
-                </div>
-              ) : templates.length === 0 ? (
-                <p className="text-sm text-pulse-500">Templates loading…</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {templates.map((tmpl) => (
-                    <button
-                      key={tmpl.id}
-                      type="button"
-                      onClick={() => setModal({ open: true, template: tmpl })}
-                      className="text-left p-4 rounded-xl border border-pulse-200 hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
-                    >
-                      <h3 className="font-medium text-pulse-900">{tmpl.name}</h3>
-                      <p className="text-sm text-pulse-500 mt-1">{tmpl.description}</p>
-                      <p className="text-xs text-pulse-400 mt-2">{tmpl.questions.length} questions</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </section>
 
             <section className="space-y-3">
               <div className="flex items-center justify-between">
@@ -422,6 +386,80 @@ export default function Dashboard() {
                 </ul>
               )}
             </section>
+          </div>
+        )}
+
+        {/* Teams tab */}
+        {activeTab === 'teams' && (
+          <div
+            role="tabpanel"
+            id="tabpanel-teams"
+            aria-labelledby="tab-teams"
+            className="space-y-4"
+          >
+            <h2 className="text-xl font-semibold">Your teams</h2>
+            {teamsLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-16 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
+                ))}
+              </div>
+            ) : teams.length === 0 ? (
+              <p className="text-sm text-pulse-500">You don't belong to any team yet.</p>
+            ) : (
+              <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
+                {teams.map((team) => (
+                  <li key={team.id} className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="font-medium text-pulse-800">{team.name}</p>
+                      <p className="text-xs text-pulse-400 mt-0.5 capitalize">{team.plan} plan</p>
+                    </div>
+                    <Link
+                      to={`/teams/${team.id}`}
+                      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    >
+                      Settings →
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {/* Templates tab */}
+        {activeTab === 'templates' && (
+          <div
+            role="tabpanel"
+            id="tabpanel-templates"
+            aria-labelledby="tab-templates"
+            className="space-y-4"
+          >
+            <h2 className="text-xl font-semibold">Start from a template</h2>
+            {templatesLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-32 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
+                ))}
+              </div>
+            ) : templates.length === 0 ? (
+              <p className="text-sm text-pulse-500">No templates available.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {templates.map((tmpl) => (
+                  <button
+                    key={tmpl.id}
+                    type="button"
+                    onClick={() => setModal({ open: true, template: tmpl })}
+                    className="text-left p-4 rounded-xl border border-pulse-200 hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+                  >
+                    <h3 className="font-medium text-pulse-900">{tmpl.name}</h3>
+                    <p className="text-sm text-pulse-500 mt-1">{tmpl.description}</p>
+                    <p className="text-xs text-pulse-400 mt-2">{tmpl.questions.length} questions</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
