@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
+import { useDensity, type Density } from '../hooks/useDensity'
+import { useInsights } from '../hooks/useInsights'
 import MainLayout from '../layouts/MainLayout'
 import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
@@ -32,34 +34,16 @@ interface TemplateResponse {
   data: { templates: Template[] }
 }
 
-const MOCK_INSIGHT_THEMES = [
-  {
-    id: '1',
-    title: 'Team velocity concerns',
-    description:
-      'Participants across multiple sessions raised concerns about sprint velocity and whether the current pace is sustainable long-term.',
-    sessionCount: 4,
-  },
-  {
-    id: '2',
-    title: 'Cross-team communication gaps',
-    description:
-      'A recurring theme of unclear handoffs and misaligned expectations between engineering and design teams.',
-    sessionCount: 3,
-  },
-  {
-    id: '3',
-    title: 'Onboarding experience',
-    description:
-      'New team members consistently highlight the onboarding process as an area for improvement, especially documentation quality.',
-    sessionCount: 2,
-  },
-]
-
 export default function Dashboard() {
   const auth = useAuth()
   const navigate = useNavigate()
-  const { state, refresh } = useSessions()
+  const { state, refresh, create } = useSessions()
+  const { density, setDensity } = useDensity()
+  const closedSessions =
+    state.status === 'ready'
+      ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
+      : []
+  const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions)
   const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const [wizardOpen, setWizardOpen] = useState(false)
   const [templates, setTemplates] = useState<Template[]>([])
@@ -236,7 +220,10 @@ export default function Dashboard() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Draft &amp; live</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Draft &amp; live</h2>
+                <DensitySwitcher density={density} onChange={setDensity} />
+              </div>
               {state.status === 'loading' ? (
                 /* LAYOUT-SKELETON-01: replace text placeholder with geometric skeleton */
                 <SessionListSkeleton rows={3} />
@@ -251,7 +238,7 @@ export default function Dashboard() {
                   {state.sessions.map((s, i) => (
                     <li
                       key={s.id}
-                      className="animate-list-item p-4 flex items-center justify-between gap-4"
+                      className={`animate-list-item flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}
                       style={{ '--stagger-index': i } as React.CSSProperties}
                     >
                       <div>
@@ -305,21 +292,70 @@ export default function Dashboard() {
               <h2 id="insight-themes-heading" className="text-heading-s font-semibold dark:text-pulse-100">
                 Top themes
               </h2>
-              <p className="text-body-s text-pulse-500 dark:text-pulse-400">
-                AI-identified themes across your closed sessions. Close more sessions to see
-                richer patterns.
-              </p>
-              <ul className="space-y-3">
-                {MOCK_INSIGHT_THEMES.map((theme) => (
-                  <li key={theme.id}>
-                    <InsightThemeCard
-                      title={theme.title}
-                      description={theme.description}
-                      sessionCount={theme.sessionCount}
-                    />
-                  </li>
-                ))}
-              </ul>
+
+              {planGated ? (
+                <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
+                  <p className="text-body-s text-violet-800 dark:text-violet-300 font-medium">
+                    AI Insights requires a Starter or Team plan.
+                  </p>
+                  <p className="text-body-s text-violet-700 dark:text-violet-400">
+                    Upgrade to unlock cross-session theme detection, confidence scoring, and follow-up question suggestions.
+                  </p>
+                  <Link
+                    to="/pricing"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 text-white px-4 py-2 text-sm font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+                  >
+                    View plans →
+                  </Link>
+                </div>
+              ) : closedSessions.length === 0 ? (
+                <p className="text-body-s text-pulse-500 dark:text-pulse-400">
+                  AI-identified themes across your closed sessions. Close more sessions to see richer patterns.
+                </p>
+              ) : insightsLoading ? (
+                <ul className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <li key={i} className="h-24 rounded-lg bg-pulse-200 dark:bg-pulse-700 skeleton-shimmer" aria-hidden="true" />
+                  ))}
+                </ul>
+              ) : insightThemes.length === 0 ? (
+                <div className="space-y-4">
+                  <p className="text-body-s text-pulse-500 dark:text-pulse-400">
+                    No insights generated yet. Analyze your closed sessions to surface themes.
+                  </p>
+                  <div className="space-y-2">
+                    {closedSessions.slice(0, 3).map((s) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => void analyzeSession(s.id)}
+                        className="w-full text-left flex items-center justify-between gap-3 p-3 rounded-lg border border-pulse-200 hover:border-teal-400 hover:bg-teal-50 dark:border-pulse-700 dark:hover:border-teal-600 dark:hover:bg-teal-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+                      >
+                        <span className="text-sm font-medium text-pulse-800 dark:text-pulse-200">{s.title}</span>
+                        <span className="text-xs text-teal-600 dark:text-teal-400 font-medium flex items-center gap-1">
+                          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z" />
+                          </svg>
+                          Analyze
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {insightThemes.map((theme) => (
+                    <li key={theme.id}>
+                      <InsightThemeCard
+                        title={theme.title}
+                        description={theme.description}
+                        sessionCount={theme.sessionCount}
+                        confidence={theme.confidence}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           </div>
         )}
@@ -337,6 +373,7 @@ export default function Dashboard() {
                 Create session from {modal.template.name}?
               </h2>
               <p className="text-sm text-pulse-600">{modal.template.description}</p>
+              {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
@@ -366,5 +403,38 @@ export default function Dashboard() {
         onSessionCreated={() => { void refresh() }}
       />
     </MainLayout>
+  )
+}
+
+function DensitySwitcher({ density, onChange }: { density: Density; onChange: (d: Density) => void }) {
+  const options: { value: Density; label: string; title: string }[] = [
+    { value: 'compact', label: '▤', title: 'Compact' },
+    { value: 'comfortable', label: '▥', title: 'Comfortable' },
+    { value: 'spacious', label: '▦', title: 'Spacious' },
+  ]
+  return (
+    <div
+      role="group"
+      aria-label="List density"
+      className="flex rounded-md border border-pulse-200 dark:border-pulse-700 overflow-hidden"
+    >
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          title={opt.title}
+          aria-pressed={density === opt.value}
+          onClick={() => onChange(opt.value)}
+          className={[
+            'px-2.5 py-1 text-sm leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500 transition-colors',
+            density === opt.value
+              ? 'bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300'
+              : 'text-pulse-500 hover:bg-pulse-50 dark:hover:bg-pulse-800 dark:text-pulse-400',
+          ].join(' ')}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
   )
 }

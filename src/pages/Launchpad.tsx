@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useSession } from '../hooks/useSessions'
+import { useSession, type Question, type PollOption } from '../hooks/useSessions'
 import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
@@ -17,7 +17,7 @@ export default function Launchpad() {
   const auth = useAuth()
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { data, loading, error } = useSession(id)
+  const { data, loading, error, reload } = useSession(id)
   const t = useT('launchpad')
 
   const [sharing, setSharing] = useState(false)
@@ -26,6 +26,20 @@ export default function Launchpad() {
   const [codeCopied, setCodeCopied] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Drag-to-reorder state
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [orderedQuestions, setOrderedQuestions] = useState<Question[]>([])
+  const [reorderError, setReorderError] = useState<string | null>(null)
+
+  // Inline editor state
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editPrompt, setEditPrompt] = useState('')
+  const [editKind, setEditKind] = useState<Question['kind']>('poll')
+  const [editOptions, setEditOptions] = useState<PollOption[]>([])
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   // Count-up timer — starts when started_at is available (LAUNCHPAD-02)
   useEffect(() => {
@@ -43,6 +57,83 @@ export default function Launchpad() {
       if (intervalRef.current !== null) clearInterval(intervalRef.current)
     }
   }, [data?.session.started_at])
+
+  // Sync orderedQuestions when session data loads
+  useEffect(() => {
+    if (data?.questions) setOrderedQuestions(data.questions)
+  }, [data?.questions])
+
+  const handleDragStart = useCallback((index: number) => {
+    setDragIndex(index)
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    setDragOverIndex(index)
+  }, [])
+
+  const handleDrop = useCallback(
+    async (dropIndex: number) => {
+      if (dragIndex === null || dragIndex === dropIndex || !id) {
+        setDragIndex(null)
+        setDragOverIndex(null)
+        return
+      }
+      const next = [...orderedQuestions]
+      const [moved] = next.splice(dragIndex, 1)
+      next.splice(dropIndex, 0, moved)
+      setOrderedQuestions(next)
+      setDragIndex(null)
+      setDragOverIndex(null)
+      setReorderError(null)
+
+      const raw = await fetch(`/api/sessions/${encodeURIComponent(id)}/questions/reorder`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questionIds: next.map((q) => q.id) }),
+      }).catch(() => null)
+      if (!raw?.ok) {
+        setReorderError(t('reorder_error'))
+        setOrderedQuestions(data?.questions ?? next)
+      }
+    },
+    [dragIndex, orderedQuestions, id, data?.questions, t],
+  )
+
+  const handleDragEnd = useCallback(() => {
+    setDragIndex(null)
+    setDragOverIndex(null)
+  }, [])
+
+  const startEdit = useCallback((q: Question) => {
+    setEditingId(q.id)
+    setEditPrompt(q.prompt)
+    setEditKind(q.kind)
+    setEditOptions(q.options)
+    setEditError(null)
+  }, [])
+
+  const cancelEdit = useCallback(() => {
+    setEditingId(null)
+    setEditError(null)
+  }, [])
+
+  const saveEdit = useCallback(async () => {
+    if (!id || !editingId) return
+    setEditSaving(true)
+    setEditError(null)
+    const res = await api<unknown>(`/api/sessions/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: { question: { kind: editKind, prompt: editPrompt.trim(), options: editOptions } },
+    })
+    setEditSaving(false)
+    if (!res.ok) {
+      setEditError(t('edit_error'))
+      return
+    }
+    setEditingId(null)
+    await reload()
+  }, [id, editingId, editKind, editPrompt, editOptions, reload, t])
 
   if (auth.status === 'loading') {
     return (
@@ -265,27 +356,125 @@ export default function Launchpad() {
         </div>
       </section>
 
-      {/* Questions preview */}
-      {data.questions.length > 0 && (
-        <section className="space-y-space-3">
-          <h2 className="text-heading-s font-semibold dark:text-pulse-100">
-            {t('questions_count', { count: data.questions.length })}
-          </h2>
+      {/* Questions — drag-to-reorder + inline editor (LAUNCHPAD-02) */}
+      <section className="space-y-space-3">
+        <h2 className="text-heading-s font-semibold dark:text-pulse-100">
+          {t('questions_count', { count: orderedQuestions.length })}
+        </h2>
+
+        {reorderError && (
+          <p role="alert" className="text-sm text-red-600">{reorderError}</p>
+        )}
+
+        {orderedQuestions.length === 0 ? (
+          <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('no_questions_hint')}</p>
+        ) : (
           <ul className="space-y-space-2">
-            {data.questions.map((q) => (
+            {orderedQuestions.map((q, index) => (
               <li
                 key={q.id}
-                className="rounded-md border border-pulse-200 dark:border-pulse-700 dark:bg-pulse-800 p-space-3 flex items-center justify-between gap-space-3"
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDrop={() => void handleDrop(index)}
+                onDragEnd={handleDragEnd}
+                className={[
+                  'rounded-md border dark:bg-pulse-800 transition-colors',
+                  dragOverIndex === index && dragIndex !== index
+                    ? 'border-teal-400 bg-teal-50 dark:bg-teal-900/20'
+                    : 'border-pulse-200 dark:border-pulse-700',
+                  dragIndex === index ? 'opacity-50' : '',
+                ].join(' ')}
               >
-                <div className="flex-1 min-w-0">
-                  <p className="text-body-s font-medium text-pulse-900 dark:text-pulse-100 truncate">{q.prompt}</p>
-                  <p className="text-caption text-pulse-500 dark:text-pulse-400 mt-0.5">{q.kind}</p>
-                </div>
+                {editingId === q.id ? (
+                  <div className="p-space-3 space-y-space-3">
+                    <div className="space-y-1">
+                      <label htmlFor={`edit-prompt-${q.id}`} className="text-caption text-pulse-500">{t('edit_prompt_label')}</label>
+                      <textarea
+                        id={`edit-prompt-${q.id}`}
+                        value={editPrompt}
+                        onChange={(e) => setEditPrompt(e.target.value)}
+                        rows={2}
+                        className="w-full rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label htmlFor={`edit-kind-${q.id}`} className="text-caption text-pulse-500">{t('edit_kind_label')}</label>
+                      <select
+                        id={`edit-kind-${q.id}`}
+                        value={editKind}
+                        onChange={(e) => setEditKind(e.target.value as Question['kind'])}
+                        className="rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      >
+                        <option value="poll">Poll</option>
+                        <option value="ranking">Ranking</option>
+                        <option value="open">Open</option>
+                        <option value="consent">Consent</option>
+                      </select>
+                    </div>
+                    {editError && (
+                      <p role="alert" className="text-sm text-red-600">{editError}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void saveEdit()}
+                        disabled={editSaving || editPrompt.trim().length === 0}
+                        className="px-3 py-1.5 rounded-md bg-teal-600 text-white text-sm font-medium hover:brightness-110 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      >
+                        {editSaving ? '…' : t('save_question')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelEdit}
+                        disabled={editSaving}
+                        className="px-3 py-1.5 rounded-md border border-pulse-300 dark:border-pulse-600 text-sm text-pulse-700 dark:text-pulse-300 hover:bg-pulse-50 dark:hover:bg-pulse-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      >
+                        {t('cancel_edit')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-space-3 flex items-center gap-space-3">
+                    {/* Drag handle */}
+                    <button
+                      type="button"
+                      aria-label={t('drag_handle_label')}
+                      className="flex-shrink-0 text-pulse-400 dark:text-pulse-500 cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                    >
+                      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="9" cy="6" r="1.5" />
+                        <circle cx="15" cy="6" r="1.5" />
+                        <circle cx="9" cy="12" r="1.5" />
+                        <circle cx="15" cy="12" r="1.5" />
+                        <circle cx="9" cy="18" r="1.5" />
+                        <circle cx="15" cy="18" r="1.5" />
+                      </svg>
+                    </button>
+
+                    <div className="flex-1 min-w-0">
+                      <p className="text-body-s font-medium text-pulse-900 dark:text-pulse-100 truncate">{q.prompt}</p>
+                      <p className="text-caption text-pulse-500 dark:text-pulse-400 mt-0.5">{q.kind}</p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => startEdit(q)}
+                      aria-label={t('edit_question')}
+                      className="flex-shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-500 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors"
+                    >
+                      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* Pre-flight checklist */}
       <section className="rounded-lg border border-pulse-200 dark:border-pulse-700 dark:bg-pulse-800 p-space-4 space-y-space-3 shadow-card">
