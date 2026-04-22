@@ -23,14 +23,22 @@ const stripeCustomerKey = (userId: string) => `stripe:customer:${userId}`
 function makeStripeClient(secretKey: string) {
   async function post<T>(path: string, body: Record<string, string>): Promise<T> {
     const params = new URLSearchParams(body).toString()
-    const res = await fetch(`https://api.stripe.com/v1${path}`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${secretKey}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: params,
-    })
+    const ac = new AbortController()
+    const timeout = setTimeout(() => ac.abort(), 10_000)
+    let res: Response
+    try {
+      res = await fetch(`https://api.stripe.com/v1${path}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${secretKey}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params,
+        signal: ac.signal,
+      })
+    } finally {
+      clearTimeout(timeout)
+    }
     if (!res.ok) {
       const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
         error?: { message?: string }

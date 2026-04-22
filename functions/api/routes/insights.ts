@@ -20,6 +20,7 @@ import {
   type InsightTheme,
 } from '../lib/ai-insights'
 import { sanitizeError } from '../lib/error-handler'
+import { rateLimit } from '../lib/rate-limit'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -48,6 +49,8 @@ type CachedInsights = {
 
 const INSIGHTS_MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
 const CACHE_TTL_SECONDS = 300 // 5 min
+// Guard against tight loops that would drain AI quota across many sessions.
+const AI_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'insights-ai' }
 
 function cacheKey(sessionId: string): string {
   return `insights:${INSIGHTS_MODEL}:${sessionId}`
@@ -173,6 +176,19 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
   app.get('/:id/insights', requireFeature('insightsAI'), async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
+
+    // Per-user rate limit — applies even on cache hits to bound endpoint abuse.
+    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
+    if (!rl.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'rate_limited', message: 'Too many insights requests; try again later' },
+          trace_id: c.get('trace_id'),
+        },
+        429,
+      )
+    }
 
     const session = await fetchOwnedSession(c.env.DB, id, user.sub)
     if (!session) {

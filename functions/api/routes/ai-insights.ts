@@ -7,6 +7,7 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { recordAuditEvent } from '../lib/audit'
+import { rateLimit } from '../lib/rate-limit'
 import type { Env } from '../types'
 
 type Vars = AuthVariables
@@ -18,8 +19,10 @@ interface InsightConfig {
 
 const insightConfig: InsightConfig = {
   max_tokens: 500,
-  model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+  model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
 }
+
+const AI_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'ai-insights' }
 
 export function mountAIInsightsRoutes(parent: any) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -32,6 +35,19 @@ export function mountAIInsightsRoutes(parent: any) {
     const user = c.get('user')
 
     try {
+      // Per-user rate limit to bound AI quota consumption.
+      const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
+      if (!rl.allowed) {
+        return c.json(
+          {
+            ok: false,
+            error: { code: 'rate_limited', message: 'Too many insights requests; try again later' },
+            trace_id,
+          },
+          429,
+        )
+      }
+
       // Check plan gating (Pro/Enterprise only)
       const userResult = await (c.env.DB.prepare as any)(
         `SELECT plan FROM users WHERE id = ?1`
@@ -112,14 +128,19 @@ ${context}
 
 Keep response concise (max 150 words). Focus on actionable insights.`
 
-      const aiResponse = await c.env.AI.run(insightConfig.model, {
-        messages: [
-          {
-            role: 'user',
-            content: aiPrompt
-          }
-        ]
-      })
+      const approxInputChars = aiPrompt.length
+      const t0 = Date.now()
+      let aiResponse: unknown
+      try {
+        aiResponse = await c.env.AI.run(insightConfig.model, {
+          messages: [{ role: 'user', content: aiPrompt }],
+          max_tokens: insightConfig.max_tokens,
+        })
+        console.log(JSON.stringify({ event: 'ai.analyze.ok', model: insightConfig.model, latencyMs: Date.now() - t0, approxInputChars }))
+      } catch (aiErr) {
+        console.log(JSON.stringify({ event: 'ai.analyze.error', model: insightConfig.model, latencyMs: Date.now() - t0, approxInputChars, error: aiErr instanceof Error ? aiErr.message : String(aiErr) }))
+        throw aiErr
+      }
 
       const insightText = (aiResponse as any)?.response ?? 'No insights generated'
 

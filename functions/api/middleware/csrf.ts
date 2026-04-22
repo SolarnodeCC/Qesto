@@ -72,6 +72,17 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // forge a fetch *without* sending an Origin. Be permissive for this case
   // to avoid breaking non-browser integrations; reject only when a header is
   // present and mismatched.
+  //
+  // Residual risk: any holder of a valid session cookie who can issue requests
+  // without Origin/Referer (e.g. a server-side integration) bypasses this
+  // check. Mitigation options if we add server-to-server callers:
+  //   (a) Issue short-lived API tokens and require Authorization header instead
+  //       of the session cookie — those callers never need cookie auth.
+  //   (b) Require a custom header (e.g. X-Qesto-Client) on all mutating
+  //       requests from known non-browser clients; CSRF attackers cannot set
+  //       custom headers cross-origin (CORS blocks them on the preflight).
+  // High-risk routes to revisit first: POST /billing/portal, POST /teams,
+  // DELETE /sessions/:id.
   const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
   if (candidate && candidate !== expected && !isPreview) {
     return c.json(
