@@ -73,10 +73,13 @@ export default function Pricing() {
     <MainLayout>
       <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-12 space-y-12">
         {/* Header */}
-        <div className="max-w-3xl mx-auto text-center space-y-4">
-          <Heading level="l">
+        <div className="animate-page-enter max-w-3xl mx-auto text-center space-y-4 py-8 px-6 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50">
+          <h1
+            className="text-display-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
+            style={{ fontFamily: 'var(--font-family-display)' }}
+          >
             Simple, Transparent Pricing
-          </Heading>
+          </h1>
           <Body size="l" className="text-pulse-600">
             Choose the plan that fits your team. Always in control. No long-term contracts.
           </Body>
@@ -117,19 +120,30 @@ export default function Pricing() {
                   )}
                 </div>
 
-                <Button
-                  variant={plan.ctaVariant}
-                  className="w-full mb-space-6"
-                  onClick={() => {
-                    // TODO: Wire up checkout/signup based on plan
-                    window.location.href =
-                      plan.price === 0
-                        ? '/login'
-                        : `https://checkout.qesto.cc?plan=${plan.name.toLowerCase()}`
-                  }}
-                >
-                  {plan.cta}
-                </Button>
+                {plan.badge ? (
+                  <button
+                    type="button"
+                    className="w-full mb-space-6 inline-flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium btn-motion focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    onClick={() => {
+                      window.location.href = `https://checkout.qesto.cc?plan=${plan.name.toLowerCase()}`
+                    }}
+                  >
+                    {plan.cta}
+                  </button>
+                ) : (
+                  <Button
+                    variant={plan.ctaVariant}
+                    className="w-full mb-space-6 btn-motion"
+                    onClick={() => {
+                      window.location.href =
+                        plan.price === 0
+                          ? '/login'
+                          : `https://checkout.qesto.cc?plan=${plan.name.toLowerCase()}`
+                    }}
+                  >
+                    {plan.cta}
+                  </Button>
+                )}
 
                 {/* Quick feature list */}
                 <div className="space-y-2 border-t border-pulse-200 pt-space-4">
@@ -258,16 +272,6 @@ export default function Pricing() {
 
             <Card>
               <Heading level="s" className="mb-space-2">
-                Do you offer enterprise or custom plans?
-              </Heading>
-              <Body size="m">
-                Yes! For large teams, custom requirements, or annual contracts, contact sales@qesto.cc for a custom
-                quote.
-              </Body>
-            </Card>
-
-            <Card>
-              <Heading level="s" className="mb-space-2">
                 What's your refund policy?
               </Heading>
               <Body size="m">
@@ -286,9 +290,13 @@ export default function Pricing() {
           <Body size="m" className="text-pulse-600">
             Join thousands of teams running interactive sessions with Qesto.
           </Body>
-          <Button variant="primary" onClick={() => (window.location.href = '/login')}>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium btn-motion focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            onClick={() => (window.location.href = '/login')}
+          >
             Start Your Free Session
-          </Button>
+          </button>
           <Body size="s" className="text-pulse-500">
             Have questions? <a href="mailto:sales@qesto.cc" className="text-teal-600 hover:underline">Contact our team</a>
           </Body>
