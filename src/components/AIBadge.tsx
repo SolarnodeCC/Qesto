@@ -17,9 +17,10 @@ export default function AIBadge({ label = 'AI suggested', className = '' }: AIBa
   return (
     <span
       className={[
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5',
-        'bg-violet-100 text-violet-700 text-xs font-medium',
+        'inline-flex items-center gap-space-1 rounded-pill px-space-3 py-space-1',
+        'bg-violet-100 text-violet-700 text-caption font-medium',
         'border border-violet-200',
+        'dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-700',
         className,
       ]
         .filter(Boolean)
