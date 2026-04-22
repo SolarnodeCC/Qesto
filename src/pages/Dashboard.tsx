@@ -6,6 +6,7 @@ import MainLayout from '../layouts/MainLayout'
 import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
 import AINarrative from '../components/AINarrative'
+import SessionWizard from '../components/SessionWizard'
 
 type DashboardTab = 'sessions' | 'insights'
 
@@ -58,15 +59,14 @@ const MOCK_INSIGHT_THEMES = [
 export default function Dashboard() {
   const auth = useAuth()
   const navigate = useNavigate()
-  const { state, create } = useSessions()
+  const { state, refresh } = useSessions()
   const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
-  const [title, setTitle] = useState('')
-  const [creating, setCreating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [wizardOpen, setWizardOpen] = useState(false)
   const [templates, setTemplates] = useState<Template[]>([])
   const [templatesLoading, setTemplatesLoading] = useState(true)
   const [modal, setModal] = useState<TemplateModalState>({ open: false, template: null })
   const [creatingFromTemplate, setCreatingFromTemplate] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // Fetch templates
@@ -96,21 +96,6 @@ export default function Dashboard() {
   }
   if (auth.status === 'anonymous') {
     return <Navigate to="/login" replace />
-  }
-
-  async function handleCreate(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const trimmed = title.trim()
-    if (!trimmed) return
-    setCreating(true)
-    setError(null)
-    const res = await create(trimmed)
-    setCreating(false)
-    if (!res.ok) {
-      setError(res.error.message)
-      return
-    }
-    setTitle('')
   }
 
   async function handleCreateFromTemplate() {
@@ -209,33 +194,17 @@ export default function Dashboard() {
             aria-labelledby="tab-sessions"
             className="space-y-6"
           >
-            <form onSubmit={handleCreate} className="flex flex-col gap-3 rounded-xl border border-pulse-200 p-5">
-              <label htmlFor="new-session-title" className="text-sm font-medium">
-                New session
-              </label>
-              <input
-                id="new-session-title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Q2 team retro"
-                maxLength={120}
-                disabled={creating}
-                className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
-              />
-              {error ? (
-                <p role="alert" className="text-sm text-red-600">
-                  {error}
-                </p>
-              ) : null}
-              <button
-                type="submit"
-                disabled={creating || title.trim().length === 0}
-                className="self-start inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
-              >
-                {creating ? 'Creating…' : 'Create draft'}
-              </button>
-            </form>
+            {/* New session trigger */}
+            <button
+              type="button"
+              onClick={() => setWizardOpen(true)}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400 px-5 py-4 font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion transition-colors"
+            >
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              + New session
+            </button>
 
             {/* Templates section */}
             <section className="space-y-3">
@@ -390,6 +359,12 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      <SessionWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onSessionCreated={() => { void refresh() }}
+      />
     </MainLayout>
   )
 }

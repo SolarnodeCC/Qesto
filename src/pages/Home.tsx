@@ -2,6 +2,25 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import MainLayout from '../layouts/MainLayout'
 import BuildStamp from '../components/BuildStamp'
+import AIBadge from '../components/AIBadge'
+
+const AI_FEATURES = [
+  {
+    icon: '✨',
+    title: 'AI-generated questions',
+    desc: 'Describe your session goal and Qesto drafts a complete question set in seconds — no blank page.',
+  },
+  {
+    icon: '📊',
+    title: 'Real-time insights',
+    desc: 'Cross-session theme detection surfaces patterns across your team\'s feedback automatically.',
+  },
+  {
+    icon: '🔒',
+    title: 'Privacy by default',
+    desc: 'All AI runs on-device via Cloudflare Workers AI. Your data never leaves the edge.',
+  },
+]
 
 export default function Home() {
   const auth = useAuth()
@@ -28,40 +47,80 @@ export default function Home() {
   )
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen flex flex-col items-center justify-center p-8 text-center">
-      {/* animate-page-enter: hero fades + slides up on load (LAYOUT-MOTION-01) */}
-      <div className="animate-page-enter max-w-xl space-y-6">
-        <h1 tabIndex={-1} className="text-4xl md:text-6xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none">
-          Feel the pulse of the room — AI amplifies it.
-        </h1>
-        <p className="text-lg text-pulse-600">
-          Real-time interactive sessions on Cloudflare&rsquo;s edge.
-        </p>
-        <div className="flex items-center justify-center gap-3">
-          {auth.status === 'authenticated' ? (
-            <div className="flex flex-col items-center gap-2">
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
-              >
-                Go to dashboard
-              </Link>
-              <span className="text-xs text-pulse-500">
-                Signed in as <strong>{auth.user.email}</strong>.
-              </span>
-            </div>
-          ) : auth.status === 'loading' ? (
-            <span className="text-sm text-pulse-500">Loading…</span>
-          ) : (
-            <Link
-              to="/login"
-              className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-2.5 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
-            >
-              Sign in
-            </Link>
-          )}
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen flex flex-col">
+      {/* Hero */}
+      <div className="animate-page-enter flex-1 flex flex-col items-center justify-center p-8 text-center space-y-8">
+        <div className="max-w-2xl space-y-6">
+          {/* AI narrative pill */}
+          <div className="flex items-center justify-center gap-2">
+            <AIBadge variant="assisted" label="AI-first" />
+            <span className="text-caption text-pulse-500">Edge-native · Privacy by default</span>
+          </div>
+
+          <h1
+            tabIndex={-1}
+            className="text-4xl md:text-6xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none"
+          >
+            Feel the pulse of the room — AI amplifies it.
+          </h1>
+
+          <p className="text-lg text-pulse-600 max-w-xl mx-auto">
+            Run real-time polls, rankings, and open questions with your team. AI drafts questions,
+            finds patterns, and surfaces what matters — all on Cloudflare&rsquo;s global edge.
+          </p>
+
+          <div className="flex items-center justify-center gap-3">
+            {auth.status === 'authenticated' ? (
+              <div className="flex flex-col items-center gap-2">
+                <Link
+                  to="/dashboard"
+                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                >
+                  Go to dashboard →
+                </Link>
+                <span className="text-xs text-pulse-500">
+                  Signed in as <strong>{auth.user.email}</strong>.
+                </span>
+              </div>
+            ) : auth.status === 'loading' ? (
+              <span className="text-sm text-pulse-500">Loading…</span>
+            ) : (
+              <div className="flex gap-3">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                >
+                  Get started free
+                </Link>
+                <Link
+                  to="/pricing"
+                  className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+                >
+                  See pricing
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <BuildStamp />
         </div>
-        <BuildStamp />
+
+        {/* AI 3-up feature strip (AI-VIS-01) */}
+        <div className="w-full max-w-3xl">
+          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {AI_FEATURES.map((feat, i) => (
+              <li
+                key={feat.title}
+                className="animate-list-item rounded-xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 text-left space-y-2 shadow-card"
+                style={{ '--stagger-index': i } as React.CSSProperties}
+              >
+                <span className="text-2xl" aria-hidden="true">{feat.icon}</span>
+                <h2 className="text-sm font-semibold dark:text-pulse-100">{feat.title}</h2>
+                <p className="text-caption text-pulse-500 leading-relaxed">{feat.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </MainLayout>
   )
