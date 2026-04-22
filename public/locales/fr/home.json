@@ -1,10 +1,10 @@
 {
-  "tagline": "[TODO] Qesto",
-  "heading": "[TODO] Feel the pulse of the room — AI amplifies it.",
-  "subtitle": "[TODO] Real-time interactive sessions on Cloudflare's edge.",
-  "goToDashboard": "[TODO] Go to dashboard",
-  "signedInAs": "[TODO] Signed in as",
-  "signOut": "[TODO] Sign out",
-  "loading": "[TODO] Loading…",
-  "signIn": "[TODO] Sign in"
+  "tagline": "Qesto",
+  "heading": "Ressentez le pouls de la salle — l'IA l'amplifie.",
+  "subtitle": "Sessions interactives en temps réel sur le réseau périphérique de Cloudflare.",
+  "goToDashboard": "Aller au tableau de bord",
+  "signedInAs": "Connecté en tant que",
+  "signOut": "Se déconnecter",
+  "loading": "Chargement…",
+  "signIn": "Se connecter"
 }

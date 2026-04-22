@@ -1,5 +1,5 @@
 {
-  "code": "[TODO] 404",
-  "message": "[TODO] That page does not exist.",
-  "backHome": "[TODO] Back home"
+  "code": "404",
+  "message": "Diese Seite existiert nicht.",
+  "backHome": "Zurück zur Startseite"
 }

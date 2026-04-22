@@ -1,12 +1,12 @@
 {
-  "heading": "[TODO] Join a session",
-  "subtitle": "[TODO] Enter the code shown by the presenter",
-  "codeLabel": "[TODO] Session code",
-  "codePlaceholder": "[TODO] XXXX",
-  "codeInvalid": "[TODO] Please enter a 4-digit code",
-  "codeNotFound": "[TODO] Session not found. Check the code and try again.",
-  "joinButton": "[TODO] Join",
-  "joining": "[TODO] Joining…",
-  "back": "[TODO] Back home",
-  "error": "[TODO] Failed to join session. Please try again."
+  "heading": "Unirse a una sesión",
+  "subtitle": "Ingresa el código que muestra el presentador",
+  "codeLabel": "Código de sesión",
+  "codePlaceholder": "XXXX",
+  "codeInvalid": "Ingresa un código de 4 dígitos",
+  "codeNotFound": "Sesión no encontrada. Verifica el código e intenta de nuevo.",
+  "joinButton": "Unirse",
+  "joining": "Uniéndose…",
+  "back": "Volver a inicio",
+  "error": "No se pudo unir a la sesión. Intenta de nuevo."
 }
