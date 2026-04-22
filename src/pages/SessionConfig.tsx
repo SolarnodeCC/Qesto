@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useSession, type PollOption } from '../hooks/useSessions'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
+import AIBadge from '../components/AIBadge'
 
 function newOptionId(): string {
   return `opt_${crypto.randomUUID().slice(0, 8)}`
@@ -23,6 +24,11 @@ export default function SessionConfig() {
   const [saved, setSaved] = useState(false)
   const [starting, setStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
+
+  // AI suggestion state
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
 
   // Hydrate form once the session loads.
   useEffect(() => {
@@ -84,6 +90,42 @@ export default function SessionConfig() {
   function removeOption(index: number) {
     if (options.length <= 2) return
     setOptions((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  async function handleAiSuggest() {
+    if (!id) return
+    setAiLoading(true)
+    setAiError(null)
+    setAiSuggestions([])
+
+    type AnalyzeResponse = {
+      session_id: string
+      themes: string[]
+      follow_ups: string[]
+      generated_at: number
+      model: string
+    }
+
+    const res = await api<AnalyzeResponse>(
+      `/api/sessions/${encodeURIComponent(id)}/insights/analyze`,
+      { method: 'POST' },
+    )
+
+    setAiLoading(false)
+
+    if (!res.ok) {
+      setAiError(res.error.message)
+      return
+    }
+
+    // Surface the follow_ups as suggested poll prompts (up to 3)
+    const suggestions = res.data.follow_ups.slice(0, 3)
+    setAiSuggestions(suggestions.length > 0 ? suggestions : ['No suggestions generated. Try adding more questions first.'])
+  }
+
+  function adoptSuggestion(suggestion: string) {
+    setPrompt(suggestion)
+    setAiSuggestions([])
   }
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
@@ -172,6 +214,71 @@ export default function SessionConfig() {
               maxLength={240}
               className="w-full border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
             />
+
+            {/* AI Suggest button */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={handleAiSuggest}
+                disabled={aiLoading}
+                aria-label="Get AI-suggested question prompts"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 text-violet-700 px-3 py-1.5 text-sm font-medium hover:bg-violet-100 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 transition-colors"
+              >
+                {aiLoading ? (
+                  <>
+                    {/* Spinner */}
+                    <svg
+                      aria-hidden="true"
+                      className="animate-spin w-3.5 h-3.5 text-violet-600"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Generating…
+                  </>
+                ) : (
+                  <>
+                    {/* Sparkle */}
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z" />
+                    </svg>
+                    AI Suggest
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* AI error */}
+            {aiError ? (
+              <p role="alert" className="text-xs text-red-600">
+                {aiError}
+              </p>
+            ) : null}
+
+            {/* AI suggestions list */}
+            {aiSuggestions.length > 0 && (
+              <div className="rounded-lg border border-violet-200 bg-violet-50 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <AIBadge />
+                  <span className="text-xs text-pulse-500">Click a suggestion to use it as your prompt</span>
+                </div>
+                <ul className="space-y-1" aria-label="AI suggested prompts">
+                  {aiSuggestions.map((suggestion, i) => (
+                    <li key={i}>
+                      <button
+                        type="button"
+                        onClick={() => adoptSuggestion(suggestion)}
+                        className="w-full text-left text-sm text-violet-800 hover:text-violet-900 hover:underline rounded px-1 py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1"
+                      >
+                        {suggestion}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
