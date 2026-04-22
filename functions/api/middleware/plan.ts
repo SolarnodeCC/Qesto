@@ -6,6 +6,9 @@ import type { Env, PlanTier } from '../types'
 import { PLAN_QUOTAS as QUOTAS_MAP } from '../types'
 import type { AuthVariables } from './auth'
 
+// Superusers bypass all plan quotas.
+const SUPERUSER_EMAILS = new Set(['oostelaar@hotmail.com'])
+
 export type PlanVariables = {
   plan: PlanTier
   planQuotas: (typeof QUOTAS_MAP)[PlanTier]
@@ -19,6 +22,13 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   if (!user) {
     // Auth middleware should have run first; if no user, auth failed elsewhere
     return c.json({ ok: false, error: { code: 'unauthorized', message: 'Not authenticated' } }, 401)
+  }
+
+  if (SUPERUSER_EMAILS.has(user.email ?? '')) {
+    c.set('plan', 'team')
+    c.set('planQuotas', { ...QUOTAS_MAP['team'], maxSessionsPerMonth: Number.MAX_SAFE_INTEGER })
+    await next()
+    return
   }
 
   // Fetch user's plan from D1
