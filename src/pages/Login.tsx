@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useState, useEffect, type FormEvent } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import BuildStamp from '../components/BuildStamp'
@@ -11,9 +11,14 @@ type SignupStatus = 'idle' | 'submitting' | 'email_taken' | 'password_too_short'
 type ResetStatus = 'idle' | 'submitting' | 'sent' | 'invalid' | 'error'
 
 export default function Login() {
-  const { requestMagicLink, loginWithPassword, signupWithPassword, requestPasswordReset } = useAuth()
+  const { requestMagicLink, loginWithPassword, signupWithPassword, requestPasswordReset, status } = useAuth()
   const [search] = useSearchParams()
+  const navigate = useNavigate()
   const t = useT('auth')
+
+  useEffect(() => {
+    if (status === 'authenticated') navigate('/dashboard', { replace: true })
+  }, [status, navigate])
 
   const [tab, setTab] = useState<Tab>('magic')
 
@@ -48,7 +53,7 @@ export default function Login() {
     e.preventDefault()
     setLoginStatus('submitting')
     const result = await loginWithPassword(loginEmail, loginPassword)
-    if (result === 'ok') return
+    if (result === 'ok') { navigate('/dashboard', { replace: true }); return }
     setLoginStatus(result === 'invalid_credentials' ? 'invalid_credentials' : 'error')
   }
 
@@ -60,7 +65,7 @@ export default function Login() {
     }
     setSignupStatus('submitting')
     const result = await signupWithPassword(signupEmail, signupPassword, signupName || undefined)
-    if (result === 'ok') return
+    if (result === 'ok') { navigate('/dashboard', { replace: true }); return }
     setSignupStatus(result === 'email_taken' ? 'email_taken' : 'error')
   }
 
