@@ -11,6 +11,7 @@ export default function AIInsightsPage() {
         title={t('features.aiInsights.seo.title')}
         description={t('features.aiInsights.seo.description')}
         canonicalPath="/features/ai-insights"
+        ogImage="/images/solutions/photo-1521737604893-d14cc237f11d.avif"
       />
       <FeaturePageTemplate
         hero={{
@@ -20,6 +21,12 @@ export default function AIInsightsPage() {
           subheadline: t('features.aiInsights.subheadline'),
           primaryCta: { label: t('cta.tryItFree'), href: '/login' },
           secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
+          imageUrl: '/images/solutions/photo-1521737604893-d14cc237f11d.avif',
+          imageAlt: 'Team leads reviewing AI-generated insight summaries',
+          gallery: [
+            { src: '/images/solutions/photo-1551434678-e076c223a692.avif', alt: 'Team retrospectives transformed into clear themes' },
+            { src: '/images/solutions/photo-1552664730-d307ca884978.avif', alt: 'Consultants sharing AI-backed recommendations' },
+          ],
       }}
       howItWorks={{
         heading: t('features.aiInsights.howItWorks.heading'),

@@ -22,6 +22,10 @@ export default function EventsPage() {
           secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
           imageUrl: '/images/solutions/photo-1572021335469-31706a17aaef.avif',
           imageAlt: t('events.imageAlt'),
+          gallery: [
+            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Workshop participants co-creating in groups' },
+            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Presenter engaging a crowd during a keynote' },
+          ],
       }}
       painPoints={{
           heading: t('events.painPoints.heading'),
