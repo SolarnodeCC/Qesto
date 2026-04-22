@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSessions'
@@ -24,6 +24,25 @@ export default function Launchpad() {
   const [startError, setStartError] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
   const [codeCopied, setCodeCopied] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Count-up timer — starts when started_at is available (LAUNCHPAD-02)
+  useEffect(() => {
+    const startedAt = data?.session.started_at ?? null
+    if (!startedAt) {
+      setElapsed(0)
+      return
+    }
+    function tick() {
+      setElapsed(Math.floor((Date.now() - (startedAt as number)) / 1000))
+    }
+    tick()
+    intervalRef.current = setInterval(tick, 1000)
+    return () => {
+      if (intervalRef.current !== null) clearInterval(intervalRef.current)
+    }
+  }, [data?.session.started_at])
 
   if (auth.status === 'loading') {
     return (
@@ -66,6 +85,12 @@ export default function Launchpad() {
         </Link>
       </MainLayout>
     )
+  }
+
+  function formatElapsed(seconds: number): string {
+    const mm = String(Math.floor(seconds / 60)).padStart(2, '0')
+    const ss = String(seconds % 60).padStart(2, '0')
+    return `${mm}:${ss}`
   }
 
   const hasTitle = data.session.title.trim().length > 0
@@ -164,18 +189,18 @@ export default function Launchpad() {
       {/* Join code + QR code block */}
       <section
         aria-labelledby="join-code-heading"
-        className="rounded-xl border border-pulse-200 p-6 space-y-4"
+        className="rounded-lg border border-pulse-200 bg-pulse-50 p-space-5 space-y-space-4 shadow-card dark:bg-pulse-800 dark:border-pulse-700"
       >
-        <h2 id="join-code-heading" className="text-sm font-medium text-pulse-500 uppercase tracking-wider">
+        <h2 id="join-code-heading" className="text-caption font-medium text-pulse-500 uppercase tracking-wider dark:text-pulse-400">
           Join code
         </h2>
 
-        <div className="flex flex-col sm:flex-row items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-space-5">
           {/* Join code display + copy */}
-          <div className="flex-1 space-y-3">
-            <div className="flex items-center gap-3">
+          <div className="flex-1 space-y-space-3">
+            <div className="flex items-center gap-space-3">
               <code
-                className="text-5xl font-mono font-bold tracking-widest text-pulse-900 select-all"
+                className="text-5xl font-mono font-bold tracking-widest text-pulse-900 dark:text-pulse-50 select-all"
                 aria-label={`Join code: ${data.session.code}`}
               >
                 {data.session.code}
@@ -184,7 +209,7 @@ export default function Launchpad() {
                 type="button"
                 onClick={handleCopyCode}
                 aria-label={codeCopied ? 'Copied!' : 'Copy join code to clipboard'}
-                className="inline-flex items-center justify-center w-10 h-10 rounded-lg border border-pulse-300 text-pulse-500 hover:border-teal-500 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+                className="inline-flex items-center justify-center w-11 h-11 rounded-md border border-pulse-300 text-pulse-500 hover:border-teal-500 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors dark:border-pulse-600 dark:text-pulse-400 dark:hover:border-teal-500 dark:hover:text-teal-400"
               >
                 {codeCopied ? (
                   /* Checkmark icon */
@@ -201,20 +226,35 @@ export default function Launchpad() {
               </button>
             </div>
             {codeCopied && (
-              <p role="status" aria-live="polite" className="text-xs text-teal-600 font-medium">
+              <p role="status" aria-live="polite" className="text-caption text-teal-600 dark:text-teal-400 font-medium">
                 Code copied to clipboard!
               </p>
             )}
-            <p className="text-sm text-pulse-500">
+            <p className="text-body-s text-pulse-500">
               Participants go to <strong>qesto.app/join</strong> and enter this code.
             </p>
+
+            {/* Elapsed timer — visible once session is live (LAUNCHPAD-02) */}
+            {data.session.started_at !== null && (
+              <div className="flex flex-col gap-space-1 pt-space-2 border-t border-pulse-100">
+                <p className="text-caption text-pulse-500 uppercase tracking-wider">Session live for</p>
+                <p
+                  className="font-mono text-2xl font-semibold text-teal-600"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  aria-label={`Session live for ${formatElapsed(elapsed)}`}
+                >
+                  {formatElapsed(elapsed)}
+                </p>
+              </div>
+            )}
           </div>
 
           {/* QR code placeholder */}
           <div
             role="img"
             aria-label="QR code placeholder — will link directly to this session"
-            className="flex-shrink-0 w-32 h-32 rounded-xl border-2 border-dashed border-pulse-300 bg-pulse-50 flex flex-col items-center justify-center gap-1 text-pulse-400"
+            className="flex-shrink-0 w-32 h-32 rounded-lg border-2 border-dashed border-pulse-300 dark:border-pulse-600 bg-pulse-100 dark:bg-pulse-700 flex flex-col items-center justify-center gap-space-1 text-pulse-400 dark:text-pulse-500"
           >
             <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" />
@@ -224,7 +264,7 @@ export default function Launchpad() {
               <path d="M14 18h3M18 14v3" />
               <path d="M5 5h3v3H5zM16 5h3v3h-3zM5 16h3v3H5z" />
             </svg>
-            <span className="text-xs text-center leading-tight px-2">QR Code</span>
+            <span className="text-caption text-center leading-tight px-space-2">QR Code</span>
           </div>
         </div>
       </section>

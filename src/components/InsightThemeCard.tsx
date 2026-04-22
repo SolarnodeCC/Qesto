@@ -30,10 +30,11 @@ export default function InsightThemeCard({
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       className={[
-        'w-full text-left rounded-xl border border-pulse-200 p-5 space-y-3',
-        'transition-all duration-150',
+        'w-full text-left rounded-lg border border-pulse-200 bg-pulse-50 p-space-5 space-y-space-3',
+        'shadow-card transition-all duration-150',
+        'dark:bg-pulse-800 dark:border-pulse-700',
         onClick
-          ? 'cursor-pointer hover:border-violet-400 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2'
+          ? 'cursor-pointer hover:border-violet-400 hover:shadow-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:hover:border-violet-500'
           : '',
       ]
         .filter(Boolean)
@@ -41,8 +42,8 @@ export default function InsightThemeCard({
       aria-label={onClick ? `View details for theme: ${title}` : undefined}
     >
       {/* Title row */}
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-sm font-semibold text-pulse-900 leading-snug">{title}</h3>
+      <div className="flex items-start justify-between gap-space-3">
+        <h3 className="text-body-s font-semibold text-pulse-900 dark:text-pulse-100 leading-snug">{title}</h3>
         {/* Drill-down chevron — only when clickable */}
         {onClick && (
           <svg
@@ -56,7 +57,7 @@ export default function InsightThemeCard({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-pulse-400 flex-shrink-0 mt-0.5"
+            className="text-pulse-400 dark:text-pulse-500 flex-shrink-0 mt-0.5"
           >
             <path d="M9 18l6-6-6-6" />
           </svg>
@@ -64,10 +65,10 @@ export default function InsightThemeCard({
       </div>
 
       {/* Description */}
-      <p className="text-sm text-pulse-600 leading-relaxed">{description}</p>
+      <p className="text-body-s text-pulse-600 dark:text-pulse-400 leading-relaxed">{description}</p>
 
       {/* Session count chip */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-space-2">
         <svg
           aria-hidden="true"
           focusable="false"
@@ -79,12 +80,12 @@ export default function InsightThemeCard({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="text-pulse-400"
+          className="text-pulse-400 dark:text-pulse-500"
         >
           <rect x="3" y="3" width="18" height="18" rx="2" />
           <path d="M3 9h18M9 21V9" />
         </svg>
-        <span className="text-xs text-pulse-500">
+        <span className="text-caption text-pulse-500 dark:text-pulse-400">
           {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
         </span>
       </div>
