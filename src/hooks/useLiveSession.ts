@@ -57,7 +57,7 @@ type Action =
   | { kind: 'error'; code: string; message: string }
   | { kind: 'vote_sent'; optionId: string }
 
-const INITIAL: LiveState = {
+export const INITIAL: LiveState = {
   connection: 'idle',
   session: null,
   question: null,
@@ -70,7 +70,7 @@ const INITIAL: LiveState = {
   lastVote: null,
 }
 
-function reducer(state: LiveState, action: Action): LiveState {
+export function reducer(state: LiveState, action: Action): LiveState {
   switch (action.kind) {
     case 'connecting':
       return { ...state, connection: 'connecting', error: null }
@@ -255,5 +255,11 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     ws.send(JSON.stringify({ type: 'request_state', data: {}, timestamp: Date.now() }))
   }, [])
 
-  return { state, sendVote, requestState }
+  const sendAdvance = useCallback(() => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({ type: 'advance', data: {}, timestamp: Date.now() }))
+  }, [])
+
+  return { state, sendVote, requestState, sendAdvance }
 }

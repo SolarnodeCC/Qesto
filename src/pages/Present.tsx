@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import QRCode from 'react-qr-code'
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { api } from '../api/client'
@@ -7,7 +8,7 @@ import { api } from '../api/client'
 export default function Present() {
   const auth = useAuth()
   const { id } = useParams<{ id: string }>()
-  const { state } = useLiveSession(id, { enabled: !!id })
+  const { state, sendAdvance } = useLiveSession(id, { enabled: !!id })
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
 
@@ -62,13 +63,24 @@ export default function Present() {
       </div>
 
       {state.session ? (
-        <header>
-          <p className="text-sm uppercase tracking-widest text-teal-600">Presenter</p>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{state.session.title}</h1>
-          <p className="text-sm text-pulse-500">
-            Join code <code className="font-mono">{state.session.code}</code> · {state.participants}{' '}
-            {state.participants === 1 ? 'participant' : 'participants'}
-          </p>
+        <header className="flex items-start gap-5">
+          <div className="flex-1 space-y-1">
+            <p className="text-sm uppercase tracking-widest text-teal-600">Presenter</p>
+            <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{state.session.title}</h1>
+            <p className="text-sm text-pulse-500">
+              Join code{' '}
+              <code className="font-mono font-bold text-pulse-900">{state.session.code}</code>
+              {' '}· {state.participants}{' '}
+              {state.participants === 1 ? 'participant' : 'participants'}
+            </p>
+          </div>
+          <div className="flex-shrink-0 rounded-lg border border-pulse-200 bg-white p-1.5 shadow-sm" aria-label="QR code to join session">
+            <QRCode
+              value={`${window.location.origin}/j/${state.session.code}`}
+              size={72}
+              style={{ display: 'block' }}
+            />
+          </div>
         </header>
       ) : (
         <p className="text-sm text-pulse-500">Connecting to live room…</p>
@@ -110,7 +122,18 @@ export default function Present() {
         </p>
       ) : null}
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
+        <button
+          type="button"
+          onClick={() => sendAdvance()}
+          disabled={state.connection !== 'open' || state.session?.status === 'closed'}
+          className="inline-flex items-center gap-2 rounded-lg bg-teal-600 text-white px-4 py-2 font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+        >
+          Next question
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
         <button
           type="button"
           onClick={handleClose}

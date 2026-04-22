@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import QRCode from 'react-qr-code'
 import { useAuth } from '../hooks/useAuth'
 import { useSession, type Question, type PollOption } from '../hooks/useSessions'
 import { useT } from '../i18n'
@@ -40,6 +41,11 @@ export default function Launchpad() {
   const [editOptions, setEditOptions] = useState<PollOption[]>([])
   const [editSaving, setEditSaving] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
+
+  // AI quick-generate state
+  const [aiTopic, setAiTopic] = useState('')
+  const [aiGenerating, setAiGenerating] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
 
   // Count-up timer — starts when started_at is available (LAUNCHPAD-02)
   useEffect(() => {
@@ -206,6 +212,28 @@ export default function Launchpad() {
 
   const allValid = preFlightItems.every((item) => item.valid)
 
+  async function handleAIGenerate(e: FormEvent) {
+    e.preventDefault()
+    if (!id || !data || aiGenerating) return
+    setAiGenerating(true)
+    setAiError(null)
+    const topic = aiTopic.trim() || data.session.title
+    const res = await api<{ questions: Array<{ id?: string; kind: string; prompt: string; options?: Array<{ id?: string; label: string }> }>; confidence: number }>(
+      `/api/sessions/${encodeURIComponent(id)}/questions/generate`,
+      {
+        method: 'POST',
+        body: { sessionTitle: data.session.title, sessionGoal: topic, focusArea: aiTopic.trim() || undefined },
+      },
+    )
+    setAiGenerating(false)
+    if (!res.ok) {
+      setAiError(res.error.message)
+      return
+    }
+    setAiTopic('')
+    await reload()
+  }
+
   async function handleStart() {
     if (!id || !allValid) return
     setStarting(true)
@@ -236,7 +264,7 @@ export default function Launchpad() {
   async function handleShare() {
     if (!data) return
     setSharing(true)
-    const url = `${window.location.origin}/join/${data.session.code}`
+    const url = `${window.location.origin}/j/${data.session.code}`
     if (navigator.share) {
       try {
         await navigator.share({
@@ -337,21 +365,16 @@ export default function Launchpad() {
             )}
           </div>
 
-          {/* QR code placeholder */}
+          {/* QR code — scan to join */}
           <div
-            role="img"
             aria-label={t('qr_aria_label')}
-            className="flex-shrink-0 w-32 h-32 rounded-lg border-2 border-dashed border-pulse-300 dark:border-pulse-600 bg-pulse-100 dark:bg-pulse-700 flex flex-col items-center justify-center gap-space-1 text-pulse-400 dark:text-pulse-500"
+            className="flex-shrink-0 rounded-lg border border-pulse-200 dark:border-pulse-600 bg-white dark:bg-white p-2 shadow-sm"
           >
-            <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" />
-              <rect x="14" y="3" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" />
-              <rect x="14" y="14" width="3" height="3" />
-              <path d="M14 18h3M18 14v3" />
-              <path d="M5 5h3v3H5zM16 5h3v3h-3zM5 16h3v3H5z" />
-            </svg>
-            <span className="text-caption text-center leading-tight px-space-2">{t('qr_label')}</span>
+            <QRCode
+              value={`${window.location.origin}/j/${data.session.code}`}
+              size={120}
+              style={{ display: 'block' }}
+            />
           </div>
         </div>
       </section>
@@ -367,7 +390,49 @@ export default function Launchpad() {
         )}
 
         {orderedQuestions.length === 0 ? (
-          <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('no_questions_hint')}</p>
+          <div className="space-y-4">
+            <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('no_questions_hint')}</p>
+            {/* AI quick-generate — surface AI when no questions exist */}
+            <div className="rounded-lg border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-space-4 space-y-space-3">
+              <div className="flex items-center gap-2">
+                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-violet-500 flex-shrink-0">
+                  <path d="M12 2l1.8 5.4 5.7 0-4.6 3.4 1.8 5.4L12 13l-4.7 3.2 1.8-5.4L4.5 7.4l5.7 0z" />
+                </svg>
+                <p className="text-sm font-semibold text-violet-800 dark:text-violet-200">Generate questions with AI</p>
+              </div>
+              <form onSubmit={(e) => void handleAIGenerate(e)} className="space-y-space-2">
+                <input
+                  type="text"
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  placeholder={`Topic or goal (default: "${data.session.title}")`}
+                  maxLength={160}
+                  disabled={aiGenerating}
+                  className="w-full rounded-md border border-violet-300 dark:border-violet-700 dark:bg-pulse-800 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-60 placeholder:text-pulse-400"
+                />
+                {aiError && (
+                  <p role="alert" className="text-xs text-red-600 dark:text-red-400">{aiError}</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={aiGenerating}
+                  className="inline-flex items-center gap-2 rounded-md bg-violet-600 text-white text-sm font-medium px-3 py-1.5 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1 transition-colors"
+                >
+                  {aiGenerating ? (
+                    <>
+                      <svg aria-hidden="true" className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Generating…
+                    </>
+                  ) : (
+                    <>✨ Generate questions</>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
         ) : (
           <ul className="space-y-space-2">
             {orderedQuestions.map((q, index) => (

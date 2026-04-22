@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
 import TeamSwitcher from '../components/TeamSwitcher'
 import { useT } from '../i18n'
+import JoinBar from '../components/JoinBar'
 
 function NavDropdown({ label, links }: { label: string; links: Array<{ label: string; href: string }> }) {
   const location = useLocation()
@@ -53,7 +54,7 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
             <Link
               to={link.href}
               role="menuitem"
-              className="block px-4 py-2 text-sm text-pulse-700 dark:text-pulse-200 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="block px-4 py2 text-sm text-pulse-700 dark:text-pulse-200 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500"
             >
               {link.label}
             </Link>
@@ -88,12 +89,17 @@ interface MainLayoutProps {
  *
  * WCAG 1.3.6 Identify Purpose, 2.4.1 Bypass Blocks, 2.4.6 Headings and Labels
  */
+const HIDE_JOIN_BAR_PATTERNS = [/^\/j\//, /\/present$/, /\/present\//]
+
 export default function MainLayout({
   children,
   mainClassName = '',
   navSlot,
   noFooter = false,
 }: MainLayoutProps) {
+  const location = useLocation()
+  const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
+
   const t = useT('solutions')
   const solutionLinks = [
     { label: t('navLinks.events'), href: '/events' },
@@ -154,6 +160,8 @@ export default function MainLayout({
           </div>
         </div>
       </header>
+
+      {showJoinBar && <JoinBar />}
 
       <main
         id="main"

@@ -155,23 +155,28 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // Public endpoints (no auth): voter join-by-code lookup + WebSocket upgrade.
   pub.get('/by-code/:code', async (c) => {
     const code = c.req.param('code').toUpperCase()
+    const traceId = c.get('trace_id')
     if (!/^[0-9A-Z]{6}$/.test(code)) {
+      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', event: 'join.bad_code', trace_id: traceId }))
       return c.json(
-        { ok: false, error: { code: 'bad_code', message: 'Invalid join code' }, trace_id: c.get('trace_id') },
+        { ok: false, error: { code: 'bad_code', message: 'Invalid join code' }, trace_id: traceId },
         400,
       )
     }
     const session = await fetchSessionByCode(c.env.DB, code)
     if (!session || session.status !== 'live') {
+      // Log enumeration attempts for security monitoring
+      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', event: 'join.not_found', trace_id: traceId }))
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'No live session for that code' }, trace_id: c.get('trace_id') },
+        { ok: false, error: { code: 'not_found', message: 'No live session for that code' }, trace_id: traceId },
         404,
       )
     }
+    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'join.success', session_id: session.id, trace_id: traceId }))
     return c.json({
       ok: true,
       data: { id: session.id, title: session.title, code: session.code },
-      trace_id: c.get('trace_id'),
+      trace_id: traceId,
     })
   })
 
