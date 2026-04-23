@@ -26,14 +26,29 @@ export const CreateSessionSchema = z.object({
   title: trimmed(1, 120),
 })
 
+export const SessionOptionsSchema = z.object({
+  anonymity: z.enum(['full', 'partial', 'none']).optional(),
+  vote_policy: z.enum(['once', 'multi', 'react']).optional(),
+  session_mode: z.enum(['reflection', 'fun']).optional(),
+})
+
 export const PatchSessionSchema = z
   .object({
     title: trimmed(1, 120).optional(),
     question: PollQuestionSchema.optional(),
+    anonymity: z.enum(['full', 'partial', 'none']).optional(),
+    vote_policy: z.enum(['once', 'multi', 'react']).optional(),
+    session_mode: z.enum(['reflection', 'fun']).optional(),
   })
-  .refine((v) => v.title !== undefined || v.question !== undefined, {
-    message: 'at least one of { title, question } must be provided',
-  })
+  .refine(
+    (v) =>
+      v.title !== undefined ||
+      v.question !== undefined ||
+      v.anonymity !== undefined ||
+      v.vote_policy !== undefined ||
+      v.session_mode !== undefined,
+    { message: 'at least one field must be provided' },
+  )
 
 // WIZ-AI-01/02: AI-assisted question generation input.
 export const GenerateQuestionsSchema = z.object({
@@ -93,3 +108,4 @@ export type AIQuestionInput = z.infer<typeof AIQuestionSchema>
 export type AIQuestionsOutput = z.infer<typeof AIQuestionsOutputSchema>
 export type ReorderQuestionsInput = z.infer<typeof ReorderQuestionsSchema>
 export type AddQuestionInput = z.infer<typeof AddQuestionSchema>
+export type SessionOptionsInput = z.infer<typeof SessionOptionsSchema>

@@ -26,7 +26,7 @@ import {
   type LiveSessionSummary,
   type ServerMessage,
 } from './realtime'
-import type { Env } from './types'
+import type { Env, VotePolicy, SessionMode } from './types'
 
 // Tell tsc the env binding exists on the DO class — Phase 4+ will reach for
 // `this.env.DB` inside `close()` to persist totals. Kept as a typed field now
@@ -40,12 +40,19 @@ const K_VOTERS = 'voters'
 const K_STATUS = 'status'
 const K_IP_RATE_LIMIT = 'ip_rate_limit' // Maps ipHash → timestamps[] for per-minute rate limiting
 
+// Fun-mode: 60 s per question before auto-advance signal.
+const FUN_MODE_QUESTION_MS = 60_000
+
 type Meta = {
   sessionId: string
   ownerId: string
   code: string
   title: string
   startedAt: number
+  votePolicy: VotePolicy
+  sessionMode: SessionMode
+  /** Unix ms when the current question expires in fun mode. */
+  questionExpiresAt?: number
 }
 
 type Counts = Record<string, number>
@@ -119,23 +126,33 @@ export class SessionRoom implements DurableObject {
           code?: string
           title?: string
           question?: LiveQuestion | null
+          votePolicy?: VotePolicy
+          sessionMode?: SessionMode
         }
       | null
     if (!body || !body.sessionId || !body.ownerId || !body.code || !body.title) {
       return this.jsonError(400, 'bad_request', 'Missing init fields')
     }
+    const nowMs = now()
+    const sessionMode: SessionMode = body.sessionMode ?? 'reflection'
     const meta: Meta = {
       sessionId: body.sessionId,
       ownerId: body.ownerId,
       code: body.code,
       title: body.title,
-      startedAt: now(),
+      startedAt: nowMs,
+      votePolicy: body.votePolicy ?? 'once',
+      sessionMode,
+      ...(sessionMode === 'fun' ? { questionExpiresAt: nowMs + FUN_MODE_QUESTION_MS } : {}),
     }
     await this.ctx.storage.put(K_META, meta)
     await this.ctx.storage.put(K_STATUS, 'live')
     await this.ctx.storage.put(K_COUNTS, {} as Counts)
     await this.ctx.storage.put(K_VOTERS, {} as Votes)
     if (body.question) await this.ctx.storage.put(K_QUESTION, body.question)
+    if (sessionMode === 'fun' && meta.questionExpiresAt) {
+      await this.scheduleAlarm(meta.questionExpiresAt)
+    }
     return this.jsonOk({ initialised: true })
   }
 
@@ -287,22 +304,45 @@ export class SessionRoom implements DurableObject {
     }
   }
 
-  // ── Alarm = flush debounced results ──────────────────────────────────────
+  // ── Alarm = flush debounced results + fun-mode question timer ────────────
   async alarm(): Promise<void> {
-    if (!this.resultsDirty) return
-    this.resultsDirty = false
-    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    const total = Object.values(counts).reduce((a, b) => a + b, 0)
-    const msg = serverMessage({
-      type: 'results',
-      data: { counts, total },
-      timestamp: now(),
-    })
-    for (const ws of this.ctx.getWebSockets()) {
-      try {
-        ws.send(msg)
-      } catch {
-        /* ignore */
+    const nowMs = now()
+
+    if (this.resultsDirty) {
+      this.resultsDirty = false
+      const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+      const total = Object.values(counts).reduce((a, b) => a + b, 0)
+      const msg = serverMessage({
+        type: 'results',
+        data: { counts, total },
+        timestamp: nowMs,
+      })
+      for (const ws of this.ctx.getWebSockets()) {
+        try { ws.send(msg) } catch { /* ignore */ }
+      }
+    }
+
+    // Fun-mode: broadcast question_timeout when the countdown expires.
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (meta?.sessionMode === 'fun' && meta.questionExpiresAt) {
+      if (meta.questionExpiresAt <= nowMs) {
+        const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
+        if (question) {
+          const msg = serverMessage({
+            type: 'question_timeout',
+            data: { questionId: question.id },
+            timestamp: nowMs,
+          })
+          for (const ws of this.ctx.getWebSockets()) {
+            try { ws.send(msg) } catch { /* ignore */ }
+          }
+        }
+        // Clear the expiry so it only fires once.
+        delete meta.questionExpiresAt
+        await this.ctx.storage.put(K_META, meta)
+      } else {
+        // Reschedule for the remaining time (results alarm may have fired early).
+        await this.ctx.storage.setAlarm(meta.questionExpiresAt)
       }
     }
   }
@@ -340,18 +380,40 @@ export class SessionRoom implements DurableObject {
       return
     }
 
-    // Per-voter dedupe on current question. Value is the chosen optionId so
-    // the close route can persist vote rows to D1.
-    const voters = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
-    if (voters[att.voterId]) {
-      ws.send(errorMessage('duplicate', 'You already voted on this question'))
-      return
-    }
-    voters[att.voterId] = optionId
-    await this.ctx.storage.put(K_VOTERS, voters)
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    const votePolicy = meta?.votePolicy ?? 'once'
 
+    const voters = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    counts[optionId] = (counts[optionId] ?? 0) + 1
+
+    if (votePolicy === 'once') {
+      // Reject duplicate — one vote per voter, immutable.
+      if (voters[att.voterId]) {
+        ws.send(errorMessage('duplicate', 'You already voted on this question'))
+        return
+      }
+      voters[att.voterId] = optionId
+      counts[optionId] = (counts[optionId] ?? 0) + 1
+    } else if (votePolicy === 'multi') {
+      // Allow vote change — decrement old choice, increment new choice.
+      const previous = voters[att.voterId]
+      if (previous === optionId) {
+        ws.send(errorMessage('duplicate', 'You already selected this option'))
+        return
+      }
+      if (previous) {
+        counts[previous] = Math.max(0, (counts[previous] ?? 1) - 1)
+      }
+      voters[att.voterId] = optionId
+      counts[optionId] = (counts[optionId] ?? 0) + 1
+    } else {
+      // react: accumulate reactions, no deduplication per voter.
+      counts[optionId] = (counts[optionId] ?? 0) + 1
+      // Store last reaction per voter (for D1 persistence on close).
+      voters[att.voterId] = optionId
+    }
+
+    await this.ctx.storage.put(K_VOTERS, voters)
     await this.ctx.storage.put(K_COUNTS, counts)
 
     await this.scheduleResultsBroadcast()
@@ -359,9 +421,15 @@ export class SessionRoom implements DurableObject {
 
   private async scheduleResultsBroadcast(): Promise<void> {
     this.resultsDirty = true
+    await this.scheduleAlarm(Date.now() + BROADCAST_DEBOUNCE_MS)
+  }
+
+  // Sets the DO alarm to `targetMs` only if it would fire sooner than any
+  // alarm already scheduled (keeps fun-mode timer intact when votes arrive).
+  private async scheduleAlarm(targetMs: number): Promise<void> {
     const existing = await this.ctx.storage.getAlarm()
-    if (existing === null) {
-      await this.ctx.storage.setAlarm(Date.now() + BROADCAST_DEBOUNCE_MS)
+    if (existing === null || targetMs < existing) {
+      await this.ctx.storage.setAlarm(targetMs)
     }
   }
 
@@ -379,6 +447,8 @@ export class SessionRoom implements DurableObject {
       code: meta.code,
       title: meta.title,
       status: 'live',
+      votePolicy: meta.votePolicy,
+      sessionMode: meta.sessionMode,
     }
     ws.send(
       serverMessage({
@@ -390,6 +460,7 @@ export class SessionRoom implements DurableObject {
           question,
           results: { counts, total },
           participants: this.ctx.getWebSockets().length,
+          expiresAt: meta.questionExpiresAt ?? null,
         },
         timestamp: now(),
       }),
