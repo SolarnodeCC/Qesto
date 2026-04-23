@@ -2,7 +2,8 @@
 
 _Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](./BACKLOG.md) (including §12) and [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
 
-_Last updated: 2026-04-22 (UTC)_
+_Last updated: 2026-04-23 (UTC)_
+_**Sprint 18 Plan Added**: 2026-04-23 — see Sprint 18 section below. Five-sprint reference arc remains pedagogical (v0.1→v0.5). Calendar truth: Sprint 17 completed 2026-04-22; Sprint 18 runs 2026-04-29 to 2026-05-13._
 
 ---
 
@@ -262,6 +263,58 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 | Enterprise | v0.3.0 | 3 | 2026-05-30 | SAML + RBAC + Audit |
 | Engagement | v0.4.0 | 4 | 2026-06-13 | i18n + Gamification |
 | Complete | v0.5.0 | 5 | 2026-06-27 | Hardening + Advanced |
+
+---
+
+## Sprint 18: Foundation + Design Tokens + i18n Hardening (2026-04-29 to 2026-05-13)
+
+**Context**: Sprint 18 is the actual next calendar sprint (after Sprint 17, 2026-04-22). The 5-sprint arc above is pedagogical. Sprint 18 focuses on **hardening & unblocking** design wave Sprint B and enterprise features. **See `/root/.claude/plans/can-you-plan-sprint-keen-dream.md` for comprehensive planning details.**
+
+**Goal**: Fix critical i18n defects (GDPR risk), establish design-token source-of-truth with CI validation, ship responsive grid + WCAG 2.2 a11y foundation.
+
+**Epics**: EPIC-I18N (critical defects), EPIC-DESIGN (new), EPIC-ENT (UI completion), EPIC-AI (scaffold)
+
+**Committed Items** (8 stories, ~55 pts):
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---|---|---|---|
+| **I18N-BUG-01**: Fix missing wizard keys (step4.mode.*) | 8 | I18N | Ready | All 5 locales have keys; 0 raw identifiers visible |
+| **I18N-BUG-02**: Extract hardcoded Dutch strings from Launchpad | 5 | I18N | Ready | Launchpad fully i18n'd; CI check extended to detect non-keyed literals |
+| **DESIGN-TOK-01**: Design-tokens.json → CI-generated tokens.ts + drift check | 8 | DESIGN | Ready | Token generator live; CI prevents drift; consumed by Tailwind |
+| **LAYOUT-GRID-01**: Responsive 12/8/4-column grid primitive | 8 | DESIGN | Ready | Tailwind grid-cols-* configured; 4px baseline lint; 3 layout snapshots pass |
+| **LAYOUT-A11Y-01**: WCAG 2.2 SC 2.4.11 conformance (landmarks, skip-link, focus) | 8 | DESIGN | Ready | 0 axe violations on top 6 flows; skip-link + landmarks shipped |
+| **ENT-03 UI**: Audit-log viewer dashboard (backend exists) | 8 | ENT | Ready | Table shipped @ `/dashboard/admin/audit`; filters + export work; <2s load |
+| **DX-INSIGHTS-01**: Dashboard Insights tab scaffold | 5 | AI | Ready | Tab visible; empty state renders; route bookmarkable |
+| **I18N-03**: Key extraction CI validation | 5 | I18N | Ready | Detects missing/orphaned keys; blocks PR on untranslated strings |
+
+**Total: 55 pts** | **Expected velocity**: 13–27 pts/week (achievable with team capacity).
+
+**Key Dependencies**:
+- I18N-BUG-01 → I18N-BUG-02 (extract keys first, then detect non-keyed literals)
+- DESIGN-TOK-01 → LAYOUT-GRID-01 → LAYOUT-A11Y-01 (token foundation, then layouts, then a11y)
+- ENT-03 UI runs parallel to LAYOUT-A11Y-01 (independent)
+- I18N-03 runs async at sprint end (days 12–14)
+
+**Critical Path**: I18N defects + DESIGN-TOK-01 are blockers for design wave Sprint B. If DESIGN-TOK-01 slips >2 days, defer ENT-03 UI + DX-INSIGHTS-01 to Sprint 19.
+
+**KPI Targets**:
+- 0 raw i18n keys visible across 5 locales
+- 0 token drift (CI check passes)
+- 0 axe-core violations on top flows
+- Audit dashboard <2s load time
+- Insights tab KPI primed for Sprint 19 measurement
+
+**Risk Mitigation**:
+- Token generator: architect pairing from day 1; snapshot test Tailwind theme
+- i18n coverage: audit all 5 locales before I18N-BUG-02 starts; CI gate enforced
+- A11y audit: run axe-core baseline by day 7; prioritize sticky regions if violations found
+- Scope contingency: defer ENT-03 UI (8 pts) and DX-INSIGHTS-01 (5 pts) if critical path slips
+
+**Definition of Done**:
+- Code merged, CI passing (`npm test`, `tsc`, `check:i18n`, `check:design-tokens`)
+- Tests: ≥80% coverage on new code
+- Documentation: BACKLOG.md updated; design guide updated (grid, skip-link, token sourcing)
+- KPI baseline: i18n coverage, token consistency, a11y compliance measured
 
 ---
 
