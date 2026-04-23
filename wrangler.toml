@@ -1,4 +1,5 @@
 name = "qesto-api"
+account_id = "5546763229b35df670e33d9316d7f2e0"
 main = "worker/index.ts"
 compatibility_date = "2026-04-19"
 compatibility_flags = ["nodejs_compat"]
