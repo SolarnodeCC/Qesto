@@ -113,6 +113,71 @@ function scoreConfidence(raw: string, cleaned: string, count: number): number {
 }
 
 const MAX_TOKENS = 1024
+// Delays between retry attempts in milliseconds (exponential backoff).
+const RETRY_DELAYS_MS = [200, 400, 800]
+// Fallback model used when the primary fails all retries.
+const FALLBACK_MODEL = '@cf/meta/llama-3.1-8b-instruct'
+
+// Invoke the AI model and return the raw text response. Retries up to
+// RETRY_DELAYS_MS.length times on invocation errors or empty responses.
+// stream: false is required — without it Workers AI may return a ReadableStream
+// which the response handler cannot consume.
+async function invokeAI(
+  ai: Ai,
+  model: string,
+  messages: Array<{ role: string; content: string }>,
+  approxInputChars: number,
+): Promise<string> {
+  let lastErr: Error = new WizardAIError('No attempts made')
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+    if (attempt > 0) {
+      await new Promise<void>((r) => setTimeout(r, RETRY_DELAYS_MS[attempt - 1]))
+    }
+    const t0 = Date.now()
+    try {
+      const res = (await ai.run(model, {
+        messages,
+        max_tokens: MAX_TOKENS,
+        stream: false,
+      })) as { response?: string } | string
+      const latencyMs = Date.now() - t0
+      const raw =
+        typeof res === 'string'
+          ? res
+          : typeof res?.response === 'string'
+            ? res.response
+            : ''
+      if (!raw || raw.trim() === '') {
+        console.log(
+          JSON.stringify({ event: 'ai.wizard.empty', model, latencyMs, approxInputChars, attempt }),
+        )
+        lastErr = new WizardAIError('AI returned empty response')
+        continue
+      }
+      console.log(
+        JSON.stringify({
+          event: 'ai.wizard.ok',
+          model,
+          latencyMs,
+          approxInputChars,
+          outputChars: raw.length,
+          attempt,
+        }),
+      )
+      return raw
+    } catch (err) {
+      const latencyMs = Date.now() - t0
+      const msg = err instanceof Error ? err.message : String(err)
+      console.log(
+        JSON.stringify({ event: 'ai.wizard.error', model, latencyMs, approxInputChars, error: msg, attempt }),
+      )
+      lastErr = err instanceof Error ? err : new Error(msg)
+    }
+  }
+  throw new WizardAIError(
+    `AI invocation failed after ${RETRY_DELAYS_MS.length + 1} attempts: ${lastErr.message}`,
+  )
+}
 
 export async function generateQuestions(
   ai: Ai,
@@ -121,35 +186,23 @@ export async function generateQuestions(
 ): Promise<GenerateResult> {
   const userPrompt = buildUserPrompt(input)
   const approxInputChars = SYSTEM_PROMPT.length + userPrompt.length
-  const t0 = Date.now()
+  const messages = [
+    { role: 'system' as const, content: SYSTEM_PROMPT },
+    { role: 'user' as const, content: userPrompt },
+  ]
+
   let raw: string
   try {
-    const res = (await ai.run(model, {
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: MAX_TOKENS,
-    })) as { response?: string } | string
-
-    const latencyMs = Date.now() - t0
-    raw =
-      typeof res === 'string'
-        ? res
-        : typeof res?.response === 'string'
-          ? res.response
-          : ''
-    if (!raw || raw.trim() === '') {
-      console.log(JSON.stringify({ event: 'ai.wizard.empty', model, latencyMs, approxInputChars }))
-      throw new WizardAIError('AI returned empty response')
+    raw = await invokeAI(ai, model, messages, approxInputChars)
+  } catch (primaryErr) {
+    if (model !== FALLBACK_MODEL) {
+      console.log(
+        JSON.stringify({ event: 'ai.wizard.fallback', primaryModel: model, fallbackModel: FALLBACK_MODEL }),
+      )
+      raw = await invokeAI(ai, FALLBACK_MODEL, messages, approxInputChars)
+    } else {
+      throw primaryErr
     }
-    console.log(JSON.stringify({ event: 'ai.wizard.ok', model, latencyMs, approxInputChars, outputChars: raw.length }))
-  } catch (err) {
-    if (err instanceof WizardAIError) throw err
-    console.log(JSON.stringify({ event: 'ai.wizard.error', model, latencyMs: Date.now() - t0, approxInputChars, error: err instanceof Error ? err.message : String(err) }))
-    throw new WizardAIError(
-      `AI invocation failed: ${err instanceof Error ? err.message : String(err)}`,
-    )
   }
 
   let cleaned: string
@@ -189,6 +242,7 @@ export const __internal = {
   buildUserPrompt,
   extractJson,
   scoreConfidence,
+  FALLBACK_MODEL,
 }
 // Re-export for handler to catch validation errors cleanly.
 export { z }

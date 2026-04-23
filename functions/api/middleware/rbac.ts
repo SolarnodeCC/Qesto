@@ -29,6 +29,7 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
 
   // Questions (CRUD)
   'POST /api/sessions/:id/questions': new Set(['owner', 'admin', 'member']),
+  'POST /api/sessions/:id/questions/generate': new Set(['owner', 'admin', 'member']),
   'GET /api/sessions/:id/questions': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
   'PATCH /api/questions/:id': new Set(['owner', 'admin', 'member']),
   'DELETE /api/questions/:id': new Set(['owner', 'admin', 'member']),
