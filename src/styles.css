@@ -96,6 +96,12 @@ html, body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
+/* ─── WCAG 2.2 SC 2.4.11 — Focus Not Obscured ─────────────────────────────── */
+/* Ensures focused elements scroll into view above the sticky header (~64px). */
+:focus-visible {
+  scroll-margin-top: 80px;
+}
+
 /* ─── Motion tokens (LAYOUT-MOTION-01) ────────────────────────────────────── */
 /*                                                                              */
 /* Durations and easing are exposed as CSS custom properties so they can be    */
