@@ -33,7 +33,7 @@ export type ApiError = {
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; error: ApiError }
 
 type Options = {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   idempotencyKey?: string
   signal?: AbortSignal
