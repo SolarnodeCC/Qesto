@@ -2,7 +2,7 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last verified: 2026-04-06 (UTC)_
+_Last verified: 2026-04-22 (UTC)_
 
 ## 1. Product lifecycle
 - **DRAFT**: session setup and question curation.
@@ -35,6 +35,8 @@ _Last verified: 2026-04-06 (UTC)_
 - i18n locale bundles for NL/EN/ES/DE/FR.
 - Energizer component set (Balloon Pop, Emoji Pulse, Tug of War, Find Your Match, etc.).
 - Public Solutions pages (`/business`, `/education`, `/enterprise`) use in-repo AI illustrations under `public/images/solutions/*` (no third-party image dependencies).
+- Dashboard UX: personalised greeting, active plan badge, Teams/Templates tabs, session search + status filter, admin panel gating.
+- Session join flow: QR code scanning, join bar, polished voter experience, language switcher on all pages.
 
 ## 5. Template library UX (next functional requirement)
 - Dashboard **Templates** area is split into two groups:
@@ -71,4 +73,12 @@ See: [`README.md`](./README.md) (documentation map), `ROADMAP_FULL.md`, `BACKLOG
   - **minimum 3 templates per topic**;
   - UI copy alignment with the minimum-3 requirement.
 - Reference test file: `tests/functional/ui/template-catalogue.test.ts`.
+
+## 7. 2026-04-22 review notes
+- Dashboard UI matured: personalised greeting (replacing "Your sessions"), active plan badge, Teams/Templates tab bar, session search + status filter.
+- Session join flow end-to-end: QR code scanning, join bar, polished voter UX with anonymous/named modes.
+- Motion choreography and skeleton states shipped across all async surfaces (LAYOUT-MOTION-01, LAYOUT-SKELETON-01).
+- Typography updated to Inter body font with preload (DESIGN-TYP-01).
+- Language switcher surfaced in header on all pages (i18n UX improvement).
+- Admin panel gated on superuser role; `/admin` route guarded.
 

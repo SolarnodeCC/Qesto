@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import MainLayout from '../layouts/MainLayout'
-import BuildStamp from '../components/BuildStamp'
 import AIBadge from '../components/AIBadge'
 
 const AI_FEATURES = [
@@ -102,7 +101,6 @@ export default function Home() {
             )}
           </div>
 
-          <BuildStamp />
         </div>
 
         {/* AI 3-up feature strip (AI-VIS-01) */}

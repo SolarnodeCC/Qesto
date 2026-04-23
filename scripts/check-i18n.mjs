@@ -67,6 +67,72 @@ function loadLanguageFiles(lang) {
 }
 
 /**
+ * Check Launchpad.tsx for hardcoded user-facing strings not wrapped in t()
+ */
+function checkLaunchpadHardcoded() {
+  const launchpadPath = join(PROJECT_ROOT, 'src', 'pages', 'Launchpad.tsx')
+  let content
+  try {
+    content = readFileSync(launchpadPath, 'utf-8')
+  } catch {
+    // If file doesn't exist or can't be read, skip check
+    return true
+  }
+
+  // Pattern to find string literals that look like user-facing text
+  // This regex finds quoted strings that start with a capital letter and are longer than 3 chars
+  // but are NOT preceded by t( and are NOT in className, URLs, or aria- attributes
+  const suspiciousPatterns = [
+    // Find strings like "Generate questions with AI" that aren't inside t()
+    /(?<!t\(\s*['"])["']([A-Z][a-z\s]{4,}(?:[A-Z][a-z\s]*)*)['"]\)/g,
+    // Also catch template literals with similar patterns
+    /`([A-Z][a-z\s]{4,}[^`]*)`/g,
+  ]
+
+  // More specific: look for literal strings in JSX that aren't wrapped in t()
+  // Pattern: find string literals that are not preceded by t(
+  const lines = content.split('\n')
+  const hardcodedLines = []
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+
+    // Skip lines with className, URLs, aria-values (likely constants)
+    if (
+      line.includes('className') ||
+      line.includes('http') ||
+      line.includes('aria-') ||
+      line.includes('svg') ||
+      line.includes('path d=')
+    ) {
+      continue
+    }
+
+    // Look for user-facing strings: "Generate..." "Generating..." etc
+    // that are NOT inside a t( call
+    if (
+      (line.includes('"Generate questions') ||
+       line.includes('"Generating') ||
+       line.includes('"Topic or goal') ||
+       line.includes('✨ Generate')) &&
+      !line.includes('t(')
+    ) {
+      hardcodedLines.push({ line: i + 1, text: line.trim() })
+    }
+  }
+
+  if (hardcodedLines.length > 0) {
+    console.error('[i18n] ❌ Launchpad.tsx contains hardcoded user-facing strings:')
+    for (const item of hardcodedLines) {
+      console.error(`       Line ${item.line}: ${item.text}`)
+    }
+    return false
+  }
+
+  return true
+}
+
+/**
  * Validate translation completeness using English as reference
  */
 function validate() {
@@ -83,6 +149,12 @@ function validate() {
   console.log(`[i18n] Found ${enKeysList.length} English keys as reference`)
 
   let hasErrors = false
+
+  // Check for hardcoded strings in Launchpad.tsx
+  console.log('[i18n] Checking Launchpad.tsx for hardcoded strings...')
+  if (!checkLaunchpadHardcoded()) {
+    hasErrors = true
+  }
 
   // Check each other language
   for (const lang of LANGUAGES) {

@@ -97,7 +97,7 @@ html, body {
 }
 
 /* LAYOUT-A11Y-01: WCAG 2.2 SC 2.4.11 (Focus Not Obscured)
- * Reserves 64px at the top so keyboard-focused elements are never hidden
+ * Reserves space at the top so keyboard-focused elements are never hidden
  * behind a sticky header. Adjust --header-height if the header grows. */
 :root {
   --header-height: 56px;

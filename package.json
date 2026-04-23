@@ -16,6 +16,7 @@
     "test:stress": "vitest run tests/stress/",
     "test:a11y": "vitest run tests/a11y/",
     "typecheck": "tsc --noEmit",
+    "check:baseline": "node scripts/check-baseline.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
     "check:baseline": "node scripts/check-baseline.mjs",

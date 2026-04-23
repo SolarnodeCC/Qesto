@@ -2,7 +2,7 @@
 
 _Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](./BACKLOG.md) (including §12) and [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
 
-_Last updated: 2026-04-19 (UTC)_
+_Last updated: 2026-04-22 (UTC)_
 
 ---
 
@@ -271,7 +271,7 @@ The Website Design Wave runs concurrently with (or immediately after) the 5-spri
 
 | Sprint | Focus | Key items | Gate |
 |---|---|---|---|
-| **Sprint A** | Layout + token foundation | `LAYOUT-GRID-01`, `LAYOUT-SKELETON-01`, `LAYOUT-A11Y-01`, `DESIGN-TOK-01`, `AI-VIS-03`, `DX-INSIGHTS-01`, `I18N-BUG-01`, `I18N-BUG-02` | Layout primitives must land before any consuming surface ships |
+| **Sprint A** (active) | Layout + token foundation — ✅ DESIGN-TYP-01, LAYOUT-SKELETON-01, LAYOUT-MOTION-01 shipped 2026-04-21 | `LAYOUT-GRID-01`, `LAYOUT-A11Y-01`, `DESIGN-TOK-01`, `AI-VIS-03`, `DX-INSIGHTS-01`, `I18N-BUG-01`, `I18N-BUG-02` | Layout primitives must land before any consuming surface ships |
 | **Sprint B** | Narrative + wizard + launchpad + density | `AI-VIS-01`, `AI-VIS-02`, `DX-INSIGHTS-02`, `WIZ-AI-01`, `WIZ-AI-02`, `WIZ-OVERVIEW-01`, `LAUNCHPAD-01`, `LAYOUT-DENSITY-01`, `LAYOUT-MOTION-01`, `DESIGN-TYP-01` | LAUNCHPAD-01 requires WIZ-OVERVIEW-01 (commits DRAFT, routes to Launchpad) |
 | **Sprint C** | Polish | `DESIGN-POLISH-01`, `DESIGN-POLISH-02`, `LAUNCHPAD-02` | Brand sign-off on logo; 0 a11y regressions |
 

@@ -7,10 +7,8 @@
 
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve, relative } from 'node:path'
-import { fileURLToPath } from 'node:url'
 
-const __dirname = new URL('.', import.meta.url).pathname
-const ROOT = resolve(__dirname, '..')
+const ROOT = resolve(new URL('.', import.meta.url).pathname, '..')
 const SCAN_DIRS = [resolve(ROOT, 'src'), resolve(ROOT, 'src/styles')]
 
 // Values that are explicitly allowed outside the 4px grid

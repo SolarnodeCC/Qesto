@@ -2,8 +2,8 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-19 (UTC)_
-_Sprint 17 Completion Sync: 2026-04-11_
+_Last updated: 2026-04-22 (UTC)_
+_Sprint 17 Completion Sync: 2026-04-22_
 _Website Design Wave added: 2026-04-19 — see §12_
 
 ## Overview
@@ -854,7 +854,7 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 
 ### Sprint allocation
 
-- **Sprint A (next committed) — layout + token foundation:** **LAYOUT-GRID-01**, **LAYOUT-SKELETON-01**, **LAYOUT-A11Y-01**, DESIGN-TOK-01, AI-VIS-03, DX-INSIGHTS-01, **I18N-BUG-01**, **I18N-BUG-02** (both P0 fix-forward). Layout primitives must land before any consuming surface ships.
+- **Sprint A (active — partially shipped) — layout + token foundation:** ✅ DESIGN-TYP-01, ✅ LAYOUT-SKELETON-01, ✅ LAYOUT-MOTION-01 (shipped 2026-04-21). Remaining: **LAYOUT-GRID-01**, **LAYOUT-A11Y-01**, DESIGN-TOK-01, AI-VIS-03, DX-INSIGHTS-01, **I18N-BUG-01**, **I18N-BUG-02** (both P0 fix-forward). Layout primitives must land before any consuming surface ships.
 - **Sprint B — narrative + wizard + launchpad + density:** AI-VIS-01, AI-VIS-02, DX-INSIGHTS-02, DESIGN-TYP-01, **WIZ-AI-01**, **WIZ-AI-02**, **WIZ-OVERVIEW-01**, **LAUNCHPAD-01**, **LAYOUT-DENSITY-01**, **LAYOUT-MOTION-01**.
 - **Sprint C — polish:** DESIGN-POLISH-01, DESIGN-POLISH-02, **LAUNCHPAD-02**.
 

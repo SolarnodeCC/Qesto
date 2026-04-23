@@ -11,7 +11,7 @@ import InsightThemeCard from '../components/InsightThemeCard'
 import AINarrative from '../components/AINarrative'
 import SessionWizard from '../components/SessionWizard'
 
-const SUPERUSER_EMAIL = 'oostelaar@hotmail.com'
+const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 
 type DashboardTab = 'sessions' | 'insights' | 'teams' | 'templates'
 
