@@ -477,6 +477,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setLaunching(true)
     setLaunchError(null)
 
+    // Save first question via PATCH (replaces any existing question at position 0)
     const questionToSave = activeQuestions[0]
     if (questionToSave) {
       const patchRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
@@ -491,6 +492,23 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
       })
       if (!patchRes.ok) {
         setLaunchError((patchRes as { ok: false; error: { message: string } }).error.message)
+        setLaunching(false)
+        return
+      }
+    }
+
+    // Save remaining questions via POST /questions
+    for (const q of activeQuestions.slice(1)) {
+      const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/questions`, {
+        method: 'POST',
+        body: {
+          kind: q.kind,
+          prompt: q.prompt,
+          options: q.options.filter((o) => o.label.trim()),
+        },
+      })
+      if (!res.ok) {
+        setLaunchError((res as { ok: false; error: { message: string } }).error.message)
         setLaunching(false)
         return
       }

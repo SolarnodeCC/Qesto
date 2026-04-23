@@ -232,11 +232,20 @@ export default function Launchpad() {
         body: { sessionTitle: data.session.title, sessionGoal: topic, focusArea: aiTopic.trim() || undefined },
       },
     )
-    setAiGenerating(false)
     if (!res.ok) {
+      setAiGenerating(false)
       setAiError(res.error.message)
       return
     }
+    // Persist each generated question so they appear in the session
+    for (const q of res.data.questions) {
+      const kind = (q.kind === 'ranking' ? 'ranking' : q.kind === 'open' ? 'open' : 'poll') as 'poll' | 'ranking' | 'open'
+      await api<unknown>(`/api/sessions/${encodeURIComponent(id)}/questions`, {
+        method: 'POST',
+        body: { kind, prompt: q.prompt, options: q.options ?? [] },
+      })
+    }
+    setAiGenerating(false)
     setAiTopic('')
     await reload()
   }
