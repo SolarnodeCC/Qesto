@@ -2,11 +2,15 @@
 // the live session id via the public `/api/sessions/by-code/:code` endpoint
 // then open a WebSocket to the DO for real-time voting.
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
+import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
+import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
+import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
+import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
 
 type Lookup =
   | { status: 'loading' }
@@ -83,6 +87,32 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const hasVoted = !!state.lastVote
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
   const t = useT('join')
+
+  // Energizer polling — checks for an active energizer every 3s
+  type AnyEnergizer = EmojiPollEnergizer | QuickFingerEnergizer | TeamQuizEnergizer | WordCloudEnergizer
+  const [activeEnergizer, setActiveEnergizer] = useState<AnyEnergizer | null>(null)
+  const energizerPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const fetchActiveEnergizer = useCallback(async () => {
+    const res = await api<{ energizer: AnyEnergizer | null }>(
+      `/api/sessions/${encodeURIComponent(sessionId)}/energizers/active`,
+    )
+    if (res.ok) {
+      setActiveEnergizer(res.data.energizer)
+    }
+  }, [sessionId])
+
+  useEffect(() => {
+    if (isEnded) {
+      if (energizerPollRef.current) clearInterval(energizerPollRef.current)
+      return
+    }
+    fetchActiveEnergizer()
+    energizerPollRef.current = setInterval(fetchActiveEnergizer, 3000)
+    return () => {
+      if (energizerPollRef.current) clearInterval(energizerPollRef.current)
+    }
+  }, [isEnded, fetchActiveEnergizer])
 
   // Inter-question countdown: when question changes after voting, show 3-2-1
   const prevQuestionIdRef = useRef<string | null>(null)
@@ -204,6 +234,20 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             )}
           </div>
         )}
+
+        {/* Active energizer — shown above the question */}
+        {!isEnded && activeEnergizer !== null && countdown === null && (() => {
+          const vid = state.voterId ?? 'anonymous'
+          if (activeEnergizer.kind === 'emoji_poll')
+            return <EmojiPollEnergizerView sessionId={sessionId} energizer={activeEnergizer as EmojiPollEnergizer} role="participant" voterId={vid} />
+          if (activeEnergizer.kind === 'quick_finger')
+            return <QuickFingerEnergizerView sessionId={sessionId} energizer={activeEnergizer as QuickFingerEnergizer} role="participant" voterId={vid} />
+          if (activeEnergizer.kind === 'team_quiz')
+            return <TeamQuizEnergizerView sessionId={sessionId} energizer={activeEnergizer as TeamQuizEnergizer} role="participant" voterId={vid} />
+          if (activeEnergizer.kind === 'word_cloud')
+            return <WordCloudEnergizerView sessionId={sessionId} energizer={activeEnergizer as WordCloudEnergizer} role="participant" voterId={vid} />
+          return null
+        })()}
 
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (

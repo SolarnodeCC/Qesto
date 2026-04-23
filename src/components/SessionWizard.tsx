@@ -508,6 +508,34 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
       }
     }
 
+    // If user picked an energizer format, create it on the backend
+    if (energizerId) {
+      const kindMap: Record<string, string> = {
+        'emoji-poll': 'emoji_poll',
+        'snelste-vinger': 'quick_finger',
+        'team-quiz': 'team_quiz',
+        'woordenwolk': 'word_cloud',
+      }
+      const backendKind = kindMap[energizerId]
+      if (backendKind) {
+        const promptMap: Record<string, string> = {
+          'emoji-poll': 'How are you feeling right now?',
+          'snelste-vinger': 'Quick Finger — edit this question in the Launchpad',
+          'team-quiz': 'Team Quiz — edit your questions in the Launchpad',
+          'woordenwolk': 'Word Cloud — participants type one word',
+        }
+        const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/energizers`, {
+          method: 'POST',
+          body: { kind: backendKind, prompt: promptMap[energizerId] ?? energizerId },
+        })
+        if (!res.ok) {
+          setLaunchError((res as { ok: false; error: { message: string } }).error.message)
+          setLaunching(false)
+          return
+        }
+      }
+    }
+
     setLaunching(false)
     onSessionCreated?.()
     navigate(`/sessions/${sessionId}/launchpad`)
