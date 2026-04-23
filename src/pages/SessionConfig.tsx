@@ -78,6 +78,10 @@ export default function SessionConfig() {
     )
   }
 
+  if (data.session.status === 'draft') {
+    return <Navigate to={`/sessions/${id}/launchpad`} replace />
+  }
+
   function updateOption(index: number, value: string) {
     setOptions((prev) => prev.map((o, i) => (i === index ? { ...o, label: value } : o)))
   }
