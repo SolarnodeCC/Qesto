@@ -1,15 +1,15 @@
 // DRAFT-API for sessions (CLAUDE.md hard rule 5 — REST for DRAFT state only;
-// LIVE state flows through the SessionRoom DO in Phase 3).
+// LIVE state flows through the SessionRoom DO).
 //
 // Routes:
-//   POST   /api/sessions            create a DRAFT session
-//   GET    /api/sessions            list caller's sessions
-//   GET    /api/sessions/:id        fetch one session (with questions)
-//   PATCH  /api/sessions/:id        update title and/or (single) poll question
-//
-// v1 constrains each session to at most one question (position = 0) because
-// the UI surfaces a single-question wizard. The DB schema already supports
-// multiple via (session_id, position) UNIQUE; Phase 2+ can add more.
+//   POST   /api/sessions                           create a DRAFT session
+//   GET    /api/sessions                           list caller's sessions
+//   GET    /api/sessions/:id                       fetch one session (with questions)
+//   PATCH  /api/sessions/:id                       update title and/or replace question at position 0
+//   POST   /api/sessions/:id/questions             append a question (does not replace others)
+//   PATCH  /api/sessions/:id/questions/:questionId update a specific question in place
+//   PUT    /api/sessions/:id/questions/reorder     reorder all questions
+//   POST   /api/sessions/:id/questions/generate    AI-draft questions (not auto-persisted)
 
 import { Hono } from 'hono'
 import { ulid } from '../lib/ulid'
@@ -95,8 +95,8 @@ async function upsertPollQuestion(
   sessionId: string,
   input: PollQuestionInput,
 ): Promise<Question> {
-  // v1 behaviour: single question at position 0. Replace on every PATCH.
-  await db.prepare(`DELETE FROM questions WHERE session_id = ?1`).bind(sessionId).run()
+  // Replace only position 0, leaving questions at other positions intact.
+  await db.prepare(`DELETE FROM questions WHERE session_id = ?1 AND position = 0`).bind(sessionId).run()
   const id = ulid()
   const now = Date.now()
   const optionsJson = JSON.stringify(input.options)
@@ -911,6 +911,53 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       data: { session, questions },
       trace_id: c.get('trace_id'),
     })
+  })
+
+  // PATCH /api/sessions/:id/questions/:questionId — Update a question in place
+  // Updates kind/prompt/options without touching other questions or positions.
+  app.patch('/:id/questions/:questionId', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const questionId = c.req.param('questionId')
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        { ok: false, error: { code: 'conflict', message: 'Only DRAFT sessions can be edited via REST' }, trace_id: c.get('trace_id') },
+        409,
+      )
+    }
+
+    const body = await c.req.json().catch(() => null)
+    const parsed = AddQuestionSchema.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'Invalid question payload', details: parsed.error.flatten() }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+
+    const options = (parsed.data.options ?? []).map((o) => ({ id: o.id ?? ulid(), label: o.label }))
+    const result = await c.env.DB
+      .prepare(`UPDATE questions SET kind = ?1, prompt = ?2, options_json = ?3 WHERE id = ?4 AND session_id = ?5`)
+      .bind(parsed.data.kind, parsed.data.prompt, JSON.stringify(options), questionId, id)
+      .run()
+
+    if (result.meta.changes === 0) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Question not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') })
   })
 
   parent.route('/api/sessions', app)
