@@ -511,7 +511,17 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       question: liveQ,
     })
     if (doRes.status !== 200) {
-      // Best-effort rollback — DO rejected init.
+      // When the DO returns 409 already_initialised, a concurrent start beat us
+      // to it. DO is live, DB is live — no split-brain, no rollback needed.
+      if (doRes.status === 409) {
+        try {
+          const doBody = (await doRes.json()) as { ok?: boolean; error?: { code?: string } }
+          if (doBody?.error?.code === 'already_initialised') {
+            return c.json({ ok: true, data: { session, question: liveQ }, trace_id: c.get('trace_id') })
+          }
+        } catch { /* fall through */ }
+      }
+      // All other DO errors: roll back DB so session stays startable.
       await c.env.DB
         .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
         .bind(id)

@@ -178,17 +178,11 @@ export default function Launchpad() {
     )
   }
 
-  if (data.session.status !== 'draft') {
-    return (
-      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
-        <p role="alert" className="text-sm text-amber-600">
-          {t('session_already', { status: data.session.status })}
-        </p>
-        <Link to="/dashboard" className="text-teal-600 hover:underline">
-          {t('back_link')}
-        </Link>
-      </MainLayout>
-    )
+  if (data.session.status === 'live') {
+    return <Navigate to={`/sessions/${id}/present`} replace />
+  }
+  if (data.session.status === 'closed' || data.session.status === 'archived') {
+    return <Navigate to={`/sessions/${id}/results`} replace />
   }
 
   function formatElapsed(seconds: number): string {
@@ -208,7 +202,7 @@ export default function Launchpad() {
     {
       key: 'question',
       label: t('preflight_question'),
-      valid: data.questions.some(q => q.kind === 'poll'),
+      valid: data.questions.length > 0 && data.questions[0].kind === 'poll',
     },
     {
       key: 'consent',

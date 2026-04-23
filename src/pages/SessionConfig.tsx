@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSession, type PollOption } from '../hooks/useSessions'
 import { api } from '../api/client'
@@ -12,7 +12,6 @@ function newOptionId(): string {
 
 export default function SessionConfig() {
   const auth = useAuth()
-  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { data, error, loading, patch } = useSession(id)
 
@@ -22,8 +21,6 @@ export default function SessionConfig() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-  const [starting, setStarting] = useState(false)
-  const [startError, setStartError] = useState<string | null>(null)
 
   // AI suggestion state
   const [aiLoading, setAiLoading] = useState(false)
@@ -341,48 +338,19 @@ export default function SessionConfig() {
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
-          <button
-            type="button"
-            disabled={starting || data.session.status !== 'draft' || data.questions.length === 0}
-            onClick={async () => {
-              if (!id) return
-              setStarting(true)
-              setStartError(null)
-              const res = await api<{ session: unknown; question: unknown }>(
-                `/api/sessions/${encodeURIComponent(id)}/start`,
-                { method: 'POST' },
-              )
-              setStarting(false)
-              if (!res.ok) {
-                setStartError(res.error.message)
-                return
-              }
-              navigate(`/sessions/${id}/present`)
-            }}
-            className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 hover:bg-teal-50 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-          >
-            {data.session.status === 'live'
-              ? 'Already live'
-              : data.session.status === 'closed'
-              ? 'Session closed'
-              : starting
-              ? 'Starting…'
-              : 'Go live'}
-          </button>
           {data.session.status === 'live' ? (
             <Link
               to={`/sessions/${id}/present`}
-              className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+              className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 hover:bg-teal-50 px-4 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             >
               Open presenter view →
             </Link>
-          ) : null}
+          ) : (
+            <span className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-400 px-4 py-2 font-medium">
+              Session closed
+            </span>
+          )}
         </div>
-        {startError ? (
-          <p role="alert" className="text-sm text-red-600">
-            {startError}
-          </p>
-        ) : null}
       </form>
     </MainLayout>
   )
