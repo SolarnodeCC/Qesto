@@ -239,7 +239,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
         `SELECT id, owner_id, code, title, status, anonymity,
                 created_at, started_at, closed_at, archived_at
            FROM sessions
-          WHERE id = ?1 AND owner_id = ?2 AND status IN ('closed', 'archived')`,
+          WHERE id = ?1 AND owner_id = ?2`,
       )
       .bind(sessionId, userId)
       .first()
@@ -248,7 +248,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       return c.json(
         {
           ok: false,
-          error: { code: 'not_found', message: 'Session not found or not closed' },
+          error: { code: 'not_found', message: 'Session not found' },
           trace_id: c.get('trace_id'),
         },
         404,
