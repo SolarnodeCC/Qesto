@@ -69,7 +69,7 @@ export default function LivePollingPage() {
       }}
       deepDive={{
         heading: 'How teams use Live Polling to steer the room',
-        intro: 'Live Polling works best when teams treat it as a facilitation control layer, not a one-off interaction gimmick.',
+        intro: 'Live Polling works best when teams treat it as a facilitation control layer, not a one-off interaction.',
         pillars: [
           {
             title: 'Real-time room diagnostics',

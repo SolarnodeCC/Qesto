@@ -1,9 +1,16 @@
 import { Heading, Body, Section, Card, Caption } from '../ui/components'
 import MainLayout from '../layouts/MainLayout'
+import PageSeo from '../components/PageSeo'
 
 export default function Terms() {
   return (
     <MainLayout>
+      <PageSeo
+        title="Qesto terms of service | Usage and billing terms"
+        description="Review Qesto terms covering service use, plan limits, billing, prohibited use, and legal conditions."
+        canonicalPath="/terms"
+        ogImage="/images/solutions/photo-1552664730-d307ca884978.avif"
+      />
       <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-8">
         <div className="animate-page-enter max-w-3xl mx-auto text-center space-y-4 py-8 px-6 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50">
           <h1

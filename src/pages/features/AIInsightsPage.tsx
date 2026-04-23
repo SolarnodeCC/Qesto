@@ -69,7 +69,7 @@ export default function AIInsightsPage() {
         ],
       }}
       deepDive={{
-        heading: 'Where AI Insights creates the biggest leverage',
+        heading: 'Where AI Insights adds measurable value',
         intro: 'Teams use AI Insights when they need to move quickly from qualitative input to strategic action without sacrificing nuance.',
         pillars: [
           {

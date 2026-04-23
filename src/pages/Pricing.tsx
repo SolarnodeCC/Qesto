@@ -1,6 +1,7 @@
 import { Heading, Body, Section, Card, Button, Badge } from '../ui/components'
 import MainLayout from '../layouts/MainLayout'
 import { PLANS, CHECKOUT_URL } from '../config/plans'
+import PageSeo from '../components/PageSeo'
 
 const featureRows = [
   { key: 'sessionsPerMonth', label: 'Sessions per month' },
@@ -20,6 +21,12 @@ function checkoutHref(planName: string) {
 export default function Pricing() {
   return (
     <MainLayout>
+      <PageSeo
+        title="Qesto pricing | Plans for interactive sessions"
+        description="Compare Free, Starter, and Team plans for polls, rankings, consent voting, and edge AI insights."
+        canonicalPath="/pricing"
+        ogImage="/images/solutions/photo-1572021335469-31706a17aaef.avif"
+      />
       <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-12 space-y-12">
         {/* Header */}
         <div className="animate-page-enter max-w-3xl mx-auto text-center space-y-4 py-8 px-6 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50">
@@ -30,7 +37,7 @@ export default function Pricing() {
             Simple, Transparent Pricing
           </h1>
           <Body size="l" className="text-pulse-600">
-            Choose the plan that fits your team. Always in control. No long-term contracts.
+            Choose the plan that matches your session volume and governance needs. Monthly billing, cancel anytime.
           </Body>
         </div>
 
@@ -236,7 +243,7 @@ export default function Pricing() {
         <div className="max-w-3xl mx-auto text-center pt-6 border-t border-pulse-200 space-y-4">
           <Heading level="m">Ready to get started?</Heading>
           <Body size="m" className="text-pulse-600">
-            Join thousands of teams running interactive sessions with Qesto.
+            Run interactive sessions with edge delivery, visible privacy controls, and decision-ready exports.
           </Body>
           <button
             type="button"

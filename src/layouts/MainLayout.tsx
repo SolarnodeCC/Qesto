@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
 import TeamSwitcher from '../components/TeamSwitcher'
@@ -12,16 +12,51 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
   const isActive = links.some(l => location.pathname === l.href)
   const [isOpen, setIsOpen] = useState(false)
   const menuId = useId()
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const closeTimerRef = useRef<number | null>(null)
+
+  const cancelClose = () => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+  }
+
+  const scheduleClose = () => {
+    cancelClose()
+    // Allow tiny cursor travel gaps between trigger and menu.
+    closeTimerRef.current = window.setTimeout(() => setIsOpen(false), 120)
+  }
 
   useEffect(() => {
     setIsOpen(false)
   }, [location.pathname])
 
+  useEffect(() => {
+    return () => {
+      cancelClose()
+    }
+  }, [])
+
   return (
     <div
+      ref={containerRef}
       className="relative"
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={() => {
+        cancelClose()
+        setIsOpen(true)
+      }}
+      onMouseLeave={scheduleClose}
+      onFocus={() => {
+        cancelClose()
+        setIsOpen(true)
+      }}
+      onBlur={(e) => {
+        const nextTarget = e.relatedTarget as Node | null
+        if (!nextTarget || !containerRef.current?.contains(nextTarget)) {
+          scheduleClose()
+        }
+      }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') setIsOpen(false)
       }}
@@ -56,7 +91,7 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
             <Link
               to={link.href}
               role="menuitem"
-              className="block px-4 py2 text-sm text-pulse-700 dark:text-pulse-200 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="block px-4 py-2 text-sm text-pulse-700 dark:text-pulse-200 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500"
             >
               {link.label}
             </Link>
