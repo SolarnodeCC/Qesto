@@ -12,5 +12,6 @@
   "closing": "Sluiten…",
   "back": "Terug naar dashboard",
   "liveParticipants": "Live deelnemers",
-  "resultsReady": "Resultaten gereed"
+  "resultsReady": "Resultaten gereed",
+  "connectingToRoom": "[TODO] Connecting to live room…"
 }

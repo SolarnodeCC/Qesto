@@ -85,7 +85,7 @@ export default function Present() {
           </div>
         </header>
       ) : (
-        <p className="text-sm text-pulse-500">Connecting to live room…</p>
+        <p className="text-sm text-pulse-500">{t('connectingToRoom')}</p>
       )}
 
       {state.question ? (

@@ -14,5 +14,7 @@
   "starting": "Starten…",
   "startError": "Kan sessie niet starten",
   "backToDashboard": "Terug naar dashboard",
-  "optionPlaceholder": "Optietekst"
+  "optionPlaceholder": "Optietekst",
+  "pollQuestion": "[TODO] Poll question",
+  "aiSuggestionHelp": "[TODO] Click a suggestion to use it as your prompt"
 }

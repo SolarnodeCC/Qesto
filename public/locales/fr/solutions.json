@@ -9,7 +9,8 @@
     "seePricing": "See pricing",
     "startFree": "Start for free",
     "viewPricing": "View pricing",
-    "tryItFree": "Try it free"
+    "tryItFree": "Try it free",
+    "talkToSales": "[TODO] Talk to sales"
   },
   "events": {
     "badge": "For Events & Conferences",
@@ -17,19 +18,130 @@
     "subheadline": "Run live polls, Q&A rankings, and sentiment checks across hundreds of participants — Qesto keeps your audience engaged from opening remarks to closing session.",
     "painPoints": {
       "heading": "The challenges every event organiser knows",
-      "passiveAudiences": { "title": "Passive audiences", "desc": "Attendees scroll their phones while speakers talk to a quiet room. Engagement drops off after the first 10 minutes." },
-      "slowFeedback": { "title": "Slow feedback loops", "desc": "Post-event surveys arrive too late to act on. You only find out what went wrong after people have left." },
-      "silentMajority": { "title": "Silent majority", "desc": "Only the loudest voices get heard in open Q&A. Most attendees never feel safe enough to share their real opinions." }
+      "passiveAudiences": {
+        "title": "Passive audiences",
+        "desc": "Attendees scroll their phones while speakers talk to a quiet room. Engagement drops off after the first 10 minutes."
+      },
+      "slowFeedback": {
+        "title": "Slow feedback loops",
+        "desc": "Post-event surveys arrive too late to act on. You only find out what went wrong after people have left."
+      },
+      "silentMajority": {
+        "title": "Silent majority",
+        "desc": "Only the loudest voices get heard in open Q&A. Most attendees never feel safe enough to share their real opinions."
+      },
+      "passive": {
+        "title": "[TODO] Audience attention drops invisibly",
+        "desc": "[TODO] Engagement falls 20 minutes into a one-way session and the data shows up after the room has emptied."
+      },
+      "feedback": {
+        "title": "[TODO] Post-event surveys arrive too late",
+        "desc": "[TODO] By the time the recap survey lands, the speaker is gone and next year's brief is already being written."
+      },
+      "silent": {
+        "title": "[TODO] Sponsor signal stays hidden",
+        "desc": "[TODO] Only confident voices reach the microphone. The signals sponsors actually paid for never make it into the recap."
+      }
     },
     "features": {
-      "heading": "Everything you need to run a live event people remember"
+      "heading": "Everything you need to run a live event people remember",
+      "subheading": "[TODO] One join code captures engagement evidence from opening keynote through the closing panel.",
+      "livePolls": {
+        "title": "[TODO] Live polls",
+        "desc": "[TODO] Capture sentiment and comprehension in seconds; project results behind the speaker in the same heartbeat."
+      },
+      "ranking": {
+        "title": "[TODO] Ranked Q&A",
+        "desc": "[TODO] Attendees upvote questions in real time so speakers spend stage time on what the room actually wants."
+      },
+      "openQuestions": {
+        "title": "[TODO] Open response themes",
+        "desc": "[TODO] Collect free-text feedback and let edge-AI clustering surface themes for the recap and the sponsor report."
+      },
+      "consent": {
+        "title": "[TODO] Consent rounds",
+        "desc": "[TODO] Run structured agreement checks before sensitive panels, community decisions, or invite-only sessions."
+      }
     },
     "scenarios": {
-      "heading": "How event teams use Qesto"
+      "heading": "How event teams use Qesto",
+      "warmup": {
+        "title": "[TODO] Opening-keynote warm-up",
+        "desc": "[TODO] Open with a single high-signal question so the speaker baselines audience context inside the first three minutes."
+      },
+      "qa": {
+        "title": "[TODO] Ranked speaker Q&A",
+        "desc": "[TODO] Collect and rank questions live so presenters spend their last fifteen minutes on what the room rated highest."
+      },
+      "pulse": {
+        "title": "[TODO] Sponsored-session pulse",
+        "desc": "[TODO] Run end-of-session pulses tied to a sponsor track so the post-event recap carries hard engagement evidence."
+      }
     },
     "bottomCta": {
       "heading": "Your next event starts here.",
       "subheading": "Set up in under 5 minutes, no app install required for attendees."
+    },
+    "seo": {
+      "title": "[TODO] Qesto for Events | Live polling for conferences",
+      "description": "[TODO] Run live polls, ranked Q&A, and sentiment checks across keynote and breakout, then deliver sponsor-ready engagement evidence by session."
+    },
+    "imageAlt": "[TODO] Speaker presenting at a conference with engaged audience",
+    "proof": {
+      "heading": "[TODO] What event teams report after switching",
+      "metric1": {
+        "value": "[TODO] 2x",
+        "label": "[TODO] Live participation",
+        "note": "[TODO] Illustrative benchmark from moderated event formats using show-of-hands baselines."
+      },
+      "metric2": {
+        "value": "[TODO] <60s",
+        "label": "[TODO] To launch the first poll",
+        "note": "[TODO] Illustrative benchmark when hosts pre-stage the first poll before session start."
+      },
+      "metric3": {
+        "value": "[TODO] Session-level",
+        "label": "[TODO] Sponsor evidence",
+        "note": "[TODO] Per-session engagement records sponsors can include directly in recap reporting."
+      },
+      "badge1": "[TODO] No app install",
+      "badge2": "[TODO] Cloudflare edge delivery",
+      "badge3": "[TODO] Any device",
+      "testimonial": {
+        "quote": "[TODO] We stopped guessing audience energy. Every speaker now has live data to adjust their talk inside the session.",
+        "author": "[TODO] Programme Director",
+        "role": "[TODO] European Tech Conference"
+      }
+    },
+    "related": {
+      "heading": "[TODO] Related pages",
+      "link1": {
+        "label": "[TODO] Feature: Live Polling",
+        "desc": "[TODO] Polls, rankings, and consent rounds inside one session."
+      },
+      "link2": {
+        "label": "[TODO] Feature: AI Insights",
+        "desc": "[TODO] Turn open feedback into themes for sponsor-ready recaps."
+      },
+      "link3": {
+        "label": "[TODO] Use case: Workshops",
+        "desc": "[TODO] Run sponsor or breakout workshops with structured input."
+      }
+    },
+    "faq": {
+      "heading": "[TODO] Common event-team questions",
+      "q1": {
+        "question": "[TODO] Can attendees join without creating an account?",
+        "answer": "[TODO] Yes. Participants join with a short code in any modern browser. No account, no install."
+      },
+      "q2": {
+        "question": "[TODO] Does this work for hybrid and remote attendees?",
+        "answer": "[TODO] Yes. In-room and remote participants use the same join code and follow the same question flow at the same time."
+      },
+      "q3": {
+        "question": "[TODO] Can we hand sponsor-ready data to partners?",
+        "answer": "[TODO] Yes. Per-session engagement and theme outputs export to CSV or JSON suitable for sponsor recap decks."
+      }
     }
   },
   "hr": {
@@ -37,17 +149,118 @@
     "headline": "Feel the pulse of your people — not just the data.",
     "subheadline": "Run anonymous pulse surveys, onboarding check-ins, and engagement sessions that employees actually respond to. AI surfaces what your team is really thinking.",
     "painPoints": {
-      "heading": "The gaps annual surveys can't fill"
+      "heading": "The gaps annual surveys can't fill",
+      "stale": {
+        "title": "[TODO] Sentiment data arrives too late",
+        "desc": "[TODO] Quarterly engagement surveys surface friction long after the right manager could have acted on it."
+      },
+      "fear": {
+        "title": "[TODO] Employees doubt anonymity",
+        "desc": "[TODO] If the anonymity model is implicit or hidden, participation drops and the answers you do get are sanitized."
+      },
+      "fatigue": {
+        "title": "[TODO] Survey fatigue erodes trust",
+        "desc": "[TODO] Long forms with no visible follow-through teach employees the next survey isn't worth opening."
+      }
     },
     "features": {
-      "heading": "A better way to listen at scale"
+      "heading": "A better way to listen at scale",
+      "anonymity": {
+        "title": "[TODO] Three anonymity modes per session",
+        "desc": "[TODO] Pick full anonymity, cohort grouping, or identified responses. The active mode is shown to participants before they answer."
+      },
+      "pulse": {
+        "title": "[TODO] Fast pulse templates",
+        "desc": "[TODO] Launch focused check-ins after all-hands moments, manager forums, and 30/60/90 onboarding milestones in minutes."
+      },
+      "ai": {
+        "title": "[TODO] AI theme detection on the edge",
+        "desc": "[TODO] Workers AI clusters open responses inside Cloudflare's edge network — employee text never reaches third-party model providers."
+      },
+      "gdpr": {
+        "title": "[TODO] Audit-ready consent log",
+        "desc": "[TODO] Time-stamped consent records suitable for DSAR responses and internal People-data review."
+      }
     },
     "scenarios": {
-      "heading": "How people teams use Qesto"
+      "heading": "How people teams use Qesto",
+      "allHands": {
+        "title": "[TODO] All-hands pulse",
+        "desc": "[TODO] Capture confidence and clarity within the hour after a leadership update — before the rumor mill writes the recap."
+      },
+      "onboarding": {
+        "title": "[TODO] 30/60/90 onboarding check-ins",
+        "desc": "[TODO] Spot friction themes by cohort and feed them into your manager onboarding playbook each month."
+      },
+      "manager": {
+        "title": "[TODO] Manager effectiveness loops",
+        "desc": "[TODO] Collect upward feedback in a fully anonymous mode and equip managers with theme-level coaching data."
+      }
     },
     "bottomCta": {
       "heading": "Build a culture where everyone has a voice.",
       "subheading": "Start free — no HR software integration required."
+    },
+    "seo": {
+      "title": "[TODO] Qesto for HR | Anonymous pulse surveys with edge AI",
+      "description": "[TODO] Run trust-first pulse sessions with three anonymity modes, AI theme detection on Cloudflare's edge, and consent logs your People team can audit."
+    },
+    "imageAlt": "[TODO] HR team in a collaborative discussion",
+    "proof": {
+      "heading": "[TODO] Outcomes HR teams target",
+      "metric1": {
+        "value": "[TODO] Target +15%",
+        "label": "[TODO] Pulse response rate",
+        "note": "[TODO] Illustrative target for short weekly sessions replacing quarterly long-form surveys."
+      },
+      "metric2": {
+        "value": "[TODO] Weekly",
+        "label": "[TODO] Listening cadence",
+        "note": "[TODO] Sustained with one to three questions and visible follow-through."
+      },
+      "metric3": {
+        "value": "[TODO] <24h",
+        "label": "[TODO] Theme-summary turnaround",
+        "note": "[TODO] Illustrative target for first People-team review after session close."
+      },
+      "badge1": "[TODO] Anonymity modes",
+      "badge2": "[TODO] Edge-processed AI",
+      "badge3": "[TODO] Audit-ready consent",
+      "testimonial": {
+        "quote": "[TODO] Participation moved once people could see which anonymity mode was active before they answered.",
+        "author": "[TODO] Head of People",
+        "role": "[TODO] Growth-stage SaaS company"
+      }
+    },
+    "related": {
+      "heading": "[TODO] Related pages",
+      "link1": {
+        "label": "[TODO] Feature: Privacy",
+        "desc": "[TODO] Review the anonymity modes and consent log in detail."
+      },
+      "link2": {
+        "label": "[TODO] Feature: AI Insights",
+        "desc": "[TODO] See how open feedback becomes editable themes on the edge."
+      },
+      "link3": {
+        "label": "[TODO] Use case: Team Meetings",
+        "desc": "[TODO] Bring pulse-style check-ins into regular team cadences."
+      }
+    },
+    "faq": {
+      "heading": "[TODO] Common HR questions",
+      "q1": {
+        "question": "[TODO] Can we run fully anonymous sessions?",
+        "answer": "[TODO] Yes. Full anonymity is one of three modes (full, cohort, identified) and the active mode is shown to participants before they answer."
+      },
+      "q2": {
+        "question": "[TODO] How do managers consume the results?",
+        "answer": "[TODO] Managers receive theme-level summaries and quantitative trends suitable for action planning, not raw comment dumps."
+      },
+      "q3": {
+        "question": "[TODO] Do we need an HRIS integration to start?",
+        "answer": "[TODO] No. Most teams begin without one and decide on integrations once the listening cadence is established."
+      }
     }
   },
   "nonprofit": {
@@ -55,17 +268,118 @@
     "headline": "Give every member a voice that counts.",
     "subheadline": "Run transparent votes, consent checks, and community feedback sessions that keep your members engaged and your board accountable — all on a privacy-first platform.",
     "painPoints": {
-      "heading": "What gets in the way of real community voice"
+      "heading": "What gets in the way of real community voice",
+      "attendance": {
+        "title": "[TODO] Members are excluded by geography",
+        "desc": "[TODO] Members who cannot attend in person are routinely left out of the decisions that matter most to them."
+      },
+      "opaque": {
+        "title": "[TODO] Outcomes feel manual and opaque",
+        "desc": "[TODO] Show-of-hands and paper ballots leave too much room for dispute about how the result was reached."
+      },
+      "loudest": {
+        "title": "[TODO] Loudest voices set the room",
+        "desc": "[TODO] Public discussion formats suppress honest input from quieter members and minority positions."
+      }
     },
     "features": {
-      "heading": "Tools built for transparent, inclusive decisions"
+      "heading": "Tools built for transparent, inclusive decisions",
+      "consent": {
+        "title": "[TODO] Structured consent voting",
+        "desc": "[TODO] Capture support, abstentions, and reasoned objections — not just majority counts — so dissent has a place to land."
+      },
+      "anonymous": {
+        "title": "[TODO] Anonymous input options",
+        "desc": "[TODO] Run sensitive questions in full anonymity while keeping turnout figures verifiable."
+      },
+      "languages": {
+        "title": "[TODO] Multilingual participation",
+        "desc": "[TODO] Member-facing UI in English, Dutch, German, French, and Spanish — useful for cross-border memberships."
+      },
+      "audit": {
+        "title": "[TODO] Verifiable decision evidence",
+        "desc": "[TODO] Each session produces an exportable record (turnout, mode, results, objections) suitable for AGM minutes and board review."
+      }
     },
     "scenarios": {
-      "heading": "How nonprofits and communities use Qesto"
+      "heading": "How nonprofits and communities use Qesto",
+      "agm": {
+        "title": "[TODO] AGM and board voting",
+        "desc": "[TODO] Run live or asynchronous member votes with a verifiable record suitable for minutes and audit."
+      },
+      "priorities": {
+        "title": "[TODO] Program prioritization",
+        "desc": "[TODO] Rank proposed initiatives before budget conversations so funding follows member intent."
+      },
+      "volunteer": {
+        "title": "[TODO] Volunteer feedback loops",
+        "desc": "[TODO] Capture post-event input from volunteers and surface theme-level patterns coordinators can act on."
+      }
     },
     "bottomCta": {
       "heading": "Democracy starts with being heard.",
       "subheading": "Free plan available. No credit card required."
+    },
+    "seo": {
+      "title": "[TODO] Qesto for Nonprofits | Consent voting and audit logs",
+      "description": "[TODO] Run inclusive board votes, member consultations, and program prioritization with consent voting, anonymity options, and verifiable decision evidence."
+    },
+    "imageAlt": "[TODO] Community group in a collaborative session",
+    "proof": {
+      "heading": "[TODO] Governance outcomes nonprofits target",
+      "metric1": {
+        "value": "[TODO] Target +20%",
+        "label": "[TODO] Remote member turnout",
+        "note": "[TODO] Illustrative target when short-code voting is available across mobile and desktop."
+      },
+      "metric2": {
+        "value": "[TODO] Single export",
+        "label": "[TODO] Vote-to-rationale trail",
+        "note": "[TODO] Outcome, mode, turnout, and objections remain in one exportable artifact."
+      },
+      "metric3": {
+        "value": "[TODO] <1 day",
+        "label": "[TODO] AGM minute draft prep",
+        "note": "[TODO] Illustrative target using structured exports instead of manual spreadsheet reconciliation."
+      },
+      "badge1": "[TODO] Consent-style voting",
+      "badge2": "[TODO] Verifiable records",
+      "badge3": "[TODO] Inclusive participation",
+      "testimonial": {
+        "quote": "[TODO] We moved from contested outcomes to a process members trust — even when they disagreed with the result.",
+        "author": "[TODO] Board Secretary",
+        "role": "[TODO] National membership organization"
+      }
+    },
+    "related": {
+      "heading": "[TODO] Related pages",
+      "link1": {
+        "label": "[TODO] Feature: Privacy",
+        "desc": "[TODO] Review anonymity options and consent log behavior."
+      },
+      "link2": {
+        "label": "[TODO] Feature: Live Polling",
+        "desc": "[TODO] See voting and ranking formats available for member sessions."
+      },
+      "link3": {
+        "label": "[TODO] Use case: Workshops",
+        "desc": "[TODO] Run member workshops with structured facilitation and shareable outputs."
+      }
+    },
+    "faq": {
+      "heading": "[TODO] Common nonprofit questions",
+      "q1": {
+        "question": "[TODO] Can members vote remotely?",
+        "answer": "[TODO] Yes. Members join with a short code from any browser-enabled device, including mobile."
+      },
+      "q2": {
+        "question": "[TODO] Can we keep a verifiable trail of the vote?",
+        "answer": "[TODO] Yes. Each session retains turnout, mode, results, and recorded objections — all exportable for governance review."
+      },
+      "q3": {
+        "question": "[TODO] Do we have to use identified voting?",
+        "answer": "[TODO] No. You choose the anonymity mode per session: full anonymity, cohort grouping, or identified."
+      }
     }
   },
   "consulting": {
@@ -73,17 +387,118 @@
     "headline": "Workshops that actually move the room.",
     "subheadline": "Replace sticky notes and show-of-hands with structured real-time data. Qesto helps facilitators surface alignment, expose hidden disagreements, and close workshops with clear decisions.",
     "painPoints": {
-      "heading": "What slows workshops down"
+      "heading": "What slows workshops down",
+      "consensus": {
+        "title": "[TODO] Verbal agreement masks real dissent",
+        "desc": "[TODO] Heads nod in the room and the objection arrives in an email three days later — usually from the sponsor."
+      },
+      "debrief": {
+        "title": "[TODO] Clients receive photos, not deliverables",
+        "desc": "[TODO] Whiteboard photos and post-it transcriptions don't survive the handoff to the team that has to execute."
+      },
+      "logistics": {
+        "title": "[TODO] Manual synthesis eats facilitation time",
+        "desc": "[TODO] Affinity-clustering and ranking by hand consumes the hours you should be spending on the next conversation."
+      }
     },
     "features": {
-      "heading": "Every tool a facilitator needs, in one session link"
+      "heading": "Every tool a facilitator needs, in one session link",
+      "ranking": {
+        "title": "[TODO] Priority ranking",
+        "desc": "[TODO] Show what the group actually values most with transparent live ranking — no facilitator-influence dot vote."
+      },
+      "consent": {
+        "title": "[TODO] Consent rounds",
+        "desc": "[TODO] Test decision readiness and surface objections before close, so the email three days later is unnecessary."
+      },
+      "open": {
+        "title": "[TODO] Anonymous open input",
+        "desc": "[TODO] Capture candid perspectives in full anonymity and let edge AI cluster them into themes for the debrief slide."
+      },
+      "export": {
+        "title": "[TODO] Same-day deliverable export",
+        "desc": "[TODO] Structured session outputs export to slide-ready summaries clients can share before they leave the building."
+      }
     },
     "scenarios": {
-      "heading": "Facilitation formats that use Qesto"
+      "heading": "Facilitation formats that use Qesto",
+      "strategy": {
+        "title": "[TODO] Strategy alignment",
+        "desc": "[TODO] Rank strategic options and run a consent round before signing off on direction."
+      },
+      "retro": {
+        "title": "[TODO] Distributed retrospectives",
+        "desc": "[TODO] Collect asynchronous input ahead of the call, then debrief clustered themes live."
+      },
+      "design": {
+        "title": "[TODO] Design-thinking workshops",
+        "desc": "[TODO] Move from divergent ideation to convergent prioritization with the evidence trail intact."
+      }
     },
     "bottomCta": {
       "heading": "Run better workshops, close with data.",
       "subheading": "Set up your first session in under 5 minutes."
+    },
+    "seo": {
+      "title": "[TODO] Qesto for Consulting | Workshops with same-day evidence",
+      "description": "[TODO] Replace sticky notes and manual synthesis with workshop workflows that leave clients with same-day decision evidence and reusable templates."
+    },
+    "imageAlt": "[TODO] Facilitator leading a collaborative workshop session",
+    "proof": {
+      "heading": "[TODO] What facilitation teams optimize for",
+      "metric1": {
+        "value": "[TODO] -30%",
+        "label": "[TODO] Synthesis overhead",
+        "note": "[TODO] Illustrative benchmark versus sticky-note and manual transcription workflows."
+      },
+      "metric2": {
+        "value": "[TODO] Same-day",
+        "label": "[TODO] Client recap delivery",
+        "note": "[TODO] Structured decisions and rationale can be shared before participants leave the room."
+      },
+      "metric3": {
+        "value": "[TODO] Reusable",
+        "label": "[TODO] Engagement templates",
+        "note": "[TODO] Standardize a facilitation flow once and adapt per client."
+      },
+      "badge1": "[TODO] Facilitator-first flow",
+      "badge2": "[TODO] Hybrid-ready sessions",
+      "badge3": "[TODO] Edge-AI synthesis",
+      "testimonial": {
+        "quote": "[TODO] Clients leave with a decision and the evidence behind it — not a folder of photos and a promise of slides next week.",
+        "author": "[TODO] Lead Facilitator",
+        "role": "[TODO] Transformation consultancy"
+      }
+    },
+    "related": {
+      "heading": "[TODO] Related pages",
+      "link1": {
+        "label": "[TODO] Use case: Workshops",
+        "desc": "[TODO] See the facilitation craft view of the same workflow."
+      },
+      "link2": {
+        "label": "[TODO] Feature: AI Insights",
+        "desc": "[TODO] Cut synthesis from a half day to one debrief meeting."
+      },
+      "link3": {
+        "label": "[TODO] Feature: Live Polling",
+        "desc": "[TODO] Run high-velocity ranking and consent rounds in the room."
+      }
+    },
+    "faq": {
+      "heading": "[TODO] Common consulting questions",
+      "q1": {
+        "question": "[TODO] Can I reuse workshop templates across clients?",
+        "answer": "[TODO] Yes. Standardize a facilitation flow once and adapt question wording per engagement — the structure travels."
+      },
+      "q2": {
+        "question": "[TODO] Does it work for hybrid client sessions?",
+        "answer": "[TODO] Yes. In-room and remote participants share the same join code and the same question flow at the same time."
+      },
+      "q3": {
+        "question": "[TODO] Can I deliver client-ready outputs the same day?",
+        "answer": "[TODO] Yes. Session outputs export to structured summaries you can share before participants leave the room."
+      }
     }
   },
   "features": {
@@ -91,36 +506,282 @@
       "badge": "AI-powered",
       "headline": "AI Insights — questions written in seconds, patterns found automatically.",
       "subheadline": "Qesto's on-device AI generates question sets from a brief, detects themes across sessions, and surfaces what your team is really thinking — without a single byte leaving your infrastructure.",
-      "howItWorks": { "heading": "How AI Insights works" },
-      "outcomes": { "heading": "What teams experience" },
-      "related": { "heading": "See AI Insights in context" },
+      "howItWorks": {
+        "heading": "How AI Insights works",
+        "step1": {
+          "title": "[TODO] Describe the session in one line",
+          "desc": "[TODO] Paste the session goal and audience. Workers AI returns a draft question flow you can edit, reorder, or replace before going live."
+        },
+        "step2": {
+          "title": "[TODO] Run the session live",
+          "desc": "[TODO] Capture polls, rankings, consent rounds, and open responses in real time with the anonymity mode you chose for the session."
+        },
+        "step3": {
+          "title": "[TODO] Read AI-clustered themes",
+          "desc": "[TODO] Open responses are grouped into themes after the session closes. Themes are editable — your facilitator decides what ships in the recap."
+        }
+      },
+      "outcomes": {
+        "heading": "What teams experience",
+        "item1": {
+          "metric": "[TODO] Under 90 seconds",
+          "desc": "[TODO] Typical time from a one-line brief to an editable first-draft question set."
+        },
+        "item2": {
+          "metric": "[TODO] On Cloudflare's edge",
+          "desc": "[TODO] Workers AI inference runs inside the same network as your session — no third-party LLM calls."
+        },
+        "item3": {
+          "metric": "[TODO] Themes, not transcripts",
+          "desc": "[TODO] Open responses are grouped so debriefs start from patterns, not from raw comment dumps."
+        }
+      },
+      "related": {
+        "heading": "See AI Insights in context",
+        "link1": {
+          "label": "[TODO] Qesto for HR",
+          "desc": "[TODO] Use themes to summarize sensitive employee feedback safely."
+        },
+        "link2": {
+          "label": "[TODO] Qesto for Consulting",
+          "desc": "[TODO] Cut workshop synthesis from a half day to the recap meeting."
+        },
+        "link3": {
+          "label": "[TODO] Use case: Workshops",
+          "desc": "[TODO] Apply AI clustering to design-thinking and prioritization rounds."
+        }
+      },
       "bottomCta": {
         "heading": "Stop staring at a blank question list.",
         "subheading": "Let AI draft it. You refine it. Your team answers it."
+      },
+      "seo": {
+        "title": "[TODO] AI Insights | Question generation and theme detection",
+        "description": "[TODO] Draft a session question set in under 90 seconds and cluster open responses into themes — without sending participant data to third-party LLMs."
+      },
+      "proof": {
+        "heading": "[TODO] What AI-assisted hosts measure",
+        "metric1": {
+          "value": "[TODO] <90s",
+          "label": "[TODO] Brief-to-draft turnaround",
+          "note": "[TODO] Measured for a 5–7 question session brief."
+        },
+        "metric2": {
+          "value": "[TODO] 0",
+          "label": "[TODO] Third-party model calls",
+          "note": "[TODO] Inference is served by Cloudflare Workers AI."
+        },
+        "metric3": {
+          "value": "[TODO] Editable",
+          "label": "[TODO] Themes before publish",
+          "note": "[TODO] Hosts approve theme labels before they appear in any recap."
+        },
+        "badge1": "[TODO] Workers AI inference",
+        "badge2": "[TODO] Editable themes",
+        "badge3": "[TODO] Question generation"
+      },
+      "faq": {
+        "heading": "[TODO] Common AI Insights questions",
+        "q1": {
+          "question": "[TODO] Can I edit AI-generated questions?",
+          "answer": "[TODO] Yes. Drafts are fully editable before the session starts and during pacing, including question text, response type, and ordering."
+        },
+        "q2": {
+          "question": "[TODO] Does AI Insights call third-party model providers?",
+          "answer": "[TODO] No. Question generation and theme clustering run on Cloudflare Workers AI inside the same edge network that serves the session — there are no calls to OpenAI, Anthropic, or other third-party LLMs."
+        },
+        "q3": {
+          "question": "[TODO] Can I compare themes across sessions?",
+          "answer": "[TODO] Yes. Theme groupings persist with the session record so recurring patterns surface across HR pulses, retros, and recurring workshops."
+        }
       }
     },
     "livePolling": {
       "badge": "Core feature",
       "headline": "Live polling that moves at the speed of your room.",
       "subheadline": "Multiple choice, scales, rankings, open questions, and consent votes — all updating in real time on every participant's device and your presenter screen simultaneously.",
-      "howItWorks": { "heading": "From question to result in under 10 seconds" },
-      "outcomes": { "heading": "Why teams switch to Qesto" },
-      "related": { "heading": "See live polling in action" },
+      "howItWorks": {
+        "heading": "From question to result in under 10 seconds",
+        "step1": {
+          "title": "[TODO] Share a short join code",
+          "desc": "[TODO] Participants join in the browser on any device. No app install, no account creation, no waiting room."
+        },
+        "step2": {
+          "title": "[TODO] Pace questions live",
+          "desc": "[TODO] Hosts reveal, pause, and close questions based on room dynamics. Participants only see what the host has opened."
+        },
+        "step3": {
+          "title": "[TODO] Read results as they arrive",
+          "desc": "[TODO] Live-updating visuals are sized for the room and the projector. Hosts can switch between facilitator view and audience view."
+        }
+      },
+      "outcomes": {
+        "heading": "Why teams switch to Qesto",
+        "item1": {
+          "metric": "[TODO] Four formats",
+          "desc": "[TODO] Polls, rankings, consent rounds, and open responses live in the same session — no stitching."
+        },
+        "item2": {
+          "metric": "[TODO] Global edge",
+          "desc": "[TODO] Cloudflare's edge network keeps interaction latency consistent for distributed audiences."
+        },
+        "item3": {
+          "metric": "[TODO] Browser-only",
+          "desc": "[TODO] Participants join from any modern browser — no install reduces drop-off in the first minute."
+        }
+      },
+      "related": {
+        "heading": "See live polling in action",
+        "link1": {
+          "label": "[TODO] Qesto for Events",
+          "desc": "[TODO] Drive ranked Q&A and pulse checks across keynote and breakout."
+        },
+        "link2": {
+          "label": "[TODO] Qesto for HR",
+          "desc": "[TODO] Run pulse sessions with anonymity controls participants can see."
+        },
+        "link3": {
+          "label": "[TODO] Use case: Team Meetings",
+          "desc": "[TODO] Replace circular debate with consent rounds and ranked agendas."
+        }
+      },
       "bottomCta": {
         "heading": "Your audience is waiting to be heard.",
         "subheading": "No app install. No waiting. Just join and vote."
+      },
+      "seo": {
+        "title": "[TODO] Live polling | Real-time polls, rankings, consent rounds",
+        "description": "[TODO] Run polls, rankings, consent checks, and open questions inside one session — with low latency for in-room and remote participants on any device."
+      },
+      "proof": {
+        "heading": "[TODO] Delivery numbers that matter live",
+        "metric1": {
+          "value": "[TODO] <100ms",
+          "label": "[TODO] Typical interaction latency",
+          "note": "[TODO] Measured for participants on the same continent as the edge node."
+        },
+        "metric2": {
+          "value": "[TODO] 1 join code",
+          "label": "[TODO] For the entire session",
+          "note": "[TODO] Hosts run multiple formats without re-prompting participants to rejoin."
+        },
+        "metric3": {
+          "value": "[TODO] 0 installs",
+          "label": "[TODO] On the participant side",
+          "note": "[TODO] Browsers join with a code; no native app or extension required."
+        }
+      },
+      "faq": {
+        "heading": "[TODO] Common live polling questions",
+        "q1": {
+          "question": "[TODO] Do participants need an app?",
+          "answer": "[TODO] No. Participants join in the browser using a short code on any modern device — phone, laptop, tablet, or kiosk."
+        },
+        "q2": {
+          "question": "[TODO] Can we mix rankings and open questions in one session?",
+          "answer": "[TODO] Yes. A single session can combine polls, rankings, consent rounds, and open responses, sequenced by the host."
+        },
+        "q3": {
+          "question": "[TODO] Can hosts control the pace?",
+          "answer": "[TODO] Yes. Hosts reveal, pause, and close each question based on room energy. Participants only see questions the host has opened."
+        }
       }
     },
     "privacy": {
       "badge": "Privacy by default",
       "headline": "Your team's responses stay yours — always.",
       "subheadline": "Anonymity modes, GDPR consent logging, and on-device AI inference mean participants can speak honestly and you can prove it. No third-party model providers ever see your data.",
-      "howItWorks": { "heading": "Privacy is architecture, not a checkbox" },
-      "outcomes": { "heading": "What privacy-first means in practice" },
-      "related": { "heading": "Privacy matters most here" },
+      "howItWorks": {
+        "heading": "Privacy is architecture, not a checkbox",
+        "step1": {
+          "title": "[TODO] Inference runs at the edge",
+          "desc": "[TODO] Workers AI on Cloudflare runs theme detection inside the same network boundary that serves your session — no third-party model providers."
+        },
+        "step2": {
+          "title": "[TODO] Pick an anonymity mode per session",
+          "desc": "[TODO] Choose full anonymity, cohort grouping, or identified responses based on the question's sensitivity. The chosen mode is shown to participants before they answer."
+        },
+        "step3": {
+          "title": "[TODO] Consent is logged, not assumed",
+          "desc": "[TODO] Every consent decision becomes a time-stamped artifact you can export for DSAR responses, governance reviews, or internal audit."
+        }
+      },
+      "outcomes": {
+        "heading": "What privacy-first means in practice",
+        "item1": {
+          "metric": "[TODO] No third-party model calls",
+          "desc": "[TODO] Open-text responses do not leave Cloudflare's edge for inference."
+        },
+        "item2": {
+          "metric": "[TODO] Exportable consent log",
+          "desc": "[TODO] Time-stamped per-participant records suitable for DSAR and audit response."
+        },
+        "item3": {
+          "metric": "[TODO] Visible anonymity",
+          "desc": "[TODO] Participants see the active mode before they respond, which lifts response honesty."
+        }
+      },
+      "related": {
+        "heading": "Privacy matters most here",
+        "link1": {
+          "label": "[TODO] Qesto for Consulting",
+          "desc": "[TODO] Run sensitive client workshops with controls participants can see."
+        },
+        "link2": {
+          "label": "[TODO] Qesto for HR",
+          "desc": "[TODO] Make pulse programs trustworthy enough for honest answers."
+        },
+        "link3": {
+          "label": "[TODO] Qesto for Nonprofits",
+          "desc": "[TODO] Support member governance with auditable decision evidence."
+        }
+      },
       "bottomCta": {
         "heading": "Honest responses start with trusted infrastructure.",
         "subheading": "Privacy is on by default — you never have to turn it on."
+      },
+      "seo": {
+        "title": "[TODO] Privacy by default | Edge AI, anonymity, consent logs",
+        "description": "[TODO] Run sensitive sessions with edge AI inference, per-session anonymity modes, and time-stamped consent logs your DPO can audit."
+      },
+      "hero": {
+        "secondaryCta": "[TODO] Read the privacy policy"
+      },
+      "proof": {
+        "heading": "[TODO] Outcomes privacy-first teams report",
+        "metric1": {
+          "value": "[TODO] Lower",
+          "label": "[TODO] Participant hesitation",
+          "note": "[TODO] When the active anonymity mode is shown in the participant view."
+        },
+        "metric2": {
+          "value": "[TODO] Audit-ready",
+          "label": "[TODO] Consent log format",
+          "note": "[TODO] Exportable as JSON or CSV with participant-scoped timestamps."
+        },
+        "metric3": {
+          "value": "[TODO] Cloudflare edge",
+          "label": "[TODO] Where AI runs",
+          "note": "[TODO] Workers AI inference in the same network as your session traffic."
+        },
+        "badge1": "[TODO] Anonymity modes",
+        "badge2": "[TODO] Time-stamped consent",
+        "badge3": "[TODO] Workers AI on edge"
+      },
+      "faq": {
+        "heading": "[TODO] Common privacy questions",
+        "q1": {
+          "question": "[TODO] Can we choose anonymity per session?",
+          "answer": "[TODO] Yes. Each session uses one of three modes — full anonymity, cohort grouping, or identified responses — and the active mode is visible to participants before they respond."
+        },
+        "q2": {
+          "question": "[TODO] Where does AI inference run?",
+          "answer": "[TODO] Theme detection and question generation run on Cloudflare Workers AI inside the same edge network that serves your session. Open-text responses are not routed to third-party model providers."
+        },
+        "q3": {
+          "question": "[TODO] What does the consent log contain?",
+          "answer": "[TODO] Per-participant decisions with UTC timestamps, the prompt text shown, and the mode in effect. Exportable as JSON or CSV for DSAR responses and governance review."
+        }
       }
     }
   },
@@ -129,37 +790,382 @@
       "badge": "Use case: Team Meetings",
       "headline": "Meetings where everyone contributes, not just the loudest.",
       "subheadline": "Replace silent nodding with structured input. Qesto makes standups, retrospectives, and decision meetings faster, more inclusive, and actually useful.",
-      "painPoints": { "heading": "What makes team meetings frustrating" },
-      "features": { "heading": "Qesto tools for better team meetings" },
-      "scenarios": { "heading": "Meeting formats that work well with Qesto" },
+      "painPoints": {
+        "heading": "What makes team meetings frustrating",
+        "silent": {
+          "title": "[TODO] Silent disagreement becomes rework",
+          "desc": "[TODO] Team members avoid conflict in the call and surface concerns once the work is already in flight."
+        },
+        "time": {
+          "title": "[TODO] Agendas drift into debate",
+          "desc": "[TODO] Unstructured discussion swallows the time you reserved for the priority decision."
+        },
+        "record": {
+          "title": "[TODO] Decision rationale evaporates",
+          "desc": "[TODO] Three weeks later nobody remembers why the decision was made — only that it was."
+        }
+      },
+      "features": {
+        "heading": "Qesto tools for better team meetings",
+        "pulse": {
+          "title": "[TODO] Pulse checks",
+          "desc": "[TODO] Open with a 30-second sentiment check so blockers surface before the agenda starts."
+        },
+        "ranking": {
+          "title": "[TODO] Agenda ranking",
+          "desc": "[TODO] Rank topics live before discussion so the highest-impact decisions get the time they deserve."
+        },
+        "consent": {
+          "title": "[TODO] Decision consent rounds",
+          "desc": "[TODO] Validate buy-in and capture objections before closing — making post-meeting reversals visible early."
+        },
+        "recap": {
+          "title": "[TODO] Recap export to Slack, Notion, Linear",
+          "desc": "[TODO] Send structured outcomes (decision, rationale, dissent) into the surface your team already works in."
+        }
+      },
+      "scenarios": {
+        "heading": "Meeting formats that work well with Qesto",
+        "retro": {
+          "title": "[TODO] Weekly retrospectives",
+          "desc": "[TODO] Collect candid input ahead of the call and discuss clustered themes instead of free-form debate."
+        },
+        "sprint": {
+          "title": "[TODO] Sprint planning prioritization",
+          "desc": "[TODO] Rank backlog candidates before the planning conversation so the team debates priorities, not the list."
+        },
+        "decision": {
+          "title": "[TODO] Architecture decision checkpoints",
+          "desc": "[TODO] Run consent rounds before finalizing impactful changes — the rationale lives with the session record."
+        }
+      },
       "bottomCta": {
         "heading": "Turn your next meeting into a real conversation.",
         "subheading": "Join codes work on any device — no app install for participants."
+      },
+      "seo": {
+        "title": "[TODO] Use case: Team meetings | Decisions with rationale",
+        "description": "[TODO] Improve retros, planning, and decision checkpoints with consent rounds, ranked agendas, and recap exports into Slack, Notion, and Linear."
+      },
+      "imageAlt": "[TODO] Team collaborating around a table in a meeting",
+      "proof": {
+        "heading": "[TODO] Meeting metrics teams improve",
+        "metric1": {
+          "value": "[TODO] Target -20%",
+          "label": "[TODO] Decision-cycle time",
+          "note": "[TODO] Illustrative target when ranked agendas and consent rounds are used each week."
+        },
+        "metric2": {
+          "value": "[TODO] Target +15%",
+          "label": "[TODO] Perceived inclusion",
+          "note": "[TODO] Illustrative target from teams that rotate pulse checks and anonymous input."
+        },
+        "metric3": {
+          "value": "[TODO] Linked",
+          "label": "[TODO] Decision and rationale",
+          "note": "[TODO] Outcome and reasoning stay attached to the session record."
+        },
+        "badge1": "[TODO] Retro-ready",
+        "badge2": "[TODO] Standup-friendly",
+        "badge3": "[TODO] Decision-centric",
+        "testimonial": {
+          "quote": "[TODO] We spend less time debating because dissent is visible before we close the decision — not after the work has shipped.",
+          "author": "[TODO] Engineering Manager",
+          "role": "[TODO] Distributed product team"
+        }
+      },
+      "related": {
+        "heading": "[TODO] Related pages",
+        "link1": {
+          "label": "[TODO] Feature: Live Polling",
+          "desc": "[TODO] Use polls, rankings, and consent rounds inside one session."
+        },
+        "link2": {
+          "label": "[TODO] Feature: Privacy",
+          "desc": "[TODO] Enable safer participation for sensitive team topics."
+        },
+        "link3": {
+          "label": "[TODO] Qesto for HR",
+          "desc": "[TODO] Scale team-level listening into org-wide pulse loops."
+        }
+      },
+      "faq": {
+        "heading": "[TODO] Common team-meeting questions",
+        "q1": {
+          "question": "[TODO] Can we use this in short standups?",
+          "answer": "[TODO] Yes. A session can be a single 30-second pulse — the workflow scales down without losing the recap."
+        },
+        "q2": {
+          "question": "[TODO] Will it slow our agenda down?",
+          "answer": "[TODO] Usually the opposite. Teams report shorter cycles because circular debate is cut by ranked agendas and consent rounds."
+        },
+        "q3": {
+          "question": "[TODO] Can we share outcomes after every meeting?",
+          "answer": "[TODO] Yes. Recaps export to Slack, Notion, and Linear with the decision and the rationale attached."
+        }
       }
     },
     "workshops": {
       "badge": "Use case: Workshops & Facilitation",
       "headline": "Facilitate without the sticky notes.",
       "subheadline": "Real-time structured input replaces physical props and messy whiteboards. Run ideation, prioritisation, and consent rounds from a single session link — and leave with exportable results.",
-      "painPoints": { "heading": "What slows workshops down" },
-      "features": { "heading": "One session link for every workshop format" },
-      "scenarios": { "heading": "Workshop formats that use Qesto" },
+      "painPoints": {
+        "heading": "What slows workshops down",
+        "props": {
+          "title": "[TODO] Physical props slow the craft",
+          "desc": "[TODO] Sticky notes, markers, and the photo phase eat the convergent half of the workshop where decisions actually happen."
+        },
+        "distributed": {
+          "title": "[TODO] Hybrid puts remote in second class",
+          "desc": "[TODO] In-room participants dominate physical-first formats while remote attendees watch the back of someone's head."
+        },
+        "results": {
+          "title": "[TODO] Photo handoffs don't survive Monday",
+          "desc": "[TODO] Photo-based outputs are unsearchable, untransferable, and impossible to operationalize for the team that has to execute."
+        }
+      },
+      "features": {
+        "heading": "One session link for every workshop format",
+        "ideas": {
+          "title": "[TODO] Parallel idea capture",
+          "desc": "[TODO] Every participant contributes at the same time — no turn-taking, no facilitator bottleneck."
+        },
+        "voting": {
+          "title": "[TODO] Live prioritization",
+          "desc": "[TODO] Use ranking to converge on the highest-value options with the math visible to the room."
+        },
+        "ai": {
+          "title": "[TODO] AI affinity clustering",
+          "desc": "[TODO] Open responses are grouped into themes by edge AI so the convergent phase starts with structure, not a wall of text."
+        },
+        "results": {
+          "title": "[TODO] Shareable structured outputs",
+          "desc": "[TODO] Export workshop outputs as structured artifacts the execution team can read on Monday morning."
+        }
+      },
+      "scenarios": {
+        "heading": "Workshop formats that use Qesto",
+        "design": {
+          "title": "[TODO] Design-thinking sessions",
+          "desc": "[TODO] Move from divergent ideation to convergent ranking inside one session — no tool switch."
+        },
+        "values": {
+          "title": "[TODO] Values and principles workshops",
+          "desc": "[TODO] Capture individual input anonymously and let the group prioritize shared principles transparently."
+        },
+        "hybrid": {
+          "title": "[TODO] Hybrid offsites",
+          "desc": "[TODO] Keep remote and in-room voices equally weighted in the live decision moments."
+        }
+      },
       "bottomCta": {
         "heading": "Great facilitation leaves evidence.",
         "subheading": "Qesto turns workshop conversations into structured, shareable results."
+      },
+      "seo": {
+        "title": "[TODO] Use case: Workshops | Hybrid facilitation craft",
+        "description": "[TODO] Facilitate ideation and prioritization workshops with parallel idea capture, AI affinity clustering, and outputs that survive the handoff."
+      },
+      "imageAlt": "[TODO] Workshop participants collaborating on a shared activity",
+      "proof": {
+        "heading": "[TODO] Workshop KPIs facilitators improve",
+        "metric1": {
+          "value": "[TODO] Target -30%",
+          "label": "[TODO] Convergence time",
+          "note": "[TODO] Illustrative target when AI clustering replaces manual affinity sorting."
+        },
+        "metric2": {
+          "value": "[TODO] 100%",
+          "label": "[TODO] Shared interaction flow",
+          "note": "[TODO] Remote and in-room participants use the same join flow and facilitation sequence."
+        },
+        "metric3": {
+          "value": "[TODO] Same-day",
+          "label": "[TODO] Structured handoff",
+          "note": "[TODO] Workshop outputs are export-ready for Monday execution planning."
+        },
+        "badge1": "[TODO] Hybrid-ready",
+        "badge2": "[TODO] Facilitator pacing",
+        "badge3": "[TODO] Structured exports",
+        "testimonial": {
+          "quote": "[TODO] We end workshops with decisions and structured outputs the execution team actually reads, not a folder of whiteboard photos.",
+          "author": "[TODO] Principal Facilitator",
+          "role": "[TODO] Innovation consultancy"
+        }
+      },
+      "related": {
+        "heading": "[TODO] Related pages",
+        "link1": {
+          "label": "[TODO] Qesto for Consulting",
+          "desc": "[TODO] See the commercial-deliverable view of the same workflow."
+        },
+        "link2": {
+          "label": "[TODO] Feature: AI Insights",
+          "desc": "[TODO] Edge-AI clustering for the affinity phase."
+        },
+        "link3": {
+          "label": "[TODO] Feature: Live Polling",
+          "desc": "[TODO] Ranking and consent rounds for the convergent phase."
+        }
+      },
+      "faq": {
+        "heading": "[TODO] Common workshop questions",
+        "q1": {
+          "question": "[TODO] Can we run this without physical sticky notes?",
+          "answer": "[TODO] Yes. The flow is fully digital from divergent ideation through convergent ranking — and the outputs survive the handoff."
+        },
+        "q2": {
+          "question": "[TODO] Does it support hybrid facilitation?",
+          "answer": "[TODO] Yes. In-room and remote participants share the same join code, the same question flow, and the same view."
+        },
+        "q3": {
+          "question": "[TODO] Can we export workshop outcomes quickly?",
+          "answer": "[TODO] Yes. Structured outputs are available immediately and can be shared before participants leave the room."
+        }
       }
     },
     "training": {
       "badge": "Use case: Training & Learning",
       "headline": "Check understanding while you still have the room.",
       "subheadline": "Run formative knowledge checks, confidence surveys, and reflection questions mid-session. Find out what participants actually understood — not what they said they understood.",
-      "painPoints": { "heading": "Why training assessments usually fail" },
-      "features": { "heading": "Qesto tools for training sessions" },
-      "scenarios": { "heading": "Training scenarios where Qesto helps" },
+      "painPoints": {
+        "heading": "Why training assessments usually fail",
+        "passive": {
+          "title": "[TODO] Engagement looks fine, comprehension isn't",
+          "desc": "[TODO] Cameras stay on and heads stay up while the actual concept lands with one third of the cohort."
+        },
+        "silence": {
+          "title": "[TODO] Learners don't ask in public",
+          "desc": "[TODO] Public-question formats favour the confident learners and leave gaps invisible until the assessment."
+        },
+        "surveys": {
+          "title": "[TODO] Smile sheets arrive too late",
+          "desc": "[TODO] Post-session surveys land after the room has emptied and the trainer has moved on to the next cohort."
+        }
+      },
+      "features": {
+        "heading": "Qesto tools for training sessions",
+        "formative": {
+          "title": "[TODO] Formative checks",
+          "desc": "[TODO] Run quick comprehension checks at module boundaries and re-teach where the data points."
+        },
+        "confidence": {
+          "title": "[TODO] Confidence scales",
+          "desc": "[TODO] Measure learner self-rated readiness before progressing — surfaces quiet uncertainty without public exposure."
+        },
+        "reflection": {
+          "title": "[TODO] Reflection prompts",
+          "desc": "[TODO] Capture learner takeaways and unresolved questions in real time, scoped to the cohort."
+        },
+        "ai": {
+          "title": "[TODO] AI summary support",
+          "desc": "[TODO] Edge-AI clusters open reflections so trainers see the misconception pattern without manual coding."
+        }
+      },
+      "scenarios": {
+        "heading": "Training scenarios where Qesto helps",
+        "midModule": {
+          "title": "[TODO] Mid-module checks",
+          "desc": "[TODO] Validate comprehension before introducing more advanced material — re-teach where the data shows it."
+        },
+        "reflection": {
+          "title": "[TODO] End-of-day reflection",
+          "desc": "[TODO] Capture takeaways and unresolved questions before learners log off — and feed the next session brief."
+        },
+        "baseline": {
+          "title": "[TODO] Onboarding cohort baselines",
+          "desc": "[TODO] Pre/post comparisons across an onboarding cohort show confidence and knowledge shifts over the program."
+        }
+      },
       "bottomCta": {
         "heading": "Train smarter — check understanding while it matters.",
         "subheading": "No app required. Participants join by code on any device."
+      },
+      "seo": {
+        "title": "[TODO] Use case: Training | Live formative checks",
+        "description": "[TODO] Run formative checks, confidence scales, and reflection prompts with real-time feedback — Kirkpatrick L1 and L2 evidence inside the session."
+      },
+      "imageAlt": "[TODO] Trainer leading an interactive learning session",
+      "proof": {
+        "heading": "[TODO] Learning outcomes L&D teams track",
+        "metric1": {
+          "value": "[TODO] In-session",
+          "label": "[TODO] Comprehension visibility",
+          "note": "[TODO] Trainers spot gaps before the session closes — Kirkpatrick L2 inside the room."
+        },
+        "metric2": {
+          "value": "[TODO] <1 module",
+          "label": "[TODO] Instructional adjustment lag",
+          "note": "[TODO] Confidence checks surface misunderstanding early enough to re-teach before the next module."
+        },
+        "metric3": {
+          "value": "[TODO] Program-ready",
+          "label": "[TODO] L&D evidence",
+          "note": "[TODO] Structured outputs feed reporting at L1 (reaction) and L2 (learning)."
+        },
+        "badge1": "[TODO] Formative-first",
+        "badge2": "[TODO] Instructor pacing",
+        "badge3": "[TODO] L&D evidence",
+        "testimonial": {
+          "quote": "[TODO] We can detect misunderstanding mid-session and re-teach the same hour — the smile sheet becomes confirmatory, not corrective.",
+          "author": "[TODO] Learning Program Manager",
+          "role": "[TODO] Enterprise enablement team"
+        }
+      },
+      "related": {
+        "heading": "[TODO] Related pages",
+        "link1": {
+          "label": "[TODO] Feature: Live Polling",
+          "desc": "[TODO] Deploy quick checks and confidence scales inside the module."
+        },
+        "link2": {
+          "label": "[TODO] Feature: AI Insights",
+          "desc": "[TODO] Cluster open learner reflections without manual coding."
+        },
+        "link3": {
+          "label": "[TODO] Qesto for Events",
+          "desc": "[TODO] Apply interactive learning patterns at large-audience scale."
+        }
+      },
+      "faq": {
+        "heading": "[TODO] Common training questions",
+        "q1": {
+          "question": "[TODO] Can learners join without creating accounts?",
+          "answer": "[TODO] Yes. Learners join with a session code in the browser — no install, no account, no waiting room."
+        },
+        "q2": {
+          "question": "[TODO] Can trainers run checks during modules?",
+          "answer": "[TODO] Yes. Trainers control timing — reveal, pause, and close each check based on the room's pace."
+        },
+        "q3": {
+          "question": "[TODO] Can we use outcomes in L&D reporting?",
+          "answer": "[TODO] Yes. Structured outputs feed Kirkpatrick L1 (reaction) and L2 (learning) summaries for program review."
+        }
       }
     }
+  },
+  "navLinks": {
+    "events": "[TODO] Events",
+    "hr": "[TODO] HR & People",
+    "nonprofit": "[TODO] Nonprofits",
+    "consulting": "[TODO] Consulting",
+    "aiInsights": "[TODO] AI Insights",
+    "livePolling": "[TODO] Live Polling",
+    "featurePrivacy": "[TODO] Privacy",
+    "teamMeetings": "[TODO] Team Meetings",
+    "workshops": "[TODO] Workshops",
+    "training": "[TODO] Training"
+  },
+  "footer": {
+    "pricing": "[TODO] Pricing",
+    "events": "[TODO] Events",
+    "hr": "[TODO] HR",
+    "nonprofit": "[TODO] Nonprofits",
+    "consulting": "[TODO] Consulting",
+    "aiInsights": "[TODO] AI Insights",
+    "livePolling": "[TODO] Live Polling",
+    "featurePrivacy": "[TODO] Feature Privacy",
+    "privacyPolicy": "[TODO] Privacy",
+    "terms": "[TODO] Terms"
   }
 }

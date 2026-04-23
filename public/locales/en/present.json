@@ -10,6 +10,7 @@
   "closeSession": "Close session",
   "endPresentation": "End presentation",
   "closing": "Closing…",
+  "connectingToRoom": "Connecting to live room…",
   "back": "Back to dashboard",
   "liveParticipants": "Live participants",
   "resultsReady": "Results ready"

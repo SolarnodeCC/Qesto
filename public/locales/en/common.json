@@ -49,6 +49,8 @@
   "remove": "Remove",
   "sending": "Sending…",
   "deleting": "Deleting…",
+  "inviteMember": "Invite member",
+  "samlConfiguration": "SAML configuration",
   "copyLink": "Copy link",
   "copied": "Copied!",
   "backToDashboard": "Back to dashboard",
