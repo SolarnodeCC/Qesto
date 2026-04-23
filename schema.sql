@@ -163,12 +163,16 @@ CREATE INDEX IF NOT EXISTS idx_badges_session ON badges(session_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- energizers — gamification energizer templates (Phase 9)
--- Supported types: poll, ranking, consent, open, battle_royale, bracket
+-- Supported types: poll, ranking, consent, open, battle_royale, bracket, emoji_poll, quick_finger, team_quiz, word_cloud
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS energizers (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  kind TEXT NOT NULL CHECK (kind IN ('poll', 'ranking', 'consent', 'open', 'battle_royale', 'bracket')),
+  kind TEXT NOT NULL CHECK (kind IN (
+    'poll', 'ranking', 'consent', 'open',
+    'battle_royale', 'bracket',
+    'emoji_poll', 'quick_finger', 'team_quiz', 'word_cloud'
+  )),
   prompt TEXT NOT NULL,
   options_json TEXT NOT NULL DEFAULT '[]',
   config_json TEXT NOT NULL DEFAULT '{}',
@@ -264,3 +268,33 @@ CREATE TABLE IF NOT EXISTS referral_signups (
 );
 CREATE INDEX IF NOT EXISTS idx_referral_signups_referred ON referral_signups(referred_user_id);
 CREATE INDEX IF NOT EXISTS idx_referral_signups_referrer ON referral_signups(referrer_user_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- energizer_votes — per-participant votes for emoji_poll and future energizers
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS energizer_votes (
+  id TEXT PRIMARY KEY,
+  energizer_id TEXT NOT NULL REFERENCES energizers(id) ON DELETE CASCADE,
+  session_id TEXT NOT NULL,
+  voter_id TEXT NOT NULL,
+  value TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  UNIQUE(energizer_id, voter_id)
+);
+CREATE INDEX IF NOT EXISTS idx_energizer_votes_energizer ON energizer_votes(energizer_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- team_quiz_responses — per-participant, per-question answers for Team Quiz
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS team_quiz_responses (
+  id TEXT PRIMARY KEY,
+  energizer_id TEXT NOT NULL REFERENCES energizers(id) ON DELETE CASCADE,
+  voter_id TEXT NOT NULL,
+  question_index INTEGER NOT NULL,
+  value TEXT NOT NULL,
+  correct INTEGER NOT NULL DEFAULT 0,
+  created_at INTEGER NOT NULL,
+  UNIQUE(energizer_id, voter_id, question_index)
+);
+CREATE INDEX IF NOT EXISTS idx_tqr_energizer ON team_quiz_responses(energizer_id);
+CREATE INDEX IF NOT EXISTS idx_tqr_voter ON team_quiz_responses(energizer_id, voter_id);

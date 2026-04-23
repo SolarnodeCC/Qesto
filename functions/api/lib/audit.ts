@@ -22,6 +22,7 @@ export type AuditAction =
   | 'insights.generate'
   | 'energizer.create'
   | 'energizer.advance'
+  | 'energizer.activate'
   | 'session.close_with_badges'
 
 export interface AuditContext {
