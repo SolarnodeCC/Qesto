@@ -135,9 +135,9 @@ export default function Launchpad() {
     if (!id || !editingId) return
     setEditSaving(true)
     setEditError(null)
-    const res = await api<unknown>(`/api/sessions/${encodeURIComponent(id)}`, {
+    const res = await api<unknown>(`/api/sessions/${encodeURIComponent(id)}/questions/${encodeURIComponent(editingId)}`, {
       method: 'PATCH',
-      body: { question: { kind: editKind, prompt: editPrompt.trim(), options: editOptions } },
+      body: { kind: editKind, prompt: editPrompt.trim(), options: editOptions },
     })
     setEditSaving(false)
     if (!res.ok) {
