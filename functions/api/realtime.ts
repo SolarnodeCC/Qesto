@@ -18,7 +18,7 @@ export type ClientMessage =
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
   id: string
-  kind: 'poll'
+  kind: 'poll' | 'ranking' | 'consent' | 'open'
   prompt: string
   options: PollOption[]
 }

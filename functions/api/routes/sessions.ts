@@ -132,7 +132,7 @@ async function fetchSessionByCode(db: D1Database, code: string): Promise<Session
 }
 
 function questionToLive(q: Question): LiveQuestion {
-  return { id: q.id, kind: 'poll', prompt: q.prompt, options: q.options }
+  return { id: q.id, kind: q.kind, prompt: q.prompt, options: q.options }
 }
 
 async function doStub(env: Env, sessionId: string): Promise<DurableObjectStub> {

@@ -12,29 +12,29 @@ function mockAi(response: unknown): Ai {
   } as unknown as Ai
 }
 
+const VALID_QUESTIONS_JSON = JSON.stringify({
+  questions: [
+    {
+      kind: 'poll',
+      prompt: 'What matters most this quarter?',
+      options: [{ label: 'Growth' }, { label: 'Quality' }, { label: 'Speed' }],
+    },
+    {
+      kind: 'poll',
+      prompt: 'Biggest blocker?',
+      options: [{ label: 'Process' }, { label: 'Tools' }, { label: 'People' }],
+    },
+    {
+      kind: 'consent',
+      prompt: 'Proceed with plan?',
+      options: [{ label: 'Yes' }, { label: 'No' }, { label: 'Abstain' }],
+    },
+  ],
+})
+
 describe('ai-wizard/generateQuestions', () => {
   it('parses a clean JSON response into validated questions with ids', async () => {
-    const ai = mockAi({
-      response: JSON.stringify({
-        questions: [
-          {
-            kind: 'poll',
-            prompt: 'What matters most this quarter?',
-            options: [{ label: 'Growth' }, { label: 'Quality' }, { label: 'Speed' }],
-          },
-          {
-            kind: 'poll',
-            prompt: 'Biggest blocker?',
-            options: [{ label: 'Process' }, { label: 'Tools' }, { label: 'People' }],
-          },
-          {
-            kind: 'consent',
-            prompt: 'Proceed with plan?',
-            options: [{ label: 'Yes' }, { label: 'No' }, { label: 'Abstain' }],
-          },
-        ],
-      }),
-    })
+    const ai = mockAi({ response: VALID_QUESTIONS_JSON })
 
     const result = await generateQuestions(ai, {
       sessionTitle: 'Q2 Kickoff',
@@ -101,6 +101,38 @@ describe('ai-wizard/generateQuestions', () => {
     await expect(
       generateQuestions(ai, { sessionTitle: 'x', sessionGoal: 'y' }),
     ).rejects.toBeInstanceOf(WizardAIError)
+  })
+
+  it('succeeds after transient failures (retry logic)', async () => {
+    let callCount = 0
+    const ai: Ai = {
+      run: async () => {
+        callCount++
+        if (callCount < 3) throw new Error('transient error')
+        return { response: VALID_QUESTIONS_JSON }
+      },
+    } as unknown as Ai
+
+    const result = await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
+    expect(result.questions).toHaveLength(3)
+    expect(callCount).toBe(3)
+  })
+
+  it('falls back to secondary model when primary fails all retries', async () => {
+    const calledModels: string[] = []
+    const ai: Ai = {
+      run: async (model: string) => {
+        calledModels.push(model as string)
+        if (model === '@cf/meta/llama-3.3-70b-instruct-fp8-fast') {
+          throw new Error('primary model unavailable')
+        }
+        return { response: VALID_QUESTIONS_JSON }
+      },
+    } as unknown as Ai
+
+    const result = await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
+    expect(result.questions).toHaveLength(3)
+    expect(calledModels).toContain(__internal.FALLBACK_MODEL)
   })
 
   it('builds user prompt with focus area when provided', () => {
