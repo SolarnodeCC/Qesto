@@ -116,7 +116,7 @@ const MAX_TOKENS = 1024
 // Delays between retry attempts in milliseconds (exponential backoff).
 const RETRY_DELAYS_MS = [200, 400, 800]
 // Fallback model used when the primary fails all retries.
-const FALLBACK_MODEL = '@cf/meta/llama-3.1-8b-instruct'
+const FALLBACK_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8'
 
 // Invoke the AI model and return the raw text response. Retries up to
 // RETRY_DELAYS_MS.length times on invocation errors or empty responses.
@@ -139,6 +139,7 @@ async function invokeAI(
         messages,
         max_tokens: MAX_TOKENS,
         stream: false,
+        response_format: { type: 'json_object' },
       })) as { response?: string } | string
       const latencyMs = Date.now() - t0
       const raw =
