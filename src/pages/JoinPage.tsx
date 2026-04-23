@@ -8,6 +8,7 @@ import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
 import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
+import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
 
 type Lookup =
   | { status: 'loading' }
@@ -86,11 +87,11 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const t = useT('join')
 
   // Energizer polling — checks for an active energizer every 3s
-  const [activeEnergizer, setActiveEnergizer] = useState<EmojiPollEnergizer | null>(null)
+  const [activeEnergizer, setActiveEnergizer] = useState<EmojiPollEnergizer | QuickFingerEnergizer | null>(null)
   const energizerPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const fetchActiveEnergizer = useCallback(async () => {
-    const res = await api<{ energizer: EmojiPollEnergizer | null; results: Record<string, number> }>(
+    const res = await api<{ energizer: EmojiPollEnergizer | QuickFingerEnergizer | null; results: Record<string, number> }>(
       `/api/sessions/${encodeURIComponent(sessionId)}/energizers/active`,
     )
     if (res.ok) {
@@ -231,11 +232,19 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           </div>
         )}
 
-        {/* Active energizer — emoji poll or other types */}
+        {/* Active energizer — emoji poll or quick finger */}
         {!isEnded && activeEnergizer?.kind === 'emoji_poll' && countdown === null && (
           <EmojiPollEnergizerView
             sessionId={sessionId}
-            energizer={activeEnergizer}
+            energizer={activeEnergizer as EmojiPollEnergizer}
+            role="participant"
+            voterId={state.voterId ?? 'anonymous'}
+          />
+        )}
+        {!isEnded && activeEnergizer?.kind === 'quick_finger' && countdown === null && (
+          <QuickFingerEnergizerView
+            sessionId={sessionId}
+            energizer={activeEnergizer as QuickFingerEnergizer}
             role="participant"
             voterId={state.voterId ?? 'anonymous'}
           />

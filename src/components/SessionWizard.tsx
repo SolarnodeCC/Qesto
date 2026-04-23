@@ -501,11 +501,13 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     if (energizerId) {
       const kindMap: Record<string, string> = {
         'emoji-poll': 'emoji_poll',
+        'snelste-vinger': 'quick_finger',
       }
       const backendKind = kindMap[energizerId]
       if (backendKind) {
         const promptMap: Record<string, string> = {
           'emoji-poll': 'How are you feeling right now?',
+          'snelste-vinger': 'Quick Finger — edit this question in the Launchpad',
         }
         const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/energizers`, {
           method: 'POST',

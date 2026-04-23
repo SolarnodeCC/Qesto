@@ -19,6 +19,7 @@ import {
   advanceBracketRound,
   determineBadgesAwarded,
   type EmojiPollConfig,
+  type QuickFingerConfig,
 } from '../lib/gamification'
 import { recordAuditEvent } from '../lib/audit'
 import type { Env } from '../types'
@@ -36,14 +37,16 @@ export function mountEnergizerRoutes(parent: any) {
 
     try {
       const body = await c.req.json<{
-        kind: 'battle_royale' | 'bracket' | 'emoji_poll'
+        kind: 'battle_royale' | 'bracket' | 'emoji_poll' | 'quick_finger'
         prompt: string
         participants?: string[]
         bracket_size?: 4 | 8 | 16
         emojis?: string[]
+        options?: string[]
+        correct_index?: number
       }>()
 
-      if (!['battle_royale', 'bracket', 'emoji_poll'].includes(body.kind)) {
+      if (!['battle_royale', 'bracket', 'emoji_poll', 'quick_finger'].includes(body.kind)) {
         return c.json(
           { ok: false, error: { code: 'validation', message: 'Invalid energizer kind' }, trace_id },
           400,
@@ -57,6 +60,9 @@ export function mountEnergizerRoutes(parent: any) {
       if (body.kind === 'emoji_poll') {
         const emojis = body.emojis ?? ['😀', '😐', '😕', '😡', '😴']
         config = { emojis } satisfies EmojiPollConfig
+      } else if (body.kind === 'quick_finger') {
+        const options = body.options ?? ['Option A', 'Option B', 'Option C', 'Option D']
+        config = { options, correct_index: body.correct_index ?? 0 } satisfies QuickFingerConfig
       } else {
         if (!Array.isArray(body.participants) || body.participants.length < 2) {
           return c.json(
@@ -140,6 +146,8 @@ export function mountEnergizerRoutes(parent: any) {
 
       const config = JSON.parse(energizer.config_json)
       let results: Record<string, number> = {}
+      let rankings: Array<{ voter_id: string; value: string; correct: boolean; speed_ms: number; rank: number }> | undefined
+      const activatedAt = energizer.updated_at as number
 
       if (energizer.kind === 'emoji_poll') {
         const votes = await (c.env.DB.prepare as any)(
@@ -155,6 +163,28 @@ export function mountEnergizerRoutes(parent: any) {
         for (const row of (votes.results ?? []) as { value: string; count: number }[]) {
           results[row.value] = row.count
         }
+      } else if (energizer.kind === 'quick_finger') {
+        const qf = config as QuickFingerConfig
+        const correctAnswer = qf.options[qf.correct_index]
+
+        const votes = await (c.env.DB.prepare as any)(
+          `SELECT voter_id, value, created_at FROM energizer_votes
+           WHERE energizer_id = ?1 ORDER BY created_at ASC`,
+        )
+          .bind(energizer.id)
+          .all()
+
+        let rank = 1
+        rankings = (votes.results ?? []).map((v: { voter_id: string; value: string; created_at: number }) => {
+          const correct = v.value === correctAnswer
+          return {
+            voter_id: v.voter_id,
+            value: v.value,
+            correct,
+            speed_ms: Math.max(0, v.created_at - activatedAt),
+            rank: correct ? rank++ : -1,
+          }
+        })
       }
 
       return c.json({
@@ -168,6 +198,7 @@ export function mountEnergizerRoutes(parent: any) {
             state: energizer.state,
           },
           results,
+          ...(rankings !== undefined ? { rankings } : {}),
         },
         trace_id,
       })
@@ -177,15 +208,20 @@ export function mountEnergizerRoutes(parent: any) {
     }
   })
 
-  // PATCH /sessions/:sessionId/energizers/:energizerId — update state
+  // PATCH /sessions/:sessionId/energizers/:energizerId — update state and/or config
   app.patch('/sessions/:sessionId/energizers/:energizerId', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
     const energizerId = c.req.param('energizerId')
 
     try {
-      const body = await c.req.json<{ state: 'active' | 'completed' }>()
-      if (!['active', 'completed'].includes(body.state)) {
+      const body = await c.req.json<{
+        state?: 'active' | 'completed'
+        prompt?: string
+        config?: object
+      }>()
+
+      if (body.state !== undefined && !['active', 'completed'].includes(body.state)) {
         return c.json(
           { ok: false, error: { code: 'validation', message: 'state must be active or completed' }, trace_id },
           400,
@@ -202,11 +238,30 @@ export function mountEnergizerRoutes(parent: any) {
           .run()
       }
 
+      // Build dynamic SET clause based on provided fields
+      const sets: string[] = ['updated_at = ?1']
+      const binds: unknown[] = [Date.now()]
+      let paramIdx = 2
+
+      if (body.state !== undefined) {
+        sets.push(`state = ?${paramIdx++}`)
+        binds.push(body.state)
+      }
+      if (body.prompt !== undefined) {
+        sets.push(`prompt = ?${paramIdx++}`)
+        binds.push(body.prompt)
+      }
+      if (body.config !== undefined) {
+        sets.push(`config_json = ?${paramIdx++}`)
+        binds.push(JSON.stringify(body.config))
+      }
+
+      binds.push(energizerId, sessionId)
       const result = await (c.env.DB.prepare as any)(
-        `UPDATE energizers SET state = ?1, updated_at = ?2
-         WHERE id = ?3 AND session_id = ?4`,
+        `UPDATE energizers SET ${sets.join(', ')}
+         WHERE id = ?${paramIdx++} AND session_id = ?${paramIdx++}`,
       )
-        .bind(body.state, Date.now(), energizerId, sessionId)
+        .bind(...binds)
         .run()
 
       if (result.meta?.changes === 0) {
@@ -275,8 +330,17 @@ export function mountEnergizerRoutes(parent: any) {
             400,
           )
         }
+      } else if (energizer.kind === 'quick_finger') {
+        const config = JSON.parse(energizer.config_json) as QuickFingerConfig
+        if (!config.options.includes(body.value)) {
+          return c.json(
+            { ok: false, error: { code: 'validation', message: 'Invalid answer choice' }, trace_id },
+            400,
+          )
+        }
       }
 
+      // For quick_finger, once voted correctly don't allow resubmit (upsert is fine — first correct wins on timing)
       await (c.env.DB.prepare as any)(
         `INSERT INTO energizer_votes (id, energizer_id, session_id, voter_id, value, created_at)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)

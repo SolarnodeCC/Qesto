@@ -163,12 +163,12 @@ CREATE INDEX IF NOT EXISTS idx_badges_session ON badges(session_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- energizers — gamification energizer templates (Phase 9)
--- Supported types: poll, ranking, consent, open, battle_royale, bracket, emoji_poll
+-- Supported types: poll, ranking, consent, open, battle_royale, bracket, emoji_poll, quick_finger
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS energizers (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  kind TEXT NOT NULL CHECK (kind IN ('poll', 'ranking', 'consent', 'open', 'battle_royale', 'bracket', 'emoji_poll')),
+  kind TEXT NOT NULL CHECK (kind IN ('poll', 'ranking', 'consent', 'open', 'battle_royale', 'bracket', 'emoji_poll', 'quick_finger')),
   prompt TEXT NOT NULL,
   options_json TEXT NOT NULL DEFAULT '[]',
   config_json TEXT NOT NULL DEFAULT '{}',
