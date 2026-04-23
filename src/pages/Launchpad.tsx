@@ -208,7 +208,7 @@ export default function Launchpad() {
     {
       key: 'question',
       label: t('preflight_question'),
-      valid: data.questions.length > 0,
+      valid: data.questions.some(q => q.kind === 'poll'),
     },
     {
       key: 'consent',

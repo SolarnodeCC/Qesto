@@ -282,7 +282,7 @@ export default function Dashboard() {
                                     ? `/sessions/${s.id}/present`
                                     : s.status === 'closed' || s.status === 'archived'
                                     ? `/sessions/${s.id}/results`
-                                    : `/sessions/${s.id}`
+                                    : `/sessions/${s.id}/launchpad`
                                 }
                                 className="font-medium text-pulse-800 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                               >
