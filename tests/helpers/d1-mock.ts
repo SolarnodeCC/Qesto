@@ -53,12 +53,18 @@ type VoteRow = {
   submitted_at: number
 }
 
+type UserRole = {
+  user_id: string
+  role: 'owner' | 'admin' | 'member' | 'viewer'
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
   readonly sessions = new Map<string, SessionRow>()
   readonly questions = new Map<string, QuestionRow>()
   readonly votes = new Map<string, VoteRow>()
+  readonly userRoles = new Map<string, UserRole>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -272,6 +278,18 @@ export class D1PreparedStatementMock {
       const row = this.db.users.get(id)
       return (row ? { plan: row.plan } : null) as T | null
     }
+    if (this.sql.startsWith('SELECT role FROM user_roles WHERE user_id')) {
+      const [user_id] = this.args as [string]
+      for (const r of this.db.userRoles.values()) {
+        if (r.user_id === user_id && (r.role === 'owner' || r.role === 'admin')) {
+          return { role: r.role } as T
+        }
+      }
+      return null
+    }
+    if (this.sql.startsWith('SELECT COUNT(*)')) {
+      return { count: 0 } as T
+    }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
       // Single-row lookup: WHERE id = ?1 AND owner_id = ?2
       const [id, owner_id] = this.args as [string, string]
@@ -282,6 +300,17 @@ export class D1PreparedStatementMock {
   }
 
   async all<T = unknown>(): Promise<{ results: T[] }> {
+    if (this.sql.startsWith('SELECT role FROM user_roles WHERE user_id')) {
+      const [user_id] = this.args as [string]
+      const rows = [...this.db.userRoles.values()].filter((r) => r.user_id === user_id)
+      return { results: rows.map((r) => ({ role: r.role })) as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT * FROM audit_events') || this.sql.startsWith('SELECT COUNT(*)')) {
+      return { results: [] as T[] }
+    }
+    if (this.sql.startsWith('SELECT bucket_ts')) {
+      return { results: [] as T[] }
+    }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
       // List form: WHERE owner_id = ?1 AND status != 'archived'
       const [owner_id] = this.args as [string]
