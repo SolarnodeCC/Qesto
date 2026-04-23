@@ -284,13 +284,15 @@ export default function Dashboard() {
                                     ? `/sessions/${s.id}/results`
                                     : `/sessions/${s.id}/launchpad`
                                 }
-                                className="font-medium text-pulse-800 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                                className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                               >
-                                {s.title}
+                                <span className="font-medium text-pulse-800 group-hover:text-teal-600">
+                                  {s.title}
+                                </span>
+                                <p className="text-xs text-pulse-500 mt-0.5">
+                                  code {s.code} · {new Date(s.created_at).toLocaleString()}
+                                </p>
                               </Link>
-                              <p className="text-xs text-pulse-500">
-                                code {s.code} · {new Date(s.created_at).toLocaleString()}
-                              </p>
                             </div>
                             <span
                               className={

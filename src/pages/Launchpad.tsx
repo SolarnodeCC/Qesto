@@ -101,12 +101,11 @@ export default function Launchpad() {
       setDragOverIndex(null)
       setReorderError(null)
 
-      const raw = await fetch(`/api/sessions/${encodeURIComponent(id)}/questions/reorder`, {
+      const res = await api<unknown>(`/api/sessions/${encodeURIComponent(id)}/questions/reorder`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionIds: next.map((q) => q.id) }),
-      }).catch(() => null)
-      if (!raw?.ok) {
+        body: { questionIds: next.map((q) => q.id) },
+      })
+      if (!res.ok) {
         setReorderError(t('reorder_error'))
         setOrderedQuestions(data?.questions ?? next)
       }
