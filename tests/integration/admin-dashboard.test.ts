@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { testHonoApp, cookieFor, TEST_SECRET, SEED_ADMIN_EMAIL } from './setup'
+import { testHonoApp, cookieFor, SEED_ADMIN_EMAIL } from './setup'
 
 describe('Admin Routes — Phase 8 Step 2', () => {
   let app: any
@@ -135,6 +135,48 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       )
 
       expect(res.status).toBe(403)
+    })
+  })
+
+  describe('Admin RBAC via user_roles DB (real path)', () => {
+    it('returns 403 for authenticated user without admin role (real user_roles path)', async () => {
+      // Create a fresh setup without SEED_ADMIN_EMAIL to test the real user_roles DB path
+      let app2: any
+      let db2: any
+      let env2: any
+      {
+        const setup = await testHonoApp()
+        app2 = setup.app
+        db2 = setup.db
+        env2 = { ...setup.env, SEED_ADMIN_EMAIL: undefined }
+      }
+
+      // Create a user without admin role
+      const userWithoutRole = await cookieFor('user_no_role', 'noAdmin@example.com')
+
+      // First request: no user_roles entry → adminMiddleware checks DB → returns 403
+      const res1 = await app2.fetch(
+        new Request('http://local/api/admin/metrics/live', {
+          headers: { cookie: userWithoutRole, 'cf-connecting-ip': '127.0.0.1' },
+        }),
+        env2,
+      )
+      expect(res1.status).toBe(403)
+
+      // Now add an admin role to user_roles in the DB
+      db2.userRoles.set('role_123', {
+        user_id: 'user_no_role',
+        role: 'admin',
+      })
+
+      // Second request: user_roles entry exists with admin role → should be allowed
+      const res2 = await app2.fetch(
+        new Request('http://local/api/admin/metrics/live', {
+          headers: { cookie: userWithoutRole, 'cf-connecting-ip': '127.0.0.1' },
+        }),
+        env2,
+      )
+      expect(res2.status).toBe(200)
     })
   })
 })

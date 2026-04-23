@@ -24,8 +24,11 @@ describe('RBAC + Audit — Phase 8 Step 3', () => {
       )
 
       // viewer role: DB has no explicit role → defaults to 'viewer' in RBAC
-      // GET /api/sessions is allowed for viewer
-      expect([200, 403]).toContain(res.status)
+      // GET /api/sessions is allowed for viewer, so should return 200 (empty list)
+      expect(res.status).toBe(200)
+      const body = await res.json() as any
+      expect(body.ok).toBe(true)
+      expect(Array.isArray(body.data.sessions)).toBe(true)
     })
 
     it('denies guest role from creating sessions', async () => {
@@ -43,20 +46,21 @@ describe('RBAC + Audit — Phase 8 Step 3', () => {
       expect([401, 403, 404]).toContain(res.status)
     })
 
-    it('denies member role from deleting sessions', async () => {
-      // Authenticated user with no explicit roles defaults to viewer in RBAC.
-      // DELETE requires owner/admin → RBAC returns 403.
-      const cookie = await cookieFor('user_member', 'member@example.com')
-      const sessionId = 'session_test_123'
+    it('denies non-admin from audit endpoint (pure RBAC gate)', async () => {
+      // Authenticated user without admin role: viewer defaults
+      // GET /api/admin/audit requires owner/admin → RBAC blocks them with 403
+      const memberCookie = await cookieFor('user_member', 'member@example.com')
       const res = await app.fetch(
-        new Request(`http://local/api/sessions/${sessionId}`, {
-          method: 'DELETE',
-          headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+        new Request('http://local/api/admin/audit', {
+          headers: { cookie: memberCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
 
-      expect([401, 403, 404]).toContain(res.status)
+      // Auth succeeded (valid cookie), but RBAC denies endpoint for non-admin
+      expect(res.status).toBe(403)
+      const body = await res.json() as any
+      expect(body.error.code).toBe('forbidden')
     })
 
     it('allows owner role from deleting sessions', async () => {

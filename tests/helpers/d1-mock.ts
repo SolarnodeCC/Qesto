@@ -58,6 +58,19 @@ type UserRole = {
   role: 'owner' | 'admin' | 'member' | 'viewer'
 }
 
+type AuditEvent = {
+  id: string
+  actor_id: string | null
+  action: string
+  subject_type: string
+  subject_id: string
+  before_snapshot: string
+  after_snapshot: string
+  ts: number
+  trace_id: string
+  idempotency_key: string | null
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
@@ -65,6 +78,7 @@ export class D1Mock {
   readonly questions = new Map<string, QuestionRow>()
   readonly votes = new Map<string, VoteRow>()
   readonly userRoles = new Map<string, UserRole>()
+  readonly auditEvents = new Map<string, AuditEvent>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -255,6 +269,65 @@ export class D1PreparedStatementMock {
       })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO audit_events')) {
+      // INSERT INTO audit_events
+      // (id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key)
+      // VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+      // ON CONFLICT DO NOTHING
+      const [id, ts, actor_id, _actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key] = this.args as [
+        string,
+        number,
+        string | null,
+        string | null,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string | null,
+      ]
+      // Check for existing event with same trace_id + action + subject_id (ON CONFLICT behavior)
+      for (const event of this.db.auditEvents.values()) {
+        if (event.trace_id === trace_id && event.action === action && event.subject_id === subject_id) {
+          // Conflict — return 0 changes per ON CONFLICT DO NOTHING
+          return { meta: { changes: 0 } }
+        }
+      }
+      this.db.auditEvents.set(id, {
+        id,
+        actor_id,
+        action,
+        subject_type,
+        subject_id,
+        before_snapshot,
+        after_snapshot,
+        ts,
+        trace_id,
+        idempotency_key,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO user_roles')) {
+      // INSERT INTO user_roles (id, user_id, role, created_at)
+      // VALUES (?1, ?2, ?3, ?4)
+      // ON CONFLICT(user_id, role) DO NOTHING
+      const [id, user_id, role, created_at] = this.args as [
+        string,
+        string,
+        'owner' | 'admin' | 'member' | 'viewer',
+        number,
+      ]
+      // Check for existing role
+      for (const r of this.db.userRoles.values()) {
+        if (r.user_id === user_id && r.role === role) {
+          // Conflict — return 0 changes per ON CONFLICT DO NOTHING
+          return { meta: { changes: 0 } }
+        }
+      }
+      this.db.userRoles.set(id, { user_id, role })
+      return { meta: { changes: 1 } }
+    }
     throw new Error(`d1-mock: unsupported run(): ${this.sql}`)
   }
 
@@ -305,7 +378,12 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.userRoles.values()].filter((r) => r.user_id === user_id)
       return { results: rows.map((r) => ({ role: r.role })) as unknown as T[] }
     }
-    if (this.sql.startsWith('SELECT * FROM audit_events') || this.sql.startsWith('SELECT COUNT(*)')) {
+    if (this.sql.startsWith('SELECT * FROM audit_events')) {
+      // Return all audit events (filters handled by caller if needed)
+      const rows = [...this.db.auditEvents.values()]
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { results: [] as T[] }
     }
     if (this.sql.startsWith('SELECT bucket_ts')) {
