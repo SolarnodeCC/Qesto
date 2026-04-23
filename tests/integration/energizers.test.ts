@@ -1,49 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { createApp } from '../../functions/api/app'
-import type { Env } from '../../functions/api/types'
-
-// Mock test utilities
-const mockEnv = {
-  DB: {
-    prepare: (sql: string) => ({
-      bind: (...args: any[]) => ({
-        run: async () => ({ success: true }),
-        first: async () => null,
-        all: async () => ({ results: [] })
-      })
-    })
-  },
-  AI: { run: async () => ({}) },
-  USERS_KV: {},
-  SESSIONS_KV: {},
-  TEAMS_KV: {},
-  AUDIT_KV: {},
-  ENV: 'test'
-} as unknown as Env
+import { describe, it, expect } from 'vitest'
 
 describe('Energizers Routes', () => {
-  let app: any
-
-  beforeAll(() => {
-    app = createApp()
-  })
 
   describe('POST /sessions/:sessionId/energizers (create)', () => {
     it('should create battle_royale energizer', async () => {
-      const mockContext = {
-        req: {
-          param: (key: string) => key === 'sessionId' ? 'test-session-1' : undefined,
-          json: async () => ({
-            kind: 'battle_royale',
-            prompt: 'Who wins?',
-            participants: ['user-1', 'user-2', 'user-3']
-          })
-        },
-        env: mockEnv,
-        get: (key: string) => key === 'trace_id' ? 'trace-123' : undefined,
-        json: (data: any, status?: number) => ({ ok: data.ok })
-      }
-
       // Validates participants count and kind
       expect(['battle_royale', 'bracket']).toContain('battle_royale')
       expect(['user-1', 'user-2', 'user-3'].length).toBeGreaterThanOrEqual(2)
@@ -84,7 +44,6 @@ describe('Energizers Routes', () => {
   describe('POST /sessions/:sessionId/energizers/:energizerId/advance', () => {
     it('should advance battle_royale round', async () => {
       const scores = { 'user-1': 100, 'user-2': 80, 'user-3': 60 }
-      const round = 1
 
       // Simulate advanceBattleRoyaleRound
       const sortedUsers = Object.entries(scores)

@@ -13,8 +13,6 @@ import {
   initializeBracket,
   advanceBattleRoyaleRound,
   advanceBracketRound,
-  getBattleRoyaleWinner,
-  getBracketWinner,
   determineBadgesAwarded,
 } from '../lib/gamification'
 import { recordAuditEvent } from '../lib/audit'
@@ -115,7 +113,7 @@ export function mountEnergizerRoutes(parent: any) {
       let nextRound = null
 
       if (energizer.kind === 'battle_royale') {
-        const { advancing, eliminated, scaledScores } = advanceBattleRoyaleRound(
+        const { advancing, scaledScores } = advanceBattleRoyaleRound(
           config.participants,
           body.scores,
           config.elimination_threshold ?? 0.5,
@@ -158,7 +156,7 @@ export function mountEnergizerRoutes(parent: any) {
       if (nextState === 'completed' && winners) {
         const user = c.get('user')
         const badges = determineBadgesAwarded(user.sub, {
-          leaderboard_rank: winners.champion === user.sub ? 1 : undefined,
+          ...(winners.champion === user.sub ? { leaderboard_rank: 1 } : {}),
         })
 
         if (badges.length > 0) {

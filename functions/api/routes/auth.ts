@@ -258,7 +258,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
-    return c.json({ ok: true, data: { id: userId, email: normalEmail }, trace_id: c.get('trace_id') }, 201)
+    return c.json({ ok: true, data: { id: userId, email: normalEmail, token: jwt }, trace_id: c.get('trace_id') }, 201)
   })
 
   // POST /api/auth/password/login
@@ -304,7 +304,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
-    return c.json({ ok: true, data: { id: user!.id, email: normalEmail }, trace_id: c.get('trace_id') })
+    return c.json({ ok: true, data: { id: user!.id, email: normalEmail, token: jwt }, trace_id: c.get('trace_id') })
   })
 
   // POST /api/auth/password/reset-request
@@ -394,7 +394,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       path: '/',
       maxAge: JWT_TTL_SECONDS,
     })
-    return c.json({ ok: true, data: { reset: true }, trace_id: c.get('trace_id') })
+    return c.json({ ok: true, data: { reset: true, token: jwt }, trace_id: c.get('trace_id') })
   })
 
   // ─────────────────────────────────────────────────────────────────────────

@@ -102,12 +102,14 @@ describe('Plan Enforcement (BILL-04)', () => {
       plan: 'starter',
     })
 
-    // Create 50 sessions — all should succeed
+    // Create 50 sessions — all should succeed.
+    // Use a unique cf-connecting-ip per request so each gets its own rate-limit
+    // bucket (rate limit is 30/hr per IP; quota is 50/month per user).
     for (let i = 0; i < 50; i++) {
       const res = await app.fetch(
         new Request('http://local/api/sessions', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `starter-${i}` },
+          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `starter-${i}`, 'cf-connecting-ip': `10.${i}.0.1` },
           body: JSON.stringify({ title: `Session ${i + 1}` }),
         }),
         env,
@@ -115,11 +117,11 @@ describe('Plan Enforcement (BILL-04)', () => {
       expect(res.status).toBe(201)
     }
 
-    // 51st session should fail with 429
+    // 51st session should fail with 429 (quota exceeded)
     const failRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'starter-51' },
+        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'starter-51', 'cf-connecting-ip': '10.51.0.1' },
         body: JSON.stringify({ title: 'Session 51' }),
       }),
       env,
@@ -142,12 +144,13 @@ describe('Plan Enforcement (BILL-04)', () => {
       plan: 'team',
     })
 
-    // Create 500 sessions — all should succeed
+    // Create 500 sessions — all should succeed.
+    // Unique IPs prevent hitting the 30/hr per-IP rate limit.
     for (let i = 0; i < 500; i++) {
       const res = await app.fetch(
         new Request('http://local/api/sessions', {
           method: 'POST',
-          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `team-${i}` },
+          headers: { 'content-type': 'application/json', cookie, 'idempotency-key': `team-${i}`, 'cf-connecting-ip': `10.${Math.floor(i / 255)}.${i % 255}.1` },
           body: JSON.stringify({ title: `Session ${i + 1}` }),
         }),
         env,
@@ -155,11 +158,11 @@ describe('Plan Enforcement (BILL-04)', () => {
       expect(res.status).toBe(201)
     }
 
-    // 501st session should fail with 429
+    // 501st session should fail with 429 (quota exceeded)
     const failRes = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
-        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'team-501' },
+        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'team-501', 'cf-connecting-ip': '10.1.255.1' },
         body: JSON.stringify({ title: 'Session 501' }),
       }),
       env,

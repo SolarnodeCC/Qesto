@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { recordSpan, recordSpanSafe } from '../../functions/api/lib/observability'
 
 describe('Observability — Span Tracing', () => {
@@ -12,6 +12,10 @@ describe('Observability — Span Tracing', () => {
     vi.useFakeTimers()
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('records successful span with latency', async () => {
     const startTime = Date.now()
     vi.setSystemTime(startTime)
@@ -22,17 +26,23 @@ describe('Observability — Span Tracing', () => {
     }, { trace_id: 'trace123', user_id: 'user456', kv: mockKV })
 
     expect(result).toBe('success')
-    // KV put should be called to record metrics
+    // Flush the fire-and-forget metrics promise chain
+    await vi.runAllTimersAsync()
     expect(mockKV.put).toHaveBeenCalled()
   })
 
   it('records span error without throwing', async () => {
+    // recordSpanSafe catches errors and returns SpanResult (not undefined)
     const result = await recordSpanSafe('failing_op', async () => {
       throw new Error('Intentional error')
     }, { trace_id: 'trace123', kv: mockKV })
 
-    expect(result).toBeUndefined()
-    // KV put should still be called (error_count incremented)
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.message).toBe('Intentional error')
+    }
+    // Flush the fire-and-forget metrics
+    await vi.runAllTimersAsync()
     expect(mockKV.put).toHaveBeenCalled()
   })
 
@@ -43,6 +53,7 @@ describe('Observability — Span Tracing', () => {
       kv: mockKV,
     })
 
+    await vi.runAllTimersAsync()
     const callArgs = mockKV.put.mock.calls[0]
     const key = callArgs[0]
     // Verify trace_id is not leaked into KV key (should be in value only)

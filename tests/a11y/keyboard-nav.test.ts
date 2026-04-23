@@ -19,27 +19,6 @@ import { describe, it, expect, beforeEach } from 'vitest'
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────
 
-/**
- * Simulate Tab key press and return the next focused element.
- * Filters out non-interactive elements and handles tabindex properly.
- */
-function getNextTabbable(doc: Document, fromElement?: Element): Element | null {
-  const tabbables = Array.from(
-    doc.querySelectorAll(
-      'button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((el) => {
-    const style = window.getComputedStyle(el)
-    return style.display !== 'none' && style.visibility !== 'hidden'
-  })
-
-  if (!fromElement || !tabbables.includes(fromElement)) {
-    return tabbables[0] ?? null
-  }
-
-  const currentIndex = tabbables.indexOf(fromElement)
-  return tabbables[currentIndex + 1] ?? null
-}
 
 /**
  * Walk through all tabbable elements in order.
@@ -343,7 +322,7 @@ describe('A11y — Keyboard navigation', () => {
         </select>
       `
 
-      const select = document.querySelector('select')!
+      const select = document.querySelector('select') as unknown as Element
       expect(inputHasLabel(select)).toBe(true)
     })
 

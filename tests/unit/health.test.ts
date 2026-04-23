@@ -32,8 +32,10 @@ describe('GET /api/admin/health', () => {
   })
 
   it('404s unknown routes with envelope', async () => {
+    // Use a path outside /api/* so sub-app auth middleware does not intercept
+    // before the notFound handler. The envelope format is the same regardless.
     const app = createApp()
-    const res = await app.fetch(new Request('http://local/api/nope'), fakeEnv())
+    const res = await app.fetch(new Request('http://local/unknown-route-xyz'), fakeEnv())
     expect(res.status).toBe(404)
     const body = (await res.json()) as { ok: boolean; error: { code: string } }
     expect(body.ok).toBe(false)

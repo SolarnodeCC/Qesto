@@ -11,7 +11,10 @@ export type AuthVariables = {
 }
 
 export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthVariables }> = async (c, next) => {
-  const token = getCookie(c, SESSION_COOKIE)
+  const cookieToken = getCookie(c, SESSION_COOKIE)
+  const authHeader = c.req.header('authorization')
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const token = cookieToken ?? bearerToken
   if (!token) {
     return c.json(
       { ok: false, error: { code: 'unauthenticated', message: 'Missing session cookie' }, trace_id: c.get('trace_id') },

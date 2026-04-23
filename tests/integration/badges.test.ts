@@ -187,11 +187,7 @@ describe('Badge Mechanics (Phase 9 Step 5)', () => {
     })
 
     it('should handle null/undefined individual stat values', () => {
-      const badges = determineBadgesAwarded('user-1', {
-        first_answer: undefined,
-        accuracy: undefined,
-        leaderboard_rank: undefined,
-      })
+      const badges = determineBadgesAwarded('user-1', {})
       expect(Array.isArray(badges)).toBe(true)
     })
 

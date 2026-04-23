@@ -134,7 +134,7 @@ export function advanceBracketRound(
 /**
  * Determine bracket champion (last winner standing).
  */
-export function getBracketWinner(finalWinner: string): string {
+export function getBracketWinner(finalWinner: string): string | null {
   return finalWinner.startsWith('bye_') ? null : finalWinner
 }
 
@@ -146,7 +146,7 @@ export type BadgeType = 'first_answer' | 'speedster' | 'perfect_trivia' | 'engag
  * Determine which badges should be awarded based on session performance.
  */
 export function determineBadgesAwarded(
-  userId: string,
+  _userId: string,
   sessionStats: {
     first_answer?: boolean
     response_time_ms?: number
