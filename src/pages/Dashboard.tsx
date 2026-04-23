@@ -46,7 +46,7 @@ export default function Dashboard() {
     state.status === 'ready'
       ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
       : []
-  const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions)
+  const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions, activeTab === 'insights')
   const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const [wizardOpen, setWizardOpen] = useState(false)
   const [search, setSearch] = useState('')

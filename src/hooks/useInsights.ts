@@ -82,7 +82,7 @@ function aggregateThemes(perSession: Map<string, RawInsights>): AggregatedTheme[
     }))
 }
 
-export function useInsights(closedSessions: SessionSummary[]): InsightsState {
+export function useInsights(closedSessions: SessionSummary[], enabled = false): InsightsState {
   const [themes, setThemes] = useState<AggregatedTheme[]>([])
   const [loading, setLoading] = useState(false)
   const [planGated, setPlanGated] = useState(false)
@@ -124,8 +124,9 @@ export function useInsights(closedSessions: SessionSummary[]): InsightsState {
   }, [])
 
   useEffect(() => {
+    if (!enabled) return
     void fetchAll(closedSessions)
-  }, [closedSessions, fetchAll])
+  }, [closedSessions, fetchAll, enabled])
 
   const analyzeSession = useCallback(async (sessionId: string) => {
     const res = await api<{ session_id: string; themes: string[]; follow_ups: string[]; generated_at: number; model: string }>(

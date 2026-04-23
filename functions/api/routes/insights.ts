@@ -177,19 +177,6 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const user = c.get('user')
     const id = c.req.param('id')
 
-    // Per-user rate limit — applies even on cache hits to bound endpoint abuse.
-    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
-    if (!rl.allowed) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'rate_limited', message: 'Too many insights requests; try again later' },
-          trace_id: c.get('trace_id'),
-        },
-        429,
-      )
-    }
-
     const session = await fetchOwnedSession(c.env.DB, id, user.sub)
     if (!session) {
       return c.json(
@@ -208,7 +195,7 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       )
     }
 
-    // Cache check.
+    // Cache check before rate limit — hits don't consume AI quota.
     const cached = await c.env.SESSIONS_KV.get(cacheKey(id), 'json')
     if (cached) {
       const ci = cached as CachedInsights
@@ -222,6 +209,19 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
         },
         trace_id: c.get('trace_id'),
       })
+    }
+
+    // Rate limit only applies to fresh AI calls.
+    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
+    if (!rl.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'rate_limited', message: 'Too many insights requests; try again later' },
+          trace_id: c.get('trace_id'),
+        },
+        429,
+      )
     }
 
     const [openResponses, pollBreakdown, trend] = await Promise.all([
