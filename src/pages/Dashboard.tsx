@@ -586,7 +586,7 @@ export default function Dashboard() {
                       <p className="text-xs text-pulse-400 mt-0.5 capitalize">{team.plan} plan</p>
                     </div>
                     <Link
-                      to={`/teams/${team.id}`}
+                      to={`/teams/${team.id}/settings`}
                       className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                     >
                       Settings →
