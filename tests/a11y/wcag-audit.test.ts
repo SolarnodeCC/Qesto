@@ -30,7 +30,7 @@ import axe from 'axe-core'
  * Run axe accessibility audit and assert no violations.
  * Returns the violations array for inspection.
  */
-async function auditHtml(html: string, context?: string): Promise<axe.Result[]> {
+async function auditHtml(html: string, _context?: string): Promise<axe.Result[]> {
   const host = document.createElement('div')
   host.innerHTML = html
   document.body.appendChild(host)

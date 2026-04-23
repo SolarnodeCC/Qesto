@@ -175,27 +175,6 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     })
   })
 
-  // GET /api/templates/:id — fetch single Qesto template (public, no auth)
-  app.get('/:id', async (c) => {
-    await ensureSeedTemplates(c.env.TEMPLATES_KV)
-
-    const id = c.req.param('id')
-    const tmpl = SEED_TEMPLATES.find((t) => t.id === id)
-
-    if (!tmpl) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Template not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
-    }
-
-    return c.json({
-      ok: true,
-      data: { template: tmpl },
-      trace_id: c.get('trace_id'),
-    })
-  })
-
   // GET /api/templates/mine — list current user's saved templates (auth required)
   app.get('/mine', authMiddleware, async (c) => {
     const user = c.get('user')
@@ -358,6 +337,28 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     return c.json({
       ok: true,
       data: { id: templateId },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  // GET /api/templates/:id — fetch single Qesto template (public, no auth)
+  // Must be registered after /mine to avoid matching "mine" as a template id.
+  app.get('/:id', async (c) => {
+    await ensureSeedTemplates(c.env.TEMPLATES_KV)
+
+    const id = c.req.param('id')
+    const tmpl = SEED_TEMPLATES.find((t) => t.id === id)
+
+    if (!tmpl) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Template not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+
+    return c.json({
+      ok: true,
+      data: { template: tmpl },
       trace_id: c.get('trace_id'),
     })
   })

@@ -1,9 +1,6 @@
 import type { Hono } from 'hono'
 import { z } from 'zod'
-import { authMiddleware, type AuthVariables } from '../middleware/auth'
-import type { Env } from '../types'
-
-type Vars = AuthVariables & { trace_id: string }
+import { authMiddleware } from '../middleware/auth'
 
 const PREFS_TTL = 365 * 24 * 60 * 60 // 1 year
 
@@ -17,7 +14,7 @@ const PrefsSchema = z.object({
 
 type UserPrefs = z.infer<typeof PrefsSchema>
 
-export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>) {
+export function mountUserRoutes(app: Hono<any>) {
   app.get('/api/users/preferences', authMiddleware, async (c) => {
     const user = c.get('user')
     const raw = await c.env.USERS_KV.get(prefsKey(user.sub))

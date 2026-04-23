@@ -19,6 +19,10 @@ export type AuditAction =
   | 'auth.login'
   | 'auth.logout'
   | 'billing.plan_change'
+  | 'insights.generate'
+  | 'energizer.create'
+  | 'energizer.advance'
+  | 'session.close_with_badges'
 
 export interface AuditContext {
   action: AuditAction

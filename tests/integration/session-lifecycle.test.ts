@@ -61,7 +61,7 @@ const DO_ALREADY_INIT = makeDO(409, { ok: false, error: { code: 'already_initial
 const DO_FAIL = makeDO(500, { ok: false, error: { code: 'internal_error', message: 'DO unavailable' } })
 
 async function createSession(
-  db: D1Mock,
+  _db: D1Mock,
   app: ReturnType<typeof createApp>,
   env: Env,
   cookie: string,

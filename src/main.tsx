@@ -13,7 +13,7 @@ async function mount() {
   // The try/catch inside initI18n ensures a fetch failure degrades to showing keys,
   // never a blank page.
   await initI18n()
-  createRoot(root).render(
+  createRoot(root!).render(
     <StrictMode>
       <BrowserRouter>
         <App />

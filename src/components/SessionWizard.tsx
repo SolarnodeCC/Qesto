@@ -339,7 +339,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
   // Async
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [creatingSession, setCreatingSession] = useState(false)
-  const [generating, setGenerating] = useState(false)
+  const [_generating, setGenerating] = useState(false)
   const [launching, setLaunching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [launchError, setLaunchError] = useState<string | null>(null)
@@ -784,7 +784,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                           key={q.id}
                           question={q}
                           onChange={updateQuestion}
-                          onDismiss={questions.filter((x) => !x.dismissed).length > 1 ? () => dismissQuestion(q.id) : undefined}
+                          {...(questions.filter((x) => !x.dismissed).length > 1 ? { onDismiss: () => dismissQuestion(q.id) } : {})}
                         />
                       ),
                     )}
