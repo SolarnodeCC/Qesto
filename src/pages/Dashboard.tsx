@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useDensity, type Density } from '../hooks/useDensity'
 import { useInsights } from '../hooks/useInsights'
+import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { SessionListSkeleton } from '../components/SkeletonLoader'
@@ -40,6 +41,7 @@ interface TemplateResponse {
 export default function Dashboard() {
   const auth = useAuth()
   const navigate = useNavigate()
+  const t = useT('dashboard')
   const { state, refresh, create } = useSessions()
   const { density, setDensity } = useDensity()
   const closedSessions =
@@ -218,7 +220,7 @@ export default function Dashboard() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">
-              Goedendag, {auth.user.email.split('@')[0]} 👋
+              {t('greeting', { name: auth.user.email.split('@')[0] })}
             </h1>
             <p className="text-sm text-pulse-500">{auth.user.email}</p>
           </div>
@@ -232,10 +234,10 @@ export default function Dashboard() {
           className="flex gap-1 border-b border-pulse-200 dark:border-pulse-700"
         >
           {([
-            { id: 'sessions', label: 'Sessions' },
-            { id: 'insights', label: 'Insights' },
-            { id: 'teams',    label: 'Teams' },
-            { id: 'templates', label: 'Templates' },
+            { id: 'sessions', label: t('sessions') },
+            { id: 'insights', label: t('insights') },
+            { id: 'teams',    label: t('teams') },
+            { id: 'templates', label: t('templates') },
           ] as const).map(({ id, label }) => (
             <button
               key={id}
@@ -275,12 +277,12 @@ export default function Dashboard() {
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M12 5v14M5 12h14" />
               </svg>
-              + New session
+              {t('newSession')}
             </button>
 
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Draft &amp; live</h2>
+                <h2 className="text-xl font-semibold">{t('draftAndLive')}</h2>
                 <DensitySwitcher density={density} onChange={setDensity} />
               </div>
               {state.status === 'loading' ? (
@@ -290,7 +292,7 @@ export default function Dashboard() {
                   {state.error.message}
                 </p>
               ) : state.sessions.length === 0 ? (
-                <p className="text-sm text-pulse-500">No sessions yet. Create your first one above.</p>
+                <p className="text-sm text-pulse-500">{t('noSessionsYet')}</p>
               ) : (() => {
                 const q = search.trim().toLowerCase()
                 const filtered = state.sessions.filter((s) => {
@@ -312,29 +314,29 @@ export default function Dashboard() {
                         </svg>
                         <input
                           type="search"
-                          aria-label="Search sessions"
-                          placeholder="Search by title, code or date…"
+                          aria-label={t('searchSessions')}
+                          placeholder={t('searchPlaceholder')}
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
                           className="w-full rounded-lg border border-pulse-200 bg-white py-2 pl-9 pr-3 text-sm text-pulse-800 placeholder:text-pulse-400 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
                         />
                       </div>
                       <select
-                        aria-label="Filter by status"
+                        aria-label={t('filterByStatus')}
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as 'all' | 'draft' | 'live')}
                         className="rounded-lg border border-pulse-200 bg-white px-3 py-2 text-sm text-pulse-800 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
                       >
-                        <option value="all">All statuses</option>
-                        <option value="draft">Draft</option>
-                        <option value="live">Live</option>
+                        <option value="all">{t('allStatuses')}</option>
+                        <option value="draft">{t('draft')}</option>
+                        <option value="live">{t('live')}</option>
                       </select>
                     </div>
                     <p className="text-xs text-pulse-400">
                       {filtered.length} of {state.sessions.length} session{state.sessions.length !== 1 ? 's' : ''} visible
                     </p>
                     {filtered.length === 0 ? (
-                      <p className="text-sm text-pulse-500 py-4 text-center">No sessions match your search.</p>
+                      <p className="text-sm text-pulse-500 py-4 text-center">{t('noMatchingSearch')}</p>
                     ) : (
                       <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
                         {filtered.map((s, i) => (
@@ -385,7 +387,7 @@ export default function Dashboard() {
                                 to={`/sessions/${s.id}/results`}
                                 className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
                               >
-                                Post-session review
+                                {t('postSessionReview')}
                               </Link>
 
                               {/* Export Excel/CSV */}
@@ -395,7 +397,7 @@ export default function Dashboard() {
                                 onClick={() => handleExportCSV(s.id, s.title)}
                                 className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
                               >
-                                Export Excel/CSV
+                                {t('exportExcel')}
                               </button>
 
                               {/* Koppel aan PowerPoint */}
@@ -415,7 +417,7 @@ export default function Dashboard() {
                                 onClick={() => void handleDuplicate(s.id)}
                                 className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
                               >
-                                {actionLoading[s.id] === 'duplicate' ? 'Duplicating…' : 'Dupliceren'}
+                                {actionLoading[s.id] === 'duplicate' ? t('duplicating') : t('duplicate')}
                               </button>
 
                               {/* Save as template */}
@@ -425,27 +427,27 @@ export default function Dashboard() {
                                 onClick={() => void handleSaveAsTemplate(s.id, s.title)}
                                 className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
                               >
-                                {actionLoading[s.id] === 'template' ? 'Saving…' : '🗂 Template'}
+                                {actionLoading[s.id] === 'template' ? t('saving') : t('template')}
                               </button>
 
                               {/* Delete (with inline confirm) */}
                               {confirmDeleteId === s.id ? (
                                 <span className="inline-flex items-center gap-1">
-                                  <span className="text-xs text-red-600 font-medium">Verwijderen?</span>
+                                  <span className="text-xs text-red-600 font-medium">{t('confirmDelete')}</span>
                                   <button
                                     type="button"
                                     disabled={actionLoading[s.id] === 'delete'}
                                     onClick={() => void handleDelete(s.id)}
                                     className="inline-flex items-center rounded-md border border-red-300 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
                                   >
-                                    {actionLoading[s.id] === 'delete' ? 'Deleting…' : 'Ja'}
+                                    {actionLoading[s.id] === 'delete' ? t('deleting') : t('yes')}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setConfirmDeleteId(null)}
                                     className="inline-flex items-center rounded-md border border-pulse-200 bg-white px-2 py-1 text-xs font-medium text-pulse-600 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500 transition-colors"
                                   >
-                                    Annuleren
+                                    {t('cancel')}
                                   </button>
                                 </span>
                               ) : (
@@ -455,7 +457,7 @@ export default function Dashboard() {
                                   onClick={() => setConfirmDeleteId(s.id)}
                                   className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-600 hover:border-red-400 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
                                 >
-                                  🗑 Verwijderen
+                                  {t('delete')}
                                 </button>
                               )}
 
@@ -489,16 +491,16 @@ export default function Dashboard() {
 
             <section aria-labelledby="insight-themes-heading" className="space-y-space-3">
               <h2 id="insight-themes-heading" className="text-heading-s font-semibold dark:text-pulse-100">
-                Top themes
+                {t('topThemes')}
               </h2>
 
               {planGated ? (
                 <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
                   <p className="text-body-s text-violet-800 dark:text-violet-300 font-medium">
-                    AI Insights requires a Starter or Team plan.
+                    {t('aiInsightsPlanRequired')}
                   </p>
                   <p className="text-body-s text-violet-700 dark:text-violet-400">
-                    Upgrade to unlock cross-session theme detection, confidence scoring, and follow-up question suggestions.
+                    {t('upgradeForInsights')}
                   </p>
                   <Link
                     to="/pricing"
@@ -568,7 +570,7 @@ export default function Dashboard() {
             aria-labelledby="tab-teams"
             className="space-y-4"
           >
-            <h2 className="text-xl font-semibold">Your teams</h2>
+            <h2 className="text-xl font-semibold">{t('yourTeams')}</h2>
             {teamsLoading ? (
               <div className="space-y-3">
                 {[1, 2].map((i) => (
@@ -576,7 +578,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : teams.length === 0 ? (
-              <p className="text-sm text-pulse-500">You don't belong to any team yet.</p>
+              <p className="text-sm text-pulse-500">{t('noTeamsYet')}</p>
             ) : (
               <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
                 {teams.map((team) => (
@@ -606,7 +608,7 @@ export default function Dashboard() {
             aria-labelledby="tab-templates"
             className="space-y-4"
           >
-            <h2 className="text-xl font-semibold">Start from a template</h2>
+            <h2 className="text-xl font-semibold">{t('startFromTemplate')}</h2>
             {templatesLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[1, 2, 3].map((i) => (
@@ -614,7 +616,7 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : templates.length === 0 ? (
-              <p className="text-sm text-pulse-500">No templates available.</p>
+              <p className="text-sm text-pulse-500">{t('noTemplatesAvailable')}</p>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {templates.map((tmpl) => (
@@ -644,7 +646,7 @@ export default function Dashboard() {
           >
             <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 animate-page-enter space-y-4">
               <h2 id="modal-title" className="text-xl font-semibold">
-                Create session from {modal.template.name}?
+                {t('createFromTemplate', { name: modal.template.name })}
               </h2>
               <p className="text-sm text-pulse-600">{modal.template.description}</p>
               {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
@@ -655,7 +657,7 @@ export default function Dashboard() {
                   disabled={creatingFromTemplate}
                   className="px-4 py-2 rounded-lg border border-pulse-300 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
@@ -663,7 +665,7 @@ export default function Dashboard() {
                   disabled={creatingFromTemplate}
                   className="px-4 py-2 rounded-lg bg-teal-600 text-white hover:brightness-110 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                 >
-                  {creatingFromTemplate ? 'Creating…' : 'Create'}
+                  {creatingFromTemplate ? t('creating') : t('create')}
                 </button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 
@@ -54,6 +55,7 @@ function RoleBadge({ role }: { role: Role }) {
 export default function TeamSettings() {
   const { id } = useParams<{ id: string }>()
   const auth = useAuth()
+  const t = useT('sessions')
 
   const [team, setTeam] = useState<Team | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)

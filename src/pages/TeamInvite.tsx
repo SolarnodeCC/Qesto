@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
+import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 
@@ -14,6 +15,7 @@ type AcceptState =
   | { status: 'error'; message: string }
 
 export default function TeamInvite() {
+  const t = useT('join')
   // Support both /teams/invite/:token (route param) and /teams/accept?token=... (query param)
   const { token: routeToken } = useParams<{ token?: string }>()
   const [searchParams] = useSearchParams()
@@ -24,7 +26,7 @@ export default function TeamInvite() {
 
   useEffect(() => {
     if (!token) {
-      setState({ status: 'error', message: 'No invite token found in the link.' })
+      setState({ status: 'error', message: t('noInviteTokenFound') })
       return
     }
 
@@ -39,14 +41,14 @@ export default function TeamInvite() {
         const code = res.error.code
         let message = res.error.message
         if (code === 'not_found' || code === 'invalid_token') {
-          message = 'This invite link has expired or is invalid. Ask your team owner to send a new invite.'
+          message = t('inviteLinkExpired')
         } else if (code === 'already_member') {
-          message = 'You are already a member of this team.'
+          message = t('alreadyMemberOfTeam')
         }
         setState({ status: 'error', message })
       }
     })
-  }, [token])
+  }, [token, t])
 
   return (
     <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8">
@@ -58,7 +60,7 @@ export default function TeamInvite() {
               aria-hidden="true"
             />
             <p className="text-pulse-600" aria-live="polite" aria-busy="true">
-              Confirming your invite…
+              {t('confirmingInvite')}
             </p>
           </>
         )}
