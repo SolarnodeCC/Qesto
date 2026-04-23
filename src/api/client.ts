@@ -4,6 +4,26 @@
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 
+// In-memory token store. Backed by sessionStorage so it survives page
+// refreshes within the same tab but is cleared when the tab is closed.
+// This is the fallback auth path for browsers that block third-party cookies
+// (e.g. Chrome Privacy Sandbox) when the API is on a different origin.
+const TOKEN_KEY = 'qesto_token'
+let _token: string | null = null
+
+export function setAuthToken(token: string | null): void {
+  _token = token
+  if (token) sessionStorage.setItem(TOKEN_KEY, token)
+  else sessionStorage.removeItem(TOKEN_KEY)
+}
+
+export function getAuthToken(): string | null {
+  if (_token) return _token
+  const stored = sessionStorage.getItem(TOKEN_KEY)
+  if (stored) _token = stored
+  return _token
+}
+
 export type ApiError = {
   code: string
   message: string
@@ -23,6 +43,8 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
   const headers: Record<string, string> = {}
   if (opts.body !== undefined) headers['content-type'] = 'application/json'
   if (opts.idempotencyKey) headers['idempotency-key'] = opts.idempotencyKey
+  const token = getAuthToken()
+  if (token) headers['authorization'] = `Bearer ${token}`
 
   const init: RequestInit = {
     method: opts.method ?? 'GET',
