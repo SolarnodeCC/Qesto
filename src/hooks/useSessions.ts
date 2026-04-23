@@ -49,6 +49,14 @@ export function useSessions() {
     void refresh()
   }, [refresh])
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refresh()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [refresh])
+
   const create = useCallback(async (title: string) => {
     const idemKey = crypto.randomUUID()
     const res = await api<SessionDetail>('/api/sessions', {

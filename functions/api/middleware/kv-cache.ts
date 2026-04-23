@@ -27,7 +27,7 @@ export const kvCacheMiddleware: MiddlewareHandler<{
   // Helper to get from KV with TTL check
   const getCached = async (key: string): Promise<any | null> => {
     try {
-      const cached = await c.env.DECISIONS_KV.get(key, 'json')
+      const cached = await c.env.DECISIONS_KV.get(key, 'json') as { data: unknown; expires_at: number } | null
       if (cached && cached.expires_at && cached.expires_at > Date.now()) {
         cacheMarkings[key] = 'HIT'
         return cached.data
@@ -39,19 +39,6 @@ export const kvCacheMiddleware: MiddlewareHandler<{
       cacheMarkings[key] = 'ERROR'
     }
     return null
-  }
-
-  // Helper to set in KV with TTL
-  const setCached = async (key: string, data: any, ttl_sec: number): Promise<void> => {
-    try {
-      await c.env.DECISIONS_KV.put(
-        key,
-        JSON.stringify({ data, expires_at: Date.now() + ttl_sec * 1000 }),
-        { expirationTtl: ttl_sec }
-      )
-    } catch (err) {
-      console.error(`[kv-cache] Failed to cache ${key}:`, err)
-    }
   }
 
   // Pre-load plan usage cache for current user

@@ -11,19 +11,23 @@ describe('Metrics KV — Time-Series Bucketing', () => {
     }
   })
 
+  // bucketKeyFor returns { dateKey, minuteKey } — tests combine them to compare
   describe('bucketKeyFor', () => {
     it('generates key with YYYYMMDDHHMM format', () => {
       const key = bucketKeyFor(new Date('2026-04-21T14:35:00Z'))
-      expect(key).toMatch(/^\d{12}$/)
-      expect(key).toBe('202604211435')
+      const combined = key.dateKey + key.minuteKey
+      expect(combined).toMatch(/^\d{12}$/)
+      expect(combined).toBe('202604211435')
     })
 
     it('zero-pads month and day', () => {
       const key = bucketKeyFor(new Date('2026-01-05T09:05:00Z'))
-      expect(key).toBe('202601050905')
+      const combined = key.dateKey + key.minuteKey
+      expect(combined).toBe('202601050905')
     })
   })
 
+  // recordMetric writes 3 separate KV keys (latency array, error_count, request_count)
   describe('recordMetric', () => {
     it('records latency for a route', async () => {
       await recordMetric(
@@ -36,9 +40,9 @@ describe('Metrics KV — Time-Series Bucketing', () => {
       )
 
       expect(mockKV.put).toHaveBeenCalled()
-      const [key] = mockKV.put.mock.calls[0]
-      expect(key).toContain('metrics:')
-      expect(key).toContain('GET_/api/sessions') // route slug
+      const keys = mockKV.put.mock.calls.map((c: string[]) => c[0])
+      expect(keys.some((k: string) => k.startsWith('metrics:'))).toBe(true)
+      expect(keys.some((k: string) => k.includes('GET__api_sessions'))).toBe(true)
     })
 
     it('increments error_count on status >= 500', async () => {
@@ -51,14 +55,12 @@ describe('Metrics KV — Time-Series Bucketing', () => {
         'trace456',
       )
 
-      const [, value] = mockKV.put.mock.calls[0]
-      const parsed = JSON.parse(value)
-      expect(parsed.error_count).toBeGreaterThan(0)
+      const errorCall = mockKV.put.mock.calls.find((c: string[]) => c[0].endsWith(':error_count'))
+      expect(errorCall).toBeDefined()
+      expect(Number.parseInt(errorCall[1], 10)).toBeGreaterThan(0)
     })
 
     it('does not increment error_count on status < 500', async () => {
-      mockKV.get.mockResolvedValueOnce(null) // no existing data
-
       await recordMetric(
         mockKV,
         'POST /api/votes',
@@ -68,9 +70,9 @@ describe('Metrics KV — Time-Series Bucketing', () => {
         'trace456',
       )
 
-      const [, value] = mockKV.put.mock.calls[0]
-      const parsed = JSON.parse(value)
-      expect(parsed.error_count).toBe(0)
+      const errorCall = mockKV.put.mock.calls.find((c: string[]) => c[0].endsWith(':error_count'))
+      expect(errorCall).toBeDefined()
+      expect(Number.parseInt(errorCall[1], 10)).toBe(0)
     })
 
     it('does not leak user_id into KV key', async () => {
@@ -83,8 +85,10 @@ describe('Metrics KV — Time-Series Bucketing', () => {
         'trace456',
       )
 
-      const [key] = mockKV.put.mock.calls[0]
-      expect(key).not.toContain('secret_user_123')
+      const keys = mockKV.put.mock.calls.map((c: string[]) => c[0])
+      for (const key of keys) {
+        expect(key).not.toContain('secret_user_123')
+      }
     })
 
     it('sets 7-day TTL on KV write', async () => {
@@ -97,7 +101,7 @@ describe('Metrics KV — Time-Series Bucketing', () => {
         'trace456',
       )
 
-      const [, , options] = mockKV.put.mock.calls[0]
+      const options = mockKV.put.mock.calls[0][2]
       expect(options.expirationTtl).toBe(7 * 24 * 60 * 60)
     })
   })
@@ -128,14 +132,20 @@ describe('Metrics KV — Time-Series Bucketing', () => {
     })
   })
 
+  // readBucket uses 3 separate KV keys — mock them individually
   describe('readBucket', () => {
     it('parses KV bucket and calculates percentiles', async () => {
-      const bucketData = {
-        latencies: [100, 150, 200, 250, 300, 350, 400, 450, 500],
-        error_count: 2,
-        request_count: 100,
-      }
-      mockKV.get.mockResolvedValueOnce(JSON.stringify(bucketData))
+      const latencySamples = [100, 150, 200, 250, 300, 350, 400, 450, 500].map((latency_ms) => ({
+        latency_ms,
+        status: 200,
+        trace_id: 'test',
+        ts: Date.now(),
+      }))
+      // readBucket calls kv.get 3 times: latency (json), error_count, request_count
+      mockKV.get
+        .mockResolvedValueOnce(latencySamples) // latency array (pre-parsed by KV json type)
+        .mockResolvedValueOnce('2')             // error_count
+        .mockResolvedValueOnce('100')           // request_count
 
       const result = await readBucket(
         mockKV,
@@ -150,8 +160,7 @@ describe('Metrics KV — Time-Series Bucketing', () => {
     })
 
     it('returns null for missing bucket', async () => {
-      mockKV.get.mockResolvedValueOnce(null)
-
+      // All 3 KV reads return null
       const result = await readBucket(
         mockKV,
         'GET /api/sessions',

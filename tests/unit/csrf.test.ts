@@ -3,8 +3,13 @@ import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
+import { KVMock } from '../helpers/kv-mock'
 
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
+
+function kv(): KVNamespace {
+  return new KVMock() as unknown as KVNamespace
+}
 
 function makeEnv(db: D1Mock): Env {
   return {
@@ -13,6 +18,13 @@ function makeEnv(db: D1Mock): Env {
     API_URL: 'http://local',
     JWT_SECRET: SECRET,
     DB: db as unknown as D1Database,
+    USERS_KV: kv(),
+    SESSIONS_KV: kv(),
+    TEAMS_KV: kv(),
+    TEMPLATES_KV: kv(),
+    DECISIONS_KV: kv(),
+    AUDIT_KV: kv(),
+    ACTIONS_KV: kv(),
   } as unknown as Env
 }
 

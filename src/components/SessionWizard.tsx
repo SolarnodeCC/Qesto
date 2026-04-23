@@ -339,7 +339,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
   // Async
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [creatingSession, setCreatingSession] = useState(false)
-  const [generating, setGenerating] = useState(false)
+  const [_generating, setGenerating] = useState(false)
   const [launching, setLaunching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [launchError, setLaunchError] = useState<string | null>(null)
@@ -477,35 +477,18 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setLaunching(true)
     setLaunchError(null)
 
-    // Save first question via PATCH (replaces any existing question at position 0)
-    const questionToSave = activeQuestions[0]
-    if (questionToSave) {
-      const patchRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
-        method: 'PATCH',
-        body: {
-          question: {
-            kind: questionToSave.kind,
-            prompt: questionToSave.prompt,
-            options: questionToSave.options.filter((o) => o.label.trim()),
-          },
-        },
-      })
-      if (!patchRes.ok) {
-        setLaunchError((patchRes as { ok: false; error: { message: string } }).error.message)
-        setLaunching(false)
-        return
-      }
-    }
+    // Save all questions via POST /questions.
+    // PATCH /api/sessions/:id only accepts kind:'poll', so we always use POST
+    // here to support ranking and open question kinds as the first question too.
+    for (const q of activeQuestions) {
+      const filledOptions = q.options.filter((o) => o.label.trim())
+      const body: Record<string, unknown> = { kind: q.kind, prompt: q.prompt }
+      // Only include options when there are at least 2 (open questions have none).
+      if (filledOptions.length >= 2) body.options = filledOptions
 
-    // Save remaining questions via POST /questions
-    for (const q of activeQuestions.slice(1)) {
       const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/questions`, {
         method: 'POST',
-        body: {
-          kind: q.kind,
-          prompt: q.prompt,
-          options: q.options.filter((o) => o.label.trim()),
-        },
+        body,
       })
       if (!res.ok) {
         setLaunchError((res as { ok: false; error: { message: string } }).error.message)
@@ -801,7 +784,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                           key={q.id}
                           question={q}
                           onChange={updateQuestion}
-                          onDismiss={questions.filter((x) => !x.dismissed).length > 1 ? () => dismissQuestion(q.id) : undefined}
+                          {...(questions.filter((x) => !x.dismissed).length > 1 ? { onDismiss: () => dismissQuestion(q.id) } : {})}
                         />
                       ),
                     )}

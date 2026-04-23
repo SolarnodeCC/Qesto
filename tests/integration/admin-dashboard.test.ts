@@ -1,22 +1,27 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { testHonoApp } from './setup'
+import { testHonoApp, cookieFor, SEED_ADMIN_EMAIL } from './setup'
 
 describe('Admin Routes — Phase 8 Step 2', () => {
   let app: any
   let env: any
+  let adminCookie: string
+  let nonAdminCookie: string
 
   beforeEach(async () => {
     const setup = await testHonoApp()
     app = setup.app
     env = setup.env
+    // Admin: email matches SEED_ADMIN_EMAIL — bypasses user_roles DB lookup
+    adminCookie = await cookieFor('user_123', SEED_ADMIN_EMAIL)
+    // Non-admin: different email, no roles in DB → adminMiddleware rejects with 403
+    nonAdminCookie = await cookieFor('user_456', 'other@example.com')
   })
 
   describe('GET /api/admin/metrics/live', () => {
     it('returns live metrics for authenticated admin', async () => {
-      const jwt = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsImVtYWlsIjoicWVzdG9AZXhhbXBsZS5jb20ifQ.xyz'
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/live', {
-          headers: { Authorization: jwt, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -29,10 +34,9 @@ describe('Admin Routes — Phase 8 Step 2', () => {
     })
 
     it('returns 403 for non-admin user', async () => {
-      const jwt = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzQ1NiIsImVtYWlsIjoib3RoZXJAZXhhbXBsZS5jb20ifQ.xyz'
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/live', {
-          headers: { Authorization: jwt, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { cookie: nonAdminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -53,11 +57,10 @@ describe('Admin Routes — Phase 8 Step 2', () => {
     })
 
     it('returns response in under 200ms (p95)', async () => {
-      const jwt = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsImVtYWlsIjoicWVzdG9AZXhhbXBsZS5jb20ifQ.xyz'
       const start = Date.now()
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/live', {
-          headers: { Authorization: jwt, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -70,12 +73,11 @@ describe('Admin Routes — Phase 8 Step 2', () => {
 
   describe('GET /api/admin/metrics/historical', () => {
     it('returns historical metrics for date range', async () => {
-      const jwt = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsImVtYWlsIjoicWVzdG9AZXhhbXBsZS5jb20ifQ.xyz'
       const start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       const end = new Date().toISOString()
       const res = await app.fetch(
         new Request(`http://local/api/admin/metrics/historical?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
-          headers: { Authorization: jwt, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -87,13 +89,12 @@ describe('Admin Routes — Phase 8 Step 2', () => {
     })
 
     it('returns response in under 1000ms (p95)', async () => {
-      const jwt = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsImVtYWlsIjoicWVzdG9AZXhhbXBsZS5jb20ifQ.xyz'
       const start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       const end = new Date().toISOString()
       const startTime = Date.now()
       const res = await app.fetch(
         new Request(`http://local/api/admin/metrics/historical?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`, {
-          headers: { Authorization: jwt, 'cf-connecting-ip': '127.0.0.1' },
+          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
         }),
         env,
       )
@@ -106,13 +107,12 @@ describe('Admin Routes — Phase 8 Step 2', () => {
 
   describe('POST /api/admin/metrics/export', () => {
     it('exports metrics as CSV', async () => {
-      const jwt = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzEyMyIsImVtYWlsIjoicWVzdG9AZXhhbXBsZS5jb20ifQ.xyz'
       const start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       const end = new Date().toISOString()
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/export', {
           method: 'POST',
-          headers: { Authorization: jwt, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
+          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
           body: JSON.stringify({ start, end }),
         }),
         env,
@@ -120,22 +120,63 @@ describe('Admin Routes — Phase 8 Step 2', () => {
 
       expect(res.status).toBe(200)
       const text = await res.text()
-      expect(text).toContain('timestamp')
+      expect(text).toContain('bucket_ts')
       expect(text).toContain('route')
     })
 
     it('returns 403 for non-admin', async () => {
-      const jwt = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyXzQ1NiIsImVtYWlsIjoib3RoZXJAZXhhbXBsZS5jb20ifQ.xyz'
       const res = await app.fetch(
         new Request('http://local/api/admin/metrics/export', {
           method: 'POST',
-          headers: { Authorization: jwt, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
+          headers: { cookie: nonAdminCookie, 'cf-connecting-ip': '127.0.0.1', 'Content-Type': 'application/json' },
           body: JSON.stringify({ start: new Date().toISOString(), end: new Date().toISOString() }),
         }),
         env,
       )
 
       expect(res.status).toBe(403)
+    })
+  })
+
+  describe('Admin RBAC via user_roles DB (real path)', () => {
+    it('returns 403 for authenticated user without admin role (real user_roles path)', async () => {
+      // Create a fresh setup without SEED_ADMIN_EMAIL to test the real user_roles DB path
+      let app2: any
+      let db2: any
+      let env2: any
+      {
+        const setup = await testHonoApp()
+        app2 = setup.app
+        db2 = setup.db
+        env2 = { ...setup.env, SEED_ADMIN_EMAIL: undefined }
+      }
+
+      // Create a user without admin role
+      const userWithoutRole = await cookieFor('user_no_role', 'noAdmin@example.com')
+
+      // First request: no user_roles entry → adminMiddleware checks DB → returns 403
+      const res1 = await app2.fetch(
+        new Request('http://local/api/admin/metrics/live', {
+          headers: { cookie: userWithoutRole, 'cf-connecting-ip': '127.0.0.1' },
+        }),
+        env2,
+      )
+      expect(res1.status).toBe(403)
+
+      // Now add an admin role to user_roles in the DB
+      db2.userRoles.set('role_123', {
+        user_id: 'user_no_role',
+        role: 'admin',
+      })
+
+      // Second request: user_roles entry exists with admin role → should be allowed
+      const res2 = await app2.fetch(
+        new Request('http://local/api/admin/metrics/live', {
+          headers: { cookie: userWithoutRole, 'cf-connecting-ip': '127.0.0.1' },
+        }),
+        env2,
+      )
+      expect(res2.status).toBe(200)
     })
   })
 })

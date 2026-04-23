@@ -8,7 +8,7 @@
  * - Broadcast debouncing: Results broadcast batched within 100ms window
  */
 
-import { describe, expect, it, beforeEach, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { SessionRoom } from '../../functions/api/SessionRoom'
 import type { Env } from '../../functions/api/types'
 import { MockDurableObjectState, MockWebSocket } from '../helpers/do-mock'
