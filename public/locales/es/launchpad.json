@@ -24,8 +24,6 @@
   "start_button": "Ir en vivo",
   "starting": "Iniciando…",
   "no_questions_hint": "Aún no hay preguntas. Agregue una desde la configuración de la sesión.",
-  "ai_generate_title": "Generar preguntas con IA",
-  "ai_generate_placeholder": "Tema u objetivo (predeterminado: \"{{sessionTitle}}\")",
   "ai_generating": "Generando…",
   "ai_generate_button": "✨ Generar preguntas",
   "edit_question": "Editar pregunta",
@@ -43,8 +41,6 @@
   },
   "time_remaining": "{{minutes}} minutos hasta el inicio automático",
   "ai_generate_heading": "Generar preguntas con IA",
-  "ai_generate_button": "Generar preguntas",
-  "ai_generating": "Generando…",
   "ai_topic_placeholder": "Tema u objetivo (por defecto: \"{{title}}\")",
   "add_question_inline": "+ Añadir pregunta"
 }

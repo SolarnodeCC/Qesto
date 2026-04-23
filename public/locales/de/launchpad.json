@@ -24,9 +24,7 @@
   "start_button": "Live gehen",
   "starting": "Starten…",
   "no_questions_hint": "Noch keine Fragen. Fügen Sie eine über die Sitzungskonfiguration hinzu.",
-  "ai_generate_title": "Fragen mit KI generieren",
-  "ai_generate_placeholder": "Thema oder Ziel (Standard: \"{{sessionTitle}}\")",
-  "ai_generating": "Generiere…",
+  "ai_generating": "Generierung…",
   "ai_generate_button": "✨ Fragen generieren",
   "edit_question": "Frage bearbeiten",
   "edit_prompt_label": "Fragetext",
@@ -43,8 +41,6 @@
   },
   "time_remaining": "{{minutes}} Minuten bis zum automatischen Start",
   "ai_generate_heading": "Fragen mit KI generieren",
-  "ai_generate_button": "Fragen generieren",
-  "ai_generating": "Generierung…",
   "ai_topic_placeholder": "Thema oder Ziel (Standard: \"{{title}}\")",
   "add_question_inline": "+ Frage hinzufügen"
 }
