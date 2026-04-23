@@ -39,7 +39,7 @@ import type { LiveQuestion } from '../realtime'
 import type { Env, PollOption, Question, Session } from '../types'
 
 type Vars = AuthVariables & PlanVariables
-type SessionRow = Omit<Session, 'owner_id'> & { owner_id: string }
+type SessionRow = Session
 
 type QuestionRow = {
   id: string
@@ -67,7 +67,7 @@ function rowToQuestion(row: QuestionRow): Question {
 async function fetchSession(db: D1Database, id: string, ownerId: string): Promise<Session | null> {
   const row = await db
     .prepare(
-      `SELECT id, owner_id, code, title, status, anonymity,
+      `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
               created_at, started_at, closed_at, archived_at
          FROM sessions
         WHERE id = ?1 AND owner_id = ?2`,
@@ -121,7 +121,7 @@ async function upsertPollQuestion(
 async function fetchSessionByCode(db: D1Database, code: string): Promise<Session | null> {
   const row = await db
     .prepare(
-      `SELECT id, owner_id, code, title, status, anonymity,
+      `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
               created_at, started_at, closed_at, archived_at
          FROM sessions
         WHERE code = ?1`,
@@ -191,7 +191,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const id = c.req.param('id')
     const session = await c.env.DB
       .prepare(
-        `SELECT id, owner_id, code, title, status, anonymity,
+        `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
                 created_at, started_at, closed_at, archived_at
            FROM sessions
           WHERE id = ?1`,
@@ -334,8 +334,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
           const code = generateJoinCode()
           const now = Date.now()
           await c.env.DB.prepare(
-            `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, created_at)
-             VALUES (?1, ?2, ?3, ?4, 'draft', 'anonymous', ?5)`,
+            `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, vote_policy, session_mode, created_at)
+             VALUES (?1, ?2, ?3, ?4, 'draft', 'full', 'once', 'reflection', ?5)`,
           )
             .bind(id, user.sub, code, parsed.data.title, now)
             .run()
@@ -345,7 +345,9 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
             code,
             title: parsed.data.title,
             status: 'draft',
-            anonymity: 'anonymous',
+            anonymity: 'full',
+            vote_policy: 'once',
+            session_mode: 'reflection',
             created_at: now,
             started_at: null,
             closed_at: null,
@@ -383,7 +385,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const user = c.get('user')
     const { results } = await c.env.DB
       .prepare(
-        `SELECT id, owner_id, code, title, status, anonymity,
+        `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
                 created_at, started_at, closed_at, archived_at
            FROM sessions
           WHERE owner_id = ?1 AND status != 'archived'
@@ -450,6 +452,27 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         .bind(parsed.data.title, id, user.sub)
         .run()
       session.title = parsed.data.title
+    }
+    if (parsed.data.anonymity !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET anonymity = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.anonymity, id, user.sub)
+        .run()
+      session.anonymity = parsed.data.anonymity
+    }
+    if (parsed.data.vote_policy !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET vote_policy = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.vote_policy, id, user.sub)
+        .run()
+      session.vote_policy = parsed.data.vote_policy
+    }
+    if (parsed.data.session_mode !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET session_mode = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.session_mode, id, user.sub)
+        .run()
+      session.session_mode = parsed.data.session_mode
     }
     let questions = await fetchQuestions(c.env.DB, id)
     if (parsed.data.question) {
@@ -531,6 +554,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       code: session.code,
       title: session.title,
       question: liveQ,
+      votePolicy: session.vote_policy,
+      sessionMode: session.session_mode,
     })
     if (doRes.status !== 200) {
       // Defence-in-depth: if DO returns already_initialised (409), another
@@ -1072,6 +1097,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       title,
       status: 'draft',
       anonymity: session.anonymity,
+      vote_policy: session.vote_policy,
+      session_mode: session.session_mode,
       created_at: now,
       started_at: null,
       closed_at: null,

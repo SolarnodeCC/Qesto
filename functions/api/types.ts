@@ -47,6 +47,9 @@ export type Env = {
 
 export type SessionStatus = 'draft' | 'live' | 'closed' | 'archived'
 export type QuestionKind = 'poll' | 'ranking' | 'consent' | 'open'
+export type Anonymity = 'full' | 'partial' | 'none'
+export type VotePolicy = 'once' | 'multi' | 'react'
+export type SessionMode = 'reflection' | 'fun'
 
 export type PollOption = { id: string; label: string }
 
@@ -66,7 +69,9 @@ export type Session = {
   code: string
   title: string
   status: SessionStatus
-  anonymity: 'anonymous' | 'identified'
+  anonymity: Anonymity
+  vote_policy: VotePolicy
+  session_mode: SessionMode
   created_at: number
   started_at: number | null
   closed_at: number | null

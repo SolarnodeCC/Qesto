@@ -7,7 +7,7 @@
 // `timestamp` is the sender's epoch-ms clock (for latency tracing only —
 // never trusted for ordering).
 
-import type { PollOption } from './types'
+import type { PollOption, VotePolicy, SessionMode } from './types'
 
 // ── Client → Server ─────────────────────────────────────────────────────────
 export type ClientMessage =
@@ -28,6 +28,8 @@ export type LiveSessionSummary = {
   code: string
   title: string
   status: 'live' | 'closed'
+  votePolicy: VotePolicy
+  sessionMode: SessionMode
 }
 
 export type ServerMessage =
@@ -40,6 +42,8 @@ export type ServerMessage =
         question: LiveQuestion | null
         results: { counts: Record<string, number>; total: number }
         participants: number
+        /** Unix ms when the current question auto-advances (fun mode only). */
+        expiresAt: number | null
       }
       timestamp: number
     }
@@ -61,6 +65,11 @@ export type ServerMessage =
   | {
       type: 'session_closed'
       data: { counts: Record<string, number>; total: number }
+      timestamp: number
+    }
+  | {
+      type: 'question_timeout'
+      data: { questionId: string }
       timestamp: number
     }
   | {

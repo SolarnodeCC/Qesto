@@ -477,6 +477,17 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setLaunching(true)
     setLaunchError(null)
 
+    // Persist session options chosen in step 4.
+    const optionsRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
+      method: 'PATCH',
+      body: { anonymity, vote_policy: votePolicy, session_mode: sessionMode },
+    })
+    if (!optionsRes.ok) {
+      setLaunchError((optionsRes as { ok: false; error: { message: string } }).error.message)
+      setLaunching(false)
+      return
+    }
+
     // Save all questions via POST /questions.
     // PATCH /api/sessions/:id only accepts kind:'poll', so we always use POST
     // here to support ranking and open question kinds as the first question too.
@@ -1021,8 +1032,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                     {t('step5.edit')} ✏️
                   </button>
                 </div>
-                <p className="text-caption text-pulse-500 capitalize">
-                  {anonymity} anonymity · {votePolicy} vote · {sessionMode} mode
+                <p className="text-caption text-pulse-500">
+                  {t(`step4.anonymity.${anonymity}`)} · {t(`step4.votePolicy.${votePolicy}`)} · {sessionMode === 'fun' ? t('step4.mode.fun_title') : t('step4.mode.reflection_title')}
                 </p>
               </section>
 

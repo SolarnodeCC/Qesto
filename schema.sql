@@ -44,8 +44,12 @@ CREATE TABLE IF NOT EXISTS sessions (
   title TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'draft'
     CHECK (status IN ('draft','live','closed','archived')),
-  anonymity TEXT NOT NULL DEFAULT 'anonymous'
-    CHECK (anonymity IN ('anonymous','identified')),
+  anonymity TEXT NOT NULL DEFAULT 'full'
+    CHECK (anonymity IN ('full','partial','none')),
+  vote_policy TEXT NOT NULL DEFAULT 'once'
+    CHECK (vote_policy IN ('once','multi','react')),
+  session_mode TEXT NOT NULL DEFAULT 'reflection'
+    CHECK (session_mode IN ('reflection','fun')),
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,
@@ -267,6 +271,15 @@ CREATE TABLE IF NOT EXISTS referral_signups (
   UNIQUE(referred_user_id, referral_code_id)
 );
 CREATE INDEX IF NOT EXISTS idx_referral_signups_referred ON referral_signups(referred_user_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Migration v2: session options (vote_policy, session_mode, anonymity rename)
+-- Run on existing DBs after deploying this schema version:
+--   wrangler d1 execute <db> --command "ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once'"
+--   wrangler d1 execute <db> --command "ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection'"
+--   wrangler d1 execute <db> --command "UPDATE sessions SET anonymity = 'full' WHERE anonymity = 'anonymous'"
+--   wrangler d1 execute <db> --command "UPDATE sessions SET anonymity = 'none' WHERE anonymity = 'identified'"
+-- ─────────────────────────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_referral_signups_referrer ON referral_signups(referrer_user_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
