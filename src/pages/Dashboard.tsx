@@ -380,7 +380,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               ) : (
-                <ul className="space-y-3">
+                <ul className={density === 'compact' ? 'space-y-1' : density === 'spacious' ? 'space-y-5' : 'space-y-3'}>
                   {insightThemes.map((theme) => (
                     <li key={theme.id}>
                       <InsightThemeCard
@@ -388,6 +388,7 @@ export default function Dashboard() {
                         description={theme.description}
                         sessionCount={theme.sessionCount}
                         confidence={theme.confidence}
+                        trend30d={theme.trend30d}
                       />
                     </li>
                   ))}
@@ -417,7 +418,7 @@ export default function Dashboard() {
             ) : (
               <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
                 {teams.map((team) => (
-                  <li key={team.id} className="flex items-center justify-between gap-4 p-4">
+                  <li key={team.id} className={`flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}>
                     <div>
                       <p className="font-medium text-pulse-800">{team.name}</p>
                       <p className="text-xs text-pulse-400 mt-0.5 capitalize">{team.plan} plan</p>

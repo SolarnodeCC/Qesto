@@ -41,5 +41,10 @@
     "question_required": "Minimaal één vraag is vereist",
     "consent_required": "AI-toestemming is vereist"
   },
-  "time_remaining": "{{minutes}} minuten tot automatische start"
+  "time_remaining": "{{minutes}} minuten tot automatische start",
+  "ai_generate_heading": "Vragen genereren met AI",
+  "ai_generate_button": "Vragen genereren",
+  "ai_generating": "Genereren…",
+  "ai_topic_placeholder": "Onderwerp of doel (standaard: \"{{title}}\")",
+  "add_question_inline": "+ Vraag toevoegen"
 }

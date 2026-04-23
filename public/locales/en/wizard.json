@@ -62,6 +62,11 @@
     "ai_generated_badge": "✨ AI-generated content — fully editable",
     "ai_review_back":   "← Back to chat",
     "ai_regenerate_confirm": "Regenerating will replace your edited questions. Continue?",
+    "chip_accept":   "Accept this question",
+    "chip_edit":     "Edit this question",
+    "chip_dismiss":  "Dismiss this question",
+    "chip_collapse": "← Back to overview",
+    "chip_empty":    "(no question text)",
     "review_add_question": "Add question",
     "template_loading": "Loading templates...",
     "template_error":   "Could not load templates",
@@ -69,7 +74,9 @@
     "template_retry":   "Try again",
     "template_select":  "Select",
     "template_selected": "✓ Selected",
-    "template_questions": "{{count}} questions"
+    "template_questions": "{{count}} questions",
+    "all_dismissed": "All questions dismissed. Go back to regenerate.",
+    "template_coming_soon": "Template selection coming soon."
   },
   "step3": {
     "title":       "Add an energizer?",

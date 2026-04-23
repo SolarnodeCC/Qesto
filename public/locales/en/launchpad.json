@@ -41,5 +41,10 @@
     "question_required": "At least one question is required",
     "consent_required": "AI consent is required"
   },
-  "time_remaining": "{{minutes}} minutes until automatic start"
+  "time_remaining": "{{minutes}} minutes until automatic start",
+  "ai_generate_heading": "Generate questions with AI",
+  "ai_generate_button": "Generate questions",
+  "ai_generating": "Generating…",
+  "ai_topic_placeholder": "Topic or goal (default: \"{{title}}\")",
+  "add_question_inline": "+ Add question"
 }

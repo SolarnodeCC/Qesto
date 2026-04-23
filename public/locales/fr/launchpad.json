@@ -41,5 +41,10 @@
     "question_required": "Au moins une question est requise",
     "consent_required": "Le consentement à l'IA est requis"
   },
-  "time_remaining": "{{minutes}} minutes jusqu'au démarrage automatique"
+  "time_remaining": "{{minutes}} minutes jusqu'au démarrage automatique",
+  "ai_generate_heading": "Générer des questions avec l'IA",
+  "ai_generate_button": "Générer des questions",
+  "ai_generating": "Génération…",
+  "ai_topic_placeholder": "Sujet ou objectif (par défaut : \"{{title}}\")",
+  "add_question_inline": "+ Ajouter une question"
 }

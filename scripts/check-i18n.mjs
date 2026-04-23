@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync } from 'fs'
-import { join } from 'path'
+import { join, relative } from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 
@@ -187,9 +187,142 @@ function validate() {
   return !hasErrors
 }
 
-const success = validate()
+// ─────────────────────────────────────────────────────────────────────────────
+// I18N-BUG-02: Detect non-keyed literals in JSX components.
+//
+// Flags user-visible text strings in .tsx/.ts files that are rendered directly
+// in JSX without going through the `t('...')` translation function.
+//
+// Heuristic: Looks for JSX text content patterns that appear to be natural-
+// language sentences/phrases (≥ 3 words, not a technical identifier, not a
+// URL, not a number/code). Short single-word labels and technical strings are
+// excluded by allowlisting.
+// ─────────────────────────────────────────────────────────────────────────────
 
-if (success) {
+const SRC_DIR = join(PROJECT_ROOT, 'src')
+
+/**
+ * Patterns that indicate a non-keyed literal in JSX.
+ * Each pattern captures the raw string content that is rendered directly.
+ */
+const NON_KEYED_PATTERNS = [
+  // JSX text node between tags: <p>Hard coded text here</p>
+  // Must be ≥ 3 words and contain a space (sentences, not identifiers)
+  />([A-ZÁÉÍÓÚÀÈÙÄÖÜ][a-záéíóúàèùäöüA-Z][^<>{}\n]{10,})</,
+  // Explicit string in JSX expression: {'Hard coded text'}
+  /\{['"]([A-ZÁÉÍÓÚÀÈÙÄÖÜ][a-záéíóúàèùäöüA-Z ]{10,})['"]\}/,
+]
+
+// Known-good strings that don't need i18n (technical labels, brand names, etc.)
+const NON_KEYED_ALLOWLIST = [
+  /^Qesto$/i,
+  /^[A-Z][a-z]+:/, // "Label: value" patterns in code comments
+  /^\d/,           // Starts with number
+  /^https?:\/\//,  // URLs
+  /^[A-Z_]+$/,     // ALL_CAPS constants
+  /^←/, /^→/,      // Arrows already i18n'd separately
+  /copyright/i,
+  /^\//, // Paths
+  /WCAG|ARIA|HTML|CSS|JSX|API|KV|DO|AI|QR/i, // Tech abbreviations
+  // Short phrases that are intentionally hard-coded (structural, not UX copy)
+  /^(true|false|null|undefined|NaN)$/,
+  /^\+|\-\d/,
+]
+
+function shouldFlagString(str) {
+  const trimmed = str.trim()
+  if (trimmed.length < 12) return false
+  if (trimmed.split(/\s+/).length < 2) return false // single word
+  if (NON_KEYED_ALLOWLIST.some((p) => p.test(trimmed))) return false
+  return true
+}
+
+function scanFileForNonKeyedLiterals(filepath) {
+  const content = readFileSync(filepath, 'utf8')
+  const issues = []
+  const lines = content.split('\n')
+
+  // Only scan .tsx files that use the `t()` hook (are i18n-aware)
+  if (!filepath.endsWith('.tsx')) return []
+  if (!content.includes('useT(') && !content.includes("from '../i18n'")) return []
+
+  lines.forEach((line, idx) => {
+    // Skip comment lines, import lines, type definitions
+    const trimmedLine = line.trim()
+    if (
+      trimmedLine.startsWith('//') ||
+      trimmedLine.startsWith('*') ||
+      trimmedLine.startsWith('import ') ||
+      trimmedLine.startsWith('type ') ||
+      trimmedLine.startsWith('interface ') ||
+      trimmedLine.startsWith('export type')
+    ) return
+
+    for (const pattern of NON_KEYED_PATTERNS) {
+      const match = line.match(pattern)
+      if (match) {
+        const candidate = match[1]?.trim()
+        if (candidate && shouldFlagString(candidate)) {
+          issues.push({
+            line: idx + 1,
+            text: candidate.slice(0, 60),
+          })
+        }
+      }
+    }
+  })
+
+  return issues
+}
+
+function walkSrcDir(dir) {
+  const results = []
+  let entries
+
+  try {
+    entries = readdirSync(dir, { withFileTypes: true })
+  } catch {
+    return results
+  }
+
+  for (const entry of entries) {
+    if (['.', 'node_modules', 'dist', '.git'].includes(entry.name)) continue
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) {
+      results.push(...walkSrcDir(full))
+    } else if (entry.name.endsWith('.tsx')) {
+      const issues = scanFileForNonKeyedLiterals(full)
+      if (issues.length > 0) {
+        results.push({ file: relative(PROJECT_ROOT, full), issues })
+      }
+    }
+  }
+
+  return results
+}
+
+function validateNonKeyedLiterals() {
+  console.log('[i18n] Scanning for non-keyed literals in i18n-aware components…')
+  const findings = walkSrcDir(SRC_DIR)
+
+  if (findings.length === 0) {
+    console.log('[i18n] ✓ No non-keyed literals detected')
+    return true
+  }
+
+  console.error('[i18n] ❌ Non-keyed literals found (use t() for all user-visible strings):')
+  for (const { file, issues } of findings) {
+    for (const issue of issues) {
+      console.error(`  ${file}:${issue.line}  →  "${issue.text}"`)
+    }
+  }
+  return false
+}
+
+const success = validate()
+const noLiterals = validateNonKeyedLiterals()
+
+if (success && noLiterals) {
   console.log('\n[i18n] Validation passed - all languages are complete ✓')
   process.exit(0)
 } else {

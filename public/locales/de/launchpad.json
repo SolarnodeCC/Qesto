@@ -41,5 +41,10 @@
     "question_required": "Mindestens eine Frage ist erforderlich",
     "consent_required": "KI-Zustimmung ist erforderlich"
   },
-  "time_remaining": "{{minutes}} Minuten bis zum automatischen Start"
+  "time_remaining": "{{minutes}} Minuten bis zum automatischen Start",
+  "ai_generate_heading": "Fragen mit KI generieren",
+  "ai_generate_button": "Fragen generieren",
+  "ai_generating": "Generierung…",
+  "ai_topic_placeholder": "Thema oder Ziel (Standard: \"{{title}}\")",
+  "add_question_inline": "+ Frage hinzufügen"
 }

@@ -19,6 +19,8 @@
     "check:baseline": "node scripts/check-baseline.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
+    "check:baseline": "node scripts/check-baseline.mjs",
+    "check:tokens-drift": "node scripts/check-tokens-drift.mjs",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify:deploy.mjs"
   },

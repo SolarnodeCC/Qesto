@@ -131,14 +131,14 @@ export default function MainLayout({
         <div className="grid-container flex items-center justify-between py-3 px-4 md:px-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-1 text-sm font-bold uppercase tracking-widest text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+            className="inline-flex items-center gap-1.5 text-base font-extrabold uppercase tracking-widest text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
           >
             {/* Sparkle mark — DESIGN-POLISH-02 */}
             <svg
               aria-hidden="true"
               focusable="false"
-              width="12"
-              height="12"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="currentColor"
               className="text-violet-500 flex-shrink-0"

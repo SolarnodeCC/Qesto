@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 export type Density = 'compact' | 'comfortable' | 'spacious'
 
@@ -26,8 +26,25 @@ function readStored(): Density {
   return 'comfortable'
 }
 
+function isValidDensity(v: unknown): v is Density {
+  return v === 'compact' || v === 'comfortable' || v === 'spacious'
+}
+
 export function useDensity() {
   const [density, setDensityState] = useState<Density>(readStored)
+
+  // Hydrate from server prefs on mount (best-effort; silently ignored on failure).
+  useEffect(() => {
+    fetch('/api/users/preferences', { credentials: 'include' })
+      .then((r) => r.json() as Promise<{ ok: boolean; data?: { density?: unknown } }>)
+      .then((body) => {
+        if (body.ok && isValidDensity(body.data?.density)) {
+          setDensityState(body.data.density)
+          try { localStorage.setItem(STORAGE_KEY, body.data.density) } catch { /* noop */ }
+        }
+      })
+      .catch(() => { /* silently fail — offline or unauthenticated */ })
+  }, [])
 
   const setDensity = useCallback((d: Density) => {
     try {
@@ -36,6 +53,13 @@ export function useDensity() {
       // storage unavailable
     }
     setDensityState(d)
+    // Fire-and-forget persistence to USERS_KV; no UI dependency on result.
+    fetch('/api/users/preferences', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ density: d }),
+    }).catch(() => { /* silently fail */ })
   }, [])
 
   return {

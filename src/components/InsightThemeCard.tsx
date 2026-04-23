@@ -1,4 +1,5 @@
 import type { InsightConfidence } from '../hooks/useInsights'
+import TrendSpark from './TrendSpark'
 
 const CONFIDENCE_STYLES: Record<InsightConfidence, { chip: string; label: string }> = {
   high:   { chip: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',   label: 'High' },
@@ -12,6 +13,8 @@ interface InsightThemeCardProps {
   sessionCount: number
   /** AI-derived confidence level for this theme */
   confidence?: InsightConfidence
+  /** 30-day weekly trend buckets (oldest → newest) */
+  trend30d?: number[]
   /** Optional click handler for future drill-down navigation */
   onClick?: () => void
 }
@@ -21,6 +24,7 @@ export default function InsightThemeCard({
   description,
   sessionCount,
   confidence,
+  trend30d,
   onClick,
 }: InsightThemeCardProps) {
   const Tag = onClick ? 'button' : 'div'
@@ -74,27 +78,32 @@ export default function InsightThemeCard({
       {/* Description */}
       <p className="text-body-s text-pulse-600 dark:text-pulse-400 leading-relaxed">{description}</p>
 
-      {/* Session count chip */}
-      <div className="flex items-center gap-space-2">
-        <svg
-          aria-hidden="true"
-          focusable="false"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-pulse-400 dark:text-pulse-500"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <path d="M3 9h18M9 21V9" />
-        </svg>
-        <span className="text-caption text-pulse-500 dark:text-pulse-400">
-          {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
-        </span>
+      {/* Session count + trend sparkline */}
+      <div className="flex items-center justify-between gap-space-2">
+        <div className="flex items-center gap-space-2">
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-pulse-400 dark:text-pulse-500"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M3 9h18M9 21V9" />
+          </svg>
+          <span className="text-caption text-pulse-500 dark:text-pulse-400">
+            {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
+          </span>
+        </div>
+        {trend30d && trend30d.some((v) => v > 0) && (
+          <TrendSpark data={trend30d} width={56} height={20} />
+        )}
       </div>
     </Tag>
   )

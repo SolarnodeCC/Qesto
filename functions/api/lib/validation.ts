@@ -68,6 +68,22 @@ export const ReorderQuestionsSchema = z.object({
   questionIds: z.array(z.string().min(1).max(64)).min(1).max(50),
 })
 
+// LAUNCHPAD-02: add a single question inline (append, not replace).
+export const AddQuestionSchema = z.object({
+  kind: z.enum(['poll', 'ranking', 'open']),
+  prompt: trimmed(1, 240),
+  options: z
+    .array(
+      z.object({
+        id: z.string().min(1).max(32).optional(),
+        label: trimmed(1, 160),
+      }),
+    )
+    .min(2)
+    .max(10)
+    .optional(),
+})
+
 export type PollOptionInput = z.infer<typeof PollOptionSchema>
 export type PollQuestionInput = z.infer<typeof PollQuestionSchema>
 export type CreateSessionInput = z.infer<typeof CreateSessionSchema>
@@ -76,3 +92,4 @@ export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsSchema>
 export type AIQuestionInput = z.infer<typeof AIQuestionSchema>
 export type AIQuestionsOutput = z.infer<typeof AIQuestionsOutputSchema>
 export type ReorderQuestionsInput = z.infer<typeof ReorderQuestionsSchema>
+export type AddQuestionInput = z.infer<typeof AddQuestionSchema>
