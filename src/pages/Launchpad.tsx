@@ -7,6 +7,7 @@ import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { LaunchpadPreFlightSkeleton } from '../components/SkeletonLoader'
+import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
 
 type PreFlightItem = {
   key: 'title' | 'question' | 'consent'
@@ -47,6 +48,23 @@ export default function Launchpad() {
   const [aiTopic, setAiTopic] = useState('')
   const [aiGenerating, setAiGenerating] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+
+  // Energizer state
+  const [energizers, setEnergizers] = useState<EmojiPollEnergizer[]>([])
+  const [energizerVersion, setEnergizerVersion] = useState(0)
+
+  // Fetch energizers for this session
+  useEffect(() => {
+    if (!id) return
+    let cancelled = false
+    ;(async () => {
+      const res = await api<{ energizers: EmojiPollEnergizer[] }>(
+        `/api/sessions/${encodeURIComponent(id)}/energizers`,
+      )
+      if (!cancelled && res.ok) setEnergizers(res.data.energizers)
+    })()
+    return () => { cancelled = true }
+  }, [id, energizerVersion])
 
   // Inline add-question state
   const [addingQuestion, setAddingQuestion] = useState(false)
@@ -698,6 +716,27 @@ export default function Launchpad() {
                 </button>
               )}
             </section>
+
+            {/* Energizer panel — shown if one was attached in the wizard */}
+            {energizers.filter((e) => e.kind === 'emoji_poll').length > 0 && (
+              <section aria-labelledby="energizer-heading" className="space-y-3">
+                <h2 id="energizer-heading" className="text-lg font-semibold dark:text-pulse-100">
+                  Energizer
+                </h2>
+                {energizers
+                  .filter((e) => e.kind === 'emoji_poll')
+                  .map((energizer) => (
+                    <EmojiPollEnergizerView
+                      key={energizer.id}
+                      sessionId={id!}
+                      energizer={energizer}
+                      role="host"
+                      onActivate={() => setEnergizerVersion((v) => v + 1)}
+                      onComplete={() => setEnergizerVersion((v) => v + 1)}
+                    />
+                  ))}
+              </section>
+            )}
           </div>
         </div>
       </div>

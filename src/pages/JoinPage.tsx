@@ -2,11 +2,12 @@
 // the live session id via the public `/api/sessions/by-code/:code` endpoint
 // then open a WebSocket to the DO for real-time voting.
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
+import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
 
 type Lookup =
   | { status: 'loading' }
@@ -83,6 +84,31 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const hasVoted = !!state.lastVote
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
   const t = useT('join')
+
+  // Energizer polling — checks for an active energizer every 3s
+  const [activeEnergizer, setActiveEnergizer] = useState<EmojiPollEnergizer | null>(null)
+  const energizerPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const fetchActiveEnergizer = useCallback(async () => {
+    const res = await api<{ energizer: EmojiPollEnergizer | null; results: Record<string, number> }>(
+      `/api/sessions/${encodeURIComponent(sessionId)}/energizers/active`,
+    )
+    if (res.ok) {
+      setActiveEnergizer(res.data.energizer)
+    }
+  }, [sessionId])
+
+  useEffect(() => {
+    if (isEnded) {
+      if (energizerPollRef.current) clearInterval(energizerPollRef.current)
+      return
+    }
+    fetchActiveEnergizer()
+    energizerPollRef.current = setInterval(fetchActiveEnergizer, 3000)
+    return () => {
+      if (energizerPollRef.current) clearInterval(energizerPollRef.current)
+    }
+  }, [isEnded, fetchActiveEnergizer])
 
   // Inter-question countdown: when question changes after voting, show 3-2-1
   const prevQuestionIdRef = useRef<string | null>(null)
@@ -203,6 +229,16 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
               </div>
             )}
           </div>
+        )}
+
+        {/* Active energizer — emoji poll or other types */}
+        {!isEnded && activeEnergizer?.kind === 'emoji_poll' && countdown === null && (
+          <EmojiPollEnergizerView
+            sessionId={sessionId}
+            energizer={activeEnergizer}
+            role="participant"
+            voterId={state.voterId ?? 'anonymous'}
+          />
         )}
 
         {/* Active question — hide during countdown */}

@@ -4,7 +4,11 @@
 // - Battle Royale: multi-round elimination with scoring multipliers
 // - Bracket: tournament-style head-to-head competitions (4/8/16 participants)
 
-export type EnergizerKind = 'poll' | 'ranking' | 'consent' | 'open' | 'battle_royale' | 'bracket'
+export type EnergizerKind = 'poll' | 'ranking' | 'consent' | 'open' | 'battle_royale' | 'bracket' | 'emoji_poll'
+
+export interface EmojiPollConfig {
+  emojis: string[]
+}
 
 export interface BattleRoyaleConfig {
   num_rounds: number
