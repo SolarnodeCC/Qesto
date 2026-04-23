@@ -4,7 +4,7 @@
 // - Battle Royale: multi-round elimination with scoring multipliers
 // - Bracket: tournament-style head-to-head competitions (4/8/16 participants)
 
-export type EnergizerKind = 'poll' | 'ranking' | 'consent' | 'open' | 'battle_royale' | 'bracket' | 'emoji_poll' | 'quick_finger'
+export type EnergizerKind = 'poll' | 'ranking' | 'consent' | 'open' | 'battle_royale' | 'bracket' | 'emoji_poll' | 'quick_finger' | 'team_quiz' | 'word_cloud'
 
 export interface EmojiPollConfig {
   emojis: string[]
@@ -13,6 +13,21 @@ export interface EmojiPollConfig {
 export interface QuickFingerConfig {
   options: string[]       // answer choices shown to participants
   correct_index: number   // 0-based index of the correct option
+}
+
+export interface TeamQuizQuestion {
+  prompt: string
+  options: string[]
+  correct_index: number
+}
+
+export interface TeamQuizConfig {
+  questions: TeamQuizQuestion[]
+  current_index: number  // -1 = not started; >= questions.length = all done
+}
+
+export interface WordCloudConfig {
+  max_words_per_participant: number
 }
 
 export interface BattleRoyaleConfig {

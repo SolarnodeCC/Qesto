@@ -9,6 +9,8 @@ import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
 import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
 import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
+import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
+import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
 
 type Lookup =
   | { status: 'loading' }
@@ -87,11 +89,12 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const t = useT('join')
 
   // Energizer polling — checks for an active energizer every 3s
-  const [activeEnergizer, setActiveEnergizer] = useState<EmojiPollEnergizer | QuickFingerEnergizer | null>(null)
+  type AnyEnergizer = EmojiPollEnergizer | QuickFingerEnergizer | TeamQuizEnergizer | WordCloudEnergizer
+  const [activeEnergizer, setActiveEnergizer] = useState<AnyEnergizer | null>(null)
   const energizerPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const fetchActiveEnergizer = useCallback(async () => {
-    const res = await api<{ energizer: EmojiPollEnergizer | QuickFingerEnergizer | null; results: Record<string, number> }>(
+    const res = await api<{ energizer: AnyEnergizer | null }>(
       `/api/sessions/${encodeURIComponent(sessionId)}/energizers/active`,
     )
     if (res.ok) {
@@ -232,23 +235,19 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           </div>
         )}
 
-        {/* Active energizer — emoji poll or quick finger */}
-        {!isEnded && activeEnergizer?.kind === 'emoji_poll' && countdown === null && (
-          <EmojiPollEnergizerView
-            sessionId={sessionId}
-            energizer={activeEnergizer as EmojiPollEnergizer}
-            role="participant"
-            voterId={state.voterId ?? 'anonymous'}
-          />
-        )}
-        {!isEnded && activeEnergizer?.kind === 'quick_finger' && countdown === null && (
-          <QuickFingerEnergizerView
-            sessionId={sessionId}
-            energizer={activeEnergizer as QuickFingerEnergizer}
-            role="participant"
-            voterId={state.voterId ?? 'anonymous'}
-          />
-        )}
+        {/* Active energizer — shown above the question */}
+        {!isEnded && activeEnergizer !== null && countdown === null && (() => {
+          const vid = state.voterId ?? 'anonymous'
+          if (activeEnergizer.kind === 'emoji_poll')
+            return <EmojiPollEnergizerView sessionId={sessionId} energizer={activeEnergizer as EmojiPollEnergizer} role="participant" voterId={vid} />
+          if (activeEnergizer.kind === 'quick_finger')
+            return <QuickFingerEnergizerView sessionId={sessionId} energizer={activeEnergizer as QuickFingerEnergizer} role="participant" voterId={vid} />
+          if (activeEnergizer.kind === 'team_quiz')
+            return <TeamQuizEnergizerView sessionId={sessionId} energizer={activeEnergizer as TeamQuizEnergizer} role="participant" voterId={vid} />
+          if (activeEnergizer.kind === 'word_cloud')
+            return <WordCloudEnergizerView sessionId={sessionId} energizer={activeEnergizer as WordCloudEnergizer} role="participant" voterId={vid} />
+          return null
+        })()}
 
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (

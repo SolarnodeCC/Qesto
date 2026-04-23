@@ -9,6 +9,8 @@ import MainLayout from '../layouts/MainLayout'
 import { LaunchpadPreFlightSkeleton } from '../components/SkeletonLoader'
 import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
 import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
+import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
+import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
 
 type PreFlightItem = {
   key: 'title' | 'question' | 'consent'
@@ -51,7 +53,8 @@ export default function Launchpad() {
   const [aiError, setAiError] = useState<string | null>(null)
 
   // Energizer state
-  const [energizers, setEnergizers] = useState<(EmojiPollEnergizer | QuickFingerEnergizer)[]>([])
+  type AnyEnergizer = EmojiPollEnergizer | QuickFingerEnergizer | TeamQuizEnergizer | WordCloudEnergizer
+  const [energizers, setEnergizers] = useState<AnyEnergizer[]>([])
   const [energizerVersion, setEnergizerVersion] = useState(0)
 
   // Fetch energizers for this session
@@ -59,7 +62,7 @@ export default function Launchpad() {
     if (!id) return
     let cancelled = false
     ;(async () => {
-      const res = await api<{ energizers: (EmojiPollEnergizer | QuickFingerEnergizer)[] }>(
+      const res = await api<{ energizers: AnyEnergizer[] }>(
         `/api/sessions/${encodeURIComponent(id)}/energizers`,
       )
       if (!cancelled && res.ok) setEnergizers(res.data.energizers)
@@ -729,26 +732,30 @@ export default function Launchpad() {
                   const onComplete = () => setEnergizerVersion((v) => v + 1)
                   if (energizer.kind === 'emoji_poll') {
                     return (
-                      <EmojiPollEnergizerView
-                        key={energizer.id}
-                        sessionId={id!}
-                        energizer={energizer as EmojiPollEnergizer}
-                        role="host"
-                        onActivate={onActivate}
-                        onComplete={onComplete}
-                      />
+                      <EmojiPollEnergizerView key={energizer.id} sessionId={id!}
+                        energizer={energizer as EmojiPollEnergizer} role="host"
+                        onActivate={onActivate} onComplete={onComplete} />
                     )
                   }
                   if (energizer.kind === 'quick_finger') {
                     return (
-                      <QuickFingerEnergizerView
-                        key={energizer.id}
-                        sessionId={id!}
-                        energizer={energizer as QuickFingerEnergizer}
-                        role="host"
-                        onActivate={onActivate}
-                        onComplete={onComplete}
-                      />
+                      <QuickFingerEnergizerView key={energizer.id} sessionId={id!}
+                        energizer={energizer as QuickFingerEnergizer} role="host"
+                        onActivate={onActivate} onComplete={onComplete} />
+                    )
+                  }
+                  if (energizer.kind === 'team_quiz') {
+                    return (
+                      <TeamQuizEnergizerView key={energizer.id} sessionId={id!}
+                        energizer={energizer as TeamQuizEnergizer} role="host"
+                        onActivate={onActivate} onComplete={onComplete} />
+                    )
+                  }
+                  if (energizer.kind === 'word_cloud') {
+                    return (
+                      <WordCloudEnergizerView key={energizer.id} sessionId={id!}
+                        energizer={energizer as WordCloudEnergizer} role="host"
+                        onActivate={onActivate} onComplete={onComplete} />
                     )
                   }
                   return null
