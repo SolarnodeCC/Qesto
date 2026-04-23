@@ -94,7 +94,7 @@ export default function EventsPage() {
       }}
       playbook={{
           heading: 'A high-impact event flow in three moves',
-          intro: 'Use this facilitation pattern to increase participation and capture sponsor-ready intelligence in every session block.',
+          intro: 'Use this facilitation pattern to increase participation and capture sponsor-ready evidence in every session block.',
           steps: [
             {
               title: 'Prime the room in minute one',

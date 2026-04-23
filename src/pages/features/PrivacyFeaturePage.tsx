@@ -69,7 +69,7 @@ export default function PrivacyFeaturePage() {
       }}
       deepDive={{
         heading: 'Privacy patterns for high-trust participation',
-        intro: 'Privacy is not one setting—it is a set of choices teams make based on sensitivity, follow-up needs, and governance obligations.',
+        intro: 'Privacy is not one setting. It is a set of choices teams make based on sensitivity, follow-up needs, and governance obligations.',
         pillars: [
           {
             title: 'Choose the right anonymity mode',

@@ -80,6 +80,7 @@ export default function App() {
         <Route path="/events" element={<Suspense fallback={<LazyRouteFallback />}><EventsPage /></Suspense>} />
         <Route path="/hr" element={<Suspense fallback={<LazyRouteFallback />}><HRPage /></Suspense>} />
         <Route path="/nonprofit" element={<Suspense fallback={<LazyRouteFallback />}><NonprofitPage /></Suspense>} />
+        <Route path="/nonprofits" element={<Suspense fallback={<LazyRouteFallback />}><NonprofitPage /></Suspense>} />
         <Route path="/consulting" element={<Suspense fallback={<LazyRouteFallback />}><ConsultingPage /></Suspense>} />
 
         {/* Feature pages */}
