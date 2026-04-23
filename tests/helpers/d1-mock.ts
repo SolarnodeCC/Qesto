@@ -177,7 +177,9 @@ export class D1PreparedStatementMock {
     if (this.sql.startsWith("UPDATE sessions SET status = 'live'")) {
       const [started_at, id, owner_id] = this.args as [number, string, string]
       const row = this.db.sessions.get(id)
-      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      // Mirrors the AND status = 'draft' guard in the production SQL — only
+      // a draft session can transition; returns 0 changes if already live.
+      if (!row || row.owner_id !== owner_id || row.status !== 'draft') return { meta: { changes: 0 } }
       row.status = 'live'
       row.started_at = started_at
       return { meta: { changes: 1 } }
@@ -264,6 +266,11 @@ export class D1PreparedStatementMock {
         if (u.email === email) return { id: u.id } as T
       }
       return null
+    }
+    if (this.sql.startsWith('SELECT plan FROM users WHERE id')) {
+      const [id] = this.args as [string]
+      const row = this.db.users.get(id)
+      return (row ? { plan: row.plan } : null) as T | null
     }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
       // Single-row lookup: WHERE id = ?1 AND owner_id = ?2

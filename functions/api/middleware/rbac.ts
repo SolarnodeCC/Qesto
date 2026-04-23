@@ -26,6 +26,10 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'GET /api/sessions/:id': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
   'PATCH /api/sessions/:id': new Set(['owner', 'admin', 'member']),
   'DELETE /api/sessions/:id': new Set(['owner', 'admin']),
+  // Session lifecycle transitions (owner_id enforced at DB layer; matrix
+  // documents intent and gates future team-member access).
+  'POST /api/sessions/:id/start': new Set(['owner', 'admin']),
+  'POST /api/sessions/:id/close': new Set(['owner', 'admin']),
 
   // Questions (CRUD)
   'POST /api/sessions/:id/questions': new Set(['owner', 'admin', 'member']),

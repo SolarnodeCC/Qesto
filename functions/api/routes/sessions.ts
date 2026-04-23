@@ -493,16 +493,38 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     const now = Date.now()
-    await c.env.DB
+    const liveQ = questionToLive(questions[0])
+    const traceId = c.get('trace_id')
+    const logCtx = { trace_id: traceId, session_id: id, user_id: user.sub }
+
+    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx }))
+
+    // Conditional UPDATE: only transitions from draft → live.
+    // `meta.changes === 0` means a concurrent request already won this write.
+    const result = await c.env.DB
       .prepare(
-        `UPDATE sessions SET status = 'live', started_at = ?1 WHERE id = ?2 AND owner_id = ?3`,
+        `UPDATE sessions SET status = 'live', started_at = ?1
+         WHERE id = ?2 AND owner_id = ?3 AND status = 'draft'`,
       )
       .bind(now, id, user.sub)
       .run()
+
+    if (result.meta.changes === 0) {
+      // A concurrent request already transitioned the session. Re-read it and
+      // return success without a redundant DO /init call.
+      const current = await fetchSession(c.env.DB, id, user.sub)
+      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.concurrent_win', ...logCtx }))
+      if (current?.status === 'live') {
+        return c.json({ ok: true, data: { session: current, question: liveQ }, trace_id: traceId })
+      }
+      return c.json(
+        { ok: false, error: { code: 'conflict', message: 'Session could not be started' }, trace_id: traceId },
+        409,
+      )
+    }
     session.status = 'live'
     session.started_at = now
 
-    const liveQ = questionToLive(questions[0])
     const doRes = await postDO(c.env, id, '/init', {
       sessionId: session.id,
       ownerId: session.owner_id,
@@ -511,34 +533,43 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       question: liveQ,
     })
     if (doRes.status !== 200) {
-      // When the DO returns 409 already_initialised, a concurrent start beat us
-      // to it. DO is live, DB is live — no split-brain, no rollback needed.
+      // Defence-in-depth: if DO returns already_initialised (409), another
+      // concurrent start won the DO race. DB is already live — no rollback.
       if (doRes.status === 409) {
         try {
           const doBody = (await doRes.json()) as { ok?: boolean; error?: { code?: string } }
           if (doBody?.error?.code === 'already_initialised') {
-            return c.json({ ok: true, data: { session, question: liveQ }, trace_id: c.get('trace_id') })
+            console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.do_idempotent', ...logCtx }))
+            return c.json({ ok: true, data: { session, question: liveQ }, trace_id: traceId })
           }
-        } catch { /* fall through */ }
+        } catch { /* fall through to rollback */ }
       }
-      // All other DO errors: roll back DB so session stays startable.
-      await c.env.DB
-        .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
-        .bind(id)
-        .run()
+      // All other DO errors: roll back DB so the session stays startable.
+      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', event: 'session.start.do_failure', ...logCtx, do_status: doRes.status }))
+      try {
+        await c.env.DB
+          .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
+          .bind(id)
+          .run()
+      } catch (rbErr) {
+        // Rollback failed — DB may be stuck live while DO is not initialised.
+        // Operator must use RUNBOOK_SESSION_RECONCILE.md to recover.
+        console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'error', event: 'session.start.rollback_failed', ...logCtx, err: String(rbErr) }))
+      }
       return c.json(
         {
           ok: false,
           error: { code: 'do_init_failed', message: `DurableObject refused init (${doRes.status})` },
-          trace_id: c.get('trace_id'),
+          trace_id: traceId,
         },
         500,
       )
     }
+    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.success', ...logCtx }))
     return c.json({
       ok: true,
       data: { session, question: liveQ },
-      trace_id: c.get('trace_id'),
+      trace_id: traceId,
     })
   })
 

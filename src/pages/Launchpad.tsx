@@ -24,6 +24,7 @@ export default function Launchpad() {
   const [sharing, setSharing] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
+  const startingRef = useRef(false)
   const [codeCopied, setCodeCopied] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -264,19 +265,21 @@ export default function Launchpad() {
   }
 
   async function handleStart() {
-    if (!id || !allValid) return
+    if (!id || !allValid || startingRef.current) return
+    startingRef.current = true
     setStarting(true)
     setStartError(null)
-    const res = await api<{ session: unknown; question: unknown }>(
-      `/api/sessions/${encodeURIComponent(id)}/start`,
-      { method: 'POST' },
-    )
-    setStarting(false)
-    if (!res.ok) {
-      setStartError(res.error.message)
-      return
+    try {
+      const res = await api<{ session: unknown; question: unknown }>(
+        `/api/sessions/${encodeURIComponent(id)}/start`,
+        { method: 'POST' },
+      )
+      if (!res.ok) { setStartError(res.error.message); return }
+      navigate(`/sessions/${id}/present`)
+    } finally {
+      startingRef.current = false
+      setStarting(false)
     }
-    navigate(`/sessions/${id}/present`)
   }
 
   async function handleCopyCode() {
