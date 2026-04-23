@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { api } from '../api/client'
+import { api, setAuthToken } from '../api/client'
 
 export type AuthUser = { id: string; email: string }
 
@@ -28,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (result.ok) {
       setState({ status: 'authenticated', user: result.data })
     } else {
+      setAuthToken(null)
       setState({ status: 'anonymous' })
     }
   }, [])
@@ -45,8 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithPassword = useCallback(
     async (email: string, password: string): Promise<'ok' | 'invalid_credentials' | 'error'> => {
-      const result = await api('/api/auth/password/login', { method: 'POST', body: { email, password } })
+      const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/login', { method: 'POST', body: { email, password } })
       if (result.ok) {
+        setAuthToken(result.data.token)
         await refresh()
         return 'ok'
       }
@@ -58,8 +60,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signupWithPassword = useCallback(
     async (email: string, password: string, name?: string): Promise<'ok' | 'email_taken' | 'error'> => {
-      const result = await api('/api/auth/password/signup', { method: 'POST', body: { email, password, name } })
+      const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/signup', { method: 'POST', body: { email, password, name } })
       if (result.ok) {
+        setAuthToken(result.data.token)
         await refresh()
         return 'ok'
       }
@@ -78,8 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const confirmPasswordReset = useCallback(
     async (token: string, password: string): Promise<'ok' | 'invalid_token' | 'invalid' | 'error'> => {
-      const result = await api<{ id: string }>('/api/auth/password/reset-confirm', { method: 'POST', body: { token, password } })
+      const result = await api<{ reset: boolean; token: string }>('/api/auth/password/reset-confirm', { method: 'POST', body: { token, password } })
       if (result.ok) {
+        setAuthToken(result.data.token)
         await refresh()
         return 'ok'
       }
@@ -94,6 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await api('/api/auth/logout', { method: 'POST' })
+    setAuthToken(null)
     setState({ status: 'anonymous' })
   }, [])
 
