@@ -46,7 +46,7 @@ export default function Dashboard() {
     state.status === 'ready'
       ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
       : []
-  const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions)
+  const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions, activeTab === 'insights')
   const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const [wizardOpen, setWizardOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -57,6 +57,9 @@ export default function Dashboard() {
   const [creatingFromTemplate, setCreatingFromTemplate] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [teams, setTeams] = useState<Array<{ id: string; name: string; plan: string }>>([])
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [actionLoading, setActionLoading] = useState<Record<string, string>>({})
+  const [actionFeedback, setActionFeedback] = useState<Record<string, { message: string; isError: boolean }>>({})
   const [teamsLoading, setTeamsLoading] = useState(true)
 
   useEffect(() => {
@@ -113,6 +116,71 @@ export default function Dashboard() {
       setCreatingFromTemplate(false)
       setModal({ open: false, template: null })
     }
+  }
+
+  function setFeedback(sessionId: string, message: string, isError: boolean) {
+    setActionFeedback((prev) => ({ ...prev, [sessionId]: { message, isError } }))
+    setTimeout(() => setActionFeedback((prev) => { const next = { ...prev }; delete next[sessionId]; return next }), 3000)
+  }
+
+  async function handleDelete(sessionId: string) {
+    setActionLoading((prev) => ({ ...prev, [sessionId]: 'delete' }))
+    try {
+      const token = (await import('../api/client')).getAuthToken()
+      const headers: Record<string, string> = {}
+      if (token) headers['authorization'] = `Bearer ${token}`
+      const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE', credentials: 'include', headers })
+      if (res.ok) {
+        setConfirmDeleteId(null)
+        await refresh()
+      } else {
+        setConfirmDeleteId(null)
+        setFeedback(sessionId, 'Delete failed', true)
+      }
+    } finally {
+      setActionLoading((prev) => { const next = { ...prev }; delete next[sessionId]; return next })
+    }
+  }
+
+  async function handleDuplicate(sessionId: string) {
+    setActionLoading((prev) => ({ ...prev, [sessionId]: 'duplicate' }))
+    try {
+      const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/duplicate`, { method: 'POST' })
+      if (res.ok) {
+        await refresh()
+        setFeedback(sessionId, 'Duplicated!', false)
+      } else {
+        setFeedback(sessionId, res.error.message, true)
+      }
+    } finally {
+      setActionLoading((prev) => { const next = { ...prev }; delete next[sessionId]; return next })
+    }
+  }
+
+  async function handleSaveAsTemplate(sessionId: string, title: string) {
+    setActionLoading((prev) => ({ ...prev, [sessionId]: 'template' }))
+    try {
+      const res = await api<unknown>('/api/templates/mine', {
+        method: 'POST',
+        body: { sessionId, name: title },
+      })
+      if (res.ok) {
+        setFeedback(sessionId, 'Saved as template!', false)
+      } else {
+        setFeedback(sessionId, res.error.message, true)
+      }
+    } finally {
+      setActionLoading((prev) => { const next = { ...prev }; delete next[sessionId]; return next })
+    }
+  }
+
+  function handleExportCSV(sessionId: string, title: string) {
+    const a = document.createElement('a')
+    a.href = `/api/sessions/${encodeURIComponent(sessionId)}/export.csv`
+    a.download = `${title}.csv`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
   }
 
   const isSuperuser = auth.user.email === SUPERUSER_EMAIL
@@ -272,40 +340,132 @@ export default function Dashboard() {
                         {filtered.map((s, i) => (
                           <li
                             key={s.id}
-                            className={`animate-list-item flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}
+                            className={`animate-list-item ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}
                             style={{ '--stagger-index': i } as React.CSSProperties}
                           >
-                            <div>
-                              <Link
-                                to={
-                                  s.status === 'live'
-                                    ? `/sessions/${s.id}/present`
-                                    : s.status === 'closed' || s.status === 'archived'
-                                    ? `/sessions/${s.id}/results`
-                                    : `/sessions/${s.id}/launchpad`
+                            {/* Title row */}
+                            <div className="flex items-center justify-between gap-4">
+                              <div>
+                                <Link
+                                  to={
+                                    s.status === 'live'
+                                      ? `/sessions/${s.id}/present`
+                                      : s.status === 'closed' || s.status === 'archived'
+                                      ? `/sessions/${s.id}/results`
+                                      : `/sessions/${s.id}/launchpad`
+                                  }
+                                  className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                                >
+                                  <span className="font-medium text-pulse-800 group-hover:text-teal-600">
+                                    {s.title}
+                                  </span>
+                                  <p className="text-xs text-pulse-500 mt-0.5">
+                                    code {s.code} · {new Date(s.created_at).toLocaleString()}
+                                  </p>
+                                </Link>
+                              </div>
+                              <span
+                                className={
+                                  'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
+                                  (s.status === 'draft'
+                                    ? 'bg-pulse-100 text-pulse-600'
+                                    : s.status === 'live'
+                                    ? 'bg-teal-100 text-teal-700'
+                                    : 'bg-violet-100 text-violet-700')
                                 }
-                                className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                               >
-                                <span className="font-medium text-pulse-800 group-hover:text-teal-600">
-                                  {s.title}
-                                </span>
-                                <p className="text-xs text-pulse-500 mt-0.5">
-                                  code {s.code} · {new Date(s.created_at).toLocaleString()}
-                                </p>
-                              </Link>
+                                {s.status}
+                              </span>
                             </div>
-                            <span
-                              className={
-                                'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
-                                (s.status === 'draft'
-                                  ? 'bg-pulse-100 text-pulse-600'
-                                  : s.status === 'live'
-                                  ? 'bg-teal-100 text-teal-700'
-                                  : 'bg-violet-100 text-violet-700')
-                              }
-                            >
-                              {s.status}
-                            </span>
+
+                            {/* Action buttons row */}
+                            <div className="flex flex-wrap items-center gap-2 mt-3">
+                              {/* Post-session review */}
+                              <Link
+                                to={`/sessions/${s.id}/results`}
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
+                              >
+                                Post-session review
+                              </Link>
+
+                              {/* Export Excel/CSV */}
+                              <button
+                                type="button"
+                                disabled={actionLoading[s.id] === 'export'}
+                                onClick={() => handleExportCSV(s.id, s.title)}
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
+                              >
+                                Export Excel/CSV
+                              </button>
+
+                              {/* Koppel aan PowerPoint */}
+                              <button
+                                type="button"
+                                disabled
+                                title="Coming soon"
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-400 cursor-not-allowed opacity-60"
+                              >
+                                Koppel aan PowerPoint
+                              </button>
+
+                              {/* Duplicate */}
+                              <button
+                                type="button"
+                                disabled={!!actionLoading[s.id]}
+                                onClick={() => void handleDuplicate(s.id)}
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
+                              >
+                                {actionLoading[s.id] === 'duplicate' ? 'Duplicating…' : 'Dupliceren'}
+                              </button>
+
+                              {/* Save as template */}
+                              <button
+                                type="button"
+                                disabled={!!actionLoading[s.id]}
+                                onClick={() => void handleSaveAsTemplate(s.id, s.title)}
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
+                              >
+                                {actionLoading[s.id] === 'template' ? 'Saving…' : '🗂 Template'}
+                              </button>
+
+                              {/* Delete (with inline confirm) */}
+                              {confirmDeleteId === s.id ? (
+                                <span className="inline-flex items-center gap-1">
+                                  <span className="text-xs text-red-600 font-medium">Verwijderen?</span>
+                                  <button
+                                    type="button"
+                                    disabled={actionLoading[s.id] === 'delete'}
+                                    onClick={() => void handleDelete(s.id)}
+                                    className="inline-flex items-center rounded-md border border-red-300 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
+                                  >
+                                    {actionLoading[s.id] === 'delete' ? 'Deleting…' : 'Ja'}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setConfirmDeleteId(null)}
+                                    className="inline-flex items-center rounded-md border border-pulse-200 bg-white px-2 py-1 text-xs font-medium text-pulse-600 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500 transition-colors"
+                                  >
+                                    Annuleren
+                                  </button>
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={!!actionLoading[s.id]}
+                                  onClick={() => setConfirmDeleteId(s.id)}
+                                  className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-600 hover:border-red-400 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
+                                >
+                                  🗑 Verwijderen
+                                </button>
+                              )}
+
+                              {/* Inline feedback */}
+                              {actionFeedback[s.id] && (
+                                <span className={`text-xs font-medium ${actionFeedback[s.id].isError ? 'text-red-600' : 'text-teal-600'}`}>
+                                  {actionFeedback[s.id].message}
+                                </span>
+                              )}
+                            </div>
                           </li>
                         ))}
                       </ul>

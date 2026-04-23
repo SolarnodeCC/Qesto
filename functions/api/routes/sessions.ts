@@ -1001,5 +1001,137 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') })
   })
 
+  // DELETE /api/sessions/:id — hard-delete a session the caller owns
+  app.delete('/:id', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    await c.env.DB.prepare(`DELETE FROM votes WHERE session_id = ?1`).bind(id).run()
+    await c.env.DB.prepare(`DELETE FROM questions WHERE session_id = ?1`).bind(id).run()
+    await c.env.DB.prepare(`DELETE FROM sessions WHERE id = ?1 AND owner_id = ?2`).bind(id, user.sub).run()
+    return c.json({ ok: true, trace_id: c.get('trace_id') })
+  })
+
+  // POST /api/sessions/:id/duplicate — create a DRAFT copy with same title + questions
+  app.post('/:id/duplicate', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const quotas = c.get('planQuotas')
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+
+    const { allowed } = await incrementSessionQuota(c.env.SESSIONS_KV, user.sub, quotas.maxSessionsPerMonth)
+    if (!allowed) {
+      return c.json(
+        { ok: false, error: { code: 'quota_exceeded', message: 'Session quota exceeded' }, trace_id: c.get('trace_id') },
+        429,
+      )
+    }
+
+    const newId = ulid()
+    const code = generateJoinCode()
+    const now = Date.now()
+    const title = `Copy of ${session.title}`
+
+    await c.env.DB
+      .prepare(
+        `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, created_at)
+         VALUES (?1, ?2, ?3, ?4, 'draft', ?5, ?6)`,
+      )
+      .bind(newId, user.sub, code, title, session.anonymity, now)
+      .run()
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    for (const q of questions) {
+      const qid = ulid()
+      await c.env.DB
+        .prepare(
+          `INSERT INTO questions (id, session_id, position, kind, prompt, options_json, created_at)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
+        )
+        .bind(qid, newId, q.position, q.kind, q.prompt, JSON.stringify(q.options), now)
+        .run()
+    }
+
+    const newSession: Session = {
+      id: newId,
+      owner_id: user.sub,
+      code,
+      title,
+      status: 'draft',
+      anonymity: session.anonymity,
+      created_at: now,
+      started_at: null,
+      closed_at: null,
+      archived_at: null,
+    }
+    const newQuestions = await fetchQuestions(c.env.DB, newId)
+    return c.json(
+      { ok: true, data: { session: newSession, questions: newQuestions }, trace_id: c.get('trace_id') },
+      201,
+    )
+  })
+
+  // GET /api/sessions/:id/export.csv — download session results as CSV
+  app.get('/:id/export.csv', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    const rows: string[] = ['Question,Option,Votes']
+
+    for (const q of questions) {
+      const { results: voteRows } = await c.env.DB
+        .prepare(`SELECT option_id, COUNT(*) AS n FROM votes WHERE question_id = ?1 GROUP BY option_id`)
+        .bind(q.id)
+        .all<{ option_id: string; n: number }>()
+
+      const voteCounts: Record<string, number> = {}
+      for (const row of voteRows ?? []) {
+        voteCounts[row.option_id] = row.n
+      }
+
+      if (q.options.length > 0) {
+        for (const opt of q.options) {
+          const prompt = q.prompt.replace(/"/g, '""')
+          const label = opt.label.replace(/"/g, '""')
+          rows.push(`"${prompt}","${label}",${voteCounts[opt.id] ?? 0}`)
+        }
+      } else {
+        const prompt = q.prompt.replace(/"/g, '""')
+        const total = Object.values(voteCounts).reduce((a, b) => a + b, 0)
+        rows.push(`"${prompt}","(open answer)",${total}`)
+      }
+    }
+
+    const csv = rows.join('\n')
+    const filename = `${session.title.replace(/[^a-z0-9]/gi, '-')}-${session.code}.csv`
+    return new Response(csv, {
+      headers: {
+        'content-type': 'text/csv; charset=utf-8',
+        'content-disposition': `attachment; filename="${filename}"`,
+      },
+    })
+  })
+
   parent.route('/api/sessions', app)
 }
