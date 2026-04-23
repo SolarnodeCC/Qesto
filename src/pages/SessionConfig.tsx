@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSession, type PollOption } from '../hooks/useSessions'
+import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
@@ -12,6 +13,7 @@ function newOptionId(): string {
 
 export default function SessionConfig() {
   const auth = useAuth()
+  const t = useT('session-config')
   const { id } = useParams<{ id: string }>()
   const { data, error, loading, patch } = useSession(id)
 
@@ -58,7 +60,7 @@ export default function SessionConfig() {
   if (loading) {
     return (
       <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
-        Loading session…
+        {t('loadingSession')}
       </MainLayout>
     )
   }
@@ -66,10 +68,10 @@ export default function SessionConfig() {
     return (
       <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
         <p role="alert" className="text-red-600">
-          {error?.message ?? 'Session not found'}
+          {error?.message ?? t('sessionNotFound')}
         </p>
         <Link to="/dashboard" className="text-teal-600 hover:underline">
-          ← Back to dashboard
+          {t('backToDashboard')}
         </Link>
       </MainLayout>
     )

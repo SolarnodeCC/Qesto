@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useT } from '../i18n'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
 
@@ -23,6 +24,7 @@ const AI_FEATURES = [
 
 export default function Home() {
   const auth = useAuth()
+  const t = useT('home')
 
   const navSlot = (
     <>
@@ -60,12 +62,11 @@ export default function Home() {
             tabIndex={-1}
             className="text-4xl md:text-6xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none"
           >
-            Feel the pulse of the room — AI amplifies it.
+            {t('heroTitle')}
           </h1>
 
           <p className="text-lg text-pulse-600 max-w-xl mx-auto">
-            Run real-time polls, rankings, and open questions with your team. AI drafts questions,
-            finds patterns, and surfaces what matters — all on Cloudflare&rsquo;s global edge.
+            {t('heroDescription')}
           </p>
 
           <div className="flex items-center justify-center gap-3">
@@ -75,27 +76,27 @@ export default function Home() {
                   to="/dashboard"
                   className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
                 >
-                  Go to dashboard →
+                  {t('goToDashboard')}
                 </Link>
                 <span className="text-xs text-pulse-500">
-                  Signed in as <strong>{auth.user.email}</strong>.
+                  {t('signedInAs', { email: auth.user.email })}
                 </span>
               </div>
             ) : auth.status === 'loading' ? (
-              <span className="text-sm text-pulse-500">Loading…</span>
+              <span className="text-sm text-pulse-500">{t('loading')}</span>
             ) : (
               <div className="flex gap-3">
                 <Link
                   to="/login"
                   className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
                 >
-                  Get started free
+                  {t('getStartedFree')}
                 </Link>
                 <Link
                   to="/pricing"
                   className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
                 >
-                  See pricing
+                  {t('seePricing')}
                 </Link>
               </div>
             )}

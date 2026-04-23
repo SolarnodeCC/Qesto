@@ -3,10 +3,12 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession } from '../hooks/useLiveSession'
+import { useT } from '../i18n'
 import { api } from '../api/client'
 
 export default function Present() {
   const auth = useAuth()
+  const t = useT('present')
   const { id } = useParams<{ id: string }>()
   const { state, sendAdvance } = useLiveSession(id, { enabled: !!id })
   const [closing, setClosing] = useState(false)
@@ -31,7 +33,7 @@ export default function Present() {
   }
 
   if (auth.status === 'loading') {
-    return <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">Loading…</main>
+    return <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">{t('loading')}</main>
   }
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
 
@@ -41,7 +43,7 @@ export default function Present() {
       <div className="animate-page-enter space-y-6">
         <div className="flex items-center justify-between">
         <Link to="/dashboard" className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
-          ← Dashboard
+          {t('dashboard')}
         </Link>
         <span
           className={
@@ -65,13 +67,13 @@ export default function Present() {
       {state.session ? (
         <header className="flex items-start gap-5">
           <div className="flex-1 space-y-1">
-            <p className="text-sm uppercase tracking-widest text-teal-600">Presenter</p>
+            <p className="text-sm uppercase tracking-widest text-teal-600">{t('presenter')}</p>
             <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{state.session.title}</h1>
             <p className="text-sm text-pulse-500">
-              Join code{' '}
+              {t('joinCode')}{' '}
               <code className="font-mono font-bold text-pulse-900">{state.session.code}</code>
               {' '}· {state.participants}{' '}
-              {state.participants === 1 ? 'participant' : 'participants'}
+              {state.participants === 1 ? t('participant') : t('participants')}
             </p>
           </div>
           <div className="flex-shrink-0 rounded-lg border border-pulse-200 bg-white p-1.5 shadow-sm" aria-label="QR code to join session">
