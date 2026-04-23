@@ -280,7 +280,14 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
     // Look up the password hash from KV (null = user exists but has no password).
     const credRaw = user ? await c.env.USERS_KV.get(pwdKey(user.id)) : null
-    const cred = credRaw ? (JSON.parse(credRaw) as { hash: string }) : null
+    let cred: { hash: string } | null = null
+    if (credRaw) {
+      try {
+        cred = JSON.parse(credRaw) as { hash: string }
+      } catch (parseErr) {
+        console.warn(`[auth] failed to parse password credential for user ${user?.id}:`, parseErr)
+      }
+    }
 
     // Always run verifyPassword with a dummy hash to prevent timing attacks.
     const valid = cred ? await verifyPassword(password, cred.hash) : false
@@ -374,7 +381,18 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         400,
       )
     }
-    const { userId, email } = JSON.parse(raw) as { userId: string; email: string }
+    let userId: string, email: string
+    try {
+      const parsed = JSON.parse(raw) as { userId: string; email: string }
+      userId = parsed.userId
+      email = parsed.email
+    } catch (parseErr) {
+      console.error('[auth] failed to parse reset token data:', parseErr)
+      return c.json(
+        { ok: false, error: { code: 'internal', message: 'Reset link corrupted' }, trace_id: c.get('trace_id') },
+        500,
+      )
+    }
 
     // Consume the token immediately — delete before updating password.
     await c.env.ACTIONS_KV.delete(kvKey)
@@ -618,9 +636,14 @@ async function upsertOAuthUser(
 
   const stored = await kv.get(key)
   if (stored) {
-    const { userId } = JSON.parse(stored) as { userId: string }
-    await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, userId).run()
-    return userId
+    try {
+      const { userId } = JSON.parse(stored) as { userId: string }
+      await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, userId).run()
+      return userId
+    } catch (parseErr) {
+      console.warn(`[auth] failed to parse oauth state for ${provider}/${providerSub}:`, parseErr)
+      // Fall through to create new user
+    }
   }
 
   const emailNorm = email.toLowerCase().trim()

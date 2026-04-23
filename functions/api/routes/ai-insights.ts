@@ -72,16 +72,16 @@ export function mountAIInsightsRoutes(parent: any) {
         )
       }
 
-      // Fetch session and questions
+      // Fetch session and verify ownership
       const sessionResult = await (c.env.DB.prepare as any)(
-        `SELECT id, title FROM sessions WHERE id = ?1`
+        `SELECT id, title FROM sessions WHERE id = ?1 AND owner_id = ?2`
       )
-        .bind(sessionId)
+        .bind(sessionId, user.sub)
         .first()
 
       if (!sessionResult) {
         return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id },
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
           404
         )
       }
@@ -110,7 +110,12 @@ export function mountAIInsightsRoutes(parent: any) {
           .all()
 
         const votes = votesResult.results ?? []
-        const options = JSON.parse(question.options_json || '[]')
+        let options: any[] = []
+        try {
+          options = JSON.parse(question.options_json || '[]')
+        } catch (parseErr) {
+          console.warn(`[ai-insights] failed to parse options for question ${question.id}:`, parseErr)
+        }
 
         for (const vote of votes) {
           const option = options.find((o: any) => o.id === vote.option_id)
@@ -204,8 +209,23 @@ Keep response concise (max 150 words). Focus on actionable insights.`
   app.get('/sessions/:sessionId/insights', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
+    const user = c.get('user')
 
     try {
+      // Verify session ownership before returning insights
+      const sessionCheck = await (c.env.DB.prepare as any)(
+        `SELECT id FROM sessions WHERE id = ?1 AND owner_id = ?2`
+      )
+        .bind(sessionId, user.sub)
+        .first()
+
+      if (!sessionCheck) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404
+        )
+      }
+
       const cacheKey = `insights:${sessionId}`
       const cached = await c.env.DECISIONS_KV.get(cacheKey, 'json')
 

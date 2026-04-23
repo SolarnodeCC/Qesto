@@ -18,7 +18,14 @@ export function mountUserRoutes(app: Hono<any>) {
   app.get('/api/users/preferences', authMiddleware, async (c) => {
     const user = c.get('user')
     const raw = await c.env.USERS_KV.get(prefsKey(user.sub))
-    const prefs: UserPrefs = raw ? (JSON.parse(raw) as UserPrefs) : {}
+    let prefs: UserPrefs = {}
+    if (raw) {
+      try {
+        prefs = JSON.parse(raw) as UserPrefs
+      } catch (parseErr) {
+        console.warn(`[users] failed to parse preferences for user ${user.sub}:`, parseErr)
+      }
+    }
     return c.json({ ok: true, data: prefs, trace_id: c.get('trace_id') })
   })
 
@@ -35,7 +42,14 @@ export function mountUserRoutes(app: Hono<any>) {
 
     const key = prefsKey(user.sub)
     const existing = await c.env.USERS_KV.get(key)
-    const current: UserPrefs = existing ? (JSON.parse(existing) as UserPrefs) : {}
+    let current: UserPrefs = {}
+    if (existing) {
+      try {
+        current = JSON.parse(existing) as UserPrefs
+      } catch (parseErr) {
+        console.warn(`[users] failed to parse existing preferences for user ${user.sub}:`, parseErr)
+      }
+    }
     const updated: UserPrefs = { ...current, ...parsed.data }
 
     await c.env.USERS_KV.put(key, JSON.stringify(updated), { expirationTtl: PREFS_TTL })

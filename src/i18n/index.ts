@@ -12,14 +12,23 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
 const LANG_STORAGE_KEY = 'qesto_lang'
 
 export function detectLanguage(): string {
-  const stored = localStorage.getItem(LANG_STORAGE_KEY)
-  if (stored && SUPPORTED_LANGUAGES.includes(stored as SupportedLanguage)) return stored
+  try {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY)
+    if (stored && SUPPORTED_LANGUAGES.includes(stored as SupportedLanguage)) return stored
+  } catch {
+    // Storage unavailable (private browsing, quota exceeded, disabled)
+  }
   const browserLang = navigator.language.slice(0, 2)
   return SUPPORTED_LANGUAGES.includes(browserLang as SupportedLanguage) ? browserLang : 'en'
 }
 
 export function setLanguage(lang: SupportedLanguage): void {
-  localStorage.setItem(LANG_STORAGE_KEY, lang)
+  try {
+    localStorage.setItem(LANG_STORAGE_KEY, lang)
+  } catch {
+    // Storage unavailable; reload without persisting preference
+    console.warn('[i18n] Failed to persist language preference')
+  }
   window.location.reload()
 }
 

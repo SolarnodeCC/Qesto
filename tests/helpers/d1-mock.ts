@@ -312,11 +312,10 @@ export class D1PreparedStatementMock {
       // INSERT INTO user_roles (id, user_id, role, created_at)
       // VALUES (?1, ?2, ?3, ?4)
       // ON CONFLICT(user_id, role) DO NOTHING
-      const [id, user_id, role, created_at] = this.args as [
+      const [id, user_id, role] = this.args as [
         string,
         string,
         'owner' | 'admin' | 'member' | 'viewer',
-        number,
       ]
       // Check for existing role
       for (const r of this.db.userRoles.values()) {
