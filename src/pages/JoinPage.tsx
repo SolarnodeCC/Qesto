@@ -83,11 +83,72 @@ export default function JoinPage() {
   return <Voter sessionId={lookup.sessionId} title={lookup.title} />
 }
 
+function SliderInput({
+  options,
+  hasVoted,
+  canVote,
+  myVotes,
+  onVote,
+}: {
+  options: { id: string; label: string }[]
+  hasVoted: boolean
+  canVote: boolean
+  myVotes: string[]
+  onVote: (id: string) => void
+}) {
+  const [pos, setPos] = useState(Math.floor((options.length - 1) / 2))
+  const selected = options[pos]
+  const votedOption = options.find((o) => myVotes.includes(o.id))
+
+  if (hasVoted) {
+    return (
+      <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        Response: <strong className="ml-1">{votedOption?.label ?? selected?.label}</strong>
+      </p>
+    )
+  }
+  return (
+    <div className="space-y-4">
+      <div className="text-center text-4xl font-bold text-teal-600 tabular-nums" aria-live="polite" aria-atomic="true">
+        {selected?.label ?? pos + 1}
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={options.length - 1}
+        value={pos}
+        onChange={(e) => setPos(Number(e.target.value))}
+        disabled={!canVote}
+        className="w-full accent-teal-500 cursor-pointer disabled:cursor-default"
+        aria-label="Select a value"
+      />
+      <div className="flex justify-between text-xs text-pulse-400">
+        <span>{options[0]?.label}</span>
+        <span>{options[options.length - 1]?.label}</span>
+      </div>
+      <button
+        type="button"
+        onClick={() => selected && onVote(selected.id)}
+        disabled={!canVote || !selected}
+        className="w-full rounded-lg bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+      >
+        Submit
+      </button>
+    </div>
+  )
+}
+
 function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const { state, sendVote } = useLiveSession(sessionId, { enabled: true })
-  const hasVoted = !!state.lastVote
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
   const t = useT('join')
+  const [myVotes, setMyVotes] = useState<string[]>([])
+  const questionKind = state.question?.kind ?? 'poll'
+  const isMultiVote = questionKind === 'multi_select' || questionKind === 'upvote'
+  const hasVoted = !isMultiVote && myVotes.length > 0
 
   // Energizer polling — checks for an active energizer every 3s
   type AnyEnergizer = EmojiPollEnergizer | QuickFingerEnergizer | TeamQuizEnergizer | WordCloudEnergizer
@@ -142,6 +203,15 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       if (countdownRef.current) clearInterval(countdownRef.current)
     }
   }, [state.question?.id])
+
+  useEffect(() => {
+    setMyVotes([])
+  }, [state.question?.id])
+
+  function handleVote(optionId: string) {
+    sendVote(optionId)
+    setMyVotes((prev) => [...prev, optionId])
+  }
 
   const options = state.question?.options ?? []
   const ordered = useMemo(
@@ -267,53 +337,226 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
               {state.question.prompt}
             </h2>
 
-            <ul className="space-y-2" role="list">
-              {state.question.options.map((o) => {
-                const voted = state.lastVote?.optionId === o.id
-                const otherVoted = hasVoted && !voted
-                return (
-                  <li key={o.id}>
-                    <button
-                      type="button"
-                      onClick={() => sendVote(o.id)}
-                      disabled={hasVoted || state.connection !== 'open'}
-                      aria-pressed={voted}
-                      className={[
-                        'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150',
-                        'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
-                        voted
-                          ? 'border-teal-500 bg-teal-50 text-teal-800'
-                          : otherVoted
-                          ? 'border-pulse-200 text-pulse-400 cursor-default'
-                          : 'border-pulse-200 bg-white text-pulse-900 hover:border-teal-400 hover:bg-teal-50 active:scale-[0.99]',
-                      ].join(' ')}
-                    >
-                      <span className="flex items-center gap-3">
-                        <span
-                          className={[
-                            'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
-                            voted
-                              ? 'border-teal-500 bg-teal-500'
-                              : 'border-pulse-300',
-                          ].join(' ')}
-                          aria-hidden="true"
-                        >
-                          {voted && (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </span>
-                        {o.label}
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
+            {/* Paused banner */}
+            {state.paused && (
+              <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700" role="status">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                </svg>
+                Voting is paused
+              </div>
+            )}
 
-            {/* Post-vote confirmation + live results */}
-            {hasVoted && (
+            {/* Kind-specific vote input */}
+            {!state.paused && (() => {
+              const qk = questionKind
+              const canVote = state.connection === 'open'
+
+              /* ── Word cloud / Open text ───────────────────────────── */
+              if (qk === 'word_cloud' || qk === 'open') {
+                if (hasVoted) {
+                  return (
+                    <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700">
+                      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      {t('vote_recorded')}
+                    </p>
+                  )
+                }
+                return (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      const inp = e.currentTarget.elements.namedItem('resp') as HTMLInputElement
+                      const val = inp.value.trim()
+                      if (!val || !canVote) return
+                      handleVote(val)
+                    }}
+                    className="space-y-2"
+                  >
+                    <input
+                      type="text"
+                      name="resp"
+                      disabled={!canVote}
+                      maxLength={120}
+                      placeholder={qk === 'word_cloud' ? 'Type a word or phrase…' : 'Type your response…'}
+                      className="w-full rounded-lg border border-pulse-200 px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:opacity-50"
+                      autoComplete="off"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!canVote}
+                      className="w-full rounded-lg bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    >
+                      Submit
+                    </button>
+                  </form>
+                )
+              }
+
+              /* ── Likert scale ─────────────────────────────────────── */
+              if (qk === 'likert') {
+                return (
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {state.question!.options.map((o) => {
+                      const voted = myVotes.includes(o.id)
+                      return (
+                        <button
+                          key={o.id}
+                          type="button"
+                          onClick={() => !hasVoted && canVote && handleVote(o.id)}
+                          disabled={hasVoted || !canVote}
+                          aria-pressed={voted}
+                          className={[
+                            'flex flex-col items-center gap-1 rounded-lg border py-3 px-1 text-xs font-medium text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+                            voted
+                              ? 'border-teal-500 bg-teal-50 text-teal-800'
+                              : hasVoted
+                              ? 'border-pulse-200 text-pulse-300 cursor-default'
+                              : 'border-pulse-200 bg-white text-pulse-700 hover:border-teal-400 hover:bg-teal-50',
+                          ].join(' ')}
+                        >
+                          {o.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )
+              }
+
+              /* ── Slider ───────────────────────────────────────────── */
+              if (qk === 'slider') {
+                return (
+                  <SliderInput
+                    options={state.question!.options}
+                    hasVoted={hasVoted}
+                    canVote={canVote}
+                    myVotes={myVotes}
+                    onVote={handleVote}
+                  />
+                )
+              }
+
+              /* ── Multi-select ─────────────────────────────────────── */
+              if (qk === 'multi_select') {
+                return (
+                  <ul className="space-y-2" role="list">
+                    {state.question!.options.map((o) => {
+                      const selected = myVotes.includes(o.id)
+                      return (
+                        <li key={o.id}>
+                          <button
+                            type="button"
+                            onClick={() => !selected && canVote && handleVote(o.id)}
+                            disabled={selected || !canVote}
+                            aria-pressed={selected}
+                            className={[
+                              'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+                              selected
+                                ? 'border-teal-500 bg-teal-50 text-teal-800'
+                                : 'border-pulse-200 bg-white text-pulse-900 hover:border-teal-400 hover:bg-teal-50 active:scale-[0.99]',
+                            ].join(' ')}
+                          >
+                            <span className="flex items-center gap-3">
+                              <span
+                                className={[
+                                  'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
+                                  selected ? 'border-teal-500 bg-teal-500' : 'border-pulse-300',
+                                ].join(' ')}
+                                aria-hidden="true"
+                              >
+                                {selected && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                              </span>
+                              {o.label}
+                            </span>
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )
+              }
+
+              /* ── Upvote queue ─────────────────────────────────────── */
+              if (qk === 'upvote') {
+                return (
+                  <ul className="space-y-2" role="list">
+                    {state.question!.options.map((o) => {
+                      const upvoted = myVotes.includes(o.id)
+                      const count = state.results.counts[o.id] ?? 0
+                      return (
+                        <li key={o.id} className="flex items-center gap-3 rounded-lg border border-pulse-200 bg-white px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => !upvoted && canVote && handleVote(o.id)}
+                            disabled={upvoted || !canVote}
+                            aria-label={`Upvote: ${o.label}`}
+                            className={[
+                              'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+                              upvoted
+                                ? 'border-teal-500 bg-teal-50 text-teal-700'
+                                : 'border-pulse-200 text-pulse-600 hover:border-teal-400 hover:bg-teal-50',
+                            ].join(' ')}
+                          >
+                            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill={upvoted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+                              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
+                              <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                            </svg>
+                            {count}
+                          </button>
+                          <span className="text-sm text-pulse-800">{o.label}</span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )
+              }
+
+              /* ── Default: poll / ranking / consent ───────────────── */
+              return (
+                <ul className="space-y-2" role="list">
+                  {state.question!.options.map((o) => {
+                    const voted = myVotes.includes(o.id)
+                    const otherVoted = hasVoted && !voted
+                    return (
+                      <li key={o.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleVote(o.id)}
+                          disabled={hasVoted || !canVote}
+                          aria-pressed={voted}
+                          className={[
+                            'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150',
+                            'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+                            voted
+                              ? 'border-teal-500 bg-teal-50 text-teal-800'
+                              : otherVoted
+                              ? 'border-pulse-200 text-pulse-400 cursor-default'
+                              : 'border-pulse-200 bg-white text-pulse-900 hover:border-teal-400 hover:bg-teal-50 active:scale-[0.99]',
+                          ].join(' ')}
+                        >
+                          <span className="flex items-center gap-3">
+                            <span
+                              className={[
+                                'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
+                                voted ? 'border-teal-500 bg-teal-500' : 'border-pulse-300',
+                              ].join(' ')}
+                              aria-hidden="true"
+                            >
+                              {voted && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                            </span>
+                            {o.label}
+                          </span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )
+            })()}
+
+            {/* Post-vote: confirmation + live results bar chart */}
+            {/* Shown for single-vote types that have predefined options */}
+            {hasVoted && !['word_cloud', 'open', 'slider'].includes(questionKind) && (
               <div className="space-y-4 pt-2 border-t border-pulse-100">
                 <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700">
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -334,7 +577,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                     </p>
                     {ordered.map((o) => {
                       const pct = state.results.total === 0 ? 0 : Math.round((o.count / state.results.total) * 100)
-                      const isMyVote = state.lastVote?.optionId === o.id
+                      const isMyVote = myVotes.includes(o.id)
                       return (
                         <div key={o.id} className="space-y-1">
                           <div className="flex justify-between text-sm">

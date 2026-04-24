@@ -10,7 +10,7 @@ import { useCallback, useEffect, useReducer, useRef } from 'react'
 export type LivePollOption = { id: string; label: string }
 export type LiveQuestion = {
   id: string
-  kind: 'poll'
+  kind: string
   prompt: string
   options: LivePollOption[]
 }

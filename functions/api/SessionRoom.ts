@@ -83,10 +83,10 @@ function normaliseVotes(raw: Record<string, string | string[]> | undefined): Vot
 // is in here because each submitted phrase counts as an independent entry.
 const MULTI_VOTE_KINDS = new Set(['multi_select', 'upvote', 'word_cloud'])
 
-// `word_cloud` accepts any text as the "optionId" (the word/phrase). Other
-// kinds must reference a preconfigured option.
+// `word_cloud` and `open` accept any text as the "optionId". Other kinds
+// must reference a preconfigured option.
 function isFreeTextKind(kind: LiveQuestion['kind']): boolean {
-  return kind === 'word_cloud'
+  return kind === 'word_cloud' || kind === 'open'
 }
 
 // ── Per-connection attachment stored on each WebSocket ──────────────────────
