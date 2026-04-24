@@ -6,6 +6,7 @@ import { generateMagicLinkToken, hashMagicLinkToken } from '../lib/tokens'
 import { magicLinkEmail, sendEmail } from '../lib/email'
 import { rateLimit } from '../lib/rate-limit'
 import { ulid } from '../lib/ulid'
+import { writeEvent } from '../lib/observability'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { Env } from '../types'
@@ -169,6 +170,12 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       )
         .bind(userId, row.email, now, now)
         .run()
+      writeEvent(c.env.METRICS_AE, {
+        name: 'signup',
+        userId,
+        plan: 'free',
+        traceId: c.get('trace_id'),
+      })
     }
 
     const jwt = await signJwt({ sub: userId, email: row.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)

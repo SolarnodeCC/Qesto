@@ -16,6 +16,7 @@ import { ulid } from '../lib/ulid'
 import { generateJoinCode } from '../lib/code'
 import { IdempotencyInFlightError, withIdempotency } from '../lib/idempotency'
 import { deriveVoterIdentity } from '../lib/voter'
+import { writeEvent } from '../lib/observability'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { verifyJwt } from '../lib/jwt'
@@ -608,6 +609,13 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.success', ...logCtx }))
+    writeEvent(c.env.METRICS_AE, {
+      name: 'session.started',
+      sessionId: id,
+      userId: user.sub,
+      plan: c.get('plan'),
+      traceId,
+    })
     return c.json({
       ok: true,
       data: { session, question: liveQ },
@@ -675,6 +683,17 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       .run()
     session.status = 'closed'
     session.closed_at = closedAt
+
+    const durationMs = session.started_at ? closedAt - session.started_at : 0
+    writeEvent(c.env.METRICS_AE, {
+      name: 'session.closed',
+      sessionId: id,
+      userId: user.sub,
+      plan: c.get('plan'),
+      durationMs,
+      count: total,
+      traceId: c.get('trace_id'),
+    })
 
     return c.json({
       ok: true,
