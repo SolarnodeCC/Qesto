@@ -121,3 +121,121 @@ Key AE events to monitor: `session.started` · `ws.capacity_exceeded` · `ai.inf
 | Deployment process change | This skill file |
 | New incident pattern | This skill file incident runbook |
 | Infra backlog item closed | `docs/BACKLOG.md §4` |
+
+## Rollback Runbook
+
+**When**: Deployment introduces bug or breaks critical path. Decision: roll back vs fix-forward.
+
+### Decision Tree
+- **<5 min since deploy, critical path broken** → ROLLBACK (fastest recovery)
+- **>30 min, metrics stable, fix in progress** → FIX-FORWARD (rollback cost > fix cost)
+- **User-visible PII leak or auth bypass** → ROLLBACK IMMEDIATELY + security review
+
+### Rollback Steps (5-10 min)
+
+```bash
+# 1. Identify current deployment
+wrangler pages deployment list --project-name qesto | head -5
+# Note: current commit SHA (CURRENT_SHA)
+
+# 2. Identify last-good deployment
+git log --oneline origin/main | head -10
+# Find: LAST_GOOD_SHA (when? check AE error rate spike timeline)
+
+# 3. Rollback Pages functions + static
+git checkout LAST_GOOD_SHA
+npm run build
+wrangler pages deploy dist --project-name qesto
+# Takes ~2-3 min. Verify in CF dashboard.
+
+# 4. Verify
+curl https://qesto.app/api/admin/health
+# Expected: all services "ok", latencyMs normal
+
+# 5. Notify
+# Post to #incidents: "Rolled back [CURRENT_SHA → LAST_GOOD_SHA]. Reason: [brief]. ETA for fix: [time]"
+```
+
+### What NOT to Rollback
+- **D1 schema migrations** (data already committed — rolling back code leaves orphaned schema)
+  - Fix: deploy code-side migration handler + backfill, OR open incident
+- **KV data changes** (cannot revert distributed writes)
+  - Fix: remediation code on new deployment
+
+### Rollback Verification Checklist
+- [ ] Health endpoint returns 200 all services
+- [ ] No error spike in AE (wait 2 min, check metrics)
+- [ ] Session creation succeeds (manual test in staging clone)
+- [ ] Presenter can start LIVE session (manual test)
+- [ ] Users reporting issue confirm recovery
+
+---
+
+## First-15-Minute Incident Triage
+
+**When**: Alerts fire or customer reports production issue.
+
+### Minutes 0–3: Assess Scope
+```bash
+# Get error snapshot
+wrangler pages deployment tail --project-name qesto --env production | head -30
+
+# Which service degraded?
+curl -s https://qesto.app/api/admin/health | jq '.'
+# Look for: d1, kv, do, ai — one will be "error" or missing
+
+# Error rate trend?
+curl -s -H "Authorization: Bearer $ADMIN_TOKEN" \
+  https://qesto.app/api/admin/metrics?window=5m | jq '.errors_per_minute'
+```
+
+**Triage summary** (for incident channel):
+- Affected service: [d1|kv|do|ai|unknown]
+- Error rate: [N errors/min, trend: ↑↓→]
+- User impact: [which feature broken — auth|session|billing|realtime]
+- Duration: [when did it start — from AE timestamp]
+
+### Minutes 3–10: Diagnosis Checklist
+
+| Issue | Diagnosis | Fix |
+|---|---|---|
+| **D1 down** | `wrangler d1 execute qesto-db --command "SELECT 1"` → fails | Check CF status page. If CF OK → database locked (migration in progress?). Escalate to architect. |
+| **KV error rate 100%** | `wrangler kv namespace describe SESSIONS_KV` → error | KV namespace misconfigured or binding broken. Check `wrangler.toml` binding name. Redeploy if config changed. |
+| **DO unresponsive** | New `SessionRoom.ts` code crashed all DOs on startup | Rollback last deployment (see Rollback Runbook above). |
+| **AI timeout** | `ai.inference` calls returning 504 | Workers AI region issue — temporary. Retry or degrade gracefully (use cached decision instead). |
+| **500 error on all routes** | Any code path has uncaught exception | Check error logs for `stack: ...`. If auth issue → check JWT_SECRET rotation. If KV parse → corrupted JSON blob (rare). |
+
+### Minutes 10–15: Escalation Path
+
+- **If diagnosis unclear** → Escalate to architect (DOs, schema, multi-service consistency)
+- **If data loss suspected** → P0 incident, notify PO + security
+- **If rollback needed** → Follow Rollback Runbook (5–10 min parallel with diagnosis)
+- **If prolonged outage** → Page on-call engineer (Slack: #incidents)
+
+---
+
+## Quality Gates
+
+- [ ] Deployment verified with health check before closing PR
+- [ ] Secrets rotated using `wrangler pages secret put` only (never committed)
+- [ ] D1 migration tested in local-first (wrangler d1 local)
+- [ ] Rollback plan documented for non-reversible changes (KV, D1 schema)
+
+## Do Not
+
+- Do not commit secrets to `wrangler.toml` — use `wrangler pages secret put` only
+- Do not deploy without running `npm run build` first (ensures test + typecheck pass)
+- Do not manually edit KV blobs in production — always deploy code changes
+- Do not skip health check after deployment (curl /api/admin/health)
+- Do not rollback D1 migrations in production — migrate data forward instead
+- Do not rotate JWT_SECRET without notifying users first (all sessions invalidated)
+
+## Metrics
+
+- Deployment success rate (target: 100% — zero failed deploys)
+- Mean rollback decision time (target: <5 min)
+- Incident detection-to-triage time (target: <10 min)
+- Service availability (target: 99.9% — ~43 min downtime/month)
+
+## Change Log
+- 2026-04-24: Added Wave 2 runbooks — rollback procedure, first-15-min triage, quality gates
