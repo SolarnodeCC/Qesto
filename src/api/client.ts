@@ -13,14 +13,23 @@ let _token: string | null = null
 
 export function setAuthToken(token: string | null): void {
   _token = token
-  if (token) sessionStorage.setItem(TOKEN_KEY, token)
-  else sessionStorage.removeItem(TOKEN_KEY)
+  try {
+    if (token) sessionStorage.setItem(TOKEN_KEY, token)
+    else sessionStorage.removeItem(TOKEN_KEY)
+  } catch {
+    // Storage unavailable; token remains in memory only
+    console.warn('[api] Failed to persist auth token to sessionStorage')
+  }
 }
 
 export function getAuthToken(): string | null {
   if (_token) return _token
-  const stored = sessionStorage.getItem(TOKEN_KEY)
-  if (stored) _token = stored
+  try {
+    const stored = sessionStorage.getItem(TOKEN_KEY)
+    if (stored) _token = stored
+  } catch {
+    // Storage unavailable; continue with in-memory token
+  }
   return _token
 }
 

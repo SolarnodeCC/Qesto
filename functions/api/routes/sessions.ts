@@ -52,7 +52,12 @@ type QuestionRow = {
 }
 
 function rowToQuestion(row: QuestionRow): Question {
-  const parsed = JSON.parse(row.options_json) as PollOption[]
+  let parsed: PollOption[] = []
+  try {
+    parsed = JSON.parse(row.options_json) as PollOption[]
+  } catch (parseErr) {
+    console.warn(`[sessions] failed to parse options for question ${row.id}:`, parseErr)
+  }
   return {
     id: row.id,
     session_id: row.session_id,

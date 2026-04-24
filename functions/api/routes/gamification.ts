@@ -21,6 +21,15 @@ export function mountGamificationRoutes(parent: any) {
   app.get('/users/:userId/badges', async (c) => {
     const trace_id = c.get('trace_id')
     const userId = c.req.param('userId')
+    const user = c.get('user')
+
+    // Only allow viewing own badges
+    if (userId !== user.sub) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Cannot view other users\' badges' }, trace_id },
+        403
+      )
+    }
 
     try {
       const result = await (c.env.DB.prepare as any)(
@@ -61,8 +70,23 @@ export function mountGamificationRoutes(parent: any) {
   app.get('/sessions/:sessionId/badges', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
+    const user = c.get('user')
 
     try {
+      // Verify session ownership
+      const sessionCheck = await (c.env.DB.prepare as any)(
+        `SELECT id FROM sessions WHERE id = ?1 AND owner_id = ?2`
+      )
+        .bind(sessionId, user.sub)
+        .first()
+
+      if (!sessionCheck) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404
+        )
+      }
+
       const result = await (c.env.DB.prepare as any)(
         `SELECT user_id, badge_type, awarded_at FROM badges
          WHERE session_id = ?1 ORDER BY awarded_at DESC`,
@@ -107,18 +131,19 @@ export function mountGamificationRoutes(parent: any) {
   app.post('/sessions/:sessionId/close', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
+    const user = c.get('user')
 
     try {
-      // Get session and votes for badge calculation
+      // Get session and verify ownership
       const sessionResult = await (c.env.DB.prepare as any)(
-        `SELECT id, owner_id FROM sessions WHERE id = ?1`,
+        `SELECT id, owner_id FROM sessions WHERE id = ?1 AND owner_id = ?2`,
       )
-        .bind(sessionId)
+        .bind(sessionId, user.sub)
         .first()
 
       if (!sessionResult) {
         return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id },
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
           404
         )
       }
