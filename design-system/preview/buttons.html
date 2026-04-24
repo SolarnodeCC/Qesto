@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  .row3 { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .btn { font-family: var(--font-body); font-weight: 600; font-size: 15px; padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; transition: all 120ms cubic-bezier(0.2,0,0.4,1); }
+  .btn-primary { background: linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%); color: #FFF; box-shadow: 0 2px 8px rgba(10,15,30,0.06); }
+  .btn-primary:hover { box-shadow: 0 4px 20px rgba(20,184,166,0.25); transform: scale(1.02); }
+  .btn-secondary { background: #FFF; color: #0A0F1E; box-shadow: inset 0 0 0 1px #E5E5E5; }
+  .btn-secondary:hover { box-shadow: inset 0 0 0 1px #D4D4D4; }
+  .btn-ghost { background: transparent; color: #0D9488; padding: 8px 12px; }
+  .btn-ghost:hover { background: #F0FDFA; }
+  .btn-ai { background: #F5F3FF; color: #6D28D9; box-shadow: inset 0 0 0 1px #DDD6FE; }
+  .btn-ai:hover { box-shadow: 0 4px 20px rgba(139,92,246,0.25), inset 0 0 0 1px #DDD6FE; }
+  .btn-lg { font-size: 17px; padding: 14px 28px; }
+  .btn-sm { font-size: 13px; padding: 6px 12px; }
+  .sparkle { width: 16px; height: 16px; }
+</style>
+<div class="kicker">Buttons</div>
+<div class="row3">
+  <button class="btn btn-primary btn-lg">Launch your next session</button>
+  <button class="btn btn-primary">Start free</button>
+  <button class="btn btn-primary btn-sm">Save</button>
+</div>
+<div class="row3">
+  <button class="btn btn-secondary">See anonymity modes</button>
+  <button class="btn btn-secondary btn-sm">Cancel</button>
+  <button class="btn btn-ghost">Skip for now →</button>
+</div>
+<div class="row3">
+  <button class="btn btn-ai"><svg class="sparkle" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2 2M16 16l2 2M18 6l-2 2M8 16l-2 2"/></svg>Draft with Workers AI</button>
+  <button class="btn btn-secondary" disabled style="opacity:.5;cursor:not-allowed">Disabled</button>
+</div>
+<div class="lbl">primary gradient · secondary outline · ghost · AI (violet + sparkle) · 10px radius · 120ms fast-ease</div>

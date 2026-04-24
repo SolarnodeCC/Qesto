@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Join code + QR</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:var(--pulse-50); font-family:var(--font-body);}
+  .card { background:#fff; border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow-card); max-width:320px; text-align:center;}
+  .cap { font:600 11px var(--font-body); color:var(--pulse-500); letter-spacing:0.08em; text-transform:uppercase;}
+  .code { font-family:var(--font-mono); font-weight:700; font-size:48px; line-height:1; letter-spacing:0.12em; color:var(--pulse-900); margin:14px 0 16px; display:flex; justify-content:center; gap:10px;}
+  .qr { width:140px;height:140px; margin:0 auto 10px; background:
+    repeating-conic-gradient(var(--pulse-900) 0% 25%, #fff 0% 50%) 50% / 12px 12px,
+    #fff; border-radius:var(--radius-md); box-shadow:inset 0 0 0 8px #fff;}
+  .hint { font:400 13px var(--font-body); color:var(--pulse-600); margin:0;}
+  .hint a { color:var(--teal-600); font-weight:500;}
+</style></head>
+<body>
+  <div class="card">
+    <div class="cap">Join code</div>
+    <div class="code"><span>4</span><span>6</span><span>0</span><span>4</span></div>
+    <div class="qr" aria-label="QR placeholder"></div>
+    <p class="hint">Scan the QR or go to <a href="#">qesto.cc</a> and enter the code.</p>
+  </div>
+</body></html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Grid · 12/8/4</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body);}
+  .label { font:500 11px var(--font-mono); color:var(--pulse-500); margin-bottom:6px;}
+  .g { display:grid; gap:12px; margin-bottom:10px;}
+  .col { height:28px; border-radius:4px; background:var(--gradient-brand-subtle); border:1px solid var(--teal-200); text-align:center; font:500 11px var(--font-mono); line-height:28px; color:var(--teal-700);}
+  .g12 { grid-template-columns:repeat(12,1fr);}
+  .g8 { grid-template-columns:repeat(8,1fr);}
+  .g4 { grid-template-columns:repeat(4,1fr);}
+</style></head>
+<body>
+  <div class="label">desktop · 12 cols · 24px gutter · max 1280px</div>
+  <div class="g g12" id="d"></div>
+  <div class="label">tablet · 8 cols · 24px gutter</div>
+  <div class="g g8" id="t"></div>
+  <div class="label">mobile · 4 cols · 16px gutter</div>
+  <div class="g g4" id="m"></div>
+<script>
+['d','t','m'].forEach(id=>{const n={d:12,t:8,m:4}[id];const el=document.getElementById(id);for(let i=1;i<=n;i++){const d=document.createElement('div');d.className='col';d.textContent=i;el.appendChild(d);}});
+</script></body></html>

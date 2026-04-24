@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Motion tokens</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body); }
+  .grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;}
+  .t { padding:14px; border:1px solid var(--surface-border); border-radius:12px;}
+  .k { font:600 13px var(--font-body); color:var(--pulse-800);}
+  .v { font:500 11px var(--font-mono); color:var(--pulse-500); margin-top:2px;}
+  .dot { width:16px; height:16px; border-radius:50%; background:var(--gradient-brand); margin-top:10px; animation:b 1.4s infinite;}
+  @keyframes b { 0%,100%{transform:translateX(0)} 50%{transform:translateX(100px)}}
+  .f { animation-duration:var(--motion-fast); animation-timing-function:var(--ease-fast);}
+  .n { animation-duration:var(--motion-normal); animation-timing-function:var(--ease-standard);}
+  .s { animation-duration:var(--motion-slow); animation-timing-function:var(--ease-enter);}
+</style></head>
+<body>
+  <div class="grid">
+    <div class="t"><div class="k">fast · 120ms</div><div class="v">hover, focus, chip accept</div><div class="dot f"></div></div>
+    <div class="t"><div class="k">normal · 200ms</div><div class="v">modals, sheets, tabs</div><div class="dot n"></div></div>
+    <div class="t"><div class="k">slow · 300ms</div><div class="v">page enter, route change</div><div class="dot s"></div></div>
+  </div>
+  <div style="margin-top:12px;font:500 11px var(--font-mono);color:var(--pulse-500)">easing · standard (0.2,0,0,1) · enter (0,0,0.2,1) · exit (0.4,0,1,1)</div>
+</body></html>

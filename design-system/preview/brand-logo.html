@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Logo + favicon</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body);}
+  .row { display:flex; align-items:center; gap:24px; padding:10px 0; border-bottom:1px solid var(--surface-border);}
+  .mark { width:48px; height:48px; }
+  .mark.lg { width:80px; height:80px;}
+  .word { font-family:var(--font-display); font-weight:700; font-size:32px; color:var(--pulse-900); letter-spacing:-0.01em;}
+  .word.grad { background:var(--gradient-brand); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .word.sm { font-size:18px;}
+  .meta { font:500 11px var(--font-mono); color:var(--pulse-500); min-width:100px;}
+</style></head>
+<body>
+  <div class="row"><span class="meta">large</span><img class="mark lg" src="../assets/favicon.svg" alt=""><span class="word grad">Qesto</span></div>
+  <div class="row"><span class="meta">default</span><img class="mark" src="../assets/favicon.svg" alt=""><span class="word">Qesto</span></div>
+  <div class="row"><span class="meta">compact</span><img class="mark" src="../assets/favicon.svg" alt="" style="width:24px;height:24px"><span class="word sm">Qesto</span></div>
+</body></html>

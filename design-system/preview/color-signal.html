@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css"><style>
+  body{margin:0;padding:20px;background:#fff;font-family:var(--font-body)}
+  .card{width:660px;padding:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .sig{border-radius:12px;padding:16px;color:#fff;font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:4px;min-height:96px;justify-content:flex-end}
+  .sig .h{font-family:var(--font-mono);font-size:11px;font-weight:400;opacity:.85}
+  .label{grid-column:1/-1;font-size:11px;color:var(--pulse-500);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+</style></head>
+<body><div class="card">
+<div class="label">Signal · Semantic states</div>
+<div class="sig" style="background:#22C55E"><span>Success</span><span class="h">#22C55E</span></div>
+<div class="sig" style="background:#F59E0B"><span>Warning</span><span class="h">#F59E0B</span></div>
+<div class="sig" style="background:#DC2626"><span>Error</span><span class="h">#DC2626</span></div>
+<div class="sig" style="background:#0EA5E9"><span>Info</span><span class="h">#0EA5E9</span></div>
+</div></body></html>

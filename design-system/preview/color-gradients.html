@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css"><style>
+  body{margin:0;padding:20px;background:#fff;font-family:var(--font-body)}
+  .card{width:660px;padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .g{border-radius:14px;padding:18px;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;color:#fff}
+  .g.sub{color:var(--pulse-900)}
+  .g .n{font-weight:700;font-size:15px;font-family:var(--font-display)}
+  .g .d{font-size:11px;opacity:.85;font-family:var(--font-mono)}
+  .label{grid-column:1/-1;font-size:11px;color:var(--pulse-500);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+</style></head>
+<body><div class="card">
+<div class="label">Signature gradients</div>
+<div class="g" style="background:linear-gradient(135deg,#14B8A6 0%,#8B5CF6 100%)"><span class="n">Brand</span><span class="d">#14B8A6 → #8B5CF6</span></div>
+<div class="g sub" style="background:linear-gradient(135deg,#F0FDFA 0%,#F5F3FF 100%);box-shadow:inset 0 0 0 1px #E5E5E5"><span class="n">Brand subtle</span><span class="d">#F0FDFA → #F5F3FF</span></div>
+<div class="g" style="background:linear-gradient(135deg,#8B5CF6 0%,#2DD4BF 100%)"><span class="n">AI (reserved)</span><span class="d">#8B5CF6 → #2DD4BF</span></div>
+</div></body></html>

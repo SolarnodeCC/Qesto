@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .label { font-size: 13px; font-weight: 600; color: #262626; }
+  .help { font-size: 12px; color: var(--text-muted); }
+  .input { font-family: var(--font-body); font-size: 15px; padding: 10px 14px; border-radius: 10px; border: 1px solid #E5E5E5; background: #FFF; color: #0A0F1E; transition: all 120ms; }
+  .input:focus { outline: none; border-color: #14B8A6; box-shadow: 0 0 0 3px rgba(20,184,166,0.4); }
+  .input.error { border-color: #DC2626; }
+  .input.error:focus { box-shadow: 0 0 0 3px rgba(220,38,38,0.25); }
+  .err { font-size: 12px; color: #DC2626; }
+  .chk { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+  .chk input { accent-color: #0D9488; margin-top: 2px; }
+</style>
+<div class="kicker">Form inputs</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div class="field">
+    <label class="label">Session title</label>
+    <input class="input" value="Q1 roadmap pulse">
+    <span class="help">Shown on the join screen.</span>
+  </div>
+  <div class="field">
+    <label class="label">Team email</label>
+    <input class="input error" value="ada@example">
+    <span class="err">Enter a full email address.</span>
+  </div>
+  <div class="field">
+    <label class="label">Anonymity mode</label>
+    <select class="input">
+      <option>Full — no identifiers</option>
+      <option>Cohort — roles only</option>
+      <option>Identified — names logged</option>
+    </select>
+  </div>
+  <div class="field">
+    <label class="label">Join window</label>
+    <input class="input" placeholder="e.g. 15 min after launch">
+  </div>
+</div>
+<label class="chk"><input type="checkbox" checked><span>Record a consent round before results are shared. <span class="help">Workers AI never runs until every participant consents.</span></span></label>

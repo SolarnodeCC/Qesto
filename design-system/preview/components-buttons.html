@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css"><style>
+  body{margin:0;padding:24px;background:#fff;font-family:var(--font-body)}
+  .card{width:660px;padding:16px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .btn{font-weight:600;font-size:14px;padding:12px 24px;border-radius:10px;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:transform 120ms cubic-bezier(0.2,0,0,1),box-shadow 120ms cubic-bezier(0.2,0,0,1)}
+  .primary{background:linear-gradient(135deg,#14B8A6 0%,#8B5CF6 100%);color:#fff;box-shadow:0 2px 8px rgba(10,15,30,0.06)}
+  .primary:hover{transform:scale(1.02);box-shadow:0 4px 20px rgba(20,184,166,0.25)}
+  .secondary{background:#fff;color:var(--pulse-900);border:1px solid var(--surface-border)}
+  .secondary:hover{border-color:var(--surface-border-strong)}
+  .ghost{background:transparent;color:var(--pulse-700)}
+  .ghost:hover{background:var(--pulse-100)}
+  .danger{background:#DC2626;color:#fff}
+  .ai{background:linear-gradient(135deg,#8B5CF6 0%,#2DD4BF 100%);color:#fff}
+  .ai:hover{box-shadow:0 4px 20px rgba(139,92,246,0.25);transform:scale(1.02)}
+</style></head>
+<body><div class="card">
+<button class="btn primary">Launch session</button>
+<button class="btn ai"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z"/></svg>Generate with AI</button>
+<button class="btn secondary">See pricing</button>
+<button class="btn ghost">Back</button>
+<button class="btn danger">Delete draft</button>
+</div></body></html>

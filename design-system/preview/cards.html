@@ -1,0 +1,42 @@
+<!doctype html><meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #FAFAFA; padding: 20px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: #FFF; border-radius: 16px; box-shadow: 0 2px 8px rgba(10,15,30,0.06); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .card h3 { margin: 0; font-size: 18px; font-weight: 600; }
+  .card p { margin: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+  .card-ai { position: relative; overflow: hidden; }
+  .card-ai::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(135deg, #8B5CF6, #2DD4BF); }
+  .metric-val { font-family: var(--font-display); font-weight: 700; font-size: 40px; line-height: 1; color: #0A0F1E; letter-spacing: -0.02em; }
+  .metric-label { font-size: 12px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+  .metric-note { font-size: 12px; color: var(--text-muted); }
+  .meta { display: flex; gap: 8px; font-size: 12px; color: var(--text-muted); align-items: center; }
+  .dot::before { content: '·'; margin: 0 4px; }
+</style>
+<div class="kicker" style="padding:0 4px">Cards</div>
+<div class="cards">
+  <div class="card">
+    <div class="meta"><span style="width:6px;height:6px;border-radius:50%;background:#22C55E;display:inline-block"></span>Live<span class="dot"></span>34 connected</div>
+    <h3>Q1 roadmap pulse</h3>
+    <p>Ada Obi · Engineering all-hands · Started 12 min ago</p>
+  </div>
+  <div class="card card-ai">
+    <div class="meta" style="color:#6D28D9;font-weight:600">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="#7C3AED"><path d="M12 2l2 6h6l-5 4 2 7-5-4-5 4 2-7-5-4h6z"/></svg>
+      AI recap ready
+    </div>
+    <h3>Top three tensions surfaced</h3>
+    <p>Cost pressure · Hiring bar · Go-to-market focus. Evidence-anchored to 42 ranked responses.</p>
+  </div>
+  <div class="card">
+    <div class="metric-label">ACTIVE SESSIONS</div>
+    <div class="metric-val">12</div>
+    <div class="metric-note">Illustrative · last 30 days</div>
+  </div>
+  <div class="card">
+    <div class="metric-label">BRIEF → DRAFT</div>
+    <div class="metric-val">&lt;90s</div>
+    <div class="metric-note">Target · Workers AI on Cloudflare's edge</div>
+  </div>
+</div>
