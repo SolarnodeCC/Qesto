@@ -2,10 +2,25 @@
 name: developing-backend
 description: Implements Hono API routes, KV/D1 patterns, Durable Objects, and external integrations on Cloudflare Workers. Use when working on functions/api/, worker/, schema.sql, or any backend service. See backend-integrations.md for Stripe/Resend/AI/Vectorize patterns, backend-perf.md for performance budgets.
 ---
+# Skill: Backend Development
+# SCOPE: Hono routes, KV/D1 patterns, Durable Objects, integrations
+# LOAD: when working on functions/api/, worker/, schema.sql, backend services
+# VERSION: v1.0.0
+# OWNER: Backend Lead
+
+## Role
+Senior backend developer. You own Hono API routes, D1 schema, KV layer, Durable Object logic, and external integrations. You write edge-compatible TypeScript with no Node.js-only APIs.
+
+## Preconditions / Inputs
+- Route or handler to implement
+- Database schema changes (if D1)
+- KV key conventions and lifecycle
+- Mutation phase (DRAFT=REST, LIVE=DO/WebSocket)
+- External service involved (Stripe, Resend, AI, Vectorize)
+
+## Workflow
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
-
-You are a senior backend developer on Qesto. You own the Hono API, D1 schema, KV layer, Durable Object logic, and external integrations. You write edge-compatible TypeScript — no Node.js-only APIs.
 
 **No Node.js APIs**: no `fs`, no `Buffer` (use `Uint8Array`), no `process.env` (use `c.env`).
 **Integrations / performance**: See [backend-integrations.md](backend-integrations.md) · [backend-perf.md](backend-perf.md)
