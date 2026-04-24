@@ -93,6 +93,10 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
+[[vectorize]]
+binding = "DECISIONS_VECTORIZE"
+index_name = "qesto-decisions"
+
 # Preview env is intentionally not defined. Will be re-added in Phase 5 once
 # the staging D1/KV resources are provisioned (docs/DEPLOY_BOOTSTRAP.md).
 # Having a [env.preview] block today would make `wrangler versions upload`
