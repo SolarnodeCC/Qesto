@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useAdminMetrics } from '../hooks/useAdminMetrics'
 import { useAdminKpis } from '../hooks/useAdminKpis'
@@ -45,7 +45,13 @@ export default function AdminDashboard() {
   if (auth.user?.email !== SUPERUSER_EMAIL) return <Navigate to="/dashboard" replace />
 
   const navSlot = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
+      <Link
+        to="/dashboard"
+        className="text-sm font-medium text-pulse-600 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded px-2 py-1"
+      >
+        ← {t('backToDashboard')}
+      </Link>
       <span className="text-xs font-medium text-teal-600">Admin: {auth.user?.email}</span>
     </div>
   )
