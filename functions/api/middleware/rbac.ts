@@ -69,6 +69,14 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'GET /api/admin/metrics/historical': new Set(['owner', 'admin']),
   'POST /api/admin/metrics/export': new Set(['owner', 'admin']),
   'GET /api/admin/audit': new Set(['owner', 'admin']),
+  'GET /api/admin/kpis': new Set(['owner', 'admin']),
+  'GET /api/admin/users': new Set(['owner', 'admin']),
+  'POST /api/admin/users': new Set(['owner', 'admin']),
+  'PATCH /api/admin/users/:id': new Set(['owner', 'admin']),
+  'POST /api/admin/users/:id/suspend': new Set(['owner', 'admin']),
+  'POST /api/admin/users/:id/restore': new Set(['owner', 'admin']),
+  'GET /api/admin/ops/summary': new Set(['owner', 'admin']),
+  'GET /api/admin/analytics': new Set(['owner', 'admin']),
 }
 
 // ─── Utility Functions ────────────────────────────────────────────────────────

@@ -1,0 +1,332 @@
+import { useState, useEffect, useRef } from 'react'
+import { useAdminUsers, type AdminUser } from '../../hooks/useAdminUsers'
+import { Heading, Body, Button, Card, Badge, TextInput, SkeletonCard } from '../../ui/components'
+
+// ─── Plan badge colours ───────────────────────────────────────────────────────
+
+function PlanBadge({ plan }: { plan: AdminUser['plan'] }) {
+  const variant: Record<AdminUser['plan'], string> = {
+    free: 'bg-pulse-100 text-pulse-600',
+    starter: 'bg-teal-100 text-teal-700',
+    team: 'bg-purple-100 text-purple-700',
+  }
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium uppercase tracking-wide ${variant[plan]}`}>
+      {plan}
+    </span>
+  )
+}
+
+function StatusBadge({ suspended }: { suspended: boolean }) {
+  return suspended ? (
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600">
+      Geschorst
+    </span>
+  ) : (
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-600">
+      Actief
+    </span>
+  )
+}
+
+function RoleBadge({ role }: { role: 'owner' | 'admin' | null }) {
+  if (!role) return <span className="text-pulse-400">—</span>
+  const styles = role === 'owner'
+    ? 'bg-purple-100 text-purple-700'
+    : 'bg-blue-100 text-blue-700'
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${styles}`}>
+      {role === 'owner' ? 'Super Admin' : 'Admin'}
+    </span>
+  )
+}
+
+// ─── Create/Edit modal ────────────────────────────────────────────────────────
+
+type ModalMode = { type: 'create' } | { type: 'edit'; user: AdminUser }
+
+function UserModal({
+  mode,
+  onClose,
+  onSave,
+}: {
+  mode: ModalMode
+  onClose: () => void
+  onSave: (data: Partial<AdminUser> & { email?: string }) => Promise<void>
+}) {
+  const isEdit = mode.type === 'edit'
+  const user = isEdit ? mode.user : null
+
+  const [email, setEmail] = useState(user?.email ?? '')
+  const [displayName, setDisplayName] = useState(user?.display_name ?? '')
+  const [plan, setPlan] = useState<AdminUser['plan']>(user?.plan ?? 'free')
+  const [adminRole, setAdminRole] = useState<'owner' | 'admin' | '' >(
+    user?.admin_role ?? ''
+  )
+  const [saving, setSaving] = useState(false)
+  const [fieldError, setFieldError] = useState<string | null>(null)
+
+  async function handleSave() {
+    if (!isEdit && !email.trim()) { setFieldError('E-mailadres is verplicht'); return }
+    setSaving(true)
+    setFieldError(null)
+    try {
+      await onSave({
+        ...(isEdit ? {} : { email: email.trim() }),
+        display_name: displayName.trim() || undefined,
+        plan,
+        admin_role: adminRole === '' ? null : adminRole,
+      })
+      onClose()
+    } catch (e) {
+      setFieldError((e as Error).message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
+      <div className="bg-white rounded-xl shadow-elevated w-full max-w-md mx-4 p-6 space-y-4">
+        <Heading level="s">{isEdit ? 'Account bewerken' : 'Account aanmaken'}</Heading>
+
+        {!isEdit && (
+          <div className="space-y-1">
+            <label className="text-body-s font-medium text-pulse-700">E-mailadres</label>
+            <TextInput
+              placeholder="user@example.com"
+              value={email}
+              onChange={setEmail}
+              type="email"
+              className="w-full"
+            />
+          </div>
+        )}
+
+        <div className="space-y-1">
+          <label className="text-body-s font-medium text-pulse-700">Weergavenaam</label>
+          <TextInput
+            placeholder="Naam (optioneel)"
+            value={displayName}
+            onChange={setDisplayName}
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-body-s font-medium text-pulse-700">Plan</label>
+          <select
+            value={plan}
+            onChange={(e) => setPlan(e.target.value as AdminUser['plan'])}
+            className="w-full border border-pulse-300 rounded-md px-3 py-2 text-body-s focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
+          >
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="team">Team</option>
+          </select>
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-body-s font-medium text-pulse-700">Admin-rol</label>
+          <select
+            value={adminRole}
+            onChange={(e) => setAdminRole(e.target.value as 'owner' | 'admin' | '')}
+            className="w-full border border-pulse-300 rounded-md px-3 py-2 text-body-s focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
+          >
+            <option value="">Geen</option>
+            <option value="admin">Admin</option>
+            <option value="owner">Super Admin</option>
+          </select>
+        </div>
+
+        {fieldError && <Body size="s" className="text-red-600">{fieldError}</Body>}
+
+        <div className="flex gap-2 justify-end pt-2">
+          <Button variant="ghost" onClick={onClose} disabled={saving}>Annuleren</Button>
+          <Button variant="primary" onClick={handleSave} disabled={saving}>
+            {saving ? 'Opslaan…' : 'Opslaan'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export default function AdminUsersTab() {
+  const {
+    users, total, loading, error,
+    search, setSearch, offset, setOffset, limit,
+    createUser, updateUser, suspendUser, restoreUser,
+  } = useAdminUsers()
+
+  const [modal, setModal] = useState<ModalMode | null>(null)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function handleSearchChange(val: string) {
+    if (searchRef.current) clearTimeout(searchRef.current)
+    searchRef.current = setTimeout(() => {
+      setSearch(val)
+      setOffset(0)
+    }, 300)
+  }
+
+  async function handleSuspend(user: AdminUser) {
+    setActionLoading(user.id)
+    await suspendUser(user.id)
+    setActionLoading(null)
+  }
+
+  async function handleRestore(user: AdminUser) {
+    setActionLoading(user.id)
+    await restoreUser(user.id)
+    setActionLoading(null)
+  }
+
+  async function handleModalSave(data: Partial<AdminUser> & { email?: string }) {
+    if (modal?.type === 'create') {
+      const res = await createUser({ email: data.email!, display_name: data.display_name ?? undefined, plan: data.plan })
+      if (!res.ok) throw new Error(res.error.message)
+    } else if (modal?.type === 'edit') {
+      const res = await updateUser(modal.user.id, {
+        display_name: data.display_name,
+        plan: data.plan,
+        admin_role: data.admin_role as 'admin' | 'owner' | null,
+      })
+      if (!res.ok) throw new Error(res.error.message)
+    }
+  }
+
+  const totalPages = Math.ceil(total / limit)
+  const currentPage = Math.floor(offset / limit) + 1
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Heading level="m">Gebruikers</Heading>
+        <Button variant="primary" onClick={() => setModal({ type: 'create' })}>
+          + Account aanmaken
+        </Button>
+      </div>
+
+      <TextInput
+        placeholder="Zoek op naam of e-mail…"
+        onChange={handleSearchChange}
+        className="w-full max-w-sm"
+      />
+
+      {error && <Body size="s" className="text-red-600">{error}</Body>}
+
+      <Card className="overflow-x-auto p-0">
+        <table className="w-full text-body-s">
+          <thead>
+            <tr className="border-b border-pulse-200 bg-pulse-50">
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Naam</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">E-mail</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Plan</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Laatste betaling</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Admin-rol</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Status</th>
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-pulse-100">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  <td colSpan={7} className="px-4 py-3">
+                    <div className="h-4 bg-pulse-100 rounded animate-pulse w-full" />
+                  </td>
+                </tr>
+              ))
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-4 py-8 text-center text-pulse-400">
+                  Geen gebruikers gevonden
+                </td>
+              </tr>
+            ) : (
+              users.map((user) => (
+                <tr key={user.id} className="hover:bg-pulse-50">
+                  <td className="px-4 py-3 font-medium text-pulse-900">
+                    {user.display_name || user.email.split('@')[0]}
+                  </td>
+                  <td className="px-4 py-3 text-pulse-500">{user.email}</td>
+                  <td className="px-4 py-3"><PlanBadge plan={user.plan} /></td>
+                  <td className="px-4 py-3 text-pulse-400">—</td>
+                  <td className="px-4 py-3"><RoleBadge role={user.admin_role} /></td>
+                  <td className="px-4 py-3"><StatusBadge suspended={!!user.suspended_at} /></td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2 justify-end">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setModal({ type: 'edit', user })}
+                      >
+                        Bewerken
+                      </Button>
+                      {user.suspended_at ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={actionLoading === user.id}
+                          onClick={() => handleRestore(user)}
+                        >
+                          {actionLoading === user.id ? '…' : 'Gebruiker herstellen'}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          disabled={actionLoading === user.id}
+                          onClick={() => handleSuspend(user)}
+                        >
+                          {actionLoading === user.id ? '…' : 'Schorsen'}
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-body-s text-pulse-500">
+          <span>{total} gebruikers totaal</span>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={currentPage <= 1}
+              onClick={() => setOffset(Math.max(0, offset - limit))}
+            >
+              Vorige
+            </Button>
+            <span className="py-1 px-2">Pagina {currentPage} van {totalPages}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={currentPage >= totalPages}
+              onClick={() => setOffset(offset + limit)}
+            >
+              Volgende
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {modal && (
+        <UserModal
+          mode={modal}
+          onClose={() => setModal(null)}
+          onSave={handleModalSave}
+        />
+      )}
+    </div>
+  )
+}
