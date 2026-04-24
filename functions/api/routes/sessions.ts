@@ -591,6 +591,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       code: session.code,
       title: session.title,
       question: liveQ,
+      questions: questions.map(questionToLive),
       votePolicy: session.vote_policy,
       sessionMode: session.session_mode,
     })
