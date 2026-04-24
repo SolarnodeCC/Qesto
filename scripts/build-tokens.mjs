@@ -177,6 +177,37 @@ function buildTailwindTheme(tokens) {
     }
   }
 
+  // Grid configuration: cols (4, 8, 12) + gutters
+  if (tokens.grid) {
+    theme.extend.gridTemplateColumns = {}
+    // Add common column counts (1-12)
+    for (let i = 1; i <= 12; i++) {
+      theme.extend.gridTemplateColumns[`${i}`] = `repeat(${i}, minmax(0, 1fr))`
+    }
+    // Add specific grid sizes from design tokens
+    if (tokens.grid.mobile?.columns) {
+      theme.extend.gridTemplateColumns['mobile'] = `repeat(${tokens.grid.mobile.columns}, minmax(0, 1fr))`
+    }
+    if (tokens.grid.tablet?.columns) {
+      theme.extend.gridTemplateColumns['tablet'] = `repeat(${tokens.grid.tablet.columns}, minmax(0, 1fr))`
+    }
+    if (tokens.grid.desktop?.columns) {
+      theme.extend.gridTemplateColumns['desktop'] = `repeat(${tokens.grid.desktop.columns}, minmax(0, 1fr))`
+    }
+
+    // Grid gap from spacing tokens
+    theme.extend.gap = theme.extend.gap || {}
+    if (tokens.grid.mobile?.gutter) {
+      theme.extend.gap['mobile'] = tokens.grid.mobile.gutter
+    }
+    if (tokens.grid.tablet?.gutter) {
+      theme.extend.gap['tablet'] = tokens.grid.tablet.gutter
+    }
+    if (tokens.grid.desktop?.gutter) {
+      theme.extend.gap['desktop'] = tokens.grid.desktop.gutter
+    }
+  }
+
   return theme
 }
 

@@ -2,9 +2,11 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-22 (UTC)_
+_Last updated: 2026-04-23 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-22_
+_Sprint 18 Planning Review: 2026-04-23 — see Sprint 18 section below + §12 Website Design Wave_
 _Website Design Wave added: 2026-04-19 — see §12_
+_**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review (Product Owner, Architect, AI Strategy) completed 2026-04-23; findings integrated into Sprint 18 plan._
 
 ## Overview
 

@@ -32,11 +32,7 @@ jobs:
         run: npm run tokens:build
 
       - name: Check for design token drift
-        run: git diff --exit-code src/ui/tailwind-theme.ts
-        continue-on-error: false
-
-      - name: Check design token usage (check-design-tokens)
-        run: npm run check:design-tokens
+        run: npm run check:tokens-drift
 
       - name: i18n validation (check-i18n)
         run: npm run check:i18n

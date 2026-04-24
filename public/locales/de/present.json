@@ -12,5 +12,6 @@
   "closing": "Wird beendet…",
   "back": "Zurück zum Dashboard",
   "liveParticipants": "Live-Teilnehmer",
-  "resultsReady": "Ergebnisse bereit"
+  "resultsReady": "Ergebnisse bereit",
+  "connectingToRoom": "[TODO] Connecting to live room…"
 }

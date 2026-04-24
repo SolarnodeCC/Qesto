@@ -202,7 +202,7 @@ export default function SessionConfig() {
         </div>
 
         <fieldset className="space-y-3 rounded-xl border border-pulse-200 p-5">
-          <legend className="text-sm font-medium px-1">Poll question</legend>
+          <legend className="text-sm font-medium px-1">{t('pollQuestion')}</legend>
 
           <div className="space-y-2">
             <label htmlFor="poll-prompt" className="text-sm font-medium">
@@ -265,7 +265,7 @@ export default function SessionConfig() {
               <div className="rounded-lg border border-violet-200 bg-violet-50 p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <AIBadge />
-                  <span className="text-xs text-pulse-500">Click a suggestion to use it as your prompt</span>
+                  <span className="text-xs text-pulse-500">{t('aiSuggestionHelp')}</span>
                 </div>
                 <ul className="space-y-1" aria-label="AI suggested prompts">
                   {aiSuggestions.map((suggestion, i) => (

@@ -12,5 +12,6 @@
   "closing": "Cerrando…",
   "back": "Volver al panel",
   "liveParticipants": "Participantes activos",
-  "resultsReady": "Resultados listos"
+  "resultsReady": "Resultados listos",
+  "connectingToRoom": "[TODO] Connecting to live room…"
 }

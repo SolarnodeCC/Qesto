@@ -8,6 +8,9 @@ const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefi
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import { Heading, Body, Caption, Button, Card, MetricCard, Section, SkeletonCard } from '../ui/components'
+import AuditLogViewer from '../components/AuditLogViewer'
+
+type AdminTab = 'metrics' | 'audit'
 
 export default function AdminDashboard() {
   const auth = useAuth()
@@ -16,6 +19,7 @@ export default function AdminDashboard() {
   const [startDate, setStartDate] = useState(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
   const [endDate, setEndDate] = useState(new Date())
   const [exporting, setExporting] = useState(false)
+  const [activeTab, setActiveTab] = useState<AdminTab>('metrics')
 
   if (auth.status === 'loading') {
     return (
@@ -41,100 +45,142 @@ export default function AdminDashboard() {
         <Body size="s" className="text-pulse-500 mt-space-2">{t('realtimePlatformObservability')}</Body>
       </header>
 
-      {/* Live Metrics Cards */}
-      <Section>
-        <Heading level="m">{t('liveLast5min')}</Heading>
-        {loading && !liveMetrics ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
-        ) : error ? (
-          <Body className="text-signal-error">{error}</Body>
-        ) : liveMetrics ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
-            <MetricCard label={t('activeSessions')} value={liveMetrics.active_sessions} />
-            <MetricCard label={t('participants')} value={liveMetrics.total_participants} />
-            <MetricCard label={t('revenue24h')} value={`$${(liveMetrics.revenue_24h_cents / 100).toFixed(2)}`} />
-            <MetricCard label={t('p95Latency')} value={`${liveMetrics.p95_latency_ms}ms`} alert={liveMetrics.p95_latency_ms > 500} />
-            <MetricCard label={t('errorRate')} value={`${(liveMetrics.error_rate * 100).toFixed(1)}%`} alert={liveMetrics.error_rate > 0.05} />
-          </div>
-        ) : null}
-        {liveMetrics?.stub && <Caption className="text-amber-600">⚠️ Stub data (metrics KV not ready)</Caption>}
-      </Section>
+      {/* Tab bar */}
+      <div
+        role="tablist"
+        aria-label="Admin sections"
+        className="flex gap-1 border-b border-pulse-200"
+      >
+        {([
+          { id: 'metrics', label: 'Metrics' },
+          { id: 'audit', label: 'Audit Log' },
+        ] as const).map(({ id, label }) => (
+          <button
+            key={id}
+            role="tab"
+            id={`tab-${id}`}
+            aria-controls={`tabpanel-${id}`}
+            aria-selected={activeTab === id}
+            onClick={() => setActiveTab(id)}
+            className={[
+              'px-5 py-3 text-sm font-medium rounded-t-md -mb-px border border-b-0 min-h-[44px]',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
+              activeTab === id
+                ? 'border-pulse-200 bg-white text-pulse-900'
+                : 'border-transparent text-pulse-500 hover:text-pulse-800',
+            ].join(' ')}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      {/* Historical Data + Export */}
-      <Section>
-        <div className="flex items-center justify-between">
-          <Heading level="m">{t('historicalData')}</Heading>
-          <div className="flex items-center gap-space-3">
-            <div className="flex gap-space-2">
-              <input
-                type="date"
-                value={startDate.toISOString().split('T')[0]}
-                onChange={(e) => setStartDate(new Date(e.target.value))}
-                className="text-body-s border border-pulse-300 rounded-md px-space-2 py-space-1"
-              />
-              <input
-                type="date"
-                value={endDate.toISOString().split('T')[0]}
-                onChange={(e) => setEndDate(new Date(e.target.value))}
-                className="text-body-s border border-pulse-300 rounded-md px-space-2 py-space-1"
-              />
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={async () => {
-                setExporting(true)
-                await exportCSV(startDate, endDate)
-                setExporting(false)
-              }}
-              disabled={exporting}
-            >
-              {exporting ? t('exporting') : t('exportCsv')}
-            </Button>
-          </div>
-        </div>
-
-        {loading && !historicalData ? (
-          <ResultsSectionSkeleton bars={6} />
-        ) : error ? (
-          <Body className="text-signal-error">{error}</Body>
-        ) : historicalData && historicalData.length > 0 ? (
-          <Card className="overflow-x-auto">
-            <table className="w-full text-body-s">
-              <thead>
-                <tr className="border-b border-pulse-200">
-                  <th className="text-left py-space-2 font-medium text-pulse-700">{t('timestamp')}</th>
-                  <th className="text-left py-space-2 font-medium text-pulse-700">{t('route')}</th>
-                  <th className="text-right py-space-2 font-medium text-pulse-700">p50</th>
-                  <th className="text-right py-space-2 font-medium text-pulse-700">p95</th>
-                  <th className="text-right py-space-2 font-medium text-pulse-700">p99</th>
-                  <th className="text-right py-space-2 font-medium text-pulse-700">{t('errorPercent')}</th>
-                  <th className="text-right py-space-2 font-medium text-pulse-700">{t('requests')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-pulse-100">
-                {historicalData.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-pulse-50">
-                    <td className="py-space-2">{new Date(row.bucket_ts).toLocaleString()}</td>
-                    <td className="py-space-2">{row.route || '(all)'}</td>
-                    <td className="text-right py-space-2">{row.p50_ms}ms</td>
-                    <td className="text-right py-space-2">{row.p95_ms}ms</td>
-                    <td className="text-right py-space-2">{row.p99_ms}ms</td>
-                    <td className="text-right py-space-2">{((row.error_count / (row.request_count || 1)) * 100).toFixed(1)}%</td>
-                    <td className="text-right py-space-2">{row.request_count}</td>
-                  </tr>
+      {/* Metrics tab */}
+      {activeTab === 'metrics' && (
+        <div role="tabpanel" id="tabpanel-metrics" aria-labelledby="tab-metrics" className="space-y-8">
+          {/* Live Metrics Cards */}
+          <Section>
+            <Heading level="m">{t('liveLast5min')}</Heading>
+            {loading && !liveMetrics ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonCard key={i} />
                 ))}
-              </tbody>
-            </table>
-          </Card>
-        ) : (
-          <Body className="text-pulse-500">{t('noDataInRange')}</Body>
-        )}
-      </Section>
+              </div>
+            ) : error ? (
+              <Body className="text-signal-error">{error}</Body>
+            ) : liveMetrics ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
+                <MetricCard label={t('activeSessions')} value={liveMetrics.active_sessions} />
+                <MetricCard label={t('participants')} value={liveMetrics.total_participants} />
+                <MetricCard label={t('revenue24h')} value={`$${(liveMetrics.revenue_24h_cents / 100).toFixed(2)}`} />
+                <MetricCard label={t('p95Latency')} value={`${liveMetrics.p95_latency_ms}ms`} alert={liveMetrics.p95_latency_ms > 500} />
+                <MetricCard label={t('errorRate')} value={`${(liveMetrics.error_rate * 100).toFixed(1)}%`} alert={liveMetrics.error_rate > 0.05} />
+              </div>
+            ) : null}
+            {liveMetrics?.stub && <Caption className="text-amber-600">⚠️ Stub data (metrics KV not ready)</Caption>}
+          </Section>
+
+          {/* Historical Data + Export */}
+          <Section>
+            <div className="flex items-center justify-between">
+              <Heading level="m">{t('historicalData')}</Heading>
+              <div className="flex items-center gap-space-3">
+                <div className="flex gap-space-2">
+                  <input
+                    type="date"
+                    value={startDate.toISOString().split('T')[0]}
+                    onChange={(e) => setStartDate(new Date(e.target.value))}
+                    className="text-body-s border border-pulse-300 rounded-md px-space-2 py-space-1"
+                  />
+                  <input
+                    type="date"
+                    value={endDate.toISOString().split('T')[0]}
+                    onChange={(e) => setEndDate(new Date(e.target.value))}
+                    className="text-body-s border border-pulse-300 rounded-md px-space-2 py-space-1"
+                  />
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={async () => {
+                    setExporting(true)
+                    await exportCSV(startDate, endDate)
+                    setExporting(false)
+                  }}
+                  disabled={exporting}
+                >
+                  {exporting ? t('exporting') : t('exportCsv')}
+                </Button>
+              </div>
+            </div>
+
+            {loading && !historicalData ? (
+              <ResultsSectionSkeleton bars={6} />
+            ) : error ? (
+              <Body className="text-signal-error">{error}</Body>
+            ) : historicalData && historicalData.length > 0 ? (
+              <Card className="overflow-x-auto">
+                <table className="w-full text-body-s">
+                  <thead>
+                    <tr className="border-b border-pulse-200">
+                      <th className="text-left py-space-2 font-medium text-pulse-700">{t('timestamp')}</th>
+                      <th className="text-left py-space-2 font-medium text-pulse-700">{t('route')}</th>
+                      <th className="text-right py-space-2 font-medium text-pulse-700">p50</th>
+                      <th className="text-right py-space-2 font-medium text-pulse-700">p95</th>
+                      <th className="text-right py-space-2 font-medium text-pulse-700">p99</th>
+                      <th className="text-right py-space-2 font-medium text-pulse-700">{t('errorPercent')}</th>
+                      <th className="text-right py-space-2 font-medium text-pulse-700">{t('requests')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-pulse-100">
+                    {historicalData.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-pulse-50">
+                        <td className="py-space-2">{new Date(row.bucket_ts).toLocaleString()}</td>
+                        <td className="py-space-2">{row.route || '(all)'}</td>
+                        <td className="text-right py-space-2">{row.p50_ms}ms</td>
+                        <td className="text-right py-space-2">{row.p95_ms}ms</td>
+                        <td className="text-right py-space-2">{row.p99_ms}ms</td>
+                        <td className="text-right py-space-2">{((row.error_count / (row.request_count || 1)) * 100).toFixed(1)}%</td>
+                        <td className="text-right py-space-2">{row.request_count}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+            ) : (
+              <Body className="text-pulse-500">{t('noDataInRange')}</Body>
+            )}
+          </Section>
+        </div>
+      )}
+
+      {/* Audit Log tab */}
+      {activeTab === 'audit' && (
+        <div role="tabpanel" id="tabpanel-audit" aria-labelledby="tab-audit">
+          <AuditLogViewer />
+        </div>
+      )}
     </MainLayout>
   )
 }

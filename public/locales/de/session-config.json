@@ -14,5 +14,7 @@
   "starting": "Wird gestartet…",
   "startError": "Sitzung konnte nicht gestartet werden",
   "backToDashboard": "Zurück zum Dashboard",
-  "optionPlaceholder": "Optionstext"
+  "optionPlaceholder": "Optionstext",
+  "pollQuestion": "[TODO] Poll question",
+  "aiSuggestionHelp": "[TODO] Click a suggestion to use it as your prompt"
 }

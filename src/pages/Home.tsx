@@ -55,7 +55,7 @@ export default function Home() {
           {/* AI narrative pill */}
           <div className="flex items-center justify-center gap-2">
             <AIBadge variant="assisted" label="AI-first" />
-            <span className="text-caption text-pulse-500">Edge-native · Privacy by default</span>
+            <span className="text-caption text-pulse-500">{t('heroTagline')}</span>
           </div>
 
           <h1

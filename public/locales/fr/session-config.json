@@ -14,5 +14,7 @@
   "starting": "Démarrage…",
   "startError": "Impossible de démarrer la session",
   "backToDashboard": "Retour au tableau de bord",
-  "optionPlaceholder": "Texte de l'option"
+  "optionPlaceholder": "Texte de l'option",
+  "pollQuestion": "[TODO] Poll question",
+  "aiSuggestionHelp": "[TODO] Click a suggestion to use it as your prompt"
 }

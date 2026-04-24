@@ -42,6 +42,7 @@ export default function Dashboard() {
   const auth = useAuth()
   const navigate = useNavigate()
   const t = useT('dashboard')
+  const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const { state, refresh, create } = useSessions()
   const { density, setDensity } = useDensity()
   const closedSessions =
@@ -49,7 +50,6 @@ export default function Dashboard() {
       ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
       : []
   const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(closedSessions, activeTab === 'insights')
-  const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const [wizardOpen, setWizardOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'live'>('all')

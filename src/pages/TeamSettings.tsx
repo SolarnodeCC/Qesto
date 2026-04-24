@@ -335,7 +335,7 @@ export default function TeamSettings() {
 
         {/* ── Invite ─────────────────────────────────────────────────────────── */}
         <section aria-labelledby="section-invite" className="space-y-4 rounded-xl border border-pulse-200 p-6">
-          <h2 id="section-invite" className="text-lg font-semibold">Invite member</h2>
+          <h2 id="section-invite" className="text-lg font-semibold">{t('inviteMember')}</h2>
           <form onSubmit={(e) => void handleInvite(e)} className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex flex-col gap-1">
@@ -392,7 +392,7 @@ export default function TeamSettings() {
         {/* ── SAML (owner only) ─────────────────────────────────────────────── */}
         {isOwner && (
           <section aria-labelledby="section-saml" className="space-y-4 rounded-xl border border-pulse-200 p-6">
-            <h2 id="section-saml" className="text-lg font-semibold">SAML configuration</h2>
+            <h2 id="section-saml" className="text-lg font-semibold">{t('samlConfiguration')}</h2>
             <p className="text-sm text-pulse-500">
               Configure single sign-on via SAML 2.0. Contact your identity provider for these values.
             </p>

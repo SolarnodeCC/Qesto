@@ -12,5 +12,6 @@
   "closing": "Fermeture…",
   "back": "Retour au tableau de bord",
   "liveParticipants": "Participants en direct",
-  "resultsReady": "Résultats prêts"
+  "resultsReady": "Résultats prêts",
+  "connectingToRoom": "[TODO] Connecting to live room…"
 }
