@@ -42,6 +42,16 @@ import type { Env, PollOption, Question, Session } from '../types'
 type Vars = AuthVariables & PlanVariables
 type SessionRow = Session
 
+// Apply schema columns that may be missing on older D1 databases (pre-migration 0008).
+// Runs once per worker cold-start; subsequent calls are no-ops after the columns exist.
+let _schemaPatchDone = false
+async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
+  if (_schemaPatchDone) return
+  _schemaPatchDone = true
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once' CHECK (vote_policy IN ('once','multi','react'))`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection' CHECK (session_mode IN ('reflection','fun'))`).run().catch(() => {})
+}
+
 type QuestionRow = {
   id: string
   session_id: string
@@ -389,6 +399,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // GET /api/sessions — list caller's sessions (DRAFT + LIVE + CLOSED, not ARCHIVED)
   app.get('/', async (c) => {
     const user = c.get('user')
+    await patchSchemaIfNeeded(c.env.DB)
     const { results } = await c.env.DB
       .prepare(
         `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,

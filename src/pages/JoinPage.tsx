@@ -234,7 +234,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   return (
     <main id="main" className="min-h-screen bg-white flex flex-col">
       {/* Top brand bar */}
-      <div className="h-1 bg-[var(--gradient-brand)]" aria-hidden="true" />
+      <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
       <div className="border-b border-pulse-100 px-5 py-3 flex items-center justify-between">
         <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900">Qesto</span>
         {state.connection === 'open' ? (
@@ -275,7 +275,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Session ended */}
         {isEnded && countdown === null && (
           <div className="rounded-xl border border-pulse-200 p-6 text-center space-y-2">
-            <div className="w-14 h-14 rounded-full bg-[var(--gradient-brand)] flex items-center justify-center mx-auto shadow-teal" aria-hidden="true">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-violet-500 flex items-center justify-center mx-auto shadow-teal" aria-hidden="true">
               <CheckCircle2 size={28} className="text-white" />
             </div>
             <p className="font-semibold text-pulse-900">{t('session_ended_title')}</p>

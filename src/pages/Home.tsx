@@ -102,7 +102,7 @@ export default function Home() {
               className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 mb-5 max-w-[920px] focus:outline-none"
             >
               Feel the pulse of the room,{' '}
-              <span className="bg-[var(--gradient-brand)] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-br from-teal-500 to-violet-500 bg-clip-text text-transparent">
                 amplified by AI.
               </span>
             </h1>
@@ -120,7 +120,7 @@ export default function Home() {
                 <>
                   <Link
                     to="/dashboard"
-                    className="inline-flex items-center gap-2 rounded-md bg-[var(--gradient-brand)] text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 rounded-md bg-gradient-to-br from-teal-500 to-violet-500 text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Go to dashboard
                   </Link>
@@ -137,7 +137,7 @@ export default function Home() {
                 <>
                   <Link
                     to="/login"
-                    className="inline-flex items-center gap-2 rounded-md bg-[var(--gradient-brand)] text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 rounded-md bg-gradient-to-br from-teal-500 to-violet-500 text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Launch your next session
                   </Link>

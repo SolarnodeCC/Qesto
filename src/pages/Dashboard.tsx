@@ -234,7 +234,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setWizardOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md bg-[var(--gradient-brand)] text-white px-4 py-2 text-sm font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+              className="inline-flex items-center gap-2 rounded-md bg-gradient-to-br from-teal-500 to-violet-500 text-white px-4 py-2 text-sm font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
             >
               <Sparkles size={14} aria-hidden="true" />
               {t('newSession')}
