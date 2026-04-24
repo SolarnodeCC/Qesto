@@ -192,7 +192,7 @@ export default function MainLayout({
           <div className="flex items-center gap-3">
             {showTeamSwitcher && <TeamSwitcher />}
             <nav aria-label="Site navigation" className="flex items-center gap-1">
-              {isHome && (
+              {isMarketingPage && (
                 <>
                   <NavDropdown label={t('nav.solutions')} links={solutionLinks} />
                   <NavDropdown label={t('nav.features')} links={featureLinks} />

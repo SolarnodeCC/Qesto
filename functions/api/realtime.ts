@@ -7,7 +7,7 @@
 // `timestamp` is the sender's epoch-ms clock (for latency tracing only —
 // never trusted for ordering).
 
-import type { PollOption, VotePolicy, SessionMode } from './types'
+import type { PollOption, QuestionKind, VotePolicy, SessionMode } from './types'
 
 // ── Client → Server ─────────────────────────────────────────────────────────
 export type ClientMessage =
@@ -18,7 +18,7 @@ export type ClientMessage =
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
   id: string
-  kind: 'poll' | 'ranking' | 'consent' | 'open'
+  kind: QuestionKind
   prompt: string
   options: PollOption[]
 }

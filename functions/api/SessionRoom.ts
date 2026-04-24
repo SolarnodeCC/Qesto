@@ -56,9 +56,36 @@ type Meta = {
 }
 
 type Counts = Record<string, number>
-// Per-voter vote history: voterId → optionId. Counts are derived, but kept
-// as a denormalised cache so broadcasts don't recompute every tick.
-type Votes = Record<string, string>
+// Per-voter vote history: voterId → optionId[]. The array holds every selection
+// that voter has made for the active question. For kinds that enforce a single
+// choice (poll, likert, slider, ranking, consent, open) the array length stays
+// at 1; for multi_select / upvote / word_cloud it may grow with each send.
+// Counts are derived, but kept as a denormalised cache so broadcasts don't
+// recompute every tick.
+//
+// Legacy rows persisted before this change are `Record<string, string>`. Any
+// read path that touches this shape must call `normaliseVotes()` to coerce
+// a stored string into a single-element array.
+type Votes = Record<string, string[]>
+
+function normaliseVotes(raw: Record<string, string | string[]> | undefined): Votes {
+  const out: Votes = {}
+  if (!raw) return out
+  for (const [voterId, value] of Object.entries(raw)) {
+    out[voterId] = Array.isArray(value) ? value : [value]
+  }
+  return out
+}
+
+// Kinds for which one voter may submit multiple accepted values. `word_cloud`
+// is in here because each submitted phrase counts as an independent entry.
+const MULTI_VOTE_KINDS = new Set(['multi_select', 'upvote', 'word_cloud'])
+
+// `word_cloud` accepts any text as the "optionId" (the word/phrase). Other
+// kinds must reference a preconfigured option.
+function isFreeTextKind(kind: LiveQuestion['kind']): boolean {
+  return kind === 'word_cloud'
+}
 
 // ── Per-connection attachment stored on each WebSocket ──────────────────────
 type Attachment = {
@@ -163,7 +190,9 @@ export class SessionRoom implements DurableObject {
       return this.jsonError(409, 'not_live', 'Session is not LIVE')
     }
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    const votes = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
+    const votes = normaliseVotes(
+      await this.ctx.storage.get<Record<string, string | string[]>>(K_VOTERS),
+    )
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const msg = serverMessage({
       type: 'session_closed',
@@ -180,7 +209,16 @@ export class SessionRoom implements DurableObject {
     }
     await this.ctx.storage.put(K_STATUS, 'closed')
     const questionId = (await this.ctx.storage.get<LiveQuestion>(K_QUESTION))?.id ?? null
-    const voteList = Object.entries(votes).map(([voterId, optionId]) => ({ voterId, optionId }))
+    // Flatten voterId → optionId[] into one row per (voter, optionId) so the
+    // D1 schema (UNIQUE(question_id, voter_id) … wait, actually the caller
+    // uses INSERT OR IGNORE so duplicate voter rows collapse). For kinds
+    // where one voter can legitimately submit multiple entries (multi_select,
+    // upvote, word_cloud) each entry is emitted separately; the caller must
+    // relax the UNIQUE constraint at the schema level for those kinds before
+    // all rows will persist. See docs/ARCHITECTURE.md.
+    const voteList = Object.entries(votes).flatMap(([voterId, optionIds]) =>
+      optionIds.map((optionId) => ({ voterId, optionId })),
+    )
     return this.jsonOk({ counts, total, votes: voteList, questionId })
   }
 
@@ -189,7 +227,9 @@ export class SessionRoom implements DurableObject {
     const meta = await this.ctx.storage.get<Meta>(K_META)
     const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    const voters = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
+    const voters = normaliseVotes(
+      await this.ctx.storage.get<Record<string, string | string[]>>(K_VOTERS),
+    )
     const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? 'uninitialised'
     return this.jsonOk({
       meta: meta ?? null,
@@ -375,7 +415,14 @@ export class SessionRoom implements DurableObject {
       return
     }
     const optionId = data.optionId
-    if (!optionId || !question.options.some((o) => o.id === optionId)) {
+    if (!optionId) {
+      ws.send(errorMessage('bad_option', 'Missing optionId'))
+      return
+    }
+    // For free-text kinds (word_cloud) the `optionId` is the submitted phrase,
+    // so we accept any non-empty string. Other kinds must reference a
+    // preconfigured option.
+    if (!isFreeTextKind(question.kind) && !question.options.some((o) => o.id === optionId)) {
       ws.send(errorMessage('bad_option', 'Unknown option'))
       return
     }
@@ -383,20 +430,33 @@ export class SessionRoom implements DurableObject {
     const meta = await this.ctx.storage.get<Meta>(K_META)
     const votePolicy = meta?.votePolicy ?? 'once'
 
-    const voters = (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {}
+    const voters = normaliseVotes(
+      await this.ctx.storage.get<Record<string, string | string[]>>(K_VOTERS),
+    )
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
 
-    if (votePolicy === 'once') {
+    if (MULTI_VOTE_KINDS.has(question.kind)) {
+      // multi_select / upvote / word_cloud: voter may submit several entries.
+      // Reject an exact duplicate selection (same optionId already sent by
+      // this voter) but otherwise append to the array.
+      const previous = voters[att.voterId] ?? []
+      if (previous.includes(optionId)) {
+        ws.send(errorMessage('duplicate', 'You already selected this option'))
+        return
+      }
+      voters[att.voterId] = [...previous, optionId]
+      counts[optionId] = (counts[optionId] ?? 0) + 1
+    } else if (votePolicy === 'once') {
       // Reject duplicate — one vote per voter, immutable.
-      if (voters[att.voterId]) {
+      if ((voters[att.voterId]?.length ?? 0) > 0) {
         ws.send(errorMessage('duplicate', 'You already voted on this question'))
         return
       }
-      voters[att.voterId] = optionId
+      voters[att.voterId] = [optionId]
       counts[optionId] = (counts[optionId] ?? 0) + 1
     } else if (votePolicy === 'multi') {
       // Allow vote change — decrement old choice, increment new choice.
-      const previous = voters[att.voterId]
+      const previous = voters[att.voterId]?.[0]
       if (previous === optionId) {
         ws.send(errorMessage('duplicate', 'You already selected this option'))
         return
@@ -404,13 +464,13 @@ export class SessionRoom implements DurableObject {
       if (previous) {
         counts[previous] = Math.max(0, (counts[previous] ?? 1) - 1)
       }
-      voters[att.voterId] = optionId
+      voters[att.voterId] = [optionId]
       counts[optionId] = (counts[optionId] ?? 0) + 1
     } else {
       // react: accumulate reactions, no deduplication per voter.
       counts[optionId] = (counts[optionId] ?? 0) + 1
       // Store last reaction per voter (for D1 persistence on close).
-      voters[att.voterId] = optionId
+      voters[att.voterId] = [optionId]
     }
 
     await this.ctx.storage.put(K_VOTERS, voters)

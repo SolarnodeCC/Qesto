@@ -26,6 +26,7 @@ import {
   PatchSessionSchema,
   ReorderQuestionsSchema,
   AddQuestionSchema,
+  autoPopulateOptions,
   type PollQuestionInput,
 } from '../lib/validation'
 import {
@@ -510,11 +511,11 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     const questions = await fetchQuestions(c.env.DB, id)
-    if (questions.length === 0 || questions[0].kind !== 'poll') {
+    if (questions.length === 0) {
       return c.json(
         {
           ok: false,
-          error: { code: 'no_question', message: 'Session has no poll question yet' },
+          error: { code: 'no_question', message: 'Session has no question yet' },
           trace_id: c.get('trace_id'),
         },
         409,
@@ -870,7 +871,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const nextPosition = existing.length
     const qid = ulid()
     const now = Date.now()
-    const rawOptions = parsed.data.options ?? []
+    const rawOptions = autoPopulateOptions(parsed.data.kind, parsed.data.options)
     const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
     const optionsJson = JSON.stringify(options)
 
@@ -1014,7 +1015,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
 
-    const options = (parsed.data.options ?? []).map((o) => ({ id: o.id ?? ulid(), label: o.label }))
+    const rawOptions = autoPopulateOptions(parsed.data.kind, parsed.data.options)
+    const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
     const result = await c.env.DB
       .prepare(`UPDATE questions SET kind = ?1, prompt = ?2, options_json = ?3 WHERE id = ?4 AND session_id = ?5`)
       .bind(parsed.data.kind, parsed.data.prompt, JSON.stringify(options), questionId, id)

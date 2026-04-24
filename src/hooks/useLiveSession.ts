@@ -33,6 +33,7 @@ export type LiveState = {
   error: string | null
   reconnectAttempts: number
   lastVote: { optionId: string } | null
+  paused: boolean
 }
 
 type Action =
@@ -56,6 +57,8 @@ type Action =
   | { kind: 'session_closed'; counts: Record<string, number>; total: number }
   | { kind: 'error'; code: string; message: string }
   | { kind: 'vote_sent'; optionId: string }
+  | { kind: 'session_paused' }
+  | { kind: 'session_resumed' }
 
 export const INITIAL: LiveState = {
   connection: 'idle',
@@ -68,6 +71,7 @@ export const INITIAL: LiveState = {
   error: null,
   reconnectAttempts: 0,
   lastVote: null,
+  paused: false,
 }
 
 export function reducer(state: LiveState, action: Action): LiveState {
@@ -93,6 +97,7 @@ export function reducer(state: LiveState, action: Action): LiveState {
         participants: action.participants,
         reconnectAttempts: 0,
         error: null,
+        paused: false,
       }
     case 'question':
       return { ...state, question: action.question, lastVote: null }
@@ -111,6 +116,10 @@ export function reducer(state: LiveState, action: Action): LiveState {
       return { ...state, error: `${action.code}: ${action.message}` }
     case 'vote_sent':
       return { ...state, lastVote: { optionId: action.optionId } }
+    case 'session_paused':
+      return { ...state, paused: true }
+    case 'session_resumed':
+      return { ...state, paused: false }
   }
 }
 
@@ -198,6 +207,12 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
               message: msg.data.message as string,
             })
             break
+          case 'session_paused':
+            dispatch({ kind: 'session_paused' })
+            break
+          case 'session_resumed':
+            dispatch({ kind: 'session_resumed' })
+            break
         }
       } catch {
         /* ignore unparseable frames */
@@ -261,5 +276,17 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     ws.send(JSON.stringify({ type: 'advance', data: {}, timestamp: Date.now() }))
   }, [])
 
-  return { state, sendVote, requestState, sendAdvance }
+  const sendPause = useCallback(() => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({ type: 'pause', data: {}, timestamp: Date.now() }))
+  }, [])
+
+  const sendResume = useCallback(() => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({ type: 'resume', data: {}, timestamp: Date.now() }))
+  }, [])
+
+  return { state, sendVote, requestState, sendAdvance, sendPause, sendResume }
 }

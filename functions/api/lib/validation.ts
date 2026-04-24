@@ -84,8 +84,22 @@ export const ReorderQuestionsSchema = z.object({
 })
 
 // LAUNCHPAD-02: add a single question inline (append, not replace).
+// Supported kinds: classic poll/ranking/open/consent plus multi_select, likert
+// (5-point scale), upvote, word_cloud (free-text; no options), slider (1–10).
+// `likert` and `slider` auto-populate options when omitted; `word_cloud` never
+// requires options. See `autoPopulateOptions` below.
 export const AddQuestionSchema = z.object({
-  kind: z.enum(['poll', 'ranking', 'open']),
+  kind: z.enum([
+    'poll',
+    'ranking',
+    'open',
+    'consent',
+    'multi_select',
+    'likert',
+    'upvote',
+    'word_cloud',
+    'slider',
+  ]),
   prompt: trimmed(1, 240),
   options: z
     .array(
@@ -94,10 +108,43 @@ export const AddQuestionSchema = z.object({
         label: trimmed(1, 160),
       }),
     )
-    .min(2)
     .max(10)
     .optional(),
 })
+
+/**
+ * For kinds that ship with fixed option scales, synthesise the options when
+ * the caller omits them (or sends an empty array). Other kinds are returned
+ * untouched so existing poll/ranking/upvote/multi_select flows still require
+ * the caller to supply options explicitly.
+ */
+export type QuestionKindInput = z.infer<typeof AddQuestionSchema>['kind']
+
+export function autoPopulateOptions(
+  kind: QuestionKindInput,
+  options: Array<{ id?: string; label: string }> | undefined,
+): Array<{ id?: string; label: string }> {
+  const provided = options ?? []
+  if (provided.length > 0) return provided
+
+  if (kind === 'likert') {
+    return [
+      { id: '1', label: 'Strongly disagree' },
+      { id: '2', label: 'Disagree' },
+      { id: '3', label: 'Neutral' },
+      { id: '4', label: 'Agree' },
+      { id: '5', label: 'Strongly agree' },
+    ]
+  }
+  if (kind === 'slider') {
+    return Array.from({ length: 10 }, (_, i) => ({
+      id: String(i + 1),
+      label: String(i + 1),
+    }))
+  }
+  // word_cloud, open, consent: free-text / no options needed.
+  return provided
+}
 
 export type PollOptionInput = z.infer<typeof PollOptionSchema>
 export type PollQuestionInput = z.infer<typeof PollQuestionSchema>

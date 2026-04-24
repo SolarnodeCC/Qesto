@@ -49,7 +49,16 @@ export type Env = {
 }
 
 export type SessionStatus = 'draft' | 'live' | 'closed' | 'archived'
-export type QuestionKind = 'poll' | 'ranking' | 'consent' | 'open'
+export type QuestionKind =
+  | 'poll'
+  | 'ranking'
+  | 'consent'
+  | 'open'
+  | 'multi_select'
+  | 'likert'
+  | 'upvote'
+  | 'word_cloud'
+  | 'slider'
 export type Anonymity = 'full' | 'partial' | 'none'
 export type VotePolicy = 'once' | 'multi' | 'react'
 export type SessionMode = 'reflection' | 'fun'
