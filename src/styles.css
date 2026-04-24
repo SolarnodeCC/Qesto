@@ -1,10 +1,11 @@
 @import 'tailwindcss';
 @import './styles/grid.css';
+@import '../design-system/colors_and_type.css';
 
-/* ─── Google Fonts — Inter ─────────────────────────────────────────────────── */
-/* Loaded here so the CSS bundle owns the import; the <link preload> in        */
-/* index.html provides the critical woff2 preload for LCP.                     */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* ─── Google Fonts — Inter · Syne · JetBrains Mono ────────────────────────── */
+/* Single combined request for all three brand fonts. The <link preload> in    */
+/* index.html provides the critical woff2 preload for Inter/LCP.               */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* Design token CSS variables — auto-generated from design-tokens.json */
 /* These support the @theme block and component CSS below. */
@@ -69,6 +70,7 @@
   --shadow-elevated: 0 8px 24px rgba(10,15,30,0.10);
   --shadow-teal: 0 4px 20px rgba(20,184,166,0.25);
   --shadow-ai: 0 4px 20px rgba(139,92,246,0.25);
+  --shadow-error: 0 4px 20px rgba(220,38,38,0.25);
   --shadow-focus-ring: 0 0 0 3px rgba(20,184,166,0.4);
 
   /* Typography — see design-tokens.json::typography */
@@ -280,9 +282,9 @@ html {
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      #1e293b 25%,
-      #334155 50%,
-      #1e293b 75%
+      var(--color-pulse-800) 25%,
+      var(--color-pulse-700) 50%,
+      var(--color-pulse-800) 75%
     );
     background-size: 800px 100%;
   }

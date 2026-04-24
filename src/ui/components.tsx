@@ -128,7 +128,7 @@ export function Button({
     `,
     danger: `
       bg-signal-error text-white
-      hover:shadow-[0_4px_20px_rgba(220,38,38,0.25)] ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+      hover:shadow-error ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
   }
 
