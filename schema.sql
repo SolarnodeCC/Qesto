@@ -297,11 +297,10 @@ CREATE INDEX IF NOT EXISTS idx_referral_signups_referred ON referral_signups(ref
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Migration v2: session options (vote_policy, session_mode, anonymity rename)
--- Run on existing DBs after deploying this schema version:
---   wrangler d1 execute <db> --command "ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once'"
---   wrangler d1 execute <db> --command "ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection'"
---   wrangler d1 execute <db> --command "UPDATE sessions SET anonymity = 'full' WHERE anonymity = 'anonymous'"
---   wrangler d1 execute <db> --command "UPDATE sessions SET anonymity = 'none' WHERE anonymity = 'identified'"
+-- Shipped as migrations/0008 (vote_policy, session_mode columns) and
+-- migrations/0009 (anonymity CHECK constraint fix: 'anonymous'→'full',
+-- 'identified'→'none'; table recreated because SQLite cannot ALTER constraints).
+-- Apply: `wrangler d1 migrations apply qesto-prod`
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_referral_signups_referrer ON referral_signups(referrer_user_id);
 
