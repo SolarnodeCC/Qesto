@@ -224,10 +224,12 @@ code, kbd, .mono {
   color: transparent;
 }
 
-/* Link defaults */
-a { color: var(--text-link); text-decoration: none; }
-a:hover { text-decoration: underline; }
-a.ai { color: var(--text-link-ai); }
+/* Link defaults — in @layer base so Tailwind utility classes (text-white etc.) can override */
+@layer base {
+  a { color: var(--text-link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a.ai { color: var(--text-link-ai); }
+}
 
 /* Focus-ring token */
 :where(button, a, input, textarea, select, [tabindex]):focus-visible {
