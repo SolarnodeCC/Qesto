@@ -511,6 +511,15 @@ export default function Present() {
             Export CSV
           </a>
         )}
+
+        <span className="w-px h-5 bg-pulse-700 ml-auto" aria-hidden="true" />
+
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+        >
+          ← Dashboard
+        </Link>
       </div>
     </div>
   )
