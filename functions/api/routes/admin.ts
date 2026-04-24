@@ -320,9 +320,9 @@ export function mountAdminRoutes(parent: any) {
       const { results } = await stmt.all<MetricsSummaryRow>()
       return c.json({ ok: true, data: results, trace_id }, 200)
     } catch (err) {
-      // Table doesn't exist yet (Step 1 not shipped).
+      // Degrade gracefully if table or column doesn't exist yet (Step 1 not shipped).
       const msg = (err as Error).message ?? ''
-      if (msg.includes('no such table')) {
+      if (msg.includes('no such table') || msg.includes('no such column')) {
         return c.json({ ok: true, data: [], stub: true, trace_id }, 200)
       }
       throw err
@@ -390,7 +390,7 @@ export function mountAdminRoutes(parent: any) {
       })
     } catch (err) {
       const msg = (err as Error).message ?? ''
-      if (msg.includes('no such table')) {
+      if (msg.includes('no such table') || msg.includes('no such column')) {
         // Return empty CSV stub until Step 1 ships.
         const csv = CSV_HEADERS.join(',') + '\r\n'
         return new Response(csv, {
