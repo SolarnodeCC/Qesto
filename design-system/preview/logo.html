@@ -1,0 +1,47 @@
+<!doctype html><meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { background: #FFF; }
+  .stack { display: grid; gap: 28px; }
+  .row5 { display: flex; align-items: center; gap: 28px; }
+  .mark { width: 72px; height: 72px; }
+  .wm { font-family: var(--font-display); font-weight: 700; color: #0A0F1E; letter-spacing: -0.02em; }
+  .small { font-size: 24px; }
+  .med { font-size: 36px; }
+  .grad { background: linear-gradient(135deg,#14B8A6,#8B5CF6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tiles { display: flex; gap: 14px; align-items: center; }
+  .tile { width: 64px; height: 64px; border-radius: 14px; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(10,15,30,0.06); }
+  .tile img { width: 40px; height: 40px; }
+  .tile.brand { background: linear-gradient(135deg,#14B8A6,#8B5CF6); }
+  .tile.brand img { filter: brightness(0) invert(1); }
+  .tile.ink { background: #0A0F1E; }
+  .tile.ink img { filter: brightness(0) invert(1); }
+  .tile.soft { background: linear-gradient(135deg,#F0FDFA,#F5F3FF); }
+  .tile.sm { width: 40px; height: 40px; border-radius: 10px; }
+  .tile.sm img { width: 24px; height: 24px; }
+  .tile.xs { width: 28px; height: 28px; border-radius: 8px; }
+  .tile.xs img { width: 18px; height: 18px; }
+</style>
+<div class="kicker">Logo + wordmark</div>
+<div class="stack">
+  <div class="row5">
+    <img class="mark" src="../assets/favicon.svg" alt="Qesto mark">
+    <div class="wm med grad">Qesto</div>
+    <div class="lbl">mark + wordmark · hero lockup · Syne 700, brand gradient</div>
+  </div>
+  <div class="row5">
+    <img class="mark" src="../assets/favicon.svg" style="width:40px;height:40px" alt="Qesto mark">
+    <div class="wm small">Qesto</div>
+    <div class="lbl">navigation lockup · 40px mark · Syne 700 ink</div>
+  </div>
+  <div class="row5">
+    <div class="tiles">
+      <div class="tile brand"><img src="../assets/favicon.svg" alt=""></div>
+      <div class="tile ink"><img src="../assets/favicon.svg" alt=""></div>
+      <div class="tile soft"><img src="../assets/favicon.svg" alt=""></div>
+      <div class="tile sm brand"><img src="../assets/favicon.svg" alt=""></div>
+      <div class="tile xs brand"><img src="../assets/favicon.svg" alt=""></div>
+    </div>
+    <div class="lbl">monogram mark — avatars, app icon, favicon echoes · 64 / 40 / 28 · reversed on brand + ink</div>
+  </div>
+</div>

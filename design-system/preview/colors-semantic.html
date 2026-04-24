@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Colors · Semantic & signal</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:20px; background:#fff; font-family:var(--font-body); }
+  .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  .sw { height:72px; border-radius:10px; padding:10px 12px; color:#fff; display:flex; flex-direction:column; justify-content:space-between; font-weight:600; font-size:14px;}
+  .sw small { font:500 11px var(--font-mono); opacity:.85; }
+  h3 { margin:0 0 10px; font:600 12px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:var(--pulse-500); }
+  .light { color:var(--pulse-900); }
+  .light small { color:var(--pulse-600); opacity:1; }
+</style></head>
+<body>
+  <h3>Signal</h3>
+  <div class="grid">
+    <div class="sw" style="background:var(--signal-success)">Success<small>#22C55E</small></div>
+    <div class="sw" style="background:var(--signal-warning)">Warning<small>#F59E0B</small></div>
+    <div class="sw" style="background:var(--signal-error)">Error<small>#DC2626</small></div>
+    <div class="sw" style="background:var(--signal-info)">Info<small>#0EA5E9</small></div>
+  </div>
+  <h3 style="margin-top:14px">Surface + text</h3>
+  <div class="grid">
+    <div class="sw light" style="background:var(--surface-bg);box-shadow:inset 0 0 0 1px var(--surface-border)">Surface bg<small>#FFFFFF</small></div>
+    <div class="sw light" style="background:var(--surface-bg-subtle)">Bg subtle<small>pulse-50</small></div>
+    <div class="sw" style="background:var(--text-primary)">Text primary<small>pulse-900</small></div>
+    <div class="sw" style="background:var(--text-link)">Link / teal-600<small>#0D9488</small></div>
+  </div>
+</body></html>

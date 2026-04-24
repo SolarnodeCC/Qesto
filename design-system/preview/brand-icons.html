@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Iconography</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body);}
+  .grid { display:grid; grid-template-columns:repeat(10,1fr); gap:12px;}
+  .cell { display:flex; flex-direction:column; align-items:center; gap:4px; color:var(--pulse-700);}
+  .cell i, .cell svg { width:22px; height:22px; stroke-width:1.75;}
+  .cell span { font:500 10px var(--font-mono); color:var(--pulse-500);}
+  .t { font:600 12px var(--font-body); color:var(--pulse-500); letter-spacing:.06em; text-transform:uppercase; margin:0 0 8px;}
+  .t + .grid { margin-bottom:12px;}
+</style></head>
+<body>
+  <div class="t">Lucide · stroke 1.75 · 16/20/24</div>
+  <div class="grid">
+    <div class="cell"><i data-lucide="sparkles" style="color:var(--violet-500)"></i><span>sparkles</span></div>
+    <div class="cell"><i data-lucide="bar-chart-3"></i><span>chart</span></div>
+    <div class="cell"><i data-lucide="lock"></i><span>lock</span></div>
+    <div class="cell"><i data-lucide="users"></i><span>users</span></div>
+    <div class="cell"><i data-lucide="qr-code"></i><span>qr</span></div>
+    <div class="cell"><i data-lucide="clipboard-list"></i><span>templates</span></div>
+    <div class="cell"><i data-lucide="pencil"></i><span>edit</span></div>
+    <div class="cell"><i data-lucide="play"></i><span>play</span></div>
+    <div class="cell"><i data-lucide="arrow-right"></i><span>→</span></div>
+    <div class="cell"><i data-lucide="arrow-left"></i><span>←</span></div>
+    <div class="cell"><i data-lucide="grip-vertical"></i><span>drag</span></div>
+    <div class="cell"><i data-lucide="check"></i><span>check</span></div>
+    <div class="cell"><i data-lucide="x"></i><span>x</span></div>
+    <div class="cell"><i data-lucide="settings"></i><span>settings</span></div>
+    <div class="cell"><i data-lucide="eye"></i><span>eye</span></div>
+    <div class="cell"><i data-lucide="eye-off"></i><span>eye-off</span></div>
+    <div class="cell"><i data-lucide="message-square"></i><span>message</span></div>
+    <div class="cell"><i data-lucide="zap"></i><span>zap</span></div>
+    <div class="cell"><i data-lucide="trending-up"></i><span>trend</span></div>
+    <div class="cell"><i data-lucide="shield"></i><span>shield</span></div>
+  </div>
+<script>lucide.createIcons();</script></body></html>

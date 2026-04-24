@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Pills + type chips</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body);}
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center;}
+  .chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--radius-pill); font:500 12px var(--font-body);}
+  .open { background:var(--pulse-100); color:var(--pulse-700);}
+  .mc { background:var(--teal-50); color:var(--teal-700);}
+  .rank { background:var(--violet-50); color:var(--violet-700);}
+  .word { background:var(--violet-50); color:var(--violet-600);}
+  .dot { width:6px;height:6px;border-radius:50%;}
+  .meta { font:500 11px var(--font-mono); color:var(--pulse-500); margin-right:6px;}
+  .success { background:rgba(34,197,94,0.12); color:#15803D;}
+  .warn { background:rgba(245,158,11,0.14); color:#B45309;}
+  .err { background:rgba(220,38,38,0.10); color:#B91C1C;}
+</style></head>
+<body>
+  <div class="row"><span class="meta">question type</span>
+    <span class="chip open"><span class="dot" style="background:var(--pulse-600)"></span>Open</span>
+    <span class="chip mc"><span class="dot" style="background:var(--teal-600)"></span>Multiple choice</span>
+    <span class="chip rank"><span class="dot" style="background:var(--violet-600)"></span>Ranking</span>
+    <span class="chip word"><span class="dot" style="background:var(--violet-500)"></span>Wordcloud</span>
+  </div>
+  <div class="row"><span class="meta">status</span>
+    <span class="chip success">✓ LIVE</span>
+    <span class="chip warn">● DRAFT</span>
+    <span class="chip err">● CLOSED</span>
+  </div>
+</body></html>

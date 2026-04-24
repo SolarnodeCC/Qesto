@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Cards</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:var(--pulse-50); font-family:var(--font-body);}
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .card { background:#fff; border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-card); border:1px solid var(--surface-border);}
+  .card.ai { position:relative; overflow:hidden;}
+  .card.ai::before { content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--gradient-ai);}
+  .h { font:600 16px var(--font-body); margin:0 0 6px;}
+  .p { font:400 14px/1.5 var(--font-body); color:var(--pulse-600); margin:0;}
+  .meta { font:500 11px var(--font-mono); color:var(--pulse-500);}
+  .metric { font:700 32px/1 var(--font-display); color:var(--pulse-900); margin:8px 0;}
+  .badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--radius-pill); font:500 11px var(--font-body); background:var(--violet-100); color:var(--violet-700); margin-bottom:8px;}
+</style></head>
+<body>
+  <div class="grid">
+    <div class="card">
+      <div class="meta">Decisions this month</div>
+      <div class="metric">24</div>
+      <div class="p">↑ 12% vs last month</div>
+    </div>
+    <div class="card ai">
+      <span class="badge">✦ AI analyzed</span>
+      <div class="h">Top themes</div>
+      <p class="p">Onboarding, sprint velocity, async communication. Confidence 92%.</p>
+    </div>
+  </div>
+</body></html>

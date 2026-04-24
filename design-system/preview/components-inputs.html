@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Form inputs</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body); color:var(--pulse-900);}
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; max-width:620px;}
+  label { font:500 13px var(--font-body); color:var(--pulse-700); display:block; margin-bottom:6px;}
+  input, textarea, select { width:100%; box-sizing:border-box; height:40px; padding:0 12px; border:1px solid var(--surface-border); border-radius:var(--radius-md); font:400 14px var(--font-body); color:var(--pulse-900); background:#fff; transition:border-color var(--motion-fast) var(--ease-fast), box-shadow var(--motion-fast) var(--ease-fast);}
+  textarea { height:auto; padding:10px 12px;}
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--teal-500); box-shadow:0 0 0 3px rgba(20,184,166,0.15);}
+  .check { display:flex; gap:8px; align-items:flex-start; padding:10px 12px; border:1px solid var(--surface-border); border-radius:var(--radius-md);}
+  .box { width:18px;height:18px;border-radius:4px;border:1.5px solid var(--pulse-400); flex:0 0 18px; margin-top:1px;}
+  .check.on .box { background:var(--teal-500); border-color:var(--teal-500); position:relative;}
+  .check.on .box::after { content:""; position:absolute; left:4px; top:1px; width:6px; height:10px; border-right:2px solid #fff; border-bottom:2px solid #fff; transform:rotate(45deg);}
+  .meta { font:500 11px var(--font-mono); color:var(--pulse-500); margin-bottom:6px;}
+</style></head>
+<body>
+  <div class="meta">40px input · radius-md · teal-500 focus · 3px halo</div>
+  <div class="grid">
+    <div><label>Session title</label><input value="Team reflection Q2"></div>
+    <div><label>Join code</label><input style="font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.1em;font-weight:600" value="ABC123"></div>
+    <div style="grid-column:1/-1"><label>Goal of the session</label><textarea rows="2" placeholder="e.g. Gain insight into how the team experienced the sprint…"></textarea></div>
+    <div class="check on"><div class="box"></div><div><div style="font-weight:500">I agree that my session title and goal will be processed by AI</div><div class="meta" style="margin:2px 0 0">Workers AI on Cloudflare's edge — no third-party providers.</div></div></div>
+    <div class="check"><div class="box"></div><div><div style="font-weight:500">Allow participants to rejoin after disconnect</div></div></div>
+  </div>
+</body></html>

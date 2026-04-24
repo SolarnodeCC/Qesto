@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>AI Badges</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body);}
+  .row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .badge { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:var(--radius-pill); font:500 12px var(--font-body); letter-spacing:0.02em;}
+  .assisted { background:var(--violet-100); color:var(--violet-700); border:1px solid var(--violet-200);}
+  .generated { background:var(--gradient-ai); color:#fff;}
+  .analyzed { background:var(--violet-50); color:var(--violet-700); border:1px solid var(--violet-200); position:relative;}
+  .analyzed::after { content:""; width:6px;height:6px;border-radius:50%;background:var(--teal-500);display:inline-block;margin-left:2px;}
+  .spk { width:12px; height:12px; }
+  .meta { font:500 11px var(--font-mono); color:var(--pulse-500); margin-right:6px; min-width:72px;}
+  .t { font:600 12px var(--font-body); color:var(--pulse-500); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em;}
+</style></head>
+<body>
+  <div class="t">AI badge · ✦ + label · never icon-only</div>
+  <div class="row"><span class="meta">assisted</span><span class="badge assisted"><svg class="spk" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z"/></svg>AI assisted</span></div>
+  <div class="row"><span class="meta">generated</span><span class="badge generated"><svg class="spk" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z"/></svg>AI generated</span></div>
+  <div class="row"><span class="meta">analyzed</span><span class="badge analyzed"><svg class="spk" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z"/></svg>AI analyzed</span></div>
+</body></html>

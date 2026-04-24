@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Wizard step card</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:var(--pulse-50); font-family:var(--font-body);}
+  .modal { background:#fff; border-radius:var(--radius-xl); box-shadow:var(--shadow-elevated); padding:24px; max-width:560px;}
+  .bar { height:2px; background:var(--surface-border); border-radius:2px; overflow:hidden; margin:-4px 0 12px;}
+  .bar > div { height:100%; width:40%; background:var(--gradient-brand);}
+  .caption-step { color:var(--pulse-500);}
+  h2 { font:600 22px var(--font-body); margin:8px 0 14px;}
+  .opt { display:grid; grid-template-columns:auto 1fr auto; gap:14px; align-items:center; padding:14px; border:1px solid var(--surface-border); border-radius:var(--radius-lg); margin-bottom:10px; transition:border-color var(--motion-fast) var(--ease-fast), box-shadow var(--motion-fast) var(--ease-fast);}
+  .opt:hover { border-color:var(--surface-border-strong); box-shadow:var(--shadow-elevated);}
+  .opt.sel { border:1.5px solid var(--teal-500); background:var(--teal-50);}
+  .ico { width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--pulse-100); color:var(--pulse-700);}
+  .opt.ai .ico { background:var(--gradient-ai); color:#fff;}
+  .tt { font:600 14px var(--font-body);}
+  .sb { font:400 13px var(--font-body); color:var(--pulse-600);}
+  .chev { color:var(--pulse-400);}
+  .sparkle { width:16px; height:16px;}
+</style></head>
+<body>
+  <div class="modal">
+    <div class="bar"><div></div></div>
+    <span class="caption-step">Questions · Step 2 of 5</span>
+    <h2>How do you want to add questions?</h2>
+    <div class="opt"><div class="ico">✎</div><div><div class="tt">Write yourself</div><div class="sb">Write and manage your own questions</div></div><div class="chev">›</div></div>
+    <div class="opt ai sel"><div class="ico"><svg class="sparkle" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z"/></svg></div><div><div class="tt">AI generate</div><div class="sb">Give a prompt, we generate questions</div></div><div class="chev">✓</div></div>
+    <div class="opt"><div class="ico">☰</div><div><div class="tt">From template</div><div class="sb">Choose from proven question sets</div></div><div class="chev">›</div></div>
+  </div>
+</body></html>

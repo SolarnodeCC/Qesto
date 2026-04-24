@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Session row</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:22px; background:#fff; font-family:var(--font-body);}
+  .row { display:grid; grid-template-columns:auto 1fr auto auto auto; gap:16px; align-items:center; height:48px; padding:0 16px; border-bottom:1px solid var(--surface-border);}
+  .title { font:500 15px var(--font-body); color:var(--pulse-900);}
+  .sub { font:400 12px var(--font-mono); color:var(--pulse-500); margin-left:8px;}
+  .chip { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--radius-pill); font:500 12px var(--font-body);}
+  .live { background:rgba(34,197,94,0.12); color:#15803D;}
+  .draft { background:var(--pulse-100); color:var(--pulse-700);}
+  .closed { background:var(--pulse-100); color:var(--pulse-500);}
+  .ai { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:var(--radius-pill); font:500 11px var(--font-body); background:var(--violet-100); color:var(--violet-700);}
+  .participants { font:500 13px var(--font-mono); color:var(--pulse-600);}
+  .meta { color:var(--pulse-500); font:500 12px var(--font-body);}
+</style></head>
+<body>
+  <div class="row">
+    <span class="chip live">● LIVE</span>
+    <div><span class="title">Team reflection Q2</span><span class="sub">ABC123</span></div>
+    <span class="ai">✦ AI assisted</span>
+    <span class="participants">142 joined</span>
+    <span class="meta">2 min ago</span>
+  </div>
+  <div class="row">
+    <span class="chip draft">● DRAFT</span>
+    <div><span class="title">Product review — April</span></div>
+    <span></span><span class="participants">—</span><span class="meta">Today</span>
+  </div>
+  <div class="row">
+    <span class="chip closed">● CLOSED</span>
+    <div><span class="title">Leadership offsite · day 2</span><span class="sub">XJ4F92</span></div>
+    <span class="ai">✦ AI analyzed</span>
+    <span class="participants">38 joined</span>
+    <span class="meta">3 days ago</span>
+  </div>
+</body></html>

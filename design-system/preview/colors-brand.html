@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Colors · Brand</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  body { margin:0; padding:20px; background:#fff; }
+  .row { display:grid; grid-template-columns:repeat(10,1fr); gap:6px; }
+  .sw { height:64px; border-radius:8px; position:relative; box-shadow:inset 0 0 0 1px rgba(0,0,0,0.04); }
+  .sw small { position:absolute; bottom:4px; left:6px; font:500 10px var(--font-mono); color:rgba(0,0,0,0.55); }
+  .sw.dark small { color:rgba(255,255,255,0.85); }
+  h3 { margin:0 0 8px; font:600 12px/1 var(--font-body); letter-spacing:.08em; text-transform:uppercase; color:var(--pulse-500); }
+  .group + .group { margin-top:14px; }
+</style></head>
+<body>
+  <div class="group">
+    <h3>Teal · Primary brand</h3>
+    <div class="row" id="teal"></div>
+  </div>
+  <div class="group">
+    <h3>Violet · AI accent</h3>
+    <div class="row" id="violet"></div>
+  </div>
+<script>
+const steps=['50','100','200','300','400','500','600','700','800','900'];
+function render(id,varname){const el=document.getElementById(id);steps.forEach(s=>{const d=document.createElement('div');d.className='sw'+(Number(s)>=500?' dark':'');d.style.background=`var(--${varname}-${s})`;d.innerHTML=`<small>${s}</small>`;el.appendChild(d);});}
+render('teal','teal');render('violet','violet');
+</script></body></html>

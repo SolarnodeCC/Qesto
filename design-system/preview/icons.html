@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8">
+<link rel="stylesheet" href="_card.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  .grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 16px; }
+  .ico { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+  .ico i { width: 24px; height: 24px; color: #0A0F1E; }
+  .ico.ai i { color: #7C3AED; }
+  .sizes { display: flex; align-items: end; gap: 28px; margin-top: 18px; padding: 16px; background: #FAFAFA; border-radius: 12px; }
+  .sizes .s { display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
+</style>
+<div class="kicker">Lucide · stroke 1.75 · two-tone friendly</div>
+<div class="grid">
+  <div class="ico"><i data-lucide="sparkles"></i>sparkles*</div>
+  <div class="ico"><i data-lucide="bar-chart-3"></i>bar-chart-3</div>
+  <div class="ico"><i data-lucide="lock"></i>lock</div>
+  <div class="ico"><i data-lucide="users"></i>users</div>
+  <div class="ico"><i data-lucide="play"></i>play</div>
+  <div class="ico"><i data-lucide="mic"></i>mic</div>
+  <div class="ico"><i data-lucide="qr-code"></i>qr-code</div>
+  <div class="ico"><i data-lucide="calendar"></i>calendar</div>
+  <div class="ico"><i data-lucide="check-circle-2"></i>check-circle-2</div>
+  <div class="ico"><i data-lucide="alert-triangle"></i>alert-triangle</div>
+  <div class="ico"><i data-lucide="arrow-right"></i>arrow-right</div>
+  <div class="ico"><i data-lucide="arrow-left"></i>arrow-left</div>
+  <div class="ico"><i data-lucide="message-square"></i>message</div>
+  <div class="ico"><i data-lucide="list-ordered"></i>ranked</div>
+  <div class="ico"><i data-lucide="cloud"></i>cloud</div>
+  <div class="ico ai"><i data-lucide="wand-2"></i>wand (AI)</div>
+</div>
+<div class="sizes">
+  <div class="s"><i data-lucide="sparkles" style="width:16px;height:16px;color:#7C3AED"></i><span>icon-s · 16</span></div>
+  <div class="s"><i data-lucide="sparkles" style="width:20px;height:20px;color:#7C3AED"></i><span>icon-m · 20</span></div>
+  <div class="s"><i data-lucide="sparkles" style="width:24px;height:24px;color:#7C3AED"></i><span>icon-l · 24</span></div>
+  <div class="s" style="margin-left:auto;align-self:center;text-align:right">
+    <span style="font-family:var(--font-body);font-size:13px;color:var(--text-primary)">*Sparkle @ violet-500 = AI mark</span>
+    <span>prefix every AI-suggested surface</span>
+  </div>
+</div>
+<script>lucide.createIcons();</script>
