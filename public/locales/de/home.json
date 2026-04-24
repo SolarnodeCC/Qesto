@@ -2,10 +2,14 @@
   "tagline": "Qesto",
   "heading": "Spüren Sie den Puls des Raums — KI verstärkt ihn.",
   "subtitle": "Echtzeit-Interaktive Sitzungen auf Cloudflare's Edge.",
+  "heroTagline": "Edge-native · Privacy by default",
+  "heroTitle": "Spüren Sie den Puls des Raums — KI verstärkt ihn.",
+  "heroDescription": "Echtzeit-Interaktive Sitzungen auf Cloudflare's Edge.",
   "goToDashboard": "Zum Dashboard",
-  "signedInAs": "Angemeldet als",
+  "signedInAs": "Angemeldet als {{email}}",
   "signOut": "Abmelden",
   "loading": "Wird geladen…",
   "signIn": "Anmelden",
-  "heroTagline": "[TODO] Edge-native · Privacy by default"
+  "getStartedFree": "Kostenlos starten",
+  "seePricing": "Preise anzeigen"
 }

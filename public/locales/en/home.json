@@ -3,9 +3,13 @@
   "heading": "Feel the pulse of the room — AI amplifies it.",
   "subtitle": "Real-time interactive sessions on Cloudflare's edge.",
   "heroTagline": "Edge-native · Privacy by default",
+  "heroTitle": "Feel the pulse of the room — AI amplifies it.",
+  "heroDescription": "Real-time interactive sessions on Cloudflare's edge.",
   "goToDashboard": "Go to dashboard",
-  "signedInAs": "Signed in as",
+  "signedInAs": "Signed in as {{email}}",
   "signOut": "Sign out",
   "loading": "Loading…",
-  "signIn": "Sign in"
+  "signIn": "Sign in",
+  "getStartedFree": "Get started free",
+  "seePricing": "See pricing"
 }

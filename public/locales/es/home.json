@@ -2,10 +2,14 @@
   "tagline": "Qesto",
   "heading": "Siente el pulso de la sala — la IA lo amplifica.",
   "subtitle": "Sesiones interactivas en tiempo real en el borde de Cloudflare.",
+  "heroTagline": "Edge-native · Privacy by default",
+  "heroTitle": "Siente el pulso de la sala — la IA lo amplifica.",
+  "heroDescription": "Sesiones interactivas en tiempo real en el borde de Cloudflare.",
   "goToDashboard": "Ir al panel",
-  "signedInAs": "Iniciado como",
+  "signedInAs": "Iniciado como {{email}}",
   "signOut": "Cerrar sesión",
   "loading": "Cargando…",
   "signIn": "Iniciar sesión",
-  "heroTagline": "[TODO] Edge-native · Privacy by default"
+  "getStartedFree": "Comienza gratis",
+  "seePricing": "Ver precios"
 }
