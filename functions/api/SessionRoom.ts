@@ -53,6 +53,8 @@ type Meta = {
   sessionMode: SessionMode
   /** Unix ms when the current question expires in fun mode. */
   questionExpiresAt?: number
+  /** When true, vote messages are rejected until the presenter resumes. */
+  paused?: boolean
 }
 
 type Counts = Record<string, number>
@@ -322,6 +324,20 @@ export class SessionRoom implements DurableObject {
       case 'request_state':
         await this.sendInit(ws, att)
         break
+      case 'pause':
+        if (att.role !== 'presenter') {
+          ws.send(errorMessage('forbidden', 'Only presenter can pause'))
+          return
+        }
+        await this.setPaused(true)
+        break
+      case 'resume':
+        if (att.role !== 'presenter') {
+          ws.send(errorMessage('forbidden', 'Only presenter can resume'))
+          return
+        }
+        await this.setPaused(false)
+        break
       default:
         ws.send(errorMessage('unknown_type', `Unknown type: ${(parsed as { type?: string }).type}`))
     }
@@ -404,6 +420,12 @@ export class SessionRoom implements DurableObject {
     }
     att.bucket = { tokens: refilled - 1, lastAt: nowMs }
     ws.serializeAttachment(att)
+
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (meta?.paused) {
+      ws.send(errorMessage('paused', 'Voting is paused'))
+      return
+    }
 
     const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
     if (!question) {
@@ -550,6 +572,17 @@ export class SessionRoom implements DurableObject {
     }
 
     return limitExceeded
+  }
+
+  private async setPaused(paused: boolean): Promise<void> {
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (!meta) return
+    await this.ctx.storage.put(K_META, { ...meta, paused })
+    const type = paused ? 'session_paused' : 'session_resumed'
+    const msg = serverMessage({ type, data: {}, timestamp: now() })
+    for (const ws of this.ctx.getWebSockets()) {
+      try { ws.send(msg) } catch { /* stale socket */ }
+    }
   }
 
   private async broadcastParticipants(): Promise<void> {

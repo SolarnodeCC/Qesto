@@ -14,6 +14,8 @@ export type ClientMessage =
   | { type: 'vote'; data: { questionId: string; optionId: string }; timestamp: number }
   | { type: 'advance'; data: Record<string, never>; timestamp: number }
   | { type: 'request_state'; data: Record<string, never>; timestamp: number }
+  | { type: 'pause'; data: Record<string, never>; timestamp: number }
+  | { type: 'resume'; data: Record<string, never>; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
@@ -70,6 +72,16 @@ export type ServerMessage =
   | {
       type: 'question_timeout'
       data: { questionId: string }
+      timestamp: number
+    }
+  | {
+      type: 'session_paused'
+      data: Record<string, never>
+      timestamp: number
+    }
+  | {
+      type: 'session_resumed'
+      data: Record<string, never>
       timestamp: number
     }
   | {
