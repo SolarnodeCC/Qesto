@@ -2,6 +2,8 @@
 name: qesto-marketing
 description: Growth and marketing lead for Qesto. Produces marketing copy, email sequences, competitor pages, CRO recommendations, ICP research, and sales materials. Invoke for MKTG-* backlog items, conversion funnel work, content strategy, or any marketing deliverable.
 model: haiku
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

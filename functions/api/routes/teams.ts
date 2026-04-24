@@ -24,6 +24,7 @@ import { generateMagicLinkToken, hashMagicLinkToken } from '../lib/tokens'
 import { sendEmail } from '../lib/email'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
+import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 
 const INVITE_TTL_SECONDS = 24 * 60 * 60 // 24 hours
@@ -190,6 +191,14 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     await saveTeam(c.env.TEAMS_KV, team)
     await addUserTeam(c.env.TEAMS_KV, user.sub, team.id)
     await upsertUserRole(c.env.DB, user.sub, 'owner')
+
+    writeEvent(c.env.METRICS_AE, {
+      name: 'team_created',
+      userId: user.sub,
+      teamId: team.id,
+      plan,
+      traceId: c.get('trace_id'),
+    })
 
     return c.json({ ok: true, data: { team }, trace_id: c.get('trace_id') }, 201)
   })

@@ -88,6 +88,8 @@ export type Session = {
   started_at: number | null
   closed_at: number | null
   archived_at: number | null
+  /** Optional analytics-only field (OBS-001). Not exposed to frontend. */
+  team_id?: string | null
 }
 
 export type User = {

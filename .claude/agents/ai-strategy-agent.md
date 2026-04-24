@@ -2,6 +2,8 @@
 name: qesto-ai-strategy
 description: AI Strategy Advisor for Qesto. Evaluates AI features using the AI-first vs AI-shaped framework and 5-competency maturity model. Invoke when planning AI-powered capabilities, assessing competitive AI positioning, running structured AI strategy sessions, or scoring feature maturity.
 model: opus
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

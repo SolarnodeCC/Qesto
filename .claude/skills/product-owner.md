@@ -66,3 +66,70 @@ AND [additional constraint]
 | New defect | `docs/BACKLOG.md §1` with TC=13 |
 | Stories completed | `docs/BACKLOG.md §5` + `docs/SPRINT_PLAN.md` |
 | Sprint scope change | `docs/SPRINT_PLAN.md` |
+
+## In-Sprint Scope Change Protocol (Wave 2)
+
+When a mid-sprint request arrives (bug fix, urgent feature, spec clarification), use this decision tree:
+
+### Decision Tree
+
+```
+Urgent request arrives during sprint?
+│
+├─ Critical security/data loss bug?
+│  └─ ACCEPT immediately
+│     Action: Pull from backlog, assign to developer with lowest WIP
+│     Impact: Descope lower-priority story in sprint (move to backlog)
+│
+├─ P0 defect (broken feature in production)?
+│  └─ EVALUATE: Can fix in <2 hours?
+│     YES → ACCEPT (developer context-switches)
+│     NO → DEFER to next sprint
+│
+├─ P1 (feature blockers, shipping delay)?
+│  └─ EVALUATE: Team capacity (spare points remaining)?
+│     YES (>5pts) → ACCEPT if WSJF score ≥ current sprint-min
+│     NO → DEFER to next sprint
+│
+├─ P2/P3 (nice-to-have, feature requests)?
+│  └─ DEFER to next sprint (never descope planned work for P2)
+│
+└─ Unclear severity?
+   └─ PARKING LOT: Schedule 15-min clarification call with stakeholder
+      Decision after call using tree above
+```
+
+### Acceptance Criteria for Adding Mid-Sprint Work
+- [ ] Severity justified (P0/P1 only, not subjective)
+- [ ] Story points estimated (must fit in remaining sprint capacity)
+- [ ] Descope plan clear (what gets moved to backlog?)
+- [ ] Developer identified (who takes this?)
+- [ ] Stakeholder aware (why something else is being delayed)
+
+---
+
+## Quality Gates
+
+- [ ] Every story has AC (no vague requirements)
+- [ ] No story starts without backend/frontend alignment
+- [ ] Story points ≤ 13 (if larger, split into subtasks)
+- [ ] Sprint not overbooked (aim 85–95% capacity, leave 5–15% buffer)
+- [ ] Sprint scope change followed protocol above (no ad-hoc descopes)
+
+## Do Not
+
+- Do not start a story without AC written
+- Do not commit to a story without backend/frontend input (blocking dependencies?)
+- Do not let scope creep during sprint (mid-sprint adds must follow protocol)
+- Do not descope P0/P1 stories for P2 requests
+- Do not close a sprint with unfinished stories (done means AC met + reviewed)
+
+## Metrics
+
+- Story estimation accuracy (planned vs actual, target: ±20%)
+- Sprint velocity consistency (target: ±5% variance sprint-to-sprint)
+- Scope creep incidents per sprint (target: ≤ 1 mid-sprint change approved)
+- Definition of Done compliance (target: 100% — no story shipped without DoD)
+
+## Change Log
+- 2026-04-24: Added Wave 2 in-sprint scope change decision tree + protocol for P0/P1 mid-sprint requests

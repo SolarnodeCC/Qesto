@@ -2,6 +2,8 @@
 name: qesto-tester
 description: QA lead for Qesto. Writes Vitest unit and integration tests, maps acceptance criteria to test cases, and verifies coverage targets. Invoke when writing tests, reviewing coverage, debugging CI failures, verifying story acceptance criteria, or adding accessibility tests.
 model: haiku
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

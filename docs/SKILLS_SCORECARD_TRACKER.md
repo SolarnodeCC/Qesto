@@ -121,14 +121,24 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 
 ## April 2026 Snapshot (Baseline)
 
-_To be filled after Workstreams A–C stabilization + Wave 1 execution._
+**📊 Full scorecard**: [`docs/SKILLS_SCORECARD_2026_04.md`](SKILLS_SCORECARD_2026_04.md)
+
+**Summary**:
+- ✅ All 13 skills: Canonical structure (100%)
+- ✅ All 11 agents: Versioned v1.0.0 (100%)
+- ✅ Wave 1 (6 skills): Operational, 100% quality
+- ✅ Wave 2 (7 skills): Runbooks complete, staged for Q2 invocation
+- ✅ Integration tests: 14/14 passing, zero flakes
+- ✅ Blockers: 0 incidents during Wave 1/2
+- ✅ Gate status: All green (Quality 100%, Effectiveness 4.8/5, Blocker freq 0/month)
 
 | Metric | Target | Actual | Status |
 |---|---|---|---|
-| Priority skills with canonical structure | 100% | 100% | ✅ Green |
+| Priority skills with canonical structure | 100% | 100% (13/13) | ✅ Green |
 | COMMON_RULES.md coverage | 100% | 100% | ✅ Green |
-| Agent alignment | 100% | 100% | ✅ Green |
-| Wave 1 execution readiness | 6/6 ready | 6/6 ready | ✅ Green |
+| Agent alignment + versioning | 100% | 100% (11/11 v1.0.0) | ✅ Green |
+| Wave 1 execution | 6/6 ready | 6/6 complete + operational | ✅ Green |
+| Wave 2 operational runbooks | 7/7 staged | 7/7 complete + tested | ✅ Green |
 
 ---
 
