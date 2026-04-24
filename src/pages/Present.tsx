@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
-import { ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, Play, Shuffle, Sparkles, Timer, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, Play, Shuffle, Sparkles, Timer, Users } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession, type LivePollOption } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -51,7 +51,7 @@ export default function Present() {
   const auth = useAuth()
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
-  const { state, sendAdvance, sendPause, sendResume } = useLiveSession(id, { enabled: !!id })
+  const { state, sendAdvance, sendBack, sendPause, sendResume } = useLiveSession(id, { enabled: !!id })
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -332,7 +332,16 @@ export default function Present() {
       {/* ── Presenter control panel ───────────────────────────────────────── */}
       <div className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0">
 
-        {/* Next question / Close session */}
+        {/* Back / Next question / Close session */}
+        <button
+          type="button"
+          onClick={() => sendBack()}
+          disabled={!isLive}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-pulse-600"
+        >
+          <ChevronLeft size={14} aria-hidden="true" />
+          Back
+        </button>
         <button
           type="button"
           onClick={() => sendAdvance()}

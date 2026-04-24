@@ -342,6 +342,29 @@ export class SessionRoom implements DurableObject {
         }
         break
       }
+      case 'back': {
+        if (att.role !== 'presenter') {
+          ws.send(errorMessage('forbidden', 'Only presenter can go back'))
+          return
+        }
+        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+        const prevIdx = curIdx - 1
+        if (prevIdx < 0) {
+          ws.send(errorMessage('noop', 'Already at first question'))
+          return
+        }
+        const prevQ = allQs[prevIdx]
+        await this.ctx.storage.put(K_QUESTION_INDEX, prevIdx)
+        await this.ctx.storage.put(K_QUESTION, prevQ)
+        await this.ctx.storage.put(K_COUNTS, {} as Counts)
+        await this.ctx.storage.put(K_VOTERS, {} as Votes)
+        const backMsg = serverMessage({ type: 'question', data: { question: prevQ }, timestamp: now() })
+        for (const socket of this.ctx.getWebSockets()) {
+          try { socket.send(backMsg) } catch { /* ignore closed socket */ }
+        }
+        break
+      }
       case 'request_state':
         await this.sendInit(ws, att)
         break

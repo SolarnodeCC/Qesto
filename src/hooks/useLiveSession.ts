@@ -276,6 +276,12 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     ws.send(JSON.stringify({ type: 'advance', data: {}, timestamp: Date.now() }))
   }, [])
 
+  const sendBack = useCallback(() => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({ type: 'back', data: {}, timestamp: Date.now() }))
+  }, [])
+
   const sendPause = useCallback(() => {
     const ws = wsRef.current
     if (!ws || ws.readyState !== WebSocket.OPEN) return
@@ -288,5 +294,5 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     ws.send(JSON.stringify({ type: 'resume', data: {}, timestamp: Date.now() }))
   }, [])
 
-  return { state, sendVote, requestState, sendAdvance, sendPause, sendResume }
+  return { state, sendVote, requestState, sendAdvance, sendBack, sendPause, sendResume }
 }
