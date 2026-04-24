@@ -178,8 +178,25 @@ export default function Present() {
           {/* Top accent bar */}
           <div className="absolute top-0 left-0 right-0 h-[6px]" style={{ background: 'var(--gradient-brand)' }} />
 
+          {/* All done overlay */}
+          {state.allDone && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center" style={{ background: 'var(--gradient-brand)' }}>
+              <div className="text-[120px] mb-6" aria-hidden="true">🎉</div>
+              <h2 className="font-[family-name:var(--font-display)] font-bold text-[80px] leading-[1.1] tracking-[-0.02em] text-white text-center [text-wrap:balance]">
+                Bedankt voor<br />jullie input!
+              </h2>
+              <p className="mt-6 text-[32px] text-white/80 font-medium">
+                {state.session?.title}
+              </p>
+              <div className="mt-12 flex items-center gap-3 text-[26px] text-white/70 font-medium">
+                <Users size={28} className="text-white/60" aria-hidden="true" />
+                {state.participants} {t('participant', { count: state.participants })} {t('connectedLabel')}
+              </div>
+            </div>
+          )}
+
           {/* Paused overlay */}
-          {localPaused && (
+          {localPaused && !state.allDone && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
               <div className="flex items-center gap-4 bg-white rounded-2xl px-10 py-6 shadow-2xl">
                 <Pause size={36} className="text-amber-500" aria-hidden="true" />

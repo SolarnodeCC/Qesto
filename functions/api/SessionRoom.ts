@@ -328,7 +328,10 @@ export class SessionRoom implements DurableObject {
         const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
         const nextIdx = curIdx + 1
         if (nextIdx >= allQs.length) {
-          ws.send(errorMessage('noop', 'No more questions'))
+          const doneMsg = serverMessage({ type: 'all_done', data: {}, timestamp: now() })
+          for (const socket of this.ctx.getWebSockets()) {
+            try { socket.send(doneMsg) } catch { /* ignore */ }
+          }
           return
         }
         const nextQ = allQs[nextIdx]

@@ -34,6 +34,7 @@ export type LiveState = {
   reconnectAttempts: number
   lastVote: { optionId: string } | null
   paused: boolean
+  allDone: boolean
 }
 
 type Action =
@@ -59,6 +60,7 @@ type Action =
   | { kind: 'vote_sent'; optionId: string }
   | { kind: 'session_paused' }
   | { kind: 'session_resumed' }
+  | { kind: 'all_done' }
 
 export const INITIAL: LiveState = {
   connection: 'idle',
@@ -72,6 +74,7 @@ export const INITIAL: LiveState = {
   reconnectAttempts: 0,
   lastVote: null,
   paused: false,
+  allDone: false,
 }
 
 export function reducer(state: LiveState, action: Action): LiveState {
@@ -120,6 +123,8 @@ export function reducer(state: LiveState, action: Action): LiveState {
       return { ...state, paused: true }
     case 'session_resumed':
       return { ...state, paused: false }
+    case 'all_done':
+      return { ...state, allDone: true }
   }
 }
 
@@ -212,6 +217,9 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
             break
           case 'session_resumed':
             dispatch({ kind: 'session_resumed' })
+            break
+          case 'all_done':
+            dispatch({ kind: 'all_done' })
             break
         }
       } catch {

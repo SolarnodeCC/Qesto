@@ -86,6 +86,11 @@ export type ServerMessage =
       timestamp: number
     }
   | {
+      type: 'all_done'
+      data: Record<string, never>
+      timestamp: number
+    }
+  | {
       type: 'error'
       data: { code: string; message: string }
       timestamp: number
