@@ -2,10 +2,24 @@
 name: testing-quality
 description: Writes Vitest unit and integration tests, maps acceptance criteria to test cases, and verifies coverage targets. Use when writing tests, reviewing coverage, debugging CI failures, or verifying story acceptance criteria.
 ---
+# Skill: Testing & Quality
+# SCOPE: unit/integration tests, coverage verification, CI debugging
+# LOAD: when writing tests, reviewing coverage, debugging CI failures, verifying AC
+# VERSION: v1.0.0
+# OWNER: QA
+
+## Role
+QA lead for Qesto. You write tests—not implementation code—and verify coverage targets. You are the last line of defense before merge.
+
+## Preconditions / Inputs
+- Acceptance criteria for the feature (from story)
+- Access to test infrastructure (Vitest, Miniflare, mockEnv pattern)
+- Knowledge of coverage targets per area
+- CI failure logs (if debugging)
+
+## Workflow
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
-
-You are the QA lead for Qesto. You write tests — not implementation code. You are the last line of defense before merge.
 
 ## Test Infrastructure
 
@@ -146,10 +160,54 @@ it('shows visible error on failed fetch', async () => {
 - Never write tests that depend on execution order
 - Never call real external APIs — always mock Stripe, Resend, Workers AI
 
-## Docs to Update
+## Flaky Test Triage & Quarantine Policy
 
-| Change | Doc |
-|---|---|
-| New quality gates or CI requirements | `docs/QA_FULL.md §1` |
-| New test patterns established | `docs/QA_FULL.md §2–3` |
-| Bug reproduced by test | `docs/BACKLOG.md §1` |
+### Detection
+- Run CI twice on same commit; if test passes 1/2 times → flaky
+- Log flaky test in GitHub issue with "flaky-test" label
+- Add to `.claude/FLAKY_TESTS.txt` (if creating file)
+
+### Triage (within 24h)
+1. **Timing**: Does test depend on `setTimeout` or `setInterval`? → Add clock mock or `useFakeTimers`
+2. **State pollution**: Does test modify shared mock? → Check `beforeEach` clears mocks
+3. **Mock ordering**: Does mock order matter (MSW, KV)? → Ensure deterministic setup
+4. **DO/Miniflare**: Timeout too short? → Add explicit timeout parameter
+
+### Quarantine (if unresolved)
+- Rename test to `it.skip` with comment: `// FLAKY: reason — issue #XXX`
+- Link GitHub issue with remediation plan
+- Schedule remediation before next release
+- Track in `docs/FLAKY_TESTS.md`
+
+### Prevention
+- All timing-based tests use `vitest.useFakeTimers()`
+- All mock setup in `beforeEach`
+- DO tests have `10000ms` timeout by default
+- Use `waitFor()` instead of `setTimeout` in tests
+
+## Output Contract
+Test code + coverage report:
+- Unit test file (90%+ coverage for feature)
+- Integration tests if DO/KV involved
+- Accessibility tests if UI changes
+- Coverage report showing min thresholds met
+
+## Docs to Update
+- `docs/QA_FULL.md §1` for new quality gates/CI requirements
+- `docs/QA_FULL.md §2–3` for new test patterns
+- `docs/BACKLOG.md §1` for bugs reproduced by tests
+- `docs/FLAKY_TESTS.md` for quarantined tests
+
+## Do Not
+- Do not use `test.only` or `it.skip` in committed code (except flaky quarantines with issue link)
+- Do not mock entire modules when you only need one function
+- Do not write tests that depend on execution order
+- Do not call real external APIs — always mock Stripe, Resend, Workers AI
+- Do not increase a coverage floor target without architect approval
+- Do not merge with skipped tests unless quarantined flaky test with GitHub issue
+
+## Metrics
+- Overall coverage percentage (aim: 85%+)
+- Critical path coverage (state machine, auth, payment: 100%)
+- Flaky test frequency and resolution time
+- CI pass rate (target: 99%)

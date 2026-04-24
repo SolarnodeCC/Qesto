@@ -2,6 +2,22 @@
 name: investigating-bugs
 description: Provides a structured 5-step debug protocol for Durable Object and WebSocket issues. Use when diagnosing DO/WebSocket failures, hibernation bugs, timer/alarm problems, or any SessionRoom.ts root-cause analysis.
 ---
+# Skill: Investigating Bugs
+# SCOPE: DO/WebSocket root-cause diagnosis
+# LOAD: when debugging SessionRoom failures, WS disconnects, hibernation issues
+# VERSION: v1.0.0
+# OWNER: Backend/DevOps
+
+## Role
+Structured root-cause investigator for Durable Object and WebSocket failures. You diagnose bugs efficiently, minimize time-to-resolution, and escalate appropriately when tooling limits are reached.
+
+## Preconditions / Inputs
+- Session ID or reproducible scenario (browser, device, LIVE/DRAFT state)
+- Error logs from `wrangler tail` or browser DevTools
+- Access to SessionRoom.ts and WS protocol types
+- Understanding of DO lifecycle (hibernation, alarms, tags)
+
+## Workflow
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 
@@ -61,8 +77,14 @@ wrangler tail qesto --format json | jq 'select(.logs[].message | test("error:"))
 3. Bug only reproducible in production
 4. Involves billing/Stripe state
 
-## Output Template
+## Quality Gates
+- [ ] All 5 steps completed (REPRODUCE through CONCLUDE)
+- [ ] Root cause stated in one sentence
+- [ ] Evidence includes log line + code location
+- [ ] Escalation path followed (see "Escalate to Architect When" section)
 
+## Output Contract
+Investigation report with these fields:
 ```markdown
 ## Investigation Report — <date>
 **Problem**: <1-sentence>
@@ -72,3 +94,20 @@ wrangler tail qesto --format json | jq 'select(.logs[].message | test("error:"))
 **Fix**: <code change or workaround>
 **Prevention**: <backlog item? Yes/No — ID>
 ```
+
+## Docs to Update
+- `docs/KNOWN_ISSUES.md` for recurrent patterns
+- `docs/ARCHITECTURE.md` if DO protocol changes needed
+- GitHub issue with "investigation" label when root cause found
+
+## Do Not
+- Do not refactor during investigation — test hypothesis with minimal change only
+- Do not ignore "common bug patterns" table — check it first
+- Do not commit changes without running `npm test` and verifying in local environment
+- Do not speculate on root cause — follow 5-step protocol to evidence
+- Do not skip WS/DO checklist — hibernation state is the #1 cause
+
+## Metrics
+- Average time-to-root-cause per investigation
+- Escalation rate (% requiring architect review)
+- Recurrence rate (same bug appearing twice)

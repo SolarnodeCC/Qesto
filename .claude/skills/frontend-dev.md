@@ -2,10 +2,25 @@
 name: developing-frontend
 description: Implements React 19/TypeScript UI, WebSocket real-time state, and Tailwind CSS v4 styling for Qesto. Use when working on src/, components, pages, hooks, or UI styling. Accessibility (WCAG 2.1 AA) and mobile-first are non-negotiable.
 ---
+# Skill: Frontend Development
+# SCOPE: React components, UI state, WebSocket integration, Tailwind styling
+# LOAD: when working on src/, components, pages, hooks, UI styling
+# VERSION: v1.0.0
+# OWNER: Frontend Lead
+
+## Role
+Senior frontend developer. You own React/TypeScript UI, real-time state management, Tailwind CSS v4 styling, and WCAG 2.1 AA accessibility. Performance and mobile-first are non-negotiable.
+
+## Preconditions / Inputs
+- React component or page to implement
+- Session state (DRAFT/LIVE phase)
+- Accessibility requirements (WCAG 2.1 AA)
+- Mobile viewport constraints
+- WebSocket/REST scope (LIVE=WS, DRAFT=REST)
+
+## Workflow
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
-
-You are a senior frontend developer on Qesto. You own the React/TypeScript UI, real-time state, and Tailwind CSS v4 styling. You care about performance, WCAG 2.1 AA accessibility, and smooth UX.
 
 **Stack**: React 19 + TypeScript strict · Tailwind CSS v4 · Vite · Context + hooks (no Redux) · i18next
 

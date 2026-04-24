@@ -2,10 +2,24 @@
 name: reviewing-code
 description: Runs code quality gates covering correctness, security, mobile accessibility, and architecture conformance. Use before every merge or after story implementation to block releases on critical findings.
 ---
+# Skill: Code Review
+# SCOPE: pre-merge quality gate, correctness/security/a11y/architecture audit
+# LOAD: before every merge, after story implementation
+# VERSION: v1.0.0
+# OWNER: QA/CSO (shared gate)
+
+## Role
+Code quality gate for Qesto. You review changed files against automated and manual gates, block merges on critical findings, and escalate security/architecture issues.
+
+## Preconditions / Inputs
+- Diff of all changed files (git diff or PR)
+- Test results (npm test, tsc --noEmit)
+- Story acceptance criteria (from backlog)
+- Changed layer (backend route, frontend component, integration, etc.)
+
+## Workflow
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
-
-You are the code quality gate for Qesto. You review changed files and block merges on critical findings.
 
 ## Step 1 — Automated Gates (block on failure)
 
@@ -73,6 +87,25 @@ tsc --noEmit    # no TypeScript errors
 □ No user input directly in fetch() URL (SSRF risk)
 ```
 
+## Risk-Tiered Review Depth
+
+### Tier 1 (High-Risk) — Full Deep Dive Required
+**Scope**: Auth flow, payments, DO state, rate limits, GDPR, Stripe webhooks, SAML config
+- Run all 5 steps (Automated + Correctness + Architecture + Mobile + Security)
+- Require CSO review + architecture review
+- Test locally if possible
+- Escalate to architect if design changes needed
+
+### Tier 2 (Medium-Risk) — Standard Review
+**Scope**: API routes (non-auth), KV operations, session transitions, email
+- Run steps 1–4 (skip deep security unless auth-related)
+- QA review sufficient (CSO optional unless crypto involved)
+
+### Tier 3 (Low-Risk) — Spot Check
+**Scope**: UI/frontend components (no API calls), doc updates, refactoring (no behavior change)
+- Run automated gates (step 1) + step 2 (correctness only)
+- QA sign-off sufficient
+
 ## Severity
 
 | Level | Examples | Action |
@@ -81,19 +114,35 @@ tsc --noEmit    # no TypeScript errors
 | **Require** | Missing aria-label, error state, touch target | Fix before merge |
 | **Suggest** | Naming, minor refactor | Optional — log in backlog |
 
-## Report Format
+## Quality Gates
 
-```markdown
-## Code Review — [story-ID] [date]
+| Gate | Command | Required |
+|---|---|---|
+| Unit tests pass | `npm test` | ✓ pre-merge |
+| Type check pass | `tsc --noEmit` | ✓ |
+| Lint/format | `npm run lint` | ✓ if present |
 
-### ✅ Passed
-- npm test green (X/X) | tsc clean
+## Output Contract
+Code review report with:
+- ✅ Passed gates (tests, TS, lint)
+- 🔴 Blocking issues (if any)
+- 🟡 Required changes (if any)
+- 💡 Suggestions (optional)
+- Final decision: APPROVED / BLOCKED / APPROVED WITH CHANGES
 
-### 🔴 Blocking
-- [file:line] [description]
+## Docs to Update
+- Story (backlog) with review checklist items if new patterns found
+- `docs/CODE_REVIEW_GUIDE.md` if new gate discovered
+- `docs/ARCHITECTURE.md` if architecture change required
 
-### 🟡 Required
-- [file:line] [description]
+## Do Not
+- Do not approve if tests fail or TS has errors
+- Do not approve high-risk changes without respective owner review (CSO for security, architect for design)
+- Do not skip accessibility checks for UI changes
+- Do not merge with "Require" severity items unfixed
+- Do not review your own code — request peer review
 
-### Decision: APPROVED | BLOCKED | APPROVED WITH CHANGES
-```
+## Metrics
+- Review turnaround time (target: <4h)
+- Issues caught pre-merge (target: 100% of "Block" severity)
+- Rework rate (% of PRs with review rounds > 1)

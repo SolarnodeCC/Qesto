@@ -98,5 +98,26 @@ git commit                      # Hook passes
 ## 7) Precedence Rule
 If a local agent/skill instruction conflicts with this file, treat this file as the default safety baseline and escalate for explicit override in the task scope.
 
+## 8) Test & Type-Check Minimums (Referenced in all skills)
+- `npm test` must pass before every commit
+- `npx tsc --noEmit` must pass before every commit
+- New route/handler tests required (coverage target in skill file)
+- No test.skip or it.skip in committed code (except flaky quarantines with GitHub issue link)
+
+## 9) Documentation Update Obligations
+Every skill file must reference which docs to update:
+- Policy changes → `docs/AGENT_SKILL_GOVERNANCE.md`
+- Architecture changes → `docs/ARCHITECTURE.md`
+- Security findings → `docs/BACKLOG.md §1` (P0) or `§4 Security`
+- QA/test patterns → `docs/QA_FULL.md §2–3`
+- Flaky tests → `docs/FLAKY_TESTS.md`
+
+## 10) Skill Governance Alignment (Non-Negotiable)
+- Semantic versioning: MAJOR (breaking) / MINOR (backward-compatible) / PATCH (clarifications)
+- Owner designation required (DRI per OWNER field in skill header)
+- Changelog entry required on update (YYYY-MM-DD: change note)
+- Monthly quality scorecard review (keep/improve/retire decision)
+
 ## Change Log
+- 2026-04-24: Added test/type-check minimums, doc obligations, and governance alignment rules.
 - 2026-04-10: Canonicalized file headers and shared rules reference.
