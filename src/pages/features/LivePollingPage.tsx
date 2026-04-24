@@ -1,121 +1,218 @@
-import FeaturePageTemplate from '../../components/FeaturePageTemplate'
+import { Link } from 'react-router-dom'
+import { List, CheckSquare, BarChart3, MessageSquare, ThumbsUp, Move, Cloud, Gauge, Play, EyeOff, Shuffle, Users, Timer, Download } from 'lucide-react'
+import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
-import { useT } from '../../i18n'
+
+const btnPrimary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+const btnSecondary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 text-sm border border-pulse-300 bg-white hover:border-pulse-500 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+
+const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
+const displayFont = { fontFamily: 'var(--font-family-display)' }
+const monoFont = { fontFamily: 'var(--font-family-mono)' }
+const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
+const shadowCard = { boxShadow: 'var(--shadow-card)' }
+
+const questionTypes = [
+  { icon: <List size={22} />, title: 'Multiple choice', desc: 'Single-select with live bar tally. Shuffle options to defeat position bias. 2–12 options.', tag: 'type: mc' },
+  { icon: <CheckSquare size={22} />, title: 'Multi-select', desc: '"Pick up to N." Live stacked bars with exact counts. Great for prioritization.', tag: 'type: multi' },
+  { icon: <BarChart3 size={22} />, title: 'Likert / scale', desc: '1–5 or 1–7 with custom endpoint labels. Mean and distribution shown together, never alone.', tag: 'type: scale' },
+  { icon: <MessageSquare size={22} />, title: 'Open text', desc: 'Free response clustered by AI in 8–15 seconds. Raw rows never shown — themes with counts and representative quotes.', tag: 'type: open' },
+  { icon: <ThumbsUp size={22} />, title: 'Upvote queue', desc: 'Audience submits questions; others upvote. Moderator console shows a ranked queue. Perfect for Q&A.', tag: 'type: queue' },
+  { icon: <Move size={22} />, title: 'Ranking', desc: 'Drag-order items. Tally shows Borda count and positional heatmap.', tag: 'type: rank' },
+  { icon: <Cloud size={22} />, title: 'Word cloud', desc: '1–3 word responses rendered as a live cloud. Frequency-scaled, stemming on by default.', tag: 'type: cloud' },
+  { icon: <Gauge size={22} />, title: 'Slider', desc: 'Continuous 0–100 input. Tally shows median, IQR, and distribution — never just the mean.', tag: 'type: slider' },
+]
+
+const latencyRows = [
+  { hop: 'Hop 01', title: 'Client → edge POP.', desc: 'TLS to the nearest Cloudflare edge. Participant never talks to an origin.', lat: '~22ms', sub: 'p50 wire' },
+  { hop: 'Hop 02', title: 'Edge → Durable Object.', desc: 'Session state lives in a single DO, pinned to the colo closest to first-mover.', lat: '~8ms', sub: 'intra-colo' },
+  { hop: 'Hop 03', title: 'DO → WebSocket fan-out.', desc: 'Tally update broadcast to every connected participant over persistent WS.', lat: '~12ms', sub: 'fanout' },
+  { hop: 'Hop 04', title: 'Render.', desc: 'Bar moves on the projected screen. Same pipe, no client poll.', lat: '~16ms', sub: 'paint' },
+  { hop: 'Total', title: 'Tap to bar movement.', desc: 'End-to-end, measured across 10k sessions in production.', lat: '< 80ms', sub: 'p50 end-to-end', highlight: true },
+]
+
+const hostControls = [
+  { icon: <Play size={22} />, title: 'Launch, pause, reopen', desc: 'Every question is a state machine. Host controls all transitions; participants never see a broken flow.' },
+  { icon: <EyeOff size={22} />, title: 'Hide tally live', desc: "Toggle visibility mid-vote. Useful when you want the room to commit before seeing others' answers." },
+  { icon: <Shuffle size={22} />, title: 'Option shuffle', desc: 'Randomize order per participant. Defeats position bias without randomizing on the projected screen.' },
+  { icon: <Users size={22} />, title: 'Minimum tally gate', desc: 'Results stay hidden until N voters are in. Default 5, configurable. Prevents single-voter exposure.' },
+  { icon: <Timer size={22} />, title: 'Soft timer', desc: 'Optional countdown visible to participants. Expires to close, not to lock — stragglers finish on next question.' },
+  { icon: <Download size={22} />, title: 'One-click export', desc: 'CSV, JSON, or signed PDF with every tally and consent log. Integrates with Workday, HRIS, Notion, Slack.' },
+]
 
 export default function LivePollingPage() {
-  const t = useT('solutions')
-
   return (
-    <>
+    <MainLayout>
       <PageSeo
-        title={t('features.livePolling.seo.title')}
-        description={t('features.livePolling.seo.description')}
+        title="Live Polling — Qesto"
+        description="Tallies that land in under a second. Every vote goes to a Durable Object in the same Cloudflare colo as the voter."
         canonicalPath="/features/live-polling"
         ogImage="/images/solutions/photo-1572021335469-31706a17aaef.avif"
       />
-      <FeaturePageTemplate
-        hero={{
-          badge: t('features.livePolling.badge'),
-          headline: t('features.livePolling.headline'),
-          subheadline: t('features.livePolling.subheadline'),
-          primaryCta: { label: t('cta.tryItFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-          imageUrl: '/images/solutions/photo-1572021335469-31706a17aaef.avif',
-          imageAlt: 'Audience responding to a live poll during an event',
-          gallery: [
-            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Workshop participants ranking ideas in real time' },
-            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Large session with instant pulse checks' },
-          ],
-      }}
-      howItWorks={{
-        heading: t('features.livePolling.howItWorks.heading'),
-        steps: [
-          {
-            number: 1,
-              title: t('features.livePolling.howItWorks.step1.title'),
-              desc: t('features.livePolling.howItWorks.step1.desc'),
-          },
-          {
-            number: 2,
-              title: t('features.livePolling.howItWorks.step2.title'),
-              desc: t('features.livePolling.howItWorks.step2.desc'),
-          },
-          {
-            number: 3,
-              title: t('features.livePolling.howItWorks.step3.title'),
-              desc: t('features.livePolling.howItWorks.step3.desc'),
-          },
-        ],
-      }}
-      outcomes={{
-        heading: t('features.livePolling.outcomes.heading'),
-        items: [
-          {
-            icon: '🌍',
-              metric: t('features.livePolling.outcomes.item1.metric'),
-              desc: t('features.livePolling.outcomes.item1.desc'),
-          },
-          {
-            icon: '👥',
-              metric: t('features.livePolling.outcomes.item2.metric'),
-              desc: t('features.livePolling.outcomes.item2.desc'),
-          },
-          {
-            icon: '🗳️',
-              metric: t('features.livePolling.outcomes.item3.metric'),
-              desc: t('features.livePolling.outcomes.item3.desc'),
-          },
-        ],
-      }}
-      deepDive={{
-        heading: 'How teams use Live Polling to steer the room',
-        intro: 'Live Polling works best when teams treat it as a facilitation control layer, not a one-off interaction.',
-        pillars: [
-          {
-            title: 'Real-time room diagnostics',
-            desc: 'Spot confusion, confidence dips, and priority shifts while the session is still live.',
-          },
-          {
-            title: 'Inclusive participation at scale',
-            desc: 'Enable equal contribution from in-room and remote attendees with low-friction join flows.',
-          },
-          {
-            title: 'Faster closure on decisions',
-            desc: 'Use ranking and consent formats to align groups visibly before moving to execution.',
-          },
-        ],
-      }}
-      proof={{
-        heading: t('features.livePolling.proof.heading'),
-        metrics: [
-          { value: t('features.livePolling.proof.metric1.value'), label: t('features.livePolling.proof.metric1.label'), note: t('features.livePolling.proof.metric1.note') },
-          { value: t('features.livePolling.proof.metric2.value'), label: t('features.livePolling.proof.metric2.label'), note: t('features.livePolling.proof.metric2.note') },
-          { value: t('features.livePolling.proof.metric3.value'), label: t('features.livePolling.proof.metric3.label'), note: t('features.livePolling.proof.metric3.note') },
-        ],
-      }}
-      related={{
-        heading: t('features.livePolling.related.heading'),
-        links: [
-            { label: t('features.livePolling.related.link1.label'), href: '/events', desc: t('features.livePolling.related.link1.desc') },
-            { label: t('features.livePolling.related.link2.label'), href: '/hr', desc: t('features.livePolling.related.link2.desc') },
-            { label: t('features.livePolling.related.link3.label'), href: '/use-cases/team-meetings', desc: t('features.livePolling.related.link3.desc') },
-        ],
-      }}
-      faq={{
-        heading: t('features.livePolling.faq.heading'),
-        items: [
-          { question: t('features.livePolling.faq.q1.question'), answer: t('features.livePolling.faq.q1.answer') },
-          { question: t('features.livePolling.faq.q2.question'), answer: t('features.livePolling.faq.q2.answer') },
-          { question: t('features.livePolling.faq.q3.question'), answer: t('features.livePolling.faq.q3.answer') },
-        ],
-      }}
-      bottomCta={{
-          heading: t('features.livePolling.bottomCta.heading'),
-          subheading: t('features.livePolling.bottomCta.subheading'),
-          primaryCta: { label: t('cta.startFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-        }}
-      />
-    </>
+
+      {/* Hero */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Live Polling</div>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+                Tallies that land in{' '}
+                <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
+                  under a second.
+                </span>
+              </h1>
+              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+                Every vote goes to a Durable Object in the same Cloudflare colo as the voter. No central server
+                round-trip, no polling loop, no "results update in 30 seconds." The bar moves when the thumb does.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+                  Start a session
+                </Link>
+                <Link to="/features/ai-insights" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                  Read the architecture
+                </Link>
+              </div>
+            </div>
+
+            {/* Poll preview */}
+            <div className="bg-white rounded-[20px] p-7" style={shadowElevated}>
+              <div className="flex justify-between mb-3.5 text-[11px] font-bold uppercase tracking-widest text-pulse-500">
+                <span>Question 03 of 07</span>
+                <span className="flex items-center gap-1.5 text-teal-700">
+                  <span className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_6px_#14B8A6]" />
+                  Live · 142 voters
+                </span>
+              </div>
+              <h3 className="font-bold text-[22px] tracking-tight mb-4 text-pulse-900" style={displayFont}>
+                Which of these should we ship first?
+              </h3>
+              {[
+                { lbl: 'Better onboarding', pct: 68, n: 96 },
+                { lbl: 'Mobile parity', pct: 42, n: 60 },
+                { lbl: 'Integrations', pct: 31, n: 44 },
+                { lbl: 'Perf work', pct: 18, n: 26 },
+              ].map(({ lbl, pct, n }) => (
+                <div key={lbl} className="flex items-center gap-2.5 mb-2 text-sm">
+                  <span className="w-32 font-medium text-pulse-700">{lbl}</span>
+                  <div className="flex-1 h-2.5 bg-pulse-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, ...gradientBrand }} />
+                  </div>
+                  <span className="w-7 text-right text-pulse-500" style={{ fontVariantNumeric: 'tabular-nums', ...monoFont }}>
+                    {n}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Question types */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Question types</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+            Eight primitives. Every session you'll ever need.
+          </h2>
+          <p className="text-pulse-500 mb-8 text-lg">
+            Not a kitchen sink. These are the shapes a facilitator actually reaches for, sharpened.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {questionTypes.map(({ icon, title, desc, tag }) => (
+              <div
+                key={title}
+                className="bg-white rounded-xl p-5.5 grid gap-4 items-start"
+                style={{ boxShadow: 'var(--shadow-card)', gridTemplateColumns: '48px 1fr' }}
+              >
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center flex-shrink-0">
+                  {icon}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-[16px] mb-1.5 text-pulse-900">{title}</h3>
+                  <p className="text-[13.5px] text-pulse-500 leading-relaxed mb-1.5">{desc}</p>
+                  <span className="text-[11px] text-pulse-400" style={monoFont}>{tag}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Latency ladder */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Latency</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+            Because a tally that lags is a tally people don't trust.
+          </h2>
+          <p className="text-pulse-500 mb-8 text-lg">
+            Measured p50 latencies across the Qesto path, from tap to projected bar. Edge-resident state means the
+            wire distance is "to the nearest Cloudflare POP" — usually under 30ms.
+          </p>
+          <div className="rounded-2xl overflow-hidden border border-pulse-200 divide-y divide-pulse-200">
+            {latencyRows.map(({ hop, title, desc, lat, sub, highlight }) => (
+              <div
+                key={hop}
+                className="bg-white px-6 py-4.5 grid items-center gap-6 text-sm"
+                style={{ gridTemplateColumns: '140px 1fr 120px' }}
+              >
+                <span className="text-teal-700 font-semibold text-[12px]" style={monoFont}>{hop}</span>
+                <span className="text-pulse-800">
+                  <strong className="font-semibold">{title}</strong> {desc}
+                </span>
+                <div className="text-right" style={monoFont}>
+                  <div
+                    className={`text-[13px] font-bold ${highlight ? 'text-teal-700' : 'text-pulse-800'}`}
+                  >
+                    {lat}
+                  </div>
+                  <div className="text-[11px] text-pulse-500 uppercase tracking-widest">{sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Host controls */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Host controls</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+            The console a facilitator actually wants.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {hostControls.map(({ icon, title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-4">
+                  {icon}
+                </div>
+                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900">{title}</h3>
+                <p className="text-sm leading-relaxed text-pulse-500">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA band */}
+      <div className="py-10 px-6">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+          <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
+            Ship the tally. Keep the room.
+          </h2>
+          <p className="text-slate-400 mb-8">
+            Start a session free. Paid plans unlock recaps, exports, and longer retention.
+          </p>
+          <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+            Launch your first poll
+          </Link>
+        </div>
+      </div>
+    </MainLayout>
   )
 }

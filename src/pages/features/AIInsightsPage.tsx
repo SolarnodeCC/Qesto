@@ -1,123 +1,277 @@
-import FeaturePageTemplate from '../../components/FeaturePageTemplate'
+import { Link } from 'react-router-dom'
+import { Sparkles, Layers, FileText, Search, Cpu, Shield, Trash2, Check } from 'lucide-react'
+import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
-import { useT } from '../../i18n'
+
+const btnPrimary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+const btnSecondary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 text-sm border border-pulse-300 bg-white hover:border-pulse-500 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+
+const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
+const gradientAI = { background: 'linear-gradient(135deg, #8B5CF6 0%, #2DD4BF 100%)' }
+const displayFont = { fontFamily: 'var(--font-family-display)' }
+const monoFont = { fontFamily: 'var(--font-family-mono)' }
+const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
+const shadowCard = { boxShadow: 'var(--shadow-card)' }
+
+const clusters = [
+  { title: 'Theme 01 · Hiring velocity', count: 58, quote: '"Every backfill takes six weeks longer than last year." · "Senior pipeline is dry." · "Recruiter handoffs fall through."' },
+  { title: 'Theme 02 · Cross-team rituals', count: 34, quote: '"Nobody knows what design is shipping until it ships." · "Stand-up doesn\'t scale past 8." · "PM and eng are on different roadmaps."' },
+  { title: 'Theme 03 · Tooling debt', count: 22, quote: '"Build takes 14 minutes." · "Three different logging stacks." · "Staging drift is a monthly fire."' },
+]
+
+const antiSlop = [
+  { title: 'Minimum evidence threshold', desc: 'A theme needs 5+ linked responses to appear. Below that, it\'s an outlier — shown as a list, not a cluster.' },
+  { title: 'No inferred sentiment', desc: 'We cluster by topic, not by mood. If a host wants a valence score, they add a scale question.' },
+  { title: 'Quotes are never paraphrased', desc: 'Exemplar lines in a cluster are verbatim. Edits by the host are visible in the audit log.' },
+  { title: 'Refusal is a feature', desc: 'Asked to "summarize tone," the model returns "no tone model deployed." Better than pretending.' },
+]
 
 export default function AIInsightsPage() {
-  const t = useT('solutions')
-
   return (
-    <>
+    <MainLayout>
       <PageSeo
-        title={t('features.aiInsights.seo.title')}
-        description={t('features.aiInsights.seo.description')}
+        title="AI Insights — Qesto"
+        description="Evidence-anchored AI insights. Edge-inferred. Clusters open text into themes in 8–15 seconds, each anchored to the raw responses."
         canonicalPath="/features/ai-insights"
         ogImage="/images/solutions/photo-1521737604893-d14cc237f11d.avif"
       />
-      <FeaturePageTemplate
-        hero={{
-          ai: true,
-          badge: t('features.aiInsights.badge'),
-          headline: t('features.aiInsights.headline'),
-          subheadline: t('features.aiInsights.subheadline'),
-          primaryCta: { label: t('cta.tryItFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-          imageUrl: '/images/solutions/photo-1521737604893-d14cc237f11d.avif',
-          imageAlt: 'Team leads reviewing AI-generated insight summaries',
-          gallery: [
-            { src: '/images/solutions/photo-1551434678-e076c223a692.avif', alt: 'Team retrospectives transformed into clear themes' },
-            { src: '/images/solutions/photo-1552664730-d307ca884978.avif', alt: 'Consultants sharing AI-backed recommendations' },
-          ],
-      }}
-      howItWorks={{
-        heading: t('features.aiInsights.howItWorks.heading'),
-        steps: [
-          {
-            number: 1,
-              title: t('features.aiInsights.howItWorks.step1.title'),
-              desc: t('features.aiInsights.howItWorks.step1.desc'),
-          },
-          {
-            number: 2,
-              title: t('features.aiInsights.howItWorks.step2.title'),
-              desc: t('features.aiInsights.howItWorks.step2.desc'),
-          },
-          {
-            number: 3,
-              title: t('features.aiInsights.howItWorks.step3.title'),
-              desc: t('features.aiInsights.howItWorks.step3.desc'),
-          },
-        ],
-      }}
-      outcomes={{
-        heading: t('features.aiInsights.outcomes.heading'),
-        items: [
-          {
-            icon: '⚡',
-              metric: t('features.aiInsights.outcomes.item1.metric'),
-              desc: t('features.aiInsights.outcomes.item1.desc'),
-          },
-          {
-            icon: '🔒',
-              metric: t('features.aiInsights.outcomes.item2.metric'),
-              desc: t('features.aiInsights.outcomes.item2.desc'),
-          },
-          {
-            icon: '✦',
-              metric: t('features.aiInsights.outcomes.item3.metric'),
-              desc: t('features.aiInsights.outcomes.item3.desc'),
-          },
-        ],
-      }}
-      deepDive={{
-        heading: 'Where AI Insights adds measurable value',
-        intro: 'Teams use AI Insights when they need to move quickly from qualitative input to strategic action without sacrificing nuance.',
-        pillars: [
-          {
-            title: 'Faster preparation cycles',
-            desc: 'Generate strong first-draft question sets from a short brief and reduce session design bottlenecks.',
-          },
-          {
-            title: 'Higher-quality synthesis',
-            desc: 'Turn hundreds of comments into coherent themes with tensions, outliers, and recurring signals surfaced early.',
-          },
-          {
-            title: 'Decision-ready outputs',
-            desc: 'Translate insight clusters into stakeholder narratives, priorities, and next-step recommendations.',
-          },
-        ],
-      }}
-      proof={{
-        heading: t('features.aiInsights.proof.heading'),
-        metrics: [
-          { value: t('features.aiInsights.proof.metric1.value'), label: t('features.aiInsights.proof.metric1.label'), note: t('features.aiInsights.proof.metric1.note') },
-          { value: t('features.aiInsights.proof.metric2.value'), label: t('features.aiInsights.proof.metric2.label'), note: t('features.aiInsights.proof.metric2.note') },
-          { value: t('features.aiInsights.proof.metric3.value'), label: t('features.aiInsights.proof.metric3.label'), note: t('features.aiInsights.proof.metric3.note') },
-        ],
-        badges: [{ label: t('features.aiInsights.proof.badge1') }, { label: t('features.aiInsights.proof.badge2') }, { label: t('features.aiInsights.proof.badge3') }],
-      }}
-      related={{
-        heading: t('features.aiInsights.related.heading'),
-        links: [
-            { label: t('features.aiInsights.related.link1.label'), href: '/hr', desc: t('features.aiInsights.related.link1.desc') },
-            { label: t('features.aiInsights.related.link2.label'), href: '/consulting', desc: t('features.aiInsights.related.link2.desc') },
-            { label: t('features.aiInsights.related.link3.label'), href: '/use-cases/workshops', desc: t('features.aiInsights.related.link3.desc') },
-        ],
-      }}
-      faq={{
-        heading: t('features.aiInsights.faq.heading'),
-        items: [
-          { question: t('features.aiInsights.faq.q1.question'), answer: t('features.aiInsights.faq.q1.answer') },
-          { question: t('features.aiInsights.faq.q2.question'), answer: t('features.aiInsights.faq.q2.answer') },
-          { question: t('features.aiInsights.faq.q3.question'), answer: t('features.aiInsights.faq.q3.answer') },
-        ],
-      }}
-      bottomCta={{
-          heading: t('features.aiInsights.bottomCta.heading'),
-          subheading: t('features.aiInsights.bottomCta.subheading'),
-          primaryCta: { label: t('cta.startFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-        }}
-      />
-    </>
+
+      {/* Hero */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <div
+                className="text-xs font-bold tracking-widest uppercase text-violet-700 mb-3 inline-flex items-center gap-1.5"
+              >
+                <Sparkles size={12} />
+                AI Insights
+              </div>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+                Evidence-anchored.{' '}
+                <span
+                  className="bg-clip-text text-transparent"
+                  style={gradientAI}
+                >
+                  Edge-inferred.
+                </span>
+              </h1>
+              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+                Qesto's AI clusters open text into themes in 8–15 seconds, each anchored to the raw responses that
+                produced it. Inference runs on Workers AI — inside the same Cloudflare network as your session. No
+                OpenAI key, no vendor lock-in, no data exit.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+                  See a sample recap
+                </Link>
+                <Link to="/features/privacy" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                  How we handle AI data
+                </Link>
+              </div>
+            </div>
+
+            {/* AI shot card */}
+            <div className="bg-white rounded-[20px] p-7" style={shadowElevated}>
+              <div className="flex justify-between items-center mb-4">
+                <div
+                  className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-violet-700 bg-violet-50 px-2.5 py-1 rounded"
+                >
+                  <Sparkles size={12} />
+                  AI-generated
+                </div>
+                <span className="text-[12px] text-pulse-400" style={monoFont}>Generated in 11.4s · 142 responses</span>
+              </div>
+              <h3 className="font-bold text-[20px] tracking-tight mb-4 text-pulse-900" style={displayFont}>
+                What's blocking your team this quarter?
+              </h3>
+              <div className="space-y-2.5">
+                {clusters.map(({ title, count, quote }) => (
+                  <div
+                    key={title}
+                    className="pl-4 py-3.5 pr-4 rounded-r-lg"
+                    style={{ borderLeft: '3px solid #7C3AED', background: '#F5F3FF' }}
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <strong className="text-[14.5px] font-semibold text-pulse-900">{title}</strong>
+                      <span className="text-[11px] font-semibold text-violet-700" style={monoFont}>
+                        {count} evidence
+                      </span>
+                    </div>
+                    <p className="text-[13px] text-pulse-500 leading-snug italic">{quote}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Three jobs */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+            Three jobs the AI does. Three it doesn't.
+          </h2>
+          <p className="text-pulse-500 mb-8 text-lg">
+            Qesto's AI is scoped. It helps the facilitator read the room — it does not decide for them.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: <Layers size={22} />,
+                title: 'Cluster open responses',
+                desc: 'Groups free-text answers into themes with counts and exemplar quotes. Stemming + sentence embeddings, clustered with density threshold.',
+                code: ['// 142 responses', '→ 3 clusters, 12 outliers', '→ 11.4s'],
+              },
+              {
+                icon: <FileText size={22} />,
+                title: 'Draft the recap',
+                desc: 'Produces a first-pass summary the facilitator edits in place. Every sentence links to the evidence that produced it — no orphan claims.',
+                code: ['// recap draft', '→ 8 sentences', '→ each linked to 2+ anchors'],
+              },
+              {
+                icon: <Search size={22} />,
+                title: 'Surface the missed cluster',
+                desc: "Highlights a theme the host didn't ask about. Shown as a soft suggestion on the host console — never to participants.",
+                code: ['// missed', '→ "compensation fairness" (14 ev)', '→ host-only'],
+              },
+            ].map(({ icon, title, desc, code }) => (
+              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
+                <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center mb-4">
+                  {icon}
+                </div>
+                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900">{title}</h3>
+                <p className="text-sm leading-relaxed text-pulse-500 mb-3">{desc}</p>
+                <div className="bg-pulse-50 rounded-lg p-3 text-[11.5px] text-pulse-900 leading-relaxed" style={monoFont}>
+                  {code.map((line, i) => (
+                    <div key={i}>
+                      {line.startsWith('//') ? (
+                        <span className="text-violet-700">{line}</span>
+                      ) : (
+                        line
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Disclosure */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="bg-violet-50 rounded-[20px] p-10 grid gap-5" style={{ gridTemplateColumns: '48px 1fr' }}>
+            <div className="w-12 h-12 bg-violet-100 text-violet-700 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Sparkles size={24} />
+            </div>
+            <div>
+              <h2 className="font-bold text-[26px] tracking-tight mb-2.5 text-pulse-900" style={displayFont}>
+                The AI disclosure rules we actually follow.
+              </h2>
+              <p className="text-[15.5px] leading-relaxed text-pulse-800 mb-3.5">
+                Anything produced by a model carries the AI badge. No exceptions — not even the summary line in an
+                email. Participants see when they're reading AI output. Hosts can edit it; the badge persists on the
+                edited version.
+              </p>
+              <ul className="space-y-2 text-sm text-pulse-600 list-disc pl-5">
+                <li>AI-generated content is always labeled with the sparkles glyph and violet accent.</li>
+                <li>Every cluster and sentence links back to the raw tally or quote that produced it.</li>
+                <li>Host edits are tracked — the recap PDF shows "AI draft + 3 edits by M. Holloway."</li>
+                <li>Participants never see AI output during a live session — only aggregate tallies.</li>
+                <li>We don't generate quotes. Every quoted line in a recap is a real participant response.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Anti-slop */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="bg-pulse-900 text-white rounded-3xl p-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 className="font-bold text-[32px] tracking-tight mb-4" style={displayFont}>
+                No slop. No hallucinations. No "helpful" metaphors.
+              </h2>
+              <p className="text-[16px] leading-relaxed text-slate-300 mb-3">
+                Qesto's AI prompts are tuned to refuse to invent. If it can't anchor a claim to five or more
+                responses, it says so. If the cluster is too small, it stays in the outlier bucket.
+              </p>
+              <p className="text-[16px] leading-relaxed text-slate-300">
+                We'd rather ship a short recap than a confident one.
+              </p>
+            </div>
+            <div className="space-y-3.5">
+              {antiSlop.map(({ title, desc }) => (
+                <div key={title} className="flex items-start gap-3.5 p-4 rounded-xl bg-white/[0.04]">
+                  <Check size={20} className="text-teal-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white font-semibold text-sm block mb-1">{title}</strong>
+                    <span className="text-slate-400 text-[13.5px] leading-relaxed">{desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Inference */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Where inference runs</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+            Inside Cloudflare. Never outside it.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: <Cpu size={22} />,
+                title: 'Workers AI only',
+                desc: 'llama-3.1-8b-instruct and bge-large-en for embeddings. Both run on Cloudflare\'s GPU fleet, in-region, no third-party routing.',
+              },
+              {
+                icon: <Shield size={22} />,
+                title: 'No vendor hand-off',
+                desc: 'No OpenAI, no Anthropic, no Azure AI. Your raw responses never leave the Cloudflare boundary.',
+              },
+              {
+                icon: <Trash2 size={22} />,
+                title: 'Retention follows session',
+                desc: 'Model inputs and outputs live with the session. Delete the session, the prompts go with it. No training pipeline — ever.',
+              },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
+                <div className="w-12 h-12 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center mb-4">
+                  {icon}
+                </div>
+                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900">{title}</h3>
+                <p className="text-sm leading-relaxed text-pulse-500">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA band */}
+      <div className="py-10 px-6">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+          <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
+            Evidence you can edit. AI you can trust.
+          </h2>
+          <p className="text-slate-400 mb-8">
+            Try AI Insights on your next session. Free for drafts up to 5 per month.
+          </p>
+          <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+            Generate a recap
+          </Link>
+        </div>
+      </div>
+    </MainLayout>
   )
 }

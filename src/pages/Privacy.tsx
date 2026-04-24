@@ -1,242 +1,224 @@
-import { Heading, Body, Section, Card, Caption } from '../ui/components'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
+
+const displayFont = { fontFamily: 'var(--font-family-display)' }
+const monoFont = { fontFamily: 'var(--font-family-mono)' }
+
+const toc = [
+  { id: 's1', label: 'Who we are' },
+  { id: 's2', label: 'What we collect' },
+  { id: 's3', label: 'Consent posture' },
+  { id: 's4', label: 'How we use data' },
+  { id: 's5', label: 'Sub-processors' },
+  { id: 's6', label: 'Retention' },
+  { id: 's7', label: 'Your rights' },
+  { id: 's8', label: 'AI & inference' },
+  { id: 's9', label: 'Security' },
+  { id: 's10', label: 'Changes' },
+  { id: 's11', label: 'Contact' },
+]
 
 export default function Privacy() {
   return (
     <MainLayout>
       <PageSeo
-        title="Qesto privacy policy | Data handling and consent"
+        title="Privacy Policy — Qesto"
         description="Read how Qesto handles session data, consent logs, retention, security controls, and privacy rights."
         canonicalPath="/privacy"
-        ogImage="/images/solutions/photo-1543269865-cbf427effbad.avif"
       />
-      <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-12 space-y-8">
-        <div className="animate-page-enter max-w-3xl mx-auto text-center space-y-4 py-8 px-6 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50">
-          <h1
-            className="text-display-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
-            style={{ fontFamily: 'var(--font-family-display)' }}
-          >
+
+      {/* Legal hero */}
+      <div className="border-b border-pulse-200 pb-6 pt-14">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Legal</div>
+          <h1 className="font-bold tracking-tight text-pulse-900 mb-3" style={{ ...displayFont, fontSize: 44 }}>
             Privacy Policy
           </h1>
-          <Body size="l" className="text-pulse-600">
-            Effective date: April 22, 2026. Qesto is committed to protecting your privacy while enabling
-            collaborative, real-time interactive sessions.
-          </Body>
+          <div className="flex gap-5 text-[13px] text-pulse-500" style={monoFont}>
+            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 2.1.0</span>
+            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-01-15</span>
+            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Previous:</strong> 2025-09-02</span>
+          </div>
         </div>
+      </div>
 
-        <Section className="space-y-4">
-          <Heading level="m">
-            1. Information We Collect
-          </Heading>
-          <Body size="m">
-            When you create an account or run a session, we collect:
-          </Body>
-          <ul className="list-disc list-inside space-y-2 ml-4">
-            <li className="text-body-m">
-              <strong>Account data:</strong> Email, display name, authentication tokens (JWT)
-            </li>
-            <li className="text-body-m">
-              <strong>Session data:</strong> Session title, questions, participant responses (anonymized by
-              default)
-            </li>
-            <li className="text-body-m">
-              <strong>Usage data:</strong> Sessions created, participants, feature adoption (for anonymity
-              analytics)
-            </li>
-            <li className="text-body-m">
-              <strong>Technical data:</strong> IP address, user agent, WebSocket connection metadata
-            </li>
-          </ul>
-        </Section>
+      {/* Legal layout */}
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid gap-16 py-12 pb-24" style={{ gridTemplateColumns: '200px 1fr' }}>
 
-        <Section className="space-y-4">
-          <Heading level="m" className="mb-space-4">
-            2. How We Use Your Data
-          </Heading>
-          <Body size="m">
-            We use collected data to:
-          </Body>
-          <ul className="list-disc list-inside space-y-2 ml-4">
-            <li className="text-body-m">Provide and maintain Qesto services (session hosting, realtime updates)</li>
-            <li className="text-body-m">Enforce plan quotas (session/participant limits per your plan tier)</li>
-            <li className="text-body-m">Generate AI-powered insights (optional, plan-gated feature)</li>
-            <li className="text-body-m">Comply with legal obligations and prevent abuse</li>
-            <li className="text-body-m">
-              Improve the platform through aggregate analytics (never sharing individual identities)
-            </li>
-          </ul>
-        </Section>
+          {/* TOC */}
+          <aside className="hidden md:block" style={{ position: 'sticky', top: 80, height: 'fit-content' }}>
+            <h5 className="text-[13px] font-bold text-pulse-900 mb-3">On this page</h5>
+            <ol className="space-y-1.5 list-decimal list-inside">
+              {toc.map(({ id, label }) => (
+                <li key={id}>
+                  <a
+                    href={`#${id}`}
+                    className="text-[13px] text-pulse-500 hover:text-teal-700 transition-colors"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </aside>
 
-        <Section className="space-y-4">
-          <Heading level="m" className="mb-space-4">
-            3. Data Retention
-          </Heading>
-          <Body size="m">
-            We retain data for operational and legal purposes:
-          </Body>
-          <Card className="mt-space-4 bg-blue-50 border-blue-200">
-            <ul className="list-disc list-inside space-y-2">
-              <li className="text-body-m">
-                <strong>Session data:</strong> Retained for 6 months after closure (supports insights and audit)
-              </li>
-              <li className="text-body-m">
-                <strong>Account data:</strong> Retained until account deletion; backup retained for 90 days
-              </li>
-              <li className="text-body-m">
-                <strong>Audit logs:</strong> Retained for 12 months for security and compliance
-              </li>
-              <li className="text-body-m">
-                <strong>Magic link tokens:</strong> Expired after 15 minutes; not retained beyond expiry
-              </li>
+          {/* Prose */}
+          <main className="prose-content min-w-0">
+            <p className="text-[17px] text-pulse-900 leading-relaxed mb-8">
+              Qesto is built on the premise that a room speaks honestly only when it knows the rules. This document
+              tells you exactly what happens to your data — what we hold, who touches it, and when it disappears.
+            </p>
+
+            <h2 id="s1" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              1. Who we are
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Qesto B.V. ("Qesto", "we") is registered in Amsterdam, the Netherlands, at KvK 88214503. We act as
+              the data <em>processor</em> for hosts running sessions on our platform, and as <em>controller</em>{' '}
+              only for our own account metadata (your login, your billing, the sessions you've created).
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              For hosted session data — votes, responses, tallies, consent logs — the host is the controller. We
+              process on their instructions under the Data Processing Agreement you signed at account creation.
+            </p>
+
+            <h2 id="s2" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              2. What we collect
+            </h2>
+            <h3 className="font-semibold text-[18px] text-pulse-900 mt-5 mb-2">From hosts</h3>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
+              <li>Account email, name, organization name, and OAuth identifier (if SSO).</li>
+              <li>Billing address and payment metadata (card handled by Stripe, never by us).</li>
+              <li>Session configuration — question text, option labels, retention settings.</li>
             </ul>
-          </Card>
-        </Section>
+            <h3 className="font-semibold text-[18px] text-pulse-900 mt-5 mb-2">From participants</h3>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
+              <li>Their consent choice for that session (identified, cohort-visible, or anonymous) with timestamp.</li>
+              <li>Their votes and free-text responses.</li>
+              <li>
+                Their identity (name, email, team) <em>only if</em> they selected identified or cohort-visible mode.
+              </li>
+              <li>A short-lived, session-scoped session token. No cross-session tracking.</li>
+            </ul>
 
-        <Section className="space-y-4">
-          <Heading level="m" className="mb-space-4">
-            4. Your Rights
-          </Heading>
-          <Body size="m">
-            Under GDPR (EU), CCPA (California), and other privacy laws, you have the right to:
-          </Body>
-          <ul className="list-disc list-inside space-y-2 ml-4">
-            <li className="text-body-m">
-              <strong>Access:</strong> Request a copy of all data we hold about you
-            </li>
-            <li className="text-body-m">
-              <strong>Rectification:</strong> Correct inaccurate or incomplete data
-            </li>
-            <li className="text-body-m">
-              <strong>Erasure:</strong> Request deletion of your account and associated data (within retention
-              windows)
-            </li>
-            <li className="text-body-m">
-              <strong>Portability:</strong> Export your sessions and responses in machine-readable format
-            </li>
-            <li className="text-body-m">
-              <strong>Opt-out:</strong> Disable AI Insights, analytics, or marketing communications
-            </li>
-          </ul>
-          <Body size="m" className="mt-space-4">
-            To exercise these rights, contact <strong>privacy@qesto.cc</strong>.
-          </Body>
-        </Section>
+            <h2 id="s3" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              3. Consent posture
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Every session starts with a consent round. Participants pick their visibility posture before any
+              question opens. The posture is honored for the life of the session and stored in the consent log.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              If a participant selects anonymous, we <strong>cannot</strong> re-link their response to an identity
+              later. Not for legal hold, not for support, not for us. The link does not exist.
+            </p>
 
-        <Section className="space-y-4">
-          <Heading level="m" className="mb-space-4">
-            5. Third-Party Integrations
-          </Heading>
-          <Body size="m">
-            We use the following third parties on your behalf:
-          </Body>
-          <Card className="mt-space-4">
-            <div className="space-y-4">
-              <div>
-                <strong className="text-body-m block mb-space-2">Stripe (Payment Processing)</strong>
-                <Body size="s">
-                  Processes subscription payments. Card data is encrypted and never stored by Qesto. See{' '}
-                  <a href="https://stripe.com/privacy" className="text-teal-600 hover:underline">
-                    Stripe's privacy policy
-                  </a>
-                  .
-                </Body>
-              </div>
-              <div>
-                <strong className="text-body-m block mb-space-2">Cloudflare Workers AI (Optional)</strong>
-                <Body size="s">
-                  When you enable AI Insights (Team plan only), Qesto runs inference on Cloudflare Workers AI
-                  (not Anthropic). Prompts are run in-region and not stored for training. See{' '}
-                  <a href="https://www.cloudflare.com/privacy/" className="text-teal-600 hover:underline">
-                    Cloudflare's privacy policy
-                  </a>
-                  .
-                </Body>
-              </div>
-              <div>
-                <strong className="text-body-m block mb-space-2">Resend (Email Delivery)</strong>
-                <Body size="s">
-                  Delivers magic-link login emails and account notifications. See{' '}
-                  <a href="https://resend.com/privacy" className="text-teal-600 hover:underline">
-                    Resend's privacy policy
-                  </a>
-                  .
-                </Body>
-              </div>
-            </div>
-          </Card>
-        </Section>
+            <h2 id="s4" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              4. How we use data
+            </h2>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
+              <li><strong>To run your session.</strong> Deliver votes to the Durable Object, compute tallies, generate recaps.</li>
+              <li><strong>To bill you.</strong> Count session-hours against your plan.</li>
+              <li><strong>To support you.</strong> Respond to tickets. Support staff see only metadata, never raw responses, without your explicit request.</li>
+              <li><strong>To keep the platform healthy.</strong> Aggregate error telemetry (no content, no identity).</li>
+            </ul>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              We do <strong>not</strong> sell data. We do <strong>not</strong> serve ads. We do{' '}
+              <strong>not</strong> train models on your content.
+            </p>
 
-        <Section className="space-y-4">
-          <Heading level="m" className="mb-space-4">
-            6. Security
-          </Heading>
-          <Body size="m">
-            We implement industry-standard security practices:
-          </Body>
-          <ul className="list-disc list-inside space-y-2 ml-4">
-            <li className="text-body-m">
-              <strong>Transport:</strong> All data transmitted over HTTPS (TLS 1.3)
-            </li>
-            <li className="text-body-m">
-              <strong>Authentication:</strong> JWT-based magic-link auth; optional SAML SSO (Team plan)
-            </li>
-            <li className="text-body-m">
-              <strong>Database:</strong> Encrypted at rest on Cloudflare D1; access restricted to authorized
-              functions
-            </li>
-            <li className="text-body-m">
-              <strong>Audit logging:</strong> All sensitive actions (session access, data export, plan changes)
-              logged
-            </li>
-          </ul>
-          <Body size="m" className="mt-space-4">
-            If you discover a security vulnerability, please email <strong>security@qesto.cc</strong>.
-          </Body>
-        </Section>
+            <h2 id="s5" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              5. Sub-processors
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-3">The complete list:</p>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
+              <li><strong>Cloudflare, Inc.</strong> — Workers compute, Durable Objects (session state), R2 (object storage), Workers AI (inference). EU, US, or APAC region per your contract.</li>
+              <li><strong>Stripe, Inc.</strong> — payment processing for paid plans. No session data ever touches Stripe.</li>
+              <li><strong>Postmark (ActiveCampaign).</strong> — transactional email (recap PDFs, login links).</li>
+            </ul>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              That's the whole list. We publish changes 30 days in advance; existing customers can object in writing.
+            </p>
 
-        <Section className="space-y-4">
-          <Heading level="m" className="mb-space-4">
-            7. Cookies & Tracking
-          </Heading>
-          <Body size="m">
-            Qesto uses minimal tracking. We do not use third-party analytics (Google Analytics, Mixpanel, etc.).
-            Session cookies are used only for authentication; no persistent tracking across sites.
-          </Body>
-        </Section>
+            <h2 id="s6" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              6. Retention
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-3">
+              Retention is configured per workspace. Defaults:
+            </p>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
+              <li><strong>Pulse plan:</strong> 30 days.</li>
+              <li><strong>Signal plan:</strong> 365 days.</li>
+              <li><strong>Chorus plan:</strong> custom, as low as 7 days or as high as 7 years.</li>
+            </ul>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Identity rows purge first. Aggregate tallies can persist longer — with no link back — for trend
+              reporting.
+            </p>
 
-        <Section className="space-y-4">
-          <Heading level="m" className="mb-space-4">
-            8. Contact & Questions
-          </Heading>
-          <Body size="m">
-            For privacy inquiries, contact:
-          </Body>
-          <Card className="mt-space-4 bg-pulse-50">
-            <div className="text-body-m space-y-2">
-              <div>
-                <strong>Email:</strong> privacy@qesto.cc
-              </div>
-              <div>
-                <strong>Data Protection Officer (if applicable):</strong> dpo@qesto.cc
-              </div>
-              <div>
-                <strong>Address:</strong> Qesto, contact form at https://qesto.cc
-              </div>
-            </div>
-          </Card>
-        </Section>
+            <h2 id="s7" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              7. Your rights
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Under GDPR and equivalent laws, you have the right to access, correct, export, or delete your data.
+              Email{' '}
+              <a href="mailto:dpo@qesto.app" className="text-teal-600 hover:underline">
+                dpo@qesto.app
+              </a>{' '}
+              — we respond within 30 days.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Participants: for rights over responses submitted in a session, contact the host who ran that session.
+              We'll help them execute the request.
+            </p>
 
-        <Section className="mb-space-12">
-          <Heading level="m" className="mb-space-4">
-            9. Changes to This Policy
-          </Heading>
-          <Body size="m">
-            We may update this policy from time to time. We will notify you of material changes via email or by
-            posting a notice on the site.
-          </Body>
-          <Caption className="mt-space-4">Last updated: April 22, 2026</Caption>
-        </Section>
+            <h2 id="s8" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              8. AI &amp; inference
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Qesto uses <strong>Cloudflare Workers AI only</strong>. Inference runs inside the same network as your
+              session, in your region. No vendor hand-off — no OpenAI, no Anthropic, no Azure AI.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Model inputs and outputs live with the session. Delete the session, the prompts go with it. No training
+              pipeline, no fine-tuning corpus, no retention past the session's own retention window.
+            </p>
+
+            <h2 id="s9" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              9. Security
+            </h2>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
+              <li>TLS 1.3 for every connection. HSTS with preload.</li>
+              <li>Data at rest encrypted with AES-256 (Cloudflare-managed keys; customer-managed keys on Chorus).</li>
+              <li>SOC 2 Type II audited, 2025. Report available under NDA.</li>
+              <li>Penetration test annually, latest by a named EU firm. Summary available to customers.</li>
+            </ul>
+
+            <h2 id="s10" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              10. Changes
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              We'll notify you 30 days before material changes. Minor edits (clarifications, sub-processor
+              replacements within the same tier) get a version bump and a changelog entry — no email blast.
+            </p>
+
+            <h2 id="s11" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              11. Contact
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              Data Protection Officer:{' '}
+              <a href="mailto:dpo@qesto.app" className="text-teal-600 hover:underline">dpo@qesto.app</a>
+              {' '}· EU representative:{' '}
+              <a href="mailto:eu-rep@qesto.app" className="text-teal-600 hover:underline">eu-rep@qesto.app</a>
+              {' '}· General:{' '}
+              <a href="mailto:privacy@qesto.app" className="text-teal-600 hover:underline">privacy@qesto.app</a>
+            </p>
+            <p className="text-[13px] text-pulse-400 mt-8">
+              — This policy replaces all prior privacy statements. Prior versions available on request.
+            </p>
+          </main>
+        </div>
       </div>
     </MainLayout>
   )
