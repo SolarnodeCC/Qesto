@@ -122,8 +122,8 @@ export type QuestionKindInput = z.infer<typeof AddQuestionSchema>['kind']
 
 export function autoPopulateOptions(
   kind: QuestionKindInput,
-  options: Array<{ id?: string; label: string }> | undefined,
-): Array<{ id?: string; label: string }> {
+  options: Array<{ id?: string | undefined; label: string }> | undefined,
+): Array<{ id?: string | undefined; label: string }> {
   const provided = options ?? []
   if (provided.length > 0) return provided
 

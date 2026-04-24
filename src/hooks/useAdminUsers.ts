@@ -45,7 +45,7 @@ export function useAdminUsers() {
     fetchUsers(search, offset)
   }, [fetchUsers, search, offset])
 
-  const createUser = useCallback(async (data: { email: string; display_name?: string; plan?: string }) => {
+  const createUser = useCallback(async (data: { email: string; display_name?: string | null | undefined; plan?: string | undefined }) => {
     const res = await api<AdminUser>('/api/admin/users', { method: 'POST', body: data })
     if (res.ok) {
       await fetchUsers(search, offset)
@@ -53,7 +53,7 @@ export function useAdminUsers() {
     return res
   }, [fetchUsers, search, offset])
 
-  const updateUser = useCallback(async (id: string, data: { display_name?: string; plan?: string; admin_role?: 'admin' | 'owner' | null }) => {
+  const updateUser = useCallback(async (id: string, data: { display_name?: string | null | undefined; plan?: string | undefined; admin_role?: 'admin' | 'owner' | null | undefined }) => {
     const res = await api<AdminUser>(`/api/admin/users/${id}`, { method: 'PATCH', body: data })
     if (res.ok) {
       setUsers(prev => prev.map(u => u.id === id ? res.data : u))

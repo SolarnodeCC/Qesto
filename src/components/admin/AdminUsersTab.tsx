@@ -73,7 +73,7 @@ function UserModal({
     try {
       await onSave({
         ...(isEdit ? {} : { email: email.trim() }),
-        display_name: displayName.trim() || undefined,
+        display_name: displayName.trim() || null,
         plan,
         admin_role: adminRole === '' ? null : adminRole,
       })

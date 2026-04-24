@@ -245,7 +245,7 @@ describe('Wave 1: Auth → Session Lifecycle Smoke Tests', () => {
       const sessionId = 'sess_' + Math.random().toString(36).substr(2, 5)
 
       // Create
-      const session = { id: sessionId, ownerId: userId, status: 'draft', questions: [] }
+      const session: { id: string; ownerId: string; status: string; code?: string; questions: { id: string; type: string; text: string }[] } = { id: sessionId, ownerId: userId, status: 'draft', questions: [] }
       expect(session.status).toBe('draft')
 
       // Add questions
