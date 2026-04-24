@@ -231,14 +231,6 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             {activePlan && <PlanBadge plan={activePlan} />}
-            <button
-              type="button"
-              onClick={() => setWizardOpen(true)}
-              className="inline-flex items-center gap-2 rounded-md bg-gradient-to-br from-teal-500 to-violet-500 text-white px-4 py-2 text-sm font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
-            >
-              <Sparkles size={14} aria-hidden="true" />
-              {t('newSession')}
-            </button>
           </div>
         </div>
 
@@ -291,7 +283,7 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setWizardOpen(true)}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-pulse-200 bg-white text-pulse-700 px-4 py-3 font-medium hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-500 text-white px-4 py-3 font-semibold shadow-card hover:shadow-teal hover:scale-[1.01] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
             >
               <Sparkles size={16} aria-hidden="true" />
               {t('newSession')}
