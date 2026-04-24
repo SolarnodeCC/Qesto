@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
 import { ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, Play, Shuffle, Sparkles, Timer, Users } from 'lucide-react'
@@ -83,12 +83,17 @@ export default function Present() {
   const max = ordered.reduce((m, o) => Math.max(m, o.count), 0)
   const tallyVisible = !hideTally && state.results.total >= minGate
 
+  const [scale, setScale] = useState(1)
+  const containerRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
+  useLayoutEffect(() => {
     function fit() {
-      if (!stageRef.current) return
-      const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080)
+      const container = containerRef.current
+      if (!container || !stageRef.current) return
+      const { width, height } = container.getBoundingClientRect()
+      const s = Math.min(width / 1920, height / 1080)
       stageRef.current.style.transform = `scale(${s})`
+      setScale(s)
     }
     fit()
     window.addEventListener('resize', fit)
@@ -154,10 +159,11 @@ export default function Present() {
   return (
     <div className="fixed inset-0 flex flex-col bg-pulse-950 animate-page-enter">
       {/* ── 1920×1080 letterboxed stage ────────────────────────────────────── */}
-      <div className="flex-1 grid place-items-center min-h-0 overflow-hidden">
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
+        <div style={{ width: scale * 1920, height: scale * 1080, flexShrink: 0 }}>
         <div
           ref={stageRef}
-          className="w-[1920px] h-[1080px] origin-center relative bg-white overflow-hidden flex-shrink-0"
+          className="w-[1920px] h-[1080px] origin-top-left relative bg-white overflow-hidden"
           id="main"
         >
           {/* Background glow */}
@@ -357,6 +363,7 @@ export default function Present() {
               Anonymity: Full
             </div>
           </div>
+        </div>
         </div>
       </div>
 
