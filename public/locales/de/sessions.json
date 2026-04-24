@@ -598,5 +598,6 @@
   "lobbyDesc": "Teile den Code unten. Klicke \"Sitzung starten\" wenn alle bereit sind.",
   "lobbyJoinCode": "Teilnahmecode",
   "lobbyParticipants": "{{count}} Teilnehmer verbunden",
-  "lobbyStartSession": "Sitzung starten"
+  "lobbyStartSession": "Sitzung starten",
+  "samlConfiguration": "SAML-Konfiguration"
 }

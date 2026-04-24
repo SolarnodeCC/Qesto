@@ -20,5 +20,6 @@
   "participant_other": "deelnemers",
   "connectedLabel": "verbonden",
   "responses_one": "{count} antwoord",
-  "responses_other": "{count} antwoorden"
+  "responses_other": "{count} antwoorden",
+  "anonymity": "Volledige anonimiteit"
 }

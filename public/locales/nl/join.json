@@ -27,5 +27,9 @@
   "live_results": "Live resultaten",
   "your_vote": "jouw stem",
   "next_question_countdown": "Volgende vraag in {seconds}…",
-  "get_ready": "Maak je klaar…"
+  "get_ready": "Maak je klaar…",
+  "noInviteTokenFound": "Geen uitnodigingstoken gevonden. Gebruik alstublieft de link uit uw uitnodigingse-mail.",
+  "inviteLinkExpired": "Deze uitnodigingslink is verlopen of ongeldig.",
+  "alreadyMemberOfTeam": "U bent al lid van dit team.",
+  "confirmingInvite": "Uw uitnodiging wordt bevestigd…"
 }

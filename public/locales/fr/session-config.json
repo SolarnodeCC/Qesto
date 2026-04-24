@@ -16,5 +16,7 @@
   "backToDashboard": "Retour au tableau de bord",
   "optionPlaceholder": "Texte de l'option",
   "pollQuestion": "Question de sondage",
-  "aiSuggestionHelp": "Cliquez sur une suggestion pour l'utiliser comme invite"
+  "aiSuggestionHelp": "Cliquez sur une suggestion pour l'utiliser comme invite",
+  "loadingSession": "Chargement de la session…",
+  "sessionNotFound": "Session non trouvée"
 }
