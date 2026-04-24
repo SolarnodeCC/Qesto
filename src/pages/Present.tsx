@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
-import { ChevronRight, Lock, Sparkles, Users } from 'lucide-react'
+import { ChevronRight, Link2, Lock, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -14,6 +14,7 @@ export default function Present() {
   const { state, sendAdvance } = useLiveSession(id, { enabled: !!id })
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const options = state.question?.options ?? []
   const ordered = useMemo(
@@ -33,6 +34,15 @@ export default function Present() {
     window.addEventListener('resize', fit)
     return () => window.removeEventListener('resize', fit)
   }, [])
+
+  function handleCopyDisplayLink() {
+    if (!state.session?.code) return
+    const url = `${window.location.origin}/display/${state.session.code}`
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   async function handleClose() {
     if (!id) return
@@ -234,6 +244,19 @@ export default function Present() {
               </Link>
             )}
           </div>
+          {/* Display link for PowerPoint embedding */}
+          {state.session && (
+            <button
+              type="button"
+              onClick={handleCopyDisplayLink}
+              disabled={!state.session.code}
+              title="Copy display URL to embed in PowerPoint"
+              className="inline-flex items-center gap-2 rounded-md border border-pulse-300 text-pulse-700 hover:border-teal-400 hover:text-teal-700 px-4 py-2.5 text-[16px] font-medium transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            >
+              <Link2 size={16} aria-hidden="true" />
+              {copied ? 'Copied!' : 'Display link'}
+            </button>
+          )}
           {/* AI disclosure */}
           <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-violet-50 border border-violet-200 rounded-full text-[16px] font-semibold text-violet-700">
             <Sparkles size={16} className="text-violet-600" aria-hidden="true" />
