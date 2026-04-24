@@ -12,3 +12,4 @@ coverage/
 .idea/
 .vscode/
 src/ui/tokens.ts
+.claude/worktrees/
