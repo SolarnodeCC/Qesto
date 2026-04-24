@@ -16,6 +16,7 @@ export type GenerateInput = {
   sessionTitle: string
   sessionGoal: string
   focusArea?: string | undefined
+  language?: string | undefined
 }
 
 export type GeneratedQuestion = {
@@ -47,7 +48,15 @@ export class WizardAIError extends Error {
   }
 }
 
-const SYSTEM_PROMPT = `You are a meeting facilitator assistant. Your job is to
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  nl: 'Dutch',
+  es: 'Spanish',
+  de: 'German',
+  fr: 'French',
+}
+
+const SYSTEM_PROMPT_BASE = `You are a meeting facilitator assistant. Your job is to
 design clear, unbiased poll and ranking questions for live team sessions.
 
 Always respond with STRICT JSON and nothing else — no prose, no markdown.
@@ -66,6 +75,13 @@ Rules:
 - Keep option labels short, action-oriented, and mutually exclusive where
   possible.
 - Avoid leading language ("don't you agree…?").`
+
+function buildSystemPrompt(language?: string): string {
+  const lang = language && language.length >= 2 ? language.slice(0, 2).toLowerCase() : 'en'
+  const langName = LANGUAGE_NAMES[lang] ?? 'English'
+  return `${SYSTEM_PROMPT_BASE}
+- Write ALL question prompts and option labels in ${langName}.`
+}
 
 function buildUserPrompt(input: GenerateInput): string {
   const focus = input.focusArea ? `\nFocus area: ${input.focusArea}` : ''
@@ -185,10 +201,11 @@ export async function generateQuestions(
   input: GenerateInput,
   model = '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
 ): Promise<GenerateResult> {
+  const systemPrompt = buildSystemPrompt(input.language)
   const userPrompt = buildUserPrompt(input)
-  const approxInputChars = SYSTEM_PROMPT.length + userPrompt.length
+  const approxInputChars = systemPrompt.length + userPrompt.length
   const messages = [
-    { role: 'system' as const, content: SYSTEM_PROMPT },
+    { role: 'system' as const, content: systemPrompt },
     { role: 'user' as const, content: userPrompt },
   ]
 
@@ -239,7 +256,7 @@ export async function generateQuestions(
 
 // Exported for unit tests.
 export const __internal = {
-  SYSTEM_PROMPT,
+  buildSystemPrompt,
   buildUserPrompt,
   extractJson,
   scoreConfidence,
