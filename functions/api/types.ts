@@ -43,6 +43,7 @@ export type Env = {
   ACTIONS_KV: KVNamespace
   SESSION_ROOM: DurableObjectNamespace
   AI: Ai
+  DECISIONS_VECTORIZE: VectorizeIndex
 }
 
 export type SessionStatus = 'draft' | 'live' | 'closed' | 'archived'
