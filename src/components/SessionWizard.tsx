@@ -8,7 +8,7 @@ import AIBadge from './AIBadge'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type WizardStep = 1 | 2 | 3 | 4 | 5
-type QuestionKind = 'poll' | 'ranking' | 'open'
+type QuestionKind = 'poll' | 'ranking' | 'open' | 'multi_select' | 'likert' | 'slider' | 'upvote' | 'word_cloud'
 type Step2Mode = 'idle' | 'manual' | 'ai' | 'template'
 type AIPhase = 'consent' | 'chat' | 'generating' | 'review'
 
@@ -41,26 +41,36 @@ function newId() {
   return crypto.randomUUID().slice(0, 8)
 }
 
+const NO_OPTIONS_KINDS = new Set<QuestionKind>(['open', 'word_cloud', 'likert', 'slider'])
+
 function emptyQuestion(kind: QuestionKind = 'poll'): WizardQuestion {
   const defaultOptions = [
     { id: newId(), label: '' },
     { id: newId(), label: '' },
   ]
-  return { id: newId(), kind, prompt: '', options: kind === 'open' ? [] : defaultOptions, fromAI: false, dismissed: false, accepted: false }
+  return { id: newId(), kind, prompt: '', options: NO_OPTIONS_KINDS.has(kind) ? [] : defaultOptions, fromAI: false, dismissed: false, accepted: false }
 }
 
 function isQuestionValid(q: WizardQuestion): boolean {
   if (q.dismissed) return false
   if (!q.prompt.trim()) return false
-  if (q.kind === 'open') return true
+  if (NO_OPTIONS_KINDS.has(q.kind)) return true
   const filled = q.options.filter((o) => o.label.trim())
   return filled.length >= 2
 }
 
 function kindLabel(kind: QuestionKind): string {
-  if (kind === 'poll') return 'Multiple choice'
-  if (kind === 'ranking') return 'Ranking'
-  return 'Open / Wordcloud'
+  const labels: Record<QuestionKind, string> = {
+    poll: 'Multiple choice',
+    ranking: 'Ranking',
+    open: 'Open text',
+    multi_select: 'Multi-select',
+    likert: 'Likert scale',
+    slider: 'Slider',
+    upvote: 'Upvote',
+    word_cloud: 'Word cloud',
+  }
+  return labels[kind] ?? kind
 }
 
 const ENERGIZER_FORMATS = [
@@ -83,9 +93,9 @@ function QuestionEditor({
 }) {
   function setKind(kind: QuestionKind) {
     const updated = { ...question, kind }
-    if (kind === 'open') {
+    if (NO_OPTIONS_KINDS.has(kind)) {
       updated.options = []
-    } else if (question.kind === 'open') {
+    } else if (NO_OPTIONS_KINDS.has(question.kind)) {
       updated.options = [
         { id: newId(), label: '' },
         { id: newId(), label: '' },
@@ -143,7 +153,7 @@ function QuestionEditor({
 
       {/* Kind selector */}
       <div className="flex gap-2 flex-wrap">
-        {(['poll', 'ranking', 'open'] as QuestionKind[]).map((k) => (
+        {(['poll', 'multi_select', 'ranking', 'upvote', 'open', 'word_cloud', 'likert', 'slider'] as QuestionKind[]).map((k) => (
           <button
             key={k}
             type="button"
@@ -171,7 +181,7 @@ function QuestionEditor({
       />
 
       {/* Options */}
-      {question.kind !== 'open' && (
+      {!NO_OPTIONS_KINDS.has(question.kind) && (
         <div className="space-y-2">
           {question.options.map((opt, idx) => (
             <div key={opt.id} className="flex items-center gap-2">
@@ -211,6 +221,15 @@ function QuestionEditor({
             {question.options.length < 2 && ' — add at least 2'}
           </p>
         </div>
+      )}
+      {question.kind === 'likert' && (
+        <p className="text-caption text-pulse-400 italic">Auto-generated 5-point scale: Strongly disagree → Strongly agree</p>
+      )}
+      {question.kind === 'slider' && (
+        <p className="text-caption text-pulse-400 italic">Auto-generated 1–10 numeric slider</p>
+      )}
+      {(question.kind === 'word_cloud' || question.kind === 'open') && (
+        <p className="text-caption text-pulse-400 italic">Participants type a free-text response — no options needed</p>
       )}
     </div>
   )
@@ -437,7 +456,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
 
     const generated: WizardQuestion[] = res.data.questions.map((q) => ({
       id: q.id ?? newId(),
-      kind: (q.kind === 'ranking' ? 'ranking' : q.kind === 'open' ? 'open' : 'poll') as QuestionKind,
+      kind: (['poll','ranking','open','multi_select','likert','slider','upvote','word_cloud'].includes(q.kind) ? q.kind : 'poll') as QuestionKind,
       prompt: q.prompt,
       options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
       fromAI: true,

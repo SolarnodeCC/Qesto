@@ -17,8 +17,8 @@ interface AuditEvent {
 }
 
 interface AuditResponse {
-  ok: boolean
-  data: { events: AuditEvent[]; total: number }
+  events: AuditEvent[]
+  total: number
 }
 
 const ACTIONS = [
@@ -86,8 +86,8 @@ export default function AuditLogViewer() {
 
       const res = await api<AuditResponse>(`/api/admin/audit?${params}`, { method: 'GET' })
       if (res.ok) {
-        setEvents(res.data.data.events)
-        setTotal(res.data.data.total)
+        setEvents(res.data.events ?? [])
+        setTotal(res.data.total ?? 0)
       } else {
         setError(res.error.message)
       }
@@ -121,7 +121,7 @@ export default function AuditLogViewer() {
 
       const csvRows = [
         ['Timestamp', 'User ID', 'Action', 'Subject Type', 'Subject ID', 'Before', 'After'].join(','),
-        ...res.data.data.events.map((e) =>
+        ...(res.data.events ?? []).map((e) =>
           [
             new Date(e.ts).toISOString(),
             e.actor_id || 'unknown',

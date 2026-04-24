@@ -7,18 +7,20 @@
 // `timestamp` is the sender's epoch-ms clock (for latency tracing only —
 // never trusted for ordering).
 
-import type { PollOption, VotePolicy, SessionMode } from './types'
+import type { PollOption, QuestionKind, VotePolicy, SessionMode } from './types'
 
 // ── Client → Server ─────────────────────────────────────────────────────────
 export type ClientMessage =
   | { type: 'vote'; data: { questionId: string; optionId: string }; timestamp: number }
   | { type: 'advance'; data: Record<string, never>; timestamp: number }
   | { type: 'request_state'; data: Record<string, never>; timestamp: number }
+  | { type: 'pause'; data: Record<string, never>; timestamp: number }
+  | { type: 'resume'; data: Record<string, never>; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
   id: string
-  kind: 'poll' | 'ranking' | 'consent' | 'open'
+  kind: QuestionKind
   prompt: string
   options: PollOption[]
 }
@@ -70,6 +72,16 @@ export type ServerMessage =
   | {
       type: 'question_timeout'
       data: { questionId: string }
+      timestamp: number
+    }
+  | {
+      type: 'session_paused'
+      data: Record<string, never>
+      timestamp: number
+    }
+  | {
+      type: 'session_resumed'
+      data: Record<string, never>
       timestamp: number
     }
   | {

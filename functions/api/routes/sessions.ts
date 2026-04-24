@@ -26,6 +26,7 @@ import {
   PatchSessionSchema,
   ReorderQuestionsSchema,
   AddQuestionSchema,
+  autoPopulateOptions,
   type PollQuestionInput,
 } from '../lib/validation'
 import {
@@ -40,6 +41,16 @@ import type { Env, PollOption, Question, Session } from '../types'
 
 type Vars = AuthVariables & PlanVariables
 type SessionRow = Session
+
+// Apply schema columns that may be missing on older D1 databases (pre-migration 0008).
+// Runs once per worker cold-start; subsequent calls are no-ops after the columns exist.
+let _schemaPatchDone = false
+async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
+  if (_schemaPatchDone) return
+  _schemaPatchDone = true
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once' CHECK (vote_policy IN ('once','multi','react'))`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection' CHECK (session_mode IN ('reflection','fun'))`).run().catch(() => {})
+}
 
 type QuestionRow = {
   id: string
@@ -388,6 +399,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // GET /api/sessions — list caller's sessions (DRAFT + LIVE + CLOSED, not ARCHIVED)
   app.get('/', async (c) => {
     const user = c.get('user')
+    await patchSchemaIfNeeded(c.env.DB)
     const { results } = await c.env.DB
       .prepare(
         `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
@@ -510,11 +522,11 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     const questions = await fetchQuestions(c.env.DB, id)
-    if (questions.length === 0 || questions[0].kind !== 'poll') {
+    if (questions.length === 0) {
       return c.json(
         {
           ok: false,
-          error: { code: 'no_question', message: 'Session has no poll question yet' },
+          error: { code: 'no_question', message: 'Session has no question yet' },
           trace_id: c.get('trace_id'),
         },
         409,
@@ -870,7 +882,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const nextPosition = existing.length
     const qid = ulid()
     const now = Date.now()
-    const rawOptions = parsed.data.options ?? []
+    const rawOptions = autoPopulateOptions(parsed.data.kind, parsed.data.options)
     const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
     const optionsJson = JSON.stringify(options)
 
@@ -1014,7 +1026,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
 
-    const options = (parsed.data.options ?? []).map((o) => ({ id: o.id ?? ulid(), label: o.label }))
+    const rawOptions = autoPopulateOptions(parsed.data.kind, parsed.data.options)
+    const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
     const result = await c.env.DB
       .prepare(`UPDATE questions SET kind = ?1, prompt = ?2, options_json = ?3 WHERE id = ?4 AND session_id = ?5`)
       .bind(parsed.data.kind, parsed.data.prompt, JSON.stringify(options), questionId, id)

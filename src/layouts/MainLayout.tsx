@@ -140,6 +140,12 @@ export default function MainLayout({
   const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 
+  const MARKETING_PATHS = ['/', '/pricing', '/events', '/hr', '/nonprofit', '/consulting', '/privacy', '/terms']
+  const isMarketingPage =
+    MARKETING_PATHS.includes(location.pathname) ||
+    location.pathname.startsWith('/features/') ||
+    location.pathname.startsWith('/use-cases/')
+
   const t = useT('solutions')
   const solutionLinks = [
     { label: t('navLinks.events'), href: '/events' },
@@ -186,7 +192,7 @@ export default function MainLayout({
           <div className="flex items-center gap-3">
             {showTeamSwitcher && <TeamSwitcher />}
             <nav aria-label="Site navigation" className="flex items-center gap-1">
-              {isHome && (
+              {isMarketingPage && (
                 <>
                   <NavDropdown label={t('nav.solutions')} links={solutionLinks} />
                   <NavDropdown label={t('nav.features')} links={featureLinks} />
@@ -199,7 +205,7 @@ export default function MainLayout({
                   </Link>
                 </>
               )}
-              <LanguageSwitcher />
+              {!isMarketingPage && <LanguageSwitcher />}
               {navSlot}
             </nav>
           </div>
