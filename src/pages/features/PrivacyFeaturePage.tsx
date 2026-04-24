@@ -1,122 +1,222 @@
-import FeaturePageTemplate from '../../components/FeaturePageTemplate'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Check, X } from 'lucide-react'
+import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
-import { useT } from '../../i18n'
+
+const btnPrimary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+const btnSecondary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 text-sm border border-pulse-300 bg-white hover:border-pulse-500 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+
+const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
+const displayFont = { fontFamily: 'var(--font-family-display)' }
+const monoFont = { fontFamily: 'var(--font-family-mono)' }
+const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
+const shadowCard = { boxShadow: 'var(--shadow-card)' }
+
+type ConsentMode = 'identified' | 'cohort' | 'anonymous'
+
+const consentOptions: { key: ConsentMode; name: string; desc: string; tag: string }[] = [
+  { key: 'identified', name: 'Identified', desc: 'Your name and votes are linked. Useful for board meetings and named feedback.', tag: 'name + vote' },
+  { key: 'cohort', name: 'Cohort-visible', desc: 'Your vote is attributed to your team, not you. Teams of 5+ only.', tag: 'team + vote' },
+  { key: 'anonymous', name: 'Anonymous', desc: 'Only your vote is stored. No identity, no IP log, no cohort link.', tag: 'vote only' },
+]
+
+const doGuarantees = [
+  { title: 'We store per-session', desc: 'Every session is its own Durable Object. Data lives there until deletion. No cross-session joins, ever.' },
+  { title: 'We log every consent choice', desc: "Each participant's visibility pick is timestamped. Exports include the log. Auditable by a works council." },
+  { title: 'We gate results by tally', desc: 'A result is hidden until the minimum vote count is met. Default 5. No single-voter exposure, anywhere.' },
+  { title: 'We delete on schedule', desc: 'Identity rows purge on the retention you pick. Aggregate tallies can live longer — without link back.' },
+]
+
+const dontGuarantees = [
+  { title: "We don't sell data", desc: 'No ads network, no data broker, no telemetry pipeline to a third party. Your tallies are yours.' },
+  { title: "We don't train on you", desc: "Nothing in Qesto feeds a training run — not ours, not a vendor's. Workers AI is used for inference, never fine-tuning." },
+  { title: "We don't route to third-party AI", desc: 'No OpenAI, no Anthropic, no Azure. Inference stays on Cloudflare\'s network, in your region.' },
+  { title: "We don't resolve identity late", desc: "Once a vote is anonymous, it stays anonymous. We can't un-anonymize — not for subpoena, not for us." },
+]
+
+const certs = [
+  { name: 'SOC 2', label: 'Type II · 2025' },
+  { name: 'GDPR', label: 'DPA + SCCs' },
+  { name: 'ISO 27001', label: 'In progress 2026' },
+  { name: 'EU residency', label: 'Workers AI EU' },
+]
 
 export default function PrivacyFeaturePage() {
-  const t = useT('solutions')
+  const [selected, setSelected] = useState<ConsentMode>('anonymous')
 
   return (
-    <>
+    <MainLayout>
       <PageSeo
-        title={t('features.privacy.seo.title')}
-        description={t('features.privacy.seo.description')}
+        title="Privacy by Default — Qesto"
+        description="Every Qesto session starts with a consent round. Participants choose whether they're identified, cohort-visible, or fully anonymous."
         canonicalPath="/features/privacy"
         ogImage="/images/solutions/photo-1543269865-cbf427effbad.avif"
       />
-      <FeaturePageTemplate
-        hero={{
-          badge: t('features.privacy.badge'),
-          headline: t('features.privacy.headline'),
-          subheadline: t('features.privacy.subheadline'),
-          primaryCta: { label: t('cta.talkToSales'), href: '/pricing' },
-          secondaryCta: { label: t('features.privacy.hero.secondaryCta'), href: '/privacy' },
-          imageUrl: '/images/solutions/photo-1543269865-cbf427effbad.avif',
-          imageAlt: 'People collaborating with privacy-first feedback controls',
-          gallery: [
-            { src: '/images/solutions/photo-1681949103006-70066fb25dfe.avif', alt: 'Community discussion with anonymous participation' },
-            { src: '/images/solutions/photo-1551434678-e076c223a692.avif', alt: 'HR team reviewing secure engagement results' },
-          ],
-      }}
-      howItWorks={{
-        heading: t('features.privacy.howItWorks.heading'),
-        steps: [
-          {
-            number: 1,
-              title: t('features.privacy.howItWorks.step1.title'),
-              desc: t('features.privacy.howItWorks.step1.desc'),
-          },
-          {
-            number: 2,
-              title: t('features.privacy.howItWorks.step2.title'),
-              desc: t('features.privacy.howItWorks.step2.desc'),
-          },
-          {
-            number: 3,
-              title: t('features.privacy.howItWorks.step3.title'),
-              desc: t('features.privacy.howItWorks.step3.desc'),
-          },
-        ],
-      }}
-      outcomes={{
-        heading: t('features.privacy.outcomes.heading'),
-        items: [
-          {
-            icon: '🔒',
-              metric: t('features.privacy.outcomes.item1.metric'),
-              desc: t('features.privacy.outcomes.item1.desc'),
-          },
-          {
-            icon: '📋',
-              metric: t('features.privacy.outcomes.item2.metric'),
-              desc: t('features.privacy.outcomes.item2.desc'),
-          },
-          {
-            icon: '🛡️',
-              metric: t('features.privacy.outcomes.item3.metric'),
-              desc: t('features.privacy.outcomes.item3.desc'),
-          },
-        ],
-      }}
-      deepDive={{
-        heading: 'Privacy patterns for high-trust participation',
-        intro: 'Privacy is not one setting. It is a set of choices teams make based on sensitivity, follow-up needs, and governance obligations.',
-        pillars: [
-          {
-            title: 'Choose the right anonymity mode',
-            desc: 'Match session sensitivity with full anonymous, cohort, or identified participation models.',
-          },
-          {
-            title: 'Capture defensible consent history',
-            desc: 'Maintain time-stamped records that support internal reviews, external audits, and policy conversations.',
-          },
-          {
-            title: 'Keep safeguards visible to participants',
-            desc: 'Show clear privacy controls up front to reduce hesitation and increase honest participation.',
-          },
-        ],
-      }}
-      proof={{
-        heading: t('features.privacy.proof.heading'),
-        metrics: [
-          { value: t('features.privacy.proof.metric1.value'), label: t('features.privacy.proof.metric1.label'), note: t('features.privacy.proof.metric1.note') },
-          { value: t('features.privacy.proof.metric2.value'), label: t('features.privacy.proof.metric2.label'), note: t('features.privacy.proof.metric2.note') },
-          { value: t('features.privacy.proof.metric3.value'), label: t('features.privacy.proof.metric3.label'), note: t('features.privacy.proof.metric3.note') },
-        ],
-        badges: [{ label: t('features.privacy.proof.badge1') }, { label: t('features.privacy.proof.badge2') }, { label: t('features.privacy.proof.badge3') }],
-      }}
-      related={{
-        heading: t('features.privacy.related.heading'),
-        links: [
-            { label: t('features.privacy.related.link1.label'), href: '/consulting', desc: t('features.privacy.related.link1.desc') },
-            { label: t('features.privacy.related.link2.label'), href: '/hr', desc: t('features.privacy.related.link2.desc') },
-            { label: t('features.privacy.related.link3.label'), href: '/nonprofit', desc: t('features.privacy.related.link3.desc') },
-        ],
-      }}
-      faq={{
-        heading: t('features.privacy.faq.heading'),
-        items: [
-          { question: t('features.privacy.faq.q1.question'), answer: t('features.privacy.faq.q1.answer') },
-          { question: t('features.privacy.faq.q2.question'), answer: t('features.privacy.faq.q2.answer') },
-          { question: t('features.privacy.faq.q3.question'), answer: t('features.privacy.faq.q3.answer') },
-        ],
-      }}
-      bottomCta={{
-          heading: t('features.privacy.bottomCta.heading'),
-          subheading: t('features.privacy.bottomCta.subheading'),
-          primaryCta: { label: t('cta.talkToSales'), href: '/pricing' },
-          secondaryCta: { label: t('features.privacy.hero.secondaryCta'), href: '/privacy' },
-        }}
-      />
-    </>
+
+      {/* Hero */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Privacy by Default</div>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+                The room{' '}
+                <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
+                  picks its posture.
+                </span>
+              </h1>
+              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+                Every Qesto session starts with a consent round. Participants choose whether they're identified,
+                cohort-visible, or fully anonymous — per question, per session, per their call. Results stay hidden
+                until the minimum tally is met.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/privacy" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+                  Read the DPA
+                </Link>
+                <Link to="/privacy" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                  Full privacy policy
+                </Link>
+              </div>
+            </div>
+
+            {/* Consent picker */}
+            <div className="bg-white rounded-[20px] p-7" style={shadowElevated}>
+              <h3 className="font-semibold text-[17px] mb-1.5 text-pulse-900">How do you want to participate?</h3>
+              <p className="text-[13px] text-pulse-500 mb-5">You can change this any time during the session.</p>
+              <div className="space-y-2">
+                {consentOptions.map(({ key, name, desc, tag }) => (
+                  <button
+                    key={key}
+                    onClick={() => setSelected(key)}
+                    className={`w-full text-left p-4 rounded-xl grid gap-3.5 items-center border-2 transition-all ${
+                      selected === key
+                        ? 'border-teal-500 bg-teal-50'
+                        : 'border-pulse-200 hover:border-pulse-300'
+                    }`}
+                    style={{ gridTemplateColumns: '24px 1fr auto' }}
+                  >
+                    <div
+                      className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        selected === key
+                          ? 'border-teal-600 bg-teal-600'
+                          : 'border-pulse-300'
+                      }`}
+                    >
+                      {selected === key && (
+                        <div className="w-[6px] h-[6px] rounded-full bg-white" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="text-[14.5px] font-semibold text-pulse-900">{name}</div>
+                      <div className="text-[12.5px] text-pulse-500 leading-snug mt-0.5">{desc}</div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-teal-700" style={monoFont}>{tag}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Guarantees */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Guarantees</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+            Four things we do. Four things we don't.
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {doGuarantees.map(({ title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
+                <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-4">
+                  <Check size={22} />
+                </div>
+                <h3 className="font-semibold text-[16px] mb-2 text-pulse-900">{title}</h3>
+                <p className="text-[13.5px] leading-relaxed text-pulse-500">{desc}</p>
+              </div>
+            ))}
+            {dontGuarantees.map(({ title, desc }) => (
+              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
+                  style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}
+                >
+                  <X size={22} />
+                </div>
+                <h3 className="font-semibold text-[16px] mb-2" style={{ color: '#DC2626' }}>{title}</h3>
+                <p className="text-[13.5px] leading-relaxed text-pulse-500">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Data lifecycle */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Data lifecycle</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+            Where your data lives, and for how long.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-pulse-200">
+            {[
+              { t: 'During the session', title: 'In the Durable Object', desc: 'Votes, tallies, and consent choices live in a single DO, pinned to the colo closest to first-mover. No replication.' },
+              { t: 'After close', title: 'In your workspace', desc: 'Session locks. Recap generates. Data moves to R2 (object storage) for retention window. Encrypted at rest.' },
+              { t: 'Retention end', title: 'Purged by scheduler', desc: 'Cron job on every DO sweeps expired sessions. Identity rows go first; aggregate tallies follow on your schedule.' },
+            ].map(({ t, title, desc }) => (
+              <div key={t} className="px-8 py-8 first:pl-0 last:pr-0 relative">
+                <div className="text-[11px] font-bold uppercase tracking-widest text-teal-700 mb-2">{t}</div>
+                <h3 className="font-semibold text-[17px] mb-2 text-pulse-900">{title}</h3>
+                <p className="text-sm text-pulse-500 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Certifications */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Certifications</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+            The paperwork your procurement team needs.
+          </h2>
+          <p className="text-pulse-500 mb-8">
+            SOC 2 Type II audit on file. GDPR DPA signed per customer. Sub-processors limited to Cloudflare and
+            Stripe (billing only).
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {certs.map(({ name, label }) => (
+              <div key={name} className="bg-white rounded-xl p-5.5 text-center" style={shadowCard}>
+                <div className="font-bold text-[18px] tracking-tight text-pulse-900 mb-1" style={displayFont}>
+                  {name}
+                </div>
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-pulse-500">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA band */}
+      <div className="py-10 px-6">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+          <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
+            Privacy that your works council will sign off.
+          </h2>
+          <p className="text-slate-400 mb-8">
+            Request the DPA, the SOC 2 report, or the sub-processor list — we ship them same-day.
+          </p>
+          <Link to="/pricing" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+            Request the trust pack
+          </Link>
+        </div>
+      </div>
+    </MainLayout>
   )
 }

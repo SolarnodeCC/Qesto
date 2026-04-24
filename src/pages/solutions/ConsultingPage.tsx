@@ -1,112 +1,210 @@
-import SolutionPageTemplate from '../../components/SolutionPageTemplate'
+import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
+import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
-import { useT } from '../../i18n'
+
+const btnPrimary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+const btnSecondary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 text-sm border border-pulse-300 bg-white hover:border-pulse-500 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+
+const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
+const displayFont = { fontFamily: 'var(--font-family-display)' }
+const monoFont = { fontFamily: 'var(--font-family-mono)' }
+const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
+const shadowCard = { boxShadow: 'var(--shadow-card)' }
+
+const themes = [
+  { title: 'Theme 01 · Trust in forecasting', evidence: 12, quote: '"We don\'t believe the numbers until three people have re-keyed them." — 8 of 12 pre-workshop interviews echoed this.' },
+  { title: 'Theme 02 · Meeting-to-decision gap', evidence: 9, quote: 'Live tally: 74% of attendees rated decision velocity ≤ 3/10. Cluster emerged unprompted in breakout 2.' },
+  { title: 'Theme 03 · Cross-BU handoffs', evidence: 7, quote: 'Pulse at 14:20 found 6 of 7 teams losing context at handoff. Root cause cluster: ownership ambiguity.' },
+]
+
+const whitelabel = [
+  { key: 'Branded domain', value: 'qesto.yourfirm.com', sub: 'Your clients see your logo and colors from join code to PDF. DNS handoff is one CNAME.' },
+  { key: 'Template library', value: "Your firm's session templates, not ours", sub: 'Standard discovery, offsite, and retro templates shared across your partners. New engagements launch in 60 seconds.' },
+  { key: 'Deliverable export', value: 'PDF, DOCX, Notion, or raw JSON', sub: 'Plug into your synthesis pipeline. JSON includes every tally, cluster, and evidence anchor.' },
+  { key: 'Client data isolation', value: 'Per-client Durable Object boundary', sub: "Acme's rooms never sit next to Globex's. Retention configured per engagement, not per account." },
+  { key: 'Partner SSO', value: 'Okta, Azure AD, Google Workspace', sub: 'Your partners sign in once. Clients join with a code. No seat math for engagement teams.' },
+]
 
 export default function ConsultingPage() {
-  const t = useT('solutions')
-
   return (
-    <>
+    <MainLayout>
       <PageSeo
-        title={t('consulting.seo.title')}
-        description={t('consulting.seo.description')}
+        title="Qesto for Consulting — Workshops that ship evidence"
+        description="Run client discovery, strategy offsites, and change-management sessions where every conclusion is backed by a tally."
         canonicalPath="/consulting"
         ogImage="/images/solutions/photo-1552664730-d307ca884978.avif"
       />
-      <SolutionPageTemplate
-        hero={{
-          badge: t('consulting.badge'),
-          headline: t('consulting.headline'),
-          subheadline: t('consulting.subheadline'),
-          primaryCta: { label: t('cta.startFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-          imageUrl: '/images/solutions/photo-1552664730-d307ca884978.avif',
-          imageAlt: t('consulting.imageAlt'),
-          gallery: [
-            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Consultants facilitating strategic prioritization' },
-            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Stakeholders in a design sprint workshop' },
-          ],
-      }}
-      painPoints={{
-          heading: t('consulting.painPoints.heading'),
-          items: [
-            { icon: '🤔', title: t('consulting.painPoints.consensus.title'), desc: t('consulting.painPoints.consensus.desc') },
-            { icon: '🗓️', title: t('consulting.painPoints.debrief.title'), desc: t('consulting.painPoints.debrief.desc') },
-            { icon: '⏱️', title: t('consulting.painPoints.logistics.title'), desc: t('consulting.painPoints.logistics.desc') },
-          ],
-      }}
-      features={{
-          heading: t('consulting.features.heading'),
-          items: [
-            { icon: '🏆', title: t('consulting.features.ranking.title'), desc: t('consulting.features.ranking.desc') },
-            { icon: '⚖️', title: t('consulting.features.consent.title'), desc: t('consulting.features.consent.desc') },
-            { icon: '💬', title: t('consulting.features.open.title'), desc: t('consulting.features.open.desc'), ai: true },
-            { icon: '📈', title: t('consulting.features.export.title'), desc: t('consulting.features.export.desc') },
-          ],
-        }}
-        proof={{
-          heading: t('consulting.proof.heading'),
-          metrics: [
-            { value: t('consulting.proof.metric1.value'), label: t('consulting.proof.metric1.label'), note: t('consulting.proof.metric1.note') },
-            { value: t('consulting.proof.metric2.value'), label: t('consulting.proof.metric2.label'), note: t('consulting.proof.metric2.note') },
-            { value: t('consulting.proof.metric3.value'), label: t('consulting.proof.metric3.label'), note: t('consulting.proof.metric3.note') },
-          ],
-          badges: [{ label: t('consulting.proof.badge1') }, { label: t('consulting.proof.badge2') }, { label: t('consulting.proof.badge3') }],
-          testimonial: {
-            quote: t('consulting.proof.testimonial.quote'),
-            author: t('consulting.proof.testimonial.author'),
-            role: t('consulting.proof.testimonial.role'),
-          },
-      }}
-      playbook={{
-          heading: 'A consultant playbook for faster client alignment',
-          intro: 'Move from exploration to commitment with a facilitation flow that surfaces disagreement early and leaves teams with implementable outcomes.',
-          steps: [
-            {
-              title: 'Capture divergent input at scale',
-              desc: 'Collect ideas and concerns in parallel so senior voices do not dominate the discovery phase.',
-            },
-            {
-              title: 'Converge with visible prioritization',
-              desc: 'Use rankings and consent checks to reveal where alignment is strong and where unresolved risk remains.',
-            },
-            {
-              title: 'Deliver a same-day evidence pack',
-              desc: 'Export structured decisions, rationale, and next actions so clients can execute immediately.',
-            },
-          ],
-        }}
-      scenarios={{
-          heading: t('consulting.scenarios.heading'),
-          items: [
-            { title: t('consulting.scenarios.strategy.title'), desc: t('consulting.scenarios.strategy.desc') },
-            { title: t('consulting.scenarios.retro.title'), desc: t('consulting.scenarios.retro.desc') },
-            { title: t('consulting.scenarios.design.title'), desc: t('consulting.scenarios.design.desc') },
-          ],
-        }}
-        related={{
-          heading: t('consulting.related.heading'),
-          links: [
-            { label: t('consulting.related.link1.label'), href: '/use-cases/workshops', desc: t('consulting.related.link1.desc') },
-            { label: t('consulting.related.link2.label'), href: '/features/ai-insights', desc: t('consulting.related.link2.desc') },
-            { label: t('consulting.related.link3.label'), href: '/features/live-polling', desc: t('consulting.related.link3.desc') },
-          ],
-        }}
-        faq={{
-          heading: t('consulting.faq.heading'),
-          items: [
-            { question: t('consulting.faq.q1.question'), answer: t('consulting.faq.q1.answer') },
-            { question: t('consulting.faq.q2.question'), answer: t('consulting.faq.q2.answer') },
-            { question: t('consulting.faq.q3.question'), answer: t('consulting.faq.q3.answer') },
-          ],
-      }}
-      bottomCta={{
-          heading: t('consulting.bottomCta.heading'),
-          subheading: t('consulting.bottomCta.subheading'),
-          primaryCta: { label: t('cta.startFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-        }}
-      />
-    </>
+
+      {/* Hero */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">
+                Qesto for Consulting
+              </div>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+                Workshops that ship{' '}
+                <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
+                  evidence, not vibes.
+                </span>
+              </h1>
+              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+                Run client discovery, strategy offsites, and change-management sessions where every conclusion is
+                backed by a tally. The slide deck writes itself — and it quotes the room, not your intern.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+                  Run a pilot engagement
+                </Link>
+                <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                  See a sample readout
+                </Link>
+              </div>
+            </div>
+
+            {/* Deliverable card */}
+            <div className="bg-white rounded-[20px] overflow-hidden" style={shadowElevated}>
+              <div className="bg-pulse-900 text-white px-6 py-5 flex justify-between items-center">
+                <span className="font-bold text-[18px] tracking-tight" style={displayFont}>
+                  Client readout — Acme Industries
+                </span>
+                <span className="text-[12px] text-slate-400" style={monoFont}>2026-04-12</span>
+              </div>
+              <div className="p-7 space-y-4">
+                {themes.map(({ title, evidence, quote }) => (
+                  <div
+                    key={title}
+                    className="pl-4 py-3.5 pr-4 rounded-r-lg"
+                    style={{ borderLeft: '3px solid #7C3AED', background: '#F5F3FF' }}
+                  >
+                    <div className="flex justify-between items-center mb-1.5">
+                      <strong className="text-[15px] font-semibold text-pulse-900">{title}</strong>
+                      <span className="text-[12px] font-semibold text-violet-700" style={monoFont}>
+                        {evidence} evidence
+                      </span>
+                    </div>
+                    <p className="text-[13.5px] text-pulse-500 leading-snug italic">{quote}</p>
+                  </div>
+                ))}
+              </div>
+              <div
+                className="px-6 py-3.5 bg-pulse-50 border-t border-pulse-200 flex justify-between text-[12px] text-pulse-500"
+              >
+                <span>Evidence-anchored · Session QSTO-5R8K</span>
+                <span>Generated 14:42</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Workflow */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Engagement loop</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+            Discover. Workshop. Readout. Repeat.
+          </h2>
+          <p className="text-pulse-500 mb-8 text-lg">
+            Qesto sits across the three moments of a consulting engagement where your clients expect evidence —
+            and where you'd usually burn a week synthesizing.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                phase: 'Phase 01 · Discovery',
+                title: 'Pre-engagement pulse',
+                desc: "Ship a 10-question pulse to the client org before day one. Anonymous by default. AI clusters open responses into the 5 themes you'll walk in already knowing.",
+                output: 'Output: themed evidence deck, ready for kickoff.',
+              },
+              {
+                phase: 'Phase 02 · Workshop',
+                title: 'Live session, live signal',
+                desc: 'Facilitate on your slides; Qesto runs the tallies. Project behind you or tablet-beside-you. Every cluster is a slide you didn\'t have to build.',
+                output: 'Output: decision log with evidence attached.',
+              },
+              {
+                phase: 'Phase 03 · Readout',
+                title: 'Evidence-anchored recap',
+                desc: "Same-day client PDF. Every theme quotes the tally that produced it. Your logo, your font, the client's room.",
+                output: "Output: signed recap, in the sponsor's inbox by dinner.",
+              },
+            ].map(({ phase, title, desc, output }) => (
+              <div key={phase} className="bg-white rounded-2xl p-7" style={shadowCard}>
+                <div className="text-[11px] font-bold uppercase tracking-widest text-pulse-500 mb-2.5">{phase}</div>
+                <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900">{title}</h3>
+                <p className="text-sm text-pulse-500 leading-relaxed mb-4">{desc}</p>
+                <div className="border-t border-dashed border-pulse-200 pt-3.5 flex items-start gap-2 text-[13px] text-pulse-500">
+                  <ArrowRight size={16} className="text-teal-600 flex-shrink-0 mt-0.5" />
+                  <span>
+                    <strong className="text-teal-700">{output.split(':')[0]}:</strong>
+                    {output.split(':')[1]}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* White-label stack */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Your firm on Qesto</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+            White-label the room. Keep your brand on the deliverable.
+          </h2>
+          <div className="rounded-2xl overflow-hidden border border-pulse-200 divide-y divide-pulse-200">
+            {whitelabel.map(({ key, value, sub }) => (
+              <div
+                key={key}
+                className="bg-white px-6 py-5 grid gap-6 items-start"
+                style={{ gridTemplateColumns: '160px 1fr' }}
+              >
+                <span className="text-[11px] font-bold uppercase tracking-widest text-teal-700 pt-0.5">{key}</span>
+                <span className="text-[15px] text-pulse-900 leading-relaxed">
+                  {value}
+                  <span className="block mt-1 text-[13.5px] text-pulse-500">{sub}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Quote */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <blockquote className="max-w-3xl mx-auto text-center">
+            <p className="text-[20px] leading-relaxed text-pulse-900 mb-6 italic">
+              "We used to lose three days per engagement on synthesis. Now the readout is drafted before the workshop
+              ends — we spend that time on the recommendation, not the slide."
+            </p>
+            <footer className="text-sm text-pulse-500">
+              <strong className="text-pulse-900">Marcus Viljoen</strong> · Partner, boutique strategy firm
+            </footer>
+          </blockquote>
+        </div>
+      </section>
+
+      {/* CTA band */}
+      <div className="py-10 px-6">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+          <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
+            Your next engagement has a receipt.
+          </h2>
+          <p className="text-slate-400 mb-8">
+            Pilot Qesto on one client. If the readout doesn't save you a synthesis day, we'll refund the license.
+          </p>
+          <Link to="/pricing" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+            Talk to our consulting team
+          </Link>
+        </div>
+      </div>
+    </MainLayout>
   )
 }

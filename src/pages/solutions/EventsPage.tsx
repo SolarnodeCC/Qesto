@@ -1,155 +1,244 @@
-import SolutionPageTemplate from '../../components/SolutionPageTemplate'
+import { Link } from 'react-router-dom'
+import { QrCode, Monitor, Sparkles } from 'lucide-react'
+import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
-import { useT } from '../../i18n'
+
+const btnPrimary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+const btnSecondary =
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 text-sm border border-pulse-300 bg-white hover:border-pulse-500 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+
+const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
+const displayFont = { fontFamily: 'var(--font-family-display)' }
+const monoFont = { fontFamily: 'var(--font-family-mono)' }
+const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
+const shadowCard = { boxShadow: 'var(--shadow-card)' }
+
+const timeline = [
+  { time: '08:55', msg: <>Doors open. <span className="text-pulse-500">Join code on the lobby screens; 212 devices connected before the intro track ends.</span></>, tag: 'Pre-event', live: false },
+  { time: '09:05', msg: <>Consent round. <span className="text-pulse-500">Every attendee picks visibility for the day. 94% opt in to anonymous, 22% to identified for panel questions.</span></>, tag: 'Consent', live: false },
+  { time: '09:10', msg: <>"What are you here to solve?" — <span className="text-pulse-500">284 responses, AI clusters into 3 themes in 12 seconds, projected behind the speaker.</span></>, tag: 'Live', live: true },
+  { time: '10:20', msg: <>Panel queue. <span className="text-pulse-500">Upvoted questions surface on the moderator's console. Top 5 read aloud in order, identified voters optional.</span></>, tag: 'Live', live: true },
+  { time: '11:00', msg: <>Workshops. <span className="text-pulse-500">Ten rooms, ten Qestos. Each facilitator runs the same template; host console aggregates at 12:30.</span></>, tag: 'Breakout', live: false },
+  { time: '14:45', msg: <>"What's the one thing you'll change on Monday?" — <span className="text-pulse-500">word cloud on stage, full list in the recap email.</span></>, tag: 'Live', live: true },
+  { time: '15:30', msg: <>Recap shipped. <span className="text-pulse-500">Signed PDF with every tally, every theme, every consent choice — in the organizer's inbox before teardown.</span></>, tag: 'Recap', live: false },
+]
 
 export default function EventsPage() {
-  const t = useT('solutions')
-
   return (
-    <>
+    <MainLayout>
       <PageSeo
-        title={t('events.seo.title')}
-        description={t('events.seo.description')}
+        title="Qesto for Events — The room answers back"
+        description="Turn any keynote, panel, or breakout into a two-way conversation. Live tallies, AI insights, and a recap before the applause lands."
         canonicalPath="/events"
         ogImage="/images/solutions/photo-1572021335469-31706a17aaef.avif"
       />
-      <SolutionPageTemplate
-        hero={{
-          badge: t('events.badge'),
-          headline: t('events.headline'),
-          subheadline: t('events.subheadline'),
-          primaryCta: { label: t('cta.startFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-          imageUrl: '/images/solutions/photo-1572021335469-31706a17aaef.avif',
-          imageAlt: t('events.imageAlt'),
-          gallery: [
-            { src: '/images/solutions/photo-1704652070195-61e76e1466db.avif', alt: 'Workshop participants co-creating in groups' },
-            { src: '/images/solutions/photo-1557804506-669a67965ba0.avif', alt: 'Presenter engaging a crowd during a keynote' },
-          ],
-      }}
-      painPoints={{
-          heading: t('events.painPoints.heading'),
-          items: [
-            {
-              icon: '😶',
-              title: t('events.painPoints.passive.title'),
-              desc: t('events.painPoints.passive.desc'),
-            },
-            {
-              icon: '🐢',
-              title: t('events.painPoints.feedback.title'),
-              desc: t('events.painPoints.feedback.desc'),
-            },
-            {
-              icon: '🔇',
-              title: t('events.painPoints.silent.title'),
-              desc: t('events.painPoints.silent.desc'),
-            },
-          ],
-      }}
-      features={{
-          heading: t('events.features.heading'),
-          subheading: t('events.features.subheading'),
-          items: [
-            {
-              icon: '📊',
-              title: t('events.features.livePolls.title'),
-              desc: t('events.features.livePolls.desc'),
-            },
-            {
-              icon: '🏆',
-              title: t('events.features.ranking.title'),
-              desc: t('events.features.ranking.desc'),
-            },
-            {
-              icon: '💬',
-              title: t('events.features.openQuestions.title'),
-              desc: t('events.features.openQuestions.desc'),
-              ai: true,
-            },
-            {
-              icon: '✅',
-              title: t('events.features.consent.title'),
-              desc: t('events.features.consent.desc'),
-            },
-          ],
-        }}
-        proof={{
-          heading: t('events.proof.heading'),
-          metrics: [
-            { value: t('events.proof.metric1.value'), label: t('events.proof.metric1.label'), note: t('events.proof.metric1.note') },
-            { value: t('events.proof.metric2.value'), label: t('events.proof.metric2.label'), note: t('events.proof.metric2.note') },
-            { value: t('events.proof.metric3.value'), label: t('events.proof.metric3.label'), note: t('events.proof.metric3.note') },
-          ],
-          badges: [
-            { label: t('events.proof.badge1') },
-            { label: t('events.proof.badge2') },
-            { label: t('events.proof.badge3') },
-          ],
-          testimonial: {
-            quote: t('events.proof.testimonial.quote'),
-            author: t('events.proof.testimonial.author'),
-            role: t('events.proof.testimonial.role'),
-          },
-      }}
-      playbook={{
-          heading: 'A high-impact event flow in three moves',
-          intro: 'Use this facilitation pattern to increase participation and capture sponsor-ready evidence in every session block.',
-          steps: [
-            {
-              title: 'Prime the room in minute one',
-              desc: 'Open with a context-setting poll to map audience expectations and tailor speaker framing in real time.',
-            },
-            {
-              title: 'Convert questions into priorities',
-              desc: 'Run ranked Q&A during the talk so the most valuable questions rise early instead of getting lost at the end.',
-            },
-            {
-              title: 'Close with actionable pulse data',
-              desc: 'End each session with a quick confidence check and export the insights for sponsors, producers, and speakers.',
-            },
-          ],
-        }}
-      scenarios={{
-          heading: t('events.scenarios.heading'),
-          items: [
-            {
-              title: t('events.scenarios.warmup.title'),
-              desc: t('events.scenarios.warmup.desc'),
-            },
-            {
-              title: t('events.scenarios.qa.title'),
-              desc: t('events.scenarios.qa.desc'),
-            },
-            {
-              title: t('events.scenarios.pulse.title'),
-              desc: t('events.scenarios.pulse.desc'),
-            },
-          ],
-        }}
-        related={{
-          heading: t('events.related.heading'),
-          links: [
-            { label: t('events.related.link1.label'), href: '/features/live-polling', desc: t('events.related.link1.desc') },
-            { label: t('events.related.link2.label'), href: '/features/ai-insights', desc: t('events.related.link2.desc') },
-            { label: t('events.related.link3.label'), href: '/use-cases/workshops', desc: t('events.related.link3.desc') },
-          ],
-        }}
-        faq={{
-          heading: t('events.faq.heading'),
-          items: [
-            { question: t('events.faq.q1.question'), answer: t('events.faq.q1.answer') },
-            { question: t('events.faq.q2.question'), answer: t('events.faq.q2.answer') },
-            { question: t('events.faq.q3.question'), answer: t('events.faq.q3.answer') },
-          ],
-      }}
-      bottomCta={{
-          heading: t('events.bottomCta.heading'),
-          subheading: t('events.bottomCta.subheading'),
-          primaryCta: { label: t('cta.startFree'), href: '/login' },
-          secondaryCta: { label: t('cta.viewPricing'), href: '/pricing' },
-        }}
-      />
-    </>
+
+      {/* Hero */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Qesto for Events</div>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+                The room{' '}
+                <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
+                  answers back.
+                </span>
+              </h1>
+              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+                Turn any keynote, panel, or breakout into a two-way conversation. Live tallies project on the main
+                screen, AI surfaces the question a facilitator missed, and the speaker walks offstage with a recap
+                before the applause lands.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+                  Run your next event
+                </Link>
+                <Link to="/features/live-polling" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                  See Present mode
+                </Link>
+              </div>
+            </div>
+
+            {/* Stage mockup */}
+            <div
+              className="relative rounded-3xl p-7 text-white grid overflow-hidden"
+              style={{ background: '#0A0F1E', aspectRatio: '16/10', gridTemplateRows: 'auto 1fr auto', gap: 16, ...shadowElevated }}
+            >
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(circle at 70% 20%, rgba(20,184,166,0.2), transparent 60%)' }}
+              />
+              <div className="relative flex justify-between items-center text-[11px] tracking-widest uppercase text-white/60">
+                <span>qesto · room QSTO-7K2</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_#4ade80]" />
+                  Live · 284 votes
+                </span>
+              </div>
+              <div className="relative font-bold text-3xl leading-tight tracking-tight" style={displayFont}>
+                Which of these is blocking your team the most this quarter?
+              </div>
+              <div className="relative grid gap-2.5">
+                {[
+                  { lbl: 'Hiring velocity', pct: 78, n: 142 },
+                  { lbl: 'Cross-team rituals', pct: 52, n: 94 },
+                  { lbl: 'Tooling debt', pct: 28, n: 48 },
+                ].map(({ lbl, pct, n }) => (
+                  <div key={lbl} className="flex items-center gap-3 text-sm">
+                    <span className="w-36 text-white/80 font-medium">{lbl}</span>
+                    <div className="flex-1 h-3.5 bg-white/10 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, ...gradientBrand }} />
+                    </div>
+                    <span className="w-8 text-right text-white/80" style={monoFont}>{n}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Formats */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Formats</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+            One stage. Three sessions. Same host console.
+          </h2>
+          <p className="text-pulse-500 mb-8 text-lg">
+            Qesto adapts to the room. Projected tallies for 500. Breakout wizards for 20. Same session ID threads
+            the whole day.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden bg-pulse-900 text-white">
+              <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>01</div>
+              <div>
+                <h3 className="text-[22px] font-semibold mb-2.5">Keynote</h3>
+                <p className="text-sm leading-relaxed opacity-85">
+                  Project live tallies behind the speaker. 1-tap join. AI clusters open responses into 3 themes the
+                  speaker can address before Q&amp;A.
+                </p>
+              </div>
+            </div>
+            <div
+              className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900"
+              style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #F5F3FF 100%)' }}
+            >
+              <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>02</div>
+              <div>
+                <h3 className="text-[22px] font-semibold mb-2.5">Panel</h3>
+                <p className="text-sm leading-relaxed opacity-85">
+                  Audience submits questions with upvotes. Moderator sees the ranked queue. Identified mode on if the
+                  panelists want to reply by name.
+                </p>
+              </div>
+            </div>
+            <div className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900 bg-teal-50">
+              <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>03</div>
+              <div>
+                <h3 className="text-[22px] font-semibold mb-2.5">Workshop</h3>
+                <p className="text-sm leading-relaxed opacity-85">
+                  Break 80 people into 10 rooms. Each room runs its own consent round. Host console aggregates themes
+                  without exposing raw rows.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Timeline */}
+      <section className="py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">A day in the room</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+            From curtain-up to recap, one session ID.
+          </h2>
+          <p className="text-pulse-500 mb-8 text-lg">
+            Here's how a 300-person half-day runs on Qesto. Every step is logged, every tally is exportable.
+          </p>
+          <div className="rounded-2xl overflow-hidden border border-pulse-200 divide-y divide-pulse-200">
+            {timeline.map(({ time, msg, tag, live }) => (
+              <div
+                key={time}
+                className="bg-white px-6 py-4.5 grid items-center gap-5"
+                style={{ gridTemplateColumns: '80px 1fr auto' }}
+              >
+                <span className="text-teal-700 font-semibold text-[13px]" style={monoFont}>{time}</span>
+                <span className="text-[15px] text-pulse-900">{msg}</span>
+                <span
+                  className={`text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded ${
+                    live ? 'bg-teal-50 text-teal-700' : 'bg-pulse-100 text-pulse-500'
+                  }`}
+                >
+                  {tag}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why switch */}
+      <section className="py-16 bg-pulse-50">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Why event producers switch</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+            Because nobody installs a second app at your event.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: <QrCode size={22} />,
+                title: 'Join code on the screen',
+                desc: 'Short 6-character code, QR, or NFC. Works on the sketchiest conference wifi — edge server, no round-trip.',
+                ai: false,
+              },
+              {
+                icon: <Monitor size={22} />,
+                title: 'Present mode runs on anything',
+                desc: 'Project from a laptop, iPad, or the AV booth. Tallies stay readable at the back row because we designed for 1920×1080 first.',
+                ai: false,
+              },
+              {
+                icon: <Sparkles size={22} />,
+                title: 'The question the host missed',
+                desc: "AI surfaces the cluster nobody asked about. Helpful for moderators running to time; invisible if you don't want it.",
+                ai: true,
+              },
+            ].map(({ icon, title, desc, ai }) => (
+              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
+                <div
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+                    ai ? 'bg-violet-50 text-violet-700' : 'bg-teal-50 text-teal-700'
+                  }`}
+                >
+                  {icon}
+                </div>
+                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900">{title}</h3>
+                <p className="text-sm leading-relaxed text-pulse-500">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA band */}
+      <div className="py-10 px-6">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+          <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
+            Your next keynote should hear back.
+          </h2>
+          <p className="text-slate-400 mb-8">
+            Spin up a room in 90 seconds. Free for audiences under 100; pay per-session above.
+          </p>
+          <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+            Launch Present mode
+          </Link>
+        </div>
+      </div>
+    </MainLayout>
   )
 }
