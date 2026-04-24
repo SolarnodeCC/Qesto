@@ -64,11 +64,11 @@ function ConsentDonut({ rate }: { rate: number }) {
   return (
     <div className="flex flex-col items-center gap-2">
       <svg width="96" height="96" viewBox="0 0 96 96" aria-label={`Consent rate ${Math.round(rate * 100)}%`}>
-        <circle cx="48" cy="48" r={r} fill="none" stroke="#e5e7eb" strokeWidth="10" />
+        <circle cx="48" cy="48" r={r} fill="none" stroke="var(--pulse-200)" strokeWidth="10" />
         <circle
           cx="48" cy="48" r={r}
           fill="none"
-          stroke="#14b8a6"
+          stroke="var(--teal-500)"
           strokeWidth="10"
           strokeDasharray={`${filled} ${circ - filled}`}
           strokeLinecap="round"

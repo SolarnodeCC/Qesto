@@ -19,7 +19,7 @@ export default function TrendSpark({ data, width = 56, height = 20, className = 
 
   const isUp = data[data.length - 1] > data[0]
   const isFlat = data.every((v) => v === data[0])
-  const color = isFlat ? '#94a3b8' : isUp ? '#0d9488' : '#f59e0b'
+  const color = isFlat ? 'var(--pulse-400)' : isUp ? 'var(--teal-600)' : 'var(--signal-warning)'
 
   return (
     <svg

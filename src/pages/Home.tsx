@@ -1,24 +1,55 @@
 import { Link } from 'react-router-dom'
+import { Sparkles, BarChart3, Lock, Cloud, Users, QrCode, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
 
-const AI_FEATURES = [
+const FEATURE_STRIP = [
+  { icon: Sparkles, label: 'AI-drafted questions in <90s' },
+  { icon: BarChart3, label: 'Live results for every participant' },
+  { icon: Lock, label: 'Full, cohort, or identified anonymity' },
+  { icon: Cloud, label: 'Edge inference · no third-party models' },
+] as const
+
+interface FeatureCard {
+  icon: typeof BarChart3
+  title: string
+  desc: string
+  ai?: boolean
+}
+
+const FEATURE_CARDS: FeatureCard[] = [
   {
-    icon: '✨',
-    title: 'AI-generated questions',
-    desc: 'Describe your session goal and Qesto drafts a complete question set in seconds — no blank page.',
+    icon: BarChart3,
+    title: 'Live polling & ranking',
+    desc: 'Multi-choice, ranked Q&A, wordclouds, and 1–10 scales. Results update in <200ms on the edge.',
   },
   {
-    icon: '📊',
-    title: 'Real-time insights',
-    desc: 'Cross-session theme detection surfaces patterns across your team\'s feedback automatically.',
+    icon: CheckCircle2,
+    title: 'Consent rounds',
+    desc: 'A single-tap consent vote before any recap is generated — and a signed log for compliance review.',
   },
   {
-    icon: '🔒',
-    title: 'Privacy by default',
-    desc: 'All AI runs on-device via Cloudflare Workers AI. Your data never leaves the edge.',
+    icon: Sparkles,
+    title: 'Same-day recap',
+    desc: "Workers AI drafts the summary in the session's last 60 seconds, anchored to ranked evidence. You edit, then send.",
+    ai: true,
+  },
+  {
+    icon: Users,
+    title: 'Anonymity modes',
+    desc: 'Full, cohort (roles only), or identified. Choose per session — participants see the mode on the join screen.',
+  },
+  {
+    icon: QrCode,
+    title: 'Join in one tap',
+    desc: 'Short join codes, QR, or magic link. Works on any device — no app, no account required to participate.',
+  },
+  {
+    icon: Lock,
+    title: 'Edge-only inference',
+    desc: 'AI runs inside the same Cloudflare network as your session. No OpenAI, no Anthropic, no third-party model providers.',
   },
 ]
 
@@ -48,78 +79,153 @@ export default function Home() {
   )
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen flex flex-col">
-      {/* Hero */}
-      <div className="animate-page-enter flex-1 flex flex-col items-center justify-center p-8 text-center space-y-8">
-        <div className="max-w-2xl space-y-6">
-          {/* AI narrative pill */}
-          <div className="flex items-center justify-center gap-2">
-            <AIBadge variant="assisted" label="AI-first" />
-            <span className="text-caption text-pulse-500">{t('heroTagline')}</span>
+    <MainLayout navSlot={navSlot}>
+      <div className="animate-page-enter">
+
+        {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+        <section
+          aria-labelledby="hero-heading"
+          className="relative overflow-hidden py-24 px-6 before:absolute before:left-1/2 before:-top-[120px] before:-translate-x-1/2 before:w-[1200px] before:h-[600px] before:bg-[radial-gradient(circle,rgba(20,184,166,0.08)_0%,transparent_60%)] before:pointer-events-none"
+        >
+          <div className="max-w-[1120px] mx-auto">
+
+            {/* AI pill */}
+            <div className="flex items-center gap-2 mb-6">
+              <AIBadge variant="assisted" label="AI-first" />
+              <span className="text-sm text-pulse-500">{t('heroTagline')}</span>
+            </div>
+
+            {/* H1 */}
+            <h1
+              id="hero-heading"
+              tabIndex={-1}
+              className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 mb-5 max-w-[920px] focus:outline-none"
+            >
+              Feel the pulse of the room,{' '}
+              <span className="bg-[var(--gradient-brand)] bg-clip-text text-transparent">
+                amplified by AI.
+              </span>
+            </h1>
+
+            {/* Sub-headline */}
+            <p className="text-xl leading-[1.55] text-pulse-600 max-w-[680px] mb-8">
+              Live polling, ranked Q&amp;A, and consent votes with Workers AI drafting questions and
+              summarising evidence — all on Cloudflare&apos;s edge, inside the same network as your
+              session.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3 mb-12">
+              {auth.status === 'authenticated' ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="inline-flex items-center gap-2 rounded-md bg-[var(--gradient-brand)] text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    Go to dashboard
+                  </Link>
+                  <Link
+                    to="/pricing"
+                    className="inline-flex items-center rounded-md bg-white border border-pulse-200 text-pulse-900 px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    See the anonymity modes
+                  </Link>
+                </>
+              ) : auth.status === 'loading' ? (
+                <span className="text-sm text-pulse-500">{t('loading')}</span>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center gap-2 rounded-md bg-[var(--gradient-brand)] text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    Launch your next session
+                  </Link>
+                  <Link
+                    to="/pricing"
+                    className="inline-flex items-center rounded-md bg-white border border-pulse-200 text-pulse-900 px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    See the anonymity modes
+                  </Link>
+                </>
+              )}
+              <span className="text-[13px] text-pulse-400 ml-2">No card required · 2-minute setup</span>
+            </div>
+
+            {/* Feature strip */}
+            <div
+              className="flex flex-wrap gap-7 pt-5 border-t border-pulse-200"
+              aria-label="Key features"
+            >
+              {FEATURE_STRIP.map(({ icon: Icon, label }) => (
+                <div key={label} className="flex items-center gap-2.5 text-sm text-pulse-600">
+                  <Icon aria-hidden="true" size={16} className="text-teal-600 flex-shrink-0" />
+                  {label}
+                </div>
+              ))}
+            </div>
           </div>
+        </section>
 
-          <h1
-            tabIndex={-1}
-            className="text-4xl md:text-6xl font-semibold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none"
-          >
-            {t('heroTitle')}
-          </h1>
+        {/* ── Feature cards ─────────────────────────────────────────────────────── */}
+        <section
+          aria-labelledby="features-heading"
+          className="bg-pulse-50 py-24 px-6"
+          id="features"
+        >
+          <div className="max-w-[1120px] mx-auto">
 
-          <p className="text-lg text-pulse-600 max-w-xl mx-auto">
-            {t('heroDescription')}
-          </p>
+            {/* Eyebrow */}
+            <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-teal-600 mb-3">
+              Facilitator-first
+            </p>
 
-          <div className="flex items-center justify-center gap-3">
-            {auth.status === 'authenticated' ? (
-              <div className="flex flex-col items-center gap-2">
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
-                >
-                  {t('goToDashboard')}
-                </Link>
-                <span className="text-xs text-pulse-500">
-                  {t('signedInAs', { email: auth.user.email })}
-                </span>
-              </div>
-            ) : auth.status === 'loading' ? (
-              <span className="text-sm text-pulse-500">{t('loading')}</span>
-            ) : (
-              <div className="flex gap-3">
-                <Link
-                  to="/login"
-                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
-                >
-                  {t('getStartedFree')}
-                </Link>
-                <Link
-                  to="/pricing"
-                  className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
-                >
-                  {t('seePricing')}
-                </Link>
-              </div>
-            )}
+            <h2
+              id="features-heading"
+              className="font-[family-name:var(--font-display)] font-bold text-[48px] leading-[1.1] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 mb-4 max-w-[680px]"
+            >
+              Decisions you can defend, with evidence that survives the meeting.
+            </h2>
+
+            <p className="text-lg text-pulse-600 max-w-[620px] mb-12">
+              Qesto turns live rooms into audit-ready sessions — every vote, consent round, and AI
+              summary is logged against the participants who were actually there.
+            </p>
+
+            {/* 3-col grid */}
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
+              {FEATURE_CARDS.map((card, i) => {
+                const Icon = card.icon
+                return (
+                  <li
+                    key={card.title}
+                    className="animate-list-item bg-white rounded-lg shadow-card hover:shadow-elevated transition-shadow duration-[120ms] p-7 flex flex-col gap-3"
+                    style={{ '--stagger-index': i } as React.CSSProperties}
+                  >
+                    {/* Icon container */}
+                    <div
+                      className={[
+                        'rounded-xl w-11 h-11 flex items-center justify-center flex-shrink-0',
+                        card.ai
+                          ? 'bg-violet-50 text-violet-700'
+                          : 'bg-teal-50 text-teal-700',
+                      ].join(' ')}
+                      aria-hidden="true"
+                    >
+                      <Icon size={20} />
+                    </div>
+
+                    <h3 className="text-[20px] font-semibold text-pulse-900 leading-snug">
+                      {card.title}
+                    </h3>
+                    <p className="text-[15px] text-pulse-600 leading-[1.55]">{card.desc}</p>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
+        </section>
 
-        </div>
-
-        {/* AI 3-up feature strip (AI-VIS-01) */}
-        <div className="w-full max-w-3xl">
-          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {AI_FEATURES.map((feat, i) => (
-              <li
-                key={feat.title}
-                className="animate-list-item rounded-xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 text-left space-y-2 shadow-card"
-                style={{ '--stagger-index': i } as React.CSSProperties}
-              >
-                <span className="text-2xl" aria-hidden="true">{feat.icon}</span>
-                <h2 className="text-sm font-semibold dark:text-pulse-100">{feat.title}</h2>
-                <p className="text-caption text-pulse-500 leading-relaxed">{feat.desc}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </MainLayout>
   )

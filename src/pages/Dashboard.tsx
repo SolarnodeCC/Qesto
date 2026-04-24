@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Sparkles } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
@@ -80,7 +81,7 @@ export default function Dashboard() {
 
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
+      <MainLayout mainClassName="min-h-screen max-w-5xl mx-auto p-8 space-y-8">
         <div className="space-y-2">
           <div className="h-9 w-48 rounded-lg bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
           <div className="h-4 w-64 rounded-md bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
@@ -214,7 +215,7 @@ export default function Dashboard() {
   )
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-8">
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-5xl mx-auto p-8 space-y-8">
       {/* animate-page-enter: entire content fades + slides up on mount (LAYOUT-MOTION-01) */}
       <div className="animate-page-enter space-y-8">
         <div className="flex items-start justify-between gap-4">
@@ -224,7 +225,17 @@ export default function Dashboard() {
             </h1>
             <p className="text-sm text-pulse-500">{auth.user.email}</p>
           </div>
-          {activePlan && <PlanBadge plan={activePlan} />}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            {activePlan && <PlanBadge plan={activePlan} />}
+            <button
+              type="button"
+              onClick={() => setWizardOpen(true)}
+              className="inline-flex items-center gap-2 rounded-md bg-[var(--gradient-brand)] text-white px-4 py-2 text-sm font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+            >
+              <Sparkles size={14} aria-hidden="true" />
+              {t('newSession')}
+            </button>
+          </div>
         </div>
 
         {/* Tab bar */}
@@ -272,11 +283,9 @@ export default function Dashboard() {
             <button
               type="button"
               onClick={() => setWizardOpen(true)}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-teal-300 dark:border-teal-700 text-teal-700 dark:text-teal-400 px-5 py-4 font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-pulse-200 bg-white text-pulse-700 px-4 py-3 font-medium hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion transition-colors"
             >
-              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
+              <Sparkles size={16} aria-hidden="true" />
               {t('newSession')}
             </button>
 
@@ -362,7 +371,7 @@ export default function Dashboard() {
                                     {s.title}
                                   </span>
                                   <p className="text-xs text-pulse-500 mt-0.5">
-                                    code {s.code} · {new Date(s.created_at).toLocaleString()}
+                                    code <code className="font-mono text-[0.95em] tracking-wide">{s.code}</code> · {new Date(s.created_at).toLocaleString()}
                                   </p>
                                 </Link>
                               </div>
@@ -370,10 +379,10 @@ export default function Dashboard() {
                                 className={
                                   'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
                                   (s.status === 'draft'
-                                    ? 'bg-pulse-100 text-pulse-600'
+                                    ? 'bg-pulse-100 text-pulse-700'
                                     : s.status === 'live'
-                                    ? 'bg-teal-100 text-teal-700'
-                                    : 'bg-violet-100 text-violet-700')
+                                    ? 'relative bg-teal-100 text-teal-700 font-semibold before:w-1.5 before:h-1.5 before:rounded-full before:bg-teal-500 before:inline-block before:mr-1'
+                                    : 'bg-violet-50 text-violet-700')
                                 }
                               >
                                 {s.status}
