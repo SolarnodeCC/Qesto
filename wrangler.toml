@@ -81,6 +81,9 @@ id = "8a418acd50924c89a6fb8d19a7777d31"
 [[kv_namespaces]]
 binding = "ACTIONS_KV"
 id = "59680ad5a348400f89f36c148dbc72ef"
+[[kv_namespaces]]
+binding = "METRICS_KV"
+id = "afe3946dc37d4b2ea506ef41a246396b"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
@@ -96,6 +99,10 @@ binding = "AI"
 [[vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
+
+[[analytics_engine_datasets]]
+binding = "METRICS_AE"
+dataset = "qesto_metrics"
 
 # Preview env is intentionally not defined. Will be re-added in Phase 5 once
 # the staging D1/KV resources are provisioned (docs/DEPLOY_BOOTSTRAP.md).

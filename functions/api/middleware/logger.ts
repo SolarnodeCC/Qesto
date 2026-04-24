@@ -10,6 +10,7 @@
 import type { MiddlewareHandler } from 'hono'
 import type { AuthClaims } from '../lib/jwt'
 import type { Env } from '../types'
+import { routeKey, writeLiveMetricBucket } from '../lib/metrics-kv'
 
 type LoggerVariables = {
   trace_id: string
@@ -61,11 +62,12 @@ export const loggerMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: Log
   }
 
   const user = c.get('user')
+  const path = new URL(c.req.url).pathname
   const line: LogLine = {
     ts: new Date().toISOString(),
     level: status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info',
     method: c.req.method,
-    path: new URL(c.req.url).pathname,
+    path,
     status,
     duration_ms,
     trace_id: c.get('trace_id') ?? 'unknown',
@@ -73,4 +75,18 @@ export const loggerMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: Log
     ...(error_code ? { error_code } : {}),
   }
   console.log(JSON.stringify(line))
+
+  // Analytics Engine — fire-and-forget, never blocks response.
+  c.env.METRICS_AE?.writeDataPoint({
+    indexes: [routeKey(path)],
+    doubles: [duration_ms, status >= 500 ? 1 : 0, status],
+    blobs: [line.trace_id, ...(user?.sub ? [user.sub] : [])],
+  })
+
+  // METRICS_KV live bucket — async, deferred via waitUntil.
+  if (c.env.METRICS_KV) {
+    c.executionCtx.waitUntil(
+      writeLiveMetricBucket(c.env.METRICS_KV, duration_ms, status >= 500),
+    )
+  }
 }

@@ -123,14 +123,39 @@ export function mountAIInsightsRoutes(parent: any) {
         }
       }
 
+      // Vectorize: embed current session context to find similar past sessions.
+      // Best-effort — insights still generate if Vectorize is unavailable.
+      let similarSessionsContext = ''
+      try {
+        const embedResult = await c.env.AI.run('@cf/baai/bge-m3', { text: context }) as { data: number[][] }
+        const vector = embedResult?.data?.[0]
+        if (vector?.length === 768) {
+          const queryResult = await c.env.DECISIONS_VECTORIZE.query(vector, {
+            topK: 3,
+            returnMetadata: 'all',
+          })
+          const matches = queryResult.matches.filter(m => m.id !== sessionId && (m.score ?? 0) > 0.75)
+          if (matches.length > 0) {
+            similarSessionsContext = '\n\nSimilar past sessions for additional context:\n'
+            for (const match of matches) {
+              const meta = match.metadata as Record<string, string> | undefined
+              if (meta?.title) similarSessionsContext += `- "${meta.title}"\n`
+            }
+          }
+          // Store vector for upsert after generation (reuse to save a second embed call).
+          ;(c as any).__sessionVector = vector
+        }
+      } catch (vecErr) {
+        console.log(JSON.stringify({ event: 'vectorize.query.skip', reason: (vecErr as Error).message }))
+      }
+
       // Call Workers AI for theme summarization
       const aiPrompt = `Analyze the following session results and provide:
 1. Key themes and patterns in participant responses
 2. Top 3 actionable insights
 3. Follow-up questions for deeper engagement
 
-${context}
-
+${context}${similarSessionsContext}
 Keep response concise (max 150 words). Focus on actionable insights.`
 
       const approxInputChars = aiPrompt.length
@@ -167,6 +192,30 @@ Keep response concise (max 150 words). Focus on actionable insights.`
       await c.env.DECISIONS_KV.put(cacheKey, JSON.stringify(insights), {
         expirationTtl: 3600
       })
+
+      // Vectorize: upsert this session's insights so future sessions can find it.
+      // Re-uses the vector computed above; falls back to a fresh embed if missing.
+      try {
+        let vector: number[] | undefined = (c as any).__sessionVector
+        if (!vector) {
+          const embedResult = await c.env.AI.run('@cf/baai/bge-m3', { text: insightText }) as { data: number[][] }
+          vector = embedResult?.data?.[0]
+        }
+        if (vector?.length === 768) {
+          await c.env.DECISIONS_VECTORIZE.upsert([{
+            id: sessionId,
+            values: vector,
+            metadata: {
+              session_id: sessionId,
+              title: sessionResult.title as string,
+              ts: String(Date.now()),
+              theme_count: String(themes.length),
+            },
+          }])
+        }
+      } catch (vecErr) {
+        console.log(JSON.stringify({ event: 'vectorize.upsert.skip', reason: (vecErr as Error).message }))
+      }
 
       // Audit trail (log prompt + model + response for compliance)
       await recordAuditEvent(c, {

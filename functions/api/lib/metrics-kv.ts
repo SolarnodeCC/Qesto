@@ -161,3 +161,52 @@ export async function readBucket(
     request_count,
   }
 }
+
+type LiveBucket = {
+  active_sessions: number
+  total_participants: number
+  revenue_24h_cents: number
+  p95_latency_ms: number
+  error_count: number
+  request_count: number
+  latency_samples: number[]
+}
+
+function liveBucketKey(now: Date): string {
+  const yyyy = now.getUTCFullYear()
+  const mm = String(now.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(now.getUTCDate()).padStart(2, '0')
+  const hh = String(now.getUTCHours()).padStart(2, '0')
+  const mi = String(now.getUTCMinutes()).padStart(2, '0')
+  return `metrics:live:${yyyy}${mm}${dd}T${hh}${mi}`
+}
+
+/**
+ * Increment the current-minute live bucket with a single request sample.
+ * Called from the logger middleware via waitUntil — never blocks the response.
+ * Maintains a capped latency array (200 samples) for p95 computation on read.
+ */
+export async function writeLiveMetricBucket(
+  kv: KVNamespace,
+  latency_ms: number,
+  isError: boolean,
+  now: Date = new Date(),
+): Promise<void> {
+  const key = liveBucketKey(now)
+  const existing = await kv.get<LiveBucket>(key, 'json')
+  const latencySamples = [...(existing?.latency_samples ?? []), latency_ms].slice(-200)
+  const sorted = [...latencySamples].sort((a, b) => a - b)
+  const p95 = sorted[Math.max(0, Math.ceil(0.95 * sorted.length) - 1)] ?? latency_ms
+
+  const bucket: LiveBucket = {
+    active_sessions: existing?.active_sessions ?? 0,
+    total_participants: existing?.total_participants ?? 0,
+    revenue_24h_cents: existing?.revenue_24h_cents ?? 0,
+    p95_latency_ms: p95,
+    error_count: (existing?.error_count ?? 0) + (isError ? 1 : 0),
+    request_count: (existing?.request_count ?? 0) + 1,
+    latency_samples: latencySamples,
+  }
+
+  await kv.put(key, JSON.stringify(bucket), { expirationTtl: 7 * 24 * 60 * 60 })
+}
