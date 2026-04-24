@@ -102,3 +102,86 @@ For every analysis:
 - Zero count on shipped feature → backend-dev to check `writeEvent()` calls
 - PII visible in results → stop immediately, escalate to security agent
 - New metric needed → propose new AE event to backend-dev + architect
+
+## Data Quality Checks (Weekly)
+
+**Every Monday**: Run sanity checks on AE instrumentation. Report anomalies in #analytics.
+
+### Completeness Checks
+```sql
+-- Are all expected events firing?
+SELECT blob1 AS event, COUNT(*) AS count
+FROM qesto_events
+WHERE timestamp > NOW() - INTERVAL '7' DAY
+GROUP BY blob1 ORDER BY count DESC;
+
+-- Red flags: zero count on [signup, first_session_started, session.closed, ai.inference]
+```
+
+### Null/Cardinality Checks
+```sql
+-- Any missing mandatory fields?
+SELECT 
+  SUM(CASE WHEN blob3 IS NULL THEN 1 ELSE 0 END) AS null_teamId,
+  SUM(CASE WHEN double1 < 0 THEN 1 ELSE 0 END) AS negative_duration,
+  COUNT(DISTINCT blob3) AS unique_teams,
+  COUNT(DISTINCT blob2) AS unique_users
+FROM qesto_events WHERE timestamp > NOW() - INTERVAL '7' DAY;
+
+-- Red flag: null_teamId > 0 (team context missing)
+-- Red flag: unique_teams < 10 (low event volume or data corruption)
+```
+
+### Event Lag Check
+```sql
+-- Is data arriving in real-time?
+SELECT MAX(timestamp) AS latest_event, NOW() - MAX(timestamp) AS age_minutes
+FROM qesto_events;
+
+-- Red flag: age > 30 min (pipeline delay or stuck ingestion)
+```
+
+### Anomaly Scoring
+
+| Signal | Threshold | Action |
+|---|---|---|
+| Event count 50% below 7-day avg | —50% vs avg | Investigate missing instrumentation |
+| Null team_id rate | >1% | Escalate to backend-dev — auth context loss |
+| AI p95 latency | >8s | Page backend-dev — model degraded |
+| Error rate | >5% of total events | Incident investigation |
+| Data freshness | >30 min behind current time | Escalate to devops — AE pipeline stuck |
+
+### Quality Gate Checklist
+- [ ] All expected events present (count > 0)
+- [ ] No missing mandatory fields (blob3 teamId present)
+- [ ] Data age < 30 min
+- [ ] Error rate < 5%
+- [ ] No anomalies flagged above thresholds
+
+---
+
+## Quality Gates
+
+- [ ] Every query segments by plan (free/pro/enterprise)
+- [ ] No PII surfaces in results (emails, names, IPs use anonymised IDs)
+- [ ] Anomalies documented (zero counts, unexpected spikes)
+- [ ] Data freshness verified (<30 min lag)
+- [ ] Query result archived to `docs/ANALYTICS/YYYY-MM-DD_<topic>.md`
+
+## Do Not
+
+- Do not run mutations (INSERT/UPDATE/DELETE) on D1 or AE — read-only only
+- Do not surface PII (email, names, IP addresses) — always use anonymised IDs
+- Do not report metrics without plan segmentation (free/pro/enterprise)
+- Do not ignore zero-count events — escalate to backend-dev
+- Do not report stale data (>30 min old) without flagging age to stakeholders
+
+## Metrics
+
+- Data freshness (lag between event write and query availability) — target: <5 min
+- Instrumentation completeness (% of expected events firing) — target: 100%
+- Weekly data quality audit pass rate — target: 100%
+- Anomaly detection accuracy (false positives / alerts) — target: <10%
+
+## Change Log
+- 2026-04-24: Added Wave 2 data quality checks — weekly sanity audit, completeness checks, anomaly scoring

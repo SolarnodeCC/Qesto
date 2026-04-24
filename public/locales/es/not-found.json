@@ -1,5 +1,6 @@
 {
   "code": "404",
   "message": "Esa página no existe.",
-  "backHome": "Volver a inicio"
+  "backHome": "Volver a inicio",
+  "pageNotFound": "Página no encontrada"
 }

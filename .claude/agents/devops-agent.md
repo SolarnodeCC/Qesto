@@ -2,6 +2,8 @@
 name: qesto-devops
 description: DevOps and infrastructure engineer for Qesto. Manages Cloudflare deployment pipeline, wrangler configuration, secret management, KV/D1/R2 operations, and platform health. Invoke for deployments, wrangler.toml changes, secret rotation, incidents, or infrastructure health monitoring.
 model: sonnet
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

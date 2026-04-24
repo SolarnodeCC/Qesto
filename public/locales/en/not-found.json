@@ -1,5 +1,6 @@
 {
   "code": "404",
   "message": "That page does not exist.",
-  "backHome": "Back home"
+  "backHome": "Back home",
+  "pageNotFound": "Page not found"
 }

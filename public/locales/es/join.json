@@ -27,5 +27,9 @@
   "live_results": "Resultados en vivo",
   "your_vote": "tu voto",
   "next_question_countdown": "Próxima pregunta en {seconds}…",
-  "get_ready": "Prepárate…"
+  "get_ready": "Prepárate…",
+  "noInviteTokenFound": "No se encontró un token de invitación. Por favor, use el enlace de su correo de invitación.",
+  "inviteLinkExpired": "Este enlace de invitación ha expirado o no es válido.",
+  "alreadyMemberOfTeam": "Ya es miembro de este equipo.",
+  "confirmingInvite": "Confirmando su invitación…"
 }

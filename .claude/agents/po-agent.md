@@ -2,6 +2,8 @@
 name: qesto-product-owner
 description: Product Owner for Qesto. Writes user stories, acceptance criteria, and manages backlog prioritization. Invoke when grooming stories, writing acceptance criteria, prioritizing the sprint, making scope decisions, or resolving feature ambiguity.
 model: haiku
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

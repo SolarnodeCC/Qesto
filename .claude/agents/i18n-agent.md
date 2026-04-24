@@ -2,6 +2,8 @@
 name: qesto-i18n
 description: i18n engineer for Qesto. Manages translation infrastructure, JSON namespace files, key extraction pipeline, and language detection across 5 languages (EN/NL/ES/DE/FR). Invoke for I18N-* backlog items, translation files, string extraction, pluralisation, or language detection middleware.
 model: haiku
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

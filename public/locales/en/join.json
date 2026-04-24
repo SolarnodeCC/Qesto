@@ -27,5 +27,9 @@
   "live_results": "Live results",
   "your_vote": "your vote",
   "next_question_countdown": "Next question in {seconds}…",
-  "get_ready": "Get ready…"
+  "get_ready": "Get ready…",
+  "noInviteTokenFound": "No invite token found. Please use the link from your invitation email.",
+  "inviteLinkExpired": "This invite link has expired or is invalid.",
+  "alreadyMemberOfTeam": "You are already a member of this team.",
+  "confirmingInvite": "Confirming your invite…"
 }

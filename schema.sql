@@ -55,13 +55,16 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,
-  archived_at INTEGER
+  archived_at INTEGER,
+  team_id TEXT DEFAULT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
 CREATE INDEX IF NOT EXISTS idx_sessions_code ON sessions(code);
 -- Phase 10 Step 2: Compound index for listing sessions by owner + status
 CREATE INDEX IF NOT EXISTS idx_sessions_owner_status ON sessions(owner_id, status, created_at DESC);
+-- OBS-001: index on team_id for analytics segmentation (sessions per team).
+CREATE INDEX IF NOT EXISTS idx_sessions_team ON sessions(team_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- questions — v1 slice supports 'poll' only. Other types reserved for future.

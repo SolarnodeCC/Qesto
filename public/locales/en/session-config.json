@@ -16,5 +16,7 @@
   "starting": "Starting…",
   "startError": "Failed to start session",
   "backToDashboard": "Back to dashboard",
-  "optionPlaceholder": "Option text"
+  "optionPlaceholder": "Option text",
+  "loadingSession": "Loading session…",
+  "sessionNotFound": "Session not found"
 }

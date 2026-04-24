@@ -27,5 +27,9 @@
   "live_results": "Live-Ergebnisse",
   "your_vote": "deine Stimme",
   "next_question_countdown": "Nächste Frage in {seconds}…",
-  "get_ready": "Mach dich bereit…"
+  "get_ready": "Mach dich bereit…",
+  "noInviteTokenFound": "Kein Einladungstoken gefunden. Bitte verwenden Sie den Link aus Ihrer Einladungs-E-Mail.",
+  "inviteLinkExpired": "Dieser Einladungslink ist abgelaufen oder ungültig.",
+  "alreadyMemberOfTeam": "Sie sind bereits Mitglied dieses Teams.",
+  "confirmingInvite": "Ihre Einladung wird bestätigt…"
 }

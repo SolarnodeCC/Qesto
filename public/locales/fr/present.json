@@ -20,5 +20,6 @@
   "participant_other": "participants",
   "connectedLabel": "connectes",
   "responses_one": "{count} reponse",
-  "responses_other": "{count} reponses"
+  "responses_other": "{count} reponses",
+  "anonymity": "Anonymat complet"
 }

@@ -94,3 +94,105 @@ app.verb('/path/:param', authMiddleware, planMiddleware, async (c) => {
 | WebSocket message types | `docs/API_FULL.md` |
 | Security controls / threat model | `docs/SECURITY_FULL.md` |
 | Tech debt discovered | `docs/BACKLOG.md §4` |
+
+## ADR-Lite Template (Wave 2)
+
+Use for architectural decisions that don't require a formal Architecture Decision Record. Keep it under 500 words. Store in `docs/DECISIONS/`.
+
+```markdown
+# [Decision Title]
+
+**Date**: [YYYY-MM-DD]  
+**Owner**: [Architect name]  
+**Status**: [Proposed | Approved | Implemented]
+
+## Problem
+[1–2 sentences: What problem is this decision solving?]
+
+## Options Considered
+- **Option A**: [Brief description]
+  - Pro: [benefit]
+  - Con: [drawback]
+- **Option B**: [Brief description]
+  - Pro: [benefit]
+  - Con: [drawback]
+
+## Recommendation
+**Choose Option X because**: [1 sentence rationale]
+
+Trade-off accepted: [What we give up by choosing this option]
+
+## Implementation
+- Phase 1: [What changes]
+- Phase 2: [What changes]
+- Rollback: [How to undo if it fails]
+
+## Success Criteria
+- [Metric/observable that proves it worked]
+
+## Conflict Resolution Notes
+[If backend-dev or DevOps requirements conflict with this decision, how to resolve]
+```
+
+---
+
+## Conflict Resolution Guidance (Wave 2)
+
+When architectural decisions conflict with backend/devops/security constraints:
+
+### Scenario 1: Backend Says "Not Feasible on KV Write Limit"
+**Problem**: Architecture says "write decision vote to KV on each submit", but KV is 1 write/s per key.  
+**Resolution Process**:
+1. Backend-dev runs load test: how many votes/s? (e.g., 10 votes/s with 500 participants)
+2. Architect proposes alternatives:
+   - Option A: Buffer votes in DO memory, flush to KV every 5s (eventual consistency acceptable?)
+   - Option B: Move votes to D1 — trade D1 write cost for unlimited throughput
+   - Option C: Use different KV key per participant (`vote:participant_{id}`, no conflict)
+3. PO decides: is eventual consistency OK? Or must votes persist immediately?
+4. Decision logged in this design doc + `docs/DECISIONS/`.
+
+### Scenario 2: DevOps Says "Rollout Risky"
+**Problem**: Architecture requires schema migration + KV key rename (breaking change).  
+**Resolution Process**:
+1. DevOps presents risk: "Migration on 1M KV entries could timeout."
+2. Architect proposes mitigations:
+   - Use background job to migrate KV incrementally (per team)
+   - Feature flag: old code accepts both old + new keys, writes new key only
+   - Canary: deploy to 5% of users, monitor error rate before full rollout
+3. Backend-dev estimates effort — if >13 points, defer to next sprint
+4. Decision logged + added to `docs/BACKLOG.md §4` (Tech Debt)
+
+### Conflict Escalation
+- **Deadlock after 2 iterations**: PO makes final call (product priority wins)
+- **Security conflict**: CSO veto (security wins, always)
+- **Architect confidence low**: Pause, gather more data, re-propose next sprint
+
+---
+
+## Quality Gates
+
+- [ ] Decision documented (Problem + Options + Recommendation)
+- [ ] Trade-offs explicitly stated (what we're giving up)
+- [ ] Implementation phases specified (how to actually build it)
+- [ ] Rollback path clear (how to undo if it fails)
+- [ ] Cross-team impact assessed (backend, devops, security, product)
+- [ ] Success criteria measurable (not "should work well")
+
+## Do Not
+
+- Do not design without backend/devops input — involves constraints you can't see
+- Do not introduce new KV namespaces without versioning strategy (how to migrate later?)
+- Do not design stateful code in Pages Functions (they're ephemeral) — use D1 or KV
+- Do not ignore the Workers AI + Cloudflare platform constraints — they're hard limits
+- Do not defer rollback planning until incident (design for undo from the start)
+- Do not push decisions without documenting conflict resolution approach
+
+## Metrics
+
+- Architectural decision quality (0 = broke in production, 1 = required major rework, 5 = smooth implementation)
+- Conflict resolution cycle time (target: <1 week from proposal to decision)
+- Rollback success rate (target: 100% — every decision must be reversible)
+- Cross-team consensus on decisions (target: zero surprises at implementation time)
+
+## Change Log
+- 2026-04-24: Added Wave 2 ADR-lite template + conflict resolution guidance for cross-team dependencies

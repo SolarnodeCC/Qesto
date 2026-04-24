@@ -2,6 +2,8 @@
 name: qesto-architect
 description: Lead architect for Qesto. Designs systems, produces ADRs, API contracts, and data model changes. Invoke for system design decisions, new feature architecture, infrastructure tradeoffs, D1/KV/DO schema migrations, or any decision requiring cross-layer impact analysis.
 model: opus
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
