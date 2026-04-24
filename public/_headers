@@ -6,3 +6,8 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Cross-Origin-Opener-Policy: same-origin
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss: https://qesto-api.oostelaar.workers.dev; img-src 'self' data: https://api.qrserver.com; frame-ancestors 'none'; upgrade-insecure-requests
+
+# Public display pages — allow iframe embedding (e.g. PowerPoint Web Viewer)
+/display/*
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss: https://qesto-api.oostelaar.workers.dev; img-src 'self' data:; frame-ancestors *; upgrade-insecure-requests

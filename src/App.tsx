@@ -15,6 +15,7 @@ import ResetPassword from './pages/ResetPassword'
 import TeamSettings from './pages/TeamSettings'
 import TeamInvite from './pages/TeamInvite'
 
+const Display = lazy(() => import('./pages/Display'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -100,6 +101,7 @@ export default function App() {
         <Route path="/sessions/:id/present" element={<Present />} />
         <Route path="/sessions/:id/results" element={<Results />} />
         <Route path="/j/:code" element={<JoinPage />} />
+        <Route path="/display/:code" element={<Suspense fallback={<LazyRouteFallback />}><Display /></Suspense>} />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />
         <Route path="/teams/accept" element={<TeamInvite />} />
