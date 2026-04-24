@@ -328,7 +328,10 @@ export class SessionRoom implements DurableObject {
         const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
         const nextIdx = curIdx + 1
         if (nextIdx >= allQs.length) {
-          ws.send(errorMessage('noop', 'No more questions'))
+          const doneMsg = serverMessage({ type: 'all_done', data: {}, timestamp: now() })
+          for (const socket of this.ctx.getWebSockets()) {
+            try { socket.send(doneMsg) } catch { /* ignore */ }
+          }
           return
         }
         const nextQ = allQs[nextIdx]
@@ -339,6 +342,29 @@ export class SessionRoom implements DurableObject {
         const advanceMsg = serverMessage({ type: 'question', data: { question: nextQ }, timestamp: now() })
         for (const socket of this.ctx.getWebSockets()) {
           try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
+        }
+        break
+      }
+      case 'back': {
+        if (att.role !== 'presenter') {
+          ws.send(errorMessage('forbidden', 'Only presenter can go back'))
+          return
+        }
+        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+        const prevIdx = curIdx - 1
+        if (prevIdx < 0) {
+          ws.send(errorMessage('noop', 'Already at first question'))
+          return
+        }
+        const prevQ = allQs[prevIdx]
+        await this.ctx.storage.put(K_QUESTION_INDEX, prevIdx)
+        await this.ctx.storage.put(K_QUESTION, prevQ)
+        await this.ctx.storage.put(K_COUNTS, {} as Counts)
+        await this.ctx.storage.put(K_VOTERS, {} as Votes)
+        const backMsg = serverMessage({ type: 'question', data: { question: prevQ }, timestamp: now() })
+        for (const socket of this.ctx.getWebSockets()) {
+          try { socket.send(backMsg) } catch { /* ignore closed socket */ }
         }
         break
       }

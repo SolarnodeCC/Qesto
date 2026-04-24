@@ -94,7 +94,13 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
 
       {/* Content */}
       <div className="flex-1 px-8 pb-6 pt-4 flex flex-col overflow-hidden">
-        {isEnded ? (
+        {state.allDone && !isEnded ? (
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
+            <div className="text-7xl" aria-hidden="true">🎉</div>
+            <p className="text-4xl font-bold text-white">Bedankt voor jullie input!</p>
+            <p className="text-white/50 text-lg">{state.session?.title}</p>
+          </div>
+        ) : isEnded ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
             <p className="text-3xl font-bold text-white">Session ended</p>
             <p className="text-white/50">Thanks for participating!</p>

@@ -13,6 +13,7 @@ import type { PollOption, QuestionKind, VotePolicy, SessionMode } from './types'
 export type ClientMessage =
   | { type: 'vote'; data: { questionId: string; optionId: string }; timestamp: number }
   | { type: 'advance'; data: Record<string, never>; timestamp: number }
+  | { type: 'back'; data: Record<string, never>; timestamp: number }
   | { type: 'request_state'; data: Record<string, never>; timestamp: number }
   | { type: 'pause'; data: Record<string, never>; timestamp: number }
   | { type: 'resume'; data: Record<string, never>; timestamp: number }
@@ -81,6 +82,11 @@ export type ServerMessage =
     }
   | {
       type: 'session_resumed'
+      data: Record<string, never>
+      timestamp: number
+    }
+  | {
+      type: 'all_done'
       data: Record<string, never>
       timestamp: number
     }
