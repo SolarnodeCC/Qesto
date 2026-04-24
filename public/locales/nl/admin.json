@@ -169,5 +169,20 @@
   "sessionRoles.viewer": "Kijker",
   "sessionRoles.updateRole": "Rol bijwerken",
   "sessionRoles.roleUpdated": "Rol bijgewerkt",
-  "sessionRoles.roleUpdateFailed": "Bijwerken van rol mislukt"
+  "sessionRoles.roleUpdateFailed": "Bijwerken van rol mislukt",
+  "realtimePlatformObservability": "Realtime platformobservability",
+  "liveLast5min": "Live (laatste 5 min)",
+  "participants": "Deelnemers",
+  "revenue24h": "Omzet (24u)",
+  "p95Latency": "P95-latentie",
+  "errorRate": "Foutpercentage",
+  "historicalData": "Historische data",
+  "noDataInRange": "Geen data in geselecteerd bereik",
+  "exportCsv": "Exporteer CSV",
+  "exporting": "Exporteren…",
+  "route": "Route",
+  "errorPercent": "Fout %",
+  "requests": "Verzoeken",
+  "auditLog": "Auditlog",
+  "changeSummary": "Wijzigingssamenvatting"
 }

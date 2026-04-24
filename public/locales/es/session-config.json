@@ -15,6 +15,6 @@
   "startError": "No se pudo iniciar la sesión",
   "backToDashboard": "Volver al panel",
   "optionPlaceholder": "Texto de opción",
-  "pollQuestion": "[TODO] Poll question",
-  "aiSuggestionHelp": "[TODO] Click a suggestion to use it as your prompt"
+  "pollQuestion": "Pregunta de encuesta",
+  "aiSuggestionHelp": "Haz clic en una sugerencia para usarla como tu prompt"
 }

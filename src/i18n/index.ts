@@ -1,35 +1,85 @@
+import { useSyncExternalStore } from 'react'
+
 type LocaleMap = Record<string, Record<string, string>>
+type Listener = () => void
 
 const NAMESPACES = ['admin', 'auth', 'common', 'components', 'dashboard', 'errors', 'home', 'insights', 'join', 'launchpad', 'login', 'not-found', 'present', 'results', 'session-config', 'sessions', 'solutions', 'vote', 'wizard']
 
 let cachedLocales: LocaleMap = {}
 let currentLanguage = 'en'
 let initPromise: Promise<void> | null = null
+const listeners = new Set<Listener>()
+const warnedMissingKeys = new Set<string>()
+const warnedMissingVars = new Set<string>()
 
 export const SUPPORTED_LANGUAGES = ['en', 'nl', 'es', 'de', 'fr'] as const
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
 
 const LANG_STORAGE_KEY = 'qesto_lang'
 
+function isSupportedLanguage(value: string | null | undefined): value is SupportedLanguage {
+  return !!value && SUPPORTED_LANGUAGES.includes(value as SupportedLanguage)
+}
+
+function getLanguageFromUrl(): SupportedLanguage | null {
+  try {
+    const lang = new URLSearchParams(window.location.search).get('lang')
+    return isSupportedLanguage(lang) ? lang : null
+  } catch {
+    return null
+  }
+}
+
+function updateUrlLanguageParam(lang: SupportedLanguage): void {
+  try {
+    const url = new URL(window.location.href)
+    url.searchParams.set('lang', lang)
+    window.history.replaceState(null, '', url.toString())
+  } catch {
+    // Ignore URL mutation failures.
+  }
+}
+
+function applyDocumentLanguage(lang: string): void {
+  if (typeof document !== 'undefined' && document.documentElement.lang !== lang) {
+    document.documentElement.lang = lang
+  }
+}
+
+function notifyI18nChanged(): void {
+  applyDocumentLanguage(currentLanguage)
+  for (const listener of listeners) listener()
+}
+
 export function detectLanguage(): string {
+  const fromUrl = getLanguageFromUrl()
+  if (fromUrl) return fromUrl
   try {
     const stored = localStorage.getItem(LANG_STORAGE_KEY)
-    if (stored && SUPPORTED_LANGUAGES.includes(stored as SupportedLanguage)) return stored
+    if (isSupportedLanguage(stored)) return stored
   } catch {
     // Storage unavailable (private browsing, quota exceeded, disabled)
   }
   const browserLang = navigator.language.slice(0, 2)
-  return SUPPORTED_LANGUAGES.includes(browserLang as SupportedLanguage) ? browserLang : 'en'
+  return isSupportedLanguage(browserLang) ? browserLang : 'en'
 }
 
-export function setLanguage(lang: SupportedLanguage): void {
+async function loadLanguage(lang: SupportedLanguage): Promise<void> {
+  const entries = await Promise.all(NAMESPACES.map((ns) => fetchNamespace(lang, ns)))
+  cachedLocales = Object.fromEntries(entries)
+  currentLanguage = lang
+  notifyI18nChanged()
+}
+
+export async function setLanguage(lang: SupportedLanguage): Promise<void> {
   try {
     localStorage.setItem(LANG_STORAGE_KEY, lang)
   } catch {
-    // Storage unavailable; reload without persisting preference
+    // Storage unavailable; continue with in-memory language switch.
     console.warn('[i18n] Failed to persist language preference')
   }
-  window.location.reload()
+  updateUrlLanguageParam(lang)
+  await loadLanguage(lang)
 }
 
 async function fetchNamespace(language: string, namespace: string): Promise<[string, Record<string, string>]> {
@@ -71,13 +121,13 @@ async function fetchNamespace(language: string, namespace: string): Promise<[str
 export async function initI18n(): Promise<void> {
   if (initPromise) return initPromise
   initPromise = (async () => {
-    const language = detectLanguage()
-    currentLanguage = language
+    const language = detectLanguage() as SupportedLanguage
+    updateUrlLanguageParam(language)
     try {
-      const entries = await Promise.all(NAMESPACES.map((ns) => fetchNamespace(language, ns)))
-      cachedLocales = Object.fromEntries(entries)
+      await loadLanguage(language)
     } catch (err) {
       console.error('[i18n] Failed to load translations, UI will show keys as fallback:', err)
+      notifyI18nChanged()
     }
   })()
   return initPromise
@@ -100,20 +150,49 @@ function translate(namespace: string, key: string, vars?: Record<string, string 
     console.warn(`[i18n] Namespace '${namespace}' not loaded`)
     return key
   }
-  const resolved = resolveDotPath(ns, key)
+  let resolved = resolveDotPath(ns, key)
+  if (vars && typeof vars.count === 'number') {
+    const category = new Intl.PluralRules(currentLanguage).select(vars.count)
+    resolved = resolveDotPath(ns, `${key}_${category}`) ?? resolveDotPath(ns, `${key}_other`) ?? resolved
+  }
   if (!resolved) {
-    console.warn(`[i18n] Missing key '${namespace}.${key}'`)
+    const missingId = `${namespace}.${key}`
+    if (!warnedMissingKeys.has(missingId)) {
+      warnedMissingKeys.add(missingId)
+      console.warn(`[i18n] Missing key '${missingId}'`)
+    }
     return key
   }
   if (!vars) return resolved
-  return Object.entries(vars).reduce(
-    (acc, [k, v]) => acc.replace(`{{${k}}}`, String(v)).replace(`{${k}}`, String(v)),
-    resolved,
-  )
+  let missingVarDetected = false
+  const out = resolved.replace(/\{\{(\w+)\}\}|\{(\w+)\}/g, (full, p1, p2) => {
+    const varName = p1 ?? p2
+    if (!(varName in vars)) {
+      missingVarDetected = true
+      return full
+    }
+    return String(vars[varName]!)
+  })
+  if (missingVarDetected) {
+    const missingVarId = `${namespace}.${key}`
+    if (!warnedMissingVars.has(missingVarId)) {
+      warnedMissingVars.add(missingVarId)
+      console.warn(`[i18n] Missing interpolation vars for '${missingVarId}'`)
+    }
+  }
+  return out
 }
 
 // Synchronous after initI18n() has resolved — no per-hook loading state needed.
 export function useT(namespace: string) {
+  useSyncExternalStore(
+    (listener) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+    () => currentLanguage,
+    () => currentLanguage,
+  )
   return (key: string, vars?: Record<string, string | number>): string =>
     translate(namespace, key, vars)
 }
@@ -123,5 +202,9 @@ export function getLoadedLocales(): LocaleMap {
 }
 
 export function getCurrentLanguage(): string {
+  return currentLanguage
+}
+
+export function getLanguageHeader(): string {
   return currentLanguage
 }

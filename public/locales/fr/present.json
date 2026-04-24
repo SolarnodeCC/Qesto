@@ -13,5 +13,12 @@
   "back": "Retour au tableau de bord",
   "liveParticipants": "Participants en direct",
   "resultsReady": "Résultats prêts",
-  "connectingToRoom": "[TODO] Connecting to live room…"
+  "connectingToRoom": "Connexion à la salle en direct…",
+  "votingPaused": "Vote en pause",
+  "joinThisSession": "Rejoindre cette session",
+  "participant_one": "participant",
+  "participant_other": "participants",
+  "connectedLabel": "connectes",
+  "responses_one": "{count} reponse",
+  "responses_other": "{count} reponses"
 }

@@ -1,8 +1,8 @@
 {
   "nav": {
-    "next":   "Next",
-    "back":   "Back",
-    "close":  "Close",
+    "next": "Next",
+    "back": "Back",
+    "close": "Close",
     "launch": "Start session"
   },
   "steps": {
@@ -13,121 +13,145 @@
     "5": "Overview"
   },
   "step1": {
-    "title":             "What is the session?",
-    "label_title":       "Session title",
-    "label_goal":        "Goal of the session",
+    "title": "What is the session?",
+    "label_title": "Session title",
+    "label_goal": "Goal of the session",
     "placeholder_title": "e.g. Team reflection Q2",
-    "placeholder_goal":  "e.g. Gain insight into how the team experienced the sprint..."
+    "placeholder_goal": "e.g. Gain insight into how the team experienced the sprint..."
   },
   "question_types": {
     "multiple-choice": "Multiple choice",
-    "ranking":         "Ranking",
-    "open":            "Open",
-    "wordcloud":       "Wordcloud"
+    "ranking": "Ranking",
+    "open": "Open",
+    "wordcloud": "Wordcloud"
   },
   "step2": {
-    "mode_title":       "How do you want to add questions?",
-    "manual":           { "label": "Write yourself", "desc": "Write and manage your own questions" },
-    "ai":               { "label": "AI generate",    "desc": "Give a prompt, we generate questions" },
-    "template":         { "label": "From template",  "desc": "Choose from proven question sets" },
-    "back":             "← Choose another method",
-    "manual_add":       "Add question",
+    "mode_title": "How do you want to add questions?",
+    "manual": {
+      "label": "Write yourself",
+      "desc": "Write and manage your own questions"
+    },
+    "ai": {
+      "label": "AI generate",
+      "desc": "Give a prompt, we generate questions"
+    },
+    "template": {
+      "label": "From template",
+      "desc": "Choose from proven question sets"
+    },
+    "back": "← Choose another method",
+    "manual_add": "Add question",
     "manual_placeholder": "Type your question...",
-    "manual_max":       "Maximum of 20 questions reached",
-    "manual_delete":    "Delete question",
+    "manual_max": "Maximum of 20 questions reached",
+    "manual_delete": "Delete question",
     "multiple_choice_option_placeholder": "Answer option {{n}}",
     "multiple_choice_add_option": "Add answer option",
     "multiple_choice_remove_option": "Remove answer option",
     "multiple_choice_validation_hint": "Multiple choice needs at least 2 answers (3–5 recommended).",
     "multiple_choice_validation_error": "One or more multiple choice questions has fewer than 2 answers.",
-    "ai_greeting":      "I see session \"{{title}}\" with goal: \"{{goal}}\". Tell me which aspect to focus on, or click 'Generate now'.",
+    "ai_greeting": "I see session \"{{title}}\" with goal: \"{{goal}}\". Tell me which aspect to focus on, or click 'Generate now'.",
     "ai_greeting_empty": "Tell me what the session is about, or click 'Generate now'.",
-    "ai_generate_cta":  "✨ Generate now",
-    "ai_generating":    "Generating...",
-    "ai_placeholder":   "Refine the focus...",
-    "ai_send":          "Send",
+    "ai_generate_cta": "✨ Generate now",
+    "ai_generating": "Generating...",
+    "ai_placeholder": "Refine the focus...",
+    "ai_send": "Send",
     "ai_questions_label": "Generated questions",
-    "ai_consent":       "I agree that my session title and goal will be processed by AI",
+    "ai_consent": "I agree that my session title and goal will be processed by AI",
     "ai_consent_required": "Please consent to AI processing to generate questions",
     "ai_consent_v2": {
-      "title":       "AI-Powered Generation",
+      "title": "AI-Powered Generation",
       "description": "We'll use AI to suggest questions based on your session goal",
-      "checkbox":    "I consent to AI processing my session title and goal",
-      "error":       "Please consent to AI processing"
+      "checkbox": "I consent to AI processing my session title and goal",
+      "error": "Please consent to AI processing"
     },
-    "ai_error":         "Generation failed. Please try again.",
-    "ai_review_cta":    "Edit questions →",
-    "ai_review_title":  "Edit your questions",
+    "ai_error": "Generation failed. Please try again.",
+    "ai_review_cta": "Edit questions →",
+    "ai_review_title": "Edit your questions",
     "ai_review_subtitle": "Adjust questions or types before continuing",
     "ai_generated_badge": "✨ AI-generated content — fully editable",
-    "ai_review_back":   "← Back to chat",
+    "ai_review_back": "← Back to chat",
     "ai_regenerate_confirm": "Regenerating will replace your edited questions. Continue?",
-    "chip_accept":   "Accept this question",
-    "chip_edit":     "Edit this question",
-    "chip_dismiss":  "Dismiss this question",
+    "chip_accept": "Accept this question",
+    "chip_edit": "Edit this question",
+    "chip_dismiss": "Dismiss this question",
     "chip_collapse": "← Back to overview",
-    "chip_empty":    "(no question text)",
+    "chip_empty": "(no question text)",
     "review_add_question": "Add question",
     "template_loading": "Loading templates...",
-    "template_error":   "Could not load templates",
-    "template_empty":   "No templates available",
-    "template_retry":   "Try again",
-    "template_select":  "Select",
+    "template_error": "Could not load templates",
+    "template_empty": "No templates available",
+    "template_retry": "Try again",
+    "template_select": "Select",
     "template_selected": "✓ Selected",
     "template_questions": "{{count}} questions",
     "all_dismissed": "All questions dismissed. Go back to regenerate.",
-    "template_coming_soon": "Template selection coming soon."
+    "template_coming_soon": "Template selection coming soon.",
+    "auto_scale_hint": "Auto-generated 5-point scale: Strongly disagree -> Strongly agree",
+    "auto_slider_hint": "Auto-generated 1-10 numeric slider",
+    "free_text_hint": "Participants type a free-text response - no options needed"
   },
   "step3": {
-    "title":       "Add an energizer?",
-    "yes":         "Yes please!",
-    "no":          "No, skip",
+    "title": "Add an energizer?",
+    "yes": "Yes please!",
+    "no": "No, skip",
     "pick_format": "Choose a format",
     "formats": {
-      "emoji-poll":     { "name": "Emoji Poll",     "desc": "Quick mood check via emojis" },
-      "snelste-vinger": { "name": "Quick Finger",   "desc": "Who is fastest with the right answer?" },
-      "team-quiz":      { "name": "Team Quiz",       "desc": "Short competitive quiz to warm up" },
-      "woordenwolk":    { "name": "Word Cloud",      "desc": "Participants type one word, visible together" }
+      "emoji-poll": {
+        "name": "Emoji Poll",
+        "desc": "Quick mood check via emojis"
+      },
+      "snelste-vinger": {
+        "name": "Quick Finger",
+        "desc": "Who is fastest with the right answer?"
+      },
+      "team-quiz": {
+        "name": "Team Quiz",
+        "desc": "Short competitive quiz to warm up"
+      },
+      "woordenwolk": {
+        "name": "Word Cloud",
+        "desc": "Participants type one word, visible together"
+      }
     }
   },
   "step4": {
     "title": "Session settings",
     "anonymity": {
-      "label":   "Anonymity",
-      "full":    "Fully anonymous",
+      "label": "Anonymity",
+      "full": "Fully anonymous",
       "partial": "Partial",
-      "none":    "Not anonymous"
+      "none": "Not anonymous"
     },
     "votePolicy": {
       "label": "Vote policy",
-      "once":  "One vote",
+      "once": "One vote",
       "multi": "Multiple votes",
       "react": "Reactions"
     },
     "mode": {
-      "label":            "Session mode",
+      "label": "Session mode",
       "reflection_title": "Reflection Mode",
-      "fun_title":        "Quick Mode",
-      "fun_desc":         "Speed up with automatic question timing"
+      "fun_title": "Quick Mode",
+      "fun_desc": "Speed up with automatic question timing"
     }
   },
   "step5": {
-    "title":             "Overview & launch",
-    "edit":              "Edit",
-    "section_basis":     "Basics",
+    "title": "Overview & launch",
+    "edit": "Edit",
+    "section_basis": "Basics",
     "section_questions": "Questions",
     "template_selected": "Template selected",
-    "more_questions":    "+ {{count}} more",
-    "no_questions":      "No questions added",
+    "more_questions": "+ {{count}} more",
+    "no_questions": "No questions added",
     "section_energizer": "Energizer",
-    "no_energizer":      "No energizer",
-    "section_settings":  "Settings",
-    "consent_text":      "By launching the session you agree to the privacy statement. Answers are processed in accordance with your anonymity settings.",
-    "launch_error":      "Failed to launch session. Please try again.",
-    "launching":         "Launching..."
+    "no_energizer": "No energizer",
+    "section_settings": "Settings",
+    "consent_text": "By launching the session you agree to the privacy statement. Answers are processed in accordance with your anonymity settings.",
+    "launch_error": "Failed to launch session. Please try again.",
+    "launching": "Launching..."
   },
   "draft": {
-    "banner":  "You have a saved draft. Would you like to continue?",
+    "banner": "You have a saved draft. Would you like to continue?",
     "restore": "Restore",
     "dismiss": "Dismiss"
   },
@@ -135,29 +159,29 @@
     "cta": "+ New session"
   },
   "a11y": {
-    "modal_label":    "Create new session",
+    "modal_label": "Create new session",
     "progress_label": "Step {{current}} of {{total}}",
-    "close_label":    "Close wizard"
+    "close_label": "Close wizard"
   },
   "auth_gate": {
-    "title":       "Log in to get started",
-    "subtitle":    "You need an account to create a session",
+    "title": "Log in to get started",
+    "subtitle": "You need an account to create a session",
     "email_label": "Email address",
-    "cta":         "Send Magic Link",
-    "sent":        "Check your inbox — we sent a link to {{email}}"
+    "cta": "Send Magic Link",
+    "sent": "Check your inbox — we sent a link to {{email}}"
   },
   "edit_mode": {
-    "modal_label":            "Edit session",
-    "banner":                 "You are editing an existing session",
-    "save_cta":               "Save changes",
-    "saving":                 "Saving...",
+    "modal_label": "Edit session",
+    "banner": "You are editing an existing session",
+    "save_cta": "Save changes",
+    "saving": "Saving...",
     "active_session_warning": "Questions cannot be changed while the session is active"
   },
   "present": {
     "header": {
       "questions_count": "{{n}} questions",
-      "energizer":       "Energizer",
-      "edit":            "Edit"
+      "energizer": "Energizer",
+      "edit": "Edit"
     }
   }
 }

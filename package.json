@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit",
     "check:baseline": "node scripts/check-baseline.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
+    "report:i18n:gaps": "node scripts/i18n-gap-report.mjs",
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
     "check:tokens-drift": "node scripts/check-tokens-drift.mjs",
     "perf:audit": "node scripts/perf-audit.mjs",

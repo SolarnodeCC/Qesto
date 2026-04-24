@@ -18,5 +18,7 @@
     "percent": "Percentage van totaal"
   },
   "no_question": "Deze sessie heeft geen vraag gekoppeld.",
-  "no_votes": "Er zijn geen stemmen geregistreerd."
+  "no_votes": "Er zijn geen stemmen geregistreerd.",
+  "responses_one": "{count} antwoord",
+  "responses_other": "{count} antwoorden"
 }

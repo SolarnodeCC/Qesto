@@ -71,7 +71,7 @@ export default function LanguageSwitcher() {
                 type="button"
                 role="option"
                 aria-selected={lang === current}
-                onClick={() => setLanguage(lang)}
+                onClick={() => { void setLanguage(lang) }}
                 className={[
                   'w-full text-left px-4 py-2 text-sm flex items-center gap-2 min-h-[44px]',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500',

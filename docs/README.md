@@ -47,7 +47,9 @@ This file is the **entry point** for everything under `docs/`: how documents con
 ### Internationalisation
 
 - **`I18N_GLOSSARY.md`**, **`spec/SPEC_FRONTEND.md`** (i18n sections)
-- CI: `npm run check:i18n` / `scripts/i18n-check` as referenced in specs and backlog
+- **`I18N_ARCHITECTURE_CONTRACT.md`** for the runtime/source-of-truth contract and app-vs-marketing scope boundary
+- CI: `npm run check:i18n`
+- Inventory report: `npm run report:i18n:gaps` (writes `docs/reports/i18n-gap-inventory.md` + `.json`)
 
 ### AI agent framework (skills, governance, scorecards)
 

@@ -1,6 +1,7 @@
 // Thin fetch wrapper for the Hono API. Centralises the envelope shape
 // (ApiSuccess / ApiError per SPEC_BACKEND.md) so pages and hooks don't
 // hand-roll error handling.
+import { getLanguageHeader } from '../i18n'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 
@@ -52,6 +53,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
   const headers: Record<string, string> = {}
   if (opts.body !== undefined) headers['content-type'] = 'application/json'
   if (opts.idempotencyKey) headers['idempotency-key'] = opts.idempotencyKey
+  headers['accept-language'] = getLanguageHeader()
   const token = getAuthToken()
   if (token) headers['authorization'] = `Bearer ${token}`
 

@@ -300,7 +300,7 @@ export default function AuditLogViewer() {
                   <th className="px-4 py-3 text-left font-medium text-pulse-700">Action</th>
                   <th className="px-4 py-3 text-left font-medium text-pulse-700">Subject</th>
                   <th className="px-4 py-3 text-left font-medium text-pulse-700">Subject ID</th>
-                  <th className="px-4 py-3 text-left font-medium text-pulse-700">Change Summary</th>
+                  <th className="px-4 py-3 text-left font-medium text-pulse-700">{t('changeSummary')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-pulse-200">

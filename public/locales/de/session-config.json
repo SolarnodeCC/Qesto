@@ -15,6 +15,6 @@
   "startError": "Sitzung konnte nicht gestartet werden",
   "backToDashboard": "Zurück zum Dashboard",
   "optionPlaceholder": "Optionstext",
-  "pollQuestion": "[TODO] Poll question",
-  "aiSuggestionHelp": "[TODO] Click a suggestion to use it as your prompt"
+  "pollQuestion": "Umfragefrage",
+  "aiSuggestionHelp": "Klicke auf einen Vorschlag, um ihn als Prompt zu verwenden"
 }

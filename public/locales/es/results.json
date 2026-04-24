@@ -18,5 +18,7 @@
     "percent": "Porcentaje del total"
   },
   "no_question": "Esta sesión no tiene ninguna pregunta adjunta.",
-  "no_votes": "No se registraron votos."
+  "no_votes": "No se registraron votos.",
+  "responses_one": "{count} respuesta",
+  "responses_other": "{count} respuestas"
 }

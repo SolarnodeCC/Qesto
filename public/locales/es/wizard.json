@@ -1,8 +1,8 @@
 {
   "nav": {
-    "next":   "Siguiente",
-    "back":   "Atrás",
-    "close":  "Cerrar",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "close": "Cerrar",
     "launch": "Iniciar sesión"
   },
   "steps": {
@@ -13,121 +13,145 @@
     "5": "Resumen"
   },
   "step1": {
-    "title":             "¿De qué trata la sesión?",
-    "label_title":       "Título de la sesión",
-    "label_goal":        "Objetivo de la sesión",
+    "title": "¿De qué trata la sesión?",
+    "label_title": "Título de la sesión",
+    "label_goal": "Objetivo de la sesión",
     "placeholder_title": "ej. Reflexión de equipo Q2",
-    "placeholder_goal":  "ej. Obtener información sobre cómo vivió el equipo el sprint..."
+    "placeholder_goal": "ej. Obtener información sobre cómo vivió el equipo el sprint..."
   },
   "question_types": {
     "multiple-choice": "Opción múltiple",
-    "ranking":         "Clasificación",
-    "open":            "Abierta",
-    "wordcloud":       "Nube de palabras"
+    "ranking": "Clasificación",
+    "open": "Abierta",
+    "wordcloud": "Nube de palabras"
   },
   "step2": {
-    "mode_title":       "¿Cómo quieres añadir preguntas?",
-    "manual":           { "label": "Escribir yo mismo", "desc": "Escribe y gestiona tus propias preguntas" },
-    "ai":               { "label": "Generar con IA",    "desc": "Da un prompt, generamos preguntas" },
-    "template":         { "label": "Desde plantilla",   "desc": "Elige entre conjuntos de preguntas probados" },
-    "back":             "← Elegir otro método",
-    "manual_add":       "Añadir pregunta",
+    "mode_title": "¿Cómo quieres añadir preguntas?",
+    "manual": {
+      "label": "Escribir yo mismo",
+      "desc": "Escribe y gestiona tus propias preguntas"
+    },
+    "ai": {
+      "label": "Generar con IA",
+      "desc": "Da un prompt, generamos preguntas"
+    },
+    "template": {
+      "label": "Desde plantilla",
+      "desc": "Elige entre conjuntos de preguntas probados"
+    },
+    "back": "← Elegir otro método",
+    "manual_add": "Añadir pregunta",
     "manual_placeholder": "Escribe tu pregunta...",
-    "manual_max":       "Se alcanzó el máximo de 20 preguntas",
-    "manual_delete":    "Eliminar pregunta",
+    "manual_max": "Se alcanzó el máximo de 20 preguntas",
+    "manual_delete": "Eliminar pregunta",
     "multiple_choice_option_placeholder": "Opción de respuesta {{n}}",
     "multiple_choice_add_option": "Añadir opción de respuesta",
     "multiple_choice_remove_option": "Eliminar opción de respuesta",
     "multiple_choice_validation_hint": "La opción múltiple requiere al menos 2 respuestas (3–5 recomendado).",
     "multiple_choice_validation_error": "Una o más preguntas de opción múltiple tienen menos de 2 respuestas.",
-    "ai_greeting":      "Veo la sesión \"{{title}}\" con objetivo: \"{{goal}}\". Dime en qué aspecto centrarse o haz clic en 'Generar ahora'.",
+    "ai_greeting": "Veo la sesión \"{{title}}\" con objetivo: \"{{goal}}\". Dime en qué aspecto centrarse o haz clic en 'Generar ahora'.",
     "ai_greeting_empty": "Cuéntame de qué trata la sesión o haz clic en 'Generar ahora'.",
-    "ai_generate_cta":  "✨ Generar ahora",
-    "ai_generating":    "Generando...",
-    "ai_placeholder":   "Afinar el enfoque...",
-    "ai_send":          "Enviar",
+    "ai_generate_cta": "✨ Generar ahora",
+    "ai_generating": "Generando...",
+    "ai_placeholder": "Afinar el enfoque...",
+    "ai_send": "Enviar",
     "ai_questions_label": "Preguntas generadas",
-    "ai_consent":       "Acepto que el título y objetivo de mi sesión sean procesados por IA",
+    "ai_consent": "Acepto que el título y objetivo de mi sesión sean procesados por IA",
     "ai_consent_required": "Por favor acepta el procesamiento por IA para generar preguntas",
     "ai_consent_v2": {
-      "title":       "Generación con tecnología de IA",
+      "title": "Generación con tecnología de IA",
       "description": "Usaremos IA para sugerir preguntas basadas en el objetivo de tu sesión",
-      "checkbox":    "Acepto el procesamiento por IA de mi título y objetivo de sesión",
-      "error":       "Por favor acepta el procesamiento por IA"
+      "checkbox": "Acepto el procesamiento por IA de mi título y objetivo de sesión",
+      "error": "Por favor acepta el procesamiento por IA"
     },
-    "ai_error":         "La generación falló. Por favor inténtalo de nuevo.",
-    "ai_review_cta":    "Editar preguntas →",
-    "ai_review_title":  "Editar tus preguntas",
+    "ai_error": "La generación falló. Por favor inténtalo de nuevo.",
+    "ai_review_cta": "Editar preguntas →",
+    "ai_review_title": "Editar tus preguntas",
     "ai_review_subtitle": "Ajusta preguntas o tipos antes de continuar",
     "ai_generated_badge": "✨ Contenido generado por IA — totalmente editable",
-    "ai_review_back":   "← Volver al chat",
+    "ai_review_back": "← Volver al chat",
     "ai_regenerate_confirm": "Regenerar reemplazará tus preguntas editadas. ¿Continuar?",
-    "chip_accept":   "Aceptar esta pregunta",
-    "chip_edit":     "Editar esta pregunta",
-    "chip_dismiss":  "Descartar esta pregunta",
+    "chip_accept": "Aceptar esta pregunta",
+    "chip_edit": "Editar esta pregunta",
+    "chip_dismiss": "Descartar esta pregunta",
     "chip_collapse": "← Volver al resumen",
-    "chip_empty":    "(sin texto de pregunta)",
+    "chip_empty": "(sin texto de pregunta)",
     "review_add_question": "Añadir pregunta",
     "template_loading": "Cargando plantillas...",
-    "template_error":   "No se pudieron cargar las plantillas",
-    "template_empty":   "No hay plantillas disponibles",
-    "template_retry":   "Reintentar",
-    "template_select":  "Seleccionar",
+    "template_error": "No se pudieron cargar las plantillas",
+    "template_empty": "No hay plantillas disponibles",
+    "template_retry": "Reintentar",
+    "template_select": "Seleccionar",
     "template_selected": "✓ Seleccionado",
     "template_questions": "{{count}} preguntas",
     "all_dismissed": "Todas las preguntas descartadas. Vuelve para regenerar.",
-    "template_coming_soon": "La selección de plantillas estará disponible pronto."
+    "template_coming_soon": "La selección de plantillas estará disponible pronto.",
+    "auto_scale_hint": "Escala de 5 puntos generada automaticamente: Totalmente en desacuerdo -> Totalmente de acuerdo",
+    "auto_slider_hint": "Control numerico de 1-10 generado automaticamente",
+    "free_text_hint": "Los participantes escriben una respuesta de texto libre - no se necesitan opciones"
   },
   "step3": {
-    "title":       "¿Añadir un energizador?",
-    "yes":         "¡Sí, por favor!",
-    "no":          "No, saltar",
+    "title": "¿Añadir un energizador?",
+    "yes": "¡Sí, por favor!",
+    "no": "No, saltar",
     "pick_format": "Elige un formato",
     "formats": {
-      "emoji-poll":     { "name": "Encuesta Emoji",   "desc": "Revisión rápida del estado de ánimo con emojis" },
-      "snelste-vinger": { "name": "Dedo más rápido",  "desc": "¿Quién responde más rápido correctamente?" },
-      "team-quiz":      { "name": "Quiz de equipo",   "desc": "Quiz competitivo corto para calentar" },
-      "woordenwolk":    { "name": "Nube de palabras", "desc": "Los participantes escriben una palabra, visible juntos" }
+      "emoji-poll": {
+        "name": "Encuesta Emoji",
+        "desc": "Revisión rápida del estado de ánimo con emojis"
+      },
+      "snelste-vinger": {
+        "name": "Dedo más rápido",
+        "desc": "¿Quién responde más rápido correctamente?"
+      },
+      "team-quiz": {
+        "name": "Quiz de equipo",
+        "desc": "Quiz competitivo corto para calentar"
+      },
+      "woordenwolk": {
+        "name": "Nube de palabras",
+        "desc": "Los participantes escriben una palabra, visible juntos"
+      }
     }
   },
   "step4": {
     "title": "Configuración de sesión",
     "anonymity": {
-      "label":   "Anonimato",
-      "full":    "Completamente anónimo",
+      "label": "Anonimato",
+      "full": "Completamente anónimo",
       "partial": "Parcial",
-      "none":    "No anónimo"
+      "none": "No anónimo"
     },
     "votePolicy": {
       "label": "Política de voto",
-      "once":  "Un voto",
+      "once": "Un voto",
       "multi": "Múltiples votos",
       "react": "Reacciones"
     },
     "mode": {
-      "label":            "Modo de sesión",
+      "label": "Modo de sesión",
       "reflection_title": "Modo Reflexión",
-      "fun_title":        "Modo Rápido",
-      "fun_desc":         "Acelera con temporización automática de preguntas"
+      "fun_title": "Modo Rápido",
+      "fun_desc": "Acelera con temporización automática de preguntas"
     }
   },
   "step5": {
-    "title":             "Resumen y lanzamiento",
-    "edit":              "Editar",
-    "section_basis":     "Básicos",
+    "title": "Resumen y lanzamiento",
+    "edit": "Editar",
+    "section_basis": "Básicos",
     "section_questions": "Preguntas",
     "template_selected": "Plantilla seleccionada",
-    "more_questions":    "+ {{count}} más",
-    "no_questions":      "No se añadieron preguntas",
+    "more_questions": "+ {{count}} más",
+    "no_questions": "No se añadieron preguntas",
     "section_energizer": "Energizador",
-    "no_energizer":      "Sin energizador",
-    "section_settings":  "Configuración",
-    "consent_text":      "Al lanzar la sesión aceptas la declaración de privacidad. Las respuestas se procesan según tu configuración de anonimato.",
-    "launch_error":      "Error al lanzar la sesión. Por favor inténtalo de nuevo.",
-    "launching":         "Lanzando..."
+    "no_energizer": "Sin energizador",
+    "section_settings": "Configuración",
+    "consent_text": "Al lanzar la sesión aceptas la declaración de privacidad. Las respuestas se procesan según tu configuración de anonimato.",
+    "launch_error": "Error al lanzar la sesión. Por favor inténtalo de nuevo.",
+    "launching": "Lanzando..."
   },
   "draft": {
-    "banner":  "Tienes un borrador guardado. ¿Deseas continuar?",
+    "banner": "Tienes un borrador guardado. ¿Deseas continuar?",
     "restore": "Restaurar",
     "dismiss": "Descartar"
   },
@@ -135,29 +159,29 @@
     "cta": "+ Nueva sesión"
   },
   "a11y": {
-    "modal_label":    "Crear nueva sesión",
+    "modal_label": "Crear nueva sesión",
     "progress_label": "Paso {{current}} de {{total}}",
-    "close_label":    "Cerrar asistente"
+    "close_label": "Cerrar asistente"
   },
   "auth_gate": {
-    "title":       "Inicia sesión para empezar",
-    "subtitle":    "Necesitas una cuenta para crear una sesión",
+    "title": "Inicia sesión para empezar",
+    "subtitle": "Necesitas una cuenta para crear una sesión",
     "email_label": "Dirección de correo electrónico",
-    "cta":         "Enviar Magic Link",
-    "sent":        "Revisa tu bandeja — enviamos un enlace a {{email}}"
+    "cta": "Enviar Magic Link",
+    "sent": "Revisa tu bandeja — enviamos un enlace a {{email}}"
   },
   "edit_mode": {
-    "modal_label":            "Editar sesión",
-    "banner":                 "Estás editando una sesión existente",
-    "save_cta":               "Guardar cambios",
-    "saving":                 "Guardando...",
+    "modal_label": "Editar sesión",
+    "banner": "Estás editando una sesión existente",
+    "save_cta": "Guardar cambios",
+    "saving": "Guardando...",
     "active_session_warning": "Las preguntas no se pueden cambiar mientras la sesión está activa"
   },
   "present": {
     "header": {
       "questions_count": "{{n}} preguntas",
-      "energizer":       "Energizador",
-      "edit":            "Editar"
+      "energizer": "Energizador",
+      "edit": "Editar"
     }
   }
 }

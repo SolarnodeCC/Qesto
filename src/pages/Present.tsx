@@ -177,7 +177,7 @@ export default function Present() {
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
               <div className="flex items-center gap-4 bg-white rounded-2xl px-10 py-6 shadow-2xl">
                 <Pause size={36} className="text-amber-500" aria-hidden="true" />
-                <span className="font-bold text-[40px] text-pulse-900 tracking-tight">Voting paused</span>
+                <span className="font-bold text-[40px] text-pulse-900 tracking-tight">{t('votingPaused')}</span>
               </div>
             </div>
           )}
@@ -235,7 +235,7 @@ export default function Present() {
             <div className="mt-5 text-[22px] text-pulse-600 flex gap-9">
               <span className="flex items-center gap-2">
                 <Users size={20} className="text-teal-600" aria-hidden="true" />
-                {state.results.total} {state.results.total === 1 ? t('participant') : t('participants')}
+                {state.results.total} {t('participant', { count: state.results.total })}
               </span>
               <span className="flex items-center gap-2">
                 <Lock size={20} className="text-teal-600" aria-hidden="true" />
@@ -281,7 +281,7 @@ export default function Present() {
 
           {/* ── Join panel ── */}
           <div className="absolute right-[64px] top-[144px] w-[440px] p-9 bg-white border border-pulse-200 rounded-[32px] shadow-elevated z-10">
-            <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase text-teal-700 mb-3">Join this session</h3>
+            <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase text-teal-700 mb-3">{t('joinThisSession')}</h3>
             {state.session && <div className="font-mono text-[20px] font-medium text-pulse-600 mb-4">qesto.app/join</div>}
             {state.session && (
               <div className="font-mono text-[52px] font-medium tracking-[0.12em] leading-none mb-5 bg-clip-text text-transparent" style={{ backgroundImage: 'var(--gradient-brand)' }}>
@@ -299,7 +299,7 @@ export default function Present() {
             )}
             <div className="mt-5 text-[18px] text-pulse-600 text-center">
               <span className="font-[family-name:var(--font-display)] font-bold text-[26px] tracking-[-0.01em] text-pulse-900">{state.participants}</span>{' '}
-              {state.participants === 1 ? t('participant') : t('participants')} connected
+              {t('participant', { count: state.participants })} {t('connectedLabel')}
             </div>
           </div>
 

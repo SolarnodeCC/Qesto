@@ -13,5 +13,12 @@
   "back": "Zurück zum Dashboard",
   "liveParticipants": "Live-Teilnehmer",
   "resultsReady": "Ergebnisse bereit",
-  "connectingToRoom": "[TODO] Connecting to live room…"
+  "connectingToRoom": "Verbinde mit dem Live-Raum…",
+  "votingPaused": "Abstimmung pausiert",
+  "joinThisSession": "Dieser Sitzung beitreten",
+  "participant_one": "Teilnehmer",
+  "participant_other": "Teilnehmer",
+  "connectedLabel": "verbunden",
+  "responses_one": "{count} Antwort",
+  "responses_other": "{count} Antworten"
 }

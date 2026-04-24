@@ -169,5 +169,20 @@
   "sessionRoles.viewer": "Betrachter",
   "sessionRoles.updateRole": "Rolle aktualisieren",
   "sessionRoles.roleUpdated": "Rolle aktualisiert",
-  "sessionRoles.roleUpdateFailed": "Rollenaktualisierung fehlgeschlagen"
+  "sessionRoles.roleUpdateFailed": "Rollenaktualisierung fehlgeschlagen",
+  "realtimePlatformObservability": "Echtzeit-Plattformbeobachtbarkeit",
+  "liveLast5min": "Live (letzte 5 Min)",
+  "participants": "Teilnehmer",
+  "revenue24h": "Umsatz (24h)",
+  "p95Latency": "P95-Latenz",
+  "errorRate": "Fehlerrate",
+  "historicalData": "Historische Daten",
+  "noDataInRange": "Keine Daten im ausgewählten Zeitraum",
+  "exportCsv": "CSV exportieren",
+  "exporting": "Exportiere…",
+  "route": "Route",
+  "errorPercent": "Fehler %",
+  "requests": "Anfragen",
+  "auditLog": "Audit-Protokoll",
+  "changeSummary": "Änderungszusammenfassung"
 }

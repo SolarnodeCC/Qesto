@@ -169,5 +169,20 @@
   "sessionRoles.viewer": "Espectador",
   "sessionRoles.updateRole": "Actualizar rol",
   "sessionRoles.roleUpdated": "Rol actualizado",
-  "sessionRoles.roleUpdateFailed": "Error al actualizar el rol"
+  "sessionRoles.roleUpdateFailed": "Error al actualizar el rol",
+  "realtimePlatformObservability": "Observabilidad de la plataforma en tiempo real",
+  "liveLast5min": "En vivo (últimos 5 min)",
+  "participants": "Participantes",
+  "revenue24h": "Ingresos (24h)",
+  "p95Latency": "Latencia P95",
+  "errorRate": "Tasa de errores",
+  "historicalData": "Datos históricos",
+  "noDataInRange": "No hay datos en el rango seleccionado",
+  "exportCsv": "Exportar CSV",
+  "exporting": "Exportando…",
+  "route": "Ruta",
+  "errorPercent": "Error %",
+  "requests": "Solicitudes",
+  "auditLog": "Registro de auditoría",
+  "changeSummary": "Resumen de cambios"
 }

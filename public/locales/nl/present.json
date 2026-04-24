@@ -13,5 +13,12 @@
   "back": "Terug naar dashboard",
   "liveParticipants": "Live deelnemers",
   "resultsReady": "Resultaten gereed",
-  "connectingToRoom": "[TODO] Connecting to live room…"
+  "connectingToRoom": "Verbinden met live sessie…",
+  "votingPaused": "Stemmen gepauzeerd",
+  "joinThisSession": "Neem deel aan deze sessie",
+  "participant_one": "deelnemer",
+  "participant_other": "deelnemers",
+  "connectedLabel": "verbonden",
+  "responses_one": "{count} antwoord",
+  "responses_other": "{count} antwoorden"
 }

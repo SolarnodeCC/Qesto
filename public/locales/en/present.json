@@ -13,5 +13,12 @@
   "connectingToRoom": "Connecting to live room…",
   "back": "Back to dashboard",
   "liveParticipants": "Live participants",
-  "resultsReady": "Results ready"
+  "resultsReady": "Results ready",
+  "votingPaused": "Voting paused",
+  "joinThisSession": "Join this session",
+  "participant_one": "participant",
+  "participant_other": "participants",
+  "connectedLabel": "connected",
+  "responses_one": "{count} response",
+  "responses_other": "{count} responses"
 }

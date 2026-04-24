@@ -177,6 +177,6 @@
     "viewSessionAria": "Bekijk sessie voor beslissing: {{question}}",
     "viewSession": "Bekijk sessie"
   },
-  "inviteMember": "[TODO] Invite member",
-  "samlConfiguration": "[TODO] SAML configuration"
+  "inviteMember": "Lid uitnodigen",
+  "samlConfiguration": "SAML-configuratie"
 }

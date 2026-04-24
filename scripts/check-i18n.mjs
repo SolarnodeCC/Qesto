@@ -8,7 +8,12 @@ const __dirname = dirname(__filename)
 
 const PROJECT_ROOT = join(__dirname, '..')
 const LOCALES_DIR = join(PROJECT_ROOT, 'public', 'locales')
-const LANGUAGES = ['en', 'nl', 'es', 'de', 'fr']
+const SCOPE_PATH = join(PROJECT_ROOT, 'i18n.scope.json')
+const SCOPE = JSON.parse(readFileSync(SCOPE_PATH, 'utf-8'))
+const LANGUAGES = SCOPE.supportedLanguages
+const NAMESPACES = SCOPE.namespaces
+const EXCLUDED_NAMESPACES = new Set(SCOPE.excludedNamespaces ?? [])
+const EXCLUDED_SOURCE_GLOBS = SCOPE.excludedSourceGlobs ?? []
 
 /**
  * Recursively flatten a nested object into dot-notation keys
@@ -64,6 +69,61 @@ function loadLanguageFiles(lang) {
   }
 
   return flatMap
+}
+
+function loadNamespaceSet(lang) {
+  const langDir = join(LOCALES_DIR, lang)
+  const files = readdirSync(langDir).filter((f) => f.endsWith('.json'))
+  return new Set(files.map((f) => f.replace('.json', '')))
+}
+
+function normalizePath(filepath) {
+  return filepath.replaceAll('\\', '/')
+}
+
+function isExcludedPath(filepath) {
+  const rel = normalizePath(relative(PROJECT_ROOT, filepath))
+  return EXCLUDED_SOURCE_GLOBS.some((pattern) => {
+    if (pattern.endsWith('/**')) {
+      const prefix = pattern.slice(0, -3)
+      return rel.startsWith(prefix)
+    }
+    return rel === pattern
+  })
+}
+
+function validateNamespaceMatrix() {
+  let hasErrors = false
+  const expected = new Set(NAMESPACES)
+  for (const lang of LANGUAGES) {
+    const actual = loadNamespaceSet(lang)
+    const missing = [...expected].filter((ns) => !actual.has(ns))
+    const extra = [...actual].filter((ns) => !expected.has(ns))
+    if (missing.length > 0 || extra.length > 0) {
+      hasErrors = true
+      if (missing.length > 0) {
+        console.error(`[i18n] ❌ ${lang} missing namespace files: ${missing.join(', ')}`)
+      }
+      if (extra.length > 0) {
+        console.error(`[i18n] ❌ ${lang} has unexpected namespace files: ${extra.join(', ')}`)
+      }
+    }
+  }
+  if (!hasErrors) {
+    console.log('[i18n] ✓ Namespace matrix is aligned across all languages')
+  }
+  return !hasErrors
+}
+
+function validateNoTodoInEnglish() {
+  const en = loadLanguageFiles('en')
+  const todo = Object.entries(en).filter(([, value]) => typeof value === 'string' && value.startsWith('[TODO]'))
+  if (todo.length > 0) {
+    console.error(`[i18n] ❌ English locale contains ${todo.length} [TODO] placeholders`)
+    return false
+  }
+  console.log('[i18n] ✓ English locale contains no [TODO] placeholders')
+  return true
 }
 
 /**
@@ -137,9 +197,12 @@ function checkLaunchpadHardcoded() {
  */
 function validate() {
   console.log('[i18n] Starting translation validation...')
+  console.log(`[i18n] Scope excludes namespaces: ${[...EXCLUDED_NAMESPACES].join(', ') || '(none)'}`)
 
   const enKeys = loadLanguageFiles('en')
-  const enKeysList = Object.keys(enKeys).sort()
+  const enKeysList = Object.keys(enKeys)
+    .filter((key) => !EXCLUDED_NAMESPACES.has(key.split('.')[0]))
+    .sort()
 
   if (enKeysList.length === 0) {
     console.error('[i18n] Error: No English translations found')
@@ -161,7 +224,6 @@ function validate() {
     if (lang === 'en') continue
 
     const langKeys = loadLanguageFiles(lang)
-    const langKeysList = Object.keys(langKeys)
     const missing = []
 
     // Find keys in English but missing in this language
@@ -238,13 +300,14 @@ function shouldFlagString(str) {
 }
 
 function scanFileForNonKeyedLiterals(filepath) {
+  if (isExcludedPath(filepath)) return []
   const content = readFileSync(filepath, 'utf8')
   const issues = []
   const lines = content.split('\n')
 
   // Only scan .tsx files that use the `t()` hook (are i18n-aware)
   if (!filepath.endsWith('.tsx')) return []
-  if (!content.includes('useT(') && !content.includes("from '../i18n'")) return []
+  if (!content.includes('useT(') && !content.includes("from '../i18n'") && !content.includes('from "../i18n"')) return []
 
   lines.forEach((line, idx) => {
     // Skip comment lines, import lines, type definitions
@@ -320,9 +383,11 @@ function validateNonKeyedLiterals() {
 }
 
 const success = validate()
+const namespaceMatrixOk = validateNamespaceMatrix()
+const englishTodoOk = validateNoTodoInEnglish()
 const noLiterals = validateNonKeyedLiterals()
 
-if (success && noLiterals) {
+if (success && namespaceMatrixOk && englishTodoOk && noLiterals) {
   console.log('\n[i18n] Validation passed - all languages are complete ✓')
   process.exit(0)
 } else {

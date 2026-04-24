@@ -177,6 +177,6 @@
     "viewSessionAria": "View session for decision: {{question}}",
     "viewSession": "View session"
   },
-  "inviteMember": "[TODO] Invite member",
-  "samlConfiguration": "[TODO] SAML configuration"
+  "inviteMember": "Invitar miembro",
+  "samlConfiguration": "Configuración SAML"
 }

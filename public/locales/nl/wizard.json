@@ -1,8 +1,8 @@
 {
   "nav": {
-    "next":   "Volgende",
-    "back":   "Terug",
-    "close":  "Sluiten",
+    "next": "Volgende",
+    "back": "Terug",
+    "close": "Sluiten",
     "launch": "Sessie starten"
   },
   "steps": {
@@ -13,121 +13,145 @@
     "5": "Overzicht"
   },
   "step1": {
-    "title":             "Wat is de sessie?",
-    "label_title":       "Sessietitel",
-    "label_goal":        "Doel van de sessie",
+    "title": "Wat is de sessie?",
+    "label_title": "Sessietitel",
+    "label_goal": "Doel van de sessie",
     "placeholder_title": "bv. Teamreflectie Q2",
-    "placeholder_goal":  "bv. Inzicht krijgen in hoe het team de sprint heeft ervaren..."
+    "placeholder_goal": "bv. Inzicht krijgen in hoe het team de sprint heeft ervaren..."
   },
   "question_types": {
     "multiple-choice": "Multiple choice",
-    "ranking":         "Rangschikking",
-    "open":            "Open",
-    "wordcloud":       "Wordcloud"
+    "ranking": "Rangschikking",
+    "open": "Open",
+    "wordcloud": "Wordcloud"
   },
   "step2": {
-    "mode_title":       "Hoe wil je vragen toevoegen?",
-    "manual":           { "label": "Zelf schrijven", "desc": "Schrijf en beheer je eigen vragen" },
-    "ai":               { "label": "AI genereren",   "desc": "Geef een prompt, wij genereren vragen" },
-    "template":         { "label": "Uit template",   "desc": "Kies uit bewezen vragensets" },
-    "back":             "← Andere methode kiezen",
-    "manual_add":       "Vraag toevoegen",
+    "mode_title": "Hoe wil je vragen toevoegen?",
+    "manual": {
+      "label": "Zelf schrijven",
+      "desc": "Schrijf en beheer je eigen vragen"
+    },
+    "ai": {
+      "label": "AI genereren",
+      "desc": "Geef een prompt, wij genereren vragen"
+    },
+    "template": {
+      "label": "Uit template",
+      "desc": "Kies uit bewezen vragensets"
+    },
+    "back": "← Andere methode kiezen",
+    "manual_add": "Vraag toevoegen",
     "manual_placeholder": "Typ je vraag...",
-    "manual_max":       "Maximum van 20 vragen bereikt",
-    "manual_delete":    "Verwijder vraag",
+    "manual_max": "Maximum van 20 vragen bereikt",
+    "manual_delete": "Verwijder vraag",
     "multiple_choice_option_placeholder": "Antwoordoptie {{n}}",
     "multiple_choice_add_option": "Antwoordoptie toevoegen",
     "multiple_choice_remove_option": "Antwoordoptie verwijderen",
     "multiple_choice_validation_hint": "Multiple choice vereist minimaal 2 antwoorden (3–5 aanbevolen).",
     "multiple_choice_validation_error": "Eén of meer multiple choice-vragen hebben minder dan 2 antwoorden.",
-    "ai_greeting":      "Ik zie sessie \"{{title}}\" met doel: \"{{goal}}\". Vertel me op welk aspect je wil focussen, of klik 'Genereer meteen'.",
+    "ai_greeting": "Ik zie sessie \"{{title}}\" met doel: \"{{goal}}\". Vertel me op welk aspect je wil focussen, of klik 'Genereer meteen'.",
     "ai_greeting_empty": "Vertel me waar de sessie over gaat, of klik 'Genereer meteen'.",
-    "ai_generate_cta":  "✨ Genereer meteen",
-    "ai_generating":    "Genereren...",
-    "ai_placeholder":   "Verfijn de focus...",
-    "ai_send":          "Verstuur",
+    "ai_generate_cta": "✨ Genereer meteen",
+    "ai_generating": "Genereren...",
+    "ai_placeholder": "Verfijn de focus...",
+    "ai_send": "Verstuur",
     "ai_questions_label": "Gegenereerde vragen",
-    "ai_consent":       "Ik ga akkoord dat mijn sessietitel en doel worden verwerkt door de AI",
+    "ai_consent": "Ik ga akkoord dat mijn sessietitel en doel worden verwerkt door de AI",
     "ai_consent_required": "Geef toestemming voor AI-verwerking om vragen te genereren",
     "ai_consent_v2": {
-      "title":       "AI-aangedreven generatie",
+      "title": "AI-aangedreven generatie",
       "description": "We gebruiken AI om vragen voor te stellen op basis van je sessiedoel",
-      "checkbox":    "Ik geef toestemming voor AI-verwerking van mijn sessietitel en doel",
-      "error":       "Geef toestemming voor AI-verwerking"
+      "checkbox": "Ik geef toestemming voor AI-verwerking van mijn sessietitel en doel",
+      "error": "Geef toestemming voor AI-verwerking"
     },
-    "ai_error":         "Genereren mislukt. Probeer het opnieuw.",
-    "ai_review_cta":    "Bewerk vragen →",
-    "ai_review_title":  "Bewerk je vragen",
+    "ai_error": "Genereren mislukt. Probeer het opnieuw.",
+    "ai_review_cta": "Bewerk vragen →",
+    "ai_review_title": "Bewerk je vragen",
     "ai_review_subtitle": "Pas vragen of typen aan voor je verdergaat",
     "ai_generated_badge": "✨ AI-gegenereerde inhoud — volledig bewerkbaar",
-    "ai_review_back":   "← Terug naar chat",
+    "ai_review_back": "← Terug naar chat",
     "ai_regenerate_confirm": "Opnieuw genereren vervangt je bewerkte vragen. Doorgaan?",
-    "chip_accept":   "Accepteer deze vraag",
-    "chip_edit":     "Bewerk deze vraag",
-    "chip_dismiss":  "Verwijder deze vraag",
+    "chip_accept": "Accepteer deze vraag",
+    "chip_edit": "Bewerk deze vraag",
+    "chip_dismiss": "Verwijder deze vraag",
     "chip_collapse": "← Terug naar overzicht",
-    "chip_empty":    "(geen vraagtekst)",
+    "chip_empty": "(geen vraagtekst)",
     "review_add_question": "Vraag toevoegen",
     "template_loading": "Templates laden...",
-    "template_error":   "Templates konden niet geladen worden",
-    "template_empty":   "Geen templates beschikbaar",
-    "template_retry":   "Opnieuw proberen",
-    "template_select":  "Selecteer",
+    "template_error": "Templates konden niet geladen worden",
+    "template_empty": "Geen templates beschikbaar",
+    "template_retry": "Opnieuw proberen",
+    "template_select": "Selecteer",
     "template_selected": "✓ Geselecteerd",
     "template_questions": "{{count}} vragen",
     "all_dismissed": "Alle vragen verwijderd. Ga terug om opnieuw te genereren.",
-    "template_coming_soon": "Sjabloonselectie komt binnenkort."
+    "template_coming_soon": "Sjabloonselectie komt binnenkort.",
+    "auto_scale_hint": "Automatisch gegenereerde 5-puntsschaal: Helemaal oneens -> Helemaal eens",
+    "auto_slider_hint": "Automatisch gegenereerde numerieke schuif van 1-10",
+    "free_text_hint": "Deelnemers typen een vrije tekstreactie - geen opties nodig"
   },
   "step3": {
-    "title":       "Energizer toevoegen?",
-    "yes":         "Ja, graag!",
-    "no":          "Nee, overslaan",
+    "title": "Energizer toevoegen?",
+    "yes": "Ja, graag!",
+    "no": "Nee, overslaan",
     "pick_format": "Kies een format",
     "formats": {
-      "emoji-poll":     { "name": "Emoji Poll",     "desc": "Snelle stemming check via emoji's" },
-      "snelste-vinger": { "name": "Snelste vinger", "desc": "Wie is het snelst met het goede antwoord?" },
-      "team-quiz":      { "name": "Team Quiz",       "desc": "Korte competitieve quiz om op te warmen" },
-      "woordenwolk":    { "name": "Woordenwolk",     "desc": "Deelnemers typen één woord, samen zichtbaar" }
+      "emoji-poll": {
+        "name": "Emoji Poll",
+        "desc": "Snelle stemming check via emoji's"
+      },
+      "snelste-vinger": {
+        "name": "Snelste vinger",
+        "desc": "Wie is het snelst met het goede antwoord?"
+      },
+      "team-quiz": {
+        "name": "Team Quiz",
+        "desc": "Korte competitieve quiz om op te warmen"
+      },
+      "woordenwolk": {
+        "name": "Woordenwolk",
+        "desc": "Deelnemers typen één woord, samen zichtbaar"
+      }
     }
   },
   "step4": {
     "title": "Sessie-instellingen",
     "anonymity": {
-      "label":   "Anonimiteit",
-      "full":    "Volledig anoniem",
+      "label": "Anonimiteit",
+      "full": "Volledig anoniem",
       "partial": "Gedeeltelijk",
-      "none":    "Niet anoniem"
+      "none": "Niet anoniem"
     },
     "votePolicy": {
       "label": "Stembeleid",
-      "once":  "Één stem",
+      "once": "Één stem",
       "multi": "Meerdere stemmen",
       "react": "Reacties"
     },
     "mode": {
-      "label":            "Sessiemodus",
+      "label": "Sessiemodus",
       "reflection_title": "Reflectie Mode",
-      "fun_title":        "Snelle Modus",
-      "fun_desc":         "Versnelling met automatische vraagvoering"
+      "fun_title": "Snelle Modus",
+      "fun_desc": "Versnelling met automatische vraagvoering"
     }
   },
   "step5": {
-    "title":             "Overzicht & starten",
-    "edit":              "Bewerken",
-    "section_basis":     "Basis",
+    "title": "Overzicht & starten",
+    "edit": "Bewerken",
+    "section_basis": "Basis",
     "section_questions": "Vragen",
     "template_selected": "Template geselecteerd",
-    "more_questions":    "+ {{count}} meer",
-    "no_questions":      "Geen vragen toegevoegd",
+    "more_questions": "+ {{count}} meer",
+    "no_questions": "Geen vragen toegevoegd",
     "section_energizer": "Energizer",
-    "no_energizer":      "Geen energizer",
-    "section_settings":  "Instellingen",
-    "consent_text":      "Door de sessie te starten ga je akkoord met de privacyverklaring. Antwoorden worden verwerkt conform jouw anonimiteitsinstellingen.",
-    "launch_error":      "Sessie starten mislukt. Probeer het opnieuw.",
-    "launching":         "Starten..."
+    "no_energizer": "Geen energizer",
+    "section_settings": "Instellingen",
+    "consent_text": "Door de sessie te starten ga je akkoord met de privacyverklaring. Antwoorden worden verwerkt conform jouw anonimiteitsinstellingen.",
+    "launch_error": "Sessie starten mislukt. Probeer het opnieuw.",
+    "launching": "Starten..."
   },
   "draft": {
-    "banner":  "Je hebt een opgeslagen concept. Wil je verder gaan?",
+    "banner": "Je hebt een opgeslagen concept. Wil je verder gaan?",
     "restore": "Herstel",
     "dismiss": "Negeer"
   },
@@ -135,29 +159,29 @@
     "cta": "+ Nieuwe sessie"
   },
   "a11y": {
-    "modal_label":    "Nieuwe sessie aanmaken",
+    "modal_label": "Nieuwe sessie aanmaken",
     "progress_label": "Stap {{current}} van {{total}}",
-    "close_label":    "Wizard sluiten"
+    "close_label": "Wizard sluiten"
   },
   "auth_gate": {
-    "title":       "Log in om te beginnen",
-    "subtitle":    "Je hebt een account nodig om een sessie aan te maken",
+    "title": "Log in om te beginnen",
+    "subtitle": "Je hebt een account nodig om een sessie aan te maken",
     "email_label": "E-mailadres",
-    "cta":         "Stuur Magic Link",
-    "sent":        "Check je inbox — we hebben een link gestuurd naar {{email}}"
+    "cta": "Stuur Magic Link",
+    "sent": "Check je inbox — we hebben een link gestuurd naar {{email}}"
   },
   "edit_mode": {
-    "modal_label":            "Sessie bewerken",
-    "banner":                 "Je bewerkt een bestaande sessie",
-    "save_cta":               "Wijzigingen opslaan",
-    "saving":                 "Opslaan...",
+    "modal_label": "Sessie bewerken",
+    "banner": "Je bewerkt een bestaande sessie",
+    "save_cta": "Wijzigingen opslaan",
+    "saving": "Opslaan...",
     "active_session_warning": "Vragen kunnen niet worden aangepast terwijl de sessie actief is"
   },
   "present": {
     "header": {
       "questions_count": "{{n}} vragen",
-      "energizer":       "Energizer",
-      "edit":            "Bewerken"
+      "energizer": "Energizer",
+      "edit": "Bewerken"
     }
   }
 }

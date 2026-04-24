@@ -163,7 +163,6 @@
   "noRunbooks": "No runbooks saved. Use PUT /admin/runbooks/:category to add one.",
   "realtimePlatformObservability": "Real-time platform observability",
   "liveLast5min": "Live (last 5 min)",
-  "activeSessions": "Active sessions",
   "participants": "Participants",
   "revenue24h": "Revenue (24h)",
   "p95Latency": "P95 latency",
@@ -184,5 +183,6 @@
   "sessionRoles.viewer": "Viewer",
   "sessionRoles.updateRole": "Update role",
   "sessionRoles.roleUpdated": "Role updated",
-  "sessionRoles.roleUpdateFailed": "Failed to update role"
+  "sessionRoles.roleUpdateFailed": "Failed to update role",
+  "changeSummary": "Change Summary"
 }

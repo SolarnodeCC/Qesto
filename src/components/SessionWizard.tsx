@@ -91,6 +91,7 @@ function QuestionEditor({
   onChange: (q: WizardQuestion) => void
   onDismiss?: () => void
 }) {
+  const t = useT('wizard')
   function setKind(kind: QuestionKind) {
     const updated = { ...question, kind }
     if (NO_OPTIONS_KINDS.has(kind)) {
@@ -223,13 +224,13 @@ function QuestionEditor({
         </div>
       )}
       {question.kind === 'likert' && (
-        <p className="text-caption text-pulse-400 italic">Auto-generated 5-point scale: Strongly disagree → Strongly agree</p>
+        <p className="text-caption text-pulse-400 italic">{t('step2.auto_scale_hint')}</p>
       )}
       {question.kind === 'slider' && (
-        <p className="text-caption text-pulse-400 italic">Auto-generated 1–10 numeric slider</p>
+        <p className="text-caption text-pulse-400 italic">{t('step2.auto_slider_hint')}</p>
       )}
       {(question.kind === 'word_cloud' || question.kind === 'open') && (
-        <p className="text-caption text-pulse-400 italic">Participants type a free-text response — no options needed</p>
+        <p className="text-caption text-pulse-400 italic">{t('step2.free_text_hint')}</p>
       )}
     </div>
   )
