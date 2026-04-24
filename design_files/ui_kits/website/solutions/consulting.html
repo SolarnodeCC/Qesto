@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Qesto for Consulting — Workshops that ship evidence</title>
+<link rel="icon" href="../../../assets/favicon.svg">
+<link rel="stylesheet" href="../_shared.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  .hero-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 56px; align-items: center; }
+  .deliv { background: #FFF; border-radius: 20px; box-shadow: var(--shadow-elevated); overflow: hidden; }
+  .deliv-top { background: var(--pulse-900); color: #FFF; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
+  .deliv-top .ttl { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .deliv-top .dte { font-family: var(--font-mono); font-size: 12px; color: #94A3B8; }
+  .deliv-body { padding: 28px; display: grid; gap: 20px; }
+  .deliv-theme { padding: 14px 18px; border-left: 3px solid var(--violet-500); background: var(--violet-50); border-radius: 0 8px 8px 0; }
+  .deliv-theme .h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .deliv-theme .h b { font-size: 15px; font-weight: 600; color: var(--pulse-900); }
+  .deliv-theme .h .c { font-family: var(--font-mono); font-size: 12px; color: var(--violet-700); font-weight: 600; }
+  .deliv-theme p { margin: 0; font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; font-style: italic; }
+  .deliv-foot { padding: 14px 24px; background: var(--pulse-50); font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 1px solid var(--surface-border); }
+
+  .workflow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .wf { background: #FFF; border-radius: 16px; padding: 28px; box-shadow: var(--shadow-card); }
+  .wf .ph { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+  .wf h3 { margin: 0 0 10px; font-size: 20px; font-weight: 600; }
+  .wf p { margin: 0 0 16px; font-size: 14.5px; line-height: 1.55; color: var(--text-secondary); }
+  .wf .out { border-top: 1px dashed var(--surface-border); padding-top: 14px; font-size: 13px; color: var(--text-muted); display: flex; gap: 8px; align-items: flex-start; }
+  .wf .out b { color: var(--teal-700); font-weight: 600; }
+
+  .stack { display: grid; gap: 1px; background: var(--surface-border); border-radius: 16px; overflow: hidden; }
+  .stack-row { background: #FFF; padding: 20px 24px; display: grid; grid-template-columns: 160px 1fr; gap: 24px; align-items: start; }
+  .stack-row .k { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-700); padding-top: 2px; }
+  .stack-row .v { font-size: 15px; line-height: 1.55; color: var(--text-primary); }
+  .stack-row .v span { color: var(--text-secondary); display: block; margin-top: 4px; font-size: 13.5px; }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="container"><div class="nav-row">
+  <a href="../index.html" class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</a>
+  <div class="nav-links"><a href="#">Product</a><a href="./consulting.html" class="active">Solutions</a><a href="../pricing.html">Pricing</a><a href="#">Docs</a></div>
+  <div class="nav-cta"><a class="btn btn-ghost" href="#">Sign in</a><a class="btn btn-primary" href="#">Start free</a></div>
+</div></div></nav>
+
+<section class="page-hero"><div class="container">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Qesto for Consulting</div>
+      <h1>Workshops that ship <span class="grad">evidence, not vibes.</span></h1>
+      <p class="lede">Run client discovery, strategy offsites, and change-management sessions where every conclusion is backed by a tally. The slide deck writes itself — and it quotes the room, not your intern.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#">Run a pilot engagement</a>
+        <a class="btn btn-secondary btn-lg" href="#">See a sample readout</a>
+      </div>
+    </div>
+    <div class="deliv">
+      <div class="deliv-top"><span class="ttl">Client readout — Acme Industries</span><span class="dte">2026-04-12</span></div>
+      <div class="deliv-body">
+        <div class="deliv-theme"><div class="h"><b>Theme 01 · Trust in forecasting</b><span class="c">12 evidence</span></div><p>"We don't believe the numbers until three people have re-keyed them." — 8 of 12 pre-workshop interviews echoed this.</p></div>
+        <div class="deliv-theme"><div class="h"><b>Theme 02 · Meeting-to-decision gap</b><span class="c">9 evidence</span></div><p>Live tally: 74% of attendees rated decision velocity ≤ 3/10. Cluster emerged unprompted in breakout 2.</p></div>
+        <div class="deliv-theme"><div class="h"><b>Theme 03 · Cross-BU handoffs</b><span class="c">7 evidence</span></div><p>Pulse at 14:20 found 6 of 7 teams losing context at handoff. Root cause cluster: ownership ambiguity.</p></div>
+      </div>
+      <div class="deliv-foot"><span>Evidence-anchored · Session QSTO-5R8K</span><span>Generated 14:42</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="eyebrow">Engagement loop</div>
+  <h2>Discover. Workshop. Readout. Repeat.</h2>
+  <p class="lede">Qesto sits across the three moments of a consulting engagement where your clients expect evidence — and where you'd usually burn a week synthesizing.</p>
+  <div class="workflow">
+    <div class="wf"><div class="ph">Phase 01 · Discovery</div><h3>Pre-engagement pulse</h3><p>Ship a 10-question pulse to the client org before day one. Anonymous by default. AI clusters open responses into the 5 themes you'll walk in already knowing.</p><div class="out"><i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--teal-600)"></i><span><b>Output:</b> themed evidence deck, ready for kickoff.</span></div></div>
+    <div class="wf"><div class="ph">Phase 02 · Workshop</div><h3>Live session, live signal</h3><p>Facilitate on your slides; Qesto runs the tallies. Project behind you or tablet-beside-you. Every cluster is a slide you didn't have to build.</p><div class="out"><i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--teal-600)"></i><span><b>Output:</b> decision log with evidence attached.</span></div></div>
+    <div class="wf"><div class="ph">Phase 03 · Readout</div><h3>Evidence-anchored recap</h3><p>Same-day client PDF. Every theme quotes the tally that produced it. Your logo, your font, the client's room.</p><div class="out"><i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--teal-600)"></i><span><b>Output:</b> signed recap, in the sponsor's inbox by dinner.</span></div></div>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="eyebrow">Your firm on Qesto</div>
+  <h2>White-label the room. Keep your brand on the deliverable.</h2>
+  <div class="stack">
+    <div class="stack-row"><span class="k">Branded domain</span><span class="v">qesto.yourfirm.com<span>Your clients see your logo and colors from join code to PDF. DNS handoff is one CNAME.</span></span></div>
+    <div class="stack-row"><span class="k">Template library</span><span class="v">Your firm's session templates, not ours<span>Standard discovery, offsite, and retro templates shared across your partners. New engagements launch in 60 seconds.</span></span></div>
+    <div class="stack-row"><span class="k">Deliverable export</span><span class="v">PDF, DOCX, Notion, or raw JSON<span>Plug into your synthesis pipeline. JSON includes every tally, cluster, and evidence anchor.</span></span></div>
+    <div class="stack-row"><span class="k">Client data isolation</span><span class="v">Per-client Durable Object boundary<span>Acme's rooms never sit next to Globex's. Retention configured per engagement, not per account.</span></span></div>
+    <div class="stack-row"><span class="k">Partner SSO</span><span class="v">Okta, Azure AD, Google Workspace<span>Your partners sign in once. Clients join with a code. No seat math for engagement teams.</span></span></div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="quote">
+    <p>"We used to lose three days per engagement on synthesis. Now the readout is drafted before the workshop ends — we spend that time on the recommendation, not the slide."</p>
+    <div class="who"><b>Marcus Viljoen</b> · Partner, boutique strategy firm</div>
+  </div>
+</div></section>
+
+<div class="cta-band"><div class="container">
+  <h2>Your next engagement has a receipt.</h2>
+  <p>Pilot Qesto on one client. If the readout doesn't save you a synthesis day, we'll refund the license.</p>
+  <a class="btn btn-primary btn-lg" href="#">Talk to our consulting team</a>
+</div></div>
+
+<footer><div class="container">
+  <div class="cols">
+    <div class="brand-col"><div class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</div><p>Real-time, AI-amplified, private-by-default sessions.</p></div>
+    <div><h5>Solutions</h5><ul><li><a href="./hr.html">HR pulse</a></li><li><a href="./events.html">Events</a></li><li><a href="./nonprofits.html">Nonprofit boards</a></li><li><a href="./consulting.html">Consulting</a></li></ul></div>
+    <div><h5>Product</h5><ul><li><a href="../features/live-polling.html">Live polling</a></li><li><a href="../features/ai-insights.html">AI insights</a></li><li><a href="../features/privacy.html">Privacy</a></li><li><a href="../pricing.html">Pricing</a></li></ul></div>
+    <div><h5>Company</h5><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li><li><a href="#">Contact</a></li></ul></div>
+  </div>
+  <div class="legal"><span>© 2026 Qesto</span><span>qesto.app</span></div>
+</div></footer>
+
+<script>
+  lucide.createIcons();
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8));
+</script>
+</body>
+</html>
