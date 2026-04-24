@@ -1,6 +1,6 @@
 type LocaleMap = Record<string, Record<string, string>>
 
-const NAMESPACES = ['admin', 'auth', 'common', 'components', 'dashboard', 'errors', 'home', 'insights', 'join', 'launchpad', 'login', 'not-found', 'present', 'results', 'session-config', 'sessions', 'vote', 'wizard']
+const NAMESPACES = ['admin', 'auth', 'common', 'components', 'dashboard', 'errors', 'home', 'insights', 'join', 'launchpad', 'login', 'not-found', 'present', 'results', 'session-config', 'sessions', 'solutions', 'vote', 'wizard']
 
 let cachedLocales: LocaleMap = {}
 let currentLanguage = 'en'
