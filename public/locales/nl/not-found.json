@@ -1,5 +1,6 @@
 {
   "code": "404",
   "message": "Die pagina bestaat niet.",
-  "backHome": "Terug naar huis"
+  "backHome": "Terug naar huis",
+  "pageNotFound": "Pagina niet gevonden"
 }

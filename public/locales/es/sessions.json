@@ -598,5 +598,6 @@
   "lobbyDesc": "Comparte el código a continuación. Haz clic en \"Iniciar sesión\" cuando todos estén listos.",
   "lobbyJoinCode": "Código de participación",
   "lobbyParticipants": "{{count}} participantes conectados",
-  "lobbyStartSession": "Iniciar sesión"
+  "lobbyStartSession": "Iniciar sesión",
+  "samlConfiguration": "Configuración SAML"
 }

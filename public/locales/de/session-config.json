@@ -16,5 +16,7 @@
   "backToDashboard": "Zurück zum Dashboard",
   "optionPlaceholder": "Optionstext",
   "pollQuestion": "Umfragefrage",
-  "aiSuggestionHelp": "Klicke auf einen Vorschlag, um ihn als Prompt zu verwenden"
+  "aiSuggestionHelp": "Klicke auf einen Vorschlag, um ihn als Prompt zu verwenden",
+  "loadingSession": "Sitzung wird geladen…",
+  "sessionNotFound": "Sitzung nicht gefunden"
 }

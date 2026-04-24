@@ -16,5 +16,7 @@
   "backToDashboard": "Terug naar dashboard",
   "optionPlaceholder": "Optietekst",
   "pollQuestion": "Pollvraag",
-  "aiSuggestionHelp": "Klik op een suggestie om deze als je prompt te gebruiken"
+  "aiSuggestionHelp": "Klik op een suggestie om deze als je prompt te gebruiken",
+  "loadingSession": "Sessie wordt geladen…",
+  "sessionNotFound": "Sessie niet gevonden"
 }

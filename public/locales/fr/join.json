@@ -27,5 +27,9 @@
   "live_results": "Résultats en direct",
   "your_vote": "votre vote",
   "next_question_countdown": "Prochaine question dans {seconds}…",
-  "get_ready": "Préparez-vous…"
+  "get_ready": "Préparez-vous…",
+  "noInviteTokenFound": "Aucun jeton d'invitation trouvé. Veuillez utiliser le lien de votre email d'invitation.",
+  "inviteLinkExpired": "Ce lien d'invitation a expiré ou n'est pas valide.",
+  "alreadyMemberOfTeam": "Vous êtes déjà membre de cette équipe.",
+  "confirmingInvite": "Confirmation de votre invitation…"
 }

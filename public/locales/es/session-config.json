@@ -16,5 +16,7 @@
   "backToDashboard": "Volver al panel",
   "optionPlaceholder": "Texto de opción",
   "pollQuestion": "Pregunta de encuesta",
-  "aiSuggestionHelp": "Haz clic en una sugerencia para usarla como tu prompt"
+  "aiSuggestionHelp": "Haz clic en una sugerencia para usarla como tu prompt",
+  "loadingSession": "Cargando sesión…",
+  "sessionNotFound": "Sesión no encontrada"
 }

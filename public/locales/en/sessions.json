@@ -598,5 +598,6 @@
   "lobbyDesc": "Share the code below. Click \"Start session\" when everyone is ready.",
   "lobbyJoinCode": "Join code",
   "lobbyParticipants": "{{count}} participants connected",
-  "lobbyStartSession": "Start session"
+  "lobbyStartSession": "Start session",
+  "samlConfiguration": "SAML configuration"
 }

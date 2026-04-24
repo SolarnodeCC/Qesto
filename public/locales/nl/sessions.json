@@ -598,5 +598,6 @@
   "lobbyDesc": "Deel de code hieronder. Klik \"Sessie starten\" wanneer iedereen klaar is.",
   "lobbyJoinCode": "Deelnamecode",
   "lobbyParticipants": "{{count}} deelnemers verbonden",
-  "lobbyStartSession": "Sessie starten"
+  "lobbyStartSession": "Sessie starten",
+  "samlConfiguration": "SAML-configuratie"
 }
