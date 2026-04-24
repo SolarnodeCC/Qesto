@@ -145,4 +145,37 @@ describe('ai-wizard/generateQuestions', () => {
     expect(p).toContain('Session goal: G')
     expect(p).toContain('Focus area: F')
   })
+
+  it('builds system prompt in Dutch when language is nl', () => {
+    const p = __internal.buildSystemPrompt('nl')
+    expect(p).toContain('Dutch')
+  })
+
+  it('builds system prompt in English when language is en', () => {
+    const p = __internal.buildSystemPrompt('en')
+    expect(p).toContain('English')
+  })
+
+  it('builds system prompt in English when language is unknown', () => {
+    const p = __internal.buildSystemPrompt('xx')
+    expect(p).toContain('English')
+  })
+
+  it('builds system prompt in English when language is undefined', () => {
+    const p = __internal.buildSystemPrompt(undefined)
+    expect(p).toContain('English')
+  })
+
+  it('passes language from input to system prompt', async () => {
+    const capturedMessages: Array<{ role: string; content: string }>[] = []
+    const ai: Ai = {
+      run: async (_model: string, opts: { messages: Array<{ role: string; content: string }> }) => {
+        capturedMessages.push(opts.messages)
+        return { response: VALID_QUESTIONS_JSON }
+      },
+    } as unknown as Ai
+
+    await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G', language: 'nl' })
+    expect(capturedMessages[0][0].content).toContain('Dutch')
+  })
 })

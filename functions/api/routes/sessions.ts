@@ -872,7 +872,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
 
     try {
-      const result = await generateQuestions(c.env.AI, parsed.data)
+      const language = c.req.header('accept-language') ?? 'en'
+      const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
       return c.json({
         ok: true,
         data: { questions: result.questions, confidence: result.confidence },
