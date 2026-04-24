@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useAdminMetrics } from '../hooks/useAdminMetrics'
+import { useAdminKpis } from '../hooks/useAdminKpis'
 import { useT } from '../i18n'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
@@ -9,17 +10,28 @@ import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import { Heading, Body, Caption, Button, Card, MetricCard, Section, SkeletonCard } from '../ui/components'
 import AuditLogViewer from '../components/AuditLogViewer'
+import AdminUsersTab from '../components/admin/AdminUsersTab'
+import AdminOpsTab from '../components/admin/AdminOpsTab'
+import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab'
 
-type AdminTab = 'metrics' | 'audit'
+type AdminTab = 'dashboard' | 'users' | 'ops' | 'analytics'
+
+const TABS: Array<{ id: AdminTab; label: string }> = [
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'users', label: 'Gebruikers' },
+  { id: 'ops', label: 'OPS' },
+  { id: 'analytics', label: 'Analytics' },
+]
 
 export default function AdminDashboard() {
   const auth = useAuth()
   const t = useT('admin')
-  const { liveMetrics, historicalData, loading, error, exportCSV } = useAdminMetrics()
+  const { liveMetrics, historicalData, loading: metricsLoading, error: metricsError, exportCSV } = useAdminMetrics()
+  const { kpis } = useAdminKpis()
   const [startDate, setStartDate] = useState(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
   const [endDate, setEndDate] = useState(new Date())
   const [exporting, setExporting] = useState(false)
-  const [activeTab, setActiveTab] = useState<AdminTab>('metrics')
+  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
 
   if (auth.status === 'loading') {
     return (
@@ -41,7 +53,7 @@ export default function AdminDashboard() {
   return (
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-6xl mx-auto p-8 space-y-8">
       <header>
-        <Heading level="l">{t('metricsDashboard')}</Heading>
+        <Heading level="l">Admin</Heading>
         <Body size="s" className="text-pulse-500 mt-space-2">{t('realtimePlatformObservability')}</Body>
       </header>
 
@@ -51,10 +63,7 @@ export default function AdminDashboard() {
         aria-label="Admin sections"
         className="flex gap-1 border-b border-pulse-200"
       >
-        {([
-          { id: 'metrics', label: 'Metrics' },
-          { id: 'audit', label: 'Audit Log' },
-        ] as const).map(({ id, label }) => (
+        {TABS.map(({ id, label }) => (
           <button
             key={id}
             role="tab"
@@ -75,20 +84,35 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Metrics tab */}
-      {activeTab === 'metrics' && (
-        <div role="tabpanel" id="tabpanel-metrics" aria-labelledby="tab-metrics" className="space-y-8">
-          {/* Live Metrics Cards */}
+      {/* Dashboard tab */}
+      {activeTab === 'dashboard' && (
+        <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-8">
+          {/* Platform KPI totals */}
+          {kpis && (
+            <Section>
+              <Heading level="m">Platform overzicht</Heading>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-4">
+                <MetricCard label="Live sessies" value={kpis.live_sessions} />
+                <MetricCard label="Totaal gebruikers" value={kpis.total_users} />
+                <MetricCard label="Sessies vandaag" value={kpis.sessions_today} />
+                <MetricCard label="Sessies deze maand" value={kpis.sessions_this_month} />
+                <MetricCard label="Sessies totaal" value={kpis.total_sessions} />
+                <MetricCard label="Gesch. AI-kosten" value={`€${(kpis.ai_cost_estimate_cents / 100).toFixed(2)}`} />
+              </div>
+            </Section>
+          )}
+
+          {/* Live Metrics */}
           <Section>
             <Heading level="m">{t('liveLast5min')}</Heading>
-            {loading && !liveMetrics ? (
+            {metricsLoading && !liveMetrics ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))}
               </div>
-            ) : error ? (
-              <Body className="text-signal-error">{error}</Body>
+            ) : metricsError ? (
+              <Body className="text-signal-error">{metricsError}</Body>
             ) : liveMetrics ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
                 <MetricCard label={t('activeSessions')} value={liveMetrics.active_sessions} />
@@ -98,7 +122,7 @@ export default function AdminDashboard() {
                 <MetricCard label={t('errorRate')} value={`${(liveMetrics.error_rate * 100).toFixed(1)}%`} alert={liveMetrics.error_rate > 0.05} />
               </div>
             ) : null}
-            {liveMetrics?.stub && <Caption className="text-amber-600">⚠️ Stub data (metrics KV not ready)</Caption>}
+            {liveMetrics?.stub && <Caption className="text-amber-600">⚠ Stub data (metrics KV not ready)</Caption>}
           </Section>
 
           {/* Historical Data + Export */}
@@ -135,10 +159,10 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {loading && !historicalData ? (
+            {metricsLoading && !historicalData ? (
               <ResultsSectionSkeleton bars={6} />
-            ) : error ? (
-              <Body className="text-signal-error">{error}</Body>
+            ) : metricsError ? (
+              <Body className="text-signal-error">{metricsError}</Body>
             ) : historicalData && historicalData.length > 0 ? (
               <Card className="overflow-x-auto">
                 <table className="w-full text-body-s">
@@ -172,16 +196,35 @@ export default function AdminDashboard() {
               <Body className="text-pulse-500">{t('noDataInRange')}</Body>
             )}
           </Section>
+
+          {/* Audit Log */}
+          <Section>
+            <Heading level="m">Audit Log</Heading>
+            <AuditLogViewer />
+          </Section>
         </div>
       )}
 
-      {/* Audit Log tab */}
-      {activeTab === 'audit' && (
-        <div role="tabpanel" id="tabpanel-audit" aria-labelledby="tab-audit">
-          <AuditLogViewer />
+      {/* Users tab */}
+      {activeTab === 'users' && (
+        <div role="tabpanel" id="tabpanel-users" aria-labelledby="tab-users">
+          <AdminUsersTab />
+        </div>
+      )}
+
+      {/* OPS tab */}
+      {activeTab === 'ops' && (
+        <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops">
+          <AdminOpsTab />
+        </div>
+      )}
+
+      {/* Analytics tab */}
+      {activeTab === 'analytics' && (
+        <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics">
+          <AdminAnalyticsTab />
         </div>
       )}
     </MainLayout>
   )
 }
-

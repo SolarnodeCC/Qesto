@@ -24,6 +24,10 @@ export type AuditAction =
   | 'energizer.advance'
   | 'energizer.activate'
   | 'session.close_with_badges'
+  | 'user.create'
+  | 'user.update'
+  | 'user.suspend'
+  | 'user.restore'
 
 export interface AuditContext {
   action: AuditAction

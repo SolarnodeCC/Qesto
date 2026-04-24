@@ -16,9 +16,11 @@ CREATE TABLE IF NOT EXISTS users (
   display_name TEXT,
   created_at INTEGER NOT NULL,                                 -- unix ms
   last_login_at INTEGER,
-  plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','starter','team'))
+  plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','starter','team')),
+  suspended_at INTEGER                                         -- unix ms; NULL = active
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_suspended ON users(suspended_at);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- magic_links — one-time tokens emailed for login
