@@ -2,6 +2,8 @@
 name: qesto-analytics
 description: Data and analytics engineer for Qesto. Queries Cloudflare Analytics Engine, interprets platform metrics, validates observability instrumentation, and produces conversion funnel reports. Invoke for AQL queries, metric dashboards, funnel analysis, event instrumentation review, or north-star metric reporting.
 model: sonnet
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

@@ -2,6 +2,8 @@
 name: qesto-security
 description: Security reviewer for Qesto. Runs OWASP Top 10 + STRIDE audits, triages vulnerabilities, and blocks releases on critical findings. Invoke before releases, when adding routes, changing auth flows, modifying Stripe webhooks, or any security-sensitive code change.
 model: opus
+version: "1.0.0"
+owner: Qesto Team
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.

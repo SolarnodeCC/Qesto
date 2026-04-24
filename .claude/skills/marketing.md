@@ -103,3 +103,67 @@ Load the matching skill before each task:
 | New competitor positioning decision | This skill file (Competitors section) |
 | New MKTG backlog item | `docs/BACKLOG.md §3` with WSJF |
 | MKTG item completed | `docs/BACKLOG.md` status → ✅ closed |
+
+## Experiment Card Template (Wave 2)
+
+Use this template for every controlled test. Store in `docs/EXPERIMENTS/`.
+
+```markdown
+# Experiment: [Hypothesis name]
+
+**Date**: [Start date — YYYY-MM-DD]  
+**Owner**: [Your name]  
+**Status**: [Planned | Running | Completed | Failed]
+
+## Hypothesis
+[Specific hypothesis, not a vague hope]  
+**Expected impact**: [Metric improvement, e.g., "10% increase in signup-to-first-session conversion"]
+
+## Test Design
+- **Cohort A (Control)**: [Description, usually: current experience]
+- **Cohort B (Treatment)**: [Variant being tested]
+- **Sample size**: [N users / duration]
+- **Tracking**: Which events in Analytics Engine?
+
+## Success Criteria
+- **Primary KPI**: [Metric + target improvement]
+- **Secondary KPI**: [Metric to watch for regressions]
+- **Statistical significance**: [e.g., "p < 0.05"]
+- **Minimum detectable effect**: [e.g., "5% uplift"]
+
+## Stopping Rules
+```
+IF traffic drops > 10% AND Cohort B worse → STOP immediately
+IF runs 14 days AND p < 0.05 on primary KPI → DECLARE WIN, scale to 100%
+IF runs 14 days AND p > 0.05 → DECLARE LOSS, keep control, iterate
+IF runs 28 days no convergence → STOP, insufficient power, gather more data
+```
+
+## Results (after completion)
+- Primary KPI: [Improvement ±95% CI]
+- Secondary KPI: [Any regressions?]
+- Conclusion: [Actionable next step]
+
+## What We Learned
+[What surprised you? What should we test next?]
+
+---
+
+## Do Not
+
+- Do not run experiments without tracking plan (which events = experiment detected?)
+- Do not declare winner before statistical significance
+- Do not mix multiple changes in one test (A/B not A/B/C)
+- Do not run forever — set stopping rule before launch
+- Do not cherry-pick metrics (primary KPI first, not "look, metric X improved")
+- Do not run experiments at <5% audience size (noise too high)
+
+## Metrics
+
+- Experiment velocity (new experiments launched per month, target: 2–4)
+- Statistical rigor compliance (p < 0.05 for all declared winners, target: 100%)
+- Iteration cycle time (hypothesis → result, target: 14 days avg)
+- Learning capture (docs published for every experiment, target: 100%)
+
+## Change Log
+- 2026-04-24: Added Wave 2 experiment card template + stopping rules to prevent vanity metrics and indefinite tests
