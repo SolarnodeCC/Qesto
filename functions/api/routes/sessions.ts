@@ -593,6 +593,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       question: liveQ,
       votePolicy: session.vote_policy,
       sessionMode: session.session_mode,
+      plan: c.get('plan'),
     })
     if (doRes.status !== 200) {
       // Defence-in-depth: if DO returns already_initialised (409), another
