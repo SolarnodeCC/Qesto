@@ -1,5 +1,5 @@
 import { useAdminOps, type ServiceStatus } from '../../hooks/useAdminOps'
-import { Heading, Body, Card, Section, SkeletonCard } from '../../ui/components'
+import { Heading, Body, Card, SkeletonCard } from '../../ui/components'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

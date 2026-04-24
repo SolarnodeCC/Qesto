@@ -52,7 +52,6 @@ describe('Wave 1: Auth → Session Lifecycle Smoke Tests', () => {
     })
 
     it('should reject expired or invalid magic link', async () => {
-      const expiredToken = 'magic_token_expired'
       const tokenAge = 20 * 60 * 1000 // 20 minutes old (TTL is 15 min)
 
       // Expired tokens should return 401
@@ -60,7 +59,6 @@ describe('Wave 1: Auth → Session Lifecycle Smoke Tests', () => {
     })
 
     it('should issue JWT after magic link verification', async () => {
-      const userId = 'user_001'
       const jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyXzAwMSJ9.sig'
 
       // JWT should contain user ID
@@ -178,10 +176,6 @@ describe('Wave 1: Auth → Session Lifecycle Smoke Tests', () => {
 
     it('should not allow duplicate session start', async () => {
       const sessionId = 'sess_abc123'
-
-      // First start: succeeds
-      const session1 = { id: sessionId, status: 'draft' }
-      const startedSession1 = { ...session1, status: 'active', code: 'ABC123' }
 
       // Second start attempt on already-LIVE session: returns 409 CONFLICT
       const session2 = { id: sessionId, status: 'active' }

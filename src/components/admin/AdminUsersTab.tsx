@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useAdminUsers, type AdminUser } from '../../hooks/useAdminUsers'
-import { Heading, Body, Button, Card, Badge, TextInput, SkeletonCard } from '../../ui/components'
+import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
 
@@ -157,7 +157,7 @@ function UserModal({
 export default function AdminUsersTab() {
   const {
     users, total, loading, error,
-    search, setSearch, offset, setOffset, limit,
+    setSearch, offset, setOffset, limit,
     createUser, updateUser, suspendUser, restoreUser,
   } = useAdminUsers()
 
