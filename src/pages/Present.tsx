@@ -314,46 +314,8 @@ export default function Present() {
             <p role="alert" className="absolute top-[1020px] left-[64px] text-sm text-red-600 z-10">{state.error}</p>
           )}
 
-          {/* ── Bottom chrome ── */}
-          <div className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center border-t border-pulse-200 pt-6 z-10 text-[18px] text-pulse-600">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => sendAdvance()}
-                disabled={!isLive}
-                className="inline-flex items-center gap-2 rounded-md text-white px-5 py-2.5 text-[16px] font-semibold shadow-card disabled:opacity-50 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                style={{ background: 'var(--gradient-brand)' }}
-              >
-                <ChevronRight size={18} aria-hidden="true" />
-                Next question
-              </button>
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={closing || isClosed}
-                className="inline-flex items-center rounded-md border border-pulse-300 text-pulse-700 hover:border-red-400 hover:text-red-700 px-5 py-2.5 text-[16px] font-medium disabled:opacity-50 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-              >
-                {isClosed ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
-              </button>
-              {closeError && <span className="text-sm text-red-600">{closeError}</span>}
-              {id && isClosed && (
-                <Link to={`/sessions/${id}/results`} className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
-                  View results →
-                </Link>
-              )}
-            </div>
-            {state.session && (
-              <button
-                type="button"
-                onClick={handleCopyDisplayLink}
-                disabled={!state.session.code}
-                title="Copy display URL to embed in PowerPoint"
-                className="inline-flex items-center gap-2 rounded-md border border-pulse-300 text-pulse-700 hover:border-teal-400 hover:text-teal-700 px-4 py-2.5 text-[16px] font-medium transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-              >
-                <Link2 size={16} aria-hidden="true" />
-                {copied ? 'Copied!' : 'Display link'}
-              </button>
-            )}
+          {/* ── Bottom chrome (display only — controls are in presenter panel) ── */}
+          <div className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center border-t border-pulse-200 pt-6 z-10 text-[18px] text-pulse-600 pointer-events-none">
             <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-violet-50 border border-violet-200 rounded-full text-[16px] font-semibold text-violet-700">
               <Sparkles size={16} className="text-violet-600" aria-hidden="true" />
               AI recap at session close · Workers AI on Cloudflare
@@ -369,6 +331,33 @@ export default function Present() {
 
       {/* ── Presenter control panel ───────────────────────────────────────── */}
       <div className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0">
+
+        {/* Next question / Close session */}
+        <button
+          type="button"
+          onClick={() => sendAdvance()}
+          disabled={!isLive}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-teal-600 text-white hover:bg-teal-700"
+        >
+          <ChevronRight size={14} aria-hidden="true" />
+          Next question
+        </button>
+        <button
+          type="button"
+          onClick={handleClose}
+          disabled={closing || isClosed}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-red-700"
+        >
+          {isClosed ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
+        </button>
+        {closeError && <span className="text-xs text-red-400">{closeError}</span>}
+        {id && isClosed && (
+          <Link to={`/sessions/${id}/results`} className="text-xs text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded">
+            View results →
+          </Link>
+        )}
+
+        <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
         {/* Pause / Resume */}
         <button
@@ -474,6 +463,18 @@ export default function Present() {
         <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
         {/* One-click export */}
+        {state.session && (
+          <button
+            type="button"
+            onClick={handleCopyDisplayLink}
+            disabled={!state.session.code}
+            title="Copy display URL to embed in PowerPoint"
+            className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
+          >
+            <Link2 size={14} aria-hidden="true" />
+            {copied ? 'Copied!' : 'Display link'}
+          </button>
+        )}
         {id && (
           <a
             href={`/api/sessions/${encodeURIComponent(id)}/export.csv`}
