@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Qesto for HR — Honest pulse without a witch hunt</title>
+<link rel="icon" href="../../../assets/favicon.svg">
+<link rel="stylesheet" href="../_shared.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  .hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: center; }
+  .mode-card { background: #FFF; border-radius: 20px; padding: 24px; box-shadow: var(--shadow-elevated); }
+  .mode-card .tabs { display: flex; gap: 6px; padding: 4px; background: var(--pulse-100); border-radius: 10px; margin-bottom: 20px; }
+  .mode-card .tab { flex: 1; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+  .mode-card .tab.on { background: #FFF; color: var(--text-primary); box-shadow: var(--shadow-card); }
+  .mode-card .ident-row { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 12px; background: var(--pulse-50); margin-bottom: 10px; }
+  .mode-card .ident-row .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--gradient-brand); display: grid; place-items: center; color: #FFF; font-weight: 600; font-size: 13px; flex-shrink: 0; }
+  .mode-card .ident-row.anon .avatar { background: var(--pulse-300); color: var(--pulse-600); }
+  .mode-card .ident-row .name { font-size: 14px; font-weight: 600; }
+  .mode-card .ident-row .vote { font-size: 13px; color: var(--text-secondary); }
+  .mode-card .ident-row .vote b { color: var(--teal-700); }
+  .mode-card .tally { display: grid; gap: 6px; padding: 16px; border-radius: 12px; background: var(--pulse-50); }
+  .mode-card .tally .bar { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .mode-card .tally .bar .lbl { width: 90px; font-weight: 500; }
+  .mode-card .tally .bar .track { flex: 1; height: 10px; background: #FFF; border-radius: 5px; overflow: hidden; }
+  .mode-card .tally .bar .fill { height: 100%; background: var(--gradient-brand); border-radius: 5px; }
+  .mode-card .tally .bar .n { font-variant-numeric: tabular-nums; color: var(--text-muted); width: 32px; text-align: right; }
+
+  .use-cases { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .uc { background: #FFF; border-radius: 16px; padding: 28px; box-shadow: var(--shadow-card); }
+  .uc .tag { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal-700); margin-bottom: 8px; }
+  .uc h3 { margin: 0 0 10px; font-size: 20px; font-weight: 600; }
+  .uc p { margin: 0 0 16px; color: var(--text-secondary); font-size: 14.5px; line-height: 1.55; }
+  .uc ul { margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="container"><div class="nav-row">
+  <a href="../index.html" class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</a>
+  <div class="nav-links">
+    <a href="#">Product</a>
+    <a href="./hr.html" class="active">Solutions</a>
+    <a href="../pricing.html">Pricing</a>
+    <a href="#">Docs</a>
+  </div>
+  <div class="nav-cta"><a class="btn btn-ghost" href="#">Sign in</a><a class="btn btn-primary" href="#">Start free</a></div>
+</div></div></nav>
+
+<section class="page-hero"><div class="container">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Qesto for HR</div>
+      <h1>Honest pulse. <span class="grad">Without a witch hunt.</span></h1>
+      <p class="lede">Run quarterly climate checks, manager 360s, and open-comment sessions where people actually speak. Consent rounds mean every attendee picks their visibility before the first vote — and no result is shown until the floor is large enough to protect them.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#">Start a pulse</a>
+        <a class="btn btn-secondary btn-lg" href="#">Book a walkthrough</a>
+        <span class="note">SOC 2 · DPA on file · EU residency</span>
+      </div>
+    </div>
+    <div class="mode-card">
+      <div class="tabs">
+        <div class="tab on" data-t="anon">Anonymous</div>
+        <div class="tab" data-t="cohort">Cohort-visible</div>
+        <div class="tab" data-t="ident">Identified</div>
+      </div>
+      <div id="p-anon">
+        <div class="ident-row anon"><div class="avatar"><i data-lucide="user" style="width:16px;height:16px"></i></div><div style="flex:1"><div class="name">Participant</div><div class="vote">Vote recorded · No identity linked</div></div></div>
+        <div class="ident-row anon"><div class="avatar"><i data-lucide="user" style="width:16px;height:16px"></i></div><div style="flex:1"><div class="name">Participant</div><div class="vote">Vote recorded · No identity linked</div></div></div>
+        <div class="tally" style="margin-top:10px">
+          <div class="bar"><span class="lbl">Strongly agree</span><div class="track"><div class="fill" style="width:62%"></div></div><span class="n">29</span></div>
+          <div class="bar"><span class="lbl">Agree</span><div class="track"><div class="fill" style="width:26%"></div></div><span class="n">12</span></div>
+          <div class="bar"><span class="lbl">Disagree</span><div class="track"><div class="fill" style="width:12%"></div></div><span class="n">6</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="eyebrow">Proof</div>
+  <h2>HR teams run Qesto when results have to be defensible.</h2>
+  <div class="proof">
+    <div class="pt"><div class="l">Consent opt-in rate</div><div class="v">94%</div><div class="n">Avg across deployed pulses — measured at the start of every session.</div></div>
+    <div class="pt"><div class="l">Free-text response rate</div><div class="v">3.1×</div><div class="n">vs. identified surveys among the same cohorts.</div></div>
+    <div class="pt"><div class="l">Minimum tally threshold</div><div class="v">5</div><div class="n">Results stay hidden until five voices are in. No single-voter exposure.</div></div>
+    <div class="pt"><div class="l">Time to signed recap</div><div class="v">&lt; 2h</div><div class="n">From session close to evidence-anchored PDF in legal's inbox.</div></div>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="eyebrow">Where it fits</div>
+  <h2>Four HR moments Qesto was built for.</h2>
+  <p class="lede">Each one demands a different consent posture. Qesto is the only tool that lets the room choose.</p>
+  <div class="use-cases">
+    <div class="uc"><div class="tag">Quarterly pulse</div><h3>Climate check across the org</h3><p>Ship a 6-question pulse to everyone who shows up to the all-hands. Results anchored to the meeting, not a dashboard people ignore.</p><ul><li>Full anonymity by default</li><li>Per-team breakdowns with min-tally gating</li><li>AI recap of open comments, deduplicated by theme</li></ul></div>
+    <div class="uc"><div class="tag">Manager 360</div><h3>Upward feedback with a floor</h3><p>Direct reports rate a manager anonymously; results unlock only if at least five reports voted. Below that, the session ends with no data shown.</p><ul><li>Cohort-visible mode (HR sees, manager sees aggregate only)</li><li>Free-text themes, never raw quotes</li><li>Identity deleted 30 days after close</li></ul></div>
+    <div class="uc"><div class="tag">DEIB listening</div><h3>Sessions that don't chill the room</h3><p>Run ERG listening circles where participants pick visibility per question — a salary question can be anonymous while a resources question is identified.</p><ul><li>Per-question consent toggle</li><li>Consent log attached to every export</li><li>Exportable to Workday, BambooHR via webhook</li></ul></div>
+    <div class="uc"><div class="tag">Exit &amp; onboarding</div><h3>First 90 / last 90</h3><p>A short, standard cadence that runs itself. Same instrument every cycle means trends you can actually compare across quarters.</p><ul><li>Scheduled sessions with auto-reminders</li><li>Benchmark mode (compare cohort to rolling org average)</li><li>Signed PDF recap for employee files</li></ul></div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="quote">
+    <p>"We used to spend two weeks arguing about whether the engagement survey was honest. Now we run the pulse in the room, see the tally, and the argument is about what to do about it."</p>
+    <div class="who"><b>Priya Ramanathan</b> · Chief People Officer, mid-market SaaS (pilot customer)</div>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="eyebrow">Compliance posture</div>
+  <h2>Built to survive your legal team.</h2>
+  <div class="cards">
+    <div class="fc"><div class="ico"><i data-lucide="shield-check"></i></div><h3>Consent logged, not assumed</h3><p>Every participant's visibility choice is timestamped and stored with the session. Exports include the log so a works council can verify.</p></div>
+    <div class="fc"><div class="ico"><i data-lucide="map-pin"></i></div><h3>EU residency by default</h3><p>EU customers run on EU-only Cloudflare Durable Objects. Workers AI inference stays in-region. DPA and SCCs on file.</p></div>
+    <div class="fc"><div class="ico"><i data-lucide="trash-2"></i></div><h3>Retention you pick</h3><p>Identity rows purge on your schedule — 30 days, 90, custom. Aggregate tallies live longer for trend reporting, with no link back.</p></div>
+  </div>
+</div></section>
+
+<div class="cta-band"><div class="container">
+  <h2>Pilot one pulse. Keep it if the room does.</h2>
+  <p>Run your next climate check on Qesto. If the response rate doesn't beat your last survey, we'll refund the quarter.</p>
+  <a class="btn btn-primary btn-lg" href="#">Book an HR walkthrough</a>
+</div></div>
+
+<footer><div class="container">
+  <div class="cols">
+    <div class="brand-col"><div class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</div><p>Real-time, AI-amplified, private-by-default sessions. Built on Cloudflare's edge, in that order.</p></div>
+    <div><h5>Solutions</h5><ul><li><a href="./hr.html">HR pulse</a></li><li><a href="./events.html">Events</a></li><li><a href="./nonprofits.html">Nonprofit boards</a></li><li><a href="./consulting.html">Consulting</a></li></ul></div>
+    <div><h5>Product</h5><ul><li><a href="../features/live-polling.html">Live polling</a></li><li><a href="../features/ai-insights.html">AI insights</a></li><li><a href="../features/privacy.html">Privacy</a></li><li><a href="../pricing.html">Pricing</a></li></ul></div>
+    <div><h5>Company</h5><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li><li><a href="#">Contact</a></li></ul></div>
+  </div>
+  <div class="legal"><span>© 2026 Qesto · Built on Cloudflare Workers</span><span>qesto.app</span></div>
+</div></footer>
+
+<script>
+  lucide.createIcons();
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8));
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
+    t.classList.add('on');
+  }));
+</script>
+</body>
+</html>

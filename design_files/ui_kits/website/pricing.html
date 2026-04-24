@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pricing — Qesto</title>
+<link rel="icon" href="../../assets/favicon.svg">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<link rel="stylesheet" href="./_shared.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: stretch; }
+  .plan { background: #FFF; border-radius: 20px; padding: 32px 28px; box-shadow: var(--shadow-card); display: flex; flex-direction: column; position: relative; }
+  .plan.feat { background: var(--pulse-900); color: #FFF; box-shadow: var(--shadow-elevated); transform: translateY(-8px); }
+  .plan .tag { position: absolute; top: -12px; left: 24px; background: var(--gradient-brand); color: #FFF; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .plan h3 { font-family: var(--font-display); font-weight: 700; font-size: 24px; letter-spacing: -0.01em; margin: 0 0 8px; }
+  .plan .desc { font-size: 14px; margin: 0 0 24px; min-height: 40px; }
+  .plan.feat .desc { color: #CBD5E1; }
+  .plan:not(.feat) .desc { color: var(--text-secondary); }
+  .plan .price { font-family: var(--font-display); font-weight: 700; font-size: 48px; letter-spacing: -0.02em; margin-bottom: 4px; line-height: 1; }
+  .plan .price small { font-family: var(--font-body); font-size: 14px; font-weight: 500; margin-left: 6px; }
+  .plan:not(.feat) .price small { color: var(--text-muted); }
+  .plan.feat .price small { color: #94A3B8; }
+  .plan .note { font-size: 12px; margin-bottom: 24px; }
+  .plan:not(.feat) .note { color: var(--text-muted); }
+  .plan.feat .note { color: #94A3B8; }
+  .plan ul { list-style: none; padding: 0; margin: 0 0 28px; display: grid; gap: 12px; font-size: 14.5px; flex: 1; }
+  .plan li { display: flex; gap: 10px; align-items: start; }
+  .plan li i { color: var(--teal-600); flex-shrink: 0; margin-top: 2px; width: 18px; height: 18px; }
+  .plan.feat li i { color: var(--teal-400); }
+  .plan .cta { margin-top: auto; }
+  .plan.feat .btn-primary { background: #FFF; color: var(--pulse-900); }
+  .plan.feat .btn-primary:hover { box-shadow: 0 4px 20px rgba(255,255,255,0.25); }
+
+  .matrix { background: #FFF; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-card); }
+  .matrix table { width: 100%; border-collapse: collapse; }
+  .matrix th { text-align: left; padding: 20px 24px; background: var(--pulse-50); font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--surface-border); }
+  .matrix th.plan-col { text-align: center; color: var(--pulse-900); font-family: var(--font-display); font-size: 15px; letter-spacing: -0.01em; }
+  .matrix th.plan-col.feat { color: var(--teal-700); }
+  .matrix td { padding: 16px 24px; border-bottom: 1px solid var(--surface-border); font-size: 14.5px; vertical-align: top; }
+  .matrix td.cat { font-weight: 600; color: var(--text-primary); }
+  .matrix td.v { text-align: center; font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); }
+  .matrix td.v i { color: var(--teal-600); width: 18px; height: 18px; }
+  .matrix td.v i.no { color: var(--pulse-300); }
+  .matrix tr.section-head td { background: var(--pulse-900); color: #FFF; font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; padding: 12px 24px; }
+
+  .faqs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .faq h3 { margin: 0 0 8px; font-size: 17px; font-weight: 600; }
+  .faq p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="container"><div class="nav-row">
+  <a href="./index.html" class="brand"><img src="../../assets/favicon.svg" alt="">Qesto</a>
+  <div class="nav-links"><a href="#">Product</a><a href="./solutions/hr.html">Solutions</a><a href="./pricing.html" class="active">Pricing</a><a href="#">Docs</a></div>
+  <div class="nav-cta"><a class="btn btn-ghost" href="#">Sign in</a><a class="btn btn-primary" href="#">Start free</a></div>
+</div></div></nav>
+
+<section class="page-hero"><div class="container" style="text-align: center; max-width: 760px;">
+  <div class="eyebrow" style="display:inline-block">Pricing</div>
+  <h1 style="margin-left:auto;margin-right:auto">Start free. Pay when a room <span class="grad">depends on it.</span></h1>
+  <p class="lede" style="margin-left:auto;margin-right:auto">Every plan includes edge inference, consent rounds, and unlimited participants. You pay for sessions and retention — not for voices in the room.</p>
+</div></section>
+
+<section class="section" style="padding-top:20px"><div class="container">
+  <div class="plans">
+    <div class="plan">
+      <h3>Pulse</h3>
+      <div class="desc">For one-off team pulses and workshop tests. Always free.</div>
+      <div class="price">€0<small>/ host / month</small></div>
+      <div class="note">No credit card. No session caps on free tier.</div>
+      <ul>
+        <li><i data-lucide="check"></i>3 active sessions at a time</li>
+        <li><i data-lucide="check"></i>30-day retention</li>
+        <li><i data-lucide="check"></i>Full &amp; cohort anonymity</li>
+        <li><i data-lucide="check"></i>Workers AI drafts — 5 / month</li>
+        <li><i data-lucide="check"></i>CSV &amp; PDF exports</li>
+      </ul>
+      <div class="cta"><a class="btn btn-secondary" href="#" style="width:100%;justify-content:center">Start free</a></div>
+    </div>
+    <div class="plan feat">
+      <div class="tag">Most chosen</div>
+      <h3>Signal</h3>
+      <div class="desc">For facilitators running recurring rooms every week.</div>
+      <div class="price">€24<small>/ host / month</small></div>
+      <div class="note">Billed annually · €29/mo month-to-month</div>
+      <ul>
+        <li><i data-lucide="check"></i>Unlimited sessions &amp; recaps</li>
+        <li><i data-lucide="check"></i>365-day retention, audit exports</li>
+        <li><i data-lucide="check"></i>Identified mode + consent logs</li>
+        <li><i data-lucide="check"></i>Same-day evidence-anchored recap</li>
+        <li><i data-lucide="check"></i>Slack, Notion, Workday webhooks</li>
+        <li><i data-lucide="check"></i>Stripe-billed, cancel anytime</li>
+      </ul>
+      <div class="cta"><a class="btn btn-primary" href="#" style="width:100%;justify-content:center">Start 14-day trial</a></div>
+    </div>
+    <div class="plan">
+      <h3>Chorus</h3>
+      <div class="desc">For HR, events, and compliance-heavy org-wide rollouts.</div>
+      <div class="price">Talk to us</div>
+      <div class="note">Annual contract · custom scope</div>
+      <ul>
+        <li><i data-lucide="check"></i>SSO, SCIM, role scopes</li>
+        <li><i data-lucide="check"></i>Custom retention &amp; residency</li>
+        <li><i data-lucide="check"></i>Private Workers AI endpoints</li>
+        <li><i data-lucide="check"></i>Customer-managed encryption keys</li>
+        <li><i data-lucide="check"></i>Dedicated onboarding + SLA</li>
+        <li><i data-lucide="check"></i>Branded domain &amp; PDF templates</li>
+      </ul>
+      <div class="cta"><a class="btn btn-secondary" href="#" style="width:100%;justify-content:center">Book a walkthrough</a></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="eyebrow">Feature matrix</div>
+  <h2>What's in each plan — line by line.</h2>
+  <p class="lede">No asterisks, no hidden tier. If it's in the column, it's in the plan.</p>
+  <div class="matrix">
+    <table>
+      <thead><tr>
+        <th style="width:38%">Capability</th>
+        <th class="plan-col">Pulse</th>
+        <th class="plan-col feat">Signal</th>
+        <th class="plan-col">Chorus</th>
+      </tr></thead>
+      <tbody>
+        <tr class="section-head"><td colspan="4">Sessions &amp; participants</td></tr>
+        <tr><td class="cat">Active sessions at once</td><td class="v">3</td><td class="v">Unlimited</td><td class="v">Unlimited</td></tr>
+        <tr><td class="cat">Participants per session</td><td class="v">Unlimited</td><td class="v">Unlimited</td><td class="v">Unlimited</td></tr>
+        <tr><td class="cat">Question types</td><td class="v">8</td><td class="v">8</td><td class="v">8 + custom</td></tr>
+        <tr><td class="cat">Retention</td><td class="v">30 days</td><td class="v">365 days</td><td class="v">7d – 7yr</td></tr>
+
+        <tr class="section-head"><td colspan="4">Privacy &amp; consent</td></tr>
+        <tr><td class="cat">Full anonymity mode</td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Cohort-visible mode</td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Identified mode + consent log</td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Minimum tally gating</td><td class="v">5 (fixed)</td><td class="v">Configurable</td><td class="v">Configurable</td></tr>
+
+        <tr class="section-head"><td colspan="4">AI insights</td></tr>
+        <tr><td class="cat">AI draft recaps</td><td class="v">5 / mo</td><td class="v">Unlimited</td><td class="v">Unlimited</td></tr>
+        <tr><td class="cat">Evidence-anchored clusters</td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Private Workers AI endpoint</td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+
+        <tr class="section-head"><td colspan="4">Admin &amp; compliance</td></tr>
+        <tr><td class="cat">SSO (OIDC, SAML)</td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v">Google, Okta</td><td class="v">All IdPs + SCIM</td></tr>
+        <tr><td class="cat">Data residency</td><td class="v">Global</td><td class="v">EU or US</td><td class="v">Custom</td></tr>
+        <tr><td class="cat">DPA &amp; SOC 2 report</td><td class="v">DPA only</td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Customer-managed keys</td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Uptime SLA</td><td class="v">—</td><td class="v">99.9%</td><td class="v">99.95%</td></tr>
+
+        <tr class="section-head"><td colspan="4">Integrations</td></tr>
+        <tr><td class="cat">CSV / PDF / JSON export</td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Webhooks (Slack, Notion, Workday)</td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="check"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+        <tr><td class="cat">Branded domain &amp; PDF templates</td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="x" class="no"></i></td><td class="v"><i data-lucide="check"></i></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div></section>
+
+<section class="section"><div class="container-narrow">
+  <div class="eyebrow">Nonprofit &amp; education</div>
+  <h2 style="text-align:center">Mission-first means budget-second.</h2>
+  <p class="lede" style="text-align:center;margin-left:auto;margin-right:auto">Registered nonprofits and accredited educational institutions get Chorus at 40% off. Apply with a copy of your registration and we'll turn it around in 48 hours.</p>
+  <div style="text-align:center;margin-top:24px"><a class="btn btn-primary btn-lg" href="#">Apply for nonprofit pricing</a></div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="eyebrow">Pricing questions</div>
+  <h2>Answers to what you're about to ask.</h2>
+  <div class="faqs" style="margin-top:32px">
+    <div class="faq"><h3>What counts as a "session"?</h3><p>A session is one room — one join code, one set of participants, one retention window. Questions inside that room are free. Rooms don't expire until you close them or retention kicks in.</p></div>
+    <div class="faq"><h3>Do participants pay?</h3><p>Never. Qesto charges the host only. An audience of 5 and an audience of 5,000 cost the same.</p></div>
+    <div class="faq"><h3>Can I cancel?</h3><p>Yes, any time, from the billing page. Monthly cancels immediately with no refund on the current month. Annual cancels at renewal.</p></div>
+    <div class="faq"><h3>What if my first pulse flops?</h3><p>If your first session doesn't beat the response rate of your last survey, email us within 14 days of your first billing. We'll refund the full quarter.</p></div>
+    <div class="faq"><h3>How does usage-based billing work on Chorus?</h3><p>It doesn't. Chorus is a flat annual. No per-session, per-seat, or per-response surprises.</p></div>
+    <div class="faq"><h3>Is there a free tier for students?</h3><p>Yes — Pulse is free forever, no cap on participants. For coursework at scale (&gt; 3 concurrent rooms), we grant free Signal access via the .edu program.</p></div>
+  </div>
+</div></section>
+
+<div class="cta-band"><div class="container">
+  <h2>Start with Pulse. Scale when the room does.</h2>
+  <p>Free forever. Upgrade in one click when you need longer retention or identified mode.</p>
+  <a class="btn btn-primary btn-lg" href="#">Create your workspace</a>
+</div></div>
+
+<footer><div class="container">
+  <div class="cols">
+    <div class="brand-col"><div class="brand"><img src="../../assets/favicon.svg" alt="">Qesto</div><p>Real-time, AI-amplified, private-by-default sessions.</p></div>
+    <div><h5>Solutions</h5><ul><li><a href="./solutions/hr.html">HR pulse</a></li><li><a href="./solutions/events.html">Events</a></li><li><a href="./solutions/nonprofits.html">Nonprofit boards</a></li><li><a href="./solutions/consulting.html">Consulting</a></li></ul></div>
+    <div><h5>Product</h5><ul><li><a href="./features/live-polling.html">Live polling</a></li><li><a href="./features/ai-insights.html">AI insights</a></li><li><a href="./features/privacy.html">Privacy</a></li><li><a href="./pricing.html">Pricing</a></li></ul></div>
+    <div><h5>Company</h5><ul><li><a href="./legal/privacy.html">Privacy policy</a></li><li><a href="./legal/terms.html">Terms</a></li></ul></div>
+  </div>
+  <div class="legal"><span>© 2026 Qesto</span><span>qesto.app</span></div>
+</div></footer>
+
+<script>lucide.createIcons();const nav=document.getElementById('nav');addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>8));</script>
+</body>
+</html>
