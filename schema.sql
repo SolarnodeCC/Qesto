@@ -129,6 +129,24 @@ CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role);
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- metrics_summary — 5-min API performance buckets populated by scheduled worker (Phase 8)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS metrics_summary (
+  id            TEXT    PRIMARY KEY,
+  bucket_ts     INTEGER NOT NULL,
+  route         TEXT    NOT NULL,
+  p50_ms        INTEGER NOT NULL,
+  p95_ms        INTEGER NOT NULL,
+  p99_ms        INTEGER NOT NULL,
+  error_count   INTEGER NOT NULL,
+  request_count INTEGER NOT NULL,
+  created_at    INTEGER NOT NULL DEFAULT (CAST(UNIXEPOCH() * 1000 AS INTEGER))
+);
+CREATE INDEX IF NOT EXISTS idx_metrics_ts       ON metrics_summary(bucket_ts DESC);
+CREATE INDEX IF NOT EXISTS idx_metrics_route    ON metrics_summary(route, bucket_ts);
+CREATE INDEX IF NOT EXISTS idx_metrics_ts_route ON metrics_summary(bucket_ts DESC, route);
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- audit_events — comprehensive audit trail with before/after snapshots (Phase 8)
 -- Captures all state mutations with full change tracking for compliance
 -- ─────────────────────────────────────────────────────────────────────────────
