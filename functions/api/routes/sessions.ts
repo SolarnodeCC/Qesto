@@ -41,7 +41,9 @@ import type { LiveQuestion } from '../realtime'
 import type { Env, PollOption, Question, Session } from '../types'
 
 type Vars = AuthVariables & PlanVariables
-type SessionRow = Session
+// SessionRow mirrors the D1 row shape. Analytics-only column `team_id` (OBS-001)
+// is present on the row and surfaced on Session as an optional field.
+type SessionRow = Session & { team_id: string | null }
 
 // Apply schema columns that may be missing on older D1 databases (pre-migration 0008).
 // Runs once per worker cold-start; subsequent calls are no-ops after the columns exist.
@@ -51,6 +53,8 @@ async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   _schemaPatchDone = true
   await db.prepare(`ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once' CHECK (vote_policy IN ('once','multi','react'))`).run().catch(() => {})
   await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection' CHECK (session_mode IN ('reflection','fun'))`).run().catch(() => {})
+  // OBS-001: analytics segmentation column. Nullable — individual (no-team) sessions remain valid.
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN team_id TEXT DEFAULT NULL`).run().catch(() => {})
 }
 
 type QuestionRow = {
@@ -85,7 +89,7 @@ async function fetchSession(db: D1Database, id: string, ownerId: string): Promis
   const row = await db
     .prepare(
       `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
-              created_at, started_at, closed_at, archived_at
+              created_at, started_at, closed_at, archived_at, team_id
          FROM sessions
         WHERE id = ?1 AND owner_id = ?2`,
     )
@@ -139,7 +143,7 @@ async function fetchSessionByCode(db: D1Database, code: string): Promise<Session
   const row = await db
     .prepare(
       `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
-              created_at, started_at, closed_at, archived_at
+              created_at, started_at, closed_at, archived_at, team_id
          FROM sessions
         WHERE code = ?1`,
     )
@@ -209,7 +213,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const session = await c.env.DB
       .prepare(
         `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
-                created_at, started_at, closed_at, archived_at
+                created_at, started_at, closed_at, archived_at, team_id
            FROM sessions
           WHERE id = ?1`,
       )
@@ -350,11 +354,25 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
           const id = ulid()
           const code = generateJoinCode()
           const now = Date.now()
+          // OBS-001: attribute new session to the user's first team (if any).
+          // TEAMS_KV key `user-teams:{userId}` stores `string[]` of teamIds.
+          // Null is valid — individual (team-less) sessions remain supported.
+          let teamId: string | null = null
+          try {
+            const raw = await c.env.TEAMS_KV.get(`user-teams:${user.sub}`)
+            if (raw) {
+              const ids = JSON.parse(raw) as string[]
+              teamId = Array.isArray(ids) && ids.length > 0 ? ids[0] : null
+            }
+          } catch {
+            // KV lookup is best-effort analytics attribution — never blocks session creation.
+            teamId = null
+          }
           await c.env.DB.prepare(
-            `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, vote_policy, session_mode, created_at)
-             VALUES (?1, ?2, ?3, ?4, 'draft', 'full', 'once', 'reflection', ?5)`,
+            `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, vote_policy, session_mode, created_at, team_id)
+             VALUES (?1, ?2, ?3, ?4, 'draft', 'full', 'once', 'reflection', ?5, ?6)`,
           )
-            .bind(id, user.sub, code, parsed.data.title, now)
+            .bind(id, user.sub, code, parsed.data.title, now, teamId)
             .run()
           const session: Session = {
             id,
@@ -369,6 +387,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
             started_at: null,
             closed_at: null,
             archived_at: null,
+            team_id: teamId,
           }
           return {
             status: 201,
@@ -404,7 +423,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const { results } = await c.env.DB
       .prepare(
         `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
-                created_at, started_at, closed_at, archived_at
+                created_at, started_at, closed_at, archived_at, team_id
            FROM sessions
           WHERE owner_id = ?1 AND status != 'archived'
           ORDER BY created_at DESC
@@ -613,9 +632,31 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       name: 'session.started',
       sessionId: id,
       userId: user.sub,
+      ...(session.team_id ? { teamId: session.team_id } : {}),
       plan: c.get('plan'),
       traceId,
     })
+
+    // OBS-003: emit `first_session_started` iff this is the user's first non-draft session.
+    // The draft→live UPDATE above already committed, so count includes this session (==1).
+    try {
+      const sessionCount = await c.env.DB
+        .prepare(`SELECT COUNT(*) as n FROM sessions WHERE owner_id = ?1 AND status != 'draft'`)
+        .bind(user.sub)
+        .first<{ n: number }>()
+      if ((sessionCount?.n ?? 0) === 1) {
+        writeEvent(c.env.METRICS_AE, {
+          name: 'first_session_started',
+          userId: user.sub,
+          ...(session.team_id ? { teamId: session.team_id } : {}),
+          plan: c.get('plan'),
+          traceId,
+        })
+      }
+    } catch {
+      // Best-effort analytics — never fail the start response.
+    }
+
     return c.json({
       ok: true,
       data: { session, question: liveQ },
@@ -689,6 +730,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       name: 'session.closed',
       sessionId: id,
       userId: user.sub,
+      ...(session.team_id ? { teamId: session.team_id } : {}),
       plan: c.get('plan'),
       durationMs,
       count: total,
