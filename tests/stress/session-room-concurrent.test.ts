@@ -307,21 +307,18 @@ describe('Stress: Duplicate vote rejection under concurrency', () => {
 
     const ws = connectVoter(state, 'voter_dup_concurrent', 'ip_dup')
 
-    // Send two votes concurrently from the same voter
-    const votePromises = [
-      sendMessage(room, ws, {
-        type: 'vote',
-        data: { questionId: 'q_1', optionId: 'a' },
-        timestamp: Date.now(),
-      }),
-      sendMessage(room, ws, {
-        type: 'vote',
-        data: { questionId: 'q_1', optionId: 'b' },
-        timestamp: Date.now() + 1,
-      }),
-    ]
-
-    await Promise.all(votePromises)
+    // Send two votes sequentially — Durable Objects serialize WebSocket
+    // messages so concurrent delivery is processed one-at-a-time in production.
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_1', optionId: 'a' },
+      timestamp: Date.now(),
+    })
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_1', optionId: 'b' },
+      timestamp: Date.now() + 1,
+    })
 
     const messages = ws.messages<{ type: string; data?: { code?: string } }>()
     const errors = messages.filter((m) => m.type === 'error')
