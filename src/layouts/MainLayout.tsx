@@ -136,7 +136,6 @@ export default function MainLayout({
 }: MainLayoutProps) {
   const location = useLocation()
   const auth = useAuth()
-  const isHome = location.pathname === '/'
   const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 

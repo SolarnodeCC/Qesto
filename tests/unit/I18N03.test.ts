@@ -160,7 +160,6 @@ describe('I18N-03: Key Extraction + CI Validation', () => {
   })
 
   it('allows PR on missing non-EN keys (advisory only)', () => {
-    const missingInES = ['dashboard.greeting'] // EN has it, ES doesn't
     const shouldBlock = false
 
     expect(shouldBlock).toBe(false)

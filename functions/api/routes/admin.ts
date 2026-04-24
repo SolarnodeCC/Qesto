@@ -432,7 +432,6 @@ export function mountAdminRoutes(parent: any) {
   // Platform-wide KPI totals — user count, session counts, cost estimate.
   app.get('/kpis', async (c) => {
     const trace_id = c.get('trace_id')
-    const now = Date.now()
     const todayStart = new Date()
     todayStart.setUTCHours(0, 0, 0, 0)
     const monthStart = new Date()
