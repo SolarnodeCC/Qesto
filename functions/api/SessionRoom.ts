@@ -449,7 +449,6 @@ export class SessionRoom implements DurableObject {
       return
     }
 
-    const meta = await this.ctx.storage.get<Meta>(K_META)
     const votePolicy = meta?.votePolicy ?? 'once'
 
     const voters = normaliseVotes(

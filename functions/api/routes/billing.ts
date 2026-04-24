@@ -84,8 +84,23 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     const usage = await getQuotaUsage(c.env.SESSIONS_KV, userId, quotas.maxSessionsPerMonth)
 
-    // Calculate reset date (first day of next month)
+    // AI insights used this month — count from audit_events (best-effort; 0 if table missing)
     const now = new Date()
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
+    let insightsUsedThisMonth = 0
+    try {
+      const row = await c.env.DB
+        .prepare(
+          `SELECT COUNT(*) as n FROM audit_events WHERE action = 'insights.generate' AND actor_id = ?1 AND ts >= ?2`,
+        )
+        .bind(userId, monthStart)
+        .first<{ n: number }>()
+      insightsUsedThisMonth = row?.n ?? 0
+    } catch {
+      // audit_events table may not exist in older deploys
+    }
+
+    // Calculate reset date (first day of next month)
     const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1)
 
     return c.json({
@@ -101,6 +116,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         usage: {
           sessions_created: usage.sessions_created,
           remaining: usage.remaining,
+          insights_generated: insightsUsedThisMonth,
         },
         reset_date: resetDate.toISOString(),
       },

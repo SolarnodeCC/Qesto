@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useDensity, type Density } from '../hooks/useDensity'
 import { useInsights } from '../hooks/useInsights'
+import { useQuotaUsage } from '../hooks/useQuotaUsage'
 import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
@@ -12,6 +13,7 @@ import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
 import AINarrative from '../components/AINarrative'
 import SessionWizard from '../components/SessionWizard'
+import PlanUsageSidebar from '../components/PlanUsageSidebar'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 
@@ -46,6 +48,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('sessions')
   const { state, refresh, create } = useSessions()
   const { density, setDensity } = useDensity()
+  const userId = auth.status === 'authenticated' ? auth.user.id : undefined
+  const { data: quotaData, loading: quotaLoading } = useQuotaUsage(userId)
   const closedSessions =
     state.status === 'ready'
       ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
@@ -215,7 +219,7 @@ export default function Dashboard() {
   )
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-5xl mx-auto p-8 space-y-8">
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-6xl mx-auto p-8">
       {/* animate-page-enter: entire content fades + slides up on mount (LAYOUT-MOTION-01) */}
       <div className="animate-page-enter space-y-8">
         <div className="flex items-start justify-between gap-4">
@@ -237,6 +241,10 @@ export default function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Two-column layout: tabs + content left, plan sidebar right */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_272px] gap-8 items-start">
+        <div className="min-w-0 space-y-6">
 
         {/* Tab bar */}
         <div
@@ -680,7 +688,18 @@ export default function Dashboard() {
             </div>
           </div>
         )}
-      </div>
+        </div>{/* end left column */}
+
+        {/* ── Plan usage sidebar ── */}
+        <div className="lg:sticky lg:top-6">
+          {quotaData ? (
+            <PlanUsageSidebar data={quotaData} loading={quotaLoading} />
+          ) : quotaLoading ? (
+            <PlanUsageSidebar data={{ plan: 'free', quotas: { max_sessions_per_month: 5, max_participants_per_session: 50, features_unlocked: { resultsExport: false, semanticSearch: false, insightsAI: false, customBranding: false, consentMode: false, rankingQuestions: false } }, usage: { sessions_created: 0, remaining: 5, insights_generated: 0 }, reset_date: new Date().toISOString() }} loading={true} />
+          ) : null}
+        </div>
+        </div>{/* end grid */}
+      </div>{/* end animate-page-enter */}
 
       <SessionWizard
         open={wizardOpen}
