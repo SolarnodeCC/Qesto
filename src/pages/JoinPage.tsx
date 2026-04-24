@@ -4,6 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { CheckCircle2, Sparkles } from 'lucide-react'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -161,10 +162,11 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       : null
 
   return (
-    <main id="main" className="min-h-screen bg-white dark:bg-pulse-950 flex flex-col">
-      {/* Top strip */}
-      <div className="border-b border-pulse-100 dark:border-pulse-800 px-5 py-3 flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-widest text-teal-600">Qesto</span>
+    <main id="main" className="min-h-screen bg-white flex flex-col">
+      {/* Top brand bar */}
+      <div className="h-1 bg-[var(--gradient-brand)]" aria-hidden="true" />
+      <div className="border-b border-pulse-100 px-5 py-3 flex items-center justify-between">
+        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900">Qesto</span>
         {state.connection === 'open' ? (
           <span className="flex items-center gap-1.5 text-xs text-pulse-500">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
@@ -177,16 +179,16 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
       <div className="flex-1 max-w-lg w-full mx-auto px-5 py-8 flex flex-col gap-6">
         {/* Session title */}
-        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-pulse-50 focus:outline-none">
+        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 focus:outline-none">
           {title}
         </h1>
 
         {/* Connecting skeleton */}
         {state.connection === 'connecting' && (
           <div className="space-y-3 animate-pulse">
-            <div className="h-5 bg-pulse-100 dark:bg-pulse-800 rounded w-3/4" />
+            <div className="h-5 bg-pulse-100 rounded w-3/4" />
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 bg-pulse-100 dark:bg-pulse-800 rounded-xl" />
+              <div key={i} className="h-14 bg-pulse-100 rounded-xl" />
             ))}
           </div>
         )}
@@ -202,9 +204,11 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
         {/* Session ended */}
         {isEnded && countdown === null && (
-          <div className="rounded-xl border border-pulse-200 dark:border-pulse-700 p-6 text-center space-y-2">
-            <div className="text-3xl">🎉</div>
-            <p className="font-semibold text-pulse-900 dark:text-pulse-100">{t('session_ended_title')}</p>
+          <div className="rounded-xl border border-pulse-200 p-6 text-center space-y-2">
+            <div className="w-14 h-14 rounded-full bg-[var(--gradient-brand)] flex items-center justify-center mx-auto shadow-teal" aria-hidden="true">
+              <CheckCircle2 size={28} className="text-white" />
+            </div>
+            <p className="font-semibold text-pulse-900">{t('session_ended_title')}</p>
             <p className="text-sm text-pulse-500">{t('session_ended_body')}</p>
             {state.results.total > 0 && (
               <div className="mt-4 space-y-3 text-left">
@@ -215,14 +219,14 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                   return (
                     <div key={o.id} className="space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className={isWinner ? 'font-semibold text-teal-700 dark:text-teal-400' : 'text-pulse-700 dark:text-pulse-300'}>
+                        <span className={isWinner ? 'font-semibold text-teal-700' : 'text-pulse-700'}>
                           {o.label}
                         </span>
                         <span className="text-pulse-500">{o.count} · {pct}%</span>
                       </div>
-                      <div className="h-2 bg-pulse-100 dark:bg-pulse-800 rounded-full overflow-hidden">
+                      <div className="h-2 bg-pulse-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-[width] duration-500 ${isWinner ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300 dark:bg-pulse-600'}`}
+                          className={`h-full rounded-full transition-[width] duration-500 ${isWinner ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300'}`}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -232,6 +236,13 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                 <p className="text-xs text-pulse-400 text-right">{t('total_votes', { count: state.results.total })}</p>
               </div>
             )}
+            <div className="mt-4 rounded-[14px] bg-violet-50 border border-violet-200 p-4 flex gap-3 items-start text-left">
+              <Sparkles size={20} className="text-violet-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <div>
+                <p className="text-[12px] font-bold tracking-[0.06em] uppercase text-violet-700 mb-1">AI recap pending</p>
+                <p className="text-[13px] text-pulse-600 leading-[1.45]">A same-day summary will be drafted on Cloudflare's edge at session close, anchored to the ranked evidence.</p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -252,7 +263,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (
           <section className="space-y-4" aria-labelledby="question-heading">
-            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-pulse-100">
+            <h2 id="question-heading" className="text-lg font-medium text-pulse-900">
               {state.question.prompt}
             </h2>
 
@@ -268,13 +279,13 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       disabled={hasVoted || state.connection !== 'open'}
                       aria-pressed={voted}
                       className={[
-                        'w-full text-left rounded-xl border-2 px-4 py-3.5 font-medium transition-all duration-150',
+                        'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150',
                         'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
                         voted
-                          ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-200'
+                          ? 'border-teal-500 bg-teal-50 text-teal-800'
                           : otherVoted
-                          ? 'border-pulse-200 dark:border-pulse-700 text-pulse-400 dark:text-pulse-500 cursor-default'
-                          : 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100 hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
+                          ? 'border-pulse-200 text-pulse-400 cursor-default'
+                          : 'border-pulse-200 bg-white text-pulse-900 hover:border-teal-400 hover:bg-teal-50 active:scale-[0.99]',
                       ].join(' ')}
                     >
                       <span className="flex items-center gap-3">
@@ -283,7 +294,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                             'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
                             voted
                               ? 'border-teal-500 bg-teal-500'
-                              : 'border-pulse-300 dark:border-pulse-600',
+                              : 'border-pulse-300',
                           ].join(' ')}
                           aria-hidden="true"
                         >
@@ -303,13 +314,17 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
             {/* Post-vote confirmation + live results */}
             {hasVoted && (
-              <div className="space-y-4 pt-2 border-t border-pulse-100 dark:border-pulse-800">
-                <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700 dark:text-teal-400">
+              <div className="space-y-4 pt-2 border-t border-pulse-100">
+                <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700">
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                   {t('vote_recorded')}
                 </p>
+                <div className="flex items-center gap-2 text-[12px] text-violet-600 font-medium">
+                  <Sparkles size={12} aria-hidden="true" />
+                  <span>Workers AI recap drafting at session close · Cloudflare's edge</span>
+                </div>
 
                 {state.results.total > 0 && (
                   <div className="space-y-2">
@@ -323,15 +338,15 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       return (
                         <div key={o.id} className="space-y-1">
                           <div className="flex justify-between text-sm">
-                            <span className={isMyVote ? 'font-semibold text-teal-700 dark:text-teal-400' : 'text-pulse-700 dark:text-pulse-300'}>
+                            <span className={isMyVote ? 'font-semibold text-teal-700' : 'text-pulse-700'}>
                               {o.label}
                               {isMyVote && <span className="ml-1.5 text-xs text-teal-500">· {t('your_vote')}</span>}
                             </span>
                             <span className="text-pulse-500 tabular-nums">{pct}%</span>
                           </div>
-                          <div className="h-2 bg-pulse-100 dark:bg-pulse-800 rounded-full overflow-hidden">
+                          <div className="h-2 bg-pulse-100 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-[width] duration-300 ${isMyVote ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300 dark:bg-pulse-600'}`}
+                              className={`h-full rounded-full transition-[width] duration-300 ${isMyVote ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300'}`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -349,7 +364,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         )}
 
         {state.error && (
-          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+          <p role="alert" className="text-sm text-red-600">
             {state.error}
           </p>
         )}
