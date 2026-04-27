@@ -123,6 +123,8 @@ export class SessionRoom implements DurableObject {
   private readonly ctx: DurableObjectState
   private readonly env: Env
   private resultsDirty = false
+  private _voters: Votes | null = null
+  private _votersInitPromise: Promise<void> | null = null
 
   constructor(ctx: DurableObjectState, env: Env) {
     this.ctx = ctx
@@ -142,6 +144,22 @@ export class SessionRoom implements DurableObject {
       JSON.stringify({ ok: false, error: { code: 'not_found', message: 'Unknown DO route' } }),
       { status: 404, headers: { 'content-type': 'application/json' } },
     )
+  }
+
+  // Returns the in-memory voters map, loading from storage exactly once.
+  // Two concurrent callers both waiting on the same storage read will share
+  // the same Votes object reference, so synchronous mutations made after the
+  // await are immediately visible to the second caller — eliminating the
+  // concurrent-write race in handleVote.
+  private async ensureVoters(): Promise<Votes> {
+    if (this._voters !== null) return this._voters
+    if (!this._votersInitPromise) {
+      this._votersInitPromise = this.ctx.storage
+        .get<Record<string, string | string[]>>(K_VOTERS)
+        .then(raw => { this._voters = normaliseVotes(raw) })
+    }
+    await this._votersInitPromise
+    return this._voters!
   }
 
   // ── /init ─────────────────────────────────────────────────────────────────
@@ -181,6 +199,8 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_STATUS, 'live')
     await this.ctx.storage.put(K_COUNTS, {} as Counts)
     await this.ctx.storage.put(K_VOTERS, {} as Votes)
+    this._voters = {}
+    this._votersInitPromise = null
     const allQuestions: LiveQuestion[] = body.questions ?? (body.question ? [body.question] : [])
     await this.ctx.storage.put(K_QUESTIONS, allQuestions)
     await this.ctx.storage.put(K_QUESTION_INDEX, 0)
@@ -198,9 +218,7 @@ export class SessionRoom implements DurableObject {
       return this.jsonError(409, 'not_live', 'Session is not LIVE')
     }
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    const votes = normaliseVotes(
-      await this.ctx.storage.get<Record<string, string | string[]>>(K_VOTERS),
-    )
+    const votes = await this.ensureVoters()
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const msg = serverMessage({
       type: 'session_closed',
@@ -235,9 +253,7 @@ export class SessionRoom implements DurableObject {
     const meta = await this.ctx.storage.get<Meta>(K_META)
     const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    const voters = normaliseVotes(
-      await this.ctx.storage.get<Record<string, string | string[]>>(K_VOTERS),
-    )
+    const voters = await this.ensureVoters()
     const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? 'uninitialised'
     return this.jsonOk({
       meta: meta ?? null,
@@ -339,6 +355,8 @@ export class SessionRoom implements DurableObject {
         await this.ctx.storage.put(K_QUESTION, nextQ)
         await this.ctx.storage.put(K_COUNTS, {} as Counts)
         await this.ctx.storage.put(K_VOTERS, {} as Votes)
+        this._voters = {}
+        this._votersInitPromise = null
         const advanceMsg = serverMessage({ type: 'question', data: { question: nextQ }, timestamp: now() })
         for (const socket of this.ctx.getWebSockets()) {
           try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
@@ -362,6 +380,8 @@ export class SessionRoom implements DurableObject {
         await this.ctx.storage.put(K_QUESTION, prevQ)
         await this.ctx.storage.put(K_COUNTS, {} as Counts)
         await this.ctx.storage.put(K_VOTERS, {} as Votes)
+        this._voters = {}
+        this._votersInitPromise = null
         const backMsg = serverMessage({ type: 'question', data: { question: prevQ }, timestamp: now() })
         for (const socket of this.ctx.getWebSockets()) {
           try { socket.send(backMsg) } catch { /* ignore closed socket */ }
@@ -498,10 +518,13 @@ export class SessionRoom implements DurableObject {
 
     const votePolicy = meta?.votePolicy ?? 'once'
 
-    const voters = normaliseVotes(
-      await this.ctx.storage.get<Record<string, string | string[]>>(K_VOTERS),
-    )
-    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    // Load voters via shared in-memory reference. The check+update below
+    // contains no await points, so concurrent vote messages from the same
+    // voter serialise naturally — the second caller sees the first caller's
+    // mutation before running its own duplicate check.
+    const voters = await this.ensureVoters()
+    let countKey: string | null = null
+    let countDecKey: string | null = null
 
     if (MULTI_VOTE_KINDS.has(question.kind)) {
       // multi_select / upvote / word_cloud: voter may submit several entries.
@@ -513,7 +536,7 @@ export class SessionRoom implements DurableObject {
         return
       }
       voters[att.voterId] = [...previous, optionId]
-      counts[optionId] = (counts[optionId] ?? 0) + 1
+      countKey = optionId
     } else if (votePolicy === 'once') {
       // Reject duplicate — one vote per voter, immutable.
       if ((voters[att.voterId]?.length ?? 0) > 0) {
@@ -521,7 +544,7 @@ export class SessionRoom implements DurableObject {
         return
       }
       voters[att.voterId] = [optionId]
-      counts[optionId] = (counts[optionId] ?? 0) + 1
+      countKey = optionId
     } else if (votePolicy === 'multi') {
       // Allow vote change — decrement old choice, increment new choice.
       const previous = voters[att.voterId]?.[0]
@@ -529,17 +552,20 @@ export class SessionRoom implements DurableObject {
         ws.send(errorMessage('duplicate', 'You already selected this option'))
         return
       }
-      if (previous) {
-        counts[previous] = Math.max(0, (counts[previous] ?? 1) - 1)
-      }
+      countDecKey = previous ?? null
       voters[att.voterId] = [optionId]
-      counts[optionId] = (counts[optionId] ?? 0) + 1
+      countKey = optionId
     } else {
       // react: accumulate reactions, no deduplication per voter.
-      counts[optionId] = (counts[optionId] ?? 0) + 1
-      // Store last reaction per voter (for D1 persistence on close).
       voters[att.voterId] = [optionId]
+      countKey = optionId
     }
+
+    // Load and update counts after the voter decision is finalised (safe to
+    // await here — the duplicate check above has already mutated voters).
+    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    if (countKey) counts[countKey] = (counts[countKey] ?? 0) + 1
+    if (countDecKey) counts[countDecKey] = Math.max(0, (counts[countDecKey] ?? 1) - 1)
 
     await this.ctx.storage.put(K_VOTERS, voters)
     await this.ctx.storage.put(K_COUNTS, counts)
