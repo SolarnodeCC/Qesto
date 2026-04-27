@@ -1,9 +1,6 @@
 import { Link } from 'react-router-dom'
-import { useT } from '../i18n'
 
 export default function InsightEmptyState({ onCreateSession }: { onCreateSession: () => void }) {
-  const t = useT('dashboard')
-
   return (
     <div className="space-y-6 py-8">
       <div className="text-center space-y-4">

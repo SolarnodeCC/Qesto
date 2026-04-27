@@ -542,7 +542,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     const questions = await fetchQuestions(c.env.DB, id)
-    if (questions.length === 0) {
+    if (questions.length === 0 || questions[0].kind !== 'poll') {
       return c.json(
         {
           ok: false,

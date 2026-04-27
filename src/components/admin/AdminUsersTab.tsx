@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useAdminUsers, type AdminUser } from '../../hooks/useAdminUsers'
-import { Heading, Body, Button, Card, Badge, TextInput, SkeletonCard } from '../../ui/components'
+import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
 
@@ -73,7 +73,7 @@ function UserModal({
     try {
       await onSave({
         ...(isEdit ? {} : { email: email.trim() }),
-        display_name: displayName.trim() || undefined,
+        display_name: displayName.trim() || null,
         plan,
         admin_role: adminRole === '' ? null : adminRole,
       })
@@ -157,7 +157,7 @@ function UserModal({
 export default function AdminUsersTab() {
   const {
     users, total, loading, error,
-    search, setSearch, offset, setOffset, limit,
+    setSearch, offset, setOffset, limit,
     createUser, updateUser, suspendUser, restoreUser,
   } = useAdminUsers()
 
@@ -187,12 +187,16 @@ export default function AdminUsersTab() {
 
   async function handleModalSave(data: Partial<AdminUser> & { email?: string }) {
     if (modal?.type === 'create') {
-      const res = await createUser({ email: data.email!, display_name: data.display_name ?? undefined, plan: data.plan })
+      const res = await createUser({
+        email: data.email!,
+        ...(data.display_name != null ? { display_name: data.display_name } : {}),
+        ...(data.plan != null ? { plan: data.plan } : {}),
+      })
       if (!res.ok) throw new Error(res.error.message)
     } else if (modal?.type === 'edit') {
       const res = await updateUser(modal.user.id, {
-        display_name: data.display_name,
-        plan: data.plan,
+        ...(data.display_name != null ? { display_name: data.display_name } : {}),
+        ...(data.plan != null ? { plan: data.plan } : {}),
         admin_role: data.admin_role as 'admin' | 'owner' | null,
       })
       if (!res.ok) throw new Error(res.error.message)
