@@ -186,18 +186,18 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     const session = await fetchSessionByCode(c.env.DB, code)
-    if (!session || session.status !== 'live') {
+    if (!session || session.status === 'archived' || session.status === 'closed') {
       // Log enumeration attempts for security monitoring
       console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', event: 'join.not_found', trace_id: traceId }))
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'No live session for that code' }, trace_id: traceId },
+        { ok: false, error: { code: 'not_found', message: 'No active session for that code' }, trace_id: traceId },
         404,
       )
     }
-    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'join.success', session_id: session.id, trace_id: traceId }))
+    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'join.success', session_id: session.id, status: session.status, trace_id: traceId }))
     return c.json({
       ok: true,
-      data: { id: session.id, title: session.title, code: session.code },
+      data: { id: session.id, title: session.title, code: session.code, status: session.status as 'draft' | 'live' },
       trace_id: traceId,
     })
   })
