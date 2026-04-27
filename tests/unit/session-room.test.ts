@@ -304,12 +304,12 @@ describe('advance authorisation', () => {
     expect(errs.some((e) => e.data.code === 'forbidden')).toBe(true)
   })
 
-  it('presenter advance is a no-op in v1 (single-question slice)', async () => {
+  it('presenter advance past last question broadcasts all_done', async () => {
     const { room, state } = await buildRoom()
     await init(room)
     const ws = connectPresenter(state)
     await sendMessage(room, ws, { type: 'advance', data: {}, timestamp: 0 })
-    const errs = ws.messages<{ type: string; data: { code?: string } }>().filter((m) => m.type === 'error')
-    expect(errs.some((e) => e.data.code === 'noop')).toBe(true)
+    const msgs = ws.messages<{ type: string }>()
+    expect(msgs.some((m) => m.type === 'all_done')).toBe(true)
   })
 })

@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
-import { ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, Play, Shuffle, Sparkles, Timer, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, Play, Shuffle, Sparkles, Timer, Users } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession, type LivePollOption } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -51,7 +51,7 @@ export default function Present() {
   const auth = useAuth()
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
-  const { state, sendAdvance, sendPause, sendResume } = useLiveSession(id, { enabled: !!id })
+  const { state, sendAdvance, sendBack, sendPause, sendResume } = useLiveSession(id, { enabled: !!id })
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -83,12 +83,17 @@ export default function Present() {
   const max = ordered.reduce((m, o) => Math.max(m, o.count), 0)
   const tallyVisible = !hideTally && state.results.total >= minGate
 
+  const [scale, setScale] = useState(1)
+  const containerRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
+  useLayoutEffect(() => {
     function fit() {
-      if (!stageRef.current) return
-      const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080)
+      const container = containerRef.current
+      if (!container || !stageRef.current) return
+      const { width, height } = container.getBoundingClientRect()
+      const s = Math.min(width / 1920, height / 1080)
       stageRef.current.style.transform = `scale(${s})`
+      setScale(s)
     }
     fit()
     window.addEventListener('resize', fit)
@@ -154,10 +159,11 @@ export default function Present() {
   return (
     <div className="fixed inset-0 flex flex-col bg-pulse-950 animate-page-enter">
       {/* ── 1920×1080 letterboxed stage ────────────────────────────────────── */}
-      <div className="flex-1 grid place-items-center min-h-0 overflow-hidden">
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
+        <div style={{ width: scale * 1920, height: scale * 1080, flexShrink: 0 }}>
         <div
           ref={stageRef}
-          className="w-[1920px] h-[1080px] origin-center relative bg-white overflow-hidden flex-shrink-0"
+          className="w-[1920px] h-[1080px] origin-top-left relative bg-white overflow-hidden"
           id="main"
         >
           {/* Background glow */}
@@ -172,8 +178,25 @@ export default function Present() {
           {/* Top accent bar */}
           <div className="absolute top-0 left-0 right-0 h-[6px]" style={{ background: 'var(--gradient-brand)' }} />
 
+          {/* All done overlay */}
+          {state.allDone && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center" style={{ background: 'var(--gradient-brand)' }}>
+              <div className="text-[120px] mb-6" aria-hidden="true">🎉</div>
+              <h2 className="font-[family-name:var(--font-display)] font-bold text-[80px] leading-[1.1] tracking-[-0.02em] text-white text-center [text-wrap:balance]">
+                Bedankt voor<br />jullie input!
+              </h2>
+              <p className="mt-6 text-[32px] text-white/80 font-medium">
+                {state.session?.title}
+              </p>
+              <div className="mt-12 flex items-center gap-3 text-[26px] text-white/70 font-medium">
+                <Users size={28} className="text-white/60" aria-hidden="true" />
+                {state.participants} {t('participant', { count: state.participants })} {t('connectedLabel')}
+              </div>
+            </div>
+          )}
+
           {/* Paused overlay */}
-          {localPaused && (
+          {localPaused && !state.allDone && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
               <div className="flex items-center gap-4 bg-white rounded-2xl px-10 py-6 shadow-2xl">
                 <Pause size={36} className="text-amber-500" aria-hidden="true" />
@@ -308,46 +331,8 @@ export default function Present() {
             <p role="alert" className="absolute top-[1020px] left-[64px] text-sm text-red-600 z-10">{state.error}</p>
           )}
 
-          {/* ── Bottom chrome ── */}
-          <div className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center border-t border-pulse-200 pt-6 z-10 text-[18px] text-pulse-600">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => sendAdvance()}
-                disabled={!isLive}
-                className="inline-flex items-center gap-2 rounded-md text-white px-5 py-2.5 text-[16px] font-semibold shadow-card disabled:opacity-50 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                style={{ background: 'var(--gradient-brand)' }}
-              >
-                <ChevronRight size={18} aria-hidden="true" />
-                Next question
-              </button>
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={closing || isClosed}
-                className="inline-flex items-center rounded-md border border-pulse-300 text-pulse-700 hover:border-red-400 hover:text-red-700 px-5 py-2.5 text-[16px] font-medium disabled:opacity-50 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-              >
-                {isClosed ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
-              </button>
-              {closeError && <span className="text-sm text-red-600">{closeError}</span>}
-              {id && isClosed && (
-                <Link to={`/sessions/${id}/results`} className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded">
-                  View results →
-                </Link>
-              )}
-            </div>
-            {state.session && (
-              <button
-                type="button"
-                onClick={handleCopyDisplayLink}
-                disabled={!state.session.code}
-                title="Copy display URL to embed in PowerPoint"
-                className="inline-flex items-center gap-2 rounded-md border border-pulse-300 text-pulse-700 hover:border-teal-400 hover:text-teal-700 px-4 py-2.5 text-[16px] font-medium transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-              >
-                <Link2 size={16} aria-hidden="true" />
-                {copied ? 'Copied!' : 'Display link'}
-              </button>
-            )}
+          {/* ── Bottom chrome (display only — controls are in presenter panel) ── */}
+          <div className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center border-t border-pulse-200 pt-6 z-10 text-[18px] text-pulse-600 pointer-events-none">
             <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-violet-50 border border-violet-200 rounded-full text-[16px] font-semibold text-violet-700">
               <Sparkles size={16} className="text-violet-600" aria-hidden="true" />
               AI recap at session close · Workers AI on Cloudflare
@@ -358,10 +343,47 @@ export default function Present() {
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       {/* ── Presenter control panel ───────────────────────────────────────── */}
       <div className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0">
+
+        {/* Back / Next question / Close session */}
+        <button
+          type="button"
+          onClick={() => sendBack()}
+          disabled={!isLive}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-pulse-600"
+        >
+          <ChevronLeft size={14} aria-hidden="true" />
+          Back
+        </button>
+        <button
+          type="button"
+          onClick={() => sendAdvance()}
+          disabled={!isLive}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-teal-600 text-white hover:bg-teal-700"
+        >
+          <ChevronRight size={14} aria-hidden="true" />
+          Next question
+        </button>
+        <button
+          type="button"
+          onClick={handleClose}
+          disabled={closing || isClosed}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-red-700"
+        >
+          {isClosed ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
+        </button>
+        {closeError && <span className="text-xs text-red-400">{closeError}</span>}
+        {id && isClosed && (
+          <Link to={`/sessions/${id}/results`} className="text-xs text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded">
+            View results →
+          </Link>
+        )}
+
+        <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
         {/* Pause / Resume */}
         <button
@@ -467,6 +489,18 @@ export default function Present() {
         <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
         {/* One-click export */}
+        {state.session && (
+          <button
+            type="button"
+            onClick={handleCopyDisplayLink}
+            disabled={!state.session.code}
+            title="Copy display URL to embed in PowerPoint"
+            className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
+          >
+            <Link2 size={14} aria-hidden="true" />
+            {copied ? 'Copied!' : 'Display link'}
+          </button>
+        )}
         {id && (
           <a
             href={`/api/sessions/${encodeURIComponent(id)}/export.csv`}
@@ -477,6 +511,15 @@ export default function Present() {
             Export CSV
           </a>
         )}
+
+        <span className="w-px h-5 bg-pulse-700 ml-auto" aria-hidden="true" />
+
+        <Link
+          to="/dashboard"
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+        >
+          ← Dashboard
+        </Link>
       </div>
     </div>
   )

@@ -34,6 +34,7 @@ export type LiveState = {
   reconnectAttempts: number
   lastVote: { optionId: string } | null
   paused: boolean
+  allDone: boolean
 }
 
 type Action =
@@ -59,6 +60,7 @@ type Action =
   | { kind: 'vote_sent'; optionId: string }
   | { kind: 'session_paused' }
   | { kind: 'session_resumed' }
+  | { kind: 'all_done' }
 
 export const INITIAL: LiveState = {
   connection: 'idle',
@@ -72,6 +74,7 @@ export const INITIAL: LiveState = {
   reconnectAttempts: 0,
   lastVote: null,
   paused: false,
+  allDone: false,
 }
 
 export function reducer(state: LiveState, action: Action): LiveState {
@@ -120,6 +123,8 @@ export function reducer(state: LiveState, action: Action): LiveState {
       return { ...state, paused: true }
     case 'session_resumed':
       return { ...state, paused: false }
+    case 'all_done':
+      return { ...state, allDone: true }
   }
 }
 
@@ -213,6 +218,9 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
           case 'session_resumed':
             dispatch({ kind: 'session_resumed' })
             break
+          case 'all_done':
+            dispatch({ kind: 'all_done' })
+            break
         }
       } catch {
         /* ignore unparseable frames */
@@ -276,6 +284,12 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     ws.send(JSON.stringify({ type: 'advance', data: {}, timestamp: Date.now() }))
   }, [])
 
+  const sendBack = useCallback(() => {
+    const ws = wsRef.current
+    if (!ws || ws.readyState !== WebSocket.OPEN) return
+    ws.send(JSON.stringify({ type: 'back', data: {}, timestamp: Date.now() }))
+  }, [])
+
   const sendPause = useCallback(() => {
     const ws = wsRef.current
     if (!ws || ws.readyState !== WebSocket.OPEN) return
@@ -288,5 +302,5 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     ws.send(JSON.stringify({ type: 'resume', data: {}, timestamp: Date.now() }))
   }, [])
 
-  return { state, sendVote, requestState, sendAdvance, sendPause, sendResume }
+  return { state, sendVote, requestState, sendAdvance, sendBack, sendPause, sendResume }
 }

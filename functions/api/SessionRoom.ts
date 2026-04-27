@@ -35,6 +35,8 @@ import type { Env, VotePolicy, SessionMode } from './types'
 // ── Persisted state keys (ctx.storage) ──────────────────────────────────────
 const K_META = 'meta'
 const K_QUESTION = 'question'
+const K_QUESTIONS = 'questions'
+const K_QUESTION_INDEX = 'question_index'
 const K_COUNTS = 'counts'
 const K_VOTERS = 'voters'
 const K_STATUS = 'status'
@@ -173,6 +175,7 @@ export class SessionRoom implements DurableObject {
           code?: string
           title?: string
           question?: LiveQuestion | null
+          questions?: LiveQuestion[]
           votePolicy?: VotePolicy
           sessionMode?: SessionMode
         }
@@ -198,7 +201,10 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_VOTERS, {} as Votes)
     this._voters = {}
     this._votersInitPromise = null
-    if (body.question) await this.ctx.storage.put(K_QUESTION, body.question)
+    const allQuestions: LiveQuestion[] = body.questions ?? (body.question ? [body.question] : [])
+    await this.ctx.storage.put(K_QUESTIONS, allQuestions)
+    await this.ctx.storage.put(K_QUESTION_INDEX, 0)
+    if (allQuestions.length > 0) await this.ctx.storage.put(K_QUESTION, allQuestions[0])
     if (sessionMode === 'fun' && meta.questionExpiresAt) {
       await this.scheduleAlarm(meta.questionExpiresAt)
     }
@@ -329,14 +335,59 @@ export class SessionRoom implements DurableObject {
       case 'vote':
         await this.handleVote(ws, att, parsed.data)
         break
-      case 'advance':
+      case 'advance': {
         if (att.role !== 'presenter') {
           ws.send(errorMessage('forbidden', 'Only presenter can advance'))
           return
         }
-        // v1 has a single question — advance is a no-op ack.
-        ws.send(errorMessage('noop', 'Only one question in v1'))
+        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+        const nextIdx = curIdx + 1
+        if (nextIdx >= allQs.length) {
+          const doneMsg = serverMessage({ type: 'all_done', data: {}, timestamp: now() })
+          for (const socket of this.ctx.getWebSockets()) {
+            try { socket.send(doneMsg) } catch { /* ignore */ }
+          }
+          return
+        }
+        const nextQ = allQs[nextIdx]
+        await this.ctx.storage.put(K_QUESTION_INDEX, nextIdx)
+        await this.ctx.storage.put(K_QUESTION, nextQ)
+        await this.ctx.storage.put(K_COUNTS, {} as Counts)
+        await this.ctx.storage.put(K_VOTERS, {} as Votes)
+        this._voters = {}
+        this._votersInitPromise = null
+        const advanceMsg = serverMessage({ type: 'question', data: { question: nextQ }, timestamp: now() })
+        for (const socket of this.ctx.getWebSockets()) {
+          try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
+        }
         break
+      }
+      case 'back': {
+        if (att.role !== 'presenter') {
+          ws.send(errorMessage('forbidden', 'Only presenter can go back'))
+          return
+        }
+        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+        const prevIdx = curIdx - 1
+        if (prevIdx < 0) {
+          ws.send(errorMessage('noop', 'Already at first question'))
+          return
+        }
+        const prevQ = allQs[prevIdx]
+        await this.ctx.storage.put(K_QUESTION_INDEX, prevIdx)
+        await this.ctx.storage.put(K_QUESTION, prevQ)
+        await this.ctx.storage.put(K_COUNTS, {} as Counts)
+        await this.ctx.storage.put(K_VOTERS, {} as Votes)
+        this._voters = {}
+        this._votersInitPromise = null
+        const backMsg = serverMessage({ type: 'question', data: { question: prevQ }, timestamp: now() })
+        for (const socket of this.ctx.getWebSockets()) {
+          try { socket.send(backMsg) } catch { /* ignore closed socket */ }
+        }
+        break
+      }
       case 'request_state':
         await this.sendInit(ws, att)
         break

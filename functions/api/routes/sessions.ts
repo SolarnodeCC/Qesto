@@ -542,7 +542,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     const questions = await fetchQuestions(c.env.DB, id)
-    if (questions.length === 0 || questions[0].kind !== 'poll') {
+    if (questions.length === 0) {
       return c.json(
         {
           ok: false,
@@ -591,6 +591,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       code: session.code,
       title: session.title,
       question: liveQ,
+      questions: questions.map(questionToLive),
       votePolicy: session.vote_policy,
       sessionMode: session.session_mode,
     })
@@ -872,7 +873,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
 
     try {
-      const result = await generateQuestions(c.env.AI, parsed.data)
+      const language = c.req.header('accept-language') ?? 'en'
+      const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
       return c.json({
         ok: true,
         data: { questions: result.questions, confidence: result.confidence },

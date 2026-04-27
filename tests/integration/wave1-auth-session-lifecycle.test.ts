@@ -177,10 +177,6 @@ describe('Wave 1: Auth → Session Lifecycle Smoke Tests', () => {
     it('should not allow duplicate session start', async () => {
       const sessionId = 'sess_abc123'
 
-      // First start: succeeds
-      const session1 = { id: sessionId, status: 'draft' }
-      void { ...session1, status: 'active', code: 'ABC123' }
-
       // Second start attempt on already-LIVE session: returns 409 CONFLICT
       const session2 = { id: sessionId, status: 'active' }
       const shouldFail = session2.status !== 'draft'
@@ -243,7 +239,7 @@ describe('Wave 1: Auth → Session Lifecycle Smoke Tests', () => {
       const sessionId = 'sess_' + Math.random().toString(36).substr(2, 5)
 
       // Create
-      const session: { id: string; ownerId: string; status: string; questions: { id: string; type: string; text: string }[]; code?: string } = { id: sessionId, ownerId: userId, status: 'draft', questions: [] }
+      const session: { id: string; ownerId: string; status: string; code?: string; questions: { id: string; type: string; text: string }[] } = { id: sessionId, ownerId: userId, status: 'draft', questions: [] }
       expect(session.status).toBe('draft')
 
       // Add questions

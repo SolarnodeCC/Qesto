@@ -238,7 +238,7 @@ describe('POST /api/sessions/:id/start', () => {
     expect(db.sessions.get(sessionId)?.status).toBe('draft') // unchanged
   })
 
-  it('ranking question at position 0 (not poll) → 409 no_question', async () => {
+  it('ranking question at position 0 → 200 (all kinds are valid live questions)', async () => {
     const db = new D1Mock()
     const app = createApp()
     const cookie = await cookieFor('user_7', 'user7@example.com')
@@ -250,9 +250,9 @@ describe('POST /api/sessions/:id/start', () => {
       new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
       env,
     )
-    expect(res.status).toBe(409)
-    const body = (await res.json()) as { error: { code: string } }
-    expect(body.error.code).toBe('no_question')
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { ok: boolean }
+    expect(body.ok).toBe(true)
   })
 
   it('non-owner cannot start → 404', async () => {

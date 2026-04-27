@@ -272,6 +272,15 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           </div>
         )}
 
+        {/* All questions done */}
+        {state.allDone && !isEnded && countdown === null && (
+          <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+            <div className="text-6xl" aria-hidden="true">🎉</div>
+            <h2 className="text-2xl font-bold text-pulse-900">Bedankt voor jullie input!</h2>
+            <p className="text-sm text-pulse-500">{title}</p>
+          </div>
+        )}
+
         {/* Session ended */}
         {isEnded && countdown === null && (
           <div className="rounded-xl border border-pulse-200 p-6 text-center space-y-2">
