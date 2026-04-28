@@ -26,7 +26,9 @@ import {
   type LiveSessionSummary,
   type ServerMessage,
 } from './realtime'
-import type { Env, VotePolicy, SessionMode } from './types'
+import type { Env, VotePolicy, SessionMode, PlanTier } from './types'
+import { PLAN_QUOTAS } from './types'
+import { writeEvent } from './lib/observability'
 
 // Tell tsc the env binding exists on the DO class — Phase 4+ will reach for
 // `this.env.DB` inside `close()` to persist totals. Kept as a typed field now
@@ -53,6 +55,8 @@ type Meta = {
   startedAt: number
   votePolicy: VotePolicy
   sessionMode: SessionMode
+  /** Owner's plan tier — used to enforce per-session voter capacity. */
+  plan?: PlanTier
   /** Unix ms when the current question expires in fun mode. */
   questionExpiresAt?: number
   /** When true, vote messages are rejected until the presenter resumes. */
@@ -178,6 +182,7 @@ export class SessionRoom implements DurableObject {
           questions?: LiveQuestion[]
           votePolicy?: VotePolicy
           sessionMode?: SessionMode
+          plan?: PlanTier
         }
       | null
     if (!body || !body.sessionId || !body.ownerId || !body.code || !body.title) {
@@ -193,6 +198,7 @@ export class SessionRoom implements DurableObject {
       startedAt: nowMs,
       votePolicy: body.votePolicy ?? 'once',
       sessionMode,
+      ...(body.plan ? { plan: body.plan } : {}),
       ...(sessionMode === 'fun' ? { questionExpiresAt: nowMs + FUN_MODE_QUESTION_MS } : {}),
     }
     await this.ctx.storage.put(K_META, meta)
@@ -283,6 +289,22 @@ export class SessionRoom implements DurableObject {
       const existing = this.ctx.getWebSockets(`ip:${ipHash}`)
       if (existing.length >= PER_IP_CONCURRENT_CAP) {
         return new Response('Too many connections from this IP', { status: 429 })
+      }
+
+      // Per-session participant capacity cap (plan-gated). Counts existing
+      // voter sockets (tag role:voter) and rejects new joins at the limit.
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      const plan: PlanTier = meta?.plan ?? 'free'
+      const maxParticipants = PLAN_QUOTAS[plan].maxParticipantsPerSession
+      const currentVoters = this.ctx.getWebSockets('role:voter').length
+      if (currentVoters >= maxParticipants) {
+        writeEvent(this.env.METRICS_AE, {
+          name: 'ws.capacity_exceeded',
+          sessionId: meta?.sessionId,
+          plan,
+          count: currentVoters,
+        })
+        return new Response('Session capacity reached', { status: 429 })
       }
 
       // Per-IP per-minute rate limiting (SEC-01).

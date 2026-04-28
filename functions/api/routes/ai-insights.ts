@@ -8,7 +8,8 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { recordAuditEvent } from '../lib/audit'
 import { rateLimit } from '../lib/rate-limit'
-import type { Env } from '../types'
+import { writeEvent } from '../lib/observability'
+import type { Env, PlanTier } from '../types'
 
 type Vars = AuthVariables
 
@@ -127,7 +128,15 @@ export function mountAIInsightsRoutes(parent: any) {
       // Best-effort — insights still generate if Vectorize is unavailable.
       let similarSessionsContext = ''
       try {
+        const aiStart = Date.now()
         const embedResult = await c.env.AI.run('@cf/baai/bge-m3', { text: context }) as { data: number[][] }
+        writeEvent(c.env.METRICS_AE, {
+          name: 'ai.inference',
+          userId: user.sub,
+          plan: userPlan as PlanTier,
+          durationMs: Date.now() - aiStart,
+          traceId: trace_id,
+        })
         const vector = embedResult?.data?.[0]
         if (vector?.length === 768) {
           const queryResult = await c.env.DECISIONS_VECTORIZE.query(vector, {
@@ -166,7 +175,15 @@ Keep response concise (max 150 words). Focus on actionable insights.`
           messages: [{ role: 'user', content: aiPrompt }],
           max_tokens: insightConfig.max_tokens,
         })
-        console.log(JSON.stringify({ event: 'ai.analyze.ok', model: insightConfig.model, latencyMs: Date.now() - t0, approxInputChars }))
+        const aiLatency = Date.now() - t0
+        console.log(JSON.stringify({ event: 'ai.analyze.ok', model: insightConfig.model, latencyMs: aiLatency, approxInputChars }))
+        writeEvent(c.env.METRICS_AE, {
+          name: 'ai.inference',
+          userId: user.sub,
+          plan: userPlan as PlanTier,
+          durationMs: aiLatency,
+          traceId: trace_id,
+        })
       } catch (aiErr) {
         console.log(JSON.stringify({ event: 'ai.analyze.error', model: insightConfig.model, latencyMs: Date.now() - t0, approxInputChars, error: aiErr instanceof Error ? aiErr.message : String(aiErr) }))
         throw aiErr
@@ -198,7 +215,15 @@ Keep response concise (max 150 words). Focus on actionable insights.`
       try {
         let vector: number[] | undefined = (c as any).__sessionVector
         if (!vector) {
+          const aiStart = Date.now()
           const embedResult = await c.env.AI.run('@cf/baai/bge-m3', { text: insightText }) as { data: number[][] }
+          writeEvent(c.env.METRICS_AE, {
+            name: 'ai.inference',
+            userId: user.sub,
+            plan: userPlan as PlanTier,
+            durationMs: Date.now() - aiStart,
+            traceId: trace_id,
+          })
           vector = embedResult?.data?.[0]
         }
         if (vector?.length === 768) {
