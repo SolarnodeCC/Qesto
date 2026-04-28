@@ -155,20 +155,14 @@ async function invokeAI(
         messages,
         max_tokens: MAX_TOKENS,
         stream: false,
-        response_format: { type: 'json_object' },
-      })) as { response?: string | object } | string
+      })) as { response?: string } | string
       const latencyMs = Date.now() - t0
-      // Workers AI with response_format returns res.response as an object (parsed
-      // JSON), not a string. Handle all three shapes: plain string, string in
-      // response field, or object in response field (JSON mode).
       const raw =
         typeof res === 'string'
           ? res
           : typeof res?.response === 'string'
             ? res.response
-            : res?.response != null && typeof res?.response === 'object'
-              ? JSON.stringify(res.response)
-              : ''
+            : ''
       if (!raw || raw.trim() === '') {
         console.log(
           JSON.stringify({ event: 'ai.wizard.empty', model, latencyMs, approxInputChars, attempt }),
