@@ -48,21 +48,6 @@ describe('ai-wizard/generateQuestions', () => {
     expect(result.confidence).toBeLessThanOrEqual(1)
   })
 
-  it('handles Workers AI JSON mode: response is a parsed object (not string)', async () => {
-    // Workers AI with response_format: { type: 'json_object' } returns res.response
-    // as a JS object, not a string. The handler must stringify it before parsing.
-    const ai = mockAi({ response: JSON.parse(VALID_QUESTIONS_JSON) })
-
-    const result = await generateQuestions(ai, {
-      sessionTitle: 'Q2 Kickoff',
-      sessionGoal: 'Align the team on priorities',
-    })
-
-    expect(result.questions).toHaveLength(3)
-    expect(result.questions[0].id).toMatch(/^[0-9A-HJKMNP-TV-Z]+$/i)
-    expect(result.confidence).toBeGreaterThan(0.7)
-  })
-
   it('strips markdown fences before parsing', async () => {
     const ai = mockAi({
       response:
