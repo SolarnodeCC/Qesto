@@ -106,6 +106,8 @@ export default function Present() {
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    }).catch(() => {
+      setCopied(false)
     })
   }
 
@@ -353,7 +355,7 @@ export default function Present() {
         <button
           type="button"
           onClick={() => sendBack()}
-          disabled={!isLive}
+          disabled={!isLive || state.allDone}
           className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-pulse-600"
         >
           <ChevronLeft size={14} aria-hidden="true" />
@@ -362,7 +364,7 @@ export default function Present() {
         <button
           type="button"
           onClick={() => sendAdvance()}
-          disabled={!isLive}
+          disabled={!isLive || state.allDone}
           className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-teal-600 text-white hover:bg-teal-700"
         >
           <ChevronRight size={14} aria-hidden="true" />
@@ -389,7 +391,7 @@ export default function Present() {
         <button
           type="button"
           onClick={handleTogglePause}
-          disabled={!isLive}
+          disabled={!isLive || state.allDone}
           aria-pressed={localPaused}
           className={[
             'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40',
@@ -420,7 +422,7 @@ export default function Present() {
         <button
           type="button"
           onClick={handleShuffle}
-          disabled={baseOptions.length < 2}
+          disabled={baseOptions.length < 2 || state.allDone}
           className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
         >
           <Shuffle size={14} aria-hidden="true" />
@@ -474,7 +476,8 @@ export default function Present() {
             <button
               type="button"
               onClick={handleStartTimer}
-              className="rounded px-2.5 py-1.5 text-xs font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+              disabled={isClosed}
+              className="rounded px-2.5 py-1.5 text-xs font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
             >
               Start
             </button>
