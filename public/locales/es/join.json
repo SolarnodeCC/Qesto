@@ -31,5 +31,6 @@
   "noInviteTokenFound": "No se encontró un token de invitación. Por favor, use el enlace de su correo de invitación.",
   "inviteLinkExpired": "Este enlace de invitación ha expirado o no es válido.",
   "alreadyMemberOfTeam": "Ya es miembro de este equipo.",
-  "confirmingInvite": "Confirmando su invitación…"
+  "confirmingInvite": "Confirmando su invitación…",
+  "allDone.heading": "¡Gracias por vuestra aportación!"
 }

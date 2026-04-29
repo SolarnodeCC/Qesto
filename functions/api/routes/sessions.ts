@@ -35,6 +35,12 @@ import {
   WizardValidationError,
   generateQuestions,
 } from '../lib/ai-wizard'
+import { extractThemes } from '../lib/ai-insights'
+import {
+  toInsightsInput,
+  type SessionBundle,
+  type QuestionBreakdown,
+} from '../lib/session-bundle'
 import { rateLimit } from '../lib/rate-limit'
 import { sanitizeError } from '../lib/error-handler'
 import type { LiveQuestion } from '../realtime'
@@ -168,6 +174,106 @@ async function postDO(env: Env, sessionId: string, path: string, body: unknown):
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
+
+// Best-effort background insight generation triggered on session close.
+// Runs via waitUntil so it never delays the close response.
+// Only fires for team-plan users; skips if insights are already cached.
+async function precomputeInsights(
+  env: Env,
+  sessionId: string,
+  sessionTitle: string,
+  ownerId: string,
+): Promise<void> {
+  const MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
+  const cacheKey = `insights:${sessionId}`
+
+  const userRow = await env.DB.prepare(`SELECT plan FROM users WHERE id = ?1`)
+    .bind(ownerId)
+    .first<{ plan: string }>()
+  if (userRow?.plan !== 'team') return
+
+  // Skip if already cached (e.g. user manually triggered analyze before closing)
+  const existing = await env.DECISIONS_KV.get(cacheKey)
+  if (existing) return
+
+  // Collect open-ended responses
+  const openRows = await env.DB.prepare(
+    `SELECT v.option_id AS text
+       FROM votes v
+       JOIN questions q ON q.id = v.question_id
+      WHERE v.session_id = ?1 AND q.kind = 'open'
+      ORDER BY v.submitted_at ASC
+      LIMIT 500`,
+  )
+    .bind(sessionId)
+    .all<{ text: string }>()
+  const openResponses = (openRows.results ?? []).map((r) => r.text).filter(Boolean)
+
+  // Collect poll/ranking/consent breakdowns
+  const qRows = await env.DB.prepare(
+    `SELECT id, prompt, kind, options_json
+       FROM questions
+      WHERE session_id = ?1
+        AND kind IN ('poll', 'ranking', 'consent')
+      ORDER BY position`,
+  )
+    .bind(sessionId)
+    .all<{ id: string; prompt: string; kind: string; options_json: string }>()
+
+  const pollBreakdown: QuestionBreakdown[] = []
+  for (const q of qRows.results ?? []) {
+    const voteRows = await env.DB.prepare(
+      `SELECT option_id, COUNT(*) AS votes FROM votes WHERE question_id = ?1 GROUP BY option_id`,
+    )
+      .bind(q.id)
+      .all<{ option_id: string; votes: number }>()
+
+    let options: { id: string; label: string }[] = []
+    try {
+      options = JSON.parse(q.options_json) as { id: string; label: string }[]
+    } catch {
+      options = []
+    }
+
+    pollBreakdown.push({
+      questionId: q.id,
+      prompt: q.prompt,
+      kind: q.kind as QuestionBreakdown['kind'],
+      options: options.map((o) => ({
+        label: o.label,
+        votes: voteRows.results?.find((v) => v.option_id === o.id)?.votes ?? 0,
+      })),
+    })
+  }
+
+  const bundle: SessionBundle = {
+    sessionId,
+    sessionTitle,
+    closedAt: Date.now(),
+    openResponses,
+    pollBreakdown,
+    similarSessionTitles: [], // skip Vectorize in background job to reduce latency
+  }
+
+  const input = toInsightsInput(bundle)
+  if (input.openResponses.length === 0 && !input.pollBreakdown?.length) return
+
+  const result = await extractThemes(env.AI, input, MODEL)
+  const themes = result.themes.map((t) => t.theme)
+
+  const payload = {
+    session_id: sessionId,
+    generated_at: Date.now(),
+    model: MODEL,
+    themes,
+    follow_ups: [] as string[],
+  }
+
+  await env.DECISIONS_KV.put(cacheKey, JSON.stringify(payload), { expirationTtl: 3600 })
+  console.log(
+    JSON.stringify({ event: 'insights.precompute.ok', sessionId, theme_count: themes.length }),
+  )
 }
 
 export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
@@ -738,6 +844,26 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       count: total,
       traceId: c.get('trace_id'),
     })
+
+    // Background insight pre-computation: fires after response is sent, never
+    // delays the close. Only runs for team-plan users; skips if already cached.
+    // Hono throws "This context has no ExecutionContext" when no ctx is passed
+    // (e.g. in tests), so we guard with try/catch rather than optional chaining.
+    try {
+      c.executionCtx.waitUntil(
+        precomputeInsights(c.env, id, session.title, user.sub).catch((err) => {
+          console.log(
+            JSON.stringify({
+              event: 'insights.precompute.error',
+              sessionId: id,
+              error: String(err),
+            }),
+          )
+        }),
+      )
+    } catch {
+      // No ExecutionContext available (test environment) — skip background work.
+    }
 
     return c.json({
       ok: true,

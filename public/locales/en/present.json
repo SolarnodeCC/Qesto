@@ -21,5 +21,6 @@
   "connectedLabel": "connected",
   "responses_one": "{count} response",
   "responses_other": "{count} responses",
-  "anonymity": "Full anonymity"
+  "anonymity": "Full anonymity",
+  "allDone.heading": "Thanks for your input!"
 }

@@ -43,6 +43,8 @@ export type ServerMessage =
         role: 'presenter' | 'voter'
         voterId: string
         question: LiveQuestion | null
+        questionIndex: number
+        questionTotal: number
         results: { counts: Record<string, number>; total: number }
         participants: number
         /** Unix ms when the current question auto-advances (fun mode only). */
@@ -52,7 +54,7 @@ export type ServerMessage =
     }
   | {
       type: 'question'
-      data: { question: LiveQuestion }
+      data: { question: LiveQuestion; index: number; total: number }
       timestamp: number
     }
   | {

@@ -60,6 +60,8 @@ describe('useLiveSession reducer', () => {
         role: 'voter',
         voterId: 'v_abc',
         question: QUESTION,
+        questionIndex: 0,
+        questionTotal: 3,
         results: { counts: { o1: 3, o2: 1 }, total: 4 },
         participants: 7,
       })
@@ -71,6 +73,8 @@ describe('useLiveSession reducer', () => {
       expect(next.participants).toBe(7)
       expect(next.reconnectAttempts).toBe(0)
       expect(next.error).toBeNull()
+      expect(next.questionIndex).toBe(0)
+      expect(next.questionTotal).toBe(3)
     })
 
     it('resets reconnect counter on successful init', () => {
@@ -81,6 +85,8 @@ describe('useLiveSession reducer', () => {
         role: 'voter',
         voterId: 'v_abc',
         question: null,
+        questionIndex: 0,
+        questionTotal: 0,
         results: { counts: {}, total: 0 },
         participants: 0,
       })
@@ -89,12 +95,15 @@ describe('useLiveSession reducer', () => {
   })
 
   describe('question', () => {
-    it('updates active question and resets lastVote', () => {
-      const state: LiveState = { ...INITIAL, lastVote: { optionId: 'o1' } }
+    it('updates active question, resets lastVote and allDone, and tracks position', () => {
+      const state: LiveState = { ...INITIAL, lastVote: { optionId: 'o1' }, allDone: true }
       const newQ: LiveQuestion = { ...QUESTION, id: 'q2', prompt: 'Next question' }
-      const next = reducer(state, { kind: 'question', question: newQ })
+      const next = reducer(state, { kind: 'question', question: newQ, index: 1, total: 3 })
       expect(next.question).toEqual(newQ)
       expect(next.lastVote).toBeNull()
+      expect(next.allDone).toBe(false)
+      expect(next.questionIndex).toBe(1)
+      expect(next.questionTotal).toBe(3)
     })
   })
 
