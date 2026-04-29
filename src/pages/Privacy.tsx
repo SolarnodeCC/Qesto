@@ -163,8 +163,8 @@ export default function Privacy() {
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               Under GDPR and equivalent laws, you have the right to access, correct, export, or delete your data.
               Email{' '}
-              <a href="mailto:dpo@qesto.app" className="text-teal-600 hover:underline">
-                dpo@qesto.app
+              <a href="mailto:dpo@qesto.cc" className="text-teal-600 hover:underline">
+                dpo@qesto.cc
               </a>{' '}
               — we respond within 30 days.
             </p>
@@ -208,11 +208,11 @@ export default function Privacy() {
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               Data Protection Officer:{' '}
-              <a href="mailto:dpo@qesto.app" className="text-teal-600 hover:underline">dpo@qesto.app</a>
+              <a href="mailto:dpo@qesto.cc" className="text-teal-600 hover:underline">dpo@qesto.cc</a>
               {' '}· EU representative:{' '}
-              <a href="mailto:eu-rep@qesto.app" className="text-teal-600 hover:underline">eu-rep@qesto.app</a>
+              <a href="mailto:eu-rep@qesto.cc" className="text-teal-600 hover:underline">eu-rep@qesto.cc</a>
               {' '}· General:{' '}
-              <a href="mailto:privacy@qesto.app" className="text-teal-600 hover:underline">privacy@qesto.app</a>
+              <a href="mailto:privacy@qesto.cc" className="text-teal-600 hover:underline">privacy@qesto.cc</a>
             </p>
             <p className="text-[13px] text-pulse-400 mt-8">
               — This policy replaces all prior privacy statements. Prior versions available on request.

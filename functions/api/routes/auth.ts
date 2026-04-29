@@ -117,7 +117,13 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
     const { subject, text, html } = magicLinkEmail(c.env.API_URL, raw)
     try {
-      await sendEmail(c.env.RESEND_API_KEY, { to: email, subject, text, html })
+      await sendEmail(c.env.RESEND_API_KEY, {
+        to: email,
+        subject,
+        text,
+        html,
+        ...(c.env.RESEND_FROM ? { from: c.env.RESEND_FROM } : {}),
+      })
     } catch (err) {
       console.error(`[auth] email delivery failed: ${(err as Error).message}`)
     }
@@ -355,6 +361,7 @@ export function mountAuthRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
           subject: 'Reset your Qesto password',
           text: `Click the link to reset your password (valid 1 hour):\n\n${resetUrl}`,
           html: `<p>Click the link below to reset your Qesto password. The link is valid for 1 hour.</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
+          ...(c.env.RESEND_FROM ? { from: c.env.RESEND_FROM } : {}),
         })
       } catch (err) {
         console.error(`[auth] reset email delivery failed: ${(err as Error).message}`)
