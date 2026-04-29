@@ -89,7 +89,7 @@ function buildUserPrompt(input: InsightsInput): string {
 const ThemeSchema = z.object({
   theme: z.string().min(1).max(60),
   count: z.number().int().min(0).max(100_000),
-  examples: z.array(z.string().min(1).max(200)).min(1).max(3),
+  examples: z.array(z.string().min(1).max(200)).min(0).max(5),
 })
 const ThemesOutputSchema = z.object({
   themes: z.array(ThemeSchema).min(1).max(5),
