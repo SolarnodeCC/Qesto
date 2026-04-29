@@ -730,7 +730,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 **Story**: As a team owner, I can generate shareable referral links to invite new users, earning credits for upgrades.
 
 **Acceptance Criteria**:
-- Given a team, when I click "Get Referral Link", then unique link is generated (format: `qesto.app/ref?code={referral_code}`)
+- Given a team, when I click "Get Referral Link", then unique link is generated (format: `qesto.cc/ref?code={referral_code}`)
 - Given a new user visiting referral link, when they sign up, then referrer team gets credit
 - Credit value: Free user ref = $10 credit, Pro ref = $25 credit (applied to next invoice)
 - Referrer can view referral history: email, date, signup status, credit earned

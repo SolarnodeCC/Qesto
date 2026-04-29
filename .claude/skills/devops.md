@@ -37,7 +37,7 @@ wrangler deploy worker/tail/tail.ts --name qesto-tail-worker
 wrangler d1 execute qesto-db --file schema.sql --env production
 
 # Verify
-curl https://qesto.app/api/admin/health
+curl https://qesto.cc/api/admin/health
 # Expected: { "d1": "ok", "kv": "ok", "do": "ok", "ai": "ok", "latencyMs": <n> }
 ```
 
@@ -101,7 +101,7 @@ Escalate: backup > 24h stale → P0 to architect
 
 ```bash
 wrangler pages deployment tail --project-name qesto --env production
-curl -H "Authorization: Bearer $ADMIN_TOKEN" "https://qesto.app/api/admin/metrics?window=24h"
+curl -H "Authorization: Bearer $ADMIN_TOKEN" "https://qesto.cc/api/admin/metrics?window=24h"
 ```
 
 Key AE events to monitor: `session.started` · `ws.capacity_exceeded` · `ai.inference` · `billing.payment_failed` · `error.*`
@@ -149,7 +149,7 @@ wrangler pages deploy dist --project-name qesto
 # Takes ~2-3 min. Verify in CF dashboard.
 
 # 4. Verify
-curl https://qesto.app/api/admin/health
+curl https://qesto.cc/api/admin/health
 # Expected: all services "ok", latencyMs normal
 
 # 5. Notify
@@ -181,12 +181,12 @@ curl https://qesto.app/api/admin/health
 wrangler pages deployment tail --project-name qesto --env production | head -30
 
 # Which service degraded?
-curl -s https://qesto.app/api/admin/health | jq '.'
+curl -s https://qesto.cc/api/admin/health | jq '.'
 # Look for: d1, kv, do, ai — one will be "error" or missing
 
 # Error rate trend?
 curl -s -H "Authorization: Bearer $ADMIN_TOKEN" \
-  https://qesto.app/api/admin/metrics?window=5m | jq '.errors_per_minute'
+  https://qesto.cc/api/admin/metrics?window=5m | jq '.errors_per_minute'
 ```
 
 **Triage summary** (for incident channel):
