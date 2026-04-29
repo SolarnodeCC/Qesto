@@ -15,6 +15,7 @@ export type InsightsInput = {
   sessionTitle: string
   openResponses: string[] // raw free-text responses
   pollBreakdown?: { prompt: string; topLabels: string[] }[] // up to 5 poll prompts with their top labels
+  similarSessionTitles?: string[] // from Vectorize semantic search, best-effort
 }
 
 export type InsightTheme = {
@@ -74,6 +75,12 @@ function buildUserPrompt(input: InsightsInput): string {
   const capped = input.openResponses.slice(0, 100) // cap to bound tokens
   for (let i = 0; i < capped.length; i++) {
     lines.push(`${i + 1}. ${capped[i]}`)
+  }
+  if (input.similarSessionTitles && input.similarSessionTitles.length > 0) {
+    lines.push('\nSimilar past sessions for additional context:')
+    for (const t of input.similarSessionTitles) {
+      lines.push(`- "${t}"`)
+    }
   }
   lines.push('\nReturn the themes JSON now.')
   return lines.join('\n')
