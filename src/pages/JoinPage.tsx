@@ -15,6 +15,7 @@ import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/W
 
 type Lookup =
   | { status: 'loading' }
+  | { status: 'waiting'; sessionId: string; title: string }
   | { status: 'ready'; sessionId: string; title: string }
   | { status: 'error'; message: string }
 
@@ -22,22 +23,52 @@ export default function JoinPage() {
   const { code } = useParams<{ code: string }>()
   const [lookup, setLookup] = useState<Lookup>({ status: 'loading' })
   const t = useT('join')
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const lookupCode = useCallback(async (c: string, silent = false) => {
+    const res = await api<{ id: string; title: string; code: string; status: 'draft' | 'live' }>(
+      `/api/sessions/by-code/${encodeURIComponent(c.toUpperCase())}`,
+    )
+    if (res.ok) {
+      if (res.data.status === 'live') {
+        if (pollRef.current) {
+          clearInterval(pollRef.current)
+          pollRef.current = null
+        }
+        setLookup({ status: 'ready', sessionId: res.data.id, title: res.data.title })
+      } else if (!silent) {
+        setLookup({ status: 'waiting', sessionId: res.data.id, title: res.data.title })
+      }
+    } else if (!silent) {
+      setLookup({ status: 'error', message: res.error.message })
+    }
+  }, [])
 
   useEffect(() => {
     if (!code) return
-    let cancelled = false
-    ;(async () => {
-      const res = await api<{ id: string; title: string; code: string }>(
-        `/api/sessions/by-code/${encodeURIComponent(code.toUpperCase())}`,
-      )
-      if (cancelled) return
-      if (res.ok) setLookup({ status: 'ready', sessionId: res.data.id, title: res.data.title })
-      else setLookup({ status: 'error', message: res.error.message })
-    })()
+    lookupCode(code)
     return () => {
-      cancelled = true
+      if (pollRef.current) {
+        clearInterval(pollRef.current)
+        pollRef.current = null
+      }
     }
-  }, [code])
+  }, [code, lookupCode])
+
+  // Start polling when we enter the waiting state
+  useEffect(() => {
+    if (lookup.status !== 'waiting' || !code) return
+    if (pollRef.current) clearInterval(pollRef.current)
+    pollRef.current = setInterval(() => {
+      lookupCode(code, true)
+    }, 3000)
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current)
+        pollRef.current = null
+      }
+    }
+  }, [lookup.status, code, lookupCode])
 
   if (lookup.status === 'loading') {
     return (
@@ -52,6 +83,39 @@ export default function JoinPage() {
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
         <span className="text-sm">{t('looking_up')}</span>
+      </main>
+    )
+  }
+
+  if (lookup.status === 'waiting') {
+    return (
+      <main id="main" className="min-h-screen flex flex-col">
+        <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
+        <div className="border-b border-pulse-100 px-5 py-3">
+          <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900">Qesto</span>
+        </div>
+        <div className="flex-1 max-w-lg w-full mx-auto px-5 py-12 flex flex-col items-center justify-center gap-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-violet-500 flex items-center justify-center shadow-lg" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold text-pulse-900">{lookup.title}</h1>
+            <p className="text-sm text-pulse-500 max-w-xs">You're in the right place! The presenter hasn't started the session yet.</p>
+          </div>
+          <div className="rounded-xl border border-pulse-200 bg-pulse-50 px-6 py-5 w-full max-w-sm space-y-3">
+            <div className="flex items-center justify-center gap-2 text-sm font-medium text-pulse-700" role="status" aria-live="polite">
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
+              Waiting for the session to start…
+            </div>
+            <p className="text-xs text-pulse-400">This page will automatically update when the presenter starts.</p>
+          </div>
+          <p className="text-xs text-pulse-400">
+            Join code: <span className="font-mono font-semibold text-pulse-600">{code?.toUpperCase()}</span>
+          </p>
+        </div>
       </main>
     )
   }

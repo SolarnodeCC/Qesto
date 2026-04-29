@@ -894,6 +894,73 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 
 ---
 
+## OBS-01: Observability Instrumentation (WebSocket Capacity, AI Inference, API Errors)
+
+**Size**: 5 pts | **Sprint**: 18 (mid-sprint P1 enabler) | **Priority**: P1 | **Status**: Pending
+
+**Story**: As an analytics operator, I need complete observability for realtime platform health, so I can measure engagement, performance bottlenecks, and error signals that block the north-star metric.
+
+**Acceptance Criteria**:
+
+**Event: ws.capacity_exceeded**
+- Given a LIVE session at max participant capacity, when a new voter attempts to join, then `ws.capacity_exceeded` event fires to Analytics Engine
+- Event payload includes: `timestamp`, `session_id`, `session_state` (LIVE), `max_capacity`, `current_participants`, `user_agent`
+- Event is fired before the JOIN_DENIED response is sent to the client (success signal before the reject)
+- Timestamp uses ISO 8601 format (UTC)
+- Code: Event fired in SessionRoom DO `onConnect()` handler after capacity check fails
+- Tests: Unit test verifies event payload structure; integration test with session at capacity + new joiner
+
+**Event: ai.inference**
+- Given any Workers AI inference call completes (e.g., question generation, theme extraction), when the call returns, then `ai.inference` event fires to Analytics Engine
+- Event payload includes: `timestamp`, `model_id` (e.g., `@cf/meta/llama-3.3-70b-instruct-fp8-fast`), `inference_duration_ms` (double), `input_tokens`, `output_tokens`, `inference_endpoint` (source route), `status` (success|failure)
+- Duration is measured server-side in milliseconds with sub-millisecond precision
+- If inference fails, `error_message` is included (first 200 chars only, no PII)
+- Code: Wrapper in `functions/api/utils/ai.ts` that emits event after `c.env.AI.run()` completes
+- Tests: Unit test verifies duration recording ≥1ms; mock AI call returns known duration; edge case: 0ms duration handled gracefully
+
+**Event: error.api**
+- Given any API route returns 5xx status, when the response is sent, then `error.api` event fires to Analytics Engine
+- Event payload includes: `timestamp`, `http_status` (500-599), `route` (path pattern, e.g., `/api/sessions/:id`), `method` (GET|POST|PUT|DELETE), `error_message` (first 200 chars, no PII), `user_id` (if authenticated; null if not), `team_id` (if applicable; null if not), `latency_ms` (double)
+- Every 5xx response generates exactly one event (no duplicates on retry)
+- Latency includes request receive time through response send
+- Code: Global error handler in Hono middleware (after all route handlers) emits event on 5xx
+- Tests: Unit test verifies event fires on 500/502/503/504; mock error thrown in route handler confirms payload; edge case: error with no user context handled
+
+**Definition of Done**:
+- [ ] Code reviewed (min 1 backend-dev reviewer)
+- [ ] Unit tests added (`tests/unit/observability/`) covering all three events + edge cases (missing fields, zero durations, 5xx variants)
+- [ ] `npm test` green (all observability tests pass)
+- [ ] `tsc --noEmit` passes (no TypeScript errors)
+- [ ] Acceptance criteria demonstrated: three events verified in Analytics Engine query (SELECT * FROM events WHERE event_name IN (...)) with correct payloads
+- [ ] Event payloads conform to Analytics Engine schema (existing schema must accommodate the three new events; no schema migration needed if backward-compatible)
+- [ ] Error state visible: all 5xx status codes are caught and instrumented (no silent failures)
+- [ ] No PII leaked: error messages and user context sanitized (first 200 chars, no email/password/token)
+- [ ] Latency impact: instrumentation adds <5ms to p95 request latency (measured in staging)
+
+**Story Points**: 5 (mechanical instrumentation, no new features; three events, three separate call sites, existing event schema)
+
+**In-Sprint Scope Change Analysis**:
+
+Decision tree (from product-owner.md Wave 2):
+1. **Is this a critical security/data loss bug?** No (observability enabler, not a bug fix)
+2. **Is this a P0 defect (broken feature in production)?** No (feature works; analytics incomplete)
+3. **Is this P1 (feature blockers, shipping delay)?** **YES — Analytics Engine is the north-star metric blocker**
+   - Three events (ws.capacity_exceeded, ai.inference, error.api) are essential for measuring platform health
+   - Backend-dev is implementing these now; must ship before analytics freeze for measurement baseline
+   - Without these, north-star KPIs (sessions started per team per month) are incomplete
+4. **Team capacity check**: Sprint 18 currently ~55 pts committed; estimate remaining capacity ~30 pts (typical 85–95% utilization rule). This story = 5 pts; well within buffer.
+5. **WSJF score vs. sprint minimum**: This is a P1 enabler (high business value: platform observability). Current sprint minimum is ~5 pts. ACCEPT.
+
+**Acceptance Decision**: **ACCEPT into Sprint 18**
+
+**Descope Plan**: None required (within capacity buffer). If capacity reduces mid-sprint due to blockers, defer lower-priority items from Sprint 18 (e.g., deferred `DX-INSIGHTS-01` if DESIGN-TOK-01 slips >2 days per SPRINT_PLAN.md risk mitigation).
+
+**Stakeholder Note**: This work unblocks analytics measurement. Backend-dev is already implementing; this story formalizes acceptance criteria and DoD to ensure events are production-ready before merge.
+
+**Dependencies**: None (can run in parallel with other Sprint 18 items)
+
+---
+
 **See also**:
 - `README.md` — documentation map (truth hierarchy, reading order)
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule

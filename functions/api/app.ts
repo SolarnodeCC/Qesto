@@ -18,6 +18,7 @@ import type { AdminVariables } from './middleware/admin'
 import { rbacMiddleware, type RbacVariables } from './middleware/rbac'
 import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
+import { writeEvent } from './lib/observability'
 import type { Env } from './types'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -85,6 +86,13 @@ export function createApp() {
     const trace_id = c.get('trace_id') ?? 'unknown'
     const maybeStatus = (err as unknown as { status?: number }).status
     const status = typeof maybeStatus === 'number' ? maybeStatus : 500
+    // Fire analytics event for 5xx errors only; 4xx client errors are noise.
+    if (status >= 500) {
+      writeEvent(c.env.METRICS_AE, {
+        name: 'error.api',
+        traceId: trace_id,
+      })
+    }
     return c.json(
       {
         ok: false,

@@ -187,12 +187,16 @@ export default function AdminUsersTab() {
 
   async function handleModalSave(data: Partial<AdminUser> & { email?: string }) {
     if (modal?.type === 'create') {
-      const res = await createUser({ email: data.email!, display_name: data.display_name ?? undefined, plan: data.plan })
+      const res = await createUser({
+        email: data.email!,
+        ...(data.display_name != null ? { display_name: data.display_name } : {}),
+        ...(data.plan != null ? { plan: data.plan } : {}),
+      })
       if (!res.ok) throw new Error(res.error.message)
     } else if (modal?.type === 'edit') {
       const res = await updateUser(modal.user.id, {
-        display_name: data.display_name,
-        plan: data.plan,
+        ...(data.display_name != null ? { display_name: data.display_name } : {}),
+        ...(data.plan != null ? { plan: data.plan } : {}),
         admin_role: data.admin_role as 'admin' | 'owner' | null,
       })
       if (!res.ok) throw new Error(res.error.message)

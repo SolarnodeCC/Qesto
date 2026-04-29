@@ -23,7 +23,8 @@ import {
   type QuestionBreakdown,
   type PollOptionBreakdown,
 } from '../lib/session-bundle'
-import type { Env } from '../types'
+import { writeEvent } from '../lib/observability'
+import type { Env, PlanTier } from '../types'
 
 type Vars = AuthVariables
 
@@ -147,9 +148,17 @@ export function mountAIInsightsRoutes(parent: any) {
       let sessionVector: number[] | undefined
       try {
         const embedText = `${sessionResult.title}: ${openResponses.slice(0, 10).join('. ')}`
+        const embedStart = Date.now()
         const embedResult = (await c.env.AI.run('@cf/baai/bge-m3', {
           text: embedText,
         })) as { data: number[][] }
+        writeEvent(c.env.METRICS_AE, {
+          name: 'ai.inference',
+          userId: user.sub,
+          plan: userPlan as PlanTier,
+          durationMs: Date.now() - embedStart,
+          traceId: trace_id,
+        })
         const vector = embedResult?.data?.[0]
         if (vector?.length === 768) {
           sessionVector = vector
@@ -189,7 +198,15 @@ export function mountAIInsightsRoutes(parent: any) {
       // ── AI call (probabilistic layer) ─────────────────────────────────────
       let result: Awaited<ReturnType<typeof extractThemes>>
       try {
+        const inferenceStart = Date.now()
         result = await extractThemes(c.env.AI, insightsInput, INSIGHTS_MODEL)
+        writeEvent(c.env.METRICS_AE, {
+          name: 'ai.inference',
+          userId: user.sub,
+          plan: userPlan as PlanTier,
+          durationMs: Date.now() - inferenceStart,
+          traceId: trace_id,
+        })
       } catch (err) {
         if (err instanceof InsightsValidationError) {
           return c.json(
@@ -233,12 +250,19 @@ export function mountAIInsightsRoutes(parent: any) {
 
       // Vectorize upsert: store this session for future similarity queries.
       try {
-        const vector =
-          sessionVector ??
-          ((await c.env.AI.run('@cf/baai/bge-m3', { text: sessionResult.title })) as {
-            data: number[][]
-          })?.data?.[0]
-
+        let vector: number[] | undefined = sessionVector
+        if (!vector) {
+          const upsertEmbedStart = Date.now()
+          const upsertEmbedResult = (await c.env.AI.run('@cf/baai/bge-m3', { text: sessionResult.title })) as { data: number[][] }
+          writeEvent(c.env.METRICS_AE, {
+            name: 'ai.inference',
+            userId: user.sub,
+            plan: userPlan as PlanTier,
+            durationMs: Date.now() - upsertEmbedStart,
+            traceId: trace_id,
+          })
+          vector = upsertEmbedResult?.data?.[0]
+        }
         if (vector?.length === 768) {
           await c.env.DECISIONS_VECTORIZE.upsert([
             {

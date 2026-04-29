@@ -155,7 +155,6 @@ async function invokeAI(
         messages,
         max_tokens: MAX_TOKENS,
         stream: false,
-        response_format: { type: 'json_object' },
       })) as { response?: string } | string
       const latencyMs = Date.now() - t0
       const raw =
