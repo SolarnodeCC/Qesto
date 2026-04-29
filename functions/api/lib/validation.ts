@@ -83,7 +83,7 @@ export const AIQuestionSchema = z.object({
 })
 
 export const AIQuestionsOutputSchema = z.object({
-  questions: z.array(AIQuestionSchema).min(3).max(5),
+  questions: z.array(AIQuestionSchema).min(5).max(10),
 })
 
 // LAUNCHPAD-01: reorder input.
