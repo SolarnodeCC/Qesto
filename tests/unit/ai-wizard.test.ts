@@ -12,23 +12,19 @@ function mockAi(response: unknown): Ai {
   } as unknown as Ai
 }
 
+const Q = (prompt: string, kind = 'poll') => ({
+  kind,
+  prompt,
+  options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }],
+})
+
 const VALID_QUESTIONS_JSON = JSON.stringify({
   questions: [
-    {
-      kind: 'poll',
-      prompt: 'What matters most this quarter?',
-      options: [{ label: 'Growth' }, { label: 'Quality' }, { label: 'Speed' }],
-    },
-    {
-      kind: 'poll',
-      prompt: 'Biggest blocker?',
-      options: [{ label: 'Process' }, { label: 'Tools' }, { label: 'People' }],
-    },
-    {
-      kind: 'consent',
-      prompt: 'Proceed with plan?',
-      options: [{ label: 'Yes' }, { label: 'No' }, { label: 'Abstain' }],
-    },
+    { kind: 'poll',    prompt: 'What matters most this quarter?', options: [{ label: 'Growth' }, { label: 'Quality' }, { label: 'Speed' }] },
+    { kind: 'poll',    prompt: 'Biggest blocker?',                options: [{ label: 'Process' }, { label: 'Tools' }, { label: 'People' }] },
+    { kind: 'consent', prompt: 'Proceed with plan?',              options: [{ label: 'Yes' }, { label: 'No' }, { label: 'Abstain' }] },
+    { kind: 'ranking', prompt: 'Prioritise these goals:',         options: [{ label: 'Quality' }, { label: 'Speed' }, { label: 'Cost' }] },
+    { kind: 'open',    prompt: 'What would you change?',          options: [{ label: 'Processes' }, { label: 'Tools' }] },
   ],
 })
 
@@ -41,7 +37,7 @@ describe('ai-wizard/generateQuestions', () => {
       sessionGoal: 'Align the team on priorities',
     })
 
-    expect(result.questions).toHaveLength(3)
+    expect(result.questions).toHaveLength(5)
     expect(result.questions[0].id).toMatch(/^[0-9A-HJKMNP-TV-Z]+$/i)
     expect(result.questions[0].options[0].id).toBeTruthy()
     expect(result.confidence).toBeGreaterThan(0.7)
@@ -49,16 +45,13 @@ describe('ai-wizard/generateQuestions', () => {
   })
 
   it('strips markdown fences before parsing', async () => {
+    const fenced = [Q('Q1?'), Q('Q2?'), Q('Q3?'), Q('Q4?'), Q('Q5?')]
     const ai = mockAi({
-      response:
-        '```json\n{\n  "questions": [\n    {"kind":"poll","prompt":"First question?","options":[{"label":"x"},{"label":"y"},{"label":"z"}]},\n    {"kind":"poll","prompt":"Second question?","options":[{"label":"x"},{"label":"y"},{"label":"z"}]},\n    {"kind":"poll","prompt":"Third question?","options":[{"label":"x"},{"label":"y"},{"label":"z"}]}\n  ]\n}\n```',
+      response: '```json\n' + JSON.stringify({ questions: fenced }) + '\n```',
     })
 
-    const result = await generateQuestions(ai, {
-      sessionTitle: 'X',
-      sessionGoal: 'Y',
-    })
-    expect(result.questions).toHaveLength(3)
+    const result = await generateQuestions(ai, { sessionTitle: 'X', sessionGoal: 'Y' })
+    expect(result.questions).toHaveLength(5)
     // Confidence deducted for needing fence trimming AND minimum count.
     expect(result.confidence).toBeLessThan(1)
   })
@@ -70,13 +63,15 @@ describe('ai-wizard/generateQuestions', () => {
     ).rejects.toBeInstanceOf(WizardValidationError)
   })
 
-  it('throws WizardValidationError when schema fails (only one option)', async () => {
+  it('throws WizardValidationError when schema fails (only one option per question)', async () => {
     const ai = mockAi({
       response: JSON.stringify({
         questions: [
           { kind: 'poll', prompt: 'Question A', options: [{ label: 'x' }] },
           { kind: 'poll', prompt: 'Question B', options: [{ label: 'x' }] },
           { kind: 'poll', prompt: 'Question C', options: [{ label: 'x' }] },
+          { kind: 'poll', prompt: 'Question D', options: [{ label: 'x' }] },
+          { kind: 'poll', prompt: 'Question E', options: [{ label: 'x' }] },
         ],
       }),
     })
@@ -90,8 +85,7 @@ describe('ai-wizard/generateQuestions', () => {
       response: JSON.stringify({
         questions: [
           { kind: 'multi_choice', prompt: 'Question A?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
-          { kind: 'poll', prompt: 'Question B?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
-          { kind: 'poll', prompt: 'Question C?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
+          Q('Question B?'), Q('Question C?'), Q('Question D?'), Q('Question E?'),
         ],
       }),
     })
@@ -104,8 +98,7 @@ describe('ai-wizard/generateQuestions', () => {
       response: JSON.stringify({
         questions: [
           { kind: 'consent', prompt: 'Proceed?', options: [{ label: 'Yes' }, { label: 'No' }] },
-          { kind: 'poll', prompt: 'Question B?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
-          { kind: 'poll', prompt: 'Question C?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
+          Q('Question B?'), Q('Question C?'), Q('Question D?'), Q('Question E?'),
         ],
       }),
     })
@@ -143,7 +136,7 @@ describe('ai-wizard/generateQuestions', () => {
     } as unknown as Ai
 
     const result = await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
-    expect(result.questions).toHaveLength(3)
+    expect(result.questions).toHaveLength(5)
     expect(callCount).toBe(3)
   })
 
@@ -160,7 +153,7 @@ describe('ai-wizard/generateQuestions', () => {
     } as unknown as Ai
 
     const result = await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
-    expect(result.questions).toHaveLength(3)
+    expect(result.questions).toHaveLength(5)
     expect(calledModels).toContain(__internal.FALLBACK_MODEL)
   })
 

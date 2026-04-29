@@ -61,17 +61,20 @@ design clear, unbiased poll and ranking questions for live team sessions.
 
 Always respond with STRICT JSON and nothing else — no prose, no markdown.
 The JSON must be an object with exactly one key "questions", whose value is an
-array of between 3 and 5 question objects. Each question object has:
+array of 5 to 10 question objects. Each question object has:
 
   kind    : one of "poll" | "ranking" | "consent" | "open"
   prompt  : a concise question (max 240 chars)
-  options : an array of 3 to 5 option objects { "label": string }
+  options : an array of 2 to 5 option objects { "label": string }
 
 Rules:
+- Generate between 5 and 10 questions. Use fewer (5-6) for narrow or simple
+  topics and more (8-10) for broad or complex topics that benefit from deeper
+  exploration.
 - Do not repeat the session title verbatim as a question.
 - Prefer "poll" kind for 3+ choice scenarios, "ranking" when order matters,
   "consent" for agree/disagree, "open" only when free text is desired (still
-  provide 3 suggested prompt options).
+  provide 2-3 suggested prompt options).
 - Keep option labels short, action-oriented, and mutually exclusive where
   possible.
 - Avoid leading language ("don't you agree…?").`
@@ -88,8 +91,10 @@ function buildUserPrompt(input: GenerateInput): string {
   return `Session title: ${input.sessionTitle}
 Session goal: ${input.sessionGoal}${focus}
 
-Generate 3 to 5 questions that help the facilitator surface group alignment,
-priorities, and concerns. Respond with JSON only.`
+Generate between 5 and 10 questions that help the facilitator surface group
+alignment, priorities, and concerns. Scale the number to the breadth and depth
+of the topic — more questions for complex or multi-faceted subjects.
+Respond with JSON only.`
 }
 
 // Extract the first JSON object from a possibly-noisy AI response. Llama
@@ -123,7 +128,7 @@ function normalise(parsed: AIQuestionsOutput): GeneratedQuestion[] {
 function scoreConfidence(raw: string, cleaned: string, count: number): number {
   let score = 1.0
   if (raw !== cleaned) score -= 0.1 // needed trimming
-  if (count === 3) score -= 0.1 // hit the lower bound
+  if (count === 5) score -= 0.1 // hit the lower bound
   if (raw.length > 4000) score -= 0.1 // unusually long response
   return Math.max(0, Math.min(1, Number(score.toFixed(2))))
 }
