@@ -40,7 +40,7 @@ export type SamlAssertion = {
  * The returned string is already base64-encoded + URL-encoded; callers should
  * append it directly to the IdP SSO URL as `?SAMLRequest=<value>`.
  *
- * @param entityId  SP entity id (e.g. 'https://app.qesto.io')
+ * @param entityId  SP entity id (e.g. 'https://qesto.cc')
  * @param acsUrl    Assertion Consumer Service URL (our /api/auth/saml/callback)
  * @param _idpSsoUrl IdP SSO endpoint — reserved for future destination attr
  */

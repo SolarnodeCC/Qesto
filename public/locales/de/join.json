@@ -31,5 +31,6 @@
   "noInviteTokenFound": "Kein Einladungstoken gefunden. Bitte verwenden Sie den Link aus Ihrer Einladungs-E-Mail.",
   "inviteLinkExpired": "Dieser Einladungslink ist abgelaufen oder ungültig.",
   "alreadyMemberOfTeam": "Sie sind bereits Mitglied dieses Teams.",
-  "confirmingInvite": "Ihre Einladung wird bestätigt…"
+  "confirmingInvite": "Ihre Einladung wird bestätigt…",
+  "allDone.heading": "Danke für euren Beitrag!"
 }

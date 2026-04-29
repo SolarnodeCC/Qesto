@@ -4,6 +4,12 @@ import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
 
+const PLAN_BRAND_NAMES: Record<AdminUser['plan'], string> = {
+  free:    'Pulse',
+  starter: 'Signal',
+  team:    'Chorus',
+}
+
 function PlanBadge({ plan }: { plan: AdminUser['plan'] }) {
   const variant: Record<AdminUser['plan'], string> = {
     free: 'bg-pulse-100 text-pulse-600',
@@ -12,7 +18,7 @@ function PlanBadge({ plan }: { plan: AdminUser['plan'] }) {
   }
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium uppercase tracking-wide ${variant[plan]}`}>
-      {plan}
+      {PLAN_BRAND_NAMES[plan]}
     </span>
   )
 }
@@ -120,9 +126,9 @@ function UserModal({
             onChange={(e) => setPlan(e.target.value as AdminUser['plan'])}
             className="w-full border border-pulse-300 rounded-md px-3 py-2 text-body-s focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
           >
-            <option value="free">Free</option>
-            <option value="starter">Starter</option>
-            <option value="team">Team</option>
+            <option value="free">Pulse</option>
+            <option value="starter">Signal</option>
+            <option value="team">Chorus</option>
           </select>
         </div>
 

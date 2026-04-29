@@ -21,5 +21,6 @@
   "connectedLabel": "verbunden",
   "responses_one": "{count} Antwort",
   "responses_other": "{count} Antworten",
-  "anonymity": "Vollständige Anonymität"
+  "anonymity": "Vollständige Anonymität",
+  "allDone.heading": "Danke für euren Beitrag!"
 }

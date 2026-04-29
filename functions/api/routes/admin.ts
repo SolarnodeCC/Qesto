@@ -522,7 +522,8 @@ export function mountAdminRoutes(parent: any) {
 
       return c.json({ ok: true, data: { users: results, total: countRow?.n ?? 0 }, trace_id }, 200)
     } catch (err) {
-      return c.json({ ok: true, data: { users: [], total: 0 }, trace_id }, 200)
+      const message = err instanceof Error ? err.message : 'Failed to fetch users'
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 

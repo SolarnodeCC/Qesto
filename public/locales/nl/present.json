@@ -21,5 +21,6 @@
   "connectedLabel": "verbonden",
   "responses_one": "{count} antwoord",
   "responses_other": "{count} antwoorden",
-  "anonymity": "Volledige anonimiteit"
+  "anonymity": "Volledige anonimiteit",
+  "allDone.heading": "Bedankt voor jullie input!"
 }
