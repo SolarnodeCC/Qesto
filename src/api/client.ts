@@ -2,8 +2,7 @@
 // (ApiSuccess / ApiError per SPEC_BACKEND.md) so pages and hooks don't
 // hand-roll error handling.
 import { getLanguageHeader } from '../i18n'
-
-const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
+import { API_BASE_URL } from '../config/api'
 
 // In-memory token store. Backed by sessionStorage so it survives page
 // refreshes within the same tab but is cleared when the tab is closed.
@@ -67,7 +66,7 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
 
   let res: Response
   try {
-    res = await fetch(`${API_BASE}${path}`, init)
+    res = await fetch(`${API_BASE_URL}${path}`, init)
   } catch (err) {
     return {
       ok: false,

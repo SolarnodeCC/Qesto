@@ -164,7 +164,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
         className="shrink-0 px-8 py-4 flex items-center justify-between text-xs border-t"
         style={{ borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.25)' }}
       >
-        <span>qesto.app/j/{state.session?.code ?? code}</span>
+        <span>qesto.cc/j/{state.session?.code ?? code}</span>
         <span className="font-[family-name:var(--font-display)] font-semibold">Qesto</span>
       </div>
     </div>
