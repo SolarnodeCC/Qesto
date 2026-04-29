@@ -48,6 +48,14 @@ export const adminMiddleware: MiddlewareHandler<{
     return
   }
 
+  // Superuser bypass — production owner account.
+  if (c.env.SUPERUSER_EMAIL && user.email === c.env.SUPERUSER_EMAIL) {
+    c.set('isAdmin', true)
+    c.set('adminRole', 'owner')
+    await next()
+    return
+  }
+
   // Query user_roles table.  The index idx_user_roles_user_id covers this lookup.
   const row = await c.env.DB.prepare(
     `SELECT role FROM user_roles WHERE user_id = ?1 AND role IN ('owner', 'admin') LIMIT 1`,
