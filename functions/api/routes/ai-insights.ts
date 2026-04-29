@@ -219,7 +219,7 @@ export function mountAIInsightsRoutes(parent: any) {
               },
               trace_id,
             },
-            400,
+            502,
           )
         }
         if (err instanceof InsightsAIError) {

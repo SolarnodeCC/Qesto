@@ -254,7 +254,7 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
             },
             trace_id: c.get('trace_id'),
           },
-          400,
+          502,
         )
       }
       if (err instanceof InsightsAIError) {
