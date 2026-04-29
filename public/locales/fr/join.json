@@ -31,5 +31,6 @@
   "noInviteTokenFound": "Aucun jeton d'invitation trouvé. Veuillez utiliser le lien de votre email d'invitation.",
   "inviteLinkExpired": "Ce lien d'invitation a expiré ou n'est pas valide.",
   "alreadyMemberOfTeam": "Vous êtes déjà membre de cette équipe.",
-  "confirmingInvite": "Confirmation de votre invitation…"
+  "confirmingInvite": "Confirmation de votre invitation…",
+  "allDone.heading": "Merci pour vos contributions !"
 }

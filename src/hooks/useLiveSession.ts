@@ -35,6 +35,8 @@ export type LiveState = {
   lastVote: { optionId: string } | null
   paused: boolean
   allDone: boolean
+  questionIndex: number
+  questionTotal: number
 }
 
 type Action =
@@ -49,10 +51,12 @@ type Action =
       role: 'presenter' | 'voter'
       voterId: string
       question: LiveQuestion | null
+      questionIndex: number
+      questionTotal: number
       results: { counts: Record<string, number>; total: number }
       participants: number
     }
-  | { kind: 'question'; question: LiveQuestion }
+  | { kind: 'question'; question: LiveQuestion; index: number; total: number }
   | { kind: 'results'; counts: Record<string, number>; total: number }
   | { kind: 'participants'; count: number }
   | { kind: 'session_closed'; counts: Record<string, number>; total: number }
@@ -75,6 +79,8 @@ export const INITIAL: LiveState = {
   lastVote: null,
   paused: false,
   allDone: false,
+  questionIndex: 0,
+  questionTotal: 0,
 }
 
 export function reducer(state: LiveState, action: Action): LiveState {
@@ -96,6 +102,8 @@ export function reducer(state: LiveState, action: Action): LiveState {
         role: action.role,
         voterId: action.voterId,
         question: action.question,
+        questionIndex: action.questionIndex,
+        questionTotal: action.questionTotal,
         results: action.results,
         participants: action.participants,
         reconnectAttempts: 0,
@@ -103,7 +111,7 @@ export function reducer(state: LiveState, action: Action): LiveState {
         paused: false,
       }
     case 'question':
-      return { ...state, question: action.question, lastVote: null }
+      return { ...state, question: action.question, lastVote: null, allDone: false, questionIndex: action.index, questionTotal: action.total }
     case 'results':
       return { ...state, results: { counts: action.counts, total: action.total } }
     case 'participants':
@@ -181,12 +189,19 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
               role: msg.data.role as 'presenter' | 'voter',
               voterId: msg.data.voterId as string,
               question: (msg.data.question as LiveQuestion | null) ?? null,
+              questionIndex: (msg.data.questionIndex as number) ?? 0,
+              questionTotal: (msg.data.questionTotal as number) ?? 0,
               results: msg.data.results as { counts: Record<string, number>; total: number },
               participants: msg.data.participants as number,
             })
             break
           case 'question':
-            dispatch({ kind: 'question', question: msg.data.question as LiveQuestion })
+            dispatch({
+              kind: 'question',
+              question: msg.data.question as LiveQuestion,
+              index: (msg.data.index as number) ?? 0,
+              total: (msg.data.total as number) ?? 0,
+            })
             break
           case 'results':
             dispatch({

@@ -183,7 +183,7 @@ export default function Present() {
             <div className="absolute inset-0 z-30 flex flex-col items-center justify-center" style={{ background: 'var(--gradient-brand)' }}>
               <div className="text-[120px] mb-6" aria-hidden="true">🎉</div>
               <h2 className="font-[family-name:var(--font-display)] font-bold text-[80px] leading-[1.1] tracking-[-0.02em] text-white text-center [text-wrap:balance]">
-                Bedankt voor<br />jullie input!
+                {t('allDone.heading')}
               </h2>
               <p className="mt-6 text-[32px] text-white/80 font-medium">
                 {state.session?.title}
@@ -353,7 +353,7 @@ export default function Present() {
         <button
           type="button"
           onClick={() => sendBack()}
-          disabled={!isLive}
+          disabled={!isLive || state.questionIndex === 0}
           className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-pulse-600"
         >
           <ChevronLeft size={14} aria-hidden="true" />

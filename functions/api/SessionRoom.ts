@@ -339,7 +339,7 @@ export class SessionRoom implements DurableObject {
         await this.ctx.storage.put(K_QUESTION, nextQ)
         await this.ctx.storage.put(K_COUNTS, {} as Counts)
         await this.ctx.storage.put(K_VOTERS, {} as Votes)
-        const advanceMsg = serverMessage({ type: 'question', data: { question: nextQ }, timestamp: now() })
+        const advanceMsg = serverMessage({ type: 'question', data: { question: nextQ, index: nextIdx, total: allQs.length }, timestamp: now() })
         for (const socket of this.ctx.getWebSockets()) {
           try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
         }
@@ -362,7 +362,7 @@ export class SessionRoom implements DurableObject {
         await this.ctx.storage.put(K_QUESTION, prevQ)
         await this.ctx.storage.put(K_COUNTS, {} as Counts)
         await this.ctx.storage.put(K_VOTERS, {} as Votes)
-        const backMsg = serverMessage({ type: 'question', data: { question: prevQ }, timestamp: now() })
+        const backMsg = serverMessage({ type: 'question', data: { question: prevQ, index: prevIdx, total: allQs.length }, timestamp: now() })
         for (const socket of this.ctx.getWebSockets()) {
           try { socket.send(backMsg) } catch { /* ignore closed socket */ }
         }
@@ -568,6 +568,8 @@ export class SessionRoom implements DurableObject {
       return
     }
     const question = (await this.ctx.storage.get<LiveQuestion>(K_QUESTION)) ?? null
+    const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+    const questionIndex = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const session: LiveSessionSummary = {
@@ -586,6 +588,8 @@ export class SessionRoom implements DurableObject {
           role: att.role,
           voterId: att.voterId,
           question,
+          questionIndex,
+          questionTotal: allQs.length,
           results: { counts, total },
           participants: this.ctx.getWebSockets().length,
           expiresAt: meta.questionExpiresAt ?? null,

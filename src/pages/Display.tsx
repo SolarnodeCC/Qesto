@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { Users } from 'lucide-react'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
+import { useT } from '../i18n'
 
 type Lookup =
   | { status: 'loading' }
@@ -63,6 +64,7 @@ const FILLS = [
 
 function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
   const { state } = useLiveSession(sessionId)
+  const t = useT('present')
 
   const options = state.question?.options ?? []
   const ordered = useMemo(
@@ -97,7 +99,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
         {state.allDone && !isEnded ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
             <div className="text-7xl" aria-hidden="true">🎉</div>
-            <p className="text-4xl font-bold text-white">Bedankt voor jullie input!</p>
+            <p className="text-4xl font-bold text-white">{t('allDone.heading')}</p>
             <p className="text-white/50 text-lg">{state.session?.title}</p>
           </div>
         ) : isEnded ? (
