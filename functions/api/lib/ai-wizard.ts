@@ -61,17 +61,18 @@ design clear, unbiased poll and ranking questions for live team sessions.
 
 Always respond with STRICT JSON and nothing else — no prose, no markdown.
 The JSON must be an object with exactly one key "questions", whose value is an
-array of between 3 and 5 question objects. Each question object has:
+array of exactly 5 question objects. Each question object has:
 
   kind    : one of "poll" | "ranking" | "consent" | "open"
   prompt  : a concise question (max 240 chars)
-  options : an array of 3 to 5 option objects { "label": string }
+  options : an array of 2 to 5 option objects { "label": string }
 
 Rules:
+- Generate exactly 5 questions — no more, no fewer.
 - Do not repeat the session title verbatim as a question.
 - Prefer "poll" kind for 3+ choice scenarios, "ranking" when order matters,
   "consent" for agree/disagree, "open" only when free text is desired (still
-  provide 3 suggested prompt options).
+  provide 2-3 suggested prompt options).
 - Keep option labels short, action-oriented, and mutually exclusive where
   possible.
 - Avoid leading language ("don't you agree…?").`
@@ -88,7 +89,7 @@ function buildUserPrompt(input: GenerateInput): string {
   return `Session title: ${input.sessionTitle}
 Session goal: ${input.sessionGoal}${focus}
 
-Generate 3 to 5 questions that help the facilitator surface group alignment,
+Generate exactly 5 questions that help the facilitator surface group alignment,
 priorities, and concerns. Respond with JSON only.`
 }
 
