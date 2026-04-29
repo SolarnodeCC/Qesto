@@ -70,19 +70,48 @@ describe('ai-wizard/generateQuestions', () => {
     ).rejects.toBeInstanceOf(WizardValidationError)
   })
 
-  it('throws WizardValidationError when schema fails (too few options)', async () => {
+  it('throws WizardValidationError when schema fails (only one option)', async () => {
     const ai = mockAi({
       response: JSON.stringify({
         questions: [
-          { kind: 'poll', prompt: 'Question A', options: [{ label: 'x' }, { label: 'y' }] },
-          { kind: 'poll', prompt: 'Question B', options: [{ label: 'x' }, { label: 'y' }] },
-          { kind: 'poll', prompt: 'Question C', options: [{ label: 'x' }, { label: 'y' }] },
+          { kind: 'poll', prompt: 'Question A', options: [{ label: 'x' }] },
+          { kind: 'poll', prompt: 'Question B', options: [{ label: 'x' }] },
+          { kind: 'poll', prompt: 'Question C', options: [{ label: 'x' }] },
         ],
       }),
     })
     await expect(
       generateQuestions(ai, { sessionTitle: 'x', sessionGoal: 'y' }),
     ).rejects.toBeInstanceOf(WizardValidationError)
+  })
+
+  it('succeeds when AI returns an unknown kind (coerced to poll)', async () => {
+    const ai = mockAi({
+      response: JSON.stringify({
+        questions: [
+          { kind: 'multi_choice', prompt: 'Question A?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
+          { kind: 'poll', prompt: 'Question B?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
+          { kind: 'poll', prompt: 'Question C?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
+        ],
+      }),
+    })
+    const result = await generateQuestions(ai, { sessionTitle: 'x', sessionGoal: 'y' })
+    expect(result.questions[0].kind).toBe('poll')
+  })
+
+  it('succeeds when AI returns a consent question with 2 options', async () => {
+    const ai = mockAi({
+      response: JSON.stringify({
+        questions: [
+          { kind: 'consent', prompt: 'Proceed?', options: [{ label: 'Yes' }, { label: 'No' }] },
+          { kind: 'poll', prompt: 'Question B?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
+          { kind: 'poll', prompt: 'Question C?', options: [{ label: 'x' }, { label: 'y' }, { label: 'z' }] },
+        ],
+      }),
+    })
+    const result = await generateQuestions(ai, { sessionTitle: 'x', sessionGoal: 'y' })
+    expect(result.questions[0].kind).toBe('consent')
+    expect(result.questions[0].options).toHaveLength(2)
   })
 
   it('throws WizardAIError when AI returns empty string', async () => {

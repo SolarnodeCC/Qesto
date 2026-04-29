@@ -21,7 +21,7 @@ export type GenerateInput = {
 
 export type GeneratedQuestion = {
   id: string
-  kind: 'poll' | 'ranking' | 'consent' | 'open'
+  kind: 'poll' | 'ranking' | 'consent' | 'open' | 'multi_select' | 'likert' | 'upvote' | 'word_cloud' | 'slider'
   prompt: string
   options: { id: string; label: string }[]
 }
