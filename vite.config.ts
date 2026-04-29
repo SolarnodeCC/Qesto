@@ -6,7 +6,6 @@ import { theme as generatedTheme } from './src/ui/tailwind-theme'
 import { execSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { dirname } from 'node:path'
-import { loadEnv } from 'vite'
 
 function getFrontendCommit(): string {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA.slice(0, 12)
@@ -25,13 +24,9 @@ const frontendBuildTime = new Date().toISOString()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-export default defineConfig(({ command, mode }) => {
-  if (command === 'build') {
-    const env = loadEnv(mode, process.cwd(), '')
-    if (!env.VITE_API_BASE_URL) {
-      throw new Error('Missing VITE_API_BASE_URL for production build. Configure it in the Pages Production environment variables.')
-    }
-  }
+export default defineConfig(() => {
+  // VITE_API_BASE_URL is optional: empty string means relative URLs (co-located Pages + Functions).
+  // Set it explicitly only when the API lives on a different origin.
 
   return {
     plugins: [react(), tailwindcss()],
