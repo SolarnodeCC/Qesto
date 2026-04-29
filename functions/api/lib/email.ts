@@ -14,7 +14,7 @@ export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs)
     console.log(`[email:dev] to=${args.to} subject=${args.subject}\n${args.text}`)
     return { delivered: false }
   }
-  const from = args.from?.trim() || 'Qesto <onboarding@resend.dev>'
+  const from = args.from?.trim() || 'Qesto <noreply@qesto.cc>'
   const ac = new AbortController()
   const timeout = setTimeout(() => ac.abort(), 10_000)
   let res: Response
