@@ -150,7 +150,7 @@ Transition lines (between steps):
 
 ## 12. Footer legal (reusable)
 
-> © 2026 Qesto · Built on Cloudflare Workers · qesto.app
+> © 2026 Qesto · Built on Cloudflare Workers · qesto.cc
 
 Privacy footnote:
 > Workers AI runs inference inside Cloudflare's network. Your responses never reach a third-party model provider. Read the consent model.
