@@ -6,6 +6,7 @@ export type SendEmailArgs = {
   subject: string
   html: string
   text: string
+  from?: string
 }
 
 export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs): Promise<{ delivered: boolean; id?: string }> {
@@ -13,6 +14,7 @@ export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs)
     console.log(`[email:dev] to=${args.to} subject=${args.subject}\n${args.text}`)
     return { delivered: false }
   }
+  const from = args.from?.trim() || 'Qesto <onboarding@resend.dev>'
   const ac = new AbortController()
   const timeout = setTimeout(() => ac.abort(), 10_000)
   let res: Response
@@ -24,7 +26,7 @@ export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs)
         authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: 'Qesto <login@qesto.app>',
+        from,
         to: [args.to],
         subject: args.subject,
         html: args.html,

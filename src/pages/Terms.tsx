@@ -99,7 +99,7 @@ export default function Terms() {
               <li>Run sessions that violate local law or published terms of a venue.</li>
               <li>Collect responses from children under 13 (or your jurisdiction's equivalent) without verified parental consent.</li>
               <li>Attempt to re-identify anonymous participants. Doing so terminates your account immediately.</li>
-              <li>Scrape, probe, or reverse-engineer the platform. Security research is welcome via our responsible disclosure program — see <a href="https://qesto.app/security" className="text-teal-600 hover:underline">qesto.app/security</a>.</li>
+              <li>Scrape, probe, or reverse-engineer the platform. Security research is welcome via our responsible disclosure program — see <a href="https://qesto.cc/security" className="text-teal-600 hover:underline">qesto.cc/security</a>.</li>
               <li>Impersonate another host or organization.</li>
             </ul>
 
@@ -193,7 +193,7 @@ export default function Terms() {
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               Governing law: Netherlands. Courts of Amsterdam have exclusive jurisdiction. Before filing, notify us
               at{' '}
-              <a href="mailto:legal@qesto.app" className="text-teal-600 hover:underline">legal@qesto.app</a>; we'll
+              <a href="mailto:legal@qesto.cc" className="text-teal-600 hover:underline">legal@qesto.cc</a>; we'll
               engage within 30 days.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
@@ -218,7 +218,7 @@ export default function Terms() {
             </p>
             <p className="text-[13px] text-pulse-400 mt-8">
               Questions?{' '}
-              <a href="mailto:legal@qesto.app" className="text-teal-600 hover:underline">legal@qesto.app</a>
+              <a href="mailto:legal@qesto.cc" className="text-teal-600 hover:underline">legal@qesto.cc</a>
             </p>
           </main>
         </div>

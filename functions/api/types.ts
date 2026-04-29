@@ -13,7 +13,7 @@ export type Env = {
   COMMIT_SHA?: string
   /** SAML SP entity ID (e.g. `https://app.qesto.io`). Vars, not secret. */
   SAML_SP_ENTITY_ID?: string
-  /** SAML Assertion Consumer Service URL (e.g. `https://api.qesto.app/api/auth/saml/callback`). */
+  /** SAML Assertion Consumer Service URL (e.g. `https://api.qesto.cc/api/auth/saml/callback`). */
   SAML_ACS_URL?: string
   /** Superuser email — bypasses all plan quotas. */
   SUPERUSER_EMAIL?: string
@@ -21,6 +21,8 @@ export type Env = {
   SEED_ADMIN_EMAIL?: string
   /** Checkout URL for paid plan upgrades. */
   CHECKOUT_URL?: string
+  /** Optional sender shown in Resend, e.g. "Qesto <login@yourdomain.com>". */
+  RESEND_FROM?: string
 
   // Secrets (wrangler pages secret put ...)
   JWT_SECRET: string
