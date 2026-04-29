@@ -11,6 +11,8 @@ export type Env = {
   CF_ACCESS_AUDIENCE?: string
   CF_ACCESS_CERTS_URL?: string
   COMMIT_SHA?: string
+  /** Injected automatically by Cloudflare Pages at deploy time. */
+  CF_PAGES_COMMIT_SHA?: string
   /** SAML SP entity ID (e.g. `https://qesto.cc`). Vars, not secret. */
   SAML_SP_ENTITY_ID?: string
   /** SAML Assertion Consumer Service URL (e.g. `https://api.qesto.app/api/auth/saml/callback`). */
