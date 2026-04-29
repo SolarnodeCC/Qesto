@@ -13,7 +13,7 @@
   "join_code_copy_label": "Copy join code to clipboard",
   "join_code_copied_label": "Copied!",
   "join_code_copied_toast": "Code copied to clipboard!",
-  "join_hint": "Participants go to qesto.app/join and enter this code.",
+  "join_hint": "Participants go to qesto.cc/join and enter this code.",
   "timer_label": "Session live for",
   "qr_aria_label": "QR code — scan to join this session",
   "qr_label": "QR Code",

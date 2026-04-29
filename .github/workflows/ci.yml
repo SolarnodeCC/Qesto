@@ -60,7 +60,7 @@ jobs:
       - name: Vite build
         run: npm run build
         env:
-          VITE_API_BASE_URL: https://qesto-api.oostelaar.workers.dev
+          VITE_API_BASE_URL: https://qesto.cc
 
       - name: Deploy to Cloudflare Pages
         run: wrangler pages deploy dist --project-name=qesto

@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import BuildStamp from '../components/BuildStamp'
+import { apiUrl } from '../config/api'
 
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
@@ -131,14 +132,14 @@ export default function Login() {
         {/* OAuth buttons */}
         <div className="space-y-2">
           <a
-            href="/api/auth/microsoft"
+            href={apiUrl('/api/auth/microsoft')}
             className="flex w-full items-center justify-center gap-3 rounded-lg border border-pulse-300 dark:border-pulse-600 bg-white dark:bg-pulse-900 px-4 py-2.5 text-sm font-medium text-pulse-800 dark:text-pulse-200 hover:bg-pulse-50 dark:hover:bg-pulse-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <MicrosoftIcon />
             {t('continueWithMicrosoft')}
           </a>
           <a
-            href="/api/auth/google"
+            href={apiUrl('/api/auth/google')}
             className="flex w-full items-center justify-center gap-3 rounded-lg border border-pulse-300 dark:border-pulse-600 bg-white dark:bg-pulse-900 px-4 py-2.5 text-sm font-medium text-pulse-800 dark:text-pulse-200 hover:bg-pulse-50 dark:hover:bg-pulse-700 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <GoogleIcon />

@@ -305,7 +305,7 @@ export default function Present() {
           {/* ── Join panel ── */}
           <div className="absolute right-[64px] top-[144px] w-[440px] p-9 bg-white border border-pulse-200 rounded-[32px] shadow-elevated z-10">
             <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase text-teal-700 mb-3">{t('joinThisSession')}</h3>
-            {state.session && <div className="font-mono text-[20px] font-medium text-pulse-600 mb-4">qesto.app/join</div>}
+            {state.session && <div className="font-mono text-[20px] font-medium text-pulse-600 mb-4">qesto.cc/join</div>}
             {state.session && (
               <div className="font-mono text-[52px] font-medium tracking-[0.12em] leading-none mb-5 bg-clip-text text-transparent" style={{ backgroundImage: 'var(--gradient-brand)' }}>
                 {state.session.code}

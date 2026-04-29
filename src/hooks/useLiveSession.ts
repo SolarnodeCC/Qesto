@@ -6,6 +6,7 @@
 // we always rehydrate from the `init` payload on reconnect.
 
 import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { API_BASE_URL } from '../config/api'
 
 export type LivePollOption = { id: string; label: string }
 export type LiveQuestion = {
@@ -155,9 +156,8 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     closedByClientRef.current = false
     dispatch({ kind: 'connecting' })
 
-    const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
-    const wsBase = apiBase
-      ? apiBase.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://')
+    const wsBase = API_BASE_URL
+      ? API_BASE_URL.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://')
       : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`
     const url = `${wsBase}/api/sessions/${encodeURIComponent(sessionId)}/ws${
       fingerprint ? `?fp=${encodeURIComponent(fingerprint)}` : ''
