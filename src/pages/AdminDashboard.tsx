@@ -13,6 +13,7 @@ import AuditLogViewer from '../components/AuditLogViewer'
 import AdminUsersTab from '../components/admin/AdminUsersTab'
 import AdminOpsTab from '../components/admin/AdminOpsTab'
 import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab'
+import BuildStamp from '../components/BuildStamp'
 
 type AdminTab = 'dashboard' | 'users' | 'ops' | 'analytics'
 
@@ -231,6 +232,9 @@ export default function AdminDashboard() {
           <AdminAnalyticsTab />
         </div>
       )}
+      <div className="px-4 pb-4">
+        <BuildStamp />
+      </div>
     </MainLayout>
   )
 }

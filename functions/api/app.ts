@@ -119,7 +119,7 @@ export function createApp() {
       ok: true,
       data: {
         env: c.env.ENV,
-        commit: c.env.COMMIT_SHA ?? 'unknown',
+        commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
       },
       trace_id: c.get('trace_id')!,
     }),
@@ -133,7 +133,7 @@ export function createApp() {
         env: c.env.ENV,
         ts: Date.now(),
         region: (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null,
-        commit: c.env.COMMIT_SHA ?? 'unknown',
+        commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
       },
       trace_id: c.get('trace_id')!,
     }),
