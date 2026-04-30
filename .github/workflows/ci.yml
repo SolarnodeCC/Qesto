@@ -37,6 +37,9 @@ jobs:
       - name: i18n validation (check-i18n)
         run: npm run check:i18n
 
+      - name: Baseline metric assertions
+        run: npm run check:baseline
+
       - name: TypeScript (tsc --noEmit)
         run: npm run typecheck
 
@@ -58,6 +61,27 @@ jobs:
           retention-days: 7
 
       - name: Vite build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://qesto.cc
+
+  deploy:
+    name: deploy → Cloudflare Pages
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build
         run: npm run build
         env:
           VITE_API_BASE_URL: https://qesto.cc

@@ -71,6 +71,16 @@ type AuditEvent = {
   idempotency_key: string | null
 }
 
+type InsightsDailyRow = {
+  id: string
+  session_id: string
+  day: string
+  themes_json: string
+  confidence: number
+  n_votes: number
+  computed_at: number
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
@@ -79,6 +89,7 @@ export class D1Mock {
   readonly votes = new Map<string, VoteRow>()
   readonly userRoles = new Map<string, UserRole>()
   readonly auditEvents = new Map<string, AuditEvent>()
+  readonly insightsDaily = new Map<string, InsightsDailyRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -327,6 +338,20 @@ export class D1PreparedStatementMock {
       this.db.userRoles.set(id, { user_id, role })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('UPDATE sessions SET ai_grounding_hash')) {
+      const [hash, id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      ;(row as SessionRow & { ai_grounding_hash?: string }).ai_grounding_hash = hash
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO insights_daily')) {
+      const [id, session_id, day, themes_json, confidence, n_votes, computed_at] = this.args as [
+        string, string, string, string, number, number, number,
+      ]
+      this.db.insightsDaily.set(id, { id, session_id, day, themes_json, confidence, n_votes, computed_at })
+      return { meta: { changes: 1 } }
+    }
     throw new Error(`d1-mock: unsupported run(): ${this.sql}`)
   }
 
@@ -415,6 +440,14 @@ export class D1PreparedStatementMock {
         tally.set(v.option_id, (tally.get(v.option_id) ?? 0) + 1)
       }
       const rows = [...tally.entries()].map(([option_id, n]) => ({ option_id, n }))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT day, themes_json, confidence, n_votes')) {
+      // insights_daily fetch — ignore date filter (mock, not SQLite).
+      const [session_id] = this.args as [string, string]
+      const rows = [...this.db.insightsDaily.values()]
+        .filter((r) => r.session_id === session_id)
+        .sort((a, b) => b.day.localeCompare(a.day))
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

@@ -66,6 +66,11 @@ CREATE INDEX IF NOT EXISTS idx_sessions_owner_status ON sessions(owner_id, statu
 -- OBS-001: index on team_id for analytics segmentation (sessions per team).
 CREATE INDEX IF NOT EXISTS idx_sessions_team ON sessions(team_id);
 
+-- Sprint 18 prereq: AI provenance + GDPR consent audit trail for wizard generation
+ALTER TABLE sessions ADD COLUMN ai_generated INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE sessions ADD COLUMN ai_consent_at INTEGER;           -- epoch ms; NULL = no consent given
+ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT;          -- sha256 of generation prompt context
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- questions — v1 slice supports 'poll' only. Other types reserved for future.
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -73,7 +78,9 @@ CREATE TABLE IF NOT EXISTS questions (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   position INTEGER NOT NULL,                                   -- 0-indexed order
-  kind TEXT NOT NULL CHECK (kind IN ('poll','ranking','consent','open')),
+  -- NOTE: 'word_cloud' added for new deployments. Existing DBs widen the CHECK
+  -- via patchSchemaIfNeeded() at runtime; SQLite cannot ALTER a CHECK constraint.
+  kind TEXT NOT NULL CHECK (kind IN ('poll','ranking','consent','open','word_cloud')),
   prompt TEXT NOT NULL,
   options_json TEXT NOT NULL DEFAULT '[]',                     -- JSON array of {id,label}
   created_at INTEGER NOT NULL,
@@ -148,6 +155,23 @@ CREATE TABLE IF NOT EXISTS metrics_summary (
 CREATE INDEX IF NOT EXISTS idx_metrics_ts       ON metrics_summary(bucket_ts DESC);
 CREATE INDEX IF NOT EXISTS idx_metrics_route    ON metrics_summary(route, bucket_ts);
 CREATE INDEX IF NOT EXISTS idx_metrics_ts_route ON metrics_summary(bucket_ts DESC, route);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- insights_daily — Sprint 18 prereq: Pre-computed per-session insight aggregates
+-- for DX-INSIGHTS-02 sparkline. Populated by precomputeInsights() on session
+-- close. Read by GET /insights/themes.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS insights_daily (
+  id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  day TEXT NOT NULL,                          -- ISO-8601 date, e.g. '2026-04-30'
+  themes_json TEXT NOT NULL DEFAULT '[]',     -- JSON: InsightTheme[]
+  confidence REAL NOT NULL DEFAULT 0.0,       -- 0.0–1.0
+  n_votes INTEGER NOT NULL DEFAULT 0,
+  computed_at INTEGER NOT NULL,               -- epoch ms
+  UNIQUE(session_id, day)
+);
+CREATE INDEX IF NOT EXISTS idx_insights_daily_session ON insights_daily(session_id, day DESC);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_events — comprehensive audit trail with before/after snapshots (Phase 8)
