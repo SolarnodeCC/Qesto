@@ -318,6 +318,101 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 
 ---
 
+## Sprint 19: AI Wizard + Launchpad (2026-05-13 to 2026-05-27)
+
+**Context**: Sprint 19 completes the core "create session" journey (wizard → overview → Launchpad) with integrated AI generation. It unblocks Website Design Wave Sprint B and establishes AI adoption metrics. **Agent-planned**: 2026-04-30 (Product Owner + Architect consensus).
+
+**Goal**: Ship AI-powered session wizard with measurable adoption (≥50% AI question acceptance); complete Launchpad pre-flight flow; establish design-token + layout foundation for downstream design wave.
+
+**Epics**: EPIC-CORE (wizard completion), EPIC-AI (generation + badges), EPIC-DESIGN (density tiers)
+
+**Committed Items** (7 stories, ~43 pts):
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---|---|---|---|
+| **WIZ-AI-01**: AI wizard sub-flow — consent gate, grounding echo, `Generate now` + refine, streaming skeleton | 8 | AI | Ready | ≥50% AI question acceptance rate; ≥65% wizard completion rate; SSE streaming <1s TTFB |
+| **WIZ-AI-02**: Per-question editor — type switcher (MC/Ranking/Wordcloud) + validation gating Next | 8 | CORE | Ready | 0 invalid sessions reach LIVE; `Next` disabled-click rate ≤8% per step |
+| **WIZ-OVERVIEW-01**: Step 5 overview — read-only summary + pencil edit-jump preserving state | 8 | CORE | Ready | +10% wizard completion; 0 state-loss bugs on edit round-trip |
+| **LAUNCHPAD-01**: Session Launchpad (pre-live) — T6 template, action rail, content rail, pre-flight strip | 8 | CORE | Ready | ≥99.5% DRAFT→LIVE transition success; median time-on-Launchpad 20–60s; responsive at all breakpoints |
+| **AI-VIS-03**: `<AIBadge>` primitive — assisted/generated/analyzed variants + sparkle icon + tooltip | 3 | DESIGN | Ready | 100% of AI surfaces carry badge + accessible tooltip |
+| **AI-VIS-02**: Inline AI suggestions in wizard — accept/edit/dismiss chips | 5 | AI | Ready | ≥30% chip acceptance rate; streaming <2s p95 |
+| **LAYOUT-DENSITY-01**: Density tiers (Compact/Comfortable/Spacious) on list + table surfaces | 3 | DESIGN | Ready | ≥3 surfaces switchable without rhythm shift; pref persisted in USERS_KV |
+
+**Conditional Stretch** (add only if Sprint 18 ships `insights_daily` precompute infrastructure):
+
+| Item | Size | Condition |
+|---|---|---|
+| **DX-INSIGHTS-02**: Top-themes card + confidence chip + 30-day trend sparkline | 8 | Requires `insights_daily` D1 table + session close-time precompute job; architect veto if missing |
+
+**Key Dependencies**:
+- WIZ-AI-01 → WIZ-AI-02 (schema contract is load-bearing)
+- WIZ-AI-02 → WIZ-OVERVIEW-01 (step sequencing)
+- WIZ-OVERVIEW-01 → LAUNCHPAD-01 (commits DRAFT, routes to Launchpad)
+- DESIGN-TOK-01 (S18) → AI-VIS-03 (token consumption)
+- DX-INSIGHTS-01 (S18) → DX-INSIGHTS-02 (conditional; requires precompute job)
+
+**Critical Path — Week 1 (days 1–7)**:
+1. WIZ-AI-01 + WIZ-AI-02 + AI-VIS-03 (establish AI streaming contract + schema invariants)
+2. LAUNCHPAD-01 pre-flight wiring (depends on 1; unblocks DO `start()`)
+3. WIZ-OVERVIEW-01, AI-VIS-02 land week 2 on stabilized schema
+
+**Contingency** (drop in priority order if velocity < 28 pts/week by day 7):
+1. LAYOUT-DENSITY-01 (3 pts) — pure polish, defer to S20
+2. AI-VIS-02 (5 pts) — wizard ships without inline chips, add in S20
+
+**KPI Targets**:
+- ≥50% of new sessions use AI-generated questions
+- ≥65% of users complete wizard (up from prior baseline)
+- ≥30% acceptance rate on inline AI suggestions
+- 0 invalid sessions reaching LIVE state
+- Launchpad 99.5%+ DRAFT→LIVE success rate
+
+**Sprint 18 Prerequisites (must land by 2026-05-13)**:
+
+_These are additions to Sprint 18 scope. See BACKLOG.md for detailed acceptance criteria._
+
+**D1 Migrations**:
+- `sessions.ai_generated` (INTEGER, 0/1 flag) — provenance for AIBadge
+- `sessions.ai_consent_at` (INTEGER, epoch ms) — GDPR audit trail for AI generation
+- `sessions.ai_grounding_hash` (TEXT) — deterministic hash of generation context for refine round-trips
+- `questions.kind` widened to include `'wordcloud'` (if not present)
+- `insights_daily` table (session_id, day, themes_json, confidence, n_votes) — **required only for DX-INSIGHTS-02 conditional**
+
+**API Routes (DRAFT-API only, no DO involvement)**:
+- `POST /api/sessions/:id/ai/generate` (streaming SSE, Workers AI) — returns chunked `QuestionDraft[]` skeleton + full JSON on close
+- `POST /api/sessions/:id/ai/refine` (idempotent on `grounding_hash`) — re-uses prior grounding, avoids re-billing tokens
+- `GET /api/sessions/:id/preflight` — returns invariant checks; single source of truth for DO entry-gate validation
+- `GET /api/sessions/:id/insights/themes?window=30d` — returns `insights_daily` slice (conditional on precompute)
+
+**KV Schema Updates** (no migration, just contract freeze):
+- `SESSIONS_KV` DRAFT shape: add `aiMeta: { consentAt, grounding, model, promptVersion }`
+- `USERS_KV` add `prefs.density: 'compact'|'comfortable'|'spacious'`
+
+**ADRs (document before S19 kickoff)**:
+- ADR-0xx: AI streaming transport (SSE vs chunked JSON) for wizard + inline suggestions
+- ADR-0xx: Pre-flight contract — which invariant checks live in worker vs. DO `onStart`
+
+**Risk Mitigation**:
+- **AI streaming**: New surface (Pages Functions SSE) — budget 1 spike day in S18 to validate latency + client handling
+- **KV rate limits**: Per-team token bucket in `ACTIONS_KV` (1 write/s/key ceiling) — monitor; consider DO-backed bucket if tier-1 team exceeds 1 gen/s
+- **Pre-flight duplication**: If worker and DO each implement checks separately, they drift. ADR must mandate shared validator module
+- **Streaming UX regression**: If skeleton + streaming do not ship, wizard adoption plummets — non-negotiable for this sprint
+- **Schema invariants**: WIZ-AI-02 type-switcher must match DO expectations at LIVE transition — review contract review on days 2–3
+
+**Deferred to Later Sprints** (both PO + Architect veto):
+- **ENT-04** (RBAC depth): Cross-cuts every auth middleware; needs dedicated 2-sprint epic + authz ADR → **S20–S21**
+- **GAM-01** (Energizer question type in LIVE): Requires extending DO `ClientMessage`/`ServerMessage` schema + protocol versioning ADR we lack → **S21+**
+
+**Definition of Done**:
+- Code merged, CI passing (`npm test`, `tsc`, `npm run check:i18n`)
+- Tests: ≥80% coverage on new code (streaming SSE, type validation, pre-flight)
+- Manual: SSE streaming <1s TTFB on 3G network simulation; wizard → Launchpad round-trip 0 state loss
+- Observability: AI generation request/latency logged; token bucket contention alerted
+- Docs: ARCHITECTURE.md + SPEC.md updated for `/ai/*` routes; wizard type enum documented
+- KPI baseline: AI adoption (%) measured at S19 close
+
+---
+
 ## Website Design Wave (Sprints A / B / C)
 
 The Website Design Wave runs concurrently with (or immediately after) the 5-sprint feature arc above. It is governed by [`docs/specs/WEBSITE_DESIGN_SPEC.md`](./specs/WEBSITE_DESIGN_SPEC.md) and its machine-readable companion [`docs/specs/design-tokens.json`](./specs/design-tokens.json). Full item list, KPIs, and exit criteria are in [`docs/BACKLOG.md §12`](./BACKLOG.md).

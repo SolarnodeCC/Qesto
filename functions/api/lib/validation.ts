@@ -59,9 +59,17 @@ export const GenerateQuestionsSchema = z.object({
 
 // WIZ-AI validator for parsed AI output. Options default to generated ids if
 // the model omits them, so we accept a looser shape here and normalise in the
-// handler.
+// handler. kind is coerced to 'poll' for unrecognised values so a model that
+// returns an unexpected kind doesn't hard-fail the whole generation.
+const AI_VALID_KINDS = [
+  'poll', 'ranking', 'consent', 'open',
+  'multi_select', 'likert', 'upvote', 'word_cloud', 'slider',
+] as const
 export const AIQuestionSchema = z.object({
-  kind: z.enum(['poll', 'ranking', 'consent', 'open']),
+  kind: z.preprocess(
+    (v) => (AI_VALID_KINDS.includes(v as (typeof AI_VALID_KINDS)[number]) ? v : 'poll'),
+    z.enum(AI_VALID_KINDS),
+  ),
   prompt: trimmed(3, 240),
   options: z
     .array(
@@ -70,12 +78,12 @@ export const AIQuestionSchema = z.object({
         label: trimmed(1, 160),
       }),
     )
-    .min(3)
-    .max(5),
+    .min(2)
+    .max(10),
 })
 
 export const AIQuestionsOutputSchema = z.object({
-  questions: z.array(AIQuestionSchema).min(3).max(5),
+  questions: z.array(AIQuestionSchema).min(5).max(10),
 })
 
 // LAUNCHPAD-01: reorder input.

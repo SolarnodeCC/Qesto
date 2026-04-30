@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, P
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession, type LivePollOption } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
-import { api } from '../api/client'
+import { api, getAuthToken } from '../api/client'
 
 // ── Soft-timer hook ────────────────────────────────────────────────────────
 function useSoftTimer() {
@@ -51,7 +51,7 @@ export default function Present() {
   const auth = useAuth()
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
-  const { state, sendAdvance, sendBack, sendPause, sendResume } = useLiveSession(id, { enabled: !!id })
+  const { state, sendAdvance, sendBack, sendPause, sendResume } = useLiveSession(id, { enabled: !!id, presenterToken: getAuthToken() ?? undefined })
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)

@@ -2,11 +2,12 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-23 (UTC)_
+_Last updated: 2026-04-30 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-22_
-_Sprint 18 Planning Review: 2026-04-23 — see Sprint 18 section below + §12 Website Design Wave_
+_Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
+_Sprint 19 Consensus Plan: 2026-04-30 (PO + Architect agreed; see SPRINT_PLAN.md §Sprint 19 for full plan + S18 prerequisites)_
 _Website Design Wave added: 2026-04-19 — see §12_
-_**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review (Product Owner, Architect, AI Strategy) completed 2026-04-23; findings integrated into Sprint 18 plan._
+_**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review (PO, Architect) completed 2026-04-30; Sprint 19 plan committed to SPRINT_PLAN.md. Sprint 18 prerequisite migrations + routes flagged below._
 
 ## Overview
 
@@ -17,6 +18,29 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 **Planning truth:** Use [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) for release-level status. Use this file for **incremental committed work** (including §12 Website Design Wave) and story-level acceptance criteria. Use [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md) for historical sprint summaries. For technical build truth, start at [`spec/INDEX.md`](./spec/INDEX.md) (code wins until specs are updated deliberately).
 
 **Sprint field on stories:** The **Sprint: 1–5** metadata on each story refers to the **reference arc** in [`SPRINT_PLAN.md`](./SPRINT_PLAN.md), not to the calendar sprint counter in [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). Treat those numbers as **ordering and pedagogy**, not “we are still in Sprint 1.”
+
+---
+
+## Sprint 19 Planning (2026-05-13 to 2026-05-27)
+
+**Status**: Consensus plan agreed by PO + Architect on 2026-04-30. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for full detail.
+
+**Committed items** (43 pts): WIZ-AI-01, WIZ-AI-02, WIZ-OVERVIEW-01, LAUNCHPAD-01, AI-VIS-03, AI-VIS-02, LAYOUT-DENSITY-01
+
+**Conditional stretch** (8 pts, if S18 ships `insights_daily` precompute): DX-INSIGHTS-02
+
+**Deferred from Sprint 19** (architect + PO agreement):
+- **RBAC depth (custom roles)**: Cross-cuts auth middleware; needs dedicated 2-sprint epic + permissions ADR. Defer to S20–S21. Note: ENT-02 (base 5-role model) remains on Sprint 3 reference arc.
+- **GAM-01 (Energizer in LIVE session)**: Requires DO state machine + `ClientMessage`/`ServerMessage` protocol extension + versioning ADR not yet written. Defer to S21+.
+
+**Sprint 18 Prerequisite Additions** (must land by 2026-05-13 for S19 to unblock; added to S18 scope):
+
+1. **D1 Migrations**: `sessions.ai_generated`, `sessions.ai_consent_at`, `sessions.ai_grounding_hash`, `questions.kind` extended, `insights_daily` table (conditional for DX-INSIGHTS-02)
+2. **DRAFT-API Routes**: `POST /sessions/:id/ai/generate` (SSE streaming), `POST /sessions/:id/ai/refine`, `GET /sessions/:id/preflight`, `GET /sessions/:id/insights/themes`
+3. **KV Schema**: `SESSIONS_KV` adds `aiMeta` field; `USERS_KV` adds `prefs.density`
+4. **ADRs**: AI streaming transport (SSE vs chunked JSON); pre-flight validation contract
+
+See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for detailed prerequisites.
 
 ---
 
