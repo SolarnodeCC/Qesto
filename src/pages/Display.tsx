@@ -47,9 +47,11 @@ function LoadingScreen() {
 }
 
 function ErrorScreen({ message }: { message: string }) {
+  const t = useT('present')
+
   return (
     <div className="fixed inset-0 bg-[#0f1117] flex flex-col items-center justify-center gap-3 text-center p-8">
-      <p className="text-xl font-semibold text-white">Session not found</p>
+      <p className="text-xl font-semibold text-white">{t('sessionNotFound')}</p>
       <p className="text-sm text-white/50">{message}</p>
     </div>
   )
@@ -90,7 +92,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
             className={`w-2 h-2 rounded-full shrink-0 ${state.connection === 'open' ? 'bg-teal-400' : 'bg-white/20'}`}
             style={state.connection === 'open' ? { animation: 'pulse 1.8s infinite' } : undefined}
           />
-          {state.connection === 'open' ? 'Live' : state.connection}
+          {state.connection === 'open' ? t('live') : state.connection}
         </div>
       </div>
 
@@ -104,27 +106,27 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
           </div>
         ) : isEnded ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
-            <p className="text-3xl font-bold text-white">Session ended</p>
-            <p className="text-white/50">Thanks for participating!</p>
+            <p className="text-3xl font-bold text-white">{t('sessionEndedTitle')}</p>
+            <p className="text-white/50">{t('sessionEndedBody')}</p>
           </div>
         ) : !state.question ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="flex items-center gap-2.5 text-white/40 text-base">
               <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-              Waiting for question…
+              {t('waitingForQuestion')}
             </div>
           </div>
         ) : (
           <div className="flex-1 flex flex-col gap-8 overflow-hidden">
             {/* Question prompt */}
             <div className="shrink-0">
-              <p className="text-xs font-bold tracking-[0.14em] uppercase text-teal-400 mb-3">Question</p>
+              <p className="text-xs font-bold tracking-[0.14em] uppercase text-teal-400 mb-3">{t('questionLabel')}</p>
               <h1 className="font-[family-name:var(--font-display)] font-bold text-4xl leading-tight text-white [text-wrap:balance]">
                 {state.question.prompt}
               </h1>
               <div className="mt-3 flex items-center gap-1.5 text-sm text-white/40">
                 <Users size={13} className="text-teal-500" aria-hidden="true" />
-                {state.results.total} {state.results.total === 1 ? 'vote' : 'votes'}
+                {state.results.total} {t('vote', { count: state.results.total })}
               </div>
             </div>
 

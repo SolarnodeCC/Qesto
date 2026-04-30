@@ -103,17 +103,17 @@ export default function JoinPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-pulse-900">{lookup.title}</h1>
-            <p className="text-sm text-pulse-500 max-w-xs">You're in the right place! The presenter hasn't started the session yet.</p>
+            <p className="text-sm text-pulse-500 max-w-xs">{t('waiting_intro')}</p>
           </div>
           <div className="rounded-xl border border-pulse-200 bg-pulse-50 px-6 py-5 w-full max-w-sm space-y-3">
             <div className="flex items-center justify-center gap-2 text-sm font-medium text-pulse-700" role="status" aria-live="polite">
               <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
-              Waiting for the session to start…
+              {t('waiting_status')}
             </div>
-            <p className="text-xs text-pulse-400">This page will automatically update when the presenter starts.</p>
+            <p className="text-xs text-pulse-400">{t('waiting_auto_update')}</p>
           </div>
           <p className="text-xs text-pulse-400">
-            Join code: <span className="font-mono font-semibold text-pulse-600">{code?.toUpperCase()}</span>
+            {t('join_code_label')} <span className="font-mono font-semibold text-pulse-600">{code?.toUpperCase()}</span>
           </p>
         </div>
       </main>
@@ -138,7 +138,7 @@ export default function JoinPage() {
           href="/"
           className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
         >
-          ← Back to home
+          {t('back_to_home')}
         </a>
       </main>
     )
@@ -160,6 +160,7 @@ function SliderInput({
   myVotes: string[]
   onVote: (id: string) => void
 }) {
+  const t = useT('join')
   const [pos, setPos] = useState(Math.floor((options.length - 1) / 2))
   const selected = options[pos]
   const votedOption = options.find((o) => myVotes.includes(o.id))
@@ -170,7 +171,7 @@ function SliderInput({
         <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="20 6 9 17 4 12" />
         </svg>
-        Response: <strong className="ml-1">{votedOption?.label ?? selected?.label}</strong>
+        {t('response_label')} <strong className="ml-1">{votedOption?.label ?? selected?.label}</strong>
       </p>
     )
   }
@@ -187,7 +188,7 @@ function SliderInput({
         onChange={(e) => setPos(Number(e.target.value))}
         disabled={!canVote}
         className="w-full accent-teal-500 cursor-pointer disabled:cursor-default"
-        aria-label="Select a value"
+        aria-label={t('select_value_aria')}
       />
       <div className="flex justify-between text-xs text-pulse-400">
         <span>{options[0]?.label}</span>
@@ -199,7 +200,7 @@ function SliderInput({
         disabled={!canVote || !selected}
         className="w-full rounded-lg bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
       >
-        Submit
+        {t('submit')}
       </button>
     </div>
   )
@@ -382,8 +383,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             <div className="mt-4 rounded-[14px] bg-violet-50 border border-violet-200 p-4 flex gap-3 items-start text-left">
               <Sparkles size={20} className="text-violet-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
               <div>
-                <p className="text-[12px] font-bold tracking-[0.06em] uppercase text-violet-700 mb-1">AI recap pending</p>
-                <p className="text-[13px] text-pulse-600 leading-[1.45]">A same-day summary will be drafted on Cloudflare's edge at session close, anchored to the ranked evidence.</p>
+                <p className="text-[12px] font-bold tracking-[0.06em] uppercase text-violet-700 mb-1">{t('ai_recap_pending')}</p>
+                <p className="text-[13px] text-pulse-600 leading-[1.45]">{t('ai_recap_body')}</p>
               </div>
             </div>
           </div>
@@ -416,7 +417,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                 <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
                   <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                 </svg>
-                Voting is paused
+                {t('voting_paused')}
               </div>
             )}
 
@@ -451,7 +452,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       name="resp"
                       disabled={!canVote}
                       maxLength={120}
-                      placeholder={qk === 'word_cloud' ? 'Type a word or phrase…' : 'Type your response…'}
+                      placeholder={qk === 'word_cloud' ? t('word_phrase_placeholder') : t('response_placeholder')}
                       className="w-full rounded-lg border border-pulse-200 px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:opacity-50"
                       autoComplete="off"
                     />
@@ -460,7 +461,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       disabled={!canVote}
                       className="w-full rounded-lg bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                     >
-                      Submit
+                      {t('submit')}
                     </button>
                   </form>
                 )
@@ -562,7 +563,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                             type="button"
                             onClick={() => !upvoted && canVote && handleVote(o.id)}
                             disabled={upvoted || !canVote}
-                            aria-label={`Upvote: ${o.label}`}
+                            aria-label={t('upvote_aria', { label: o.label })}
                             className={[
                               'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                               upvoted
@@ -639,7 +640,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                 </p>
                 <div className="flex items-center gap-2 text-[12px] text-violet-600 font-medium">
                   <Sparkles size={12} aria-hidden="true" />
-                  <span>Workers AI recap drafting at session close · Cloudflare's edge</span>
+                  <span>{t('workers_ai_recap_status')}</span>
                 </div>
 
                 {state.results.total > 0 && (

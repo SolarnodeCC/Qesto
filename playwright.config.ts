@@ -7,7 +7,10 @@ export default defineConfig({
     timeout: 5_000,
   },
   retries: process.env.CI ? 1 : 0,
-  reporter: [['list']],
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+  ],
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8788',
     trace: 'on-first-retry',
@@ -16,7 +19,28 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chrome',
+      name: 'fullstack-chrome',
+      testIgnore: /a11y\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+      },
+    },
+    {
+      name: 'spa-chrome',
+      testMatch: [
+        /public-routes\.spec\.ts/,
+        /protected-routes\.spec\.ts/,
+      ],
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:5173',
+      },
+    },
+    {
+      name: 'a11y-chrome',
+      testMatch: /a11y\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',

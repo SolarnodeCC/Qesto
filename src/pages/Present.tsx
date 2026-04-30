@@ -51,7 +51,11 @@ export default function Present() {
   const auth = useAuth()
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
-  const { state, sendAdvance, sendBack, sendPause, sendResume } = useLiveSession(id, { enabled: !!id, presenterToken: getAuthToken() ?? undefined })
+  const presenterToken = getAuthToken()
+  const { state, sendAdvance, sendBack, sendPause, sendResume } = useLiveSession(
+    id,
+    presenterToken ? { enabled: !!id, presenterToken } : { enabled: !!id },
+  )
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)

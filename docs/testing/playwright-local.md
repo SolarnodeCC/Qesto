@@ -1,42 +1,82 @@
-# Playwright Local E2E (Chrome)
+# Playwright Local E2E
 
-This project includes Playwright E2E tests for auth flow, targeting local full-stack dev on `http://localhost:8788`.
+This project includes Playwright E2E tests for public route smoke checks, auth, session lifecycle, participant voting, and a small real-page axe accessibility pass.
+
+## Modes
+
+- `spa-chrome`: Vite-only route smoke tests at `http://localhost:5173`.
+- `fullstack-chrome`: Cloudflare Pages Functions tests at `http://localhost:8788`.
+- `a11y-chrome`: real rendered public pages with axe injected by Playwright.
 
 ## Prerequisites
 
-- Google Chrome installed locally.
-- Dependencies installed: `npm install`.
-- Full-stack local server running on `http://localhost:8788`.
+- Google Chrome installed locally, or run `npx playwright install chrome`.
+- Dependencies installed with `npm install`.
+- For full-stack tests, `CLOUDFLARE_API_TOKEN` must be available because Wrangler authenticates when the AI binding is present.
 
-Recommended local server command:
+## Vite-only smoke tests
 
-```bash
-npx wrangler pages dev dist --port 8788 --binding JWT_SECRET=dev-secret --binding ENVIRONMENT=development --binding APP_URL=http://localhost:8788 --no-show-interactive-dev-session
-```
-
-If needed, set up local D1 schema before running auth tests:
+In one terminal:
 
 ```bash
-npx wrangler d1 execute qesto-db --local --file=functions/api/schema.sql
-npx wrangler d1 execute qesto-db --local --file=migrations/005_user_badges.sql
+npm run dev
 ```
 
-## Install browser for Playwright
-
-Run once if Playwright asks for browser installation:
+In another terminal:
 
 ```bash
-npx playwright install chrome
+npm run test:e2e:spa
 ```
 
-## Run tests
+This validates public/protected SPA routing only. API-backed tests require full-stack mode.
 
-- All E2E tests: `npm run test:e2e`
-- Chrome project only: `npm run test:e2e:chrome`
+## Full-stack local tests
+
+Build the frontend first:
+
+```bash
+npm run build
+```
+
+Apply the local D1 migrations:
+
+```bash
+npm run e2e:db:local
+```
+
+Start the Pages dev server:
+
+```bash
+npm run e2e:serve:fullstack
+```
+
+Then run the full-stack suite from a second terminal:
+
+```bash
+npm run test:e2e:fullstack
+```
+
+## Accessibility pass
+
+With the full-stack server running:
+
+```bash
+npm run test:e2e:a11y
+```
+
+## Useful commands
+
+- Default full-stack suite: `npm run test:e2e`
+- Full-stack suite explicitly: `npm run test:e2e:fullstack`
+- SPA smoke subset: `npm run test:e2e:spa`
+- Real-page axe smoke subset: `npm run test:e2e:a11y`
 - Headed mode: `npm run test:e2e:headed`
+- List discovered tests: `npx playwright test --list`
 
 ## Notes
 
-- Default base URL is `http://localhost:8788`.
-- You can override with: `PLAYWRIGHT_BASE_URL=http://localhost:8788 npm run test:e2e:chrome`.
+- Full-stack default base URL is `http://localhost:8788`.
+- SPA project default base URL is `http://localhost:5173`.
+- Override either with `PLAYWRIGHT_BASE_URL`.
 - Auth tests use password signup/login flow for local reliability.
+- Durable Object realtime/WebSocket behavior is not covered by local E2E while `SESSION_ROOM` is configured as an external worker and shows as local `[not connected]`.

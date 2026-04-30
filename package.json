@@ -15,6 +15,8 @@
     "test:watch": "vitest",
     "test:stress": "vitest run tests/stress/",
     "test:a11y": "vitest run tests/a11y/",
+    "e2e:db:local": "wrangler d1 migrations apply qesto-db --local",
+    "e2e:serve:fullstack": "wrangler pages dev dist --port 8788 --binding JWT_SECRET=dev-secret --binding ENVIRONMENT=development --binding APP_URL=http://localhost:8788 --no-show-interactive-dev-session",
     "typecheck": "tsc --noEmit",
     "check:baseline": "node scripts/check-baseline.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
@@ -23,9 +25,12 @@
     "check:tokens-drift": "node scripts/check-tokens-drift.mjs",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify:deploy.mjs",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=fullstack-chrome",
+    "test:e2e:fullstack": "playwright test --project=fullstack-chrome",
+    "test:e2e:spa": "playwright test --project=spa-chrome",
+    "test:e2e:a11y": "playwright test --project=a11y-chrome",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:chrome": "playwright test --project=chrome"
+    "test:e2e:chrome": "playwright test --project=fullstack-chrome"
   },
   "dependencies": {
     "hono": "^4.6.0",

@@ -6,6 +6,11 @@ type SessionResults = {
   question: { id: string; kind: string; prompt: string; options: Array<{ id: string; label: string }> } | null
   results: { counts: Record<string, number>; total: number; source: 'live' | 'persisted' }
 }
+type ApiResponse<T> = {
+  ok?: boolean
+  data?: T
+  error?: { message?: string }
+}
 
 export async function createDraftSession(page: Page, title: string): Promise<CreatedSession> {
   const result = await page.evaluate(async ({ sessionTitle }) => {
@@ -19,9 +24,10 @@ export async function createDraftSession(page: Page, title: string): Promise<Cre
       },
       body: JSON.stringify({ title: sessionTitle }),
     })
-    const json = await res.json()
+    const json = await res.json() as ApiResponse<{ session: CreatedSession }>
     if (!res.ok || !json?.ok) throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
-    return json.data.session as CreatedSession
+    if (!json.data?.session) throw new Error('Missing session in response')
+    return json.data.session
   }, { sessionTitle: title })
   return result
 }
@@ -45,7 +51,7 @@ export async function addPollQuestion(page: Page, sessionId: string, prompt: str
         ],
       }),
     })
-    const json = await res.json()
+    const json = await res.json() as ApiResponse<unknown>
     if (!res.ok || !json?.ok) throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
   }, { id: sessionId, questionPrompt: prompt })
 }
@@ -58,7 +64,7 @@ export async function startSession(page: Page, sessionId: string): Promise<void>
       credentials: 'include',
       headers: token ? { authorization: `Bearer ${token}` } : {},
     })
-    const json = await res.json()
+    const json = await res.json() as ApiResponse<unknown>
     if (!res.ok || !json?.ok) throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
   }, sessionId)
 }
@@ -71,7 +77,7 @@ export async function closeSession(page: Page, sessionId: string): Promise<void>
       credentials: 'include',
       headers: token ? { authorization: `Bearer ${token}` } : {},
     })
-    const json = await res.json()
+    const json = await res.json() as ApiResponse<unknown>
     if (!res.ok || !json?.ok) throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
   }, sessionId)
 }
@@ -84,9 +90,10 @@ export async function getSessionResults(page: Page, sessionId: string): Promise<
       credentials: 'include',
       headers: token ? { authorization: `Bearer ${token}` } : {},
     })
-    const json = await res.json()
+    const json = await res.json() as ApiResponse<SessionResults>
     if (!res.ok || !json?.ok) throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
-    return json.data as SessionResults
+    if (!json.data) throw new Error('Missing results in response')
+    return json.data
   }, sessionId)
   return result
 }
