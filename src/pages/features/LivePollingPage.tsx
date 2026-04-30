@@ -46,8 +46,8 @@ export default function LivePollingPage() {
   return (
     <MainLayout>
       <PageSeo
-        title="Live Polling — Qesto"
-        description="Tallies that land in under a second. Every vote goes to a Durable Object in the same Cloudflare colo as the voter."
+        title="Live Polling for Meetings, Training & Events — Qesto"
+        description="Ask a question and see what your room is thinking in real time. Live polling for teachers, trainers, facilitators, and team leaders."
         canonicalPath="/features/live-polling"
         ogImage="/images/solutions/photo-1572021335469-31706a17aaef.avif"
       />
@@ -59,21 +59,21 @@ export default function LivePollingPage() {
             <div>
               <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Live Polling</div>
               <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
-                Tallies that land in{' '}
+                Ask a question.{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
-                  under a second.
+                  Hear from everyone.
                 </span>
               </h1>
               <p className="text-lg text-pulse-500 leading-relaxed mb-8">
-                Every vote goes to a Durable Object in the same Cloudflare colo as the voter. No central server
-                round-trip, no polling loop, no "results update in 30 seconds." The bar moves when the thumb does.
+                Responses show up in real time as people answer. Everyone in the room can see what the group
+                thinks — while the moment still matters. No app to install, no waiting for results.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
                   Start a session
                 </Link>
                 <Link to="/features/ai-insights" className={btnSecondary + ' text-base px-7 py-3.5'}>
-                  Read the architecture
+                  See AI Insights
                 </Link>
               </div>
             </div>
@@ -150,8 +150,8 @@ export default function LivePollingPage() {
             Because a tally that lags is a tally people don't trust.
           </h2>
           <p className="text-pulse-500 mb-8 text-lg">
-            Measured p50 latencies across the Qesto path, from tap to projected bar. Edge-resident state means the
-            wire distance is "to the nearest Cloudflare POP" — usually under 30ms.
+            The bar moves when people tap. Results don't make the room wait — so you can keep the conversation
+            going without breaking the flow.
           </p>
           <div className="rounded-2xl overflow-hidden border border-pulse-200 divide-y divide-pulse-200">
             {latencyRows.map(({ hop, title, desc, lat, sub, highlight }) => (

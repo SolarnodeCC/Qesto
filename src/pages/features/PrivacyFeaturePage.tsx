@@ -24,7 +24,7 @@ const consentOptions: { key: ConsentMode; name: string; desc: string; tag: strin
 ]
 
 const doGuarantees = [
-  { title: 'We store per-session', desc: 'Every session is its own Durable Object. Data lives there until deletion. No cross-session joins, ever.' },
+  { title: 'We store per-session', desc: 'Every session is isolated. Data lives there until deletion. No cross-session joins, ever.' },
   { title: 'We log every consent choice', desc: "Each participant's visibility pick is timestamped. Exports include the log. Auditable by a works council." },
   { title: 'We gate results by tally', desc: 'A result is hidden until the minimum vote count is met. Default 5. No single-voter exposure, anywhere.' },
   { title: 'We delete on schedule', desc: 'Identity rows purge on the retention you pick. Aggregate tallies can live longer — without link back.' },
@@ -32,7 +32,7 @@ const doGuarantees = [
 
 const dontGuarantees = [
   { title: "We don't sell data", desc: 'No ads network, no data broker, no telemetry pipeline to a third party. Your tallies are yours.' },
-  { title: "We don't train on you", desc: "Nothing in Qesto feeds a training run — not ours, not a vendor's. Workers AI is used for inference, never fine-tuning." },
+  { title: "We don't train on you", desc: "Nothing in Qesto feeds a training run — not ours, not anyone's. Analysis happens privately and is never used to train any model." },
   { title: "We don't route to third-party AI", desc: 'No OpenAI, no Anthropic, no Azure. Inference stays on Cloudflare\'s network, in your region.' },
   { title: "We don't resolve identity late", desc: "Once a vote is anonymous, it stays anonymous. We can't un-anonymize — not for subpoena, not for us." },
 ]
@@ -41,7 +41,7 @@ const certs = [
   { name: 'SOC 2', label: 'Type II · 2025' },
   { name: 'GDPR', label: 'DPA + SCCs' },
   { name: 'ISO 27001', label: 'In progress 2026' },
-  { name: 'EU residency', label: 'Workers AI EU' },
+  { name: 'EU residency', label: 'EU-only processing' },
 ]
 
 export default function PrivacyFeaturePage() {
@@ -165,7 +165,7 @@ export default function PrivacyFeaturePage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-pulse-200">
             {[
-              { t: 'During the session', title: 'In the Durable Object', desc: 'Votes, tallies, and consent choices live in a single DO, pinned to the colo closest to first-mover. No replication.' },
+              { t: 'During the session', title: 'In secure session storage', desc: 'Votes, tallies, and consent choices are isolated to your session. No sharing across sessions, no replication.' },
               { t: 'After close', title: 'In your workspace', desc: 'Session locks. Recap generates. Data moves to R2 (object storage) for retention window. Encrypted at rest.' },
               { t: 'Retention end', title: 'Purged by scheduler', desc: 'Cron job on every DO sweeps expired sessions. Identity rows go first; aggregate tallies follow on your schedule.' },
             ].map(({ t, title, desc }) => (
@@ -207,13 +207,13 @@ export default function PrivacyFeaturePage() {
       <div className="py-10 px-6">
         <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
           <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
-            Privacy that your works council will sign off.
+            Privacy your team and your participants can trust.
           </h2>
           <p className="text-slate-400 mb-8">
-            Request the DPA, the SOC 2 report, or the sub-processor list — we ship them same-day.
+            See our privacy policy, request the compliance docs, or talk through how anonymity works in your context.
           </p>
           <Link to="/pricing" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
-            Request the trust pack
+            Read the privacy policy
           </Link>
         </div>
       </div>

@@ -127,7 +127,7 @@ export default function FeaturePageTemplate({
           <div className={hasHeroImage ? 'col-span-full max-w-[1120px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center' : 'col-span-full max-w-[680px] mx-auto text-center'}>
             <div className="space-y-6">
               <div className={hasHeroImage ? 'flex items-center gap-2' : 'flex items-center justify-center gap-2'}>
-              {hero.ai && <AIBadge variant="analyzed" label="AI-powered" />}
+              {hero.ai && <AIBadge variant="analyzed" label="AI-assisted" />}
               {hero.badge && (
                 <span className="inline-flex items-center rounded-pill px-3 py-1 text-caption font-medium bg-teal-100 text-teal-700 border border-teal-200">
                   {hero.badge}
