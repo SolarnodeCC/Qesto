@@ -61,6 +61,10 @@ async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection' CHECK (session_mode IN ('reflection','fun'))`).run().catch(() => {})
   // OBS-001: analytics segmentation column. Nullable — individual (no-team) sessions remain valid.
   await db.prepare(`ALTER TABLE sessions ADD COLUMN team_id TEXT DEFAULT NULL`).run().catch(() => {})
+  // Sprint 18 prereq: AI provenance + GDPR consent audit trail for wizard generation.
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_generated INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_consent_at INTEGER`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT`).run().catch(() => {})
 }
 
 type QuestionRow = {
@@ -95,7 +99,8 @@ async function fetchSession(db: D1Database, id: string, ownerId: string): Promis
   const row = await db
     .prepare(
       `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
-              created_at, started_at, closed_at, archived_at, team_id
+              created_at, started_at, closed_at, archived_at, team_id,
+              ai_generated, ai_consent_at, ai_grounding_hash
          FROM sessions
         WHERE id = ?1 AND owner_id = ?2`,
     )
@@ -1368,5 +1373,302 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     })
   })
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // S18 prereq: GET /api/sessions/:id/preflight
+  // Validates a DRAFT session is launch-ready. Returns a list of named checks
+  // with pass/fail and a top-level `ready` boolean (true iff all pass).
+  // ──────────────────────────────────────────────────────────────────────────
+  app.get('/:id/preflight', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const traceId = c.get('trace_id')
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        { ok: false, error: { code: 'conflict', message: 'Preflight only valid for DRAFT sessions' }, trace_id: traceId },
+        409,
+      )
+    }
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    const checks: { id: string; label: string; pass: boolean; message?: string }[] = []
+
+    const pushCheck = (
+      check: { id: string; label: string; pass: boolean; message: string | undefined },
+    ) => {
+      const entry: { id: string; label: string; pass: boolean; message?: string } = {
+        id: check.id,
+        label: check.label,
+        pass: check.pass,
+      }
+      if (check.message !== undefined) entry.message = check.message
+      checks.push(entry)
+    }
+
+    // 1. has_questions
+    pushCheck({
+      id: 'has_questions',
+      label: 'At least one question',
+      pass: questions.length >= 1,
+      message: questions.length === 0 ? 'Add at least one question before launching' : undefined,
+    })
+
+    // 2. questions_valid: every poll/ranking/consent question must have ≥2 options
+    const invalid = questions.filter(
+      (q) => q.kind !== 'open' && q.kind !== 'word_cloud' && q.options.length < 2,
+    )
+    pushCheck({
+      id: 'questions_valid',
+      label: 'All questions have ≥2 options',
+      pass: invalid.length === 0,
+      message: invalid.length > 0 ? `${invalid.length} question(s) need more options` : undefined,
+    })
+
+    // 3. title_set
+    const titleOk = !!(session.title && session.title.trim().length > 0)
+    pushCheck({
+      id: 'title_set',
+      label: 'Session title set',
+      pass: titleOk,
+      message: titleOk ? undefined : 'Set a session title before launching',
+    })
+
+    // 4. ai_consent: only required if AI-generated
+    const consentOk = session.ai_generated === 1 ? !!session.ai_consent_at : true
+    pushCheck({
+      id: 'ai_consent',
+      label: 'AI generation consent recorded',
+      pass: consentOk,
+      message: consentOk ? undefined : 'GDPR consent required for AI-generated sessions',
+    })
+
+    const ready = checks.every((c) => c.pass)
+    return c.json({ ok: true, data: { ready, checks }, trace_id: traceId })
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // S18 prereq: POST /api/sessions/:id/ai/refine
+  // Iterative refinement of AI-generated drafts. Caches by SHA-256 of the
+  // grounding text so repeated identical refines are free. Rate-limit:
+  // 10/hour/user. DRAFT-only.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.post('/:id/ai/refine', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const traceId = c.get('trace_id')
+
+    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
+      max: 10,
+      windowSeconds: 3600,
+      prefix: 'ai-refine',
+    })
+    if (!rl.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'rate_limited',
+            message: 'Too many AI refinements. Try again in an hour.',
+            details: { reset_at: rl.resetAt, limit: 10 },
+          },
+          trace_id: traceId,
+        },
+        429,
+      )
+    }
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        { ok: false, error: { code: 'conflict', message: 'Only DRAFT sessions can be refined' }, trace_id: traceId },
+        409,
+      )
+    }
+
+    const body = (await c.req.json().catch(() => null)) as
+      | { grounding?: unknown; feedback?: unknown; previous_questions?: unknown[] }
+      | null
+    if (
+      !body ||
+      typeof body.grounding !== 'string' ||
+      body.grounding.trim().length === 0 ||
+      typeof body.feedback !== 'string' ||
+      body.feedback.trim().length === 0
+    ) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'validation',
+            message: 'Invalid refine payload',
+            details: { required: ['grounding:string', 'feedback:string'] },
+          },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+    const grounding = body.grounding
+    const feedback = body.feedback
+
+    const groundingHash = await hashGrounding(grounding)
+    const cacheKey = `draft:ai:${id}`
+
+    // Cache hit: same grounding hash already stored. Return cached questions.
+    if (session.ai_grounding_hash && session.ai_grounding_hash === groundingHash) {
+      const cachedRaw = await c.env.SESSIONS_KV.get(cacheKey)
+      if (cachedRaw) {
+        try {
+          const cached = JSON.parse(cachedRaw) as { questions: unknown; confidence?: number }
+          return c.json({
+            ok: true,
+            data: { questions: cached.questions, confidence: cached.confidence ?? 1, cached: true },
+            trace_id: traceId,
+          })
+        } catch {
+          // fall through to regenerate on parse error
+        }
+      }
+    }
+
+    try {
+      const language = c.req.header('accept-language') ?? 'en'
+      // The refine prompt blends grounding + user feedback into the goal field.
+      const result = await generateQuestions(c.env.AI, {
+        sessionTitle: session.title,
+        sessionGoal: `${grounding}\n\nRefinement feedback: ${feedback}`,
+        language,
+      })
+
+      // Persist hash on the session row for future cache hits.
+      await c.env.DB
+        .prepare(`UPDATE sessions SET ai_grounding_hash = ?1 WHERE id = ?2`)
+        .bind(groundingHash, id)
+        .run()
+      // Store refined questions in KV (24h TTL) for cache replays.
+      await c.env.SESSIONS_KV.put(
+        cacheKey,
+        JSON.stringify({ questions: result.questions, confidence: result.confidence }),
+        { expirationTtl: 86400 },
+      )
+
+      return c.json({
+        ok: true,
+        data: { questions: result.questions, confidence: result.confidence, cached: false },
+        trace_id: traceId,
+      })
+    } catch (err) {
+      if (err instanceof WizardValidationError) {
+        return c.json(
+          {
+            ok: false,
+            error: {
+              code: 'ai_output_invalid',
+              message: 'AI returned an output that failed validation',
+              details: err.details,
+            },
+            trace_id: traceId,
+          },
+          502,
+        )
+      }
+      if (err instanceof WizardAIError) {
+        const sanitized = sanitizeError(err, c.env.ENV, 500)
+        return c.json(
+          { ok: false, error: { ...sanitized, code: 'ai_failed' }, trace_id: traceId },
+          500,
+        )
+      }
+      throw err
+    }
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // S18 prereq: GET /api/sessions/:id/insights/themes?window=7d|30d
+  // Reads pre-computed daily insights for the DX-INSIGHTS-02 sparkline. No AI
+  // call here — only reads from `insights_daily`. Closed/archived only.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.get('/:id/insights/themes', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const traceId = c.get('trace_id')
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId },
+        404,
+      )
+    }
+    if (session.status !== 'closed' && session.status !== 'archived') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Insights only available for closed sessions' },
+          trace_id: traceId,
+        },
+        409,
+      )
+    }
+
+    const windowParam = c.req.query('window') === '7d' ? '7d' : '30d'
+    const sqliteOffset = windowParam === '7d' ? '-7 days' : '-30 days'
+
+    const { results } = await c.env.DB
+      .prepare(
+        `SELECT day, themes_json, confidence, n_votes
+           FROM insights_daily
+          WHERE session_id = ?1 AND day >= date('now', ?2)
+          ORDER BY day DESC`,
+      )
+      .bind(id, sqliteOffset)
+      .all<{ day: string; themes_json: string; confidence: number; n_votes: number }>()
+
+    const rows = results ?? []
+    if (rows.length === 0) {
+      return c.json({
+        ok: true,
+        data: { themes: [], trend: [], window: windowParam },
+        trace_id: traceId,
+      })
+    }
+
+    let topThemes: unknown = []
+    try {
+      topThemes = JSON.parse(rows[0].themes_json)
+    } catch {
+      topThemes = []
+    }
+    const trend = rows.map((r) => ({ day: r.day, confidence: r.confidence, n_votes: r.n_votes }))
+
+    return c.json({
+      ok: true,
+      data: { themes: topThemes, trend, window: windowParam },
+      trace_id: traceId,
+    })
+  })
+
   parent.route('/api/sessions', app)
+}
+
+// SHA-256 hex of the grounding text — used to detect repeated refines and
+// short-circuit with cached results.
+async function hashGrounding(text: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
 }
