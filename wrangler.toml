@@ -4,9 +4,6 @@ main = "worker/index.ts"
 compatibility_date = "2026-04-19"
 compatibility_flags = ["nodejs_compat"]
 
-[build]
-command = "npm ci"
-
 # Cloudflare Worker — API only. Static frontend is deployed separately to Cloudflare Pages.
 # Secrets: `wrangler secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
 #

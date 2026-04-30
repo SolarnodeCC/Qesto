@@ -22,7 +22,10 @@
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
     "check:tokens-drift": "node scripts/check-tokens-drift.mjs",
     "perf:audit": "node scripts/perf-audit.mjs",
-    "verify:deploy": "node scripts/verify:deploy.mjs"
+    "verify:deploy": "node scripts/verify:deploy.mjs",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:chrome": "playwright test --project=chrome"
   },
   "dependencies": {
     "hono": "^4.6.0",
@@ -35,6 +38,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260101.0",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "^4.0.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
