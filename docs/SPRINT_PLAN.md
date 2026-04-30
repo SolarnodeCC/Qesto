@@ -266,6 +266,12 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 
 ---
 
+# §Calendar Sprints (Actual Project: 2026-04-29+)
+
+**Note**: The 5-sprint reference arc above (v0.1→v0.5) is a pedagogical teaching sequence **not** a literal greenfield schedule. The sections below document actual calendar sprints (17, 18, 19) on the shipped v2.0 baseline. Do not confuse the two "sprint" notions; see [`BACKLOG.md`](./BACKLOG.md) for clarification.
+
+---
+
 ## Sprint 18: Foundation + Design Tokens + i18n Hardening (2026-04-29 to 2026-05-13)
 
 **Context**: Sprint 18 is the actual next calendar sprint (after Sprint 17, 2026-04-22). The 5-sprint arc above is pedagogical. Sprint 18 focuses on **hardening & unblocking** design wave Sprint B and enterprise features. **See `/root/.claude/plans/can-you-plan-sprint-keen-dream.md` for comprehensive planning details.**
@@ -318,9 +324,9 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 
 ---
 
-## Sprint 19: AI Wizard + Launchpad (2026-05-13 to 2026-05-27)
+## Sprint 19: AI Wizard + Launchpad (Implemented 2026-04-30, ahead of planned 2026-05-13 to 2026-05-27)
 
-**Context**: Sprint 19 completes the core "create session" journey (wizard → overview → Launchpad) with integrated AI generation. It unblocks Website Design Wave Sprint B and establishes AI adoption metrics. **Agent-planned**: 2026-04-30 (Product Owner + Architect consensus). **Implementation completed ahead of the planned 2026-05-13 to 2026-05-27 calendar window on 2026-04-30; KPI measurement remains post-ship.**
+**Context**: Sprint 19 completes the core "create session" journey (wizard → overview → Launchpad) with integrated AI generation. It unblocks Website Design Wave Sprint B and establishes AI adoption metrics. **Design & consensus**: 2026-04-23 (Product Owner + Architect consensus). **Implementation completed 2026-04-30** (13 days ahead of planned window start; urgent feature prioritization per backlog review). **KPI measurement deferred post-ship; see §Implementation Evidence below.**
 
 **Goal**: Ship AI-powered session wizard with measurable adoption (≥50% AI question acceptance); complete Launchpad pre-flight flow; establish design-token + layout foundation for downstream design wave.
 
@@ -420,6 +426,31 @@ _These are additions to Sprint 18 scope. See BACKLOG.md for detailed acceptance 
 
 ---
 
+## Sprint 20 & 21 Preview (Dates TBD pending S18/S19 velocity review)
+
+**Status**: Placeholder for deferred scope and forward roadmap. Dates to be scheduled after Sprint 19 KPI baseline and team capacity review (target: ~weekly on Mondays).
+
+**Deferred from Sprint 19** (Architect + PO agreement):
+- **ENT-04 / RBAC Depth (custom roles)**: Cross-cuts every auth middleware; requires dedicated 2-sprint epic + Authorization ADR. Estimated 13–21 pts. **Target**: S20–S21 (depends on AUTH flows hardening completion).
+- **GAM-01 (Energizer question type in LIVE)**: Requires DO state machine extension (`ClientMessage`/`ServerMessage` protocol versioning) + DO/WebSocket versioning ADR. Estimated 8–13 pts. **Target**: S21+ (depends on DO schema stability from S19).
+
+**Possible S20 scope** (pending velocity verification):
+- **ENT-04.A**: Authorization contract + ADR (3–5 pts)
+- **ENT-04.B**: Role enforcement in middleware + tests (5–8 pts)
+- **UX refinements** from S19 KPI analysis (polish, A/B test winners)
+- **Infrastructure hardening** (observability, performance profiling)
+
+**Possible S21 scope**:
+- **ENT-04.C**: Custom role UI + tests (5–8 pts)
+- **GAM-01**: Energizer implementation + DO protocol change (8–13 pts)
+- **Website Design Wave Sprint C** polish items
+
+**Velocity baseline**: 40–50 pts / 2-week sprint (reference). S18 and S19 actual velocity to be recorded post-close for forward planning.
+
+**Risk mitigation**: ENT-04 and GAM-01 are blockers for roadmap v2.1+; if velocity < 30 pts in S20, escalate scope trade-offs to PO + Architect.
+
+---
+
 ## Website Design Wave (Sprints A / B / C)
 
 The Website Design Wave runs concurrently with (or immediately after) the 5-sprint feature arc above. It is governed by [`docs/specs/WEBSITE_DESIGN_SPEC.md`](./specs/WEBSITE_DESIGN_SPEC.md) and its machine-readable companion [`docs/specs/design-tokens.json`](./specs/design-tokens.json). Full item list, KPIs, and exit criteria are in [`docs/BACKLOG.md §12`](./BACKLOG.md).
@@ -431,6 +462,34 @@ The Website Design Wave runs concurrently with (or immediately after) the 5-spri
 | **Sprint C** | Polish | `DESIGN-POLISH-01`, `DESIGN-POLISH-02`, `LAUNCHPAD-02` | Brand sign-off on logo; 0 a11y regressions |
 
 **Critical path:** `DESIGN-TOK-01` (Sprint A) unblocks `DESIGN-TYP-01`, `DESIGN-POLISH-01`, `LAYOUT-GRID-01`, and `AI-VIS-03`. Do not start consuming surfaces until the token generator CI step is green.
+
+### Calendar Sprint → Design Wave Mapping
+
+The design wave runs on its own cadence (Sprint A/B/C) overlaid on calendar sprints (18, 19, 20). Items are delivered across calendar sprints but organized by wave for design continuity.
+
+**Wave Sprint A fulfillment** (Token foundation + layout primitives):
+- ✅ `DESIGN-TYP-01`: Shipped 2026-04-21 (commit `ab5e2c1`) — typography refresh completed
+- ✅ `DESIGN-TOK-01` (S18): Committed in SPRINT_PLAN.md §Sprint 18, delivered via `design-tokens.json` → Tailwind CI pipeline
+- ✅ `LAYOUT-GRID-01` (S18): 12/8/4-column responsive grid primitive, tested on 3 breakpoints
+- ✅ `LAYOUT-A11Y-01` (S18): WCAG 2.2 SC 2.4.11 (landmarks, skip-link, focus management) via `<SkipLink>` + `<Landmark>` components
+- ✅ `AI-VIS-03` (S19): AIBadge primitive + sparkle icon (uses DESIGN-TOK-01 tokens; shipped 2026-04-30)
+- ✅ `DX-INSIGHTS-01` (S18): Dashboard Insights tab scaffold; empty states ready for DX-INSIGHTS-02
+- ✅ `I18N-BUG-01`, `I18N-BUG-02` (S18): Dutch string extraction, wizard key fixes
+
+**Wave Sprint B fulfillment** (Narrative + wizard + density):
+- ✅ `WIZ-AI-01`, `WIZ-AI-02`, `WIZ-OVERVIEW-01` (S19): AI-assisted session wizard, per-question editor, overview step
+- ✅ `LAUNCHPAD-01` (S19): Launchpad pre-live template with action/content rails
+- ✅ `AI-VIS-01` (S19): Narrative on landing page (HTML, copy, 3-up feature strip) — **pending copy sign-off**
+- ✅ `AI-VIS-02` (S19): Inline AI suggestions (accept/edit/dismiss chips in wizard)
+- ✅ `DX-INSIGHTS-02` (S19 conditional stretch): Top-themes card + confidence chip (depends on `insights_daily` precompute)
+- ✅ `LAYOUT-DENSITY-01` (S19): Compact/comfortable/spacious density tiers on Dashboard sessions, Insights, Teams
+- 🔄 `DESIGN-TYP-01` (S19): Typography applied to new wizard + Launchpad surfaces
+- 🔄 `LAYOUT-MOTION-01` (S19): Micro-interactions on wizard transitions + Launchpad entry
+
+**Wave Sprint C** (Polish — planned S20+):
+- ⏳ `DESIGN-POLISH-01`: Primary CTA hover state (scale + shadow, motion.fast token)
+- ⏳ `DESIGN-POLISH-02`: Logo optical weight bump + sparkle mark
+- ⏳ `LAUNCHPAD-02`: Launchpad refinements post-KPI analysis
 
 ---
 
