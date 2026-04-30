@@ -1401,7 +1401,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const checks: { id: string; label: string; pass: boolean; message?: string }[] = []
 
     const pushCheck = (
-      check: { id: string; label: string; pass: boolean; message: string | undefined },
+      check: { id: string; label: string; pass: boolean; message?: string | undefined },
     ) => {
       const entry: { id: string; label: string; pass: boolean; message?: string } = {
         id: check.id,
