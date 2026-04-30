@@ -1,8 +1,8 @@
 // Wizard AI (WIZ-AI-01/02): prompt construction, AI invocation, and output
 // normalisation for session-question generation.
 //
-// The Workers AI Llama-3.3 model is asked to emit a JSON object with exactly
-// one key, `questions`, whose value is an array of 3–5 question objects. The
+// The Workers AI model is asked to emit a JSON object with exactly
+// one key, `questions`, whose value is an array of 3-4 question objects. The
 // response is parsed, validated with Zod, and normalised (e.g. synthesising
 // option ids when the model omits them). A confidence score is derived from
 // heuristics such as "model returned valid JSON on first try" and "all
@@ -59,18 +59,16 @@ const LANGUAGE_NAMES: Record<string, string> = {
 const SYSTEM_PROMPT_BASE = `You are a meeting facilitator assistant. Your job is to
 design clear, unbiased poll and ranking questions for live team sessions.
 
-Always respond with STRICT JSON and nothing else — no prose, no markdown.
+Always respond with STRICT JSON and nothing else - no prose, no markdown.
 The JSON must be an object with exactly one key "questions", whose value is an
-array of 5 to 10 question objects. Each question object has:
+array of 3 to 4 question objects. Each question object has:
 
   kind    : one of "poll" | "ranking" | "consent" | "open"
   prompt  : a concise question (max 240 chars)
   options : an array of 2 to 5 option objects { "label": string }
 
 Rules:
-- Generate between 5 and 10 questions. Use fewer (5-6) for narrow or simple
-  topics and more (8-10) for broad or complex topics that benefit from deeper
-  exploration.
+- Generate 3 questions for narrow topics and 4 for broad topics.
 - Do not repeat the session title verbatim as a question.
 - Prefer "poll" kind for 3+ choice scenarios, "ranking" when order matters,
   "consent" for agree/disagree, "open" only when free text is desired (still
@@ -86,14 +84,14 @@ function buildSystemPrompt(language?: string): string {
 - Write ALL question prompts and option labels in ${langName}.`
 }
 
-function buildUserPrompt(input: GenerateInput): string {
+function buildUserPrompt(input: GenerateInput, batchFocus?: string): string {
   const focus = input.focusArea ? `\nFocus area: ${input.focusArea}` : ''
+  const batch = batchFocus ? `\nBatch focus: ${batchFocus}` : ''
   return `Session title: ${input.sessionTitle}
-Session goal: ${input.sessionGoal}${focus}
+Session goal: ${input.sessionGoal}${focus}${batch}
 
-Generate between 5 and 10 questions that help the facilitator surface group
-alignment, priorities, and concerns. Scale the number to the breadth and depth
-of the topic — more questions for complex or multi-faceted subjects.
+Generate between 3 and 4 questions that help the facilitator surface group
+alignment, priorities, and concerns. Prefer concise, immediately usable output.
 Respond with JSON only.`
 }
 
@@ -102,13 +100,16 @@ Respond with JSON only.`
 // we strip both rather than fail outright.
 function extractJson(raw: string): string {
   const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
-  const body = fenceMatch ? fenceMatch[1] : raw
-  const firstBrace = body.indexOf('{')
-  const lastBrace = body.lastIndexOf('}')
-  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-    throw new WizardValidationError('AI response did not contain a JSON object')
+  const body = (fenceMatch ? fenceMatch[1] : raw).trim()
+  const firstObject = body.indexOf('{')
+  const firstArray = body.indexOf('[')
+  const startsWithArray = firstArray !== -1 && (firstObject === -1 || firstArray < firstObject)
+  const first = startsWithArray ? firstArray : firstObject
+  const last = startsWithArray ? body.lastIndexOf(']') : body.lastIndexOf('}')
+  if (first === -1 || last === -1 || last <= first) {
+    throw new WizardValidationError('AI response did not contain a JSON object or array')
   }
-  return body.slice(firstBrace, lastBrace + 1)
+  return body.slice(first, last + 1)
 }
 
 function normalise(parsed: AIQuestionsOutput): GeneratedQuestion[] {
@@ -123,21 +124,95 @@ function normalise(parsed: AIQuestionsOutput): GeneratedQuestion[] {
   }))
 }
 
+const OPTION_REQUIRED_KINDS = new Set(['poll', 'ranking', 'consent', 'multi_select', 'upvote'])
+const VALID_KINDS = new Set([
+  'poll',
+  'ranking',
+  'consent',
+  'open',
+  'multi_select',
+  'likert',
+  'upvote',
+  'word_cloud',
+  'slider',
+])
+
+function fallbackOptions(kind: string): Array<{ label: string }> {
+  if (kind === 'consent') return [{ label: 'Agree' }, { label: 'Disagree' }]
+  return [{ label: 'High priority' }, { label: 'Medium priority' }, { label: 'Low priority' }]
+}
+
+type RepairedOption = { id?: string; label: string }
+
+function repairAIOutput(value: unknown): unknown {
+  const source = Array.isArray(value)
+    ? { questions: value }
+    : value && typeof value === 'object'
+      ? value as Record<string, unknown>
+      : null
+  if (!source || !Array.isArray(source.questions)) return value
+
+  return {
+    questions: source.questions.map((item) => {
+      if (!item || typeof item !== 'object') return item
+      const q = item as Record<string, unknown>
+      const rawKind = typeof q.kind === 'string' ? q.kind : typeof q.type === 'string' ? q.type : 'poll'
+      const kind = VALID_KINDS.has(rawKind) ? rawKind : 'poll'
+      const rawPrompt =
+        typeof q.prompt === 'string'
+          ? q.prompt
+          : typeof q.question === 'string'
+            ? q.question
+            : typeof q.text === 'string'
+              ? q.text
+              : ''
+      const rawOptions = Array.isArray(q.options) ? q.options : []
+      const options: RepairedOption[] = rawOptions
+        .map((option) => {
+          if (typeof option === 'string') return { label: option }
+          if (option && typeof option === 'object') {
+            const o = option as Record<string, unknown>
+            return typeof o.label === 'string'
+              ? { id: typeof o.id === 'string' ? o.id : undefined, label: o.label }
+              : null
+          }
+          return null
+        })
+        .filter((option): option is RepairedOption => Boolean(option))
+
+      return {
+        ...q,
+        kind,
+        prompt: rawPrompt,
+        options:
+          OPTION_REQUIRED_KINDS.has(kind) && options.length < 2
+            ? fallbackOptions(kind)
+            : options,
+      }
+    }),
+  }
+}
+
 // Heuristic confidence: starts at 1.0, deducted for signals that the model
 // output was borderline (e.g. needed fence stripping, had minimum counts).
 function scoreConfidence(raw: string, cleaned: string, count: number): number {
   let score = 1.0
   if (raw !== cleaned) score -= 0.1 // needed trimming
-  if (count === 5) score -= 0.1 // hit the lower bound
+  if (count <= 4) score -= 0.1 // hit the lower bound
   if (raw.length > 4000) score -= 0.1 // unusually long response
   return Math.max(0, Math.min(1, Number(score.toFixed(2))))
 }
 
-const MAX_TOKENS = 1024
+const MAX_TOKENS = 700
+const TARGET_QUESTION_COUNT = 8
 // Delays between retry attempts in milliseconds (exponential backoff).
-const RETRY_DELAYS_MS = [200, 400, 800]
-// Fallback model used when the primary fails all retries.
-const FALLBACK_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8'
+const RETRY_DELAYS_MS = [150, 300]
+const FAST_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8'
+const QUALITY_FALLBACK_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+const PARALLEL_BATCH_FOCI = [
+  'alignment, priorities, and decisions',
+  'risks, concerns, trade-offs, and next steps',
+]
 
 // Invoke the AI model and return the raw text response. Retries up to
 // RETRY_DELAYS_MS.length times on invocation errors or empty responses.
@@ -200,33 +275,26 @@ async function invokeAI(
   )
 }
 
-export async function generateQuestions(
+async function invokeWithFallback(
   ai: Ai,
-  input: GenerateInput,
-  model = '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-): Promise<GenerateResult> {
-  const systemPrompt = buildSystemPrompt(input.language)
-  const userPrompt = buildUserPrompt(input)
-  const approxInputChars = systemPrompt.length + userPrompt.length
-  const messages = [
-    { role: 'system' as const, content: systemPrompt },
-    { role: 'user' as const, content: userPrompt },
-  ]
-
-  let raw: string
+  model: string,
+  messages: Array<{ role: string; content: string }>,
+  approxInputChars: number,
+): Promise<string> {
   try {
-    raw = await invokeAI(ai, model, messages, approxInputChars)
+    return await invokeAI(ai, model, messages, approxInputChars)
   } catch (primaryErr) {
-    if (model !== FALLBACK_MODEL) {
+    if (model !== QUALITY_FALLBACK_MODEL) {
       console.log(
-        JSON.stringify({ event: 'ai.wizard.fallback', primaryModel: model, fallbackModel: FALLBACK_MODEL }),
+        JSON.stringify({ event: 'ai.wizard.fallback', primaryModel: model, fallbackModel: QUALITY_FALLBACK_MODEL }),
       )
-      raw = await invokeAI(ai, FALLBACK_MODEL, messages, approxInputChars)
-    } else {
-      throw primaryErr
+      return await invokeAI(ai, QUALITY_FALLBACK_MODEL, messages, approxInputChars)
     }
+    throw primaryErr
   }
+}
 
+function parseAIQuestions(raw: string): GenerateResult {
   let cleaned: string
   try {
     cleaned = extractJson(raw)
@@ -245,7 +313,7 @@ export async function generateQuestions(
     )
   }
 
-  const result = AIQuestionsOutputSchema.safeParse(parsedObj)
+  const result = AIQuestionsOutputSchema.safeParse(repairAIOutput(parsedObj))
   if (!result.success) {
     throw new WizardValidationError(
       'AI response did not match question schema',
@@ -258,13 +326,79 @@ export async function generateQuestions(
   return { questions, confidence }
 }
 
+function mergeQuestionBatches(batches: GenerateResult[]): GenerateResult {
+  const seen = new Set<string>()
+  const questions: GeneratedQuestion[] = []
+
+  for (const batch of batches) {
+    for (const question of batch.questions) {
+      const key = question.prompt.trim().toLowerCase().replace(/\s+/g, ' ')
+      if (!key || seen.has(key)) continue
+      seen.add(key)
+      questions.push(question)
+      if (questions.length >= TARGET_QUESTION_COUNT) break
+    }
+    if (questions.length >= TARGET_QUESTION_COUNT) break
+  }
+
+  const confidence = batches.length === 0
+    ? 0
+    : Number((batches.reduce((sum, batch) => sum + batch.confidence, 0) / batches.length).toFixed(2))
+  return { questions, confidence }
+}
+
+function buildMessages(
+  input: GenerateInput,
+  batchFocus?: string,
+): { messages: Array<{ role: 'system' | 'user'; content: string }>; approxInputChars: number } {
+  const systemPrompt = buildSystemPrompt(input.language)
+  const userPrompt = buildUserPrompt(input, batchFocus)
+  return {
+    approxInputChars: systemPrompt.length + userPrompt.length,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  }
+}
+
+export async function generateQuestions(
+  ai: Ai,
+  input: GenerateInput,
+  model = FAST_MODEL,
+): Promise<GenerateResult> {
+  if (model !== FAST_MODEL) {
+    const { messages, approxInputChars } = buildMessages(input)
+    const raw = await invokeWithFallback(ai, model, messages, approxInputChars)
+    return parseAIQuestions(raw)
+  }
+
+  const settled = await Promise.allSettled(
+    PARALLEL_BATCH_FOCI.map(async (batchFocus) => {
+      const { messages, approxInputChars } = buildMessages(input, batchFocus)
+      const raw = await invokeWithFallback(ai, model, messages, approxInputChars)
+      return parseAIQuestions(raw)
+    }),
+  )
+
+  const fulfilled = settled
+    .filter((result): result is PromiseFulfilledResult<GenerateResult> => result.status === 'fulfilled')
+    .map((result) => result.value)
+  if (fulfilled.length > 0) return mergeQuestionBatches(fulfilled)
+
+  const firstError = settled.find((result): result is PromiseRejectedResult => result.status === 'rejected')?.reason
+  throw firstError instanceof Error ? firstError : new WizardAIError('AI generation failed')
+}
+
 // Exported for unit tests.
 export const __internal = {
   buildSystemPrompt,
   buildUserPrompt,
   extractJson,
   scoreConfidence,
-  FALLBACK_MODEL,
+  FAST_MODEL,
+  QUALITY_FALLBACK_MODEL,
+  TARGET_QUESTION_COUNT,
 }
 // Re-export for handler to catch validation errors cleanly.
 export { z }

@@ -2,11 +2,31 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-20 (UTC)_
+_Last updated: 2026-04-30 (UTC)_
 
 ## Overview
 
 This document provides historical summaries of completed sprints (15, 16, 17, 18) and conditional sprint (16 v2). For **calendar / team sprint history**, use this file and [`BACKLOG.md`](./BACKLOG.md). For a **reference five-sprint teaching arc** (v0.1→v0.5) layered on the shipped v2 baseline, see [`SPRINT_PLAN.md`](./SPRINT_PLAN.md) — and read [`README.md`](./README.md) so the two notions of “sprint” are not confused.
+
+---
+
+## Sprint 19 — AI Wizard + Launchpad (Implemented 2026-04-30 ahead of planned 2026-05-13 to 2026-05-27 window)
+
+**Focus**: Complete the host create-session journey from AI-assisted wizard through overview, Launchpad preflight, and Open lobby readiness.
+
+**Delivered**:
+- ✅ **WIZ-AI-01**: AI wizard generation via `/api/sessions/:id/ai/generate` SSE (`ready` → `questions` → `done`), with grounding hash support and existing `/ai/refine` idempotency.
+- ✅ **WIZ-AI-02**: Per-question editor supports poll, ranking, open, multi-select, likert, slider, upvote, and word cloud; validation gates progression.
+- ✅ **WIZ-OVERVIEW-01**: Step 5 read-only overview with edit-jump preserving wizard state.
+- ✅ **LAUNCHPAD-01**: Launchpad action/content rails with backend `/preflight` as the single launch readiness gate.
+- ✅ **AI-VIS-03 / AI-VIS-02**: AI badge primitive plus accept/edit/dismiss suggestion chips in the wizard.
+- ✅ **LAYOUT-DENSITY-01**: Compact/comfortable/spacious density applied to Dashboard sessions, Insights, and Teams list surfaces with `USERS_KV` persistence.
+- ✅ **DX-INSIGHTS-02**: Conditional stretch delivered after `insights_daily` precompute/read path landed.
+
+**Quality**:
+- Focused tests: `npx vitest run tests/unit/sessions-new-routes.test.ts tests/unit/ai-wizard.test.ts tests/integration/user-preferences.test.ts` — 47 tests green.
+- TypeScript: 0 errors (`npm run typecheck`).
+- KPI measurement remains post-ship; implementation evidence is captured in `SPRINT_PLAN.md` §Sprint 19.
 
 ---
 

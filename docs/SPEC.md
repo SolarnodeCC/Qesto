@@ -2,7 +2,7 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last verified: 2026-04-22 (UTC)_
+_Last verified: 2026-04-30 (UTC)_
 
 ## 1. Product lifecycle
 - **DRAFT**: session setup and question curation.
@@ -25,6 +25,11 @@ _Last verified: 2026-04-22 (UTC)_
   - When presenting results, options are automatically ordered from highest to lowest score/count (large to small).
 - `points`
 - `consent`
+- `multi_select`
+- `likert`
+- `slider`
+- `upvote`
+- `word_cloud`
 
 ## 4. Implemented platform capabilities
 - Realtime voting lifecycle with Durable Object session state.
@@ -81,4 +86,10 @@ See: [`README.md`](./README.md) (documentation map), `ROADMAP_FULL.md`, `BACKLOG
 - Typography updated to Inter body font with preload (DESIGN-TYP-01).
 - Language switcher surfaced in header on all pages (i18n UX improvement).
 - Admin panel gated on superuser role; `/admin` route guarded.
+
+## 8. 2026-04-30 Sprint 19 closeout notes
+- AI wizard generation uses `POST /api/sessions/:id/ai/generate` as an SSE stream (`ready`, `questions`, `done`), with `/api/sessions/:id/ai/refine` for grounding-hash based refinement.
+- Wizard-generated sessions persist AI provenance on the DRAFT session: `ai_generated`, `ai_consent_at`, and `ai_grounding_hash`.
+- Launchpad uses `GET /api/sessions/:id/preflight` as the canonical readiness gate before `Open lobby`.
+- Density preference is persisted in `USERS_KV` and applied to three Dashboard list surfaces: sessions, Insights, and Teams.
 

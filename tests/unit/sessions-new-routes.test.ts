@@ -75,7 +75,7 @@ function seedQuestion(
   overrides: Partial<{
     id: string
     session_id: string
-    kind: 'poll' | 'ranking' | 'consent' | 'open'
+    kind: 'poll' | 'ranking' | 'consent' | 'open' | 'multi_select' | 'likert' | 'upvote' | 'word_cloud' | 'slider'
     options_json: string
   }> = {},
 ) {
@@ -211,6 +211,24 @@ describe('GET /api/sessions/:id/preflight', () => {
     expect(body.data.checks.find((c) => c.id === 'questions_valid')?.pass).toBe(true)
   })
 
+  it('questions_valid passes for word_cloud with no options', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    seedQuestion(db, { kind: 'word_cloud', options_json: '[]' })
+    const app = createApp()
+    const res = await app.fetch(
+      new Request('http://local/api/sessions/sess_1/preflight', {
+        headers: { cookie: await cookieFor(USER_ID) },
+      }),
+      makeEnv(db),
+    )
+    const body = (await res.json()) as {
+      data: { ready: boolean; checks: Array<{ id: string; pass: boolean }> }
+    }
+    expect(body.data.ready).toBe(true)
+    expect(body.data.checks.find((c) => c.id === 'questions_valid')?.pass).toBe(true)
+  })
+
   it('title_set fails when title is empty', async () => {
     const db = new D1Mock()
     seedSession(db, { title: '' })
@@ -227,6 +245,145 @@ describe('GET /api/sessions/:id/preflight', () => {
     }
     expect(body.data.ready).toBe(false)
     expect(body.data.checks.find((c) => c.id === 'title_set')?.pass).toBe(false)
+  })
+
+  it('requires consent when session is marked AI-generated', async () => {
+    const db = new D1Mock()
+    seedSession(db, { title: 'AI Retro' })
+    const row = db.sessions.get('sess_1') as { ai_generated?: number; ai_consent_at?: number | null }
+    row.ai_generated = 1
+    row.ai_consent_at = null
+    seedQuestion(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/preflight', {
+        headers: { cookie: await cookieFor(USER_ID) },
+      }),
+      makeEnv(db),
+    )
+    const body = (await res.json()) as {
+      data: { ready: boolean; checks: Array<{ id: string; pass: boolean }> }
+    }
+    expect(body.data.ready).toBe(false)
+    expect(body.data.checks.find((c) => c.id === 'ai_consent')?.pass).toBe(false)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PATCH /api/sessions/:id AI provenance
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('PATCH /api/sessions/:id AI provenance', () => {
+  it('persists AI provenance so preflight consent passes', async () => {
+    const db = new D1Mock()
+    seedSession(db, { title: 'AI Retro' })
+    seedQuestion(db)
+    const app = createApp()
+    const cookie = await cookieFor(USER_ID)
+    const consentAt = Date.now()
+
+    const patchRes = await app.fetch(
+      new Request('http://local/api/sessions/sess_1', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({
+          ai_generated: true,
+          ai_consent_at: consentAt,
+          ai_grounding_hash: 'abc123',
+        }),
+      }),
+      makeEnv(db),
+    )
+    expect(patchRes.status).toBe(200)
+
+    const preflightRes = await app.fetch(
+      new Request('http://local/api/sessions/sess_1/preflight', { headers: { cookie } }),
+      makeEnv(db),
+    )
+    const body = (await preflightRes.json()) as {
+      data: { ready: boolean; checks: Array<{ id: string; pass: boolean }> }
+    }
+    expect(body.data.ready).toBe(true)
+    expect(body.data.checks.find((c) => c.id === 'ai_consent')?.pass).toBe(true)
+    expect(db.sessions.get('sess_1')?.ai_generated).toBe(1)
+    expect(db.sessions.get('sess_1')?.ai_consent_at).toBe(consentAt)
+    expect(db.sessions.get('sess_1')?.ai_grounding_hash).toBe('abc123')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/sessions/:id/ai/generate
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('POST /api/sessions/:id/ai/generate', () => {
+  const aiResponse = JSON.stringify({
+    questions: Array.from({ length: 5 }, (_, i) => ({
+      kind: i === 4 ? 'word_cloud' : 'poll',
+      prompt: `Question ${i + 1}?`,
+      options: i === 4 ? [] : [
+        { label: 'One' },
+        { label: 'Two' },
+      ],
+    })),
+  })
+
+  it('streams ready and questions events for a DRAFT session', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/ai/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        body: JSON.stringify({ sessionTitle: 'Sprint Retro', sessionGoal: 'Improve planning' }),
+      }),
+      makeEnv(db, { run: (async () => ({ response: aiResponse })) as unknown as Ai['run'] }),
+    )
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('text/event-stream')
+    const text = await res.text()
+    expect(text).toContain('event: ready')
+    expect(text).toContain('event: questions')
+    expect(text).toContain('event: done')
+    expect(text).toContain('groundingHash')
+    expect(text).toContain('word_cloud')
+  })
+
+  it('repairs common AI JSON variants instead of failing the wizard', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    const repairedResponse = JSON.stringify([
+      { type: 'poll', question: 'Which risk needs attention first?', options: ['Scope', 'Timing'] },
+      { kind: 'consent', prompt: 'Are we aligned on the next step?', options: [] },
+      { kind: 'open', text: 'What context should we add before deciding?', options: [] },
+    ])
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/ai/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        body: JSON.stringify({ sessionTitle: 'Sprint Retro', sessionGoal: 'Improve planning' }),
+      }),
+      makeEnv(db, { run: (async () => ({ response: repairedResponse })) as unknown as Ai['run'] }),
+    )
+
+    expect(res.status).toBe(200)
+    const text = await res.text()
+    expect(text).toContain('event: questions')
+    expect(text).toContain('Which risk needs attention first?')
+    expect(text).toContain('Scope')
+    expect(text).toContain('Agree')
+  })
+
+  it('returns 409 for non-DRAFT sessions before opening the stream', async () => {
+    const db = new D1Mock()
+    seedSession(db, { status: 'live' })
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/ai/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        body: JSON.stringify({ sessionTitle: 'Sprint Retro', sessionGoal: 'Improve planning' }),
+      }),
+      makeEnv(db, { run: (async () => ({ response: aiResponse })) as unknown as Ai['run'] }),
+    )
+    expect(res.status).toBe(409)
   })
 })
 

@@ -5,7 +5,7 @@ _Hub: [Documentation map](./README.md)._
 _Last updated: 2026-04-30 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
-_Sprint 19 Consensus Plan: 2026-04-30 (PO + Architect agreed; see SPRINT_PLAN.md §Sprint 19 for full plan + S18 prerequisites)_
+_Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
 _Website Design Wave added: 2026-04-19 — see §12_
 _**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review (PO, Architect) completed 2026-04-30; Sprint 19 plan committed to SPRINT_PLAN.md. Sprint 18 prerequisite migrations + routes flagged below._
 
@@ -23,11 +23,11 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 
 ## Sprint 19 Planning (2026-05-13 to 2026-05-27)
 
-**Status**: Consensus plan agreed by PO + Architect on 2026-04-30. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for full detail.
+**Status**: Implementation completed on 2026-04-30, ahead of the planned calendar window. KPI measurement remains post-ship. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for full detail and closeout evidence.
 
-**Committed items** (43 pts): WIZ-AI-01, WIZ-AI-02, WIZ-OVERVIEW-01, LAUNCHPAD-01, AI-VIS-03, AI-VIS-02, LAYOUT-DENSITY-01
+**Committed items** (43 pts): ✅ WIZ-AI-01, ✅ WIZ-AI-02, ✅ WIZ-OVERVIEW-01, ✅ LAUNCHPAD-01, ✅ AI-VIS-03, ✅ AI-VIS-02, ✅ LAYOUT-DENSITY-01
 
-**Conditional stretch** (8 pts, if S18 ships `insights_daily` precompute): DX-INSIGHTS-02
+**Conditional stretch** (8 pts, if S18 ships `insights_daily` precompute): ✅ DX-INSIGHTS-02
 
 **Deferred from Sprint 19** (architect + PO agreement):
 - **RBAC depth (custom roles)**: Cross-cuts auth middleware; needs dedicated 2-sprint epic + permissions ADR. Defer to S20–S21. Note: ENT-02 (base 5-role model) remains on Sprint 3 reference arc.

@@ -20,6 +20,8 @@
   "questions_count": "Questions ({{count}})",
   "preflight_title": "Session title",
   "preflight_question": "At least one question",
+  "preflight_questions_valid": "Questions are launch-ready",
+  "preflight_checking": "Checking launch readiness…",
   "preflight_consent": "AI consent acknowledged",
   "start_button": "Go Live",
   "starting": "Starting…",

@@ -320,7 +320,7 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 
 ## Sprint 19: AI Wizard + Launchpad (2026-05-13 to 2026-05-27)
 
-**Context**: Sprint 19 completes the core "create session" journey (wizard → overview → Launchpad) with integrated AI generation. It unblocks Website Design Wave Sprint B and establishes AI adoption metrics. **Agent-planned**: 2026-04-30 (Product Owner + Architect consensus).
+**Context**: Sprint 19 completes the core "create session" journey (wizard → overview → Launchpad) with integrated AI generation. It unblocks Website Design Wave Sprint B and establishes AI adoption metrics. **Agent-planned**: 2026-04-30 (Product Owner + Architect consensus). **Implementation completed ahead of the planned 2026-05-13 to 2026-05-27 calendar window on 2026-04-30; KPI measurement remains post-ship.**
 
 **Goal**: Ship AI-powered session wizard with measurable adoption (≥50% AI question acceptance); complete Launchpad pre-flight flow; establish design-token + layout foundation for downstream design wave.
 
@@ -330,19 +330,19 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---|---|---|---|
-| **WIZ-AI-01**: AI wizard sub-flow — consent gate, grounding echo, `Generate now` + refine, streaming skeleton | 8 | AI | Ready | ≥50% AI question acceptance rate; ≥65% wizard completion rate; SSE streaming <1s TTFB |
-| **WIZ-AI-02**: Per-question editor — type switcher (MC/Ranking/Wordcloud) + validation gating Next | 8 | CORE | Ready | 0 invalid sessions reach LIVE; `Next` disabled-click rate ≤8% per step |
-| **WIZ-OVERVIEW-01**: Step 5 overview — read-only summary + pencil edit-jump preserving state | 8 | CORE | Ready | +10% wizard completion; 0 state-loss bugs on edit round-trip |
-| **LAUNCHPAD-01**: Session Launchpad (pre-live) — T6 template, action rail, content rail, pre-flight strip | 8 | CORE | Ready | ≥99.5% DRAFT→LIVE transition success; median time-on-Launchpad 20–60s; responsive at all breakpoints |
-| **AI-VIS-03**: `<AIBadge>` primitive — assisted/generated/analyzed variants + sparkle icon + tooltip | 3 | DESIGN | Ready | 100% of AI surfaces carry badge + accessible tooltip |
-| **AI-VIS-02**: Inline AI suggestions in wizard — accept/edit/dismiss chips | 5 | AI | Ready | ≥30% chip acceptance rate; streaming <2s p95 |
-| **LAYOUT-DENSITY-01**: Density tiers (Compact/Comfortable/Spacious) on list + table surfaces | 3 | DESIGN | Ready | ≥3 surfaces switchable without rhythm shift; pref persisted in USERS_KV |
+| **WIZ-AI-01**: AI wizard sub-flow — consent gate, grounding echo, `Generate now` + refine, streaming skeleton | 8 | AI | ✅ Implemented 2026-04-30 | ≥50% AI question acceptance rate; ≥65% wizard completion rate; SSE streaming <1s TTFB |
+| **WIZ-AI-02**: Per-question editor — type switcher (MC/Ranking/Wordcloud) + validation gating Next | 8 | CORE | ✅ Implemented 2026-04-30 | 0 invalid sessions reach LIVE; `Next` disabled-click rate ≤8% per step |
+| **WIZ-OVERVIEW-01**: Step 5 overview — read-only summary + pencil edit-jump preserving state | 8 | CORE | ✅ Implemented 2026-04-30 | +10% wizard completion; 0 state-loss bugs on edit round-trip |
+| **LAUNCHPAD-01**: Session Launchpad (pre-live) — T6 template, action rail, content rail, pre-flight strip | 8 | CORE | ✅ Implemented 2026-04-30 | ≥99.5% DRAFT→LIVE transition success; median time-on-Launchpad 20–60s; responsive at all breakpoints |
+| **AI-VIS-03**: `<AIBadge>` primitive — assisted/generated/analyzed variants + sparkle icon + tooltip | 3 | DESIGN | ✅ Implemented 2026-04-30 | 100% of AI surfaces carry badge + accessible tooltip |
+| **AI-VIS-02**: Inline AI suggestions in wizard — accept/edit/dismiss chips | 5 | AI | ✅ Implemented 2026-04-30 | ≥30% chip acceptance rate; streaming <2s p95 |
+| **LAYOUT-DENSITY-01**: Density tiers (Compact/Comfortable/Spacious) on list + table surfaces | 3 | DESIGN | ✅ Implemented 2026-04-30 | ≥3 surfaces switchable without rhythm shift; pref persisted in USERS_KV |
 
 **Conditional Stretch** (add only if Sprint 18 ships `insights_daily` precompute infrastructure):
 
 | Item | Size | Condition |
 |---|---|---|
-| **DX-INSIGHTS-02**: Top-themes card + confidence chip + 30-day trend sparkline | 8 | Requires `insights_daily` D1 table + session close-time precompute job; architect veto if missing |
+| **DX-INSIGHTS-02**: Top-themes card + confidence chip + 30-day trend sparkline | 8 | ✅ Implemented 2026-04-30 after `insights_daily` precompute/read path landed |
 
 **Key Dependencies**:
 - WIZ-AI-01 → WIZ-AI-02 (schema contract is load-bearing)
@@ -410,6 +410,13 @@ _These are additions to Sprint 18 scope. See BACKLOG.md for detailed acceptance 
 - Observability: AI generation request/latency logged; token bucket contention alerted
 - Docs: ARCHITECTURE.md + SPEC.md updated for `/ai/*` routes; wizard type enum documented
 - KPI baseline: AI adoption (%) measured at S19 close
+
+**Implementation closeout evidence (2026-04-30)**:
+- `/api/sessions/:id/ai/generate` streams `ready`, `questions`, and `done` SSE events; `/api/sessions/:id/ai/refine` remains idempotent on grounding hash.
+- Wizard persists AI provenance (`ai_generated`, `ai_consent_at`, `ai_grounding_hash`) before routing to Launchpad.
+- Launchpad consumes backend `/preflight` as the launch gate and refreshes after edits, reorders, inline adds, and AI generation.
+- Density tiers apply to Dashboard sessions, Insights, and Teams list surfaces and persist through `USERS_KV`.
+- Focused verification: `npm run typecheck`; `npx vitest run tests/unit/sessions-new-routes.test.ts tests/unit/ai-wizard.test.ts tests/integration/user-preferences.test.ts`.
 
 ---
 

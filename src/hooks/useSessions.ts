@@ -20,7 +20,7 @@ export type Question = {
   id: string
   session_id: string
   position: number
-  kind: 'poll' | 'ranking' | 'consent' | 'open'
+  kind: 'poll' | 'ranking' | 'consent' | 'open' | 'multi_select' | 'likert' | 'upvote' | 'word_cloud' | 'slider'
   prompt: string
   options: PollOption[]
 }
@@ -95,7 +95,7 @@ export function useSession(id: string | undefined) {
   }, [load])
 
   const patch = useCallback(
-    async (payload: { title?: string; question?: { kind: 'poll' | 'ranking' | 'open' | 'consent'; prompt: string; options: PollOption[] } }) => {
+    async (payload: { title?: string; question?: { kind: Question['kind']; prompt: string; options: PollOption[] } }) => {
       if (!id) return { ok: false as const, status: 0, error: { code: 'no_id', message: 'Missing session id' } }
       const res = await api<SessionDetail>(`/api/sessions/${encodeURIComponent(id)}`, {
         method: 'PATCH',

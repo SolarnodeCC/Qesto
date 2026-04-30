@@ -622,6 +622,27 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         .run()
       session.session_mode = parsed.data.session_mode
     }
+    if (parsed.data.ai_generated !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET ai_generated = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.ai_generated ? 1 : 0, id, user.sub)
+        .run()
+      session.ai_generated = parsed.data.ai_generated ? 1 : 0
+    }
+    if (parsed.data.ai_consent_at !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET ai_consent_at = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.ai_consent_at, id, user.sub)
+        .run()
+      session.ai_consent_at = parsed.data.ai_consent_at
+    }
+    if (parsed.data.ai_grounding_hash !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET ai_grounding_hash = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.ai_grounding_hash, id, user.sub)
+        .run()
+      session.ai_grounding_hash = parsed.data.ai_grounding_hash
+    }
     let questions = await fetchQuestions(c.env.DB, id)
     if (parsed.data.question) {
       const q = await upsertPollQuestion(c.env.DB, id, parsed.data.question)
@@ -1040,6 +1061,124 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       }
       throw err
     }
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // WIZ-AI-01: POST /api/sessions/:id/ai/generate
+  // SSE variant used by the Sprint 19 wizard. It sends a ready event
+  // immediately, then streams the final validated question payload when the
+  // Workers AI generation completes.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.post('/:id/ai/generate', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
+      max: 20,
+      windowSeconds: 3600,
+      prefix: 'ai-wizard',
+    })
+    if (!rl.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'rate_limited',
+            message: 'Too many AI generations. Try again in an hour.',
+            details: { reset_at: rl.resetAt, limit: 20 },
+          },
+          trace_id: c.get('trace_id'),
+        },
+        429,
+      )
+    }
+
+    const session = await fetchSession(c.env.DB, id, user.sub)
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.status !== 'draft') {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Only DRAFT sessions can generate questions' },
+          trace_id: c.get('trace_id'),
+        },
+        409,
+      )
+    }
+
+    const body = (await c.req.json().catch(() => null)) as unknown
+    const parsed = GenerateQuestionsSchema.safeParse(body)
+    if (!parsed.success) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'validation', message: 'Invalid generation payload', details: parsed.error.flatten() },
+          trace_id: c.get('trace_id'),
+        },
+        400,
+      )
+    }
+
+    const encoder = new TextEncoder()
+    const language = c.req.header('accept-language') ?? 'en'
+    const grounding = JSON.stringify({
+      sessionTitle: parsed.data.sessionTitle,
+      sessionGoal: parsed.data.sessionGoal,
+      focusArea: parsed.data.focusArea ?? null,
+      language,
+    })
+    const groundingHash = await hashGrounding(grounding)
+    const traceId = c.get('trace_id')
+
+    function sse(event: string, data: unknown): Uint8Array {
+      return encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
+    }
+
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        controller.enqueue(sse('ready', { trace_id: traceId, groundingHash }))
+        try {
+          const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
+          controller.enqueue(sse('questions', {
+            questions: result.questions,
+            confidence: result.confidence,
+            groundingHash,
+          }))
+          controller.enqueue(sse('done', { ok: true }))
+        } catch (err) {
+          if (err instanceof WizardValidationError) {
+            controller.enqueue(sse('error', {
+              code: 'ai_output_invalid',
+              message: 'AI returned an output that failed validation',
+              details: err.details,
+            }))
+          } else if (err instanceof WizardAIError) {
+            const sanitized = sanitizeError(err, c.env.ENV, 500)
+            controller.enqueue(sse('error', { ...sanitized, code: 'ai_failed' }))
+          } else {
+            controller.enqueue(sse('error', {
+              code: 'internal_error',
+              message: err instanceof Error ? err.message : 'Unexpected AI generation error',
+            }))
+          }
+        } finally {
+          controller.close()
+        }
+      },
+    })
+
+    return new Response(stream, {
+      headers: {
+        'content-type': 'text/event-stream; charset=utf-8',
+        'cache-control': 'no-cache, no-transform',
+        connection: 'keep-alive',
+      },
+    })
   })
 
   // ──────────────────────────────────────────────────────────────────────────

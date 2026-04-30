@@ -39,6 +39,9 @@ export const PatchSessionSchema = z
     anonymity: z.enum(['full', 'partial', 'none']).optional(),
     vote_policy: z.enum(['once', 'multi', 'react']).optional(),
     session_mode: z.enum(['reflection', 'fun']).optional(),
+    ai_generated: z.boolean().optional(),
+    ai_consent_at: z.number().int().positive().optional(),
+    ai_grounding_hash: z.string().min(1).max(128).optional(),
   })
   .refine(
     (v) =>
@@ -46,7 +49,10 @@ export const PatchSessionSchema = z
       v.question !== undefined ||
       v.anonymity !== undefined ||
       v.vote_policy !== undefined ||
-      v.session_mode !== undefined,
+      v.session_mode !== undefined ||
+      v.ai_generated !== undefined ||
+      v.ai_consent_at !== undefined ||
+      v.ai_grounding_hash !== undefined,
     { message: 'at least one field must be provided' },
   )
 
@@ -65,25 +71,41 @@ const AI_VALID_KINDS = [
   'poll', 'ranking', 'consent', 'open',
   'multi_select', 'likert', 'upvote', 'word_cloud', 'slider',
 ] as const
-export const AIQuestionSchema = z.object({
-  kind: z.preprocess(
-    (v) => (AI_VALID_KINDS.includes(v as (typeof AI_VALID_KINDS)[number]) ? v : 'poll'),
-    z.enum(AI_VALID_KINDS),
-  ),
-  prompt: trimmed(3, 240),
-  options: z
-    .array(
-      z.object({
-        id: z.string().min(1).max(32).optional(),
-        label: trimmed(1, 160),
-      }),
-    )
-    .min(2)
-    .max(10),
-})
+export const AIQuestionSchema = z
+  .object({
+    kind: z.preprocess(
+      (v) => (AI_VALID_KINDS.includes(v as (typeof AI_VALID_KINDS)[number]) ? v : 'poll'),
+      z.enum(AI_VALID_KINDS),
+    ),
+    prompt: trimmed(3, 240),
+    options: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(32).optional(),
+          label: trimmed(1, 160),
+        }),
+      )
+      .max(10),
+  })
+  .superRefine((q, ctx) => {
+    if (['open', 'word_cloud', 'likert', 'slider'].includes(q.kind)) return
+    if (q.options.length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.too_small,
+        origin: 'array',
+        minimum: 2,
+        inclusive: true,
+        path: ['options'],
+        message: 'At least 2 options are required for this question type',
+      })
+    }
+  })
 
 export const AIQuestionsOutputSchema = z.object({
-  questions: z.array(AIQuestionSchema).min(5).max(10),
+  // The prompt asks for 3-5, and older deployed prompts may still produce
+  // larger batches. Accept the range we can render without turning a
+  // recoverable model variation into a 502 for the wizard.
+  questions: z.array(AIQuestionSchema).min(3).max(10),
 })
 
 // LAUNCHPAD-01: reorder input.

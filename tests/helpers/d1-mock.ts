@@ -27,18 +27,23 @@ type SessionRow = {
   code: string
   title: string
   status: 'draft' | 'live' | 'closed' | 'archived'
-  anonymity: 'anonymous' | 'identified'
+  anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none'
+  vote_policy?: 'once' | 'multi' | 'react'
+  session_mode?: 'reflection' | 'fun'
   created_at: number
   started_at: number | null
   closed_at: number | null
   archived_at: number | null
+  ai_generated?: number
+  ai_consent_at?: number | null
+  ai_grounding_hash?: string | null
 }
 
 type QuestionRow = {
   id: string
   session_id: string
   position: number
-  kind: 'poll' | 'ranking' | 'consent' | 'open'
+  kind: 'poll' | 'ranking' | 'consent' | 'open' | 'multi_select' | 'likert' | 'upvote' | 'word_cloud' | 'slider'
   prompt: string
   options_json: string
   created_at: number
@@ -205,6 +210,27 @@ export class D1PreparedStatementMock {
       row.title = title
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('UPDATE sessions SET anonymity')) {
+      const [anonymity, id, owner_id] = this.args as [SessionRow['anonymity'], string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.anonymity = anonymity
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET vote_policy')) {
+      const [vote_policy, id, owner_id] = this.args as [NonNullable<SessionRow['vote_policy']>, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.vote_policy = vote_policy
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET session_mode')) {
+      const [session_mode, id, owner_id] = this.args as [NonNullable<SessionRow['session_mode']>, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.session_mode = session_mode
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith("UPDATE sessions SET status = 'live'")) {
       const [started_at, id, owner_id] = this.args as [number, string, string]
       const row = this.db.sessions.get(id)
@@ -264,7 +290,7 @@ export class D1PreparedStatementMock {
       const [id, session_id, kind, prompt, options_json, created_at] = this.args as [
         string,
         string,
-        'poll' | 'ranking' | 'consent' | 'open',
+        QuestionRow['kind'],
         string,
         string,
         number,
@@ -339,10 +365,24 @@ export class D1PreparedStatementMock {
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE sessions SET ai_grounding_hash')) {
-      const [hash, id] = this.args as [string, string]
+      const [hash, id, owner_id] = this.args as [string, string, string | undefined]
       const row = this.db.sessions.get(id)
-      if (!row) return { meta: { changes: 0 } }
-      ;(row as SessionRow & { ai_grounding_hash?: string }).ai_grounding_hash = hash
+      if (!row || (owner_id !== undefined && row.owner_id !== owner_id)) return { meta: { changes: 0 } }
+      row.ai_grounding_hash = hash
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET ai_generated')) {
+      const [ai_generated, id, owner_id] = this.args as [number, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.ai_generated = ai_generated
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET ai_consent_at')) {
+      const [ai_consent_at, id, owner_id] = this.args as [number, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.ai_consent_at = ai_consent_at
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO insights_daily')) {

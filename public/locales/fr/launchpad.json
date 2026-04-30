@@ -20,6 +20,8 @@
   "questions_count": "Questions ({{count}})",
   "preflight_title": "Titre de la séance",
   "preflight_question": "Au moins une question",
+  "preflight_questions_valid": "Les questions sont prêtes au lancement",
+  "preflight_checking": "Vérification de la préparation…",
   "preflight_consent": "Consentement IA confirmé",
   "start_button": "Démarrer en direct",
   "starting": "Démarrage…",

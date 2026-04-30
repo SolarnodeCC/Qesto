@@ -20,6 +20,8 @@
   "questions_count": "Vragen ({{count}})",
   "preflight_title": "Sessietitel",
   "preflight_question": "Minimaal één vraag",
+  "preflight_questions_valid": "Vragen zijn klaar om te starten",
+  "preflight_checking": "Startgereedheid controleren…",
   "preflight_consent": "AI-toestemming bevestigd",
   "start_button": "Live gaan",
   "starting": "Starten…",

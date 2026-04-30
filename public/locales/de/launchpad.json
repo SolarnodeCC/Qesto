@@ -20,6 +20,8 @@
   "questions_count": "Fragen ({{count}})",
   "preflight_title": "Sitzungstitel",
   "preflight_question": "Mindestens eine Frage",
+  "preflight_questions_valid": "Fragen sind startbereit",
+  "preflight_checking": "Startbereitschaft wird geprüft…",
   "preflight_consent": "KI-Einwilligung bestätigt",
   "start_button": "Live gehen",
   "starting": "Starten…",

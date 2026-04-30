@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useT } from '../i18n'
-import { api } from '../api/client'
+import { getLanguageHeader, useT } from '../i18n'
+import { api, getAuthToken } from '../api/client'
+import { apiUrl } from '../config/api'
 import { WizardAIGenerationSkeleton } from './SkeletonLoader'
 import AIBadge from './AIBadge'
 
@@ -27,6 +28,12 @@ interface GeneratedQuestion {
   kind: string
   prompt: string
   options?: { id?: string; label: string }[]
+}
+
+type GenerateQuestionsSsePayload = {
+  questions: GeneratedQuestion[]
+  confidence: number
+  groundingHash: string
 }
 
 export interface SessionWizardProps {
@@ -71,6 +78,17 @@ function kindLabel(kind: QuestionKind): string {
     word_cloud: 'Word cloud',
   }
   return labels[kind] ?? kind
+}
+
+function parseSseEvent(raw: string): { event: string; data: unknown } | null {
+  let event = 'message'
+  const dataLines: string[] = []
+  for (const line of raw.split('\n')) {
+    if (line.startsWith('event:')) event = line.slice('event:'.length).trim()
+    if (line.startsWith('data:')) dataLines.push(line.slice('data:'.length).trim())
+  }
+  if (dataLines.length === 0) return null
+  return { event, data: JSON.parse(dataLines.join('\n')) as unknown }
 }
 
 const ENERGIZER_FORMATS = [
@@ -358,6 +376,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
 
   // Async
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [generatedAiGroundingHash, setGeneratedAiGroundingHash] = useState<string | null>(null)
   const [creatingSession, setCreatingSession] = useState(false)
   const [_generating, setGenerating] = useState(false)
   const [launching, setLaunching] = useState(false)
@@ -384,6 +403,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setVotePolicy('once')
     setSessionMode('reflection')
     setSessionId(null)
+    setGeneratedAiGroundingHash(null)
     setCreatingSession(false)
     setGenerating(false)
     setLaunching(false)
@@ -439,34 +459,82 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setGenerating(true)
     setAiPhase('generating')
     setError(null)
+    setGeneratedAiGroundingHash(null)
 
-    const res = await api<{ questions: GeneratedQuestion[]; confidence: number }>(
-      `/api/sessions/${encodeURIComponent(sessionId)}/questions/generate`,
-      {
+    try {
+      const headers: Record<string, string> = {
+        'content-type': 'application/json',
+        'accept-language': getLanguageHeader(),
+      }
+      const token = getAuthToken()
+      if (token) headers.authorization = `Bearer ${token}`
+
+      const response = await fetch(apiUrl(`/api/sessions/${encodeURIComponent(sessionId)}/ai/generate`), {
         method: 'POST',
-        body: { sessionTitle: title.trim(), sessionGoal: goal.trim(), focusArea: aiPrompt.trim() || undefined },
-      },
-    )
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({
+          sessionTitle: title.trim(),
+          sessionGoal: goal.trim(),
+          focusArea: aiPrompt.trim() || undefined,
+        }),
+      })
 
-    setGenerating(false)
-    if (!res.ok) {
+      if (!response.ok) {
+        throw new Error(t('step2.ai_error'))
+      }
+      if (!response.body) {
+        throw new Error(t('step2.ai_error'))
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let payload: GenerateQuestionsSsePayload | null = null
+
+      for (;;) {
+        const { value, done } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n')
+        let boundary = buffer.indexOf('\n\n')
+        while (boundary !== -1) {
+          const chunk = buffer.slice(0, boundary)
+          buffer = buffer.slice(boundary + 2)
+          const parsed = parseSseEvent(chunk)
+          if (parsed?.event === 'ready') {
+            const readyData = parsed.data as { groundingHash?: unknown }
+            if (typeof readyData.groundingHash === 'string') setGeneratedAiGroundingHash(readyData.groundingHash)
+          }
+          if (parsed?.event === 'questions') {
+            payload = parsed.data as GenerateQuestionsSsePayload
+          }
+          if (parsed?.event === 'error') {
+            throw new Error(t('step2.ai_error'))
+          }
+          boundary = buffer.indexOf('\n\n')
+        }
+      }
+
+      if (!payload) throw new Error(t('step2.ai_error'))
+      setGeneratedAiGroundingHash(payload.groundingHash)
+      const generated: WizardQuestion[] = payload.questions.map((q) => ({
+        id: q.id ?? newId(),
+        kind: (['poll','ranking','open','multi_select','likert','slider','upvote','word_cloud'].includes(q.kind) ? q.kind : 'poll') as QuestionKind,
+        prompt: q.prompt,
+        options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
+        fromAI: true,
+        dismissed: false,
+        accepted: false,
+      }))
+
+      setQuestions(generated)
+      setAiPhase('review')
+    } catch {
       setError(t('step2.ai_error'))
       setAiPhase('chat')
-      return
+    } finally {
+      setGenerating(false)
     }
-
-    const generated: WizardQuestion[] = res.data.questions.map((q) => ({
-      id: q.id ?? newId(),
-      kind: (['poll','ranking','open','multi_select','likert','slider','upvote','word_cloud'].includes(q.kind) ? q.kind : 'poll') as QuestionKind,
-      prompt: q.prompt,
-      options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
-      fromAI: true,
-      dismissed: false,
-      accepted: false,
-    }))
-
-    setQuestions(generated)
-    setAiPhase('review')
   }
 
   function dismissQuestion(id: string) {
@@ -498,9 +566,17 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setLaunchError(null)
 
     // Persist session options chosen in step 4.
+    const usedAiQuestions = activeQuestions.some((q) => q.fromAI)
+    const optionsBody: Record<string, unknown> = { anonymity, vote_policy: votePolicy, session_mode: sessionMode }
+    if (usedAiQuestions) {
+      optionsBody.ai_generated = true
+      optionsBody.ai_consent_at = Date.now()
+      if (generatedAiGroundingHash) optionsBody.ai_grounding_hash = generatedAiGroundingHash
+    }
+
     const optionsRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
       method: 'PATCH',
-      body: { anonymity, vote_policy: votePolicy, session_mode: sessionMode },
+      body: optionsBody,
     })
     if (!optionsRes.ok) {
       setLaunchError((optionsRes as { ok: false; error: { message: string } }).error.message)

@@ -13,9 +13,20 @@ import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/Tea
 import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
 
 type PreFlightItem = {
-  key: 'title' | 'question' | 'consent'
+  key: string
   label: string
   valid: boolean
+  message?: string
+}
+
+type PreFlightResponse = {
+  ready: boolean
+  checks: Array<{
+    id: string
+    label: string
+    pass: boolean
+    message?: string
+  }>
 }
 
 export default function Launchpad() {
@@ -32,6 +43,9 @@ export default function Launchpad() {
   const [codeCopied, setCodeCopied] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [preFlight, setPreFlight] = useState<PreFlightResponse | null>(null)
+  const [preFlightLoading, setPreFlightLoading] = useState(false)
+  const [preFlightError, setPreFlightError] = useState<string | null>(null)
 
   // Drag-to-reorder state
   const [dragIndex, setDragIndex] = useState<number | null>(null)
@@ -99,6 +113,24 @@ export default function Launchpad() {
     if (data?.questions) setOrderedQuestions(data.questions)
   }, [data?.questions])
 
+  const refreshPreFlight = useCallback(async () => {
+    if (!id || data?.session.status !== 'draft') return
+    setPreFlightLoading(true)
+    setPreFlightError(null)
+    const res = await api<PreFlightResponse>(`/api/sessions/${encodeURIComponent(id)}/preflight`)
+    setPreFlightLoading(false)
+    if (res.ok) {
+      setPreFlight(res.data)
+      return
+    }
+    setPreFlight(null)
+    setPreFlightError(res.error.message)
+  }, [id, data?.session.status])
+
+  useEffect(() => {
+    void refreshPreFlight()
+  }, [refreshPreFlight, data?.questions.length, data?.session.title])
+
   const handleDragStart = useCallback((index: number) => {
     setDragIndex(index)
   }, [])
@@ -130,9 +162,12 @@ export default function Launchpad() {
       if (!res.ok) {
         setReorderError(t('reorder_error'))
         setOrderedQuestions(data?.questions ?? next)
+        void refreshPreFlight()
+        return
       }
+      void refreshPreFlight()
     },
-    [dragIndex, orderedQuestions, id, data?.questions, t],
+    [dragIndex, orderedQuestions, id, data?.questions, refreshPreFlight, t],
   )
 
   const handleDragEnd = useCallback(() => {
@@ -168,7 +203,8 @@ export default function Launchpad() {
     }
     setEditingId(null)
     await reload()
-  }, [id, editingId, editKind, editPrompt, editOptions, reload, t])
+    await refreshPreFlight()
+  }, [id, editingId, editKind, editPrompt, editOptions, reload, refreshPreFlight, t])
 
   if (auth.status === 'loading') {
     return (
@@ -213,18 +249,16 @@ export default function Launchpad() {
     return `${mm}:${ss}`
   }
 
-  const hasTitle = data.session.title.trim().length > 0
-
-  const preFlightItems: PreFlightItem[] = [
+  const localPreFlightItems: PreFlightItem[] = [
     {
       key: 'title',
       label: t('preflight_title'),
-      valid: hasTitle,
+      valid: data.session.title.trim().length > 0,
     },
     {
       key: 'question',
       label: t('preflight_question'),
-      valid: data.questions.length > 0 && data.questions[0].kind === 'poll',
+      valid: data.questions.length > 0,
     },
     {
       key: 'consent',
@@ -233,7 +267,27 @@ export default function Launchpad() {
     },
   ]
 
-  const allValid = preFlightItems.every((item) => item.valid)
+  function localizePreFlightLabel(check: PreFlightResponse['checks'][number]): string {
+    if (check.id === 'title_set') return t('preflight_title')
+    if (check.id === 'has_questions') return t('preflight_question')
+    if (check.id === 'questions_valid') return t('preflight_questions_valid')
+    if (check.id === 'ai_consent') return t('preflight_consent')
+    return check.label
+  }
+
+  const preFlightItems: PreFlightItem[] = preFlight
+    ? preFlight.checks.map((check) => {
+        const item: PreFlightItem = {
+          key: check.id,
+          label: localizePreFlightLabel(check),
+          valid: check.pass,
+        }
+        if (check.message !== undefined) item.message = check.message
+        return item
+      })
+    : localPreFlightItems
+
+  const allValid = !preFlightLoading && (preFlight ? preFlight.ready : localPreFlightItems.every((item) => item.valid))
 
   async function handleAIGenerate(e: FormEvent) {
     e.preventDefault()
@@ -255,7 +309,9 @@ export default function Launchpad() {
     }
     // Persist each generated question so they appear in the session
     for (const q of res.data.questions) {
-      const kind = (q.kind === 'ranking' ? 'ranking' : q.kind === 'open' ? 'open' : 'poll') as 'poll' | 'ranking' | 'open'
+      const kind = (['poll', 'ranking', 'consent', 'open', 'multi_select', 'likert', 'upvote', 'word_cloud', 'slider'].includes(q.kind)
+        ? q.kind
+        : 'poll') as Question['kind']
       await api<unknown>(`/api/sessions/${encodeURIComponent(id)}/questions`, {
         method: 'POST',
         body: { kind, prompt: q.prompt, options: q.options ?? [] },
@@ -264,6 +320,7 @@ export default function Launchpad() {
     setAiGenerating(false)
     setAiTopic('')
     await reload()
+    await refreshPreFlight()
   }
 
   async function handleAddQuestion() {
@@ -283,6 +340,7 @@ export default function Launchpad() {
     setAddKind('poll')
     setAddingQuestion(false)
     await reload()
+    await refreshPreFlight()
   }
 
   async function handleStart() {
@@ -381,9 +439,20 @@ export default function Launchpad() {
               <span className={`text-caption ${item.valid ? 'text-pulse-700 dark:text-pulse-300' : 'text-red-600 dark:text-red-400'}`}>
                 {item.label}
               </span>
+              {!item.valid && item.message && (
+                <span className="sr-only">: {item.message}</span>
+              )}
             </div>
           ))}
         </section>
+        {(preFlightLoading || preFlightError) && (
+          <p
+            role={preFlightError ? 'alert' : 'status'}
+            className={preFlightError ? 'text-sm text-amber-600' : 'text-sm text-pulse-500'}
+          >
+            {preFlightError ?? t('preflight_checking')}
+          </p>
+        )}
 
         {/* Two-column rails */}
         <div className="flex flex-col lg:flex-row gap-6 items-start">
@@ -601,6 +670,11 @@ export default function Launchpad() {
                               <option value="ranking">Ranking</option>
                               <option value="open">Open</option>
                               <option value="consent">Consent</option>
+                              <option value="multi_select">Multi-select</option>
+                              <option value="likert">Likert</option>
+                              <option value="upvote">Upvote</option>
+                              <option value="word_cloud">Word cloud</option>
+                              <option value="slider">Slider</option>
                             </select>
                           </div>
                           {editError && (
@@ -688,6 +762,12 @@ export default function Launchpad() {
                       <option value="poll">Poll</option>
                       <option value="ranking">Ranking</option>
                       <option value="open">Open</option>
+                      <option value="consent">Consent</option>
+                      <option value="multi_select">Multi-select</option>
+                      <option value="likert">Likert</option>
+                      <option value="upvote">Upvote</option>
+                      <option value="word_cloud">Word cloud</option>
+                      <option value="slider">Slider</option>
                     </select>
                   </div>
                   {addError && <p role="alert" className="text-sm text-red-600">{addError}</p>}

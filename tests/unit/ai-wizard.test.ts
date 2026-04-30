@@ -63,15 +63,13 @@ describe('ai-wizard/generateQuestions', () => {
     ).rejects.toBeInstanceOf(WizardValidationError)
   })
 
-  it('throws WizardValidationError when schema fails (only one option per question)', async () => {
+  it('throws WizardValidationError when required prompt text is missing', async () => {
     const ai = mockAi({
       response: JSON.stringify({
         questions: [
-          { kind: 'poll', prompt: 'Question A', options: [{ label: 'x' }] },
-          { kind: 'poll', prompt: 'Question B', options: [{ label: 'x' }] },
-          { kind: 'poll', prompt: 'Question C', options: [{ label: 'x' }] },
-          { kind: 'poll', prompt: 'Question D', options: [{ label: 'x' }] },
-          { kind: 'poll', prompt: 'Question E', options: [{ label: 'x' }] },
+          { kind: 'poll', prompt: '', options: [{ label: 'x' }, { label: 'y' }] },
+          { kind: 'poll', prompt: '', options: [{ label: 'x' }, { label: 'y' }] },
+          { kind: 'poll', prompt: '', options: [{ label: 'x' }, { label: 'y' }] },
         ],
       }),
     })
@@ -137,7 +135,7 @@ describe('ai-wizard/generateQuestions', () => {
 
     const result = await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
     expect(result.questions).toHaveLength(5)
-    expect(callCount).toBe(3)
+    expect(callCount).toBe(4)
   })
 
   it('falls back to secondary model when primary fails all retries', async () => {
@@ -145,7 +143,7 @@ describe('ai-wizard/generateQuestions', () => {
     const ai: Ai = {
       run: async (model: string) => {
         calledModels.push(model as string)
-        if (model === '@cf/meta/llama-3.3-70b-instruct-fp8-fast') {
+        if (model === __internal.FAST_MODEL) {
           throw new Error('primary model unavailable')
         }
         return { response: VALID_QUESTIONS_JSON }
@@ -154,7 +152,63 @@ describe('ai-wizard/generateQuestions', () => {
 
     const result = await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
     expect(result.questions).toHaveLength(5)
-    expect(calledModels).toContain(__internal.FALLBACK_MODEL)
+    expect(calledModels).toContain(__internal.FAST_MODEL)
+    expect(calledModels).toContain(__internal.QUALITY_FALLBACK_MODEL)
+  })
+
+  it('uses parallel fast-model batches and compact generation settings by default', async () => {
+    const calls: Array<{ model: string; max_tokens: number | undefined; prompt: string }> = []
+    const ai: Ai = {
+      run: async (model: string, opts: { messages: Array<{ role: string; content: string }>; max_tokens?: number }) => {
+        calls.push({ model, max_tokens: opts.max_tokens, prompt: opts.messages.map((m) => m.content).join('\n') })
+        return { response: VALID_QUESTIONS_JSON }
+      },
+    } as unknown as Ai
+
+    await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
+    expect(calls).toHaveLength(2)
+    expect(calls[0].model).toBe(__internal.FAST_MODEL)
+    expect(calls[0].max_tokens).toBe(700)
+    expect(calls[0].prompt).toContain('3 to 4')
+    expect(calls[0].prompt).toContain('Batch focus:')
+    expect(calls[1].prompt).toContain('Batch focus:')
+  })
+
+  it('merges unique questions from parallel batches up to the target count', async () => {
+    const batchA = JSON.stringify({
+      questions: [
+        Q('Question A?'),
+        Q('Question B?'),
+        Q('Question C?'),
+        Q('Question D?'),
+      ],
+    })
+    const batchB = JSON.stringify({
+      questions: [
+        Q('Question D?'),
+        Q('Question E?'),
+        Q('Question F?'),
+        Q('Question G?'),
+        Q('Question H?'),
+      ],
+    })
+    let call = 0
+    const ai: Ai = {
+      run: async () => ({ response: call++ === 0 ? batchA : batchB }),
+    } as unknown as Ai
+
+    const result = await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' })
+    expect(result.questions.map((q) => q.prompt)).toEqual([
+      'Question A?',
+      'Question B?',
+      'Question C?',
+      'Question D?',
+      'Question E?',
+      'Question F?',
+      'Question G?',
+      'Question H?',
+    ])
+    expect(result.questions).toHaveLength(__internal.TARGET_QUESTION_COUNT)
   })
 
   it('builds user prompt with focus area when provided', () => {

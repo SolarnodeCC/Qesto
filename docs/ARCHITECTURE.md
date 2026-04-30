@@ -2,7 +2,7 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last verified: 2026-04-22 (UTC)_
+_Last verified: 2026-04-30 (UTC)_
 
 ## 1. Runtime architecture
 - **Frontend**: React + Vite.
@@ -44,3 +44,9 @@ _Last verified: 2026-04-22 (UTC)_
 - UI layer now has a formalised design-token source of truth (`docs/specs/design-tokens.json` → `src/ui/tokens.ts`; token generator CI step in progress per DESIGN-TOK-01).
 - Skeleton/empty/error parity enforced via `SkeletonLoader.tsx` (SessionListSkeleton, InsightsTabSkeleton, WizardAIGenerationSkeleton, LaunchpadPreFlightSkeleton, ResultsSectionSkeleton).
 - Motion system: CSS custom-property tokens (`--duration-*`, `--ease-*`) with `@keyframes` in `styles.css`; global `prefers-reduced-motion` override ensures accessibility compliance.
+
+## 9. 2026-04-30 Sprint 19 architecture addendum
+- DRAFT session AI generation is exposed through `/api/sessions/:id/ai/generate` as an SSE route on the sessions API module. The stream emits an immediate readiness event, then a validated question payload, without mutating LIVE Durable Object state.
+- AI provenance lives on the D1 `sessions` row (`ai_generated`, `ai_consent_at`, `ai_grounding_hash`) and is checked by `/api/sessions/:id/preflight`.
+- Launchpad now treats backend preflight as the single source of truth for DRAFT→LIVE readiness; frontend checks are a temporary fallback while the request loads.
+- User density preference is stored in `USERS_KV` and hydrated by the dashboard UI.
