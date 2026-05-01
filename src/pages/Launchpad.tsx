@@ -410,7 +410,7 @@ export default function Launchpad() {
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Page header */}
         <header>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-pulse-50">
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8]">
             {data.session.title}
           </h1>
           <p className="text-caption text-pulse-500 mt-1">{t('title')}</p>

@@ -178,17 +178,17 @@ export default function SessionConfig() {
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">Configure</h1>
-          <p className="text-sm text-pulse-500">Join code: <code className="font-mono">{data.session.code}</code></p>
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8]">Configure</h1>
+          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">Join code: <code className="font-mono">{data.session.code}</code></p>
         </div>
-        <span className="text-xs uppercase tracking-wider rounded-full px-2 py-0.5 bg-pulse-100 text-pulse-600">
+        <span className="text-xs uppercase tracking-wider rounded-full px-2 py-0.5 bg-pulse-100 dark:bg-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC]">
           {data.session.status}
         </span>
       </div>
 
       <form onSubmit={handleSave} className="space-y-5">
         <div className="space-y-2">
-          <label htmlFor="session-title" className="text-sm font-medium">
+          <label htmlFor="session-title" className="text-sm font-medium dark:text-[#F0F2F8]">
             Title
           </label>
           <input
@@ -197,15 +197,15 @@ export default function SessionConfig() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
-            className="w-full border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+            className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
           />
         </div>
 
-        <fieldset className="space-y-3 rounded-xl border border-pulse-200 p-5">
-          <legend className="text-sm font-medium px-1">{t('pollQuestion')}</legend>
+        <fieldset className="space-y-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] dark:bg-[#151C2E] p-5">
+          <legend className="text-sm font-medium px-1 dark:text-[#F0F2F8]">{t('pollQuestion')}</legend>
 
           <div className="space-y-2">
-            <label htmlFor="poll-prompt" className="text-sm font-medium">
+            <label htmlFor="poll-prompt" className="text-sm font-medium dark:text-[#F0F2F8]">
               Prompt
             </label>
             <input
@@ -215,7 +215,7 @@ export default function SessionConfig() {
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="What should we prioritise next quarter?"
               maxLength={240}
-              className="w-full border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+              className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
             />
 
             {/* AI Suggest button */}
@@ -225,7 +225,7 @@ export default function SessionConfig() {
                 onClick={handleAiSuggest}
                 disabled={aiLoading}
                 aria-label="Get AI-suggested question prompts"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 text-violet-700 px-3 py-1.5 text-sm font-medium hover:bg-violet-100 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 dark:border-violet-800/60 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 px-3 py-1.5 text-sm font-medium hover:bg-violet-100 dark:hover:bg-violet-900/30 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 transition-colors"
               >
                 {aiLoading ? (
                   <>
@@ -262,7 +262,7 @@ export default function SessionConfig() {
 
             {/* AI suggestions list */}
             {aiSuggestions.length > 0 && (
-              <div className="rounded-lg border border-violet-200 bg-violet-50 p-3 space-y-2">
+              <div className="rounded-lg border border-violet-200 dark:border-violet-800/60 bg-violet-50 dark:bg-violet-900/20 p-3 space-y-2">
                 <div className="flex items-center gap-2">
                   <AIBadge />
                   <span className="text-xs text-pulse-500">{t('aiSuggestionHelp')}</span>
@@ -273,7 +273,7 @@ export default function SessionConfig() {
                       <button
                         type="button"
                         onClick={() => adoptSuggestion(suggestion)}
-                        className="w-full text-left text-sm text-violet-800 hover:text-violet-900 hover:underline rounded px-1 py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1"
+                        className="w-full text-left text-sm text-violet-800 dark:text-violet-300 hover:text-violet-900 dark:hover:text-violet-200 hover:underline rounded px-1 py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1"
                       >
                         {suggestion}
                       </button>
@@ -285,7 +285,7 @@ export default function SessionConfig() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium">Options ({options.length}/10)</p>
+            <p className="text-sm font-medium dark:text-[#F0F2F8]">Options ({options.length}/10)</p>
             <ul className="space-y-2">
               {options.map((o, i) => (
                 <li key={o.id} className="flex gap-2">
@@ -296,13 +296,13 @@ export default function SessionConfig() {
                     placeholder={`Option ${i + 1}`}
                     maxLength={160}
                     aria-label={`Option ${i + 1}`}
-                    className="flex-1 border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                    className="flex-1 border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                   />
                   <button
                     type="button"
                     onClick={() => removeOption(i)}
                     disabled={options.length <= 2}
-                    className="text-pulse-500 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm px-2"
+                    className="text-pulse-500 dark:text-[#6B7A99] hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm px-2"
                     aria-label={`Remove option ${i + 1}`}
                   >
                     Remove
@@ -348,7 +348,7 @@ export default function SessionConfig() {
               Open presenter view →
             </Link>
           ) : (
-            <span className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-400 px-4 py-2 font-medium">
+            <span className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-400 dark:text-[#6B7A99] px-4 py-2 font-medium">
               Session closed
             </span>
           )}
