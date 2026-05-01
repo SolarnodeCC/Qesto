@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { recordSpan, recordSpanSafe } from '../../functions/api/lib/observability'
+import { recordSpan, recordSpanSafe, writeEvent } from '../../functions/api/lib/observability'
+import type { AnalyticsEngineDataset } from '@cloudflare/workers-types'
 
 describe('Observability — Span Tracing', () => {
   let mockKV: any
@@ -68,5 +69,74 @@ describe('Observability — Span Tracing', () => {
     expect(ctx).toHaveProperty('trace_id')
     expect(ctx).not.toHaveProperty('email')
     expect(ctx).not.toHaveProperty('ip')
+  })
+})
+
+describe('writeEvent — Analytics Engine', () => {
+  it('writes correct blobs and doubles to AE dataset', () => {
+    const mockAe = { writeDataPoint: vi.fn() } as unknown as AnalyticsEngineDataset
+    writeEvent(mockAe, {
+      name: 'session.started',
+      sessionId: 'sess_abc',
+      teamId: 'team_xyz',
+      plan: 'team',
+      traceId: 'trace_001',
+      durationMs: 250,
+      count: 3,
+      value: 9.99,
+    })
+    expect(mockAe.writeDataPoint).toHaveBeenCalledOnce()
+    const dp = (mockAe.writeDataPoint as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      blobs: string[]
+      doubles: number[]
+    }
+    expect(dp.blobs[0]).toBe('session.started')
+    expect(dp.blobs[1]).toBe('sess_abc')
+    expect(dp.blobs[2]).toBe('team_xyz')
+    expect(dp.blobs[3]).toBe('team')
+    expect(dp.blobs[4]).toBe('trace_001')
+    expect(dp.doubles[0]).toBe(250)
+    expect(dp.doubles[1]).toBe(3)
+    expect(dp.doubles[2]).toBe(9.99)
+  })
+
+  it('uses userId as blob2 when sessionId is absent', () => {
+    const mockAe = { writeDataPoint: vi.fn() } as unknown as AnalyticsEngineDataset
+    writeEvent(mockAe, { name: 'signup', userId: 'user_001', traceId: 'trace_x' })
+    const dp = (mockAe.writeDataPoint as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      blobs: string[]
+    }
+    expect(dp.blobs[1]).toBe('user_001')
+  })
+
+  it('is a no-op when ae is undefined', () => {
+    expect(() => writeEvent(undefined, { name: 'session.started', sessionId: 'sess_1' })).not.toThrow()
+  })
+
+  it('swallows errors thrown by writeDataPoint', () => {
+    const mockAe = {
+      writeDataPoint: vi.fn().mockImplementation(() => { throw new Error('AE unavailable') }),
+    } as unknown as AnalyticsEngineDataset
+    expect(() => writeEvent(mockAe, { name: 'error.api', sessionId: 's1' })).not.toThrow()
+  })
+
+  it('emits preflight.checked as a valid event name', () => {
+    const mockAe = { writeDataPoint: vi.fn() } as unknown as AnalyticsEngineDataset
+    writeEvent(mockAe, { name: 'preflight.checked', sessionId: 'sess_1', count: 2 })
+    const dp = (mockAe.writeDataPoint as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      blobs: string[]
+      doubles: number[]
+    }
+    expect(dp.blobs[0]).toBe('preflight.checked')
+    expect(dp.doubles[1]).toBe(2)
+  })
+
+  it('emits ai.rate_limited as a valid event name', () => {
+    const mockAe = { writeDataPoint: vi.fn() } as unknown as AnalyticsEngineDataset
+    writeEvent(mockAe, { name: 'ai.rate_limited', userId: 'user_1', sessionId: 'sess_1' })
+    const dp = (mockAe.writeDataPoint as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      blobs: string[]
+    }
+    expect(dp.blobs[0]).toBe('ai.rate_limited')
   })
 })

@@ -42,6 +42,8 @@ export const PatchSessionSchema = z
     ai_generated: z.boolean().optional(),
     ai_consent_at: z.number().int().positive().optional(),
     ai_grounding_hash: z.string().min(1).max(128).optional(),
+    ai_accepted_count: z.number().int().nonnegative().max(100).optional(),
+    ai_dismissed_count: z.number().int().nonnegative().max(100).optional(),
   })
   .refine(
     (v) =>
@@ -52,7 +54,9 @@ export const PatchSessionSchema = z
       v.session_mode !== undefined ||
       v.ai_generated !== undefined ||
       v.ai_consent_at !== undefined ||
-      v.ai_grounding_hash !== undefined,
+      v.ai_grounding_hash !== undefined ||
+      v.ai_accepted_count !== undefined ||
+      v.ai_dismissed_count !== undefined,
     { message: 'at least one field must be provided' },
   )
 

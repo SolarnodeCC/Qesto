@@ -67,6 +67,8 @@ async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_generated INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_consent_at INTEGER`).run().catch(() => {})
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
 }
 
 type QuestionRow = {
@@ -108,7 +110,8 @@ async function fetchSession(db: D1Database, id: string, ownerId: string): Promis
     .prepare(
       `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
               created_at, started_at, closed_at, archived_at, team_id,
-              ai_generated, ai_consent_at, ai_grounding_hash
+              ai_generated, ai_consent_at, ai_grounding_hash,
+              ai_accepted_count, ai_dismissed_count
          FROM sessions
         WHERE id = ?1 AND owner_id = ?2`,
     )
@@ -653,6 +656,20 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         .run()
       session.ai_grounding_hash = parsed.data.ai_grounding_hash
     }
+    if (parsed.data.ai_accepted_count !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET ai_accepted_count = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.ai_accepted_count, id, user.sub)
+        .run()
+      session.ai_accepted_count = parsed.data.ai_accepted_count
+    }
+    if (parsed.data.ai_dismissed_count !== undefined) {
+      await c.env.DB
+        .prepare(`UPDATE sessions SET ai_dismissed_count = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(parsed.data.ai_dismissed_count, id, user.sub)
+        .run()
+      session.ai_dismissed_count = parsed.data.ai_dismissed_count
+    }
     let questions = await fetchQuestions(c.env.DB, id)
     if (parsed.data.question) {
       const denied = deniedQuestionFeature(plan, quotas, parsed.data.question.kind)
@@ -983,7 +1000,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // questions are *not* auto-persisted — the frontend surfaces them in a
   // review step so the host can tweak labels before save.
   // Rate-limited per-user: 20 generations / hour.
-  // ──────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────-
   app.post('/:id/questions/generate', async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
@@ -994,6 +1011,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       prefix: 'ai-wizard',
     })
     if (!rl.allowed) {
+      writeEvent(c.env.METRICS_AE, { name: 'ai.rate_limited', userId: user.sub, sessionId: id, traceId: c.get('trace_id') })
       return c.json(
         {
           ok: false,
@@ -1093,6 +1111,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       prefix: 'ai-wizard',
     })
     if (!rl.allowed) {
+      writeEvent(c.env.METRICS_AE, { name: 'ai.rate_limited', userId: user.sub, sessionId: id, traceId: c.get('trace_id') })
       return c.json(
         {
           ok: false,
@@ -1611,6 +1630,14 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     })
 
     const ready = checks.every((c) => c.pass)
+    writeEvent(c.env.METRICS_AE, {
+      name: 'preflight.checked',
+      sessionId: id,
+      ...(session.team_id ? { teamId: session.team_id } : {}),
+      plan: c.get('plan'),
+      traceId,
+      count: checks.filter((ch) => !ch.pass).length,
+    })
     return c.json({ ok: true, data: { ready, checks }, trace_id: traceId })
   })
 
@@ -1631,6 +1658,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       prefix: 'ai-refine',
     })
     if (!rl.allowed) {
+      writeEvent(c.env.METRICS_AE, { name: 'ai.rate_limited', userId: user.sub, sessionId: id, traceId })
       return c.json(
         {
           ok: false,

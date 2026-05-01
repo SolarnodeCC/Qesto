@@ -100,6 +100,10 @@ export type Session = {
   ai_consent_at?: number | null
   /** Sprint 18 prereq: sha256 hex of grounding prompt context, used to dedupe refines. */
   ai_grounding_hash?: string | null
+  /** S19-MEASURE-01: count of AI-suggested questions the host accepted (kept in final set). */
+  ai_accepted_count?: number
+  /** S19-MEASURE-01: count of AI-suggested questions the host dismissed. */
+  ai_dismissed_count?: number
 }
 
 export type User = {

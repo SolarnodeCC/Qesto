@@ -572,6 +572,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
       optionsBody.ai_generated = true
       optionsBody.ai_consent_at = Date.now()
       if (generatedAiGroundingHash) optionsBody.ai_grounding_hash = generatedAiGroundingHash
+      optionsBody.ai_accepted_count = questions.filter((q) => q.fromAI && q.accepted).length
+      optionsBody.ai_dismissed_count = questions.filter((q) => q.fromAI && q.dismissed).length
     }
 
     const optionsRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
