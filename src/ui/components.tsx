@@ -49,7 +49,7 @@ export function Body({
 }
 
 export function Caption({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`text-caption font-medium text-pulse-600 ${className}`}>{children}</span>
+  return <span className={`text-caption font-medium text-pulse-600 dark:text-[#6B7A99] ${className}`}>{children}</span>
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export function Card({
   return (
     <div
       className={`
-        rounded-lg border border-pulse-200 bg-pulse-50 p-space-4
+        rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-space-4
         shadow-card ${hoverable ? 'hover:shadow-elevated transition-shadow' : ''}
         ${className}
       `}
@@ -116,18 +116,18 @@ export function Button({
   const variantStyles = {
     primary: `
       bg-gradient-brand text-white
-      hover:shadow-teal ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+      hover:shadow-teal dark:hover:shadow-[0_4px_24px_rgba(45,212,191,0.35)] ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     secondary: `
-      border border-teal-500 text-teal-700 bg-white
-      hover:bg-teal-50 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+      border border-teal-500 dark:border-teal-400 text-teal-700 dark:text-teal-400 bg-white dark:bg-[#1C2540]
+      hover:bg-teal-50 dark:hover:bg-teal-500/10 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     ghost: `
-      text-pulse-700 bg-transparent
-      hover:bg-pulse-100 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+      text-pulse-700 dark:text-[#A8B3CC] bg-transparent
+      hover:bg-pulse-100 dark:hover:bg-white/8 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     danger: `
-      bg-signal-error text-white
+      bg-signal-error dark:bg-red-500 text-white
       hover:shadow-error ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
   }
@@ -166,8 +166,10 @@ export function TextInput({
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       className={`
-        border border-pulse-300 rounded-md px-space-3 py-space-2 text-body-s
-        focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none
+        border border-pulse-300 dark:border-[#2A3858] rounded-md px-space-3 py-space-2 text-body-s
+        bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]
+        placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99]
+        focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-400/20 focus:outline-none
         transition-all duration-150
         ${className}
       `}
@@ -187,11 +189,11 @@ export function Badge({
   className?: string
 }) {
   const variantStyles = {
-    primary: 'bg-teal-100 text-teal-700 border border-teal-200',
-    ai: 'bg-gradient-ai text-white border border-violet-400',
-    success: 'bg-green-100 text-green-700 border border-green-200',
-    warning: 'bg-amber-100 text-amber-700 border border-amber-200',
-    error: 'bg-red-100 text-red-700 border border-red-200',
+    primary: 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800',
+    ai: 'bg-gradient-ai text-white border border-violet-400 dark:border-violet-500',
+    success: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800',
+    warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
+    error: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
   }
 
   return (
@@ -215,7 +217,7 @@ export function MetricCard({
   return (
     <Card className={`${alert ? 'border-signal-error bg-red-50' : ''} ${className}`}>
       <Caption className={alert ? 'text-signal-error' : ''}>{label}</Caption>
-      <div className={`text-2xl font-bold mt-space-2 ${alert ? 'text-signal-error' : 'text-pulse-900'}`}>
+      <div className={`text-2xl font-bold mt-space-2 ${alert ? 'text-signal-error dark:text-red-400' : 'text-pulse-900 dark:text-[#F0F2F8]'}`}>
         {value}
       </div>
     </Card>
@@ -235,10 +237,10 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-space-12 text-center">
-      <Heading level="m" className="text-pulse-700">
+      <Heading level="m" className="text-pulse-700 dark:text-[#A8B3CC]">
         {title}
       </Heading>
-      {description && <Body className="text-pulse-600 mt-space-2">{description}</Body>}
+      {description && <Body className="text-pulse-600 dark:text-[#6B7A99] mt-space-2">{description}</Body>}
       {action && <div className="mt-space-4">{action}</div>}
     </div>
   )
@@ -248,10 +250,10 @@ export function EmptyState({
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`rounded-lg border border-pulse-200 p-space-4 h-24 bg-pulse-100 animate-pulse ${className}`} />
+    <div className={`rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-space-4 h-24 bg-pulse-100 dark:bg-[#151C2E] animate-pulse ${className}`} />
   )
 }
 
 export function SkeletonLine({ className = '' }: { className?: string }) {
-  return <div className={`h-4 bg-pulse-200 rounded-md animate-pulse ${className}`} />
+  return <div className={`h-4 bg-pulse-200 dark:bg-[#1C2540] rounded-md animate-pulse ${className}`} />
 }

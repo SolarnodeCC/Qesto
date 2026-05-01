@@ -92,14 +92,14 @@ export default function Home() {
             {/* AI pill */}
             <div className="flex items-center gap-2 mb-6">
               <AIBadge variant="assisted" label="AI-assisted" />
-              <span className="text-sm text-pulse-500">{t('heroTagline')}</span>
+              <span className="text-sm text-pulse-500 dark:text-[#6B7A99]">{t('heroTagline')}</span>
             </div>
 
             {/* H1 */}
             <h1
               id="hero-heading"
               tabIndex={-1}
-              className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 mb-5 max-w-[920px] focus:outline-none"
+              className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-5 max-w-[920px] focus:outline-none"
             >
               Feel the pulse of the room,{' '}
               <span className="bg-gradient-to-br from-teal-500 to-violet-500 bg-clip-text text-transparent">
@@ -108,7 +108,7 @@ export default function Home() {
             </h1>
 
             {/* Sub-headline */}
-            <p className="text-xl leading-[1.55] text-pulse-600 max-w-[680px] mb-8">
+            <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-8">
               Make it easy for everyone to join in, share what they think, and stay with you from
               start to finish. For teachers, trainers, facilitators, and team leaders.
             </p>
@@ -125,7 +125,7 @@ export default function Home() {
                   </Link>
                   <Link
                     to="/pricing"
-                    className="inline-flex items-center rounded-md bg-white border border-pulse-200 text-pulse-900 px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     See the anonymity modes
                   </Link>
@@ -142,7 +142,7 @@ export default function Home() {
                   </Link>
                   <Link
                     to="/pricing"
-                    className="inline-flex items-center rounded-md bg-white border border-pulse-200 text-pulse-900 px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     See the anonymity modes
                   </Link>
@@ -153,12 +153,12 @@ export default function Home() {
 
             {/* Feature strip */}
             <div
-              className="flex flex-wrap gap-7 pt-5 border-t border-pulse-200"
+              className="flex flex-wrap gap-7 pt-5 border-t border-pulse-200 dark:border-[#1E2A45]"
               aria-label="Key features"
             >
               {FEATURE_STRIP.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2.5 text-sm text-pulse-600">
-                  <Icon aria-hidden="true" size={16} className="text-teal-600 flex-shrink-0" />
+                <div key={label} className="flex items-center gap-2.5 text-sm text-pulse-600 dark:text-[#A8B3CC]">
+                  <Icon aria-hidden="true" size={16} className="text-teal-600 dark:text-teal-400 flex-shrink-0" />
                   {label}
                 </div>
               ))}
@@ -169,24 +169,24 @@ export default function Home() {
         {/* ── Feature cards ─────────────────────────────────────────────────────── */}
         <section
           aria-labelledby="features-heading"
-          className="bg-pulse-50 py-24 px-6"
+          className="bg-pulse-50 dark:bg-[#0F1525] py-24 px-6"
           id="features"
         >
           <div className="max-w-[1120px] mx-auto">
 
             {/* Eyebrow */}
-            <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-teal-600 mb-3">
+            <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-teal-600 dark:text-teal-400 mb-3">
               Facilitator-first
             </p>
 
             <h2
               id="features-heading"
-              className="font-[family-name:var(--font-display)] font-bold text-[48px] leading-[1.1] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 mb-4 max-w-[680px]"
+              className="font-[family-name:var(--font-display)] font-bold text-[48px] leading-[1.1] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-4 max-w-[680px]"
             >
               Decisions you can defend, with evidence that survives the meeting.
             </h2>
 
-            <p className="text-lg text-pulse-600 max-w-[620px] mb-12">
+            <p className="text-lg text-pulse-600 dark:text-[#A8B3CC] max-w-[620px] mb-12">
               Ask a question. See what your room is thinking. Give people a safe way to contribute
               honestly — and leave with a clear record of what was said.
             </p>
@@ -198,7 +198,7 @@ export default function Home() {
                 return (
                   <li
                     key={card.title}
-                    className="animate-list-item bg-white rounded-lg shadow-card hover:shadow-elevated transition-shadow duration-[120ms] p-7 flex flex-col gap-3"
+                    className="animate-list-item bg-white dark:bg-[#151C2E] rounded-lg shadow-card hover:shadow-elevated transition-shadow duration-[120ms] p-7 flex flex-col gap-3"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     {/* Icon container */}
@@ -206,18 +206,18 @@ export default function Home() {
                       className={[
                         'rounded-xl w-11 h-11 flex items-center justify-center flex-shrink-0',
                         card.ai
-                          ? 'bg-violet-50 text-violet-700'
-                          : 'bg-teal-50 text-teal-700',
+                          ? 'bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400'
+                          : 'bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400',
                       ].join(' ')}
                       aria-hidden="true"
                     >
                       <Icon size={20} />
                     </div>
 
-                    <h3 className="text-[20px] font-semibold text-pulse-900 leading-snug">
+                    <h3 className="text-[20px] font-semibold text-pulse-900 dark:text-[#F0F2F8] leading-snug">
                       {card.title}
                     </h3>
-                    <p className="text-[15px] text-pulse-600 leading-[1.55]">{card.desc}</p>
+                    <p className="text-[15px] text-pulse-600 dark:text-[#A8B3CC] leading-[1.55]">{card.desc}</p>
                   </li>
                 )
               })}

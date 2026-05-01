@@ -419,7 +419,7 @@ export default function Launchpad() {
         {/* Pre-flight strip — horizontal checklist bar */}
         <section
           aria-label={t('checklist_title')}
-          className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-pulse-200 dark:border-pulse-700 bg-pulse-50 dark:bg-pulse-800 px-4 py-3"
+          className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1525] px-4 py-3"
         >
           {preFlightItems.map((item) => (
             <div key={item.key} className="flex items-center gap-2">
@@ -462,9 +462,9 @@ export default function Launchpad() {
             {/* Join code */}
             <section
               aria-labelledby="join-code-heading"
-              className="rounded-lg border border-pulse-200 dark:border-pulse-700 bg-pulse-50 dark:bg-pulse-800 p-4 space-y-3 shadow-card"
+              className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4 space-y-3 shadow-card"
             >
-              <h2 id="join-code-heading" className="text-caption font-medium text-pulse-500 uppercase tracking-wider dark:text-pulse-400">
+              <h2 id="join-code-heading" className="text-caption font-medium text-pulse-500 uppercase tracking-wider dark:text-[#6B7A99]">
                 {t('join_code_heading')}
               </h2>
               <div className="flex items-center gap-3">
@@ -501,7 +501,7 @@ export default function Launchpad() {
 
               {/* Elapsed timer */}
               {data.session.started_at !== null && (
-                <div className="pt-2 border-t border-pulse-100 dark:border-pulse-700">
+                <div className="pt-2 border-t border-pulse-100 dark:border-[#1E2A45]">
                   <p className="text-caption text-pulse-500 uppercase tracking-wider">{t('timer_label')}</p>
                   <p
                     className="font-mono text-2xl font-semibold text-teal-600"
@@ -518,7 +518,7 @@ export default function Launchpad() {
             {/* QR code */}
             <div
               aria-label={t('qr_aria_label')}
-              className="flex justify-center rounded-lg border border-pulse-200 dark:border-pulse-600 bg-white p-4 shadow-sm"
+              className="flex justify-center rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-4 shadow-sm"
             >
               <QRCode
                 value={`${window.location.origin}/j/${data.session.code}`}
@@ -571,7 +571,7 @@ export default function Launchpad() {
           <div className="flex-1 min-w-0 space-y-6">
             {/* Questions — drag-to-reorder + inline editor */}
             <section className="space-y-3">
-              <h2 className="text-lg font-semibold dark:text-pulse-100">
+              <h2 className="text-lg font-semibold dark:text-[#F0F2F8]">
                 {t('questions_count', { count: orderedQuestions.length })}
               </h2>
 
@@ -583,7 +583,7 @@ export default function Launchpad() {
                 <div className="space-y-4">
                   <p className="text-sm text-pulse-500 dark:text-pulse-400">{t('no_questions_hint')}</p>
                   {/* AI quick-generate */}
-                  <div className="rounded-lg border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-4 space-y-3">
+                  <div className="rounded-lg border border-violet-200 dark:border-violet-800/60 bg-violet-50 dark:bg-violet-900/20 p-4 space-y-3">
                     <div className="flex items-center gap-2">
                       <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-violet-500 flex-shrink-0">
                         <path d="M12 2l1.8 5.4 5.7 0-4.6 3.4 1.8 5.4L12 13l-4.7 3.2 1.8-5.4L4.5 7.4l5.7 0z" />
@@ -598,7 +598,7 @@ export default function Launchpad() {
                         placeholder={t('ai_topic_placeholder', { title: data.session.title })}
                         maxLength={160}
                         disabled={aiGenerating}
-                        className="w-full rounded-md border border-violet-300 dark:border-violet-700 dark:bg-pulse-800 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-60 placeholder:text-pulse-400"
+                        className="w-full rounded-md border border-violet-300 dark:border-violet-700/60 dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-60 placeholder:text-pulse-400"
                       />
                       {aiError && (
                         <p role="alert" className="text-xs text-red-600 dark:text-red-400">{aiError}</p>
@@ -639,10 +639,10 @@ export default function Launchpad() {
                       onDrop={() => void handleDrop(index)}
                       onDragEnd={handleDragEnd}
                       className={[
-                        'rounded-md border dark:bg-pulse-800 transition-colors',
+                        'rounded-md border bg-white dark:bg-[#151C2E] transition-colors',
                         dragOverIndex === index && dragIndex !== index
-                          ? 'border-teal-400 bg-teal-50 dark:bg-teal-900/20'
-                          : 'border-pulse-200 dark:border-pulse-700',
+                          ? 'border-teal-400 bg-teal-50 dark:bg-teal-500/10'
+                          : 'border-pulse-200 dark:border-[#1E2A45]',
                         dragIndex === index ? 'opacity-50' : '',
                       ].join(' ')}
                     >
@@ -655,7 +655,7 @@ export default function Launchpad() {
                               value={editPrompt}
                               onChange={(e) => setEditPrompt(e.target.value)}
                               rows={2}
-                              className="w-full rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                              className="w-full rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                             />
                           </div>
                           <div className="space-y-1">
@@ -664,7 +664,7 @@ export default function Launchpad() {
                               id={`edit-kind-${q.id}`}
                               value={editKind}
                               onChange={(e) => setEditKind(e.target.value as Question['kind'])}
-                              className="rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                              className="rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                             >
                               <option value="poll">Poll</option>
                               <option value="ranking">Ranking</option>
@@ -693,7 +693,7 @@ export default function Launchpad() {
                               type="button"
                               onClick={cancelEdit}
                               disabled={editSaving}
-                              className="px-3 py-1.5 rounded-md border border-pulse-300 dark:border-pulse-600 text-sm text-pulse-700 dark:text-pulse-300 hover:bg-pulse-50 dark:hover:bg-pulse-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                              className="px-3 py-1.5 rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                             >
                               {t('cancel_edit')}
                             </button>
@@ -739,7 +739,7 @@ export default function Launchpad() {
 
               {/* Inline add-question form */}
               {addingQuestion ? (
-                <div className="mt-3 rounded-lg border border-teal-200 dark:border-teal-700 bg-teal-50/40 dark:bg-teal-900/10 p-3 space-y-3">
+                <div className="mt-3 rounded-lg border border-teal-200 dark:border-teal-400/40 bg-teal-50/40 dark:bg-teal-500/10 p-3 space-y-3">
                   <div className="space-y-1">
                     <label htmlFor="add-prompt" className="text-caption text-pulse-500">{t('edit_prompt_label')}</label>
                     <textarea
@@ -748,7 +748,7 @@ export default function Launchpad() {
                       onChange={(e) => setAddPrompt(e.target.value)}
                       rows={2}
                       autoFocus
-                      className="w-full rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      className="w-full rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                     />
                   </div>
                   <div className="space-y-1">
@@ -757,7 +757,7 @@ export default function Launchpad() {
                       id="add-kind"
                       value={addKind}
                       onChange={(e) => setAddKind(e.target.value as Question['kind'])}
-                      className="rounded-md border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-700 dark:text-pulse-100 px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      className="rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                     >
                       <option value="poll">Poll</option>
                       <option value="ranking">Ranking</option>
@@ -784,7 +784,7 @@ export default function Launchpad() {
                       type="button"
                       onClick={() => { setAddingQuestion(false); setAddPrompt(''); setAddError(null) }}
                       disabled={addSaving}
-                      className="px-3 py-1.5 rounded-md border border-pulse-300 dark:border-pulse-600 text-sm text-pulse-700 dark:text-pulse-300 hover:bg-pulse-50 dark:hover:bg-pulse-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      className="px-3 py-1.5 rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                     >
                       {t('cancel_edit')}
                     </button>
@@ -804,7 +804,7 @@ export default function Launchpad() {
             {/* Energizer panel — shown if one was attached in the wizard */}
             {energizers.length > 0 && (
               <section aria-labelledby="energizer-heading" className="space-y-3">
-                <h2 id="energizer-heading" className="text-lg font-semibold dark:text-pulse-100">
+                <h2 id="energizer-heading" className="text-lg font-semibold dark:text-[#F0F2F8]">
                   Energizer
                 </h2>
                 {energizers.map((energizer) => {
