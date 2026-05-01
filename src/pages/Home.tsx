@@ -6,10 +6,10 @@ import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
 
 const FEATURE_STRIP = [
-  { icon: Sparkles, label: 'AI-drafted questions in <90s' },
-  { icon: BarChart3, label: 'Live results for every participant' },
-  { icon: Lock, label: 'Full, cohort, or identified anonymity' },
-  { icon: Cloud, label: 'Edge inference · no third-party models' },
+  { icon: Sparkles, label: 'Question ideas ready in under 90 seconds' },
+  { icon: BarChart3, label: 'Live results every participant can see' },
+  { icon: Lock, label: 'Anonymous, cohort, or identified — your choice' },
+  { icon: Cloud, label: 'Responses stay private, always' },
 ] as const
 
 interface FeatureCard {
@@ -33,7 +33,7 @@ const FEATURE_CARDS: FeatureCard[] = [
   {
     icon: Sparkles,
     title: 'Same-day recap',
-    desc: "Workers AI drafts the summary in the session's last 60 seconds, anchored to ranked evidence. You edit, then send.",
+    desc: "AI drafts the summary in the session's last 60 seconds, anchored to real responses. You edit, then send.",
     ai: true,
   },
   {
@@ -48,8 +48,8 @@ const FEATURE_CARDS: FeatureCard[] = [
   },
   {
     icon: Lock,
-    title: 'Edge-only inference',
-    desc: 'AI runs inside the same Cloudflare network as your session. No OpenAI, no Anthropic, no third-party model providers.',
+    title: 'Private by design',
+    desc: 'Responses never leave your session. No third-party AI, no data sold, no training on anything your room shared.',
   },
 ]
 
@@ -91,7 +91,7 @@ export default function Home() {
 
             {/* AI pill */}
             <div className="flex items-center gap-2 mb-6">
-              <AIBadge variant="assisted" label="AI-first" />
+              <AIBadge variant="assisted" label="AI-assisted" />
               <span className="text-sm text-pulse-500">{t('heroTagline')}</span>
             </div>
 
@@ -109,9 +109,8 @@ export default function Home() {
 
             {/* Sub-headline */}
             <p className="text-xl leading-[1.55] text-pulse-600 max-w-[680px] mb-8">
-              Live polling, ranked Q&amp;A, and consent votes with Workers AI drafting questions and
-              summarising evidence — all on Cloudflare&apos;s edge, inside the same network as your
-              session.
+              Make it easy for everyone to join in, share what they think, and stay with you from
+              start to finish. For teachers, trainers, facilitators, and team leaders.
             </p>
 
             {/* CTAs */}
@@ -188,8 +187,8 @@ export default function Home() {
             </h2>
 
             <p className="text-lg text-pulse-600 max-w-[620px] mb-12">
-              Qesto turns live rooms into audit-ready sessions — every vote, consent round, and AI
-              summary is logged against the participants who were actually there.
+              Ask a question. See what your room is thinking. Give people a safe way to contribute
+              honestly — and leave with a clear record of what was said.
             </p>
 
             {/* 3-col grid */}

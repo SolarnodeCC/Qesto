@@ -32,8 +32,8 @@ export default function AIInsightsPage() {
   return (
     <MainLayout>
       <PageSeo
-        title="AI Insights — Qesto"
-        description="Evidence-anchored AI insights. Edge-inferred. Clusters open text into themes in 8–15 seconds, each anchored to the raw responses."
+        title="AI Insights for Live Sessions — Qesto"
+        description="See what your audience is thinking. Get themes from open responses in seconds, each backed by real answers from your room."
         canonicalPath="/features/ai-insights"
         ogImage="/images/solutions/photo-1521737604893-d14cc237f11d.avif"
       />
@@ -50,18 +50,18 @@ export default function AIInsightsPage() {
                 AI Insights
               </div>
               <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
-                Evidence-anchored.{' '}
+                See what your audience is{' '}
                 <span
                   className="bg-clip-text text-transparent"
                   style={gradientAI}
                 >
-                  Edge-inferred.
+                  thinking, in real time.
                 </span>
               </h1>
               <p className="text-lg text-pulse-500 leading-relaxed mb-8">
-                Qesto's AI clusters open text into themes in 8–15 seconds, each anchored to the raw responses that
-                produced it. Inference runs on Workers AI — inside the same Cloudflare network as your session. No
-                OpenAI key, no vendor lock-in, no data exit.
+                Ask an open question. Get themes in seconds — each one backed by real responses from your room.
+                Understand what people actually think without reading every answer, so you can adapt while the
+                moment still matters.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
@@ -113,10 +113,10 @@ export default function AIInsightsPage() {
       <section className="py-16 bg-pulse-50">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
-            Three jobs the AI does. Three it doesn't.
+            Three things it does for you. Three it won't do.
           </h2>
           <p className="text-pulse-500 mb-8 text-lg">
-            Qesto's AI is scoped. It helps the facilitator read the room — it does not decide for them.
+            The AI helps you read the room faster — it doesn't interpret the room for you. You stay in control.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
@@ -221,29 +221,29 @@ export default function AIInsightsPage() {
         </div>
       </section>
 
-      {/* Inference */}
+      {/* Privacy */}
       <section className="py-16 bg-pulse-50">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Where inference runs</div>
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Your responses stay private</div>
           <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
-            Inside Cloudflare. Never outside it.
+            What your room shares, stays in your room.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
               {
                 icon: <Cpu size={22} />,
-                title: 'Workers AI only',
-                desc: 'llama-3.1-8b-instruct and bge-large-en for embeddings. Both run on Cloudflare\'s GPU fleet, in-region, no third-party routing.',
+                title: 'Analysis happens inside your session',
+                desc: 'Themes are generated in real time without sending responses to any external service. What people share stays where it belongs.',
               },
               {
                 icon: <Shield size={22} />,
-                title: 'No vendor hand-off',
-                desc: 'No OpenAI, no Anthropic, no Azure AI. Your raw responses never leave the Cloudflare boundary.',
+                title: 'No third-party AI services',
+                desc: 'Your responses are never sent to outside providers. The analysis runs privately, so your room can share honestly.',
               },
               {
                 icon: <Trash2 size={22} />,
-                title: 'Retention follows session',
-                desc: 'Model inputs and outputs live with the session. Delete the session, the prompts go with it. No training pipeline — ever.',
+                title: 'Deleted when you delete',
+                desc: 'All analysis data lives with the session. When you remove a session, everything that was generated goes with it.',
               },
             ].map(({ icon, title, desc }) => (
               <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
