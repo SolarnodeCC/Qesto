@@ -121,6 +121,7 @@ export interface PlanQuotas {
     customBranding: boolean
     consentMode: boolean
     rankingQuestions: boolean
+    samlSso: boolean
   }
 }
 
@@ -135,6 +136,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       customBranding: false,
       consentMode: false,
       rankingQuestions: false,
+      samlSso: false,
     },
   },
   starter: {
@@ -147,6 +149,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       customBranding: true,
       consentMode: true,
       rankingQuestions: true,
+      samlSso: false,
     },
   },
   team: {
@@ -159,6 +162,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       customBranding: true,
       consentMode: true,
       rankingQuestions: true,
+      samlSso: true,
     },
   },
 }

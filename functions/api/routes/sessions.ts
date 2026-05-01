@@ -19,8 +19,10 @@ import { deriveVoterIdentity } from '../lib/voter'
 import { writeEvent } from '../lib/observability'
 import { authMiddleware, SESSION_COOKIE, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
+import { requireFeature } from '../middleware/feature-gate'
 import { verifyJwt } from '../lib/jwt'
 import { incrementSessionQuota } from '../lib/quota'
+import { denyFeature, featureAllowed, questionKindFeature } from '../lib/entitlements'
 import {
   CreateSessionSchema,
   GenerateQuestionsSchema,
@@ -44,7 +46,7 @@ import {
 import { rateLimit } from '../lib/rate-limit'
 import { sanitizeError } from '../lib/error-handler'
 import type { LiveQuestion } from '../realtime'
-import type { Env, PollOption, Question, Session } from '../types'
+import type { Env, PlanQuotas, PlanTier, PollOption, Question, Session } from '../types'
 
 type Vars = AuthVariables & PlanVariables
 // SessionRow mirrors the D1 row shape. Analytics-only column `team_id` (OBS-001)
@@ -93,6 +95,12 @@ function rowToQuestion(row: QuestionRow): Question {
     options: parsed,
     created_at: row.created_at,
   }
+}
+
+function deniedQuestionFeature(plan: PlanTier, quotas: PlanQuotas, kind: Question['kind']) {
+  const feature = questionKindFeature(kind)
+  if (!feature || featureAllowed(quotas, feature)) return null
+  return denyFeature(plan, feature)
 }
 
 async function fetchSession(db: D1Database, id: string, ownerId: string): Promise<Session | null> {
@@ -562,6 +570,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // PATCH /api/sessions/:id — DRAFT-only write
   app.patch('/:id', async (c) => {
     const user = c.get('user')
+    const plan = c.get('plan')
+    const quotas = c.get('planQuotas')
     const id = c.req.param('id')
     const body = (await c.req.json().catch(() => null)) as unknown
     const parsed = PatchSessionSchema.safeParse(body)
@@ -645,6 +655,10 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
     let questions = await fetchQuestions(c.env.DB, id)
     if (parsed.data.question) {
+      const denied = deniedQuestionFeature(plan, quotas, parsed.data.question.kind)
+      if (denied) {
+        return c.json({ ok: false, error: denied, trace_id: c.get('trace_id') }, 403)
+      }
       const q = await upsertPollQuestion(c.env.DB, id, parsed.data.question)
       questions = [q]
     }
@@ -1217,6 +1231,10 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const qid = ulid()
     const now = Date.now()
     const rawOptions = autoPopulateOptions(parsed.data.kind, parsed.data.options)
+    const denied = deniedQuestionFeature(c.get('plan'), c.get('planQuotas'), parsed.data.kind)
+    if (denied) {
+      return c.json({ ok: false, error: denied, trace_id: c.get('trace_id') }, 403)
+    }
     const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
     const optionsJson = JSON.stringify(options)
 
@@ -1361,6 +1379,10 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
 
     const rawOptions = autoPopulateOptions(parsed.data.kind, parsed.data.options)
+    const denied = deniedQuestionFeature(c.get('plan'), c.get('planQuotas'), parsed.data.kind)
+    if (denied) {
+      return c.json({ ok: false, error: denied, trace_id: c.get('trace_id') }, 403)
+    }
     const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
     const result = await c.env.DB
       .prepare(`UPDATE questions SET kind = ?1, prompt = ?2, options_json = ?3 WHERE id = ?4 AND session_id = ?5`)
@@ -1464,7 +1486,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   })
 
   // GET /api/sessions/:id/export.csv — download session results as CSV
-  app.get('/:id/export.csv', async (c) => {
+  app.get('/:id/export.csv', requireFeature('resultsExport'), async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
     const session = await fetchSession(c.env.DB, id, user.sub)

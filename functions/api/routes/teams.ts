@@ -25,6 +25,7 @@ import { sendEmail } from '../lib/email'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { writeEvent } from '../lib/observability'
+import { denyFeature, denyLimit, featureAllowed, maxTeamMembersForPlan } from '../lib/entitlements'
 import type { Env } from '../types'
 
 const INVITE_TTL_SECONDS = 24 * 60 * 60 // 24 hours
@@ -271,7 +272,14 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     }
 
     if (parsed.data.name !== undefined) team.name = parsed.data.name
-    if (parsed.data.samlConfig !== undefined) team.samlConfig = parsed.data.samlConfig
+    if (parsed.data.samlConfig !== undefined) {
+      const plan = c.get('plan')
+      const quotas = c.get('planQuotas')
+      if (parsed.data.samlConfig !== null && !featureAllowed(quotas, 'samlSso')) {
+        return c.json({ ok: false, error: denyFeature(plan, 'samlSso'), trace_id: c.get('trace_id') }, 403)
+      }
+      team.samlConfig = parsed.data.samlConfig
+    }
 
     await saveTeam(c.env.TEAMS_KV, team)
     return c.json({ ok: true, data: { team }, trace_id: c.get('trace_id') })
@@ -318,6 +326,18 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       return c.json(
         { ok: false, error: { code: 'already_member', message: 'Email is already a team member' }, trace_id: c.get('trace_id') },
         409,
+      )
+    }
+    const plan = c.get('plan')
+    const limit = maxTeamMembersForPlan(plan)
+    if (team.members.length >= limit) {
+      return c.json(
+        {
+          ok: false,
+          error: denyLimit(plan, `Team member limit exceeded for your ${plan} plan`, limit, team.members.length),
+          trace_id: c.get('trace_id'),
+        },
+        403,
       )
     }
 

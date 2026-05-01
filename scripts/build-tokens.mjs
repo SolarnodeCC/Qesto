@@ -10,11 +10,7 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
-const SRC = resolve(ROOT, 'docs/specs/design-tokens.json')
-const OUT_TOKENS = resolve(ROOT, 'src/ui/tokens.ts')
-const OUT_TAILWIND = resolve(ROOT, 'src/ui/tailwind-theme.ts')
-
-const raw = JSON.parse(readFileSync(SRC, 'utf8'))
+const DEFAULT_SRC = resolve(ROOT, 'docs/specs/design-tokens.json')
 
 function resolveRef(value, root) {
   if (typeof value !== 'string') return value
@@ -41,20 +37,6 @@ function walk(node, root, path = []) {
   }
   return out
 }
-
-const tokens = walk(raw, raw)
-
-// Generate tokens.ts
-const banner = `// AUTO-GENERATED from docs/specs/design-tokens.json — do not edit by hand.
-// Regenerate: \`npm run tokens:build\`. See DESIGN-TOK-01.
-
-`
-
-const body = `export const tokens = ${JSON.stringify(tokens, null, 2)} as const\n\nexport type Tokens = typeof tokens\n`
-
-mkdirSync(dirname(OUT_TOKENS), { recursive: true })
-writeFileSync(OUT_TOKENS, banner + body)
-console.log(`✓ wrote ${OUT_TOKENS}`)
 
 // Generate tailwind-theme.ts from colors, spacing, radius, shadows, typography
 function buildTailwindTheme(tokens) {
@@ -211,15 +193,48 @@ function buildTailwindTheme(tokens) {
   return theme
 }
 
-const tailwindTheme = buildTailwindTheme(tokens)
+function outputPath(value, fallback) {
+  return resolve(ROOT, value ?? fallback)
+}
 
-const tailwindBanner = `// AUTO-GENERATED from docs/specs/design-tokens.json — do not edit by hand.
+export function buildTokens(options = {}) {
+  const src = options.src ?? DEFAULT_SRC
+  const outTokens = options.outTokens ?? outputPath(process.env.QESTO_TOKENS_OUT, 'src/ui/tokens.ts')
+  const outTailwind = options.outTailwind ?? outputPath(process.env.QESTO_TAILWIND_OUT, 'src/ui/tailwind-theme.ts')
+  const log = options.log ?? console.log
+
+  const raw = JSON.parse(readFileSync(src, 'utf8'))
+  const tokens = walk(raw, raw)
+
+  const banner = `// AUTO-GENERATED from docs/specs/design-tokens.json — do not edit by hand.
+// Regenerate: \`npm run tokens:build\`. See DESIGN-TOK-01.
+
+`
+
+  const body = `export const tokens = ${JSON.stringify(tokens, null, 2)} as const\n\nexport type Tokens = typeof tokens\n`
+
+  mkdirSync(dirname(outTokens), { recursive: true })
+  writeFileSync(outTokens, banner + body)
+  log(`✓ wrote ${outTokens}`)
+
+  const tailwindTheme = buildTailwindTheme(tokens)
+
+  const tailwindBanner = `// AUTO-GENERATED from docs/specs/design-tokens.json — do not edit by hand.
 // This file is used by vite.config.ts to extend the Tailwind theme.
 // Regenerate: \`npm run tokens:build\`. See DESIGN-TOK-01.
 
 `
 
-const tailwindBody = `export const theme = ${JSON.stringify(tailwindTheme, null, 2)} as const\n`
+  const tailwindBody = `export const theme = ${JSON.stringify(tailwindTheme, null, 2)} as const\n`
 
-writeFileSync(OUT_TAILWIND, tailwindBanner + tailwindBody)
-console.log(`✓ wrote ${OUT_TAILWIND}`)
+  mkdirSync(dirname(outTailwind), { recursive: true })
+  writeFileSync(outTailwind, tailwindBanner + tailwindBody)
+  log(`✓ wrote ${outTailwind}`)
+
+  return { tokens, tailwindTheme, outTokens, outTailwind }
+}
+
+const invokedPath = process.argv[1] ? resolve(process.argv[1]) : ''
+if (fileURLToPath(import.meta.url) === invokedPath) {
+  buildTokens()
+}

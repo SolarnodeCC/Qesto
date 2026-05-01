@@ -6,8 +6,9 @@ _Last updated: 2026-04-30 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
+_Sprint 20 Planned (2026-05-27 to 2026-06-10) — readiness, entitlement enforcement, observability, and Sprint 19 KPI measurement; see SPRINT_PLAN.md §Sprint 20_
 _Website Design Wave added: 2026-04-19 — see §12_
-_**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review (PO, Architect) completed 2026-04-30; Sprint 19 plan committed to SPRINT_PLAN.md. Sprint 18 prerequisite migrations + routes flagged below._
+_**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review completed 2026-04-30; Sprint 19 implementation is complete; Sprint 20 is the next committed readiness sprint._
 
 ## Overview
 
@@ -21,7 +22,7 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 
 ---
 
-## Sprint 19 Planning (2026-05-13 to 2026-05-27)
+## Sprint 19 Closeout + Sprint 20 Planning
 
 **Status**: Implementation completed on 2026-04-30, ahead of the planned calendar window. KPI measurement remains post-ship. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for full detail and closeout evidence.
 
@@ -33,7 +34,7 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 - **RBAC depth (custom roles)**: Cross-cuts auth middleware; needs dedicated 2-sprint epic + permissions ADR. Defer to S20–S21. Note: ENT-02 (base 5-role model) remains on Sprint 3 reference arc.
 - **GAM-01 (Energizer in LIVE session)**: Requires DO state machine + `ClientMessage`/`ServerMessage` protocol extension + versioning ADR not yet written. Defer to S21+.
 
-**Sprint 18 Scope Revision v1** (Prerequisite Additions for S19 unblocking)
+**Sprint 18/19 prerequisite closeout evidence** (implemented by 2026-04-30; keep as traceability checklist):
 
 **Decision Date**: 2026-04-23 | **Decision Maker**: Product Owner + Architect | **Status**: ✅ Delivered 2026-04-30
 
@@ -63,6 +64,20 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
    - ADR-0003: Pre-flight contract (worker vs. DO invariant checks) — delivered commit 10ee51b
 
 **Delivery Confirmation**: All items landed in commit 2452e67 (2026-04-30) and subsequent bug-fix commits. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for detailed prerequisites and implementation evidence.
+
+### Sprint 20 Planning (2026-05-27 to 2026-06-10)
+
+**Status**: Planned on 2026-04-30 after agent-assisted product and engineering review. Sprint 20 is a readiness/enforcement sprint, not a broad feature-expansion sprint.
+
+**Committed items** (34 pts): ✅ ENTITLEMENTS-01, ENTITLEMENTS-02 (in progress), OBS-02, ✅ QA-DOCDRIFT-01, ✅ DESIGN-GATE-01, S19-MEASURE-01
+
+**Sprint goal**: Harden v2.1 by proving plan entitlements are enforced server-side, capturing Sprint 19 KPI and operational evidence, and aligning local/CI quality gates.
+
+**Stretch only after core items are green**: AUTHZ-ADR-01, LAUNCHPAD-02.
+
+**Explicitly deferred**: RBAC depth/custom roles implementation until AUTHZ-ADR-01 exists; GAM-01 / LIVE energizers until a Durable Object protocol/versioning ADR exists.
+
+See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance criteria, dependencies, KPIs, and Definition of Done.
 
 ---
 
@@ -902,11 +917,11 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 
 ### Sprint allocation
 
-- **Sprint A (active — partially shipped) — layout + token foundation:** ✅ DESIGN-TYP-01, ✅ LAYOUT-SKELETON-01, ✅ LAYOUT-MOTION-01 (shipped 2026-04-21). Remaining: **LAYOUT-GRID-01**, **LAYOUT-A11Y-01**, DESIGN-TOK-01, AI-VIS-03, DX-INSIGHTS-01, **I18N-BUG-01**, **I18N-BUG-02** (both P0 fix-forward). Layout primitives must land before any consuming surface ships.
-- **Sprint B — narrative + wizard + launchpad + density:** AI-VIS-01, AI-VIS-02, DX-INSIGHTS-02, DESIGN-TYP-01, **WIZ-AI-01**, **WIZ-AI-02**, **WIZ-OVERVIEW-01**, **LAUNCHPAD-01**, **LAYOUT-DENSITY-01**, **LAYOUT-MOTION-01**.
-- **Sprint C — polish:** DESIGN-POLISH-01, DESIGN-POLISH-02, **LAUNCHPAD-02**.
+- **Sprint A (mostly shipped; verification rolls into Sprint 20) — layout + token foundation:** ✅ DESIGN-TYP-01, ✅ LAYOUT-SKELETON-01, ✅ LAYOUT-MOTION-01 (shipped 2026-04-21). Sprint 20 verifies/settles **LAYOUT-GRID-01**, **LAYOUT-A11Y-01**, DESIGN-TOK-01, DX-INSIGHTS-01, **I18N-BUG-01**, and **I18N-BUG-02** via gate reliability work.
+- **Sprint B (implementation complete except marketing narrative):** ✅ AI-VIS-02, ✅ AI-VIS-03, ✅ DX-INSIGHTS-02, ✅ **WIZ-AI-01**, ✅ **WIZ-AI-02**, ✅ **WIZ-OVERVIEW-01**, ✅ **LAUNCHPAD-01**, ✅ **LAYOUT-DENSITY-01**. AI-VIS-01 remains marketing/copy scope.
+- **Sprint C (planned after Sprint 20 readiness):** DESIGN-POLISH-01, DESIGN-POLISH-02, **LAUNCHPAD-02**.
 
-**Critical path note:** WIZ-OVERVIEW-01 ships in Sprint B (promoted from C) because it now commits DRAFT and routes to the Launchpad — LAUNCHPAD-01 depends on it. DRAFT→LIVE transition moves from the wizard's "Start session" to the Launchpad's "Open lobby" CTA.
+**Critical path note:** WIZ-OVERVIEW-01 and LAUNCHPAD-01 shipped in Sprint 19. Sprint 20 now verifies KPI and operational evidence before Launchpad polish expands the flow.
 
 ### KPIs (measured 30 days post-ship of the wave)
 
@@ -932,10 +947,10 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 - i18n keys populated in EN/NL/DE/FR/ES for every new user-facing string.
 - Design-token JSON is the source; `src/ui/tokens.ts` regenerated, no hand-edits.
 
-### Open questions (resolve before Sprint A)
+### Open questions (resolve before Sprint C / next feature expansion)
 
-- Does "AI analyzed" require on-device inference, or is Workers AI acceptable with explicit consent? (Security + AI strategy)
-- Plan-gating for Insights tab (free = 7d window, team = 30d + themes)? (PO)
+- Does "AI analyzed" require on-device inference, or is Workers AI acceptable with explicit consent? (Security + AI strategy; current implementation uses Workers AI provenance/consent tracking)
+- Plan-gating for Insights tab (free = 7d window, team = 30d + themes)? (PO; now part of Sprint 20 entitlement matrix)
 - Dark-mode pass in this wave or deferred? (Frontend)
 
 ---
@@ -976,7 +991,7 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 - [ ] Code reviewed (min 1 backend-dev reviewer)
 - [ ] Unit tests added (`tests/unit/observability/`) covering all three events + edge cases (missing fields, zero durations, 5xx variants)
 - [ ] `npm test` green (all observability tests pass)
-- [ ] `tsc --noEmit` passes (no TypeScript errors)
+- [ ] `npm run typecheck` passes (no TypeScript errors)
 - [ ] Acceptance criteria demonstrated: three events verified in Analytics Engine query (SELECT * FROM events WHERE event_name IN (...)) with correct payloads
 - [ ] Event payloads conform to Analytics Engine schema (existing schema must accommodate the three new events; no schema migration needed if backward-compatible)
 - [ ] Error state visible: all 5xx status codes are caught and instrumented (no silent failures)

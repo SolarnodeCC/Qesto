@@ -94,7 +94,7 @@ _Date_: 2026-04-10
 2. Add `COMMON_RULES` references and deduplicate constraints.
 3. Add missing sections (`Metrics`, `Change Log`, runbooks).
 4. Validate template compliance via review checklist.
-5. Run `npm test` and `npx tsc --noEmit`.
+5. Run `npm test` and `npm run typecheck`.
 
 ## Definition of done
 - Every agent/skill file has required canonical sections.

@@ -687,7 +687,7 @@ export default function Dashboard() {
           {quotaData ? (
             <PlanUsageSidebar data={quotaData} loading={quotaLoading} />
           ) : quotaLoading ? (
-            <PlanUsageSidebar data={{ plan: 'free', quotas: { max_sessions_per_month: 5, max_participants_per_session: 50, features_unlocked: { resultsExport: false, semanticSearch: false, insightsAI: false, customBranding: false, consentMode: false, rankingQuestions: false } }, usage: { sessions_created: 0, remaining: 5, insights_generated: 0 }, reset_date: new Date().toISOString() }} loading={true} />
+            <PlanUsageSidebar data={{ plan: 'free', quotas: { max_sessions_per_month: 5, max_participants_per_session: 50, features_unlocked: { resultsExport: false, semanticSearch: false, insightsAI: false, customBranding: false, consentMode: false, rankingQuestions: false, samlSso: false } }, usage: { sessions_created: 0, remaining: 5, insights_generated: 0 }, reset_date: new Date().toISOString() }} loading={true} />
           ) : null}
         </div>
         </div>{/* end grid */}

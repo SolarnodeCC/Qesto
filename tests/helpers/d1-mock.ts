@@ -34,6 +34,7 @@ type SessionRow = {
   started_at: number | null
   closed_at: number | null
   archived_at: number | null
+  team_id?: string | null
   ai_generated?: number
   ai_consent_at?: number | null
   ai_grounding_hash?: string | null
@@ -179,13 +180,13 @@ export class D1PreparedStatementMock {
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO sessions')) {
-      const [id, owner_id, code, title, created_at] = this.args as [
-        string,
-        string,
-        string,
-        string,
-        number,
-      ]
+      const [id, owner_id, code, title] = this.args as [string, string, string, string]
+      const hasExplicitAnonymity = this.sql.includes("VALUES (?1, ?2, ?3, ?4, 'draft', ?5, ?6)")
+      const anonymity = hasExplicitAnonymity
+        ? (this.args[4] as SessionRow['anonymity'])
+        : 'full'
+      const created_at = hasExplicitAnonymity ? (this.args[5] as number) : (this.args[4] as number)
+      const team_id = this.args.length >= 6 && !hasExplicitAnonymity ? (this.args[5] as string | null) : null
       if ([...this.db.sessions.values()].some((s) => s.code === code)) {
         throw new Error('UNIQUE constraint failed: sessions.code')
       }
@@ -195,11 +196,12 @@ export class D1PreparedStatementMock {
         code,
         title,
         status: 'draft',
-        anonymity: 'anonymous',
+        anonymity,
         created_at,
         started_at: null,
         closed_at: null,
         archived_at: null,
+        team_id,
       })
       return { meta: { changes: 1 } }
     }
@@ -287,23 +289,37 @@ export class D1PreparedStatementMock {
       return { meta: { changes } }
     }
     if (this.sql.startsWith('INSERT INTO questions')) {
-      const [id, session_id, kind, prompt, options_json, created_at] = this.args as [
-        string,
-        string,
-        QuestionRow['kind'],
-        string,
-        string,
-        number,
-      ]
+      const [id, session_id] = this.args as [string, string]
+      const hasExplicitPosition = this.args.length >= 7
+      const position = hasExplicitPosition ? (this.args[2] as number) : 0
+      const kind = this.args[hasExplicitPosition ? 3 : 2] as QuestionRow['kind']
+      const prompt = this.args[hasExplicitPosition ? 4 : 3] as string
+      const options_json = this.args[hasExplicitPosition ? 5 : 4] as string
+      const created_at = this.args[hasExplicitPosition ? 6 : 5] as number
       this.db.questions.set(id, {
         id,
         session_id,
-        position: 0,
+        position,
         kind,
         prompt,
         options_json,
         created_at,
       })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE questions SET kind')) {
+      const [kind, prompt, options_json, id, session_id] = this.args as [
+        QuestionRow['kind'],
+        string,
+        string,
+        string,
+        string,
+      ]
+      const row = this.db.questions.get(id)
+      if (!row || row.session_id !== session_id) return { meta: { changes: 0 } }
+      row.kind = kind
+      row.prompt = prompt
+      row.options_json = options_json
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO audit_events')) {

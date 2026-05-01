@@ -7,18 +7,17 @@
 // the output against the committed files. Fails if they differ, instructing
 // the developer to run `npm run tokens:build`.
 
-import { execSync } from 'node:child_process'
-import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { buildTokens } from './build-tokens.mjs'
 
-const __dirname = new URL('.', import.meta.url).pathname
+const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
 
 const TOKENS_TS    = resolve(ROOT, 'src/ui/tokens.ts')
 const TAILWIND_TS  = resolve(ROOT, 'src/ui/tailwind-theme.ts')
-const TOKENS_TEMP  = resolve(ROOT, 'src/ui/tokens.ts.tmp')
-const TAILWIND_TEMP = resolve(ROOT, 'src/ui/tailwind-theme.ts.tmp')
 
 function fail(msg) {
   console.error(`\n❌ Design-token drift detected: ${msg}`)
@@ -38,34 +37,39 @@ if (!existsSync(TAILWIND_TS)) {
 const committedTokens   = readFileSync(TOKENS_TS, 'utf8')
 const committedTailwind = readFileSync(TAILWIND_TS, 'utf8')
 
-// 3. Temporarily redirect build output to .tmp files by running the build
-//    script in a subprocess, then comparing outputs.
-//    We patch the output paths via env vars instead of editing the script.
+// 3. Redirect build output to a temp directory, then compare outputs. This
+//    keeps the working tree clean and avoids shell path issues on Windows.
+const tempDir = mkdtempSync(resolve(tmpdir(), 'qesto-tokens-'))
+const tempTokens = resolve(tempDir, 'tokens.ts')
+const tempTailwind = resolve(tempDir, 'tailwind-theme.ts')
+
 try {
-  // Run the build and capture what it would write
-  execSync(`node ${resolve(__dirname, 'build-tokens.mjs')}`, {
-    cwd: ROOT,
-    stdio: 'pipe', // suppress output during drift check
+  buildTokens({
+    outTokens: tempTokens,
+    outTailwind: tempTailwind,
+    log: () => {},
   })
 } catch (err) {
+  rmSync(tempDir, { recursive: true, force: true })
   fail(`build-tokens.mjs failed: ${err.message}`)
 }
 
-// 4. Read the freshly regenerated files
-const freshTokens   = readFileSync(TOKENS_TS, 'utf8')
-const freshTailwind = readFileSync(TAILWIND_TS, 'utf8')
+// 4. Read the freshly generated files
+const freshTokens = readFileSync(tempTokens, 'utf8')
+const freshTailwind = readFileSync(tempTailwind, 'utf8')
+rmSync(tempDir, { recursive: true, force: true })
 
-// 5. Restore committed content (build-tokens overwrites in-place; we detect
-//    whether the freshly written content matches what was already there)
+// 5. Report every stale artefact in one actionable error.
+const stale = []
 if (freshTokens !== committedTokens) {
-  // Restore to committed so the working tree isn't dirty after the check
-  writeFileSync(TOKENS_TS, committedTokens)
-  fail('src/ui/tokens.ts is out of date with docs/specs/design-tokens.json')
+  stale.push('src/ui/tokens.ts')
+}
+if (freshTailwind !== committedTailwind) {
+  stale.push('src/ui/tailwind-theme.ts')
 }
 
-if (freshTailwind !== committedTailwind) {
-  writeFileSync(TAILWIND_TS, committedTailwind)
-  fail('src/ui/tailwind-theme.ts is out of date with docs/specs/design-tokens.json')
+if (stale.length > 0) {
+  fail(`${stale.join(', ')} out of date with docs/specs/design-tokens.json`)
 }
 
 console.log('✅ Design-token artefacts are up to date — no drift detected.')

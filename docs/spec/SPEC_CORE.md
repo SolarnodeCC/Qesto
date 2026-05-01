@@ -152,7 +152,7 @@ KEY RULE:
 
 3. **npm test + tsc Must Pass**
    - Before every commit: `npm test` (Vitest in `tests/unit/`)
-   - TypeScript: `tsc --noEmit` (no JS output, type-check only)
+   - TypeScript: `npm run typecheck` (runs `tsc --noEmit`)
    - e2e: optional for features, required for critical paths
 
 4. **DRAFT-API vs LIVE-WebSocket**

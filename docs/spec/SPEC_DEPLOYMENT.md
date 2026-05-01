@@ -14,7 +14,7 @@ Commands + `wrangler` excerpts = **targets**; **wrangler.toml + CI YAML in repo*
 | **Architect** | **Primary** — env matrix, rollback, secret blast radius, who can deploy, observability depth. |
 | **Backend Developer** | `pages dev`, D1 migrate order, `.dev.vars` ↔ Pages secrets parity, post-deploy smoke. |
 | **Frontend Developer** | `npm run dev` / `vite` ports, `dist/` output; E2E timing vs deploy job. |
-| **UI specialist** | CI gates: `test:a11y`, `i18n:validate`; perf checks if present in workflows. |
+| **UI specialist** | CI gates: `test:a11y`, `check:i18n`; perf checks if present in workflows. |
 | **Cloudflare specialist** | **Lead** — Wrangler projects, bindings, routes, `wrangler pages deploy`, `d1 migrations`. |
 | **API & middleware specialist** | Trace/log shipping, admin `/health`, rate-limit dashboards/alerts wiring. |
 
@@ -37,7 +37,7 @@ npm run dev
   # API: http://localhost:8788 (wrangler)
 
 # Type checking
-npx tsc --noEmit
+npm run typecheck
 
 # Run tests
 npm test              # Unit tests (Vitest)
@@ -45,8 +45,10 @@ npm run test:e2e      # E2E tests (Playwright)
 npm run test:a11y     # Accessibility (Axe)
 
 # Validation checks
-npm run check        # Run all validation scripts
-npm run i18n:validate # i18n completeness check
+npm run check:baseline       # Baseline repo checks
+npm run check:i18n           # i18n completeness check
+npm run check:design-tokens  # Design-token schema/source check
+npm run check:tokens-drift   # Generated token artefact drift check
 ```
 
 ### Production Build
@@ -58,10 +60,9 @@ npm run i18n:validate # i18n completeness check
 npm run build
 
 # Steps:
-# 1. tsc --noEmit (type-check)
-# 2. vitest run (unit tests)
-# 3. vite build (frontend bundle → dist/)
-# 4. Wrangler generates functions bundle
+# 1. npm run tokens:build (generated design-token artefacts)
+# 2. vite build (frontend bundle → dist/)
+# 3. Wrangler generates functions bundle during deploy/dev workflows
 
 # Result:
 # - dist/               (React app, static)
@@ -306,13 +307,13 @@ jobs:
         run: npm ci
       
       - name: Type check
-        run: npx tsc --noEmit
+        run: npm run typecheck
       
       - name: Run tests
         run: npm test
       
       - name: Check i18n
-        run: npm run i18n:validate
+        run: npm run check:i18n
       
       - name: Build
         run: npm run build
@@ -408,7 +409,7 @@ jobs:
           node-version: '20'
       
       - name: Check missing keys
-        run: npm run i18n:validate
+        run: npm run check:i18n
       
       - name: Check unused keys
         run: node scripts/check-i18n-unused.mjs
@@ -605,10 +606,10 @@ GROUP BY metadata.planId
 Before deploying to production:
 
 - [ ] All tests passing (`npm test`)
-- [ ] Type checking passing (`tsc --noEmit`)
+- [ ] Type checking passing (`npm run typecheck`)
 - [ ] E2E tests passing (`npm run test:e2e`)
 - [ ] A11y tests passing (`npm run test:a11y`)
-- [ ] i18n validation passing (`npm run i18n:validate`)
+- [ ] i18n validation passing (`npm run check:i18n`)
 - [ ] No secrets in code (secret scan passed)
 - [ ] Database migrations reviewed
 - [ ] New environment variables documented

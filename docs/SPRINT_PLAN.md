@@ -2,8 +2,9 @@
 
 _Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](./BACKLOG.md) (including §12) and [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
 
-_Last updated: 2026-04-23 (UTC)_
+_Last updated: 2026-04-30 (UTC)_
 _**Sprint 18 Plan Added**: 2026-04-23 — see Sprint 18 section below. Five-sprint reference arc remains pedagogical (v0.1→v0.5). Calendar truth: Sprint 17 completed 2026-04-22; Sprint 18 runs 2026-04-29 to 2026-05-13._
+_**Sprint 20 Plan Added**: 2026-04-30 — Sprint 19 implementation completed early; Sprint 20 focuses on readiness, entitlement enforcement, observability, and measurement before the next feature expansion._
 
 ---
 
@@ -373,9 +374,9 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 - 0 invalid sessions reaching LIVE state
 - Launchpad 99.5%+ DRAFT→LIVE success rate
 
-**Sprint 18 Prerequisites (must land by 2026-05-13)**:
+**Sprint 18 prerequisite closeout evidence (landed before Sprint 19 implementation closeout)**:
 
-_These are additions to Sprint 18 scope. See BACKLOG.md for detailed acceptance criteria._
+_These were originally additions to Sprint 18 scope. They are retained here as traceability for the Sprint 19 implementation completed on 2026-04-30. See BACKLOG.md for detailed acceptance criteria._
 
 **D1 Migrations**:
 - `sessions.ai_generated` (INTEGER, 0/1 flag) — provenance for AIBadge
@@ -410,7 +411,7 @@ _These are additions to Sprint 18 scope. See BACKLOG.md for detailed acceptance 
 - **GAM-01** (Energizer question type in LIVE): Requires extending DO `ClientMessage`/`ServerMessage` schema + protocol versioning ADR we lack → **S21+**
 
 **Definition of Done**:
-- Code merged, CI passing (`npm test`, `tsc`, `npm run check:i18n`)
+- Code merged, CI passing (`npm test`, `npm run typecheck`, `npm run check:i18n`)
 - Tests: ≥80% coverage on new code (streaming SSE, type validation, pre-flight)
 - Manual: SSE streaming <1s TTFB on 3G network simulation; wizard → Launchpad round-trip 0 state loss
 - Observability: AI generation request/latency logged; token bucket contention alerted
@@ -426,28 +427,62 @@ _These are additions to Sprint 18 scope. See BACKLOG.md for detailed acceptance 
 
 ---
 
-## Sprint 20 & 21 Preview (Dates TBD pending S18/S19 velocity review)
+## Sprint 20: Readiness + Entitlement Enforcement + Measurement (2026-05-27 to 2026-06-10)
 
-**Status**: Placeholder for deferred scope and forward roadmap. Dates to be scheduled after Sprint 19 KPI baseline and team capacity review (target: ~weekly on Mondays).
+**Context**: Sprint 19 delivered the AI wizard and Launchpad implementation ahead of its planned calendar window. Sprint 20 deliberately avoids a broad new feature push so the team can convert that delivery into release confidence: entitlement coverage, operational evidence, stable local/CI gates, and KPI measurement.
 
-**Deferred from Sprint 19** (Architect + PO agreement):
-- **ENT-04 / RBAC Depth (custom roles)**: Cross-cuts every auth middleware; requires dedicated 2-sprint epic + Authorization ADR. Estimated 13–21 pts. **Target**: S20–S21 (depends on AUTH flows hardening completion).
-- **GAM-01 (Energizer question type in LIVE)**: Requires DO state machine extension (`ClientMessage`/`ServerMessage` protocol versioning) + DO/WebSocket versioning ADR. Estimated 8–13 pts. **Target**: S21+ (depends on DO schema stability from S19).
+**Goal**: Harden v2.1 by proving users receive only the capabilities their plan allows, measuring Sprint 19 adoption and reliability, and making quality gates trustworthy on both local Windows development and CI.
 
-**Possible S20 scope** (pending velocity verification):
-- **ENT-04.A**: Authorization contract + ADR (3–5 pts)
-- **ENT-04.B**: Role enforcement in middleware + tests (5–8 pts)
-- **UX refinements** from S19 KPI analysis (polish, A/B test winners)
-- **Infrastructure hardening** (observability, performance profiling)
+**Epics**: EPIC-BILLING (entitlement enforcement), EPIC-ENT (compliance readiness), EPIC-AI (measurement), EPIC-DESIGN (gate reliability), EPIC-QA (test/documentation hygiene)
 
-**Possible S21 scope**:
-- **ENT-04.C**: Custom role UI + tests (5–8 pts)
-- **GAM-01**: Energizer implementation + DO protocol change (8–13 pts)
-- **Website Design Wave Sprint C** polish items
+**Committed Items** (6 stories, ~34 pts):
 
-**Velocity baseline**: 40–50 pts / 2-week sprint (reference). S18 and S19 actual velocity to be recorded post-close for forward planning.
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---:|---|---|---|
+| **ENTITLEMENTS-01**: Pricing claim → backend gate matrix | 8 | BILLING/ENT | ✅ Implemented 2026-05-01 | Every pricing claim maps to an owning route/service, entitlement flag, and expected allow/deny behaviour |
+| **ENTITLEMENTS-02**: Contract tests for paid capabilities | 8 | BILLING/QA | In progress | Negative tests cover analytics, semantic search, branding, facilitator limits, history/retention, question-mode gating, and MCP/API access |
+| **OBS-02**: Sprint 19 operational evidence | 5 | AI/OPS | Planned | AI generation/refine latency, preflight failures, Launchpad DRAFT→LIVE success, token bucket contention, WebSocket capacity, and 5xx errors are queryable or logged with trace IDs |
+| **QA-DOCDRIFT-01**: Align docs with actual scripts and test counts | 3 | QA/DOCS | ✅ Implemented 2026-05-01 | Docs use `npm run typecheck`; stale `type-check` / `check:api` references are removed or backed by real scripts; test-count claims are refreshed |
+| **DESIGN-GATE-01**: Stabilize token drift check locally and in CI | 5 | DESIGN/QA | ✅ Implemented 2026-05-01 | `npm run tokens:build` and `npm run check:tokens-drift` agree on Windows and CI; failures produce actionable path output |
+| **S19-MEASURE-01**: KPI baseline report for AI wizard + Launchpad | 5 | AI/PRODUCT | Planned | Baseline captures AI usage rate, wizard completion, inline suggestion acceptance, invalid LIVE attempts, and Launchpad success rate |
 
-**Risk mitigation**: ENT-04 and GAM-01 are blockers for roadmap v2.1+; if velocity < 30 pts in S20, escalate scope trade-offs to PO + Architect.
+**Stretch / Do Not Commit Until Core Items Are Green**:
+
+| Item | Size | Condition |
+|---|---:|---|
+| **AUTHZ-ADR-01**: Custom RBAC authorization ADR | 3 | Start only if ENTITLEMENTS-01 is complete; required before RBAC depth implementation |
+| **LAUNCHPAD-02**: Inline Launchpad editor + reorder polish | 8 | Start only after S19-MEASURE-01 shows no launch reliability regression |
+
+**Explicitly Deferred**:
+- **RBAC depth/custom roles implementation**: requires AUTHZ-ADR-01 first; target S21+.
+- **GAM-01 / LIVE energizers**: requires Durable Object protocol/versioning ADR; target S21+.
+- **New broad product surfaces**: defer until entitlement and observability evidence are credible.
+
+**Key Dependencies**:
+- ENTITLEMENTS-01 → ENTITLEMENTS-02 (matrix before tests)
+- OBS-02 → S19-MEASURE-01 (events/logs before KPI baseline)
+- DESIGN-GATE-01 → any follow-on design polish that relies on generated tokens
+- AUTHZ-ADR-01 → RBAC depth/custom roles
+
+**KPI Targets**:
+- 100% of pricing claims classified as enforced, intentionally ungated, or not yet implemented
+- 0 known paid-feature routes without server-side allow/deny coverage
+- Sprint 19 KPI baseline captured before planning further wizard/Launchpad scope
+- Local and CI quality gates use the same command names and produce the same token-drift result
+- No new P0/P1 regressions in wizard → Launchpad → Open lobby full-stack smoke testing
+
+**Risk Mitigation**:
+- Entitlement work: prefer contract tests over one-off route assertions so pricing changes cannot silently drift from enforcement.
+- Observability: use route-pattern labels and sanitized messages; do not log email, tokens, prompts, or raw participant text.
+- Gate reliability: fix Windows path handling before adding stricter token checks, so local developers trust failures.
+- Scope: do not start RBAC implementation or energizer protocol work until the ADRs exist.
+
+**Definition of Done**:
+- Code merged, CI passing (`npm test`, `npm run typecheck`, `npm run check:i18n`, `npm run check:design-tokens`, `npm run check:tokens-drift`)
+- Entitlement matrix committed and linked from `PLAN_ENTITLEMENT_AUDIT.md`
+- Contract tests demonstrate at least one allow and one deny path for each enforced paid capability
+- Sprint 19 KPI baseline documented with known measurement gaps called out
+- Docs updated where command names, test counts, route contracts, or release status changed
 
 ---
 
@@ -457,11 +492,11 @@ The Website Design Wave runs concurrently with (or immediately after) the 5-spri
 
 | Sprint | Focus | Key items | Gate |
 |---|---|---|---|
-| **Sprint A** (active) | Layout + token foundation — ✅ DESIGN-TYP-01, LAYOUT-SKELETON-01, LAYOUT-MOTION-01 shipped 2026-04-21 | `LAYOUT-GRID-01`, `LAYOUT-A11Y-01`, `DESIGN-TOK-01`, `AI-VIS-03`, `DX-INSIGHTS-01`, `I18N-BUG-01`, `I18N-BUG-02` | Layout primitives must land before any consuming surface ships |
-| **Sprint B** | Narrative + wizard + launchpad + density | `AI-VIS-01`, `AI-VIS-02`, `DX-INSIGHTS-02`, `WIZ-AI-01`, `WIZ-AI-02`, `WIZ-OVERVIEW-01`, `LAUNCHPAD-01`, `LAYOUT-DENSITY-01`, `LAYOUT-MOTION-01`, `DESIGN-TYP-01` | LAUNCHPAD-01 requires WIZ-OVERVIEW-01 (commits DRAFT, routes to Launchpad) |
-| **Sprint C** | Polish | `DESIGN-POLISH-01`, `DESIGN-POLISH-02`, `LAUNCHPAD-02` | Brand sign-off on logo; 0 a11y regressions |
+| **Sprint A** (mostly shipped / verify in S20) | Layout + token foundation — ✅ DESIGN-TYP-01, LAYOUT-SKELETON-01, LAYOUT-MOTION-01 shipped 2026-04-21 | Verify/close `LAYOUT-GRID-01`, `LAYOUT-A11Y-01`, `DESIGN-TOK-01`, `DX-INSIGHTS-01`, `I18N-BUG-01`, `I18N-BUG-02` | S20 gate reliability work must confirm token drift, i18n, and a11y checks |
+| **Sprint B** (implementation complete except marketing narrative) | Narrative + wizard + launchpad + density | ✅ `AI-VIS-02`, ✅ `AI-VIS-03`, ✅ `DX-INSIGHTS-02`, ✅ `WIZ-AI-01`, ✅ `WIZ-AI-02`, ✅ `WIZ-OVERVIEW-01`, ✅ `LAUNCHPAD-01`, ✅ `LAYOUT-DENSITY-01`; `AI-VIS-01` remains marketing/copy scope | KPI measurement moves to Sprint 20 before further Launchpad expansion |
+| **Sprint C** (planned after S20 readiness) | Polish | `DESIGN-POLISH-01`, `DESIGN-POLISH-02`, `LAUNCHPAD-02` | Brand sign-off on logo; 0 a11y regressions; S19 Launchpad KPI baseline acceptable |
 
-**Critical path:** `DESIGN-TOK-01` (Sprint A) unblocks `DESIGN-TYP-01`, `DESIGN-POLISH-01`, `LAYOUT-GRID-01`, and `AI-VIS-03`. Do not start consuming surfaces until the token generator CI step is green.
+**Critical path:** Sprint 20 verifies that design-token generation, drift checks, i18n checks, and a11y checks are trustworthy before Sprint C polish expands the surface area.
 
 ### Calendar Sprint → Design Wave Mapping
 
@@ -497,7 +532,7 @@ The design wave runs on its own cadence (Sprint A/B/C) overlaid on calendar spri
 
 ### Quality Gates (All Sprints)
 - `npm test` must pass (unit + integration)
-- `tsc --noEmit` must pass (no TS errors)
+- `npm run typecheck` must pass (no TS errors)
 - Manual testing on 2 browsers (Chrome + Safari)
 - 0 P0 bugs at sprint end
 

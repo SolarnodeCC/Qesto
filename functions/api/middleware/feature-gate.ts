@@ -3,6 +3,7 @@
 import type { MiddlewareHandler } from 'hono'
 import type { Env, PlanQuotas } from '../types'
 import type { PlanVariables } from './plan'
+import { denyFeature, featureAllowed } from '../lib/entitlements'
 
 export type FeatureKey = keyof PlanQuotas['featuresUnlocked']
 
@@ -16,19 +17,12 @@ export function requireFeature(feature: FeatureKey): MiddlewareHandler<{ Binding
     const plan = c.get('plan')
     const quotas = c.get('planQuotas')
 
-    if (!quotas?.featuresUnlocked[feature]) {
+    if (!quotas || !featureAllowed(quotas, feature)) {
+      const error = denyFeature(plan, feature)
       return c.json(
         {
           ok: false,
-          error: {
-            code: 'feature_not_available',
-            message: `Feature '${feature}' is not available on your plan`,
-            details: {
-              feature,
-              current_plan: plan,
-              upgrade_url: '/billing/upgrade',
-            },
-          },
+          error,
           trace_id: c.get('trace_id') ?? 'unknown',
         },
         403,

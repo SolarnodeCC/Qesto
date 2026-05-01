@@ -13,6 +13,7 @@ export interface QuotaUsage {
       customBranding: boolean
       consentMode: boolean
       rankingQuestions: boolean
+      samlSso: boolean
     }
   }
   usage: {

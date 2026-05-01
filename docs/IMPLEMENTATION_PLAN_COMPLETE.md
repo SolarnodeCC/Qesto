@@ -57,7 +57,7 @@ _Clear breakdown of what was built, where it is, how to use it, and what's unblo
 
 | Section | What's New | Impact |
 |---|---|---|
-| Test/Type-Check Minimums (§8) | Added: `npm test` + `tsc --noEmit` must pass pre-commit | All skills now reference this (no duplication) |
+| Test/Type-Check Minimums (§8) | Added: `npm test` + `npm run typecheck` must pass pre-commit | All skills now reference this (no duplication) |
 | Documentation Update Obligations (§9) | Added: Docs to update per change type (policy, architecture, security, QA) | Clear mapping: change → docs |
 | Skill Governance Alignment (§10) | Added: Semver versioning, owner DRI, changelog, monthly review | Operationalized skill lifecycle |
 

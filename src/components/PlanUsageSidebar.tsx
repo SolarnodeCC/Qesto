@@ -167,6 +167,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
           <FeatureRow label="Custom branding" value={data.quotas.features_unlocked.customBranding} />
           <FeatureRow label="Consent mode" value={data.quotas.features_unlocked.consentMode} />
           <FeatureRow label="Ranking questions" value={data.quotas.features_unlocked.rankingQuestions} />
+          <FeatureRow label="SAML SSO" value={data.quotas.features_unlocked.samlSso} />
         </div>
       </div>
 

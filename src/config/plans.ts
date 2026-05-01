@@ -19,6 +19,7 @@ export interface PlanConfig {
     customBranding: boolean
     consentMode: boolean
     rankingQuestions: boolean
+    samlSso: boolean
   }
 }
 
@@ -40,6 +41,7 @@ export const PLANS: PlanConfig[] = [
       customBranding: false,
       consentMode: false,
       rankingQuestions: false,
+      samlSso: false,
     },
   },
   {
@@ -59,6 +61,7 @@ export const PLANS: PlanConfig[] = [
       customBranding: true,
       consentMode: true,
       rankingQuestions: true,
+      samlSso: false,
     },
   },
   {
@@ -78,6 +81,7 @@ export const PLANS: PlanConfig[] = [
       customBranding: true,
       consentMode: true,
       rankingQuestions: true,
+      samlSso: true,
     },
   },
 ]

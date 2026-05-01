@@ -2,7 +2,7 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-22 (UTC)_
+_Last updated: 2026-04-30 (UTC)_
 
 ## Release status
 - **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
@@ -19,7 +19,22 @@ _Last updated: 2026-04-22 (UTC)_
 
 ## Next planning milestones
 
-### Sprint A — Layout + Token Foundation (active)
+### Sprint 20 — Readiness + Entitlement Enforcement + Measurement (planned)
+**Focus:** Stabilize v2.1 before the next feature expansion: plan entitlement coverage, Sprint 19 KPI measurement, observability evidence, and trustworthy local/CI quality gates.
+
+**Key items:**
+| Item | Status |
+|---|---|
+| ENTITLEMENTS-01 Pricing claim → backend gate matrix | ✅ Shipped 2026-05-01 |
+| ENTITLEMENTS-02 Contract tests for paid capabilities | In progress |
+| OBS-02 Sprint 19 operational evidence | Planned |
+| QA-DOCDRIFT-01 Align docs with package scripts/test counts | ✅ Shipped 2026-05-01 |
+| DESIGN-GATE-01 Stabilize token drift check locally and in CI | ✅ Shipped 2026-05-01 |
+| S19-MEASURE-01 AI wizard + Launchpad KPI baseline | Planned |
+
+**Gate:** RBAC depth/custom roles require an authorization ADR; LIVE energizers require a Durable Object protocol/versioning ADR.
+
+### Sprint A — Layout + Token Foundation (mostly shipped; verify in Sprint 20)
 **Focus:** Design-token source of truth, layout primitives, a11y baseline, i18n bug fixes.
 
 **Key items (P0 first):**
@@ -28,23 +43,23 @@ _Last updated: 2026-04-22 (UTC)_
 | DESIGN-TYP-01 Typography refresh (Inter body) | ✅ Shipped 2026-04-21 |
 | LAYOUT-SKELETON-01 Skeleton/empty/error state parity | ✅ Shipped 2026-04-21 |
 | LAYOUT-MOTION-01 Motion choreography tokens | ✅ Shipped 2026-04-21 |
-| LAYOUT-GRID-01 Responsive 12/8/4-column grid primitive | In progress |
-| LAYOUT-A11Y-01 Landmark regions, skip-link, WCAG 2.2 focus | In progress |
-| DESIGN-TOK-01 Design-token source-of-truth → src/ui/tokens.ts | In progress |
-| AI-VIS-03 `<AIBadge>` primitive + sparkle icon | Queued |
-| DX-INSIGHTS-01 Dashboard Insights tab scaffold | Queued |
-| I18N-BUG-01 Fix missing wizard step4 keys across 5 locales | Queued |
-| I18N-BUG-02 Fix Dutch/English mixing on Launchpad | Queued |
+| LAYOUT-GRID-01 Responsive 12/8/4-column grid primitive | Verify/close in Sprint 20 |
+| LAYOUT-A11Y-01 Landmark regions, skip-link, WCAG 2.2 focus | Verify/close in Sprint 20 |
+| DESIGN-TOK-01 Design-token source-of-truth → src/ui/tokens.ts | Verify/close in Sprint 20 |
+| AI-VIS-03 `<AIBadge>` primitive + sparkle icon | ✅ Shipped 2026-04-30 |
+| DX-INSIGHTS-01 Dashboard Insights tab scaffold | Verify/close in Sprint 20 |
+| I18N-BUG-01 Fix missing wizard step4 keys across 5 locales | Verify/close in Sprint 20 |
+| I18N-BUG-02 Fix Dutch/English mixing on Launchpad | Verify/close in Sprint 20 |
 
-### Sprint B — Narrative + Wizard + Launchpad + Density (next)
-AI-VIS-01, AI-VIS-02, DX-INSIGHTS-02, WIZ-AI-01, WIZ-AI-02, WIZ-OVERVIEW-01, LAUNCHPAD-01, LAYOUT-DENSITY-01, LAYOUT-MOTION-01, DESIGN-TYP-01.
+### Sprint B — Narrative + Wizard + Launchpad + Density (implementation complete except marketing narrative)
+✅ AI-VIS-02, ✅ DX-INSIGHTS-02, ✅ WIZ-AI-01, ✅ WIZ-AI-02, ✅ WIZ-OVERVIEW-01, ✅ LAUNCHPAD-01, ✅ LAYOUT-DENSITY-01 shipped 2026-04-30. AI-VIS-01 remains marketing/copy scope.
 
-**Gate:** LAUNCHPAD-01 requires WIZ-OVERVIEW-01 (commits DRAFT, routes to Launchpad).
+**Gate:** Sprint 20 must measure AI wizard and Launchpad reliability before further Launchpad expansion.
 
-### Sprint C — Polish (planned)
+### Sprint C — Polish (planned after Sprint 20 readiness)
 DESIGN-POLISH-01, DESIGN-POLISH-02, LAUNCHPAD-02.
 
-**Gate:** Brand sign-off on logo; 0 a11y regressions.
+**Gate:** Brand sign-off on logo; 0 a11y regressions; Sprint 19 KPI baseline acceptable.
 
 ### Parallel feature work (shipped since 2026-04-19)
 - Dashboard personalised greeting (replaces "Your sessions" heading)

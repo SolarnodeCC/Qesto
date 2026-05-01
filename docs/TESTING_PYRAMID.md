@@ -27,7 +27,7 @@ Qesto uses a structured testing pyramid to ensure comprehensive coverage while m
 | **Integration** | 20% | ~12 files | 0 failures | <1s each |
 | **E2E** | 10% | ~6 files | 0 failures (or skip) | <5s each |
 
-**Current Stats:** 60 test files, 917 tests passing
+**Current Stats:** 42 test files, 405 tests passing (`npm test`, verified 2026-05-01)
 
 ## Test Classification
 
@@ -238,7 +238,7 @@ npm test 2>&1 | grep "Test Files"
 
 ✅ **No TypeScript errors**
 ```bash
-tsc --noEmit
+npm run typecheck
 # Must show no errors
 ```
 

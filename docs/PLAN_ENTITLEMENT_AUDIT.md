@@ -3,6 +3,7 @@
 _Hub: [Documentation map](./README.md)._
 
 Date: 2026-04-05
+Sprint 20 update: 2026-05-01
 
 ## Executive summary
 
@@ -97,6 +98,28 @@ Legend:
 
 5. **Automated verification**
    - Add entitlement contract tests that map each pricing-row claim to at least one protected API behavior.
+
+## Sprint 20 entitlement contract matrix
+
+Legend:
+- **Enforced**: route/service has server-side allow/deny logic and should have contract tests.
+- **Classified**: no route exists yet, or behaviour is intentionally ungated; keep documented so pricing changes do not silently drift.
+- **Next**: still requires code or test coverage.
+
+| Pricing / package claim | Backend contract | Current enforcement | Sprint 20 status |
+|---|---|---|---|
+| Monthly session quota | `POST /api/sessions`, `POST /api/sessions/:id/duplicate` check `PLAN_QUOTAS.maxSessionsPerMonth` through `incrementSessionQuota()` | Enforced | Covered by existing quota tests; duplicate path needs explicit contract test |
+| Participant capacity | `SessionRoom` join path checks `PLAN_QUOTAS.maxParticipantsPerSession` | Enforced | Covered by realtime/session lifecycle tests; keep load/stress evidence separate |
+| Results export | `GET /api/sessions/:id/export.csv` requires `resultsExport` | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny + starter allow |
+| Ranking questions | DRAFT question create/update paths reject `ranking` when `rankingQuestions` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny + starter allow |
+| Consent mode/questions | DRAFT question create/update paths reject `consent` when `consentMode` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny |
+| AI insights / Insights tab | `GET /api/sessions/:id/insights` requires `insightsAI`; legacy `POST /sessions/:id/insights/analyze` still performs inline starter/team check | Partially enforced | Next: centralize legacy route on shared entitlement helper or intentionally document Starter preview behaviour |
+| Custom branding | `customBranding` exists in plan config, but no backend branding route is present in this codebase | Classified: not implemented | Next: add route gate when branding API lands |
+| SAML SSO | `PATCH /api/teams/:id` rejects non-null `samlConfig` unless `samlSso` is true | Enforced 2026-05-01 | Contract tests added 2026-05-01 for starter deny + team allow |
+| Team/facilitator count | `POST /api/teams/:id/members` enforces plan member cap: free=1, starter=3, team=10 | Enforced 2026-05-01 | Contract test added 2026-05-01 for limit deny |
+| Semantic search / evidence clusters | `semanticSearch` exists in plan config; no standalone semantic-search route was found. Vectorize lookup inside AI insights is currently tied to insights generation. | Classified: coupled to insights | Next: gate standalone search route if/when exposed |
+| Team analytics | Admin analytics is role-gated; session Insights is plan-gated. Team-wide analytics route is not a distinct paid endpoint yet. | Classified: mixed admin/insights coverage | Next: define route ownership before adding plan gate |
+| MCP API access | No MCP token or method route found in `functions/api/routes` | Classified: not implemented | Next: add scope-aware gate when MCP API lands |
 
 ## Bottom line
 
