@@ -193,6 +193,79 @@ describe('Sprint 20 entitlement contracts', () => {
     expect(body.error.details.limit).toBe(3)
   })
 
+  it('applies monthly session quota to duplicate creation', async () => {
+    addUser(db, 'free_duplicate', 'free')
+    const cookie = await cookieFor('free_duplicate', 'free_duplicate@example.com')
+    const firstSessionId = await createSession(app, env, cookie, 'free duplicate 1')
+    await createSession(app, env, cookie, 'free duplicate 2')
+    await createSession(app, env, cookie, 'free duplicate 3')
+    await createSession(app, env, cookie, 'free duplicate 4')
+    await createSession(app, env, cookie, 'free duplicate 5')
+
+    const res = await app.fetch(
+      new Request(`http://local/api/sessions/${firstSessionId}/duplicate`, {
+        method: 'POST',
+        headers: { cookie },
+      }),
+      env,
+    )
+    expect(res.status).toBe(429)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('quota_exceeded')
+  })
+
+  it('gates precomputed insights themes to team plan', async () => {
+    addUser(db, 'free_themes', 'free')
+    addUser(db, 'team_themes', 'team')
+    const freeCookie = await cookieFor('free_themes', 'free_themes@example.com')
+    const teamCookie = await cookieFor('team_themes', 'team_themes@example.com')
+    const freeSessionId = await createSession(app, env, freeCookie, 'free themes')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team themes')
+    db.sessions.get(freeSessionId)!.status = 'closed'
+    db.sessions.get(teamSessionId)!.status = 'closed'
+    db.insightsDaily.set('themes_team', {
+      id: 'themes_team',
+      session_id: teamSessionId,
+      day: '2026-05-01',
+      themes_json: JSON.stringify([{ label: 'Alignment', count: 3 }]),
+      confidence: 0.92,
+      n_votes: 12,
+      computed_at: Date.now(),
+    })
+
+    const freeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/insights/themes`, { headers: { cookie: freeCookie } }),
+      env,
+    )
+    expect(freeRes.status).toBe(403)
+
+    const teamRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/insights/themes`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    expect(teamRes.status).toBe(200)
+    const body = (await teamRes.json()) as { data: { themes: Array<{ label: string; count: number }> } }
+    expect(body.data.themes[0]).toEqual({ label: 'Alignment', count: 3 })
+  })
+
+  it('uses the shared insightsAI entitlement for legacy AI insights analysis', async () => {
+    addUser(db, 'starter_legacy_insights', 'starter')
+    const cookie = await cookieFor('starter_legacy_insights', 'starter_legacy_insights@example.com')
+    const sessionId = await createSession(app, env, cookie, 'starter legacy insights')
+
+    const res = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/insights/analyze`, {
+        method: 'POST',
+        headers: { cookie },
+      }),
+      env,
+    )
+    expect(res.status).toBe(403)
+    const body = (await res.json()) as { error: { code: string; details: { feature: string } } }
+    expect(body.error.code).toBe('feature_not_available')
+    expect(body.error.details.feature).toBe('insightsAI')
+  })
+
   async function createTeam(cookie: string, name: string) {
     const res = await app.fetch(
       new Request('http://local/api/teams', {

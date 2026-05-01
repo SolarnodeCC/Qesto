@@ -70,6 +70,17 @@ function seedSession(
   return sess
 }
 
+function seedUser(db: D1Mock, plan: 'free' | 'starter' | 'team' = 'team') {
+  db.users.set(USER_ID, {
+    id: USER_ID,
+    email: `${USER_ID}@example.com`,
+    display_name: 'Host',
+    created_at: Date.now(),
+    last_login_at: null,
+    plan,
+  })
+}
+
 function seedQuestion(
   db: D1Mock,
   overrides: Partial<{
@@ -473,6 +484,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
 
   it('returns 409 when session is DRAFT (not closed)', async () => {
     const db = new D1Mock()
+    seedUser(db)
     seedSession(db, { status: 'draft' })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes', {
@@ -487,6 +499,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
 
   it('returns empty themes when insights_daily has no rows', async () => {
     const db = new D1Mock()
+    seedUser(db)
     seedSession(db, { status: 'closed' })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes', {
@@ -507,6 +520,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
 
   it('returns themes and trend rows from insights_daily', async () => {
     const db = new D1Mock()
+    seedUser(db)
     seedSession(db, { status: 'closed' })
     const themes = [{ label: 'Collaboration', count: 12 }]
     db.insightsDaily.set('row_1', {
@@ -541,6 +555,7 @@ describe('GET /api/sessions/:id/insights/themes', () => {
 
   it('accepts archived status', async () => {
     const db = new D1Mock()
+    seedUser(db)
     seedSession(db, { status: 'archived' })
     const res = await createApp().fetch(
       new Request('http://local/api/sessions/sess_1/insights/themes', {
@@ -549,5 +564,20 @@ describe('GET /api/sessions/:id/insights/themes', () => {
       makeEnv(db),
     )
     expect(res.status).toBe(200)
+  })
+
+  it('returns 403 for free plan', async () => {
+    const db = new D1Mock()
+    seedUser(db, 'free')
+    seedSession(db, { status: 'closed' })
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/insights/themes', {
+        headers: { cookie: await cookieFor(USER_ID) },
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(403)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('feature_not_available')
   })
 })

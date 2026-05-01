@@ -1762,7 +1762,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // Reads pre-computed daily insights for the DX-INSIGHTS-02 sparkline. No AI
   // call here — only reads from `insights_daily`. Closed/archived only.
   // ──────────────────────────────────────────────────────────────────────────
-  app.get('/:id/insights/themes', async (c) => {
+  app.get('/:id/insights/themes', requireFeature('insightsAI'), async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
     const traceId = c.get('trace_id')

@@ -108,12 +108,12 @@ Legend:
 
 | Pricing / package claim | Backend contract | Current enforcement | Sprint 20 status |
 |---|---|---|---|
-| Monthly session quota | `POST /api/sessions`, `POST /api/sessions/:id/duplicate` check `PLAN_QUOTAS.maxSessionsPerMonth` through `incrementSessionQuota()` | Enforced | Covered by existing quota tests; duplicate path needs explicit contract test |
+| Monthly session quota | `POST /api/sessions`, `POST /api/sessions/:id/duplicate` check `PLAN_QUOTAS.maxSessionsPerMonth` through `incrementSessionQuota()` | Enforced | Contract tests cover create quota and duplicate-path denial |
 | Participant capacity | `SessionRoom` join path checks `PLAN_QUOTAS.maxParticipantsPerSession` | Enforced | Covered by realtime/session lifecycle tests; keep load/stress evidence separate |
 | Results export | `GET /api/sessions/:id/export.csv` requires `resultsExport` | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny + starter allow |
 | Ranking questions | DRAFT question create/update paths reject `ranking` when `rankingQuestions` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny + starter allow |
 | Consent mode/questions | DRAFT question create/update paths reject `consent` when `consentMode` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny |
-| AI insights / Insights tab | `GET /api/sessions/:id/insights` requires `insightsAI`; legacy `POST /sessions/:id/insights/analyze` still performs inline starter/team check | Partially enforced | Next: centralize legacy route on shared entitlement helper or intentionally document Starter preview behaviour |
+| AI insights / Insights tab | `GET /api/sessions/:id/insights`, `GET /api/sessions/:id/insights/themes`, and legacy `POST /sessions/:id/insights/analyze` require `insightsAI` through the shared entitlement helper | Enforced 2026-05-01 | Contract tests cover free/starter denial and team allow for precomputed themes; legacy analyze uses shared `feature_not_available` response |
 | Custom branding | `customBranding` exists in plan config, but no backend branding route is present in this codebase | Classified: not implemented | Next: add route gate when branding API lands |
 | SAML SSO | `PATCH /api/teams/:id` rejects non-null `samlConfig` unless `samlSso` is true | Enforced 2026-05-01 | Contract tests added 2026-05-01 for starter deny + team allow |
 | Team/facilitator count | `POST /api/teams/:id/members` enforces plan member cap: free=1, starter=3, team=10 | Enforced 2026-05-01 | Contract test added 2026-05-01 for limit deny |

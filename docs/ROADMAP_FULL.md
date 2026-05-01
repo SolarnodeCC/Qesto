@@ -2,12 +2,12 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-30 (UTC)_
+_Last updated: 2026-05-01 (UTC)_
 
 ## Release status
 - **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
-- **v2.1 (target)**: stabilization + enterprise/compliance completion + translation QA hardening.
-- **v2.2 (target)**: advanced gamification depth and admin analytics maturity.
+- **v2.1 (target)**: stabilization + entitlement enforcement + enterprise/compliance readiness + translation QA hardening.
+- **v2.2 (target)**: template catalogue polish, Launchpad/design polish, advanced gamification depth, and admin analytics maturity.
 
 ## Epic status summary
 -  **Core Session Platform** (session lifecycle, realtime voting, presenter controls)
@@ -33,6 +33,58 @@ _Last updated: 2026-04-30 (UTC)_
 | S19-MEASURE-01 AI wizard + Launchpad KPI baseline | Planned |
 
 **Gate:** RBAC depth/custom roles require an authorization ADR; LIVE energizers require a Durable Object protocol/versioning ADR.
+
+### Sprint 21 — Enterprise Authorization + Compliance UX (planned)
+**Focus:** Turn the Sprint 20 entitlement evidence into an authorization design the team can safely extend. This is the first sprint where RBAC depth can move, but only after the ADR is accepted.
+
+**Key items:**
+| Item | Status |
+|---|---|
+| AUTHZ-ADR-01 Custom RBAC authorization ADR | Planned |
+| AUTHZ-RBAC-01 Custom role permission matrix + server-side enforcement plan | Planned |
+| AUTHZ-RBAC-02 Admin role-management UX and delegated permissions | Planned |
+| ENT-03/ENT-04 compliance UX follow-through from audit/admin evidence | Planned |
+
+**Gate:** No custom-role implementation without accepted ADR, route ownership map, audit semantics, and contract-test plan.
+
+### Sprint 22 — Template Catalogue + Session Creation Polish (planned)
+**Focus:** Pull forward the next functional requirement from `SPEC.md`: make templates a complete session-starting surface instead of a passive dashboard tab.
+
+**Key items:**
+| Item | Status |
+|---|---|
+| TPL-CATALOG-01 Customer vs Qesto template groups | Planned |
+| TPL-CATALOG-02 Template overview confirmation flow | Planned |
+| TPL-CATALOG-03 Minimum 3 Qesto templates per required topic + functional coverage | Planned |
+| Wizard seeding from selected template into the customize step | Planned |
+
+**Gate:** No direct session creation from a card; every template path requires overview confirmation and editable wizard state.
+
+### Sprint 23 — Launchpad + Design Polish (planned)
+**Focus:** Complete Website Design Wave Sprint C after Sprint 19 measurement proves the wizard → Launchpad path is reliable.
+
+**Key items:**
+| Item | Status |
+|---|---|
+| LAUNCHPAD-02 Inline editor, reorder, and state-preserving back-to-questions flow | Planned |
+| DESIGN-POLISH-01 Primary CTA hover/motion polish | Planned |
+| DESIGN-POLISH-02 Logo optical weight + sparkle mark | Planned |
+| AI-VIS-01 Landing AI narrative + copy/i18n sign-off | Planned |
+
+**Gate:** S19-MEASURE-01 must show no launch reliability regression; token, i18n, and a11y gates remain green.
+
+### Sprint 24 — v2.2 Gamification/Admin Analytics Foundation (planned)
+**Focus:** Start v2.2 depth work with protocol governance first, then controlled LIVE energizer and analytics expansion.
+
+**Key items:**
+| Item | Status |
+|---|---|
+| DO-PROTOCOL-ADR-01 Durable Object protocol/versioning ADR | Planned |
+| GAM-01 LIVE energizer foundation behind versioned message contracts | Planned |
+| ADMIN-ANALYTICS-01 Admin reporting/export maturity | Planned |
+| Legacy backlog status reconciliation for v2.x regression contracts | Planned |
+
+**Gate:** Durable Object message schema changes require versioning, fallback behavior, and tests before LIVE rollout.
 
 ### Sprint A — Layout + Token Foundation (mostly shipped; verify in Sprint 20)
 **Focus:** Design-token source of truth, layout primitives, a11y baseline, i18n bug fixes.

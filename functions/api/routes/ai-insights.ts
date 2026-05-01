@@ -10,6 +10,8 @@
 
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
+import { planMiddleware, type PlanVariables } from '../middleware/plan'
+import { requireFeature } from '../middleware/feature-gate'
 import { recordAuditEvent } from '../lib/audit'
 import { rateLimit } from '../lib/rate-limit'
 import {
@@ -26,7 +28,7 @@ import {
 import { writeEvent } from '../lib/observability'
 import type { Env, PlanTier } from '../types'
 
-type Vars = AuthVariables
+type Vars = AuthVariables & PlanVariables
 
 const INSIGHTS_MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
 const AI_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'ai-insights' }
@@ -35,12 +37,14 @@ const CACHE_KEY = (sessionId: string) => `insights:${sessionId}`
 export function mountAIInsightsRoutes(parent: any) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
+  app.use('*', planMiddleware)
 
   // POST /sessions/:sessionId/insights/analyze
-  app.post('/sessions/:sessionId/insights/analyze', async (c) => {
+  app.post('/sessions/:sessionId/insights/analyze', requireFeature('insightsAI'), async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
     const user = c.get('user')
+    const userPlan = c.get('plan')
 
     try {
       const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
@@ -52,22 +56,6 @@ export function mountAIInsightsRoutes(parent: any) {
             trace_id,
           },
           429,
-        )
-      }
-
-      const userResult = await c.env.DB.prepare(`SELECT plan FROM users WHERE id = ?1`)
-        .bind(user.sub)
-        .first<{ plan: string }>()
-
-      const userPlan = userResult?.plan ?? 'free'
-      if (!['starter', 'team'].includes(userPlan)) {
-        return c.json(
-          {
-            ok: false,
-            error: { code: 'forbidden', message: 'AI Insights requires starter or team plan' },
-            trace_id,
-          },
-          403,
         )
       }
 

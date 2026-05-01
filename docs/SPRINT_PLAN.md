@@ -2,9 +2,10 @@
 
 _Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](./BACKLOG.md) (including §12) and [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
 
-_Last updated: 2026-04-30 (UTC)_
+_Last updated: 2026-05-01 (UTC)_
 _**Sprint 18 Plan Added**: 2026-04-23 — see Sprint 18 section below. Five-sprint reference arc remains pedagogical (v0.1→v0.5). Calendar truth: Sprint 17 completed 2026-04-22; Sprint 18 runs 2026-04-29 to 2026-05-13._
 _**Sprint 20 Plan Added**: 2026-04-30 — Sprint 19 implementation completed early; Sprint 20 focuses on readiness, entitlement enforcement, observability, and measurement before the next feature expansion._
+_**Next-five-sprint refresh**: 2026-05-01 — Sprint 20 to Sprint 24 now form the active calendar planning arc for v2.1 readiness and v2.2 foundation work._
 
 ---
 
@@ -483,6 +484,126 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 - Contract tests demonstrate at least one allow and one deny path for each enforced paid capability
 - Sprint 19 KPI baseline documented with known measurement gaps called out
 - Docs updated where command names, test counts, route contracts, or release status changed
+
+---
+
+## Next Five Calendar Sprint Arc (Actual Project: Sprint 20 to Sprint 24)
+
+**Planning basis**: Agent-assisted product/engineering review on 2026-05-01. Sprint 20 is committed; Sprints 21–24 are sequenced intent and should be refined at each planning ceremony using completed evidence from the prior sprint.
+
+| Sprint | Window | Release posture | Goal | Gate |
+|---|---|---|---|---|
+| **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock | Entitlement tests, operational evidence, Sprint 19 KPI baseline, trustworthy local/CI gates | No broad feature expansion until evidence exists |
+| **Sprint 21** | 2026-06-10 to 2026-06-24 | v2.1 enterprise hardening | Authorization ADR, custom role matrix, compliance/admin UX follow-through | AUTHZ-ADR-01 accepted before custom RBAC code |
+| **Sprint 22** | 2026-06-24 to 2026-07-08 | v2.1/v2.2 session creation polish | Template catalogue requirement from SPEC.md: groups, overview confirmation, wizard seeding, functional coverage | No template card creates a session without overview confirmation |
+| **Sprint 23** | 2026-07-08 to 2026-07-22 | v2.2 design/Launchpad polish | LAUNCHPAD-02, CTA/logo polish, landing AI narrative sign-off | S19 KPI baseline healthy; token/i18n/a11y gates green |
+| **Sprint 24** | 2026-07-22 to 2026-08-05 | v2.2 foundation | DO protocol ADR, LIVE energizer foundation, admin analytics maturity, backlog status reconciliation | Versioned DO message contract accepted before LIVE energizer rollout |
+
+**Dependency chain**:
+- ENTITLEMENTS-01 → ENTITLEMENTS-02 → AUTHZ-ADR-01 → RBAC depth/custom roles.
+- OBS-02 → S19-MEASURE-01 → LAUNCHPAD-02 and Website Design Wave Sprint C.
+- `SPEC.md` template requirement → TPL-CATALOG-01/02/03 → template-seeded wizard flow.
+- DO-PROTOCOL-ADR-01 → GAM-01 LIVE energizers → GAM-02/GAM-03 depth.
+
+---
+
+## Sprint 21: Enterprise Authorization + Compliance UX (2026-06-10 to 2026-06-24)
+
+**Context**: Sprint 21 follows the Sprint 20 readiness lock. It should only expand authorization after entitlement coverage is proven and measurement gaps are documented.
+
+**Goal**: Establish a safe authorization model for custom roles and convert audit/admin evidence into usable compliance UX.
+
+**Epics**: EPIC-ENT, EPIC-AUTH, EPIC-QA
+
+**Committed Candidates** (refine after Sprint 20 closeout):
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---:|---|---|---|
+| **AUTHZ-ADR-01**: Custom RBAC authorization ADR | 3 | ENT/AUTH | Planned | ADR defines roles, permission scopes, route ownership, audit semantics, migration plan, and test strategy |
+| **AUTHZ-RBAC-01**: Custom role permission matrix + enforcement plan | 8 | ENT | Planned | Matrix maps each role/scope to route/service allow/deny behavior; contract tests drafted before implementation |
+| **AUTHZ-RBAC-02**: Admin role-management UX + delegated permissions | 8 | ENT/UX | Planned | Owner/admin can create, edit, assign, revoke, and audit scoped roles without cross-team leakage |
+| **ENT-COMPLIANCE-01**: Audit/admin compliance UX follow-through | 5 | ENT/OPS | Planned | Audit filters/export and admin evidence views cover entitlement, authz, and sensitive mutations |
+
+**Definition of Done**:
+- ADR accepted before RBAC implementation lands.
+- Contract tests include positive and negative paths for every new permission scope.
+- Audit events exist for role create/edit/assign/revoke actions.
+- Docs update `SPEC_BACKEND.md`/`SPEC_DATAMODEL.md` if route or schema contracts change.
+
+---
+
+## Sprint 22: Template Catalogue + Session Creation Polish (2026-06-24 to 2026-07-08)
+
+**Context**: `SPEC.md` names the template library UX as the next functional requirement. Sprint 22 makes that path production-grade and keeps it integrated with the AI wizard rather than creating a parallel flow.
+
+**Goal**: Let teams start from customer or Qesto templates, inspect fit before use, and land in editable wizard state with functional coverage.
+
+**Epics**: EPIC-CORE, EPIC-TEMPLATES, EPIC-I18N, EPIC-QA
+
+**Committed Candidates**:
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---:|---|---|---|
+| **TPL-CATALOG-01**: Customer vs Qesto template groups | 5 | TEMPLATES | Planned | Dashboard Templates separates tenant-created templates from curated Qesto templates |
+| **TPL-CATALOG-02**: Template overview confirmation flow | 8 | TEMPLATES/CORE | Planned | Card opens overview with title, description, preview image, and explicit "Use template" CTA |
+| **TPL-CATALOG-03**: Qesto starter-template coverage | 5 | TEMPLATES/CONTENT | Planned | Minimum 3 Qesto templates per required topic; preferred 4+ for high-use topics |
+| **TPL-WIZARD-01**: Template-seeded wizard customize step | 8 | CORE | Planned | Selected template seeds wizard questions/settings and preserves editability before Launchpad |
+| **TPL-QA-01**: Functional UI coverage for template catalogue | 3 | QA | Planned | `tests/functional/ui/template-catalogue.test.ts` verifies topic IDs, minimum counts, and copy alignment |
+
+**Definition of Done**:
+- No direct session creation from a template card.
+- All new strings are keyed in EN/NL/DE/FR/ES.
+- Template preview images have stable dimensions and accessible alt text.
+- Wizard state survives template selection, editing, and back navigation.
+
+---
+
+## Sprint 23: Launchpad + Design Polish (2026-07-08 to 2026-07-22)
+
+**Context**: Sprint 23 is Website Design Wave Sprint C in calendar form. It should start only after Sprint 19 KPI evidence shows the wizard → Launchpad path is reliable.
+
+**Goal**: Improve Launchpad editability and complete visible design polish without regressing conversion, a11y, or i18n.
+
+**Epics**: EPIC-CORE, EPIC-DESIGN, EPIC-I18N
+
+**Committed Candidates**:
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---:|---|---|---|
+| **LAUNCHPAD-02**: Inline editor, reorder, and state-preserving back-to-questions | 8 | CORE | Planned | Hosts can add/reorder/edit one question from Launchpad; wizard round-trip has 0 state-loss bugs |
+| **DESIGN-POLISH-01**: Primary CTA hover/motion polish | 3 | DESIGN | Planned | Vote/Join/Landing CTAs use tokenized motion and pass a11y regression checks |
+| **DESIGN-POLISH-02**: Logo optical weight bump + sparkle mark | 3 | DESIGN/BRAND | Planned | Brand sign-off; mark used consistently across app and public surfaces |
+| **AI-VIS-01**: Landing AI narrative + feature strip | 5 | MARKETING/I18N | Planned | Copy approved, localized in 5 locales, and instrumented for visitor-to-signup conversion |
+
+**Definition of Done**:
+- S19-MEASURE-01 shows no launch reliability regression before rollout.
+- `npm run check:i18n`, token drift checks, and a11y suite stay green.
+- Launchpad preflight refreshes after add/edit/reorder operations.
+- Metrics distinguish Launchpad inline edits from full wizard edits.
+
+---
+
+## Sprint 24: v2.2 Gamification/Admin Analytics Foundation (2026-07-22 to 2026-08-05)
+
+**Context**: Sprint 24 begins v2.2 depth work. The team should protect realtime stability by writing protocol governance before extending LIVE session messages.
+
+**Goal**: Establish versioned Durable Object message contracts for LIVE energizers and mature admin analytics into usable reporting.
+
+**Epics**: EPIC-GAM, EPIC-ENT, EPIC-OPS, EPIC-QA
+
+**Committed Candidates**:
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---:|---|---|---|
+| **DO-PROTOCOL-ADR-01**: Durable Object protocol/versioning ADR | 3 | GAM/ARCH | Planned | ADR defines message versioning, compatibility, fallback behavior, and test matrix |
+| **GAM-LIVE-01**: LIVE energizer protocol foundation | 8 | GAM | Planned | Speed/trivia messages are versioned behind feature flags and tested without breaking existing voting |
+| **ADMIN-ANALYTICS-01**: Admin reporting/export maturity | 8 | ENT/OPS | Planned | Admin can inspect/export engagement, entitlement, and operational health metrics |
+| **BACKLOG-HYGIENE-01**: Legacy backlog status reconciliation | 5 | DOCS/QA | Planned | Legacy v0.x stories are labeled shipped/regression contract/deferred; confusing stale status is removed |
+
+**Definition of Done**:
+- No LIVE message schema change ships without protocol tests and fallback behavior.
+- Admin analytics avoid PII and use route-pattern/event labels, not raw prompts or participant text.
+- Backlog reconciliation keeps `ROADMAP_FULL.md`, `SPEC.md`, and `BACKLOG.md` aligned.
 
 ---
 

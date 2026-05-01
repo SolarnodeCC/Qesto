@@ -2,13 +2,13 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-30 (UTC)_
+_Last updated: 2026-05-01 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
 _Sprint 20 Planned (2026-05-27 to 2026-06-10) — readiness, entitlement enforcement, observability, and Sprint 19 KPI measurement; see SPRINT_PLAN.md §Sprint 20_
 _Website Design Wave added: 2026-04-19 — see §12_
-_**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review completed 2026-04-30; Sprint 19 implementation is complete; Sprint 20 is the next committed readiness sprint._
+_**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review completed 2026-05-01; Sprint 19 implementation is complete; Sprint 20 starts the next five-calendar-sprint plan._
 
 ## Overview
 
@@ -78,6 +78,40 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 **Explicitly deferred**: RBAC depth/custom roles implementation until AUTHZ-ADR-01 exists; GAM-01 / LIVE energizers until a Durable Object protocol/versioning ADR exists.
 
 See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance criteria, dependencies, KPIs, and Definition of Done.
+
+---
+
+## Next Five Calendar Sprints (Sprint 20 to Sprint 24)
+
+**Planning status**: Agent-assisted planning refresh completed 2026-05-01. Sprint 20 is the committed readiness sprint; Sprints 21–24 are sequenced backlog intent and should be revalidated at each sprint planning ceremony.
+
+| Sprint | Window | Product goal | Backlog posture |
+|---|---|---|---|
+| **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock: entitlement tests, Sprint 19 measurement, operational evidence, and quality-gate trust | Committed: ENTITLEMENTS-02, OBS-02, S19-MEASURE-01. Verify/close Sprint A design/i18n leftovers. |
+| **Sprint 21** | 2026-06-10 to 2026-06-24 | Enterprise authorization foundation + compliance UX | Commit AUTHZ-ADR-01, split RBAC depth into concrete stories, begin role matrix/admin compliance work only after entitlement gates are green. |
+| **Sprint 22** | 2026-06-24 to 2026-07-08 | Template catalogue + session creation polish | Promote the SPEC.md template requirement: customer/Qesto template groups, 3–4 Qesto templates per topic, overview confirmation, wizard seeding, functional tests. |
+| **Sprint 23** | 2026-07-08 to 2026-07-22 | Launchpad + design polish | Promote LAUNCHPAD-02, DESIGN-POLISH-01, DESIGN-POLISH-02, and AI-VIS-01 only if Sprint 19 KPI baseline shows no launch reliability regression. |
+| **Sprint 24** | 2026-07-22 to 2026-08-05 | v2.2 gamification/admin analytics foundation | Write Durable Object protocol/versioning ADR, start LIVE energizer foundation, mature admin analytics/reporting/export, and reconcile stale legacy backlog statuses. |
+
+### Active Backlog Additions From Planning Refresh
+
+| ID | Item | Pri | Target | Acceptance signal |
+|---|---|---|---|---|
+| AUTHZ-ADR-01 | Authorization ADR for custom roles, scoped permissions, route ownership, and audit semantics | P0 | Sprint 21 | ADR accepted before any custom RBAC implementation begins |
+| AUTHZ-RBAC-01 | Custom role permission matrix + server-side enforcement plan | P0 | Sprint 21 | Matrix maps roles to routes/services; allow/deny contract tests drafted |
+| AUTHZ-RBAC-02 | Admin role-management UX for custom roles and delegated permissions | P1 | Sprint 21/22 | Owner/admin can create, edit, assign, and revoke scoped roles with audit events |
+| TPL-CATALOG-01 | Customer vs Qesto template catalogue groups | P0 | Sprint 22 | Dashboard Templates separates tenant-created and curated Qesto templates |
+| TPL-CATALOG-02 | Template overview confirmation flow | P0 | Sprint 22 | Template card opens title/description/preview screen; session creation starts only after "Use template" confirmation |
+| TPL-CATALOG-03 | Qesto starter-template coverage and functional tests | P0 | Sprint 22 | Minimum 3 templates per required topic; `tests/functional/ui/template-catalogue.test.ts` covers counts and copy |
+| DO-PROTOCOL-ADR-01 | Durable Object protocol/versioning ADR for LIVE session message extensions | P0 | Sprint 24 | ADR accepted before GAM-01 LIVE energizer work changes `ClientMessage`/`ServerMessage` |
+| ADMIN-ANALYTICS-01 | Admin analytics reporting/export maturity | P1 | Sprint 24 | Admin can inspect/export key engagement, entitlement, and operational health metrics without raw log spelunking |
+
+**Dependencies and gates**:
+- ENTITLEMENTS-02 must be green before Sprint 21 expands role enforcement.
+- OBS-02 must land before S19-MEASURE-01 can produce credible KPI baseline.
+- AUTHZ-ADR-01 blocks RBAC depth/custom roles implementation.
+- DO-PROTOCOL-ADR-01 blocks GAM-01 in LIVE sessions.
+- Token/i18n/a11y gates must stay green before Sprint 23 design polish expands affected surfaces.
 
 ---
 
