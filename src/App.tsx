@@ -1,6 +1,7 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useRef, lazy, Suspense } from 'react'
 import { AuthProvider } from './hooks/useAuth'
+import { useColorScheme } from './hooks/useColorScheme'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -65,6 +66,7 @@ function RouteAnnouncer() {
 }
 
 export default function App() {
+  useColorScheme()
   return (
     <AuthProvider>
       {/* Skip link is rendered by MainLayout on each page that uses it. */}

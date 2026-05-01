@@ -148,7 +148,7 @@ function QuestionEditor({
   const valid = isQuestionValid(question)
 
   return (
-    <div className="rounded-lg border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-4 space-y-3">
+    <div className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           {question.fromAI && <AIBadge variant="generated" />}
@@ -180,8 +180,8 @@ function QuestionEditor({
             className={[
               'px-3 py-1 rounded-pill text-caption font-medium border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
               question.kind === k
-                ? 'bg-teal-50 border-teal-400 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300 dark:border-teal-600'
-                : 'border-pulse-300 text-pulse-600 hover:border-teal-300 dark:border-pulse-600 dark:text-pulse-400',
+                ? 'bg-teal-50 dark:bg-teal-500/10 border-teal-400 dark:border-teal-400 text-teal-700 dark:text-teal-300'
+                : 'border-pulse-300 dark:border-[#2A3858] text-pulse-600 dark:text-[#A8B3CC] hover:border-teal-300',
             ].join(' ')}
           >
             {kindLabel(k)}
@@ -195,7 +195,7 @@ function QuestionEditor({
         onChange={(e) => setPrompt(e.target.value)}
         placeholder="Type your question…"
         rows={2}
-        className="w-full rounded-lg border border-pulse-300 dark:border-pulse-600 bg-transparent px-3 py-2 text-sm resize-none focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
+        className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm resize-none focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
         aria-label="Question text"
       />
 
@@ -210,7 +210,7 @@ function QuestionEditor({
                 value={opt.label}
                 onChange={(e) => setOptionLabel(idx, e.target.value)}
                 placeholder={`Option ${idx + 1}`}
-                className="flex-1 rounded-md border border-pulse-300 dark:border-pulse-600 bg-transparent px-2 py-1.5 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-300"
+                className="flex-1 rounded-md border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-2 py-1.5 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-300"
                 aria-label={`Option ${idx + 1}`}
               />
               <button
@@ -663,19 +663,19 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     >
       <div
         ref={dialogRef}
-        className="bg-white dark:bg-pulse-900 rounded-2xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
+        className="bg-white dark:bg-[#1C2540] rounded-2xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-pulse-200 dark:border-pulse-700 flex-shrink-0">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-pulse-200 dark:border-[#1E2A45] flex-shrink-0">
           <div className="space-y-1">
             <h2
               ref={headingRef}
               tabIndex={-1}
-              className="text-xl font-semibold focus:outline-none dark:text-pulse-50"
+              className="text-xl font-semibold focus:outline-none dark:text-[#F0F2F8]"
             >
               {STEP_LABELS[step]}
             </h2>
-            <p className="text-caption text-pulse-500" aria-live="polite">
+            <p className="text-caption text-pulse-500 dark:text-[#6B7A99]" aria-live="polite">
               {t('a11y.progress_label', { current: step, total: 5 })}
             </p>
           </div>
@@ -700,7 +700,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                 role="listitem"
                 className={[
                   'h-1.5 flex-1 rounded-pill transition-colors',
-                  s < step ? 'bg-teal-500' : s === step ? 'bg-teal-400' : 'bg-pulse-200 dark:bg-pulse-700',
+                  s < step ? 'bg-teal-500' : s === step ? 'bg-teal-400' : 'bg-pulse-200 dark:bg-[#1E2A45]',
                 ].join(' ')}
                 aria-label={`Step ${s}${s === step ? ' (current)' : s < step ? ' (complete)' : ''}`}
               />
@@ -715,7 +715,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
           {step === 1 && (
             <div className="space-y-4">
               <div className="space-y-1">
-                <label htmlFor="wiz-title" className="text-sm font-medium dark:text-pulse-200">
+                <label htmlFor="wiz-title" className="text-sm font-medium dark:text-[#F0F2F8]">
                   {t('step1.label_title')}
                 </label>
                 <input
@@ -725,11 +725,11 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={t('step1.placeholder_title')}
                   maxLength={160}
-                  className="w-full rounded-lg border border-pulse-300 dark:border-pulse-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
+                  className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
                 />
               </div>
               <div className="space-y-1">
-                <label htmlFor="wiz-goal" className="text-sm font-medium dark:text-pulse-200">
+                <label htmlFor="wiz-goal" className="text-sm font-medium dark:text-[#F0F2F8]">
                   {t('step1.label_goal')}
                 </label>
                 <textarea
@@ -739,7 +739,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                   placeholder={t('step1.placeholder_goal')}
                   rows={3}
                   maxLength={400}
-                  className="w-full rounded-lg border border-pulse-300 dark:border-pulse-600 bg-transparent px-3 py-2 text-sm resize-none focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
+                  className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm resize-none focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
                 />
               </div>
               {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
@@ -752,7 +752,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
               {/* Mode selector */}
               {step2Mode === 'idle' && (
                 <div className="space-y-3">
-                  <p className="text-sm font-medium dark:text-pulse-200">{t('step2.mode_title')}</p>
+                  <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('step2.mode_title')}</p>
                   <div className="grid grid-cols-1 gap-2">
                     {([
                       { id: 'ai', label: t('step2.ai.label'), desc: t('step2.ai.desc'), icon: '✨' },
@@ -767,9 +767,9 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                           if (mode.id === 'manual') setQuestions([emptyQuestion()])
                           if (mode.id === 'ai') setAiPhase('consent')
                         }}
-                        className="text-left p-3 rounded-xl border border-pulse-200 dark:border-pulse-700 hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
+                        className="text-left p-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
                       >
-                        <span className="font-medium text-sm dark:text-pulse-100">{mode.icon} {mode.label}</span>
+                        <span className="font-medium text-sm dark:text-[#F0F2F8]">{mode.icon} {mode.label}</span>
                         <p className="text-caption text-pulse-500 mt-0.5">{mode.desc}</p>
                       </button>
                     ))}
@@ -790,11 +790,11 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
 
                   {/* Consent gate */}
                   {aiPhase === 'consent' && (
-                    <div className="rounded-xl border border-violet-200 dark:border-violet-700 bg-violet-50/50 dark:bg-violet-900/20 p-4 space-y-3">
+                    <div className="rounded-xl border border-violet-200 dark:border-violet-800/60 bg-violet-50/50 dark:bg-violet-900/20 p-4 space-y-3">
                       <div className="flex items-start gap-2">
                         <span className="text-xl">✨</span>
                         <div>
-                          <p className="font-medium text-sm dark:text-pulse-100">{t('step2.ai_consent_v2.title')}</p>
+                          <p className="font-medium text-sm dark:text-[#F0F2F8]">{t('step2.ai_consent_v2.title')}</p>
                           <p className="text-caption text-pulse-500 mt-0.5">{t('step2.ai_consent_v2.description')}</p>
                         </div>
                       </div>
@@ -805,7 +805,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                           onChange={(e) => setAiConsented(e.target.checked)}
                           className="mt-0.5 rounded border-pulse-300 text-teal-600 focus:ring-teal-500"
                         />
-                        <span className="text-sm dark:text-pulse-200">{t('step2.ai_consent_v2.checkbox')}</span>
+                        <span className="text-sm dark:text-[#A8B3CC]">{t('step2.ai_consent_v2.checkbox')}</span>
                       </label>
                       <button
                         type="button"
@@ -833,7 +833,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                           onChange={(e) => setAiPrompt(e.target.value)}
                           onKeyDown={(e) => { if (e.key === 'Enter') handleGenerate() }}
                           placeholder={t('step2.ai_placeholder')}
-                          className="flex-1 rounded-lg border border-pulse-300 dark:border-pulse-600 bg-transparent px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                          className="flex-1 rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                         />
                         <button
                           type="button"
@@ -866,7 +866,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                   {aiPhase === 'review' && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium dark:text-pulse-200">{t('step2.ai_review_title')}</p>
+                        <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('step2.ai_review_title')}</p>
                         <button
                           type="button"
                           onClick={() => {
@@ -958,12 +958,12 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                 <button
                   type="button"
                   onClick={() => { if (jumpedFrom5) { setStep(5); setJumpedFrom5(false) } else setStep(4) }}
-                  className="text-left p-3 rounded-xl border border-pulse-200 dark:border-pulse-700 hover:border-pulse-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors text-sm text-pulse-600"
+                  className="text-left p-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] hover:border-pulse-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors text-sm text-pulse-600 dark:text-[#A8B3CC]"
                 >
                   {t('step3.no')} (skip energizer)
                 </button>
               </div>
-              <p className="text-sm font-medium dark:text-pulse-200">{t('step3.pick_format')}</p>
+              <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('step3.pick_format')}</p>
               <div className="grid grid-cols-1 gap-2">
                 {ENERGIZER_FORMATS.map((fmt) => (
                   <button
@@ -976,11 +976,11 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                     className={[
                       'text-left p-3 rounded-xl border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                       energizerId === fmt.id
-                        ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30'
-                        : 'border-pulse-200 dark:border-pulse-700 hover:border-teal-300',
+                        ? 'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-500/10'
+                        : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] hover:border-teal-300',
                     ].join(' ')}
                   >
-                    <span className="font-medium text-sm dark:text-pulse-100">{fmt.name}</span>
+                    <span className="font-medium text-sm dark:text-[#F0F2F8]">{fmt.name}</span>
                     <p className="text-caption text-pulse-500">{fmt.desc}</p>
                   </button>
                 ))}
@@ -993,7 +993,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
             <div className="space-y-5">
               {/* Anonymity */}
               <fieldset className="space-y-2">
-                <legend className="text-sm font-medium dark:text-pulse-200">{t('step4.anonymity.label')}</legend>
+                <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.anonymity.label')}</legend>
                 <div className="flex gap-2 flex-wrap">
                   {(['full', 'partial', 'none'] as const).map((val) => (
                     <button
@@ -1003,8 +1003,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                       className={[
                         'px-3 py-1.5 rounded-lg border text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                         anonymity === val
-                          ? 'border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300'
-                          : 'border-pulse-300 dark:border-pulse-600 hover:border-teal-300',
+                          ? 'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
+                          : 'border-pulse-300 dark:border-[#2A3858] hover:border-teal-300',
                       ].join(' ')}
                     >
                       {t(`step4.anonymity.${val}`)}
@@ -1015,7 +1015,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
 
               {/* Vote policy */}
               <fieldset className="space-y-2">
-                <legend className="text-sm font-medium dark:text-pulse-200">{t('step4.votePolicy.label')}</legend>
+                <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.votePolicy.label')}</legend>
                 <div className="flex gap-2 flex-wrap">
                   {(['once', 'multi', 'react'] as const).map((val) => (
                     <button
@@ -1025,8 +1025,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                       className={[
                         'px-3 py-1.5 rounded-lg border text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                         votePolicy === val
-                          ? 'border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300'
-                          : 'border-pulse-300 dark:border-pulse-600 hover:border-teal-300',
+                          ? 'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
+                          : 'border-pulse-300 dark:border-[#2A3858] hover:border-teal-300',
                       ].join(' ')}
                     >
                       {t(`step4.votePolicy.${val}`)}
@@ -1037,7 +1037,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
 
               {/* Session mode */}
               <fieldset className="space-y-2">
-                <legend className="text-sm font-medium dark:text-pulse-200">{t('step4.mode.label')}</legend>
+                <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.mode.label')}</legend>
                 <div className="flex gap-2 flex-wrap">
                   {([
                     { val: 'reflection' as const, label: t('step4.mode.reflection_title') },
@@ -1050,8 +1050,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                       className={[
                         'px-3 py-1.5 rounded-lg border text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                         sessionMode === val
-                          ? 'border-teal-500 bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300'
-                          : 'border-pulse-300 dark:border-pulse-600 hover:border-teal-300',
+                          ? 'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
+                          : 'border-pulse-300 dark:border-[#2A3858] hover:border-teal-300',
                       ].join(' ')}
                     >
                       {label}
@@ -1071,9 +1071,9 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
               <p className="text-caption text-pulse-500">{t('step5.consent_text')}</p>
 
               {/* Basics */}
-              <section className="rounded-xl border border-pulse-200 dark:border-pulse-700 p-3 space-y-1">
+              <section className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-3 space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold dark:text-pulse-100">{t('step5.section_basis')}</h3>
+                  <h3 className="text-sm font-semibold dark:text-[#F0F2F8]">{t('step5.section_basis')}</h3>
                   <button type="button" onClick={() => jumpToStep(1)} aria-label="Edit basics" className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">
                     {t('step5.edit')} ✏️
                   </button>
@@ -1083,9 +1083,9 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
               </section>
 
               {/* Questions */}
-              <section className="rounded-xl border border-pulse-200 dark:border-pulse-700 p-3 space-y-2">
+              <section className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold dark:text-pulse-100">{t('step5.section_questions')}</h3>
+                  <h3 className="text-sm font-semibold dark:text-[#F0F2F8]">{t('step5.section_questions')}</h3>
                   <button type="button" onClick={() => jumpToStep(2)} aria-label="Edit questions" className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">
                     {t('step5.edit')} ✏️
                   </button>
@@ -1097,7 +1097,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                     {activeQuestions.map((q) => (
                       <li key={q.id} className="text-sm flex items-start gap-2">
                         <span className="text-teal-600 mt-0.5">•</span>
-                        <span className="dark:text-pulse-200">{q.prompt || <em className="text-pulse-400">No prompt</em>}</span>
+                        <span className="dark:text-[#A8B3CC]">{q.prompt || <em className="text-pulse-400">No prompt</em>}</span>
                         <span className="ml-auto text-caption text-pulse-400 whitespace-nowrap">{kindLabel(q.kind)}</span>
                       </li>
                     ))}
@@ -1106,24 +1106,24 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
               </section>
 
               {/* Energizer */}
-              <section className="rounded-xl border border-pulse-200 dark:border-pulse-700 p-3 space-y-1">
+              <section className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-3 space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold dark:text-pulse-100">{t('step5.section_energizer')}</h3>
+                  <h3 className="text-sm font-semibold dark:text-[#F0F2F8]">{t('step5.section_energizer')}</h3>
                   <button type="button" onClick={() => jumpToStep(3)} aria-label="Edit energizer" className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">
                     {t('step5.edit')} ✏️
                   </button>
                 </div>
                 {energizerId ? (
-                  <p className="text-sm dark:text-pulse-200">{ENERGIZER_FORMATS.find((f) => f.id === energizerId)?.name ?? energizerId}</p>
+                  <p className="text-sm dark:text-[#A8B3CC]">{ENERGIZER_FORMATS.find((f) => f.id === energizerId)?.name ?? energizerId}</p>
                 ) : (
                   <p className="text-caption text-pulse-500">{t('step5.no_energizer')}</p>
                 )}
               </section>
 
               {/* Settings */}
-              <section className="rounded-xl border border-pulse-200 dark:border-pulse-700 p-3 space-y-1">
+              <section className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-3 space-y-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold dark:text-pulse-100">{t('step5.section_settings')}</h3>
+                  <h3 className="text-sm font-semibold dark:text-[#F0F2F8]">{t('step5.section_settings')}</h3>
                   <button type="button" onClick={() => jumpToStep(4)} aria-label="Edit settings" className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">
                     {t('step5.edit')} ✏️
                   </button>
@@ -1139,13 +1139,13 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
         </div>
 
         {/* Footer navigation */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-pulse-200 dark:border-pulse-700 flex-shrink-0 gap-3">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] flex-shrink-0 gap-3">
           {/* Back */}
           {step > 1 && !jumpedFrom5 ? (
             <button
               type="button"
               onClick={() => setStep((s) => (s - 1) as WizardStep)}
-              className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-pulse-600 text-sm hover:bg-pulse-50 dark:hover:bg-pulse-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent dark:text-[#A8B3CC] text-sm hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             >
               {t('nav.back')}
             </button>
@@ -1153,7 +1153,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
             <button
               type="button"
               onClick={() => { setJumpedFrom5(false); setStep(5) }}
-              className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-pulse-600 text-sm hover:bg-pulse-50 dark:hover:bg-pulse-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent dark:text-[#A8B3CC] text-sm hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             >
               ← Overview
             </button>

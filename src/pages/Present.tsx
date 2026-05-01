@@ -171,6 +171,7 @@ export default function Present() {
           ref={stageRef}
           className="w-[1920px] h-[1080px] origin-top-left relative bg-white overflow-hidden"
           id="main"
+          data-theme="light"
         >
           {/* Background glow */}
           <div

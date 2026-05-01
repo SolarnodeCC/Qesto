@@ -84,7 +84,7 @@ export default function Login() {
     }`
 
   const inputClass =
-    'w-full rounded-lg border border-pulse-300 bg-white dark:bg-pulse-900 dark:border-pulse-700 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+    'w-full rounded-lg border border-pulse-300 bg-white dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8] dark:placeholder:text-[#6B7A99] px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400'
 
   const primaryBtn =
     'w-full rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2'
@@ -93,7 +93,7 @@ export default function Login() {
     <main id="main" className="min-h-screen flex items-center justify-center p-6">
       <section
         aria-labelledby="login-title"
-        className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-8 shadow-sm"
+        className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
       >
         <div className="space-y-1 text-center">
           <h1
@@ -154,7 +154,7 @@ export default function Login() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-pulse-900 p-1" role="tablist">
+        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[#0A0F1E] p-1" role="tablist">
           <button role="tab" aria-selected={tab === 'magic'} className={tabClass(tab === 'magic')} onClick={() => setTab('magic')}>
             {t('magicLinkTab')}
           </button>

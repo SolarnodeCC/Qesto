@@ -77,7 +77,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
 
   return (
-    <div className="fixed inset-0 bg-[#0f1117] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-[#0f1117] flex flex-col overflow-hidden" data-theme="dark">
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'var(--gradient-brand)' }} />
 

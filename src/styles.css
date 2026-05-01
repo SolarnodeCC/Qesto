@@ -84,10 +84,67 @@
   --font-weight-bold: 700;
 }
 
+/* ─── Semantic dark mode tokens ────────────────────────────────────────────── */
+/* Activated by data-theme="dark" on <html> (set by useColorScheme hook).      */
+/* The @media fallback covers the no-JS / pre-hydration frame.                 */
+
+:root {
+  --color-bg:               #FFFFFF;
+  --color-bg-subtle:        #FAFAFA;
+  --color-surface:          #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-surface-overlay:  #FFFFFF;
+  --color-border:           #E5E5E5;
+  --color-border-strong:    #D4D4D4;
+  --text-primary:           #0A0F1E;
+  --text-secondary:         #525252;
+  --text-muted:             #737373;
+  --color-ink:              #0A0F1E;
+  --shadow-card:            0 2px 8px rgba(10,15,30,0.06);
+  --shadow-elevated:        0 8px 24px rgba(10,15,30,0.10);
+  --shadow-teal:            0 4px 20px rgba(20,184,166,0.25);
+  --shadow-ai:              0 4px 20px rgba(139,92,246,0.25);
+  --shadow-focus-ring:      0 0 0 3px rgba(20,184,166,0.4);
+}
+
+[data-theme="dark"] {
+  --color-bg:               #0A0F1E;
+  --color-bg-subtle:        #0F1525;
+  --color-surface:          #151C2E;
+  --color-surface-elevated: #1C2540;
+  --color-surface-overlay:  #212A48;
+  --color-border:           #1E2A45;
+  --color-border-strong:    #2A3858;
+  --text-primary:           #F0F2F8;
+  --text-secondary:         #A8B3CC;
+  --text-muted:             #6B7A99;
+  --color-ink:              #F0F2F8;
+  --shadow-card:            0 0 0 1px rgba(255,255,255,0.06);
+  --shadow-elevated:        0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.07);
+  --shadow-teal:            0 4px 24px rgba(45,212,191,0.35);
+  --shadow-ai:              0 4px 24px rgba(167,139,250,0.40);
+  --shadow-focus-ring:      0 0 0 3px rgba(45,212,191,0.5);
+}
+
+/* No-JS / pre-hydration fallback */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface: #0A0F1E;
-    --color-ink: #FAFAFA;
+  :root:not([data-theme="light"]) {
+    --color-bg:               #0A0F1E;
+    --color-bg-subtle:        #0F1525;
+    --color-surface:          #151C2E;
+    --color-surface-elevated: #1C2540;
+    --color-surface-overlay:  #212A48;
+    --color-border:           #1E2A45;
+    --color-border-strong:    #2A3858;
+    --text-primary:           #F0F2F8;
+    --text-secondary:         #A8B3CC;
+    --text-muted:             #6B7A99;
+    --color-ink:              #F0F2F8;
+    --shadow-card:            0 0 0 1px rgba(255,255,255,0.06);
+    --shadow-elevated:        0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.07);
+    --shadow-teal:            0 4px 24px rgba(45,212,191,0.35);
+    --shadow-ai:              0 4px 24px rgba(167,139,250,0.40);
+    --shadow-focus-ring:      0 0 0 3px rgba(45,212,191,0.5);
   }
 }
 
@@ -278,13 +335,23 @@ html {
   animation: shimmer 1.6s var(--motion-ease-normal) infinite;
 }
 
+[data-theme="dark"] .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #151C2E 25%,
+    #1C2540 50%,
+    #151C2E 75%
+  );
+  background-size: 800px 100%;
+}
+
 @media (prefers-color-scheme: dark) {
-  .skeleton-shimmer {
+  :root:not([data-theme="light"]) .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      var(--color-pulse-800) 25%,
-      var(--color-pulse-700) 50%,
-      var(--color-pulse-800) 75%
+      #151C2E 25%,
+      #1C2540 50%,
+      #151C2E 75%
     );
     background-size: 800px 100%;
   }

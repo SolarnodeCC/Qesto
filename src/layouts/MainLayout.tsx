@@ -6,6 +6,7 @@ import { useT } from '../i18n'
 import JoinBar from '../components/JoinBar'
 import { useAuth } from '../hooks/useAuth'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { useColorScheme } from '../hooks/useColorScheme'
 
 function NavDropdown({ label, links }: { label: string; links: Array<{ label: string; href: string }> }) {
   const location = useLocation()
@@ -65,8 +66,8 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
         type="button"
         className={[
           'flex items-center gap-1 text-sm font-medium rounded px-2 py-1',
-          'hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
-          isActive ? 'text-teal-600' : 'text-pulse-600',
+          'hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2',
+          isActive ? 'text-teal-600 dark:text-teal-400' : 'text-pulse-600 dark:text-[#A8B3CC]',
         ].join(' ')}
         aria-haspopup="true"
         aria-expanded={isOpen}
@@ -82,7 +83,7 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
         id={menuId}
         role="menu"
         className={[
-          'absolute left-0 top-full mt-1 z-50 min-w-[160px] rounded-lg border border-pulse-200 bg-white dark:bg-pulse-900 shadow-elevated py-1',
+          'absolute left-0 top-full mt-1 z-50 min-w-[160px] rounded-lg border border-pulse-200 dark:border-white/8 bg-white dark:bg-[#1C2540] shadow-elevated py-1',
           isOpen ? 'block' : 'hidden',
         ].join(' ')}
       >
@@ -91,7 +92,7 @@ function NavDropdown({ label, links }: { label: string; links: Array<{ label: st
             <Link
               to={link.href}
               role="menuitem"
-              className="block px-4 py-2 text-sm text-pulse-700 dark:text-pulse-200 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="block px-4 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-500/10 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400"
             >
               {link.label}
             </Link>
@@ -136,6 +137,7 @@ export default function MainLayout({
 }: MainLayoutProps) {
   const location = useLocation()
   const auth = useAuth()
+  const { scheme, toggle } = useColorScheme()
   const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 
@@ -167,11 +169,11 @@ export default function MainLayout({
     <>
       <SkipLink />
 
-      <header className="border-b border-pulse-200 bg-[var(--color-surface)]">
+      <header className="border-b border-pulse-200 dark:border-white/7 bg-[var(--color-surface)]">
         <div className="grid-container flex items-center justify-between py-3 px-4 md:px-6">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-base font-extrabold uppercase tracking-widest text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+            className="inline-flex items-center gap-1.5 text-base font-extrabold uppercase tracking-widest text-teal-600 dark:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
           >
             {/* Sparkle mark — DESIGN-POLISH-02 */}
             <svg
@@ -198,7 +200,7 @@ export default function MainLayout({
                   <NavDropdown label={t('nav.useCases')} links={useCaseLinks} />
                   <Link
                     to="/pricing"
-                    className="text-sm font-medium text-pulse-600 hover:text-teal-600 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2"
                   >
                     {t('footer.pricing')}
                   </Link>
@@ -207,6 +209,30 @@ export default function MainLayout({
               {!isMarketingPage && <LanguageSwitcher />}
               {navSlot}
             </nav>
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={scheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="ml-1 flex items-center justify-center w-8 h-8 rounded text-pulse-500 dark:text-[#A8B3CC] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors duration-200"
+            >
+              {scheme === 'dark' ? (
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="4" />
+                  <line x1="12" y1="2" x2="12" y2="6" />
+                  <line x1="12" y1="18" x2="12" y2="22" />
+                  <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
+                  <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
+                  <line x1="2" y1="12" x2="6" y2="12" />
+                  <line x1="18" y1="12" x2="22" y2="12" />
+                  <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
+                  <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
+                </svg>
+              ) : (
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
       </header>
@@ -228,8 +254,8 @@ export default function MainLayout({
       </main>
 
       {!noFooter && (
-        <footer className="border-t border-pulse-200 py-6">
-          <div className="grid-container px-4 md:px-6 text-xs text-pulse-500 flex flex-wrap items-center justify-between gap-2">
+        <footer className="border-t border-pulse-200 dark:border-white/7 py-6">
+          <div className="grid-container px-4 md:px-6 text-xs text-pulse-500 dark:text-[#6B7A99] flex flex-wrap items-center justify-between gap-2">
             <span>
               &copy; {new Date().getFullYear()} Qesto. Edge-first, privacy-by-default.
             </span>
@@ -238,7 +264,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/pricing"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.pricing')}
                   </Link>
@@ -246,7 +272,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/events"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.events')}
                   </Link>
@@ -254,7 +280,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/hr"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.hr')}
                   </Link>
@@ -262,7 +288,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/nonprofit"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.nonprofit')}
                   </Link>
@@ -270,7 +296,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/consulting"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.consulting')}
                   </Link>
@@ -278,7 +304,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/features/ai-insights"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.aiInsights')}
                   </Link>
@@ -286,7 +312,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/features/live-polling"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.livePolling')}
                   </Link>
@@ -294,7 +320,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/features/privacy"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.featurePrivacy')}
                   </Link>
@@ -302,7 +328,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/privacy"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.privacyPolicy')}
                   </Link>
@@ -310,7 +336,7 @@ export default function MainLayout({
                 <li>
                   <Link
                     to="/terms"
-                    className="hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.terms')}
                   </Link>

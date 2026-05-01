@@ -242,7 +242,7 @@ export default function Dashboard() {
         <div
           role="tablist"
           aria-label="Dashboard sections"
-          className="flex gap-1 border-b border-pulse-200 dark:border-pulse-700"
+          className="flex gap-1 border-b border-pulse-200 dark:border-[#1E2A45]"
         >
           {([
             { id: 'sessions', label: t('sessions') },
@@ -262,8 +262,8 @@ export default function Dashboard() {
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
                 'tab-transition',
                 activeTab === id
-                  ? 'border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 text-pulse-900 dark:text-pulse-100'
-                  : 'border-transparent text-pulse-500 dark:text-pulse-400 hover:text-pulse-800 dark:hover:text-pulse-200',
+                  ? 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] text-pulse-900 dark:text-[#F0F2F8]'
+                  : 'border-transparent text-pulse-500 dark:text-[#6B7A99] hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
               ].join(' ')}
             >
               {label}
@@ -327,14 +327,14 @@ export default function Dashboard() {
                           placeholder={t('searchPlaceholder')}
                           value={search}
                           onChange={(e) => setSearch(e.target.value)}
-                          className="w-full rounded-lg border border-pulse-200 bg-white py-2 pl-9 pr-3 text-sm text-pulse-800 placeholder:text-pulse-400 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+                          className="w-full rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] py-2 pl-9 pr-3 text-sm text-pulse-800 dark:text-[#F0F2F8] placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99] focus:outline-none focus:border-teal-400 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
                         />
                       </div>
                       <select
                         aria-label={t('filterByStatus')}
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value as 'all' | 'draft' | 'live')}
-                        className="rounded-lg border border-pulse-200 bg-white px-3 py-2 text-sm text-pulse-800 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200"
+                        className="rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] px-3 py-2 text-sm text-pulse-800 dark:text-[#F0F2F8] focus:outline-none focus:border-teal-400 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
                       >
                         <option value="all">{t('allStatuses')}</option>
                         <option value="draft">{t('draft')}</option>
@@ -347,7 +347,7 @@ export default function Dashboard() {
                     {filtered.length === 0 ? (
                       <p className="text-sm text-pulse-500 py-4 text-center">{t('noMatchingSearch')}</p>
                     ) : (
-                      <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
+                      <ul className="divide-y divide-pulse-200 dark:divide-[#1E2A45] rounded-xl border border-pulse-200 dark:border-[#1E2A45]">
                         {filtered.map((s, i) => (
                           <li
                             key={s.id}
@@ -367,10 +367,10 @@ export default function Dashboard() {
                                   }
                                   className="block group focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
                                 >
-                                  <span className="font-medium text-pulse-800 group-hover:text-teal-600">
+                                  <span className="font-medium text-pulse-800 dark:text-[#F0F2F8] group-hover:text-teal-600 dark:group-hover:text-teal-400">
                                     {s.title}
                                   </span>
-                                  <p className="text-xs text-pulse-500 mt-0.5">
+                                  <p className="text-xs text-pulse-500 dark:text-[#6B7A99] mt-0.5">
                                     code <code className="font-mono text-[0.95em] tracking-wide">{s.code}</code> · {new Date(s.created_at).toLocaleString()}
                                   </p>
                                 </Link>
@@ -379,10 +379,10 @@ export default function Dashboard() {
                                 className={
                                   'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
                                   (s.status === 'draft'
-                                    ? 'bg-pulse-100 text-pulse-700'
+                                    ? 'bg-pulse-100 dark:bg-pulse-800/60 text-pulse-700 dark:text-[#A8B3CC]'
                                     : s.status === 'live'
-                                    ? 'relative bg-teal-100 text-teal-700 font-semibold before:w-1.5 before:h-1.5 before:rounded-full before:bg-teal-500 before:inline-block before:mr-1'
-                                    : 'bg-violet-50 text-violet-700')
+                                    ? 'relative bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 font-semibold before:w-1.5 before:h-1.5 before:rounded-full before:bg-teal-500 before:inline-block before:mr-1'
+                                    : 'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300')
                                 }
                               >
                                 {s.status}
@@ -394,7 +394,7 @@ export default function Dashboard() {
                               {/* Post-session review */}
                               <Link
                                 to={`/sessions/${s.id}/results`}
-                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent px-2.5 py-1 text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 dark:hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 transition-colors"
                               >
                                 {t('postSessionReview')}
                               </Link>
@@ -404,7 +404,7 @@ export default function Dashboard() {
                                 type="button"
                                 disabled={actionLoading[s.id] === 'export'}
                                 onClick={() => handleExportCSV(s.id, s.title)}
-                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent px-2.5 py-1 text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 dark:hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 transition-colors disabled:opacity-50"
                               >
                                 {t('exportExcel')}
                               </button>
@@ -424,7 +424,7 @@ export default function Dashboard() {
                                 type="button"
                                 disabled={!!actionLoading[s.id]}
                                 onClick={() => void handleDuplicate(s.id)}
-                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent px-2.5 py-1 text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 dark:hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 transition-colors disabled:opacity-50"
                               >
                                 {actionLoading[s.id] === 'duplicate' ? t('duplicating') : t('duplicate')}
                               </button>
@@ -434,7 +434,7 @@ export default function Dashboard() {
                                 type="button"
                                 disabled={!!actionLoading[s.id]}
                                 onClick={() => void handleSaveAsTemplate(s.id, s.title)}
-                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 bg-white px-2.5 py-1 text-xs font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent px-2.5 py-1 text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 dark:hover:border-teal-500 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 transition-colors disabled:opacity-50"
                               >
                                 {actionLoading[s.id] === 'template' ? t('saving') : t('template')}
                               </button>
@@ -447,14 +447,14 @@ export default function Dashboard() {
                                     type="button"
                                     disabled={actionLoading[s.id] === 'delete'}
                                     onClick={() => void handleDelete(s.id)}
-                                    className="inline-flex items-center rounded-md border border-red-300 bg-red-50 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
+                                    className="inline-flex items-center rounded-md border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
                                   >
                                     {actionLoading[s.id] === 'delete' ? t('deleting') : t('yes')}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => setConfirmDeleteId(null)}
-                                    className="inline-flex items-center rounded-md border border-pulse-200 bg-white px-2 py-1 text-xs font-medium text-pulse-600 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500 transition-colors"
+                                    className="inline-flex items-center rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent px-2 py-1 text-xs font-medium text-pulse-600 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500 transition-colors"
                                   >
                                     {t('cancel')}
                                   </button>
@@ -464,7 +464,7 @@ export default function Dashboard() {
                                   type="button"
                                   disabled={!!actionLoading[s.id]}
                                   onClick={() => setConfirmDeleteId(s.id)}
-                                  className="inline-flex items-center gap-1 rounded-md border border-red-200 bg-white px-2.5 py-1 text-xs font-medium text-red-600 hover:border-red-400 hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
+                                  className="inline-flex items-center gap-1 rounded-md border border-red-200 dark:border-red-900 bg-white dark:bg-transparent px-2.5 py-1 text-xs font-medium text-red-600 dark:text-red-400 hover:border-red-400 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 transition-colors disabled:opacity-50"
                                 >
                                   {t('delete')}
                                 </button>
@@ -539,7 +539,7 @@ export default function Dashboard() {
                         key={s.id}
                         type="button"
                         onClick={() => void analyzeSession(s.id)}
-                        className="w-full text-left flex items-center justify-between gap-3 p-3 rounded-lg border border-pulse-200 hover:border-teal-400 hover:bg-teal-50 dark:border-pulse-700 dark:hover:border-teal-600 dark:hover:bg-teal-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+                        className="w-full text-left flex items-center justify-between gap-3 p-3 rounded-lg border border-pulse-200 dark:border-[#1E2A45] hover:border-teal-400 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors"
                       >
                         <span className="text-sm font-medium text-pulse-800 dark:text-pulse-200">{s.title}</span>
                         <span className="text-xs text-teal-600 dark:text-teal-400 font-medium flex items-center gap-1">
@@ -589,16 +589,16 @@ export default function Dashboard() {
             ) : teams.length === 0 ? (
               <p className="text-sm text-pulse-500">{t('noTeamsYet')}</p>
             ) : (
-              <ul className="divide-y divide-pulse-200 rounded-xl border border-pulse-200">
+              <ul className="divide-y divide-pulse-200 dark:divide-[#1E2A45] rounded-xl border border-pulse-200 dark:border-[#1E2A45]">
                 {teams.map((team) => (
                   <li key={team.id} className={`flex items-center justify-between gap-4 ${density === 'compact' ? 'p-2' : density === 'spacious' ? 'p-6' : 'p-4'}`}>
                     <div>
-                      <p className="font-medium text-pulse-800">{team.name}</p>
-                      <p className="text-xs text-pulse-400 mt-0.5 capitalize">{team.plan} plan</p>
+                      <p className="font-medium text-pulse-800 dark:text-[#F0F2F8]">{team.name}</p>
+                      <p className="text-xs text-pulse-400 dark:text-[#6B7A99] mt-0.5 capitalize">{team.plan} plan</p>
                     </div>
                     <Link
                       to={`/teams/${team.id}/settings`}
-                      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                      className="text-sm text-teal-600 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                     >
                       Settings →
                     </Link>
@@ -633,11 +633,11 @@ export default function Dashboard() {
                     key={tmpl.id}
                     type="button"
                     onClick={() => setModal({ open: true, template: tmpl })}
-                    className="text-left p-4 rounded-xl border border-pulse-200 hover:border-teal-300 hover:bg-teal-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+                    className="text-left p-4 rounded-xl border border-pulse-200 dark:border-[#1E2A45] dark:bg-[#151C2E] hover:border-teal-300 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors"
                   >
-                    <h3 className="font-medium text-pulse-900">{tmpl.name}</h3>
-                    <p className="text-sm text-pulse-500 mt-1">{tmpl.description}</p>
-                    <p className="text-xs text-pulse-400 mt-2">{tmpl.questions.length} questions</p>
+                    <h3 className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{tmpl.name}</h3>
+                    <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] mt-1">{tmpl.description}</p>
+                    <p className="text-xs text-pulse-400 dark:text-[#6B7A99] mt-2">{tmpl.questions.length} questions</p>
                   </button>
                 ))}
               </div>
@@ -653,18 +653,18 @@ export default function Dashboard() {
             aria-labelledby="modal-title"
             aria-modal="true"
           >
-            <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 animate-page-enter space-y-4">
-              <h2 id="modal-title" className="text-xl font-semibold">
+            <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl dark:shadow-[0_24px_64px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.08)] max-w-sm w-full p-6 animate-page-enter space-y-4">
+              <h2 id="modal-title" className="text-xl font-semibold dark:text-[#F0F2F8]">
                 {t('createFromTemplate', { name: modal.template.name })}
               </h2>
-              <p className="text-sm text-pulse-600">{modal.template.description}</p>
+              <p className="text-sm text-pulse-600 dark:text-[#A8B3CC]">{modal.template.description}</p>
               {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
                   onClick={() => setModal({ open: false, template: null })}
                   disabled={creatingFromTemplate}
-                  className="px-4 py-2 rounded-lg border border-pulse-300 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                 >
                   {t('cancel')}
                 </button>
@@ -732,7 +732,7 @@ function DensitySwitcher({ density, onChange }: { density: Density; onChange: (d
     <div
       role="group"
       aria-label="List density"
-      className="flex rounded-md border border-pulse-200 dark:border-pulse-700 overflow-hidden"
+      className="flex rounded-md border border-pulse-200 dark:border-[#1E2A45] overflow-hidden"
     >
       {options.map((opt) => (
         <button
