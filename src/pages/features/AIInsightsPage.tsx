@@ -39,17 +39,17 @@ export default function AIInsightsPage() {
       />
 
       {/* Hero */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
               <div
-                className="text-xs font-bold tracking-widest uppercase text-violet-700 mb-3 inline-flex items-center gap-1.5"
+                className="text-xs font-bold tracking-widest uppercase text-violet-700 dark:text-violet-400 mb-3 inline-flex items-center gap-1.5"
               >
                 <Sparkles size={12} />
                 AI Insights
               </div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 See what your audience is{' '}
                 <span
                   className="bg-clip-text text-transparent"
@@ -58,7 +58,7 @@ export default function AIInsightsPage() {
                   thinking, in real time.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
                 Ask an open question. Get themes in seconds — each one backed by real responses from your room.
                 Understand what people actually think without reading every answer, so you can adapt while the
                 moment still matters.
@@ -67,24 +67,24 @@ export default function AIInsightsPage() {
                 <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
                   See a sample recap
                 </Link>
-                <Link to="/features/privacy" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                <Link to="/features/privacy" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                   How we handle AI data
                 </Link>
               </div>
             </div>
 
             {/* AI shot card */}
-            <div className="bg-white rounded-[20px] p-7" style={shadowElevated}>
+            <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-7" style={shadowElevated}>
               <div className="flex justify-between items-center mb-4">
                 <div
-                  className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-violet-700 bg-violet-50 px-2.5 py-1 rounded"
+                  className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-violet-700 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/12 px-2.5 py-1 rounded"
                 >
                   <Sparkles size={12} />
                   AI-generated
                 </div>
-                <span className="text-[12px] text-pulse-400" style={monoFont}>Generated in 11.4s · 142 responses</span>
+                <span className="text-[12px] text-pulse-400 dark:text-[#6B7A99]" style={monoFont}>Generated in 11.4s · 142 responses</span>
               </div>
-              <h3 className="font-bold text-[20px] tracking-tight mb-4 text-pulse-900" style={displayFont}>
+              <h3 className="font-bold text-[20px] tracking-tight mb-4 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 What's blocking your team this quarter?
               </h3>
               <div className="space-y-2.5">
@@ -95,12 +95,12 @@ export default function AIInsightsPage() {
                     style={{ borderLeft: '3px solid #7C3AED', background: '#F5F3FF' }}
                   >
                     <div className="flex justify-between items-center mb-1">
-                      <strong className="text-[14.5px] font-semibold text-pulse-900">{title}</strong>
-                      <span className="text-[11px] font-semibold text-violet-700" style={monoFont}>
+                      <strong className="text-[14.5px] font-semibold text-pulse-900 dark:text-[#F0F2F8]">{title}</strong>
+                      <span className="text-[11px] font-semibold text-violet-700 dark:text-violet-400" style={monoFont}>
                         {count} evidence
                       </span>
                     </div>
-                    <p className="text-[13px] text-pulse-500 leading-snug italic">{quote}</p>
+                    <p className="text-[13px] text-pulse-500 dark:text-[#6B7A99] leading-snug italic">{quote}</p>
                   </div>
                 ))}
               </div>
@@ -110,12 +110,12 @@ export default function AIInsightsPage() {
       </section>
 
       {/* Three jobs */}
-      <section className="py-16 bg-pulse-50">
+      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
-          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Three things it does for you. Three it won't do.
           </h2>
-          <p className="text-pulse-500 mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
             The AI helps you read the room faster — it doesn't interpret the room for you. You stay in control.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -139,17 +139,17 @@ export default function AIInsightsPage() {
                 code: ['// missed', '→ "compensation fairness" (14 ev)', '→ host-only'],
               },
             ].map(({ icon, title, desc, code }) => (
-              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
-                <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center mb-4">
+              <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
+                <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>
-                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500 mb-3">{desc}</p>
-                <div className="bg-pulse-50 rounded-lg p-3 text-[11.5px] text-pulse-900 leading-relaxed" style={monoFont}>
+                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#6B7A99] mb-3">{desc}</p>
+                <div className="bg-pulse-50 dark:bg-[#0F1525] rounded-lg p-3 text-[11.5px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed" style={monoFont}>
                   {code.map((line, i) => (
                     <div key={i}>
                       {line.startsWith('//') ? (
-                        <span className="text-violet-700">{line}</span>
+                        <span className="text-violet-700 dark:text-violet-400">{line}</span>
                       ) : (
                         line
                       )}
@@ -163,22 +163,22 @@ export default function AIInsightsPage() {
       </section>
 
       {/* Disclosure */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="bg-violet-50 rounded-[20px] p-10 grid gap-5" style={{ gridTemplateColumns: '48px 1fr' }}>
-            <div className="w-12 h-12 bg-violet-100 text-violet-700 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="bg-violet-50 dark:bg-violet-500/12 rounded-[20px] p-10 grid gap-5" style={{ gridTemplateColumns: '48px 1fr' }}>
+            <div className="w-12 h-12 bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400 rounded-xl flex items-center justify-center flex-shrink-0">
               <Sparkles size={24} />
             </div>
             <div>
-              <h2 className="font-bold text-[26px] tracking-tight mb-2.5 text-pulse-900" style={displayFont}>
+              <h2 className="font-bold text-[26px] tracking-tight mb-2.5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 The AI disclosure rules we actually follow.
               </h2>
-              <p className="text-[15.5px] leading-relaxed text-pulse-800 mb-3.5">
+              <p className="text-[15.5px] leading-relaxed text-pulse-800 dark:text-[#A8B3CC] mb-3.5">
                 Anything produced by a model carries the AI badge. No exceptions — not even the summary line in an
                 email. Participants see when they're reading AI output. Hosts can edit it; the badge persists on the
                 edited version.
               </p>
-              <ul className="space-y-2 text-sm text-pulse-600 list-disc pl-5">
+              <ul className="space-y-2 text-sm text-pulse-600 dark:text-[#A8B3CC] list-disc pl-5">
                 <li>AI-generated content is always labeled with the sparkles glyph and violet accent.</li>
                 <li>Every cluster and sentence links back to the raw tally or quote that produced it.</li>
                 <li>Host edits are tracked — the recap PDF shows "AI draft + 3 edits by M. Holloway."</li>
@@ -222,10 +222,10 @@ export default function AIInsightsPage() {
       </section>
 
       {/* Privacy */}
-      <section className="py-16 bg-pulse-50">
+      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Your responses stay private</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Your responses stay private</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             What your room shares, stays in your room.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -246,12 +246,12 @@ export default function AIInsightsPage() {
                 desc: 'All analysis data lives with the session. When you remove a session, everything that was generated goes with it.',
               },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="bg-white rounded-2xl p-7" style={shadowCard}>
-                <div className="w-12 h-12 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center mb-4">
+              <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
+                <div className="w-12 h-12 rounded-xl bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>
-                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500">{desc}</p>
+                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#6B7A99]">{desc}</p>
               </div>
             ))}
           </div>

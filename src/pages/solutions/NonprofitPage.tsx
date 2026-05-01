@@ -35,20 +35,20 @@ export default function NonprofitPage() {
       />
 
       {/* Hero */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
-              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">
                 Qesto for Nonprofit Boards
               </div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Motions on the record.{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
                   Minutes before the meeting ends.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
                 Roll-call votes, secret ballots, and chair-called polls — run inside your board meeting, exported as
                 the minutes themselves. Identity logged where bylaws require it; anonymized where they don't.
               </p>
@@ -56,7 +56,7 @@ export default function NonprofitPage() {
                 <Link to="/pricing" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
                   Book a board demo
                 </Link>
-                <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                   See exported minutes
                 </Link>
                 <span className="text-xs text-pulse-500" style={monoFont}>
@@ -67,16 +67,16 @@ export default function NonprofitPage() {
 
             {/* Minutes mockup */}
             <div
-              className="bg-white rounded-[20px] p-8 relative"
+              className="bg-white dark:bg-[#1C2540] rounded-[20px] p-8 relative"
               style={{ ...shadowElevated, fontFamily: 'var(--font-family-mono)', fontSize: 13, lineHeight: 1.8, color: '#262626' }}
             >
               <div
-                className="absolute top-3 right-4 text-[11px] font-bold uppercase tracking-widest text-pulse-400"
+                className="absolute top-3 right-4 text-[11px] font-bold uppercase tracking-widest text-pulse-400 dark:text-[#6B7A99]"
                 style={{ fontFamily: 'var(--font-family-body)' }}
               >
                 Minutes · 2026-03-14
               </div>
-              <div className="font-bold text-[20px] mb-4 text-pulse-900 tracking-tight" style={{ fontFamily: 'var(--font-family-display)' }}>
+              <div className="font-bold text-[20px] mb-4 text-pulse-900 dark:text-[#F0F2F8] tracking-tight" style={{ fontFamily: 'var(--font-family-display)' }}>
                 Q1 Board Meeting
               </div>
               <div>ATTENDANCE: 9 of 11 directors present (quorum met).</div>
@@ -112,7 +112,7 @@ export default function NonprofitPage() {
                 <strong className="text-teal-700 ml-1">1</strong> · Abstain:{' '}
                 <strong className="text-teal-700 ml-1">0</strong>
               </div>
-              <div className="mt-5 pt-3.5 border-t border-pulse-200 flex justify-between text-[11px] text-pulse-500" style={{ fontFamily: 'var(--font-family-body)' }}>
+              <div className="mt-5 pt-3.5 border-t border-pulse-200 dark:border-[#1E2A45] flex justify-between text-[11px] text-pulse-500 dark:text-[#6B7A99]" style={{ fontFamily: 'var(--font-family-body)' }}>
                 <span>Signed: M. Holloway, Secretary</span>
                 <span>Qesto session QSTO-8H3P</span>
               </div>
@@ -122,13 +122,13 @@ export default function NonprofitPage() {
       </section>
 
       {/* Steps */}
-      <section className="py-16 bg-pulse-50">
+      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">How a motion moves</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">How a motion moves</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Four steps from "any objections?" to signed minutes.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-pulse-200 bg-white rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-pulse-200 dark:divide-[#1E2A45] bg-white dark:bg-[#151C2E] rounded-2xl overflow-hidden">
             {[
               { num: '01', title: 'Chair calls the vote', desc: 'Pick the motion from the agenda, set identified or secret, and launch. Every director\'s device lights up.' },
               { num: '02', title: 'Directors cast', desc: 'For, against, abstain. Quorum tracked live. Proxy votes pre-loaded against the director\'s name.' },
@@ -136,9 +136,9 @@ export default function NonprofitPage() {
               { num: '04', title: 'Minutes exported', desc: 'Signed PDF with every motion, tally, and consent log. Sent to the secretary before adjournment.' },
             ].map(({ num, title, desc }) => (
               <div key={num} className="p-7">
-                <div className="text-teal-700 font-semibold text-[12px] mb-2.5" style={monoFont}>Step {num}</div>
-                <h3 className="font-semibold text-[17px] mb-2 text-pulse-900">{title}</h3>
-                <p className="text-[13.5px] text-pulse-500 leading-relaxed">{desc}</p>
+                <div className="text-teal-700 dark:text-teal-400 font-semibold text-[12px] mb-2.5" style={monoFont}>Step {num}</div>
+                <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
+                <p className="text-[13.5px] text-pulse-500 dark:text-[#6B7A99] leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -146,20 +146,20 @@ export default function NonprofitPage() {
       </section>
 
       {/* Checklist */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">What you get on every meeting</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">What you get on every meeting</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             A governance tool, not a polling gimmick.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 gap-x-8">
             {checklist.map(({ title, desc }) => (
               <div key={title} className="flex gap-3 items-start">
-                <span className="text-teal-600 flex-shrink-0 mt-0.5">
+                <span className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5">
                   <CheckCircle size={18} />
                 </span>
-                <span className="text-sm text-pulse-600">
-                  <strong className="text-pulse-900 font-semibold">{title}</strong> {desc}
+                <span className="text-sm text-pulse-600 dark:text-[#A8B3CC]">
+                  <strong className="text-pulse-900 dark:text-[#F0F2F8] font-semibold">{title}</strong> {desc}
                 </span>
               </div>
             ))}
@@ -168,28 +168,28 @@ export default function NonprofitPage() {
       </section>
 
       {/* Quote */}
-      <section className="py-16 bg-pulse-50">
+      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <blockquote className="max-w-3xl mx-auto text-center">
-            <p className="text-[20px] leading-relaxed text-pulse-900 mb-6 italic">
+            <p className="text-[20px] leading-relaxed text-pulse-900 dark:text-[#F0F2F8] mb-6 italic">
               "Our board meetings used to run 40 minutes long because the secretary was transcribing. Now we adjourn
               on time, and the minutes are in my inbox before I reach the elevator."
             </p>
-            <footer className="text-sm text-pulse-500">
-              <strong className="text-pulse-900">Teodora Marin</strong> · Board Chair, regional arts foundation
+            <footer className="text-sm text-pulse-500 dark:text-[#6B7A99]">
+              <strong className="text-pulse-900 dark:text-[#F0F2F8]">Teodora Marin</strong> · Board Chair, regional arts foundation
             </footer>
           </blockquote>
         </div>
       </section>
 
       {/* Nonprofit pricing */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Pricing for nonprofits</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-4 text-pulse-900" style={displayFont}>
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Pricing for nonprofits</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-4 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Chorus at 40% off. Because mission-first means budget-second.
           </h2>
-          <p className="text-pulse-500 mb-6 text-lg leading-relaxed max-w-3xl">
+          <p className="text-pulse-500 dark:text-[#6B7A99] mb-6 text-lg leading-relaxed max-w-3xl">
             Registered 501(c)(3), UK charity, and EU nonprofit entities get Chorus pricing discounted across SSO,
             custom retention, and bylaw-templated motions. No seat caps.
           </p>
@@ -197,7 +197,7 @@ export default function NonprofitPage() {
             <Link to="/pricing" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
               Apply for nonprofit pricing
             </Link>
-            <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5'}>
+            <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
               See full plan matrix
             </Link>
           </div>

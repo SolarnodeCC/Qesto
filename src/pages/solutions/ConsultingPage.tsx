@@ -103,13 +103,13 @@ export default function ConsultingPage() {
       </section>
 
       {/* Workflow */}
-      <section className="py-16 bg-pulse-50">
+      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Engagement loop</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900" style={displayFont}>
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Engagement loop</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Discover. Workshop. Readout. Repeat.
           </h2>
-          <p className="text-pulse-500 mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
             Qesto sits across the three moments of a consulting engagement where your clients expect evidence —
             and where you'd usually burn a week synthesizing.
           </p>
@@ -134,14 +134,14 @@ export default function ConsultingPage() {
                 output: "Output: signed recap, in the sponsor's inbox by dinner.",
               },
             ].map(({ phase, title, desc, output }) => (
-              <div key={phase} className="bg-white rounded-2xl p-7" style={shadowCard}>
-                <div className="text-[11px] font-bold uppercase tracking-widest text-pulse-500 mb-2.5">{phase}</div>
-                <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900">{title}</h3>
-                <p className="text-sm text-pulse-500 leading-relaxed mb-4">{desc}</p>
-                <div className="border-t border-dashed border-pulse-200 pt-3.5 flex items-start gap-2 text-[13px] text-pulse-500">
-                  <ArrowRight size={16} className="text-teal-600 flex-shrink-0 mt-0.5" />
+              <div key={phase} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
+                <div className="text-[11px] font-bold uppercase tracking-widest text-pulse-500 dark:text-[#6B7A99] mb-2.5">{phase}</div>
+                <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
+                <p className="text-sm text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-4">{desc}</p>
+                <div className="border-t border-dashed border-pulse-200 dark:border-[#1E2A45] pt-3.5 flex items-start gap-2 text-[13px] text-pulse-500 dark:text-[#6B7A99]">
+                  <ArrowRight size={16} className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5" />
                   <span>
-                    <strong className="text-teal-700">{output.split(':')[0]}:</strong>
+                    <strong className="text-teal-700 dark:text-teal-400">{output.split(':')[0]}:</strong>
                     {output.split(':')[1]}
                   </span>
                 </div>
@@ -152,23 +152,23 @@ export default function ConsultingPage() {
       </section>
 
       {/* White-label stack */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">Your firm on Qesto</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900" style={displayFont}>
+          <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Your firm on Qesto</div>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             White-label the room. Keep your brand on the deliverable.
           </h2>
-          <div className="rounded-2xl overflow-hidden border border-pulse-200 divide-y divide-pulse-200">
+          <div className="rounded-2xl overflow-hidden border border-pulse-200 dark:border-[#1E2A45] divide-y divide-pulse-200 dark:divide-[#1E2A45]">
             {whitelabel.map(({ key, value, sub }) => (
               <div
                 key={key}
-                className="bg-white px-6 py-5 grid gap-6 items-start"
+                className="bg-white dark:bg-[#151C2E] px-6 py-5 grid gap-6 items-start"
                 style={{ gridTemplateColumns: '160px 1fr' }}
               >
-                <span className="text-[11px] font-bold uppercase tracking-widest text-teal-700 pt-0.5">{key}</span>
-                <span className="text-[15px] text-pulse-900 leading-relaxed">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 pt-0.5">{key}</span>
+                <span className="text-[15px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed">
                   {value}
-                  <span className="block mt-1 text-[13.5px] text-pulse-500">{sub}</span>
+                  <span className="block mt-1 text-[13.5px] text-pulse-500 dark:text-[#6B7A99]">{sub}</span>
                 </span>
               </div>
             ))}
@@ -177,15 +177,15 @@ export default function ConsultingPage() {
       </section>
 
       {/* Quote */}
-      <section className="py-16 bg-pulse-50">
+      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <blockquote className="max-w-3xl mx-auto text-center">
-            <p className="text-[20px] leading-relaxed text-pulse-900 mb-6 italic">
+            <p className="text-[20px] leading-relaxed text-pulse-900 dark:text-[#F0F2F8] mb-6 italic">
               "We used to lose three days per engagement on synthesis. Now the readout is drafted before the workshop
               ends — we spend that time on the recommendation, not the slide."
             </p>
-            <footer className="text-sm text-pulse-500">
-              <strong className="text-pulse-900">Marcus Viljoen</strong> · Partner, boutique strategy firm
+            <footer className="text-sm text-pulse-500 dark:text-[#6B7A99]">
+              <strong className="text-pulse-900 dark:text-[#F0F2F8]">Marcus Viljoen</strong> · Partner, boutique strategy firm
             </footer>
           </blockquote>
         </div>
