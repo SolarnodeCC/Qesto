@@ -33,14 +33,36 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 - **RBAC depth (custom roles)**: Cross-cuts auth middleware; needs dedicated 2-sprint epic + permissions ADR. Defer to S20–S21. Note: ENT-02 (base 5-role model) remains on Sprint 3 reference arc.
 - **GAM-01 (Energizer in LIVE session)**: Requires DO state machine + `ClientMessage`/`ServerMessage` protocol extension + versioning ADR not yet written. Defer to S21+.
 
-**Sprint 18 Prerequisite Additions** (must land by 2026-05-13 for S19 to unblock; added to S18 scope):
+**Sprint 18 Scope Revision v1** (Prerequisite Additions for S19 unblocking)
 
-1. **D1 Migrations**: `sessions.ai_generated`, `sessions.ai_consent_at`, `sessions.ai_grounding_hash`, `questions.kind` extended, `insights_daily` table (conditional for DX-INSIGHTS-02)
-2. **DRAFT-API Routes**: `POST /sessions/:id/ai/generate` (SSE streaming), `POST /sessions/:id/ai/refine`, `GET /sessions/:id/preflight`, `GET /sessions/:id/insights/themes`
-3. **KV Schema**: `SESSIONS_KV` adds `aiMeta` field; `USERS_KV` adds `prefs.density`
-4. **ADRs**: AI streaming transport (SSE vs chunked JSON); pre-flight validation contract
+**Decision Date**: 2026-04-23 | **Decision Maker**: Product Owner + Architect | **Status**: ✅ Delivered 2026-04-30
 
-See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for detailed prerequisites.
+**Scope Addition**: Required for Sprint 19 to launch on 2026-04-30; formally added to Sprint 18 scope per WSJF prioritization and capacity buffer analysis (BACKLOG.md §OBS-01 scope change decision tree).
+
+**Items**:
+
+1. **D1 Migrations**: 
+   - `sessions.ai_generated` (INTEGER, 0/1 flag) — provenance for AIBadge
+   - `sessions.ai_consent_at` (INTEGER, epoch ms) — GDPR audit trail for AI generation
+   - `sessions.ai_grounding_hash` (TEXT) — deterministic hash of generation context for refine round-trips
+   - `questions.kind` widened to include `'wordcloud'` (if not present)
+   - `insights_daily` table (session_id, day, themes_json, confidence, n_votes) — conditional for DX-INSIGHTS-02
+
+2. **DRAFT-API Routes**: 
+   - `POST /sessions/:id/ai/generate` (streaming SSE, Workers AI) — chunked QuestionsSkeletons, closes with full JSON
+   - `POST /sessions/:id/ai/refine` (idempotent on `grounding_hash`) — reuses prior grounding, avoids re-billing
+   - `GET /sessions/:id/preflight` — invariant checks; single source of truth for DO entry-gate validation
+   - `GET /sessions/:id/insights/themes?window=30d` — `insights_daily` slice (conditional)
+
+3. **KV Schema Updates** (no migration, contract freeze):
+   - `SESSIONS_KV` DRAFT shape: add `aiMeta: { consentAt, grounding, model, promptVersion }`
+   - `USERS_KV` add `prefs.density: 'compact'|'comfortable'|'spacious'`
+
+4. **ADRs**:
+   - ADR-0002: AI streaming transport (SSE vs chunked JSON) — delivered commit 10ee51b
+   - ADR-0003: Pre-flight contract (worker vs. DO invariant checks) — delivered commit 10ee51b
+
+**Delivery Confirmation**: All items landed in commit 2452e67 (2026-04-30) and subsequent bug-fix commits. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for detailed prerequisites and implementation evidence.
 
 ---
 
@@ -920,7 +942,7 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 
 ## OBS-01: Observability Instrumentation (WebSocket Capacity, AI Inference, API Errors)
 
-**Size**: 5 pts | **Sprint**: 18 (mid-sprint P1 enabler) | **Priority**: P1 | **Status**: Pending
+**Size**: 5 pts | **Sprint**: 18 (mid-sprint P1 enabler) | **Priority**: P1 | **Status**: ✅ Completed 2026-04-24
 
 **Story**: As an analytics operator, I need complete observability for realtime platform health, so I can measure engagement, performance bottlenecks, and error signals that block the north-star metric.
 
@@ -975,7 +997,13 @@ Decision tree (from product-owner.md Wave 2):
 4. **Team capacity check**: Sprint 18 currently ~55 pts committed; estimate remaining capacity ~30 pts (typical 85–95% utilization rule). This story = 5 pts; well within buffer.
 5. **WSJF score vs. sprint minimum**: This is a P1 enabler (high business value: platform observability). Current sprint minimum is ~5 pts. ACCEPT.
 
-**Acceptance Decision**: **ACCEPT into Sprint 18**
+**Acceptance Decision**: **ACCEPT into Sprint 18** (2026-04-24, 15:22 UTC)
+
+**Delivery Evidence**: 
+- Commit `e7aa3ac` (2026-04-24 16:43 UTC): "Implement application event instrumentation for Analytics Engine" — writeEvent() helper + 3 critical events (signup, session.started, session.closed)
+- Commit `a2bb6bc` (2026-04-24 17:22 UTC): "Short-term + medium-term Wave 2 activation: instrumentation + skill cold-starts" — remaining events (error.api, ai.inference, ws.capacity_exceeded)
+- Tests: `npx vitest run tests/unit/` — all observability tests pass (verified via CI green)
+- Analytics Engine fully instrumented for north-star metric baseline
 
 **Descope Plan**: None required (within capacity buffer). If capacity reduces mid-sprint due to blockers, defer lower-priority items from Sprint 18 (e.g., deferred `DX-INSIGHTS-01` if DESIGN-TOK-01 slips >2 days per SPRINT_PLAN.md risk mitigation).
 
