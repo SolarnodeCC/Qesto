@@ -39,20 +39,20 @@ export default function ConsultingPage() {
       />
 
       {/* Hero */}
-      <section className="py-16 md:py-20 bg-white">
+      <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
-              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">
                 Qesto for Consulting
               </div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Workshops that ship{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
                   evidence, not vibes.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
                 Run client discovery, strategy offsites, and change-management sessions where every conclusion is
                 backed by a tally. The slide deck writes itself — and it quotes the room, not your intern.
               </p>
@@ -60,14 +60,14 @@ export default function ConsultingPage() {
                 <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
                   Run a pilot engagement
                 </Link>
-                <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5'}>
+                <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                   See a sample readout
                 </Link>
               </div>
             </div>
 
             {/* Deliverable card */}
-            <div className="bg-white rounded-[20px] overflow-hidden" style={shadowElevated}>
+            <div className="bg-white dark:bg-[#1C2540] rounded-[20px] overflow-hidden" style={shadowElevated}>
               <div className="bg-pulse-900 text-white px-6 py-5 flex justify-between items-center">
                 <span className="font-bold text-[18px] tracking-tight" style={displayFont}>
                   Client readout — Acme Industries
@@ -82,17 +82,17 @@ export default function ConsultingPage() {
                     style={{ borderLeft: '3px solid #7C3AED', background: '#F5F3FF' }}
                   >
                     <div className="flex justify-between items-center mb-1.5">
-                      <strong className="text-[15px] font-semibold text-pulse-900">{title}</strong>
-                      <span className="text-[12px] font-semibold text-violet-700" style={monoFont}>
+                      <strong className="text-[15px] font-semibold text-pulse-900 dark:text-[#F0F2F8]">{title}</strong>
+                      <span className="text-[12px] font-semibold text-violet-700 dark:text-violet-400" style={monoFont}>
                         {evidence} evidence
                       </span>
                     </div>
-                    <p className="text-[13.5px] text-pulse-500 leading-snug italic">{quote}</p>
+                    <p className="text-[13.5px] text-pulse-500 dark:text-[#6B7A99] leading-snug italic">{quote}</p>
                   </div>
                 ))}
               </div>
               <div
-                className="px-6 py-3.5 bg-pulse-50 border-t border-pulse-200 flex justify-between text-[12px] text-pulse-500"
+                className="px-6 py-3.5 bg-pulse-50 dark:bg-[#0F1525] border-t border-pulse-200 dark:border-[#1E2A45] flex justify-between text-[12px] text-pulse-500 dark:text-[#6B7A99]"
               >
                 <span>Evidence-anchored · Session QSTO-5R8K</span>
                 <span>Generated 14:42</span>
