@@ -7,7 +7,7 @@ Use this checklist before merging any update to solution, feature, use-case, pri
 - Follows `docs/BRAND_VOICE.md` (practical, evidence-first, no hype words).
 - Uses page-specific language for audience and context.
 - Avoids filler claims like "best-in-class", "revolutionary", "seamless".
-- Any AI claim is anchored to Workers AI / Cloudflare edge in the same section.
+- Any AI claim focuses on business value and privacy (analysis stays private, responses never shared with third parties).
 
 ## 2) Content structure
 

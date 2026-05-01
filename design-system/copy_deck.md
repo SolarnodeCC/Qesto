@@ -1,6 +1,6 @@
 # Qesto copy deck
 
-Canonical sentences for every Qesto surface. Paste directly. Every line here follows the content rules in `README.md` — sentence case, no exclamation points, AI claims always anchored to Workers AI / Cloudflare's edge.
+Canonical sentences for every Qesto surface. Paste directly. Every line here follows the content rules in `README.md` — sentence case, no exclamation points, AI claims focused on business value and privacy.
 
 If you need a variant, **edit minimally**. If the variant breaks a rule (e.g. drops the AI anchor), it doesn't ship.
 
@@ -19,8 +19,8 @@ Alternates (same promise, different angle):
 
 ## 2. Hero subheadlines (≤30 words)
 
-- Live polling, ranked Q&A, and consent votes with Workers AI drafting questions and summarising evidence — all on Cloudflare's edge, inside the same network as your session.
-- Draft in a minute, vote in a tap, recap the same day. Workers AI runs on Cloudflare's edge — never on third-party providers.
+- Live polling, ranked Q&A, and consent votes with AI drafting questions and summarising evidence — all private, never shared with third-party providers.
+- Draft in a minute, vote in a tap, recap the same day. Your responses stay private and never reach third-party providers.
 - Every vote, consent round, and AI summary logged against the participants who were actually there.
 
 ## 3. CTAs (verb-first, page-specific)
@@ -29,7 +29,7 @@ Primary:
 - Launch your next session.
 - Start your first pulse.
 - Run a consent round.
-- Draft with Workers AI.
+- Draft your questions.
 - Open present mode.
 
 Secondary:
@@ -51,7 +51,7 @@ Ghost:
 - AI-drafted questions in &lt;90s.
 - Live results for every participant.
 - Full, cohort, or identified anonymity — you choose per session.
-- Edge inference. No third-party model providers.
+- Responses stay private, always.
 - Consent rounds before any recap leaves the room.
 - Same-day summaries, anchored to ranked evidence.
 
@@ -59,10 +59,10 @@ Ghost:
 
 | Value | Label | Note |
 |---|---|---|
-| &lt;90s | Brief to draft | Target · Workers AI on Cloudflare's edge |
-| &lt;200ms | Result update latency | p95 · measured at the edge |
+| &lt;90s | Brief to draft | Target · private AI analysis |
+| &lt;200ms | Result update latency | p95 · real-time for all participants |
 | 96% | Consent rate | Rolling · last 12 sessions · illustrative |
-| 0 | Third-party model calls | Inference stays inside your Cloudflare network |
+| 0 | Third-party model calls | All analysis stays private |
 
 ## 6. Empty-state copy
 
@@ -84,11 +84,11 @@ Ghost:
 **Consent declined (participant view)**
 > You're joining as a listener. You'll see results, but your device won't appear in the vote totals or the AI recap.
 
-**Workers AI unavailable**
-> Edge inference is paused. Your session continues as normal — polls, ranking, and the consent log are unaffected. The AI recap will draft when inference resumes.
+**AI analysis unavailable**
+> AI recap is temporarily paused. Your session continues as normal — polls, ranking, and the consent log are unaffected. The recap will draft when analysis resumes.
 
 **No AI recap yet (session closed)**
-> The recap is drafting on the edge now. This usually takes under a minute on Workers AI. We'll notify you when it's ready to review.
+> The recap is drafting now. This usually takes under a minute. We'll notify you when it's ready to review.
 
 ## 7. Error states
 
@@ -109,11 +109,11 @@ Ghost:
 
 ## 8. AI-disclosure patterns (pick one per surface)
 
-- Workers AI on Cloudflare's edge
-- Anchored to ranked evidence · edge inference
-- Drafted on Cloudflare · no third-party model providers
-- Inference stays inside the same network as your session
+- Private AI analysis · you edit before it ships
+- Drafted from your responses · never shared with third parties
+- Analysis stays within your session
 - Same-day recap · you edit, then send
+- Private synthesis · no third-party model calls
 
 Never use: "AI-powered", "powered by artificial intelligence", "our AI", "the AI thinks".
 
@@ -136,7 +136,7 @@ Transition lines (between steps):
 > CTA: `Open consent round`
 
 **Participant prompt**
-> Do you consent to an AI-drafted recap of this session? Workers AI runs on Cloudflare's edge and won't send your responses to a third-party model.
+> Do you consent to an AI-drafted recap of this session? Your responses will be analysed privately and never shared with third-party providers.
 > Options: `Yes, include my vote` · `No, I decline` · `Ask me again at the close`
 
 **Consent result (mixed)**
@@ -150,10 +150,10 @@ Transition lines (between steps):
 
 ## 12. Footer legal (reusable)
 
-> © 2026 Qesto · Built on Cloudflare Workers · qesto.cc
+> © 2026 Qesto · qesto.cc
 
 Privacy footnote:
-> Workers AI runs inference inside Cloudflare's network. Your responses never reach a third-party model provider. Read the consent model.
+> All analysis stays private — your responses never reach third-party providers. Read the consent model.
 
 ---
 
