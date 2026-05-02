@@ -8,6 +8,7 @@ _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
 _Sprint 20 Planned (2026-05-27 to 2026-06-10) — readiness, entitlement enforcement, observability, and Sprint 19 KPI measurement; see SPRINT_PLAN.md §Sprint 20_
 _Website Design Wave added: 2026-04-19 — see §12_
+_**Sprint 20 scope expansion**: 2026-05-01 — Sprint 19 shipped early; AUTHZ-ADR-01 pulled in as committed (was stretch); Sprint A verification bundle added; total committed scope raised from 34 to 45 pts. See SPRINT_PLAN.md §Sprint 20 for updated table._
 _**Planning context**: Repository ships v2.x; backlog items are regression contracts + hardening work. Agent review completed 2026-05-01; Sprint 19 implementation is complete; Sprint 20 starts the next five-calendar-sprint plan._
 
 ## Overview
@@ -67,15 +68,29 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 
 ### Sprint 20 Planning (2026-05-27 to 2026-06-10)
 
-**Status**: Planned on 2026-04-30 after agent-assisted product and engineering review. Sprint 20 is a readiness/enforcement sprint, not a broad feature-expansion sprint.
+**Status**: Planned on 2026-04-30; **scope expanded 2026-05-01** — Sprint 19 shipped early, creating extra velocity. AUTHZ-ADR-01 pulled forward from stretch to committed. Sprint A design/i18n verification bundle added. Sprint 20 remains a readiness/enforcement sprint, not a broad feature-expansion sprint.
 
-**Committed items** (34 pts): ✅ ENTITLEMENTS-01, ENTITLEMENTS-02 (in progress), OBS-02, ✅ QA-DOCDRIFT-01, ✅ DESIGN-GATE-01, S19-MEASURE-01
+**Committed items** (45 pts):
 
-**Sprint goal**: Harden v2.1 by proving plan entitlements are enforced server-side, capturing Sprint 19 KPI and operational evidence, and aligning local/CI quality gates.
+| Item | Pts | Status |
+|---|---:|---|
+| ENTITLEMENTS-01: Pricing claim → backend gate matrix | 8 | ✅ Done 2026-05-01 |
+| ENTITLEMENTS-02: Contract tests for paid capabilities | 8 | In progress |
+| OBS-02: Sprint 19 operational evidence | 5 | Planned |
+| QA-DOCDRIFT-01: Align docs with actual scripts | 3 | ✅ Done 2026-05-01 |
+| DESIGN-GATE-01: Stabilize token drift locally + CI | 5 | ✅ Done 2026-05-01 |
+| S19-MEASURE-01: AI wizard + Launchpad KPI baseline | 5 | Planned (after OBS-02) |
+| **AUTHZ-ADR-01**: Custom RBAC authorization ADR *(pulled in from stretch)* | 3 | Start now — ENTITLEMENTS-01 gate satisfied |
+| **Sprint A verification bundle** (LAYOUT-GRID-01, LAYOUT-A11Y-01, DESIGN-TOK-01, DX-INSIGHTS-01, I18N-BUG-01, I18N-BUG-02) | 8 | QA gate sign-off — DESIGN-GATE-01 tooling ready |
 
-**Stretch only after core items are green**: AUTHZ-ADR-01, LAUNCHPAD-02.
+**Sprint goal**: Harden v2.1 by proving plan entitlements are enforced server-side, capturing Sprint 19 KPI and operational evidence, aligning local/CI quality gates, and getting AUTHZ-ADR-01 into review so Sprint 21 opens with implementation.
 
-**Explicitly deferred**: RBAC depth/custom roles implementation until AUTHZ-ADR-01 exists; GAM-01 / LIVE energizers until a Durable Object protocol/versioning ADR exists.
+**Stretch (start only after all core items green)**:
+- **DESIGN-POLISH-01** (3 pts) — CTA hover state; all tech deps satisfied; start after Sprint A verification closes.
+- **DESIGN-POLISH-02** (3 pts) — logo bump; conditional on brand sign-off by 2026-05-14, else defer to Sprint 23.
+- **LAUNCHPAD-02** (8 pts) — inline editor + reorder; gate: S19-MEASURE-01 shows no launch reliability regression. **Do not start before S19-MEASURE-01 is complete.**
+
+**Explicitly deferred**: RBAC depth/custom roles implementation until AUTHZ-ADR-01 is *accepted* (not just drafted); GAM-01 / LIVE energizers until a Durable Object protocol/versioning ADR exists; TPL-CATALOG-* until Sprint 22.
 
 See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance criteria, dependencies, KPIs, and Definition of Done.
 
@@ -87,8 +102,8 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 
 | Sprint | Window | Product goal | Backlog posture |
 |---|---|---|---|
-| **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock: entitlement tests, Sprint 19 measurement, operational evidence, and quality-gate trust | Committed: ENTITLEMENTS-02, OBS-02, S19-MEASURE-01. Verify/close Sprint A design/i18n leftovers. |
-| **Sprint 21** | 2026-06-10 to 2026-06-24 | Enterprise authorization foundation + compliance UX | Commit AUTHZ-ADR-01, split RBAC depth into concrete stories, begin role matrix/admin compliance work only after entitlement gates are green. |
+| **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock: entitlement tests, Sprint 19 measurement, operational evidence, quality-gate trust, and AUTHZ-ADR-01 in review | Committed (45 pts): ENTITLEMENTS-02, OBS-02, S19-MEASURE-01, **AUTHZ-ADR-01** (pulled in), Sprint A verification bundle. Stretch: DESIGN-POLISH-01, LAUNCHPAD-02 (after S19-MEASURE-01). |
+| **Sprint 21** | 2026-06-10 to 2026-06-24 | Enterprise authorization foundation + compliance UX | AUTHZ-ADR-01 must be *accepted* before Sprint 21 opens RBAC code; split RBAC depth into concrete stories (AUTHZ-RBAC-01/02); begin role matrix/admin compliance work. |
 | **Sprint 22** | 2026-06-24 to 2026-07-08 | Template catalogue + session creation polish | Promote the SPEC.md template requirement: customer/Qesto template groups, 3–4 Qesto templates per topic, overview confirmation, wizard seeding, functional tests. |
 | **Sprint 23** | 2026-07-08 to 2026-07-22 | Launchpad + design polish | Promote LAUNCHPAD-02, DESIGN-POLISH-01, DESIGN-POLISH-02, and AI-VIS-01 only if Sprint 19 KPI baseline shows no launch reliability regression. |
 | **Sprint 24** | 2026-07-22 to 2026-08-05 | v2.2 gamification/admin analytics foundation | Write Durable Object protocol/versioning ADR, start LIVE energizer foundation, mature admin analytics/reporting/export, and reconcile stale legacy backlog statuses. |
@@ -97,7 +112,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 
 | ID | Item | Pri | Target | Acceptance signal |
 |---|---|---|---|---|
-| AUTHZ-ADR-01 | Authorization ADR for custom roles, scoped permissions, route ownership, and audit semantics | P0 | Sprint 21 | ADR accepted before any custom RBAC implementation begins |
+| AUTHZ-ADR-01 | Authorization ADR for custom roles, scoped permissions, route ownership, and audit semantics | P0 | **Sprint 20** *(pulled in 2026-05-01)* | ADR accepted before any custom RBAC implementation begins |
 | AUTHZ-RBAC-01 | Custom role permission matrix + server-side enforcement plan | P0 | Sprint 21 | Matrix maps roles to routes/services; allow/deny contract tests drafted |
 | AUTHZ-RBAC-02 | Admin role-management UX for custom roles and delegated permissions | P1 | Sprint 21/22 | Owner/admin can create, edit, assign, and revoke scoped roles with audit events |
 | TPL-CATALOG-01 | Customer vs Qesto template catalogue groups | P0 | Sprint 22 | Dashboard Templates separates tenant-created and curated Qesto templates |

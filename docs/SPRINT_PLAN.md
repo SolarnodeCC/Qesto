@@ -6,6 +6,7 @@ _Last updated: 2026-05-01 (UTC)_
 _**Sprint 18 Plan Added**: 2026-04-23 — see Sprint 18 section below. Five-sprint reference arc remains pedagogical (v0.1→v0.5). Calendar truth: Sprint 17 completed 2026-04-22; Sprint 18 runs 2026-04-29 to 2026-05-13._
 _**Sprint 20 Plan Added**: 2026-04-30 — Sprint 19 implementation completed early; Sprint 20 focuses on readiness, entitlement enforcement, observability, and measurement before the next feature expansion._
 _**Next-five-sprint refresh**: 2026-05-01 — Sprint 20 to Sprint 24 now form the active calendar planning arc for v2.1 readiness and v2.2 foundation work._
+_**Sprint 20 scope expansion**: 2026-05-01 — Sprint 19 shipped early; AUTHZ-ADR-01 pulled in from stretch to committed; Sprint A verification bundle added; total committed scope raised from 34 pts to 45 pts._
 
 ---
 
@@ -436,7 +437,7 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 **Epics**: EPIC-BILLING (entitlement enforcement), EPIC-ENT (compliance readiness), EPIC-AI (measurement), EPIC-DESIGN (gate reliability), EPIC-QA (test/documentation hygiene)
 
-**Committed Items** (6 stories, ~34 pts):
+**Committed Items** (8 stories + verification bundle, ~45 pts — expanded 2026-05-01):
 
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---:|---|---|---|
@@ -445,14 +446,17 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 | **OBS-02**: Sprint 19 operational evidence | 5 | AI/OPS | Planned | AI generation/refine latency, preflight failures, Launchpad DRAFT→LIVE success, token bucket contention, WebSocket capacity, and 5xx errors are queryable or logged with trace IDs |
 | **QA-DOCDRIFT-01**: Align docs with actual scripts and test counts | 3 | QA/DOCS | ✅ Implemented 2026-05-01 | Docs use `npm run typecheck`; stale `type-check` / `check:api` references are removed or backed by real scripts; test-count claims are refreshed |
 | **DESIGN-GATE-01**: Stabilize token drift check locally and in CI | 5 | DESIGN/QA | ✅ Implemented 2026-05-01 | `npm run tokens:build` and `npm run check:tokens-drift` agree on Windows and CI; failures produce actionable path output |
-| **S19-MEASURE-01**: KPI baseline report for AI wizard + Launchpad | 5 | AI/PRODUCT | Planned | Baseline captures AI usage rate, wizard completion, inline suggestion acceptance, invalid LIVE attempts, and Launchpad success rate |
+| **S19-MEASURE-01**: KPI baseline report for AI wizard + Launchpad | 5 | AI/PRODUCT | Planned (after OBS-02) | Baseline captures AI usage rate, wizard completion, inline suggestion acceptance, invalid LIVE attempts, and Launchpad success rate; delivered as a doc artifact in `docs/` |
+| **AUTHZ-ADR-01**: Custom RBAC authorization ADR *(pulled in from stretch — 2026-05-01)* | 3 | ENT/AUTH | Start now — ENTITLEMENTS-01 gate satisfied | ADR defines custom role scopes, permission-to-route ownership, audit event semantics for role mutations, migration plan from the current 5-role model, and contract test strategy |
+| **Sprint A verification bundle** (LAYOUT-GRID-01, LAYOUT-A11Y-01, DESIGN-TOK-01, DX-INSIGHTS-01, I18N-BUG-01, I18N-BUG-02) | 8 | DESIGN/I18N/QA | Start now — DESIGN-GATE-01 tooling ready | Run `check:tokens-drift`, `check:i18n`, axe-core a11y suite; confirm LAYOUT-GRID-01 column spans adopted on wizard/Launchpad/Insights surfaces; verify DX-INSIGHTS-01 graceful degradation without DX-INSIGHTS-02 data |
 
 **Stretch / Do Not Commit Until Core Items Are Green**:
 
 | Item | Size | Condition |
 |---|---:|---|
-| **AUTHZ-ADR-01**: Custom RBAC authorization ADR | 3 | Start only if ENTITLEMENTS-01 is complete; required before RBAC depth implementation |
-| **LAUNCHPAD-02**: Inline Launchpad editor + reorder polish | 8 | Start only after S19-MEASURE-01 shows no launch reliability regression |
+| **DESIGN-POLISH-01**: Primary CTA hover/motion state | 3 | Start after Sprint A verification bundle closes; all tech deps satisfied |
+| **DESIGN-POLISH-02**: Logo optical weight bump + sparkle mark | 3 | Conditional on brand sign-off by 2026-05-14; else defer to Sprint 23 |
+| **LAUNCHPAD-02**: Inline Launchpad editor + reorder polish | 8 | Start only after S19-MEASURE-01 shows no launch reliability regression; do not start before S19-MEASURE-01 is complete |
 
 **Explicitly Deferred**:
 - **RBAC depth/custom roles implementation**: requires AUTHZ-ADR-01 first; target S21+.
@@ -493,8 +497,8 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 | Sprint | Window | Release posture | Goal | Gate |
 |---|---|---|---|---|
-| **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock | Entitlement tests, operational evidence, Sprint 19 KPI baseline, trustworthy local/CI gates | No broad feature expansion until evidence exists |
-| **Sprint 21** | 2026-06-10 to 2026-06-24 | v2.1 enterprise hardening | Authorization ADR, custom role matrix, compliance/admin UX follow-through | AUTHZ-ADR-01 accepted before custom RBAC code |
+| **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock | Entitlement tests, operational evidence, Sprint 19 KPI baseline, trustworthy local/CI gates, **AUTHZ-ADR-01 in review** | No broad feature expansion until evidence exists; 45 pts committed (expanded 2026-05-01) |
+| **Sprint 21** | 2026-06-10 to 2026-06-24 | v2.1 enterprise hardening | Custom role matrix + enforcement (AUTHZ-RBAC-01), admin role-management UX (AUTHZ-RBAC-02), compliance UX follow-through | AUTHZ-ADR-01 must be *accepted* before any RBAC code lands |
 | **Sprint 22** | 2026-06-24 to 2026-07-08 | v2.1/v2.2 session creation polish | Template catalogue requirement from SPEC.md: groups, overview confirmation, wizard seeding, functional coverage | No template card creates a session without overview confirmation |
 | **Sprint 23** | 2026-07-08 to 2026-07-22 | v2.2 design/Launchpad polish | LAUNCHPAD-02, CTA/logo polish, landing AI narrative sign-off | S19 KPI baseline healthy; token/i18n/a11y gates green |
 | **Sprint 24** | 2026-07-22 to 2026-08-05 | v2.2 foundation | DO protocol ADR, LIVE energizer foundation, admin analytics maturity, backlog status reconciliation | Versioned DO message contract accepted before LIVE energizer rollout |
@@ -515,11 +519,10 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 **Epics**: EPIC-ENT, EPIC-AUTH, EPIC-QA
 
-**Committed Candidates** (refine after Sprint 20 closeout):
+**Committed Candidates** (refine after Sprint 20 closeout; AUTHZ-ADR-01 must be *accepted* before any item below lands):
 
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---:|---|---|---|
-| **AUTHZ-ADR-01**: Custom RBAC authorization ADR | 3 | ENT/AUTH | Planned | ADR defines roles, permission scopes, route ownership, audit semantics, migration plan, and test strategy |
 | **AUTHZ-RBAC-01**: Custom role permission matrix + enforcement plan | 8 | ENT | Planned | Matrix maps each role/scope to route/service allow/deny behavior; contract tests drafted before implementation |
 | **AUTHZ-RBAC-02**: Admin role-management UX + delegated permissions | 8 | ENT/UX | Planned | Owner/admin can create, edit, assign, revoke, and audit scoped roles without cross-team leakage |
 | **ENT-COMPLIANCE-01**: Audit/admin compliance UX follow-through | 5 | ENT/OPS | Planned | Audit filters/export and admin evidence views cover entitlement, authz, and sensitive mutations |

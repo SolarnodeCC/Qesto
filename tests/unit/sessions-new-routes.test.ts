@@ -3,12 +3,13 @@
 //   POST /api/sessions/:id/ai/refine
 //   GET  /api/sessions/:id/insights/themes
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
+import type { AnalyticsEngineDataset } from '@cloudflare/workers-types'
 
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 const USER_ID = 'user_host_1'
@@ -579,5 +580,161 @@ describe('GET /api/sessions/:id/insights/themes', () => {
     expect(res.status).toBe(403)
     const body = (await res.json()) as { error: { code: string } }
     expect(body.error.code).toBe('feature_not_available')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OBS-02: preflight.checked Analytics Engine event
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('preflight emits preflight.checked AE event', () => {
+  function makeEnvWithAe(db: D1Mock) {
+    const mockAe = { writeDataPoint: vi.fn() }
+    const env = { ...makeEnv(db), METRICS_AE: mockAe as unknown as AnalyticsEngineDataset }
+    return { env, mockAe }
+  }
+
+  it('emits event with count=0 when all checks pass', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    seedQuestion(db)
+    const { env, mockAe } = makeEnvWithAe(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/preflight', {
+        headers: { cookie: await cookieFor(USER_ID) },
+      }),
+      env,
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { data: { ready: boolean } }
+    expect(body.data.ready).toBe(true)
+    expect(mockAe.writeDataPoint).toHaveBeenCalledOnce()
+    const dp = mockAe.writeDataPoint.mock.calls[0][0] as { blobs: string[]; doubles: number[] }
+    expect(dp.blobs[0]).toBe('preflight.checked')
+    expect(dp.doubles[1]).toBe(0)
+  })
+
+  it('emits event with count=1 when title_set fails', async () => {
+    const db = new D1Mock()
+    seedSession(db, { title: '' })
+    seedQuestion(db)
+    const { env, mockAe } = makeEnvWithAe(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/preflight', {
+        headers: { cookie: await cookieFor(USER_ID) },
+      }),
+      env,
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { data: { ready: boolean } }
+    expect(body.data.ready).toBe(false)
+    expect(mockAe.writeDataPoint).toHaveBeenCalledOnce()
+    const dp = mockAe.writeDataPoint.mock.calls[0][0] as { blobs: string[]; doubles: number[] }
+    expect(dp.blobs[0]).toBe('preflight.checked')
+    expect(dp.doubles[1]).toBeGreaterThan(0)
+  })
+
+  it('is still 200 even when METRICS_AE is absent (fail-open)', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    seedQuestion(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/preflight', {
+        headers: { cookie: await cookieFor(USER_ID) },
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(200)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OBS-02: ai.rate_limited Analytics Engine event
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('AI generate emits ai.rate_limited AE event when rate limit is exceeded', () => {
+  it('returns 429 and emits ai.rate_limited for /ai/generate', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    const kvMock = new KVMock()
+    const resetAt = Date.now() + 3600 * 1000
+    await kvMock.put('rl:ai-wizard:user_host_1', JSON.stringify({ count: 20, resetAt }))
+    const mockAe = { writeDataPoint: vi.fn() }
+    const env = {
+      ...makeEnv(db),
+      ACTIONS_KV: kvMock as unknown as KVNamespace,
+      METRICS_AE: mockAe as unknown as AnalyticsEngineDataset,
+    }
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/ai/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        body: JSON.stringify({ sessionTitle: 'Test', sessionGoal: 'Test goal' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(429)
+    expect(mockAe.writeDataPoint).toHaveBeenCalledOnce()
+    const dp = mockAe.writeDataPoint.mock.calls[0][0] as { blobs: string[] }
+    expect(dp.blobs[0]).toBe('ai.rate_limited')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// S19-MEASURE-01: PATCH ai_accepted_count / ai_dismissed_count
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('PATCH /api/sessions/:id accepts ai_accepted_count and ai_dismissed_count', () => {
+  it('persists acceptance counts alongside AI provenance', async () => {
+    const db = new D1Mock()
+    seedSession(db, { title: 'AI Retro' })
+    const cookie = await cookieFor(USER_ID)
+    const consentAt = Date.now()
+
+    const patchRes = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({
+          ai_generated: true,
+          ai_consent_at: consentAt,
+          ai_accepted_count: 4,
+          ai_dismissed_count: 1,
+        }),
+      }),
+      makeEnv(db),
+    )
+    expect(patchRes.status).toBe(200)
+    expect(db.sessions.get('sess_1')?.ai_accepted_count).toBe(4)
+    expect(db.sessions.get('sess_1')?.ai_dismissed_count).toBe(1)
+  })
+
+  it('rejects negative acceptance counts', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        body: JSON.stringify({ ai_accepted_count: -1 }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(400)
+  })
+
+  it('ai_accepted_count alone satisfies the at-least-one-field refine', async () => {
+    const db = new D1Mock()
+    seedSession(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie: await cookieFor(USER_ID) },
+        body: JSON.stringify({ ai_accepted_count: 0 }),
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(200)
+    expect(db.sessions.get('sess_1')?.ai_accepted_count).toBe(0)
   })
 })

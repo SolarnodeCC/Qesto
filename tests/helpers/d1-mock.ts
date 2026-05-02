@@ -38,6 +38,8 @@ type SessionRow = {
   ai_generated?: number
   ai_consent_at?: number | null
   ai_grounding_hash?: string | null
+  ai_accepted_count?: number
+  ai_dismissed_count?: number
 }
 
 type QuestionRow = {
@@ -399,6 +401,20 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
       row.ai_consent_at = ai_consent_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET ai_accepted_count')) {
+      const [ai_accepted_count, id, owner_id] = this.args as [number, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.ai_accepted_count = ai_accepted_count
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET ai_dismissed_count')) {
+      const [ai_dismissed_count, id, owner_id] = this.args as [number, string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.ai_dismissed_count = ai_dismissed_count
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO insights_daily')) {
