@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
-import { api } from '../api/client'
+import { usePolledApi } from './usePolledApi'
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
 
@@ -26,26 +25,6 @@ export type OpsSummary = {
 }
 
 export function useAdminOps() {
-  const [ops, setOps] = useState<OpsSummary | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchOps = useCallback(async () => {
-    const res = await api<OpsSummary>('/api/admin/ops/summary')
-    if (res.ok) {
-      setOps(res.data)
-      setError(null)
-    } else {
-      setError(res.error.message)
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    fetchOps()
-    const interval = setInterval(fetchOps, 15_000)
-    return () => clearInterval(interval)
-  }, [fetchOps])
-
-  return { ops, loading, error, refresh: fetchOps }
+  const { data: ops, loading, error, refresh } = usePolledApi<OpsSummary>('/api/admin/ops/summary', 15_000)
+  return { ops, loading, error, refresh }
 }
