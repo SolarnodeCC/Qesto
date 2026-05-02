@@ -26,9 +26,9 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { writeEvent } from '../lib/observability'
 import { denyFeature, denyLimit, featureAllowed, maxTeamMembersForPlan } from '../lib/entitlements'
+import { readKvJson, writeKvJson } from '../lib/kv'
+import { TEAM_INVITE_TTL_SECONDS } from '../lib/constants'
 import type { Env } from '../types'
-
-const INVITE_TTL_SECONDS = 24 * 60 * 60 // 24 hours
 
 type Role = 'owner' | 'admin' | 'member' | 'viewer'
 
@@ -64,24 +64,22 @@ const userTeamsKey = (userId: string) => `user-teams:${userId}`
 const inviteKey = (tokenHash: string) => `team-invite:${tokenHash}`
 
 async function loadTeam(kv: KVNamespace, id: string): Promise<Team | null> {
-  const raw = await kv.get(teamKey(id))
-  return raw ? (JSON.parse(raw) as Team) : null
+  return readKvJson<Team>(kv, teamKey(id))
 }
 
 async function saveTeam(kv: KVNamespace, team: Team): Promise<void> {
-  await kv.put(teamKey(team.id), JSON.stringify(team))
+  await writeKvJson(kv, teamKey(team.id), team)
 }
 
 async function loadUserTeamIds(kv: KVNamespace, userId: string): Promise<string[]> {
-  const raw = await kv.get(userTeamsKey(userId))
-  return raw ? (JSON.parse(raw) as string[]) : []
+  return (await readKvJson<string[]>(kv, userTeamsKey(userId))) ?? []
 }
 
 async function addUserTeam(kv: KVNamespace, userId: string, teamId: string): Promise<void> {
   const ids = await loadUserTeamIds(kv, userId)
   if (!ids.includes(teamId)) {
     ids.push(teamId)
-    await kv.put(userTeamsKey(userId), JSON.stringify(ids))
+    await writeKvJson(kv, userTeamsKey(userId), ids)
   }
 }
 
@@ -89,7 +87,7 @@ async function removeUserTeam(kv: KVNamespace, userId: string, teamId: string): 
   const ids = await loadUserTeamIds(kv, userId)
   const filtered = ids.filter((id) => id !== teamId)
   if (filtered.length !== ids.length) {
-    await kv.put(userTeamsKey(userId), JSON.stringify(filtered))
+    await writeKvJson(kv, userTeamsKey(userId), filtered)
   }
 }
 
@@ -346,7 +344,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     await c.env.TEAMS_KV.put(
       inviteKey(tokenHash),
       JSON.stringify({ teamId: team.id, email, role: parsed.data.role, createdAt: Date.now() }),
-      { expirationTtl: INVITE_TTL_SECONDS },
+      { expirationTtl: TEAM_INVITE_TTL_SECONDS },
     )
 
     const inviteUrl = `${c.env.PAGES_URL}/teams/accept?token=${raw}`
