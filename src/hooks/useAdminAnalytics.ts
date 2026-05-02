@@ -1,5 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
-import { api } from '../api/client'
+import { usePolledApi } from './usePolledApi'
 
 export type DailyBucket = {
   day: string
@@ -22,26 +21,6 @@ export type AnalyticsData = {
 }
 
 export function useAdminAnalytics() {
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchAnalytics = useCallback(async () => {
-    const res = await api<AnalyticsData>('/api/admin/analytics')
-    if (res.ok) {
-      setAnalytics(res.data)
-      setError(null)
-    } else {
-      setError(res.error.message)
-    }
-    setLoading(false)
-  }, [])
-
-  useEffect(() => {
-    fetchAnalytics()
-    const interval = setInterval(fetchAnalytics, 60_000)
-    return () => clearInterval(interval)
-  }, [fetchAnalytics])
-
-  return { analytics, loading, error, refresh: fetchAnalytics }
+  const { data: analytics, loading, error, refresh } = usePolledApi<AnalyticsData>('/api/admin/analytics', 60_000)
+  return { analytics, loading, error, refresh }
 }

@@ -106,42 +106,41 @@ export async function queryAuditEvents(
   const offset = options.offset ?? 0
 
   try {
-    let query = `SELECT * FROM audit_events WHERE 1=1`
-    const params: any[] = []
-
+    const clauses: string[] = []
+    const values: Array<string | number> = []
     if (options.actor_id) {
-      query += ` AND actor_id = ?${params.length + 1}`
-      params.push(options.actor_id)
+      clauses.push('actor_id = ?')
+      values.push(options.actor_id)
     }
     if (options.action) {
-      query += ` AND action = ?${params.length + 1}`
-      params.push(options.action)
+      clauses.push('action = ?')
+      values.push(options.action)
     }
     if (options.subject_type) {
-      query += ` AND subject_type = ?${params.length + 1}`
-      params.push(options.subject_type)
+      clauses.push('subject_type = ?')
+      values.push(options.subject_type)
     }
     if (options.since_ts) {
-      query += ` AND ts >= ?${params.length + 1}`
-      params.push(options.since_ts)
+      clauses.push('ts >= ?')
+      values.push(options.since_ts)
     }
     if (options.until_ts) {
-      query += ` AND ts <= ?${params.length + 1}`
-      params.push(options.until_ts)
+      clauses.push('ts <= ?')
+      values.push(options.until_ts)
     }
+    const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''
 
     // Count total matching records
-    const countResult = await (c.env.DB.prepare as any)(query.replace('SELECT *', 'SELECT COUNT(*) as count'))
-      .bind(...params)
+    const countResult = await (c.env.DB.prepare as any)(`SELECT COUNT(*) as count FROM audit_events ${where}`)
+      .bind(...values)
       .first()
 
     // Fetch paginated results
     const countStmt = (c.env.DB.prepare as any)(
-      query +
-        ` ORDER BY ts DESC
-       LIMIT ?${params.length + 1} OFFSET ?${params.length + 2}`,
+      `SELECT id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key
+       FROM audit_events ${where} ORDER BY ts DESC LIMIT ? OFFSET ?`,
     )
-      .bind(...params, limit, offset)
+      .bind(...values, limit, offset)
 
     const result = await countStmt.all()
     return {

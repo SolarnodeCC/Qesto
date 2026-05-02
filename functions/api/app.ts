@@ -19,6 +19,7 @@ import { rbacMiddleware, type RbacVariables } from './middleware/rbac'
 import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import { writeEvent } from './lib/observability'
+import { sanitizeError } from './lib/error-handler'
 import type { Env } from './types'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -93,16 +94,28 @@ export function createApp() {
         traceId: trace_id,
       })
     }
+    const sanitized = sanitizeError(err, c.env.ENV, status)
+    const code = status === 401
+      ? 'unauthenticated'
+      : status === 403
+        ? 'forbidden'
+        : status === 404
+          ? 'not_found'
+          : status === 409
+            ? 'conflict'
+            : status === 429
+              ? 'rate_limited'
+              : sanitized.code
     return c.json(
       {
         ok: false,
         error: {
-          code: status >= 500 ? 'internal' : 'bad_request',
-          message: err.message ?? 'Unexpected error',
+          code,
+          message: sanitized.message,
         },
         trace_id,
       },
-      status as 400 | 401 | 403 | 404 | 500,
+      status as 400 | 401 | 403 | 404 | 409 | 429 | 500,
     )
   })
 
