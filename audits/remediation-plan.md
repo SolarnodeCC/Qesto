@@ -126,7 +126,7 @@ Address audit IDs: `F-01`, `F-06`, `F-08`, plus leftover medium complexity in ho
 ## 5) Regression prevention checklist per PR
 
 - Unit tests for touched domain pass.
-- `npm run type-check` passes.
+- `npm run typecheck` passes.
 - For API PRs: assert stable response envelope (`ok/error/trace_id`) and no leaked internals.
 - For refactors: add one characterization test before moving logic.
 - Avoid mixed concerns: no schema migration + route split in same PR.
