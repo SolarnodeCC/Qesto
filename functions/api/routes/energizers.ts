@@ -25,6 +25,8 @@ import {
   type WordCloudConfig,
 } from '../lib/gamification'
 import { recordAuditEvent } from '../lib/audit'
+import { sanitizeError } from '../lib/error-handler'
+import { z } from 'zod'
 import type { Env } from '../types'
 
 type Vars = AuthVariables
@@ -39,15 +41,21 @@ export function mountEnergizerRoutes(parent: any) {
     const sessionId = c.req.param('sessionId')
 
     try {
-      const body = await c.req.json<{
-        kind: 'battle_royale' | 'bracket' | 'emoji_poll' | 'quick_finger' | 'team_quiz' | 'word_cloud'
-        prompt: string
-        participants?: string[]
-        bracket_size?: 4 | 8 | 16
-        emojis?: string[]
-        options?: string[]
-        correct_index?: number
-      }>()
+      const CreateEnergizerSchema = z.object({
+        kind: z.enum(['battle_royale', 'bracket', 'emoji_poll', 'quick_finger', 'team_quiz', 'word_cloud']),
+        prompt: z.string().min(1).max(400),
+        participants: z.array(z.string()).optional(),
+        bracket_size: z.union([z.literal(4), z.literal(8), z.literal(16)]).optional(),
+        emojis: z.array(z.string()).optional(),
+        options: z.array(z.string()).optional(),
+        correct_index: z.number().int().nonnegative().optional(),
+      })
+      const raw = await c.req.json().catch(() => null)
+      const parsed = CreateEnergizerSchema.safeParse(raw)
+      if (!parsed.success) {
+        return c.json({ ok: false, error: { code: 'validation', message: 'Invalid energizer payload' }, trace_id }, 400)
+      }
+      const body = parsed.data
 
       if (!['battle_royale', 'bracket', 'emoji_poll', 'quick_finger', 'team_quiz', 'word_cloud'].includes(body.kind)) {
         return c.json(
@@ -108,7 +116,8 @@ export function mountEnergizerRoutes(parent: any) {
       return c.json({ ok: true, data: { id: energizerId, kind: body.kind }, trace_id }, 201)
     } catch (err) {
       console.error('[energizers] create failed:', err)
-      return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
@@ -138,7 +147,8 @@ export function mountEnergizerRoutes(parent: any) {
       return c.json({ ok: true, data: { energizers }, trace_id })
     } catch (err) {
       console.error('[energizers] list failed:', err)
-      return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
@@ -272,7 +282,8 @@ export function mountEnergizerRoutes(parent: any) {
       })
     } catch (err) {
       console.error('[energizers] active failed:', err)
-      return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
@@ -350,7 +361,8 @@ export function mountEnergizerRoutes(parent: any) {
       return c.json({ ok: true, data: { state: body.state }, trace_id })
     } catch (err) {
       console.error('[energizers] patch failed:', err)
-      return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
@@ -450,7 +462,8 @@ export function mountEnergizerRoutes(parent: any) {
       return c.json({ ok: true, data: { voted: body.value }, trace_id })
     } catch (err) {
       console.error('[energizers] vote failed:', err)
-      return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
@@ -517,7 +530,8 @@ export function mountEnergizerRoutes(parent: any) {
       })
     } catch (err) {
       console.error('[energizers] next failed:', err)
-      return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
@@ -631,7 +645,7 @@ export function mountEnergizerRoutes(parent: any) {
     } catch (err) {
       console.error('[energizers] advance failed:', err)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message: sanitizeError(err, c.env.ENV, 500).message }, trace_id },
         500
       )
     }
@@ -725,7 +739,7 @@ export function mountEnergizerRoutes(parent: any) {
     } catch (err) {
       console.error('[energizers] get failed:', err)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message: sanitizeError(err, c.env.ENV, 500).message }, trace_id },
         500,
       )
     }
@@ -750,7 +764,8 @@ export function mountEnergizerRoutes(parent: any) {
       )
     } catch (err) {
       console.error('[leaderboard] get failed:', err)
-      return c.json({ ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id }, 500)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
