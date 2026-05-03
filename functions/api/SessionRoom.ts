@@ -29,6 +29,7 @@ import {
 import type { Env, VotePolicy, SessionMode, PlanTier } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
+import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
 
 // Tell tsc the env binding exists on the DO class — Phase 4+ will reach for
 // `this.env.DB` inside `close()` to persist totals. Kept as a typed field now
@@ -83,16 +84,6 @@ function normaliseVotes(raw: Record<string, string | string[]> | undefined): Vot
     out[voterId] = Array.isArray(value) ? value : [value]
   }
   return out
-}
-
-// Kinds for which one voter may submit multiple accepted values. `word_cloud`
-// is in here because each submitted phrase counts as an independent entry.
-const MULTI_VOTE_KINDS = new Set(['multi_select', 'upvote', 'word_cloud'])
-
-// `word_cloud` and `open` accept any text as the "optionId". Other kinds
-// must reference a preconfigured option.
-function isFreeTextKind(kind: LiveQuestion['kind']): boolean {
-  return kind === 'word_cloud' || kind === 'open'
 }
 
 // ── Per-connection attachment stored on each WebSocket ──────────────────────
@@ -571,55 +562,28 @@ export class SessionRoom implements DurableObject {
     // For free-text kinds (word_cloud) the `optionId` is the submitted phrase,
     // so we accept any non-empty string. Other kinds must reference a
     // preconfigured option.
-    if (!isFreeTextKind(question.kind) && !question.options.some((o) => o.id === optionId)) {
+    if (!isFreeTextQuestionKind(question.kind) && !question.options.some((o) => o.id === optionId)) {
       ws.send(errorMessage('bad_option', 'Unknown option'))
       return
     }
 
     const votePolicy = meta?.votePolicy ?? 'once'
 
-    // Load voters via shared in-memory reference. The check+update below
-    // contains no await points, so concurrent vote messages from the same
-    // voter serialise naturally — the second caller sees the first caller's
-    // mutation before running its own duplicate check.
+    // Load voters via shared in-memory reference. The mutation below contains
+    // no await inside applyVoteMutation, so concurrent vote messages from the
+    // same voter serialise naturally.
     const voters = await this.ensureVoters()
-    let countKey: string | null = null
-    let countDecKey: string | null = null
-
-    if (MULTI_VOTE_KINDS.has(question.kind)) {
-      // multi_select / upvote / word_cloud: voter may submit several entries.
-      // Reject an exact duplicate selection (same optionId already sent by
-      // this voter) but otherwise append to the array.
-      const previous = voters[att.voterId] ?? []
-      if (previous.includes(optionId)) {
-        ws.send(errorMessage('duplicate', 'You already selected this option'))
-        return
-      }
-      voters[att.voterId] = [...previous, optionId]
-      countKey = optionId
-    } else if (votePolicy === 'once') {
-      // Reject duplicate — one vote per voter, immutable.
-      if ((voters[att.voterId]?.length ?? 0) > 0) {
-        ws.send(errorMessage('duplicate', 'You already voted on this question'))
-        return
-      }
-      voters[att.voterId] = [optionId]
-      countKey = optionId
-    } else if (votePolicy === 'multi') {
-      // Allow vote change — decrement old choice, increment new choice.
-      const previous = voters[att.voterId]?.[0]
-      if (previous === optionId) {
-        ws.send(errorMessage('duplicate', 'You already selected this option'))
-        return
-      }
-      countDecKey = previous ?? null
-      voters[att.voterId] = [optionId]
-      countKey = optionId
-    } else {
-      // react: accumulate reactions, no deduplication per voter.
-      voters[att.voterId] = [optionId]
-      countKey = optionId
+    const applied = applyVoteMutation(voters, {
+      questionKind: question.kind,
+      votePolicy,
+      voterId: att.voterId,
+      optionId,
+    })
+    if (!applied.ok) {
+      ws.send(errorMessage(applied.code, applied.message))
+      return
     }
+    const { countKey, countDecKey } = applied
 
     // Load and update counts after the voter decision is finalised (safe to
     // await here — the duplicate check above has already mutated voters).
