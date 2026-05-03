@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useDensity, type Density } from '../hooks/useDensity'
 import { useInsights } from '../hooks/useInsights'
+import type { PollOption } from '@/types/session'
 import { useQuotaUsage } from '../hooks/useQuotaUsage'
 import { useT } from '../i18n'
 import { api } from '../api/client'
@@ -27,7 +28,7 @@ interface Template {
   questions: Array<{
     kind: string
     prompt: string
-    options: Array<{ id: string; label: string }>
+    options: PollOption[]
   }>
 }
 

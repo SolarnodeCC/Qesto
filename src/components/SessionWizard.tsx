@@ -5,19 +5,19 @@ import { api, getAuthToken } from '../api/client'
 import { apiUrl } from '../config/api'
 import { WizardAIGenerationSkeleton } from './SkeletonLoader'
 import AIBadge from './AIBadge'
+import type { PollOption, WizardQuestionKind } from '@/types/session'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type WizardStep = 1 | 2 | 3 | 4 | 5
-type QuestionKind = 'poll' | 'ranking' | 'open' | 'multi_select' | 'likert' | 'slider' | 'upvote' | 'word_cloud'
 type Step2Mode = 'idle' | 'manual' | 'ai' | 'template'
 type AIPhase = 'consent' | 'chat' | 'generating' | 'review'
 
 interface WizardQuestion {
   id: string
-  kind: QuestionKind
+  kind: WizardQuestionKind
   prompt: string
-  options: { id: string; label: string }[]
+  options: PollOption[]
   fromAI: boolean
   dismissed: boolean
   accepted: boolean
@@ -48,9 +48,9 @@ function newId() {
   return crypto.randomUUID().slice(0, 8)
 }
 
-const NO_OPTIONS_KINDS = new Set<QuestionKind>(['open', 'word_cloud', 'likert', 'slider'])
+const NO_OPTIONS_KINDS = new Set<WizardQuestionKind>(['open', 'word_cloud', 'likert', 'slider'])
 
-function emptyQuestion(kind: QuestionKind = 'poll'): WizardQuestion {
+function emptyQuestion(kind: WizardQuestionKind = 'poll'): WizardQuestion {
   const defaultOptions = [
     { id: newId(), label: '' },
     { id: newId(), label: '' },
@@ -66,8 +66,8 @@ function isQuestionValid(q: WizardQuestion): boolean {
   return filled.length >= 2
 }
 
-function kindLabel(kind: QuestionKind): string {
-  const labels: Record<QuestionKind, string> = {
+function kindLabel(kind: WizardQuestionKind): string {
+  const labels: Record<WizardQuestionKind, string> = {
     poll: 'Multiple choice',
     ranking: 'Ranking',
     open: 'Open text',
@@ -110,7 +110,7 @@ function QuestionEditor({
   onDismiss?: () => void
 }) {
   const t = useT('wizard')
-  function setKind(kind: QuestionKind) {
+  function setKind(kind: WizardQuestionKind) {
     const updated = { ...question, kind }
     if (NO_OPTIONS_KINDS.has(kind)) {
       updated.options = []
@@ -172,7 +172,7 @@ function QuestionEditor({
 
       {/* Kind selector */}
       <div className="flex gap-2 flex-wrap">
-        {(['poll', 'multi_select', 'ranking', 'upvote', 'open', 'word_cloud', 'likert', 'slider'] as QuestionKind[]).map((k) => (
+        {(['poll', 'multi_select', 'ranking', 'upvote', 'open', 'word_cloud', 'likert', 'slider'] as WizardQuestionKind[]).map((k) => (
           <button
             key={k}
             type="button"
@@ -519,7 +519,11 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
       setGeneratedAiGroundingHash(payload.groundingHash)
       const generated: WizardQuestion[] = payload.questions.map((q) => ({
         id: q.id ?? newId(),
-        kind: (['poll','ranking','open','multi_select','likert','slider','upvote','word_cloud'].includes(q.kind) ? q.kind : 'poll') as QuestionKind,
+        kind: (['poll', 'ranking', 'open', 'multi_select', 'likert', 'slider', 'upvote', 'word_cloud'].includes(
+          q.kind,
+        )
+          ? q.kind
+          : 'poll') as WizardQuestionKind,
         prompt: q.prompt,
         options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
         fromAI: true,

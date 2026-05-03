@@ -7,6 +7,20 @@
 - `audits/code-complexity-audit.md`
 - `audits/design-pattern-audit.md`
 
+## Snapshot — shipped parity (2026-05-03)
+
+These phases are **implemented in-tree** unless called out as “remaining” in `audits/workstream-outstanding.md`.
+
+| Phase block (plan §3) | Shipped cues |
+|----------------------|---------------|
+| **Phase 1** — EH-01…04, CR-04, ST-04 | `functions/api/app.ts` (`sanitizeError` in `app.onError`); `functions/api/lib/audit.ts` (`buildAuditEventWhereClause` + shared `WHERE` for count/list); `SessionRoom.ensureVoters` rejection clears `_votersInitPromise`; energizer mutating routes use Zod / `sanitizeError` in catches; `functions/api/middleware/kv-cache.ts` (`kvNamespaceForCacheKey` / `cacheKv`) |
+| **Phase 2** — F-02/03/05/07… | `functions/api/lib/kv.ts`, `lib/http.ts`, `lib/kv-keys.ts`; routes consume these incrementally |
+| **Phase 5** — frontend dedupe (`F-01`, `F-06`, `F-08` progress) | `src/hooks/usePolledApi.ts` (admin KPIs/analytics/ops + **`useAdminMetrics` live**); `src/types/session.ts`; `src/hooks/useApiQuery.ts` + **`useSession`**; `SessionWizard` / `Results` / `JoinPage` consume shared types; `useLiveSession`: `LivePollOption` = `@api/types` `PollOption`; transport already split (`liveSessionWsTransport.ts`) |
+
+**`F-04` (plan parity):** shipped as **WS6** — `GET /api/plans/catalog`, `src/config/plans.ts` derives limits from `PLAN_QUOTAS`, `usePlanCatalog` + Pricing. See `audits/workstream-outstanding.md`.
+
+**Regression tests:** `tests/unit/error-hardening.test.ts`, `tests/unit/audit-query-builder.test.ts`, `tests/unit/kv-cache-namespaces.test.ts`.
+
 ## 1) Consolidated problem map
 
 We can cluster the findings into 5 workstreams:

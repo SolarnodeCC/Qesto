@@ -5,13 +5,15 @@
 // successful `init` resets the counter. Server is single source of truth —
 // we always rehydrate from the `init` payload on reconnect.
 
+import type { PollOption, QuestionKind } from '@api/types'
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
 
-export type LivePollOption = { id: string; label: string }
+/** Wire-level option row — same shape as REST `PollOption`. */
+export type LivePollOption = PollOption
 export type LiveQuestion = {
   id: string
-  kind: string
+  kind: QuestionKind | string
   prompt: string
   options: LivePollOption[]
 }

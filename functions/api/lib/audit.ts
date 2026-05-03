@@ -3,6 +3,8 @@
 // Captures all state mutations in audit_events table for traceability.
 // Deduplicates on trace_id + action + subject_id to prevent duplicate logging under retries.
 
+import type { Env } from '../types'
+
 export type AuditAction =
   | 'session.create'
   | 'session.start'
@@ -141,7 +143,7 @@ export function buildAuditEventWhereClause(filters: AuditQueryFilters): {
  * Returns paginated results sorted by timestamp descending.
  */
 export async function queryAuditEvents(
-  c: any,
+  c: { env: Env },
   options: {
     actor_id?: string
     action?: string

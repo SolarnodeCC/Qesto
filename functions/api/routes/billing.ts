@@ -1,14 +1,15 @@
 // Billing API routes (BILL-04): plan management, quota tracking.
 //
-// Routes:
-//   GET  /api/plans/:userId/usage    fetch quota usage for a user
-//   POST /api/billing/portal         create a Stripe billing portal session
+// Routes (all mounted under `/api`):
+//   GET  /api/plans/catalog          public `PLAN_QUOTAS` snapshot (WS6 / F-04)
+//   GET  /api/plans/:userId/usage    quota usage for authenticated user
+//   POST /api/billing/portal         Stripe billing portal session
 
 import { Hono } from 'hono'
 import { getQuotaUsage } from '../lib/quota'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
-import type { Env } from '../types'
+import { PLAN_QUOTAS, type Env, type PlanQuotas, type PlanTier } from '../types'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -60,8 +61,26 @@ function makeStripeClient(secretKey: string) {
   }
 }
 
+function catalogRow(q: PlanQuotas) {
+  return {
+    max_sessions_per_month: q.maxSessionsPerMonth,
+    max_participants_per_session: q.maxParticipantsPerSession,
+    features_unlocked: q.featuresUnlocked,
+  }
+}
+
 export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
+
+  // GET /api/plans/catalog — Authoritative PLAN_QUOTAS for web + external clients (no auth).
+  app.get('/plans/catalog', (c) => {
+    const tiers: PlanTier[] = ['free', 'starter', 'team']
+    const data = Object.fromEntries(tiers.map((t) => [t, catalogRow(PLAN_QUOTAS[t])])) as Record<
+      PlanTier,
+      ReturnType<typeof catalogRow>
+    >
+    return c.json({ ok: true, data, trace_id: c.get('trace_id') })
+  })
 
   // GET /api/plans/:userId/usage — Fetch quota usage for authenticated user
   app.get('/plans/:userId/usage', authMiddleware, planMiddleware, async (c) => {
