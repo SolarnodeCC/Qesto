@@ -9,6 +9,7 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { determineBadgesAwarded } from '../lib/gamification'
 import { recordAuditEvent } from '../lib/audit'
+import { sanitizeError } from '../lib/error-handler'
 import type { Env } from '../types'
 
 type Vars = AuthVariables
@@ -59,8 +60,9 @@ export function mountGamificationRoutes(parent: any) {
       )
     } catch (err) {
       console.error('[gamification] get badges failed:', err)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message }, trace_id },
         500
       )
     }
@@ -120,8 +122,9 @@ export function mountGamificationRoutes(parent: any) {
       )
     } catch (err) {
       console.error('[gamification] get session badges failed:', err)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message }, trace_id },
         500
       )
     }
@@ -233,8 +236,9 @@ export function mountGamificationRoutes(parent: any) {
       )
     } catch (err) {
       console.error('[gamification] close session failed:', err)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message }, trace_id },
         500
       )
     }
