@@ -77,6 +77,7 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'POST /api/admin/users/:id/restore': new Set(['owner', 'admin']),
   'GET /api/admin/ops/summary': new Set(['owner', 'admin']),
   'GET /api/admin/analytics': new Set(['owner', 'admin']),
+  'GET /api/admin/sprint19-baseline': new Set(['owner', 'admin']),
 }
 
 // ─── Utility Functions ────────────────────────────────────────────────────────

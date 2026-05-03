@@ -13,6 +13,7 @@
 //   POST /api/admin/users/:id/restore    — restore suspended account
 //   GET  /api/admin/ops/summary          — service health + reliability + issue pulse
 //   GET  /api/admin/analytics            — time-series, breakdowns, cost
+//   GET  /api/admin/sprint19-baseline    — AI wizard + Launchpad KPI baseline
 //
 // Auth: authMiddleware + adminMiddleware (owner | admin role).
 
@@ -88,6 +89,25 @@ export type AnalyticsData = {
   ai_cost_estimate_cents: number
   total_sessions_created: number
   total_decisions_processed: number
+}
+
+export type Sprint19Baseline = {
+  generated_at: number
+  window: { start: number | null; end: number }
+  ai_usage_rate: number | null
+  wizard_completion_rate: number | null
+  launchpad_success_rate: number | null
+  inline_suggestion_acceptance_rate: number | null
+  invalid_live_attempts: number | null
+  counts: {
+    total_sessions: number
+    ai_generated_sessions: number
+    ai_consent_sessions: number
+    ai_grounding_sessions: number
+    started_or_closed_sessions: number
+    draft_sessions: number
+  }
+  measurement_gaps: string[]
 }
 
 export type LiveMetrics = {
@@ -852,6 +872,75 @@ export function mountAdminRoutes(parent: any) {
         total_sessions_created: 0, total_decisions_processed: 0,
       }
       return c.json({ ok: true, data: empty, trace_id }, 200)
+    }
+  })
+
+  // ── GET /api/admin/sprint19-baseline ─────────────────────────────────────
+  // Sprint 20 measurement endpoint for the Sprint 19 AI wizard + Launchpad work.
+  // D1 provides durable baseline proxies; Analytics Engine/log-derived fields
+  // are returned as null with explicit gaps until the S20 evidence query is wired.
+  app.get('/sprint19-baseline', async (c) => {
+    const trace_id = c.get('trace_id')
+    const startParam = c.req.query('start')
+    const endParam = c.req.query('end')
+    const startMs = startParam ? Date.parse(startParam) : null
+    const endMs = endParam ? Date.parse(endParam) : Date.now()
+
+    if ((startMs !== null && Number.isNaN(startMs)) || Number.isNaN(endMs) || (startMs !== null && startMs >= endMs)) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'Invalid baseline date range' }, trace_id },
+        400,
+      )
+    }
+
+    const where = startMs === null ? '' : 'WHERE created_at >= ?1 AND created_at <= ?2'
+    const bindRange = (stmt: D1PreparedStatement) => startMs === null ? stmt : stmt.bind(startMs, endMs)
+
+    try {
+      const [
+        totalRes,
+        aiGeneratedRes,
+        aiConsentRes,
+        aiGroundingRes,
+        startedRes,
+        draftRes,
+      ] = await Promise.all([
+        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}`)).first<{ n: number }>(),
+        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_generated = 1`)).first<{ n: number }>(),
+        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_consent_at IS NOT NULL`)).first<{ n: number }>(),
+        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_grounding_hash IS NOT NULL`)).first<{ n: number }>(),
+        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} status IN ('live','closed','archived')`)).first<{ n: number }>(),
+        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} status = 'draft'`)).first<{ n: number }>(),
+      ])
+
+      const total = totalRes?.n ?? 0
+      const started = startedRes?.n ?? 0
+      const baseline: Sprint19Baseline = {
+        generated_at: Date.now(),
+        window: { start: startMs, end: endMs },
+        ai_usage_rate: total > 0 ? (aiGeneratedRes?.n ?? 0) / total : null,
+        wizard_completion_rate: total > 0 ? started / total : null,
+        launchpad_success_rate: total > 0 ? started / total : null,
+        inline_suggestion_acceptance_rate: null,
+        invalid_live_attempts: null,
+        counts: {
+          total_sessions: total,
+          ai_generated_sessions: aiGeneratedRes?.n ?? 0,
+          ai_consent_sessions: aiConsentRes?.n ?? 0,
+          ai_grounding_sessions: aiGroundingRes?.n ?? 0,
+          started_or_closed_sessions: started,
+          draft_sessions: draftRes?.n ?? 0,
+        },
+        measurement_gaps: [
+          'Inline AI suggestion acceptance requires client event ingestion before it can be computed.',
+          'Invalid LIVE attempts and preflight failure rate are emitted as preflight.failed events/logs; Analytics Engine querying is outside this Worker endpoint.',
+          'Launchpad success rate uses D1 DRAFT-to-started-or-closed sessions as a durable proxy until dedicated launch_attempt events are queryable.',
+        ],
+      }
+      return c.json({ ok: true, data: baseline, trace_id }, 200)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to compute Sprint 19 baseline'
+      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }
   })
 
