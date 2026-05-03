@@ -26,6 +26,7 @@ import {
   type PollOptionBreakdown,
 } from '../lib/session-bundle'
 import { writeEvent } from '../lib/observability'
+import { sanitizeError } from '../lib/error-handler'
 import type { Env, PlanTier } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -286,8 +287,9 @@ export function mountAIInsightsRoutes(parent: any) {
       return c.json({ ok: true, data: payload, trace_id }, 200)
     } catch (err) {
       console.error('[ai-insights] analyze failed:', err)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message }, trace_id },
         500,
       )
     }
@@ -333,8 +335,9 @@ export function mountAIInsightsRoutes(parent: any) {
       return c.json({ ok: true, data: cached, trace_id }, 200)
     } catch (err) {
       console.error('[ai-insights] get failed:', err)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message }, trace_id },
         500,
       )
     }

@@ -158,9 +158,17 @@ export class SessionRoom implements DurableObject {
   private async ensureVoters(): Promise<Votes> {
     if (this._voters !== null) return this._voters
     if (!this._votersInitPromise) {
+      // Capture the in-flight promise locally so an awaiter watching this
+      // exact load sees the rejection, but the cached field is reset to
+      // allow the next caller to retry instead of replaying the same failure.
       this._votersInitPromise = this.ctx.storage
         .get<Record<string, string | string[]>>(K_VOTERS)
         .then(raw => { this._voters = normaliseVotes(raw) })
+        .catch(err => {
+          this._voters = null
+          this._votersInitPromise = null
+          throw err
+        })
     }
     await this._votersInitPromise
     return this._voters!

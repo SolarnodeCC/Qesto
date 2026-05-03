@@ -294,18 +294,20 @@ export function mountEnergizerRoutes(parent: any) {
     const energizerId = c.req.param('energizerId')
 
     try {
-      const body = await c.req.json<{
-        state?: 'active' | 'completed'
-        prompt?: string
-        config?: object
-      }>()
-
-      if (body.state !== undefined && !['active', 'completed'].includes(body.state)) {
+      const PatchEnergizerSchema = z.object({
+        state: z.enum(['active', 'completed']).optional(),
+        prompt: z.string().min(1).max(400).optional(),
+        config: z.record(z.string(), z.unknown()).optional(),
+      })
+      const raw = await c.req.json().catch(() => null)
+      const parsed = PatchEnergizerSchema.safeParse(raw)
+      if (!parsed.success) {
         return c.json(
-          { ok: false, error: { code: 'validation', message: 'state must be active or completed' }, trace_id },
+          { ok: false, error: { code: 'validation', message: 'Invalid energizer patch payload' }, trace_id },
           400,
         )
       }
+      const body = parsed.data
 
       // If activating, deactivate any other active energizer in this session first
       if (body.state === 'active') {
@@ -373,14 +375,19 @@ export function mountEnergizerRoutes(parent: any) {
     const energizerId = c.req.param('energizerId')
 
     try {
-      const body = await c.req.json<{ value: string; voter_id: string }>()
-
-      if (!body.value || !body.voter_id) {
+      const VoteSchema = z.object({
+        value: z.string().min(1).max(200),
+        voter_id: z.string().min(1).max(120),
+      })
+      const raw = await c.req.json().catch(() => null)
+      const parsed = VoteSchema.safeParse(raw)
+      if (!parsed.success) {
         return c.json(
           { ok: false, error: { code: 'validation', message: 'value and voter_id required' }, trace_id },
           400,
         )
       }
+      const body = parsed.data
 
       const energizer = await (c.env.DB.prepare as any)(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`,
@@ -542,10 +549,19 @@ export function mountEnergizerRoutes(parent: any) {
     const energizerId = c.req.param('energizerId')
 
     try {
-      const body = await c.req.json<{
-        scores: Record<string, number> // participant_id -> score
-        round: number // current round number
-      }>()
+      const AdvanceSchema = z.object({
+        scores: z.record(z.string(), z.number()),
+        round: z.number().int().nonnegative(),
+      })
+      const raw = await c.req.json().catch(() => null)
+      const parsed = AdvanceSchema.safeParse(raw)
+      if (!parsed.success) {
+        return c.json(
+          { ok: false, error: { code: 'validation', message: 'scores and round required' }, trace_id },
+          400,
+        )
+      }
+      const body = parsed.data
 
       // Fetch energizer config
       const energizer = await (c.env.DB.prepare as any)(
