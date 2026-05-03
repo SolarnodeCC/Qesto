@@ -60,6 +60,7 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'DELETE /api/teams/:id/members/:userId': new Set(['owner', 'admin']),
 
   // Billing
+  'GET /api/plans/catalog': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
   'GET /api/billing/plans': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
   'POST /api/billing/checkout': new Set(['owner', 'admin']),
   'GET /api/billing/invoices': new Set(['owner', 'admin']),
