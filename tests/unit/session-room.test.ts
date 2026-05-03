@@ -9,7 +9,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { SessionRoom } from '../../functions/api/SessionRoom'
-import type { Env } from '../../functions/api/types'
+import type { Env, QuestionKind, VotePolicy } from '../../functions/api/types'
 import {
   MockDurableObjectState,
   MockWebSocket,
@@ -35,13 +35,26 @@ async function buildRoom(): Promise<{
 
 async function init(
   room: SessionRoom,
-  overrides: Partial<{ sessionId: string; ownerId: string; code: string; title: string }> = {},
+  overrides: Partial<{
+    sessionId: string
+    ownerId: string
+    code: string
+    title: string
+    votePolicy: VotePolicy
+    question: {
+      id: string
+      kind: QuestionKind
+      prompt: string
+      options: { id: string; label: string }[]
+    }
+  }> = {},
 ) {
   const body = {
     sessionId: 'sess_1',
     ownerId: 'user_host',
     code: 'ABC123',
     title: 'Retro Q2',
+    votePolicy: 'once' as VotePolicy,
     question: {
       id: 'q_1',
       kind: 'poll' as const,
@@ -291,6 +304,85 @@ describe('S5 — vote flood trips the token bucket', () => {
     await room.alarm()
     const counts = (await state.storage.get<Record<string, number>>('counts')) ?? {}
     expect(counts.a).toBe(1)
+  })
+})
+
+describe('WS4-A/B — votePolicy multi + react (SessionRoom integration)', () => {
+  it('multi policy swaps choice and decrements prior option counts', async () => {
+    const { room, state } = await buildRoom()
+    await init(room, { votePolicy: 'multi' })
+
+    const ws = connectVoter(state, 'v_multi')
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_1', optionId: 'a' },
+      timestamp: 0,
+    })
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_1', optionId: 'b' },
+      timestamp: 0,
+    })
+    await room.alarm()
+
+    const counts = (await state.storage.get<Record<string, number>>('counts')) ?? {}
+    expect(counts.a).toBe(0)
+    expect(counts.b).toBe(1)
+  })
+
+  it('react policy increments each submission without decrementing prior option', async () => {
+    const { room, state } = await buildRoom()
+    await init(room, { votePolicy: 'react' })
+
+    const ws = connectVoter(state, 'v_react')
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_1', optionId: 'a' },
+      timestamp: 0,
+    })
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_1', optionId: 'b' },
+      timestamp: 0,
+    })
+    await room.alarm()
+
+    const counts = (await state.storage.get<Record<string, number>>('counts')) ?? {}
+    expect(counts.a).toBe(1)
+    expect(counts.b).toBe(1)
+  })
+
+  it('multi_select accepts two options from one voter under once policy metadata', async () => {
+    const { room, state } = await buildRoom()
+    await init(room, {
+      votePolicy: 'once',
+      question: {
+        id: 'q_ms',
+        kind: 'multi_select',
+        prompt: 'Pick many',
+        options: [
+          { id: 'x', label: 'X' },
+          { id: 'y', label: 'Y' },
+        ],
+      },
+    })
+
+    const ws = connectVoter(state, 'v_ms')
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_ms', optionId: 'x' },
+      timestamp: 0,
+    })
+    await sendMessage(room, ws, {
+      type: 'vote',
+      data: { questionId: 'q_ms', optionId: 'y' },
+      timestamp: 0,
+    })
+    await room.alarm()
+
+    const counts = (await state.storage.get<Record<string, number>>('counts')) ?? {}
+    expect(counts.x).toBe(1)
+    expect(counts.y).toBe(1)
   })
 })
 
