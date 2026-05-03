@@ -6,17 +6,24 @@ import {
   InsightsAIError,
   InsightsValidationError,
 } from '../../lib/ai-insights'
+import { fetchInsightsVoteContext } from '../../lib/insights-analyze-data'
 import {
-  toInsightsInput,
-  type SessionBundle,
-  type QuestionBreakdown,
-  type PollOptionBreakdown,
-} from '../../lib/session-bundle'
+  embedAndFindSimilarSessionTitles,
+  upsertInsightsSessionVector,
+} from '../../lib/insights-vectorize'
+import { toInsightsInput, type SessionBundle } from '../../lib/session-bundle'
 import { writeEvent } from '../../lib/observability'
 import { sanitizeError } from '../../lib/error-handler'
 import { fetchSessionTitleForOwner } from '../../lib/session-repository'
+import { fail, ok } from '../../lib/http'
+import { writeKvJson } from '../../lib/kv'
 import type { PlanTier } from '../../types'
-import { AI_RATE_LIMIT, INSIGHTS_MODEL, insightsCacheKey } from './constants'
+import {
+  AI_RATE_LIMIT,
+  INSIGHTS_CACHE_TTL_SECONDS,
+  INSIGHTS_MODEL,
+  insightsCacheKey,
+} from './constants'
 import type { AiInsightsApp } from './types'
 
 export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
@@ -29,86 +36,32 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
     try {
       const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
       if (!rl.allowed) {
-        return c.json(
-          {
-            ok: false,
-            error: { code: 'rate_limited', message: 'Too many insights requests; try again later' },
-            trace_id,
-          },
-          429,
-        )
+        return fail(c, 'rate_limited', 'Too many insights requests; try again later', 429, {
+          reset_at: rl.resetAt,
+          limit: AI_RATE_LIMIT.max,
+        })
       }
 
       const sessionResult = await fetchSessionTitleForOwner(c.env.DB, sessionId, user.sub)
 
       if (!sessionResult) {
-        return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
-          404,
-        )
+        return fail(c, 'not_found', 'Session not found or access denied', 404)
       }
 
-      const openRows = await c.env.DB.prepare(
-        `SELECT v.option_id AS text
-           FROM votes v
-           JOIN questions q ON q.id = v.question_id
-          WHERE v.session_id = ?1 AND q.kind = 'open'
-          ORDER BY v.submitted_at ASC
-          LIMIT 500`,
-      )
-        .bind(sessionId)
-        .all<{ text: string }>()
-      const openResponses = (openRows.results ?? []).map((r) => r.text).filter(Boolean)
-
-      const qRows = await c.env.DB.prepare(
-        `SELECT id, prompt, kind, options_json
-           FROM questions
-          WHERE session_id = ?1
-            AND kind IN ('poll', 'ranking', 'consent')
-          ORDER BY position`,
-      )
-        .bind(sessionId)
-        .all<{ id: string; prompt: string; kind: string; options_json: string }>()
-
-      const pollBreakdown: QuestionBreakdown[] = []
-      for (const q of qRows.results ?? []) {
-        const voteRows = await c.env.DB.prepare(
-          `SELECT option_id, COUNT(*) AS votes
-             FROM votes
-            WHERE question_id = ?1
-            GROUP BY option_id`,
-        )
-          .bind(q.id)
-          .all<{ option_id: string; votes: number }>()
-
-        let options: { id: string; label: string }[] = []
-        try {
-          options = JSON.parse(q.options_json) as { id: string; label: string }[]
-        } catch {
-          options = []
-        }
-
-        const optionBreakdowns: PollOptionBreakdown[] = options.map((o) => ({
-          label: o.label,
-          votes: voteRows.results?.find((v) => v.option_id === o.id)?.votes ?? 0,
-        }))
-
-        pollBreakdown.push({
-          questionId: q.id,
-          prompt: q.prompt,
-          kind: q.kind as QuestionBreakdown['kind'],
-          options: optionBreakdowns,
-        })
-      }
+      const { openResponses, pollBreakdown } = await fetchInsightsVoteContext(c.env.DB, sessionId)
 
       const similarSessionTitles: string[] = []
       let sessionVector: number[] | undefined
       try {
-        const embedText = `${sessionResult.title}: ${openResponses.slice(0, 10).join('. ')}`
         const embedStart = Date.now()
-        const embedResult = (await c.env.AI.run('@cf/baai/bge-m3', {
-          text: embedText,
-        })) as { data: number[][] }
+        const sim = await embedAndFindSimilarSessionTitles(
+          { AI: c.env.AI, DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE },
+          {
+            sessionId,
+            sessionTitle: sessionResult.title,
+            openResponses,
+          },
+        )
         writeEvent(c.env.METRICS_AE, {
           name: 'ai.inference',
           userId: user.sub,
@@ -116,21 +69,8 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
           durationMs: Date.now() - embedStart,
           traceId: trace_id,
         })
-        const vector = embedResult?.data?.[0]
-        if (vector?.length === 768) {
-          sessionVector = vector
-          const queryResult = await c.env.DECISIONS_VECTORIZE.query(vector, {
-            topK: 3,
-            returnMetadata: 'all',
-          })
-          const matches = queryResult.matches.filter(
-            (m) => m.id !== sessionId && (m.score ?? 0) > 0.75,
-          )
-          for (const match of matches) {
-            const meta = match.metadata as Record<string, string> | undefined
-            if (meta?.title) similarSessionTitles.push(meta.title)
-          }
-        }
+        sessionVector = sim.vector
+        similarSessionTitles.push(...sim.similarSessionTitles)
       } catch (vecErr) {
         console.log(
           JSON.stringify({ event: 'vectorize.query.skip', reason: (vecErr as Error).message }),
@@ -161,24 +101,16 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         })
       } catch (err) {
         if (err instanceof InsightsValidationError) {
-          return c.json(
-            {
-              ok: false,
-              error: {
-                code: 'ai_output_invalid',
-                message: 'AI returned output that failed schema validation',
-                details: err.details,
-              },
-              trace_id,
-            },
+          return fail(
+            c,
+            'ai_output_invalid',
+            'AI returned output that failed schema validation',
             502,
+            err.details,
           )
         }
         if (err instanceof InsightsAIError) {
-          return c.json(
-            { ok: false, error: { code: 'ai_failed', message: err.message }, trace_id },
-            500,
-          )
+          return fail(c, 'ai_failed', err.message, 500)
         }
         throw err
       }
@@ -193,40 +125,20 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         follow_ups: [] as string[],
       }
 
-      await c.env.DECISIONS_KV.put(insightsCacheKey(sessionId), JSON.stringify(payload), {
-        expirationTtl: 3600,
+      await writeKvJson(c.env.DECISIONS_KV, insightsCacheKey(sessionId), payload, {
+        expirationTtl: INSIGHTS_CACHE_TTL_SECONDS,
       })
 
       try {
-        let vector: number[] | undefined = sessionVector
-        if (!vector) {
-          const upsertEmbedStart = Date.now()
-          const upsertEmbedResult = (await c.env.AI.run('@cf/baai/bge-m3', { text: sessionResult.title })) as {
-            data: number[][]
-          }
-          writeEvent(c.env.METRICS_AE, {
-            name: 'ai.inference',
-            userId: user.sub,
-            plan: userPlan as PlanTier,
-            durationMs: Date.now() - upsertEmbedStart,
-            traceId: trace_id,
-          })
-          vector = upsertEmbedResult?.data?.[0]
-        }
-        if (vector?.length === 768) {
-          await c.env.DECISIONS_VECTORIZE.upsert([
-            {
-              id: sessionId,
-              values: vector,
-              metadata: {
-                session_id: sessionId,
-                title: sessionResult.title,
-                ts: String(Date.now()),
-                theme_count: String(themes.length),
-              },
-            },
-          ])
-        }
+        await upsertInsightsSessionVector(
+          { AI: c.env.AI, DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE },
+          {
+            sessionId,
+            sessionTitle: sessionResult.title,
+            themeCount: themes.length,
+            ...(sessionVector !== undefined ? { existingVector: sessionVector } : {}),
+          },
+        )
       } catch (vecErr) {
         console.log(
           JSON.stringify({ event: 'vectorize.upsert.skip', reason: (vecErr as Error).message }),
@@ -245,14 +157,11 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         trace_id,
       })
 
-      return c.json({ ok: true, data: payload, trace_id }, 200)
+      return ok(c, payload)
     } catch (err) {
       console.error('[ai-insights] analyze failed:', err)
       const { message } = sanitizeError(err, c.env.ENV, 500)
-      return c.json(
-        { ok: false, error: { code: 'internal', message }, trace_id },
-        500,
-      )
+      return fail(c, 'internal', message, 500)
     }
   })
 }

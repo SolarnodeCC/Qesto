@@ -47,6 +47,14 @@ import { rateLimit } from '../lib/rate-limit'
 import { sanitizeError } from '../lib/error-handler'
 import type { LiveQuestion } from '../realtime'
 import type { Env, PlanQuotas, PlanTier, PollOption, Question, Session } from '../types'
+import {
+  rejectDraftForResults,
+  requireClosedOrArchivedForInsights,
+  requireDraft,
+  requireFound,
+  requireLiveForClose,
+  requireLiveForWebSocket,
+} from '../lib/session-lifecycle'
 
 type Vars = AuthVariables & PlanVariables
 // SessionRow mirrors the D1 row shape. Analytics-only column `team_id` (OBS-001)
@@ -347,10 +355,11 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         404,
       )
     }
-    if (session.status !== 'live') {
+    const wsGate = requireLiveForWebSocket(session)
+    if (!wsGate.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_live', message: 'Session is not LIVE' }, trace_id: c.get('trace_id') },
-        409,
+        { ok: false, error: { code: wsGate.error.code, message: wsGate.error.message }, trace_id: c.get('trace_id') },
+        wsGate.error.status,
       )
     }
 
@@ -589,23 +598,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!loaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id: c.get('trace_id') },
+        loaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const draftPatch = requireDraft(loaded.session, 'patch')
+    if (!draftPatch.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Only DRAFT sessions can be edited via REST' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
+        { ok: false, error: { code: draftPatch.error.code, message: draftPatch.error.message }, trace_id: c.get('trace_id') },
+        draftPatch.error.status,
       )
     }
+    const session = draftPatch.session
 
     if (parsed.data.title !== undefined) {
       await c.env.DB
@@ -687,23 +694,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   app.post('/:id/start', async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const startLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!startLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: startLoaded.error.code, message: startLoaded.error.message }, trace_id: c.get('trace_id') },
+        startLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const draftStart = requireDraft(startLoaded.session, 'start')
+    if (!draftStart.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Only DRAFT sessions can be started' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
+        { ok: false, error: { code: draftStart.error.code, message: draftStart.error.message }, trace_id: c.get('trace_id') },
+        draftStart.error.status,
       )
     }
+    const session = draftStart.session
     const questions = await fetchQuestions(c.env.DB, id)
     if (questions.length === 0) {
       return c.json(
@@ -833,23 +838,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   app.post('/:id/close', async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const closeLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!closeLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: closeLoaded.error.code, message: closeLoaded.error.message }, trace_id: c.get('trace_id') },
+        closeLoaded.error.status,
       )
     }
-    if (session.status !== 'live') {
+    const liveClose = requireLiveForClose(closeLoaded.session)
+    if (!liveClose.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Only LIVE sessions can be closed' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
+        { ok: false, error: { code: liveClose.error.code, message: liveClose.error.message }, trace_id: c.get('trace_id') },
+        liveClose.error.status,
       )
     }
+    const session = liveClose.session
     const stub = await doStub(c.env, id)
     const doRes = await stub.fetch('https://do.internal/close', { method: 'POST' })
     const parsed = (await doRes.json().catch(() => null)) as
@@ -934,23 +937,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   app.get('/:id/results', async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const resultsLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!resultsLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: resultsLoaded.error.code, message: resultsLoaded.error.message }, trace_id: c.get('trace_id') },
+        resultsLoaded.error.status,
       )
     }
-    if (session.status === 'draft') {
+    const resultsGate = rejectDraftForResults(resultsLoaded.session)
+    if (!resultsGate.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Draft sessions have no results yet' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
+        { ok: false, error: { code: resultsGate.error.code, message: resultsGate.error.message }, trace_id: c.get('trace_id') },
+        resultsGate.error.status,
       )
     }
+    const session = resultsGate.session
     const questions = await fetchQuestions(c.env.DB, id)
     const question = questions[0] ?? null
 
@@ -1033,21 +1034,18 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const genLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!genLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: genLoaded.error.code, message: genLoaded.error.message }, trace_id: c.get('trace_id') },
+        genLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const genDraft = requireDraft(genLoaded.session, 'generate_questions')
+    if (!genDraft.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Only DRAFT sessions can generate questions' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
+        { ok: false, error: { code: genDraft.error.code, message: genDraft.error.message }, trace_id: c.get('trace_id') },
+        genDraft.error.status,
       )
     }
 
@@ -1150,21 +1148,18 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const sseLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!sseLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: sseLoaded.error.code, message: sseLoaded.error.message }, trace_id: c.get('trace_id') },
+        sseLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const sseDraft = requireDraft(sseLoaded.session, 'generate_questions')
+    if (!sseDraft.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Only DRAFT sessions can generate questions' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
+        { ok: false, error: { code: sseDraft.error.code, message: sseDraft.error.message }, trace_id: c.get('trace_id') },
+        sseDraft.error.status,
       )
     }
 
@@ -1256,19 +1251,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const user = c.get('user')
     const id = c.req.param('id')
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const addQLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!addQLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: addQLoaded.error.code, message: addQLoaded.error.message }, trace_id: c.get('trace_id') },
+        addQLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const addQDraft = requireDraft(addQLoaded.session, 'add_question')
+    if (!addQDraft.ok) {
       return c.json(
-        { ok: false, error: { code: 'conflict', message: 'Only DRAFT sessions can be edited via REST' }, trace_id: c.get('trace_id') },
-        409,
+        { ok: false, error: { code: addQDraft.error.code, message: addQDraft.error.message }, trace_id: c.get('trace_id') },
+        addQDraft.error.status,
       )
     }
+    const session = addQDraft.session
 
     const body = await c.req.json().catch(() => null)
     const parsed = AddQuestionSchema.safeParse(body)
@@ -1314,23 +1311,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const user = c.get('user')
     const id = c.req.param('id')
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const reorderLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!reorderLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: reorderLoaded.error.code, message: reorderLoaded.error.message }, trace_id: c.get('trace_id') },
+        reorderLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const reorderDraft = requireDraft(reorderLoaded.session, 'reorder')
+    if (!reorderDraft.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Only DRAFT sessions can be reordered' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
+        { ok: false, error: { code: reorderDraft.error.code, message: reorderDraft.error.message }, trace_id: c.get('trace_id') },
+        reorderDraft.error.status,
       )
     }
+    const session = reorderDraft.session
 
     const body = (await c.req.json().catch(() => null)) as unknown
     const parsed = ReorderQuestionsSchema.safeParse(body)
@@ -1408,19 +1403,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const id = c.req.param('id')
     const questionId = c.req.param('questionId')
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const patchQLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!patchQLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
+        { ok: false, error: { code: patchQLoaded.error.code, message: patchQLoaded.error.message }, trace_id: c.get('trace_id') },
+        patchQLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const patchQDraft = requireDraft(patchQLoaded.session, 'patch')
+    if (!patchQDraft.ok) {
       return c.json(
-        { ok: false, error: { code: 'conflict', message: 'Only DRAFT sessions can be edited via REST' }, trace_id: c.get('trace_id') },
-        409,
+        { ok: false, error: { code: patchQDraft.error.code, message: patchQDraft.error.message }, trace_id: c.get('trace_id') },
+        patchQDraft.error.status,
       )
     }
+    const session = patchQDraft.session
 
     const body = await c.req.json().catch(() => null)
     const parsed = AddQuestionSchema.safeParse(body)
@@ -1597,19 +1594,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const id = c.req.param('id')
     const traceId = c.get('trace_id')
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const pfLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!pfLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId },
-        404,
+        { ok: false, error: { code: pfLoaded.error.code, message: pfLoaded.error.message }, trace_id: traceId },
+        pfLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const pfDraft = requireDraft(pfLoaded.session, 'preflight')
+    if (!pfDraft.ok) {
       return c.json(
-        { ok: false, error: { code: 'conflict', message: 'Preflight only valid for DRAFT sessions' }, trace_id: traceId },
-        409,
+        { ok: false, error: { code: pfDraft.error.code, message: pfDraft.error.message }, trace_id: traceId },
+        pfDraft.error.status,
       )
     }
+    const session = pfDraft.session
 
     const questions = await fetchQuestions(c.env.DB, id)
     const checks: { id: string; label: string; pass: boolean; message?: string }[] = []
@@ -1735,19 +1734,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const refineLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!refineLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId },
-        404,
+        { ok: false, error: { code: refineLoaded.error.code, message: refineLoaded.error.message }, trace_id: traceId },
+        refineLoaded.error.status,
       )
     }
-    if (session.status !== 'draft') {
+    const refineDraft = requireDraft(refineLoaded.session, 'ai_refine')
+    if (!refineDraft.ok) {
       return c.json(
-        { ok: false, error: { code: 'conflict', message: 'Only DRAFT sessions can be refined' }, trace_id: traceId },
-        409,
+        { ok: false, error: { code: refineDraft.error.code, message: refineDraft.error.message }, trace_id: traceId },
+        refineDraft.error.status,
       )
     }
+    const session = refineDraft.session
 
     const body = (await c.req.json().catch(() => null)) as
       | { grounding?: unknown; feedback?: unknown; previous_questions?: unknown[] }
@@ -1863,25 +1864,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   // call here — only reads from `insights_daily`. Closed/archived only.
   // ──────────────────────────────────────────────────────────────────────────
   app.get('/:id/insights/themes', requireFeature('insightsAI'), async (c) => {
-    const user = c.get('user')
     const id = c.req.param('id')
     const traceId = c.get('trace_id')
 
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
+    const themesLoaded = requireFound(await fetchSession(c.env.DB, id, c.get('user').sub))
+    if (!themesLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId },
-        404,
+        { ok: false, error: { code: themesLoaded.error.code, message: themesLoaded.error.message }, trace_id: traceId },
+        themesLoaded.error.status,
       )
     }
-    if (session.status !== 'closed' && session.status !== 'archived') {
+    const themesGate = requireClosedOrArchivedForInsights(themesLoaded.session)
+    if (!themesGate.ok) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Insights only available for closed sessions' },
-          trace_id: traceId,
-        },
-        409,
+        { ok: false, error: { code: themesGate.error.code, message: themesGate.error.message }, trace_id: traceId },
+        themesGate.error.status,
       )
     }
 

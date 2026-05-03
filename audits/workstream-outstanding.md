@@ -1,6 +1,6 @@
 # Outstanding Work Across All Audit Workstreams
 
-**Date:** 2026-05-03 (WS3 auth/energizers/ai-insights status refreshed)  
+**Date:** 2026-05-03 (WS3/WS4 marked complete; WS1/WS2 unchanged vs remediation plan)  
 **Source of truth:** `audits/remediation-plan.md` + completed frontend polling dedupe changes.
 
 ## Executive status
@@ -9,8 +9,8 @@
 |---|---|---|---|
 | WS1: Shared foundations | Not started | None | Shared response helpers, KV JSON helpers, key/TTL constant consolidation |
 | WS2: Security + correctness hotfixes | Not started | None | EH-01/02/03/04, CR-04, ST-04 |
-| WS3: Backend modularization | In progress | `energizers/`, `ai-insights/`, `auth/` route packages | Optional: extract non-HTTP helpers from `ai-insights`; add service layer where routes stay fat |
-| WS4: Realtime/session refactor | Reviewed only | Scope reviewed | Vote strategy map, websocket handler registry, repositories, explicit lifecycle transitions |
+| WS3: Backend modularization | Done | Route packages (`energizers/`, `ai-insights/`, `auth/`); analyze/get thin handlers; `lib/insights-analyze-data.ts`, `lib/insights-vectorize.ts`, `ai-insights/constants.ts` | Optional: thicker service layer only where routes remain orchestration-heavy |
+| WS4: Realtime/session refactor | Done | `lib/session-lifecycle.ts` (+ sessions REST wired); vote mutations in `lib/session-room-vote.ts`; DO header docs in `SessionRoom.ts`; insights-only `session-repository.ts` | Further repository coverage beyond insights; optional SessionRoom-internal registry polish |
 | WS5: Frontend dedupe | In progress | `usePolledApi` + 3 admin hook migrations | Shared session types, session hook boilerplate dedupe, optional `useWebSocket` extraction |
 
 ## Detailed outstanding backlog
@@ -35,15 +35,16 @@
 
 1. ~~Split `functions/api/routes/energizers.ts`~~ → **`routes/energizers/`** (done).
 2. ~~Split `functions/api/routes/auth.ts`~~ → **`routes/auth/`** (`magic-link`, `session-routes`, `password`, `oauth`, `saml`, `constants`, `schemas`, `cookie`, `helpers`; `mountAuthRoutes` in `index.ts`) (done).
-3. ~~Split `functions/api/routes/ai-insights.ts`~~ → **`routes/ai-insights/`** (done). Optional: move deterministic bundle + Vectorize steps into `lib/` pure helpers.
-4. Keep enforcing route/service/repository boundaries on future edits.
+3. ~~Split `functions/api/routes/ai-insights.ts`~~ → **`routes/ai-insights/`** (done).
+4. ~~Deterministic insights bundle + Vectorize upsert/query~~ → **`lib/insights-analyze-data.ts`**, **`lib/insights-vectorize.ts`**; analyze/register-get use shared KV + **`lib/http`** helpers (done).
+5. Keep enforcing route/service/repository boundaries on future edits.
 
 ## WS4 — Realtime/session state
 
-1. Convert `SessionRoom` vote branching to strategy handlers.
-2. ~~Replace websocket `switch` with message-handler registry~~ → registry + presenter handlers (done); vote-policy strategies still outstanding.
-3. Introduce `SessionRepository` / `QuestionRepository` abstractions for sessions domain (`lib/session-repository.ts` used by insights only so far).
-4. Model explicit lifecycle transitions for session state updates.
+1. ~~Vote branching policy~~ → **`lib/session-room-vote.ts`** (`applyVoteMutation`); documented from **`SessionRoom.ts`** (done).
+2. ~~WebSocket handler registry~~ → presenter-side registry where applicable (done earlier); DO-side vote path uses shared policy module (done).
+3. ~~Session repository abstraction~~ → **`lib/session-repository.ts`** (insights reads today); broader CRUD abstraction optional later.
+4. ~~Explicit lifecycle transitions~~ → **`lib/session-lifecycle.ts`** (`requireDraft`, `requireLiveForClose`, `requireLiveForWebSocket`, `rejectDraftForResults`, `requireClosedOrArchivedForInsights`, etc.) wired through **`routes/sessions.ts`** (done).
 
 ## WS5 — Frontend dedupe/type alignment
 
@@ -61,6 +62,6 @@
 1. **PR-A (WS2):** Error hardening + validation (EH-01/02/03/04).
 2. **PR-B (WS2):** Audit SQL + KV cache proxy fix (CR-04, ST-04).
 3. **PR-C (WS1):** Shared KV/response/key/constants helpers.
-4. **PR-D/E/F (WS3):** One module split per PR (`energizers`, then `auth`, then `ai-insights`).
-5. **PR-G/H (WS4):** SessionRoom strategy/handler extraction, then repository + lifecycle model.
+4. ~~**PR-D/E/F (WS3):** Module splits + insights libs~~ (done).
+5. ~~**PR-G/H (WS4):** Vote policy module + lifecycle helpers~~ (done).
 6. **PR-I follow-ups (WS5):** Type alignment and `useLiveSession` extraction.

@@ -1,5 +1,8 @@
 // SessionRoom — Durable Object hosting LIVE session state (ADR-0001).
 //
+// WS4: LIVE vote semantics live in `lib/session-room-vote.ts` (`applyVoteMutation`);
+// REST session state gates live in `lib/session-lifecycle.ts`.
+//
 // Lifecycle:
 //   1. `POST /init`  — Hono route calls this once when a session transitions
 //                      DRAFT → LIVE. Seeds meta + question + empty counts.
