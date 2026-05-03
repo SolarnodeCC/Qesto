@@ -628,10 +628,13 @@ describe('preflight emits preflight.checked AE event', () => {
     expect(res.status).toBe(200)
     const body = (await res.json()) as { data: { ready: boolean } }
     expect(body.data.ready).toBe(false)
-    expect(mockAe.writeDataPoint).toHaveBeenCalledOnce()
-    const dp = mockAe.writeDataPoint.mock.calls[0][0] as { blobs: string[]; doubles: number[] }
-    expect(dp.blobs[0]).toBe('preflight.checked')
-    expect(dp.doubles[1]).toBeGreaterThan(0)
+    expect(mockAe.writeDataPoint).toHaveBeenCalledTimes(2)
+    const checked = mockAe.writeDataPoint.mock.calls[0][0] as { blobs: string[]; doubles: number[] }
+    expect(checked.blobs[0]).toBe('preflight.checked')
+    expect(checked.doubles[1]).toBeGreaterThan(0)
+    const failed = mockAe.writeDataPoint.mock.calls[1][0] as { blobs: string[]; doubles: number[] }
+    expect(failed.blobs[0]).toBe('preflight.failed')
+    expect(failed.doubles[1]).toBeGreaterThan(0)
   })
 
   it('is still 200 even when METRICS_AE is absent (fail-open)', async () => {

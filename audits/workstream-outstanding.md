@@ -1,6 +1,6 @@
 # Outstanding Work Across All Audit Workstreams
 
-**Date:** 2026-05-02  
+**Date:** 2026-05-03 (WS3 auth/energizers/ai-insights status refreshed)  
 **Source of truth:** `audits/remediation-plan.md` + completed frontend polling dedupe changes.
 
 ## Executive status
@@ -9,7 +9,7 @@
 |---|---|---|---|
 | WS1: Shared foundations | Not started | None | Shared response helpers, KV JSON helpers, key/TTL constant consolidation |
 | WS2: Security + correctness hotfixes | Not started | None | EH-01/02/03/04, CR-04, ST-04 |
-| WS3: Backend modularization | Reviewed only | Scope reviewed | Split `energizers`, `auth`, `ai-insights`; enforce route/service/repository boundaries |
+| WS3: Backend modularization | In progress | `energizers/`, `ai-insights/`, `auth/` route packages | Optional: extract non-HTTP helpers from `ai-insights`; add service layer where routes stay fat |
 | WS4: Realtime/session refactor | Reviewed only | Scope reviewed | Vote strategy map, websocket handler registry, repositories, explicit lifecycle transitions |
 | WS5: Frontend dedupe | In progress | `usePolledApi` + 3 admin hook migrations | Shared session types, session hook boilerplate dedupe, optional `useWebSocket` extraction |
 
@@ -33,16 +33,16 @@
 
 ## WS3 — Backend modularization
 
-1. Split `functions/api/routes/energizers.ts` into kind-specific route modules + shared guards.
-2. Split `functions/api/routes/auth.ts` by protocol flows.
-3. Split `functions/api/routes/ai-insights.ts` into cache/search/generate helpers.
-4. Keep one monolith split per PR to control merge conflict and regression risk.
+1. ~~Split `functions/api/routes/energizers.ts`~~ → **`routes/energizers/`** (done).
+2. ~~Split `functions/api/routes/auth.ts`~~ → **`routes/auth/`** (`magic-link`, `session-routes`, `password`, `oauth`, `saml`, `constants`, `schemas`, `cookie`, `helpers`; `mountAuthRoutes` in `index.ts`) (done).
+3. ~~Split `functions/api/routes/ai-insights.ts`~~ → **`routes/ai-insights/`** (done). Optional: move deterministic bundle + Vectorize steps into `lib/` pure helpers.
+4. Keep enforcing route/service/repository boundaries on future edits.
 
 ## WS4 — Realtime/session state
 
 1. Convert `SessionRoom` vote branching to strategy handlers.
-2. Replace websocket `switch` with message-handler registry.
-3. Introduce `SessionRepository` / `QuestionRepository` abstractions for sessions domain.
+2. ~~Replace websocket `switch` with message-handler registry~~ → registry + presenter handlers (done); vote-policy strategies still outstanding.
+3. Introduce `SessionRepository` / `QuestionRepository` abstractions for sessions domain (`lib/session-repository.ts` used by insights only so far).
 4. Model explicit lifecycle transitions for session state updates.
 
 ## WS5 — Frontend dedupe/type alignment

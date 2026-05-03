@@ -27,10 +27,10 @@ _Last updated: 2026-05-01 (UTC)_
 |---|---|
 | ENTITLEMENTS-01 Pricing claim → backend gate matrix | ✅ Shipped 2026-05-01 |
 | ENTITLEMENTS-02 Contract tests for paid capabilities | In progress |
-| OBS-02 Sprint 19 operational evidence | Planned |
+| OBS-02 Sprint 19 operational evidence | ✅ Shipped 2026-05-01 |
 | QA-DOCDRIFT-01 Align docs with package scripts/test counts | ✅ Shipped 2026-05-01 |
 | DESIGN-GATE-01 Stabilize token drift check locally and in CI | ✅ Shipped 2026-05-01 |
-| S19-MEASURE-01 AI wizard + Launchpad KPI baseline | Planned |
+| S19-MEASURE-01 AI wizard + Launchpad KPI baseline | ✅ Shipped 2026-05-01 |
 
 **Gate:** RBAC depth/custom roles require an authorization ADR; LIVE energizers require a Durable Object protocol/versioning ADR.
 

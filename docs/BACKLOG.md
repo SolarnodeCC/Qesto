@@ -70,16 +70,16 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 
 **Status**: Planned on 2026-04-30; **scope expanded 2026-05-01** — Sprint 19 shipped early, creating extra velocity. AUTHZ-ADR-01 pulled forward from stretch to committed. Sprint A design/i18n verification bundle added. Sprint 20 remains a readiness/enforcement sprint, not a broad feature-expansion sprint.
 
-**Committed items** (45 pts):
+**Committed items** (45 pts): ✅ ENTITLEMENTS-01, ENTITLEMENTS-02 (in progress), ✅ OBS-02, ✅ QA-DOCDRIFT-01, ✅ DESIGN-GATE-01, ✅ S19-MEASURE-01
 
 | Item | Pts | Status |
 |---|---:|---|
 | ENTITLEMENTS-01: Pricing claim → backend gate matrix | 8 | ✅ Done 2026-05-01 |
 | ENTITLEMENTS-02: Contract tests for paid capabilities | 8 | In progress |
-| OBS-02: Sprint 19 operational evidence | 5 | Planned |
+| OBS-02: Sprint 19 operational evidence | 5 | ✅ Done 2026-05-01 |
 | QA-DOCDRIFT-01: Align docs with actual scripts | 3 | ✅ Done 2026-05-01 |
 | DESIGN-GATE-01: Stabilize token drift locally + CI | 5 | ✅ Done 2026-05-01 |
-| S19-MEASURE-01: AI wizard + Launchpad KPI baseline | 5 | Planned (after OBS-02) |
+| S19-MEASURE-01: AI wizard + Launchpad KPI baseline | 5 | ✅ Done 2026-05-01 |
 | **AUTHZ-ADR-01**: Custom RBAC authorization ADR *(pulled in from stretch)* | 3 | Start now — ENTITLEMENTS-01 gate satisfied |
 | **Sprint A verification bundle** (LAYOUT-GRID-01, LAYOUT-A11Y-01, DESIGN-TOK-01, DX-INSIGHTS-01, I18N-BUG-01, I18N-BUG-02) | 8 | QA gate sign-off — DESIGN-GATE-01 tooling ready |
 

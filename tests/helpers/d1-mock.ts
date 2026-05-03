@@ -79,6 +79,33 @@ type AuditEvent = {
   idempotency_key: string | null
 }
 
+/** Mirrors `buildAuditEventWhereClause` filter order for integration tests. */
+function filterAuditEventsForMock(rows: AuditEvent[], sql: string, filterArgs: unknown[]): AuditEvent[] {
+  let i = 0
+  let out = rows
+  if (sql.includes('actor_id =')) {
+    const v = filterArgs[i++] as string | null
+    out = out.filter((r) => r.actor_id === v)
+  }
+  if (sql.includes('action =')) {
+    const v = filterArgs[i++] as string
+    out = out.filter((r) => r.action === v)
+  }
+  if (sql.includes('subject_type =')) {
+    const v = filterArgs[i++] as string
+    out = out.filter((r) => r.subject_type === v)
+  }
+  if (sql.includes('ts >= ')) {
+    const v = filterArgs[i++] as number
+    out = out.filter((r) => r.ts >= v)
+  }
+  if (sql.includes('ts <= ')) {
+    const v = filterArgs[i++] as number
+    out = out.filter((r) => r.ts <= v)
+  }
+  return out
+}
+
 type InsightsDailyRow = {
   id: string
   session_id: string
@@ -456,6 +483,38 @@ export class D1PreparedStatementMock {
       }
       return null
     }
+    if (this.sql.includes('FROM audit_events') && this.sql.includes('COUNT(*)')) {
+      const filtered = filterAuditEventsForMock(
+        [...this.db.auditEvents.values()],
+        this.sql,
+        this.args as unknown[],
+      )
+      return { count: filtered.length } as T
+    }
+    if (this.sql.startsWith('SELECT COUNT(*) as n FROM sessions')) {
+      let rows = [...this.db.sessions.values()]
+      const hasRange = this.sql.includes('created_at >= ?1') && this.args.length >= 2
+      if (hasRange) {
+        const [start, end] = this.args as [number, number]
+        rows = rows.filter((s) => s.created_at >= start && s.created_at <= end)
+      }
+      if (this.sql.includes('ai_generated = 1')) {
+        rows = rows.filter((s) => s.ai_generated === 1)
+      }
+      if (this.sql.includes('ai_consent_at IS NOT NULL')) {
+        rows = rows.filter((s) => s.ai_consent_at !== null && s.ai_consent_at !== undefined)
+      }
+      if (this.sql.includes('ai_grounding_hash IS NOT NULL')) {
+        rows = rows.filter((s) => !!s.ai_grounding_hash)
+      }
+      if (this.sql.includes("status IN ('live','closed','archived')")) {
+        rows = rows.filter((s) => s.status === 'live' || s.status === 'closed' || s.status === 'archived')
+      }
+      if (this.sql.includes("status = 'draft'")) {
+        rows = rows.filter((s) => s.status === 'draft')
+      }
+      return { n: rows.length } as T
+    }
     if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { count: 0 } as T
     }
@@ -473,6 +532,21 @@ export class D1PreparedStatementMock {
       const [user_id] = this.args as [string]
       const rows = [...this.db.userRoles.values()].filter((r) => r.user_id === user_id)
       return { results: rows.map((r) => ({ role: r.role })) as unknown as T[] }
+    }
+    if (this.sql.includes('FROM audit_events') && this.sql.includes('ORDER BY ts DESC')) {
+      const args = [...this.args] as unknown[]
+      const offset = Number(args.pop())
+      const limit = Number(args.pop())
+      let rows = [...this.db.auditEvents.values()]
+      rows = filterAuditEventsForMock(rows, this.sql, args)
+      rows.sort((a, b) => b.ts - a.ts)
+      const slice = rows.slice(offset, offset + limit)
+      return {
+        results: slice.map((r) => ({
+          ...r,
+          actor_ip: null,
+        })) as unknown as T[],
+      }
     }
     if (this.sql.startsWith('SELECT * FROM audit_events')) {
       // Return all audit events (filters handled by caller if needed)

@@ -1011,7 +1011,14 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       prefix: 'ai-wizard',
     })
     if (!rl.allowed) {
-      writeEvent(c.env.METRICS_AE, { name: 'ai.rate_limited', userId: user.sub, sessionId: id, traceId: c.get('trace_id') })
+      writeEvent(c.env.METRICS_AE, {
+        name: 'ai.rate_limited',
+        userId: user.sub,
+        sessionId: id,
+        plan: c.get('plan'),
+        count: 20,
+        traceId: c.get('trace_id'),
+      })
       return c.json(
         {
           ok: false,
@@ -1059,7 +1066,17 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     try {
       const language = c.req.header('accept-language') ?? 'en'
+      const inferenceStart = Date.now()
       const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
+      writeEvent(c.env.METRICS_AE, {
+        name: 'ai.inference',
+        userId: user.sub,
+        sessionId: id,
+        plan: c.get('plan'),
+        durationMs: Date.now() - inferenceStart,
+        count: result.questions.length,
+        traceId: c.get('trace_id'),
+      })
       return c.json({
         ok: true,
         data: { questions: result.questions, confidence: result.confidence },
@@ -1111,7 +1128,14 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       prefix: 'ai-wizard',
     })
     if (!rl.allowed) {
-      writeEvent(c.env.METRICS_AE, { name: 'ai.rate_limited', userId: user.sub, sessionId: id, traceId: c.get('trace_id') })
+      writeEvent(c.env.METRICS_AE, {
+        name: 'ai.rate_limited',
+        userId: user.sub,
+        sessionId: id,
+        plan: c.get('plan'),
+        count: 20,
+        traceId: c.get('trace_id'),
+      })
       return c.json(
         {
           ok: false,
@@ -1176,7 +1200,17 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       async start(controller) {
         controller.enqueue(sse('ready', { trace_id: traceId, groundingHash }))
         try {
+          const inferenceStart = Date.now()
           const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
+          writeEvent(c.env.METRICS_AE, {
+            name: 'ai.inference',
+            userId: user.sub,
+            sessionId: id,
+            plan: c.get('plan'),
+            durationMs: Date.now() - inferenceStart,
+            count: result.questions.length,
+            traceId,
+          })
           controller.enqueue(sse('questions', {
             questions: result.questions,
             confidence: result.confidence,
@@ -1629,15 +1663,36 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       message: consentOk ? undefined : 'GDPR consent required for AI-generated sessions',
     })
 
-    const ready = checks.every((c) => c.pass)
+    const ready = checks.every((check) => check.pass)
+    const failureCount = checks.filter((check) => !check.pass).length
     writeEvent(c.env.METRICS_AE, {
       name: 'preflight.checked',
       sessionId: id,
       ...(session.team_id ? { teamId: session.team_id } : {}),
       plan: c.get('plan'),
       traceId,
-      count: checks.filter((ch) => !ch.pass).length,
+      count: failureCount,
     })
+    if (!ready) {
+      writeEvent(c.env.METRICS_AE, {
+        name: 'preflight.failed',
+        userId: user.sub,
+        sessionId: id,
+        plan: c.get('plan'),
+        count: failureCount,
+        traceId,
+      })
+      console.log(
+        JSON.stringify({
+          ts: new Date().toISOString(),
+          level: 'warn',
+          event: 'preflight.failed',
+          session_id: id,
+          failed_checks: checks.filter((check) => !check.pass).map((check) => check.id),
+          trace_id: traceId,
+        }),
+      )
+    }
     return c.json({ ok: true, data: { ready, checks }, trace_id: traceId })
   })
 
@@ -1658,7 +1713,14 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       prefix: 'ai-refine',
     })
     if (!rl.allowed) {
-      writeEvent(c.env.METRICS_AE, { name: 'ai.rate_limited', userId: user.sub, sessionId: id, traceId })
+      writeEvent(c.env.METRICS_AE, {
+        name: 'ai.rate_limited',
+        userId: user.sub,
+        sessionId: id,
+        plan: c.get('plan'),
+        count: 10,
+        traceId,
+      })
       return c.json(
         {
           ok: false,
@@ -1736,10 +1798,20 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     try {
       const language = c.req.header('accept-language') ?? 'en'
       // The refine prompt blends grounding + user feedback into the goal field.
+      const inferenceStart = Date.now()
       const result = await generateQuestions(c.env.AI, {
         sessionTitle: session.title,
         sessionGoal: `${grounding}\n\nRefinement feedback: ${feedback}`,
         language,
+      })
+      writeEvent(c.env.METRICS_AE, {
+        name: 'ai.inference',
+        userId: user.sub,
+        sessionId: id,
+        plan: c.get('plan'),
+        durationMs: Date.now() - inferenceStart,
+        count: result.questions.length,
+        traceId,
       })
 
       // Persist hash on the session row for future cache hits.

@@ -7,8 +7,27 @@
 // - Leaderboard: 1 min TTL (updates frequently during sessions)
 
 import { MiddlewareHandler } from 'hono'
-import type { Env } from '../types'
+import type { Env, PlanTier } from '../types'
+import { PLAN_QUOTAS } from '../types'
+import { getQuotaUsage } from '../lib/quota'
+import {
+  cacheLeaderboardKey,
+  cachePlanUsageKey,
+  cacheTeamMetadataKey,
+  cacheUserRolesKey,
+} from '../lib/kv-keys'
 import type { AuthVariables } from './auth'
+
+/** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
+export function kvNamespaceForCacheKey(key: string): 'USERS_KV' | 'TEAMS_KV' | 'SESSIONS_KV' {
+  if (key.startsWith('cache:team:')) return 'TEAMS_KV'
+  if (key.startsWith('cache:leaderboard:')) return 'SESSIONS_KV'
+  return 'USERS_KV'
+}
+
+function cacheKv(c: { env: Env }, key: string): KVNamespace {
+  return c.env[kvNamespaceForCacheKey(key)]
+}
 
 export interface CacheVariables {
   cachedPlanUsage?: Record<string, any>
@@ -27,7 +46,7 @@ export const kvCacheMiddleware: MiddlewareHandler<{
   // Helper to get from KV with TTL check
   const getCached = async (key: string): Promise<any | null> => {
     try {
-      const cached = await c.env.DECISIONS_KV.get(key, 'json') as { data: unknown; expires_at: number } | null
+      const cached = await cacheKv(c, key).get(key, 'json') as { data: unknown; expires_at: number } | null
       if (cached && cached.expires_at && cached.expires_at > Date.now()) {
         cacheMarkings[key] = 'HIT'
         return cached.data
@@ -43,7 +62,7 @@ export const kvCacheMiddleware: MiddlewareHandler<{
 
   // Pre-load plan usage cache for current user
   if (user?.sub) {
-    const planUsageKey = `cache:plan:${user.sub}`
+    const planUsageKey = cachePlanUsageKey(user.sub)
     const cached = await getCached(planUsageKey)
 
     if (cached) {
@@ -69,9 +88,9 @@ export async function cachePlanUsage(
   usage: Record<string, any>,
   ttl: number = 5 * 60
 ): Promise<void> {
-  const key = `cache:plan:${userId}`
+  const key = cachePlanUsageKey(userId)
   try {
-    await c.env.DECISIONS_KV.put(
+    await cacheKv(c, key).put(
       key,
       JSON.stringify({ data: usage, expires_at: Date.now() + ttl * 1000 }),
       { expirationTtl: ttl }
@@ -88,40 +107,39 @@ export async function getPlanUsageWithCache(
   c: any,
   userId: string
 ): Promise<Record<string, any>> {
-  const key = `cache:plan:${userId}`
+  const key = cachePlanUsageKey(userId)
 
   // Try cache first
   try {
-    const cached = await c.env.DECISIONS_KV.get(key, 'json')
+    const cached = await c.env.USERS_KV.get(key, 'json') as { data: Record<string, unknown>; expires_at: number } | null
     if (cached && cached.expires_at && cached.expires_at > Date.now()) {
-      return cached.data
+      return cached.data as Record<string, any>
     }
-  } catch (err) {
-    // Fall through to D1 fetch
+  } catch {
+    // Fall through to D1 + quota KV
   }
 
-  // Fetch from D1
-  const result = await (c.env.DB.prepare as any)(
-    `SELECT plan, sessions_used, sessions_limit, results_viewed, results_limit, exports_used, exports_limit
-     FROM users WHERE id = ?1`,
+  const row = (await (c.env.DB.prepare as any)(
+    `SELECT plan FROM users WHERE id = ?1`,
   )
     .bind(userId)
-    .first()
+    .first()) as { plan: PlanTier } | null
 
-  if (result) {
-    const usage = {
-      plan: result.plan,
-      sessions: { used: result.sessions_used || 0, limit: result.sessions_limit || 100 },
-      results: { used: result.results_viewed || 0, limit: result.results_limit || 500 },
-      exports: { used: result.exports_used || 0, limit: result.exports_limit || 50 },
-    }
+  const plan: PlanTier = row?.plan ?? 'free'
+  const sessionLimit = PLAN_QUOTAS[plan].maxSessionsPerMonth
+  const quota = await getQuotaUsage(c.env.SESSIONS_KV, userId, sessionLimit)
 
-    // Cache for 5 minutes
-    await cachePlanUsage(c, userId, usage, 5 * 60)
-    return usage
+  const usage = {
+    plan,
+    sessions: {
+      used: quota.sessions_created,
+      limit: quota.limit,
+      remaining: quota.remaining,
+    },
   }
 
-  return { sessions: { used: 0, limit: 100 }, results: { used: 0, limit: 500 }, exports: { used: 0, limit: 50 } }
+  await cachePlanUsage(c, userId, usage, 5 * 60)
+  return usage
 }
 
 /**
@@ -134,9 +152,9 @@ export async function cacheTeamMetadata(
   metadata: Record<string, any>,
   ttl: number = 10 * 60
 ): Promise<void> {
-  const key = `cache:team:${teamId}`
+  const key = cacheTeamMetadataKey(teamId)
   try {
-    await c.env.DECISIONS_KV.put(
+    await cacheKv(c, key).put(
       key,
       JSON.stringify({ data: metadata, expires_at: Date.now() + ttl * 1000 }),
       { expirationTtl: ttl }
@@ -156,9 +174,9 @@ export async function cacheUserRoles(
   roles: string[],
   ttl: number = 5 * 60
 ): Promise<void> {
-  const key = `cache:roles:${userId}`
+  const key = cacheUserRolesKey(userId)
   try {
-    await c.env.DECISIONS_KV.put(
+    await cacheKv(c, key).put(
       key,
       JSON.stringify({ data: roles, expires_at: Date.now() + ttl * 1000 }),
       { expirationTtl: ttl }
@@ -178,9 +196,9 @@ export async function cacheLeaderboard(
   entries: Record<string, any>[],
   ttl: number = 1 * 60
 ): Promise<void> {
-  const key = `cache:leaderboard:${sessionId}`
+  const key = cacheLeaderboardKey(sessionId)
   try {
-    await c.env.DECISIONS_KV.put(
+    await cacheKv(c, key).put(
       key,
       JSON.stringify({ data: entries, expires_at: Date.now() + ttl * 1000 }),
       { expirationTtl: ttl }
@@ -193,11 +211,11 @@ export async function cacheLeaderboard(
 /**
  * Invalidate cache entries (on mutation)
  */
-export async function invalidateCache(c: any, ...keys: string[]): Promise<void> {
+export async function invalidateCache(c: { env: Env }, ...keys: string[]): Promise<void> {
   for (const key of keys) {
     try {
-      await c.env.DECISIONS_KV.delete(key)
-    } catch (err) {
+      await cacheKv(c, key).delete(key)
+    } catch {
       // Ignore delete errors
     }
   }

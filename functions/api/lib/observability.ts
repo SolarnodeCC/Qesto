@@ -99,7 +99,23 @@ function safeRecord(
 }
 
 export type QestoEvent = {
-  name: 'signup' | 'team_created' | 'first_session_started' | 'first_paid' | 'session.started' | 'session.closed' | 'ws.voter_joined' | 'ws.capacity_exceeded' | 'ai.inference' | 'error.api' | 'error.ai_timeout' | 'preflight.checked' | 'ai.rate_limited'
+  name:
+    | 'signup'
+    | 'team_created'
+    | 'first_session_started'
+    | 'first_paid'
+    | 'session.started'
+    | 'session.closed'
+    | 'ws.voter_joined'
+    | 'ws.capacity_exceeded'
+    | 'ws.token_bucket_contention'
+    | 'ai.inference'
+    | 'preflight.checked'
+    | 'preflight.failed'
+    | 'ai.rate_limited'
+    | 'rate_limit.hit'
+    | 'error.api'
+    | 'error.ai_timeout'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

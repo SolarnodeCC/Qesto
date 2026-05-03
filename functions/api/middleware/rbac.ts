@@ -77,6 +77,7 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'POST /api/admin/users/:id/restore': new Set(['owner', 'admin']),
   'GET /api/admin/ops/summary': new Set(['owner', 'admin']),
   'GET /api/admin/analytics': new Set(['owner', 'admin']),
+  'GET /api/admin/sprint19-baseline': new Set(['owner', 'admin']),
 }
 
 // ─── Utility Functions ────────────────────────────────────────────────────────
@@ -148,7 +149,12 @@ async function getUserRoles(c: any, userId: string): Promise<string[]> {
     c.set('_rbac_cache', { roles })
     return roles
   } catch (err) {
-    // If DB fails, default to viewer (fail-safe)
+    // Fail-safe demotion — log so ops can correlate RBAC/KV incidents (EH-05).
+    console.warn('[rbac] user_roles lookup failed; demoting to viewer', {
+      trace_id: c.get('trace_id'),
+      userId,
+      message: err instanceof Error ? err.message : String(err),
+    })
     return ['viewer']
   }
 }
