@@ -498,11 +498,17 @@ export class SessionRoom implements DurableObject {
     att: Attachment,
     data: { questionId?: string; optionId?: string },
   ): Promise<void> {
+    const meta = await this.ctx.storage.get<Meta>(K_META)
     // Token-bucket rate limit (S5).
     const nowMs = now()
     const elapsed = (nowMs - att.bucket.lastAt) / 1000
     const refilled = Math.min(VOTE_BUCKET_CAPACITY, att.bucket.tokens + elapsed * VOTE_BUCKET_REFILL_PER_SEC)
     if (refilled < 1) {
+      writeEvent(this.env.METRICS_AE, {
+        name: 'ws.token_bucket_contention',
+        sessionId: meta?.sessionId,
+        count: this.ctx.getWebSockets().length,
+      })
       ws.send(errorMessage('rate_limited', 'Slow down'))
       ws.close(CLOSE_POLICY_VIOLATION, 'vote flood')
       return
@@ -510,7 +516,6 @@ export class SessionRoom implements DurableObject {
     att.bucket = { tokens: refilled - 1, lastAt: nowMs }
     ws.serializeAttachment(att)
 
-    const meta = await this.ctx.storage.get<Meta>(K_META)
     if (meta?.paused) {
       ws.send(errorMessage('paused', 'Voting is paused'))
       return

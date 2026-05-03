@@ -81,6 +81,7 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | `OBSERVABILITY.md` | Logging and metrics posture |
 | `TESTING_PYRAMID.md` | Test layering |
 | `PLAN_ENTITLEMENT_AUDIT.md` | Entitlement audit plan |
+| `SPRINT20_READINESS_SPEC.md` | Sprint 20 entitlement, observability, and KPI baseline implementation spec |
 | `ADR-workers-ai-capabilities.md` | Architecture decision record |
 | `CLOUDFLARE_WORKERS_OPTIMIZATION.md` | Workers performance notes |
 

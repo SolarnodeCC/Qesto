@@ -456,6 +456,30 @@ export class D1PreparedStatementMock {
       }
       return null
     }
+    if (this.sql.startsWith('SELECT COUNT(*) as n FROM sessions')) {
+      let rows = [...this.db.sessions.values()]
+      const hasRange = this.sql.includes('created_at >= ?1') && this.args.length >= 2
+      if (hasRange) {
+        const [start, end] = this.args as [number, number]
+        rows = rows.filter((s) => s.created_at >= start && s.created_at <= end)
+      }
+      if (this.sql.includes('ai_generated = 1')) {
+        rows = rows.filter((s) => s.ai_generated === 1)
+      }
+      if (this.sql.includes('ai_consent_at IS NOT NULL')) {
+        rows = rows.filter((s) => s.ai_consent_at !== null && s.ai_consent_at !== undefined)
+      }
+      if (this.sql.includes('ai_grounding_hash IS NOT NULL')) {
+        rows = rows.filter((s) => !!s.ai_grounding_hash)
+      }
+      if (this.sql.includes("status IN ('live','closed','archived')")) {
+        rows = rows.filter((s) => s.status === 'live' || s.status === 'closed' || s.status === 'archived')
+      }
+      if (this.sql.includes("status = 'draft'")) {
+        rows = rows.filter((s) => s.status === 'draft')
+      }
+      return { n: rows.length } as T
+    }
     if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { count: 0 } as T
     }
