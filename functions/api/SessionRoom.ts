@@ -123,17 +123,42 @@ function errorMessage(code: string, message: string): string {
 }
 
 // ── DurableObject ───────────────────────────────────────────────────────────
+type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ClientMessage) => Promise<void>
+
 export class SessionRoom implements DurableObject {
   private readonly ctx: DurableObjectState
   private readonly env: Env
   private resultsDirty = false
   private _voters: Votes | null = null
   private _votersInitPromise: Promise<void> | null = null
+  private readonly clientWsHandlers: Record<ClientMessage['type'], ClientWsHandler>
 
   constructor(ctx: DurableObjectState, env: Env) {
     this.ctx = ctx
     this.env = env
     void this.env // retained for Phase 4 D1 persistence; see file header.
+
+    this.clientWsHandlers = {
+      vote: async (ws, att, msg) => {
+        if (msg.type !== 'vote') return
+        await this.handleVote(ws, att, msg.data)
+      },
+      advance: async (ws, att, _msg) => {
+        await this.handlePresenterAdvance(ws, att)
+      },
+      back: async (ws, att, _msg) => {
+        await this.handlePresenterBack(ws, att)
+      },
+      request_state: async (ws, att, _msg) => {
+        await this.sendInit(ws, att)
+      },
+      pause: async (ws, att, _msg) => {
+        await this.handlePresenterPauseResume(ws, att, true)
+      },
+      resume: async (ws, att, _msg) => {
+        await this.handlePresenterPauseResume(ws, att, false)
+      },
+    }
   }
 
   async fetch(req: Request): Promise<Response> {
@@ -361,83 +386,12 @@ export class SessionRoom implements DurableObject {
       return
     }
 
-    switch (parsed.type) {
-      case 'vote':
-        await this.handleVote(ws, att, parsed.data)
-        break
-      case 'advance': {
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can advance'))
-          return
-        }
-        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
-        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
-        const nextIdx = curIdx + 1
-        if (nextIdx >= allQs.length) {
-          const doneMsg = serverMessage({ type: 'all_done', data: {}, timestamp: now() })
-          for (const socket of this.ctx.getWebSockets()) {
-            try { socket.send(doneMsg) } catch { /* ignore */ }
-          }
-          return
-        }
-        const nextQ = allQs[nextIdx]
-        await this.ctx.storage.put(K_QUESTION_INDEX, nextIdx)
-        await this.ctx.storage.put(K_QUESTION, nextQ)
-        await this.ctx.storage.put(K_COUNTS, {} as Counts)
-        await this.ctx.storage.put(K_VOTERS, {} as Votes)
-        this._voters = {}
-        this._votersInitPromise = null
-        const advanceMsg = serverMessage({ type: 'question', data: { question: nextQ, index: nextIdx, total: allQs.length }, timestamp: now() })
-        for (const socket of this.ctx.getWebSockets()) {
-          try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
-        }
-        break
-      }
-      case 'back': {
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can go back'))
-          return
-        }
-        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
-        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
-        const prevIdx = curIdx - 1
-        if (prevIdx < 0) {
-          ws.send(errorMessage('noop', 'Already at first question'))
-          return
-        }
-        const prevQ = allQs[prevIdx]
-        await this.ctx.storage.put(K_QUESTION_INDEX, prevIdx)
-        await this.ctx.storage.put(K_QUESTION, prevQ)
-        await this.ctx.storage.put(K_COUNTS, {} as Counts)
-        await this.ctx.storage.put(K_VOTERS, {} as Votes)
-        this._voters = {}
-        this._votersInitPromise = null
-        const backMsg = serverMessage({ type: 'question', data: { question: prevQ, index: prevIdx, total: allQs.length }, timestamp: now() })
-        for (const socket of this.ctx.getWebSockets()) {
-          try { socket.send(backMsg) } catch { /* ignore closed socket */ }
-        }
-        break
-      }
-      case 'request_state':
-        await this.sendInit(ws, att)
-        break
-      case 'pause':
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can pause'))
-          return
-        }
-        await this.setPaused(true)
-        break
-      case 'resume':
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can resume'))
-          return
-        }
-        await this.setPaused(false)
-        break
-      default:
-        ws.send(errorMessage('unknown_type', `Unknown type: ${(parsed as { type?: string }).type}`))
+    const handler = this.clientWsHandlers[parsed.type]
+    if (!handler) {
+      ws.send(errorMessage('unknown_type', `Unknown type: ${(parsed as { type?: string }).type}`))
+      return
     }
+    await handler(ws, att, parsed)
   }
 
   async webSocketClose(ws: WebSocket, _code: number, _reason: string, _wasClean: boolean): Promise<void> {
@@ -501,6 +455,77 @@ export class SessionRoom implements DurableObject {
   }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
+  private async handlePresenterAdvance(ws: WebSocket, att: Attachment): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can advance'))
+      return
+    }
+    const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+    const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+    const nextIdx = curIdx + 1
+    if (nextIdx >= allQs.length) {
+      const doneMsg = serverMessage({ type: 'all_done', data: {}, timestamp: now() })
+      for (const socket of this.ctx.getWebSockets()) {
+        try { socket.send(doneMsg) } catch { /* ignore */ }
+      }
+      return
+    }
+    const nextQ = allQs[nextIdx]
+    await this.ctx.storage.put(K_QUESTION_INDEX, nextIdx)
+    await this.ctx.storage.put(K_QUESTION, nextQ)
+    await this.ctx.storage.put(K_COUNTS, {} as Counts)
+    await this.ctx.storage.put(K_VOTERS, {} as Votes)
+    this._voters = {}
+    this._votersInitPromise = null
+    const advanceMsg = serverMessage({
+      type: 'question',
+      data: { question: nextQ, index: nextIdx, total: allQs.length },
+      timestamp: now(),
+    })
+    for (const socket of this.ctx.getWebSockets()) {
+      try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
+    }
+  }
+
+  private async handlePresenterBack(ws: WebSocket, att: Attachment): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can go back'))
+      return
+    }
+    const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+    const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+    const prevIdx = curIdx - 1
+    if (prevIdx < 0) {
+      ws.send(errorMessage('noop', 'Already at first question'))
+      return
+    }
+    const prevQ = allQs[prevIdx]
+    await this.ctx.storage.put(K_QUESTION_INDEX, prevIdx)
+    await this.ctx.storage.put(K_QUESTION, prevQ)
+    await this.ctx.storage.put(K_COUNTS, {} as Counts)
+    await this.ctx.storage.put(K_VOTERS, {} as Votes)
+    this._voters = {}
+    this._votersInitPromise = null
+    const backMsg = serverMessage({
+      type: 'question',
+      data: { question: prevQ, index: prevIdx, total: allQs.length },
+      timestamp: now(),
+    })
+    for (const socket of this.ctx.getWebSockets()) {
+      try { socket.send(backMsg) } catch { /* ignore closed socket */ }
+    }
+  }
+
+  private async handlePresenterPauseResume(ws: WebSocket, att: Attachment, paused: boolean): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(
+        errorMessage('forbidden', paused ? 'Only presenter can pause' : 'Only presenter can resume'),
+      )
+      return
+    }
+    await this.setPaused(paused)
+  }
+
   private async handleVote(
     ws: WebSocket,
     att: Attachment,
