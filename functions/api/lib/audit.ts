@@ -86,6 +86,56 @@ export async function recordAuditEvent(c: any, ctx: AuditContext): Promise<void>
   }
 }
 
+/** Bound filter values for audit event queries — explicit tuple avoids loose `any[]`. */
+export type AuditQueryBindValue = string | number
+
+export type AuditQueryFilters = {
+  actor_id?: string
+  action?: string
+  subject_type?: string
+  since_ts?: number
+  until_ts?: number
+}
+
+/**
+ * Build WHERE clause fragments with numbered D1 placeholders (?1…?n).
+ * COUNT and SELECT reuse the same fragment + bind order; LIMIT/OFFSET are appended separately (never via string replace).
+ */
+export function buildAuditEventWhereClause(filters: AuditQueryFilters): {
+  whereSql: string
+  bindValues: AuditQueryBindValue[]
+  nextPlaceholderIndex: number
+} {
+  const bindValues: AuditQueryBindValue[] = []
+  const clauses: string[] = []
+  let n = 0
+
+  const pushEq = (column: string, value: string | number | undefined) => {
+    if (value === undefined || value === '') return
+    n++
+    clauses.push(`${column} = ?${n}`)
+    bindValues.push(value)
+  }
+
+  pushEq('actor_id', filters.actor_id)
+  pushEq('action', filters.action)
+  pushEq('subject_type', filters.subject_type)
+
+  if (filters.since_ts !== undefined) {
+    n++
+    clauses.push(`ts >= ?${n}`)
+    bindValues.push(filters.since_ts)
+  }
+  if (filters.until_ts !== undefined) {
+    n++
+    clauses.push(`ts <= ?${n}`)
+    bindValues.push(filters.until_ts)
+  }
+
+  const whereSql = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''
+  return { whereSql, bindValues, nextPlaceholderIndex: n + 1 }
+}
+
 /**
  * Query audit events with filtering.
  * Returns paginated results sorted by timestamp descending.
@@ -106,43 +156,22 @@ export async function queryAuditEvents(
   const offset = options.offset ?? 0
 
   try {
-    const clauses: string[] = []
-    const values: Array<string | number> = []
-    if (options.actor_id) {
-      clauses.push('actor_id = ?')
-      values.push(options.actor_id)
-    }
-    if (options.action) {
-      clauses.push('action = ?')
-      values.push(options.action)
-    }
-    if (options.subject_type) {
-      clauses.push('subject_type = ?')
-      values.push(options.subject_type)
-    }
-    if (options.since_ts) {
-      clauses.push('ts >= ?')
-      values.push(options.since_ts)
-    }
-    if (options.until_ts) {
-      clauses.push('ts <= ?')
-      values.push(options.until_ts)
-    }
-    const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''
+    const { whereSql, bindValues, nextPlaceholderIndex } = buildAuditEventWhereClause(options)
+    const limIdx = nextPlaceholderIndex
+    const offIdx = nextPlaceholderIndex + 1
 
-    // Count total matching records
-    const countResult = await (c.env.DB.prepare as any)(`SELECT COUNT(*) as count FROM audit_events ${where}`)
-      .bind(...values)
+    const countSql = `SELECT COUNT(*) as count FROM audit_events ${whereSql}`
+    const countResult = await (c.env.DB.prepare as any)(countSql)
+      .bind(...bindValues)
       .first()
 
-    // Fetch paginated results
-    const countStmt = (c.env.DB.prepare as any)(
+    const listSql =
       `SELECT id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key
-       FROM audit_events ${where} ORDER BY ts DESC LIMIT ? OFFSET ?`,
-    )
-      .bind(...values, limit, offset)
+       FROM audit_events ${whereSql} ORDER BY ts DESC LIMIT ?${limIdx} OFFSET ?${offIdx}`
 
-    const result = await countStmt.all()
+    const listStmt = (c.env.DB.prepare as any)(listSql).bind(...bindValues, limit, offset)
+
+    const result = await listStmt.all()
     return {
       events: result.results ?? [],
       total: countResult?.count ?? 0,
