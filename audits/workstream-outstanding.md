@@ -1,67 +1,115 @@
 # Outstanding Work Across All Audit Workstreams
 
-**Date:** 2026-05-03 (WS3/WS4 marked complete; WS1/WS2 unchanged vs remediation plan)  
-**Source of truth:** `audits/remediation-plan.md` + completed frontend polling dedupe changes.
+**Date:** 2026-05-03  
+**Source of truth:** all files in `audits/`, with current code layout checked after the WS3/WS4 split work.
 
 ## Executive status
 
 | Workstream | Status | Completed | Outstanding |
 |---|---|---|---|
-| WS1: Shared foundations | Not started | None | Shared response helpers, KV JSON helpers, key/TTL constant consolidation |
-| WS2: Security + correctness hotfixes | Not started | None | EH-01/02/03/04, CR-04, ST-04 |
-| WS3: Backend modularization | Done | Route packages (`energizers/`, `ai-insights/`, `auth/`); analyze/get thin handlers; `lib/insights-analyze-data.ts`, `lib/insights-vectorize.ts`, `ai-insights/constants.ts` | Optional: thicker service layer only where routes remain orchestration-heavy |
-| WS4: Realtime/session refactor | Done | `lib/session-lifecycle.ts` (+ sessions REST wired); vote mutations in `lib/session-room-vote.ts`; DO header docs in `SessionRoom.ts`; insights-only `session-repository.ts` | Further repository coverage beyond insights; optional SessionRoom-internal registry polish |
-| WS5: Frontend dedupe | In progress | `usePolledApi` + 3 admin hook migrations | Shared session types, session hook boilerplate dedupe, optional `useWebSocket` extraction |
+| WS1: Shared foundations | Partially started | `lib/kv.ts`, `lib/kv-keys.ts`, `lib/constants.ts`, `lib/http.ts` exist | Broaden adoption; add response/error-code helpers; consolidate plan quotas, user lookup, TTL/rate-limit constants |
+| WS2: Security + correctness | Not started | None confirmed in plan | EH/EF raw error leaks, malformed JSON handling, audit SQL builder, KV cache proxy decision/fix, schema patch retry behavior |
+| WS3: Backend modularization | Mostly done | Route packages for `energizers/`, `ai-insights/`, `auth/`; insights libs extracted | Residual `sessions.ts`, `admin.ts`, `teams.ts`, `gamification.ts`, and service/repository boundaries |
+| WS4: Realtime/session state | Partially done | `session-lifecycle.ts`, `session-room-vote.ts`, insights-only `session-repository.ts`, `liveSessionWsTransport.ts` | DO outer error boundary, voter init retry validation, broader repositories, optional WS/domain hook split |
+| WS5: Frontend dedupe/type alignment | In progress | `usePolledApi` + 3 admin hook migrations; transport helper started | `useAdminMetrics`/`useAdminUsers` review, shared session types, session hook boilerplate, optional `useWebSocket` extraction |
+| WS6: Resilience/external service safety | New | Some timeout/retry examples exist in AI wizard/OAuth fetch | Timeouts, retries, fail-open KV rate limits, circuit-breaker policy, Vectorize/AI degradation paths |
+| WS7: Naming/readability contracts | New | Naming audit guide exists | Error-code registry, traceId local casing, idempotency naming, key-builder naming, camelCase DTO boundary strategy |
+| WS8: Observability/error-flow consistency | New | Observability helpers exist | OAuth/RBAC/admin/plan/billing/logging failure visibility; consistent 401/500 code mapping and logs |
+
+## Dependency map
+
+1. **Error/response/code helpers unblock security and readability.** Standardize the production-safe error envelope and `ErrorCode` registry before touching broad route catches, otherwise fixes will drift.
+2. **Resilience wrappers must land before service-wide retries.** Add small timeout/retry/fail-open helpers first, then migrate AI, Stripe, Resend, OAuth, D1/KV call sites one surface at a time.
+3. **Schema patch handling must be stabilized before any `sessions.ts` split.** `patchSchemaIfNeeded` has hidden global state and swallowed errors; splitting first would spread the migration concern.
+4. **Session repositories come before deeper session route decomposition.** The existing insights-only repository is a useful seed; expand data-access seams before extracting more handlers.
+5. **Wire-format naming changes are compatibility-sensitive.** Do not rename WebSocket error codes or payload fields without an alias/deprecation strategy and frontend checks.
+6. **Frontend type alignment depends on backend DTO boundaries.** Decide whether backend route DTOs remain snake_case at persistence edges with camelCase API types before migrating frontend declarations.
 
 ## Detailed outstanding backlog
 
-## WS1 — Shared foundations (blocking prerequisite)
+## WS1 -- Shared foundations
 
-1. Add `functions/api/lib/kv.ts` with `readKvJson` / `writeKvJson` and migrate duplicated call sites.
-2. Add centralized API response helpers and replace inline envelopes.
-3. Consolidate KV key builders and TTL/rate-limit constants in shared libs.
-4. Add unit tests covering helpers and representative route migration.
+1. Broaden `readKvJson` / `writeKvJson` adoption across routes/libs and add representative unit tests.
+2. Add centralized response helpers with stable envelope, trace id propagation, and production-safe failure shape.
+3. Add an `ErrorCode` registry/constants module and migrate magic code strings gradually.
+4. Consolidate plan quota facts (`F-04`), common user-plan lookup (`F-09`), KV key builders (`F-05`, `NC-06`), and TTL/rate-limit constants (`F-10`).
+5. Decide the fate of `middleware/kv-cache.ts`: wire it correctly with tests, or remove it as dead abstraction after replacing the intended cache use.
 
-## WS2 — Security + correctness
+## WS2 -- Security + correctness
 
-1. Update global `app.onError` to use sanitized production-safe messages.
-2. Replace raw error messages in `energizers` route catch blocks.
-3. Add schema-validated parsing for energizer creation payloads.
-4. Fix Durable Object voters init rejection caching (`ensureVoters` retry path).
-5. Rewrite audit query builder (`queryAuditEvents`) for typed clause assembly and stable count query.
-6. Resolve KV cache proxy namespace wiring bug and regression-test it.
+1. Fix global `app.onError` production leakage and status/code mapping (`EH-01`, `EH-07`, `EH-13`, `EF` template).
+2. Replace raw 500 responses in route catches, especially energizers/gamification/billing/admin (`EH-02`, `EF-09`, `EF-10`).
+3. Add safe JSON parsing/schema validation for energizer creation and admin JSON endpoints (`EH-04`, `EH-08`).
+4. Rewrite `queryAuditEvents` with typed clause assembly and stable count query (`CR-04`).
+5. Fix or retire cache proxy namespace bug (`ST-04`, `SA-06`) with regression coverage.
+6. Fix schema patch retry semantics so failed D1 migration attempts do not mark the worker instance complete (`CR-03`, `A-01`, `EF-05`, `SA-09`).
 
-## WS3 — Backend modularization
+## WS3 -- Backend modularization
 
-1. ~~Split `functions/api/routes/energizers.ts`~~ → **`routes/energizers/`** (done).
-2. ~~Split `functions/api/routes/auth.ts`~~ → **`routes/auth/`** (`magic-link`, `session-routes`, `password`, `oauth`, `saml`, `constants`, `schemas`, `cookie`, `helpers`; `mountAuthRoutes` in `index.ts`) (done).
-3. ~~Split `functions/api/routes/ai-insights.ts`~~ → **`routes/ai-insights/`** (done).
-4. ~~Deterministic insights bundle + Vectorize upsert/query~~ → **`lib/insights-analyze-data.ts`**, **`lib/insights-vectorize.ts`**; analyze/register-get use shared KV + **`lib/http`** helpers (done).
-5. Keep enforcing route/service/repository boundaries on future edits.
+1. Keep completed `energizers/`, `auth/`, and `ai-insights/` packages stable; avoid mixing further refactors into security PRs.
+2. Split remaining high-risk `sessions.ts` concerns only after WS2 schema-patch work and WS4 repository expansion.
+3. Split `admin.ts` into metrics/users/ops route modules after response/error helpers land.
+4. Extract `gamification.ts` into battle-royale, bracket, and badge modules when touching energizer internals again (`COH-02`).
+5. Move `app.ts` health/status route out of the pure integration point if/when app wiring is next edited (`CP-03`).
 
-## WS4 — Realtime/session state
+## WS4 -- Realtime/session state
 
-1. ~~Vote branching policy~~ → **`lib/session-room-vote.ts`** (`applyVoteMutation`); documented from **`SessionRoom.ts`** (done).
-2. ~~WebSocket handler registry~~ → presenter-side registry where applicable (done earlier); DO-side vote path uses shared policy module (done).
-3. ~~Session repository abstraction~~ → **`lib/session-repository.ts`** (insights reads today); broader CRUD abstraction optional later.
-4. ~~Explicit lifecycle transitions~~ → **`lib/session-lifecycle.ts`** (`requireDraft`, `requireLiveForClose`, `requireLiveForWebSocket`, `rejectDraftForResults`, `requireClosedOrArchivedForInsights`, etc.) wired through **`routes/sessions.ts`** (done).
+1. Verify `ensureVoters` clears rejected initialization promises and add a storage-failure retry test (`EH-03`, `RES-12`).
+2. Add an outer `webSocketMessage` error boundary with safe client errors and server logging (`EF-04`, `RES-13`, `EH-12`).
+3. Expand `session-repository.ts` beyond insights reads to session/question CRUD before deeper `sessions.ts` splits (`DM-02`).
+4. Continue replacing implicit lifecycle checks with `session-lifecycle.ts` helpers (`DM-04`), especially start/close/results/precompute paths.
+5. Keep WebSocket wire-code renames out of mechanical readability PRs unless aliases are added (`NC-05`).
 
-## WS5 — Frontend dedupe/type alignment
+## WS5 -- Frontend dedupe/type alignment
 
-### Already done
-- `usePolledApi<T>()` introduced.
-- `useAdminAnalytics`, `useAdminKpis`, `useAdminOps` migrated.
+1. Audit `useAdminMetrics` and `useAdminUsers` for possible `usePolledApi` adoption or intentional differences.
+2. Remove duplicated session/question frontend type declarations after backend DTO casing strategy is set (`F-06`, `NC-01`).
+3. Reduce repeated loading/error state in `useSessions` and related hooks (`F-08`).
+4. Complete optional `useLiveSession` extraction into transport + domain/message hooks (`C-06`), building on `liveSessionWsTransport.ts`.
+5. Clean low-risk naming items when files are already touched: `idempotencyKey`, event parameter names, repeated `next` locals (`NC-07`, `NC-12`, `NC-16`).
 
-### Still outstanding
-1. Remove duplicated frontend session-type declarations and align on shared contracts.
-2. Reduce repeated loading/error state management in session-related hooks.
-3. Optional: split `useLiveSession` transport lifecycle into `useWebSocket` + message/domain hooks.
+## WS6 -- Resilience/external service safety
+
+1. Add shared timeout/retry helpers for external calls; start with AI insights and Workers AI (`RES-01`, `RES-05`, `RES-15`).
+2. Add fail-open/observable handling for plan middleware, admin middleware, RBAC, and `lib/rate-limit.ts` KV failures (`RES-02`, `RES-03`, `RES-10`, `RES-14`, `EH-05`).
+3. Wrap Stripe, Resend, and OAuth external calls with bounded retry or explicit no-retry policy based on idempotency (`RES-06`, `EF-03`, `EF-12`, `EH-09`).
+4. Decide on a lightweight circuit-breaker policy after call wrappers exist (`RES-08`); do not build this before the timeout/retry primitive.
+5. Change Vectorize upsert/embedding after insights to timeout-bounded background/degraded behavior where feasible (`RES-15`).
+
+## WS7 -- Naming/readability contracts
+
+1. Introduce error-code constants/registry together with WS1/WS2 response helper work (`NC-10`).
+2. Convert local `trace_id` variables to `traceId` while preserving response payload field `trace_id` (`NC-02`).
+3. Define DTO/persistence casing boundaries before `Session`/`Question` camelCase migration (`NC-01`).
+4. Rename local abbreviations when touching affected code: energizer config vars, `idemKey`, `_rbac_cache`, unnamed boolean args (`NC-03`, `NC-07`, `NC-11`, `NC-14`).
+5. Treat WebSocket British/American spelling as an API compatibility item, not a simple rename (`NC-05`, `NC-15`).
+
+## WS8 -- Observability/error-flow consistency
+
+1. Log OAuth callback failures with enough context to distinguish user cancel vs provider/config/runtime failure (`EF-01`, `EH-06`).
+2. Ensure RBAC/plan/admin fallback behavior logs or emits metrics when it degrades (`EF-02`, `EF-07`, `RES-02`, `RES-03`, `RES-14`).
+3. Use `console.error` or structured logging for KV/rate-limit failures; keep request logs available in dev/preview where useful (`EH-10`, `EH-11`).
+4. Standardize auth failure codes across middleware (`EF-08`).
+5. Make email delivery outcomes truthful: either return actionable failure or record a pending/retry state instead of unconditional 202 (`EH-09`, `EF-12`).
 
 ## Recommended next execution order
 
-1. **PR-A (WS2):** Error hardening + validation (EH-01/02/03/04).
-2. **PR-B (WS2):** Audit SQL + KV cache proxy fix (CR-04, ST-04).
-3. **PR-C (WS1):** Shared KV/response/key/constants helpers.
-4. ~~**PR-D/E/F (WS3):** Module splits + insights libs~~ (done).
-5. ~~**PR-G/H (WS4):** Vote policy module + lifecycle helpers~~ (done).
-6. **PR-I follow-ups (WS5):** Type alignment and `useLiveSession` extraction.
+1. **PR-A (WS1/WS2/WS7):** Error envelope, `ErrorCode` registry, `app.onError` hardening, and tests.
+2. **PR-B (WS2/WS8):** Route JSON parsing/raw-error cleanup for energizers, admin, billing, gamification; OAuth/RBAC logging touch-ups.
+3. **PR-C (WS2):** Audit SQL builder and schema-patch retry semantics.
+4. **PR-D (WS1/WS2):** KV cache proxy decision plus KV helper/key/TTL adoption in a small set of routes.
+5. **PR-E (WS6):** Timeout/retry/fail-open primitives; migrate AI insights, rate-limit KV, and plan/admin middleware first.
+6. **PR-F (WS6/WS8):** Stripe, Resend, OAuth resilience wrappers and truthful email-delivery behavior.
+7. **PR-G (WS4):** Durable Object voter retry test + outer WebSocket error boundary.
+8. **PR-H (WS4/WS3):** Expand session/question repositories, then split one `sessions.ts` concern at a time.
+9. **PR-I (WS3):** Split `admin.ts`; opportunistically remove unsafe KV casts and repeated response code.
+10. **PR-J (WS5/WS7):** Frontend shared types and hook cleanup, after backend DTO strategy is settled.
+
+## Regression prevention checklist per PR
+
+1. Add characterization tests before moving logic out of large route/DO files.
+2. Keep security/resilience PRs separate from large file moves.
+3. For API changes, assert stable envelope, trace id, status code, and no production raw error leakage.
+4. For retry/timeout changes, test both success and degraded/fail-open behavior.
+5. For WebSocket changes, test existing wire codes and aliases before any rename.
+6. Run `npm test` for normal PRs; add `npm run type-check` for type/DTO/refactor PRs; note known pre-existing suite failures if encountered.
