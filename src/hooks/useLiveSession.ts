@@ -6,7 +6,7 @@
 // we always rehydrate from the `init` payload on reconnect.
 
 import { useCallback, useEffect, useReducer, useRef } from 'react'
-import { API_BASE_URL } from '../config/api'
+import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
 
 export type LivePollOption = { id: string; label: string }
 export type LiveQuestion = {
@@ -164,12 +164,7 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     closedByClientRef.current = false
     dispatch({ kind: 'connecting' })
 
-    const wsBase = API_BASE_URL
-      ? API_BASE_URL.replace(/^https:\/\//, 'wss://').replace(/^http:\/\//, 'ws://')
-      : `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`
-    const url = `${wsBase}/api/sessions/${encodeURIComponent(sessionId)}/ws${
-      fingerprint ? `?fp=${encodeURIComponent(fingerprint)}` : ''
-    }`
+    const url = buildLiveSessionWsUrl(sessionId, fingerprint)
     const subprotocols = presenterToken ? [`qesto.bearer.${presenterToken}`] : undefined
     const ws = new WebSocket(url, subprotocols)
     wsRef.current = ws
@@ -274,47 +269,38 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
   const sendVote = useCallback(
     (optionId: string) => {
       const ws = wsRef.current
-      if (!ws || ws.readyState !== WebSocket.OPEN || !state.question) return
-      ws.send(
-        JSON.stringify({
+      if (!state.question) return
+      if (
+        !sendWsJson(ws, {
           type: 'vote',
           data: { questionId: state.question.id, optionId },
           timestamp: Date.now(),
-        }),
+        })
       )
+        return
       dispatch({ kind: 'vote_sent', optionId })
     },
     [state.question],
   )
 
   const requestState = useCallback(() => {
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) return
-    ws.send(JSON.stringify({ type: 'request_state', data: {}, timestamp: Date.now() }))
+    sendWsJson(wsRef.current, { type: 'request_state', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendAdvance = useCallback(() => {
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) return
-    ws.send(JSON.stringify({ type: 'advance', data: {}, timestamp: Date.now() }))
+    sendWsJson(wsRef.current, { type: 'advance', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendBack = useCallback(() => {
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) return
-    ws.send(JSON.stringify({ type: 'back', data: {}, timestamp: Date.now() }))
+    sendWsJson(wsRef.current, { type: 'back', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendPause = useCallback(() => {
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) return
-    ws.send(JSON.stringify({ type: 'pause', data: {}, timestamp: Date.now() }))
+    sendWsJson(wsRef.current, { type: 'pause', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendResume = useCallback(() => {
-    const ws = wsRef.current
-    if (!ws || ws.readyState !== WebSocket.OPEN) return
-    ws.send(JSON.stringify({ type: 'resume', data: {}, timestamp: Date.now() }))
+    sendWsJson(wsRef.current, { type: 'resume', data: {}, timestamp: Date.now() })
   }, [])
 
   return { state, sendVote, requestState, sendAdvance, sendBack, sendPause, sendResume }

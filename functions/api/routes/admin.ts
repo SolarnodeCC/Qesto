@@ -340,7 +340,13 @@ export function mountAdminRoutes(parent: any) {
   // Streams D1 metrics_summary as CSV.  Max 10 000 rows, <5 MB.
   app.post('/metrics/export', async (c) => {
     const trace_id = c.get('trace_id')
-    const body = await c.req.json<{ start?: string; end?: string }>()
+    const body = (await c.req.json().catch(() => null)) as { start?: string; end?: string } | null
+    if (!body) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'Request body must be JSON' }, trace_id },
+        400,
+      )
+    }
     const startParam = body.start
     const endParam = body.end
 
@@ -538,9 +544,11 @@ export function mountAdminRoutes(parent: any) {
   // Create a new user account.
   app.post('/users', async (c) => {
     const trace_id = c.get('trace_id')
-    const body = await c.req.json<{ email?: string; display_name?: string; plan?: string }>()
+    const body = (await c.req.json().catch(() => null)) as
+      | { email?: string; display_name?: string; plan?: string }
+      | null
 
-    if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+    if (!body || !body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
       return c.json({ ok: false, error: { code: 'validation', message: 'Valid email is required' }, trace_id }, 400)
     }
 
@@ -587,7 +595,15 @@ export function mountAdminRoutes(parent: any) {
   app.patch('/users/:id', async (c) => {
     const trace_id = c.get('trace_id')
     const userId = c.req.param('id')
-    const body = await c.req.json<{ display_name?: string; plan?: string; admin_role?: 'admin' | 'owner' | null }>()
+    const body = (await c.req.json().catch(() => null)) as
+      | { display_name?: string; plan?: string; admin_role?: 'admin' | 'owner' | null }
+      | null
+    if (!body) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'Request body must be JSON' }, trace_id },
+        400,
+      )
+    }
 
     const existing = await c.env.DB.prepare(
       'SELECT id, email, display_name, plan, created_at, last_login_at, suspended_at FROM users WHERE id = ?1',

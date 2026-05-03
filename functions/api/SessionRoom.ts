@@ -29,6 +29,7 @@ import {
 import type { Env, VotePolicy, SessionMode, PlanTier } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
+import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
 
 // Tell tsc the env binding exists on the DO class — Phase 4+ will reach for
 // `this.env.DB` inside `close()` to persist totals. Kept as a typed field now
@@ -85,16 +86,6 @@ function normaliseVotes(raw: Record<string, string | string[]> | undefined): Vot
   return out
 }
 
-// Kinds for which one voter may submit multiple accepted values. `word_cloud`
-// is in here because each submitted phrase counts as an independent entry.
-const MULTI_VOTE_KINDS = new Set(['multi_select', 'upvote', 'word_cloud'])
-
-// `word_cloud` and `open` accept any text as the "optionId". Other kinds
-// must reference a preconfigured option.
-function isFreeTextKind(kind: LiveQuestion['kind']): boolean {
-  return kind === 'word_cloud' || kind === 'open'
-}
-
 // ── Per-connection attachment stored on each WebSocket ──────────────────────
 type Attachment = {
   role: 'presenter' | 'voter'
@@ -123,17 +114,42 @@ function errorMessage(code: string, message: string): string {
 }
 
 // ── DurableObject ───────────────────────────────────────────────────────────
+type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ClientMessage) => Promise<void>
+
 export class SessionRoom implements DurableObject {
   private readonly ctx: DurableObjectState
   private readonly env: Env
   private resultsDirty = false
   private _voters: Votes | null = null
   private _votersInitPromise: Promise<void> | null = null
+  private readonly clientWsHandlers: Record<ClientMessage['type'], ClientWsHandler>
 
   constructor(ctx: DurableObjectState, env: Env) {
     this.ctx = ctx
     this.env = env
     void this.env // retained for Phase 4 D1 persistence; see file header.
+
+    this.clientWsHandlers = {
+      vote: async (ws, att, msg) => {
+        if (msg.type !== 'vote') return
+        await this.handleVote(ws, att, msg.data)
+      },
+      advance: async (ws, att, _msg) => {
+        await this.handlePresenterAdvance(ws, att)
+      },
+      back: async (ws, att, _msg) => {
+        await this.handlePresenterBack(ws, att)
+      },
+      request_state: async (ws, att, _msg) => {
+        await this.sendInit(ws, att)
+      },
+      pause: async (ws, att, _msg) => {
+        await this.handlePresenterPauseResume(ws, att, true)
+      },
+      resume: async (ws, att, _msg) => {
+        await this.handlePresenterPauseResume(ws, att, false)
+      },
+    }
   }
 
   async fetch(req: Request): Promise<Response> {
@@ -158,9 +174,17 @@ export class SessionRoom implements DurableObject {
   private async ensureVoters(): Promise<Votes> {
     if (this._voters !== null) return this._voters
     if (!this._votersInitPromise) {
+      // Capture the in-flight promise locally so an awaiter watching this
+      // exact load sees the rejection, but the cached field is reset to
+      // allow the next caller to retry instead of replaying the same failure.
       this._votersInitPromise = this.ctx.storage
         .get<Record<string, string | string[]>>(K_VOTERS)
         .then(raw => { this._voters = normaliseVotes(raw) })
+        .catch(err => {
+          this._voters = null
+          this._votersInitPromise = null
+          throw err
+        })
     }
     await this._votersInitPromise
     return this._voters!
@@ -353,83 +377,12 @@ export class SessionRoom implements DurableObject {
       return
     }
 
-    switch (parsed.type) {
-      case 'vote':
-        await this.handleVote(ws, att, parsed.data)
-        break
-      case 'advance': {
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can advance'))
-          return
-        }
-        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
-        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
-        const nextIdx = curIdx + 1
-        if (nextIdx >= allQs.length) {
-          const doneMsg = serverMessage({ type: 'all_done', data: {}, timestamp: now() })
-          for (const socket of this.ctx.getWebSockets()) {
-            try { socket.send(doneMsg) } catch { /* ignore */ }
-          }
-          return
-        }
-        const nextQ = allQs[nextIdx]
-        await this.ctx.storage.put(K_QUESTION_INDEX, nextIdx)
-        await this.ctx.storage.put(K_QUESTION, nextQ)
-        await this.ctx.storage.put(K_COUNTS, {} as Counts)
-        await this.ctx.storage.put(K_VOTERS, {} as Votes)
-        this._voters = {}
-        this._votersInitPromise = null
-        const advanceMsg = serverMessage({ type: 'question', data: { question: nextQ, index: nextIdx, total: allQs.length }, timestamp: now() })
-        for (const socket of this.ctx.getWebSockets()) {
-          try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
-        }
-        break
-      }
-      case 'back': {
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can go back'))
-          return
-        }
-        const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
-        const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
-        const prevIdx = curIdx - 1
-        if (prevIdx < 0) {
-          ws.send(errorMessage('noop', 'Already at first question'))
-          return
-        }
-        const prevQ = allQs[prevIdx]
-        await this.ctx.storage.put(K_QUESTION_INDEX, prevIdx)
-        await this.ctx.storage.put(K_QUESTION, prevQ)
-        await this.ctx.storage.put(K_COUNTS, {} as Counts)
-        await this.ctx.storage.put(K_VOTERS, {} as Votes)
-        this._voters = {}
-        this._votersInitPromise = null
-        const backMsg = serverMessage({ type: 'question', data: { question: prevQ, index: prevIdx, total: allQs.length }, timestamp: now() })
-        for (const socket of this.ctx.getWebSockets()) {
-          try { socket.send(backMsg) } catch { /* ignore closed socket */ }
-        }
-        break
-      }
-      case 'request_state':
-        await this.sendInit(ws, att)
-        break
-      case 'pause':
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can pause'))
-          return
-        }
-        await this.setPaused(true)
-        break
-      case 'resume':
-        if (att.role !== 'presenter') {
-          ws.send(errorMessage('forbidden', 'Only presenter can resume'))
-          return
-        }
-        await this.setPaused(false)
-        break
-      default:
-        ws.send(errorMessage('unknown_type', `Unknown type: ${(parsed as { type?: string }).type}`))
+    const handler = this.clientWsHandlers[parsed.type]
+    if (!handler) {
+      ws.send(errorMessage('unknown_type', `Unknown type: ${(parsed as { type?: string }).type}`))
+      return
     }
+    await handler(ws, att, parsed)
   }
 
   async webSocketClose(ws: WebSocket, _code: number, _reason: string, _wasClean: boolean): Promise<void> {
@@ -493,6 +446,77 @@ export class SessionRoom implements DurableObject {
   }
 
   // ── Handlers ──────────────────────────────────────────────────────────────
+  private async handlePresenterAdvance(ws: WebSocket, att: Attachment): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can advance'))
+      return
+    }
+    const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+    const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+    const nextIdx = curIdx + 1
+    if (nextIdx >= allQs.length) {
+      const doneMsg = serverMessage({ type: 'all_done', data: {}, timestamp: now() })
+      for (const socket of this.ctx.getWebSockets()) {
+        try { socket.send(doneMsg) } catch { /* ignore */ }
+      }
+      return
+    }
+    const nextQ = allQs[nextIdx]
+    await this.ctx.storage.put(K_QUESTION_INDEX, nextIdx)
+    await this.ctx.storage.put(K_QUESTION, nextQ)
+    await this.ctx.storage.put(K_COUNTS, {} as Counts)
+    await this.ctx.storage.put(K_VOTERS, {} as Votes)
+    this._voters = {}
+    this._votersInitPromise = null
+    const advanceMsg = serverMessage({
+      type: 'question',
+      data: { question: nextQ, index: nextIdx, total: allQs.length },
+      timestamp: now(),
+    })
+    for (const socket of this.ctx.getWebSockets()) {
+      try { socket.send(advanceMsg) } catch { /* ignore closed socket */ }
+    }
+  }
+
+  private async handlePresenterBack(ws: WebSocket, att: Attachment): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can go back'))
+      return
+    }
+    const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+    const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+    const prevIdx = curIdx - 1
+    if (prevIdx < 0) {
+      ws.send(errorMessage('noop', 'Already at first question'))
+      return
+    }
+    const prevQ = allQs[prevIdx]
+    await this.ctx.storage.put(K_QUESTION_INDEX, prevIdx)
+    await this.ctx.storage.put(K_QUESTION, prevQ)
+    await this.ctx.storage.put(K_COUNTS, {} as Counts)
+    await this.ctx.storage.put(K_VOTERS, {} as Votes)
+    this._voters = {}
+    this._votersInitPromise = null
+    const backMsg = serverMessage({
+      type: 'question',
+      data: { question: prevQ, index: prevIdx, total: allQs.length },
+      timestamp: now(),
+    })
+    for (const socket of this.ctx.getWebSockets()) {
+      try { socket.send(backMsg) } catch { /* ignore closed socket */ }
+    }
+  }
+
+  private async handlePresenterPauseResume(ws: WebSocket, att: Attachment, paused: boolean): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(
+        errorMessage('forbidden', paused ? 'Only presenter can pause' : 'Only presenter can resume'),
+      )
+      return
+    }
+    await this.setPaused(paused)
+  }
+
   private async handleVote(
     ws: WebSocket,
     att: Attachment,
@@ -538,55 +562,28 @@ export class SessionRoom implements DurableObject {
     // For free-text kinds (word_cloud) the `optionId` is the submitted phrase,
     // so we accept any non-empty string. Other kinds must reference a
     // preconfigured option.
-    if (!isFreeTextKind(question.kind) && !question.options.some((o) => o.id === optionId)) {
+    if (!isFreeTextQuestionKind(question.kind) && !question.options.some((o) => o.id === optionId)) {
       ws.send(errorMessage('bad_option', 'Unknown option'))
       return
     }
 
     const votePolicy = meta?.votePolicy ?? 'once'
 
-    // Load voters via shared in-memory reference. The check+update below
-    // contains no await points, so concurrent vote messages from the same
-    // voter serialise naturally — the second caller sees the first caller's
-    // mutation before running its own duplicate check.
+    // Load voters via shared in-memory reference. The mutation below contains
+    // no await inside applyVoteMutation, so concurrent vote messages from the
+    // same voter serialise naturally.
     const voters = await this.ensureVoters()
-    let countKey: string | null = null
-    let countDecKey: string | null = null
-
-    if (MULTI_VOTE_KINDS.has(question.kind)) {
-      // multi_select / upvote / word_cloud: voter may submit several entries.
-      // Reject an exact duplicate selection (same optionId already sent by
-      // this voter) but otherwise append to the array.
-      const previous = voters[att.voterId] ?? []
-      if (previous.includes(optionId)) {
-        ws.send(errorMessage('duplicate', 'You already selected this option'))
-        return
-      }
-      voters[att.voterId] = [...previous, optionId]
-      countKey = optionId
-    } else if (votePolicy === 'once') {
-      // Reject duplicate — one vote per voter, immutable.
-      if ((voters[att.voterId]?.length ?? 0) > 0) {
-        ws.send(errorMessage('duplicate', 'You already voted on this question'))
-        return
-      }
-      voters[att.voterId] = [optionId]
-      countKey = optionId
-    } else if (votePolicy === 'multi') {
-      // Allow vote change — decrement old choice, increment new choice.
-      const previous = voters[att.voterId]?.[0]
-      if (previous === optionId) {
-        ws.send(errorMessage('duplicate', 'You already selected this option'))
-        return
-      }
-      countDecKey = previous ?? null
-      voters[att.voterId] = [optionId]
-      countKey = optionId
-    } else {
-      // react: accumulate reactions, no deduplication per voter.
-      voters[att.voterId] = [optionId]
-      countKey = optionId
+    const applied = applyVoteMutation(voters, {
+      questionKind: question.kind,
+      votePolicy,
+      voterId: att.voterId,
+      optionId,
+    })
+    if (!applied.ok) {
+      ws.send(errorMessage(applied.code, applied.message))
+      return
     }
+    const { countKey, countDecKey } = applied
 
     // Load and update counts after the voter decision is finalised (safe to
     // await here — the duplicate check above has already mutated voters).

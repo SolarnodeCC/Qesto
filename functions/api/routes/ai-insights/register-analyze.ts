@@ -1,45 +1,25 @@
-// AI-Powered Insights — theme summarization (Phase 9 Step 6)
-//
-// Routes (mounted under /api):
-//   POST   /sessions/:sessionId/insights/analyze   — Generate AI insights (plan-gated)
-//   GET    /sessions/:sessionId/insights           — Retrieve cached insights
-//
-// Handoff boundary: the POST handler assembles a SessionBundle (typed, deterministic)
-// from D1/Vectorize, then passes it through toInsightsInput() before the AI call.
-// Output is validated by Zod inside extractThemes() — no regex parsing.
-
-import { Hono } from 'hono'
-import { authMiddleware, type AuthVariables } from '../middleware/auth'
-import { planMiddleware, type PlanVariables } from '../middleware/plan'
-import { requireFeature } from '../middleware/feature-gate'
-import { recordAuditEvent } from '../lib/audit'
-import { rateLimit } from '../lib/rate-limit'
+import { requireFeature } from '../../middleware/feature-gate'
+import { recordAuditEvent } from '../../lib/audit'
+import { rateLimit } from '../../lib/rate-limit'
 import {
   extractThemes,
   InsightsAIError,
   InsightsValidationError,
-} from '../lib/ai-insights'
+} from '../../lib/ai-insights'
 import {
   toInsightsInput,
   type SessionBundle,
   type QuestionBreakdown,
   type PollOptionBreakdown,
-} from '../lib/session-bundle'
-import { writeEvent } from '../lib/observability'
-import type { Env, PlanTier } from '../types'
+} from '../../lib/session-bundle'
+import { writeEvent } from '../../lib/observability'
+import { sanitizeError } from '../../lib/error-handler'
+import { fetchSessionTitleForOwner } from '../../lib/session-repository'
+import type { PlanTier } from '../../types'
+import { AI_RATE_LIMIT, INSIGHTS_MODEL, insightsCacheKey } from './constants'
+import type { AiInsightsApp } from './types'
 
-type Vars = AuthVariables & PlanVariables
-
-const INSIGHTS_MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
-const AI_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'ai-insights' }
-const CACHE_KEY = (sessionId: string) => `insights:${sessionId}`
-
-export function mountAIInsightsRoutes(parent: any) {
-  const app = new Hono<{ Bindings: Env; Variables: Vars }>()
-  app.use('*', authMiddleware)
-  app.use('*', planMiddleware)
-
-  // POST /sessions/:sessionId/insights/analyze
+export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
   app.post('/sessions/:sessionId/insights/analyze', requireFeature('insightsAI'), async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
@@ -59,11 +39,7 @@ export function mountAIInsightsRoutes(parent: any) {
         )
       }
 
-      const sessionResult = await c.env.DB.prepare(
-        `SELECT id, title FROM sessions WHERE id = ?1 AND owner_id = ?2`,
-      )
-        .bind(sessionId, user.sub)
-        .first<{ id: string; title: string }>()
+      const sessionResult = await fetchSessionTitleForOwner(c.env.DB, sessionId, user.sub)
 
       if (!sessionResult) {
         return c.json(
@@ -72,10 +48,6 @@ export function mountAIInsightsRoutes(parent: any) {
         )
       }
 
-      // ── Deterministic data collection ─────────────────────────────────────
-      // Everything below is pure D1/Vectorize reads — no AI involved yet.
-
-      // Open-ended free-text responses
       const openRows = await c.env.DB.prepare(
         `SELECT v.option_id AS text
            FROM votes v
@@ -88,7 +60,6 @@ export function mountAIInsightsRoutes(parent: any) {
         .all<{ text: string }>()
       const openResponses = (openRows.results ?? []).map((r) => r.text).filter(Boolean)
 
-      // Poll/ranking/consent question breakdowns with full vote counts
       const qRows = await c.env.DB.prepare(
         `SELECT id, prompt, kind, options_json
            FROM questions
@@ -130,8 +101,6 @@ export function mountAIInsightsRoutes(parent: any) {
         })
       }
 
-      // Vectorize: embed session context to find semantically similar past sessions.
-      // Best-effort — insights still generate if Vectorize is unavailable.
       const similarSessionTitles: string[] = []
       let sessionVector: number[] | undefined
       try {
@@ -168,10 +137,6 @@ export function mountAIInsightsRoutes(parent: any) {
         )
       }
 
-      // ── Handoff boundary ──────────────────────────────────────────────────
-      // All deterministic data is now collected. Build the typed DTO and pass
-      // it through toInsightsInput() before the AI call.
-
       const bundle: SessionBundle = {
         sessionId,
         sessionTitle: sessionResult.title,
@@ -183,7 +148,6 @@ export function mountAIInsightsRoutes(parent: any) {
 
       const insightsInput = toInsightsInput(bundle)
 
-      // ── AI call (probabilistic layer) ─────────────────────────────────────
       let result: Awaited<ReturnType<typeof extractThemes>>
       try {
         const inferenceStart = Date.now()
@@ -219,29 +183,27 @@ export function mountAIInsightsRoutes(parent: any) {
         throw err
       }
 
-      // Map InsightTheme[] → string[] to maintain frontend wire format.
       const themes = result.themes.map((t) => t.theme)
-
-      // ── Deterministic post-processing ─────────────────────────────────────
 
       const payload = {
         session_id: sessionId,
         generated_at: Date.now(),
         model: INSIGHTS_MODEL,
         themes,
-        follow_ups: [] as string[], // superseded by structured theme extraction
+        follow_ups: [] as string[],
       }
 
-      await c.env.DECISIONS_KV.put(CACHE_KEY(sessionId), JSON.stringify(payload), {
+      await c.env.DECISIONS_KV.put(insightsCacheKey(sessionId), JSON.stringify(payload), {
         expirationTtl: 3600,
       })
 
-      // Vectorize upsert: store this session for future similarity queries.
       try {
         let vector: number[] | undefined = sessionVector
         if (!vector) {
           const upsertEmbedStart = Date.now()
-          const upsertEmbedResult = (await c.env.AI.run('@cf/baai/bge-m3', { text: sessionResult.title })) as { data: number[][] }
+          const upsertEmbedResult = (await c.env.AI.run('@cf/baai/bge-m3', { text: sessionResult.title })) as {
+            data: number[][]
+          }
           writeEvent(c.env.METRICS_AE, {
             name: 'ai.inference',
             userId: user.sub,
@@ -286,59 +248,11 @@ export function mountAIInsightsRoutes(parent: any) {
       return c.json({ ok: true, data: payload, trace_id }, 200)
     } catch (err) {
       console.error('[ai-insights] analyze failed:', err)
+      const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
+        { ok: false, error: { code: 'internal', message }, trace_id },
         500,
       )
     }
   })
-
-  // GET /sessions/:sessionId/insights
-  app.get('/sessions/:sessionId/insights', async (c) => {
-    const trace_id = c.get('trace_id')
-    const sessionId = c.req.param('sessionId')
-    const user = c.get('user')
-
-    try {
-      const sessionCheck = await c.env.DB.prepare(
-        `SELECT id FROM sessions WHERE id = ?1 AND owner_id = ?2`,
-      )
-        .bind(sessionId, user.sub)
-        .first()
-
-      if (!sessionCheck) {
-        return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
-          404,
-        )
-      }
-
-      const cached = await c.env.DECISIONS_KV.get(CACHE_KEY(sessionId), 'json')
-
-      if (!cached) {
-        return c.json(
-          {
-            ok: true,
-            data: {
-              session_id: sessionId,
-              insights: null,
-              message: 'No insights generated yet. Call POST /sessions/:id/insights/analyze first.',
-            },
-            trace_id,
-          },
-          200,
-        )
-      }
-
-      return c.json({ ok: true, data: cached, trace_id }, 200)
-    } catch (err) {
-      console.error('[ai-insights] get failed:', err)
-      return c.json(
-        { ok: false, error: { code: 'internal', message: (err as Error).message }, trace_id },
-        500,
-      )
-    }
-  })
-
-  parent.route('/api', app)
 }

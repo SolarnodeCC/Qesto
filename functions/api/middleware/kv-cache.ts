@@ -10,6 +10,12 @@ import { MiddlewareHandler } from 'hono'
 import type { Env, PlanTier } from '../types'
 import { PLAN_QUOTAS } from '../types'
 import { getQuotaUsage } from '../lib/quota'
+import {
+  cacheLeaderboardKey,
+  cachePlanUsageKey,
+  cacheTeamMetadataKey,
+  cacheUserRolesKey,
+} from '../lib/kv-keys'
 import type { AuthVariables } from './auth'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
@@ -56,7 +62,7 @@ export const kvCacheMiddleware: MiddlewareHandler<{
 
   // Pre-load plan usage cache for current user
   if (user?.sub) {
-    const planUsageKey = `cache:plan:${user.sub}`
+    const planUsageKey = cachePlanUsageKey(user.sub)
     const cached = await getCached(planUsageKey)
 
     if (cached) {
@@ -82,7 +88,7 @@ export async function cachePlanUsage(
   usage: Record<string, any>,
   ttl: number = 5 * 60
 ): Promise<void> {
-  const key = `cache:plan:${userId}`
+  const key = cachePlanUsageKey(userId)
   try {
     await cacheKv(c, key).put(
       key,
@@ -101,7 +107,7 @@ export async function getPlanUsageWithCache(
   c: any,
   userId: string
 ): Promise<Record<string, any>> {
-  const key = `cache:plan:${userId}`
+  const key = cachePlanUsageKey(userId)
 
   // Try cache first
   try {
@@ -146,7 +152,7 @@ export async function cacheTeamMetadata(
   metadata: Record<string, any>,
   ttl: number = 10 * 60
 ): Promise<void> {
-  const key = `cache:team:${teamId}`
+  const key = cacheTeamMetadataKey(teamId)
   try {
     await cacheKv(c, key).put(
       key,
@@ -168,7 +174,7 @@ export async function cacheUserRoles(
   roles: string[],
   ttl: number = 5 * 60
 ): Promise<void> {
-  const key = `cache:roles:${userId}`
+  const key = cacheUserRolesKey(userId)
   try {
     await cacheKv(c, key).put(
       key,
@@ -190,7 +196,7 @@ export async function cacheLeaderboard(
   entries: Record<string, any>[],
   ttl: number = 1 * 60
 ): Promise<void> {
-  const key = `cache:leaderboard:${sessionId}`
+  const key = cacheLeaderboardKey(sessionId)
   try {
     await cacheKv(c, key).put(
       key,

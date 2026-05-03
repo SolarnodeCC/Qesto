@@ -28,6 +28,7 @@ import { writeEvent } from '../lib/observability'
 import { denyFeature, denyLimit, featureAllowed, maxTeamMembersForPlan } from '../lib/entitlements'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { TEAM_INVITE_TTL_SECONDS } from '../lib/constants'
+import { teamDocumentKey, teamInviteKey, userTeamsIndexKey } from '../lib/kv-keys'
 import type { Env } from '../types'
 
 type Role = 'owner' | 'admin' | 'member' | 'viewer'
@@ -59,27 +60,23 @@ type Vars = AuthVariables & PlanVariables
 
 // ─── KV helpers ──────────────────────────────────────────────────────────────
 
-const teamKey = (id: string) => `team:${id}`
-const userTeamsKey = (userId: string) => `user-teams:${userId}`
-const inviteKey = (tokenHash: string) => `team-invite:${tokenHash}`
-
 async function loadTeam(kv: KVNamespace, id: string): Promise<Team | null> {
-  return readKvJson<Team>(kv, teamKey(id))
+  return readKvJson<Team>(kv, teamDocumentKey(id))
 }
 
 async function saveTeam(kv: KVNamespace, team: Team): Promise<void> {
-  await writeKvJson(kv, teamKey(team.id), team)
+  await writeKvJson(kv, teamDocumentKey(team.id), team)
 }
 
 async function loadUserTeamIds(kv: KVNamespace, userId: string): Promise<string[]> {
-  return (await readKvJson<string[]>(kv, userTeamsKey(userId))) ?? []
+  return (await readKvJson<string[]>(kv, userTeamsIndexKey(userId))) ?? []
 }
 
 async function addUserTeam(kv: KVNamespace, userId: string, teamId: string): Promise<void> {
   const ids = await loadUserTeamIds(kv, userId)
   if (!ids.includes(teamId)) {
     ids.push(teamId)
-    await writeKvJson(kv, userTeamsKey(userId), ids)
+    await writeKvJson(kv, userTeamsIndexKey(userId), ids)
   }
 }
 
@@ -87,7 +84,7 @@ async function removeUserTeam(kv: KVNamespace, userId: string, teamId: string): 
   const ids = await loadUserTeamIds(kv, userId)
   const filtered = ids.filter((id) => id !== teamId)
   if (filtered.length !== ids.length) {
-    await writeKvJson(kv, userTeamsKey(userId), filtered)
+    await writeKvJson(kv, userTeamsIndexKey(userId), filtered)
   }
 }
 
@@ -342,7 +339,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     const raw = generateMagicLinkToken()
     const tokenHash = await hashMagicLinkToken(raw)
     await c.env.TEAMS_KV.put(
-      inviteKey(tokenHash),
+      teamInviteKey(tokenHash),
       JSON.stringify({ teamId: team.id, email, role: parsed.data.role, createdAt: Date.now() }),
       { expirationTtl: TEAM_INVITE_TTL_SECONDS },
     )
@@ -409,7 +406,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   parent.route('/api/teams', app)
 }
 
-// ─── Internal helpers used by the SAML acceptance flow (auth.ts) ─────────────
+// ─── Internal helpers used by the SAML acceptance flow (routes/auth/saml.ts) ─
 
 /**
  * Attach a user to a team (called when a SAML callback or invite acceptance
@@ -437,9 +434,9 @@ export async function consumeInvite(
   kv: KVNamespace,
   tokenHash: string,
 ): Promise<{ teamId: string; email: string; role: Role } | null> {
-  const raw = await kv.get(inviteKey(tokenHash))
+  const raw = await kv.get(teamInviteKey(tokenHash))
   if (!raw) return null
-  await kv.delete(inviteKey(tokenHash))
+  await kv.delete(teamInviteKey(tokenHash))
   try {
     return JSON.parse(raw) as { teamId: string; email: string; role: Role }
   } catch {

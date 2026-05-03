@@ -1,29 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { Question as ApiQuestion, Session as ApiSession, SessionStatus } from '@api/types'
 import { api, type ApiError } from '../api/client'
 
-export type SessionStatus = 'draft' | 'live' | 'closed' | 'archived'
+export type { SessionStatus }
 
-export type SessionSummary = {
-  id: string
-  owner_id: string
-  code: string
-  title: string
-  status: SessionStatus
-  created_at: number
-  started_at: number | null
-  closed_at: number | null
-}
+/** Session row shape returned by list/detail session APIs (subset of `Session`). */
+export type SessionSummary = Pick<
+  ApiSession,
+  'id' | 'owner_id' | 'code' | 'title' | 'status' | 'created_at' | 'started_at' | 'closed_at'
+>
 
-export type PollOption = { id: string; label: string }
+export type Question = ApiQuestion
 
-export type Question = {
-  id: string
-  session_id: string
-  position: number
-  kind: 'poll' | 'ranking' | 'consent' | 'open' | 'multi_select' | 'likert' | 'upvote' | 'word_cloud' | 'slider'
-  prompt: string
-  options: PollOption[]
-}
+export type PollOption = ApiQuestion['options'][number]
 
 export type SessionDetail = {
   session: SessionSummary
@@ -95,7 +84,10 @@ export function useSession(id: string | undefined) {
   }, [load])
 
   const patch = useCallback(
-    async (payload: { title?: string; question?: { kind: Question['kind']; prompt: string; options: PollOption[] } }) => {
+    async (payload: {
+      title?: string
+      question?: { kind: Question['kind']; prompt: string; options: PollOption[] }
+    }) => {
       if (!id) return { ok: false as const, status: 0, error: { code: 'no_id', message: 'Missing session id' } }
       const res = await api<SessionDetail>(`/api/sessions/${encodeURIComponent(id)}`, {
         method: 'PATCH',
