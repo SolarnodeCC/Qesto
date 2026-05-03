@@ -1,4 +1,5 @@
 import { readKvJson, writeKvJson } from './kv'
+import { quotaSessionsKey } from './kv-keys'
 
 // Plan quota tracking using KV (idempotent, monthly window).
 // Quotas tracked per user per month; KV TTL handles month-end rollover.
@@ -22,7 +23,7 @@ export async function incrementSessionQuota(
   limit: number,
 ): Promise<{ allowed: boolean; remaining: number }> {
   const monthKey = getMonthKey()
-  const kvKey = `quota:sessions:${userId}:${monthKey}`
+  const kvKey = quotaSessionsKey(userId, monthKey)
 
   // Read current
   const current: QuotaRecord = (await readKvJson<QuotaRecord>(kv, kvKey)) ?? {
@@ -59,7 +60,7 @@ export async function getQuotaUsage(
   limit: number,
 ): Promise<{ sessions_created: number; limit: number; remaining: number }> {
   const monthKey = getMonthKey()
-  const kvKey = `quota:sessions:${userId}:${monthKey}`
+  const kvKey = quotaSessionsKey(userId, monthKey)
 
   const current = await readKvJson<QuotaRecord>(kv, kvKey)
 
@@ -77,7 +78,7 @@ export async function getQuotaUsage(
  */
 export async function resetQuota(kv: KVNamespace, userId: string, month?: string): Promise<void> {
   const monthKey = month ?? getMonthKey()
-  const kvKey = `quota:sessions:${userId}:${monthKey}`
+  const kvKey = quotaSessionsKey(userId, monthKey)
   await kv.delete(kvKey)
 }
 

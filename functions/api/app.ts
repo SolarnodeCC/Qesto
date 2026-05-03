@@ -115,7 +115,7 @@ export function createApp() {
         },
         trace_id,
       },
-      status as 400 | 401 | 403 | 404 | 409 | 429 | 500,
+      status as 400 | 401 | 403 | 404 | 409 | 429 | 500 | 502 | 503,
     )
   })
 

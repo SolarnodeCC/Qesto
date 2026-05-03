@@ -4,10 +4,7 @@ import { authMiddleware } from '../middleware/auth'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { ok, fail } from '../lib/http'
 import { PREFS_TTL_SECONDS } from '../lib/constants'
-
-function prefsKey(userId: string) {
-  return `prefs:${userId}`
-}
+import { userPrefsKey } from '../lib/kv-keys'
 
 const PrefsSchema = z.object({
   density: z.enum(['compact', 'comfortable', 'spacious']).optional(),
@@ -18,7 +15,7 @@ type UserPrefs = z.infer<typeof PrefsSchema>
 export function mountUserRoutes(app: Hono<any>) {
   app.get('/api/users/preferences', authMiddleware, async (c) => {
     const user = c.get('user')
-    const prefs = (await readKvJson<UserPrefs>(c.env.USERS_KV, prefsKey(user.sub))) ?? {}
+    const prefs = (await readKvJson<UserPrefs>(c.env.USERS_KV, userPrefsKey(user.sub))) ?? {}
     return ok(c, prefs)
   })
 
@@ -30,7 +27,7 @@ export function mountUserRoutes(app: Hono<any>) {
       return fail(c, 'bad_request', 'Invalid preferences', 400)
     }
 
-    const key = prefsKey(user.sub)
+    const key = userPrefsKey(user.sub)
     const current = (await readKvJson<UserPrefs>(c.env.USERS_KV, key)) ?? {}
     const updated: UserPrefs = { ...current, ...parsed.data }
 
