@@ -22,6 +22,7 @@ import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import { queryAuditEvents, recordAuditEvent } from '../lib/audit'
 import { ulid } from '../lib/ulid'
 import type { Env } from '../types'
+import { readKvJson } from '../lib/kv'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -120,20 +121,6 @@ type MetricsSummaryRow = {
 }
 
 // ─── KV key helpers (matches Step 1 observability schema) ─────────────────────
-
-/**
- * Read a single KV bucket key and parse JSON.  Fail-safe: returns null on
- * missing key or parse error rather than crashing.
- */
-async function readKvJson<T>(kv: KVNamespace, key: string): Promise<T | null> {
-  try {
-    const raw = await kv.get(key)
-    if (!raw) return null
-    return JSON.parse(raw) as T
-  } catch {
-    return null
-  }
-}
 
 /**
  * Aggregate KV snapshot buckets for the last `windowMinutes` minutes.

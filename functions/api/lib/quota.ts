@@ -1,3 +1,5 @@
+import { readKvJson, writeKvJson } from './kv'
+
 // Plan quota tracking using KV (idempotent, monthly window).
 // Quotas tracked per user per month; KV TTL handles month-end rollover.
 
@@ -23,10 +25,7 @@ export async function incrementSessionQuota(
   const kvKey = `quota:sessions:${userId}:${monthKey}`
 
   // Read current
-  const raw = await kv.get(kvKey)
-  const current: QuotaRecord = raw
-    ? JSON.parse(raw)
-    : {
+  const current: QuotaRecord = (await readKvJson<QuotaRecord>(kv, kvKey)) ?? {
         user_id: userId,
         month: monthKey,
         sessions_created: 0,
@@ -46,7 +45,7 @@ export async function incrementSessionQuota(
   const daysRemaining = getDaysRemainingInMonth()
   const ttlSeconds = daysRemaining * 86400
 
-  await kv.put(kvKey, JSON.stringify(current), { expirationTtl: ttlSeconds })
+  await writeKvJson(kv, kvKey, current, { expirationTtl: ttlSeconds })
 
   return { allowed: true, remaining: Math.max(0, limit - current.sessions_created) }
 }
@@ -62,8 +61,7 @@ export async function getQuotaUsage(
   const monthKey = getMonthKey()
   const kvKey = `quota:sessions:${userId}:${monthKey}`
 
-  const raw = await kv.get(kvKey)
-  const current: QuotaRecord | null = raw ? JSON.parse(raw) : null
+  const current = await readKvJson<QuotaRecord>(kv, kvKey)
 
   const sessionsCreated = current?.sessions_created ?? 0
 
