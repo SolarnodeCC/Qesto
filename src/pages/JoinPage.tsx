@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { CheckCircle2, Sparkles } from 'lucide-react'
+import type { PollOption, SessionLookupByCode } from '@/types/session'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -26,7 +27,7 @@ export default function JoinPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const lookupCode = useCallback(async (c: string, silent = false) => {
-    const res = await api<{ id: string; title: string; code: string; status: 'draft' | 'live' }>(
+    const res = await api<SessionLookupByCode>(
       `/api/sessions/by-code/${encodeURIComponent(c.toUpperCase())}`,
     )
     if (res.ok) {
@@ -154,7 +155,7 @@ function SliderInput({
   myVotes,
   onVote,
 }: {
-  options: { id: string; label: string }[]
+  options: PollOption[]
   hasVoted: boolean
   canVote: boolean
   myVotes: string[]

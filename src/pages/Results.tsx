@@ -2,17 +2,16 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
+import type { PollOption, SessionStatus } from '@/types/session'
 import { api, type ApiError } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
-
-type PollOption = { id: string; label: string }
 
 type ResultsPayload = {
   session: {
     id: string
     title: string
-    status: 'draft' | 'live' | 'closed' | 'archived'
+    status: SessionStatus
     code: string
     closed_at: number | null
   }

@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, X } from 'lucide-react'
+import { enrichPricingMatrix, PRICING_MATRIX_BASE, type MatrixVal } from '../config/pricing-matrix'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
+import { usePlanCatalog } from '../hooks/usePlanCatalog'
 
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
@@ -15,55 +17,6 @@ const monoFont = { fontFamily: 'var(--font-family-mono)' }
 const shadowCard = { boxShadow: 'var(--shadow-card)' }
 const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
 
-type MatrixVal = boolean | string
-
-const matrixCategories: { section: string; rows: [string, MatrixVal, MatrixVal, MatrixVal][] }[] = [
-  {
-    section: 'Sessions & participants',
-    rows: [
-      ['Active sessions at once', '3', 'Unlimited', 'Unlimited'],
-      ['Participants per session', 'Unlimited', 'Unlimited', 'Unlimited'],
-      ['Question types', '8', '8', '8 + custom'],
-      ['Retention', '30 days', '365 days', '7d – 7yr'],
-    ],
-  },
-  {
-    section: 'Privacy & consent',
-    rows: [
-      ['Full anonymity mode', true, true, true],
-      ['Cohort-visible mode', true, true, true],
-      ['Identified mode + consent log', false, true, true],
-      ['Minimum tally gating', '5 (fixed)', 'Configurable', 'Configurable'],
-    ],
-  },
-  {
-    section: 'AI insights',
-    rows: [
-      ['AI draft recaps', '5 / mo', 'Unlimited', 'Unlimited'],
-      ['Evidence-anchored clusters', false, true, true],
-      ['Private Workers AI endpoint', false, false, true],
-    ],
-  },
-  {
-    section: 'Admin & compliance',
-    rows: [
-      ['SSO (OIDC, SAML)', false, 'Google, Okta', 'All IdPs + SCIM'],
-      ['Data residency', 'Global', 'EU or US', 'Custom'],
-      ['DPA & SOC 2 report', 'DPA only', true, true],
-      ['Customer-managed keys', false, false, true],
-      ['Uptime SLA', '—', '99.9%', '99.95%'],
-    ],
-  },
-  {
-    section: 'Integrations',
-    rows: [
-      ['CSV / PDF / JSON export', true, true, true],
-      ['Webhooks (Slack, Notion, Workday)', false, true, true],
-      ['Branded domain & PDF templates', false, false, true],
-    ],
-  },
-]
-
 const faqs = [
   {
     q: 'What counts as a "session"?',
@@ -71,7 +24,7 @@ const faqs = [
   },
   {
     q: 'Do participants pay?',
-    a: 'Never. Qesto charges the host only. An audience of 5 and an audience of 5,000 cost the same.',
+    a: 'Never. Qesto charges the host only—audience sizes still respect each tier’s participant cap listed above.',
   },
   {
     q: 'Can I cancel?',
@@ -87,16 +40,26 @@ const faqs = [
   },
   {
     q: 'Is there a free tier for students?',
-    a: 'Yes — Pulse is free forever, no cap on participants. For coursework at scale (> 3 concurrent rooms), we grant free Signal access via the .edu program.',
+    a: 'Yes — Pulse stays free within the session and participant limits shown in the feature matrix below. Beyond that, apply for expanded access via the .edu program.',
   },
 ]
 
 export default function Pricing() {
+  const { plans } = usePlanCatalog()
+  const free = plans.find((p) => p.id === 'free')
+  const starter = plans.find((p) => p.id === 'starter')
+  const team = plans.find((p) => p.id === 'team')
+
+  const matrixCategories = useMemo(() => {
+    if (!free || !starter || !team) return PRICING_MATRIX_BASE
+    return enrichPricingMatrix(PRICING_MATRIX_BASE, free, starter, team)
+  }, [free, starter, team])
+
   return (
     <MainLayout>
       <PageSeo
         title="Pricing — Qesto"
-        description="Start free. Pay when a room depends on it. Every plan includes edge inference, consent rounds, and unlimited participants."
+        description="Start free. Edge inference and consent tooling on every tier; monthly session and per-room caps match in-app enforcement—see the matrix below."
         canonicalPath="/pricing"
       />
 
@@ -114,8 +77,9 @@ export default function Pricing() {
             </span>
           </h1>
           <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed">
-            Every plan includes edge inference, consent rounds, and unlimited participants. You pay for sessions and
-            retention — not for voices in the room.
+            Every plan includes edge inference and consent-aware flows. Session and room-size limits are published per
+            tier and match what the product enforces—you don’t get surprise hard-stops after you’ve committed to a
+            room.
           </p>
         </div>
       </section>
@@ -138,14 +102,21 @@ export default function Pricing() {
                 </span>
                 <span className="text-sm font-medium text-pulse-500 dark:text-[#6B7A99] ml-1.5">/ host / month</span>
               </div>
-              <p className="text-xs text-pulse-500 dark:text-[#6B7A99] mb-6 mt-1">No credit card. No session caps on free tier.</p>
+              <p className="text-xs text-pulse-500 dark:text-[#6B7A99] mb-6 mt-1">
+                No credit card.{' '}
+                {free
+                  ? `Up to ${free.features.sessionsPerMonth} new sessions / month · up to ${free.features.participantsPerSession} participants per session.`
+                  : null}
+              </p>
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
-                  '3 active sessions at a time',
+                  free
+                    ? `Up to ${free.features.sessionsPerMonth} new sessions per month (monthly reset)`
+                    : 'Monthly session allowance',
                   '30-day retention',
                   'Full & cohort anonymity',
                   'Workers AI drafts — 5 / month',
-                  'CSV & PDF exports',
+                  free?.features.resultsExport ? 'CSV & PDF exports' : 'CSV exports (PDF on paid tiers)',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
                     <span className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5">
@@ -183,13 +154,22 @@ export default function Pricing() {
                 </span>
                 <span className="text-sm font-medium text-slate-400 ml-1.5">/ host / month</span>
               </div>
-              <p className="text-xs text-slate-400 mb-6 mt-1">Billed annually · €29/mo month-to-month</p>
+              <p className="text-xs text-slate-400 mb-6 mt-1">
+                Billed annually · €29/mo month-to-month
+                {starter
+                  ? ` · Up to ${starter.features.sessionsPerMonth} new sessions/mo · ${starter.features.participantsPerSession} participants/room`
+                  : ''}
+              </p>
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
-                  'Unlimited sessions & recaps',
+                  starter
+                    ? `Up to ${starter.features.sessionsPerMonth} new sessions per month`
+                    : 'Higher session allowance',
                   '365-day retention, audit exports',
                   'Identified mode + consent logs',
-                  'Same-day evidence-anchored recap',
+                  starter?.features.insightsAI
+                    ? 'Same-day evidence-anchored recap'
+                    : 'Evidence-anchored recap (AI insights on Team)',
                   'Slack, Notion, Workday webhooks',
                   'Stripe-billed, cancel anytime',
                 ].map((f) => (
@@ -222,12 +202,17 @@ export default function Pricing() {
                   Talk to us
                 </span>
               </div>
-              <p className="text-xs text-pulse-500 dark:text-[#6B7A99] mb-6 mt-1">Annual contract · custom scope</p>
+              <p className="text-xs text-pulse-500 dark:text-[#6B7A99] mb-6 mt-1">
+                Annual contract · custom scope
+                {team
+                  ? ` · Up to ${team.features.sessionsPerMonth} new sessions/mo · ${team.features.participantsPerSession} participants/room`
+                  : ''}
+              </p>
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
-                  'SSO, SCIM, role scopes',
+                  team?.features.samlSso ? 'SSO, SCIM, role scopes' : 'SSO roadmap — contact sales',
                   'Custom retention & residency',
-                  'Private Workers AI endpoints',
+                  team?.features.insightsAI ? 'Private Workers AI endpoints' : 'AI insights',
                   'Customer-managed encryption keys',
                   'Dedicated onboarding + SLA',
                   'Branded domain & PDF templates',
@@ -249,14 +234,18 @@ export default function Pricing() {
       </section>
 
       {/* Feature matrix */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <section id="feature-matrix" className="py-16 bg-pulse-50 dark:bg-[#0F1525] scroll-mt-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Feature matrix</div>
           <h2 className="font-bold text-4xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             What's in each plan — line by line.
           </h2>
           <p className="text-pulse-500 dark:text-[#6B7A99] mb-8">
-            No asterisks, no hidden tier. If it's in the column, it's in the plan.
+            Pulse / Signal / Chorus map to Free / Starter / Team. Rows that tie to quotas or plan flags{' '}
+            <span className="font-medium text-pulse-600 dark:text-[#8893AD]">
+              hydrate from the same source as billing enforcement
+            </span>
+            ; other rows describe roadmap or packaging details.
           </p>
           <div className="bg-white dark:bg-[#151C2E] rounded-2xl overflow-hidden" style={shadowCard}>
             <table className="w-full border-collapse">
@@ -317,6 +306,11 @@ export default function Pricing() {
               </tbody>
             </table>
           </div>
+          <p className="text-sm text-pulse-500 dark:text-[#6B7A99] mt-6 max-w-3xl">
+            Numeric limits (sessions/month, participants/room, exports, SSO, semantic search clusters, branded assets)
+            mirror <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
+            <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
+          </p>
         </div>
       </section>
 
@@ -368,7 +362,8 @@ export default function Pricing() {
             Start with Pulse. Scale when the room does.
           </h2>
           <p className="text-slate-400 mb-8">
-            Free forever. Upgrade in one click when you need longer retention or identified mode.
+            Free tier stays within published monthly and room limits. Upgrade when you need longer retention, consent
+            logs, or richer exports.
           </p>
           <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
             Create your workspace
