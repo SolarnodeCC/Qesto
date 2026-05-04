@@ -96,3 +96,17 @@ return new Response(response.body, { headers })
 1. Compare against baseline in `.claude/.agent-state/perf-baseline.json` before merge
 2. Flag unexplained regressions > 10% in code review
 3. Monitor production for 24h after merge
+
+## Audit Resilience Budgets
+
+The resilience audit added these performance-adjacent gates:
+
+| Dependency | Gate |
+|---|---|
+| Workers AI | Bound execution with timeout; retry transient failures where useful; never leave a user request waiting indefinitely. |
+| D1 middleware queries | Keep indexed and bounded; catch failures in auth/plan/admin/RBAC middleware with explicit fail-open/fail-closed semantics. |
+| KV rate limits/cache | Wrap KV operations where failure should degrade gracefully; log fail-open decisions. |
+| Vectorize upsert | Defer best-effort enrichment with `waitUntil()` when it is not required for the current response. |
+| Durable Object storage | Guard cached promise initialization; storage failures should not poison later requests permanently. |
+
+Flag any new route or integration that cannot state its timeout/degradation behavior.

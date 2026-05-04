@@ -52,6 +52,12 @@ Structured debug workflow for Durable Object and WebSocket issues in Qesto.
 **Broadcast:**
 - [ ] `broadcastToRole('presenter', ...)` vs `broadcast(...)` — right choice?
 
+**Audit regression checks:**
+- [ ] Cached storage promises clear themselves on rejection?
+- [ ] `webSocketMessage` has an outer guard around handler failures?
+- [ ] Safe client error returned; internal error details only in logs?
+- [ ] Follow-up messages still work after one handler fails?
+
 ## Common Bug Patterns
 
 | Symptom | Most Likely Cause |
@@ -62,6 +68,8 @@ Structured debug workflow for Durable Object and WebSocket issues in Qesto.
 | DO unresponsive after `closeSession()` | Alarm not cleared before new alarm |
 | WS disconnect loop | Token expired; client reconnects without new token |
 | Emoji rate limit not working | `emojiRateLimits` map resets after hibernation — expected |
+| All future votes fail after one storage blip | Cached rejected storage promise was not cleared |
+| One malformed WS message breaks session | Missing outer handler try/catch |
 
 ## Log Commands
 

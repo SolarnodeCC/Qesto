@@ -1,6 +1,6 @@
 # Qesto — Documentation map
 
-_Last updated: 2026-04-19 (UTC)_
+_Last updated: 2026-05-04 (UTC)_
 
 This file is the **entry point** for everything under `docs/`: how documents connect, what to read first, and **which source wins** when wording differs. The repository root **[`README.md`](../README.md)** links here so clones and Git hosts land on the same map.
 
@@ -53,6 +53,8 @@ This file is the **entry point** for everything under `docs/`: how documents con
 
 ### AI agent framework (skills, governance, scorecards)
 
+- **`AGENTS_VISUAL_OVERVIEW.md`** — visual map of development sub-agents, skill packs, and runtime agentic services
+- **`AGENT_IMPROVEMENT_PRIORITIES.md`** — audit-derived priorities for which agents and skills to improve
 - **`AGENT_SKILL_GOVERNANCE.md`**, **`AGENT_SKILL_TEMPLATE.md`**, **`AGENT_SKILL_SCORECARD.md`**
 - **`AGENT_SKILL_IMPLEMENTATION_STEPS.md`**, **`AGENTS_NEXT_LEVEL_IMPLEMENTATION.md`**, **`SKILLS_NEXT_PHASE_PLAN.md`**
 
@@ -82,7 +84,9 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | `TESTING_PYRAMID.md` | Test layering |
 | `PLAN_ENTITLEMENT_AUDIT.md` | Entitlement audit plan |
 | `SPRINT20_READINESS_SPEC.md` | Sprint 20 entitlement, observability, and KPI baseline implementation spec |
+| `SPRINT19_COMPLETION_SPEC.md` | Sprint 19 AI wizard → Launchpad completion and measurement contract |
 | `ADR-workers-ai-capabilities.md` | Architecture decision record |
+| `adr/ADR-0004-custom-rbac-authorization.md` | AUTHZ-ADR-01 — custom RBAC authorization gate for Sprint 21 |
 | `CLOUDFLARE_WORKERS_OPTIMIZATION.md` | Workers performance notes |
 
 ### `docs/spec/` (technical specifications)

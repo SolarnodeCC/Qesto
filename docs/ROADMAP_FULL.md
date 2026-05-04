@@ -19,20 +19,22 @@ _Last updated: 2026-05-01 (UTC)_
 
 ## Next planning milestones
 
-### Sprint 20 — Readiness + Entitlement Enforcement + Measurement (planned)
+### Sprint 20 — Readiness + Entitlement Enforcement + Measurement (built; verification gate)
 **Focus:** Stabilize v2.1 before the next feature expansion: plan entitlement coverage, Sprint 19 KPI measurement, observability evidence, and trustworthy local/CI quality gates.
 
 **Key items:**
 | Item | Status |
 |---|---|
 | ENTITLEMENTS-01 Pricing claim → backend gate matrix | ✅ Shipped 2026-05-01 |
-| ENTITLEMENTS-02 Contract tests for paid capabilities | In progress |
+| ENTITLEMENTS-02 Contract tests for paid capabilities | ✅ Built 2026-05-04 |
 | OBS-02 Sprint 19 operational evidence | ✅ Shipped 2026-05-01 |
 | QA-DOCDRIFT-01 Align docs with package scripts/test counts | ✅ Shipped 2026-05-01 |
 | DESIGN-GATE-01 Stabilize token drift check locally and in CI | ✅ Shipped 2026-05-01 |
-| S19-MEASURE-01 AI wizard + Launchpad KPI baseline | ✅ Shipped 2026-05-01 |
+| S19-MEASURE-01 AI wizard + Launchpad KPI baseline | ✅ Completed with durable events 2026-05-04 |
+| AUTHZ-ADR-01 Custom RBAC authorization ADR | Proposed for Sprint 20 review |
+| Sprint A verification bundle | Verification gate active |
 
-**Gate:** RBAC depth/custom roles require an authorization ADR; LIVE energizers require a Durable Object protocol/versioning ADR.
+**Gate:** RBAC depth/custom roles require `ADR-0004` acceptance by Product Owner + Architect; LIVE energizers require a Durable Object protocol/versioning ADR.
 
 ### Sprint 21 — Enterprise Authorization + Compliance UX (planned)
 **Focus:** Turn the Sprint 20 entitlement evidence into an authorization design the team can safely extend. This is the first sprint where RBAC depth can move, but only after the ADR is accepted.
@@ -40,7 +42,7 @@ _Last updated: 2026-05-01 (UTC)_
 **Key items:**
 | Item | Status |
 |---|---|
-| AUTHZ-ADR-01 Custom RBAC authorization ADR | Planned |
+| AUTHZ-ADR-01 Custom RBAC authorization ADR | Proposed in `docs/adr/ADR-0004-custom-rbac-authorization.md`; must be accepted before code |
 | AUTHZ-RBAC-01 Custom role permission matrix + server-side enforcement plan | Planned |
 | AUTHZ-RBAC-02 Admin role-management UX and delegated permissions | Planned |
 | ENT-03/ENT-04 compliance UX follow-through from audit/admin evidence | Planned |

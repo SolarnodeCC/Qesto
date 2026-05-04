@@ -84,6 +84,20 @@ app.verb('/path/:param', authMiddleware, planMiddleware, async (c) => {
 - [ ] Plan-gated? Wire `requirePlan()` middleware
 - [ ] PII exposure risk? Add anonymity mode check
 
+## Audit Prevention Design Checklist
+
+Use this when designing or approving work in audit-affected areas.
+
+- [ ] Route layer remains thin: HTTP validation/auth/response only.
+- [ ] Multi-step domain behavior has a named service layer.
+- [ ] D1/KV access for sessions/questions/teams/auth has repository ownership or an explicit reason not to.
+- [ ] No route module imports business logic from another route module.
+- [ ] State transitions are explicit helpers or strategy tables, not scattered conditionals.
+- [ ] Vote policy and WebSocket message behavior are strategy/handler maps where complexity would otherwise grow.
+- [ ] External services have timeout, retry, circuit-breaker, or degradation semantics.
+- [ ] Shared helpers are reused for KV JSON, response envelopes, key builders, AI JSON extraction, and frontend polling.
+- [ ] Refactor plans include characterization tests and one module split per PR.
+
 ## Docs to Update
 
 | Change | Doc |

@@ -67,6 +67,13 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 □ Debug endpoints behind import.meta.env.DEV
 ```
 
+### A05 audit additions
+```
+□ No raw err.message, SQL text, upstream details, or stack traces in production responses
+□ WebSocket error messages expose safe client codes only
+□ Error sanitizer is wired through global onError and route-level 500 catches
+```
+
 ### A06 — Vulnerable Components
 ```
 □ npm audit — no high/critical vulnerabilities
@@ -98,6 +105,13 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 □ Admin audit log updated on critical actions
 ```
 
+### A09 audit additions
+```
+□ Auth/OAuth/RBAC failures are not silently swallowed
+□ KV/D1 fail-open or fail-closed behavior is explicit and logged
+□ External-service degradation emits structured log/metric with trace context
+```
+
 ### A10 — SSRF
 ```
 □ No fetch() with user input as URL without whitelist
@@ -124,6 +138,8 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 **GDPR:** Consent log: timestamp + IP hash at sign-up. Anonymisation mode: AI always uses anonymised answers. Right to erasure cascades to decisions/actions.
 
 **DO/WS:** voterId validated on connection (not just upgrade). Presenter actions check `role === 'presenter'` in DO. No unbounded growth of ipVotes/fpVotes maps.
+
+**Audit-derived release blockers:** malformed JSON producing 500s, raw production errors, unguarded DO promise rejection, WebSocket handler exceptions without containment, Workers AI/Stripe/Resend/OAuth/SAML calls without timeout/degradation posture.
 
 ## Severity & Action
 

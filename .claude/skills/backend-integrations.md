@@ -20,6 +20,17 @@ const result = await c.env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
 
 Rate limits: 10 req/min (free), 50 req/min (pro). Response time: 2–8s — always async.
 
+Audit-derived rule: every Workers AI path must have an explicit timeout, retry/fallback decision, validation of model output, and safe error response. Reuse shared AI invocation / JSON extraction helpers when available; do not duplicate `extractJson` or retry loops across AI features.
+
+```typescript
+// Expected shape for new AI calls
+// 1. Build prompt from bounded input
+// 2. Invoke with timeout + retry/fallback
+// 3. Parse strict JSON
+// 4. Validate with Zod
+// 5. Return safe 502/500 envelope on AI or validation failure
+```
+
 ## Stripe
 
 ### Webhook Verification (CRITICAL — never skip)
@@ -64,6 +75,8 @@ async function handleStripeEvent(event: StripeEvent, env: Env) {
 
 **Rules:** Verify signature first · Return 200 immediately · Process via `waitUntil()` · Deduplicate by event ID · Return 200 for unknown event types.
 
+Operational resilience rule: non-webhook Stripe API calls must define timeout/retry behavior and a user-safe degradation path. Webhook processing may retry through Stripe's delivery system, but internal side effects must be idempotent.
+
 ## Resend Email
 
 ```typescript
@@ -77,6 +90,8 @@ await sendEmail(c.env.RESEND_API_KEY, {
 
 Webhook verification: `X-Resend-Signature` header — same SubtleCrypto HMAC pattern as Stripe.
 
+Email truthfulness rule: do not tell the caller email was delivered if the send failed unless the endpoint contract explicitly means "accepted for processing". Log send failures with trace context and expose a user-safe retry path.
+
 ## Meeting Integrations (Zoom / Teams / Webex)
 
 ```typescript
@@ -89,6 +104,8 @@ const token = await exchangeOAuthCode(code, {
 // Token storage: USERS_KV `integrations:{userId}:{provider}`
 // Refresh: check expiry before each API call, refresh if < 5min remaining
 ```
+
+All OAuth/SAML metadata fetches need URL allowlisting or provider allowlisting, timeout, and structured logging on failure.
 
 ## Vectorize (Decisions)
 
@@ -107,6 +124,8 @@ const results = await c.env.DECISIONS_VECTORIZE.query(queryEmbedding, {
 })
 ```
 
+Vectorize is best-effort unless the product contract says otherwise. Queries/upserts should not block the main user response when they only enrich future insights; defer with `waitUntil()` and log skipped work.
+
 ## General Webhook Best Practices
 
 1. Verify signature first (timing-safe)
@@ -114,3 +133,11 @@ const results = await c.env.DECISIONS_VECTORIZE.query(queryEmbedding, {
 3. Deduplicate by event ID (KV with 24h TTL)
 4. Log every webhook — aids debugging
 5. Handle unknown event types gracefully — return 200, log, ignore
+
+## External Dependency Checklist
+
+- [ ] Timeout defined
+- [ ] Retry or no-retry rationale documented
+- [ ] Circuit-breaker/degradation behavior considered for user-facing paths
+- [ ] Idempotency key or dedupe key used for side effects
+- [ ] Structured log includes trace ID and sanitized upstream context

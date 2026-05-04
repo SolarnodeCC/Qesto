@@ -78,4 +78,20 @@ describe('rateLimit', () => {
     const r = await rateLimit(undefined, 'user1', { max: 1, windowSeconds: 60, prefix: 't' })
     expect(r.allowed).toBe(true)
   })
+
+  it('falls open when KV operations fail', async () => {
+    const failingKv = {
+      get: async () => {
+        throw new Error('KV unavailable')
+      },
+      put: async () => {
+        throw new Error('KV unavailable')
+      },
+    } as unknown as KVNamespace
+
+    const r = await rateLimit(failingKv, 'user1', { max: 1, windowSeconds: 60, prefix: 't' })
+    expect(r.allowed).toBe(true)
+    expect(r.remaining).toBe(1)
+    expect(r.resetAt).toBeGreaterThan(Date.now())
+  })
 })

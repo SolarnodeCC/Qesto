@@ -3,15 +3,15 @@
 _Hub: [Documentation map](./README.md)._
 
 Date: 2026-04-05
-Sprint 20 update: 2026-05-01
+Sprint 20 update: 2026-05-04
 
 ## Executive summary
 
-Qesto **does have a billing/plan model in place** (Stripe + persisted plan + central limits), but entitlement enforcement is currently **partial**.
+Qesto **does have a billing/plan model in place** (Stripe + persisted plan + central limits). Sprint 20 moved entitlement enforcement from partial discovery into an explicit enforced/classified contract matrix.
 
-- ✅ A subset of features is enforced server-side (e.g. decision quota, AI insights, decision debt, paid-only exports/integrations).
-- ⚠️ Several pricing promises are present in UI/config but not consistently enforced by backend middleware.
-- ❌ Multiple Enterprise claims in pricing appear not implemented as product capabilities in this codebase (or at least not discoverable via routes/services).
+- ✅ Priced capabilities with backend routes now have server-side allow/deny coverage and contract tests.
+- ✅ Pricing claims without product routes are classified so future work cannot silently drift.
+- ⚠️ Claims marked `Next` still require gates when their routes land, especially custom branding, standalone semantic search, team analytics, and MCP API access.
 
 ## What is in place today
 
@@ -123,5 +123,5 @@ Legend:
 
 ## Bottom line
 
-- The project already has a **good foundation** for billing and plan state.
-- To reliably ensure users only get what they pay for, Qesto still needs a **broader and stricter entitlement enforcement rollout** across all priced capabilities.
+- Sprint 20 establishes a **good entitlement foundation** for billing and plan state.
+- New priced capabilities must be added through the same matrix: route owner, entitlement key, allow/deny contract tests, and pricing-copy classification.

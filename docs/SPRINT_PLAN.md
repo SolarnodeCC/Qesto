@@ -7,6 +7,7 @@ _**Sprint 18 Plan Added**: 2026-04-23 — see Sprint 18 section below. Five-spri
 _**Sprint 20 Plan Added**: 2026-04-30 — Sprint 19 implementation completed early; Sprint 20 focuses on readiness, entitlement enforcement, observability, and measurement before the next feature expansion._
 _**Next-five-sprint refresh**: 2026-05-01 — Sprint 20 to Sprint 24 now form the active calendar planning arc for v2.1 readiness and v2.2 foundation work._
 _**Sprint 20 scope expansion**: 2026-05-01 — Sprint 19 shipped early; AUTHZ-ADR-01 pulled in from stretch to committed; Sprint A verification bundle added; total committed scope raised from 34 pts to 45 pts._
+_**Sprint 20 build package**: 2026-05-04 — ENTITLEMENTS-02, durable Sprint 19 measurement, AUTHZ-ADR-01 proposal, and Sprint A verification gates are now implemented or ready for review._
 
 ---
 
@@ -442,13 +443,13 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---:|---|---|---|
 | **ENTITLEMENTS-01**: Pricing claim → backend gate matrix | 8 | BILLING/ENT | ✅ Implemented 2026-05-01 | Every pricing claim maps to an owning route/service, entitlement flag, and expected allow/deny behaviour |
-| **ENTITLEMENTS-02**: Contract tests for paid capabilities | 8 | BILLING/QA | In progress | Negative tests cover analytics, semantic search, branding, facilitator limits, history/retention, question-mode gating, and MCP/API access |
+| **ENTITLEMENTS-02**: Contract tests for paid capabilities | 8 | BILLING/QA | ✅ Built 2026-05-04 | Negative tests cover enforced capabilities; non-implemented claims are classified in `PLAN_ENTITLEMENT_AUDIT.md` |
 | **OBS-02**: Sprint 19 operational evidence | 5 | AI/OPS | ✅ Implemented 2026-05-01 | AI generation/refine latency, preflight failures, Launchpad DRAFT→LIVE success proxy, token bucket contention, WebSocket capacity, and 5xx errors are queryable or logged with trace IDs |
 | **QA-DOCDRIFT-01**: Align docs with actual scripts and test counts | 3 | QA/DOCS | ✅ Implemented 2026-05-01 | Docs use `npm run typecheck`; stale `type-check` / `check:api` references are removed or backed by real scripts; test-count claims are refreshed |
 | **DESIGN-GATE-01**: Stabilize token drift check locally and in CI | 5 | DESIGN/QA | ✅ Implemented 2026-05-01 | `npm run tokens:build` and `npm run check:tokens-drift` agree on Windows and CI; failures produce actionable path output |
-| **S19-MEASURE-01**: KPI baseline report for AI wizard + Launchpad | 5 | AI/PRODUCT | ✅ Implemented 2026-05-01 | Baseline captures AI usage rate, wizard completion proxy, Launchpad success proxy, and explicit gaps for inline suggestion acceptance and invalid LIVE attempts |
-| **AUTHZ-ADR-01**: Custom RBAC authorization ADR *(pulled in from stretch — 2026-05-01)* | 3 | ENT/AUTH | Start now — ENTITLEMENTS-01 gate satisfied | ADR defines custom role scopes, permission-to-route ownership, audit event semantics for role mutations, migration plan from the current 5-role model, and contract test strategy |
-| **Sprint A verification bundle** (LAYOUT-GRID-01, LAYOUT-A11Y-01, DESIGN-TOK-01, DX-INSIGHTS-01, I18N-BUG-01, I18N-BUG-02) | 8 | DESIGN/I18N/QA | Start now — DESIGN-GATE-01 tooling ready | Run `check:tokens-drift`, `check:i18n`, axe-core a11y suite; confirm LAYOUT-GRID-01 column spans adopted on wizard/Launchpad/Insights surfaces; verify DX-INSIGHTS-01 graceful degradation without DX-INSIGHTS-02 data |
+| **S19-MEASURE-01**: KPI baseline report for AI wizard + Launchpad | 5 | AI/PRODUCT | ✅ Completed with durable events 2026-05-04 | Baseline captures AI usage, wizard completion, Launchpad success, AI suggestion acceptance, invalid LIVE attempts, and preflight failure rate when event denominators exist |
+| **AUTHZ-ADR-01**: Custom RBAC authorization ADR *(pulled in from stretch — 2026-05-01)* | 3 | ENT/AUTH | Proposed for review 2026-05-04 | `docs/adr/ADR-0004-custom-rbac-authorization.md` defines custom role scopes, permission-to-route ownership, audit event semantics, migration direction, and contract test strategy |
+| **Sprint A verification bundle** (LAYOUT-GRID-01, LAYOUT-A11Y-01, DESIGN-TOK-01, DX-INSIGHTS-01, I18N-BUG-01, I18N-BUG-02) | 8 | DESIGN/I18N/QA | Verification gate active | Run `check:tokens-drift`, `check:i18n`, axe-core a11y suite; confirm LAYOUT-GRID-01 column spans adopted on wizard/Launchpad/Insights surfaces; verify DX-INSIGHTS-01 graceful degradation without DX-INSIGHTS-02 data |
 
 **Stretch / Do Not Commit Until Core Items Are Green**:
 

@@ -119,6 +119,35 @@ it('shows visible error on failed fetch', async () => {
 })
 ```
 
+### Audit Regression Patterns
+
+```typescript
+it('production 500s are sanitized', async () => {
+  const res = await app.request('/api/example', { method: 'POST', body: 'bad' }, mockEnv)
+  const body = await res.json()
+  expect(res.status).not.toBe(500)
+  expect(JSON.stringify(body)).not.toContain('stack')
+})
+
+it('malformed JSON returns 400', async () => {
+  const res = await app.request('/api/example', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: '{not-json',
+  }, mockEnv)
+  expect(res.status).toBe(400)
+})
+
+it('transient DO storage failure can retry', async () => {
+  // First storage read rejects; second call succeeds and does not reuse rejected promise.
+})
+
+it('Workers AI timeout/retry behavior is explicit', async () => {
+  mockEnv.AI.run.mockRejectedValueOnce(new Error('transient')).mockResolvedValueOnce({ response: '{"ok":true}' })
+  // Assert retry/fallback or safe error depending on the feature contract.
+})
+```
+
 ## Coverage Targets
 
 | Area | Min |
@@ -153,6 +182,7 @@ it('shows visible error on failed fetch', async () => {
 | Type check | `tsc --noEmit` | ✓ |
 | No skipped tests | grep `it.skip\|test.skip` | ✓ |
 | A11y checks | axe-core on critical pages | ✓ |
+| Audit regression | targeted tests for changed audit-affected area | ✓ |
 
 ## Rules
 - Never use `test.only` or `it.skip` in committed code

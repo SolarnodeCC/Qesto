@@ -37,6 +37,16 @@ const { data, error, isLoading, mutate } = useSWR('/api/sessions/123', fetcher)
 // Never poll REST in LIVE state — use WS state
 ```
 
+## Audit Prevention Gates
+
+| Audit theme | Required frontend behavior |
+|---|---|
+| Duplicated polling hooks | Use `usePolledApi<T>()` or `useApiQuery()` for repeated fetch/loading/error shapes. Do not create a new polling hook by copy-paste. |
+| Type drift | Import shared API/session types where available. Do not redeclare backend DTOs locally unless the UI needs a deliberate view model. |
+| Large live-session hooks | Keep WebSocket transport, reducer/state derivation, and UI effects separated. Extract transport-like logic before `useLiveSession` grows further. |
+| Async UX drift | Every API action has loading, disabled, and visible error states. |
+| Plan/pricing parity | Plan limits and pricing matrices must derive from API/config sources, not independent static copies unless labelled as static/roadmap copy. |
+
 ## Session-Aware Rendering
 
 ```tsx

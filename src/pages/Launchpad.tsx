@@ -113,6 +113,14 @@ export default function Launchpad() {
     if (data?.questions) setOrderedQuestions(data.questions)
   }, [data?.questions])
 
+  useEffect(() => {
+    if (!id || data?.session.status !== 'draft') return
+    void api<unknown>('/api/sessions/journey-events', {
+      method: 'POST',
+      body: { event: 'launchpad.opened', sessionId: id },
+    })
+  }, [id, data?.session.status])
+
   const refreshPreFlight = useCallback(async () => {
     if (!id || data?.session.status !== 'draft') return
     setPreFlightLoading(true)

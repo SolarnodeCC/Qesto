@@ -579,6 +579,8 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
       optionsBody.ai_accepted_count = questions.filter((q) => q.fromAI && q.accepted).length
       optionsBody.ai_dismissed_count = questions.filter((q) => q.fromAI && q.dismissed).length
     }
+    const acceptedAiCount = usedAiQuestions ? questions.filter((q) => q.fromAI && q.accepted).length : 0
+    const dismissedAiCount = usedAiQuestions ? questions.filter((q) => q.fromAI && q.dismissed).length : 0
 
     const optionsRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
       method: 'PATCH',
@@ -636,6 +638,22 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
           return
         }
       }
+    }
+
+    await api<unknown>('/api/sessions/journey-events', {
+      method: 'POST',
+      body: { event: 'wizard.completed', sessionId },
+    })
+    if (usedAiQuestions) {
+      await api<unknown>('/api/sessions/journey-events', {
+        method: 'POST',
+        body: {
+          event: 'ai.suggestions_resolved',
+          sessionId,
+          count: acceptedAiCount,
+          value: dismissedAiCount,
+        },
+      })
     }
 
     setLaunching(false)

@@ -95,6 +95,9 @@ const ThemesOutputSchema = z.object({
   themes: z.array(ThemeSchema).min(1).max(5),
 })
 
+const AI_TIMEOUT_MS = 25_000
+const RETRY_DELAYS_MS = [200, 400] as const
+
 function extractJson(raw: string): string {
   const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
   const body = fenceMatch ? fenceMatch[1] : raw
@@ -107,6 +110,76 @@ function extractJson(raw: string): string {
 }
 
 const MAX_TOKENS = 768
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  label: string,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs)
+  })
+  try {
+    return await Promise.race([promise, timeout])
+  } finally {
+    if (timer) clearTimeout(timer)
+  }
+}
+
+async function runInsightsAI(
+  ai: Ai,
+  model: string,
+  messages: { role: 'system' | 'user'; content: string }[],
+  approxInputChars: number,
+): Promise<string> {
+  const maxAttempts = RETRY_DELAYS_MS.length + 1
+  let lastError: unknown
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const t0 = Date.now()
+    try {
+      const res = (await withTimeout(
+        ai.run(model, {
+          messages,
+          max_tokens: MAX_TOKENS,
+        }) as Promise<{ response?: string } | string>,
+        AI_TIMEOUT_MS,
+        'AI insights extraction',
+      )) as { response?: string } | string
+
+      const latencyMs = Date.now() - t0
+      const raw =
+        typeof res === 'string'
+          ? res
+          : typeof res?.response === 'string'
+            ? res.response
+            : ''
+      if (!raw || raw.trim() === '') {
+        throw new InsightsAIError('AI returned empty response')
+      }
+      console.log(JSON.stringify({ event: 'ai.insights.ok', model, attempt, latencyMs, approxInputChars, outputChars: raw.length }))
+      return raw
+    } catch (err) {
+      lastError = err
+      const latencyMs = Date.now() - t0
+      const error = err instanceof Error ? err.message : String(err)
+      const event = attempt < maxAttempts ? 'ai.insights.retry' : 'ai.insights.error'
+      console.log(JSON.stringify({ event, model, attempt, latencyMs, approxInputChars, error }))
+      if (attempt < maxAttempts) {
+        await sleep(RETRY_DELAYS_MS[attempt - 1])
+      }
+    }
+  }
+
+  throw new InsightsAIError(
+    `AI invocation failed: ${lastError instanceof Error ? lastError.message : String(lastError)}`,
+  )
+}
 
 export async function extractThemes(
   ai: Ai,
@@ -123,36 +196,15 @@ export async function extractThemes(
 
   const userPrompt = buildUserPrompt(input)
   const approxInputChars = THEME_SYSTEM_PROMPT.length + userPrompt.length
-  const t0 = Date.now()
-  let raw: string
-  try {
-    const res = (await ai.run(model, {
-      messages: [
-        { role: 'system', content: THEME_SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
-      max_tokens: MAX_TOKENS,
-    })) as { response?: string } | string
-
-    const latencyMs = Date.now() - t0
-    raw =
-      typeof res === 'string'
-        ? res
-        : typeof res?.response === 'string'
-          ? res.response
-          : ''
-    if (!raw || raw.trim() === '') {
-      console.log(JSON.stringify({ event: 'ai.insights.empty', model, latencyMs, approxInputChars }))
-      throw new InsightsAIError('AI returned empty response')
-    }
-    console.log(JSON.stringify({ event: 'ai.insights.ok', model, latencyMs, approxInputChars, outputChars: raw.length }))
-  } catch (err) {
-    if (err instanceof InsightsAIError) throw err
-    console.log(JSON.stringify({ event: 'ai.insights.error', model, latencyMs: Date.now() - t0, approxInputChars, error: err instanceof Error ? err.message : String(err) }))
-    throw new InsightsAIError(
-      `AI invocation failed: ${err instanceof Error ? err.message : String(err)}`,
-    )
-  }
+  const raw = await runInsightsAI(
+    ai,
+    model,
+    [
+      { role: 'system', content: THEME_SYSTEM_PROMPT },
+      { role: 'user', content: userPrompt },
+    ],
+    approxInputChars,
+  )
 
   const cleaned = extractJson(raw)
   let parsedObj: unknown
@@ -173,4 +225,11 @@ export async function extractThemes(
   return { themes: result.data.themes }
 }
 
-export const __internal = { THEME_SYSTEM_PROMPT, buildUserPrompt, extractJson }
+export const __internal = {
+  THEME_SYSTEM_PROMPT,
+  AI_TIMEOUT_MS,
+  RETRY_DELAYS_MS,
+  buildUserPrompt,
+  extractJson,
+  runInsightsAI,
+}

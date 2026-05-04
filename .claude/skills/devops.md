@@ -106,6 +106,24 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" "https://qesto.cc/api/admin/metrics
 
 Key AE events to monitor: `session.started` · `ws.capacity_exceeded` · `ai.inference` · `billing.payment_failed` · `error.*`
 
+## Audit Follow-Up Operations
+
+### Stripe / pricing configuration
+
+Before production pricing is considered ready:
+- Confirm product approval for rows tagged `Static copy` or `Roadmap` in the pricing matrix.
+- Configure public Stripe price ID vars and euro-cent vars in Cloudflare only after prices are final.
+- Verify `GET /api/plans/catalog` returns configured non-secret metadata.
+- Smoke-test Pricing UI and checkout links after deploy.
+
+### Resilience readiness
+
+For every release touching Stripe, Resend, OAuth/SAML, Workers AI, Vectorize, D1, KV, or Durable Objects:
+- Confirm timeout/retry/degradation behavior is documented.
+- Confirm `/api/admin/health` covers the changed dependency or document the gap.
+- Confirm structured logs/metrics exist for degraded dependencies.
+- Confirm rollback or forward-fix plan for any irreversible D1/KV change.
+
 ## Escalation Triggers
 - Schema migration required → coordinate with backend-dev + architect first
 - New binding needed → architect designs, devops implements
@@ -220,6 +238,8 @@ curl -s -H "Authorization: Bearer $ADMIN_TOKEN" \
 - [ ] Secrets rotated using `wrangler pages secret put` only (never committed)
 - [ ] D1 migration tested in local-first (wrangler d1 local)
 - [ ] Rollback plan documented for non-reversible changes (KV, D1 schema)
+- [ ] Production pricing vars verified when pricing/checkout behavior changes
+- [ ] Dependency degradation path verified for changed external services
 
 ## Do Not
 

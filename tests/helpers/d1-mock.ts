@@ -116,6 +116,20 @@ type InsightsDailyRow = {
   computed_at: number
 }
 
+type Sprint19EventRow = {
+  id: string
+  event_name: string
+  user_id: string
+  session_id: string | null
+  team_id: string | null
+  plan: string | null
+  count: number
+  value: number
+  duration_ms: number
+  created_at: number
+  trace_id: string
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
@@ -125,6 +139,7 @@ export class D1Mock {
   readonly userRoles = new Map<string, UserRole>()
   readonly auditEvents = new Map<string, AuditEvent>()
   readonly insightsDaily = new Map<string, InsightsDailyRow>()
+  readonly sprint19Events = new Map<string, Sprint19EventRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -451,6 +466,25 @@ export class D1PreparedStatementMock {
       this.db.insightsDaily.set(id, { id, session_id, day, themes_json, confidence, n_votes, computed_at })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO sprint19_events')) {
+      const [id, event_name, user_id, session_id, team_id, plan, count, value, duration_ms, created_at, trace_id] = this.args as [
+        string, string, string, string | null, string | null, string | null, number, number, number, number, string,
+      ]
+      this.db.sprint19Events.set(id, {
+        id,
+        event_name,
+        user_id,
+        session_id,
+        team_id,
+        plan,
+        count,
+        value,
+        duration_ms,
+        created_at,
+        trace_id,
+      })
+      return { meta: { changes: 1 } }
+    }
     throw new Error(`d1-mock: unsupported run(): ${this.sql}`)
   }
 
@@ -514,6 +548,18 @@ export class D1PreparedStatementMock {
         rows = rows.filter((s) => s.status === 'draft')
       }
       return { n: rows.length } as T
+    }
+    if (this.sql.startsWith('SELECT COALESCE(SUM(ai_accepted_count)')) {
+      let rows = [...this.db.sessions.values()]
+      const hasRange = this.sql.includes('created_at >= ?1') && this.args.length >= 2
+      if (hasRange) {
+        const [start, end] = this.args as [number, number]
+        rows = rows.filter((s) => s.created_at >= start && s.created_at <= end)
+      }
+      rows = rows.filter((s) => s.ai_generated === 1)
+      const accepted = rows.reduce((sum, s) => sum + (s.ai_accepted_count ?? 0), 0)
+      const dismissed = rows.reduce((sum, s) => sum + (s.ai_dismissed_count ?? 0), 0)
+      return { accepted, dismissed } as T
     }
     if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { count: 0 } as T
@@ -595,6 +641,19 @@ export class D1PreparedStatementMock {
         .filter((r) => r.session_id === session_id)
         .sort((a, b) => b.day.localeCompare(a.day))
       return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT event_name, COUNT(*) as n FROM sprint19_events')) {
+      let rows = [...this.db.sprint19Events.values()]
+      const hasRange = this.sql.includes('created_at >= ?1') && this.args.length >= 2
+      if (hasRange) {
+        const [start, end] = this.args as [number, number]
+        rows = rows.filter((r) => r.created_at >= start && r.created_at <= end)
+      }
+      const counts = new Map<string, number>()
+      for (const row of rows) counts.set(row.event_name, (counts.get(row.event_name) ?? 0) + 1)
+      return {
+        results: [...counts.entries()].map(([event_name, n]) => ({ event_name, n })) as unknown as T[],
+      }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)
   }

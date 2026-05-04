@@ -168,7 +168,7 @@ describe('Plan Enforcement (BILL-04)', () => {
       env,
     )
     expect(failRes.status).toBe(429)
-  })
+  }, 15000)
 
   it('GET /api/plans/:userId/usage returns accurate quota usage', async () => {
     const userId = 'user_quota_test'

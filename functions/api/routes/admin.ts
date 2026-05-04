@@ -27,6 +27,31 @@ import { readKvJson } from '../lib/kv'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+let _sprint19SchemaPatchDone = false
+async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void> {
+  if (_sprint19SchemaPatchDone) return
+  _sprint19SchemaPatchDone = true
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS sprint19_events (
+      id TEXT PRIMARY KEY,
+      event_name TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      session_id TEXT,
+      team_id TEXT,
+      plan TEXT,
+      count INTEGER NOT NULL DEFAULT 0,
+      value REAL NOT NULL DEFAULT 0,
+      duration_ms INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      trace_id TEXT NOT NULL
+    )`,
+  ).run().catch(() => {})
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch(() => {})
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
+}
+
 export type AdminUser = {
   id: string
   email: string
@@ -99,6 +124,7 @@ export type Sprint19Baseline = {
   launchpad_success_rate: number | null
   inline_suggestion_acceptance_rate: number | null
   invalid_live_attempts: number | null
+  preflight_failure_rate: number | null
   counts: {
     total_sessions: number
     ai_generated_sessions: number
@@ -106,6 +132,16 @@ export type Sprint19Baseline = {
     ai_grounding_sessions: number
     started_or_closed_sessions: number
     draft_sessions: number
+    wizard_opened: number
+    wizard_completed: number
+    ai_suggestions_accepted: number
+    ai_suggestions_dismissed: number
+    launchpad_opened: number
+    launch_attempts: number
+    launch_successes: number
+    launch_failures: number
+    preflight_checks: number
+    preflight_failures: number
   }
   measurement_gaps: string[]
 }
@@ -897,6 +933,7 @@ export function mountAdminRoutes(parent: any) {
   // are returned as null with explicit gaps until the S20 evidence query is wired.
   app.get('/sprint19-baseline', async (c) => {
     const trace_id = c.get('trace_id')
+    await patchSprint19SchemaIfNeeded(c.env.DB)
     const startParam = c.req.query('start')
     const endParam = c.req.query('end')
     const startMs = startParam ? Date.parse(startParam) : null
@@ -910,6 +947,7 @@ export function mountAdminRoutes(parent: any) {
     }
 
     const where = startMs === null ? '' : 'WHERE created_at >= ?1 AND created_at <= ?2'
+    const journeyWhere = startMs === null ? '' : 'WHERE created_at >= ?1 AND created_at <= ?2'
     const bindRange = (stmt: D1PreparedStatement) => startMs === null ? stmt : stmt.bind(startMs, endMs)
 
     try {
@@ -920,6 +958,8 @@ export function mountAdminRoutes(parent: any) {
         aiGroundingRes,
         startedRes,
         draftRes,
+        aiSuggestionRes,
+        journeyRes,
       ] = await Promise.all([
         bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}`)).first<{ n: number }>(),
         bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_generated = 1`)).first<{ n: number }>(),
@@ -927,18 +967,32 @@ export function mountAdminRoutes(parent: any) {
         bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_grounding_hash IS NOT NULL`)).first<{ n: number }>(),
         bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} status IN ('live','closed','archived')`)).first<{ n: number }>(),
         bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} status = 'draft'`)).first<{ n: number }>(),
+        bindRange(c.env.DB.prepare(`SELECT COALESCE(SUM(ai_accepted_count), 0) as accepted, COALESCE(SUM(ai_dismissed_count), 0) as dismissed FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_generated = 1`)).first<{ accepted: number; dismissed: number }>(),
+        bindRange(c.env.DB.prepare(`SELECT event_name, COUNT(*) as n FROM sprint19_events ${journeyWhere} GROUP BY event_name`)).all<{ event_name: string; n: number }>(),
       ])
 
       const total = totalRes?.n ?? 0
       const started = startedRes?.n ?? 0
+      const journeyCounts = new Map((journeyRes.results ?? []).map((row) => [row.event_name, row.n]))
+      const wizardOpened = journeyCounts.get('wizard.opened') ?? 0
+      const wizardCompleted = journeyCounts.get('wizard.completed') ?? 0
+      const launchAttempts = journeyCounts.get('launchpad.launch_attempt') ?? 0
+      const launchSuccesses = journeyCounts.get('launchpad.launch_success') ?? 0
+      const launchFailures = journeyCounts.get('launchpad.launch_failed') ?? 0
+      const preflightChecks = journeyCounts.get('preflight.checked') ?? 0
+      const preflightFailures = journeyCounts.get('preflight.failed') ?? 0
+      const accepted = aiSuggestionRes?.accepted ?? 0
+      const dismissed = aiSuggestionRes?.dismissed ?? 0
+      const totalSuggestions = accepted + dismissed
       const baseline: Sprint19Baseline = {
         generated_at: Date.now(),
         window: { start: startMs, end: endMs },
         ai_usage_rate: total > 0 ? (aiGeneratedRes?.n ?? 0) / total : null,
-        wizard_completion_rate: total > 0 ? started / total : null,
-        launchpad_success_rate: total > 0 ? started / total : null,
-        inline_suggestion_acceptance_rate: null,
-        invalid_live_attempts: null,
+        wizard_completion_rate: wizardOpened > 0 ? wizardCompleted / wizardOpened : (total > 0 ? started / total : null),
+        launchpad_success_rate: launchAttempts > 0 ? launchSuccesses / launchAttempts : (total > 0 ? started / total : null),
+        inline_suggestion_acceptance_rate: totalSuggestions > 0 ? accepted / totalSuggestions : null,
+        invalid_live_attempts: launchFailures,
+        preflight_failure_rate: preflightChecks > 0 ? preflightFailures / preflightChecks : null,
         counts: {
           total_sessions: total,
           ai_generated_sessions: aiGeneratedRes?.n ?? 0,
@@ -946,11 +1000,22 @@ export function mountAdminRoutes(parent: any) {
           ai_grounding_sessions: aiGroundingRes?.n ?? 0,
           started_or_closed_sessions: started,
           draft_sessions: draftRes?.n ?? 0,
+          wizard_opened: wizardOpened,
+          wizard_completed: wizardCompleted,
+          ai_suggestions_accepted: accepted,
+          ai_suggestions_dismissed: dismissed,
+          launchpad_opened: journeyCounts.get('launchpad.opened') ?? 0,
+          launch_attempts: launchAttempts,
+          launch_successes: launchSuccesses,
+          launch_failures: launchFailures,
+          preflight_checks: preflightChecks,
+          preflight_failures: preflightFailures,
         },
         measurement_gaps: [
-          'Inline AI suggestion acceptance requires client event ingestion before it can be computed.',
-          'Invalid LIVE attempts and preflight failure rate are emitted as preflight.failed events/logs; Analytics Engine querying is outside this Worker endpoint.',
-          'Launchpad success rate uses D1 DRAFT-to-started-or-closed sessions as a durable proxy until dedicated launch_attempt events are queryable.',
+          ...(wizardOpened > 0 ? [] : ['Wizard completion rate falls back to D1 created-session proxy until wizard.opened events are present.']),
+          ...(launchAttempts > 0 ? [] : ['Launchpad success rate falls back to D1 started-session proxy until launch_attempt events are present.']),
+          ...(preflightChecks > 0 ? [] : ['Preflight failure rate requires preflight.checked journey events in the selected window.']),
+          ...(totalSuggestions > 0 ? [] : ['Inline AI suggestion acceptance requires at least one completed AI-generated wizard session in the selected window.']),
         ],
       }
       return c.json({ ok: true, data: baseline, trace_id }, 200)

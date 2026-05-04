@@ -60,6 +60,16 @@ type Vars = AuthVariables & PlanVariables
 // SessionRow mirrors the D1 row shape. Analytics-only column `team_id` (OBS-001)
 // is present on the row and surfaced on Session as an optional field.
 type SessionRow = Session & { team_id: string | null }
+type Sprint19JourneyEvent =
+  | 'wizard.opened'
+  | 'wizard.completed'
+  | 'ai.suggestions_resolved'
+  | 'launchpad.opened'
+  | 'launchpad.launch_attempt'
+  | 'launchpad.launch_success'
+  | 'launchpad.launch_failed'
+  | 'preflight.checked'
+  | 'preflight.failed'
 
 // Apply schema columns that may be missing on older D1 databases (pre-migration 0008).
 // Runs once per worker cold-start; subsequent calls are no-ops after the columns exist.
@@ -77,6 +87,23 @@ async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT`).run().catch(() => {})
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(
+    `CREATE TABLE IF NOT EXISTS sprint19_events (
+      id TEXT PRIMARY KEY,
+      event_name TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      session_id TEXT,
+      team_id TEXT,
+      plan TEXT,
+      count INTEGER NOT NULL DEFAULT 0,
+      value REAL NOT NULL DEFAULT 0,
+      duration_ms INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      trace_id TEXT NOT NULL
+    )`,
+  ).run().catch(() => {})
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch(() => {})
+  await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
 }
 
 type QuestionRow = {
@@ -111,6 +138,56 @@ function deniedQuestionFeature(plan: PlanTier, quotas: PlanQuotas, kind: Questio
   const feature = questionKindFeature(kind)
   if (!feature || featureAllowed(quotas, feature)) return null
   return denyFeature(plan, feature)
+}
+
+async function recordSprint19JourneyEvent(
+  env: Env,
+  event: {
+    name: Sprint19JourneyEvent
+    userId: string
+    sessionId?: string | undefined
+    teamId?: string | null | undefined
+    plan?: PlanTier | undefined
+    count?: number | undefined
+    value?: number | undefined
+    durationMs?: number | undefined
+    traceId: string
+  },
+): Promise<void> {
+  writeEvent(env.METRICS_AE, {
+    name: event.name,
+    userId: event.userId,
+    sessionId: event.sessionId,
+    teamId: event.teamId ?? undefined,
+    plan: event.plan,
+    count: event.count,
+    value: event.value,
+    durationMs: event.durationMs,
+    traceId: event.traceId,
+  })
+  await env.DB
+    .prepare(
+      `INSERT INTO sprint19_events
+       (id, event_name, user_id, session_id, team_id, plan, count, value, duration_ms, created_at, trace_id)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`,
+    )
+    .bind(
+      ulid(),
+      event.name,
+      event.userId,
+      event.sessionId ?? null,
+      event.teamId ?? null,
+      event.plan ?? null,
+      event.count ?? 0,
+      event.value ?? 0,
+      event.durationMs ?? 0,
+      Date.now(),
+      event.traceId,
+    )
+    .run()
+    .catch(() => {
+      // Measurement must fail open; missing local migrations should not break the product path.
+    })
 }
 
 async function fetchSession(db: D1Database, id: string, ownerId: string): Promise<Session | null> {
@@ -430,6 +507,58 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
 
+  // POST /api/sessions/journey-events — client-side Sprint 19 journey signals.
+  app.post('/journey-events', async (c) => {
+    const user = c.get('user')
+    const traceId = c.get('trace_id')
+    await patchSchemaIfNeeded(c.env.DB)
+
+    const body = (await c.req.json().catch(() => null)) as
+      | { event?: unknown; sessionId?: unknown; count?: unknown; value?: unknown; durationMs?: unknown }
+      | null
+    const allowed = new Set<Sprint19JourneyEvent>([
+      'wizard.opened',
+      'wizard.completed',
+      'ai.suggestions_resolved',
+      'launchpad.opened',
+    ])
+    if (!body || typeof body.event !== 'string' || !allowed.has(body.event as Sprint19JourneyEvent)) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'validation', message: 'Invalid Sprint 19 journey event' },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+
+    let session: Session | null = null
+    if (typeof body.sessionId === 'string' && body.sessionId.trim().length > 0) {
+      session = await fetchSession(c.env.DB, body.sessionId, user.sub)
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: traceId },
+          404,
+        )
+      }
+    }
+
+    await recordSprint19JourneyEvent(c.env, {
+      name: body.event as Sprint19JourneyEvent,
+      userId: user.sub,
+      sessionId: session?.id,
+      teamId: session?.team_id,
+      plan: c.get('plan'),
+      count: typeof body.count === 'number' && Number.isFinite(body.count) ? body.count : undefined,
+      value: typeof body.value === 'number' && Number.isFinite(body.value) ? body.value : undefined,
+      durationMs: typeof body.durationMs === 'number' && Number.isFinite(body.durationMs) ? body.durationMs : undefined,
+      traceId,
+    })
+
+    return c.json({ ok: true, data: { recorded: true }, trace_id: traceId })
+  })
+
   // POST /api/sessions — create DRAFT
   app.post('/', async (c) => {
     const body = (await c.req.json().catch(() => null)) as unknown
@@ -694,35 +823,61 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   app.post('/:id/start', async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
+    const traceId = c.get('trace_id')
     const startLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
     if (!startLoaded.ok) {
       return c.json(
-        { ok: false, error: { code: startLoaded.error.code, message: startLoaded.error.message }, trace_id: c.get('trace_id') },
+        { ok: false, error: { code: startLoaded.error.code, message: startLoaded.error.message }, trace_id: traceId },
         startLoaded.error.status,
       )
     }
+    await recordSprint19JourneyEvent(c.env, {
+      name: 'launchpad.launch_attempt',
+      userId: user.sub,
+      sessionId: id,
+      teamId: startLoaded.session.team_id,
+      plan: c.get('plan'),
+      traceId,
+    })
     const draftStart = requireDraft(startLoaded.session, 'start')
     if (!draftStart.ok) {
+      await recordSprint19JourneyEvent(c.env, {
+        name: 'launchpad.launch_failed',
+        userId: user.sub,
+        sessionId: id,
+        teamId: startLoaded.session.team_id,
+        plan: c.get('plan'),
+        value: 1,
+        traceId,
+      })
       return c.json(
-        { ok: false, error: { code: draftStart.error.code, message: draftStart.error.message }, trace_id: c.get('trace_id') },
+        { ok: false, error: { code: draftStart.error.code, message: draftStart.error.message }, trace_id: traceId },
         draftStart.error.status,
       )
     }
     const session = draftStart.session
     const questions = await fetchQuestions(c.env.DB, id)
     if (questions.length === 0) {
+      await recordSprint19JourneyEvent(c.env, {
+        name: 'launchpad.launch_failed',
+        userId: user.sub,
+        sessionId: id,
+        teamId: session.team_id,
+        plan: c.get('plan'),
+        value: 1,
+        traceId,
+      })
       return c.json(
         {
           ok: false,
           error: { code: 'no_question', message: 'Session has no question yet' },
-          trace_id: c.get('trace_id'),
+          trace_id: traceId,
         },
         409,
       )
     }
     const now = Date.now()
     const liveQ = questionToLive(questions[0])
-    const traceId = c.get('trace_id')
     const logCtx = { trace_id: traceId, session_id: id, user_id: user.sub }
 
     console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx }))
@@ -788,6 +943,15 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         // Operator must use RUNBOOK_SESSION_RECONCILE.md to recover.
         console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'error', event: 'session.start.rollback_failed', ...logCtx, err: String(rbErr) }))
       }
+      await recordSprint19JourneyEvent(c.env, {
+        name: 'launchpad.launch_failed',
+        userId: user.sub,
+        sessionId: id,
+        teamId: session.team_id,
+        plan: c.get('plan'),
+        value: 1,
+        traceId,
+      })
       return c.json(
         {
           ok: false,
@@ -798,6 +962,14 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.success', ...logCtx }))
+    await recordSprint19JourneyEvent(c.env, {
+      name: 'launchpad.launch_success',
+      userId: user.sub,
+      sessionId: id,
+      teamId: session.team_id,
+      plan: c.get('plan'),
+      traceId,
+    })
     writeEvent(c.env.METRICS_AE, {
       name: 'session.started',
       sessionId: id,
@@ -1664,19 +1836,21 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     const ready = checks.every((check) => check.pass)
     const failureCount = checks.filter((check) => !check.pass).length
-    writeEvent(c.env.METRICS_AE, {
+    await recordSprint19JourneyEvent(c.env, {
       name: 'preflight.checked',
+      userId: user.sub,
       sessionId: id,
-      ...(session.team_id ? { teamId: session.team_id } : {}),
+      teamId: session.team_id,
       plan: c.get('plan'),
-      traceId,
       count: failureCount,
+      traceId,
     })
     if (!ready) {
-      writeEvent(c.env.METRICS_AE, {
+      await recordSprint19JourneyEvent(c.env, {
         name: 'preflight.failed',
         userId: user.sub,
         sessionId: id,
+        teamId: session.team_id,
         plan: c.get('plan'),
         count: failureCount,
         traceId,

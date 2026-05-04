@@ -129,8 +129,8 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         expirationTtl: INSIGHTS_CACHE_TTL_SECONDS,
       })
 
-      try {
-        await upsertInsightsSessionVector(
+      c.executionCtx.waitUntil(
+        upsertInsightsSessionVector(
           { AI: c.env.AI, DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE },
           {
             sessionId,
@@ -138,12 +138,12 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
             themeCount: themes.length,
             ...(sessionVector !== undefined ? { existingVector: sessionVector } : {}),
           },
+        ).catch((vecErr) =>
+          console.log(
+            JSON.stringify({ event: 'vectorize.upsert.skip', reason: (vecErr as Error).message }),
+          ),
         )
-      } catch (vecErr) {
-        console.log(
-          JSON.stringify({ event: 'vectorize.upsert.skip', reason: (vecErr as Error).message }),
-        )
-      }
+      )
 
       await recordAuditEvent(c, {
         action: 'insights.generate',

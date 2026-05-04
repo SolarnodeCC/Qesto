@@ -25,6 +25,19 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 **No Node.js APIs**: no `fs`, no `Buffer` (use `Uint8Array`), no `process.env` (use `c.env`).
 **Integrations / performance**: See [backend-integrations.md](backend-integrations.md) · [backend-perf.md](backend-perf.md)
 
+## Audit-Derived Backend Gates
+
+The 2026-05 audits found recurring issues in route size, helper duplication, error handling, and resilience. Apply this checklist before implementation:
+
+- Route handlers should do only HTTP concerns: parse/validate, authorize, call service/repository, return `ok`/`fail`.
+- Multi-step domain work belongs in `lib/` service helpers or repositories, not inline route closures.
+- Use shared helpers before adding new ad-hoc code: `lib/http.ts`, `lib/kv.ts`, `lib/kv-keys.ts`, `lib/session-lifecycle.ts`, `lib/session-repository.ts`.
+- Add repository/service boundaries before extending `sessions.ts`, `energizers`, `auth`, `ai-insights`, `SessionRoom`, or other already-large modules.
+- Request parsing must use safe body parsing plus Zod; malformed JSON returns 400.
+- Catch blocks that respond with 500 must sanitize the message and log trace context.
+- D1 schema compatibility code must be temporary and documented; prefer migrations over request-time schema patching.
+- New D1/KV logic needs tests for happy path, missing resource, authorization failure, malformed input, and storage failure when relevant.
+
 ## Route Pattern
 
 ```typescript
@@ -57,6 +70,8 @@ myRoutes.get('/:id', authMiddleware, async (c) => {
 400 UNPROCESSABLE  | 401 UNAUTHORIZED | 403 FORBIDDEN | 404 NOT_FOUND
 409 CONFLICT       | 422 VALIDATION   | 429 RATE_LIMIT | 500 INTERNAL_ERROR
 ```
+
+Audit rule: do not return raw exception messages to clients in production. Use the repo's `sanitizeError` / `fail` helpers where available.
 
 ## KV Patterns
 
@@ -174,6 +189,9 @@ const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\
 - [ ] New env binding in `types/env.ts`?
 - [ ] New secret via `wrangler pages secret put` (NOT wrangler.toml)?
 - [ ] New D1 column has migration in `schema.sql`?
+- [ ] No new ad-hoc KV JSON parsing, response envelope, key builder, or TTL constant?
+- [ ] External calls have timeout/retry/degradation posture or documented escalation?
+- [ ] Large-module edits include characterization tests or a deliberate extraction plan?
 - [ ] `npm test` and `tsc --noEmit` pass?
 
 ## Docs to Update

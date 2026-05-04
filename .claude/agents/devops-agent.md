@@ -31,6 +31,16 @@ wrangler pages secret put <KEY> --project-name qesto
 GET /api/admin/health  # expected: { d1, kv, do, ai, latencyMs }
 ```
 
+## Audit Follow-Up Gates
+
+| Audit outcome | DevOps action |
+|---|---|
+| External-service resilience gaps | Track operational readiness for timeouts, retries, and circuit-breaker visibility for Stripe, Resend, OAuth/SAML, Workers AI, Vectorize, D1, and KV. |
+| Pricing/Stripe production follow-up | Verify public Stripe price ID vars and euro-cent vars are configured in Cloudflare only after product approves final checkout prices. |
+| Static/roadmap pricing rows | Coordinate product confirmation before treating static copy as contractual plan behavior. |
+| Health endpoint reliance | Confirm `/api/admin/health` covers the services affected by a deployment and document any missing probe before release. |
+| Rollback risk | Any D1/KV irreversible change needs a forward-only recovery plan and release note before deploy. |
+
 ## Cloudflare Services
 
 | Service | Binding | Purpose |

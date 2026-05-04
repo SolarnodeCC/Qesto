@@ -11,8 +11,15 @@ Establish the analytics baseline for the three Sprint 19 KPIs so that Sprint 20+
 
 | Event name | Trigger | Key fields |
 |---|---|---|
+| `wizard.opened` | Host opens the new-session wizard | `userId`, `plan`, `traceId` |
+| `wizard.completed` | Host completes wizard and reaches Launchpad | `userId`, `sessionId`, `plan`, `traceId` |
+| `ai.suggestions_resolved` | AI-generated questions are accepted/dismissed at wizard completion | `sessionId`, `count` accepted, `value` dismissed |
+| `launchpad.opened` | Host opens DRAFT Launchpad | `userId`, `sessionId`, `plan`, `traceId` |
 | `session.started` | Session transitions DRAFT → LIVE | `sessionId`, `teamId`, `plan`, `durationMs` (wizard time) |
 | `preflight.checked` | GET `/api/sessions/:id/preflight` | `sessionId`, `teamId`, `plan`, `count` (failing checks, 0 = ready) |
+| `launchpad.launch_attempt` | Start endpoint receives an Open lobby attempt | `userId`, `sessionId`, `plan`, `traceId` |
+| `launchpad.launch_success` | DRAFT → LIVE succeeds | `userId`, `sessionId`, `plan`, `traceId` |
+| `launchpad.launch_failed` | Launch fails before LIVE is established | `userId`, `sessionId`, `plan`, `traceId` |
 | `ai.rate_limited` | Any AI route returns 429 | `userId`, `sessionId`, `traceId` |
 | `session.closed` | Session transitions LIVE → CLOSED | `sessionId`, `teamId`, `plan`, `durationMs` (session duration) |
 
@@ -61,8 +68,8 @@ ORDER BY day
 
 **Launch rate** = `launches / preflight_attempts` (join on day).
 
-### Known gap
-Wizard start event is not instrumented. The denominator is preflight calls, not wizard opens. Teams that never reach preflight are invisible. This gap is recorded for LAUNCHPAD-02 instrumentation scope.
+### Durable source
+`GET /api/admin/sprint19-baseline` uses `wizard.opened` / `wizard.completed` and `launchpad.launch_attempt` / `launchpad.launch_success` from `sprint19_events` when present. It falls back to D1 session-state proxies only when the selected window has no journey-event denominator yet.
 
 ---
 
@@ -100,8 +107,8 @@ GROUP BY day
 ORDER BY day
 ```
 
-### Known gap
-`ai_accepted_count` / `ai_dismissed_count` are set at wizard completion (PATCH). If a host abandons the wizard after generating suggestions, those dismissals are not counted. The acceptance rate is a lower bound on true acceptance.
+### Durable source
+`ai_accepted_count` / `ai_dismissed_count` are set at wizard completion and exposed through `GET /api/admin/sprint19-baseline`. If a host abandons the wizard after generating suggestions, those unresolved suggestions remain intentionally excluded from the completion-rate denominator.
 
 ---
 
@@ -148,8 +155,8 @@ Data collection begins on OBS-02 deploy date (2026-05-01). No historical values 
 
 | Gap | Impact | Planned fix |
 |---|---|---|
-| No wizard-start event | Launch-rate denominator is preflight, not wizard-open | LAUNCHPAD-02 scope |
-| Abandoned wizard AI dismissals not counted | Acceptance rate is lower bound | Out of scope this sprint |
+| 7-day production values not yet accrued | Baseline values remain TBD until enough post-2026-05-01 data exists | Append values after 2026-05-08 |
+| Abandoned wizard AI dismissals not counted | Acceptance rate covers completed wizard sessions, not abandoned drafts | Keep separate from completion KPI |
 | `ai_accepted_count` = 0 when AI not used | Skews aggregate; filter `WHERE ai_generated = 1` | Documented in query above |
 | AE data retention | AE rolls off after 90 days by default | Archive monthly to R2 (future) |
 

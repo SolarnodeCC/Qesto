@@ -44,29 +44,42 @@ export async function rateLimit(
   id: string,
   opts: RateLimitOptions,
 ): Promise<RateLimitResult> {
+  const fallbackResetAt = () => Date.now() + opts.windowSeconds * 1000
   if (!kv) {
-    return { allowed: true, remaining: opts.max, resetAt: Date.now() + opts.windowSeconds * 1000 }
+    return { allowed: true, remaining: opts.max, resetAt: fallbackResetAt() }
   }
-  const key = kvKey(opts.prefix, id)
-  const raw = await kv.get(key, 'json')
-  const now = Date.now()
-  const existing = raw as { count: number; resetAt: number } | null
+  try {
+    const key = kvKey(opts.prefix, id)
+    const raw = await kv.get(key, 'json')
+    const now = Date.now()
+    const existing = raw as { count: number; resetAt: number } | null
 
-  if (existing && existing.resetAt > now) {
-    if (existing.count >= opts.max) {
-      return { allowed: false, remaining: 0, resetAt: existing.resetAt }
+    if (existing && existing.resetAt > now) {
+      if (existing.count >= opts.max) {
+        return { allowed: false, remaining: 0, resetAt: existing.resetAt }
+      }
+      const next = { count: existing.count + 1, resetAt: existing.resetAt }
+      // Preserve remaining TTL — use absolute expiration.
+      const ttl = Math.max(60, Math.ceil((existing.resetAt - now) / 1000))
+      await kv.put(key, JSON.stringify(next), { expirationTtl: ttl })
+      return { allowed: true, remaining: opts.max - next.count, resetAt: existing.resetAt }
     }
-    const next = { count: existing.count + 1, resetAt: existing.resetAt }
-    // Preserve remaining TTL — use absolute expiration.
-    const ttl = Math.max(60, Math.ceil((existing.resetAt - now) / 1000))
-    await kv.put(key, JSON.stringify(next), { expirationTtl: ttl })
-    return { allowed: true, remaining: opts.max - next.count, resetAt: existing.resetAt }
-  }
 
-  // Fresh window.
-  const resetAt = now + opts.windowSeconds * 1000
-  await kv.put(key, JSON.stringify({ count: 1, resetAt }), {
-    expirationTtl: Math.max(60, opts.windowSeconds),
-  })
-  return { allowed: true, remaining: opts.max - 1, resetAt }
+    // Fresh window.
+    const resetAt = now + opts.windowSeconds * 1000
+    await kv.put(key, JSON.stringify({ count: 1, resetAt }), {
+      expirationTtl: Math.max(60, opts.windowSeconds),
+    })
+    return { allowed: true, remaining: opts.max - 1, resetAt }
+  } catch (err) {
+    console.log(
+      JSON.stringify({
+        event: 'rate_limit.kv_failure',
+        prefix: opts.prefix,
+        error: err instanceof Error ? err.message : String(err),
+      }),
+    )
+    // KV unavailable — fail open, matching middleware/rate-limit.ts.
+    return { allowed: true, remaining: opts.max, resetAt: fallbackResetAt() }
+  }
 }

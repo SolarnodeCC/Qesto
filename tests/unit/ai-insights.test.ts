@@ -75,4 +75,33 @@ describe('ai-insights/extractThemes', () => {
       }),
     ).rejects.toBeInstanceOf(InsightsAIError)
   })
+
+  it('retries transient AI failures before returning themes', async () => {
+    let calls = 0
+    const ai = {
+      run: async () => {
+        calls += 1
+        if (calls === 1) {
+          throw new Error('temporary model error')
+        }
+        return {
+          response: JSON.stringify({
+            themes: [
+              { theme: 'Team velocity', count: 7, examples: ['We ship weekly.'] },
+              { theme: 'Communication', count: 4, examples: ['Standups help a lot.'] },
+              { theme: 'Tooling', count: 3, examples: ['CI is slow.'] },
+            ],
+          }),
+        }
+      },
+    } as unknown as Ai
+
+    const result = await extractThemes(ai, {
+      sessionTitle: 'Retro',
+      openResponses: ['We ship weekly.', 'Standups help', 'CI is slow'],
+    })
+
+    expect(result.themes[0].theme).toBe('Team velocity')
+    expect(calls).toBe(2)
+  })
 })

@@ -139,4 +139,20 @@ describe('writeEvent — Analytics Engine', () => {
     }
     expect(dp.blobs[0]).toBe('ai.rate_limited')
   })
+
+  it('emits Sprint 19 journey events as valid event names', () => {
+    const mockAe = { writeDataPoint: vi.fn() } as unknown as AnalyticsEngineDataset
+    writeEvent(mockAe, {
+      name: 'launchpad.launch_success',
+      userId: 'user_1',
+      sessionId: 'sess_1',
+      count: 1,
+    })
+    const dp = (mockAe.writeDataPoint as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      blobs: string[]
+      doubles: number[]
+    }
+    expect(dp.blobs[0]).toBe('launchpad.launch_success')
+    expect(dp.doubles[1]).toBe(1)
+  })
 })

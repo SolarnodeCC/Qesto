@@ -75,6 +75,20 @@ describe('POST /sessions/:id/questions', () => {
 | Plan middleware gating | 80% |
 | AI routes | 70% (mock AI, test prompt construction) |
 
+## Audit Regression Test Priorities
+
+When a story touches audit-affected areas, add targeted regression tests for the relevant failure mode.
+
+| Area | Required regression shape |
+|---|---|
+| Error sanitization | Production 500s return canonical safe messages; development may expose useful diagnostics. |
+| Request validation | Malformed JSON and schema failures return 400/validation errors, never 500s. |
+| Durable Objects | Storage read rejection clears cached promises and later calls can retry. |
+| WebSocket handlers | Handler exceptions send a safe error and do not break subsequent messages. |
+| AI integrations | Workers AI timeout/retry/fallback behavior is mocked and asserted. |
+| External integrations | Stripe, Resend, OAuth, SAML, and Vectorize failures have tested degradation behavior. |
+| Refactors | Add characterization tests before moving route/service/repository logic. |
+
 ## CI Failure Playbook
 
 ```bash

@@ -26,6 +26,14 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 
 ## Key Patterns
 
+## Audit-Derived Frontend Gates
+
+- Use `usePolledApi<T>()` for repeated polling hooks and `useApiQuery()` for repeated one-shot query state.
+- Import shared session/poll option types where available; only create UI view models when the shape intentionally differs.
+- Keep WebSocket transport separate from reducer/state derivation and UI effects.
+- Do not duplicate plan/quota/pricing data in page code; derive from plan catalog/config or label rows as static/roadmap copy.
+- Every async path exposes loading, disabled, and visible error states.
+
 ### Tailwind CSS v4
 
 ```tsx
@@ -172,6 +180,9 @@ const debouncedSearch = useDebouncedCallback((q) => fetch(`/api/search?q=${q}`),
 □ Focus ring visible on Tab navigation
 □ Active state on mobile (active:opacity-70)
 □ Loading + error states for all async data
+□ Shared hooks used for repeated polling/query state
+□ Shared API/session types used where possible
+□ Plan/pricing data derives from catalog/config or is clearly labelled static/roadmap
 □ Tested at 375px viewport (iPhone SE)
 □ No hardcoded colours — use CSS vars or Tailwind tokens
 □ WebSocket errors handled with exponential backoff

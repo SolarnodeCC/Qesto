@@ -84,6 +84,14 @@ export default function Dashboard() {
       .finally(() => setTeamsLoading(false))
   }, [])
 
+  useEffect(() => {
+    if (!wizardOpen) return
+    void api<unknown>('/api/sessions/journey-events', {
+      method: 'POST',
+      body: { event: 'wizard.opened' },
+    })
+  }, [wizardOpen])
+
   if (auth.status === 'loading') {
     return (
       <MainLayout mainClassName="min-h-screen max-w-5xl mx-auto p-8 space-y-8">

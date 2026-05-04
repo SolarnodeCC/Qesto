@@ -12,6 +12,33 @@ export type PlanVariables = {
   planQuotas: (typeof QUOTAS_MAP)[PlanTier]
 }
 
+const PLAN_LOOKUP_TIMEOUT_MS = 1500
+
+function validPlan(value: unknown): value is PlanTier {
+  return value === 'free' || value === 'starter' || value === 'team'
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+  })
+  try {
+    return await Promise.race([promise, timeout])
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId)
+  }
+}
+
+async function lookupUserPlan(db: D1Database, userId: string): Promise<PlanTier> {
+  const result = await withTimeout(
+    db.prepare('SELECT plan FROM users WHERE id = ?1').bind(userId).first<{ plan: PlanTier }>(),
+    PLAN_LOOKUP_TIMEOUT_MS,
+    'plan lookup',
+  )
+  return validPlan(result?.plan) ? result.plan : 'free'
+}
+
 export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthVariables & PlanVariables }> = async (
   c,
   next,
@@ -29,10 +56,22 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
     return
   }
 
-  // Fetch user's plan from D1
-  const result = await c.env.DB.prepare('SELECT plan FROM users WHERE id = ?1').bind(user.sub).first<{ plan: PlanTier }>()
-
-  const plan = result?.plan ?? 'free'
+  let plan: PlanTier
+  try {
+    plan = await lookupUserPlan(c.env.DB, user.sub)
+  } catch (err) {
+    console.log(
+      JSON.stringify({
+        event: 'plan_middleware.db_failure',
+        userId: user.sub,
+        traceId: c.get('trace_id'),
+        error: err instanceof Error ? err.message : String(err),
+      }),
+    )
+    // Degrade to the safest quota tier instead of turning every authenticated
+    // route into a 500 during a transient D1 fault.
+    plan = 'free'
+  }
 
   // Set plan and quotas on context for downstream routes
   c.set('plan', plan)
@@ -40,3 +79,5 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
 
   await next()
 }
+
+export const __internal = { lookupUserPlan, PLAN_LOOKUP_TIMEOUT_MS }

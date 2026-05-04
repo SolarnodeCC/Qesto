@@ -48,16 +48,23 @@ tsc --noEmit    # no TypeScript errors
 □ authMiddleware present (or documented exception)
 □ Ownership check: user can only access own resources
 □ Input validated (400 on missing/invalid fields)
+□ Malformed JSON handled as 400, not 500
 □ Error response: { error: { code, message, statusCode, requestId } }
+□ 500s are sanitized in production; no raw err.message to clients
 □ New KV keys follow conventions in architect.md
 □ New secrets via wrangler pages secret put only
 □ D1 queries parameterized (no string concatenation)
 □ Migrations in schema.sql, not inline
+□ Route handler remains thin; service/repository owns multi-step logic
+□ Shared helpers used for KV JSON, response envelopes, key builders, and constants
+□ External calls have timeout/retry/degradation decision
 ```
 
 **Frontend (src/):**
 ```
 □ No imports from functions/ — use API fetch calls
+□ Shared API/session types used where available; no duplicate DTO declarations
+□ Repeated polling/loading/error logic uses shared hooks
 □ No hardcoded API URLs — relative paths only
 □ Error boundary at route level
 □ Loading / empty / error states for all async data
@@ -85,13 +92,25 @@ tsc --noEmit    # no TypeScript errors
 □ Stripe webhook: constructEvent() verification present
 □ New admin routes: requireAdmin() middleware present
 □ No user input directly in fetch() URL (SSRF risk)
+□ Auth/RBAC/OAuth failures are logged with trace context, not swallowed
+□ WebSocket/DO handler exceptions are contained and safe for clients
+```
+
+## Step 6 — Audit Regression Gates
+
+```
+□ Audit-affected files have targeted regression tests
+□ Refactors include characterization tests before moving behavior
+□ Large route/module additions do not reopen SA/C/L audit findings
+□ Pricing/plan display changes cite the plan catalog or are labelled static/roadmap
+□ Production config follow-ups are captured when code depends on Cloudflare/Stripe vars
 ```
 
 ## Risk-Tiered Review Depth
 
 ### Tier 1 (High-Risk) — Full Deep Dive Required
 **Scope**: Auth flow, payments, DO state, rate limits, GDPR, Stripe webhooks, SAML config
-- Run all 5 steps (Automated + Correctness + Architecture + Mobile + Security)
+- Run all 6 steps (Automated + Correctness + Architecture + Mobile + Security + Audit Regression)
 - Require CSO review + architecture review
 - Test locally if possible
 - Escalate to architect if design changes needed

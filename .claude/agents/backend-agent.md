@@ -36,6 +36,19 @@ New route → create handler in routes/{domain}.routes.ts
            → mount in functions/api/[[route]].ts: app.route('/prefix', myRoutes)
 ```
 
+## Audit Prevention Gates
+
+These gates come from the 2026-05 audit outcomes. Apply them before writing or modifying backend code.
+
+| Risk surfaced by audits | Required behavior |
+|---|---|
+| God route modules (`sessions`, `energizers`, `auth`) | Keep route handlers thin: validate, authorize, call service/repository, respond. Extract orchestration before adding another concern to a large route file. |
+| Mixed HTTP, business logic, and D1/KV access | Use or create service/repository helpers for multi-step domain logic. Do not add new inline D1/KV orchestration to route handlers when the logic is reusable or multi-phase. |
+| Repeated KV/response/key helpers | Prefer `lib/kv.ts`, `lib/http.ts`, `lib/kv-keys.ts`, and shared constants over ad-hoc `JSON.parse`, `c.json` envelopes, key builders, or TTL literals. |
+| AI and external-service fragility | Workers AI, Stripe, Resend, OAuth, Vectorize, and SAML fetches need an explicit timeout/retry/degradation decision. If none exists, add one or escalate. |
+| DRAFT/LIVE lifecycle drift | Use lifecycle helpers and the DRAFT REST / LIVE DO split. Do not add state checks inline when a shared transition helper should own it. |
+| Unsafe error handling | Parse request bodies safely, return 400 on malformed input, sanitize 500s, and log failures with trace context. |
+
 ## Session State Machine — Backend View
 
 ```typescript
@@ -98,10 +111,12 @@ Draft questions (`SESSIONS_KV: questions:{id}`) — transient, TTL 30 days, dele
 
 ## Escalation Triggers
 
+- Route file would exceed one domain concern or large-file threshold → architect
 - New KV namespace design → architect
 - D1 schema changes needing migration planning → architect
 - New DO capabilities or WS protocol changes → architect
 - New external service integration → architect
+- External dependency needs circuit breaker or degradation semantics → devops + architect
 
 ## Docs to Update
 
