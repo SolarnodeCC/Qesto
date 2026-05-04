@@ -52,25 +52,24 @@ wrangler pages deploy  # Deployen naar Cloudflare Pages (qesto project)
 ## Cursor Cloud specific instructions
 
 ### Frontend dev server
-- `npm run dev` starts Vite at `http://localhost:5173/` with HMR. This serves the React SPA only — **API routes (`/api/*`) return 404** because the `@cloudflare/vite-plugin` does not support Pages Functions file-based routing (`functions/` directory). It only supports Workers with a `main` entry point.
+- `npm run dev` starts Vite at `http://localhost:5173/` with HMR. This serves the React SPA only — **API routes (`/api/*`) return 404** because the Vite config proxies `/api` to `http://localhost:8787` (only works when wrangler dev is also running).
 - The frontend is fully testable in this mode: i18n, navigation, UI components.
 
 ### Full-stack local dev (backend API)
-- Full-stack requires `npm run build` then `npx wrangler pages dev dist --port 8788 --binding JWT_SECRET=<value> --binding ENVIRONMENT=development --binding APP_URL=http://localhost:8788 --no-show-interactive-dev-session`.
-- `CLOUDFLARE_API_TOKEN` env var **must be set** — the `[ai]` binding in `wrangler.toml` forces wrangler to authenticate with Cloudflare. Without it, wrangler fails after an auth timeout (~60s).
-- **D1 schema**: Apply the schema to the local D1 database on first run: `npx wrangler d1 execute qesto-db --local --file=functions/api/schema.sql` and `npx wrangler d1 execute qesto-db --local --file=migrations/005_user_badges.sql`.
-- **Durable Objects**: `SESSION_ROOM` is defined with `script_name = "qesto"` (an external worker). It shows as `local [not connected]` and WebSocket/realtime features return 503 locally. REST API endpoints (auth, sessions CRUD, templates, billing) work fine.
-- **Magic links in dev**: The email send fails (no `RESEND_API_KEY`), but the dev server logs `DEV magic link: <url>` to the console. Use that URL to complete auth.
+- The simplest approach: create `.dev.vars` with `JWT_SECRET`, `ENVIRONMENT`, and `APP_URL`, then run `npx wrangler dev --port 8787 --local`. The `worker/index.ts` entry point delegates to the Hono app in `functions/api/app.ts`.
+- Without `--local`, wrangler tries remote proxy for the `[ai]` binding and requires `CLOUDFLARE_API_TOKEN`. With `--local`, AI and Vectorize show as "not supported" but the server starts and all REST API endpoints work.
+- **D1 schema**: Apply the schema to the local D1 database on first run: `npx wrangler d1 execute qesto_2_db --local --file=schema.sql`. The database name in `wrangler.toml` is `qesto_2_db` and the schema file is at the repo root (`schema.sql`).
+- **Durable Objects**: `SESSION_ROOM` runs locally. WebSocket/realtime features work in local mode.
+- **Magic links in dev**: Without `RESEND_API_KEY`, the dev server logs the magic link to the console as `[email:dev] to=<email> subject=...` followed by the full URL. Use that URL (replacing `https://qesto.cc` with `http://localhost:8787`) to complete auth.
 
 ### Testing
-- `npm test` — Vitest unit tests (880 tests). Pre-commit hook also runs this.
-- `npm run type-check` — TypeScript check (`tsc --noEmit`).
+- `npm test` — Vitest unit tests (485 tests across 54 suites).
+- `npm run typecheck` — TypeScript check (`tsc --noEmit`).
 - `npm run check` — Runs `check:wrangler`, `check:api`, and `check:i18n`. The `check:wrangler` script requires Cloudflare authentication and will fail without it.
 - `npm run build` — Production build to `dist/`.
-- 2 test suites (`sessionLifecycle.test.ts`, `sessionOrchestration.test.ts`) fail to import missing source files — pre-existing, not related to environment setup.
 
 ### Gotchas
-- `.npmrc` has `legacy-peer-deps=true` — npm install requires this for dependency resolution.
-- `simple-git-hooks` runs `npm test` as a pre-commit hook (configured in `package.json`). Use `--no-verify` if the hook blocks on pre-existing test failures.
-- The `wrangler.jsonc` and `wrangler.toml` both exist — wrangler prefers `.jsonc` by default.
-- `.dev.vars` is gitignored and can be used for local secrets (JWT_SECRET, RESEND_API_KEY, etc.).
+- `.npmrc` must have `legacy-peer-deps=true` — npm install requires this for dependency resolution. Create `.npmrc` if it doesn't exist.
+- `.dev.vars` is gitignored and should be used for local secrets (JWT_SECRET, ENVIRONMENT, APP_URL, RESEND_API_KEY, etc.).
+- Only `wrangler.toml` exists (no `wrangler.jsonc`).
+- The `npm run build` step includes `npm run tokens:build` which generates `src/ui/tokens.ts` and `src/ui/tailwind-theme.ts` — these are committed but regenerated on every build.
