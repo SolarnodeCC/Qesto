@@ -599,5 +599,8 @@
   "lobbyJoinCode": "Deelnamecode",
   "lobbyParticipants": "{{count}} deelnemers verbonden",
   "lobbyStartSession": "Sessie starten",
-  "samlConfiguration": "SAML-configuratie"
+  "samlConfiguration": "SAML-configuratie",
+  "customRolesTitle": "Custom rollen",
+  "customRolesEmpty": "Nog geen custom rollen.",
+  "customRolesChooseMember": "Kies lid"
 }

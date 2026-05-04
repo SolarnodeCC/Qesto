@@ -599,5 +599,8 @@
   "lobbyJoinCode": "Teilnahmecode",
   "lobbyParticipants": "{{count}} Teilnehmer verbunden",
   "lobbyStartSession": "Sitzung starten",
-  "samlConfiguration": "SAML-Konfiguration"
+  "samlConfiguration": "SAML-Konfiguration",
+  "customRolesTitle": "Benutzerdefinierte Rollen",
+  "customRolesEmpty": "Noch keine benutzerdefinierten Rollen.",
+  "customRolesChooseMember": "Mitglied auswählen"
 }

@@ -24,10 +24,13 @@
 import {
   CLOSE_NORMAL,
   CLOSE_POLICY_VIOLATION,
+  LIVE_PROTOCOL_VERSION,
   type ClientMessage,
+  type LiveEnergizerState,
   type LiveQuestion,
   type LiveSessionSummary,
   type ServerMessage,
+  type VersionedClientEnvelope,
 } from './realtime'
 import type { Env, VotePolicy, SessionMode, PlanTier } from './types'
 import { PLAN_QUOTAS } from './types'
@@ -47,6 +50,7 @@ const K_COUNTS = 'counts'
 const K_VOTERS = 'voters'
 const K_STATUS = 'status'
 const K_IP_RATE_LIMIT = 'ip_rate_limit' // Maps ipHash → timestamps[] for per-minute rate limiting
+const K_ACTIVE_ENERGIZER = 'active_energizer'
 
 // Fun-mode: 60 s per question before auto-advance signal.
 const FUN_MODE_QUESTION_MS = 60_000
@@ -105,7 +109,7 @@ const BROADCAST_DEBOUNCE_MS = 100
 
 // ── Message helpers ─────────────────────────────────────────────────────────
 function serverMessage(msg: ServerMessage): string {
-  return JSON.stringify(msg)
+  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION, ...msg })
 }
 
 function now(): number {
@@ -151,6 +155,10 @@ export class SessionRoom implements DurableObject {
       },
       resume: async (ws, att, _msg) => {
         await this.handlePresenterPauseResume(ws, att, false)
+      },
+      energizer_activate: async (ws, att, msg) => {
+        if (msg.type !== 'energizer_activate') return
+        await this.handleEnergizerActivate(ws, att, msg.data.energizer)
       },
     }
   }
@@ -232,6 +240,7 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_STATUS, 'live')
     await this.ctx.storage.put(K_COUNTS, {} as Counts)
     await this.ctx.storage.put(K_VOTERS, {} as Votes)
+    await this.ctx.storage.delete(K_ACTIVE_ENERGIZER)
     this._voters = {}
     this._votersInitPromise = null
     const allQuestions: LiveQuestion[] = body.questions ?? (body.question ? [body.question] : [])
@@ -288,12 +297,14 @@ export class SessionRoom implements DurableObject {
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
     const voters = await this.ensureVoters()
     const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? 'uninitialised'
+    const energizer = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
     return this.jsonOk({
       meta: meta ?? null,
       question: question ?? null,
       counts,
       voterCount: Object.keys(voters).length,
       connections: this.ctx.getWebSockets().length,
+      energizer,
       status,
     })
   }
@@ -372,6 +383,11 @@ export class SessionRoom implements DurableObject {
     }
     if (!parsed || typeof parsed.type !== 'string') {
       ws.send(errorMessage('bad_message', 'Missing type'))
+      return
+    }
+    const version = (parsed as VersionedClientEnvelope).v
+    if (version !== undefined && version !== LIVE_PROTOCOL_VERSION) {
+      ws.send(errorMessage('unsupported_protocol', `Unsupported LIVE protocol version: ${version}`))
       return
     }
     const att = ws.deserializeAttachment() as Attachment | null
@@ -469,6 +485,7 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_QUESTION, nextQ)
     await this.ctx.storage.put(K_COUNTS, {} as Counts)
     await this.ctx.storage.put(K_VOTERS, {} as Votes)
+    await this.ctx.storage.delete(K_ACTIVE_ENERGIZER)
     this._voters = {}
     this._votersInitPromise = null
     const advanceMsg = serverMessage({
@@ -518,6 +535,28 @@ export class SessionRoom implements DurableObject {
       return
     }
     await this.setPaused(paused)
+  }
+
+  private async handleEnergizerActivate(
+    ws: WebSocket,
+    att: Attachment,
+    energizer: LiveEnergizerState,
+  ): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can activate energizers'))
+      return
+    }
+    if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
+      ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
+      return
+    }
+    if (!isValidLiveEnergizer(energizer)) {
+      ws.send(errorMessage('bad_energizer', 'Invalid energizer payload'))
+      return
+    }
+    const active = { ...energizer, status: 'active' as const }
+    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
+    await this.broadcastEnergizer(active)
   }
 
   private async handleVote(
@@ -624,6 +663,7 @@ export class SessionRoom implements DurableObject {
     const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
     const questionIndex = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    const energizer = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const session: LiveSessionSummary = {
       id: meta.sessionId,
@@ -645,6 +685,7 @@ export class SessionRoom implements DurableObject {
           questionTotal: allQs.length,
           results: { counts, total },
           participants: this.ctx.getWebSockets().length,
+          energizer,
           expiresAt: meta.questionExpiresAt ?? null,
         },
         timestamp: now(),
@@ -688,6 +729,17 @@ export class SessionRoom implements DurableObject {
     }
   }
 
+  private async broadcastEnergizer(energizer: LiveEnergizerState | null): Promise<void> {
+    const msg = serverMessage({
+      type: 'energizer_state',
+      data: { energizer },
+      timestamp: now(),
+    })
+    for (const ws of this.ctx.getWebSockets()) {
+      try { ws.send(msg) } catch { /* stale socket */ }
+    }
+  }
+
   private async broadcastParticipants(): Promise<void> {
     const count = this.ctx.getWebSockets().length
     const msg = serverMessage({
@@ -718,4 +770,17 @@ export class SessionRoom implements DurableObject {
       headers: { 'content-type': 'application/json' },
     })
   }
+}
+
+function isValidLiveEnergizer(value: unknown): value is LiveEnergizerState {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<LiveEnergizerState>
+  return (
+    typeof candidate.id === 'string' &&
+    candidate.id.length > 0 &&
+    typeof candidate.title === 'string' &&
+    candidate.title.length > 0 &&
+    ['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud'].includes(candidate.kind ?? '') &&
+    (candidate.status === undefined || candidate.status === 'active' || candidate.status === 'completed')
+  )
 }

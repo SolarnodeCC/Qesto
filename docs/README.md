@@ -88,8 +88,12 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | `SPRINT21_IMPLEMENTATION_SPEC.md` | Sprint 21 custom RBAC and compliance UX implementation contract |
 | `SPRINT22_IMPLEMENTATION_SPEC.md` | Sprint 22 template catalogue and wizard seeding implementation contract |
 | `SPRINT23_IMPLEMENTATION_SPEC.md` | Sprint 23 Launchpad and design polish implementation contract |
+| `SPRINT24_IMPLEMENTATION_SPEC.md` | Sprint 24 realtime protocol governance and admin hardening implementation contract |
+| `SPRINT25_IMPLEMENTATION_SPEC.md` | Sprint 25 LIVE energizer protocol foundation implementation contract |
+| `SPRINT26_32_PLAN.md` | Sprint 26-32 v2.2 live engagement, analytics, enterprise hardening, and release-candidate plan |
 | `ADR-workers-ai-capabilities.md` | Architecture decision record |
 | `adr/ADR-0004-custom-rbac-authorization.md` | AUTHZ-ADR-01 — custom RBAC authorization gate for Sprint 21 |
+| `adr/ADR-0005-do-protocol-versioning.md` | DO-PROTOCOL-ADR-01 — versioned LIVE Durable Object WebSocket protocol gate for Sprint 24 |
 | `CLOUDFLARE_WORKERS_OPTIMIZATION.md` | Workers performance notes |
 
 ### `docs/spec/` (technical specifications)

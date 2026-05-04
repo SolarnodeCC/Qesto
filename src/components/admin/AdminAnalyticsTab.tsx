@@ -1,6 +1,18 @@
 import { useAdminAnalytics, type DailyBucket } from '../../hooks/useAdminAnalytics'
 import { Heading, Body, Card, SkeletonCard } from '../../ui/components'
 
+function downloadCsv(filename: string, rows: string[][]): void {
+  const escape = (value: string) => `"${value.replace(/"/g, '""')}"`
+  const csv = rows.map((row) => row.map(escape).join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 // ─── Simple inline SVG bar chart ─────────────────────────────────────────────
 
 function BarChart({ data, label }: { data: DailyBucket[]; label: string }) {
@@ -126,11 +138,38 @@ export default function AdminAnalyticsTab() {
   const a = analytics
   const costEur = (a.ai_cost_estimate_cents / 100).toFixed(2)
 
+  const exportAnalytics = () => {
+    downloadCsv('qesto-admin-analytics.csv', [
+      ['section', 'metric', 'value'],
+      ['overview', 'sessions_today', String(a.sessions_today)],
+      ['overview', 'decisions_today', String(a.decisions_today)],
+      ['overview', 'sessions_this_month', String(a.sessions_this_month)],
+      ['overview', 'decisions_this_month', String(a.decisions_this_month)],
+      ['quality', 'consent_rate', String(a.consent_rate)],
+      ['quality', 'avg_participants', String(a.avg_participants)],
+      ['usage', 'ai_cost_estimate_cents', String(a.ai_cost_estimate_cents)],
+      ['usage', 'total_sessions_created', String(a.total_sessions_created)],
+      ['usage', 'total_decisions_processed', String(a.total_decisions_processed)],
+      ...a.sessions_per_day.map((bucket) => ['sessions_per_day', bucket.day, String(bucket.count)]),
+      ...a.decisions_per_day.map((bucket) => ['decisions_per_day', bucket.day, String(bucket.count)]),
+      ...Object.entries(a.session_status).map(([status, count]) => ['session_status', status, String(count)]),
+    ])
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="text-2xl">📊</span>
-        <Heading level="m">Analytics</Heading>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl" aria-hidden="true">📊</span>
+          <Heading level="m">Analytics</Heading>
+        </div>
+        <button
+          type="button"
+          onClick={exportAnalytics}
+          className="self-start rounded-md border border-pulse-300 px-3 py-2 text-sm font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className="flex items-center gap-2">

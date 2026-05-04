@@ -64,6 +64,7 @@ describe('useLiveSession reducer', () => {
         questionTotal: 3,
         results: { counts: { o1: 3, o2: 1 }, total: 4 },
         participants: 7,
+        energizer: null,
       })
       expect(next.session).toEqual(SESSION)
       expect(next.role).toBe('voter')
@@ -89,6 +90,7 @@ describe('useLiveSession reducer', () => {
         questionTotal: 0,
         results: { counts: {}, total: 0 },
         participants: 0,
+        energizer: null,
       })
       expect(next.reconnectAttempts).toBe(0)
     })
@@ -162,6 +164,16 @@ describe('useLiveSession reducer', () => {
       expect(INITIAL.lastVote).toBeNull()
       expect(INITIAL.participants).toBe(0)
       expect(INITIAL.reconnectAttempts).toBe(0)
+    })
+  })
+
+  describe('energizer_state', () => {
+    it('stores active LIVE energizer state', () => {
+      const next = reducer(INITIAL, {
+        kind: 'energizer_state',
+        energizer: { id: 'eg_1', kind: 'quick_finger', title: 'Quick finger', status: 'active' },
+      })
+      expect(next.energizer?.id).toBe('eg_1')
     })
   })
 })

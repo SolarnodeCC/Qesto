@@ -75,18 +75,46 @@ _Last updated: 2026-05-01 (UTC)_
 
 **Gate:** S19-MEASURE-01 must show no launch reliability regression; token, i18n, and a11y gates remain green.
 
-### Sprint 24 — v2.2 Gamification/Admin Analytics Foundation (planned)
+### Sprint 24 — v2.2 Realtime Governance + Admin Hardening (active)
 **Focus:** Start v2.2 depth work with protocol governance first, then controlled LIVE energizer and analytics expansion.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| DO-PROTOCOL-ADR-01 Durable Object protocol/versioning ADR | Planned |
-| GAM-01 LIVE energizer foundation behind versioned message contracts | Planned |
-| ADMIN-ANALYTICS-01 Admin reporting/export maturity | Planned |
-| Legacy backlog status reconciliation for v2.x regression contracts | Planned |
+| DO-PROTOCOL-ADR-01 Durable Object protocol/versioning ADR | ✅ Accepted 2026-05-04 via `ADR-0005` |
+| AUTHZ-ROLE-UI-01 Custom role-management UI | Built 2026-05-04; verification pending |
+| ADMIN-ANALYTICS-01 Admin reporting/export maturity | Built 2026-05-04; verification pending |
+| Legacy backlog status reconciliation for v2.x regression contracts | In progress |
+| GAM-01 LIVE energizer foundation behind versioned message contracts | Stretch only after protocol tests are green |
 
 **Gate:** Durable Object message schema changes require versioning, fallback behavior, and tests before LIVE rollout.
+
+### Sprint 25 — LIVE Energizer Protocol Foundation (active)
+**Focus:** Use the accepted Sprint 24 protocol contract to add the first dark-launched LIVE energizer WebSocket foundation.
+
+**Key items:**
+| Item | Status |
+|---|---|
+| GAM-LIVE-01 Presenter-only `energizer_activate` frame | Built 2026-05-04; verification pending |
+| GAM-LIVE-FLAG-01 `LIVE_ENERGIZERS_ENABLED` rollout guard | Built 2026-05-04; verification pending |
+| GAM-LIVE-RECONNECT-01 active energizer state in `init` snapshots | Built 2026-05-04; verification pending |
+
+**Gate:** No public gameplay rollout until staging WebSocket validation proves existing vote/presenter flows are unaffected.
+
+### Sprint 26-32 — v2.2 Live Engagement to Enterprise Release (planned)
+**Focus:** Turn the Sprint 25 dark-launched protocol into staged gameplay, then mature scoring, badges, admin analytics, enterprise permissions, and release readiness.
+
+| Sprint | Goal | Gate |
+|---|---|---|
+| Sprint 26 | LIVE energizer activation readiness and staging WebSocket smoke | No participant gameplay until activation is stable in staging |
+| Sprint 27 | First playable LIVE energizer: Quick Finger | No second energizer until Quick Finger coexists with normal voting |
+| Sprint 28 | Team Quiz LIVE loop | No leaderboard/badges until quiz scoring evidence is reliable |
+| Sprint 29 | Leaderboard + badge foundation | No advanced competitions until score/badge idempotency is proven |
+| Sprint 30 | Admin engagement analytics maturity | No release-candidate posture until support/admin dashboards are useful |
+| Sprint 31 | Enterprise rollout hardening | No broad rollout until permission-deny and audit paths are clear |
+| Sprint 32 | v2.2 release candidate | Release only after full-stack smoke and staging WebSocket validation |
+
+**Plan:** See [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md).
 
 ### Sprint A — Layout + Token Foundation (mostly shipped; verify in Sprint 20)
 **Focus:** Design-token source of truth, layout primitives, a11y baseline, i18n bug fixes.

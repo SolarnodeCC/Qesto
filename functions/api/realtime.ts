@@ -3,20 +3,40 @@
 // acceptance). Extra types get added alongside new client features, never
 // ahead of them.
 //
-// All messages are JSON text frames: { type, data, timestamp } where
+// All messages are JSON text frames: { v, type, data, timestamp } where
+// `v` is the protocol version. Missing `v` is accepted as legacy v1 and
 // `timestamp` is the sender's epoch-ms clock (for latency tracing only —
 // never trusted for ordering).
 
 import type { PollOption, QuestionKind, VotePolicy, SessionMode } from './types'
 
+export const LIVE_PROTOCOL_VERSION = 1
+export type LiveProtocolVersion = typeof LIVE_PROTOCOL_VERSION
+
+export type VersionedClientEnvelope = {
+  v?: LiveProtocolVersion
+  type?: string
+  data?: unknown
+  timestamp?: number
+}
+
+export type LiveEnergizerKind = 'quick_finger' | 'team_quiz' | 'emoji_poll' | 'word_cloud'
+export type LiveEnergizerState = {
+  id: string
+  kind: LiveEnergizerKind
+  title: string
+  status: 'active' | 'completed'
+}
+
 // ── Client → Server ─────────────────────────────────────────────────────────
 export type ClientMessage =
-  | { type: 'vote'; data: { questionId: string; optionId: string }; timestamp: number }
-  | { type: 'advance'; data: Record<string, never>; timestamp: number }
-  | { type: 'back'; data: Record<string, never>; timestamp: number }
-  | { type: 'request_state'; data: Record<string, never>; timestamp: number }
-  | { type: 'pause'; data: Record<string, never>; timestamp: number }
-  | { type: 'resume'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'vote'; data: { questionId: string; optionId: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'advance'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'back'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'request_state'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'pause'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'resume'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'energizer_activate'; data: { energizer: LiveEnergizerState }; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
@@ -37,6 +57,7 @@ export type LiveSessionSummary = {
 
 export type ServerMessage =
   | {
+      v?: LiveProtocolVersion
       type: 'init'
       data: {
         session: LiveSessionSummary
@@ -47,52 +68,68 @@ export type ServerMessage =
         questionTotal: number
         results: { counts: Record<string, number>; total: number }
         participants: number
+        energizer: LiveEnergizerState | null
         /** Unix ms when the current question auto-advances (fun mode only). */
         expiresAt: number | null
       }
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'question'
       data: { question: LiveQuestion; index: number; total: number }
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'results'
       data: { counts: Record<string, number>; total: number }
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'participants'
       data: { count: number }
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'session_closed'
       data: { counts: Record<string, number>; total: number }
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'question_timeout'
       data: { questionId: string }
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'session_paused'
       data: Record<string, never>
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'session_resumed'
       data: Record<string, never>
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
       type: 'all_done'
       data: Record<string, never>
       timestamp: number
     }
   | {
+      v?: LiveProtocolVersion
+      type: 'energizer_state'
+      data: { energizer: LiveEnergizerState | null }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
       type: 'error'
       data: { code: string; message: string }
       timestamp: number

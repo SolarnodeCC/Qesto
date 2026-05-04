@@ -599,5 +599,8 @@
   "lobbyJoinCode": "Join code",
   "lobbyParticipants": "{{count}} participants connected",
   "lobbyStartSession": "Start session",
-  "samlConfiguration": "SAML configuration"
+  "samlConfiguration": "SAML configuration",
+  "customRolesTitle": "Custom roles",
+  "customRolesEmpty": "No custom roles yet.",
+  "customRolesChooseMember": "Choose member"
 }

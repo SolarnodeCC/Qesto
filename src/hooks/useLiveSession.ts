@@ -9,6 +9,15 @@ import type { PollOption, QuestionKind } from '@api/types'
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
 
+const LIVE_PROTOCOL_VERSION = 1
+
+export type LiveEnergizerState = {
+  id: string
+  kind: 'quick_finger' | 'team_quiz' | 'emoji_poll' | 'word_cloud'
+  title: string
+  status: 'active' | 'completed'
+}
+
 /** Wire-level option row — same shape as REST `PollOption`. */
 export type LivePollOption = PollOption
 export type LiveQuestion = {
@@ -38,6 +47,7 @@ export type LiveState = {
   lastVote: { optionId: string } | null
   paused: boolean
   allDone: boolean
+  energizer: LiveEnergizerState | null
   questionIndex: number
   questionTotal: number
 }
@@ -58,6 +68,7 @@ type Action =
       questionTotal: number
       results: { counts: Record<string, number>; total: number }
       participants: number
+      energizer?: LiveEnergizerState | null
     }
   | { kind: 'question'; question: LiveQuestion; index: number; total: number }
   | { kind: 'results'; counts: Record<string, number>; total: number }
@@ -68,6 +79,7 @@ type Action =
   | { kind: 'session_paused' }
   | { kind: 'session_resumed' }
   | { kind: 'all_done' }
+  | { kind: 'energizer_state'; energizer: LiveEnergizerState | null }
 
 export const INITIAL: LiveState = {
   connection: 'idle',
@@ -82,6 +94,7 @@ export const INITIAL: LiveState = {
   lastVote: null,
   paused: false,
   allDone: false,
+  energizer: null,
   questionIndex: 0,
   questionTotal: 0,
 }
@@ -109,6 +122,7 @@ export function reducer(state: LiveState, action: Action): LiveState {
         questionTotal: action.questionTotal,
         results: action.results,
         participants: action.participants,
+        energizer: action.energizer ?? null,
         reconnectAttempts: 0,
         error: null,
         paused: false,
@@ -136,6 +150,8 @@ export function reducer(state: LiveState, action: Action): LiveState {
       return { ...state, paused: false }
     case 'all_done':
       return { ...state, allDone: true }
+    case 'energizer_state':
+      return { ...state, energizer: action.energizer }
   }
 }
 
@@ -190,6 +206,7 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
               questionTotal: (msg.data.questionTotal as number) ?? 0,
               results: msg.data.results as { counts: Record<string, number>; total: number },
               participants: msg.data.participants as number,
+              energizer: (msg.data.energizer as LiveEnergizerState | null | undefined) ?? null,
             })
             break
           case 'question':
@@ -233,6 +250,12 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
           case 'all_done':
             dispatch({ kind: 'all_done' })
             break
+          case 'energizer_state':
+            dispatch({
+              kind: 'energizer_state',
+              energizer: (msg.data.energizer as LiveEnergizerState | null | undefined) ?? null,
+            })
+            break
         }
       } catch {
         /* ignore unparseable frames */
@@ -274,6 +297,7 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
       if (!state.question) return
       if (
         !sendWsJson(ws, {
+          v: LIVE_PROTOCOL_VERSION,
           type: 'vote',
           data: { questionId: state.question.id, optionId },
           timestamp: Date.now(),
@@ -286,24 +310,33 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
   )
 
   const requestState = useCallback(() => {
-    sendWsJson(wsRef.current, { type: 'request_state', data: {}, timestamp: Date.now() })
+    sendWsJson(wsRef.current, { v: LIVE_PROTOCOL_VERSION, type: 'request_state', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendAdvance = useCallback(() => {
-    sendWsJson(wsRef.current, { type: 'advance', data: {}, timestamp: Date.now() })
+    sendWsJson(wsRef.current, { v: LIVE_PROTOCOL_VERSION, type: 'advance', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendBack = useCallback(() => {
-    sendWsJson(wsRef.current, { type: 'back', data: {}, timestamp: Date.now() })
+    sendWsJson(wsRef.current, { v: LIVE_PROTOCOL_VERSION, type: 'back', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendPause = useCallback(() => {
-    sendWsJson(wsRef.current, { type: 'pause', data: {}, timestamp: Date.now() })
+    sendWsJson(wsRef.current, { v: LIVE_PROTOCOL_VERSION, type: 'pause', data: {}, timestamp: Date.now() })
   }, [])
 
   const sendResume = useCallback(() => {
-    sendWsJson(wsRef.current, { type: 'resume', data: {}, timestamp: Date.now() })
+    sendWsJson(wsRef.current, { v: LIVE_PROTOCOL_VERSION, type: 'resume', data: {}, timestamp: Date.now() })
   }, [])
 
-  return { state, sendVote, requestState, sendAdvance, sendBack, sendPause, sendResume }
+  const sendEnergizerActivate = useCallback((energizer: LiveEnergizerState) => {
+    sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'energizer_activate',
+      data: { energizer },
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  return { state, sendVote, requestState, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate }
 }

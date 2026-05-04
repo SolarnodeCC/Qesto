@@ -587,27 +587,69 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 ---
 
-## Sprint 24: v2.2 Gamification/Admin Analytics Foundation (2026-07-22 to 2026-08-05)
+## Sprint 24: v2.2 Realtime Governance + Admin Hardening (started 2026-05-04; original window 2026-07-22 to 2026-08-05)
 
-**Context**: Sprint 24 begins v2.2 depth work. The team should protect realtime stability by writing protocol governance before extending LIVE session messages.
+**Context**: Sprint 24 begins v2.2 depth work after Sprint 21-23 implementation packages were built early on 2026-05-04. The team should protect realtime stability by writing protocol governance before extending LIVE session messages, while closing the deferred admin/enterprise usability gaps.
 
-**Goal**: Establish versioned Durable Object message contracts for LIVE energizers and mature admin analytics into usable reporting.
+**Goal**: Establish versioned Durable Object message contracts, mature admin analytics into usable reporting, and expose the Sprint 21 custom-role backend through Team Settings.
 
 **Epics**: EPIC-GAM, EPIC-ENT, EPIC-OPS, EPIC-QA
 
-**Committed Candidates**:
+**Committed Items**:
 
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---:|---|---|---|
-| **DO-PROTOCOL-ADR-01**: Durable Object protocol/versioning ADR | 3 | GAM/ARCH | Planned | ADR defines message versioning, compatibility, fallback behavior, and test matrix |
-| **GAM-LIVE-01**: LIVE energizer protocol foundation | 8 | GAM | Planned | Speed/trivia messages are versioned behind feature flags and tested without breaking existing voting |
-| **ADMIN-ANALYTICS-01**: Admin reporting/export maturity | 8 | ENT/OPS | Planned | Admin can inspect/export engagement, entitlement, and operational health metrics |
-| **BACKLOG-HYGIENE-01**: Legacy backlog status reconciliation | 5 | DOCS/QA | Planned | Legacy v0.x stories are labeled shipped/regression contract/deferred; confusing stale status is removed |
+| **DO-PROTOCOL-ADR-01**: Durable Object protocol/versioning ADR | 3 | GAM/ARCH | ✅ Accepted 2026-05-04 | ADR defines message versioning, compatibility, fallback behavior, and test matrix |
+| **AUTHZ-ROLE-UI-01**: Custom role-management UI | 8 | ENT/UX | Built 2026-05-04 | Team Settings lists, creates, edits, deletes, assigns, and unassigns custom roles |
+| **ADMIN-ANALYTICS-01**: Admin reporting/export maturity | 5 | ENT/OPS | Built 2026-05-04 | Admin can export sanitized aggregate analytics CSV |
+| **BACKLOG-HYGIENE-01**: Legacy backlog status reconciliation | 5 | DOCS/QA | In progress | Legacy v0.x stories are labeled shipped/regression contract/deferred; confusing stale status is removed |
+| **S21-S23-VERIFY-01**: Early-build verification bundle | 5 | QA | In progress | Focused checks cover realtime protocol compatibility plus recently built template/Launchpad/admin surfaces |
+
+**Stretch**:
+- **GAM-LIVE-01**: LIVE energizer protocol foundation. Start only after `DO-PROTOCOL-ADR-01` and focused protocol tests are green. Foundation means feature-flagged message scaffolding only, not public gameplay rollout.
 
 **Definition of Done**:
 - No LIVE message schema change ships without protocol tests and fallback behavior.
 - Admin analytics avoid PII and use route-pattern/event labels, not raw prompts or participant text.
 - Backlog reconciliation keeps `ROADMAP_FULL.md`, `SPEC.md`, and `BACKLOG.md` aligned.
+
+## Sprint 25: LIVE Energizer Protocol Foundation (started 2026-05-04)
+
+**Context**: Sprint 25 follows the accepted Sprint 24 Durable Object protocol ADR. It is the first implementation slice of `GAM-LIVE-01`, kept behind a feature flag so existing LIVE voting remains the stable baseline.
+
+**Goal**: Add versioned WebSocket scaffolding for LIVE energizers without public gameplay rollout.
+
+**Committed Items**:
+
+| Item | Size | Epic | Status | Exit Criteria |
+|---|---:|---|---|---|
+| **GAM-LIVE-01**: Presenter-only `energizer_activate` frame | 5 | GAM/REALTIME | Built 2026-05-04 | V1 client frame validates kind/title/id and rejects voter-triggered activation |
+| **GAM-LIVE-FLAG-01**: Feature flag guard | 3 | GAM/OPS | Built 2026-05-04 | `LIVE_ENERGIZERS_ENABLED=true` is required before state mutation or broadcast |
+| **GAM-LIVE-RECONNECT-01**: Reconnect snapshot support | 3 | GAM/REALTIME | Built 2026-05-04 | `init` includes active energizer state for reconnecting clients |
+| **GAM-LIVE-QA-01**: Focused protocol tests | 3 | QA | Built 2026-05-04 | Unit tests cover flag-off, presenter allow, voter deny, broadcast, and reconnect |
+
+**Definition of Done**:
+- Existing vote, presenter advance/back, pause/resume, close, and reconnect tests stay green.
+- No public gameplay surface depends on the new frame until staging WebSocket validation passes.
+- `ROADMAP_FULL.md`, `BACKLOG.md`, and `SPRINT25_IMPLEMENTATION_SPEC.md` stay aligned.
+
+## Sprint 26-32: v2.2 Live Engagement to Enterprise Release
+
+**Context**: Sprint 24 accepted the Durable Object protocol/versioning ADR, and Sprint 25 added dark-launched LIVE energizer transport. Sprints 26-32 now sequence the remaining v2.2 engagement work from staging validation through release candidate.
+
+**Arc Goal**: Turn LIVE energizer transport into staged gameplay, then harden scoring, badges, admin analytics, enterprise permissions, and rollout quality without regressing the core voting flow.
+
+| Sprint | Goal | Committed Theme | Gate |
+|---|---|---|---|
+| **Sprint 26** | LIVE energizer activation readiness | Staging WebSocket smoke, presenter controls, disabled/permission UX, protocol audit events | No participant gameplay until activation is stable in staging |
+| **Sprint 27** | First playable LIVE energizer: Quick Finger | Participant answer UI, DO answer validation, score broadcast, reconnect-safe state | No second energizer until Quick Finger coexists with normal voting |
+| **Sprint 28** | Team Quiz LIVE loop | Quiz state machine, presenter progression, participant answer locking, reconnect tests | No leaderboard/badges until quiz scoring evidence is reliable |
+| **Sprint 29** | Leaderboard + badge foundation | Aggregated scoring, live leaderboard broadcast, badge hooks, idempotency tests | No advanced competitions until score/badge idempotency is proven |
+| **Sprint 30** | Admin engagement analytics maturity | Engagement funnel, CSV metrics, realtime health correlation, privacy review | No RC posture until dashboards answer support/admin questions |
+| **Sprint 31** | Enterprise rollout hardening | Energizer activation permission gate, audit UX polish, staging checklist, enterprise regression | No broad rollout until permission-deny and audit paths are clear |
+| **Sprint 32** | v2.2 release candidate | Full regression, spec/runbook closeout, feature-flag rollout, rollback plan | Release only after full-stack smoke and staging WebSocket validation |
+
+**Detailed Plan**: [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md)
 
 ---
 

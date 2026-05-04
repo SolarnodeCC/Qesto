@@ -32,6 +32,54 @@ interface Team {
   createdAt: number
 }
 
+type Permission =
+  | 'session:create'
+  | 'session:update'
+  | 'session:launch'
+  | 'session:close'
+  | 'session:archive'
+  | 'session:export'
+  | 'template:read'
+  | 'template:write'
+  | 'team:manage_members'
+  | 'team:manage_auth'
+  | 'team:read_audit'
+  | 'billing:manage'
+
+type CustomRole = {
+  id: string
+  teamId: string
+  name: string
+  permissions: Permission[]
+  createdBy: string
+  createdAt: number
+  updatedAt: number
+}
+
+type RoleAssignment = {
+  id: string
+  team_id: string
+  user_id: string
+  role_id: string
+  assigned_by: string
+  assigned_at: number
+}
+
+const PERMISSIONS: Array<{ id: Permission; label: string; description: string }> = [
+  { id: 'session:create', label: 'Create sessions', description: 'Start new draft sessions.' },
+  { id: 'session:update', label: 'Edit sessions', description: 'Change draft questions and settings.' },
+  { id: 'session:launch', label: 'Launch sessions', description: 'Open the lobby from Launchpad.' },
+  { id: 'session:close', label: 'Close sessions', description: 'End live sessions.' },
+  { id: 'session:archive', label: 'Archive sessions', description: 'Move closed sessions to archive.' },
+  { id: 'session:export', label: 'Export sessions', description: 'Download session results.' },
+  { id: 'template:read', label: 'Read templates', description: 'Use team and Qesto templates.' },
+  { id: 'template:write', label: 'Manage templates', description: 'Create and update team templates.' },
+  { id: 'team:manage_members', label: 'Manage members', description: 'Invite, remove, and delegate roles.' },
+  { id: 'team:manage_auth', label: 'Manage authentication', description: 'Configure SAML when the plan allows it.' },
+  { id: 'team:read_audit', label: 'Read audit log', description: 'View compliance evidence.' },
+  { id: 'billing:manage', label: 'Manage billing', description: 'Change plan and billing settings.' },
+]
+
 // ─── Role badge ───────────────────────────────────────────────────────────────
 
 function RoleBadge({ role }: { role: Role }) {
@@ -75,6 +123,18 @@ export default function TeamSettings() {
   // Remove member state
   const [removingId, setRemovingId] = useState<string | null>(null)
 
+  // Custom role section state
+  const [customRoles, setCustomRoles] = useState<CustomRole[]>([])
+  const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>([])
+  const [rolesLoading, setRolesLoading] = useState(false)
+  const [roleName, setRoleName] = useState('')
+  const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>(['template:read'])
+  const [roleSaving, setRoleSaving] = useState(false)
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null)
+  const [roleFeedback, setRoleFeedback] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null)
+  const [assigningRoleId, setAssigningRoleId] = useState<string>('')
+  const [assigningUserId, setAssigningUserId] = useState<string>('')
+
   // SAML section state
   const [samlEntityId, setSamlEntityId] = useState('')
   const [samlSsoUrl, setSamlSsoUrl] = useState('')
@@ -93,10 +153,21 @@ export default function TeamSettings() {
         if (res.ok) {
           setTeam(res.data.team)
           setTeamName(res.data.team.name)
+          setAssigningUserId(res.data.team.members.find((member) => member.userId !== res.data.team.ownerId)?.userId ?? '')
           if (res.data.team.samlConfig) {
             setSamlEntityId(res.data.team.samlConfig.idpEntityId)
             setSamlSsoUrl(res.data.team.samlConfig.idpSsoUrl)
           }
+          setRolesLoading(true)
+          void api<{ roles: CustomRole[]; assignments: RoleAssignment[] }>(`/api/teams/${res.data.team.id}/roles`)
+            .then((rolesRes) => {
+              if (rolesRes.ok) {
+                setCustomRoles(rolesRes.data.roles)
+                setRoleAssignments(rolesRes.data.assignments)
+                setAssigningRoleId(rolesRes.data.roles[0]?.id ?? '')
+              }
+            })
+            .finally(() => setRolesLoading(false))
         } else {
           setLoadError(res.error.message)
         }
@@ -124,6 +195,11 @@ export default function TeamSettings() {
   const currentUserId = auth.user.id
   const isOwner = team?.ownerId === currentUserId
   const currentMember = team?.members.find((m) => m.userId === currentUserId)
+  const canManageMembers = currentMember?.role === 'owner' || currentMember?.role === 'admin' || customRoles.some(
+    (role) =>
+      role.permissions.includes('team:manage_members') &&
+      roleAssignments.some((assignment) => assignment.role_id === role.id && assignment.user_id === currentUserId),
+  )
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -179,6 +255,119 @@ export default function TeamSettings() {
         ...team,
         members: team.members.filter((m) => m.userId !== userId),
       })
+    }
+  }
+
+  function resetRoleForm() {
+    setRoleName('')
+    setSelectedPermissions(['template:read'])
+    setEditingRoleId(null)
+  }
+
+  function togglePermission(permission: Permission) {
+    setSelectedPermissions((current) =>
+      current.includes(permission)
+        ? current.filter((item) => item !== permission)
+        : [...current, permission],
+    )
+  }
+
+  function editRole(role: CustomRole) {
+    setEditingRoleId(role.id)
+    setRoleName(role.name)
+    setSelectedPermissions(role.permissions.length > 0 ? role.permissions : ['template:read'])
+    setRoleFeedback(null)
+    h1Ref.current?.focus()
+  }
+
+  async function handleSaveCustomRole(e: React.FormEvent) {
+    e.preventDefault()
+    if (!id || selectedPermissions.length === 0) return
+    const trimmed = roleName.trim()
+    if (!trimmed) return
+    setRoleSaving(true)
+    setRoleFeedback(null)
+    const endpoint = editingRoleId
+      ? `/api/teams/${id}/roles/${editingRoleId}`
+      : `/api/teams/${id}/roles`
+    const res = await api<{ role: CustomRole }>(endpoint, {
+      method: editingRoleId ? 'PATCH' : 'POST',
+      body: { name: trimmed, permissions: selectedPermissions },
+    })
+    setRoleSaving(false)
+    if (res.ok) {
+      setCustomRoles((roles) =>
+        editingRoleId
+          ? roles.map((role) => (role.id === res.data.role.id ? res.data.role : role))
+          : [...roles, res.data.role],
+      )
+      setAssigningRoleId((current) => current || res.data.role.id)
+      resetRoleForm()
+      setRoleFeedback({ kind: 'ok', msg: editingRoleId ? 'Custom role updated.' : 'Custom role created.' })
+    } else {
+      const prefix = res.error.code === 'forbidden' ? 'Permission denied: ' : ''
+      setRoleFeedback({ kind: 'err', msg: `${prefix}${res.error.message}` })
+    }
+  }
+
+  async function handleDeleteCustomRole(roleId: string) {
+    if (!id) return
+    setRoleSaving(true)
+    setRoleFeedback(null)
+    const res = await api<{ deleted: boolean; roleId: string }>(`/api/teams/${id}/roles/${roleId}`, {
+      method: 'DELETE',
+    })
+    setRoleSaving(false)
+    if (res.ok) {
+      setCustomRoles((roles) => roles.filter((role) => role.id !== res.data.roleId))
+      setRoleAssignments((assignments) => assignments.filter((assignment) => assignment.role_id !== res.data.roleId))
+      if (editingRoleId === res.data.roleId) resetRoleForm()
+      setRoleFeedback({ kind: 'ok', msg: 'Custom role deleted.' })
+    } else {
+      setRoleFeedback({ kind: 'err', msg: res.error.message })
+    }
+  }
+
+  async function handleAssignCustomRole(e: React.FormEvent) {
+    e.preventDefault()
+    if (!id || !assigningRoleId || !assigningUserId) return
+    setRoleSaving(true)
+    setRoleFeedback(null)
+    const res = await api<{ assignment: RoleAssignment }>(`/api/teams/${id}/roles/${assigningRoleId}/assignments`, {
+      method: 'POST',
+      body: { userId: assigningUserId },
+    })
+    setRoleSaving(false)
+    if (res.ok) {
+      setRoleAssignments((assignments) => {
+        const exists = assignments.some(
+          (assignment) =>
+            assignment.role_id === res.data.assignment.role_id &&
+            assignment.user_id === res.data.assignment.user_id,
+        )
+        return exists ? assignments : [...assignments, res.data.assignment]
+      })
+      setRoleFeedback({ kind: 'ok', msg: 'Role assigned.' })
+    } else {
+      setRoleFeedback({ kind: 'err', msg: res.error.message })
+    }
+  }
+
+  async function handleUnassignCustomRole(roleId: string, userId: string) {
+    if (!id) return
+    setRoleSaving(true)
+    setRoleFeedback(null)
+    const res = await api<{ removed: boolean }>(`/api/teams/${id}/roles/${roleId}/assignments/${userId}`, {
+      method: 'DELETE',
+    })
+    setRoleSaving(false)
+    if (res.ok) {
+      setRoleAssignments((assignments) =>
+        assignments.filter((assignment) => assignment.role_id !== roleId || assignment.user_id !== userId),
+      )
+      setRoleFeedback({ kind: 'ok', msg: 'Role unassigned.' })
+    } else {
+      setRoleFeedback({ kind: 'err', msg: res.error.message })
     }
   }
 
@@ -331,6 +520,201 @@ export default function TeamSettings() {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* ── Custom roles ─────────────────────────────────────────────────── */}
+        <section aria-labelledby="section-custom-roles" className="space-y-5 rounded-xl border border-pulse-200 p-6">
+          <div className="space-y-1">
+            <h2 id="section-custom-roles" className="text-lg font-semibold">{t('customRolesTitle')}</h2>
+            <p className="text-sm text-pulse-500">
+              Delegate focused permissions without making every teammate an admin.
+            </p>
+          </div>
+
+          {rolesLoading ? (
+            <div className="h-20 rounded-lg bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
+          ) : customRoles.length > 0 ? (
+            <ul className="divide-y divide-pulse-100" role="list">
+              {customRoles.map((role) => {
+                const assigned = roleAssignments.filter((assignment) => assignment.role_id === role.id)
+                return (
+                  <li key={role.id} className="py-4 space-y-3">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-pulse-900">{role.name}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {role.permissions.map((permission) => (
+                            <span key={permission} className="rounded-full bg-teal-50 px-2 py-1 text-xs font-medium text-teal-700">
+                              {permission}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-xs text-pulse-400">
+                          Assigned to {assigned.length} {assigned.length === 1 ? 'member' : 'members'}.
+                        </p>
+                      </div>
+                      {canManageMembers ? (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => editRole(role)}
+                            className="rounded-md border border-pulse-300 px-3 py-2 text-sm font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteCustomRole(role.id)}
+                            disabled={roleSaving}
+                            className="rounded-md border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:border-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 disabled:opacity-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                    {assigned.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {assigned.map((assignment) => {
+                          const member = team.members.find((entry) => entry.userId === assignment.user_id)
+                          return (
+                            <span key={assignment.id} className="inline-flex items-center gap-2 rounded-md bg-pulse-50 px-2 py-1 text-xs text-pulse-600">
+                              {member?.email ?? assignment.user_id}
+                              {canManageMembers ? (
+                                <button
+                                  type="button"
+                                  onClick={() => void handleUnassignCustomRole(role.id, assignment.user_id)}
+                                  className="font-medium text-red-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 rounded"
+                                >
+                                  Unassign
+                                </button>
+                              ) : null}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    ) : null}
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="text-sm text-pulse-500">{t('customRolesEmpty')}</p>
+          )}
+
+          {canManageMembers ? (
+            <div className="space-y-5 border-t border-pulse-100 pt-5">
+              <form onSubmit={(e) => void handleSaveCustomRole(e)} className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="custom-role-name" className="text-sm font-medium">Role name</label>
+                  <input
+                    id="custom-role-name"
+                    type="text"
+                    value={roleName}
+                    onChange={(e) => setRoleName(e.target.value)}
+                    maxLength={80}
+                    placeholder="Workshop coordinator"
+                    className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                  />
+                </div>
+
+                <fieldset className="space-y-3">
+                  <legend className="text-sm font-medium">Permissions</legend>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {PERMISSIONS.map((permission) => (
+                      <label
+                        key={permission.id}
+                        className="flex items-start gap-3 rounded-lg border border-pulse-200 p-3 text-sm hover:border-teal-300"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedPermissions.includes(permission.id)}
+                          onChange={() => togglePermission(permission.id)}
+                          className="mt-1 h-4 w-4 rounded border-pulse-300 text-teal-600 focus:ring-teal-500"
+                        />
+                        <span>
+                          <span className="block font-medium text-pulse-800">{permission.label}</span>
+                          <span className="block text-xs text-pulse-500">{permission.description}</span>
+                          <span className="block text-xs text-teal-700">{permission.id}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="submit"
+                    disabled={roleSaving || !roleName.trim() || selectedPermissions.length === 0}
+                    className="rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-4 py-2 font-medium text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  >
+                    {roleSaving ? 'Saving…' : editingRoleId ? 'Update role' : 'Create role'}
+                  </button>
+                  {editingRoleId ? (
+                    <button
+                      type="button"
+                      onClick={resetRoleForm}
+                      className="rounded-lg border border-pulse-300 px-4 py-2 font-medium text-pulse-700 hover:border-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    >
+                      Cancel edit
+                    </button>
+                  ) : null}
+                </div>
+              </form>
+
+              <form onSubmit={(e) => void handleAssignCustomRole(e)} className="grid gap-3 rounded-lg bg-pulse-50 p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="assign-role" className="text-sm font-medium">Role</label>
+                  <select
+                    id="assign-role"
+                    value={assigningRoleId}
+                    onChange={(e) => setAssigningRoleId(e.target.value)}
+                    className="border border-pulse-300 rounded-lg bg-white px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                  >
+                    <option value="">Choose role</option>
+                    {customRoles.map((role) => (
+                      <option key={role.id} value={role.id}>{role.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="assign-member" className="text-sm font-medium">Member</label>
+                  <select
+                    id="assign-member"
+                    value={assigningUserId}
+                    onChange={(e) => setAssigningUserId(e.target.value)}
+                    className="border border-pulse-300 rounded-lg bg-white px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                  >
+                    <option value="">{t('customRolesChooseMember')}</option>
+                    {team.members.map((member) => (
+                      <option key={member.userId} value={member.userId}>{member.email}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  disabled={roleSaving || !assigningRoleId || !assigningUserId}
+                  className="rounded-lg border border-pulse-300 bg-white px-4 py-2 font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                >
+                  Assign role
+                </button>
+              </form>
+            </div>
+          ) : (
+            <p className="rounded-lg bg-pulse-50 p-3 text-sm text-pulse-500">
+              Permission denied: custom roles require <code>team:manage_members</code>.
+            </p>
+          )}
+
+          {roleFeedback ? (
+            <p
+              role="alert"
+              aria-live="polite"
+              className={`text-sm ${roleFeedback.kind === 'ok' ? 'text-teal-600' : 'text-red-600'}`}
+            >
+              {roleFeedback.msg}
+            </p>
+          ) : null}
         </section>
 
         {/* ── Invite ─────────────────────────────────────────────────────────── */}

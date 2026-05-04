@@ -106,7 +106,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 | **Sprint 21** | 2026-06-10 to 2026-06-24 | Enterprise authorization foundation + compliance UX | Built backend slice: accepted ADR, D1 custom-role model, role assignment APIs, `team:manage_members` / `team:manage_auth` enforcement, audit evidence. Frontend role-management screen deferred. |
 | **Sprint 22** | 2026-06-24 to 2026-07-08 | Template catalogue + session creation polish | Built package: customer/Qesto template groups, 3+ Qesto templates per topic, overview confirmation, wizard seeding, functional tests. |
 | **Sprint 23** | 2026-07-08 to 2026-07-22 | Launchpad + design polish | Built package: LAUNCHPAD-02 verified, CTA motion/logo polish verified, and AI narrative copy corrected/i18n-keyed. |
-| **Sprint 24** | 2026-07-22 to 2026-08-05 | v2.2 gamification/admin analytics foundation | Write Durable Object protocol/versioning ADR, start LIVE energizer foundation, mature admin analytics/reporting/export, and reconcile stale legacy backlog statuses. |
+| **Sprint 24** | Started 2026-05-04; original 2026-07-22 to 2026-08-05 | v2.2 realtime governance + admin hardening | Accepted Durable Object protocol/versioning ADR, built custom role-management UI, added admin analytics export, started backlog hygiene, and kept LIVE energizer foundation as stretch behind protocol tests. |
 
 ### Active Backlog Additions From Planning Refresh
 
@@ -118,14 +118,25 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 | TPL-CATALOG-01 | Customer vs Qesto template catalogue groups | P0 | Sprint 22 | ✅ Built 2026-05-04; Dashboard Templates separates tenant-created and curated Qesto templates |
 | TPL-CATALOG-02 | Template overview confirmation flow | P0 | Sprint 22 | ✅ Built 2026-05-04; Template card opens title/description/preview screen; session creation starts only after "Use template" confirmation |
 | TPL-CATALOG-03 | Qesto starter-template coverage and functional tests | P0 | Sprint 22 | ✅ Built 2026-05-04; Minimum 3 templates per required topic; `tests/functional/ui/template-catalogue.test.ts` covers UI contract |
-| DO-PROTOCOL-ADR-01 | Durable Object protocol/versioning ADR for LIVE session message extensions | P0 | Sprint 24 | ADR accepted before GAM-01 LIVE energizer work changes `ClientMessage`/`ServerMessage` |
+| DO-PROTOCOL-ADR-01 | Durable Object protocol/versioning ADR for LIVE session message extensions | P0 | Sprint 24 | ✅ Accepted in `docs/adr/ADR-0005-do-protocol-versioning.md`; v1 envelope support added |
+| AUTHZ-ROLE-UI-01 | Team role-management UI for custom roles and delegated permissions | P0 | Sprint 24 | Team Settings can list, create, edit, delete, assign, and unassign custom roles |
 | ADMIN-ANALYTICS-01 | Admin analytics reporting/export maturity | P1 | Sprint 24 | Admin can inspect/export key engagement, entitlement, and operational health metrics without raw log spelunking |
+| GAM-LIVE-01 | LIVE energizer WebSocket foundation | P0 | Sprint 25 | Presenter-only activation frame, feature-flagged DO state, server broadcast, and reconnect snapshot all work without changing existing voting semantics |
+| GAM-STAGE-01 | Staging WebSocket validation for LIVE energizer protocol | P0 | Sprint 26 | Legacy v1, explicit v1, unsupported version, reconnect, and activation flag-off/on cases pass in staging |
+| GAM-QF-01 | Quick Finger LIVE gameplay | P0 | Sprint 27 | Participants can answer a quick-finger energizer, server validates answers, and score deltas broadcast safely |
+| GAM-TQ-01 | Team Quiz LIVE loop | P0 | Sprint 28 | Multi-question quiz state, presenter progression, participant locking, and reconnect snapshots work |
+| GAM-SCORE-01 | Leaderboard and badge foundation | P1 | Sprint 29 | Aggregated scores, leaderboard broadcasts, and badge hooks are idempotent and PII-safe |
+| ADMIN-ENGAGE-01 | Admin engagement analytics maturity | P1 | Sprint 30 | Admin can inspect/export energizer activation, participation, completion, and realtime health metrics |
+| AUTHZ-GAM-01 | Enterprise permission gate for energizer activation | P1 | Sprint 31 | Custom roles can allow/deny energizer activation with audit evidence |
+| RC-REGRESSION-01 | v2.2 release candidate regression and rollout plan | P0 | Sprint 32 | Full quality gates, specs, release notes, rollout plan, and rollback plan are ready |
 
 **Dependencies and gates**:
 - ENTITLEMENTS-02 must be green before Sprint 21 expands role enforcement.
 - OBS-02 must land before S19-MEASURE-01 can produce credible KPI baseline.
 - AUTHZ-ADR-01 blocks RBAC depth/custom roles implementation.
 - DO-PROTOCOL-ADR-01 blocks GAM-01 in LIVE sessions.
+- Sprint 26 staging validation blocks Sprint 27 participant gameplay.
+- Quick Finger evidence blocks Team Quiz and leaderboard/badge expansion.
 - Token/i18n/a11y gates must stay green before Sprint 23 design polish expands affected surfaces.
 
 ---

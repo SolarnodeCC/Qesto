@@ -33,6 +33,8 @@ export type Env = {
   TEAM_ANNUAL_EUR_CENTS?: string
   /** Optional sender shown in Resend, e.g. "Qesto <login@yourdomain.com>". */
   RESEND_FROM?: string
+  /** Sprint 25 guard: enables versioned LIVE energizer WebSocket broadcasts. */
+  LIVE_ENERGIZERS_ENABLED?: string
 
   // Secrets (wrangler pages secret put ...)
   JWT_SECRET: string

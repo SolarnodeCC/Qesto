@@ -21,6 +21,14 @@ function makeEnv(): Env {
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
     JWT_SECRET: 'irrelevant-for-do-tests',
+    LIVE_ENERGIZERS_ENABLED: 'false',
+  } as unknown as Env
+}
+
+function makeLiveEnergizerEnv(): Env {
+  return {
+    ...makeEnv(),
+    LIVE_ENERGIZERS_ENABLED: 'true',
   } as unknown as Env
 }
 
@@ -30,6 +38,15 @@ async function buildRoom(): Promise<{
 }> {
   const state = new MockDurableObjectState()
   const room = new SessionRoom(state as unknown as DurableObjectState, makeEnv())
+  return { room, state }
+}
+
+async function buildLiveEnergizerRoom(): Promise<{
+  room: SessionRoom
+  state: MockDurableObjectState
+}> {
+  const state = new MockDurableObjectState()
+  const room = new SessionRoom(state as unknown as DurableObjectState, makeLiveEnergizerEnv())
   return { room, state }
 }
 
@@ -122,6 +139,29 @@ describe('S1 — init + request_state', () => {
     expect(init1?.data.session).toMatchObject({ id: 'sess_1', title: 'Retro Q2', code: 'ABC123' })
     expect((init1?.data.question as { options: unknown[] }).options).toHaveLength(3)
     expect(init1?.data.role).toBe('voter')
+  })
+
+  it('adds v1 to server frames and accepts explicit v1 client frames', async () => {
+    const { room, state } = await buildRoom()
+    await init(room)
+
+    const ws = connectVoter(state, 'anon_v1')
+    await sendMessage(room, ws, { v: 1, type: 'request_state', data: {}, timestamp: 0 })
+
+    const init1 = ws.messages<{ v?: number; type: string }>().find((m) => m.type === 'init')
+    expect(init1?.v).toBe(1)
+  })
+
+  it('rejects unsupported future protocol versions without closing the socket', async () => {
+    const { room, state } = await buildRoom()
+    await init(room)
+
+    const ws = connectVoter(state, 'anon_future')
+    await sendMessage(room, ws, { v: 99, type: 'request_state', data: {}, timestamp: 0 })
+
+    const err = ws.messages<{ type: string; data: { code?: string } }>().find((m) => m.type === 'error')
+    expect(err?.data.code).toBe('unsupported_protocol')
+    expect(ws.closed).toBe(false)
   })
 
   it('rejects init twice (idempotence guard)', async () => {
@@ -403,5 +443,90 @@ describe('advance authorisation', () => {
     await sendMessage(room, ws, { type: 'advance', data: {}, timestamp: 0 })
     const msgs = ws.messages<{ type: string }>()
     expect(msgs.some((m) => m.type === 'all_done')).toBe(true)
+  })
+})
+
+describe('Sprint 25 — LIVE energizer protocol foundation', () => {
+  it('keeps energizer activation dark when the feature flag is off', async () => {
+    const { room, state } = await buildRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: { id: 'eg_1', kind: 'quick_finger', title: 'Quick finger', status: 'active' },
+      },
+      timestamp: 0,
+    })
+
+    const err = presenter.messages<{ type: string; data: { code?: string } }>().find((m) => m.type === 'error')
+    expect(err?.data.code).toBe('feature_disabled')
+    expect(await state.storage.get('active_energizer')).toBeUndefined()
+  })
+
+  it('broadcasts active energizer state when enabled and presenter-triggered', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const voter = connectVoter(state, 'anon_energizer')
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: { id: 'eg_1', kind: 'quick_finger', title: 'Quick finger', status: 'active' },
+      },
+      timestamp: 0,
+    })
+
+    for (const ws of [presenter, voter]) {
+      const msg = ws.messages<{ type: string; data: { energizer?: { id?: string } } }>().find(
+        (entry) => entry.type === 'energizer_state',
+      )
+      expect(msg?.data.energizer?.id).toBe('eg_1')
+    }
+    expect(await state.storage.get('active_energizer')).toMatchObject({ id: 'eg_1', status: 'active' })
+  })
+
+  it('includes active energizer state in request_state snapshots', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: { id: 'eg_2', kind: 'team_quiz', title: 'Team quiz', status: 'active' },
+      },
+      timestamp: 0,
+    })
+
+    const reconnect = connectVoter(state, 'anon_reconnect', 'ip_reconnect')
+    await sendMessage(room, reconnect, { v: 1, type: 'request_state', data: {}, timestamp: 0 })
+
+    const initMsg = reconnect.messages<{ type: string; data: { energizer?: { id?: string } | null } }>().find(
+      (entry) => entry.type === 'init',
+    )
+    expect(initMsg?.data.energizer?.id).toBe('eg_2')
+  })
+
+  it('rejects voter-triggered energizer activation', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const voter = connectVoter(state, 'anon_forbidden')
+
+    await sendMessage(room, voter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: { id: 'eg_3', kind: 'quick_finger', title: 'Nope', status: 'active' },
+      },
+      timestamp: 0,
+    })
+
+    const err = voter.messages<{ type: string; data: { code?: string } }>().find((m) => m.type === 'error')
+    expect(err?.data.code).toBe('forbidden')
   })
 })
