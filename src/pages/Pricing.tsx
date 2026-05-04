@@ -1,7 +1,12 @@
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, X } from 'lucide-react'
-import { enrichPricingMatrix, PRICING_MATRIX_BASE, type MatrixVal } from '../config/pricing-matrix'
+import {
+  enrichPricingMatrix,
+  PRICING_MATRIX_BASE,
+  type MatrixRowSource,
+  type MatrixVal,
+} from '../config/pricing-matrix'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
 import { usePlanCatalog } from '../hooks/usePlanCatalog'
@@ -16,6 +21,22 @@ const displayFont = { fontFamily: 'var(--font-family-display)' }
 const monoFont = { fontFamily: 'var(--font-family-mono)' }
 const shadowCard = { boxShadow: 'var(--shadow-card)' }
 const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
+
+function formatEuro(cents: number | null): string | null {
+  if (cents === null) return null
+  const amount = cents / 100
+  return Number.isInteger(amount) ? `€${amount}` : `€${amount.toFixed(2)}`
+}
+
+function SourceBadge({ source }: { source: MatrixRowSource }) {
+  if (source === 'quota') return null
+  const label = source === 'roadmap' ? 'Roadmap' : 'Static copy'
+  return (
+    <span className="ml-2 inline-flex align-middle text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-pulse-100 text-pulse-500 dark:bg-white/10 dark:text-[#8893AD]">
+      {label}
+    </span>
+  )
+}
 
 const faqs = [
   {
@@ -54,6 +75,10 @@ export default function Pricing() {
     if (!free || !starter || !team) return PRICING_MATRIX_BASE
     return enrichPricingMatrix(PRICING_MATRIX_BASE, free, starter, team)
   }, [free, starter, team])
+
+  const starterAnnual = formatEuro(starter?.pricing.annual_cents ?? 2400)
+  const starterMonthly = formatEuro(starter?.pricing.monthly_cents ?? 2900)
+  const starterPriceIds = [starter?.pricing.annual_price_id, starter?.pricing.monthly_price_id].filter(Boolean)
 
   return (
     <MainLayout>
@@ -150,16 +175,21 @@ export default function Pricing() {
               </p>
               <div className="mb-1 leading-none">
                 <span className="font-bold text-5xl tracking-tight" style={displayFont}>
-                  €24
+                  {starterAnnual ?? '€24'}
                 </span>
                 <span className="text-sm font-medium text-slate-400 ml-1.5">/ host / month</span>
               </div>
               <p className="text-xs text-slate-400 mb-6 mt-1">
-                Billed annually · €29/mo month-to-month
+                Billed annually · {starterMonthly ?? '€29'}/mo month-to-month
                 {starter
                   ? ` · Up to ${starter.features.sessionsPerMonth} new sessions/mo · ${starter.features.participantsPerSession} participants/room`
                   : ''}
               </p>
+              {starterPriceIds.length > 0 ? (
+                <p className="text-[11px] text-slate-500 mb-6 -mt-4" style={monoFont}>
+                  Stripe prices: {starterPriceIds.join(' / ')}
+                </p>
+              ) : null}
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
                   starter
@@ -281,7 +311,10 @@ export default function Pricing() {
                     </tr>
                     {rows.map((row) => (
                       <tr key={row[0]} className="border-b border-pulse-100 dark:border-white/5 last:border-b-0">
-                        <td className="px-6 py-4 font-semibold text-pulse-900 dark:text-[#F0F2F8] text-sm">{row[0]}</td>
+                        <td className="px-6 py-4 font-semibold text-pulse-900 dark:text-[#F0F2F8] text-sm">
+                          {row[0]}
+                          <SourceBadge source={row[4]} />
+                        </td>
                         {([row[1], row[2], row[3]] as MatrixVal[]).map((v, i) => (
                           <td key={i} className="px-6 py-4 text-center text-pulse-600 dark:text-[#A8B3CC] text-[13px]" style={monoFont}>
                             {typeof v === 'boolean' ? (
@@ -307,9 +340,11 @@ export default function Pricing() {
             </table>
           </div>
           <p className="text-sm text-pulse-500 dark:text-[#6B7A99] mt-6 max-w-3xl">
-            Numeric limits (sessions/month, participants/room, exports, SSO, semantic search clusters, branded assets)
-            mirror <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
+            Numeric limits and quota-backed feature flags mirror{' '}
+            <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
             <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
+            Rows tagged static copy or roadmap are packaging claims to review against product/commerce plans before
+            launch.
           </p>
         </div>
       </section>

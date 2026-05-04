@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../api/client'
 import { buildPlansFromCatalog, PLANS, type PlanConfig } from '../config/plans'
-import type { PlanCatalogApiPayload } from '../types/plan-catalog'
+import type { PlanCatalogApiPayload, PlanCatalogPricingPayload, PlanCatalogApiResponse } from '../types/plan-catalog'
 
 /**
  * Loads `GET /api/plans/catalog` when available; falls back to `PLANS` (from `PLAN_QUOTAS`).
@@ -9,13 +9,16 @@ import type { PlanCatalogApiPayload } from '../types/plan-catalog'
  */
 export function usePlanCatalog() {
   const [remote, setRemote] = useState<PlanCatalogApiPayload | null>(null)
+  const [remotePricing, setRemotePricing] = useState<PlanCatalogPricingPayload | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    void api<PlanCatalogApiPayload>('/api/plans/catalog')
+    void api<PlanCatalogApiResponse>('/api/plans/catalog')
       .then((res) => {
         if (res.ok) {
-          setRemote(res.data)
+          const { pricing, ...catalog } = res.data
+          setRemote(catalog as PlanCatalogApiPayload)
+          setRemotePricing(pricing ?? null)
           setError(null)
         } else {
           setError(res.error.message)
@@ -25,9 +28,9 @@ export function usePlanCatalog() {
   }, [])
 
   const plans = useMemo<PlanConfig[]>(() => {
-    if (remote) return buildPlansFromCatalog(remote)
+    if (remote) return buildPlansFromCatalog(remote, remotePricing ?? undefined)
     return PLANS
-  }, [remote])
+  }, [remote, remotePricing])
 
   return {
     plans,

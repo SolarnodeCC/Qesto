@@ -65,7 +65,32 @@ wrangler secret put MICROSOFT_CLIENT_SECRET
 wrangler secret put MICROSOFT_TENANT_ID   # optional; defaults to "common"
 ```
 
-## 4. Verify
+## 4. Public pricing metadata
+
+The pricing page reads quota limits from `GET /api/plans/catalog`. That same
+catalog can expose non-secret Stripe price IDs and display amounts so the
+marketing page stays aligned with checkout configuration.
+
+Configure these as Cloudflare vars (not secrets) once live Stripe prices are
+final:
+
+```bash
+wrangler pages deployment tail # optional sanity check for the Pages project/env
+
+# Production Pages project variables:
+STRIPE_STARTER_MONTHLY_PRICE_ID=price_...
+STRIPE_STARTER_ANNUAL_PRICE_ID=price_...
+STRIPE_TEAM_ANNUAL_PRICE_ID=price_...        # optional
+STARTER_MONTHLY_EUR_CENTS=2900
+STARTER_ANNUAL_EUR_CENTS=2400
+TEAM_ANNUAL_EUR_CENTS=0                      # optional; omit for custom pricing
+```
+
+These values are public identifiers/amounts, unlike `STRIPE_SECRET_KEY`, which
+must remain a secret. If unset, the frontend falls back to the static display
+copy (`€24` annualized, `€29` monthly for Signal).
+
+## 5. Verify
 
 ```bash
 wrangler deploy --dry-run

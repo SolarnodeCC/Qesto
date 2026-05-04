@@ -23,6 +23,14 @@ export type Env = {
   SEED_ADMIN_EMAIL?: string
   /** Checkout URL for paid plan upgrades. */
   CHECKOUT_URL?: string
+  /** Public Stripe price IDs; safe to expose for checkout/price reconciliation. */
+  STRIPE_STARTER_MONTHLY_PRICE_ID?: string
+  STRIPE_STARTER_ANNUAL_PRICE_ID?: string
+  STRIPE_TEAM_ANNUAL_PRICE_ID?: string
+  /** Display prices in euro cents, used by public plan catalog when set. */
+  STARTER_MONTHLY_EUR_CENTS?: string
+  STARTER_ANNUAL_EUR_CENTS?: string
+  TEAM_ANNUAL_EUR_CENTS?: string
   /** Optional sender shown in Resend, e.g. "Qesto <login@yourdomain.com>". */
   RESEND_FROM?: string
 

@@ -16,3 +16,18 @@ export type PlanCatalogApiRow = {
 }
 
 export type PlanCatalogApiPayload = Record<PlanTier, PlanCatalogApiRow>
+
+export type PlanCatalogPricingRow = {
+  currency: 'EUR'
+  monthly_cents: number | null
+  annual_cents: number | null
+  monthly_price_id: string | null
+  annual_price_id: string | null
+  display: string
+}
+
+export type PlanCatalogPricingPayload = Record<PlanTier, PlanCatalogPricingRow>
+
+export type PlanCatalogApiResponse = PlanCatalogApiPayload & {
+  pricing?: PlanCatalogPricingPayload
+}

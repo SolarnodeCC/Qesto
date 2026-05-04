@@ -69,6 +69,50 @@ function catalogRow(q: PlanQuotas) {
   }
 }
 
+function cents(value: string | undefined, fallback: number): number {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback
+}
+
+function catalogPricing(env: Env) {
+  return {
+    free: {
+      currency: 'EUR',
+      monthly_cents: 0,
+      annual_cents: 0,
+      monthly_price_id: null,
+      annual_price_id: null,
+      display: '€0 / host / month',
+    },
+    starter: {
+      currency: 'EUR',
+      monthly_cents: cents(env.STARTER_MONTHLY_EUR_CENTS, 2900),
+      annual_cents: cents(env.STARTER_ANNUAL_EUR_CENTS, 2400),
+      monthly_price_id: env.STRIPE_STARTER_MONTHLY_PRICE_ID ?? null,
+      annual_price_id: env.STRIPE_STARTER_ANNUAL_PRICE_ID ?? null,
+      display: '€24 / host / month billed annually; €29 month-to-month',
+    },
+    team: {
+      currency: 'EUR',
+      monthly_cents: null,
+      annual_cents: env.TEAM_ANNUAL_EUR_CENTS ? cents(env.TEAM_ANNUAL_EUR_CENTS, 0) : null,
+      monthly_price_id: null,
+      annual_price_id: env.STRIPE_TEAM_ANNUAL_PRICE_ID ?? null,
+      display: 'Custom annual contract',
+    },
+  } satisfies Record<
+    PlanTier,
+    {
+      currency: 'EUR'
+      monthly_cents: number | null
+      annual_cents: number | null
+      monthly_price_id: string | null
+      annual_price_id: string | null
+      display: string
+    }
+  >
+}
+
 export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
@@ -79,7 +123,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       PlanTier,
       ReturnType<typeof catalogRow>
     >
-    return c.json({ ok: true, data, trace_id: c.get('trace_id') })
+    return c.json({ ok: true, data: { ...data, pricing: catalogPricing(c.env) }, trace_id: c.get('trace_id') })
   })
 
   // GET /api/plans/:userId/usage — Fetch quota usage for authenticated user

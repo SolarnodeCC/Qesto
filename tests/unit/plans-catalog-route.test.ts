@@ -42,4 +42,35 @@ describe('GET /api/plans/catalog (WS6)', () => {
     expect(body.data.free.max_sessions_per_month).toBe(PLAN_QUOTAS.free.maxSessionsPerMonth)
     expect(body.data.free.max_participants_per_session).toBe(PLAN_QUOTAS.free.maxParticipantsPerSession)
   })
+
+  it('surfaces non-secret Stripe price metadata when configured', async () => {
+    const app = createApp()
+    const env = {
+      ...makeEnv(),
+      STRIPE_STARTER_MONTHLY_PRICE_ID: 'price_monthly_123',
+      STRIPE_STARTER_ANNUAL_PRICE_ID: 'price_annual_123',
+      STARTER_MONTHLY_EUR_CENTS: '3100',
+      STARTER_ANNUAL_EUR_CENTS: '2600',
+    } as Env
+    const res = await app.fetch(new Request('http://local/api/plans/catalog'), env)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      data: {
+        pricing: {
+          starter: {
+            currency: string
+            monthly_cents: number
+            annual_cents: number
+            monthly_price_id: string | null
+            annual_price_id: string | null
+          }
+        }
+      }
+    }
+    expect(body.data.pricing.starter.currency).toBe('EUR')
+    expect(body.data.pricing.starter.monthly_cents).toBe(3100)
+    expect(body.data.pricing.starter.annual_cents).toBe(2600)
+    expect(body.data.pricing.starter.monthly_price_id).toBe('price_monthly_123')
+    expect(body.data.pricing.starter.annual_price_id).toBe('price_annual_123')
+  })
 })
