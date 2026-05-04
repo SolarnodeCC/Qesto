@@ -40,6 +40,16 @@ export interface SessionWizardProps {
   open: boolean
   onClose: () => void
   onSessionCreated?: () => void
+  initialTemplate?: {
+    id: string
+    name: string
+    description: string
+    questions: Array<{
+      kind: string
+      prompt: string
+      options: PollOption[]
+    }>
+  } | null
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -89,6 +99,13 @@ function parseSseEvent(raw: string): { event: string; data: unknown } | null {
   }
   if (dataLines.length === 0) return null
   return { event, data: JSON.parse(dataLines.join('\n')) as unknown }
+}
+
+function normalizeQuestionKind(kind: string): WizardQuestionKind {
+  if (kind === 'wordcloud') return 'word_cloud'
+  return (['poll', 'ranking', 'open', 'multi_select', 'likert', 'slider', 'upvote', 'word_cloud'].includes(kind)
+    ? kind
+    : 'poll') as WizardQuestionKind
 }
 
 const ENERGIZER_FORMATS = [
@@ -348,7 +365,7 @@ function AIChip({
 
 // ─── Main wizard ──────────────────────────────────────────────────────────────
 
-export default function SessionWizard({ open, onClose, onSessionCreated }: SessionWizardProps) {
+export default function SessionWizard({ open, onClose, onSessionCreated, initialTemplate = null }: SessionWizardProps) {
   const navigate = useNavigate()
   const t = useT('wizard')
 
@@ -365,6 +382,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
   const [aiConsented, setAiConsented] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [questions, setQuestions] = useState<WizardQuestion[]>([])
+  const [templateSeedName, setTemplateSeedName] = useState<string | null>(null)
 
   // Step 3
   const [energizerId, setEnergizerId] = useState<string | null>(null)
@@ -397,7 +415,24 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setAiPhase('consent')
     setAiConsented(false)
     setAiPrompt('')
-    setQuestions([])
+    if (initialTemplate) {
+      setTitle(initialTemplate.name)
+      setGoal(initialTemplate.description)
+      setStep2Mode('template')
+      setTemplateSeedName(initialTemplate.name)
+      setQuestions(initialTemplate.questions.map((q) => ({
+        id: newId(),
+        kind: normalizeQuestionKind(q.kind),
+        prompt: q.prompt,
+        options: q.options.map((o) => ({ id: o.id || newId(), label: o.label })),
+        fromAI: false,
+        dismissed: false,
+        accepted: true,
+      })))
+    } else {
+      setQuestions([])
+      setTemplateSeedName(null)
+    }
     setEnergizerId(null)
     setAnonymity('partial')
     setVotePolicy('once')
@@ -409,7 +444,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
     setLaunching(false)
     setError(null)
     setLaunchError(null)
-  }, [open])
+  }, [open, initialTemplate])
 
   // Focus heading on step change
   useEffect(() => {
@@ -519,11 +554,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
       setGeneratedAiGroundingHash(payload.groundingHash)
       const generated: WizardQuestion[] = payload.questions.map((q) => ({
         id: q.id ?? newId(),
-        kind: (['poll', 'ranking', 'open', 'multi_select', 'likert', 'slider', 'upvote', 'word_cloud'].includes(
-          q.kind,
-        )
-          ? q.kind
-          : 'poll') as WizardQuestionKind,
+        kind: normalizeQuestionKind(q.kind),
         prompt: q.prompt,
         options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
         fromAI: true,
@@ -788,7 +819,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                         type="button"
                         onClick={() => {
                           setStep2Mode(mode.id)
-                          if (mode.id === 'manual') setQuestions([emptyQuestion()])
+                          if (mode.id === 'manual') { setQuestions([emptyQuestion()]); setTemplateSeedName(null) }
                           if (mode.id === 'ai') setAiPhase('consent')
                         }}
                         className="text-left p-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
@@ -806,7 +837,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                 <div className="space-y-4">
                   <button
                     type="button"
-                    onClick={() => { setStep2Mode('idle'); setQuestions([]) }}
+                    onClick={() => { setStep2Mode('idle'); setQuestions([]); setTemplateSeedName(null) }}
                     className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
                   >
                     {t('step2.back')}
@@ -931,7 +962,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                 <div className="space-y-3">
                   <button
                     type="button"
-                    onClick={() => { setStep2Mode('idle'); setQuestions([]) }}
+                    onClick={() => { setStep2Mode('idle'); setQuestions([]); setTemplateSeedName(null) }}
                     className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
                   >
                     {t('step2.back')}
@@ -963,12 +994,40 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                 <div className="space-y-3">
                   <button
                     type="button"
-                    onClick={() => { setStep2Mode('idle'); setQuestions([]) }}
+                    onClick={() => { setStep2Mode('idle'); setQuestions([]); setTemplateSeedName(null) }}
                     className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
                   >
                     {t('step2.back')}
                   </button>
-                  <p className="text-sm text-pulse-500">{t('step2.template_coming_soon')}</p>
+                  {templateSeedName ? (
+                    <div className="rounded-xl border border-teal-200 bg-teal-50/60 dark:border-teal-800 dark:bg-teal-900/20 p-3">
+                      <p className="text-sm font-medium text-teal-800 dark:text-teal-200">
+                        {t('step2.template_seeded', { name: templateSeedName })}
+                      </p>
+                      <p className="text-caption text-teal-700 dark:text-teal-300 mt-0.5">{t('step2.template_seeded_hint')}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-pulse-500">{t('step2.template_pick_from_dashboard')}</p>
+                  )}
+                  <div className="space-y-2">
+                    {questions.map((q) =>
+                      q.dismissed ? null : (
+                        <QuestionEditor
+                          key={q.id}
+                          question={q}
+                          onChange={updateQuestion}
+                          {...(questions.filter((x) => !x.dismissed).length > 1 ? { onDismiss: () => dismissQuestion(q.id) } : {})}
+                        />
+                      ),
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={addManualQuestion}
+                    className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                  >
+                    + {t('step2.manual_add')}
+                  </button>
                 </div>
               )}
             </div>
@@ -1104,6 +1163,11 @@ export default function SessionWizard({ open, onClose, onSessionCreated }: Sessi
                 </div>
                 <p className="text-sm dark:text-pulse-200">{title}</p>
                 <p className="text-caption text-pulse-500">{goal}</p>
+                {templateSeedName && (
+                  <p className="text-caption font-medium text-teal-700 dark:text-teal-300">
+                    {t('step5.template_selected')}: {templateSeedName}
+                  </p>
+                )}
               </section>
 
               {/* Questions */}

@@ -3,5 +3,10 @@
     "generated": "✨ Généré par l'IA",
     "assisted": "✨ Assisté par l'IA",
     "analyzed": "✨ Analysé par l'IA"
+  },
+  "aiNarrative": {
+    "title": "Sessions alimentées par l'IA",
+    "body1": "Qesto utilise Workers AI sur Cloudflare pour suggérer des questions adaptées à l'objectif de ta session, afin de passer moins de temps à écrire et plus de temps à engager l'audience.",
+    "body2": "Après chaque session, l'IA analyse les réponses des participants pour faire émerger les thèmes clés et les pistes de suivi, avec un traitement privé sur l'edge de Cloudflare et sans partage avec des tiers."
   }
 }

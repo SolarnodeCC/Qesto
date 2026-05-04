@@ -78,5 +78,21 @@
   "yourTeams": "Tes équipes",
   "noTeamsYet": "Aucune équipe pour le moment. Crée une équipe pour collaborer avec d'autres.",
   "createFromTemplate": "Créer depuis \"{{name}}\"",
-  "create": "Créer"
+  "create": "Créer",
+  "templateCatalogueIntro": "Prévisualise un modèle, puis personnalise-le dans l'assistant avant le lancement.",
+  "customerTemplates": "Tes modèles",
+  "customerTemplatesSubtitle": "Modèles réutilisables enregistrés depuis tes propres sessions.",
+  "customerTemplatesEmpty": "Enregistre une session terminée comme modèle et elle apparaîtra ici.",
+  "customerTemplate": "Modèle client",
+  "qestoTemplate": "Modèle Qesto",
+  "templatePreviewQuestions": "Aperçu des questions",
+  "useTemplate": "Utiliser le modèle",
+  "templateQuestionCount_one": "{{count}} question",
+  "templateQuestionCount_other": "{{count}} questions",
+  "templateTopic.team": "Rituels d'équipe",
+  "templateTopic.product": "Découverte produit",
+  "templateTopic.learning": "Ateliers et apprentissage",
+  "templateTopicSubtitle.team": "Rétrospectives, bilans d'équipe et alignement décisionnel.",
+  "templateTopicSubtitle.product": "Feedback, priorisation et préparation au lancement.",
+  "templateTopicSubtitle.learning": "Bilans de formation, clôtures et Q&R d'événement."
 }

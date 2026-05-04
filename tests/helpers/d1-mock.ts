@@ -130,6 +130,25 @@ type Sprint19EventRow = {
   trace_id: string
 }
 
+type CustomRoleRow = {
+  id: string
+  team_id: string
+  name: string
+  permissions_json: string
+  created_by: string
+  created_at: number
+  updated_at: number
+}
+
+type TeamRoleAssignmentRow = {
+  id: string
+  team_id: string
+  user_id: string
+  role_id: string
+  assigned_by: string
+  assigned_at: number
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
@@ -140,6 +159,8 @@ export class D1Mock {
   readonly auditEvents = new Map<string, AuditEvent>()
   readonly insightsDaily = new Map<string, InsightsDailyRow>()
   readonly sprint19Events = new Map<string, Sprint19EventRow>()
+  readonly customRoles = new Map<string, CustomRoleRow>()
+  readonly teamRoleAssignments = new Map<string, TeamRoleAssignmentRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -485,6 +506,63 @@ export class D1PreparedStatementMock {
       })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO custom_roles')) {
+      const [id, team_id, name, permissions_json, created_by, created_at, updated_at] = this.args as [
+        string, string, string, string, string, number, number,
+      ]
+      this.db.customRoles.set(id, { id, team_id, name, permissions_json, created_by, created_at, updated_at })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE custom_roles SET')) {
+      const [name, permissions_json, updated_at, id, team_id] = this.args as [string, string, number, string, string]
+      const row = this.db.customRoles.get(id)
+      if (!row || row.team_id !== team_id) return { meta: { changes: 0 } }
+      row.name = name
+      row.permissions_json = permissions_json
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM team_role_assignments WHERE role_id')) {
+      const [role_id, team_id] = this.args as [string, string]
+      let changes = 0
+      for (const [id, row] of this.db.teamRoleAssignments) {
+        if (row.role_id === role_id && row.team_id === team_id) {
+          this.db.teamRoleAssignments.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM custom_roles')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.customRoles.get(id)
+      if (!row || row.team_id !== team_id) return { meta: { changes: 0 } }
+      this.db.customRoles.delete(id)
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO team_role_assignments')) {
+      const [id, team_id, user_id, role_id, assigned_by, assigned_at] = this.args as [
+        string, string, string, string, string, number,
+      ]
+      for (const existing of this.db.teamRoleAssignments.values()) {
+        if (existing.team_id === team_id && existing.user_id === user_id && existing.role_id === role_id) {
+          return { meta: { changes: 0 } }
+        }
+      }
+      this.db.teamRoleAssignments.set(id, { id, team_id, user_id, role_id, assigned_by, assigned_at })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM team_role_assignments WHERE team_id')) {
+      const [team_id, role_id, user_id] = this.args as [string, string, string]
+      let changes = 0
+      for (const [id, row] of this.db.teamRoleAssignments) {
+        if (row.team_id === team_id && row.role_id === role_id && row.user_id === user_id) {
+          this.db.teamRoleAssignments.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
     throw new Error(`d1-mock: unsupported run(): ${this.sql}`)
   }
 
@@ -563,6 +641,11 @@ export class D1PreparedStatementMock {
     }
     if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { count: 0 } as T
+    }
+    if (this.sql.startsWith('SELECT id, team_id, name, permissions_json')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.customRoles.get(id)
+      return (row && row.team_id === team_id ? row : null) as T | null
     }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
       // Single-row lookup: WHERE id = ?1 AND owner_id = ?2
@@ -654,6 +737,31 @@ export class D1PreparedStatementMock {
       return {
         results: [...counts.entries()].map(([event_name, n]) => ({ event_name, n })) as unknown as T[],
       }
+    }
+    if (this.sql.startsWith('SELECT cr.permissions_json')) {
+      const [team_id, user_id] = this.args as [string, string]
+      const roleIds = [...this.db.teamRoleAssignments.values()]
+        .filter((row) => row.team_id === team_id && row.user_id === user_id)
+        .map((row) => row.role_id)
+      const rows = roleIds
+        .map((id) => this.db.customRoles.get(id))
+        .filter((row): row is CustomRoleRow => !!row && row.team_id === team_id)
+        .map((row) => ({ permissions_json: row.permissions_json }))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT id, team_id, name, permissions_json')) {
+      const [team_id] = this.args as [string]
+      const rows = [...this.db.customRoles.values()]
+        .filter((row) => row.team_id === team_id)
+        .sort((a, b) => a.created_at - b.created_at)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT id, team_id, user_id, role_id')) {
+      const [team_id] = this.args as [string]
+      const rows = [...this.db.teamRoleAssignments.values()]
+        .filter((row) => row.team_id === team_id)
+        .sort((a, b) => a.assigned_at - b.assigned_at)
+      return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)
   }

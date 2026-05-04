@@ -36,42 +36,42 @@ _Last updated: 2026-05-01 (UTC)_
 
 **Gate:** RBAC depth/custom roles require `ADR-0004` acceptance by Product Owner + Architect; LIVE energizers require a Durable Object protocol/versioning ADR.
 
-### Sprint 21 — Enterprise Authorization + Compliance UX (planned)
+### Sprint 21 — Enterprise Authorization + Compliance UX (built)
 **Focus:** Turn the Sprint 20 entitlement evidence into an authorization design the team can safely extend. This is the first sprint where RBAC depth can move, but only after the ADR is accepted.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| AUTHZ-ADR-01 Custom RBAC authorization ADR | Proposed in `docs/adr/ADR-0004-custom-rbac-authorization.md`; must be accepted before code |
-| AUTHZ-RBAC-01 Custom role permission matrix + server-side enforcement plan | Planned |
-| AUTHZ-RBAC-02 Admin role-management UX and delegated permissions | Planned |
-| ENT-03/ENT-04 compliance UX follow-through from audit/admin evidence | Planned |
+| AUTHZ-ADR-01 Custom RBAC authorization ADR | ✅ Accepted 2026-05-04 |
+| AUTHZ-RBAC-01 Custom role permission matrix + server-side enforcement plan | ✅ Backend foundation built 2026-05-04 |
+| AUTHZ-RBAC-02 Admin role-management UX and delegated permissions | Backend API built; frontend management screen deferred |
+| ENT-03/ENT-04 compliance UX follow-through from audit/admin evidence | Audit evidence built for role mutations and permission denials |
 
-**Gate:** No custom-role implementation without accepted ADR, route ownership map, audit semantics, and contract-test plan.
+**Gate:** Session-route permission rollout and frontend role-management UI require Sprint 21 backend contract review; LIVE energizers remain blocked by Durable Object protocol/versioning ADR.
 
-### Sprint 22 — Template Catalogue + Session Creation Polish (planned)
+### Sprint 22 — Template Catalogue + Session Creation Polish (built)
 **Focus:** Pull forward the next functional requirement from `SPEC.md`: make templates a complete session-starting surface instead of a passive dashboard tab.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| TPL-CATALOG-01 Customer vs Qesto template groups | Planned |
-| TPL-CATALOG-02 Template overview confirmation flow | Planned |
-| TPL-CATALOG-03 Minimum 3 Qesto templates per required topic + functional coverage | Planned |
-| Wizard seeding from selected template into the customize step | Planned |
+| TPL-CATALOG-01 Customer vs Qesto template groups | ✅ Built 2026-05-04 |
+| TPL-CATALOG-02 Template overview confirmation flow | ✅ Built 2026-05-04 |
+| TPL-CATALOG-03 Minimum 3 Qesto templates per required topic + functional coverage | ✅ Built 2026-05-04 |
+| Wizard seeding from selected template into the customize step | ✅ Built 2026-05-04 |
 
 **Gate:** No direct session creation from a card; every template path requires overview confirmation and editable wizard state.
 
-### Sprint 23 — Launchpad + Design Polish (planned)
+### Sprint 23 — Launchpad + Design Polish (built)
 **Focus:** Complete Website Design Wave Sprint C after Sprint 19 measurement proves the wizard → Launchpad path is reliable.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| LAUNCHPAD-02 Inline editor, reorder, and state-preserving back-to-questions flow | Planned |
-| DESIGN-POLISH-01 Primary CTA hover/motion polish | Planned |
-| DESIGN-POLISH-02 Logo optical weight + sparkle mark | Planned |
-| AI-VIS-01 Landing AI narrative + copy/i18n sign-off | Planned |
+| LAUNCHPAD-02 Inline editor, reorder, and state-preserving back-to-questions flow | ✅ Built/verified 2026-05-04 |
+| DESIGN-POLISH-01 Primary CTA hover/motion polish | ✅ Built/verified 2026-05-04 |
+| DESIGN-POLISH-02 Logo optical weight + sparkle mark | ✅ Built/verified 2026-05-04 |
+| AI-VIS-01 Landing AI narrative + copy/i18n sign-off | ✅ Built 2026-05-04 |
 
 **Gate:** S19-MEASURE-01 must show no launch reliability regression; token, i18n, and a11y gates remain green.
 

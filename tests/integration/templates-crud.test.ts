@@ -74,6 +74,32 @@ describe('Templates CRUD', () => {
     expect(body.data.templates.every((t: any) => t.category === 'team')).toBe(true)
   })
 
+  it('ships minimum Qesto starter coverage per catalogue topic', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+
+    const res = await app.fetch(
+      new Request('http://local/api/templates', {
+        headers: { 'cf-connecting-ip': '127.0.0.1' },
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as any
+    const templates = body.data.templates as any[]
+    const requiredTopics = ['team', 'product', 'learning']
+
+    for (const topic of requiredTopics) {
+      const topicTemplates = templates.filter((t) => t.topic === topic)
+      expect(topicTemplates.length, `${topic} topic coverage`).toBeGreaterThanOrEqual(3)
+      expect(topicTemplates.every((t) => t.type === 'qesto')).toBe(true)
+      expect(topicTemplates.every((t) => typeof t.previewAlt === 'string' && t.previewAlt.length > 20)).toBe(true)
+      expect(topicTemplates.every((t) => Array.isArray(t.questions) && t.questions.length >= 3)).toBe(true)
+    }
+  })
+
   it('fetches single Qesto template by id', async () => {
     const db = new D1Mock()
     const app = createApp()
@@ -179,6 +205,9 @@ describe('Templates CRUD', () => {
     expect(body.ok).toBe(true)
     expect(body.data.template.name).toBe('My Custom Template')
     expect(body.data.template.userId).toBe('user_1')
+    expect(body.data.template.type).toBe('customer')
+    expect(body.data.template.topic).toBe('customer')
+    expect(body.data.template.previewAlt).toContain('My Custom Template')
     expect(body.data.template.questions).toHaveLength(1)
   })
 

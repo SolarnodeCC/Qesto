@@ -3,5 +3,10 @@
     "generated": "✨ AI-gegenereerd",
     "assisted": "✨ AI-ondersteund",
     "analyzed": "✨ AI-geanalyseerd"
+  },
+  "aiNarrative": {
+    "title": "AI-aangedreven sessies",
+    "body1": "Qesto gebruikt Workers AI op Cloudflare om vragen voor te stellen die passen bij je sessiedoel, zodat je minder tijd kwijt bent aan schrijven en meer aan interactie.",
+    "body2": "Na elke sessie analyseert AI reacties van deelnemers om hoofdthema's en vervolgpunten te vinden, privé verwerkt op Cloudflare's edge zonder data te delen met derden."
   }
 }

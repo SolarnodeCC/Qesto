@@ -1,10 +1,4 @@
-/**
- * AINarrative — a content section explaining Qesto's AI features.
- *
- * Used on the landing page and dashboard to build user trust and awareness
- * of AI-powered capabilities. Copy is kept inline (not i18n-keyed) so the
- * i18n agent can extract them separately.
- */
+import { useT } from '../i18n'
 
 interface AINarrativeProps {
   /** Extra Tailwind classes to append to the container */
@@ -12,6 +6,8 @@ interface AINarrativeProps {
 }
 
 export default function AINarrative({ className = '' }: AINarrativeProps) {
+  const t = useT('components')
+
   return (
     <section
       aria-labelledby="ai-narrative-heading"
@@ -41,17 +37,14 @@ export default function AINarrative({ className = '' }: AINarrativeProps) {
           id="ai-narrative-heading"
           className="text-body-m font-semibold text-violet-900 dark:text-violet-200"
         >
-          AI-powered sessions
+          {t('aiNarrative.title')}
         </h2>
       </div>
       <p className="text-body-s text-violet-800 dark:text-violet-300 leading-relaxed">
-        Qesto uses on-device AI to suggest poll questions tailored to your session goal, so you
-        spend less time writing and more time engaging your audience.
+        {t('aiNarrative.body1')}
       </p>
       <p className="text-body-s text-violet-800 dark:text-violet-300 leading-relaxed">
-        After each session, AI analyses participant responses to surface key themes and
-        follow-up insights — all processed privately on Cloudflare's edge with no
-        third-party data sharing.
+        {t('aiNarrative.body2')}
       </p>
     </section>
   )

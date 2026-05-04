@@ -78,5 +78,21 @@
   "yourTeams": "Je teams",
   "noTeamsYet": "Nog geen teams. Maak een team aan om met anderen samen te werken.",
   "createFromTemplate": "Maken van \"{{name}}\"",
-  "create": "Maken"
+  "create": "Maken",
+  "templateCatalogueIntro": "Bekijk eerst het sjabloon en pas het daarna aan in de wizard.",
+  "customerTemplates": "Je sjablonen",
+  "customerTemplatesSubtitle": "Herbruikbare sjablonen uit je eigen sessies.",
+  "customerTemplatesEmpty": "Sla een afgeronde sessie op als sjabloon en die verschijnt hier.",
+  "customerTemplate": "Klantensjabloon",
+  "qestoTemplate": "Qesto-sjabloon",
+  "templatePreviewQuestions": "Voorbeeldvragen",
+  "useTemplate": "Sjabloon gebruiken",
+  "templateQuestionCount_one": "{{count}} vraag",
+  "templateQuestionCount_other": "{{count}} vragen",
+  "templateTopic.team": "Teamrituelen",
+  "templateTopic.product": "Productontdekking",
+  "templateTopic.learning": "Workshops & leren",
+  "templateTopicSubtitle.team": "Retrospectives, health checks en besluitvorming.",
+  "templateTopicSubtitle.product": "Feedback, prioritering en lanceergereedheid.",
+  "templateTopicSubtitle.learning": "Training checks, afrondingen en event Q&A."
 }

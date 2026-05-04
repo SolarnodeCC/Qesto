@@ -3,5 +3,10 @@
     "generated": "✨ AI-generiert",
     "assisted": "✨ AI-unterstützt",
     "analyzed": "✨ AI-analysiert"
+  },
+  "aiNarrative": {
+    "title": "KI-gestützte Sitzungen",
+    "body1": "Qesto nutzt Workers AI auf Cloudflare, um Fragen passend zu deinem Sitzungsziel vorzuschlagen, damit du weniger Zeit mit Schreiben und mehr Zeit mit Beteiligung verbringst.",
+    "body2": "Nach jeder Sitzung analysiert KI Teilnehmerantworten, um zentrale Themen und Follow-up-Erkenntnisse zu finden, privat auf Cloudflares Edge verarbeitet und ohne Weitergabe an Dritte."
   }
 }

@@ -499,9 +499,9 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 | Sprint | Window | Release posture | Goal | Gate |
 |---|---|---|---|---|
 | **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock | Entitlement tests, operational evidence, Sprint 19 KPI baseline, trustworthy local/CI gates, **AUTHZ-ADR-01 in review** | No broad feature expansion until evidence exists; 45 pts committed (expanded 2026-05-01) |
-| **Sprint 21** | 2026-06-10 to 2026-06-24 | v2.1 enterprise hardening | Custom role matrix + enforcement (AUTHZ-RBAC-01), admin role-management UX (AUTHZ-RBAC-02), compliance UX follow-through | AUTHZ-ADR-01 must be *accepted* before any RBAC code lands |
-| **Sprint 22** | 2026-06-24 to 2026-07-08 | v2.1/v2.2 session creation polish | Template catalogue requirement from SPEC.md: groups, overview confirmation, wizard seeding, functional coverage | No template card creates a session without overview confirmation |
-| **Sprint 23** | 2026-07-08 to 2026-07-22 | v2.2 design/Launchpad polish | LAUNCHPAD-02, CTA/logo polish, landing AI narrative sign-off | S19 KPI baseline healthy; token/i18n/a11y gates green |
+| **Sprint 21** | 2026-06-10 to 2026-06-24 | v2.1 enterprise hardening | Backend custom-role matrix + assignment APIs, delegated team-management/auth permissions, compliance audit events | Built backend slice 2026-05-04; frontend role-management UI remains follow-up |
+| **Sprint 22** | 2026-06-24 to 2026-07-08 | v2.1/v2.2 session creation polish | Built 2026-05-04: template catalogue requirement from SPEC.md: groups, overview confirmation, wizard seeding, functional coverage | No template card creates a session without overview confirmation |
+| **Sprint 23** | 2026-07-08 to 2026-07-22 | v2.2 design/Launchpad polish | Built 2026-05-04: LAUNCHPAD-02 verified, CTA/logo polish, landing AI narrative sign-off | S19 KPI baseline healthy; token/i18n/a11y gates green |
 | **Sprint 24** | 2026-07-22 to 2026-08-05 | v2.2 foundation | DO protocol ADR, LIVE energizer foundation, admin analytics maturity, backlog status reconciliation | Versioned DO message contract accepted before LIVE energizer rollout |
 
 **Dependency chain**:
@@ -524,9 +524,9 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---:|---|---|---|
-| **AUTHZ-RBAC-01**: Custom role permission matrix + enforcement plan | 8 | ENT | Planned | Matrix maps each role/scope to route/service allow/deny behavior; contract tests drafted before implementation |
-| **AUTHZ-RBAC-02**: Admin role-management UX + delegated permissions | 8 | ENT/UX | Planned | Owner/admin can create, edit, assign, revoke, and audit scoped roles without cross-team leakage |
-| **ENT-COMPLIANCE-01**: Audit/admin compliance UX follow-through | 5 | ENT/OPS | Planned | Audit filters/export and admin evidence views cover entitlement, authz, and sensitive mutations |
+| **AUTHZ-RBAC-01**: Custom role permission matrix + enforcement plan | 8 | ENT | ✅ Backend built 2026-05-04 | Matrix maps built-in/custom roles to team-management/auth permissions; allow/deny and plan-deny tests added |
+| **AUTHZ-RBAC-02**: Admin role-management UX + delegated permissions | 8 | ENT/UX | Backend API built; frontend deferred | Owner/admin can create, edit, assign, revoke scoped roles through API with audit events |
+| **ENT-COMPLIANCE-01**: Audit/admin compliance UX follow-through | 5 | ENT/OPS | Partial backend evidence built | Audit events cover role create/update/delete/assign/unassign and permission denials |
 
 **Definition of Done**:
 - ADR accepted before RBAC implementation lands.
@@ -548,11 +548,11 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---:|---|---|---|
-| **TPL-CATALOG-01**: Customer vs Qesto template groups | 5 | TEMPLATES | Planned | Dashboard Templates separates tenant-created templates from curated Qesto templates |
-| **TPL-CATALOG-02**: Template overview confirmation flow | 8 | TEMPLATES/CORE | Planned | Card opens overview with title, description, preview image, and explicit "Use template" CTA |
-| **TPL-CATALOG-03**: Qesto starter-template coverage | 5 | TEMPLATES/CONTENT | Planned | Minimum 3 Qesto templates per required topic; preferred 4+ for high-use topics |
-| **TPL-WIZARD-01**: Template-seeded wizard customize step | 8 | CORE | Planned | Selected template seeds wizard questions/settings and preserves editability before Launchpad |
-| **TPL-QA-01**: Functional UI coverage for template catalogue | 3 | QA | Planned | `tests/functional/ui/template-catalogue.test.ts` verifies topic IDs, minimum counts, and copy alignment |
+| **TPL-CATALOG-01**: Customer vs Qesto template groups | 5 | TEMPLATES | ✅ Built 2026-05-04 | Dashboard Templates separates tenant-created templates from curated Qesto templates |
+| **TPL-CATALOG-02**: Template overview confirmation flow | 8 | TEMPLATES/CORE | ✅ Built 2026-05-04 | Card opens overview with title, description, preview image, and explicit "Use template" CTA |
+| **TPL-CATALOG-03**: Qesto starter-template coverage | 5 | TEMPLATES/CONTENT | ✅ Built 2026-05-04 | Minimum 3 Qesto templates per required topic; preferred 4+ for high-use topics |
+| **TPL-WIZARD-01**: Template-seeded wizard customize step | 8 | CORE | ✅ Built 2026-05-04 | Selected template seeds wizard questions/settings and preserves editability before Launchpad |
+| **TPL-QA-01**: Functional UI coverage for template catalogue | 3 | QA | ✅ Built 2026-05-04 | `tests/functional/ui/template-catalogue.test.ts` verifies topic IDs, confirmation guard, and copy alignment |
 
 **Definition of Done**:
 - No direct session creation from a template card.
@@ -574,10 +574,10 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 | Item | Size | Epic | Status | Exit Criteria |
 |---|---:|---|---|---|
-| **LAUNCHPAD-02**: Inline editor, reorder, and state-preserving back-to-questions | 8 | CORE | Planned | Hosts can add/reorder/edit one question from Launchpad; wizard round-trip has 0 state-loss bugs |
-| **DESIGN-POLISH-01**: Primary CTA hover/motion polish | 3 | DESIGN | Planned | Vote/Join/Landing CTAs use tokenized motion and pass a11y regression checks |
-| **DESIGN-POLISH-02**: Logo optical weight bump + sparkle mark | 3 | DESIGN/BRAND | Planned | Brand sign-off; mark used consistently across app and public surfaces |
-| **AI-VIS-01**: Landing AI narrative + feature strip | 5 | MARKETING/I18N | Planned | Copy approved, localized in 5 locales, and instrumented for visitor-to-signup conversion |
+| **LAUNCHPAD-02**: Inline editor, reorder, and state-preserving back-to-questions | 8 | CORE | ✅ Built/verified 2026-05-04 | Hosts can add/reorder/edit one question from Launchpad; wizard round-trip has 0 state-loss bugs |
+| **DESIGN-POLISH-01**: Primary CTA hover/motion polish | 3 | DESIGN | ✅ Built/verified 2026-05-04 | Vote/Join/Landing CTAs use tokenized motion and pass a11y regression checks |
+| **DESIGN-POLISH-02**: Logo optical weight bump + sparkle mark | 3 | DESIGN/BRAND | ✅ Built/verified 2026-05-04 | Brand sign-off; mark used consistently across app and public surfaces |
+| **AI-VIS-01**: Landing AI narrative + feature strip | 5 | MARKETING/I18N | ✅ Built 2026-05-04 | Copy approved, localized in 5 locales, and instrumented for visitor-to-signup conversion |
 
 **Definition of Done**:
 - S19-MEASURE-01 shows no launch reliability regression before rollout.

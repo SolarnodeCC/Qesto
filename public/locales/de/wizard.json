@@ -86,6 +86,9 @@
     "template_questions": "{{count}} Fragen",
     "all_dismissed": "Alle Fragen verworfen. Gehen Sie zurück, um neu zu generieren.",
     "template_coming_soon": "Vorlagenauswahl kommt bald.",
+    "template_seeded": "\"{{name}}\" ist geladen",
+    "template_seeded_hint": "Bearbeite, entferne oder ergänze Fragen, bevor du fortfährst.",
+    "template_pick_from_dashboard": "Wähle eine Vorlage im Vorlagen-Tab, um diesen Schritt zu füllen.",
     "auto_scale_hint": "Automatisch erzeugte 5-Punkte-Skala: Stimme uberhaupt nicht zu -> Stimme voll zu",
     "auto_slider_hint": "Automatisch erzeugter numerischer 1-10-Schieberegler",
     "free_text_hint": "Teilnehmer geben eine Freitextantwort ein - keine Optionen erforderlich"

@@ -86,6 +86,9 @@
     "template_questions": "{{count}} preguntas",
     "all_dismissed": "Todas las preguntas descartadas. Vuelve para regenerar.",
     "template_coming_soon": "La selección de plantillas estará disponible pronto.",
+    "template_seeded": "\"{{name}}\" está cargada",
+    "template_seeded_hint": "Edita, elimina o añade preguntas antes de continuar.",
+    "template_pick_from_dashboard": "Elige una plantilla en la pestaña Plantillas para preparar este paso.",
     "auto_scale_hint": "Escala de 5 puntos generada automaticamente: Totalmente en desacuerdo -> Totalmente de acuerdo",
     "auto_slider_hint": "Control numerico de 1-10 generado automaticamente",
     "free_text_hint": "Los participantes escriben una respuesta de texto libre - no se necesitan opciones"

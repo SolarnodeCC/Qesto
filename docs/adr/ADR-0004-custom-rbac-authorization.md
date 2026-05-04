@@ -3,7 +3,7 @@
 _Hub: [../README.md](../README.md)._
 
 Date: 2026-05-04
-Status: Proposed for Sprint 20 review
+Status: Accepted for Sprint 21 implementation
 Backlog ID: AUTHZ-ADR-01
 
 ## Context
@@ -140,6 +140,6 @@ Tradeoffs:
 
 ## Gates
 
-- Sprint 20 can close when this ADR is reviewed and no RBAC implementation has begun.
-- Sprint 21 RBAC implementation can begin only after this ADR is accepted by Product Owner + Architect.
+- Sprint 20 closed when this ADR was reviewed and no RBAC implementation had begun.
+- Sprint 21 RBAC implementation began after the ADR was accepted by the user acting as Product Owner; implementation follows this ADR's permission order and test strategy.
 - LIVE energizer permissions stay out of scope until the Durable Object protocol/versioning ADR exists.

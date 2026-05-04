@@ -78,5 +78,21 @@
   "yourTeams": "Tus equipos",
   "noTeamsYet": "Aún no tienes equipos. Crea un equipo para colaborar con otros.",
   "createFromTemplate": "Crear desde \"{{name}}\"",
-  "create": "Crear"
+  "create": "Crear",
+  "templateCatalogueIntro": "Previsualiza una plantilla y personalízala en el asistente antes de lanzar.",
+  "customerTemplates": "Tus plantillas",
+  "customerTemplatesSubtitle": "Plantillas reutilizables guardadas desde tus propias sesiones.",
+  "customerTemplatesEmpty": "Guarda una sesión completada como plantilla y aparecerá aquí.",
+  "customerTemplate": "Plantilla de cliente",
+  "qestoTemplate": "Plantilla de Qesto",
+  "templatePreviewQuestions": "Vista previa de preguntas",
+  "useTemplate": "Usar plantilla",
+  "templateQuestionCount_one": "{{count}} pregunta",
+  "templateQuestionCount_other": "{{count}} preguntas",
+  "templateTopic.team": "Rituales de equipo",
+  "templateTopic.product": "Descubrimiento de producto",
+  "templateTopic.learning": "Talleres y aprendizaje",
+  "templateTopicSubtitle.team": "Retrospectivas, chequeos de salud y alineación de decisiones.",
+  "templateTopicSubtitle.product": "Feedback, priorización y preparación de lanzamiento.",
+  "templateTopicSubtitle.learning": "Chequeos de formación, cierres y preguntas de eventos."
 }

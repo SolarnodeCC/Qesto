@@ -103,21 +103,21 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 | Sprint | Window | Product goal | Backlog posture |
 |---|---|---|---|
 | **Sprint 20** | 2026-05-27 to 2026-06-10 | v2.1 readiness lock: entitlement tests, Sprint 19 measurement, operational evidence, quality-gate trust, and AUTHZ-ADR-01 in review | Built package: ENTITLEMENTS-02, OBS-02, S19-MEASURE-01 durable events, **AUTHZ-ADR-01** proposed, Sprint A verification gate. Stretch remains deferred. |
-| **Sprint 21** | 2026-06-10 to 2026-06-24 | Enterprise authorization foundation + compliance UX | AUTHZ-ADR-01 must be *accepted* before Sprint 21 opens RBAC code; split RBAC depth into concrete stories (AUTHZ-RBAC-01/02); begin role matrix/admin compliance work. |
-| **Sprint 22** | 2026-06-24 to 2026-07-08 | Template catalogue + session creation polish | Promote the SPEC.md template requirement: customer/Qesto template groups, 3–4 Qesto templates per topic, overview confirmation, wizard seeding, functional tests. |
-| **Sprint 23** | 2026-07-08 to 2026-07-22 | Launchpad + design polish | Promote LAUNCHPAD-02, DESIGN-POLISH-01, DESIGN-POLISH-02, and AI-VIS-01 only if Sprint 19 KPI baseline shows no launch reliability regression. |
+| **Sprint 21** | 2026-06-10 to 2026-06-24 | Enterprise authorization foundation + compliance UX | Built backend slice: accepted ADR, D1 custom-role model, role assignment APIs, `team:manage_members` / `team:manage_auth` enforcement, audit evidence. Frontend role-management screen deferred. |
+| **Sprint 22** | 2026-06-24 to 2026-07-08 | Template catalogue + session creation polish | Built package: customer/Qesto template groups, 3+ Qesto templates per topic, overview confirmation, wizard seeding, functional tests. |
+| **Sprint 23** | 2026-07-08 to 2026-07-22 | Launchpad + design polish | Built package: LAUNCHPAD-02 verified, CTA motion/logo polish verified, and AI narrative copy corrected/i18n-keyed. |
 | **Sprint 24** | 2026-07-22 to 2026-08-05 | v2.2 gamification/admin analytics foundation | Write Durable Object protocol/versioning ADR, start LIVE energizer foundation, mature admin analytics/reporting/export, and reconcile stale legacy backlog statuses. |
 
 ### Active Backlog Additions From Planning Refresh
 
 | ID | Item | Pri | Target | Acceptance signal |
 |---|---|---|---|---|
-| AUTHZ-ADR-01 | Authorization ADR for custom roles, scoped permissions, route ownership, and audit semantics | P0 | **Sprint 20** *(pulled in 2026-05-01)* | ADR proposed in `docs/adr/ADR-0004-custom-rbac-authorization.md`; Product Owner + Architect acceptance required before RBAC implementation |
-| AUTHZ-RBAC-01 | Custom role permission matrix + server-side enforcement plan | P0 | Sprint 21 | Matrix maps roles to routes/services; allow/deny contract tests drafted |
-| AUTHZ-RBAC-02 | Admin role-management UX for custom roles and delegated permissions | P1 | Sprint 21/22 | Owner/admin can create, edit, assign, and revoke scoped roles with audit events |
-| TPL-CATALOG-01 | Customer vs Qesto template catalogue groups | P0 | Sprint 22 | Dashboard Templates separates tenant-created and curated Qesto templates |
-| TPL-CATALOG-02 | Template overview confirmation flow | P0 | Sprint 22 | Template card opens title/description/preview screen; session creation starts only after "Use template" confirmation |
-| TPL-CATALOG-03 | Qesto starter-template coverage and functional tests | P0 | Sprint 22 | Minimum 3 templates per required topic; `tests/functional/ui/template-catalogue.test.ts` covers counts and copy |
+| AUTHZ-ADR-01 | Authorization ADR for custom roles, scoped permissions, route ownership, and audit semantics | P0 | **Sprint 20/21** | ✅ Accepted in `docs/adr/ADR-0004-custom-rbac-authorization.md` |
+| AUTHZ-RBAC-01 | Custom role permission matrix + server-side enforcement plan | P0 | Sprint 21 | ✅ Backend foundation built; permission helpers + contract tests added |
+| AUTHZ-RBAC-02 | Admin role-management UX for custom roles and delegated permissions | P1 | Sprint 21/22 | Backend APIs built; frontend screen deferred |
+| TPL-CATALOG-01 | Customer vs Qesto template catalogue groups | P0 | Sprint 22 | ✅ Built 2026-05-04; Dashboard Templates separates tenant-created and curated Qesto templates |
+| TPL-CATALOG-02 | Template overview confirmation flow | P0 | Sprint 22 | ✅ Built 2026-05-04; Template card opens title/description/preview screen; session creation starts only after "Use template" confirmation |
+| TPL-CATALOG-03 | Qesto starter-template coverage and functional tests | P0 | Sprint 22 | ✅ Built 2026-05-04; Minimum 3 templates per required topic; `tests/functional/ui/template-catalogue.test.ts` covers UI contract |
 | DO-PROTOCOL-ADR-01 | Durable Object protocol/versioning ADR for LIVE session message extensions | P0 | Sprint 24 | ADR accepted before GAM-01 LIVE energizer work changes `ClientMessage`/`ServerMessage` |
 | ADMIN-ANALYTICS-01 | Admin analytics reporting/export maturity | P1 | Sprint 24 | Admin can inspect/export key engagement, entitlement, and operational health metrics without raw log spelunking |
 

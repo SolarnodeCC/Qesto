@@ -86,6 +86,9 @@
     "template_questions": "{{count}} vragen",
     "all_dismissed": "Alle vragen verwijderd. Ga terug om opnieuw te genereren.",
     "template_coming_soon": "Sjabloonselectie komt binnenkort.",
+    "template_seeded": "\"{{name}}\" is geladen",
+    "template_seeded_hint": "Bewerk, verwijder of voeg vragen toe voordat je doorgaat.",
+    "template_pick_from_dashboard": "Kies een sjabloon op het tabblad Sjablonen om deze stap te vullen.",
     "auto_scale_hint": "Automatisch gegenereerde 5-puntsschaal: Helemaal oneens -> Helemaal eens",
     "auto_slider_hint": "Automatisch gegenereerde numerieke schuif van 1-10",
     "free_text_hint": "Deelnemers typen een vrije tekstreactie - geen opties nodig"

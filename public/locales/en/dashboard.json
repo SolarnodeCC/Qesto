@@ -78,5 +78,21 @@
   "yourTeams": "Your teams",
   "noTeamsYet": "No teams yet. Create a team to collaborate with others.",
   "createFromTemplate": "Create from \"{{name}}\"",
-  "create": "Create"
+  "create": "Create",
+  "templateCatalogueIntro": "Preview a template, then customize it in the wizard before launch.",
+  "customerTemplates": "Your templates",
+  "customerTemplatesSubtitle": "Reusable templates saved from your own sessions.",
+  "customerTemplatesEmpty": "Save a completed session as a template and it will appear here.",
+  "customerTemplate": "Customer template",
+  "qestoTemplate": "Qesto template",
+  "templatePreviewQuestions": "Question preview",
+  "useTemplate": "Use template",
+  "templateQuestionCount_one": "{{count}} question",
+  "templateQuestionCount_other": "{{count}} questions",
+  "templateTopic.team": "Team rituals",
+  "templateTopic.product": "Product discovery",
+  "templateTopic.learning": "Workshops & learning",
+  "templateTopicSubtitle.team": "Retrospectives, health checks, and decision alignment.",
+  "templateTopicSubtitle.product": "Feedback, prioritization, and launch readiness.",
+  "templateTopicSubtitle.learning": "Training pulse checks, closeouts, and event Q&A."
 }

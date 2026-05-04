@@ -86,6 +86,9 @@
     "template_questions": "{{count}} questions",
     "all_dismissed": "Toutes les questions supprimées. Revenez pour régénérer.",
     "template_coming_soon": "La sélection de modèles arrive bientôt.",
+    "template_seeded": "\"{{name}}\" est chargé",
+    "template_seeded_hint": "Modifie, supprime ou ajoute des questions avant de continuer.",
+    "template_pick_from_dashboard": "Choisis un modèle dans l'onglet Modèles pour préparer cette étape.",
     "auto_scale_hint": "Echelle a 5 points generee automatiquement: Pas du tout d'accord -> Tout a fait d'accord",
     "auto_slider_hint": "Curseur numerique 1-10 genere automatiquement",
     "free_text_hint": "Les participants saisissent une reponse en texte libre - aucune option necessaire"

@@ -86,6 +86,9 @@
     "template_questions": "{{count}} questions",
     "all_dismissed": "All questions dismissed. Go back to regenerate.",
     "template_coming_soon": "Template selection coming soon.",
+    "template_seeded": "\"{{name}}\" is loaded",
+    "template_seeded_hint": "Edit, remove, or add questions before you continue.",
+    "template_pick_from_dashboard": "Choose a template from the Templates tab to seed this step.",
     "auto_scale_hint": "Auto-generated 5-point scale: Strongly disagree -> Strongly agree",
     "auto_slider_hint": "Auto-generated 1-10 numeric slider",
     "free_text_hint": "Participants type a free-text response - no options needed"

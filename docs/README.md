@@ -85,6 +85,9 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | `PLAN_ENTITLEMENT_AUDIT.md` | Entitlement audit plan |
 | `SPRINT20_READINESS_SPEC.md` | Sprint 20 entitlement, observability, and KPI baseline implementation spec |
 | `SPRINT19_COMPLETION_SPEC.md` | Sprint 19 AI wizard → Launchpad completion and measurement contract |
+| `SPRINT21_IMPLEMENTATION_SPEC.md` | Sprint 21 custom RBAC and compliance UX implementation contract |
+| `SPRINT22_IMPLEMENTATION_SPEC.md` | Sprint 22 template catalogue and wizard seeding implementation contract |
+| `SPRINT23_IMPLEMENTATION_SPEC.md` | Sprint 23 Launchpad and design polish implementation contract |
 | `ADR-workers-ai-capabilities.md` | Architecture decision record |
 | `adr/ADR-0004-custom-rbac-authorization.md` | AUTHZ-ADR-01 — custom RBAC authorization gate for Sprint 21 |
 | `CLOUDFLARE_WORKERS_OPTIMIZATION.md` | Workers performance notes |
