@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom'
 import { CheckCircle2, Sparkles } from 'lucide-react'
 import type { PollOption, SessionLookupByCode } from '@/types/session'
 import { api } from '../api/client'
-import { useLiveSession } from '../hooks/useLiveSession'
+import { useLiveSession, type LiveEnergizerState } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
 import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
 import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
@@ -207,8 +207,72 @@ function SliderInput({
   )
 }
 
+function LiveQuickFingerPanel({
+  energizer,
+  voterId,
+  onAnswer,
+}: {
+  energizer: LiveEnergizerState
+  voterId: string | null
+  onAnswer: (energizerId: string, value: string) => void
+}) {
+  const t = useT('join')
+  const myAnswer = energizer.answers?.find((answer) => answer.voterId === voterId)
+  const options = energizer.options ?? []
+  const ranking = energizer.answers?.filter((answer) => answer.correct && answer.rank > 0).slice(0, 3) ?? []
+
+  return (
+    <section className="rounded-xl border border-teal-200 bg-teal-50 p-4 space-y-4" aria-labelledby="live-quick-finger-heading">
+      <div className="flex items-center gap-2">
+        <Sparkles size={18} className="text-teal-600" aria-hidden="true" />
+        <h2 id="live-quick-finger-heading" className="font-semibold text-pulse-900">
+          {energizer.title || t('quickFinger.title')}
+        </h2>
+      </div>
+      {energizer.prompt && <p className="text-sm text-pulse-700">{energizer.prompt}</p>}
+
+      {myAnswer ? (
+        <div className="rounded-lg bg-white border border-teal-200 px-3 py-2 text-sm" role="status" aria-live="polite">
+          <p className="font-medium text-teal-800">
+            {myAnswer.correct ? t('quickFinger.correct') : t('quickFinger.incorrect')}
+          </p>
+          <p className="text-pulse-500">
+            {t('quickFinger.speed', { ms: myAnswer.speedMs })}
+            {myAnswer.rank > 0 ? ` · #${myAnswer.rank}` : ''}
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-2">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onAnswer(energizer.id, option)}
+              className="w-full rounded-lg border border-teal-200 bg-white px-4 py-3 text-left text-sm font-medium text-pulse-900 hover:border-teal-500 hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            >
+              {option}
+            </button>
+          ))}
+          {options.length === 0 && <p className="text-sm text-pulse-500">{t('quickFinger.waiting')}</p>}
+        </div>
+      )}
+
+      {ranking.length > 0 && (
+        <ol className="space-y-1 text-xs text-pulse-600" aria-label={t('quickFinger.ranking')}>
+          {ranking.map((answer) => (
+            <li key={answer.voterId} className="flex justify-between rounded bg-white/80 px-2 py-1">
+              <span>#{answer.rank}</span>
+              <span>{t('quickFinger.speed', { ms: answer.speedMs })}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  )
+}
+
 function Voter({ sessionId, title }: { sessionId: string; title: string }) {
-  const { state, sendVote } = useLiveSession(sessionId, { enabled: true })
+  const { state, sendVote, sendEnergizerAnswer } = useLiveSession(sessionId, { enabled: true })
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
   const t = useT('join')
   const [myVotes, setMyVotes] = useState<string[]>([])
@@ -392,7 +456,15 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         )}
 
         {/* Active energizer — shown above the question */}
-        {!isEnded && activeEnergizer !== null && countdown === null && (() => {
+        {!isEnded && state.energizer?.kind === 'quick_finger' && countdown === null && (
+          <LiveQuickFingerPanel
+            energizer={state.energizer}
+            voterId={state.voterId}
+            onAnswer={sendEnergizerAnswer}
+          />
+        )}
+
+        {!isEnded && !state.energizer && activeEnergizer !== null && countdown === null && (() => {
           const vid = state.voterId ?? 'anonymous'
           if (activeEnergizer.kind === 'emoji_poll')
             return <EmojiPollEnergizerView sessionId={sessionId} energizer={activeEnergizer as EmojiPollEnergizer} role="participant" voterId={vid} />

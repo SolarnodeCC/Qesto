@@ -3,7 +3,7 @@
   "$meta": {
     "name": "qesto-design-tokens",
     "version": "1.0.0",
-    "description": "Machine-readable design tokens for the Qesto website and dashboard. Companion to docs/specs/WEBSITE_DESIGN_SPEC.md. src/ui/tokens.ts should be generated from this file.",
+    "description": "Machine-readable design tokens for the Qesto website and dashboard. Companion to docs/spec/WEBSITE_DESIGN_SPEC.md. src/ui/tokens.ts should be generated from this file.",
     "lastUpdated": "2026-04-19",
     "owner": "frontend + design"
   },

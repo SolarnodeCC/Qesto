@@ -4,7 +4,7 @@
 
 ## Overview
 
-This directory contains **7 consolidated specification documents** that comprehensively document Qesto's architecture, codebase, and operations.
+This directory holds **all canonical specification artefacts** for Qesto: seven domain **`SPEC_*.md`** files (architecture through deployment), **product and design contracts**, **machine-readable tokens**, **sprint implementation specs**, and shared **includes**.
 
 All specs are optimized for:
 - ✅ **AI Reconstruction**: Complete enough for GPT to rebuild any feature
@@ -29,7 +29,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 | Public / anonymous abuse surface? | [Abuse table](includes/PREBUILD_AND_DELIVERY.md#abuse-and-public-endpoints) + [SPEC_BACKEND.md](SPEC_BACKEND.md) |
 | Data retention / TTL intent? | [Retention](includes/PREBUILD_AND_DELIVERY.md#retention-and-deletion-intent) + [SPEC_DATAMODEL.md](SPEC_DATAMODEL.md) |
 | One local dev path? | [Golden path](includes/PREBUILD_AND_DELIVERY.md#golden-path-local) |
-| **Build UI / apply design system?** | [WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) (colour, typography, spacing, component specs, motion, KPIs) · [design-tokens.json](../specs/design-tokens.json) (machine-readable tokens) |
+| **Build UI / apply design system?** | [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) (colour, typography, spacing, component specs, motion, KPIs) · [design-tokens.json](./design-tokens.json) (machine-readable tokens) |
 
 ---
 
@@ -79,11 +79,11 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 
 ### 🎨 **Design Specs** — Visual Design System & Tokens
 
-**Location**: [`docs/specs/`](../specs/)
+**Location**: [`docs/spec/`](./)
 
 **Files**:
-- [`WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) — colour language, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, accessibility as layout, KPIs.
-- [`design-tokens.json`](../specs/design-tokens.json) — machine-readable design tokens; source of truth for `src/ui/tokens.ts` and Tailwind config (see backlog item `DESIGN-TOK-01`).
+- [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md) — colour language, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, accessibility as layout, KPIs.
+- [`design-tokens.json`](./design-tokens.json) — machine-readable design tokens; source of truth for `src/ui/tokens.ts` and Tailwind config (see backlog item `DESIGN-TOK-01`).
 
 **Key Sections in WEBSITE_DESIGN_SPEC.md**:
 - §4 Design language — colour tokens, gradients, AI surface rules, typography, spacing, radius/elevation/motion, iconography (AI sparkle mark)
@@ -234,7 +234,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 |------|-----------|-----------|-------|
 | **Understand system** | SPEC_CORE | SPEC_DATAMODEL | Mental model of architecture |
 | **Build UI component** | SPEC_FRONTEND | SPEC_REALTIME (if live) | Hooks, routing, state mgmt |
-| **Apply design system / UI** | [WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) | [design-tokens.json](../specs/design-tokens.json) · SPEC_FRONTEND | Colour, typography, spacing, component specs |
+| **Apply design system / UI** | [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) | [design-tokens.json](./design-tokens.json) · SPEC_FRONTEND | Colour, typography, spacing, component specs |
 | **Add API endpoint** | SPEC_BACKEND | SPEC_CORE | Middleware, validation patterns |
 | **Implement real-time feature** | SPEC_REALTIME | SPEC_FRONTEND | WebSocket protocol, DO internals |
 | **Integrate new service** | SPEC_INTEGRATIONS | SPEC_DEPLOYMENT | Auth flows, secrets management |
@@ -283,18 +283,16 @@ docs/spec/
 ├── INDEX.md (this file)
 ├── includes/
 │   └── PREBUILD_AND_DELIVERY.md   ← scope, gates, spike, golden path (canonical)
-├── SPEC_CORE.md
-├── SPEC_DATAMODEL.md
-├── SPEC_FRONTEND.md
-├── SPEC_BACKEND.md
-├── SPEC_REALTIME.md
-├── SPEC_INTEGRATIONS.md
-└── SPEC_DEPLOYMENT.md
-
-docs/specs/                        ← Design specs (separate from technical specs)
-├── WEBSITE_DESIGN_SPEC.md         ← Visual design, component specs, KPIs (source of truth for UI)
-├── design-tokens.json             ← Machine-readable tokens → generates src/ui/tokens.ts
-└── design-tokens.README.md        ← How tokens fit the doc set + engineering rules (start here for tokens)
+├── SPEC_CORE.md … SPEC_DEPLOYMENT.md   ← seven domain technical specs
+├── SPEC_PRODUCT.md                ← short shipped-product specification (stub at docs/SPEC.md)
+├── SPEC_DESIGN_SYSTEM_OVERVIEW.md ← portable-kit brand foundations (design-system / design_files)
+├── WEBSITE_DESIGN_SPEC.md         ← visual UX source of truth for UI
+├── design-tokens.json             ← machine-readable tokens → generates src/ui/tokens.ts
+├── design-tokens.README.md        ← token editing rules (start here for tokens)
+├── DESIGN_SPEC_TRIAL_ACTIVATION.md
+├── I18N_ARCHITECTURE_CONTRACT.md
+└── sprints/
+    └── SPRINT*_SPEC.md            ← sprint closure / implementation contracts
 ```
 
 ---
@@ -327,7 +325,7 @@ When navigation or **planning truth hierarchy** changes, update **[`../README.md
 7. **Architecture decision**: Update SPEC_CORE.md & reference relevant spec
 8. **Role ownership shifts** (e.g. WS-only mutation policy): tweak the **Readers** table in the affected `SPEC_*.md` (Architect row stays Primary unless governance changes)
 9. **Pre-build / sequencing policy changes** (v1 slice, spike criteria, prod gates): update [includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md) and keep **INDEX → Before you start building** links valid
-10. **Design token or visual change**: Update [docs/specs/WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) and [docs/specs/design-tokens.json](../specs/design-tokens.json) — never hand-edit `src/ui/tokens.ts` directly (see `DESIGN-TOK-01`)
+10. **Design token or visual change**: Update [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) and [design-tokens.json](./design-tokens.json) — never hand-edit `src/ui/tokens.ts` directly (see `DESIGN-TOK-01`)
 
 ### Update Frequency
 - **Endpoints**: Within 1 day of merge
@@ -391,11 +389,11 @@ Each spec includes links to critical source files:
 - **Deploy process?** → SPEC_DEPLOYMENT.md
 - **Integrate a service?** → SPEC_INTEGRATIONS.md
 - **Build UI?** → SPEC_FRONTEND.md
-- **Design system / colours / tokens?** → [WEBSITE_DESIGN_SPEC.md](../specs/WEBSITE_DESIGN_SPEC.md) + [design-tokens.json](../specs/design-tokens.json)
+- **Design system / colours / tokens?** → [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) + [design-tokens.json](./design-tokens.json)
 
 ---
 
-**Last Updated**: 2026-04-18
+**Last Updated**: 2026-05-04
 **Total Tokens**: ~23.8K (all specs combined)
 **Coverage**: 100% of Qesto features
 **Completeness**: AI-reconstruction ready

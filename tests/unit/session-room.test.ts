@@ -7,7 +7,7 @@
 // `webSocketMessage` / `alarm()`. End-to-end 101 is covered by the staging
 // deploy smoke test.
 
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { SessionRoom } from '../../functions/api/SessionRoom'
 import type { Env, QuestionKind, VotePolicy } from '../../functions/api/types'
 import {
@@ -528,5 +528,114 @@ describe('Sprint 25 — LIVE energizer protocol foundation', () => {
 
     const err = voter.messages<{ type: string; data: { code?: string } }>().find((m) => m.type === 'error')
     expect(err?.data.code).toBe('forbidden')
+  })
+})
+
+describe('Sprint 26/27 — LIVE Quick Finger answers', () => {
+  it('accepts participant answers, ranks correct responses, and broadcasts score state', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const fast = connectVoter(state, 'anon_fast', 'ip_fast')
+    const slow = connectVoter(state, 'anon_slow', 'ip_slow')
+
+    vi.useFakeTimers()
+    vi.setSystemTime(1_000)
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: {
+          id: 'eg_qf',
+          kind: 'quick_finger',
+          title: 'Quick finger',
+          status: 'active',
+          prompt: 'Pick the right answer',
+          options: ['A', 'B'],
+          correctIndex: 1,
+        },
+      },
+      timestamp: 0,
+    })
+    vi.setSystemTime(1_250)
+    await sendMessage(room, fast, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_qf', value: 'B' },
+      timestamp: 0,
+    })
+    vi.setSystemTime(1_600)
+    await sendMessage(room, slow, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_qf', value: 'B' },
+      timestamp: 0,
+    })
+
+    const stateMsg = slow
+      .messages<{ type: string; data: { energizer?: { answers?: { voterId: string; rank: number; speedMs: number }[] } } }>()
+      .filter((entry) => entry.type === 'energizer_state')
+      .at(-1)
+
+    expect(stateMsg?.data.energizer?.answers).toMatchObject([
+      { voterId: 'anon_fast', rank: 1, speedMs: 250 },
+      { voterId: 'anon_slow', rank: 2, speedMs: 600 },
+    ])
+    expect(await state.storage.get('active_energizer')).toMatchObject({
+      id: 'eg_qf',
+      answers: [
+        { voterId: 'anon_fast', rank: 1 },
+        { voterId: 'anon_slow', rank: 2 },
+      ],
+    })
+    vi.useRealTimers()
+  })
+
+  it('rejects duplicate Quick Finger answers and replays the stored score on reconnect', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const voter = connectVoter(state, 'anon_dupe_qf', 'ip_qf')
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: {
+          id: 'eg_qf_dupe',
+          kind: 'quick_finger',
+          title: 'Quick finger',
+          status: 'active',
+          options: ['A', 'B'],
+          correctIndex: 0,
+        },
+      },
+      timestamp: 0,
+    })
+    await sendMessage(room, voter, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_qf_dupe', value: 'A' },
+      timestamp: 0,
+    })
+    await sendMessage(room, voter, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_qf_dupe', value: 'B' },
+      timestamp: 0,
+    })
+
+    const err = voter.messages<{ type: string; data: { code?: string } }>().find(
+      (entry) => entry.type === 'error' && entry.data.code === 'duplicate_energizer_answer',
+    )
+    expect(err).toBeTruthy()
+
+    const reconnect = connectVoter(state, 'anon_dupe_qf', 'ip_qf_2')
+    await sendMessage(room, reconnect, { v: 1, type: 'request_state', data: {}, timestamp: 0 })
+
+    const initMsg = reconnect.messages<{ type: string; data: { energizer?: { answers?: unknown[] } | null } }>().find(
+      (entry) => entry.type === 'init',
+    )
+    expect(initMsg?.data.energizer?.answers).toHaveLength(1)
   })
 })

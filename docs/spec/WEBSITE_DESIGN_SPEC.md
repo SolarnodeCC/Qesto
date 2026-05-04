@@ -729,4 +729,4 @@ Cross-linked to backlog items in §12 of `docs/BACKLOG.md`.
 - `docs/ACCESSIBILITY_GUIDE.md` — a11y requirements.
 - `docs/I18N_GLOSSARY.md` — translation conventions.
 - `docs/BACKLOG.md` §12 — Website Design Wave items.
-- `docs/specs/design-tokens.json` — machine-readable tokens.
+- `docs/spec/design-tokens.json` — machine-readable tokens.

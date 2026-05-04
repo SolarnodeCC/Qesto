@@ -224,7 +224,7 @@ design_handoff_qesto/
 
 ## Notes for Claude Code
 
-- The existing Qesto repo (referenced in `DESIGN_SYSTEM.md`) already has many of the backend pieces and some shadcn components. **Prefer extending what's there** over rewriting. Check `docs/specs/design-tokens.json` and `src/styles.css` first — if they exist and match this handoff, you're aligned.
+- The existing Qesto repo (referenced in `DESIGN_SYSTEM.md`) already has many of the backend pieces and some shadcn components. **Prefer extending what's there** over rewriting. Check `docs/spec/design-tokens.json` and `src/styles.css` first — if they exist and match this handoff, you're aligned.
 - Lucide icons are used throughout. The prototypes load them via CDN; in the app, use `lucide-react` (already a dep per `package.json` last seen).
 - Syne is the display font. It's an opinionated choice; don't swap it for Inter "to match the body" — the contrast is intentional.
 - The `--gradient-brand` is the signature. Use it sparingly (CTAs, hero text, AI theme borders, key tally fills) — overuse flattens its meaning.

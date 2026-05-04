@@ -69,7 +69,7 @@ if (freshTailwind !== committedTailwind) {
 }
 
 if (stale.length > 0) {
-  fail(`${stale.join(', ')} out of date with docs/specs/design-tokens.json`)
+  fail(`${stale.join(', ')} out of date with docs/spec/design-tokens.json`)
 }
 
 console.log('✅ Design-token artefacts are up to date — no drift detected.')

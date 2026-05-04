@@ -8,7 +8,7 @@ _Last verified: 2026-05-01 (UTC)_
 - **Vitest unit/integration** in `tests/unit` and `tests/integration`.
 - **A11y/stress coverage** in `tests/a11y` and `tests/stress`.
 - **WebSocket/DO tests** for session state machine.
-- **Playwright E2E/a11y** scenarios.
+- **Playwright E2E/a11y** scenarios (`tests/e2e/`, config [`tests/playwright.config.ts`](../tests/playwright.config.ts), local how-to [`tests/docs/playwright-local.md`](../tests/docs/playwright-local.md)).
 - **Perf scripts** under `scripts/perf`.
 
 ## 2. Quality gates

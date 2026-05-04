@@ -62,4 +62,4 @@ Do **not** use it for generic web UI unrelated to the Qesto product.
 - No self-hosted font bundles — Google Fonts import only. Swap to woff2 for CSP-sensitive deployments.
 - No product screenshots or photography in the system. Use the skeleton/lucide placeholder patterns from the UI kits when the user hasn't provided imagery.
 - `lucide-react` in the codebase is substituted with the lucide CDN in standalone HTML. Glyphs and strokes match.
-- No Figma file was attached — all visual decisions sourced from the repo's `docs/specs/*` and `src/`. Refs are listed in `README.md`.
+- No Figma file was attached — all visual decisions sourced from the repo's `docs/spec/*` and `src/`. Refs are listed in `README.md`.

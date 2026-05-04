@@ -179,7 +179,7 @@ npm test -- tests/integration/wave1-auth-session-lifecycle.test.ts
 
 ### Skill 4: frontend-design
 **Deliverable**: Design spec for trial activation flow  
-**Location**: `docs/DESIGN_SPEC_TRIAL_ACTIVATION.md`  
+**Location**: `docs/spec/DESIGN_SPEC_TRIAL_ACTIVATION.md`  
 **Status**: ✅ Specification complete, ready for implementation
 
 **What it covers**:
@@ -314,7 +314,7 @@ If skill goes Yellow/Red:
 1. `.claude/skills/release-notes.md` — Skill for release note generation
 2. `docs/MCP_TOOL_MATRIX.md` — MCP server specification (8 tools)
 3. `docs/DECISION_DOC_TEMPLATE.md` — Decision document template
-4. `docs/DESIGN_SPEC_TRIAL_ACTIVATION.md` — Frontend redesign spec
+4. `docs/spec/DESIGN_SPEC_TRIAL_ACTIVATION.md` — Frontend redesign spec
 5. `docs/TEMPLATES_INTERNAL_COMMS.md` — 3 communication templates
 6. `docs/SKILLS_SCORECARD_TRACKER.md` — Monthly metrics dashboard
 7. `docs/SKILLS_WAVE1_EVIDENCE_LOG.md` — Wave 1 tracking log
@@ -342,7 +342,7 @@ If skill goes Yellow/Red:
 
 ### For Code Integration
 1. **Test skills**: Run `npm test -- tests/integration/wave1-auth-session-lifecycle.test.ts`
-2. **Design skill**: Implement trial activation redesign per `DESIGN_SPEC_TRIAL_ACTIVATION.md`
+2. **Design skill**: Implement trial activation redesign per `docs/spec/DESIGN_SPEC_TRIAL_ACTIVATION.md`
 3. **MCP skill**: Scaffold server per `MCP_TOOL_MATRIX.md`
 
 ### For Governance

@@ -52,7 +52,7 @@ export default function Present() {
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
   const presenterToken = getAuthToken()
-  const { state, sendAdvance, sendBack, sendPause, sendResume } = useLiveSession(
+  const { state, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate } = useLiveSession(
     id,
     presenterToken ? { enabled: !!id, presenterToken } : { enabled: !!id },
   )
@@ -148,6 +148,19 @@ export default function Present() {
   function handleStartTimer() {
     const secs = Math.max(10, Math.min(600, parseInt(timerInput, 10) * 60))
     timer.start(secs)
+  }
+
+  function handleStartQuickFinger() {
+    const sourceOptions = state.question?.options.map((option) => option.label).filter(Boolean) ?? []
+    const options = sourceOptions.length > 0 ? sourceOptions.slice(0, 4) : [t('quickFinger.optionYes'), t('quickFinger.optionNo')]
+    sendEnergizerActivate({
+      id: `quick_finger_${state.question?.id ?? Date.now()}`,
+      kind: 'quick_finger',
+      title: t('quickFinger.title'),
+      status: 'active',
+      prompt: state.question?.prompt ?? t('quickFinger.promptFallback'),
+      options,
+    })
   }
 
   if (auth.status === 'loading') {
@@ -405,6 +418,16 @@ export default function Present() {
         >
           {localPaused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
           {localPaused ? 'Resume' : 'Pause'}
+        </button>
+
+        <button
+          type="button"
+          onClick={handleStartQuickFinger}
+          disabled={!isLive || state.allDone || state.energizer?.status === 'active'}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-violet-600 text-white hover:bg-violet-700"
+        >
+          <Sparkles size={14} aria-hidden="true" />
+          {state.energizer?.status === 'active' ? t('quickFinger.active') : t('quickFinger.start')}
         </button>
 
         <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />

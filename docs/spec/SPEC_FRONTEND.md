@@ -20,9 +20,9 @@ Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names un
 
 ## Design System Reference
 
-> **All visual decisions — colour tokens, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, AI sparkle mark iconography, and acceptance KPIs — are governed by [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md).** Machine-readable tokens live in [`docs/specs/design-tokens.json`](../specs/design-tokens.json). These files are the source of truth and take precedence over any inline values in this spec.
+> **All visual decisions — colour tokens, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, AI sparkle mark iconography, and acceptance KPIs — are governed by [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md).** Machine-readable tokens live in [`design-tokens.json`](./design-tokens.json). These files are the source of truth and take precedence over any inline values in this spec.
 >
-> The `docs/specs/` directory is separate from this `docs/spec/` directory. Key entry points:
+> Key entry points (same `docs/spec/` directory):
 > - §4 Colour, typography, spacing, radius/elevation/motion, AI surface rules
 > - §5 Layout system + component specs (§5.1 Hero · §5.2 Insights tab · §5.3 Sessions list · §5.4 "+New session" button · §5.5 AIBadge · §5.6 Session Creation Wizard · §5.7 Session Launchpad)
 > - §7 Instrumented events and 30-day KPI targets
@@ -89,7 +89,7 @@ All routes in `src/App.tsx` via React Router v6. Protected routes use `<Protecte
 
 ## Component Hierarchy
 
-> **Component specs:** Detailed visual and interaction specifications for the Hero (§5.1), Insights tab (§5.2), Sessions list (§5.3), "+New session" button (§5.4), AIBadge primitive (§5.5), Session Creation Wizard (§5.6), and Session Launchpad (§5.7) are in [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) §5.1–5.7. The layout system, responsive grid, density tiers, and page templates (T1–T6) are in §5.0.
+> **Component specs:** Detailed visual and interaction specifications for the Hero (§5.1), Insights tab (§5.2), Sessions list (§5.3), "+New session" button (§5.4), AIBadge primitive (§5.5), Session Creation Wizard (§5.6), and Session Launchpad (§5.7) are in [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md) §5.1–5.7. The layout system, responsive grid, density tiers, and page templates (T1–T6) are in §5.0.
 
 ### Core Layout
 ```
@@ -195,7 +195,7 @@ components/
 
 ### Design System (src/ui/)
 
-> **Source of truth for tokens:** `src/ui/tokens.ts` is **generated** from [`docs/specs/design-tokens.json`](../specs/design-tokens.json) — do not hand-edit it (see backlog item `DESIGN-TOK-01`). For colour tokens, typography scale, spacing grid, radius/elevation/motion rules, and the AI sparkle mark iconography standard, see [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) §4.
+> **Source of truth for tokens:** `src/ui/tokens.ts` is **generated** from [`design-tokens.json`](./design-tokens.json) — do not hand-edit it (see backlog item `DESIGN-TOK-01`). For colour tokens, typography scale, spacing grid, radius/elevation/motion rules, and the AI sparkle mark iconography standard, see [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md) §4.
 
 ```
 ui/
@@ -503,7 +503,7 @@ See [[SPEC_REALTIME.md#websocket-messages]] for complete message reference.
 
 ## i18n & Localization
 
-> **Design KPI:** "0 raw i18n keys visible" across all 5 locales is a release gate for the Website Design Wave — see [`docs/specs/WEBSITE_DESIGN_SPEC.md`](../specs/WEBSITE_DESIGN_SPEC.md) §7 KPI targets and backlog items `I18N-BUG-01` / `I18N-BUG-02`.
+> **Design KPI:** "0 raw i18n keys visible" across all 5 locales is a release gate for the Website Design Wave — see [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md) §7 KPI targets and backlog items `I18N-BUG-01` / `I18N-BUG-02`.
 
 **Configuration**: `src/lib/i18n.ts`
 

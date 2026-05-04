@@ -47,5 +47,11 @@
   "inviteLinkExpired": "Este enlace de invitación ha expirado o no es válido.",
   "alreadyMemberOfTeam": "Ya es miembro de este equipo.",
   "confirmingInvite": "Confirmando su invitación…",
-  "allDone.heading": "¡Gracias por vuestra aportación!"
+  "allDone.heading": "¡Gracias por vuestra aportación!",
+  "quickFinger.title": "Quick Finger",
+  "quickFinger.waiting": "Esperando opciones de respuesta…",
+  "quickFinger.correct": "Correcto — buenos reflejos.",
+  "quickFinger.incorrect": "Respuesta recibida.",
+  "quickFinger.speed": "{ms} ms",
+  "quickFinger.ranking": "Clasificación de Quick Finger"
 }

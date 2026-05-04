@@ -29,5 +29,11 @@
   "responses_one": "{count} respuesta",
   "responses_other": "{count} respuestas",
   "anonymity": "Anonimato completo",
-  "allDone.heading": "¡Gracias por vuestra aportación!"
+  "allDone.heading": "¡Gracias por vuestra aportación!",
+  "quickFinger.title": "Quick Finger",
+  "quickFinger.start": "Iniciar Quick Finger",
+  "quickFinger.active": "Quick Finger en vivo",
+  "quickFinger.optionYes": "Sí",
+  "quickFinger.optionNo": "No",
+  "quickFinger.promptFallback": "Responde rápido"
 }

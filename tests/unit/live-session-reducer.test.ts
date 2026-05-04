@@ -171,9 +171,17 @@ describe('useLiveSession reducer', () => {
     it('stores active LIVE energizer state', () => {
       const next = reducer(INITIAL, {
         kind: 'energizer_state',
-        energizer: { id: 'eg_1', kind: 'quick_finger', title: 'Quick finger', status: 'active' },
+        energizer: {
+          id: 'eg_1',
+          kind: 'quick_finger',
+          title: 'Quick finger',
+          status: 'active',
+          options: ['A', 'B'],
+          answers: [{ voterId: 'anon_1', value: 'A', correct: true, speedMs: 320, rank: 1 }],
+        },
       })
       expect(next.energizer?.id).toBe('eg_1')
+      expect(next.energizer?.answers?.[0].rank).toBe(1)
     })
   })
 })

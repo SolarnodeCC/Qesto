@@ -10,7 +10,7 @@ This file is the **entry point** for everything under `docs/`: how documents con
 
 1. **Running code** (`functions/`, `src/`, `worker/`, migrations, `wrangler.*`) — authority for actual behaviour.
 2. **Domain specifications** (`docs/spec/SPEC_*.md`) — implementation and API contracts. Each SPEC states that **code wins** until an intentional spec PR updates the document.
-3. **Shipped product and roadmap** — **`ROADMAP_FULL.md`** and **`SPEC.md`** describe what is live and what is targeted next at release level.
+3. **Shipped product and roadmap** — **`ROADMAP_FULL.md`** and **`spec/SPEC_PRODUCT.md`** (stub at **`SPEC.md`**) describe what is live and what is targeted next at release level.
 4. **Incremental product work** — **`BACKLOG.md`** (including §12 Website Design Wave) plus **`ARCHIVED_SPRINTS.md`** for historical sprint summaries.
 5. **Reference sprint arc** — **`SPRINT_PLAN.md`** describes a **v0.1.0 → v0.5.0 teaching / dependency sequence** aligned to backlog epics. It is **not** a literal greenfield schedule; the repository is already on **v2.x**. Story-level fields such as **Sprint: 1–5** in **`BACKLOG.md`** refer to this reference arc for ordering, not to calendar week truth.
 6. **Architecture snapshot** — **`ARCHITECTURE.md`** — short current technical overview; depth lives in **`spec/SPEC_CORE.md`** and linked specs.
@@ -29,7 +29,7 @@ This file is the **entry point** for everything under `docs/`: how documents con
 ### Product, planning, and stakeholders
 
 1. **`ROADMAP_FULL.md`**
-2. **`SPEC.md`**
+2. **`SPEC.md`** → **`spec/SPEC_PRODUCT.md`**
 3. **`BACKLOG.md`**
 4. **`SPRINT_PLAN.md`** (reference sequencing only; see hierarchy above)
 
@@ -41,13 +41,13 @@ This file is the **entry point** for everything under `docs/`: how documents con
 
 ### Visual design and dashboard / marketing UI
 
-- **`specs/WEBSITE_DESIGN_SPEC.md`**, **`specs/design-tokens.json`**
+- **`spec/WEBSITE_DESIGN_SPEC.md`**, **`spec/design-tokens.json`**, **`spec/SPEC_DESIGN_SYSTEM_OVERVIEW.md`**
 - **`spec/SPEC_FRONTEND.md`**, **`BACKLOG.md`** §12
 
 ### Internationalisation
 
 - **`I18N_GLOSSARY.md`**, **`spec/SPEC_FRONTEND.md`** (i18n sections)
-- **`I18N_ARCHITECTURE_CONTRACT.md`** for the runtime/source-of-truth contract and app-vs-marketing scope boundary
+- **`spec/I18N_ARCHITECTURE_CONTRACT.md`** for the runtime/source-of-truth contract and app-vs-marketing scope boundary
 - CI: `npm run check:i18n`
 - Inventory report: `npm run report:i18n:gaps` (writes `docs/reports/i18n-gap-inventory.md` + `.json`)
 
@@ -67,7 +67,7 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | Document | Role |
 |----------|------|
 | `README.md` | This map — start here |
-| `SPEC.md` | Short product specification |
+| `SPEC.md` | Stub linking to **`spec/SPEC_PRODUCT.md`** (short product specification) |
 | `ARCHITECTURE.md` | Short architecture snapshot |
 | `ROADMAP_FULL.md` | Release and epic status |
 | `BACKLOG.md` | Epics, stories, Website Design Wave |
@@ -82,21 +82,16 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | `DATABASE_GOVERNANCE.md` | Database practices |
 | `OBSERVABILITY.md` | Logging and metrics posture |
 | `TESTING_PYRAMID.md` | Test layering |
+| [`../tests/README.md`](../tests/README.md) | Testing folder map (Vitest, Playwright config, local E2E doc) |
 | `PLAN_ENTITLEMENT_AUDIT.md` | Entitlement audit plan |
-| `SPRINT20_READINESS_SPEC.md` | Sprint 20 entitlement, observability, and KPI baseline implementation spec |
-| `SPRINT19_COMPLETION_SPEC.md` | Sprint 19 AI wizard → Launchpad completion and measurement contract |
-| `SPRINT21_IMPLEMENTATION_SPEC.md` | Sprint 21 custom RBAC and compliance UX implementation contract |
-| `SPRINT22_IMPLEMENTATION_SPEC.md` | Sprint 22 template catalogue and wizard seeding implementation contract |
-| `SPRINT23_IMPLEMENTATION_SPEC.md` | Sprint 23 Launchpad and design polish implementation contract |
-| `SPRINT24_IMPLEMENTATION_SPEC.md` | Sprint 24 realtime protocol governance and admin hardening implementation contract |
-| `SPRINT25_IMPLEMENTATION_SPEC.md` | Sprint 25 LIVE energizer protocol foundation implementation contract |
+| `spec/sprints/*_SPEC.md` | Sprint closure / implementation specification contracts |
 | `SPRINT26_32_PLAN.md` | Sprint 26-32 v2.2 live engagement, analytics, enterprise hardening, and release-candidate plan |
 | `ADR-workers-ai-capabilities.md` | Architecture decision record |
 | `adr/ADR-0004-custom-rbac-authorization.md` | AUTHZ-ADR-01 — custom RBAC authorization gate for Sprint 21 |
 | `adr/ADR-0005-do-protocol-versioning.md` | DO-PROTOCOL-ADR-01 — versioned LIVE Durable Object WebSocket protocol gate for Sprint 24 |
 | `CLOUDFLARE_WORKERS_OPTIMIZATION.md` | Workers performance notes |
 
-### `docs/spec/` (technical specifications)
+### `docs/spec/` (all canonical specifications)
 
 | Document | Role |
 |----------|------|
@@ -109,17 +104,17 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | `SPEC_REALTIME.md` | WebSocket and Durable Objects |
 | `SPEC_INTEGRATIONS.md` | Stripe, AI, email, external systems |
 | `SPEC_DEPLOYMENT.md` | Build, secrets, CI/CD, environments |
-
-### `docs/specs/` (visual design system)
-
-| Document | Role |
-|----------|------|
+| `SPEC_PRODUCT.md` | Short shipped-product specification |
+| `SPEC_DESIGN_SYSTEM_OVERVIEW.md` | Portable-kit brand foundations (`design-system/`, `design_files/`) |
 | `WEBSITE_DESIGN_SPEC.md` | Visual and UX source of truth |
 | `design-tokens.json` | Machine-readable tokens |
 | `design-tokens.README.md` | How tokens relate to the spec, repo docs, and `src/ui/tokens.ts` |
+| `DESIGN_SPEC_TRIAL_ACTIVATION.md` | Trial activation UX redesign contract |
+| `I18N_ARCHITECTURE_CONTRACT.md` | i18n runtime / locale scope contract |
+| `sprints/` | Sprint implementation and readiness specs |
 
 ---
 
 ## Maintenance rule
 
-When you ship a feature, change a public contract, or retire a document, update **this README** (if navigation changes), **`ROADMAP_FULL.md`**, **`SPEC.md`** where relevant, **`BACKLOG.md`** / **`ARCHIVED_SPRINTS.md`** for planning truth, and the affected **`spec/SPEC_*.md`** in the **same PR** when practical.
+When you ship a feature, change a public contract, or retire a document, update **this README** (if navigation changes), **`ROADMAP_FULL.md`**, **`spec/SPEC_PRODUCT.md`** where relevant, **`BACKLOG.md`** / **`ARCHIVED_SPRINTS.md`** for planning truth, and the affected **`spec/SPEC_*.md`** (or sprint spec under **`spec/sprints/`**) in the **same PR** when practical.

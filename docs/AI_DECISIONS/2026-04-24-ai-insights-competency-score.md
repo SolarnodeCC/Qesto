@@ -99,7 +99,7 @@ Per the Wave 2 KPI Mapping table in `.claude/skills/ai-strategy.md`:
 ### Week 4 — Differentiation Signal
 - [ ] New API surface: `GET /api/sessions/:id/insights/similar` returns top-3 historical sessions with matching themes, Vectorize score, and a "what changed since then" delta. This is the flywheel insight competitors cannot replicate.
 - [ ] Gate the endpoint to `enterprise` plan (raises plan-gate signal; today both files ship to `starter`/`team`).
-- [ ] Publish one-line flywheel metric in `docs/SPEC.md §8`: "% of closed sessions that surface ≥1 historical similarity match above 0.75" — target ≥40% by Q3.
+- [ ] Publish one-line flywheel metric in `docs/spec/SPEC_PRODUCT.md §8`: "% of closed sessions that surface ≥1 historical similarity match above 0.75" — target ≥40% by Q3.
 
 ---
 

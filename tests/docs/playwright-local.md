@@ -1,5 +1,7 @@
 # Playwright Local E2E
 
+_Hub: [`../README.md`](../README.md) (testing folder map)._
+
 This project includes Playwright E2E tests for public route smoke checks, auth, session lifecycle, participant voting, and a small real-page axe accessibility pass.
 
 ## Modes

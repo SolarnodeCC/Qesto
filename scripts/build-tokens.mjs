@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // scripts/build-tokens.mjs
-// Generates src/ui/tokens.ts and src/ui/tailwind-theme.ts from docs/specs/design-tokens.json.
+// Generates src/ui/tokens.ts and src/ui/tailwind-theme.ts from docs/spec/design-tokens.json.
 // Invoked by `npm run tokens:build` (runs automatically in `npm run build`).
 // Never hand-edit src/ui/tokens.ts or src/ui/tailwind-theme.ts — they are derived artefacts (DESIGN-TOK-01).
 
@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(__dirname, '..')
-const DEFAULT_SRC = resolve(ROOT, 'docs/specs/design-tokens.json')
+const DEFAULT_SRC = resolve(ROOT, 'docs/spec/design-tokens.json')
 
 function resolveRef(value, root) {
   if (typeof value !== 'string') return value
@@ -206,7 +206,7 @@ export function buildTokens(options = {}) {
   const raw = JSON.parse(readFileSync(src, 'utf8'))
   const tokens = walk(raw, raw)
 
-  const banner = `// AUTO-GENERATED from docs/specs/design-tokens.json — do not edit by hand.
+  const banner = `// AUTO-GENERATED from docs/spec/design-tokens.json — do not edit by hand.
 // Regenerate: \`npm run tokens:build\`. See DESIGN-TOK-01.
 
 `
@@ -219,7 +219,7 @@ export function buildTokens(options = {}) {
 
   const tailwindTheme = buildTailwindTheme(tokens)
 
-  const tailwindBanner = `// AUTO-GENERATED from docs/specs/design-tokens.json — do not edit by hand.
+  const tailwindBanner = `// AUTO-GENERATED from docs/spec/design-tokens.json — do not edit by hand.
 // This file is used by vite.config.ts to extend the Tailwind theme.
 // Regenerate: \`npm run tokens:build\`. See DESIGN-TOK-01.
 

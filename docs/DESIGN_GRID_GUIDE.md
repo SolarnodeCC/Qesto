@@ -208,7 +208,7 @@ Desktop: 3 features per row
 
 ## Grid + Tailwind Configuration
 
-The grid column utilities (1–12) are auto-generated from `docs/specs/design-tokens.json` by `scripts/build-tokens.mjs`.
+The grid column utilities (1–12) are auto-generated from `docs/spec/design-tokens.json` by `scripts/build-tokens.mjs`.
 
 Generated utilities:
 - `grid-cols-1` through `grid-cols-12`

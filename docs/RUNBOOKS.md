@@ -431,6 +431,6 @@ DELETE FROM sessions WHERE owner_id = ? AND status = 'archived' AND created_at <
 ## Related Documentation
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — System design decisions
-- [SPEC.md](SPEC.md) — API contracts and data model
+- [SPEC.md](SPEC.md) → [spec/SPEC_PRODUCT.md](spec/SPEC_PRODUCT.md) — shipped product summary; API/datamodel depth in [spec/SPEC_BACKEND.md](spec/SPEC_BACKEND.md) / [spec/SPEC_DATAMODEL.md](spec/SPEC_DATAMODEL.md)
 - [DEPLOYMENT.md](DEPLOYMENT.md) — CI/CD pipeline details
 - [DATABASE_GOVERNANCE.md](DATABASE_GOVERNANCE.md) — Data retention & compliance

@@ -8,7 +8,7 @@ This folder holds the **visual design system** for the public site and dashboard
 
 - **[`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md)** — prose spec: layout, components, KPIs, accessibility as layout, and how tokens are applied.
 - **[`../README.md`](../README.md)** — how all `docs/` connect (truth hierarchy, reading order).
-- **[`../spec/INDEX.md`](../spec/INDEX.md)** — technical specs hub; frontend contract in **`SPEC_FRONTEND.md`** references these artefacts.
+- **[`INDEX.md`](./INDEX.md)** — technical specs hub; frontend contract in **`SPEC_FRONTEND.md`** references these artefacts.
 
 ## Engineering rules
 

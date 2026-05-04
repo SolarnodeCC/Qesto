@@ -631,7 +631,7 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 **Definition of Done**:
 - Existing vote, presenter advance/back, pause/resume, close, and reconnect tests stay green.
 - No public gameplay surface depends on the new frame until staging WebSocket validation passes.
-- `ROADMAP_FULL.md`, `BACKLOG.md`, and `SPRINT25_IMPLEMENTATION_SPEC.md` stay aligned.
+- `ROADMAP_FULL.md`, `BACKLOG.md`, and [`spec/sprints/SPRINT25_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT25_IMPLEMENTATION_SPEC.md) stay aligned.
 
 ## Sprint 26-32: v2.2 Live Engagement to Enterprise Release
 
@@ -641,8 +641,8 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 | Sprint | Goal | Committed Theme | Gate |
 |---|---|---|---|
-| **Sprint 26** | LIVE energizer activation readiness | Staging WebSocket smoke, presenter controls, disabled/permission UX, protocol audit events | No participant gameplay until activation is stable in staging |
-| **Sprint 27** | First playable LIVE energizer: Quick Finger | Participant answer UI, DO answer validation, score broadcast, reconnect-safe state | No second energizer until Quick Finger coexists with normal voting |
+| **Sprint 26** | LIVE energizer activation readiness | Presenter controls, disabled/permission UX, activation state replay | Shipped in [`spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md) |
+| **Sprint 27** | First playable LIVE energizer: Quick Finger | Participant answer UI, DO answer validation, score broadcast, reconnect-safe state | Shipped in [`spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md) |
 | **Sprint 28** | Team Quiz LIVE loop | Quiz state machine, presenter progression, participant answer locking, reconnect tests | No leaderboard/badges until quiz scoring evidence is reliable |
 | **Sprint 29** | Leaderboard + badge foundation | Aggregated scoring, live leaderboard broadcast, badge hooks, idempotency tests | No advanced competitions until score/badge idempotency is proven |
 | **Sprint 30** | Admin engagement analytics maturity | Engagement funnel, CSV metrics, realtime health correlation, privacy review | No RC posture until dashboards answer support/admin questions |
@@ -655,7 +655,7 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 ## Website Design Wave (Sprints A / B / C)
 
-The Website Design Wave runs concurrently with (or immediately after) the 5-sprint feature arc above. It is governed by [`docs/specs/WEBSITE_DESIGN_SPEC.md`](./specs/WEBSITE_DESIGN_SPEC.md) and its machine-readable companion [`docs/specs/design-tokens.json`](./specs/design-tokens.json). Full item list, KPIs, and exit criteria are in [`docs/BACKLOG.md §12`](./BACKLOG.md).
+The Website Design Wave runs concurrently with (or immediately after) the 5-sprint feature arc above. It is governed by [`docs/spec/WEBSITE_DESIGN_SPEC.md`](./spec/WEBSITE_DESIGN_SPEC.md) and its machine-readable companion [`docs/spec/design-tokens.json`](./spec/design-tokens.json). Full item list, KPIs, and exit criteria are in [`docs/BACKLOG.md §12`](./BACKLOG.md).
 
 | Sprint | Focus | Key items | Gate |
 |---|---|---|---|

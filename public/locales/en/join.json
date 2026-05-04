@@ -47,5 +47,11 @@
   "inviteLinkExpired": "This invite link has expired or is invalid.",
   "alreadyMemberOfTeam": "You are already a member of this team.",
   "confirmingInvite": "Confirming your invite…",
-  "allDone.heading": "Thanks for your input!"
+  "allDone.heading": "Thanks for your input!",
+  "quickFinger.title": "Quick Finger",
+  "quickFinger.waiting": "Waiting for answer options…",
+  "quickFinger.correct": "Correct — nice reflexes.",
+  "quickFinger.incorrect": "Answer received.",
+  "quickFinger.speed": "{ms} ms",
+  "quickFinger.ranking": "Quick Finger ranking"
 }

@@ -271,7 +271,7 @@ async function main() {
 
   if (hasFailures || overallFailed) {
     console.log('❌ COVERAGE GATE FAILED')
-    console.log('\nTo view detailed coverage report: open coverage/index.html')
+    console.log('\nTo view detailed coverage report: open tests/artifacts/coverage/index.html')
     process.exit(1)
   } else {
     console.log('✅ COVERAGE GATE PASSED')

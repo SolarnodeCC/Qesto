@@ -29,5 +29,11 @@
   "responses_one": "{count} antwoord",
   "responses_other": "{count} antwoorden",
   "anonymity": "Volledige anonimiteit",
-  "allDone.heading": "Bedankt voor jullie input!"
+  "allDone.heading": "Bedankt voor jullie input!",
+  "quickFinger.title": "Quick Finger",
+  "quickFinger.start": "Start Quick Finger",
+  "quickFinger.active": "Quick Finger live",
+  "quickFinger.optionYes": "Ja",
+  "quickFinger.optionNo": "Nee",
+  "quickFinger.promptFallback": "Antwoord snel"
 }

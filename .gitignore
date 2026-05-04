@@ -14,7 +14,8 @@ coverage/
 src/ui/tokens.ts
 .claude/worktrees/
 
-# Playwright
+# Playwright (reports + artefacts live under tests/artifacts when using tests/playwright.config.ts)
+/tests/artifacts/
 /test-results/
 /playwright-report/
 /blob-report/

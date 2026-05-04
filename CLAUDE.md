@@ -87,7 +87,7 @@ wrangler pages deploy  # Deploy to Cloudflare Pages (qesto project)
 ## Active Sprint Context
 **Documentation map:** [`docs/README.md`](docs/README.md) — which planning files describe **shipped v2.x** versus **reference sequencing**.
 
-- **Shipped / roadmap truth:** [`docs/ROADMAP_FULL.md`](docs/ROADMAP_FULL.md), [`docs/SPEC.md`](docs/SPEC.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+- **Shipped / roadmap truth:** [`docs/ROADMAP_FULL.md`](docs/ROADMAP_FULL.md), [`docs/spec/SPEC_PRODUCT.md`](docs/spec/SPEC_PRODUCT.md) (stub [`docs/SPEC.md`](docs/SPEC.md)), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 - **Incremental committed work:** [`docs/BACKLOG.md`](docs/BACKLOG.md) (including Website Design Wave §12), [`docs/ARCHIVED_SPRINTS.md`](docs/ARCHIVED_SPRINTS.md).
 - **Reference five-sprint arc (v0.1 → v0.5):** [`docs/SPRINT_PLAN.md`](docs/SPRINT_PLAN.md) — teaching and dependency template aligned to backlog IDs; **not** a literal greenfield schedule.
 

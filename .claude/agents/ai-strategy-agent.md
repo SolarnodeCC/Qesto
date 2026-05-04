@@ -83,5 +83,5 @@ Progress markers: "Context Q{n}/8" and "Scoring Q{n}/5" — user always knows wh
 | New AI feature evaluated | `docs/BACKLOG.md §3` with WSJF |
 | AI architectural pattern established | `docs/ARCHITECTURE.md` — AI section |
 | New Workers AI prompt template | `docs/ARCHITECTURE.md` — AI patterns |
-| Competitive AI positioning updated | `docs/SPEC.md §8` |
+| Competitive AI positioning updated | `docs/spec/SPEC_PRODUCT.md §8` |
 | New AI privacy constraint | `docs/SECURITY_FULL.md` |

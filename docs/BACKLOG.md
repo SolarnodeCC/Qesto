@@ -122,8 +122,8 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 | AUTHZ-ROLE-UI-01 | Team role-management UI for custom roles and delegated permissions | P0 | Sprint 24 | Team Settings can list, create, edit, delete, assign, and unassign custom roles |
 | ADMIN-ANALYTICS-01 | Admin analytics reporting/export maturity | P1 | Sprint 24 | Admin can inspect/export key engagement, entitlement, and operational health metrics without raw log spelunking |
 | GAM-LIVE-01 | LIVE energizer WebSocket foundation | P0 | Sprint 25 | Presenter-only activation frame, feature-flagged DO state, server broadcast, and reconnect snapshot all work without changing existing voting semantics |
-| GAM-STAGE-01 | Staging WebSocket validation for LIVE energizer protocol | P0 | Sprint 26 | Legacy v1, explicit v1, unsupported version, reconnect, and activation flag-off/on cases pass in staging |
-| GAM-QF-01 | Quick Finger LIVE gameplay | P0 | Sprint 27 | Participants can answer a quick-finger energizer, server validates answers, and score deltas broadcast safely |
+| GAM-STAGE-01 | Staging WebSocket validation for LIVE energizer protocol | P0 | Sprint 26 | Shipped: presenter activation, disabled/permission guards, and reconnect-safe active state |
+| GAM-QF-01 | Quick Finger LIVE gameplay | P0 | Sprint 27 | Shipped: participants answer a Quick Finger energizer, server validates answers, and score state broadcasts safely |
 | GAM-TQ-01 | Team Quiz LIVE loop | P0 | Sprint 28 | Multi-question quiz state, presenter progression, participant locking, and reconnect snapshots work |
 | GAM-SCORE-01 | Leaderboard and badge foundation | P1 | Sprint 29 | Aggregated scores, leaderboard broadcasts, and badge hooks are idempotent and PII-safe |
 | ADMIN-ENGAGE-01 | Admin engagement analytics maturity | P1 | Sprint 30 | Admin can inspect/export energizer activation, participation, completion, and realtime health metrics |
@@ -135,7 +135,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 - OBS-02 must land before S19-MEASURE-01 can produce credible KPI baseline.
 - AUTHZ-ADR-01 blocks RBAC depth/custom roles implementation.
 - DO-PROTOCOL-ADR-01 blocks GAM-01 in LIVE sessions.
-- Sprint 26 staging validation blocks Sprint 27 participant gameplay.
+- Sprint 26 activation readiness now unblocks Sprint 27 participant gameplay.
 - Quick Finger evidence blocks Team Quiz and leaderboard/badge expansion.
 - Token/i18n/a11y gates must stay green before Sprint 23 design polish expands affected surfaces.
 
@@ -947,7 +947,7 @@ If migrating from old Sprint A/B/C structure:
 
 An external design review of the public website and dashboard rated Qesto 7.5/10. Strengths: minimalism, hierarchy, colour strategy, accessibility. Gaps: AI is invisible, dashboard feels transactional, typography reads system-default, and the primary CTA lacks polish. This wave translates the review into eight named items and introduces a design-token source-of-truth artefact.
 
-**Spec:** `docs/specs/WEBSITE_DESIGN_SPEC.md` · **Tokens:** `docs/specs/design-tokens.json`
+**Spec:** `docs/spec/WEBSITE_DESIGN_SPEC.md` · **Tokens:** `docs/spec/design-tokens.json`
 
 ### Items
 
@@ -961,7 +961,7 @@ An external design review of the public website and dashboard rated Qesto 7.5/10
 | DESIGN-TYP-01 | Typography refresh: DM Sans → Inter body; preload + Tailwind config update | P2 | Frontend | -20% visual inconsistency defects on top flows | DESIGN-TOK-01 | **✅ Shipped 2026-04-21** Inter @import in styles.css; woff2 preload in index.html; tailwind-theme.ts sans=Inter |
 | DESIGN-POLISH-01 | Primary CTA hover state (scale 1.02 + `shadow.teal`, 120ms `motion.fast`) | P2 | Frontend | Hover state visible on Vote/Join/Landing CTAs; 0 a11y regressions | DESIGN-TOK-01 |
 | DESIGN-POLISH-02 | Logo optical weight bump + sparkle mark | P2 | Frontend + Brand | Logo approved by stakeholders; used across all surfaces | Brand sign-off |
-| DESIGN-TOK-01 | Design-token source of truth — `docs/specs/design-tokens.json` → generated `src/ui/tokens.ts` + Tailwind theme | P1 | Frontend + Architect | 0 drift between JSON tokens and runtime CSS; CI check green | Build pipeline + token generator |
+| DESIGN-TOK-01 | Design-token source of truth — `docs/spec/design-tokens.json` → generated `src/ui/tokens.ts` + Tailwind theme | P1 | Frontend + Architect | 0 drift between JSON tokens and runtime CSS; CI check green | Build pipeline + token generator |
 | WIZ-AI-01 | Session wizard AI sub-flow — consent gate, grounding echo, `Generate now` + refine prompt, streaming skeleton, Workers AI wiring | P0 | Frontend + Backend + AI | ≥50% AI question acceptance rate (rows kept at step 5); ≥65% wizard completion rate | AI-VIS-03; Workers AI endpoint; DRAFT-API (Sprint 0 enabler) |
 | WIZ-AI-02 | Per-question editor with type switcher (MC 3–5, Ranking 3–8, Wordcloud) + validation that gates `Next` | P0 | Frontend + Backend | 0 invalid sessions reach LIVE; `Next` disabled-click rate ≤8% per step | WIZ-AI-01 |
 | WIZ-OVERVIEW-01 | Step 5 overview — read-only summary of 4 prior steps with pencil edit-jump that preserves state | P1 | Frontend + PO | +10% wizard completion rate vs. baseline; 0 state-loss bugs | WIZ-AI-02 |
@@ -1094,5 +1094,5 @@ Decision tree (from product-owner.md Wave 2):
 - `ARCHITECTURE.md` — system design + data model
 - `ROADMAP_FULL.md` — release timeline + version targets
 - `CLAUDE.md` — L1 project context + hard rules
-- `specs/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
-- `specs/design-tokens.json` — design-token source of truth
+- `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
+- `spec/design-tokens.json` — design-token source of truth

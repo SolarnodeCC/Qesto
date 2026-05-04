@@ -5,7 +5,7 @@ const teamSettingsSource = readFileSync('src/pages/TeamSettings.tsx', 'utf8')
 const adminAnalyticsSource = readFileSync('src/components/admin/AdminAnalyticsTab.tsx', 'utf8')
 const realtimeSource = readFileSync('functions/api/realtime.ts', 'utf8')
 const sessionRoomSource = readFileSync('functions/api/SessionRoom.ts', 'utf8')
-const sprint24Spec = readFileSync('docs/SPRINT24_IMPLEMENTATION_SPEC.md', 'utf8')
+const sprint24Spec = readFileSync('docs/spec/sprints/SPRINT24_IMPLEMENTATION_SPEC.md', 'utf8')
 const adr0005 = readFileSync('docs/adr/ADR-0005-do-protocol-versioning.md', 'utf8')
 
 describe('Sprint 24 contract', () => {

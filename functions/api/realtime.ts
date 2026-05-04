@@ -21,11 +21,23 @@ export type VersionedClientEnvelope = {
 }
 
 export type LiveEnergizerKind = 'quick_finger' | 'team_quiz' | 'emoji_poll' | 'word_cloud'
+export type LiveEnergizerAnswer = {
+  voterId: string
+  value: string
+  correct: boolean
+  speedMs: number
+  rank: number
+}
 export type LiveEnergizerState = {
   id: string
   kind: LiveEnergizerKind
   title: string
   status: 'active' | 'completed'
+  prompt?: string
+  options?: string[]
+  correctIndex?: number
+  startedAt?: number
+  answers?: LiveEnergizerAnswer[]
 }
 
 // ── Client → Server ─────────────────────────────────────────────────────────
@@ -37,6 +49,7 @@ export type ClientMessage =
   | { v?: LiveProtocolVersion; type: 'pause'; data: Record<string, never>; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'resume'; data: Record<string, never>; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'energizer_activate'; data: { energizer: LiveEnergizerState }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'energizer_answer'; data: { energizerId: string; value: string }; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {

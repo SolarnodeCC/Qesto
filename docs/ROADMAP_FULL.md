@@ -101,13 +101,13 @@ _Last updated: 2026-05-01 (UTC)_
 
 **Gate:** No public gameplay rollout until staging WebSocket validation proves existing vote/presenter flows are unaffected.
 
-### Sprint 26-32 — v2.2 Live Engagement to Enterprise Release (planned)
+### Sprint 26-32 — v2.2 Live Engagement to Enterprise Release (active)
 **Focus:** Turn the Sprint 25 dark-launched protocol into staged gameplay, then mature scoring, badges, admin analytics, enterprise permissions, and release readiness.
 
 | Sprint | Goal | Gate |
 |---|---|---|
-| Sprint 26 | LIVE energizer activation readiness and staging WebSocket smoke | No participant gameplay until activation is stable in staging |
-| Sprint 27 | First playable LIVE energizer: Quick Finger | No second energizer until Quick Finger coexists with normal voting |
+| Sprint 26 | LIVE energizer activation readiness and staging WebSocket smoke | Shipped: presenter activation, flag-off/on guards, reconnect state |
+| Sprint 27 | First playable LIVE energizer: Quick Finger | Shipped: participant answers, DO validation, score broadcast, reconnect-safe state |
 | Sprint 28 | Team Quiz LIVE loop | No leaderboard/badges until quiz scoring evidence is reliable |
 | Sprint 29 | Leaderboard + badge foundation | No advanced competitions until score/badge idempotency is proven |
 | Sprint 30 | Admin engagement analytics maturity | No release-candidate posture until support/admin dashboards are useful |

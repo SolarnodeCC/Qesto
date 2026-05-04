@@ -1,4 +1,4 @@
-// AUTO-GENERATED from docs/specs/design-tokens.json — do not edit by hand.
+// AUTO-GENERATED from docs/spec/design-tokens.json — do not edit by hand.
 // This file is used by vite.config.ts to extend the Tailwind theme.
 // Regenerate: `npm run tokens:build`. See DESIGN-TOK-01.
 

@@ -47,5 +47,11 @@
   "inviteLinkExpired": "Deze uitnodigingslink is verlopen of ongeldig.",
   "alreadyMemberOfTeam": "U bent al lid van dit team.",
   "confirmingInvite": "Uw uitnodiging wordt bevestigd…",
-  "allDone.heading": "Bedankt voor jullie input!"
+  "allDone.heading": "Bedankt voor jullie input!",
+  "quickFinger.title": "Quick Finger",
+  "quickFinger.waiting": "Wachten op antwoordopties…",
+  "quickFinger.correct": "Goed — snelle reflexen.",
+  "quickFinger.incorrect": "Antwoord ontvangen.",
+  "quickFinger.speed": "{ms} ms",
+  "quickFinger.ranking": "Quick Finger-ranglijst"
 }

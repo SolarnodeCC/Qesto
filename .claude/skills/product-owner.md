@@ -59,9 +59,9 @@ AND [additional constraint]
 
 | Change | Doc |
 |---|---|
-| New/changed session states or lifecycle rules | `docs/SPEC.md §1` |
-| New/changed roles or permissions | `docs/SPEC.md §2` |
-| New question types | `docs/SPEC.md §3` + `docs/GLOSSARY_FULL.md` |
+| New/changed session states or lifecycle rules | `docs/spec/SPEC_PRODUCT.md §1` |
+| New/changed roles or permissions | `docs/spec/SPEC_PRODUCT.md §2` |
+| New question types | `docs/spec/SPEC_PRODUCT.md §3` + `docs/GLOSSARY_FULL.md` |
 | New feature request | `docs/BACKLOG.md §3` with WSJF scored |
 | New defect | `docs/BACKLOG.md §1` with TC=13 |
 | Stories completed | `docs/BACKLOG.md §5` + `docs/SPRINT_PLAN.md` |

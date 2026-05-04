@@ -160,6 +160,10 @@ export class SessionRoom implements DurableObject {
         if (msg.type !== 'energizer_activate') return
         await this.handleEnergizerActivate(ws, att, msg.data.energizer)
       },
+      energizer_answer: async (ws, att, msg) => {
+        if (msg.type !== 'energizer_answer') return
+        await this.handleEnergizerAnswer(ws, att, msg.data)
+      },
     }
   }
 
@@ -554,9 +558,72 @@ export class SessionRoom implements DurableObject {
       ws.send(errorMessage('bad_energizer', 'Invalid energizer payload'))
       return
     }
-    const active = { ...energizer, status: 'active' as const }
+    const active: LiveEnergizerState = {
+      ...energizer,
+      status: 'active',
+      startedAt: energizer.startedAt ?? now(),
+      answers: [],
+    }
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
     await this.broadcastEnergizer(active)
+  }
+
+  private async handleEnergizerAnswer(
+    ws: WebSocket,
+    att: Attachment,
+    data: { energizerId?: string; value?: string },
+  ): Promise<void> {
+    if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
+      ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
+      return
+    }
+    if (att.role !== 'voter') {
+      ws.send(errorMessage('forbidden', 'Only participants can answer energizers'))
+      return
+    }
+    const active = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
+    if (!active || active.status !== 'active') {
+      ws.send(errorMessage('no_energizer', 'No energizer is active'))
+      return
+    }
+    if (active.kind !== 'quick_finger') {
+      ws.send(errorMessage('unsupported_energizer', 'This energizer does not accept live answers yet'))
+      return
+    }
+    if (!data?.energizerId || data.energizerId !== active.id) {
+      ws.send(errorMessage('stale_energizer', 'Answer for a different energizer'))
+      return
+    }
+    const value = typeof data.value === 'string' ? data.value.trim() : ''
+    const options = active.options ?? []
+    if (!value || (options.length > 0 && !options.includes(value))) {
+      ws.send(errorMessage('bad_energizer_answer', 'Unknown answer option'))
+      return
+    }
+    const existing = active.answers ?? []
+    if (existing.some((answer) => answer.voterId === att.voterId)) {
+      ws.send(errorMessage('duplicate_energizer_answer', 'You already answered this energizer'))
+      return
+    }
+
+    const startedAt = active.startedAt ?? now()
+    const correctValue = typeof active.correctIndex === 'number' ? options[active.correctIndex] : undefined
+    const answered: LiveEnergizerState = {
+      ...active,
+      startedAt,
+      answers: rankQuickFingerAnswers([
+        ...existing,
+        {
+          voterId: att.voterId,
+          value,
+          correct: correctValue === undefined ? true : value === correctValue,
+          speedMs: Math.max(0, now() - startedAt),
+          rank: 0,
+        },
+      ]),
+    }
+    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
+    await this.broadcastEnergizer(answered)
   }
 
   private async handleVote(
@@ -775,12 +842,35 @@ export class SessionRoom implements DurableObject {
 function isValidLiveEnergizer(value: unknown): value is LiveEnergizerState {
   if (!value || typeof value !== 'object') return false
   const candidate = value as Partial<LiveEnergizerState>
-  return (
+  const baseValid =
     typeof candidate.id === 'string' &&
     candidate.id.length > 0 &&
     typeof candidate.title === 'string' &&
     candidate.title.length > 0 &&
     ['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud'].includes(candidate.kind ?? '') &&
     (candidate.status === undefined || candidate.status === 'active' || candidate.status === 'completed')
-  )
+  if (!baseValid) return false
+  if (candidate.kind !== 'quick_finger') return true
+  if (candidate.options !== undefined) {
+    if (!Array.isArray(candidate.options) || candidate.options.some((option) => typeof option !== 'string' || option.trim().length === 0)) {
+      return false
+    }
+  }
+  if (candidate.correctIndex !== undefined) {
+    if (typeof candidate.correctIndex !== 'number' || !Number.isInteger(candidate.correctIndex)) return false
+    if (!candidate.options || candidate.correctIndex < 0 || candidate.correctIndex >= candidate.options.length) return false
+  }
+  return true
+}
+
+function rankQuickFingerAnswers(answers: NonNullable<LiveEnergizerState['answers']>): NonNullable<LiveEnergizerState['answers']> {
+  const correct = answers
+    .filter((answer) => answer.correct)
+    .sort((a, b) => a.speedMs - b.speedMs)
+    .map((answer, index) => ({ ...answer, rank: index + 1 }))
+  const incorrect = answers
+    .filter((answer) => !answer.correct)
+    .sort((a, b) => a.speedMs - b.speedMs)
+    .map((answer) => ({ ...answer, rank: 0 }))
+  return [...correct, ...incorrect]
 }

@@ -16,6 +16,17 @@ export type LiveEnergizerState = {
   kind: 'quick_finger' | 'team_quiz' | 'emoji_poll' | 'word_cloud'
   title: string
   status: 'active' | 'completed'
+  prompt?: string
+  options?: string[]
+  correctIndex?: number
+  startedAt?: number
+  answers?: {
+    voterId: string
+    value: string
+    correct: boolean
+    speedMs: number
+    rank: number
+  }[]
 }
 
 /** Wire-level option row — same shape as REST `PollOption`. */
@@ -338,5 +349,24 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     })
   }, [])
 
-  return { state, sendVote, requestState, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate }
+  const sendEnergizerAnswer = useCallback((energizerId: string, value: string) => {
+    sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'energizer_answer',
+      data: { energizerId, value },
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  return {
+    state,
+    sendVote,
+    requestState,
+    sendAdvance,
+    sendBack,
+    sendPause,
+    sendResume,
+    sendEnergizerActivate,
+    sendEnergizerAnswer,
+  }
 }

@@ -41,7 +41,7 @@ _Last verified: 2026-04-30 (UTC)_
 - **[`spec/INDEX.md`](./spec/INDEX.md)** — domain specifications for implementation detail.
 
 ## 8. 2026-04-22 architecture review addendum
-- UI layer now has a formalised design-token source of truth (`docs/specs/design-tokens.json` → `src/ui/tokens.ts`; token generator CI step in progress per DESIGN-TOK-01).
+- UI layer now has a formalised design-token source of truth (`docs/spec/design-tokens.json` → `src/ui/tokens.ts`; token generator CI step in progress per DESIGN-TOK-01).
 - Skeleton/empty/error parity enforced via `SkeletonLoader.tsx` (SessionListSkeleton, InsightsTabSkeleton, WizardAIGenerationSkeleton, LaunchpadPreFlightSkeleton, ResultsSectionSkeleton).
 - Motion system: CSS custom-property tokens (`--duration-*`, `--ease-*`) with `@keyframes` in `styles.css`; global `prefers-reduced-motion` override ensures accessibility compliance.
 

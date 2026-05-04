@@ -47,5 +47,11 @@
   "inviteLinkExpired": "Dieser Einladungslink ist abgelaufen oder ungültig.",
   "alreadyMemberOfTeam": "Sie sind bereits Mitglied dieses Teams.",
   "confirmingInvite": "Ihre Einladung wird bestätigt…",
-  "allDone.heading": "Danke für euren Beitrag!"
+  "allDone.heading": "Danke für euren Beitrag!",
+  "quickFinger.title": "Quick Finger",
+  "quickFinger.waiting": "Warte auf Antwortoptionen…",
+  "quickFinger.correct": "Richtig — starke Reflexe.",
+  "quickFinger.incorrect": "Antwort erhalten.",
+  "quickFinger.speed": "{ms} ms",
+  "quickFinger.ranking": "Quick-Finger-Rangliste"
 }
