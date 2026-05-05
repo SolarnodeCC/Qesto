@@ -498,7 +498,7 @@ describe('Sprint 25 — LIVE energizer protocol foundation', () => {
       v: 1,
       type: 'energizer_activate',
       data: {
-        energizer: { id: 'eg_2', kind: 'team_quiz', title: 'Team quiz', status: 'active' },
+        energizer: { id: 'eg_2', kind: 'quick_finger', title: 'Quick finger', status: 'active' },
       },
       timestamp: 0,
     })
@@ -637,5 +637,105 @@ describe('Sprint 26/27 — LIVE Quick Finger answers', () => {
       (entry) => entry.type === 'init',
     )
     expect(initMsg?.data.energizer?.answers).toHaveLength(1)
+  })
+})
+
+describe('Sprint 28 — LIVE Team Quiz loop', () => {
+  const TEAM_QUIZ = {
+    id: 'eg_tq',
+    kind: 'team_quiz' as const,
+    title: 'Team quiz',
+    status: 'active' as const,
+    questions: [
+      { prompt: 'First?', options: ['A', 'B'], correctIndex: 0 },
+      { prompt: 'Second?', options: ['C', 'D'], correctIndex: 1 },
+    ],
+  }
+
+  it('locks one answer per voter per quiz question and ranks score summaries', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const v1 = connectVoter(state, 'anon_tq_1', 'ip_tq_1')
+    const v2 = connectVoter(state, 'anon_tq_2', 'ip_tq_2')
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: { energizer: TEAM_QUIZ },
+      timestamp: 0,
+    })
+    await sendMessage(room, v1, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_tq', value: 'A' },
+      timestamp: 0,
+    })
+    await sendMessage(room, v1, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_tq', value: 'B' },
+      timestamp: 0,
+    })
+    await sendMessage(room, v2, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_tq', value: 'B' },
+      timestamp: 0,
+    })
+
+    const err = v1.messages<{ type: string; data: { code?: string } }>().find(
+      (entry) => entry.type === 'error' && entry.data.code === 'duplicate_energizer_answer',
+    )
+    expect(err).toBeTruthy()
+
+    const active = await state.storage.get<{ submissions: unknown[]; scores: { voterId: string; score: number; rank: number }[] }>('active_energizer')
+    expect(active?.submissions).toHaveLength(2)
+    expect(active?.scores).toMatchObject([
+      { voterId: 'anon_tq_1', score: 1, rank: 1 },
+      { voterId: 'anon_tq_2', score: 0, rank: 2 },
+    ])
+  })
+
+  it('presenter advances through quiz questions and reconnect snapshots restore the current quiz index', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const voter = connectVoter(state, 'anon_tq_reconnect', 'ip_tq_reconnect')
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: { energizer: TEAM_QUIZ },
+      timestamp: 0,
+    })
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_advance',
+      data: { energizerId: 'eg_tq' },
+      timestamp: 0,
+    })
+
+    const advanceMsg = voter
+      .messages<{ type: string; data: { energizer?: { currentIndex?: number; status?: string } } }>()
+      .filter((entry) => entry.type === 'energizer_state')
+      .at(-1)
+    expect(advanceMsg?.data.energizer?.currentIndex).toBe(1)
+
+    const reconnect = connectVoter(state, 'anon_tq_reconnect', 'ip_tq_reconnect_2')
+    await sendMessage(room, reconnect, { v: 1, type: 'request_state', data: {}, timestamp: 0 })
+    const initMsg = reconnect.messages<{ type: string; data: { energizer?: { currentIndex?: number } | null } }>().find(
+      (entry) => entry.type === 'init',
+    )
+    expect(initMsg?.data.energizer?.currentIndex).toBe(1)
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_advance',
+      data: { energizerId: 'eg_tq' },
+      timestamp: 0,
+    })
+    const completed = await state.storage.get<{ status: string; currentIndex: number }>('active_energizer')
+    expect(completed).toMatchObject({ status: 'completed', currentIndex: 1 })
   })
 })

@@ -53,5 +53,14 @@
   "quickFinger.correct": "Correct — beaux réflexes.",
   "quickFinger.incorrect": "Réponse reçue.",
   "quickFinger.speed": "{ms} ms",
-  "quickFinger.ranking": "Classement Quick Finger"
+  "quickFinger.ranking": "Classement Quick Finger",
+  "teamQuiz.title": "Team Quiz",
+  "teamQuiz.progress": "Question {current} sur {total}",
+  "teamQuiz.completed": "Quiz terminé",
+  "teamQuiz.score": "{score} points",
+  "teamQuiz.correct": "Correct — enregistré.",
+  "teamQuiz.locked": "Réponse enregistrée — attente de la question suivante.",
+  "teamQuiz.waiting": "En attente de la prochaine question du quiz…",
+  "teamQuiz.scoreboard": "Score Team Quiz",
+  "teamQuiz.you": "Vous"
 }

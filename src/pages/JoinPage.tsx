@@ -271,6 +271,96 @@ function LiveQuickFingerPanel({
   )
 }
 
+function LiveTeamQuizPanel({
+  energizer,
+  voterId,
+  onAnswer,
+}: {
+  energizer: LiveEnergizerState
+  voterId: string | null
+  onAnswer: (energizerId: string, value: string) => void
+}) {
+  const t = useT('join')
+  const currentIndex = energizer.currentIndex ?? 0
+  const question = energizer.questions?.[currentIndex]
+  const mySubmission = energizer.submissions?.find(
+    (submission) => submission.voterId === voterId && submission.questionIndex === currentIndex,
+  )
+  const myScore = energizer.scores?.find((score) => score.voterId === voterId)
+  const topScores = energizer.scores?.slice(0, 5) ?? []
+
+  return (
+    <section className="rounded-xl border border-orange-200 bg-orange-50 p-4 space-y-4" aria-labelledby="live-team-quiz-heading">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Sparkles size={18} className="text-orange-600" aria-hidden="true" />
+          <h2 id="live-team-quiz-heading" className="font-semibold text-pulse-900">
+            {energizer.title || t('teamQuiz.title')}
+          </h2>
+        </div>
+        <span className="text-xs font-medium text-orange-700">
+          {question ? t('teamQuiz.progress', { current: currentIndex + 1, total: energizer.questions?.length ?? 0 }) : t('teamQuiz.completed')}
+        </span>
+      </div>
+
+      {energizer.status === 'completed' ? (
+        <div className="rounded-lg bg-white border border-orange-200 px-3 py-3 text-sm text-center">
+          <p className="font-semibold text-pulse-900">{t('teamQuiz.completed')}</p>
+          <p className="text-pulse-500">{t('teamQuiz.score', { score: myScore?.score ?? 0 })}</p>
+        </div>
+      ) : question ? (
+        <>
+          <p className="text-sm font-medium text-pulse-900">{question.prompt}</p>
+          <div className="grid gap-2">
+            {question.options.map((option) => {
+              const isMine = mySubmission?.value === option
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => onAnswer(energizer.id, option)}
+                  disabled={mySubmission !== undefined}
+                  aria-pressed={isMine}
+                  className={[
+                    'w-full rounded-lg border px-4 py-3 text-left text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 disabled:cursor-default',
+                    isMine
+                      ? mySubmission.correct
+                        ? 'border-teal-500 bg-teal-50 text-teal-800'
+                        : 'border-red-400 bg-red-50 text-red-700'
+                      : mySubmission
+                      ? 'border-orange-100 bg-white/60 text-pulse-400'
+                      : 'border-orange-200 bg-white text-pulse-900 hover:border-orange-500 hover:bg-orange-100',
+                  ].join(' ')}
+                >
+                  {option}
+                </button>
+              )
+            })}
+          </div>
+          {mySubmission && (
+            <p className="text-sm text-pulse-500" role="status">
+              {mySubmission.correct ? t('teamQuiz.correct') : t('teamQuiz.locked')}
+            </p>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-pulse-500">{t('teamQuiz.waiting')}</p>
+      )}
+
+      {topScores.length > 0 && (
+        <ol className="space-y-1 text-xs text-pulse-600" aria-label={t('teamQuiz.scoreboard')}>
+          {topScores.map((score) => (
+            <li key={score.voterId} className="flex justify-between rounded bg-white/80 px-2 py-1">
+              <span>{score.voterId === voterId ? t('teamQuiz.you') : `#${score.rank}`}</span>
+              <span>{t('teamQuiz.score', { score: score.score })}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  )
+}
+
 function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const { state, sendVote, sendEnergizerAnswer } = useLiveSession(sessionId, { enabled: true })
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
@@ -458,6 +548,14 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Active energizer — shown above the question */}
         {!isEnded && state.energizer?.kind === 'quick_finger' && countdown === null && (
           <LiveQuickFingerPanel
+            energizer={state.energizer}
+            voterId={state.voterId}
+            onAnswer={sendEnergizerAnswer}
+          />
+        )}
+
+        {!isEnded && state.energizer?.kind === 'team_quiz' && countdown === null && (
+          <LiveTeamQuizPanel
             energizer={state.energizer}
             voterId={state.voterId}
             onAnswer={sendEnergizerAnswer}

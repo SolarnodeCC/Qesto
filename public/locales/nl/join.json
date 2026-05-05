@@ -53,5 +53,14 @@
   "quickFinger.correct": "Goed — snelle reflexen.",
   "quickFinger.incorrect": "Antwoord ontvangen.",
   "quickFinger.speed": "{ms} ms",
-  "quickFinger.ranking": "Quick Finger-ranglijst"
+  "quickFinger.ranking": "Quick Finger-ranglijst",
+  "teamQuiz.title": "Team Quiz",
+  "teamQuiz.progress": "Vraag {current} van {total}",
+  "teamQuiz.completed": "Quiz voltooid",
+  "teamQuiz.score": "{score} punten",
+  "teamQuiz.correct": "Goed — vastgelegd.",
+  "teamQuiz.locked": "Antwoord vastgelegd — wachten op de volgende vraag.",
+  "teamQuiz.waiting": "Wachten op de volgende quizvraag…",
+  "teamQuiz.scoreboard": "Team Quiz-scorebord",
+  "teamQuiz.you": "Jij"
 }

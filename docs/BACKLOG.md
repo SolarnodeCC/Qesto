@@ -124,7 +124,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 | GAM-LIVE-01 | LIVE energizer WebSocket foundation | P0 | Sprint 25 | Presenter-only activation frame, feature-flagged DO state, server broadcast, and reconnect snapshot all work without changing existing voting semantics |
 | GAM-STAGE-01 | Staging WebSocket validation for LIVE energizer protocol | P0 | Sprint 26 | Shipped: presenter activation, disabled/permission guards, and reconnect-safe active state |
 | GAM-QF-01 | Quick Finger LIVE gameplay | P0 | Sprint 27 | Shipped: participants answer a Quick Finger energizer, server validates answers, and score state broadcasts safely |
-| GAM-TQ-01 | Team Quiz LIVE loop | P0 | Sprint 28 | Multi-question quiz state, presenter progression, participant locking, and reconnect snapshots work |
+| GAM-TQ-01 | Team Quiz LIVE loop | P0 | Sprint 28 | Shipped: multi-question quiz state, presenter progression, participant locking, score summaries, and reconnect snapshots work |
 | GAM-SCORE-01 | Leaderboard and badge foundation | P1 | Sprint 29 | Aggregated scores, leaderboard broadcasts, and badge hooks are idempotent and PII-safe |
 | ADMIN-ENGAGE-01 | Admin engagement analytics maturity | P1 | Sprint 30 | Admin can inspect/export energizer activation, participation, completion, and realtime health metrics |
 | AUTHZ-GAM-01 | Enterprise permission gate for energizer activation | P1 | Sprint 31 | Custom roles can allow/deny energizer activation with audit evidence |
@@ -136,7 +136,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 - AUTHZ-ADR-01 blocks RBAC depth/custom roles implementation.
 - DO-PROTOCOL-ADR-01 blocks GAM-01 in LIVE sessions.
 - Sprint 26 activation readiness now unblocks Sprint 27 participant gameplay.
-- Quick Finger evidence blocks Team Quiz and leaderboard/badge expansion.
+- Team Quiz scoring evidence now blocks leaderboard/badge expansion.
 - Token/i18n/a11y gates must stay green before Sprint 23 design polish expands affected surfaces.
 
 ---

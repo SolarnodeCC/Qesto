@@ -164,6 +164,10 @@ export class SessionRoom implements DurableObject {
         if (msg.type !== 'energizer_answer') return
         await this.handleEnergizerAnswer(ws, att, msg.data)
       },
+      energizer_advance: async (ws, att, msg) => {
+        if (msg.type !== 'energizer_advance') return
+        await this.handleEnergizerAdvance(ws, att, msg.data)
+      },
     }
   }
 
@@ -558,12 +562,7 @@ export class SessionRoom implements DurableObject {
       ws.send(errorMessage('bad_energizer', 'Invalid energizer payload'))
       return
     }
-    const active: LiveEnergizerState = {
-      ...energizer,
-      status: 'active',
-      startedAt: energizer.startedAt ?? now(),
-      answers: [],
-    }
+    const active = initialiseLiveEnergizer(energizer)
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
     await this.broadcastEnergizer(active)
   }
@@ -586,12 +585,16 @@ export class SessionRoom implements DurableObject {
       ws.send(errorMessage('no_energizer', 'No energizer is active'))
       return
     }
-    if (active.kind !== 'quick_finger') {
-      ws.send(errorMessage('unsupported_energizer', 'This energizer does not accept live answers yet'))
-      return
-    }
     if (!data?.energizerId || data.energizerId !== active.id) {
       ws.send(errorMessage('stale_energizer', 'Answer for a different energizer'))
+      return
+    }
+    if (active.kind === 'team_quiz') {
+      await this.handleTeamQuizAnswer(ws, att, active, data.value)
+      return
+    }
+    if (active.kind !== 'quick_finger') {
+      ws.send(errorMessage('unsupported_energizer', 'This energizer does not accept live answers yet'))
       return
     }
     const value = typeof data.value === 'string' ? data.value.trim() : ''
@@ -624,6 +627,82 @@ export class SessionRoom implements DurableObject {
     }
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
     await this.broadcastEnergizer(answered)
+  }
+
+  private async handleTeamQuizAnswer(
+    ws: WebSocket,
+    att: Attachment,
+    active: LiveEnergizerState,
+    rawValue: unknown,
+  ): Promise<void> {
+    const currentIndex = active.currentIndex ?? 0
+    const question = active.questions?.[currentIndex]
+    if (!question) {
+      ws.send(errorMessage('no_quiz_question', 'No quiz question is active'))
+      return
+    }
+    const value = typeof rawValue === 'string' ? rawValue.trim() : ''
+    if (!value || !question.options.includes(value)) {
+      ws.send(errorMessage('bad_energizer_answer', 'Unknown answer option'))
+      return
+    }
+    const submissions = active.submissions ?? []
+    if (submissions.some((submission) => submission.voterId === att.voterId && submission.questionIndex === currentIndex)) {
+      ws.send(errorMessage('duplicate_energizer_answer', 'You already answered this quiz question'))
+      return
+    }
+
+    const answered: LiveEnergizerState = {
+      ...active,
+      submissions: [
+        ...submissions,
+        {
+          voterId: att.voterId,
+          questionIndex: currentIndex,
+          value,
+          correct: value === question.options[question.correctIndex],
+        },
+      ],
+    }
+    answered.scores = rankTeamQuizScores(answered.submissions ?? [])
+    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
+    await this.broadcastEnergizer(answered)
+  }
+
+  private async handleEnergizerAdvance(
+    ws: WebSocket,
+    att: Attachment,
+    data: { energizerId?: string },
+  ): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can advance energizers'))
+      return
+    }
+    if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
+      ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
+      return
+    }
+    const active = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
+    if (!active || active.status !== 'active') {
+      ws.send(errorMessage('no_energizer', 'No energizer is active'))
+      return
+    }
+    if (active.kind !== 'team_quiz') {
+      ws.send(errorMessage('unsupported_energizer', 'Only Team Quiz supports energizer advance'))
+      return
+    }
+    if (!data?.energizerId || data.energizerId !== active.id) {
+      ws.send(errorMessage('stale_energizer', 'Advance for a different energizer'))
+      return
+    }
+    const currentIndex = active.currentIndex ?? 0
+    const total = active.questions?.length ?? 0
+    const next: LiveEnergizerState =
+      currentIndex + 1 >= total
+        ? { ...active, status: 'completed', currentIndex, scores: rankTeamQuizScores(active.submissions ?? []) }
+        : { ...active, currentIndex: currentIndex + 1 }
+    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, next)
+    await this.broadcastEnergizer(next)
   }
 
   private async handleVote(
@@ -850,6 +929,24 @@ function isValidLiveEnergizer(value: unknown): value is LiveEnergizerState {
     ['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud'].includes(candidate.kind ?? '') &&
     (candidate.status === undefined || candidate.status === 'active' || candidate.status === 'completed')
   if (!baseValid) return false
+  if (candidate.kind === 'team_quiz') {
+    if (!Array.isArray(candidate.questions) || candidate.questions.length === 0) return false
+    return candidate.questions.every((question) => {
+      if (!question || typeof question !== 'object') return false
+      const q = question as Partial<NonNullable<LiveEnergizerState['questions']>[number]>
+      return (
+        typeof q.prompt === 'string' &&
+        q.prompt.trim().length > 0 &&
+        Array.isArray(q.options) &&
+        q.options.length >= 2 &&
+        q.options.every((option) => typeof option === 'string' && option.trim().length > 0) &&
+        typeof q.correctIndex === 'number' &&
+        Number.isInteger(q.correctIndex) &&
+        q.correctIndex >= 0 &&
+        q.correctIndex < q.options.length
+      )
+    })
+  }
   if (candidate.kind !== 'quick_finger') return true
   if (candidate.options !== undefined) {
     if (!Array.isArray(candidate.options) || candidate.options.some((option) => typeof option !== 'string' || option.trim().length === 0)) {
@@ -863,6 +960,24 @@ function isValidLiveEnergizer(value: unknown): value is LiveEnergizerState {
   return true
 }
 
+function initialiseLiveEnergizer(energizer: LiveEnergizerState): LiveEnergizerState {
+  if (energizer.kind === 'team_quiz') {
+    return {
+      ...energizer,
+      status: 'active',
+      currentIndex: 0,
+      submissions: [],
+      scores: [],
+    }
+  }
+  return {
+    ...energizer,
+    status: 'active',
+    startedAt: energizer.startedAt ?? now(),
+    answers: [],
+  }
+}
+
 function rankQuickFingerAnswers(answers: NonNullable<LiveEnergizerState['answers']>): NonNullable<LiveEnergizerState['answers']> {
   const correct = answers
     .filter((answer) => answer.correct)
@@ -873,4 +988,15 @@ function rankQuickFingerAnswers(answers: NonNullable<LiveEnergizerState['answers
     .sort((a, b) => a.speedMs - b.speedMs)
     .map((answer) => ({ ...answer, rank: 0 }))
   return [...correct, ...incorrect]
+}
+
+function rankTeamQuizScores(submissions: NonNullable<LiveEnergizerState['submissions']>): NonNullable<LiveEnergizerState['scores']> {
+  const totals = new Map<string, number>()
+  for (const submission of submissions) {
+    totals.set(submission.voterId, (totals.get(submission.voterId) ?? 0) + (submission.correct ? 1 : 0))
+  }
+  return [...totals.entries()]
+    .map(([voterId, score]) => ({ voterId, score, rank: 0 }))
+    .sort((a, b) => b.score - a.score || a.voterId.localeCompare(b.voterId))
+    .map((score, index) => ({ ...score, rank: index + 1 }))
 }

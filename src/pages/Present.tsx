@@ -52,7 +52,7 @@ export default function Present() {
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
   const presenterToken = getAuthToken()
-  const { state, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate } = useLiveSession(
+  const { state, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate, sendEnergizerAdvance } = useLiveSession(
     id,
     presenterToken ? { enabled: !!id, presenterToken } : { enabled: !!id },
   )
@@ -160,6 +160,34 @@ export default function Present() {
       status: 'active',
       prompt: state.question?.prompt ?? t('quickFinger.promptFallback'),
       options,
+    })
+  }
+
+  function handleStartTeamQuiz() {
+    const sourceOptions = state.question?.options.map((option) => option.label).filter(Boolean) ?? []
+    const options = sourceOptions.length >= 2 ? sourceOptions.slice(0, 4) : [
+      t('teamQuiz.optionA'),
+      t('teamQuiz.optionB'),
+      t('teamQuiz.optionC'),
+      t('teamQuiz.optionD'),
+    ]
+    sendEnergizerActivate({
+      id: `team_quiz_${state.question?.id ?? Date.now()}`,
+      kind: 'team_quiz',
+      title: t('teamQuiz.title'),
+      status: 'active',
+      questions: [
+        {
+          prompt: state.question?.prompt ?? t('teamQuiz.promptFallback'),
+          options,
+          correctIndex: 0,
+        },
+        {
+          prompt: t('teamQuiz.secondPrompt'),
+          options: [t('teamQuiz.optionA'), t('teamQuiz.optionB')],
+          correctIndex: 1,
+        },
+      ],
     })
   }
 
@@ -428,6 +456,21 @@ export default function Present() {
         >
           <Sparkles size={14} aria-hidden="true" />
           {state.energizer?.status === 'active' ? t('quickFinger.active') : t('quickFinger.start')}
+        </button>
+        <button
+          type="button"
+          onClick={
+            state.energizer?.kind === 'team_quiz' && state.energizer.status === 'active'
+              ? () => sendEnergizerAdvance(state.energizer!.id)
+              : handleStartTeamQuiz
+          }
+          disabled={!isLive || state.allDone || (state.energizer?.status === 'active' && state.energizer.kind !== 'team_quiz')}
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-orange-600 text-white hover:bg-orange-700"
+        >
+          <ChevronRight size={14} aria-hidden="true" />
+          {state.energizer?.kind === 'team_quiz' && state.energizer.status === 'active'
+            ? t('teamQuiz.advance')
+            : t('teamQuiz.start')}
         </button>
 
         <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />

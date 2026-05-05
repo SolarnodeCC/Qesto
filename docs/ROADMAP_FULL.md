@@ -108,7 +108,7 @@ _Last updated: 2026-05-01 (UTC)_
 |---|---|---|
 | Sprint 26 | LIVE energizer activation readiness and staging WebSocket smoke | Shipped: presenter activation, flag-off/on guards, reconnect state |
 | Sprint 27 | First playable LIVE energizer: Quick Finger | Shipped: participant answers, DO validation, score broadcast, reconnect-safe state |
-| Sprint 28 | Team Quiz LIVE loop | No leaderboard/badges until quiz scoring evidence is reliable |
+| Sprint 28 | Team Quiz LIVE loop | Shipped: quiz progression, locked submissions, score summary, reconnect state |
 | Sprint 29 | Leaderboard + badge foundation | No advanced competitions until score/badge idempotency is proven |
 | Sprint 30 | Admin engagement analytics maturity | No release-candidate posture until support/admin dashboards are useful |
 | Sprint 31 | Enterprise rollout hardening | No broad rollout until permission-deny and audit paths are clear |

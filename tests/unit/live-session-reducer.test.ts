@@ -183,5 +183,26 @@ describe('useLiveSession reducer', () => {
       expect(next.energizer?.id).toBe('eg_1')
       expect(next.energizer?.answers?.[0].rank).toBe(1)
     })
+
+    it('stores active Team Quiz progression and scores', () => {
+      const next = reducer(INITIAL, {
+        kind: 'energizer_state',
+        energizer: {
+          id: 'eg_tq',
+          kind: 'team_quiz',
+          title: 'Team quiz',
+          status: 'active',
+          currentIndex: 1,
+          questions: [
+            { prompt: 'One', options: ['A', 'B'], correctIndex: 0 },
+            { prompt: 'Two', options: ['C', 'D'], correctIndex: 1 },
+          ],
+          submissions: [{ voterId: 'anon_1', questionIndex: 0, value: 'A', correct: true }],
+          scores: [{ voterId: 'anon_1', score: 1, rank: 1 }],
+        },
+      })
+      expect(next.energizer?.currentIndex).toBe(1)
+      expect(next.energizer?.scores?.[0].score).toBe(1)
+    })
   })
 })

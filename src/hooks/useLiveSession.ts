@@ -27,6 +27,23 @@ export type LiveEnergizerState = {
     speedMs: number
     rank: number
   }[]
+  questions?: {
+    prompt: string
+    options: string[]
+    correctIndex: number
+  }[]
+  currentIndex?: number
+  submissions?: {
+    voterId: string
+    questionIndex: number
+    value: string
+    correct: boolean
+  }[]
+  scores?: {
+    voterId: string
+    score: number
+    rank: number
+  }[]
 }
 
 /** Wire-level option row — same shape as REST `PollOption`. */
@@ -358,6 +375,15 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     })
   }, [])
 
+  const sendEnergizerAdvance = useCallback((energizerId: string) => {
+    sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'energizer_advance',
+      data: { energizerId },
+      timestamp: Date.now(),
+    })
+  }, [])
+
   return {
     state,
     sendVote,
@@ -368,5 +394,6 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     sendResume,
     sendEnergizerActivate,
     sendEnergizerAnswer,
+    sendEnergizerAdvance,
   }
 }

@@ -35,5 +35,14 @@
   "quickFinger.active": "Quick Finger en vivo",
   "quickFinger.optionYes": "Sí",
   "quickFinger.optionNo": "No",
-  "quickFinger.promptFallback": "Responde rápido"
+  "quickFinger.promptFallback": "Responde rápido",
+  "teamQuiz.title": "Team Quiz",
+  "teamQuiz.start": "Iniciar Team Quiz",
+  "teamQuiz.advance": "Siguiente pregunta",
+  "teamQuiz.promptFallback": "Elige la mejor respuesta",
+  "teamQuiz.secondPrompt": "Pregunta extra",
+  "teamQuiz.optionA": "Opción A",
+  "teamQuiz.optionB": "Opción B",
+  "teamQuiz.optionC": "Opción C",
+  "teamQuiz.optionD": "Opción D"
 }

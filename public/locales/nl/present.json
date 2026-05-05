@@ -35,5 +35,14 @@
   "quickFinger.active": "Quick Finger live",
   "quickFinger.optionYes": "Ja",
   "quickFinger.optionNo": "Nee",
-  "quickFinger.promptFallback": "Antwoord snel"
+  "quickFinger.promptFallback": "Antwoord snel",
+  "teamQuiz.title": "Team Quiz",
+  "teamQuiz.start": "Start Team Quiz",
+  "teamQuiz.advance": "Volgende quizvraag",
+  "teamQuiz.promptFallback": "Kies het beste antwoord",
+  "teamQuiz.secondPrompt": "Bonusvraag",
+  "teamQuiz.optionA": "Optie A",
+  "teamQuiz.optionB": "Optie B",
+  "teamQuiz.optionC": "Optie C",
+  "teamQuiz.optionD": "Optie D"
 }

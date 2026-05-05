@@ -28,6 +28,22 @@ export type LiveEnergizerAnswer = {
   speedMs: number
   rank: number
 }
+export type LiveTeamQuizQuestion = {
+  prompt: string
+  options: string[]
+  correctIndex: number
+}
+export type LiveTeamQuizSubmission = {
+  voterId: string
+  questionIndex: number
+  value: string
+  correct: boolean
+}
+export type LiveTeamQuizScore = {
+  voterId: string
+  score: number
+  rank: number
+}
 export type LiveEnergizerState = {
   id: string
   kind: LiveEnergizerKind
@@ -38,6 +54,10 @@ export type LiveEnergizerState = {
   correctIndex?: number
   startedAt?: number
   answers?: LiveEnergizerAnswer[]
+  questions?: LiveTeamQuizQuestion[]
+  currentIndex?: number
+  submissions?: LiveTeamQuizSubmission[]
+  scores?: LiveTeamQuizScore[]
 }
 
 // ── Client → Server ─────────────────────────────────────────────────────────
@@ -50,6 +70,7 @@ export type ClientMessage =
   | { v?: LiveProtocolVersion; type: 'resume'; data: Record<string, never>; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'energizer_activate'; data: { energizer: LiveEnergizerState }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'energizer_answer'; data: { energizerId: string; value: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'energizer_advance'; data: { energizerId: string }; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {

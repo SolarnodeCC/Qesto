@@ -53,5 +53,14 @@
   "quickFinger.correct": "Richtig — starke Reflexe.",
   "quickFinger.incorrect": "Antwort erhalten.",
   "quickFinger.speed": "{ms} ms",
-  "quickFinger.ranking": "Quick-Finger-Rangliste"
+  "quickFinger.ranking": "Quick-Finger-Rangliste",
+  "teamQuiz.title": "Team Quiz",
+  "teamQuiz.progress": "Frage {current} von {total}",
+  "teamQuiz.completed": "Quiz abgeschlossen",
+  "teamQuiz.score": "{score} Punkte",
+  "teamQuiz.correct": "Richtig — gespeichert.",
+  "teamQuiz.locked": "Antwort gespeichert — warte auf die nächste Frage.",
+  "teamQuiz.waiting": "Warte auf die nächste Quizfrage…",
+  "teamQuiz.scoreboard": "Team-Quiz-Punktestand",
+  "teamQuiz.you": "Du"
 }
