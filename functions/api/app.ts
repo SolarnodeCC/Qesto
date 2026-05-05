@@ -20,6 +20,7 @@ import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import { writeEvent } from './lib/observability'
 import { sanitizeError } from './lib/error-handler'
+import { resolveExpectedOrigin } from './lib/origin'
 import type { Env } from './types'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -45,7 +46,7 @@ export function createApp() {
     '*',
     cors({
       origin: (origin, c) => {
-        const allowed = c.env.PAGES_URL
+        const allowed = resolveExpectedOrigin(c.env, c.req.url)
         if (!origin) return null
         if (origin === allowed) return origin
         // Allow Cloudflare Pages preview deployments (<hash>.qesto.pages.dev).

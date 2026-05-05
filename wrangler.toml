@@ -50,8 +50,8 @@ SEED_ADMIN_EMAIL = "qesto@example.com"
 # Checkout URL for paid plan upgrades.
 CHECKOUT_URL = "https://checkout.qesto.cc"
 # Resend sender identity; must be a verified sender/domain in your Resend account.
-# If omitted, the API falls back to "Qesto <onboarding@resend.dev>".
-RESEND_FROM = "Qesto <onboarding@resend.dev>"
+# Use a branded sender on qesto.cc for production auth emails.
+RESEND_FROM = "Qesto <login@qesto.cc>"
 
 [[d1_databases]]
 binding = "DB"

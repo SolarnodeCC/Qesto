@@ -26,6 +26,7 @@
 
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
+import { resolveExpectedOrigin } from '../lib/origin'
 
 const UNSAFE_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
 
@@ -48,7 +49,7 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // explicit in case future refactors change the verb.
   if (c.req.header('upgrade')?.toLowerCase() === 'websocket') return next()
 
-  const expected = normaliseOrigin(c.env.PAGES_URL)
+  const expected = resolveExpectedOrigin(c.env, c.req.url)
   if (!expected) {
     // Misconfigured deploy — fail closed.
     return c.json(

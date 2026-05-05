@@ -1,2 +1,3 @@
+/favicon.ico /favicon.svg 200
 /api/* https://qesto-api.oostelaar.workers.dev/api/:splat 200
 /* /index.html 200
