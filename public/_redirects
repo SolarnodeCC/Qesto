@@ -1,1 +1,2 @@
 # Pages Functions handles /api/* directly. Keep this file free of external proxy rewrites.
+/* /index.html 200
