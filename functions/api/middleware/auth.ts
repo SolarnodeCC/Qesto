@@ -1,6 +1,7 @@
 import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { verifyJwt, type AuthClaims } from '../lib/jwt'
+import { hashSessionToken, revokedSessionTokenKey } from '../lib/session-token'
 import type { Env } from '../types'
 
 export const SESSION_COOKIE = 'qesto_session'
@@ -8,6 +9,7 @@ export const SESSION_COOKIE = 'qesto_session'
 export type AuthVariables = {
   trace_id: string
   user: AuthClaims
+  session_token: string
 }
 
 export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthVariables }> = async (c, next) => {
@@ -28,6 +30,17 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
       401,
     )
   }
+  if (c.env.ACTIONS_KV) {
+    const tokenHash = await hashSessionToken(token)
+    const revoked = await c.env.ACTIONS_KV.get(revokedSessionTokenKey(tokenHash))
+    if (revoked) {
+      return c.json(
+        { ok: false, error: { code: 'unauthenticated', message: 'Session has been revoked' }, trace_id: c.get('trace_id') },
+        401,
+      )
+    }
+  }
   c.set('user', claims)
+  c.set('session_token', token)
   await next()
 }

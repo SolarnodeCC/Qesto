@@ -136,7 +136,6 @@ describe('OAuth characterization + hardening', () => {
   beforeEach(() => {
     vi.spyOn(oauth, 'consumeOAuthState').mockResolvedValue(true)
     vi.spyOn(oauth, 'exchangeGoogleCode').mockResolvedValue({ email: 'oauth-user@example.com', sub: 'google-sub-1' })
-    vi.spyOn(oauth, 'exchangeMicrosoftCode').mockResolvedValue({ email: 'ms-user@example.com', sub: 'ms-sub-1' })
   })
   afterEach(() => vi.restoreAllMocks())
 
@@ -162,20 +161,6 @@ describe('OAuth characterization + hardening', () => {
     const loc = res.headers.get('location') ?? ''
     expect(loc).toContain('error=sso_failed')
     expect(loc).not.toContain('SECRET')
-  })
-
-  it('microsoft callback sets session cookie on happy path', async () => {
-    const app = createApp()
-    const res = await app.fetch(
-      new Request('http://local/api/auth/microsoft/callback?code=mc1&state=ms1', { redirect: 'manual' }),
-      makeAuthEnv(new D1Mock(), {
-        MICROSOFT_CLIENT_ID: 'mid',
-        MICROSOFT_CLIENT_SECRET: 'msec',
-      }),
-    )
-    expect(res.status).toBe(302)
-    expect(res.headers.get('location')).toBe('http://local/')
-    expect(res.headers.get('set-cookie')).toContain('qesto_session=')
   })
 
   it('google start redirects provider_not_configured when client id missing', async () => {

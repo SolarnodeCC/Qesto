@@ -19,7 +19,7 @@ describe('enrichPricingMatrix', () => {
     const [free, starter, team] = PLANS
     const m = enrichPricingMatrix(PRICING_MATRIX_BASE, free, starter, team)
     const adminSection = m.find((s) => s.section === 'Admin & compliance')
-    const row = adminSection?.rows.find((r) => r[0] === 'SSO (OIDC, SAML)')
+    const row = adminSection?.rows.find((r) => r[0] === 'SAML SSO')
     expect(row?.[1]).toBe(false)
     expect(row?.[2]).toBe(false)
     expect(row?.[3]).toBe(true)

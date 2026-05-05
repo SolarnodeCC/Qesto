@@ -708,10 +708,19 @@ export class SessionRoom implements DurableObject {
   ): Promise<void> {
     if (att.role !== 'presenter') {
       ws.send(errorMessage('forbidden', 'Only presenter can advance energizers'))
+      await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
+      return
+    }
+    if (!this.canActivateEnergizer(att)) {
+      ws.send(errorMessage('forbidden', 'Presenter role cannot advance energizers'))
+      await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
+      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, { id: data?.energizerId }, { reason: 'permission' })
       return
     }
     if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
       ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
+      await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
+      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, { id: data?.energizerId }, { reason: 'feature_disabled' })
       return
     }
     const active = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
@@ -943,6 +952,7 @@ export class SessionRoom implements DurableObject {
     name:
       | 'ws.energizer_activated'
       | 'ws.energizer_activation_denied'
+      | 'ws.energizer_advance_denied'
       | 'ws.energizer_answered'
       | 'ws.energizer_advanced'
       | 'ws.energizer_completed',
@@ -962,6 +972,7 @@ export class SessionRoom implements DurableObject {
     action:
       | 'ws.energizer_activated'
       | 'ws.energizer_activation_denied'
+      | 'ws.energizer_advance_denied'
       | 'ws.energizer_answered'
       | 'ws.energizer_advanced'
       | 'ws.energizer_completed',

@@ -896,6 +896,42 @@ describe('Sprint 31 — Enterprise energizer activation permissions', () => {
     expect(await state.storage.get('active_energizer')).toMatchObject({ id: 'eg_allowed', status: 'active' })
   })
 
+  it('denies energizer advance when presenter lacks energizer activation permission', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenterAllowed = connectPresenter(state, 'user_host', ['energizer:activate'])
+    const presenterDenied = connectPresenter(state, 'user_host', [])
+
+    await sendMessage(room, presenterAllowed, {
+      type: 'energizer_activate',
+      data: {
+        energizer: {
+          id: 'eg_advance_perm',
+          kind: 'team_quiz',
+          title: 'Team quiz',
+          status: 'active',
+          questions: [{ prompt: 'Q1', options: ['A', 'B'], correctIndex: 0 }],
+        },
+      },
+      timestamp: 0,
+    })
+    await sendMessage(room, presenterDenied, {
+      type: 'energizer_advance',
+      data: { energizerId: 'eg_advance_perm' },
+      timestamp: 0,
+    })
+
+    const err = presenterDenied
+      .messages<{ type: string; data: { code?: string } }>()
+      .find((entry) => entry.type === 'error' && entry.data.code === 'forbidden')
+    expect(err).toBeTruthy()
+    expect(await state.storage.get('active_energizer')).toMatchObject({
+      id: 'eg_advance_perm',
+      status: 'active',
+      currentIndex: 0,
+    })
+  })
+
   it('writes sanitized audit evidence for realtime activation, answers, completion, and denials', async () => {
     const { room, state, db } = await buildLiveEnergizerRoom()
     await init(room)
@@ -933,10 +969,16 @@ describe('Sprint 31 — Enterprise energizer activation permissions', () => {
       data: { energizerId: 'eg_audit' },
       timestamp: 0,
     })
+    await sendMessage(room, denied, {
+      type: 'energizer_advance',
+      data: { energizerId: 'eg_audit' },
+      timestamp: 0,
+    })
 
     const actions = [...db.auditEvents.values()].map((event) => event.action)
     expect(actions).toEqual(expect.arrayContaining([
       'ws.energizer_activation_denied',
+      'ws.energizer_advance_denied',
       'ws.energizer_activated',
       'ws.energizer_answered',
       'ws.energizer_completed',

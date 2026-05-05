@@ -166,6 +166,68 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(setCookie).toContain('qesto_session=')
     expect(setCookie).toMatch(/Max-Age=0|expires=Thu, 01 Jan 1970/i)
   })
+
+  it('refresh issues a new cookie and revokes the previous session token', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+
+    const reqRes = await app.fetch(
+      new Request('http://local/api/auth/request', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'refresh@example.com' }),
+      }),
+      env,
+    )
+    expect(reqRes.status).toBe(202)
+
+    db.magicLinks.clear()
+    const { generateMagicLinkToken, hashMagicLinkToken } = await import('../../functions/api/lib/tokens')
+    const raw = generateMagicLinkToken()
+    const hash = await hashMagicLinkToken(raw)
+    const now = Date.now()
+    db.magicLinks.set(hash, {
+      token_hash: hash,
+      email: 'refresh@example.com',
+      created_at: now,
+      expires_at: now + 15 * 60 * 1000,
+      consumed_at: null,
+      requester_ip: null,
+    })
+
+    const cbRes = await app.fetch(
+      new Request(`http://local/api/auth/callback?token=${raw}`, { redirect: 'manual' }),
+      env,
+    )
+    const oldSetCookie = cbRes.headers.get('set-cookie') ?? ''
+    const oldJwt = oldSetCookie.match(/qesto_session=([^;]+)/)?.[1]
+    expect(oldJwt).toBeTruthy()
+
+    const refreshRes = await app.fetch(
+      new Request('http://local/api/auth/refresh', {
+        method: 'POST',
+        headers: { cookie: `qesto_session=${oldJwt}` },
+      }),
+      env,
+    )
+    expect(refreshRes.status).toBe(200)
+    const newSetCookie = refreshRes.headers.get('set-cookie') ?? ''
+    const newJwt = newSetCookie.match(/qesto_session=([^;]+)/)?.[1]
+    expect(newJwt).toBeTruthy()
+
+    const oldMe = await app.fetch(
+      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${oldJwt}` } }),
+      env,
+    )
+    expect(oldMe.status).toBe(401)
+
+    const newMe = await app.fetch(
+      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${newJwt}` } }),
+      env,
+    )
+    expect(newMe.status).toBe(200)
+  })
 })
 
 describe('password signup + login', () => {

@@ -91,6 +91,7 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 - **LAUNCHPAD-02** (8 pts) — inline editor + reorder; gate: S19-MEASURE-01 shows no launch reliability regression. **Do not start before S19-MEASURE-01 is complete.**
 
 **Explicitly deferred**: RBAC depth/custom roles implementation until AUTHZ-ADR-01 is *accepted* (not just drafted); GAM-01 / LIVE energizers until a Durable Object protocol/versioning ADR exists; TPL-CATALOG-* until Sprint 22.
+Microsoft OAuth login is also explicitly removed from sprint scope; the login page must not present a Microsoft sign-in option unless re-approved in a future planning cycle.
 
 See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance criteria, dependencies, KPIs, and Definition of Done.
 

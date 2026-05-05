@@ -35,6 +35,7 @@ export type AuditAction =
   | 'energizer.activation_denied'
   | 'ws.energizer_activated'
   | 'ws.energizer_activation_denied'
+  | 'ws.energizer_advance_denied'
   | 'ws.energizer_answered'
   | 'ws.energizer_advanced'
   | 'ws.energizer_completed'
