@@ -204,6 +204,12 @@ export default function MainLayout({
                   >
                     {t('footer.pricing')}
                   </Link>
+                  <Link
+                    to="/privacy"
+                    className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2"
+                  >
+                    {t('footer.privacyPolicy')}
+                  </Link>
                 </>
               )}
               {!isMarketingPage && <LanguageSwitcher />}
