@@ -99,6 +99,7 @@ type Attachment = {
   voterId: string
   ipHash: string
   bucket: { tokens: number; lastAt: number }
+  permissions?: string[]
 }
 
 const PER_IP_CONCURRENT_CAP = 5
@@ -326,6 +327,7 @@ export class SessionRoom implements DurableObject {
     const role = (req.headers.get('x-qesto-role') as 'presenter' | 'voter' | null) ?? 'voter'
     const voterId = req.headers.get('x-qesto-voter') ?? ''
     const ipHash = req.headers.get('x-qesto-ip-hash') ?? ''
+    const permissionsHeader = req.headers.get('x-qesto-permissions')
     if (!voterId || !ipHash) {
       return new Response('Missing voter headers', { status: 400 })
     }
@@ -368,6 +370,9 @@ export class SessionRoom implements DurableObject {
       voterId,
       ipHash,
       bucket: { tokens: VOTE_BUCKET_CAPACITY, lastAt: now() },
+      ...(role === 'presenter' && permissionsHeader !== null
+        ? { permissions: permissionsHeader.split(',').map((p) => p.trim()).filter(Boolean) }
+        : {}),
     }
     server.serializeAttachment(attachment)
     this.ctx.acceptWebSocket(server, [`ip:${ipHash}`, `voter:${voterId}`, `role:${role}`])
@@ -478,6 +483,10 @@ export class SessionRoom implements DurableObject {
       ws.send(errorMessage('forbidden', 'Only presenter can advance'))
       return
     }
+    if (!this.canControlSession(att)) {
+      ws.send(errorMessage('forbidden', 'Presenter role cannot advance this session'))
+      return
+    }
     const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
     const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
     const nextIdx = curIdx + 1
@@ -511,6 +520,10 @@ export class SessionRoom implements DurableObject {
       ws.send(errorMessage('forbidden', 'Only presenter can go back'))
       return
     }
+    if (!this.canControlSession(att)) {
+      ws.send(errorMessage('forbidden', 'Presenter role cannot go back in this session'))
+      return
+    }
     const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
     const curIdx = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
     const prevIdx = curIdx - 1
@@ -542,6 +555,10 @@ export class SessionRoom implements DurableObject {
       )
       return
     }
+    if (!this.canControlSession(att)) {
+      ws.send(errorMessage('forbidden', paused ? 'Presenter role cannot pause this session' : 'Presenter role cannot resume this session'))
+      return
+    }
     await this.setPaused(paused)
   }
 
@@ -552,18 +569,30 @@ export class SessionRoom implements DurableObject {
   ): Promise<void> {
     if (att.role !== 'presenter') {
       ws.send(errorMessage('forbidden', 'Only presenter can activate energizers'))
+      await this.emitEnergizerMetric('ws.energizer_activation_denied', energizer?.id, 0)
+      await this.recordEnergizerAudit('ws.energizer_activation_denied', att, energizer, { reason: 'role' })
+      return
+    }
+    if (!this.canActivateEnergizer(att)) {
+      ws.send(errorMessage('forbidden', 'Presenter role cannot activate energizers'))
+      await this.emitEnergizerMetric('ws.energizer_activation_denied', energizer?.id, 0)
+      await this.recordEnergizerAudit('ws.energizer_activation_denied', att, energizer, { reason: 'permission' })
       return
     }
     if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
       ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
+      await this.emitEnergizerMetric('ws.energizer_activation_denied', energizer?.id, 0)
+      await this.recordEnergizerAudit('ws.energizer_activation_denied', att, energizer, { reason: 'feature_disabled' })
       return
     }
     if (!isValidLiveEnergizer(energizer)) {
       ws.send(errorMessage('bad_energizer', 'Invalid energizer payload'))
       return
     }
-    const active = initialiseLiveEnergizer(energizer)
+    const active = withScoreArtifacts(initialiseLiveEnergizer(energizer))
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
+    await this.emitEnergizerMetric('ws.energizer_activated', active.id, active.leaderboard?.length ?? 0)
+    await this.recordEnergizerAudit('ws.energizer_activated', att, active)
     await this.broadcastEnergizer(active)
   }
 
@@ -611,7 +640,7 @@ export class SessionRoom implements DurableObject {
 
     const startedAt = active.startedAt ?? now()
     const correctValue = typeof active.correctIndex === 'number' ? options[active.correctIndex] : undefined
-    const answered: LiveEnergizerState = {
+    const answered: LiveEnergizerState = withScoreArtifacts({
       ...active,
       startedAt,
       answers: rankQuickFingerAnswers([
@@ -624,8 +653,10 @@ export class SessionRoom implements DurableObject {
           rank: 0,
         },
       ]),
-    }
+    })
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
+    await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
+    await this.recordEnergizerAudit('ws.energizer_answered', att, answered, { answer_count: answered.answers?.length ?? 0 })
     await this.broadcastEnergizer(answered)
   }
 
@@ -652,7 +683,7 @@ export class SessionRoom implements DurableObject {
       return
     }
 
-    const answered: LiveEnergizerState = {
+    const answered: LiveEnergizerState = withScoreArtifacts({
       ...active,
       submissions: [
         ...submissions,
@@ -663,9 +694,10 @@ export class SessionRoom implements DurableObject {
           correct: value === question.options[question.correctIndex],
         },
       ],
-    }
-    answered.scores = rankTeamQuizScores(answered.submissions ?? [])
+    })
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
+    await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.submissions?.length ?? 0)
+    await this.recordEnergizerAudit('ws.energizer_answered', att, answered, { answer_count: answered.submissions?.length ?? 0 })
     await this.broadcastEnergizer(answered)
   }
 
@@ -699,9 +731,20 @@ export class SessionRoom implements DurableObject {
     const total = active.questions?.length ?? 0
     const next: LiveEnergizerState =
       currentIndex + 1 >= total
-        ? { ...active, status: 'completed', currentIndex, scores: rankTeamQuizScores(active.submissions ?? []) }
-        : { ...active, currentIndex: currentIndex + 1 }
+        ? withScoreArtifacts({ ...active, status: 'completed', currentIndex })
+        : withScoreArtifacts({ ...active, currentIndex: currentIndex + 1 })
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, next)
+    await this.emitEnergizerMetric(
+      next.status === 'completed' ? 'ws.energizer_completed' : 'ws.energizer_advanced',
+      next.id,
+      next.leaderboard?.length ?? 0,
+    )
+    await this.recordEnergizerAudit(
+      next.status === 'completed' ? 'ws.energizer_completed' : 'ws.energizer_advanced',
+      att,
+      next,
+      { current_index: next.currentIndex ?? 0 },
+    )
     await this.broadcastEnergizer(next)
   }
 
@@ -886,6 +929,77 @@ export class SessionRoom implements DurableObject {
     }
   }
 
+  private canActivateEnergizer(att: Attachment): boolean {
+    if (att.role !== 'presenter') return false
+    return att.permissions === undefined || att.permissions.includes('energizer:activate')
+  }
+
+  private canControlSession(att: Attachment): boolean {
+    if (att.role !== 'presenter') return false
+    return att.permissions === undefined || att.permissions.includes('session:launch') || att.permissions.includes('session:close')
+  }
+
+  private async emitEnergizerMetric(
+    name:
+      | 'ws.energizer_activated'
+      | 'ws.energizer_activation_denied'
+      | 'ws.energizer_answered'
+      | 'ws.energizer_advanced'
+      | 'ws.energizer_completed',
+    energizerId: string | undefined,
+    count: number,
+  ): Promise<void> {
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    writeEvent(this.env.METRICS_AE, {
+      name,
+      sessionId: meta?.sessionId,
+      count,
+      traceId: energizerId,
+    })
+  }
+
+  private async recordEnergizerAudit(
+    action:
+      | 'ws.energizer_activated'
+      | 'ws.energizer_activation_denied'
+      | 'ws.energizer_answered'
+      | 'ws.energizer_advanced'
+      | 'ws.energizer_completed',
+    att: Attachment,
+    energizer: Pick<LiveEnergizerState, 'id' | 'kind' | 'status'> | { id?: string; kind?: string; status?: string } | null | undefined,
+    extra: Record<string, number | string | boolean | null> = {},
+  ): Promise<void> {
+    if (!this.env.DB || !energizer?.id) return
+    try {
+      await this.env.DB.prepare(
+        `INSERT INTO audit_events
+         (id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+         ON CONFLICT DO NOTHING`,
+      )
+        .bind(
+          crypto.randomUUID(),
+          now(),
+          att.voterId,
+          att.ipHash,
+          action,
+          'energizer',
+          energizer.id,
+          '{}',
+          JSON.stringify({
+            kind: energizer.kind ?? null,
+            status: energizer.status ?? null,
+            ...extra,
+          }),
+          `${action}:${energizer.id}:${now()}`,
+          null,
+        )
+        .run()
+    } catch {
+      // Audit evidence is best-effort from the realtime path; never break LIVE traffic.
+    }
+  }
+
   private async broadcastParticipants(): Promise<void> {
     const count = this.ctx.getWebSockets().length
     const msg = serverMessage({
@@ -965,9 +1079,12 @@ function initialiseLiveEnergizer(energizer: LiveEnergizerState): LiveEnergizerSt
     return {
       ...energizer,
       status: 'active',
+      startedAt: energizer.startedAt ?? now(),
       currentIndex: 0,
       submissions: [],
       scores: [],
+      leaderboard: [],
+      badges: {},
     }
   }
   return {
@@ -975,6 +1092,8 @@ function initialiseLiveEnergizer(energizer: LiveEnergizerState): LiveEnergizerSt
     status: 'active',
     startedAt: energizer.startedAt ?? now(),
     answers: [],
+    leaderboard: [],
+    badges: {},
   }
 }
 
@@ -999,4 +1118,98 @@ function rankTeamQuizScores(submissions: NonNullable<LiveEnergizerState['submiss
     .map(([voterId, score]) => ({ voterId, score, rank: 0 }))
     .sort((a, b) => b.score - a.score || a.voterId.localeCompare(b.voterId))
     .map((score, index) => ({ ...score, rank: index + 1 }))
+}
+
+function withScoreArtifacts(energizer: LiveEnergizerState): LiveEnergizerState {
+  if (energizer.kind === 'quick_finger') {
+    return withQuickFingerScoreArtifacts(energizer)
+  }
+  if (energizer.kind === 'team_quiz') {
+    return withTeamQuizScoreArtifacts(energizer)
+  }
+  return energizer
+}
+
+function withQuickFingerScoreArtifacts(energizer: LiveEnergizerState): LiveEnergizerState {
+  const answers = energizer.answers ?? []
+  const startedAt = energizer.startedAt ?? 0
+  const totals = new Map<string, number>()
+  for (const answer of answers) {
+    const speedBonus = answer.rank > 0 ? Math.max(1, 4 - answer.rank) : 0
+    totals.set(answer.voterId, (totals.get(answer.voterId) ?? 0) + (answer.correct ? 10 + speedBonus : 0))
+  }
+  const badges = new Map<string, NonNullable<LiveEnergizerState['badges']>[string]>()
+  const firstAnswer = [...answers].sort((a, b) => a.speedMs - b.speedMs)[0]
+  if (firstAnswer) addBadge(badges, firstAnswer.voterId, energizer.id, 'first_answer', 'First answer', startedAt)
+  for (const answer of answers.filter((entry) => entry.rank > 0 && entry.rank <= 3)) {
+    addBadge(badges, answer.voterId, energizer.id, 'speedster', 'Speedster', startedAt)
+  }
+  return {
+    ...energizer,
+    badges: Object.fromEntries(badges),
+    leaderboard: buildLeaderboard(totals, badges),
+  }
+}
+
+function withTeamQuizScoreArtifacts(energizer: LiveEnergizerState): LiveEnergizerState {
+  const submissions = energizer.submissions ?? []
+  const startedAt = energizer.startedAt ?? 0
+  const scores = rankTeamQuizScores(submissions)
+  const badges = new Map<string, NonNullable<LiveEnergizerState['badges']>[string]>()
+  const firstSubmission = submissions[0]
+  if (firstSubmission) addBadge(badges, firstSubmission.voterId, energizer.id, 'first_answer', 'First answer', startedAt)
+  const byVoter = new Map<string, typeof submissions>()
+  for (const submission of submissions) {
+    byVoter.set(submission.voterId, [...(byVoter.get(submission.voterId) ?? []), submission])
+  }
+  const totalQuestions = energizer.questions?.length ?? 0
+  for (const [voterId, voterSubmissions] of byVoter) {
+    if (voterSubmissions.length >= 2) addBadge(badges, voterId, energizer.id, 'engaged', 'Engaged', startedAt)
+    if (
+      energizer.status === 'completed' &&
+      totalQuestions > 0 &&
+      voterSubmissions.length >= totalQuestions &&
+      voterSubmissions.every((submission) => submission.correct)
+    ) {
+      addBadge(badges, voterId, energizer.id, 'perfect_trivia', 'Perfect trivia', startedAt)
+    }
+  }
+  const totals = new Map(scores.map((score) => [score.voterId, score.score]))
+  return {
+    ...energizer,
+    scores,
+    badges: Object.fromEntries(badges),
+    leaderboard: buildLeaderboard(totals, badges),
+  }
+}
+
+function addBadge(
+  badges: Map<string, NonNullable<LiveEnergizerState['badges']>[string]>,
+  voterId: string,
+  energizerId: string,
+  kind: NonNullable<LiveEnergizerState['badges']>[string][number]['kind'],
+  label: string,
+  awardedAt: number,
+): void {
+  const existing = badges.get(voterId) ?? []
+  const id = `${energizerId}:${kind}:${voterId}`
+  if (existing.some((badge) => badge.id === id)) return
+  badges.set(voterId, [...existing, { id, kind, label, awardedAt }])
+}
+
+function buildLeaderboard(
+  totals: Map<string, number>,
+  badges: Map<string, NonNullable<LiveEnergizerState['badges']>[string]>,
+): NonNullable<LiveEnergizerState['leaderboard']> {
+  return [...totals.entries()]
+    .map(([voterId, score]) => ({ voterId, score }))
+    .sort((a, b) => b.score - a.score || a.voterId.localeCompare(b.voterId))
+    .slice(0, 10)
+    .map((entry, index) => ({
+      voterId: entry.voterId,
+      label: `Player ${index + 1}`,
+      score: entry.score,
+      rank: index + 1,
+      badges: badges.get(entry.voterId) ?? [],
+    }))
 }

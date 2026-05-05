@@ -1,0 +1,25 @@
+import { readFileSync } from 'node:fs'
+import { describe, expect, it } from 'vitest'
+
+describe('Sprint 29 leaderboard and badge contract', () => {
+  it('keeps leaderboard and badges in the LIVE energizer snapshot', () => {
+    const realtime = readFileSync('functions/api/realtime.ts', 'utf8')
+    const room = readFileSync('functions/api/SessionRoom.ts', 'utf8')
+    const join = readFileSync('src/pages/JoinPage.tsx', 'utf8')
+    const present = readFileSync('src/pages/Present.tsx', 'utf8')
+
+    expect(realtime).toContain('LiveLeaderboardEntry')
+    expect(realtime).toContain('LiveBadgeAward')
+    expect(room).toContain('withScoreArtifacts')
+    expect(room).toContain('buildLeaderboard')
+    expect(join).toContain('LiveLeaderboard')
+    expect(present).toContain('leaderboard.title')
+  })
+
+  it('documents the Sprint 29 shipped scope', () => {
+    const sprint29 = readFileSync('docs/SPRINT29_IMPLEMENTATION_SPEC.md', 'utf8')
+
+    expect(sprint29).toContain('Leaderboard and badge foundation')
+    expect(sprint29).toContain('deterministic and idempotent')
+  })
+})

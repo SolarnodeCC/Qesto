@@ -26,7 +26,7 @@ _Repository hub: [Documentation map](../README.md)._
 | `ADM` | JWT + admin role |
 | `STR` | Stripe-only (signature verification), not user JWT |
 | `DEV` | Development environment only |
-| `WSP` | WebSocket **presenter**: `Sec-WebSocket-Protocol: qesto.bearer.<jwt>` |
+| `WSP` | WebSocket **presenter**: `Sec-WebSocket-Protocol: qesto.bearer.<jwt>`; owner or team member with effective presenter permissions, forwarded internally to `SessionRoom` |
 | `WSV` | WebSocket **voter**: anonymous path; dedup via IP+fingerprint — [[SPEC_REALTIME.md#voter-deduplication-psm-007]] |
 
 ### Response envelope
@@ -99,7 +99,7 @@ Details: [[SPEC_CORE.md#authentication]], [[SPEC_INTEGRATIONS.md#authentication-
 | GET | `/sessions/by-code/:code` | A | `{session,do_url}` | Join code |
 | GET | `/sessions/by-invite/:code` | A | `{session}` | Guest invite |
 | POST | `/sessions/:id/invite/guest` | JO | `{invite_code}` | |
-| GET | `/sessions/:id/ws` | **WSP\|WSV** | WS 101 | **GET** Upgrade; JSON text frames — [[SPEC_REALTIME.md#websocket-protocol]] |
+| GET | `/sessions/:id/ws` | **WSP\|WSV** | WS 101 | **GET** Upgrade; JSON text frames; team presenter permissions are resolved server-side and forwarded to `SessionRoom` — [[SPEC_REALTIME.md#websocket-protocol]] |
 | GET | `/sessions/:id/results` | JOP | JSON | Presenter results |
 | GET | `/sessions/:id/results/public` | A | JSON | Share token/link as implemented |
 | POST | `/sessions/:id/export` | JO | xlsx | |
@@ -203,6 +203,7 @@ Limits: [[SPEC_INTEGRATIONS.md#rate-limiting]], [[SPEC_CORE.md#critical-constrai
 | GET | `/admin/kpis` | ADM | `{kpis}` | |
 | GET | `/admin/stats` | ADM | `{stats}` | |
 | GET | `/admin/metrics` | ADM | `{metrics}` | |
+| GET | `/admin/analytics` | ADM | `{analytics}` | Includes sanitized engagement counters for LIVE energizers and badge breakdown |
 | GET | `/admin/health` | ADM | `{services}` | |
 | GET | `/admin/audit` | ADM | `{logs}` | |
 | GET | `/admin/audit-logs` | ADM | `{logs}` | |
@@ -219,6 +220,23 @@ Limits: [[SPEC_INTEGRATIONS.md#rate-limiting]], [[SPEC_CORE.md#critical-constrai
 | GET | `/admin/runbooks/:category` | ADM | `{runbook}` | |
 | PUT | `/admin/runbooks/:category` | ADM | `{runbook}` | |
 | DELETE | `/admin/runbooks/:category` | ADM | `{ok}` | |
+
+---
+
+### Admin engagement analytics
+
+`GET /admin/analytics` includes an `engagement` block used by the admin dashboard and CSV export:
+
+- `energizer_activations`
+- `energizer_participants`
+- `energizer_completions`
+- `energizer_dropouts`
+- `leaderboard_participants`
+- `badges_awarded`
+- `ws_error_rate`
+- `reconnect_rate`
+
+The endpoint counts sanitized realtime audit labels, including `ws.energizer_activated`, `ws.energizer_activation_denied`, `ws.energizer_answered`, `ws.energizer_advanced`, and `ws.energizer_completed`. It must not expose prompt text, answer values, emails, bearer tokens, SAML material, Stripe identifiers, or magic links.
 
 ---
 
@@ -373,7 +391,7 @@ Content-Type: application/json
 
 **Live vote (WebSocket)**
 
-1. Client: **`GET wss://host/api/sessions/:id/ws`** with Upgrade headers; presenter adds `Sec-WebSocket-Protocol: qesto.bearer.<jwt>`.  
+1. Client: **`GET wss://host/api/sessions/:id/ws`** with Upgrade headers; presenter adds `Sec-WebSocket-Protocol: qesto.bearer.<jwt>`. For team sessions, the route resolves effective permissions before forwarding to `SessionRoom`.
 2. After open: send JSON text frames per [[SPEC_REALTIME.md#websocket-messages]].
 
 ```json

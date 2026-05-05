@@ -14,6 +14,7 @@ import {
   MockDurableObjectState,
   MockWebSocket,
 } from '../helpers/do-mock'
+import { D1Mock } from '../helpers/d1-mock'
 
 function makeEnv(): Env {
   return {
@@ -22,6 +23,7 @@ function makeEnv(): Env {
     API_URL: 'http://local',
     JWT_SECRET: 'irrelevant-for-do-tests',
     LIVE_ENERGIZERS_ENABLED: 'false',
+    DB: new D1Mock() as unknown as D1Database,
   } as unknown as Env
 }
 
@@ -44,10 +46,13 @@ async function buildRoom(): Promise<{
 async function buildLiveEnergizerRoom(): Promise<{
   room: SessionRoom
   state: MockDurableObjectState
+  db: D1Mock
 }> {
   const state = new MockDurableObjectState()
-  const room = new SessionRoom(state as unknown as DurableObjectState, makeLiveEnergizerEnv())
-  return { room, state }
+  const env = makeLiveEnergizerEnv()
+  const db = env.DB as unknown as D1Mock
+  const room = new SessionRoom(state as unknown as DurableObjectState, env)
+  return { room, state, db }
 }
 
 async function init(
@@ -107,13 +112,14 @@ function connectVoter(state: MockDurableObjectState, voterId: string, ipHash = '
   return ws
 }
 
-function connectPresenter(state: MockDurableObjectState, userId = 'user_host'): MockWebSocket {
+function connectPresenter(state: MockDurableObjectState, userId = 'user_host', permissions?: string[]): MockWebSocket {
   const ws = new MockWebSocket()
   ws.serializeAttachment({
     role: 'presenter',
     voterId: `host_${userId}`,
     ipHash: 'presenter-ip',
     bucket: { tokens: 10, lastAt: 0 },
+    ...(permissions !== undefined ? { permissions } : {}),
   })
   state.acceptWebSocket(ws, ['ip:presenter-ip', `voter:host_${userId}`, 'role:presenter'])
   return ws
@@ -737,5 +743,206 @@ describe('Sprint 28 — LIVE Team Quiz loop', () => {
     })
     const completed = await state.storage.get<{ status: string; currentIndex: number }>('active_energizer')
     expect(completed).toMatchObject({ status: 'completed', currentIndex: 1 })
+  })
+})
+
+describe('Sprint 29 — leaderboard and badge foundation', () => {
+  it('derives a bounded Quick Finger leaderboard and idempotent speed badges', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const fast = connectVoter(state, 'anon_lb_fast', 'ip_lb_fast')
+    const slow = connectVoter(state, 'anon_lb_slow', 'ip_lb_slow')
+
+    vi.useFakeTimers()
+    vi.setSystemTime(2_000)
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: {
+          id: 'eg_lb_qf',
+          kind: 'quick_finger',
+          title: 'Quick finger',
+          status: 'active',
+          options: ['A', 'B'],
+          correctIndex: 0,
+        },
+      },
+      timestamp: 0,
+    })
+    vi.setSystemTime(2_100)
+    await sendMessage(room, fast, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_lb_qf', value: 'A' },
+      timestamp: 0,
+    })
+    vi.setSystemTime(2_500)
+    await sendMessage(room, slow, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_lb_qf', value: 'A' },
+      timestamp: 0,
+    })
+    await sendMessage(room, slow, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_lb_qf', value: 'A' },
+      timestamp: 0,
+    })
+
+    const active = await state.storage.get<{
+      leaderboard: { voterId: string; rank: number; badges: { id: string; kind: string }[] }[]
+      badges: Record<string, { id: string; kind: string }[]>
+    }>('active_energizer')
+    expect(active?.leaderboard).toHaveLength(2)
+    expect(active?.leaderboard[0]).toMatchObject({ voterId: 'anon_lb_fast', rank: 1 })
+    expect(active?.badges.anon_lb_fast.map((badge) => badge.kind)).toEqual(['first_answer', 'speedster'])
+    expect(new Set(active?.badges.anon_lb_fast.map((badge) => badge.id)).size).toBe(active?.badges.anon_lb_fast.length)
+    vi.useRealTimers()
+  })
+
+  it('awards Team Quiz engagement and perfect trivia badges once at completion', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const voter = connectVoter(state, 'anon_badge_tq', 'ip_badge_tq')
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: {
+        energizer: {
+          id: 'eg_badge_tq',
+          kind: 'team_quiz',
+          title: 'Team quiz',
+          status: 'active',
+          questions: [
+            { prompt: 'First?', options: ['A', 'B'], correctIndex: 0 },
+            { prompt: 'Second?', options: ['C', 'D'], correctIndex: 1 },
+          ],
+        },
+      },
+      timestamp: 0,
+    })
+    await sendMessage(room, voter, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_badge_tq', value: 'A' },
+      timestamp: 0,
+    })
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_advance',
+      data: { energizerId: 'eg_badge_tq' },
+      timestamp: 0,
+    })
+    await sendMessage(room, voter, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_badge_tq', value: 'D' },
+      timestamp: 0,
+    })
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_advance',
+      data: { energizerId: 'eg_badge_tq' },
+      timestamp: 0,
+    })
+
+    const completed = await state.storage.get<{
+      leaderboard: { voterId: string; score: number; badges: { id: string; kind: string }[] }[]
+      badges: Record<string, { id: string; kind: string }[]>
+    }>('active_energizer')
+    expect(completed?.leaderboard[0]).toMatchObject({ voterId: 'anon_badge_tq', score: 2 })
+    expect(completed?.badges.anon_badge_tq.map((badge) => badge.kind)).toEqual([
+      'first_answer',
+      'engaged',
+      'perfect_trivia',
+    ])
+    expect(new Set(completed?.badges.anon_badge_tq.map((badge) => badge.id)).size).toBe(completed?.badges.anon_badge_tq.length)
+  })
+})
+
+describe('Sprint 31 — Enterprise energizer activation permissions', () => {
+  it('denies presenter activation when custom permissions exclude energizer activation', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state, 'user_host', [])
+
+    await sendMessage(room, presenter, {
+      type: 'energizer_activate',
+      data: { energizer: { id: 'eg_denied', kind: 'quick_finger', title: 'Denied', status: 'active' } },
+      timestamp: 0,
+    })
+
+    const err = presenter.messages<{ type: string; data: { code: string } }>().find((entry) => entry.type === 'error')
+    expect(err?.data.code).toBe('forbidden')
+    expect(await state.storage.get('active_energizer')).toBeUndefined()
+  })
+
+  it('allows presenter activation when custom permissions include energizer activation', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state, 'user_host', ['energizer:activate'])
+
+    await sendMessage(room, presenter, {
+      type: 'energizer_activate',
+      data: { energizer: { id: 'eg_allowed', kind: 'quick_finger', title: 'Allowed', status: 'active' } },
+      timestamp: 0,
+    })
+
+    expect(await state.storage.get('active_energizer')).toMatchObject({ id: 'eg_allowed', status: 'active' })
+  })
+
+  it('writes sanitized audit evidence for realtime activation, answers, completion, and denials', async () => {
+    const { room, state, db } = await buildLiveEnergizerRoom()
+    await init(room)
+    const denied = connectPresenter(state, 'user_host', [])
+    const presenter = connectPresenter(state, 'user_host', ['session:launch', 'energizer:activate'])
+    const voter = connectVoter(state, 'anon_audit')
+
+    await sendMessage(room, denied, {
+      type: 'energizer_activate',
+      data: { energizer: { id: 'eg_audit_denied', kind: 'quick_finger', title: 'Denied title', status: 'active' } },
+      timestamp: 0,
+    })
+    await sendMessage(room, presenter, {
+      type: 'energizer_activate',
+      data: {
+        energizer: {
+          id: 'eg_audit',
+          kind: 'team_quiz',
+          title: 'Audit quiz',
+          status: 'active',
+          questions: [
+            { prompt: 'Private prompt 1', options: ['A', 'B'], correctIndex: 0 },
+          ],
+        },
+      },
+      timestamp: 0,
+    })
+    await sendMessage(room, voter, {
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_audit', value: 'A' },
+      timestamp: 0,
+    })
+    await sendMessage(room, presenter, {
+      type: 'energizer_advance',
+      data: { energizerId: 'eg_audit' },
+      timestamp: 0,
+    })
+
+    const actions = [...db.auditEvents.values()].map((event) => event.action)
+    expect(actions).toEqual(expect.arrayContaining([
+      'ws.energizer_activation_denied',
+      'ws.energizer_activated',
+      'ws.energizer_answered',
+      'ws.energizer_completed',
+    ]))
+    const serialized = JSON.stringify([...db.auditEvents.values()])
+    expect(serialized).not.toContain('Private prompt 1')
+    expect(serialized).not.toContain('"value":"A"')
   })
 })

@@ -114,6 +114,17 @@ export type AnalyticsData = {
   ai_cost_estimate_cents: number
   total_sessions_created: number
   total_decisions_processed: number
+  engagement: {
+    energizer_activations: number
+    energizer_participants: number
+    energizer_completions: number
+    energizer_dropouts: number
+    leaderboard_participants: number
+    badges_awarded: number
+    ws_error_rate: number
+    reconnect_rate: number
+  }
+  badge_breakdown: Array<{ kind: string; count: number }>
 }
 
 export type Sprint19Baseline = {
@@ -152,6 +163,12 @@ export type LiveMetrics = {
   revenue_24h_cents: number
   p95_latency_ms: number
   error_rate: number
+  reconnect_rate: number
+  energizer_activations: number
+  energizer_participants: number
+  energizer_completions: number
+  leaderboard_participants: number
+  badges_awarded: number
   refresh_ts: number
   stub?: boolean
 }
@@ -194,6 +211,13 @@ async function aggregateLiveMetrics(
     p95_latency_ms?: number
     error_count?: number
     request_count?: number
+    reconnect_count?: number
+    connection_count?: number
+    energizer_activations?: number
+    energizer_participants?: number
+    energizer_completions?: number
+    leaderboard_participants?: number
+    badges_awarded?: number
   }> = []
 
   for (let i = 0; i < windowMinutes; i++) {
@@ -207,6 +231,13 @@ async function aggregateLiveMetrics(
       p95_latency_ms?: number
       error_count?: number
       request_count?: number
+      reconnect_count?: number
+      connection_count?: number
+      energizer_activations?: number
+      energizer_participants?: number
+      energizer_completions?: number
+      leaderboard_participants?: number
+      badges_awarded?: number
     }>(kv, key)
     if (bucket) samples.push(bucket)
   }
@@ -218,6 +249,12 @@ async function aggregateLiveMetrics(
       revenue_24h_cents: 0,
       p95_latency_ms: 0,
       error_rate: 0,
+      reconnect_rate: 0,
+      energizer_activations: 0,
+      energizer_participants: 0,
+      energizer_completions: 0,
+      leaderboard_participants: 0,
+      badges_awarded: 0,
     }
   }
 
@@ -225,6 +262,8 @@ async function aggregateLiveMetrics(
   const latest = samples[0]
   const totalRequests = samples.reduce((s, b) => s + (b.request_count ?? 0), 0)
   const totalErrors = samples.reduce((s, b) => s + (b.error_count ?? 0), 0)
+  const totalConnections = samples.reduce((s, b) => s + (b.connection_count ?? 0), 0)
+  const totalReconnects = samples.reduce((s, b) => s + (b.reconnect_count ?? 0), 0)
 
   return {
     active_sessions: latest.active_sessions ?? 0,
@@ -232,6 +271,12 @@ async function aggregateLiveMetrics(
     revenue_24h_cents: latest.revenue_24h_cents ?? 0,
     p95_latency_ms: latest.p95_latency_ms ?? 0,
     error_rate: totalRequests > 0 ? totalErrors / totalRequests : 0,
+    reconnect_rate: totalConnections > 0 ? totalReconnects / totalConnections : 0,
+    energizer_activations: samples.reduce((s, b) => s + (b.energizer_activations ?? 0), 0),
+    energizer_participants: samples.reduce((s, b) => s + (b.energizer_participants ?? 0), 0),
+    energizer_completions: samples.reduce((s, b) => s + (b.energizer_completions ?? 0), 0),
+    leaderboard_participants: samples.reduce((s, b) => s + (b.leaderboard_participants ?? 0), 0),
+    badges_awarded: samples.reduce((s, b) => s + (b.badges_awarded ?? 0), 0),
   }
 }
 
@@ -275,6 +320,12 @@ export function mountAdminRoutes(parent: any) {
         revenue_24h_cents: 0,
         p95_latency_ms: 0,
         error_rate: 0,
+        reconnect_rate: 0,
+        energizer_activations: 0,
+        energizer_participants: 0,
+        energizer_completions: 0,
+        leaderboard_participants: 0,
+        badges_awarded: 0,
         refresh_ts: Date.now(),
         stub: true,
       }
@@ -780,6 +831,7 @@ export function mountAdminRoutes(parent: any) {
     if (metricsKv) {
       const agg = await aggregateLiveMetrics(metricsKv, 5)
       wsErrorRate = agg.error_rate
+      reconnectRate = agg.reconnect_rate
       activeSessions = agg.active_sessions
       voteP95 = agg.p95_latency_ms || null
     }
@@ -883,6 +935,17 @@ export function mountAdminRoutes(parent: any) {
       for (const row of statusRes.results) statusMap[row.status] = row.count
 
       const totalSessions = totalRes?.n ?? 0
+      let engagement = {
+        energizer_activations: 0,
+        energizer_participants: 0,
+        energizer_completions: 0,
+        energizer_dropouts: 0,
+        leaderboard_participants: 0,
+        badges_awarded: 0,
+        ws_error_rate: 0,
+        reconnect_rate: 0,
+      }
+      let badgeBreakdown: Array<{ kind: string; count: number }> = []
 
       // Decisions per day derived from audit_events
       let decisionsPerDay: DailyBucket[] = []
@@ -894,6 +957,65 @@ export function mountAdminRoutes(parent: any) {
         ).bind(fourteenDaysAgo).all<{ day: string; count: number }>()
         decisionsPerDay = dpd
       } catch { /* audit_events may not exist */ }
+
+      try {
+        const { results: actionRows } = await c.env.DB.prepare(
+          `SELECT action, COUNT(*) as count FROM audit_events
+           WHERE action IN (
+             'energizer.activate',
+             'energizer.advance',
+             'energizer.complete',
+             'energizer.activation_denied',
+             'ws.energizer_activated',
+             'ws.energizer_activation_denied',
+             'ws.energizer_answered',
+             'ws.energizer_advanced',
+             'ws.energizer_completed'
+           )
+           GROUP BY action`,
+        ).all<{ action: string; count: number }>()
+        const actionCounts = new Map(actionRows.map((row) => [row.action, row.count]))
+        engagement.energizer_activations =
+          (actionCounts.get('energizer.activate') ?? 0) + (actionCounts.get('ws.energizer_activated') ?? 0)
+        engagement.energizer_completions =
+          (actionCounts.get('energizer.complete') ?? 0) + (actionCounts.get('ws.energizer_completed') ?? 0)
+        engagement.energizer_participants = Math.max(
+          engagement.energizer_participants,
+          actionCounts.get('ws.energizer_answered') ?? 0,
+        )
+      } catch { /* audit_events may not exist */ }
+
+      try {
+        const [participantRes, leaderboardRes, badgeRes, activeRes] = await Promise.all([
+          c.env.DB.prepare('SELECT COUNT(DISTINCT voter_id) as n FROM energizer_votes').first<{ n: number }>(),
+          c.env.DB.prepare('SELECT COUNT(DISTINCT user_id) as n FROM leaderboard_entries').first<{ n: number }>(),
+          c.env.DB.prepare('SELECT badge_type as kind, COUNT(*) as count FROM badges GROUP BY badge_type ORDER BY count DESC').all<{ kind: string; count: number }>(),
+          c.env.DB.prepare("SELECT COUNT(*) as n FROM energizers WHERE state = 'active'").first<{ n: number }>(),
+        ])
+        engagement.energizer_participants = Math.max(engagement.energizer_participants, participantRes?.n ?? 0)
+        engagement.leaderboard_participants = leaderboardRes?.n ?? 0
+        badgeBreakdown = badgeRes.results ?? []
+        engagement.badges_awarded = badgeBreakdown.reduce((sum, row) => sum + row.count, 0)
+        engagement.energizer_dropouts = Math.max(
+          0,
+          (activeRes?.n ?? 0) + engagement.energizer_activations - engagement.energizer_completions,
+        )
+      } catch { /* gamification tables may not exist yet */ }
+
+      const metricsKv = (c.env as unknown as Record<string, KVNamespace | undefined>)['METRICS_KV']
+      if (metricsKv) {
+        const live = await aggregateLiveMetrics(metricsKv, 5)
+        engagement = {
+          ...engagement,
+          energizer_activations: engagement.energizer_activations + live.energizer_activations,
+          energizer_participants: Math.max(engagement.energizer_participants, live.energizer_participants),
+          energizer_completions: engagement.energizer_completions + live.energizer_completions,
+          leaderboard_participants: Math.max(engagement.leaderboard_participants, live.leaderboard_participants),
+          badges_awarded: engagement.badges_awarded + live.badges_awarded,
+          ws_error_rate: live.error_rate,
+          reconnect_rate: live.reconnect_rate,
+        }
+      }
 
       const analytics: AnalyticsData = {
         sessions_today: todayRes?.n ?? 0,
@@ -913,6 +1035,8 @@ export function mountAdminRoutes(parent: any) {
         ai_cost_estimate_cents: Math.round(totalSessions * 0.01),
         total_sessions_created: totalSessions,
         total_decisions_processed: (decisionsTodayRes?.n ?? 0) + (decisionsMonthRes?.n ?? 0),
+        engagement,
+        badge_breakdown: badgeBreakdown,
       }
 
       return c.json({ ok: true, data: analytics, trace_id }, 200)
@@ -922,6 +1046,17 @@ export function mountAdminRoutes(parent: any) {
         sessions_per_day: [], decisions_per_day: [], session_status: { draft: 0, live: 0, closed: 0, archived: 0 },
         consent_rate: 0, avg_participants: 0, ai_cost_estimate_cents: 0,
         total_sessions_created: 0, total_decisions_processed: 0,
+        engagement: {
+          energizer_activations: 0,
+          energizer_participants: 0,
+          energizer_completions: 0,
+          energizer_dropouts: 0,
+          leaderboard_participants: 0,
+          badges_awarded: 0,
+          ws_error_rate: 0,
+          reconnect_rate: 0,
+        },
+        badge_breakdown: [],
       }
       return c.json({ ok: true, data: empty, trace_id }, 200)
     }

@@ -44,6 +44,20 @@ export type LiveTeamQuizScore = {
   score: number
   rank: number
 }
+export type LiveBadgeKind = 'first_answer' | 'speedster' | 'perfect_trivia' | 'engaged'
+export type LiveBadgeAward = {
+  id: string
+  kind: LiveBadgeKind
+  label: string
+  awardedAt: number
+}
+export type LiveLeaderboardEntry = {
+  voterId: string
+  label: string
+  score: number
+  rank: number
+  badges: LiveBadgeAward[]
+}
 export type LiveEnergizerState = {
   id: string
   kind: LiveEnergizerKind
@@ -58,6 +72,8 @@ export type LiveEnergizerState = {
   currentIndex?: number
   submissions?: LiveTeamQuizSubmission[]
   scores?: LiveTeamQuizScore[]
+  leaderboard?: LiveLeaderboardEntry[]
+  badges?: Record<string, LiveBadgeAward[]>
 }
 
 // ── Client → Server ─────────────────────────────────────────────────────────

@@ -62,5 +62,9 @@
   "teamQuiz.locked": "Antwoord vastgelegd — wachten op de volgende vraag.",
   "teamQuiz.waiting": "Wachten op de volgende quizvraag…",
   "teamQuiz.scoreboard": "Team Quiz-scorebord",
-  "teamQuiz.you": "Jij"
+  "teamQuiz.you": "Jij",
+  "leaderboard.title": "Ranglijst",
+  "leaderboard.you": "Jij",
+  "leaderboard.points": "{score} pt",
+  "badges.earned": "Verdiende badges"
 }

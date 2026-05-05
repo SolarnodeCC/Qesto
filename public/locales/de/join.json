@@ -62,5 +62,9 @@
   "teamQuiz.locked": "Antwort gespeichert — warte auf die nächste Frage.",
   "teamQuiz.waiting": "Warte auf die nächste Quizfrage…",
   "teamQuiz.scoreboard": "Team-Quiz-Punktestand",
-  "teamQuiz.you": "Du"
+  "teamQuiz.you": "Du",
+  "leaderboard.title": "Rangliste",
+  "leaderboard.you": "Du",
+  "leaderboard.points": "{score} Pkt.",
+  "badges.earned": "Verdiente Badges"
 }

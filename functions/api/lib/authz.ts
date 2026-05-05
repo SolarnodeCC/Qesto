@@ -7,6 +7,7 @@ export type Permission =
   | 'session:close'
   | 'session:archive'
   | 'session:export'
+  | 'energizer:activate'
   | 'template:read'
   | 'template:write'
   | 'team:manage_members'
@@ -23,6 +24,7 @@ const ALL_TEAM_PERMISSIONS: Permission[] = [
   'session:close',
   'session:archive',
   'session:export',
+  'energizer:activate',
   'template:read',
   'template:write',
   'team:manage_members',
@@ -102,6 +104,18 @@ export async function customPermissionsForUser(
   return [...new Set((results ?? []).flatMap((row) => parsePermissions(row.permissions_json)))]
 }
 
+export async function effectiveTeamPermissionsForUser(
+  db: D1Database,
+  team: Team,
+  userId: string,
+): Promise<Permission[]> {
+  const member = team.members.find((entry) => entry.userId === userId)
+  if (!member) return []
+  const builtIn = BUILTIN_ROLE_PERMISSIONS[member.role] ?? []
+  const custom = await customPermissionsForUser(db, team.id, userId)
+  return [...new Set([...builtIn, ...custom])]
+}
+
 export async function hasTeamPermission(
   db: D1Database,
   team: Team,
@@ -110,10 +124,8 @@ export async function hasTeamPermission(
 ): Promise<boolean> {
   const member = team.members.find((entry) => entry.userId === userId)
   if (!member) return false
-  const builtIn = BUILTIN_ROLE_PERMISSIONS[member.role] ?? []
-  if (builtIn.includes(permission)) return true
-  const custom = await customPermissionsForUser(db, team.id, userId)
-  return custom.includes(permission)
+  const permissions = await effectiveTeamPermissionsForUser(db, team, userId)
+  return permissions.includes(permission)
 }
 
 export function validatePermissions(input: unknown): Permission[] | null {

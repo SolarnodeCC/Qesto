@@ -220,6 +220,7 @@ function LiveQuickFingerPanel({
   const myAnswer = energizer.answers?.find((answer) => answer.voterId === voterId)
   const options = energizer.options ?? []
   const ranking = energizer.answers?.filter((answer) => answer.correct && answer.rank > 0).slice(0, 3) ?? []
+  const myBadges = voterId ? energizer.badges?.[voterId] ?? [] : []
 
   return (
     <section className="rounded-xl border border-teal-200 bg-teal-50 p-4 space-y-4" aria-labelledby="live-quick-finger-heading">
@@ -267,6 +268,9 @@ function LiveQuickFingerPanel({
           ))}
         </ol>
       )}
+
+      <LiveLeaderboard energizer={energizer} voterId={voterId} />
+      {myBadges.length > 0 && <BadgeRow badges={myBadges} />}
     </section>
   )
 }
@@ -287,7 +291,7 @@ function LiveTeamQuizPanel({
     (submission) => submission.voterId === voterId && submission.questionIndex === currentIndex,
   )
   const myScore = energizer.scores?.find((score) => score.voterId === voterId)
-  const topScores = energizer.scores?.slice(0, 5) ?? []
+  const myBadges = voterId ? energizer.badges?.[voterId] ?? [] : []
 
   return (
     <section className="rounded-xl border border-orange-200 bg-orange-50 p-4 space-y-4" aria-labelledby="live-team-quiz-heading">
@@ -347,17 +351,42 @@ function LiveTeamQuizPanel({
         <p className="text-sm text-pulse-500">{t('teamQuiz.waiting')}</p>
       )}
 
-      {topScores.length > 0 && (
-        <ol className="space-y-1 text-xs text-pulse-600" aria-label={t('teamQuiz.scoreboard')}>
-          {topScores.map((score) => (
-            <li key={score.voterId} className="flex justify-between rounded bg-white/80 px-2 py-1">
-              <span>{score.voterId === voterId ? t('teamQuiz.you') : `#${score.rank}`}</span>
-              <span>{t('teamQuiz.score', { score: score.score })}</span>
-            </li>
-          ))}
-        </ol>
-      )}
+      <LiveLeaderboard energizer={energizer} voterId={voterId} />
+      {myBadges.length > 0 && <BadgeRow badges={myBadges} />}
     </section>
+  )
+}
+
+function LiveLeaderboard({ energizer, voterId }: { energizer: LiveEnergizerState; voterId: string | null }) {
+  const t = useT('join')
+  const entries = energizer.leaderboard ?? []
+  if (entries.length === 0) return null
+  return (
+    <ol className="space-y-1 text-xs text-pulse-600" aria-label={t('leaderboard.title')}>
+      {entries.slice(0, 5).map((entry) => (
+        <li key={entry.voterId} className="flex items-center justify-between gap-2 rounded bg-white/80 px-2 py-1">
+          <span className="truncate">
+            #{entry.rank} {entry.voterId === voterId ? t('leaderboard.you') : entry.label}
+          </span>
+          <span className="shrink-0 font-semibold text-pulse-800">
+            {t('leaderboard.points', { score: entry.score })}
+          </span>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+function BadgeRow({ badges }: { badges: NonNullable<LiveEnergizerState['leaderboard']>[number]['badges'] }) {
+  const t = useT('join')
+  return (
+    <div className="flex flex-wrap gap-1" aria-label={t('badges.earned')}>
+      {badges.map((badge) => (
+        <span key={badge.id} className="rounded-full bg-white border border-pulse-200 px-2 py-1 text-[11px] font-medium text-pulse-700">
+          {badge.label}
+        </span>
+      ))}
+    </div>
   )
 }
 

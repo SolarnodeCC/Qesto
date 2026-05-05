@@ -41,6 +41,8 @@ Sec-WebSocket-Key: ...
 Sec-WebSocket-Protocol: qesto.bearer.${JWT}  // Presenter auth
 ```
 
+Presenter upgrades are authorized by `/api/sessions/:id/ws` before the request reaches the Durable Object. For team sessions, the route resolves effective permissions from team membership and custom roles, then forwards that server-side list internally to `SessionRoom`. Clients must not be trusted to supply energizer permissions directly.
+
 **Close Codes**:
 - `1000`: Normal close (session ended)
 - `1008`: Policy violation (dedup check failed)
@@ -86,6 +88,11 @@ enum ClientMessageType {
   
   // Async Voting
   ASYNC_VOTE = 'async_vote',       // {questionId, selectedIndex}
+
+  // LIVE Energizers
+  ENERGIZER_ACTIVATE = 'energizer_activate', // {kind: 'quick_finger'|'team_quiz', config?}
+  ENERGIZER_ANSWER = 'energizer_answer',     // {answerIndex?}
+  ENERGIZER_ADVANCE = 'energizer_advance',   // {}
 }
 ```
 
@@ -154,6 +161,7 @@ enum ServerMessageType {
   // Special Modes
   SPEED_ROUND = 'speed_round',      // {scores: {voterId: points}}
   TEAM_UPDATE = 'team_update',      // {teams, colors, scores}
+  ENERGIZER_STATE = 'energizer_state', // {kind,status,leaderboard?,badges?,currentIndex?}
   
   // Errors & Control
   ERROR = 'error',                  // {code, message}
@@ -204,6 +212,24 @@ enum ServerMessageType {
   "timestamp": 1712000000100
 }
 ```
+
+---
+
+## LIVE Energizer v1 Extension
+
+Quick Finger and Team Quiz run through the existing WebSocket channel when `LIVE_ENERGIZERS_ENABLED` is enabled. Presenters send `energizer_activate` and, for multi-step flows, `energizer_advance`; voters send `energizer_answer`. `SessionRoom` broadcasts `energizer_state` snapshots with progress, leaderboard, and badge information suitable for participant and presenter views.
+
+Activation requires presenter role plus `energizer:activate` whenever the socket carries an explicit permission attachment. Owner/admin permissions include activation; built-in members do not receive it by default unless a custom role grants it.
+
+Realtime audit evidence is written to D1 with sanitized labels:
+
+- `ws.energizer_activated`
+- `ws.energizer_activation_denied`
+- `ws.energizer_answered`
+- `ws.energizer_advanced`
+- `ws.energizer_completed`
+
+Audit snapshots may include kind, status, counts, current index, and denial reason. They must not include prompt text, participant free text, answer values, emails, bearer tokens, SAML material, Stripe identifiers, or magic links.
 
 ---
 

@@ -40,6 +40,17 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   // Votes (read-only, written via WebSocket)
   'GET /api/sessions/:id/votes': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
 
+  // Energizers
+  'POST /api/sessions/:id/energizers': new Set(['owner', 'admin', 'member']),
+  'GET /api/sessions/:id/energizers': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
+  'GET /api/sessions/:id/energizers/active': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
+  'GET /api/sessions/:id/energizers/:id': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
+  'PATCH /api/sessions/:id/energizers/:id': new Set(['owner', 'admin', 'member']),
+  'POST /api/sessions/:id/energizers/:id/advance': new Set(['owner', 'admin', 'member']),
+  'POST /api/sessions/:id/energizers/:id/next': new Set(['owner', 'admin', 'member']),
+  'POST /api/sessions/:id/energizers/:id/vote': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
+  'GET /api/sessions/:id/leaderboard': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
+
   // Insights (analytics, plan-gated)
   'GET /api/sessions/:id/insights': new Set(['owner', 'admin', 'member']),
 
@@ -107,6 +118,7 @@ function getRouteKey(method: string, path: string): string | null {
     if (/^\d+$/.test(seg)) return true
     return false
   }
+  const idParents = new Set(['sessions', 'questions', 'teams', 'users', 'energizers'])
 
   // Try both `:id` and `:userId` substitution variants. Last numeric/ULID
   // segment becomes :userId when the previous meaningful segment is 'members'.
@@ -120,6 +132,14 @@ function getRouteKey(method: string, path: string): string | null {
     else if (isIdLike(b[i] ?? '')) b[i] = ':id'
   }
   variants.push(b.join('/'))
+  // Variant C: route resources such as session slugs and energizer IDs are
+  // often short opaque strings, so position-based normalization catches them.
+  const c = [...segments]
+  for (let i = 1; i < c.length; i++) {
+    if (c[i - 1] === 'members' && c[i]) c[i] = ':userId'
+    else if (idParents.has(c[i - 1] ?? '') && c[i]) c[i] = ':id'
+  }
+  variants.push(c.join('/'))
 
   for (const v of variants) {
     const key = `${method} ${v}`

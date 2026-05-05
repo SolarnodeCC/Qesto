@@ -179,4 +179,66 @@ describe('Admin Routes — Phase 8 Step 2', () => {
       expect(res2.status).toBe(200)
     })
   })
+
+  describe('GET /api/admin/analytics engagement', () => {
+    it('counts sanitized realtime energizer audit events in the engagement funnel', async () => {
+      const now = Date.now()
+      env.DB.sessions.set('sess_live', {
+        id: 'sess_live',
+        owner_id: 'user_123',
+        code: 'ABC123',
+        title: 'Live session',
+        status: 'live',
+        anonymity: 'full',
+        vote_policy: 'once',
+        session_mode: 'fun',
+        created_at: now,
+        started_at: now,
+        closed_at: null,
+        archived_at: null,
+        team_id: null,
+      })
+      for (const [id, action] of [
+        ['audit_1', 'ws.energizer_activated'],
+        ['audit_2', 'ws.energizer_answered'],
+        ['audit_3', 'ws.energizer_completed'],
+      ] as const) {
+        env.DB.auditEvents.set(id, {
+          id,
+          actor_id: 'host_user_123',
+          action,
+          subject_type: 'energizer',
+          subject_id: 'eg_live',
+          before_snapshot: '{}',
+          after_snapshot: '{"kind":"team_quiz","status":"active"}',
+          ts: now,
+          trace_id: id,
+          idempotency_key: null,
+        })
+      }
+
+      const res = await app.fetch(
+        new Request('http://local/api/admin/analytics', {
+          headers: { cookie: adminCookie, 'cf-connecting-ip': '127.0.0.1' },
+        }),
+        env,
+      )
+
+      expect(res.status).toBe(200)
+      const body = (await res.json()) as {
+        ok: boolean
+        data: {
+          engagement: {
+            energizer_activations: number
+            energizer_participants: number
+            energizer_completions: number
+          }
+        }
+      }
+      expect(body.ok).toBe(true)
+      expect(body.data.engagement.energizer_activations).toBe(1)
+      expect(body.data.engagement.energizer_participants).toBe(1)
+      expect(body.data.engagement.energizer_completions).toBe(1)
+    })
+  })
 })

@@ -93,12 +93,14 @@ copy (`€24` annualized, `€29` monthly for Signal).
 ## 5. Verify
 
 ```bash
-wrangler deploy --dry-run
-# Should list DB, all *_KV, SESSION_ROOM, AI under bindings.
+npm run deploy:api:dry-run
+# Should list DB, all *_KV, SESSION_ROOM, AI, METRICS_KV, METRICS_AE, and COMMIT_SHA under bindings.
 
-wrangler deploy
-# First real upload.
+npm run deploy:api
+# First real upload from a clean working tree.
 ```
+
+The deploy script injects the current short git commit into `COMMIT_SHA` so `/api/version` and `x-qesto-api-commit` can prove deployed-code parity. It refuses a dirty working tree unless `--allow-dirty` is passed for an intentional non-release dry-run.
 
 Then hit `https://qesto-api.oostelaar.workers.dev/api/admin/health` →
 expect `{ "ok": true, "data": { "env": "production", … } }`.

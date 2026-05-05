@@ -199,10 +199,20 @@ describe('useLiveSession reducer', () => {
           ],
           submissions: [{ voterId: 'anon_1', questionIndex: 0, value: 'A', correct: true }],
           scores: [{ voterId: 'anon_1', score: 1, rank: 1 }],
+          leaderboard: [
+            {
+              voterId: 'anon_1',
+              label: 'Player 1',
+              score: 1,
+              rank: 1,
+              badges: [{ id: 'eg_tq:first_answer:anon_1', kind: 'first_answer', label: 'First answer', awardedAt: 0 }],
+            },
+          ],
         },
       })
       expect(next.energizer?.currentIndex).toBe(1)
       expect(next.energizer?.scores?.[0].score).toBe(1)
+      expect(next.energizer?.leaderboard?.[0].badges[0].kind).toBe('first_answer')
     })
   })
 })

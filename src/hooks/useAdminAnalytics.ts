@@ -18,6 +18,17 @@ export type AnalyticsData = {
   ai_cost_estimate_cents: number
   total_sessions_created: number
   total_decisions_processed: number
+  engagement: {
+    energizer_activations: number
+    energizer_participants: number
+    energizer_completions: number
+    energizer_dropouts: number
+    leaderboard_participants: number
+    badges_awarded: number
+    ws_error_rate: number
+    reconnect_rate: number
+  }
+  badge_breakdown: Array<{ kind: string; count: number }>
 }
 
 export function useAdminAnalytics() {

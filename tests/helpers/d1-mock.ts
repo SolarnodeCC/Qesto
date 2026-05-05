@@ -601,6 +601,7 @@ export class D1PreparedStatementMock {
         this.sql,
         this.args as unknown[],
       )
+      if (this.sql.includes(' as n ')) return { n: filtered.length } as T
       return { count: filtered.length } as T
     }
     if (this.sql.startsWith('SELECT COUNT(*) as n FROM sessions')) {
@@ -639,6 +640,14 @@ export class D1PreparedStatementMock {
       const dismissed = rows.reduce((sum, s) => sum + (s.ai_dismissed_count ?? 0), 0)
       return { accepted, dismissed } as T
     }
+    if (this.sql.startsWith('SELECT AVG(CASE WHEN anonymity')) {
+      const [since] = this.args as [number]
+      const rows = [...this.db.sessions.values()].filter((s) => s.created_at >= since)
+      const rate = rows.length === 0
+        ? null
+        : rows.reduce((sum, s) => sum + (s.anonymity !== 'none' ? 1 : 0), 0) / rows.length
+      return { rate } as T
+    }
     if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { count: 0 } as T
     }
@@ -648,9 +657,9 @@ export class D1PreparedStatementMock {
       return (row && row.team_id === team_id ? row : null) as T | null
     }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
-      // Single-row lookup: WHERE id = ?1 AND owner_id = ?2
-      const [id, owner_id] = this.args as [string, string]
+      const [id, owner_id] = this.args as [string, string | undefined]
       const row = this.db.sessions.get(id)
+      if (owner_id === undefined) return (row as unknown as T) ?? null
       return (row && row.owner_id === owner_id ? (row as unknown as T) : null)
     }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
@@ -677,6 +686,19 @@ export class D1PreparedStatementMock {
         })) as unknown as T[],
       }
     }
+    if (this.sql.includes('FROM audit_events') && this.sql.includes('GROUP BY action')) {
+      let rows = [...this.db.auditEvents.values()]
+      if (this.sql.includes('action IN')) {
+        const matches = [...this.sql.matchAll(/'([^']+)'/g)].map((match) => match[1])
+        const allowed = new Set(matches)
+        rows = rows.filter((row) => allowed.has(row.action))
+      }
+      const counts = new Map<string, number>()
+      for (const row of rows) counts.set(row.action, (counts.get(row.action) ?? 0) + 1)
+      return {
+        results: [...counts.entries()].map(([action, count]) => ({ action, count })) as unknown as T[],
+      }
+    }
     if (this.sql.startsWith('SELECT * FROM audit_events')) {
       // Return all audit events (filters handled by caller if needed)
       const rows = [...this.db.auditEvents.values()]
@@ -687,6 +709,42 @@ export class D1PreparedStatementMock {
     }
     if (this.sql.startsWith('SELECT bucket_ts')) {
       return { results: [] as T[] }
+    }
+    if (this.sql.startsWith("SELECT DATE(created_at / 1000, 'unixepoch') as day")) {
+      const [since] = this.args as [number]
+      const counts = new Map<string, number>()
+      for (const session of this.db.sessions.values()) {
+        if (session.created_at < since) continue
+        const day = new Date(session.created_at).toISOString().slice(0, 10)
+        counts.set(day, (counts.get(day) ?? 0) + 1)
+      }
+      return {
+        results: [...counts.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([day, count]) => ({ day, count })) as unknown as T[],
+      }
+    }
+    if (this.sql.startsWith("SELECT DATE(ts / 1000, 'unixepoch') as day")) {
+      const [since] = this.args as [number]
+      const rows = [...this.db.auditEvents.values()]
+        .filter((event) => event.action === 'insights.generate' && event.ts >= since)
+      const counts = new Map<string, number>()
+      for (const event of rows) {
+        const day = new Date(event.ts).toISOString().slice(0, 10)
+        counts.set(day, (counts.get(day) ?? 0) + 1)
+      }
+      return {
+        results: [...counts.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([day, count]) => ({ day, count })) as unknown as T[],
+      }
+    }
+    if (this.sql.startsWith('SELECT status, COUNT(*) as count FROM sessions')) {
+      const counts = new Map<string, number>()
+      for (const session of this.db.sessions.values()) counts.set(session.status, (counts.get(session.status) ?? 0) + 1)
+      return {
+        results: [...counts.entries()].map(([status, count]) => ({ status, count })) as unknown as T[],
+      }
     }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
       // List form: WHERE owner_id = ?1 AND status != 'archived'

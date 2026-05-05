@@ -106,6 +106,10 @@ function KpiCard({ value, label, colour = 'text-teal-600' }: { value: number; la
   )
 }
 
+function RateCard({ value, label }: { value: number; label: string }) {
+  return <KpiCard value={Math.round(value * 100)} label={`${label} (%)`} colour="text-pulse-700" />
+}
+
 // ─── Status row ───────────────────────────────────────────────────────────────
 
 function StatusRow({ label, count }: { label: string; count: number }) {
@@ -150,6 +154,15 @@ export default function AdminAnalyticsTab() {
       ['usage', 'ai_cost_estimate_cents', String(a.ai_cost_estimate_cents)],
       ['usage', 'total_sessions_created', String(a.total_sessions_created)],
       ['usage', 'total_decisions_processed', String(a.total_decisions_processed)],
+      ['engagement', 'energizer_activations', String(a.engagement.energizer_activations)],
+      ['engagement', 'energizer_participants', String(a.engagement.energizer_participants)],
+      ['engagement', 'energizer_completions', String(a.engagement.energizer_completions)],
+      ['engagement', 'energizer_dropouts', String(a.engagement.energizer_dropouts)],
+      ['engagement', 'leaderboard_participants', String(a.engagement.leaderboard_participants)],
+      ['engagement', 'badges_awarded', String(a.engagement.badges_awarded)],
+      ['realtime', 'ws_error_rate', String(a.engagement.ws_error_rate)],
+      ['realtime', 'reconnect_rate', String(a.engagement.reconnect_rate)],
+      ...a.badge_breakdown.map((badge) => ['badge_breakdown', badge.kind, String(badge.count)]),
       ...a.sessions_per_day.map((bucket) => ['sessions_per_day', bucket.day, String(bucket.count)]),
       ...a.decisions_per_day.map((bucket) => ['decisions_per_day', bucket.day, String(bucket.count)]),
       ...Object.entries(a.session_status).map(([status, count]) => ['session_status', status, String(count)]),
@@ -183,6 +196,13 @@ export default function AdminAnalyticsTab() {
         <KpiCard value={a.decisions_today} label="Beslissingen vandaag" colour="text-purple-600" />
         <KpiCard value={a.sessions_this_month} label="Sessies deze maand" colour="text-green-600" />
         <KpiCard value={a.decisions_this_month} label="Beslissingen deze maand" colour="text-amber-500" />
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard value={a.engagement.energizer_activations} label="Energizers gestart" colour="text-teal-600" />
+        <KpiCard value={a.engagement.energizer_participants} label="Deelnemers energizers" colour="text-green-600" />
+        <KpiCard value={a.engagement.energizer_completions} label="Energizers afgerond" colour="text-amber-500" />
+        <KpiCard value={a.engagement.energizer_dropouts} label="Mogelijke uitval" colour="text-red-600" />
       </div>
 
       {/* Charts */}
@@ -219,11 +239,24 @@ export default function AdminAnalyticsTab() {
 
         <Card>
           <Heading level="s" className="mb-4">Actiepunten</Heading>
-          <StatusRow label="Open" count={0} />
-          <StatusRow label="In uitvoering" count={0} />
-          <StatusRow label="Afgerond" count={0} />
+          <StatusRow label="Leaderboard deelnemers" count={a.engagement.leaderboard_participants} />
+          <StatusRow label="Badges toegekend" count={a.engagement.badges_awarded} />
+          {a.badge_breakdown.slice(0, 3).map((badge) => (
+            <StatusRow key={badge.kind} label={badge.kind} count={badge.count} />
+          ))}
         </Card>
       </div>
+
+      <Card>
+        <Heading level="s" className="mb-4">Realtime gezondheid</Heading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <RateCard value={a.engagement.ws_error_rate} label="WebSocket fouten" />
+          <RateCard value={a.engagement.reconnect_rate} label="Reconnects" />
+        </div>
+        <Body size="s" className="mt-4 text-pulse-400">
+          Export bevat alleen geaggregeerde tellers en gesanitiseerde labels, geen vraagtekst, vrije tekst, e-mailadressen of tokens.
+        </Body>
+      </Card>
 
       {/* Cost & usage */}
       <Card>

@@ -62,5 +62,9 @@
   "teamQuiz.locked": "Réponse enregistrée — attente de la question suivante.",
   "teamQuiz.waiting": "En attente de la prochaine question du quiz…",
   "teamQuiz.scoreboard": "Score Team Quiz",
-  "teamQuiz.you": "Vous"
+  "teamQuiz.you": "Vous",
+  "leaderboard.title": "Classement",
+  "leaderboard.you": "Vous",
+  "leaderboard.points": "{score} pts",
+  "badges.earned": "Badges gagnés"
 }

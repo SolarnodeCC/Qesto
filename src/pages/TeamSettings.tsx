@@ -39,6 +39,7 @@ type Permission =
   | 'session:close'
   | 'session:archive'
   | 'session:export'
+  | 'energizer:activate'
   | 'template:read'
   | 'template:write'
   | 'team:manage_members'
@@ -72,6 +73,7 @@ const PERMISSIONS: Array<{ id: Permission; label: string; description: string }>
   { id: 'session:close', label: 'Close sessions', description: 'End live sessions.' },
   { id: 'session:archive', label: 'Archive sessions', description: 'Move closed sessions to archive.' },
   { id: 'session:export', label: 'Export sessions', description: 'Download session results.' },
+  { id: 'energizer:activate', label: 'Activate energizers', description: 'Start LIVE energizers separately from session launch and close.' },
   { id: 'template:read', label: 'Read templates', description: 'Use team and Qesto templates.' },
   { id: 'template:write', label: 'Manage templates', description: 'Create and update team templates.' },
   { id: 'team:manage_members', label: 'Manage members', description: 'Invite, remove, and delegate roles.' },

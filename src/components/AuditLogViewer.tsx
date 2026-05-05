@@ -41,6 +41,12 @@ const ACTIONS = [
   'energizer.create',
   'energizer.advance',
   'energizer.activate',
+  'energizer.complete',
+  'energizer.activation_denied',
+  'ws.energizer_activated',
+  'ws.energizer_activation_denied',
+  'ws.energizer_advanced',
+  'ws.energizer_completed',
 ]
 
 const SUBJECT_TYPES = ['session', 'question', 'user', 'team', 'auth', 'billing', 'insights', 'energizer']

@@ -47,6 +47,10 @@ import { rateLimit } from '../lib/rate-limit'
 import { sanitizeError } from '../lib/error-handler'
 import type { LiveQuestion } from '../realtime'
 import type { Env, PlanQuotas, PlanTier, PollOption, Question, Session } from '../types'
+import type { Team } from './teams'
+import { effectiveTeamPermissionsForUser, type Permission } from '../lib/authz'
+import { readKvJson } from '../lib/kv'
+import { teamDocumentKey } from '../lib/kv-keys'
 import {
   rejectDraftForResults,
   requireClosedOrArchivedForInsights,
@@ -104,6 +108,17 @@ async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   ).run().catch(() => {})
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch(() => {})
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
+}
+
+async function presenterPermissionsForSession(
+  env: Env,
+  session: SessionRow,
+  userId: string,
+): Promise<Permission[] | undefined> {
+  if (!session.team_id) return undefined
+  const team = await readKvJson<Team>(env.TEAMS_KV, teamDocumentKey(session.team_id))
+  if (!team) return []
+  return effectiveTeamPermissionsForUser(env.DB, team, userId)
 }
 
 type QuestionRow = {
@@ -456,11 +471,23 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       ?.substring(SESSION_COOKIE.length + 1)
     const token = bearerToken ?? cookieToken
     let presenterUserId: string | null = null
+    let presenterPermissions: Permission[] | undefined
     if (token) {
       const claims = await verifyJwt(token, c.env.JWT_SECRET)
-      if (claims && claims.sub === session.owner_id) {
-        role = 'presenter'
-        presenterUserId = claims.sub
+      if (claims) {
+        const teamPermissions = await presenterPermissionsForSession(c.env, session, claims.sub)
+        const canPresentTeamSession =
+          session.team_id !== null &&
+          (teamPermissions?.some((permission) =>
+            permission === 'session:launch' ||
+            permission === 'session:close' ||
+            permission === 'energizer:activate'
+          ) ?? false)
+        if (claims.sub === session.owner_id || canPresentTeamSession) {
+          role = 'presenter'
+          presenterUserId = claims.sub
+          presenterPermissions = teamPermissions
+        }
       }
     }
 
@@ -474,6 +501,9 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         'x-qesto-role': role,
         'x-qesto-voter': voterId,
         'x-qesto-ip-hash': identity.ipHash,
+        ...(role === 'presenter' && presenterPermissions !== undefined
+          ? { 'x-qesto-permissions': presenterPermissions.join(',') }
+          : {}),
       },
     })
     // Respond with a fixed subprotocol identifier. Browsers require the 101

@@ -644,7 +644,7 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 | **Sprint 26** | LIVE energizer activation readiness | Presenter controls, disabled/permission UX, activation state replay | Shipped in [`spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md) |
 | **Sprint 27** | First playable LIVE energizer: Quick Finger | Participant answer UI, DO answer validation, score broadcast, reconnect-safe state | Shipped in [`spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md) |
 | **Sprint 28** | Team Quiz LIVE loop | Quiz state machine, presenter progression, participant answer locking, reconnect tests | Shipped in `SPRINT28_IMPLEMENTATION_SPEC.md` |
-| **Sprint 29** | Leaderboard + badge foundation | Aggregated scoring, live leaderboard broadcast, badge hooks, idempotency tests | No advanced competitions until score/badge idempotency is proven |
+| **Sprint 29** | Leaderboard + badge foundation | Aggregated scoring, live leaderboard broadcast, badge hooks, idempotency tests | Shipped in `SPRINT29_IMPLEMENTATION_SPEC.md` |
 | **Sprint 30** | Admin engagement analytics maturity | Engagement funnel, CSV metrics, realtime health correlation, privacy review | No RC posture until dashboards answer support/admin questions |
 | **Sprint 31** | Enterprise rollout hardening | Energizer activation permission gate, audit UX polish, staging checklist, enterprise regression | No broad rollout until permission-deny and audit paths are clear |
 | **Sprint 32** | v2.2 release candidate | Full regression, spec/runbook closeout, feature-flag rollout, rollback plan | Release only after full-stack smoke and staging WebSocket validation |

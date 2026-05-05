@@ -62,5 +62,9 @@
   "teamQuiz.locked": "Answer locked — waiting for the next question.",
   "teamQuiz.waiting": "Waiting for the next quiz question…",
   "teamQuiz.scoreboard": "Team Quiz scoreboard",
-  "teamQuiz.you": "You"
+  "teamQuiz.you": "You",
+  "leaderboard.title": "Leaderboard",
+  "leaderboard.you": "You",
+  "leaderboard.points": "{score} pts",
+  "badges.earned": "Earned badges"
 }

@@ -374,6 +374,21 @@ export default function Present() {
             </div>
           </div>
 
+          {state.energizer?.leaderboard && state.energizer.leaderboard.length > 0 && (
+            <div className="absolute right-[64px] top-[700px] w-[440px] p-7 bg-white border border-pulse-200 rounded-[24px] shadow-elevated z-10">
+              <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase text-orange-700 mb-4">{t('leaderboard.title')}</h3>
+              <ol className="space-y-2">
+                {state.energizer.leaderboard.slice(0, 5).map((entry) => (
+                  <li key={entry.voterId} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl bg-pulse-50 px-4 py-3">
+                    <span className="font-[family-name:var(--font-display)] font-bold text-[24px] text-pulse-900 tabular-nums">{entry.rank}</span>
+                    <span className="text-[18px] font-semibold text-pulse-800 truncate">{entry.label}</span>
+                    <span className="text-[18px] font-bold text-orange-600 tabular-nums">{entry.score}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
+
           {/* WS / close errors */}
           {state.error && (
             <p role="alert" className="absolute top-[1020px] left-[64px] text-sm text-red-600 z-10">{state.error}</p>

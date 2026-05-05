@@ -1,6 +1,6 @@
 # Qesto — Documentation map
 
-_Last updated: 2026-05-04 (UTC)_
+_Last updated: 2026-05-05 (UTC)_
 
 This file is the **entry point** for everything under `docs/`: how documents connect, what to read first, and **which source wins** when wording differs. The repository root **[`README.md`](../README.md)** links here so clones and Git hosts land on the same map.
 
@@ -37,6 +37,7 @@ This file is the **entry point** for everything under `docs/`: how documents con
 
 - **`SECURITY_FULL.md`**, **`SECRET_RUNBOOK.md`**, **`SECRET_ROTATION_POLICY.md`**
 - **`DATABASE_GOVERNANCE.md`**, **`OBSERVABILITY.md`**
+- **`V2_2_AUDIT_OUTCOMES.md`** for the latest LIVE engagement audit closure and release caveats
 - **`spec/SPEC_DEPLOYMENT.md`**
 
 ### Visual design and dashboard / marketing UI
@@ -86,6 +87,7 @@ This file is the **entry point** for everything under `docs/`: how documents con
 | `PLAN_ENTITLEMENT_AUDIT.md` | Entitlement audit plan |
 | `spec/sprints/*_SPEC.md` | Sprint closure / implementation specification contracts |
 | `SPRINT26_32_PLAN.md` | Sprint 26-32 v2.2 live engagement, analytics, enterprise hardening, and release-candidate plan |
+| `V2_2_AUDIT_OUTCOMES.md` | Sprint 30-32 audit closure: analytics, realtime authz, audit evidence, coverage ruling |
 | `ADR-workers-ai-capabilities.md` | Architecture decision record |
 | `adr/ADR-0004-custom-rbac-authorization.md` | AUTHZ-ADR-01 — custom RBAC authorization gate for Sprint 21 |
 | `adr/ADR-0005-do-protocol-versioning.md` | DO-PROTOCOL-ADR-01 — versioned LIVE Durable Object WebSocket protocol gate for Sprint 24 |

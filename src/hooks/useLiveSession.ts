@@ -44,6 +44,27 @@ export type LiveEnergizerState = {
     score: number
     rank: number
   }[]
+  leaderboard?: {
+    voterId: string
+    label: string
+    score: number
+    rank: number
+    badges: {
+      id: string
+      kind: 'first_answer' | 'speedster' | 'perfect_trivia' | 'engaged'
+      label: string
+      awardedAt: number
+    }[]
+  }[]
+  badges?: Record<
+    string,
+    {
+      id: string
+      kind: 'first_answer' | 'speedster' | 'perfect_trivia' | 'engaged'
+      label: string
+      awardedAt: number
+    }[]
+  >
 }
 
 /** Wire-level option row — same shape as REST `PollOption`. */

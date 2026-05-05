@@ -8,6 +8,7 @@ import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
+import { teamDocumentKey } from '../../functions/api/lib/kv-keys'
 
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 
@@ -59,6 +60,19 @@ function makeDO(status: number, body: unknown): DurableObjectNamespace {
 const DO_OK = makeDO(200, { ok: true, data: { initialised: true } })
 const DO_ALREADY_INIT = makeDO(409, { ok: false, error: { code: 'already_initialised', message: 'Session already initialised' } })
 const DO_FAIL = makeDO(500, { ok: false, error: { code: 'internal_error', message: 'DO unavailable' } })
+
+function makeCapturingWsDO(capture: { headers?: Headers }): DurableObjectNamespace {
+  return {
+    idFromName: () => ({ toString: () => 'do-id' }) as unknown as DurableObjectId,
+    get: () =>
+      ({
+        fetch: (_input: string | Request, init?: RequestInit) => {
+          capture.headers = new Headers(init?.headers)
+          return Promise.resolve(new Response('ok', { status: 200 }))
+        },
+      }) as unknown as DurableObjectStub,
+  } as unknown as DurableObjectNamespace
+}
 
 async function createSession(
   _db: D1Mock,
@@ -345,5 +359,67 @@ describe('POST /api/sessions/:id/start', () => {
       .filter((l): l is { event: string } => typeof l === 'object' && l !== null && 'event' in l)
       .map((l) => l.event)
     expect(events).toContain('session.start.do_idempotent')
+  })
+
+  it('passes effective team permissions into the WebSocket presenter attachment path', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const capture: { headers?: Headers } = {}
+    const env = makeEnv(db, makeCapturingWsDO(capture))
+    const cookie = await cookieFor('user_member', 'member@example.com')
+    await env.TEAMS_KV.put(teamDocumentKey('team_1'), JSON.stringify({
+      id: 'team_1',
+      name: 'Team',
+      ownerId: 'owner_1',
+      members: [
+        { userId: 'user_member', email: 'member@example.com', role: 'member', joinedAt: Date.now() },
+      ],
+      plan: 'team',
+      samlConfig: null,
+      createdAt: Date.now(),
+    }))
+    db.sessions.set('sess_live_team', {
+      id: 'sess_live_team',
+      owner_id: 'owner_1',
+      code: 'LIVE42',
+      title: 'Live team session',
+      status: 'live',
+      anonymity: 'full',
+      vote_policy: 'once',
+      session_mode: 'fun',
+      created_at: Date.now(),
+      started_at: Date.now(),
+      closed_at: null,
+      archived_at: null,
+      team_id: 'team_1',
+    })
+    db.customRoles.set('role_eg', {
+      id: 'role_eg',
+      team_id: 'team_1',
+      name: 'Energizer host',
+      permissions_json: JSON.stringify(['energizer:activate']),
+      created_by: 'owner_1',
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    })
+    db.teamRoleAssignments.set('assign_eg', {
+      id: 'assign_eg',
+      team_id: 'team_1',
+      user_id: 'user_member',
+      role_id: 'role_eg',
+      assigned_by: 'owner_1',
+      assigned_at: Date.now(),
+    })
+
+    const res = await app.fetch(
+      new Request('http://local/api/sessions/sess_live_team/ws', {
+        headers: { upgrade: 'websocket', cookie, 'cf-connecting-ip': '127.0.0.1' },
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(200)
+    expect(capture.headers?.get('x-qesto-role')).toBe('presenter')
+    expect(capture.headers?.get('x-qesto-permissions')).toContain('energizer:activate')
   })
 })
