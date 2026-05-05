@@ -124,7 +124,7 @@ export default function Login() {
         )}
         {callbackError === 'provider_not_configured' && (
           <p role="alert" className="rounded-lg bg-amber-50 dark:bg-amber-900/30 p-3 text-sm text-amber-800 dark:text-amber-200">
-            {t('errorSSOFailed')}
+            {t('errorProviderNotConfigured')}
           </p>
         )}
 
