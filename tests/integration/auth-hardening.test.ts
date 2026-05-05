@@ -187,6 +187,16 @@ describe('OAuth characterization + hardening', () => {
     expect(res.status).toBe(302)
     expect(res.headers.get('location')).toContain('provider_not_configured')
   })
+
+  it('google callback redirects provider_not_configured when client secret missing', async () => {
+    const app = createApp()
+    const res = await app.fetch(
+      new Request('http://local/api/auth/google/callback?code=c3&state=s3', { redirect: 'manual' }),
+      makeAuthEnv(new D1Mock(), { GOOGLE_CLIENT_ID: 'gid' }),
+    )
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toContain('provider_not_configured')
+  })
 })
 
 describe('SAML characterization + hardening', () => {
