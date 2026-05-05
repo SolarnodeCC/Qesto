@@ -141,7 +141,7 @@ export default function Pricing() {
                   '30-day retention',
                   'Full & cohort anonymity',
                   'Workers AI drafts — 5 / month',
-                  free?.features.resultsExport ? 'CSV & PDF exports' : 'CSV exports (PDF on paid tiers)',
+                  free?.features.resultsExport ? 'CSV exports' : 'CSV exports on paid tiers',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
                     <span className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5">
@@ -200,7 +200,7 @@ export default function Pricing() {
                   starter?.features.insightsAI
                     ? 'Same-day evidence-anchored recap'
                     : 'Evidence-anchored recap (AI insights on Team)',
-                  'Slack, Notion, Workday webhooks',
+                  'Webhook integrations on the roadmap',
                   'Stripe-billed, cancel anytime',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
@@ -240,12 +240,12 @@ export default function Pricing() {
               </p>
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
-                  team?.features.samlSso ? 'SSO, SCIM, role scopes' : 'SSO roadmap — contact sales',
+                  team?.features.samlSso ? 'SAML SSO and role scopes' : 'SSO roadmap — contact sales',
                   'Custom retention & residency',
                   team?.features.insightsAI ? 'Private Workers AI endpoints' : 'AI insights',
-                  'Customer-managed encryption keys',
+                  'Customer-managed keys on the roadmap',
                   'Dedicated onboarding + SLA',
-                  'Branded domain & PDF templates',
+                  'Branded domain and PDF templates on the roadmap',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
                     <span className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5">

@@ -133,9 +133,9 @@ export default function Privacy() {
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-3">The complete list:</p>
             <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
-              <li><strong>Cloudflare, Inc.</strong> — Workers compute, Durable Objects (session state), R2 (object storage), Workers AI (inference). EU, US, or APAC region per your contract.</li>
+              <li><strong>Cloudflare, Inc.</strong> — Workers compute, Durable Objects, D1, KV storage, and Workers AI inference.</li>
               <li><strong>Stripe, Inc.</strong> — payment processing for paid plans. No session data ever touches Stripe.</li>
-              <li><strong>Postmark (ActiveCampaign).</strong> — transactional email (recap PDFs, login links).</li>
+              <li><strong>Resend.</strong> — transactional email for login links and account messages.</li>
             </ul>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               That's the whole list. We publish changes 30 days in advance; existing customers can object in writing.
@@ -177,8 +177,8 @@ export default function Privacy() {
               8. AI &amp; inference
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
-              Qesto uses <strong>Cloudflare Workers AI only</strong>. Inference runs inside the same network as your
-              session, in your region. No vendor hand-off — no OpenAI, no Anthropic, no Azure AI.
+              Qesto uses <strong>Cloudflare Workers AI only</strong>. Inference runs on Cloudflare's network. No
+              vendor hand-off to OpenAI, Anthropic, or Azure AI.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               Model inputs and outputs live with the session. Delete the session, the prompts go with it. No training
@@ -190,9 +190,9 @@ export default function Privacy() {
             </h2>
             <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
               <li>TLS 1.3 for every connection. HSTS with preload.</li>
-              <li>Data at rest encrypted with AES-256 (Cloudflare-managed keys; customer-managed keys on Chorus).</li>
-              <li>SOC 2 Type II audited, 2025. Report available under NDA.</li>
-              <li>Penetration test annually, latest by a named EU firm. Summary available to customers.</li>
+              <li>Data at rest is encrypted by the managed Cloudflare services Qesto uses.</li>
+              <li>Access to team data is controlled through JWT authentication, team membership, and plan-gated features.</li>
+              <li>Formal compliance reports, customer-managed keys, and third-party penetration-test summaries are roadmap items for enterprise procurement.</li>
             </ul>
 
             <h2 id="s10" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>

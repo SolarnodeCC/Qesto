@@ -129,8 +129,8 @@ export default function AIInsightsPage() {
               {
                 icon: <FileText size={22} />,
                 title: 'Draft the recap',
-                desc: 'Produces a first-pass summary the facilitator edits in place. Every sentence links to the evidence that produced it — no orphan claims.',
-                code: ['// recap draft', '→ 8 sentences', '→ each linked to 2+ anchors'],
+                desc: 'Produces theme suggestions and a first-pass synthesis from session responses. Hosts review the output before using it outside the room.',
+                code: ['// theme draft', '→ 8 summaries', '→ host reviewed'],
               },
               {
                 icon: <Search size={22} />,
@@ -174,14 +174,13 @@ export default function AIInsightsPage() {
                 The AI disclosure rules we actually follow.
               </h2>
               <p className="text-[15.5px] leading-relaxed text-pulse-800 dark:text-[#A8B3CC] mb-3.5">
-                Anything produced by a model carries the AI badge. No exceptions — not even the summary line in an
-                email. Participants see when they're reading AI output. Hosts can edit it; the badge persists on the
-                edited version.
+                Anything produced by a model carries the AI badge in Qesto product surfaces. Hosts review AI output
+                before using it outside the room, and participant-facing live views stay focused on aggregate tallies.
               </p>
               <ul className="space-y-2 text-sm text-pulse-600 dark:text-[#A8B3CC] list-disc pl-5">
                 <li>AI-generated content is always labeled with the sparkles glyph and violet accent.</li>
-                <li>Every cluster and sentence links back to the raw tally or quote that produced it.</li>
-                <li>Host edits are tracked — the recap PDF shows "AI draft + 3 edits by M. Holloway."</li>
+                <li>Theme clusters are generated from real session responses and should be reviewed by the host.</li>
+                <li>Detailed edit history and PDF recap provenance are roadmap items.</li>
                 <li>Participants never see AI output during a live session — only aggregate tallies.</li>
                 <li>We don't generate quotes. Every quoted line in a recap is a real participant response.</li>
               </ul>
@@ -265,7 +264,7 @@ export default function AIInsightsPage() {
             Evidence you can edit. AI you can trust.
           </h2>
           <p className="text-slate-400 mb-8">
-            Try AI Insights on your next session. Free for drafts up to 5 per month.
+            Try AI-assisted themes on your next eligible session.
           </p>
           <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
             Generate a recap

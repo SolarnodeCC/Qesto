@@ -33,7 +33,7 @@ const FEATURE_CARDS: FeatureCard[] = [
   {
     icon: Sparkles,
     title: 'Same-day recap',
-    desc: "AI drafts the summary in the session's last 60 seconds, anchored to real responses. You edit, then send.",
+    desc: 'AI-assisted theme drafts help you turn real responses into a reviewed same-day recap.',
     ai: true,
   },
   {

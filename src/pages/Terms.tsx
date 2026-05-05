@@ -115,8 +115,8 @@ export default function Terms() {
               content to you and your participants. Nothing more.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
-              Exports are yours, always. We provide CSV, JSON, and PDF exports for every session. If you cancel, you
-              have 30 days to pull your data before we purge.
+              Exports are yours. Today Qesto provides CSV session exports where your plan includes exports. If you
+              cancel, you have 30 days to pull your available data before we purge.
             </p>
 
             <h2 id="t5" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
@@ -131,8 +131,8 @@ export default function Terms() {
               We believe in the tool.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
-              Overage billing is per-session, at the rate on your plan page when the session was created. You'll see
-              every charge itemized.
+              Plan limits are enforced in the product before a session starts. We do not charge surprise usage
+              overages; any expanded commercial terms belong in a signed order form or plan update.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               Price changes affect your next renewal, not the current term. We give 60 days' notice.
@@ -142,8 +142,8 @@ export default function Terms() {
               6. Service levels
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
-              Signal and Chorus plans have a 99.9% monthly uptime SLA. Pulse is best-effort — free tier, no SLA,
-              but historically runs at the same availability.
+              Pulse and Signal are provided on a best-effort basis. Any formal uptime commitment for enterprise
+              customers belongs in a signed order form or master services agreement.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               Credits for downtime are capped at the prior month's fees, processed within the next invoice cycle.

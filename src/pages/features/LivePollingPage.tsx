@@ -30,7 +30,7 @@ const latencyRows = [
   { hop: 'Hop 02', title: 'Edge → Durable Object.', desc: 'Session state lives in a single DO, pinned to the colo closest to first-mover.', lat: '~8ms', sub: 'intra-colo' },
   { hop: 'Hop 03', title: 'DO → WebSocket fan-out.', desc: 'Tally update broadcast to every connected participant over persistent WS.', lat: '~12ms', sub: 'fanout' },
   { hop: 'Hop 04', title: 'Render.', desc: 'Bar moves on the projected screen. Same pipe, no client poll.', lat: '~16ms', sub: 'paint' },
-  { hop: 'Total', title: 'Tap to bar movement.', desc: 'End-to-end, measured across 10k sessions in production.', lat: '< 80ms', sub: 'p50 end-to-end', highlight: true },
+  { hop: 'Total', title: 'Tap to bar movement.', desc: 'End-to-end benchmark pending Cloudflare-backed staging validation.', lat: 'Live', sub: 'validation pending', highlight: true },
 ]
 
 const hostControls = [
@@ -39,7 +39,7 @@ const hostControls = [
   { icon: <Shuffle size={22} />, title: 'Option shuffle', desc: 'Randomize order per participant. Defeats position bias without randomizing on the projected screen.' },
   { icon: <Users size={22} />, title: 'Minimum tally gate', desc: 'Results stay hidden until N voters are in. Default 5, configurable. Prevents single-voter exposure.' },
   { icon: <Timer size={22} />, title: 'Soft timer', desc: 'Optional countdown visible to participants. Expires to close, not to lock — stragglers finish on next question.' },
-  { icon: <Download size={22} />, title: 'One-click export', desc: 'CSV, JSON, or signed PDF with every tally and consent log. Integrates with Workday, HRIS, Notion, Slack.' },
+  { icon: <Download size={22} />, title: 'One-click export', desc: 'CSV export for session results where the plan includes exports. Richer export formats and integrations are on the roadmap.' },
 ]
 
 export default function LivePollingPage() {

@@ -20,7 +20,7 @@ const checklist = [
   { title: 'Secret ballot mode.', desc: 'Tally without identities — useful for officer elections and sensitive motions.' },
   { title: 'Conflict disclosure.', desc: 'Directors flag conflicts per motion; noted in minutes automatically.' },
   { title: 'Consent log.', desc: "Every director's visibility choice stamped to the meeting — auditable by your secretary." },
-  { title: 'Signed PDF minutes.', desc: 'Export signed with a per-session hash; any edit invalidates.' },
+  { title: 'Exportable vote record.', desc: 'Download CSV tallies for your minutes. Signed PDF minutes are roadmap work.' },
   { title: 'Bylaw templates.', desc: 'Starter templates for 501(c)(3), UK CIO, Stichting, Verein structures.' },
 ]
 
@@ -133,7 +133,7 @@ export default function NonprofitPage() {
               { num: '01', title: 'Chair calls the vote', desc: 'Pick the motion from the agenda, set identified or secret, and launch. Every director\'s device lights up.' },
               { num: '02', title: 'Directors cast', desc: 'For, against, abstain. Quorum tracked live. Proxy votes pre-loaded against the director\'s name.' },
               { num: '03', title: 'Tally locked', desc: 'Chair seals the vote. Tally freezes on the projected screen. Changes require re-opening with a new motion.' },
-              { num: '04', title: 'Minutes exported', desc: 'Signed PDF with every motion, tally, and consent log. Sent to the secretary before adjournment.' },
+              { num: '04', title: 'Vote record exported', desc: 'CSV tallies are available for the secretary to attach to the minutes. Signed PDF minutes are roadmap work.' },
             ].map(({ num, title, desc }) => (
               <div key={num} className="p-7">
                 <div className="text-teal-700 dark:text-teal-400 font-semibold text-[12px] mb-2.5" style={monoFont}>Step {num}</div>

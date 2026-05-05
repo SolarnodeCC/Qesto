@@ -20,8 +20,8 @@ const timeline = [
   { time: '09:10', msg: <>"What are you here to solve?" — <span className="text-pulse-500">284 responses, AI clusters into 3 themes in 12 seconds, projected behind the speaker.</span></>, tag: 'Live', live: true },
   { time: '10:20', msg: <>Panel queue. <span className="text-pulse-500">Upvoted questions surface on the moderator's console. Top 5 read aloud in order, identified voters optional.</span></>, tag: 'Live', live: true },
   { time: '11:00', msg: <>Workshops. <span className="text-pulse-500">Ten rooms, ten Qestos. Each facilitator runs the same template; host console aggregates at 12:30.</span></>, tag: 'Breakout', live: false },
-  { time: '14:45', msg: <>"What's the one thing you'll change on Monday?" — <span className="text-pulse-500">word cloud on stage, full list in the recap email.</span></>, tag: 'Live', live: true },
-  { time: '15:30', msg: <>Recap shipped. <span className="text-pulse-500">Signed PDF with every tally, every theme, every consent choice — in the organizer's inbox before teardown.</span></>, tag: 'Recap', live: false },
+  { time: '14:45', msg: <>"What's the one thing you'll change on Monday?" — <span className="text-pulse-500">word cloud on stage, exported responses ready for the follow-up.</span></>, tag: 'Live', live: true },
+  { time: '15:30', msg: <>Recap source ready. <span className="text-pulse-500">CSV tallies and reviewed theme notes give organizers material for the follow-up while the event is still fresh.</span></>, tag: 'Recap', live: false },
 ]
 
 export default function EventsPage() {

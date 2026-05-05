@@ -2,7 +2,7 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-01 (UTC)_
+_Last updated: 2026-05-05 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -129,6 +129,13 @@ See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance cri
 | ADMIN-ENGAGE-01 | Admin engagement analytics maturity | P1 | Sprint 30 | Admin can inspect/export energizer activation, participation, completion, and realtime health metrics |
 | AUTHZ-GAM-01 | Enterprise permission gate for energizer activation | P1 | Sprint 31 | Custom roles can allow/deny energizer activation with audit evidence |
 | RC-REGRESSION-01 | v2.2 release candidate regression and rollout plan | P0 | Sprint 32 | Full quality gates, specs, release notes, rollout plan, and rollback plan are ready |
+| MKT-PROMISE-01 | Launch-safe marketing promise audit and copy correction | P0 | Sprint 32 | Public pricing, privacy, terms, feature, and solution pages only promise implemented launch capabilities |
+| EXPORT-RICH-01 | Rich export formats for commercial plans | P1 | Future commercial-readiness sprint | JSON, signed PDF, DOCX, and Notion-ready exports have routes, UI entry points, tests, and plan gates before public copy promotes them |
+| INT-WEBHOOK-01 | Slack, Notion, Workday, BambooHR, and generic webhook integrations | P1 | Future commercial-readiness sprint | Configurable outbound webhooks exist with auth, retries, audit logs, failure states, and docs before integration copy moves out of roadmap status |
+| ENT-COMPLIANCE-01 | Enterprise compliance evidence packet | P0 | Future enterprise-readiness sprint | SOC 2, pen-test summary, DPA/SCC packet, sub-processor list, and security review materials exist before legal/procurement pages claim them |
+| ENT-RESIDENCY-01 | Residency guarantees and customer-managed keys | P1 | Future enterprise-readiness sprint | Environment routing, contractual residency language, key-management design, and operational tests exist before residency/CMK marketing claims go live |
+| AI-RECAP-PROV-01 | AI recap evidence links and edit provenance | P1 | Future AI-readiness sprint | AI-generated summaries expose evidence links, host edit history, PDF/export provenance, and participant disclosure tests before recap provenance is promoted |
+| PERF-PROOF-01 | Production latency benchmark evidence | P1 | Future reliability sprint | Cloudflare-backed benchmark data exists for live voting and energizers before numeric latency claims appear on marketing pages |
 
 **Dependencies and gates**:
 - ENTITLEMENTS-02 must be green before Sprint 21 expands role enforcement.

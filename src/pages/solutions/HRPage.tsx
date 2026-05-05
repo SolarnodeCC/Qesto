@@ -38,11 +38,11 @@ const useCases = [
   {
     tag: 'DEIB listening',
     title: "Sessions that don't chill the room",
-    desc: 'Run ERG listening circles where participants pick visibility per question — a salary question can be anonymous while a resources question is identified.',
+    desc: 'Run ERG listening circles where the host sets the right visibility posture for the session before sensitive questions open.',
     items: [
-      'Per-question consent toggle',
+      'Session-level visibility posture',
       'Consent log attached to every export',
-      'Exportable to Workday, BambooHR via webhook',
+      'CSV export today; HRIS/webhook integrations on roadmap',
     ],
   },
   {
@@ -52,7 +52,7 @@ const useCases = [
     items: [
       'Scheduled sessions with auto-reminders',
       'Benchmark mode (compare cohort to rolling org average)',
-      'Signed PDF recap for employee files',
+      'Reviewed recap source for employee files',
     ],
   },
 ]
@@ -96,7 +96,7 @@ export default function HRPage() {
                   Book a walkthrough
                 </Link>
                 <span className="text-xs text-pulse-500" style={{ fontFamily: 'var(--font-family-mono)' }}>
-                  SOC 2 · DPA on file · EU residency
+                  Access controls · DPA request · enterprise security roadmap
                 </span>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function HRPage() {
               { label: 'Consent opt-in rate', value: '94%', note: 'Avg across deployed pulses — measured at the start of every session.' },
               { label: 'Free-text response rate', value: '3.1×', note: 'vs. identified surveys among the same cohorts.' },
               { label: 'Minimum tally threshold', value: '5', note: 'Results stay hidden until five voices are in. No single-voter exposure.' },
-              { label: 'Time to signed recap', value: '< 2h', note: "From session close to evidence-anchored PDF in legal's inbox." },
+              { label: 'Recap source readiness', value: 'Same day', note: 'Session exports and reviewed themes support the follow-up package.' },
             ].map(({ label, value, note }) => (
               <div key={label} className="bg-white dark:bg-[#151C2E] rounded-2xl p-6" style={shadowCard}>
                 <div className="text-[13px] text-pulse-500 dark:text-[#6B7A99] mb-2">{label}</div>
@@ -262,7 +262,7 @@ export default function HRPage() {
               {
                 icon: <MapPin size={22} />,
                 title: 'EU residency by default',
-                desc: 'EU customers run on EU-only Cloudflare Durable Objects. Workers AI inference stays in-region. DPA and SCCs on file.',
+                desc: 'Qesto runs on Cloudflare Workers, Durable Objects, and Workers AI. Formal residency guarantees and procurement packets are enterprise roadmap items.',
               },
               {
                 icon: <Trash2 size={22} />,

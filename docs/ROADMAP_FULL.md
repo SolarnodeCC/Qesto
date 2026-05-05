@@ -2,7 +2,7 @@
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-01 (UTC)_
+_Last updated: 2026-05-05 (UTC)_
 
 ## Release status
 - **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
@@ -115,6 +115,22 @@ _Last updated: 2026-05-01 (UTC)_
 | Sprint 32 | v2.2 release candidate | Release only after full-stack smoke and staging WebSocket validation |
 
 **Plan:** See [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md).
+
+### Post-v2.2 Commercial Promise Completion
+
+**Focus:** Keep go-live copy honest while sequencing the higher-value promises that were removed or marked roadmap during the marketing promise audit.
+
+| Item | Status |
+|---|---|
+| MKT-PROMISE-01 Launch-safe marketing promise audit and copy correction | ✅ Implemented 2026-05-05; public pages now avoid unsupported compliance, export, integration, latency, and AI provenance claims |
+| EXPORT-RICH-01 Rich export formats | Future: JSON, signed PDF, DOCX, and Notion-ready exports need backend routes, UI, tests, and plan gates |
+| INT-WEBHOOK-01 Webhook/integration suite | Future: Slack, Notion, Workday, BambooHR, and generic webhooks need auth, retries, audit logs, and failure handling |
+| ENT-COMPLIANCE-01 Compliance evidence packet | Future: SOC 2, penetration-test summary, DPA/SCC packet, and sub-processor evidence must exist before procurement claims go live |
+| ENT-RESIDENCY-01 Residency and customer-managed keys | Future: residency guarantees and CMK support need design, operations, and tests before marketing promotion |
+| AI-RECAP-PROV-01 AI recap evidence/edit provenance | Future: evidence-linked summaries, edit history, and export provenance need implementation before public AI recap claims return |
+| PERF-PROOF-01 Production latency evidence | Future: Cloudflare-backed benchmark data required before numeric latency claims return |
+
+**Gate:** Any claim moved from roadmap to public launch copy must have a matching implementation path, tests, and documentation evidence in the same PR.
 
 ### Sprint A — Layout + Token Foundation (mostly shipped; verify in Sprint 20)
 **Focus:** Design-token source of truth, layout primitives, a11y baseline, i18n bug fixes.

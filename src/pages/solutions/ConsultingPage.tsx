@@ -21,11 +21,11 @@ const themes = [
 ]
 
 const whitelabel = [
-  { key: 'Branded domain', value: 'qesto.yourfirm.com', sub: 'Your clients see your logo and colors from join code to PDF. DNS handoff is one CNAME.' },
+  { key: 'Branding', value: 'Workspace-level branding', sub: 'Your clients see a consistent room experience. Branded domains and PDF templates are roadmap work.' },
   { key: 'Template library', value: "Your firm's session templates, not ours", sub: 'Standard discovery, offsite, and retro templates shared across your partners. New engagements launch in 60 seconds.' },
-  { key: 'Deliverable export', value: 'PDF, DOCX, Notion, or raw JSON', sub: 'Plug into your synthesis pipeline. JSON includes every tally, cluster, and evidence anchor.' },
+  { key: 'Deliverable export', value: 'CSV session export today', sub: 'Use exported tallies as source material for your synthesis pipeline. DOCX, Notion, and JSON exports are roadmap work.' },
   { key: 'Client data isolation', value: 'Per-client Durable Object boundary', sub: "Acme's rooms never sit next to Globex's. Retention configured per engagement, not per account." },
-  { key: 'Partner SSO', value: 'Okta, Azure AD, Google Workspace', sub: 'Your partners sign in once. Clients join with a code. No seat math for engagement teams.' },
+  { key: 'Team SSO', value: 'SAML SSO on Team plans', sub: 'Workspace members can use configured SSO where the plan allows it. Clients can still join with a code.' },
 ]
 
 export default function ConsultingPage() {
@@ -130,8 +130,8 @@ export default function ConsultingPage() {
               {
                 phase: 'Phase 03 · Readout',
                 title: 'Evidence-anchored recap',
-                desc: "Same-day client PDF. Every theme quotes the tally that produced it. Your logo, your font, the client's room.",
-                output: "Output: signed recap, in the sponsor's inbox by dinner.",
+                desc: "Same-day client synthesis using exported tallies and reviewed AI themes. Rich branded PDF output is roadmap work.",
+                output: "Output: reviewed recap source material for the sponsor.",
               },
             ].map(({ phase, title, desc, output }) => (
               <div key={phase} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>

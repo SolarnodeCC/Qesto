@@ -20,7 +20,7 @@ type ConsentMode = 'identified' | 'cohort' | 'anonymous'
 const consentOptions: { key: ConsentMode; name: string; desc: string; tag: string }[] = [
   { key: 'identified', name: 'Identified', desc: 'Your name and votes are linked. Useful for board meetings and named feedback.', tag: 'name + vote' },
   { key: 'cohort', name: 'Cohort-visible', desc: 'Your vote is attributed to your team, not you. Teams of 5+ only.', tag: 'team + vote' },
-  { key: 'anonymous', name: 'Anonymous', desc: 'Only your vote is stored. No identity, no IP log, no cohort link.', tag: 'vote only' },
+  { key: 'anonymous', name: 'Anonymous', desc: 'Votes are stored without identity or cohort labels. Hashed anti-abuse metadata may still be used to protect the session.', tag: 'vote only' },
 ]
 
 const doGuarantees = [
@@ -33,15 +33,15 @@ const doGuarantees = [
 const dontGuarantees = [
   { title: "We don't sell data", desc: 'No ads network, no data broker, no telemetry pipeline to a third party. Your tallies are yours.' },
   { title: "We don't train on you", desc: "Nothing in Qesto feeds a training run — not ours, not anyone's. Analysis happens privately and is never used to train any model." },
-  { title: "We don't route to third-party AI", desc: 'No OpenAI, no Anthropic, no Azure. Inference stays on Cloudflare\'s network, in your region.' },
+  { title: "We don't route to third-party AI", desc: "No OpenAI, no Anthropic, no Azure. Inference runs through Cloudflare Workers AI." },
   { title: "We don't resolve identity late", desc: "Once a vote is anonymous, it stays anonymous. We can't un-anonymize — not for subpoena, not for us." },
 ]
 
 const certs = [
-  { name: 'SOC 2', label: 'Type II · 2025' },
-  { name: 'GDPR', label: 'DPA + SCCs' },
-  { name: 'ISO 27001', label: 'In progress 2026' },
-  { name: 'EU residency', label: 'EU-only processing' },
+  { name: 'GDPR', label: 'DPA request' },
+  { name: 'Security', label: 'Access controls' },
+  { name: 'AI', label: 'Workers AI only' },
+  { name: 'Enterprise', label: 'Roadmap packet' },
 ]
 
 export default function PrivacyFeaturePage() {
@@ -70,8 +70,7 @@ export default function PrivacyFeaturePage() {
               </h1>
               <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
                 Every Qesto session starts with a consent round. Participants choose whether they're identified,
-                cohort-visible, or fully anonymous — per question, per session, per their call. Results stay hidden
-                until the minimum tally is met.
+                cohort-visible, or fully anonymous for the session. Results stay hidden until the minimum tally is met.
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link to="/privacy" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
@@ -86,7 +85,7 @@ export default function PrivacyFeaturePage() {
             {/* Consent picker */}
             <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-7" style={shadowElevated}>
               <h3 className="font-semibold text-[17px] mb-1.5 text-pulse-900 dark:text-[#F0F2F8]">How do you want to participate?</h3>
-              <p className="text-[13px] text-pulse-500 dark:text-[#6B7A99] mb-5">You can change this any time during the session.</p>
+              <p className="text-[13px] text-pulse-500 dark:text-[#6B7A99] mb-5">Your host sets the session posture before sensitive questions open.</p>
               <div className="space-y-2">
                 {consentOptions.map(({ key, name, desc, tag }) => (
                   <button
@@ -166,7 +165,7 @@ export default function PrivacyFeaturePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-pulse-200 dark:divide-[#1E2A45]">
             {[
               { t: 'During the session', title: 'In secure session storage', desc: 'Votes, tallies, and consent choices are isolated to your session. No sharing across sessions, no replication.' },
-              { t: 'After close', title: 'In your workspace', desc: 'Session locks. Recap generates. Data moves to R2 (object storage) for retention window. Encrypted at rest.' },
+              { t: 'After close', title: 'In your workspace', desc: 'Session locks. Session data remains in the configured Cloudflare data stores for the retention window.' },
               { t: 'Retention end', title: 'Purged by scheduler', desc: 'Cron job on every DO sweeps expired sessions. Identity rows go first; aggregate tallies follow on your schedule.' },
             ].map(({ t, title, desc }) => (
               <div key={t} className="px-8 py-8 first:pl-0 last:pr-0 relative">
@@ -187,8 +186,8 @@ export default function PrivacyFeaturePage() {
             The paperwork your procurement team needs.
           </h2>
           <p className="text-pulse-500 dark:text-[#6B7A99] mb-8">
-            SOC 2 Type II audit on file. GDPR DPA signed per customer. Sub-processors limited to Cloudflare and
-            Stripe (billing only).
+            Qesto uses Cloudflare for compute/storage, Workers AI for inference, Stripe for payment processing, and
+            Resend for transactional email. Formal compliance reports and residency guarantees are enterprise roadmap items.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {certs.map(({ name, label }) => (
