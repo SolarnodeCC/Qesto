@@ -112,6 +112,11 @@ export default function Home() {
               Make it easy for everyone to join in, share what they think, and stay with you from
               start to finish. For teachers, trainers, facilitators, and team leaders.
             </p>
+            <p className="text-base leading-[1.6] text-pulse-600 dark:text-[#A8B3CC] max-w-[760px] mb-8">
+              Qesto helps teams and facilitators run live polls, rankings, and consent rounds during
+              workshops, classrooms, and meetings. We use sign-in only to manage your account,
+              sessions, and workspace access.
+            </p>
 
             {/* CTAs */}
             <div className="flex flex-wrap items-center gap-3 mb-12">
@@ -149,6 +154,20 @@ export default function Home() {
                 </>
               )}
               <span className="text-[13px] text-pulse-400 ml-2">No card required · 2-minute setup</span>
+            </div>
+            <div className="mb-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+              <Link
+                to="/privacy"
+                className="font-medium text-teal-700 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                to="/terms"
+                className="text-pulse-600 dark:text-[#A8B3CC] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+              >
+                Terms of Service
+              </Link>
             </div>
 
             {/* Feature strip */}
