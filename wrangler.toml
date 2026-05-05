@@ -3,6 +3,7 @@ account_id = "5546763229b35df670e33d9316d7f2e0"
 main = "worker/index.ts"
 compatibility_date = "2026-04-19"
 compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
 
 # Cloudflare Worker — API only. Static frontend is deployed separately to Cloudflare Pages.
 # Secrets: `wrangler secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).

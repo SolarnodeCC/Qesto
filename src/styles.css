@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 @import './styles/grid.css';
 @import '../design-system/colors_and_type.css';
@@ -5,7 +6,6 @@
 /* ─── Google Fonts — Inter · Syne · JetBrains Mono ────────────────────────── */
 /* Single combined request for all three brand fonts. The <link preload> in    */
 /* index.html provides the critical woff2 preload for Inter/LCP.               */
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 /* Design token CSS variables — auto-generated from design-tokens.json */
 /* These support the @theme block and component CSS below. */
