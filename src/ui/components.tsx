@@ -258,6 +258,26 @@ export function EmptyState({
   )
 }
 
+// Value-first centered stat card — matches Analytics KpiCard pattern
+export function StatCard({
+  label,
+  value,
+  colour = 'text-teal-600',
+  className = '',
+}: {
+  label: string
+  value: string | number
+  colour?: string
+  className?: string
+}) {
+  return (
+    <Card className={`text-center space-y-1 ${className}`}>
+      <p className={`text-heading-m font-bold ${colour}`}>{value}</p>
+      <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">{label}</Body>
+    </Card>
+  )
+}
+
 // ─── Loading States ────────────────────────────────────────────────────────
 
 export function SkeletonCard({ className = '' }: { className?: string }) {

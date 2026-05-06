@@ -1,5 +1,5 @@
 import { useAdminAnalytics, type DailyBucket } from '../../hooks/useAdminAnalytics'
-import { Heading, Body, Card, SkeletonCard } from '../../ui/components'
+import { Heading, Body, Card, Button, SkeletonCard } from '../../ui/components'
 
 function downloadCsv(filename: string, rows: string[][]): void {
   const escape = (value: string) => `"${value.replace(/"/g, '""')}"`
@@ -175,13 +175,7 @@ export default function AdminAnalyticsTab() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <Heading level="m" className="border-l-4 border-teal-500 pl-3">Analytics</Heading>
-        <button
-          type="button"
-          onClick={exportAnalytics}
-          className="rounded-md border border-pulse-300 dark:border-[#2A3858] px-3 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-        >
-          Export CSV
-        </button>
+        <Button variant="secondary" size="sm" onClick={exportAnalytics}>Export CSV</Button>
       </div>
 
       {/* Top-line KPIs */}
@@ -245,7 +239,7 @@ export default function AdminAnalyticsTab() {
       {/* Realtime health */}
       {/* privacy contract: geen vraagtekst, vrije tekst, e-mailadressen of tokens */}
       <Card>
-        <Heading level="s" className="mb-4 border-l-4 border-teal-500 pl-3">Realtime health</Heading>
+        <Heading level="s" className="mb-4">Realtime health</Heading>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <RateCard value={a.engagement.ws_error_rate} label="WebSocket errors" />
           <RateCard value={a.engagement.reconnect_rate} label="Reconnects" />
@@ -257,7 +251,7 @@ export default function AdminAnalyticsTab() {
 
       {/* Cost & usage */}
       <Card>
-        <Heading level="s" className="mb-4 border-l-4 border-teal-500 pl-3">Cost &amp; usage</Heading>
+        <Heading level="s" className="mb-4">Cost &amp; usage</Heading>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
             <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Sessions created</Body>
