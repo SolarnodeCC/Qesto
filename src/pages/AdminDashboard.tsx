@@ -264,7 +264,7 @@ export default function AdminDashboard() {
           {/* Platform KPI totals */}
           {kpis && (
             <Section>
-              <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('realtimePlatformObservability')}</Heading>
+              <Heading level="m" className="border-l-4 border-teal-500 pl-3">Platform Overview</Heading>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-4">
                 <MetricCard label={t('liveSessions')} value={kpis.live_sessions} />
                 <MetricCard label={t('totalUsers')} value={kpis.total_users} />
