@@ -26,11 +26,11 @@ function PlanBadge({ plan }: { plan: AdminUser['plan'] }) {
 function StatusBadge({ suspended }: { suspended: boolean }) {
   return suspended ? (
     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-600">
-      Geschorst
+      Suspended
     </span>
   ) : (
     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-600">
-      Actief
+      Active
     </span>
   )
 }
@@ -45,6 +45,11 @@ function RoleBadge({ role }: { role: 'owner' | 'admin' | null }) {
       {role === 'owner' ? 'Super Admin' : 'Admin'}
     </span>
   )
+}
+
+function formatDate(ts: number | null) {
+  if (!ts) return '—'
+  return new Date(ts).toLocaleDateString(undefined, { dateStyle: 'medium' })
 }
 
 // ─── Create/Edit modal ────────────────────────────────────────────────────────
@@ -66,14 +71,14 @@ function UserModal({
   const [email, setEmail] = useState(user?.email ?? '')
   const [displayName, setDisplayName] = useState(user?.display_name ?? '')
   const [plan, setPlan] = useState<AdminUser['plan']>(user?.plan ?? 'free')
-  const [adminRole, setAdminRole] = useState<'owner' | 'admin' | '' >(
+  const [adminRole, setAdminRole] = useState<'owner' | 'admin' | ''>(
     user?.admin_role ?? ''
   )
   const [saving, setSaving] = useState(false)
   const [fieldError, setFieldError] = useState<string | null>(null)
 
   async function handleSave() {
-    if (!isEdit && !email.trim()) { setFieldError('E-mailadres is verplicht'); return }
+    if (!isEdit && !email.trim()) { setFieldError('Email address is required'); return }
     setSaving(true)
     setFieldError(null)
     try {
@@ -93,12 +98,12 @@ function UserModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
-      <div className="bg-white rounded-xl shadow-elevated w-full max-w-md mx-4 p-6 space-y-4">
-        <Heading level="s">{isEdit ? 'Account bewerken' : 'Account aanmaken'}</Heading>
+      <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-elevated w-full max-w-md mx-4 p-6 space-y-4">
+        <Heading level="s">{isEdit ? 'Edit account' : 'Create account'}</Heading>
 
         {!isEdit && (
           <div className="space-y-1">
-            <label className="text-body-s font-medium text-pulse-700">E-mailadres</label>
+            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Email address</label>
             <TextInput
               placeholder="user@example.com"
               value={email}
@@ -109,10 +114,17 @@ function UserModal({
           </div>
         )}
 
+        {isEdit && (
+          <div className="space-y-1">
+            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Email (read-only)</label>
+            <p className="text-body-s text-pulse-500 dark:text-[#6B7A99] px-3 py-2 rounded-md bg-pulse-50 dark:bg-[#0F1526]">{user?.email}</p>
+          </div>
+        )}
+
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700">Weergavenaam</label>
+          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Display name</label>
           <TextInput
-            placeholder="Naam (optioneel)"
+            placeholder="Name (optional)"
             value={displayName}
             onChange={setDisplayName}
             className="w-full"
@@ -120,26 +132,26 @@ function UserModal({
         </div>
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700">Plan</label>
+          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Plan</label>
           <select
             value={plan}
             onChange={(e) => setPlan(e.target.value as AdminUser['plan'])}
-            className="w-full border border-pulse-300 rounded-md px-3 py-2 text-body-s focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
+            className="w-full border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
           >
-            <option value="free">Pulse</option>
-            <option value="starter">Signal</option>
-            <option value="team">Chorus</option>
+            <option value="free">Pulse (Free)</option>
+            <option value="starter">Signal (Starter)</option>
+            <option value="team">Chorus (Team)</option>
           </select>
         </div>
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700">Admin-rol</label>
+          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Admin role</label>
           <select
             value={adminRole}
             onChange={(e) => setAdminRole(e.target.value as 'owner' | 'admin' | '')}
-            className="w-full border border-pulse-300 rounded-md px-3 py-2 text-body-s focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
+            className="w-full border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
           >
-            <option value="">Geen</option>
+            <option value="">None</option>
             <option value="admin">Admin</option>
             <option value="owner">Super Admin</option>
           </select>
@@ -148,9 +160,9 @@ function UserModal({
         {fieldError && <Body size="s" className="text-red-600">{fieldError}</Body>}
 
         <div className="flex gap-2 justify-end pt-2">
-          <Button variant="ghost" onClick={onClose} disabled={saving}>Annuleren</Button>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Opslaan…' : 'Opslaan'}
+            {saving ? 'Saving…' : 'Save'}
           </Button>
         </div>
       </div>
@@ -215,57 +227,60 @@ export default function AdminUsersTab() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Heading level="m">Gebruikers</Heading>
+        <Heading level="m" className="border-l-4 border-teal-500 pl-3">Users</Heading>
         <Button variant="primary" onClick={() => setModal({ type: 'create' })}>
-          + Account aanmaken
+          + Create account
         </Button>
       </div>
 
-      <TextInput
-        placeholder="Zoek op naam of e-mail…"
-        onChange={handleSearchChange}
-        className="w-full max-w-sm"
-      />
+      <div className="flex items-center gap-3">
+        <TextInput
+          placeholder="Search by name or email…"
+          onChange={handleSearchChange}
+          className="w-full max-w-sm"
+        />
+        <Body size="s" className="text-pulse-400 whitespace-nowrap">{total} users total</Body>
+      </div>
 
       {error && <Body size="s" className="text-red-600">{error}</Body>}
 
       <Card className="overflow-x-auto p-0">
         <table className="w-full text-body-s">
           <thead>
-            <tr className="border-b border-pulse-200 bg-pulse-50">
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Naam</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">E-mail</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Plan</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Laatste betaling</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Admin-rol</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 uppercase text-xs tracking-wide">Status</th>
+            <tr className="border-b border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1526]">
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Name</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Email</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Plan</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Last login</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Admin role</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Status</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-pulse-100">
+          <tbody className="divide-y divide-pulse-100 dark:divide-[#1E2A45]">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
                   <td colSpan={7} className="px-4 py-3">
-                    <div className="h-4 bg-pulse-100 rounded animate-pulse w-full" />
+                    <div className="h-4 bg-pulse-100 dark:bg-[#1C2540] rounded animate-pulse w-full" />
                   </td>
                 </tr>
               ))
             ) : users.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-pulse-400">
-                  Geen gebruikers gevonden
+                  No users found
                 </td>
               </tr>
             ) : (
               users.map((user) => (
-                <tr key={user.id} className="hover:bg-pulse-50">
-                  <td className="px-4 py-3 font-medium text-pulse-900">
+                <tr key={user.id} className="hover:bg-pulse-50 dark:hover:bg-[#0F1526]">
+                  <td className="px-4 py-3 font-medium text-pulse-900 dark:text-[#F0F2F8]">
                     {user.display_name || user.email.split('@')[0]}
                   </td>
-                  <td className="px-4 py-3 text-pulse-500">{user.email}</td>
+                  <td className="px-4 py-3 text-pulse-500 dark:text-[#6B7A99]">{user.email}</td>
                   <td className="px-4 py-3"><PlanBadge plan={user.plan} /></td>
-                  <td className="px-4 py-3 text-pulse-400">—</td>
+                  <td className="px-4 py-3 text-pulse-400 dark:text-[#6B7A99] text-sm">{formatDate(user.last_login_at)}</td>
                   <td className="px-4 py-3"><RoleBadge role={user.admin_role} /></td>
                   <td className="px-4 py-3"><StatusBadge suspended={!!user.suspended_at} /></td>
                   <td className="px-4 py-3">
@@ -275,7 +290,7 @@ export default function AdminUsersTab() {
                         size="sm"
                         onClick={() => setModal({ type: 'edit', user })}
                       >
-                        Bewerken
+                        Edit
                       </Button>
                       {user.suspended_at ? (
                         <Button
@@ -284,7 +299,7 @@ export default function AdminUsersTab() {
                           disabled={actionLoading === user.id}
                           onClick={() => handleRestore(user)}
                         >
-                          {actionLoading === user.id ? '…' : 'Gebruiker herstellen'}
+                          {actionLoading === user.id ? '…' : 'Restore'}
                         </Button>
                       ) : (
                         <Button
@@ -293,7 +308,7 @@ export default function AdminUsersTab() {
                           disabled={actionLoading === user.id}
                           onClick={() => handleSuspend(user)}
                         >
-                          {actionLoading === user.id ? '…' : 'Schorsen'}
+                          {actionLoading === user.id ? '…' : 'Suspend'}
                         </Button>
                       )}
                     </div>
@@ -307,7 +322,7 @@ export default function AdminUsersTab() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-body-s text-pulse-500">
-          <span>{total} gebruikers totaal</span>
+          <span>Page {currentPage} of {totalPages}</span>
           <div className="flex gap-2">
             <Button
               variant="ghost"
@@ -315,16 +330,15 @@ export default function AdminUsersTab() {
               disabled={currentPage <= 1}
               onClick={() => setOffset(Math.max(0, offset - limit))}
             >
-              Vorige
+              Previous
             </Button>
-            <span className="py-1 px-2">Pagina {currentPage} van {totalPages}</span>
             <Button
               variant="ghost"
               size="sm"
               disabled={currentPage >= totalPages}
               onClick={() => setOffset(offset + limit)}
             >
-              Volgende
+              Next
             </Button>
           </div>
         </div>

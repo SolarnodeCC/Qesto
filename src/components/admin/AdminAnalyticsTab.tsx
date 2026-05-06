@@ -32,7 +32,7 @@ function BarChart({ data, label }: { data: DailyBucket[]; label: string }) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-[120px] text-pulse-300 text-body-s">
-        Geen data
+        No data
       </div>
     )
   }
@@ -60,7 +60,6 @@ function BarChart({ data, label }: { data: DailyBucket[]; label: string }) {
           </rect>
         )
       })}
-      {/* x-axis labels */}
       <text x={PAD_LEFT} y={H - 4} fontSize="10" className="fill-pulse-400">{firstDay}</text>
       <text x={W - PAD_RIGHT} y={H - 4} fontSize="10" textAnchor="end" className="fill-pulse-400">{lastDay}</text>
     </svg>
@@ -101,22 +100,24 @@ function KpiCard({ value, label, colour = 'text-teal-600' }: { value: number; la
   return (
     <Card className="text-center space-y-1">
       <p className={`text-heading-m font-bold ${colour}`}>{value}</p>
-      <Body size="s" className="text-pulse-400">{label}</Body>
+      <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">{label}</Body>
     </Card>
   )
 }
 
 function RateCard({ value, label }: { value: number; label: string }) {
-  return <KpiCard value={Math.round(value * 100)} label={`${label} (%)`} colour="text-pulse-700" />
+  const pct = Math.round(value * 100)
+  const colour = pct > 5 ? 'text-red-600 dark:text-red-400' : 'text-pulse-700 dark:text-[#A8B3CC]'
+  return <KpiCard value={pct} label={`${label} (%)`} colour={colour} />
 }
 
 // ─── Status row ───────────────────────────────────────────────────────────────
 
 function StatusRow({ label, count }: { label: string; count: number }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-pulse-100 last:border-0">
-      <Body size="s" className="text-teal-600">{label}</Body>
-      <Body size="s" className="font-medium text-pulse-600">{count}</Body>
+    <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45] last:border-0">
+      <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">{label}</Body>
+      <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{count}</Body>
     </div>
   )
 }
@@ -171,113 +172,105 @@ export default function AdminAnalyticsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl" aria-hidden="true">📊</span>
-          <Heading level="m">Analytics</Heading>
-        </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <Heading level="m" className="border-l-4 border-teal-500 pl-3">Analytics</Heading>
         <button
           type="button"
           onClick={exportAnalytics}
-          className="self-start rounded-md border border-pulse-300 px-3 py-2 text-sm font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          className="rounded-md border border-pulse-300 dark:border-[#2A3858] px-3 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
         >
           Export CSV
         </button>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-        <Body size="s" className="text-green-600 font-medium">Live updates actief</Body>
+      {/* Top-line KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard value={a.sessions_today} label="Sessions today" colour="text-teal-600" />
+        <KpiCard value={a.decisions_today} label="Decisions today" colour="text-purple-600" />
+        <KpiCard value={a.sessions_this_month} label="Sessions this month" colour="text-green-600" />
+        <KpiCard value={a.decisions_this_month} label="Decisions this month" colour="text-amber-500" />
       </div>
 
-      {/* Top KPI cards */}
+      {/* Energizer engagement */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard value={a.sessions_today} label="Sessies vandaag" colour="text-teal-600" />
-        <KpiCard value={a.decisions_today} label="Beslissingen vandaag" colour="text-purple-600" />
-        <KpiCard value={a.sessions_this_month} label="Sessies deze maand" colour="text-green-600" />
-        <KpiCard value={a.decisions_this_month} label="Beslissingen deze maand" colour="text-amber-500" />
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard value={a.engagement.energizer_activations} label="Energizers gestart" colour="text-teal-600" />
-        <KpiCard value={a.engagement.energizer_participants} label="Deelnemers energizers" colour="text-green-600" />
-        <KpiCard value={a.engagement.energizer_completions} label="Energizers afgerond" colour="text-amber-500" />
-        <KpiCard value={a.engagement.energizer_dropouts} label="Mogelijke uitval" colour="text-red-600" />
+        <KpiCard value={a.engagement.energizer_activations} label="Energizers started" colour="text-teal-600" />
+        <KpiCard value={a.engagement.energizer_participants} label="Energizer participants" colour="text-green-600" />
+        <KpiCard value={a.engagement.energizer_completions} label="Energizers completed" colour="text-amber-500" />
+        <KpiCard value={a.engagement.energizer_dropouts} label="Drop-offs" colour="text-red-600" />
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <Heading level="s" className="mb-1">Sessies per dag</Heading>
-          <Body size="s" className="text-teal-600 mb-3">Afgelopen 14 dagen</Body>
-          <BarChart data={a.sessions_per_day} label="Sessies per dag" />
+          <Heading level="s" className="mb-1">Sessions per day</Heading>
+          <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] mb-3">Last 14 days</Body>
+          <BarChart data={a.sessions_per_day} label="Sessions per day" />
         </Card>
         <Card>
-          <Heading level="s" className="mb-1">Beslissingen per dag</Heading>
-          <Body size="s" className="text-teal-600 mb-3">Afgelopen 14 dagen</Body>
-          <BarChart data={a.decisions_per_day} label="Beslissingen per dag" />
+          <Heading level="s" className="mb-1">Decisions per day</Heading>
+          <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] mb-3">Last 14 days</Body>
+          <BarChart data={a.decisions_per_day} label="Decisions per day" />
         </Card>
       </div>
 
-      {/* Decision quality + Session status + Action items */}
+      {/* Decision quality + Session status + Engagement */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="flex flex-col items-center justify-center gap-4">
-          <Heading level="s">Beslissing kwaliteit</Heading>
+          <Heading level="s">Decision quality</Heading>
           <ConsentDonut rate={a.consent_rate} />
-          <Body size="s" className="text-pulse-400 text-center">
-            Gemiddeld {a.avg_participants.toFixed(1)} deelnemers per beslissing
+          <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] text-center">
+            Avg {a.avg_participants.toFixed(1)} participants per decision
           </Body>
         </Card>
 
         <Card>
-          <Heading level="s" className="mb-4">Sessie-status</Heading>
-          <StatusRow label="Actief" count={a.session_status.live} />
+          <Heading level="s" className="mb-4">Session status</Heading>
+          <StatusRow label="Live" count={a.session_status.live} />
           <StatusRow label="Draft" count={a.session_status.draft} />
-          <StatusRow label="Gesloten" count={a.session_status.closed} />
-          <StatusRow label="Archief" count={a.session_status.archived} />
+          <StatusRow label="Closed" count={a.session_status.closed} />
+          <StatusRow label="Archived" count={a.session_status.archived} />
         </Card>
 
         <Card>
-          <Heading level="s" className="mb-4">Actiepunten</Heading>
-          <StatusRow label="Leaderboard deelnemers" count={a.engagement.leaderboard_participants} />
-          <StatusRow label="Badges toegekend" count={a.engagement.badges_awarded} />
+          <Heading level="s" className="mb-4">Engagement</Heading>
+          <StatusRow label="Leaderboard participants" count={a.engagement.leaderboard_participants} />
+          <StatusRow label="Badges awarded" count={a.engagement.badges_awarded} />
           {a.badge_breakdown.slice(0, 3).map((badge) => (
             <StatusRow key={badge.kind} label={badge.kind} count={badge.count} />
           ))}
         </Card>
       </div>
 
+      {/* Realtime health */}
+      {/* privacy contract: geen vraagtekst, vrije tekst, e-mailadressen of tokens */}
       <Card>
-        <Heading level="s" className="mb-4">Realtime gezondheid</Heading>
+        <Heading level="s" className="mb-4 border-l-4 border-teal-500 pl-3">Realtime health</Heading>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <RateCard value={a.engagement.ws_error_rate} label="WebSocket fouten" />
+          <RateCard value={a.engagement.ws_error_rate} label="WebSocket errors" />
           <RateCard value={a.engagement.reconnect_rate} label="Reconnects" />
         </div>
-        <Body size="s" className="mt-4 text-pulse-400">
-          Export bevat alleen geaggregeerde tellers en gesanitiseerde labels, geen vraagtekst, vrije tekst, e-mailadressen of tokens.
+        <Body size="s" className="mt-4 text-pulse-400 dark:text-[#6B7A99]">
+          Export contains only aggregated counters and sanitised labels — no raw content, free text, or personal identifiers.
         </Body>
       </Card>
 
       {/* Cost & usage */}
       <Card>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Heading level="s" className="mb-4 border-l-4 border-teal-500 pl-3">Cost &amp; usage</Heading>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <Heading level="s" className="mb-4">Kosten &amp; verbruik</Heading>
-            <div className="space-y-3">
-              <div>
-                <Body size="s" className="text-pulse-400">Sessies aangemaakt</Body>
-                <p className="text-heading-s font-semibold text-pulse-900">{a.total_sessions_created}</p>
-              </div>
-              <div>
-                <Body size="s" className="text-pulse-400">Beslissingen verwerkt</Body>
-                <p className="text-heading-s font-semibold text-pulse-900">{a.total_decisions_processed}</p>
-              </div>
-              <div>
-                <Body size="s" className="text-pulse-400">Gesch. AI-kosten (maand)</Body>
-                <p className="text-heading-s font-semibold text-teal-600">&lt; €{costEur}</p>
-                <Body size="s" className="text-pulse-300">Workers AI embeddings ~€0.00001/beslissing</Body>
-              </div>
-            </div>
+            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Sessions created</Body>
+            <p className="text-heading-s font-semibold text-pulse-900 dark:text-[#F0F2F8] mt-1">{a.total_sessions_created}</p>
+          </div>
+          <div>
+            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Decisions processed</Body>
+            <p className="text-heading-s font-semibold text-pulse-900 dark:text-[#F0F2F8] mt-1">{a.total_decisions_processed}</p>
+          </div>
+          <div>
+            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Est. AI costs (month)</Body>
+            <p className="text-heading-s font-semibold text-teal-600 dark:text-teal-400 mt-1">&lt; €{costEur}</p>
+            <Body size="s" className="text-pulse-300 dark:text-[#3A4A6B] mt-0.5">~€0.00001/decision</Body>
           </div>
         </div>
       </Card>
