@@ -184,5 +184,7 @@
   "errorPercent": "Error %",
   "requests": "Solicitudes",
   "auditLog": "Registro de auditoría",
-  "changeSummary": "Resumen de cambios"
+  "changeSummary": "Resumen de cambios",
+  "sessionsThisMonth": "Sesiones este mes",
+  "totalSessions": "Sesiones totales"
 }
