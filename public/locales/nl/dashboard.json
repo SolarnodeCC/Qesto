@@ -94,5 +94,18 @@
   "templateTopic.learning": "Workshops & leren",
   "templateTopicSubtitle.team": "Retrospectives, health checks en besluitvorming.",
   "templateTopicSubtitle.product": "Feedback, prioritering en lanceergereedheid.",
-  "templateTopicSubtitle.learning": "Training checks, afrondingen en event Q&A."
+  "templateTopicSubtitle.learning": "Training checks, afrondingen en event Q&A.",
+  "recentSessions": "Recent geopend",
+  "allSessions": "Alle sessies",
+  "inspiration": "Inspiratie",
+  "importSession": "Importeren",
+  "sessionSubtext": "Wat wil je vandaag doen?",
+  "home": "Home",
+  "settings": "Instellingen",
+  "help": "Help",
+  "joinSessionPrompt": "Deelnemer? Voer code in",
+  "filterAll": "Alle",
+  "filterLive": "Live",
+  "filterDraft": "Concept",
+  "filterClosed": "Gesloten"
 }
