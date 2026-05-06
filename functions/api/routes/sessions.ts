@@ -1142,6 +1142,67 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     })
   })
 
+  // POST /api/sessions/:id/transition-to-live — ENERGIZING → LIVE.
+  // Transitions a session from ENERGIZING state (after energizers) to LIVE (show questions).
+  app.post('/:id/transition-to-live', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const traceId = c.get('trace_id')
+    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!loaded.ok) {
+      return c.json(
+        { ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id: traceId },
+        loaded.error.status,
+      )
+    }
+    const session = loaded.session
+    if (session.status !== 'energizing') {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'conflict',
+            message: 'Session must be in ENERGIZING state to transition to LIVE',
+          },
+          trace_id: traceId,
+        },
+        409,
+      )
+    }
+
+    // Update DB status to live
+    const result = await c.env.DB
+      .prepare(`UPDATE sessions SET status = 'live' WHERE id = ?1 AND owner_id = ?2 AND status = 'energizing'`)
+      .bind(id, user.sub)
+      .run()
+
+    if (result.meta.changes === 0) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Session could not be transitioned to LIVE' },
+          trace_id: traceId,
+        },
+        409,
+      )
+    }
+
+    // Notify DO to update its internal state (if it exists)
+    try {
+      const stub = await doStub(c.env, id)
+      await stub.fetch('https://do.internal/transition-to-live', { method: 'POST' })
+    } catch {
+      // Best effort — if DO doesn't respond, session state is still updated in DB
+    }
+
+    session.status = 'live'
+    return c.json({
+      ok: true,
+      data: { session },
+      trace_id: traceId,
+    })
+  })
+
   // GET /api/sessions/:id/results — aggregate persisted totals (CLOSED) or the
   // live DO snapshot (LIVE). DRAFT sessions have no results to show.
   app.get('/:id/results', async (c) => {
