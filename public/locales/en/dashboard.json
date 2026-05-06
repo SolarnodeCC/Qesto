@@ -94,5 +94,18 @@
   "templateTopic.learning": "Workshops & learning",
   "templateTopicSubtitle.team": "Retrospectives, health checks, and decision alignment.",
   "templateTopicSubtitle.product": "Feedback, prioritization, and launch readiness.",
-  "templateTopicSubtitle.learning": "Training pulse checks, closeouts, and event Q&A."
+  "templateTopicSubtitle.learning": "Training pulse checks, closeouts, and event Q&A.",
+  "recentSessions": "Recently opened",
+  "allSessions": "All sessions",
+  "inspiration": "Inspiration",
+  "importSession": "Import",
+  "sessionSubtext": "What would you like to do today?",
+  "home": "Home",
+  "settings": "Settings",
+  "help": "Help",
+  "joinSessionPrompt": "Participant? Enter code",
+  "filterAll": "All",
+  "filterLive": "Live",
+  "filterDraft": "Draft",
+  "filterClosed": "Closed"
 }
