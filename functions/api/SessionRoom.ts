@@ -265,8 +265,8 @@ export class SessionRoom implements DurableObject {
   // ── /close ────────────────────────────────────────────────────────────────
   private async handleClose(): Promise<Response> {
     const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? null
-    if (status !== 'live') {
-      return this.jsonError(409, 'not_live', 'Session is not LIVE')
+    if (status !== 'live' && status !== 'energizing') {
+      return this.jsonError(409, 'not_live', 'Session is not active')
     }
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
     const votes = await this.ensureVoters()

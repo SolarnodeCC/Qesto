@@ -912,14 +912,22 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx }))
 
-    // Conditional UPDATE: only transitions from draft → live.
+    // Check if session has energizers with draft state
+    const energizers = await c.env.DB
+      .prepare(`SELECT COUNT(*) as n FROM energizers WHERE session_id = ?1 AND state = 'draft'`)
+      .bind(id)
+      .first<{ n: number }>()
+    const hasEnergizersToDo = (energizers?.n ?? 0) > 0
+    const initialStatus = hasEnergizersToDo ? 'energizing' : 'live'
+
+    // Conditional UPDATE: only transitions from draft → (energizing|live).
     // `meta.changes === 0` means a concurrent request already won this write.
     const result = await c.env.DB
       .prepare(
-        `UPDATE sessions SET status = 'live', started_at = ?1
-         WHERE id = ?2 AND owner_id = ?3 AND status = 'draft'`,
+        `UPDATE sessions SET status = ?1, started_at = ?2
+         WHERE id = ?3 AND owner_id = ?4 AND status = 'draft'`,
       )
-      .bind(now, id, user.sub)
+      .bind(initialStatus, now, id, user.sub)
       .run()
 
     if (result.meta.changes === 0) {
@@ -927,7 +935,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       // return success without a redundant DO /init call.
       const current = await fetchSession(c.env.DB, id, user.sub)
       console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.concurrent_win', ...logCtx }))
-      if (current?.status === 'live') {
+      if (current?.status === 'energizing' || current?.status === 'live') {
         return c.json({ ok: true, data: { session: current, question: liveQ }, trace_id: traceId })
       }
       return c.json(
@@ -935,7 +943,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         409,
       )
     }
-    session.status = 'live'
+    session.status = initialStatus
     session.started_at = now
 
     const doRes = await postDO(c.env, id, '/init', {
