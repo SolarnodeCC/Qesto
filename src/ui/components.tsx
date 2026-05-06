@@ -207,19 +207,31 @@ export function MetricCard({
   label,
   value,
   alert = false,
+  trend,
   className = '',
 }: {
   label: string
   value: string | number
   alert?: boolean
+  trend?: { value: number; direction: 'up' | 'down'; inverted?: boolean }
   className?: string
 }) {
+  const trendGood = trend
+    ? (trend.direction === 'up') !== (trend.inverted ?? false)
+    : null
+
   return (
     <Card className={`${alert ? 'border-signal-error bg-red-50' : ''} ${className}`}>
       <Caption className={alert ? 'text-signal-error' : ''}>{label}</Caption>
       <div className={`text-2xl font-bold mt-space-2 ${alert ? 'text-signal-error dark:text-red-400' : 'text-pulse-900 dark:text-[#F0F2F8]'}`}>
         {value}
       </div>
+      {trend && (
+        <div className={`mt-1 flex items-center gap-0.5 text-caption font-medium ${trendGood ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+          {trend.direction === 'up' ? '▲' : '▼'}
+          {Math.abs(trend.value).toFixed(1)}%
+        </div>
+      )}
     </Card>
   )
 }
