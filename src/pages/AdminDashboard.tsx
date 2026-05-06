@@ -9,7 +9,7 @@ import { useT } from '../i18n'
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
-import { Heading, Body, Caption, Button, Card, MetricCard, Section, SkeletonCard } from '../ui/components'
+import { Heading, Body, Caption, Button, Card, MetricCard, StatCard, Section, SkeletonCard } from '../ui/components'
 import AuditLogViewer from '../components/AuditLogViewer'
 import AdminUsersTab from '../components/admin/AdminUsersTab'
 import AdminOpsTab from '../components/admin/AdminOpsTab'
@@ -18,40 +18,31 @@ import BuildStamp from '../components/BuildStamp'
 
 type AdminTab = 'dashboard' | 'users' | 'ops' | 'analytics'
 
+const TABS: Array<{ id: AdminTab; label: string; icon: string }> = [
+  { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+  { id: 'users',     label: 'Users',     icon: '👥' },
+  { id: 'ops',       label: 'OPS',       icon: '🧩' },
+  { id: 'analytics', label: 'Analytics', icon: '📈' },
+]
+
 // ─── Platform health strip ────────────────────────────────────────────────────
 
 function PlatformHealthStrip({ ops }: { ops: OpsSummary | null }) {
   if (!ops) return null
 
   const styles = {
-    healthy: {
-      wrap: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
-      text: 'text-green-700 dark:text-green-400',
-      dot: 'bg-green-500',
-      pulse: true,
-    },
-    degraded: {
-      wrap: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800',
-      text: 'text-amber-700 dark:text-amber-400',
-      dot: 'bg-amber-500',
-      pulse: false,
-    },
-    down: {
-      wrap: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
-      text: 'text-red-700 dark:text-red-400',
-      dot: 'bg-red-500',
-      pulse: false,
-    },
+    healthy:  { wrap: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',   text: 'text-green-700 dark:text-green-400',   dot: 'bg-green-500', pulse: true  },
+    degraded: { wrap: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500', pulse: false },
+    down:     { wrap: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',           text: 'text-red-700 dark:text-red-400',     dot: 'bg-red-500',   pulse: false },
   }
-
+  const labels = { healthy: 'All systems operational', degraded: 'Partial degradation', down: 'Major outage' }
   const s = styles[ops.status]
-  const label = { healthy: 'Healthy', degraded: 'Degraded', down: 'Down' }[ops.status]
 
   return (
     <div className={`flex items-center justify-between rounded-lg border px-4 py-2.5 ${s.wrap}`}>
       <div className="flex items-center gap-2.5">
         <span className={`w-2 h-2 rounded-full ${s.dot} ${s.pulse ? 'animate-pulse' : ''}`} />
-        <span className={`text-sm font-semibold ${s.text}`}>Platform {label}</span>
+        <span className={`text-sm font-semibold ${s.text}`}>{labels[ops.status]}</span>
         <span className="text-xs text-pulse-400 dark:text-[#6B7A99]">
           Updated {new Date(ops.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
@@ -83,14 +74,8 @@ function LatencySparkline({ data }: { data: HistoricalBucket[] }) {
     )
   }
 
-  const W = 400
-  const H = 100
-  const PL = 38
-  const PR = 8
-  const PT = 10
-  const PB = 22
-  const chartW = W - PL - PR
-  const chartH = H - PT - PB
+  const W = 400; const H = 100; const PL = 38; const PR = 8; const PT = 10; const PB = 22
+  const chartW = W - PL - PR; const chartH = H - PT - PB
 
   const vals = points.map((p) => p.p95_ms)
   const maxVal = Math.max(...vals, 1)
@@ -100,19 +85,11 @@ function LatencySparkline({ data }: { data: HistoricalBucket[] }) {
   const toX = (i: number) => PL + (i / (points.length - 1)) * chartW
   const toY = (v: number) => PT + chartH - ((v - minVal) / range) * chartH
 
-  const linePath = points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(1)} ${toY(p.p95_ms).toFixed(1)}`)
-    .join(' ')
-
-  const areaPath = [
-    linePath,
-    `L ${toX(points.length - 1).toFixed(1)} ${(PT + chartH).toFixed(1)}`,
-    `L ${toX(0).toFixed(1)} ${(PT + chartH).toFixed(1)} Z`,
-  ].join(' ')
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${toX(i).toFixed(1)} ${toY(p.p95_ms).toFixed(1)}`).join(' ')
+  const areaPath = [linePath, `L ${toX(points.length - 1).toFixed(1)} ${(PT + chartH).toFixed(1)}`, `L ${toX(0).toFixed(1)} ${(PT + chartH).toFixed(1)} Z`].join(' ')
 
   const last = points[points.length - 1]
-  const isAlert = last.p95_ms > 500
-  const lineColor = isAlert ? '#ef4444' : '#14b8a6'
+  const lineColor = last.p95_ms > 500 ? '#ef4444' : '#14b8a6'
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full" aria-label="P95 latency trend">
@@ -124,28 +101,12 @@ function LatencySparkline({ data }: { data: HistoricalBucket[] }) {
       </defs>
       <path d={areaPath} fill="url(#lat-grad)" />
       <path d={linePath} fill="none" stroke={lineColor} strokeWidth="1.5" strokeLinejoin="round" />
-      {/* last value dot + label */}
       <circle cx={toX(points.length - 1)} cy={toY(last.p95_ms)} r="3" fill={lineColor} />
-      <text
-        x={toX(points.length - 1) - 5}
-        y={toY(last.p95_ms) - 6}
-        textAnchor="end"
-        fontSize="10"
-        fill={lineColor}
-        fontWeight="600"
-      >
-        {last.p95_ms}ms
-      </text>
-      {/* y-axis labels */}
+      <text x={toX(points.length - 1) - 5} y={toY(last.p95_ms) - 6} textAnchor="end" fontSize="10" fill={lineColor} fontWeight="600">{last.p95_ms}ms</text>
       <text x={PL - 3} y={PT + 4} textAnchor="end" fontSize="9" fill="#94a3b8">{maxVal}ms</text>
       <text x={PL - 3} y={PT + chartH} textAnchor="end" fontSize="9" fill="#94a3b8">{minVal}ms</text>
-      {/* x-axis date range */}
-      <text x={PL} y={H - 5} fontSize="9" fill="#94a3b8">
-        {new Date(points[0].bucket_ts).toLocaleDateString()}
-      </text>
-      <text x={W - PR} y={H - 5} textAnchor="end" fontSize="9" fill="#94a3b8">
-        {new Date(last.bucket_ts).toLocaleDateString()}
-      </text>
+      <text x={PL} y={H - 5} fontSize="9" fill="#94a3b8">{new Date(points[0].bucket_ts).toLocaleDateString()}</text>
+      <text x={W - PR} y={H - 5} textAnchor="end" fontSize="9" fill="#94a3b8">{new Date(last.bucket_ts).toLocaleDateString()}</text>
     </svg>
   )
 }
@@ -160,10 +121,7 @@ function computeTrend(
   if (agg.length < 4) return undefined
   const half = Math.floor(agg.length / 2)
   const avg = (arr: HistoricalBucket[]) =>
-    arr.reduce((s, d) => {
-      if (key === 'p95_ms') return s + d.p95_ms
-      return s + (d.request_count > 0 ? d.error_count / d.request_count : 0)
-    }, 0) / arr.length
+    arr.reduce((s, d) => key === 'p95_ms' ? s + d.p95_ms : s + (d.request_count > 0 ? d.error_count / d.request_count : 0), 0) / arr.length
   const older = avg(agg.slice(0, half))
   const newer = avg(agg.slice(half))
   if (older === 0) return undefined
@@ -198,13 +156,6 @@ export default function AdminDashboard() {
   const latencyTrend = computeTrend(historicalData, 'p95_ms')
   const errorTrend = computeTrend(historicalData, 'error_count')
 
-  const TABS: Array<{ id: AdminTab; label: string; icon: string }> = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'users', label: t('users'), icon: '👥' },
-    { id: 'ops', label: t('ops'), icon: '🧩' },
-    { id: 'analytics', label: t('analytics'), icon: '📈' },
-  ]
-
   const navSlot = (
     <div className="flex items-center gap-3">
       <Link
@@ -219,11 +170,9 @@ export default function AdminDashboard() {
 
   return (
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-6xl mx-auto p-8 space-y-6">
-      <header className="flex items-start justify-between">
-        <div>
-          <Heading level="l">Admin</Heading>
-          <Body size="s" className="text-pulse-500 mt-space-2">{t('realtimePlatformObservability')}</Body>
-        </div>
+      <header>
+        <Heading level="l">Admin</Heading>
+        <Body size="s" className="text-pulse-500 mt-space-2">Real-time platform observability</Body>
       </header>
 
       {/* Tab bar — pill style */}
@@ -254,62 +203,59 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Dashboard tab */}
+      {/* ── Dashboard tab ── */}
       {activeTab === 'dashboard' && (
-        <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-6">
+        <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-8">
 
-          {/* Platform health banner */}
           <PlatformHealthStrip ops={ops} />
 
-          {/* Platform KPI totals */}
+          {/* Platform KPI totals — value-first StatCard, matches Analytics style */}
           {kpis && (
             <Section>
               <Heading level="m" className="border-l-4 border-teal-500 pl-3">Platform Overview</Heading>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-4">
-                <MetricCard label={t('liveSessions')} value={kpis.live_sessions} />
-                <MetricCard label={t('totalUsers')} value={kpis.total_users} />
-                <MetricCard label={t('sessionsToday')} value={kpis.sessions_today} />
-                <MetricCard label={t('sessionsThisMonth')} value={kpis.sessions_this_month} />
-                <MetricCard label={t('totalSessions')} value={kpis.total_sessions} />
-                <MetricCard label={t('estimatedAICosts')} value={`€${(kpis.ai_cost_estimate_cents / 100).toFixed(2)}`} />
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <StatCard label="Live sessions"       value={kpis.live_sessions}        colour="text-teal-600" />
+                <StatCard label="Total users"         value={kpis.total_users}          colour="text-purple-600" />
+                <StatCard label="Sessions today"      value={kpis.sessions_today}       colour="text-green-600" />
+                <StatCard label="Sessions this month" value={kpis.sessions_this_month}  colour="text-blue-600" />
+                <StatCard label="Total sessions"      value={kpis.total_sessions}       colour="text-amber-500" />
+                <StatCard label="Est. AI costs"       value={`€${(kpis.ai_cost_estimate_cents / 100).toFixed(2)}`} colour="text-teal-600" />
               </div>
             </Section>
           )}
 
-          {/* Live Metrics */}
+          {/* Live metrics — MetricCard kept: has alert + trend arrow states */}
           <Section>
-            <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('liveLast5min')}</Heading>
+            <Heading level="m" className="border-l-4 border-teal-500 pl-3">Live — last 5 min</Heading>
             {metricsLoading && !liveMetrics ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : metricsError ? (
               <Body className="text-signal-error">{metricsError}</Body>
             ) : liveMetrics ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-4">
-                <MetricCard label={t('activeSessions')} value={liveMetrics.active_sessions} />
-                <MetricCard label={t('participants')} value={liveMetrics.total_participants} />
-                <MetricCard label={t('revenue24h')} value={`$${(liveMetrics.revenue_24h_cents / 100).toFixed(2)}`} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <MetricCard label="Active sessions" value={liveMetrics.active_sessions} />
+                <MetricCard label="Participants"    value={liveMetrics.total_participants} />
+                <MetricCard label="Revenue (24h)"   value={`€${(liveMetrics.revenue_24h_cents / 100).toFixed(2)}`} />
                 <MetricCard
-                  label={t('p95Latency')}
+                  label="P95 latency"
                   value={`${liveMetrics.p95_latency_ms}ms`}
                   alert={liveMetrics.p95_latency_ms > 500}
                   trend={latencyTrend ? { ...latencyTrend, inverted: true } : undefined}
                 />
                 <MetricCard
-                  label={t('errorRate')}
+                  label="Error rate"
                   value={`${(liveMetrics.error_rate * 100).toFixed(1)}%`}
                   alert={liveMetrics.error_rate > 0.05}
                   trend={errorTrend ? { ...errorTrend, inverted: true } : undefined}
                 />
               </div>
             ) : null}
-            {liveMetrics?.stub && <Caption className="text-amber-600">⚠ Stub data (metrics KV not ready)</Caption>}
+            {liveMetrics?.stub && <Caption className="text-amber-600">⚠ Stub data — metrics KV not ready</Caption>}
           </Section>
 
-          {/* P95 latency trend chart */}
+          {/* P95 latency trend */}
           <Section>
             <Heading level="m" className="border-l-4 border-teal-500 pl-3">P95 Latency Trend</Heading>
             <Card>
@@ -317,23 +263,23 @@ export default function AdminDashboard() {
             </Card>
           </Section>
 
-          {/* Historical Data + Export */}
+          {/* Historical data + export */}
           <Section>
             <div className="flex items-center justify-between">
-              <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('historicalData')}</Heading>
-              <div className="flex items-center gap-space-3">
-                <div className="flex gap-space-2">
+              <Heading level="m" className="border-l-4 border-teal-500 pl-3">Historical data</Heading>
+              <div className="flex items-center gap-3">
+                <div className="flex gap-2">
                   <input
                     type="date"
                     value={startDate.toISOString().split('T')[0]}
                     onChange={(e) => setStartDate(new Date(e.target.value))}
-                    className="text-body-s border border-pulse-300 rounded-md px-space-2 py-space-1"
+                    className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
                   />
                   <input
                     type="date"
                     value={endDate.toISOString().split('T')[0]}
                     onChange={(e) => setEndDate(new Date(e.target.value))}
-                    className="text-body-s border border-pulse-300 rounded-md px-space-2 py-space-1"
+                    className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
                   />
                 </div>
                 <Button
@@ -346,7 +292,7 @@ export default function AdminDashboard() {
                   }}
                   disabled={exporting}
                 >
-                  {exporting ? t('exporting') : t('exportCsv')}
+                  {exporting ? 'Exporting…' : 'Export CSV'}
                 </Button>
               </div>
             </div>
@@ -359,64 +305,65 @@ export default function AdminDashboard() {
               <Card className="overflow-x-auto">
                 <table className="w-full text-body-s">
                   <thead>
-                    <tr className="border-b border-pulse-200">
-                      <th className="text-left py-space-2 font-medium text-pulse-700">{t('timestamp')}</th>
-                      <th className="text-left py-space-2 font-medium text-pulse-700">{t('route')}</th>
-                      <th className="text-right py-space-2 font-medium text-pulse-700">p50</th>
-                      <th className="text-right py-space-2 font-medium text-pulse-700">p95</th>
-                      <th className="text-right py-space-2 font-medium text-pulse-700">p99</th>
-                      <th className="text-right py-space-2 font-medium text-pulse-700">{t('errorPercent')}</th>
-                      <th className="text-right py-space-2 font-medium text-pulse-700">{t('requests')}</th>
+                    <tr className="border-b border-pulse-200 dark:border-[#1E2A45]">
+                      <th className="text-left py-2 font-medium text-pulse-600 dark:text-[#6B7A99]">Timestamp</th>
+                      <th className="text-left py-2 font-medium text-pulse-600 dark:text-[#6B7A99]">Route</th>
+                      <th className="text-right py-2 font-medium text-pulse-600 dark:text-[#6B7A99]">p50</th>
+                      <th className="text-right py-2 font-medium text-pulse-600 dark:text-[#6B7A99]">p95</th>
+                      <th className="text-right py-2 font-medium text-pulse-600 dark:text-[#6B7A99]">p99</th>
+                      <th className="text-right py-2 font-medium text-pulse-600 dark:text-[#6B7A99]">Error %</th>
+                      <th className="text-right py-2 font-medium text-pulse-600 dark:text-[#6B7A99]">Requests</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-pulse-100">
+                  <tbody className="divide-y divide-pulse-100 dark:divide-[#1E2A45]">
                     {historicalData.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-pulse-50">
-                        <td className="py-space-2">{new Date(row.bucket_ts).toLocaleString()}</td>
-                        <td className="py-space-2">{row.route ?? '(all)'}</td>
-                        <td className="text-right py-space-2">{row.p50_ms}ms</td>
-                        <td className="text-right py-space-2">{row.p95_ms}ms</td>
-                        <td className="text-right py-space-2">{row.p99_ms}ms</td>
-                        <td className="text-right py-space-2">{((row.error_count / (row.request_count || 1)) * 100).toFixed(1)}%</td>
-                        <td className="text-right py-space-2">{row.request_count}</td>
+                      <tr key={idx} className="hover:bg-pulse-50 dark:hover:bg-[#0F1526]">
+                        <td className="py-2 text-pulse-700 dark:text-[#A8B3CC]">{new Date(row.bucket_ts).toLocaleString()}</td>
+                        <td className="py-2 font-mono text-xs text-pulse-500 dark:text-[#6B7A99]">{row.route ?? '(all)'}</td>
+                        <td className="text-right py-2">{row.p50_ms}ms</td>
+                        <td className="text-right py-2 font-medium">{row.p95_ms}ms</td>
+                        <td className="text-right py-2">{row.p99_ms}ms</td>
+                        <td className="text-right py-2">{((row.error_count / (row.request_count || 1)) * 100).toFixed(1)}%</td>
+                        <td className="text-right py-2 text-pulse-500">{row.request_count}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </Card>
             ) : (
-              <Body className="text-pulse-500">{t('noDataInRange')}</Body>
+              <Body className="text-pulse-500">No data in selected range</Body>
             )}
           </Section>
 
-          {/* Audit Log */}
+          {/* Audit log */}
           <Section>
-            <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('auditLog')}</Heading>
+            <Heading level="m" className="border-l-4 border-teal-500 pl-3">Audit log</Heading>
             <AuditLogViewer />
           </Section>
         </div>
       )}
 
-      {/* Users tab */}
+      {/* ── Users tab ── */}
       {activeTab === 'users' && (
         <div role="tabpanel" id="tabpanel-users" aria-labelledby="tab-users">
           <AdminUsersTab />
         </div>
       )}
 
-      {/* OPS tab */}
+      {/* ── OPS tab ── */}
       {activeTab === 'ops' && (
         <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops">
           <AdminOpsTab />
         </div>
       )}
 
-      {/* Analytics tab */}
+      {/* ── Analytics tab ── */}
       {activeTab === 'analytics' && (
         <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics">
           <AdminAnalyticsTab />
         </div>
       )}
+
       <div className="px-4 pb-4">
         <BuildStamp />
       </div>
