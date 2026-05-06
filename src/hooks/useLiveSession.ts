@@ -232,7 +232,12 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     dispatch({ kind: 'connecting' })
 
     const url = buildLiveSessionWsUrl(sessionId, fingerprint)
-    const subprotocols = presenterToken ? [`qesto.bearer.${presenterToken}`] : undefined
+    // Always offer 'qesto-v1' so the server can legally echo it back (RFC 6455
+    // requires the server to choose from the offered list). The bearer token is
+    // offered alongside it so the server can identify the presenter role.
+    const subprotocols = presenterToken
+      ? [`qesto.bearer.${presenterToken}`, 'qesto-v1']
+      : ['qesto-v1']
     const ws = new WebSocket(url, subprotocols)
     wsRef.current = ws
 
