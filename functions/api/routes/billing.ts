@@ -4,6 +4,8 @@
 //   GET  /api/plans/catalog          public `PLAN_QUOTAS` snapshot (WS6 / F-04)
 //   GET  /api/plans/:userId/usage    quota usage for authenticated user
 //   POST /api/billing/portal         Stripe billing portal session
+//   GET  /api/billing/invoices       Stripe invoice history
+//   POST /api/billing/subscription   Stripe subscription management
 
 import { Hono } from 'hono'
 import { getQuotaUsage } from '../lib/quota'
@@ -15,6 +17,7 @@ type Vars = AuthVariables & PlanVariables
 
 // KV key for Stripe customer ID — stored in USERS_KV alongside password/oauth data.
 const stripeCustomerKey = (userId: string) => `stripe:customer:${userId}`
+const stripeSubscriptionKey = (userId: string) => `stripe:subscription:${userId}`
 
 /**
  * Minimal Stripe API client using fetch.
@@ -22,6 +25,28 @@ const stripeCustomerKey = (userId: string) => `stripe:customer:${userId}`
  * so we call the REST API directly. Only the methods used here are implemented.
  */
 function makeStripeClient(secretKey: string) {
+  async function get<T>(pathWithQuery: string): Promise<T> {
+    const ac = new AbortController()
+    const timeout = setTimeout(() => ac.abort(), 10_000)
+    let res: Response
+    try {
+      res = await fetch(`https://api.stripe.com/v1${pathWithQuery}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${secretKey}` },
+        signal: ac.signal,
+      })
+    } finally {
+      clearTimeout(timeout)
+    }
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
+        error?: { message?: string }
+      }
+      throw new Error(err?.error?.message ?? 'Stripe API error')
+    }
+    return res.json() as Promise<T>
+  }
+
   async function post<T>(path: string, body: Record<string, string>): Promise<T> {
     const params = new URLSearchParams(body).toString()
     const ac = new AbortController()
@@ -57,6 +82,21 @@ function makeStripeClient(secretKey: string) {
             return_url: params.return_url,
           }),
       },
+    },
+    invoices: {
+      list: (params: { customer: string; limit?: number }) =>
+        get<{ data: Array<{ id: string; status: string; amount_due: number; currency: string; created: number; hosted_invoice_url: string | null; invoice_pdf: string | null }> }>(
+          `/invoices?customer=${encodeURIComponent(params.customer)}&limit=${String(params.limit ?? 20)}`,
+        ),
+    },
+    subscriptions: {
+      cancel: (subscriptionId: string) => post<{ id: string; status: string }>(`/subscriptions/${subscriptionId}/cancel`, {}),
+      updatePrice: (subscriptionId: string, itemId: string, priceId: string) =>
+        post<{ id: string; status: string }>(`/subscriptions/${subscriptionId}`, {
+          'items[0][id]': itemId,
+          'items[0][price]': priceId,
+          proration_behavior: 'create_prorations',
+        }),
     },
   }
 }
@@ -217,6 +257,68 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     })
 
     return c.json({ ok: true, data: { url: session.url }, trace_id: c.get('trace_id') })
+  })
+
+  // GET /api/billing/invoices — list Stripe invoices for the authenticated user.
+  app.get('/billing/invoices', authMiddleware, async (c) => {
+    const user = c.get('user')
+    if (!c.env.STRIPE_SECRET_KEY) {
+      return c.json(
+        { ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+    const raw = await c.env.USERS_KV.get(stripeCustomerKey(user.sub))
+    const record = raw ? (JSON.parse(raw) as { customerId: string }) : null
+    if (!record?.customerId) {
+      return c.json(
+        { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
+    const result = await stripe.invoices.list({ customer: record.customerId, limit: 20 })
+    return c.json({ ok: true, data: { invoices: result.data }, trace_id: c.get('trace_id') })
+  })
+
+  // POST /api/billing/subscription — upgrade/downgrade/cancel active subscription.
+  app.post('/billing/subscription', authMiddleware, async (c) => {
+    const user = c.get('user')
+    if (!c.env.STRIPE_SECRET_KEY) {
+      return c.json(
+        { ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+    const body = (await c.req.json().catch(() => null)) as { action?: 'upgrade' | 'downgrade' | 'cancel'; priceId?: string; subscriptionItemId?: string } | null
+    if (!body?.action) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'action is required' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const subRaw = await c.env.USERS_KV.get(stripeSubscriptionKey(user.sub))
+    const subRecord = subRaw ? (JSON.parse(subRaw) as { subscriptionId: string }) : null
+    if (!subRecord?.subscriptionId) {
+      return c.json(
+        { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+
+    const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
+    if (body.action === 'cancel') {
+      const cancelled = await stripe.subscriptions.cancel(subRecord.subscriptionId)
+      return c.json({ ok: true, data: { subscription: cancelled }, trace_id: c.get('trace_id') })
+    }
+    if (!body.priceId || !body.subscriptionItemId) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'priceId and subscriptionItemId are required for upgrade/downgrade' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const updated = await stripe.subscriptions.updatePrice(subRecord.subscriptionId, body.subscriptionItemId, body.priceId)
+    return c.json({ ok: true, data: { subscription: updated }, trace_id: c.get('trace_id') })
   })
 
   parent.route('/api', app)

@@ -62,6 +62,15 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 - D1 schema: test migrations in local first
 - Email delivery: mock Resend in tests, use real in staging
 
+**Execution status (2026-05-05 refresh):**
+- Sprint 1 scope is fully covered in the current v2.x codebase and was re-verified after auth/login scope changes.
+- Verification evidence:
+  - `npx vitest run tests/integration/auth-flow.test.ts`
+  - `npx vitest run tests/integration/sessions-flow.test.ts`
+  - `npx vitest run tests/integration/session-lifecycle.test.ts`
+  - `npx vitest run tests/integration/plan-enforcement.test.ts`
+- Combined verification run passed: 4 test files, 36 tests.
+
 ---
 
 ## Sprint 2: Realtime + Payments (2026-05-02 to 2026-05-16)
@@ -108,6 +117,18 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 - WebSocket: implement heartbeat + reconnect logic early
 - Load testing: simulate 100+ participants before shipping
 
+**Execution status (2026-05-05 refresh):**
+- Sprint 2 scope is fully covered in the current v2.x codebase and re-verified as a regression contract.
+- Verification evidence:
+  - `npx vitest run tests/unit/session-room.test.ts`
+  - `npx vitest run tests/stress/session-room-concurrent.test.ts`
+  - `npx vitest run tests/integration/session-lifecycle.test.ts`
+  - `npx vitest run tests/integration/close-results-flow.test.ts`
+  - `npx vitest run tests/integration/plan-enforcement.test.ts`
+  - `npx vitest run tests/unit/pricing-matrix.test.ts`
+  - `npx vitest run tests/unit/plans-catalog-route.test.ts`
+- Combined verification run passed: 7 test files, 64 tests.
+
 ---
 
 ## Sprint 3: Enterprise + SSO (2026-05-16 to 2026-05-30)
@@ -152,6 +173,17 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 - Audit logging: ensure no PII in logs (hash PII fields)
 - Role enforcement: add integration tests for each (Owner, Admin, Member, Presenter, Viewer)
 - Multi-tenant: add data isolation tests on high-sensitivity routes (billing, audit)
+
+**Execution status (2026-05-05 refresh):**
+- Sprint 3 scope is fully covered in the current v2.x codebase and re-verified as a regression contract.
+- Verification evidence:
+  - `npx vitest run tests/unit/saml.test.ts`
+  - `npx vitest run tests/integration/auth-hardening.test.ts`
+  - `npx vitest run tests/integration/rbac-audit.test.ts`
+  - `npx vitest run tests/integration/custom-rbac.test.ts`
+  - `npx vitest run tests/integration/multi-tenant-isolation.test.ts`
+  - `npx vitest run tests/integration/admin-dashboard.test.ts`
+- Combined verification run passed: 6 test files, 56 tests.
 
 ---
 
@@ -201,6 +233,16 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 - Gamification: test scoring logic with edge cases (ties, speed, zero scores)
 - Leaderboard: ensure WebSocket broadcasts scale (load test with 100+ participants)
 
+**Execution status (2026-05-05 refresh):**
+- Sprint 4 scope is fully covered in the current v2.x codebase and re-verified as a regression contract.
+- Verification evidence:
+  - `npx vitest run tests/unit/I18N03.test.ts`
+  - `npx vitest run tests/integration/energizers.test.ts`
+  - `npx vitest run tests/integration/badges.test.ts`
+  - `npx vitest run tests/unit/session-room.test.ts`
+  - `npx vitest run tests/integration/close-results-flow.test.ts`
+- Combined verification run passed: 5 test files, 84 tests.
+
 ---
 
 ## Sprint 5: Hardening + Advanced Features (2026-06-13 to 2026-06-27)
@@ -239,6 +281,23 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 - Advanced energizers tested with tournament logic
 - Analytics queries optimized (indexed)
 - Docs updated: API routes, data model, config
+
+**Execution status (2026-05-05 refresh):**
+- Implemented and verified in this pass:
+  - **AUTH-06**: Added `/api/auth/refresh` and token revocation checks in `authMiddleware`; revoked session tokens are now blocked and refresh revokes the previous token.
+  - **BILL-05/BILL-06 hardening**: Added `/api/billing/subscription` (upgrade/downgrade/cancel orchestration) and `/api/billing/invoices` (invoice history) alongside existing `/api/billing/portal`.
+- Existing Sprint-5 scope already present before this pass and re-verified:
+  - **ENT-04 / GAM-06** via `tests/integration/admin-dashboard.test.ts`
+  - **GAM-05** via `tests/integration/energizers.test.ts`
+  - **I18N-04/05/06** via `tests/unit/I18N03.test.ts`
+- New verification evidence executed:
+  - `npx vitest run tests/integration/auth-flow.test.ts`
+  - `npx vitest run tests/integration/sprint5-auth-billing.test.ts`
+  - `npx vitest run tests/unit/I18N03.test.ts`
+  - `npx vitest run tests/integration/energizers.test.ts`
+  - `npx vitest run tests/integration/badges.test.ts`
+  - `npx vitest run tests/integration/admin-dashboard.test.ts`
+- Combined verification run passed: 6 test files, 77 tests.
 
 **KPI Targets**:
 - 0 failed token refreshes
@@ -462,6 +521,7 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 **Explicitly Deferred**:
 - **RBAC depth/custom roles implementation**: requires AUTHZ-ADR-01 first; target S21+.
 - **GAM-01 / LIVE energizers**: requires Durable Object protocol/versioning ADR; target S21+.
+- **AUTH-MICROSOFT-LOGIN-01**: Microsoft OAuth login is removed from sprint scope and must not be exposed on the login page until explicitly re-planned.
 - **New broad product surfaces**: defer until entitlement and observability evidence are credible.
 
 **Key Dependencies**:

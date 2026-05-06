@@ -184,5 +184,7 @@
   "errorPercent": "Fout %",
   "requests": "Verzoeken",
   "auditLog": "Auditlog",
-  "changeSummary": "Wijzigingssamenvatting"
+  "changeSummary": "Wijzigingssamenvatting",
+  "sessionsThisMonth": "Sessies deze maand",
+  "totalSessions": "Sessies totaal"
 }

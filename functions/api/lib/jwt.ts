@@ -12,6 +12,7 @@ const HEADER_B64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(HEADE
 export type AuthClaims = {
   sub: string
   email: string
+  jti?: string
   iat: number
   exp: number
 }
