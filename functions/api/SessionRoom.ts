@@ -102,7 +102,7 @@ type Attachment = {
   permissions?: string[]
 }
 
-const PER_IP_CONCURRENT_CAP = 5
+const PER_IP_CONCURRENT_CAP = 10  // Increased from 5 to support shared IPs better
 const VOTE_BUCKET_CAPACITY = 10
 const VOTE_BUCKET_REFILL_PER_SEC = 1
 
@@ -917,7 +917,7 @@ export class SessionRoom implements DurableObject {
   }
 
   private async checkIpRateLimit(ipHash: string): Promise<boolean> {
-    // Per-IP per-minute rate limiting (SEC-01): max 5 connections per minute.
+    // Per-IP per-minute rate limiting (SEC-01): max 15 connections per minute (supports exponential backoff retries).
     const limits = (await this.ctx.storage.get<Record<string, number[]>>(K_IP_RATE_LIMIT)) ?? {}
     const nowMs = now()
     const windowMs = 60 * 1000 // 1 minute window
@@ -928,8 +928,8 @@ export class SessionRoom implements DurableObject {
     // Remove old timestamps outside the window
     const recentTimestamps = timestamps.filter((ts) => ts > cutoffMs)
 
-    // Check if limit exceeded
-    const limitExceeded = recentTimestamps.length >= 5
+    // Check if limit exceeded (increased from 5 to 15 to allow multiple retry attempts per user)
+    const limitExceeded = recentTimestamps.length >= 15
 
     if (!limitExceeded) {
       // Record this connection attempt

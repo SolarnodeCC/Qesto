@@ -36,10 +36,6 @@ interface TemplateModalState {
   template: Template | null
 }
 
-interface TemplateResponse {
-  ok: boolean
-  data: { templates: Template[] }
-}
 
 // ─── Session Card ─────────────────────────────────────────────────────────────
 
@@ -423,8 +419,7 @@ export default function Dashboard() {
     async function loadTemplates() {
       setTemplatesLoading(true)
       try {
-        const qestoRes = await fetch('/api/templates')
-        const qestoBody = (await qestoRes.json()) as TemplateResponse
+        const qestoBody = await api<{ templates: Template[] }>('/api/templates')
         const customerBody = await api<{ templates: Template[] }>('/api/templates/mine')
         if (cancelled) return
         const qestoTemplates = qestoBody.ok ? qestoBody.data.templates : []

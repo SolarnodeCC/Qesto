@@ -104,7 +104,7 @@ export type LiveState = {
 type Action =
   | { kind: 'connecting' }
   | { kind: 'open' }
-  | { kind: 'reconnecting'; attempt: number }
+  | { kind: 'reconnecting'; attempt: number; message?: string }
   | { kind: 'closed' }
   | { kind: 'failed'; error: string }
   | {
@@ -232,7 +232,12 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     dispatch({ kind: 'connecting' })
 
     const url = buildLiveSessionWsUrl(sessionId, fingerprint)
-    const subprotocols = presenterToken ? [`qesto.bearer.${presenterToken}`] : undefined
+    // Always offer 'qesto-v1' so the server can legally echo it back (RFC 6455
+    // requires the server to choose from the offered list). The bearer token is
+    // offered alongside it so the server can identify the presenter role.
+    const subprotocols = presenterToken
+      ? [`qesto.bearer.${presenterToken}`, 'qesto-v1']
+      : ['qesto-v1']
     const ws = new WebSocket(url, subprotocols)
     wsRef.current = ws
 
@@ -318,11 +323,15 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
       const attempt = attemptRef.current + 1
       attemptRef.current = attempt
       if (attempt > 5) {
-        dispatch({ kind: 'failed', error: 'Connection lost — refresh to retry.' })
+        dispatch({
+          kind: 'failed',
+          error: 'Unable to connect to the live session. Please refresh the page and try again.',
+        })
         return
       }
       const delay = Math.min(16000, 1000 * Math.pow(2, attempt - 1))
-      dispatch({ kind: 'reconnecting', attempt })
+      const waitSeconds = Math.round(delay / 1000)
+      dispatch({ kind: 'reconnecting', attempt, message: `Reconnecting in ${waitSeconds} seconds...` })
       retryTimerRef.current = setTimeout(connect, delay)
     })
     ws.addEventListener('error', () => {
