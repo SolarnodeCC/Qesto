@@ -463,31 +463,6 @@ export default function Present() {
           {localPaused ? 'Resume' : 'Pause'}
         </button>
 
-        <button
-          type="button"
-          onClick={handleStartQuickFinger}
-          disabled={!isLive || state.allDone || state.energizer?.status === 'active'}
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-violet-600 text-white hover:bg-violet-700"
-        >
-          <Sparkles size={14} aria-hidden="true" />
-          {state.energizer?.status === 'active' ? t('quickFinger.active') : t('quickFinger.start')}
-        </button>
-        <button
-          type="button"
-          onClick={
-            state.energizer?.kind === 'team_quiz' && state.energizer.status === 'active'
-              ? () => sendEnergizerAdvance(state.energizer!.id)
-              : handleStartTeamQuiz
-          }
-          disabled={!isLive || state.allDone || (state.energizer?.status === 'active' && state.energizer.kind !== 'team_quiz')}
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-orange-600 text-white hover:bg-orange-700"
-        >
-          <ChevronRight size={14} aria-hidden="true" />
-          {state.energizer?.kind === 'team_quiz' && state.energizer.status === 'active'
-            ? t('teamQuiz.advance')
-            : t('teamQuiz.start')}
-        </button>
-
         <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
         {/* Hide tally live */}

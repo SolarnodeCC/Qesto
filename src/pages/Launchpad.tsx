@@ -369,6 +369,24 @@ export default function Launchpad() {
     }
   }
 
+  async function handleTransitionToLive() {
+    if (!id || startingRef.current) return
+    startingRef.current = true
+    setStarting(true)
+    setStartError(null)
+    try {
+      const res = await api<{ session: unknown }>(
+        `/api/sessions/${encodeURIComponent(id)}/transition-to-live`,
+        { method: 'POST' },
+      )
+      if (!res.ok) { setStartError(res.error.message); return }
+      await reload()
+    } finally {
+      startingRef.current = false
+      setStarting(false)
+    }
+  }
+
   async function handleCopyCode() {
     if (!data) return
     try {
@@ -535,30 +553,56 @@ export default function Launchpad() {
               />
             </div>
 
-            {/* Primary CTA — Open lobby */}
-            <button
-              type="button"
-              onClick={handleStart}
-              disabled={!allValid || starting}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-3 text-base font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
-            >
-              {starting ? (
-                <>
-                  <svg aria-hidden="true" className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  {t('starting')}
-                </>
-              ) : (
-                <>
-                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M8 5v14l11-7L8 5z" />
-                  </svg>
-                  {t('open_lobby_button')}
-                </>
-              )}
-            </button>
+            {/* Primary CTA — Open lobby or Start Questions */}
+            {data.session.status === 'energizing' ? (
+              <button
+                type="button"
+                onClick={handleTransitionToLive}
+                disabled={starting}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-3 text-base font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
+              >
+                {starting ? (
+                  <>
+                    <svg aria-hidden="true" className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    {t('starting')}
+                  </>
+                ) : (
+                  <>
+                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7L8 5z" />
+                    </svg>
+                    Start Questions
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleStart}
+                disabled={!allValid || starting}
+                className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-3 text-base font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
+              >
+                {starting ? (
+                  <>
+                    <svg aria-hidden="true" className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    {t('starting')}
+                  </>
+                ) : (
+                  <>
+                    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7L8 5z" />
+                    </svg>
+                    {t('open_lobby_button')}
+                  </>
+                )}
+              </button>
+            )}
 
             {startError && (
               <p role="alert" className="text-sm text-red-600">{startError}</p>
@@ -577,6 +621,47 @@ export default function Launchpad() {
 
           {/* ── Right: Content rail ── */}
           <div className="flex-1 min-w-0 space-y-6">
+            {/* Energizers — pre-session warm-up activities */}
+            {energizers.length > 0 && (
+              <section className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold dark:text-[#F0F2F8]">
+                    Energizers ({energizers.length})
+                  </h2>
+                </div>
+                <ul className="space-y-2">
+                  {energizers.map((energizer, index) => (
+                    <li
+                      key={energizer.id}
+                      className="rounded-md border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-3"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium dark:text-[#F0F2F8]">
+                            {index + 1}. {energizer.kind === 'quick_finger' && 'Quick Finger'}
+                            {energizer.kind === 'team_quiz' && 'Team Quiz'}
+                            {energizer.kind === 'emoji_poll' && 'Emoji Poll'}
+                            {energizer.kind === 'word_cloud' && 'Word Cloud'}
+                            {!['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud'].includes(energizer.kind) && energizer.kind}
+                          </p>
+                          <p className="text-xs text-pulse-500 mt-1 truncate">
+                            {energizer.prompt || '(no prompt)'}
+                          </p>
+                        </div>
+                        <span className={`ml-2 px-2 py-1 rounded text-xs font-medium flex-shrink-0 ${
+                          energizer.state === 'draft' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' :
+                          energizer.state === 'active' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                          'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                        }`}>
+                          {energizer.state}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {/* Questions — drag-to-reorder + inline editor */}
             <section className="space-y-3">
               <h2 className="text-lg font-semibold dark:text-[#F0F2F8]">

@@ -53,21 +53,21 @@ export function requireDraft(session: Session, reason: DraftGateReason): Lifecyc
 }
 
 export function requireLiveForClose(session: Session): LifecycleOk | LifecycleErr {
-  if (session.status !== 'live') {
+  if (session.status !== 'energizing' && session.status !== 'live') {
     return {
       ok: false,
-      error: { code: 'conflict', message: 'Only LIVE sessions can be closed', status: 409 },
+      error: { code: 'conflict', message: 'Only active sessions can be closed', status: 409 },
     }
   }
   return { ok: true, session }
 }
 
-/** WebSocket upgrade — session row must already be LIVE. */
+/** WebSocket upgrade — session row must be ENERGIZING or LIVE. */
 export function requireLiveForWebSocket(session: Session): LifecycleOk | LifecycleErr {
-  if (session.status !== 'live') {
+  if (session.status !== 'energizing' && session.status !== 'live') {
     return {
       ok: false,
-      error: { code: 'not_live', message: 'Session is not LIVE', status: 409 },
+      error: { code: 'not_live', message: 'Session is not active', status: 409 },
     }
   }
   return { ok: true, session }
