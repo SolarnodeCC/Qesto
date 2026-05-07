@@ -18,6 +18,7 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": true,
+    "ignoreDeprecations": "6.0",
     "types": ["@cloudflare/workers-types", "vite/client", "vitest/globals", "node"],
     "baseUrl": ".",
     "paths": {
