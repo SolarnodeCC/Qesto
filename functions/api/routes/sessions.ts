@@ -946,17 +946,43 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     session.status = initialStatus
     session.started_at = now
 
-    const doRes = await postDO(c.env, id, '/init', {
-      sessionId: session.id,
-      ownerId: session.owner_id,
-      code: session.code,
-      title: session.title,
-      question: liveQ,
-      questions: questions.map(questionToLive),
-      votePolicy: session.vote_policy,
-      sessionMode: session.session_mode,
-      plan: c.get('plan'),
-    })
+    let doRes: Response
+    try {
+      doRes = await postDO(c.env, id, '/init', {
+        sessionId: session.id,
+        ownerId: session.owner_id,
+        code: session.code,
+        title: session.title,
+        question: liveQ,
+        questions: questions.map(questionToLive),
+        votePolicy: session.vote_policy,
+        sessionMode: session.session_mode,
+        plan: c.get('plan'),
+      })
+    } catch (doNetworkErr) {
+      // DO stub.fetch() threw at the network level (not the DO returning 500).
+      // Roll back the DB transition so the session remains startable.
+      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'error', event: 'session.start.do_network_error', ...logCtx, err: String(doNetworkErr) }))
+      try {
+        await c.env.DB
+          .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
+          .bind(id)
+          .run()
+      } catch { /* best-effort rollback */ }
+      await recordSprint19JourneyEvent(c.env, {
+        name: 'launchpad.launch_failed',
+        userId: user.sub,
+        sessionId: id,
+        teamId: session.team_id,
+        plan: c.get('plan'),
+        value: 1,
+        traceId,
+      })
+      return c.json(
+        { ok: false, error: { code: 'do_init_failed', message: 'Session room unavailable, please try again' }, trace_id: traceId },
+        500,
+      )
+    }
     if (doRes.status !== 200) {
       // Defence-in-depth: if DO returns already_initialised (409), another
       // concurrent start won the DO race. DB is already live — no rollback.
