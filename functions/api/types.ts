@@ -62,7 +62,7 @@ export type Env = {
   METRICS_AE?: AnalyticsEngineDataset
 }
 
-export type SessionStatus = 'draft' | 'live' | 'closed' | 'archived'
+export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
 export type QuestionKind =
   | 'poll'
   | 'ranking'

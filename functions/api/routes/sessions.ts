@@ -912,14 +912,22 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx }))
 
-    // Conditional UPDATE: only transitions from draft → live.
+    // Check if session has energizers with draft state
+    const energizers = await c.env.DB
+      .prepare(`SELECT COUNT(*) as n FROM energizers WHERE session_id = ?1 AND state = 'draft'`)
+      .bind(id)
+      .first<{ n: number }>()
+    const hasEnergizersToDo = (energizers?.n ?? 0) > 0
+    const initialStatus = hasEnergizersToDo ? 'energizing' : 'live'
+
+    // Conditional UPDATE: only transitions from draft → (energizing|live).
     // `meta.changes === 0` means a concurrent request already won this write.
     const result = await c.env.DB
       .prepare(
-        `UPDATE sessions SET status = 'live', started_at = ?1
-         WHERE id = ?2 AND owner_id = ?3 AND status = 'draft'`,
+        `UPDATE sessions SET status = ?1, started_at = ?2
+         WHERE id = ?3 AND owner_id = ?4 AND status = 'draft'`,
       )
-      .bind(now, id, user.sub)
+      .bind(initialStatus, now, id, user.sub)
       .run()
 
     if (result.meta.changes === 0) {
@@ -927,7 +935,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       // return success without a redundant DO /init call.
       const current = await fetchSession(c.env.DB, id, user.sub)
       console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.concurrent_win', ...logCtx }))
-      if (current?.status === 'live') {
+      if (current?.status === 'energizing' || current?.status === 'live') {
         return c.json({ ok: true, data: { session: current, question: liveQ }, trace_id: traceId })
       }
       return c.json(
@@ -935,7 +943,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         409,
       )
     }
-    session.status = 'live'
+    session.status = initialStatus
     session.started_at = now
 
     const doRes = await postDO(c.env, id, '/init', {
@@ -1131,6 +1139,67 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       ok: true,
       data: { session, results: { counts, total } },
       trace_id: c.get('trace_id'),
+    })
+  })
+
+  // POST /api/sessions/:id/transition-to-live — ENERGIZING → LIVE.
+  // Transitions a session from ENERGIZING state (after energizers) to LIVE (show questions).
+  app.post('/:id/transition-to-live', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const traceId = c.get('trace_id')
+    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!loaded.ok) {
+      return c.json(
+        { ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id: traceId },
+        loaded.error.status,
+      )
+    }
+    const session = loaded.session
+    if (session.status !== 'energizing') {
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'conflict',
+            message: 'Session must be in ENERGIZING state to transition to LIVE',
+          },
+          trace_id: traceId,
+        },
+        409,
+      )
+    }
+
+    // Update DB status to live
+    const result = await c.env.DB
+      .prepare(`UPDATE sessions SET status = 'live' WHERE id = ?1 AND owner_id = ?2 AND status = 'energizing'`)
+      .bind(id, user.sub)
+      .run()
+
+    if (result.meta.changes === 0) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'conflict', message: 'Session could not be transitioned to LIVE' },
+          trace_id: traceId,
+        },
+        409,
+      )
+    }
+
+    // Notify DO to update its internal state (if it exists)
+    try {
+      const stub = await doStub(c.env, id)
+      await stub.fetch('https://do.internal/transition-to-live', { method: 'POST' })
+    } catch {
+      // Best effort — if DO doesn't respond, session state is still updated in DB
+    }
+
+    session.status = 'live'
+    return c.json({
+      ok: true,
+      data: { session },
+      trace_id: traceId,
     })
   })
 

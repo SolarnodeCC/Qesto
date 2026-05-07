@@ -176,6 +176,7 @@ export class SessionRoom implements DurableObject {
     const url = new URL(req.url)
     if (url.pathname === '/init' && req.method === 'POST') return this.handleInit(req)
     if (url.pathname === '/close' && req.method === 'POST') return this.handleClose()
+    if (url.pathname === '/transition-to-live' && req.method === 'POST') return this.handleTransitionToLive()
     if (url.pathname === '/state' && req.method === 'GET') return this.handleState()
     if (url.pathname === '/ws' && req.headers.get('upgrade') === 'websocket') {
       return this.handleUpgrade(req)
@@ -265,8 +266,8 @@ export class SessionRoom implements DurableObject {
   // ── /close ────────────────────────────────────────────────────────────────
   private async handleClose(): Promise<Response> {
     const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? null
-    if (status !== 'live') {
-      return this.jsonError(409, 'not_live', 'Session is not LIVE')
+    if (status !== 'live' && status !== 'energizing') {
+      return this.jsonError(409, 'not_live', 'Session is not active')
     }
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
     const votes = await this.ensureVoters()
@@ -297,6 +298,30 @@ export class SessionRoom implements DurableObject {
       optionIds.map((optionId) => ({ voterId, optionId })),
     )
     return this.jsonOk({ counts, total, votes: voteList, questionId })
+  }
+
+  // ── /transition-to-live ────────────────────────────────────────────────────
+  // Transitions session from ENERGIZING to LIVE. Broadcast update to all clients.
+  private async handleTransitionToLive(): Promise<Response> {
+    const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? null
+    if (status !== 'live') {
+      // Already live or not initialized, nothing to do
+      return this.jsonOk({ transitioned: false })
+    }
+    // Broadcast the transition to all connected clients
+    const msg = serverMessage({
+      type: 'session_energizing_complete',
+      data: {},
+      timestamp: now(),
+    })
+    for (const ws of this.ctx.getWebSockets()) {
+      try {
+        ws.send(msg)
+      } catch {
+        /* ignore */
+      }
+    }
+    return this.jsonOk({ transitioned: true })
   }
 
   // ── /state (debug/test) ───────────────────────────────────────────────────
