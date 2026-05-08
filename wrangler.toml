@@ -96,9 +96,11 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
-[[kv_namespaces]]
-binding = "HELP_CONVERSATIONS_KV"
-id = "help-conversations-id"
+# HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
+# [[kv_namespaces]]
+# binding = "HELP_CONVERSATIONS_KV"
+# id = "<to-be-created>"
+
 [[vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
