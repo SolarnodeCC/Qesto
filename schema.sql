@@ -132,9 +132,10 @@ CREATE TABLE IF NOT EXISTS questions (
   id TEXT PRIMARY KEY,
   session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   position INTEGER NOT NULL,                                   -- 0-indexed order
-  -- NOTE: 'word_cloud' added for new deployments. Existing DBs widen the CHECK
-  -- via patchSchemaIfNeeded() at runtime; SQLite cannot ALTER a CHECK constraint.
-  kind TEXT NOT NULL CHECK (kind IN ('poll','ranking','consent','open','word_cloud')),
+  kind TEXT NOT NULL CHECK (kind IN (
+    'poll', 'ranking', 'consent', 'open', 'word_cloud',
+    'multi_select', 'likert', 'upvote', 'slider'
+  )),
   prompt TEXT NOT NULL,
   options_json TEXT NOT NULL DEFAULT '[]',                     -- JSON array of {id,label}
   created_at INTEGER NOT NULL,
