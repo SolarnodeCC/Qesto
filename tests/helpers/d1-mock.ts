@@ -26,7 +26,7 @@ type SessionRow = {
   owner_id: string
   code: string
   title: string
-  status: 'draft' | 'live' | 'closed' | 'archived'
+  status: 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
   anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none'
   vote_policy?: 'once' | 'multi' | 'react'
   session_mode?: 'reflection' | 'fun'
@@ -298,14 +298,21 @@ export class D1PreparedStatementMock {
       row.session_mode = session_mode
       return { meta: { changes: 1 } }
     }
-    if (this.sql.startsWith("UPDATE sessions SET status = 'live'")) {
-      const [started_at, id, owner_id] = this.args as [number, string, string]
+    if (this.sql.startsWith('UPDATE sessions SET status = ?1, started_at = ?2')) {
+      // Parameterized start: status = 'live' | 'energizing', guards AND status = 'draft'
+      const [status, started_at, id, owner_id] = this.args as [string, number, string, string]
       const row = this.db.sessions.get(id)
-      // Mirrors the AND status = 'draft' guard in the production SQL — only
-      // a draft session can transition; returns 0 changes if already live.
       if (!row || row.owner_id !== owner_id || row.status !== 'draft') return { meta: { changes: 0 } }
-      row.status = 'live'
+      row.status = status as SessionRow['status']
       row.started_at = started_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith("UPDATE sessions SET status = 'live'")) {
+      // transition-to-live: args are (id, owner_id), not (started_at, id, owner_id)
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id || row.status !== 'energizing') return { meta: { changes: 0 } }
+      row.status = 'live'
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith("UPDATE sessions SET status = 'draft'")) {
