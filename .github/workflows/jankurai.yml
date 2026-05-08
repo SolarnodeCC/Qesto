@@ -24,12 +24,15 @@ jobs:
       - uses: jeppsontaylor/Jankurai@v0.8.0
         with:
           mode: advisory
-          baseline: agent/baselines/main.repo-score.json
+          baseline: agent/repo-score.json
 
       - name: Upload Jankurai audit report
         uses: actions/upload-artifact@v7
         if: always()
         with:
           name: jankurai-audit
-          path: target/jankurai/
+          path: |
+            agent/repo-score.json
+            agent/repo-score.md
+            target/jankurai/
           retention-days: 7
