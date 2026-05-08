@@ -24,7 +24,7 @@ worker/  ──scheduled──► cleanup, cron triggers
 |---|---|---|
 | Frontend | React + TypeScript, Vite, Tailwind CSS v4 | `src/` |
 | Backend | Hono on CF Pages Functions | `functions/api/[[route]].ts` |
-| Realtime | Durable Object `SessionRoom` | WS only in LIVE state |
+| Realtime | Durable Object `SessionRoom` | WS in ENERGIZING and LIVE states |
 | DB | Cloudflare D1 (`DB`) | migrations in `schema.sql` |
 | KV stores | USERS/SESSIONS/TEAMS/TEMPLATES/DECISIONS/AUDIT/ACTIONS_KV | JSON blobs |
 | AI | `c.env.AI.run()` Workers AI — **NEVER** Anthropic API | `ai.ts` |
@@ -35,13 +35,18 @@ worker/  ──scheduled──► cleanup, cron triggers
 
 ### Session State Machine
 ```
-DRAFT ──start()──► LIVE (active) ──close()──► CLOSED ──► ARCHIVED
-  │                     │
-  └─ REST DRAFT-API      └─ WebSocket (DO) only
-     DO doesn't exist         REST forbidden
+DRAFT ──start()──► ENERGIZING* ──transition_to_live()──► LIVE (active) ──close()──► CLOSED ──► ARCHIVED
+  │                       │                                 │
+  └─ REST DRAFT-API       └─ WebSocket (DO) only            └─ WebSocket (DO) only
+     DO doesn't exist         *if energizers exist               REST forbidden
 ```
-**Critical**: In DRAFT state the DO does not exist.
-In LIVE state all config changes go through WebSocket (`ClientMessage` types in `types.ts`).
+**Critical**: 
+- In DRAFT state the DO does not exist. Host configures questions and energizers via REST API.
+- When `start()` is called, if draft energizers exist, session enters ENERGIZING state (else goes directly to LIVE).
+- In ENERGIZING state participants join and see warm-up activities (energizers) via WebSocket (DO initialized).
+- Host clicks "Start Questions" to call `transition-to-live()` and move to LIVE state, where participants see questions.
+- In LIVE state all config changes go through WebSocket (`ClientMessage` types in `types.ts`).
+- Energizers are created/managed in DRAFT state but only activated during ENERGIZING (via `/api/sessions/:id/energizers` endpoints).
 
 ### Key Code Patterns
 ```typescript
@@ -60,6 +65,26 @@ await c.env.SESSIONS_KV.put(key, JSON.stringify(data), { expirationTtl: 86400 })
 const raw = await c.env.SESSIONS_KV.get(key)
 const data = raw ? JSON.parse(raw) : null
 ```
+
+### Energizers & Pre-Session Warm-up
+**Flow:**
+1. **DRAFT state**: Host creates energizers via `POST /api/sessions/:id/energizers` (creates with `state='draft'`)
+2. **Start session**: `POST /api/sessions/:id/start`
+   - If session has draft energizers → sets `status='energizing'`, initializes DO
+   - If no energizers → sets `status='live'`, initializes DO
+   - Either way, DO now manages realtime state
+3. **ENERGIZING state**: Participants join, see active energizer(s) via WebSocket. Host can manually activate energizers or let them auto-complete.
+4. **Transition to LIVE**: `POST /api/sessions/:id/transition-to-live`
+   - Checks session is in `status='energizing'`
+   - Updates DB to `status='live'`
+   - Notifies DO to broadcast `session_energizing_complete` to all clients
+   - Frontend automatically shows questions
+
+**Energizer API** (work in both DRAFT and ENERGIZING states):
+- `GET /api/sessions/:id/energizers` — list all energizers
+- `POST /api/sessions/:id/energizers` — create (creates with `state='draft'`)
+- `PATCH /api/sessions/:id/energizers/:energizerId` — update state (e.g., draft → active)
+- `GET /api/sessions/:id/energizers/active` — fetch current active energizer
 
 ### Context Hub (fetch before any integration)
 ```bash
