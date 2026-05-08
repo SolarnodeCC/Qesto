@@ -398,6 +398,25 @@ CREATE TABLE IF NOT EXISTS energizer_votes (
 CREATE INDEX IF NOT EXISTS idx_energizer_votes_energizer ON energizer_votes(energizer_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- help_documents — Knowledge base for RAG retrieval (curated help articles)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS help_documents (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  topic TEXT NOT NULL,                              -- 'getting-started', 'faq', 'billing', 'troubleshooting'
+  scope TEXT NOT NULL,                              -- 'free' | 'starter' | 'team' (minimum plan to access)
+  excerpt TEXT,
+  embedding_id TEXT UNIQUE,                         -- Reference to Vectorize document
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  published_at INTEGER                              -- NULL = draft (not searchable)
+);
+CREATE INDEX IF NOT EXISTS idx_help_documents_topic ON help_documents(topic);
+CREATE INDEX IF NOT EXISTS idx_help_documents_scope ON help_documents(scope);
+CREATE INDEX IF NOT EXISTS idx_help_documents_published ON help_documents(published_at);
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- help_conversations — AI help assistant conversation sessions
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS help_conversations (
