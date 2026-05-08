@@ -104,9 +104,11 @@ binding = "AI"
 [[vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
-[[vectorize]]
-binding = "HELP_VECTORIZE"
-index_name = "qesto-help"
+
+# HELP_VECTORIZE will be created in Week 2 when RAG endpoints are implemented
+# [[vectorize]]
+# binding = "HELP_VECTORIZE"
+# index_name = "qesto-help"
 
 [[analytics_engine_datasets]]
 binding = "METRICS_AE"
