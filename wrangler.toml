@@ -96,9 +96,15 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
+[[kv_namespaces]]
+binding = "HELP_CONVERSATIONS_KV"
+id = "help-conversations-id"
 [[vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
+[[vectorize]]
+binding = "HELP_VECTORIZE"
+index_name = "qesto-help"
 
 [[analytics_engine_datasets]]
 binding = "METRICS_AE"

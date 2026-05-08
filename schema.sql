@@ -398,6 +398,53 @@ CREATE TABLE IF NOT EXISTS energizer_votes (
 CREATE INDEX IF NOT EXISTS idx_energizer_votes_energizer ON energizer_votes(energizer_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- help_conversations — AI help assistant conversation sessions
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS help_conversations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_id TEXT REFERENCES sessions(id) ON DELETE SET NULL,
+  topic TEXT,                                          -- e.g., 'billing', 'features', 'general'
+  plan TEXT NOT NULL,                                  -- user's plan at conversation time
+  language TEXT NOT NULL DEFAULT 'en',                 -- ISO 639-1 code
+  resolved_by_human INTEGER DEFAULT 0,                -- 1 if escalated and resolved
+  created_at INTEGER NOT NULL,
+  closed_at INTEGER,
+  UNIQUE(user_id, created_at)                         -- prevent rapid duplicates
+);
+CREATE INDEX IF NOT EXISTS idx_help_conversations_user ON help_conversations(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_help_conversations_status ON help_conversations(closed_at);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- help_messages — individual messages within a conversation
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS help_messages (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL REFERENCES help_conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+  sources_json TEXT,                                   -- JSON array of citation objects {url, title, confidence}
+  confidence REAL DEFAULT 0.0,                        -- 0.0–1.0 for assistant responses
+  handoff_suggested INTEGER DEFAULT 0,                -- 1 if assistant suggests human escalation
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_help_messages_conversation ON help_messages(conversation_id, created_at);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- help_feedback — track helpful/unhelpful responses for model tuning
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS help_feedback (
+  id TEXT PRIMARY KEY,
+  message_id TEXT NOT NULL REFERENCES help_messages(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  helpful INTEGER NOT NULL CHECK (helpful IN (0, 1)),
+  comment TEXT,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_help_feedback_message ON help_feedback(message_id);
+CREATE INDEX IF NOT EXISTS idx_help_feedback_user ON help_feedback(user_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- team_quiz_responses — per-participant, per-question answers for Team Quiz
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS team_quiz_responses (
