@@ -9,15 +9,18 @@
 import { Hono } from 'hono'
 import { authMiddleware } from '../../middleware/auth'
 import type { Env } from '../../types'
-import { registerHelpAskRoute } from './register-ask'
-import { registerHelpFeedbackRoute } from './register-feedback'
+
+// Week 2: Import route handlers when implemented
+// import { registerHelpAskRoute } from './register-ask'
+// import { registerHelpFeedbackRoute } from './register-feedback'
 
 export function mountHelpRoutes(parent: any): void {
   const app = new Hono<{ Bindings: Env }>()
   app.use('*', authMiddleware)
 
-  registerHelpAskRoute(app)
-  registerHelpFeedbackRoute(app)
+  // Week 2: Mount help endpoints
+  // registerHelpAskRoute(app)
+  // registerHelpFeedbackRoute(app)
 
   parent.route('/api', app)
 }

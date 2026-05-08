@@ -1,6 +1,12 @@
-import { ulid } from 'ulid'
 import type { D1Database, VectorizeIndex } from '@cloudflare/workers-types'
 import type { Ai } from '@cloudflare/workers-ai'
+
+// Simple ULID-like ID generator (128-bit timestamp + random)
+function generateId(): string {
+  const now = Date.now()
+  const random = Math.random().toString(36).substring(2, 15)
+  return `${now.toString(36)}-${random}`
+}
 
 export interface HelpDocumentSeed {
   id: string
@@ -67,7 +73,7 @@ export async function seedHelpDocuments(
   let docs_inserted = 0
 
   for (const doc of documents) {
-    const embedding_id = ulid()
+    let embedding_id = generateId()
     let vector: number[] | null = null
 
     // Embed the document (title + excerpt for RAG retrieval)
