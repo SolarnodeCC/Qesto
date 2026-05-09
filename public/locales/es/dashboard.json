@@ -94,5 +94,19 @@
   "templateTopic.learning": "Talleres y aprendizaje",
   "templateTopicSubtitle.team": "Retrospectivas, chequeos de salud y alineación de decisiones.",
   "templateTopicSubtitle.product": "Feedback, priorización y preparación de lanzamiento.",
-  "templateTopicSubtitle.learning": "Chequeos de formación, cierres y preguntas de eventos."
+  "templateTopicSubtitle.learning": "Chequeos de formación, cierres y preguntas de eventos.",
+  "recentSessions": "[TODO] Recently opened",
+  "allSessions": "[TODO] All sessions",
+  "inspiration": "[TODO] Inspiration",
+  "importSession": "[TODO] Import",
+  "sessionSubtext": "[TODO] What would you like to do today?",
+  "home": "[TODO] Home",
+  "settings": "[TODO] Settings",
+  "help": "[TODO] Help",
+  "joinSessionPrompt": "[TODO] Participant? Enter code",
+  "filterAll": "[TODO] All",
+  "filterLive": "[TODO] Live",
+  "filterDraft": "[TODO] Draft",
+  "filterClosed": "[TODO] Closed",
+  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes."
 }

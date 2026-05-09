@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import * as amplitude from '@amplitude/unified'
 import { getLanguageHeader, useT } from '../i18n'
 import { api, getAuthToken } from '../api/client'
 import { apiUrl } from '../config/api'
@@ -407,6 +408,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
   // Reset when opened
   useEffect(() => {
     if (!open) return
+    amplitude.track('Session Wizard Opened')
     setStep(1)
     setJumpedFrom5(false)
     setTitle('')
@@ -481,7 +483,12 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         idempotencyKey: crypto.randomUUID(),
       })
       setCreatingSession(false)
-      if (!res.ok) { setError(res.error.message); return }
+      if (!res.ok) {
+        amplitude.track('Error Encountered', { error_category: 'session', error_context: 'create', error_message: res.error.message })
+        setError(res.error.message)
+        return
+      }
+      amplitude.track('Session Created', { session_id: res.data.session.id, from_template: !!initialTemplate })
       setSessionId(res.data.session.id)
     }
 
@@ -562,9 +569,15 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         accepted: false,
       }))
 
+      amplitude.track('AI Questions Generated', {
+        session_id: sessionId,
+        question_count: generated.length,
+        has_focus_area: !!aiPrompt.trim(),
+      })
       setQuestions(generated)
       setAiPhase('review')
     } catch {
+      amplitude.track('Error Encountered', { error_category: 'ai', error_context: 'generate_questions', error_message: 'ai_generation_failed' })
       setError(t('step2.ai_error'))
       setAiPhase('chat')
     } finally {
@@ -687,6 +700,18 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
       })
     }
 
+    amplitude.track('Session Launched', {
+      session_id: sessionId,
+      question_count: activeQuestions.length,
+      used_ai: usedAiQuestions,
+      ai_accepted_count: acceptedAiCount,
+      ai_dismissed_count: dismissedAiCount,
+      has_energizer: !!energizerId,
+      anonymity,
+      vote_policy: votePolicy,
+      session_mode: sessionMode,
+      from_template: !!templateSeedName,
+    })
     setLaunching(false)
     onSessionCreated?.()
     navigate(`/sessions/${sessionId}/launchpad`)

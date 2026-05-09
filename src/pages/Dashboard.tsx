@@ -764,7 +764,7 @@ export default function Dashboard() {
                 </ul>
               ) : insightThemes.length === 0 ? (
                 <div className="space-y-4">
-                  <p className="text-body-s text-pulse-500 dark:text-pulse-400">No insights generated yet. Analyze your closed sessions to surface themes.</p>
+                  <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('insightsEmpty')}</p>
                   <div className="space-y-2">
                     {closedSessions.slice(0, 3).map((s) => (
                       <button

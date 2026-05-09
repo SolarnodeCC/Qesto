@@ -1,12 +1,10 @@
-import * as amplitude from '@amplitude/analytics-browser'
+import * as amplitude from '@amplitude/unified'
 
 const API_KEY = (import.meta.env.VITE_AMPLITUDE_API_KEY as string | undefined) ?? ''
 
 export function initAnalytics() {
   if (!API_KEY) return
-  amplitude.init(API_KEY, {
-    autocapture: false,
-  })
+  // initAll() in main.tsx handles SDK initialization
 }
 
 export function trackPageViewed(path: string) {

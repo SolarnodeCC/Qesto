@@ -172,7 +172,7 @@ export default function AdminDashboard() {
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-6xl mx-auto p-8 space-y-6">
       <header>
         <Heading level="l">Admin</Heading>
-        <Body size="s" className="text-pulse-500 mt-space-2">Real-time platform observability</Body>
+        <Body size="s" className="text-pulse-500 mt-space-2">{t('realtimePlatformObservability')}</Body>
       </header>
 
       {/* Tab bar — pill style */}
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
           {/* Platform KPI totals — value-first StatCard, matches Analytics style */}
           {kpis && (
             <Section>
-              <Heading level="m" className="border-l-4 border-teal-500 pl-3">Platform Overview</Heading>
+              <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('platformOverview')}</Heading>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 <StatCard label="Live sessions"       value={kpis.live_sessions}        colour="text-teal-600" />
                 <StatCard label="Total users"         value={kpis.total_users}          colour="text-purple-600" />
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
 
           {/* Live metrics — MetricCard kept: has alert + trend arrow states */}
           <Section>
-            <Heading level="m" className="border-l-4 border-teal-500 pl-3">Live — last 5 min</Heading>
+            <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('liveLast5min')}</Heading>
             {metricsLoading && !liveMetrics ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
@@ -266,7 +266,7 @@ export default function AdminDashboard() {
           {/* Historical data + export */}
           <Section>
             <div className="flex items-center justify-between">
-              <Heading level="m" className="border-l-4 border-teal-500 pl-3">Historical data</Heading>
+              <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('historicalData')}</Heading>
               <div className="flex items-center gap-3">
                 <div className="flex gap-2">
                   <input
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
                 </table>
               </Card>
             ) : (
-              <Body className="text-pulse-500">No data in selected range</Body>
+              <Body className="text-pulse-500">{t('noDataInRange')}</Body>
             )}
           </Section>
 

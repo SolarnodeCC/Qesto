@@ -186,5 +186,6 @@
   "auditLog": "Auditlog",
   "changeSummary": "Wijzigingssamenvatting",
   "sessionsThisMonth": "Sessies deze maand",
-  "totalSessions": "Sessies totaal"
+  "totalSessions": "Sessies totaal",
+  "platformOverview": "[TODO] Platform Overview"
 }
