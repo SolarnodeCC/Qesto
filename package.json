@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@amplitude/unified": "^1.1.3",
-    "hono": "^4.12.16",
+    "hono": "^4.12.18",
     "lucide-react": "^1.14.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
