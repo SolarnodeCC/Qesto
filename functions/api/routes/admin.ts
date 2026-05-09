@@ -24,6 +24,8 @@ import { queryAuditEvents, recordAuditEvent } from '../lib/audit'
 import { ulid } from '../lib/ulid'
 import type { Env } from '../types'
 import { readKvJson } from '../lib/kv'
+import { validateBody } from '../lib/validate'
+import { AdminMetricsExportSchema, AdminCreateUserSchema, AdminPatchUserSchema } from '../lib/validation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -427,36 +429,16 @@ export function mountAdminRoutes(parent: any) {
   // Streams D1 metrics_summary as CSV.  Max 10 000 rows, <5 MB.
   app.post('/metrics/export', async (c) => {
     const trace_id = c.get('trace_id')
-    const body = (await c.req.json().catch(() => null)) as { start?: string; end?: string } | null
-    if (!body) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Request body must be JSON' }, trace_id },
-        400,
-      )
-    }
-    const startParam = body.start
-    const endParam = body.end
 
-    if (!startParam || !endParam) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'start and end query params are required (ISO 8601)' },
-          trace_id,
-        },
-        400,
-      )
-    }
+    const validated = await validateBody(c, AdminMetricsExportSchema)
+    if ('error' in validated) return validated.error
+    const { start: startParam, end: endParam } = validated.data
 
     const startMs = Date.parse(startParam)
     const endMs = Date.parse(endParam)
-    if (isNaN(startMs) || isNaN(endMs) || startMs >= endMs) {
+    if (startMs >= endMs) {
       return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid date range' },
-          trace_id,
-        },
+        { ok: false, error: { code: 'validation', message: 'start must be before end' }, trace_id },
         400,
       )
     }
@@ -631,27 +613,23 @@ export function mountAdminRoutes(parent: any) {
   // Create a new user account.
   app.post('/users', async (c) => {
     const trace_id = c.get('trace_id')
-    const body = (await c.req.json().catch(() => null)) as
-      | { email?: string; display_name?: string; plan?: string }
-      | null
 
-    if (!body || !body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Valid email is required' }, trace_id }, 400)
-    }
+    const validated = await validateBody(c, AdminCreateUserSchema)
+    if ('error' in validated) return validated.error
+    const { email: rawEmail, display_name, plan = 'free' } = validated.data
 
-    const plan = (['free', 'starter', 'team'] as const).includes(body.plan as any) ? body.plan : 'free'
     const id = ulid()
     const now = Date.now()
 
     try {
       await c.env.DB.prepare(
         'INSERT INTO users (id, email, display_name, created_at, plan) VALUES (?1, ?2, ?3, ?4, ?5)',
-      ).bind(id, body.email.toLowerCase().trim(), body.display_name ?? null, now, plan).run()
+      ).bind(id, rawEmail.toLowerCase().trim(), display_name ?? null, now, plan).run()
 
       const user: AdminUser = {
         id,
-        email: body.email.toLowerCase().trim(),
-        display_name: body.display_name ?? null,
+        email: rawEmail.toLowerCase().trim(),
+        display_name: display_name ?? null,
         plan: plan as AdminUser['plan'],
         created_at: now,
         last_login_at: null,
@@ -682,15 +660,10 @@ export function mountAdminRoutes(parent: any) {
   app.patch('/users/:id', async (c) => {
     const trace_id = c.get('trace_id')
     const userId = c.req.param('id')
-    const body = (await c.req.json().catch(() => null)) as
-      | { display_name?: string; plan?: string; admin_role?: 'admin' | 'owner' | null }
-      | null
-    if (!body) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Request body must be JSON' }, trace_id },
-        400,
-      )
-    }
+
+    const validated = await validateBody(c, AdminPatchUserSchema)
+    if ('error' in validated) return validated.error
+    const body = validated.data
 
     const existing = await c.env.DB.prepare(
       'SELECT id, email, display_name, plan, created_at, last_login_at, suspended_at FROM users WHERE id = ?1',

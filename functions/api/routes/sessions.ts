@@ -27,7 +27,9 @@ import { validateBody } from '../lib/validate'
 import {
   CreateSessionSchema,
   GenerateQuestionsSchema,
+  JourneyEventSchema,
   PatchSessionSchema,
+  RefineQuestionsSchema,
   ReorderQuestionsSchema,
   AddQuestionSchema,
   autoPopulateOptions,
@@ -544,28 +546,12 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const traceId = c.get('trace_id')
     await patchSchemaIfNeeded(c.env.DB)
 
-    const body = (await c.req.json().catch(() => null)) as
-      | { event?: unknown; sessionId?: unknown; count?: unknown; value?: unknown; durationMs?: unknown }
-      | null
-    const allowed = new Set<Sprint19JourneyEvent>([
-      'wizard.opened',
-      'wizard.completed',
-      'ai.suggestions_resolved',
-      'launchpad.opened',
-    ])
-    if (!body || typeof body.event !== 'string' || !allowed.has(body.event as Sprint19JourneyEvent)) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid Sprint 19 journey event' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
+    const validated = await validateBody(c, JourneyEventSchema)
+    if ('error' in validated) return validated.error
+    const { data: body } = validated
 
     let session: Session | null = null
-    if (typeof body.sessionId === 'string' && body.sessionId.trim().length > 0) {
+    if (body.sessionId) {
       session = await fetchSession(c.env.DB, body.sessionId, user.sub)
       if (!session) {
         return c.json(
@@ -581,9 +567,9 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       sessionId: session?.id,
       teamId: session?.team_id,
       plan: c.get('plan'),
-      count: typeof body.count === 'number' && Number.isFinite(body.count) ? body.count : undefined,
-      value: typeof body.value === 'number' && Number.isFinite(body.value) ? body.value : undefined,
-      durationMs: typeof body.durationMs === 'number' && Number.isFinite(body.durationMs) ? body.durationMs : undefined,
+      count: body.count,
+      value: body.value,
+      durationMs: body.durationMs,
       traceId,
     })
 
@@ -1942,31 +1928,9 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
     const session = refineDraft.session
 
-    const body = (await c.req.json().catch(() => null)) as
-      | { grounding?: unknown; feedback?: unknown; previous_questions?: unknown[] }
-      | null
-    if (
-      !body ||
-      typeof body.grounding !== 'string' ||
-      body.grounding.trim().length === 0 ||
-      typeof body.feedback !== 'string' ||
-      body.feedback.trim().length === 0
-    ) {
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'validation',
-            message: 'Invalid refine payload',
-            details: { required: ['grounding:string', 'feedback:string'] },
-          },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-    const grounding = body.grounding
-    const feedback = body.feedback
+    const validated = await validateBody(c, RefineQuestionsSchema)
+    if ('error' in validated) return validated.error
+    const { grounding, feedback } = validated.data
 
     const groundingHash = await hashGrounding(grounding)
     const cacheKey = `draft:ai:${id}`

@@ -190,3 +190,63 @@ export type AIQuestionsOutput = z.infer<typeof AIQuestionsOutputSchema>
 export type ReorderQuestionsInput = z.infer<typeof ReorderQuestionsSchema>
 export type AddQuestionInput = z.infer<typeof AddQuestionSchema>
 export type SessionOptionsInput = z.infer<typeof SessionOptionsSchema>
+
+// Journey event signals from the client (Sprint 19).
+export const JourneyEventSchema = z.object({
+  event: z.enum(['wizard.opened', 'wizard.completed', 'ai.suggestions_resolved', 'launchpad.opened']),
+  sessionId: trimmed(1, 64).optional(),
+  count: z.number().finite().optional(),
+  value: z.number().finite().optional(),
+  durationMs: z.number().finite().optional(),
+})
+
+// AI question refine input.
+export const RefineQuestionsSchema = z.object({
+  grounding: trimmed(1, 2000),
+  feedback: trimmed(1, 800),
+  previous_questions: z.array(z.unknown()).optional(),
+})
+
+// Billing subscription management.
+export const BillingSubscriptionSchema = z
+  .object({
+    action: z.enum(['upgrade', 'downgrade', 'cancel']),
+    priceId: z.string().min(1).max(255).optional(),
+    subscriptionItemId: z.string().min(1).max(255).optional(),
+  })
+  .refine(
+    (v) => v.action === 'cancel' || (v.priceId !== undefined && v.subscriptionItemId !== undefined),
+    { message: 'priceId and subscriptionItemId are required for upgrade/downgrade' },
+  )
+
+// Template creation from a session.
+export const CreateTemplateSchema = z.object({
+  sessionId: trimmed(1, 64),
+  name: trimmed(1, 120),
+  description: z.string().max(400).optional(),
+})
+
+// Admin metrics export date range.
+export const AdminMetricsExportSchema = z.object({
+  start: z.string().datetime({ message: 'start must be ISO 8601' }),
+  end: z.string().datetime({ message: 'end must be ISO 8601' }),
+})
+
+// Admin user create.
+export const AdminCreateUserSchema = z.object({
+  email: z.string().email(),
+  display_name: z.string().max(120).optional(),
+  plan: z.enum(['free', 'starter', 'team']).optional().default('free'),
+})
+
+// Admin user patch.
+export const AdminPatchUserSchema = z
+  .object({
+    display_name: z.string().max(120).optional(),
+    plan: z.enum(['free', 'starter', 'team']).optional(),
+    admin_role: z.enum(['admin', 'owner']).nullable().optional(),
+  })
+  .refine(
+    (v) => v.display_name !== undefined || v.plan !== undefined || v.admin_role !== undefined,
+    { message: 'at least one field must be provided' },
+  )
