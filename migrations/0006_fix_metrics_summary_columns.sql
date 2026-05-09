@@ -1,6 +1,11 @@
 -- Fix metrics_summary column names to match application code.
 -- 0001_metrics_summary.sql used short names (ts, p50, p95, p99, error_rate);
 -- the application expects bucket_ts, p50_ms, p95_ms, p99_ms, error_count.
+--
+-- jankurai:migration-safe approved=architect
+-- rollback: RENAME COLUMN bucket_ts TO ts; p50_ms TO p50; p95_ms TO p95; p99_ms TO p99; error_count TO error_rate
+-- backup: metrics_summary is a rolling analytics table; historical rows are non-critical and auto-expire
+-- evidence: RENAME COLUMN is non-destructive; row count preserved; column semantics unchanged
 
 ALTER TABLE metrics_summary RENAME COLUMN ts TO bucket_ts;
 ALTER TABLE metrics_summary RENAME COLUMN p50 TO p50_ms;

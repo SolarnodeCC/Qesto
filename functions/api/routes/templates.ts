@@ -11,6 +11,8 @@ import { Hono } from 'hono'
 import { ulid } from '../lib/ulid'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
+import { validateBody } from '../lib/validate'
+import { CreateTemplateSchema } from '../lib/validation'
 import type { Env, Question } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -446,30 +448,10 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
   app.post('/mine', authMiddleware, async (c) => {
     const user = c.get('user')
     const userId = user.sub
-    const body = (await c.req.json().catch(() => null)) as unknown
 
-    // Validation
-    if (
-      typeof body !== 'object' ||
-      body === null ||
-      typeof (body as Record<string, unknown>).sessionId !== 'string' ||
-      typeof (body as Record<string, unknown>).name !== 'string'
-    ) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Missing or invalid sessionId and name' },
-          trace_id: c.get('trace_id'),
-        },
-        400,
-      )
-    }
-
-    const { sessionId, name, description = '' } = body as {
-      sessionId: string
-      name: string
-      description?: string
-    }
+    const validated = await validateBody(c, CreateTemplateSchema)
+    if ('error' in validated) return validated.error
+    const { sessionId, name, description = '' } = validated.data
 
     // Fetch session and its questions
     const sessionRow = await c.env.DB

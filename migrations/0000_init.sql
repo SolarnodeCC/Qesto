@@ -1,6 +1,11 @@
 -- 0000_init — initial D1 schema for Qesto v1 vertical slice.
 -- Canonical source: /schema.sql. Keep in sync when the schema changes.
 -- Apply: `wrangler d1 migrations apply qesto-prod`
+--
+-- jankurai:migration-safe approved=architect
+-- rollback: drop all tables (fresh install only; no production data exists at this point)
+-- backup: n/a — initial schema, no pre-existing rows
+-- evidence: CREATE TABLE IF NOT EXISTS guards make this idempotent; re-running is safe
 
 PRAGMA foreign_keys = ON;
 

@@ -34,6 +34,7 @@ import {
 } from '../lib/authz'
 import { recordAuditEvent } from '../lib/audit'
 import { readKvJson, writeKvJson } from '../lib/kv'
+import { validateBody } from '../lib/validate'
 import { TEAM_INVITE_TTL_SECONDS } from '../lib/constants'
 import { teamDocumentKey, teamInviteKey, userTeamsIndexKey } from '../lib/kv-keys'
 import type { Env } from '../types'
@@ -248,25 +249,18 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   // POST /api/teams — create team
   // ───────────────────────────────────────────────────────────────────────────
   app.post('/', async (c) => {
-    const body = (await c.req.json().catch(() => null)) as unknown
-    const parsed = CreateTeamSchema.safeParse(body)
-    if (!parsed.success) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid team payload', details: parsed.error.flatten() },
-          trace_id: c.get('trace_id'),
-        },
-        400,
-      )
+    const validated = await validateBody(c, CreateTeamSchema)
+    if ('error' in validated) {
+      return validated.error
     }
+    const { data: body } = validated
 
     const user = c.get('user')
     const plan = c.get('plan')
     const now = Date.now()
     const team: Team = {
       id: ulid(),
-      name: parsed.data.name,
+      name: body.name,
       ownerId: user.sub,
       members: [
         { userId: user.sub, email: user.email, role: 'owner', joinedAt: now },
