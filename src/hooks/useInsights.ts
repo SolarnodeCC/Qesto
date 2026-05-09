@@ -88,6 +88,8 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
   const [planGated, setPlanGated] = useState(false)
   // Track fetched insights by session ID to avoid re-fetching.
   const cache = useRef<Map<string, RawInsights>>(new Map())
+  // Track sessions that failed to fetch so we don't retry them in a loop.
+  const failed = useRef<Set<string>>(new Set())
 
   const fetchAll = useCallback(async (sessions: SessionSummary[]) => {
     if (sessions.length === 0) {
@@ -99,12 +101,13 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
 
     await Promise.all(
       sessions.map(async (s) => {
-        if (cache.current.has(s.id)) return
+        if (cache.current.has(s.id) || failed.current.has(s.id)) return
         const res = await api<{ session_id: string; themes?: string[]; follow_ups?: string[]; generated_at?: number; model?: string; insights: null | RawInsights; message?: string }>(
           `/api/sessions/${encodeURIComponent(s.id)}/insights`,
         )
         if (!res.ok) {
           if (res.status === 403) hitPlanGate = true
+          failed.current.add(s.id)
           return
         }
         const d = res.data
