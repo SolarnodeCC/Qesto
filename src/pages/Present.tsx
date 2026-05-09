@@ -197,7 +197,7 @@ export default function Present() {
           />
 
           {/* Top accent bar */}
-          <div className="absolute top-0 left-0 right-0 h-[6px]" style={{ background: 'var(--gradient-brand)' }} />
+          <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: 'var(--gradient-brand)' }} />
 
           {/* All done overlay */}
           {state.allDone && (
