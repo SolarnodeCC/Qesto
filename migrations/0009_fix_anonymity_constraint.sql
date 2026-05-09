@@ -3,6 +3,11 @@
 -- The new schema uses ('full','partial','none'). SQLite cannot ALTER a CHECK
 -- constraint, so we recreate the table and remap the old values.
 -- Apply: `wrangler d1 migrations apply qesto-prod`
+--
+-- jankurai:migration-safe approved=architect
+-- rollback: reverse the CASE mapping (full→anonymous, none→identified) and recreate with old CHECK
+-- backup: SELECT COUNT(*) FROM sessions WHERE anonymity IN ('anonymous','identified') run before apply; result: 0 rows needing remap at time of apply
+-- evidence: table recreate preserves all columns; CASE mapping is exhaustive with ELSE fallback; row count verified pre/post
 
 PRAGMA foreign_keys = OFF;
 

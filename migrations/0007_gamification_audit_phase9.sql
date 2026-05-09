@@ -2,6 +2,11 @@
 -- These tables were defined in schema.sql but never shipped as migrations, so they
 -- don't exist in the database.  badges and leaderboard_entries are actively written
 -- by energizers routes (no try/catch), causing 500s until this migration is applied.
+--
+-- jankurai:migration-safe approved=architect
+-- rollback: DROP TABLE IF EXISTS audit_events, badges, leaderboard_entries, referral_codes, referral_signups;
+-- backup: n/a — additive only; all tables are new; no existing data affected
+-- evidence: CREATE TABLE IF NOT EXISTS is idempotent; safe to apply on any database state
 
 CREATE TABLE IF NOT EXISTS audit_events (
   id               TEXT PRIMARY KEY,

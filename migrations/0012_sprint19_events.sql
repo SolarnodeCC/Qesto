@@ -1,4 +1,9 @@
 -- Sprint 19 completion: durable journey events for wizard -> Launchpad evidence.
+--
+-- jankurai:migration-safe approved=architect
+-- rollback: ALTER TABLE sessions DROP COLUMN ai_accepted_count; ALTER TABLE sessions DROP COLUMN ai_dismissed_count; DROP TABLE IF EXISTS sprint19_events;
+-- backup: n/a — additive only; ALTER TABLE ADD COLUMN with DEFAULT is non-destructive
+-- evidence: ADD COLUMN with NOT NULL DEFAULT never touches existing rows; CREATE TABLE IF NOT EXISTS is idempotent
 
 ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0;

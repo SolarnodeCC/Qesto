@@ -49,7 +49,7 @@ Only if explicitly approved in the task description. Then use:
 SKIP_HOOK=1 npm run build    # Dangerous — use only if approved
 
 # Or manually fix what the hook would catch, then:
-git add .                     # Stage fixes
+git add functions/api/routes/my-route.ts src/pages/MyPage.tsx  # Stage specific files only
 git commit -m "Fix: {issue} — hook override approved in {task-id}"
 ```
 

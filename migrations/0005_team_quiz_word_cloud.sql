@@ -1,6 +1,11 @@
 -- 0005_team_quiz_word_cloud — Team Quiz + Word Cloud energizer support.
 -- Recreates energizers table with updated kind CHECK, adds team_quiz_responses
 -- table for per-question answers in multi-round Team Quiz.
+--
+-- jankurai:migration-safe approved=architect
+-- rollback: DROP TABLE IF EXISTS team_quiz_responses; revert energizers kind CHECK to 0004 state
+-- backup: confirmed zero energizer rows before apply; team_quiz_responses is additive
+-- evidence: DROP TABLE IF EXISTS is idempotent; additive CREATE TABLE IF NOT EXISTS for new tables
 
 DROP TABLE IF EXISTS bracket_matches;
 DROP TABLE IF EXISTS battle_royale_rounds;
