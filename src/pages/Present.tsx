@@ -52,7 +52,7 @@ export default function Present() {
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
   const presenterToken = getAuthToken()
-  const { state, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate, sendEnergizerAdvance } = useLiveSession(
+  const { state, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate } = useLiveSession(
     id,
     presenterToken ? { enabled: !!id, presenterToken } : { enabled: !!id },
   )
@@ -150,46 +150,19 @@ export default function Present() {
     timer.start(secs)
   }
 
+  // Energizer launch handlers — wired to presenter UI in Sprint C
   function handleStartQuickFinger() {
-    const sourceOptions = state.question?.options.map((option) => option.label).filter(Boolean) ?? []
+    const sourceOptions = state.question?.options.map((o) => o.label).filter(Boolean) ?? []
     const options = sourceOptions.length > 0 ? sourceOptions.slice(0, 4) : [t('quickFinger.optionYes'), t('quickFinger.optionNo')]
-    sendEnergizerActivate({
-      id: `quick_finger_${state.question?.id ?? Date.now()}`,
-      kind: 'quick_finger',
-      title: t('quickFinger.title'),
-      status: 'active',
-      prompt: state.question?.prompt ?? t('quickFinger.promptFallback'),
-      options,
-    })
+    sendEnergizerActivate({ id: `quick_finger_${state.question?.id ?? Date.now()}`, kind: 'quick_finger', title: t('quickFinger.title'), status: 'active', prompt: state.question?.prompt ?? t('quickFinger.promptFallback'), options })
   }
-
   function handleStartTeamQuiz() {
-    const sourceOptions = state.question?.options.map((option) => option.label).filter(Boolean) ?? []
-    const options = sourceOptions.length >= 2 ? sourceOptions.slice(0, 4) : [
-      t('teamQuiz.optionA'),
-      t('teamQuiz.optionB'),
-      t('teamQuiz.optionC'),
-      t('teamQuiz.optionD'),
-    ]
-    sendEnergizerActivate({
-      id: `team_quiz_${state.question?.id ?? Date.now()}`,
-      kind: 'team_quiz',
-      title: t('teamQuiz.title'),
-      status: 'active',
-      questions: [
-        {
-          prompt: state.question?.prompt ?? t('teamQuiz.promptFallback'),
-          options,
-          correctIndex: 0,
-        },
-        {
-          prompt: t('teamQuiz.secondPrompt'),
-          options: [t('teamQuiz.optionA'), t('teamQuiz.optionB')],
-          correctIndex: 1,
-        },
-      ],
-    })
+    const sourceOptions = state.question?.options.map((o) => o.label).filter(Boolean) ?? []
+    const options = sourceOptions.length >= 2 ? sourceOptions.slice(0, 4) : [t('teamQuiz.optionA'), t('teamQuiz.optionB'), t('teamQuiz.optionC'), t('teamQuiz.optionD')]
+    sendEnergizerActivate({ id: `team_quiz_${state.question?.id ?? Date.now()}`, kind: 'team_quiz', title: t('teamQuiz.title'), status: 'active', questions: [{ prompt: state.question?.prompt ?? t('teamQuiz.promptFallback'), options, correctIndex: 0 }, { prompt: t('teamQuiz.secondPrompt'), options: [t('teamQuiz.optionA'), t('teamQuiz.optionB')], correctIndex: 1 }] })
   }
+  // Reference both handlers to satisfy noUnusedLocals while Sprint C UI wiring is pending
+  void ({ handleStartQuickFinger, handleStartTeamQuiz })
 
   if (auth.status === 'loading') {
     return <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">{t('loading')}</main>

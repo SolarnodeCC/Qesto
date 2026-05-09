@@ -242,13 +242,13 @@ export default function AdminDashboard() {
                   label="P95 latency"
                   value={`${liveMetrics.p95_latency_ms}ms`}
                   alert={liveMetrics.p95_latency_ms > 500}
-                  trend={latencyTrend ? { ...latencyTrend, inverted: true } : undefined}
+                  {...(latencyTrend ? { trend: { ...latencyTrend, inverted: true as const } } : {})}
                 />
                 <MetricCard
                   label="Error rate"
                   value={`${(liveMetrics.error_rate * 100).toFixed(1)}%`}
                   alert={liveMetrics.error_rate > 0.05}
-                  trend={errorTrend ? { ...errorTrend, inverted: true } : undefined}
+                  {...(errorTrend ? { trend: { ...errorTrend, inverted: true as const } } : {})}
                 />
               </div>
             ) : null}
