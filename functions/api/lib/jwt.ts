@@ -18,6 +18,7 @@ export type AuthClaims = {
 }
 
 export async function signJwt(claims: Omit<AuthClaims, 'iat' | 'exp'>, secret: string, ttlSeconds: number): Promise<string> {
+  if (!secret) throw new Error('JWT_SECRET is not configured — set it via `wrangler pages secret put JWT_SECRET`')
   const now = Math.floor(Date.now() / 1000)
   const full: AuthClaims = { ...claims, iat: now, exp: now + ttlSeconds }
   const payloadB64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(full)))
