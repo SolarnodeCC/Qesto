@@ -4,7 +4,6 @@ import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
-import { D1Mock } from '../helpers/d1-mock'
 
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 

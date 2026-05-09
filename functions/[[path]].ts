@@ -8,5 +8,5 @@ export const onRequest: PagesFunction<Env> = (context) => {
   if (!url.pathname.startsWith('/api/')) {
     return context.next()
   }
-  return app.fetch(context.request, context.env, context)
+  return app.fetch(context.request, context.env, context as unknown as ExecutionContext)
 }

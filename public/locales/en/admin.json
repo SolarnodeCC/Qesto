@@ -186,5 +186,6 @@
   "sessionRoles.roleUpdateFailed": "Failed to update role",
   "changeSummary": "Change Summary",
   "sessionsThisMonth": "Sessions this month",
-  "totalSessions": "Total sessions"
+  "totalSessions": "Total sessions",
+  "platformOverview": "Platform Overview"
 }

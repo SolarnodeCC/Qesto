@@ -107,5 +107,6 @@
   "filterAll": "Alle",
   "filterLive": "Live",
   "filterDraft": "Concept",
-  "filterClosed": "Gesloten"
+  "filterClosed": "Gesloten",
+  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes."
 }

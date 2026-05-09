@@ -99,14 +99,14 @@ export default function PrivacyFeaturePage() {
                     style={{ gridTemplateColumns: '24px 1fr auto' }}
                   >
                     <div
-                      className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                      className={`w-4.5 h-4.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         selected === key
                           ? 'border-teal-600 bg-teal-600'
                           : 'border-pulse-300'
                       }`}
                     >
                       {selected === key && (
-                        <div className="w-[6px] h-[6px] rounded-full bg-white" />
+                        <div className="w-1.5 h-1.5 rounded-full bg-white" />
                       )}
                     </div>
                     <div>

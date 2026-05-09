@@ -94,5 +94,19 @@
   "templateTopic.learning": "Ateliers et apprentissage",
   "templateTopicSubtitle.team": "Rétrospectives, bilans d'équipe et alignement décisionnel.",
   "templateTopicSubtitle.product": "Feedback, priorisation et préparation au lancement.",
-  "templateTopicSubtitle.learning": "Bilans de formation, clôtures et Q&R d'événement."
+  "templateTopicSubtitle.learning": "Bilans de formation, clôtures et Q&R d'événement.",
+  "recentSessions": "[TODO] Recently opened",
+  "allSessions": "[TODO] All sessions",
+  "inspiration": "[TODO] Inspiration",
+  "importSession": "[TODO] Import",
+  "sessionSubtext": "[TODO] What would you like to do today?",
+  "home": "[TODO] Home",
+  "settings": "[TODO] Settings",
+  "help": "[TODO] Help",
+  "joinSessionPrompt": "[TODO] Participant? Enter code",
+  "filterAll": "[TODO] All",
+  "filterLive": "[TODO] Live",
+  "filterDraft": "[TODO] Draft",
+  "filterClosed": "[TODO] Closed",
+  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes."
 }

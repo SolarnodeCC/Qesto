@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import * as amplitude from '@amplitude/unified'
 import App from './App'
 import { initI18n } from './i18n'
+import { initAnalytics } from './lib/analytics'
 import './styles.css'
 
 amplitude.initAll(import.meta.env.VITE_AMPLITUDE_API_KEY as string, {
@@ -31,6 +32,7 @@ const root = document.getElementById('root')
 if (!root) throw new Error('Missing #root')
 
 async function mount() {
+  initAnalytics()
   // Pre-load translations before first paint so components never see raw i18n keys.
   // The try/catch inside initI18n ensures a fetch failure degrades to showing keys,
   // never a blank page.

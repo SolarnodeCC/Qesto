@@ -2,6 +2,7 @@ import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useRef, lazy, Suspense } from 'react'
 import { AuthProvider } from './hooks/useAuth'
 import { useColorScheme } from './hooks/useColorScheme'
+import { trackPageViewed } from './lib/analytics'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -54,6 +55,7 @@ function RouteAnnouncer() {
   const h1Ref = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
+    trackPageViewed(location.pathname)
     // Move focus to the first h1 on route change so keyboard/SR users land at page top
     const h1 = document.querySelector<HTMLElement>('h1[tabindex="-1"]')
     if (h1) {

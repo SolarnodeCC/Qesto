@@ -94,5 +94,19 @@
   "templateTopic.learning": "Workshops & Lernen",
   "templateTopicSubtitle.team": "Retrospektiven, Health Checks und Entscheidungsabgleich.",
   "templateTopicSubtitle.product": "Feedback, Priorisierung und Launch-Bereitschaft.",
-  "templateTopicSubtitle.learning": "Trainingschecks, Abschlussrunden und Event-Q&A."
+  "templateTopicSubtitle.learning": "Trainingschecks, Abschlussrunden und Event-Q&A.",
+  "recentSessions": "[TODO] Recently opened",
+  "allSessions": "[TODO] All sessions",
+  "inspiration": "[TODO] Inspiration",
+  "importSession": "[TODO] Import",
+  "sessionSubtext": "[TODO] What would you like to do today?",
+  "home": "[TODO] Home",
+  "settings": "[TODO] Settings",
+  "help": "[TODO] Help",
+  "joinSessionPrompt": "[TODO] Participant? Enter code",
+  "filterAll": "[TODO] All",
+  "filterLive": "[TODO] Live",
+  "filterDraft": "[TODO] Draft",
+  "filterClosed": "[TODO] Closed",
+  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes."
 }

@@ -180,6 +180,12 @@ export type ServerMessage =
     }
   | {
       v?: LiveProtocolVersion
+      type: 'session_energizing_complete'
+      data: Record<string, never>
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
       type: 'error'
       data: { code: string; message: string }
       timestamp: number
