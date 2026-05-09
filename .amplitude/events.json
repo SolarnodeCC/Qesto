@@ -1,0 +1,78 @@
+[
+  {
+    "name": "User Signed Up",
+    "description": "Fires when a user successfully creates a new account."
+  },
+  {
+    "name": "User Logged In",
+    "description": "Fires when a user successfully authenticates via any method."
+  },
+  {
+    "name": "User Logged Out",
+    "description": "Fires when a user explicitly logs out."
+  },
+  {
+    "name": "Session Wizard Opened",
+    "description": "Fires when the session creation wizard modal is opened."
+  },
+  {
+    "name": "Session Created",
+    "description": "Fires when a new session is successfully created in step 1 of the wizard."
+  },
+  {
+    "name": "AI Questions Generated",
+    "description": "Fires when the AI successfully generates questions for a session."
+  },
+  {
+    "name": "Session Launched",
+    "description": "Fires when the host completes the wizard and navigates to the launchpad."
+  },
+  {
+    "name": "Session Started",
+    "description": "Fires when a draft session transitions to live or energizing state."
+  },
+  {
+    "name": "Session Closed",
+    "description": "Fires when a host closes a live session."
+  },
+  {
+    "name": "Participant Joined",
+    "description": "Fires when a participant successfully connects to a live session via join code."
+  },
+  {
+    "name": "Template Selected",
+    "description": "Fires when a user selects a template to start a session from."
+  },
+  {
+    "name": "Session Duplicated",
+    "description": "Fires when a user duplicates an existing session."
+  },
+  {
+    "name": "Session Exported",
+    "description": "Fires when a user downloads session results as CSV."
+  },
+  {
+    "name": "Session Saved As Template",
+    "description": "Fires when a user saves a closed session as a custom template."
+  },
+  {
+    "name": "AI Insights Viewed",
+    "description": "Fires when the insights section becomes visible on the dashboard."
+  },
+  {
+    "name": "AI Insight Analyzed",
+    "description": "Fires when a user triggers AI analysis on a specific closed session."
+  },
+  {
+    "name": "Pricing Page Viewed",
+    "description": "Fires when a user views the pricing page."
+  },
+  {
+    "name": "Upgrade Clicked",
+    "description": "Fires when a user clicks an upgrade or trial CTA on the pricing page."
+  },
+  {
+    "name": "Error Encountered",
+    "description": "Fires when a user-facing error occurs in a critical flow."
+  }
+]

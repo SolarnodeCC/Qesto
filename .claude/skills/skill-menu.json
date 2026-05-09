@@ -1,0 +1,172 @@
+{
+  "categories": {
+    "instrumentation": [
+      {
+        "id": "add-analytics-instrumentation",
+        "name": "End-to-end analytics instrumentation workflow for a PR, branch, file,"
+      },
+      {
+        "id": "diff-intake",
+        "name": "Reads a PR or branch diff and produces a structured YAML change brief for"
+      },
+      {
+        "id": "discover-analytics-patterns",
+        "name": "Discovers how analytics tracking calls are actually written in this codebase —"
+      },
+      {
+        "id": "discover-event-surfaces",
+        "name": "Given a change_brief YAML (output from diff-intake), generates an exhaustive"
+      },
+      {
+        "id": "instrument-events",
+        "name": "Given event_candidates YAML (output from discover-event-surfaces), generates a"
+      }
+    ],
+    "integration": [
+      {
+        "id": "integration-android",
+        "name": "android"
+      },
+      {
+        "id": "integration-angular",
+        "name": "angular"
+      },
+      {
+        "id": "integration-astro-hybrid",
+        "name": "Amplitude integration for Astro hybrid rendering with both static and"
+      },
+      {
+        "id": "integration-astro-ssr",
+        "name": "astro ssr"
+      },
+      {
+        "id": "integration-astro-static",
+        "name": "astro static"
+      },
+      {
+        "id": "integration-astro-view-transitions",
+        "name": "astro view transitions"
+      },
+      {
+        "id": "integration-django",
+        "name": "django"
+      },
+      {
+        "id": "integration-expo",
+        "name": "Amplitude integration for Expo applications using"
+      },
+      {
+        "id": "integration-fastapi",
+        "name": "fastapi"
+      },
+      {
+        "id": "integration-flask",
+        "name": "flask"
+      },
+      {
+        "id": "integration-javascript_node",
+        "name": "Amplitude integration for server-side Node.js applications using"
+      },
+      {
+        "id": "integration-javascript_web",
+        "name": "Amplitude integration for client-side web JavaScript applications using"
+      },
+      {
+        "id": "integration-laravel",
+        "name": "laravel"
+      },
+      {
+        "id": "integration-nextjs-app-router",
+        "name": "nextjs app router"
+      },
+      {
+        "id": "integration-nextjs-pages-router",
+        "name": "nextjs pages router"
+      },
+      {
+        "id": "integration-nuxt-3.6",
+        "name": "nuxt 3.6"
+      },
+      {
+        "id": "integration-nuxt-4",
+        "name": "nuxt 4"
+      },
+      {
+        "id": "integration-python",
+        "name": "Amplitude integration for any Python application using the amplitude-analytics"
+      },
+      {
+        "id": "integration-react-native",
+        "name": "Amplitude integration for React Native applications using"
+      },
+      {
+        "id": "integration-react-react-router-6",
+        "name": "react react router 6"
+      },
+      {
+        "id": "integration-react-react-router-7-data",
+        "name": "react react router 7 data"
+      },
+      {
+        "id": "integration-react-react-router-7-declarative",
+        "name": "react react router 7 declarative"
+      },
+      {
+        "id": "integration-react-react-router-7-framework",
+        "name": "react react router 7 framework"
+      },
+      {
+        "id": "integration-react-tanstack-router-code-based",
+        "name": "Amplitude integration for React applications using TanStack Router with"
+      },
+      {
+        "id": "integration-react-tanstack-router-file-based",
+        "name": "Amplitude integration for React applications using TanStack Router with"
+      },
+      {
+        "id": "integration-react-vite",
+        "name": "react vite"
+      },
+      {
+        "id": "integration-ruby",
+        "name": "ruby"
+      },
+      {
+        "id": "integration-ruby-on-rails",
+        "name": "ruby on rails"
+      },
+      {
+        "id": "integration-sveltekit",
+        "name": "sveltekit"
+      },
+      {
+        "id": "integration-swift",
+        "name": "Amplitude integration for Swift iOS and macOS applications using"
+      },
+      {
+        "id": "integration-tanstack-start",
+        "name": "tanstack start"
+      },
+      {
+        "id": "integration-vue-3",
+        "name": "vue 3"
+      }
+    ],
+    "taxonomy": [
+      {
+        "id": "amplitude-chart-dashboard-plan",
+        "name": "Amplitude Chart & Dashboard Planning Skill — expert implementation"
+      },
+      {
+        "id": "amplitude-quickstart-taxonomy-agent",
+        "name": "Amplitude Quickstart Taxonomy Agent — expert implementation strategist for a"
+      }
+    ],
+    "wizard": [
+      {
+        "id": "wizard-prompt-supplement",
+        "name": "Long-form wizard contracts moved out of the always-on system commandments"
+      }
+    ]
+  }
+}
