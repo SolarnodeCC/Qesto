@@ -3,7 +3,7 @@
 // then open a WebSocket to the DO for real-time voting.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle2, Sparkles } from 'lucide-react'
 import type { PollOption, SessionLookupByCode } from '@/types/session'
 import { api } from '../api/client'
@@ -19,6 +19,63 @@ type Lookup =
   | { status: 'waiting'; sessionId: string; title: string }
   | { status: 'ready'; sessionId: string; title: string }
   | { status: 'error'; message: string }
+
+function JoinLanding() {
+  const [code, setCode] = useState('')
+  const navigate = useNavigate()
+  const t = useT('join')
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    const clean = code.trim().toUpperCase()
+    if (clean.length < 1) return
+    navigate(`/j/${clean}`)
+  }
+
+  return (
+    <main id="main" className="min-h-screen flex flex-col">
+      <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
+      <div className="border-b border-pulse-100 px-5 py-3">
+        <a href="/" className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">Qesto</a>
+      </div>
+      <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="text-center space-y-2">
+            <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 focus:outline-none">{t('heading')}</h1>
+            <p className="text-sm text-pulse-500">{t('subtitle')}</p>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <label className="block">
+              <span className="sr-only">{t('codeLabel')}</span>
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))}
+                placeholder={t('codePlaceholder')}
+                maxLength={6}
+                autoFocus
+                spellCheck={false}
+                autoCapitalize="characters"
+                aria-label={t('codeLabel')}
+                className="w-full rounded-xl border border-pulse-300 bg-white text-center font-mono text-2xl font-bold tracking-[0.3em] uppercase px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 placeholder:text-pulse-300 placeholder:tracking-normal placeholder:font-normal placeholder:text-lg"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={code.trim().length === 0}
+              className="w-full rounded-xl bg-teal-600 text-white text-sm font-semibold py-3 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
+            >
+              {t('joinButton')}
+            </button>
+          </form>
+          <p className="text-center text-xs text-pulse-400">
+            <a href="/" className="text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">{t('back')}</a>
+          </p>
+        </div>
+      </div>
+    </main>
+  )
+}
 
 export default function JoinPage() {
   const { code } = useParams<{ code: string }>()
@@ -47,7 +104,7 @@ export default function JoinPage() {
 
   useEffect(() => {
     if (!code) return
-    lookupCode(code)
+    lookupCode(code as string)
     return () => {
       if (pollRef.current) {
         clearInterval(pollRef.current)
@@ -70,6 +127,8 @@ export default function JoinPage() {
       }
     }
   }, [lookup.status, code, lookupCode])
+
+  if (!code) return <JoinLanding />
 
   if (lookup.status === 'loading') {
     return (

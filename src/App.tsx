@@ -104,6 +104,7 @@ export default function App() {
         <Route path="/sessions/:id/launchpad" element={<Launchpad />} />
         <Route path="/sessions/:id/present" element={<Present />} />
         <Route path="/sessions/:id/results" element={<Results />} />
+        <Route path="/join" element={<JoinPage />} />
         <Route path="/j/:code" element={<JoinPage />} />
         <Route path="/display/:code" element={<Suspense fallback={<LazyRouteFallback />}><Display /></Suspense>} />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
