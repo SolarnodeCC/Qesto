@@ -1,6 +1,6 @@
 # Qesto Skills Review & Next-Phase Strengthening Plan
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../README.md)._
 
 _Date: 2026-04-10_
 
