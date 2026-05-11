@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI Insights — Qesto</title>
+<link rel="icon" href="../../../assets/favicon.svg">
+<link rel="stylesheet" href="../_shared.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  body { background: #FFF; }
+  .page-hero h1 .grad { background: var(--gradient-ai); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .page-hero::before { background: radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 60%) !important; }
+
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .ai-shot { background: #FFF; border-radius: 20px; padding: 28px; box-shadow: var(--shadow-elevated); }
+  .ai-shot .ah { display: flex; justify-content: space-between; margin-bottom: 18px; align-items: center; }
+  .ai-shot .badge { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--violet-700); background: var(--violet-50); padding: 4px 10px; border-radius: 4px; display: flex; gap: 6px; align-items: center; }
+  .ai-shot .badge i { width: 12px; height: 12px; }
+  .ai-shot .latency { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+  .ai-shot h3 { font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: -0.01em; margin: 0 0 18px; }
+  .ai-cluster { padding: 14px 16px; border-left: 3px solid var(--violet-500); background: var(--violet-50); border-radius: 0 8px 8px 0; margin-bottom: 10px; }
+  .ai-cluster .ch { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .ai-cluster .ch b { font-size: 14.5px; font-weight: 600; color: var(--pulse-900); }
+  .ai-cluster .ch .c { font-family: var(--font-mono); font-size: 11px; color: var(--violet-700); font-weight: 600; }
+  .ai-cluster p { margin: 0; font-size: 13px; color: var(--text-secondary); font-style: italic; line-height: 1.5; }
+
+  .disclose { background: var(--violet-50); border-radius: 20px; padding: 40px; display: grid; grid-template-columns: 48px 1fr; gap: 20px; align-items: start; }
+  .disclose i { width: 48px; height: 48px; background: var(--violet-100); color: var(--violet-700); border-radius: 12px; display: grid; place-items: center; padding: 12px; }
+  .disclose h2 { margin: 0 0 10px; font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: -0.01em; }
+  .disclose p { margin: 0 0 14px; font-size: 15.5px; line-height: 1.6; color: var(--text-primary); }
+  .disclose ul { margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 14.5px; line-height: 1.8; }
+
+  .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .tc { background: #FFF; border-radius: 16px; padding: 28px; box-shadow: var(--shadow-card); }
+  .tc .ic { width: 40px; height: 40px; border-radius: 10px; background: var(--violet-50); color: var(--violet-700); display: grid; place-items: center; margin-bottom: 14px; }
+  .tc h3 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+  .tc p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-secondary); }
+  .tc .ex { margin-top: 14px; padding: 12px; background: var(--pulse-50); border-radius: 8px; font-family: var(--font-mono); font-size: 11.5px; color: var(--text-primary); line-height: 1.5; }
+  .tc .ex span { color: var(--violet-700); }
+
+  .anti-slop { background: var(--pulse-900); color: #FFF; border-radius: 24px; padding: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+  .anti-slop h2 { font-family: var(--font-display); font-weight: 700; font-size: 32px; letter-spacing: -0.02em; margin: 0 0 16px; }
+  .anti-slop p { font-size: 16px; line-height: 1.6; color: #CBD5E1; margin: 0 0 12px; }
+  .anti-slop .rules { display: grid; gap: 14px; }
+  .anti-slop .rule { display: flex; gap: 14px; align-items: start; padding: 16px 20px; background: rgba(255,255,255,0.04); border-radius: 12px; }
+  .anti-slop .rule i { color: var(--teal-400); flex-shrink: 0; margin-top: 2px; }
+  .anti-slop .rule b { color: #FFF; font-weight: 600; font-size: 14.5px; display: block; margin-bottom: 4px; }
+  .anti-slop .rule span { color: #94A3B8; font-size: 13.5px; line-height: 1.55; }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="container"><div class="nav-row">
+  <a href="../index.html" class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</a>
+  <div class="nav-links"><a href="./ai-insights.html" class="active">Product</a><a href="../solutions/hr.html">Solutions</a><a href="../pricing.html">Pricing</a><a href="#">Docs</a></div>
+  <div class="nav-cta"><a class="btn btn-ghost" href="#">Sign in</a><a class="btn btn-primary" href="#">Start free</a></div>
+</div></div></nav>
+
+<section class="page-hero"><div class="container">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow ai">AI Insights</div>
+      <h1>Evidence-anchored. <span class="grad">Edge-inferred.</span></h1>
+      <p class="lede">Qesto's AI clusters open text into themes in 8–15 seconds, each anchored to the raw responses that produced it. Inference runs on Workers AI — inside the same Cloudflare network as your session. No OpenAI key, no vendor lock-in, no data exit.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#">See a sample recap</a>
+        <a class="btn btn-secondary btn-lg" href="./privacy.html">How we handle AI data</a>
+      </div>
+    </div>
+    <div class="ai-shot">
+      <div class="ah"><div class="badge"><i data-lucide="sparkles"></i>AI-generated</div><div class="latency">Generated in 11.4s · 142 responses</div></div>
+      <h3>What's blocking your team this quarter?</h3>
+      <div class="ai-cluster"><div class="ch"><b>Theme 01 · Hiring velocity</b><span class="c">58 evidence</span></div><p>"Every backfill takes six weeks longer than last year." · "Senior pipeline is dry." · "Recruiter handoffs fall through."</p></div>
+      <div class="ai-cluster"><div class="ch"><b>Theme 02 · Cross-team rituals</b><span class="c">34 evidence</span></div><p>"Nobody knows what design is shipping until it ships." · "Stand-up doesn't scale past 8." · "PM and eng are on different roadmaps."</p></div>
+      <div class="ai-cluster"><div class="ch"><b>Theme 03 · Tooling debt</b><span class="c">22 evidence</span></div><p>"Build takes 14 minutes." · "Three different logging stacks." · "Staging drift is a monthly fire."</p></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <h2>Three jobs the AI does. Three it doesn't.</h2>
+  <p class="lede">Qesto's AI is scoped. It helps the facilitator read the room — it does not decide for them.</p>
+  <div class="three">
+    <div class="tc"><div class="ic"><i data-lucide="layers"></i></div><h3>Cluster open responses</h3><p>Groups free-text answers into themes with counts and exemplar quotes. Stemming + sentence embeddings, clustered with density threshold.</p><div class="ex"><span>// 142 responses</span><br>→ 3 clusters, 12 outliers<br>→ 11.4s</div></div>
+    <div class="tc"><div class="ic"><i data-lucide="file-text"></i></div><h3>Draft the recap</h3><p>Produces a first-pass summary the facilitator edits in place. Every sentence links to the evidence that produced it — no orphan claims.</p><div class="ex"><span>// recap draft</span><br>→ 8 sentences<br>→ each linked to 2+ anchors</div></div>
+    <div class="tc"><div class="ic"><i data-lucide="search"></i></div><h3>Surface the missed cluster</h3><p>Highlights a theme the host didn't ask about. Shown as a soft suggestion on the host console — never to participants.</p><div class="ex"><span>// missed</span><br>→ "compensation fairness" (14 ev)<br>→ host-only</div></div>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="disclose">
+    <i data-lucide="sparkles"></i>
+    <div>
+      <h2>The AI disclosure rules we actually follow.</h2>
+      <p>Anything produced by a model carries the AI badge. No exceptions — not even the summary line in an email. Participants see when they're reading AI output. Hosts can edit it; the badge persists on the edited version.</p>
+      <ul>
+        <li>AI-generated content is always labeled with the sparkles glyph and violet accent.</li>
+        <li>Every cluster and sentence links back to the raw tally or quote that produced it.</li>
+        <li>Host edits are tracked — the recap PDF shows "AI draft + 3 edits by M. Holloway."</li>
+        <li>Participants never see AI output during a live session — only aggregate tallies.</li>
+        <li>We don't generate quotes. Every quoted line in a recap is a real participant response.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="anti-slop">
+    <div>
+      <h2>No slop. No hallucinations. No "helpful" metaphors.</h2>
+      <p>Qesto's AI prompts are tuned to refuse to invent. If it can't anchor a claim to five or more responses, it says so. If the cluster is too small, it stays in the outlier bucket.</p>
+      <p>We'd rather ship a short recap than a confident one.</p>
+    </div>
+    <div class="rules">
+      <div class="rule"><i data-lucide="check"></i><div><b>Minimum evidence threshold</b><span>A theme needs 5+ linked responses to appear. Below that, it's an outlier — shown as a list, not a cluster.</span></div></div>
+      <div class="rule"><i data-lucide="check"></i><div><b>No inferred sentiment</b><span>We cluster by topic, not by mood. If a host wants a valence score, they add a scale question.</span></div></div>
+      <div class="rule"><i data-lucide="check"></i><div><b>Quotes are never paraphrased</b><span>Exemplar lines in a cluster are verbatim. Edits by the host are visible in the audit log.</span></div></div>
+      <div class="rule"><i data-lucide="check"></i><div><b>Refusal is a feature</b><span>Asked to "summarize tone," the model returns "no tone model deployed." Better than pretending.</span></div></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="eyebrow">Where inference runs</div>
+  <h2>Inside Cloudflare. Never outside it.</h2>
+  <div class="cards">
+    <div class="fc ai"><div class="ico"><i data-lucide="cpu"></i></div><h3>Workers AI only</h3><p>llama-3.1-8b-instruct and bge-large-en for embeddings. Both run on Cloudflare's GPU fleet, in-region, no third-party routing.</p></div>
+    <div class="fc ai"><div class="ico"><i data-lucide="shield"></i></div><h3>No vendor hand-off</h3><p>No OpenAI, no Anthropic, no Azure AI. Your raw responses never leave the Cloudflare boundary.</p></div>
+    <div class="fc ai"><div class="ico"><i data-lucide="trash-2"></i></div><h3>Retention follows session</h3><p>Model inputs and outputs live with the session. Delete the session, the prompts go with it. No training pipeline — ever.</p></div>
+  </div>
+</div></section>
+
+<div class="cta-band"><div class="container">
+  <h2>Evidence you can edit. AI you can trust.</h2>
+  <p>Try AI Insights on your next session. Free for drafts up to 5 per month.</p>
+  <a class="btn btn-primary btn-lg" href="#">Generate a recap</a>
+</div></div>
+
+<footer><div class="container">
+  <div class="cols">
+    <div class="brand-col"><div class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</div><p>Real-time, AI-amplified, private-by-default sessions.</p></div>
+    <div><h5>Solutions</h5><ul><li><a href="../solutions/hr.html">HR pulse</a></li><li><a href="../solutions/events.html">Events</a></li><li><a href="../solutions/nonprofits.html">Nonprofit boards</a></li><li><a href="../solutions/consulting.html">Consulting</a></li></ul></div>
+    <div><h5>Product</h5><ul><li><a href="./live-polling.html">Live polling</a></li><li><a href="./ai-insights.html">AI insights</a></li><li><a href="./privacy.html">Privacy</a></li><li><a href="../pricing.html">Pricing</a></li></ul></div>
+    <div><h5>Company</h5><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+  </div>
+  <div class="legal"><span>© 2026 Qesto</span><span>qesto.cc</span></div>
+</div></footer>
+
+<script>
+  lucide.createIcons();
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8));
+</script>
+</body>
+</html>
