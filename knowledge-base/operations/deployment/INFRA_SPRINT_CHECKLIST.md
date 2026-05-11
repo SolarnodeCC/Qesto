@@ -222,7 +222,7 @@ wrangler kv key put \
 
 ### Create Logging Helper
 
-Create `functions/api/lib/log.ts` (see [ADR-PII-SANITIZATION.md](./ADR-PII-SANITIZATION.md)):
+Create `functions/api/lib/log.ts` (see [ADR-PII-SANITIZATION.md](../../adr/ADR-0009-pii-sanitization.md)):
 
 - [ ] Implement `safeLogContext()` function
 - [ ] Implement `sanitizeErrorMessage()` with denylist regex
@@ -255,7 +255,7 @@ Update `.github/workflows/ci.yml`:
 
 ### Implement Circuit Breaker Module
 
-Create `functions/api/lib/resilience/circuit-breaker.ts` (see [ADR-CIRCUIT-BREAKER.md](./ADR-CIRCUIT-BREAKER.md)):
+Create `functions/api/lib/resilience/circuit-breaker.ts` (see [ADR-CIRCUIT-BREAKER.md](../../adr/ADR-0007-circuit-breaker.md)):
 
 - [ ] Implement `CircuitBreaker` class with:
   - In-memory state machine

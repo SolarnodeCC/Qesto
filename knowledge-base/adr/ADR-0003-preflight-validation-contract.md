@@ -3,7 +3,7 @@
 **Date**: 2026-04-30
 **Status**: Accepted
 **Deciders**: Architecture (Sprint 19 planning, 2026-04-30)
-**Implements**: [Sprint 19 LAUNCHPAD-01](../SPRINT_PLAN.md) — pre-flight strip on Session Launchpad
+**Implements**: [Sprint 19 LAUNCHPAD-01](../product/planning/SPRINT_PLAN_MASTER.md) — pre-flight strip on Session Launchpad
 
 ---
 
@@ -76,6 +76,6 @@ The DO's `/init` does not need to protect against this scenario.
 
 ## References
 
-- [Sprint 19 LAUNCHPAD-01 exit criteria](../SPRINT_PLAN.md)
+- [Sprint 19 LAUNCHPAD-01 exit criteria](../product/planning/SPRINT_PLAN_MASTER.md)
 - [ADR-0001: DO-per-session](./ADR-0001-do-per-session.md)
 - Implementation: `functions/api/lib/preflight.ts` (Sprint 18 prereq), `functions/api/routes/sessions.ts` (`GET /:id/preflight`, `POST /:id/start`)

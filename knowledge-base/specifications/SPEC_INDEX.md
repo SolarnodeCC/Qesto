@@ -29,7 +29,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 | Public / anonymous abuse surface? | [Abuse table](includes/PREBUILD_AND_DELIVERY.md#abuse-and-public-endpoints) + [SPEC_BACKEND.md](SPEC_BACKEND.md) |
 | Data retention / TTL intent? | [Retention](includes/PREBUILD_AND_DELIVERY.md#retention-and-deletion-intent) + [SPEC_DATAMODEL.md](SPEC_DATAMODEL.md) |
 | One local dev path? | [Golden path](includes/PREBUILD_AND_DELIVERY.md#golden-path-local) |
-| **Build UI / apply design system?** | [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) (colour, typography, spacing, component specs, motion, KPIs) · [design-tokens.json](./design-tokens.json) (machine-readable tokens) |
+| **Build UI / apply design system?** | [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) (colour, typography, spacing, component specs, motion, KPIs) · [design-tokens.json](./design-tokens.json) (machine-readable tokens) |
 
 ---
 
@@ -82,7 +82,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 **Location**: [`docs/spec/`](./)
 
 **Files**:
-- [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md) — colour language, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, accessibility as layout, KPIs.
+- [`WEBSITE_DESIGN_SPEC.md`](./product/WEBSITE_DESIGN_SPEC.md) — colour language, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, accessibility as layout, KPIs.
 - [`design-tokens.json`](./design-tokens.json) — machine-readable design tokens; source of truth for `src/ui/tokens.ts` and Tailwind config (see backlog item `DESIGN-TOK-01`).
 
 **Key Sections in WEBSITE_DESIGN_SPEC.md**:
@@ -234,7 +234,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 |------|-----------|-----------|-------|
 | **Understand system** | SPEC_CORE | SPEC_DATAMODEL | Mental model of architecture |
 | **Build UI component** | SPEC_FRONTEND | SPEC_REALTIME (if live) | Hooks, routing, state mgmt |
-| **Apply design system / UI** | [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) | [design-tokens.json](./design-tokens.json) · SPEC_FRONTEND | Colour, typography, spacing, component specs |
+| **Apply design system / UI** | [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) | [design-tokens.json](./design-tokens.json) · SPEC_FRONTEND | Colour, typography, spacing, component specs |
 | **Add API endpoint** | SPEC_BACKEND | SPEC_CORE | Middleware, validation patterns |
 | **Implement real-time feature** | SPEC_REALTIME | SPEC_FRONTEND | WebSocket protocol, DO internals |
 | **Integrate new service** | SPEC_INTEGRATIONS | SPEC_DEPLOYMENT | Auth flows, secrets management |
@@ -325,7 +325,7 @@ When navigation or **planning truth hierarchy** changes, update **[`../README.md
 7. **Architecture decision**: Update SPEC_CORE.md & reference relevant spec
 8. **Role ownership shifts** (e.g. WS-only mutation policy): tweak the **Readers** table in the affected `SPEC_*.md` (Architect row stays Primary unless governance changes)
 9. **Pre-build / sequencing policy changes** (v1 slice, spike criteria, prod gates): update [includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md) and keep **INDEX → Before you start building** links valid
-10. **Design token or visual change**: Update [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) and [design-tokens.json](./design-tokens.json) — never hand-edit `src/ui/tokens.ts` directly (see `DESIGN-TOK-01`)
+10. **Design token or visual change**: Update [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) and [design-tokens.json](./design-tokens.json) — never hand-edit `src/ui/tokens.ts` directly (see `DESIGN-TOK-01`)
 
 ### Update Frequency
 - **Endpoints**: Within 1 day of merge
@@ -389,7 +389,7 @@ Each spec includes links to critical source files:
 - **Deploy process?** → SPEC_DEPLOYMENT.md
 - **Integrate a service?** → SPEC_INTEGRATIONS.md
 - **Build UI?** → SPEC_FRONTEND.md
-- **Design system / colours / tokens?** → [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md) + [design-tokens.json](./design-tokens.json)
+- **Design system / colours / tokens?** → [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) + [design-tokens.json](./design-tokens.json)
 
 ---
 

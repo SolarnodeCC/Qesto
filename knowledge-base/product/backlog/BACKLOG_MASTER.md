@@ -13,19 +13,19 @@ _**Planning context**: Repository ships v2.x; backlog items are regression contr
 
 ## Overview
 
-This backlog holds **durable user stories** with acceptance criteria (Given / When / Then), grouped under six epics. Items are prioritised with WSJF-style weighting and mapped to a **reference five-sprint sequence** in [`SPRINT_PLAN.md`](./SPRINT_PLAN.md) for dependency ordering and onboarding.
+This backlog holds **durable user stories** with acceptance criteria (Given / When / Then), grouped under six epics. Items are prioritised with WSJF-style weighting and mapped to a **reference five-sprint sequence** in [`SPRINT_PLAN.md`](./planning/SPRINT_PLAN.md) for dependency ordering and onboarding.
 
 **Shipped baseline:** The repository already ships **v2.x** capabilities summarised in [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md). Many stories describe behaviour that is **already implemented**; they remain as **regression contracts**, refinement targets, and narrative for new contributors.
 
-**Planning truth:** Use [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) for release-level status. Use this file for **incremental committed work** (including §12 Website Design Wave) and story-level acceptance criteria. Use [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md) for historical sprint summaries. For technical build truth, start at [`spec/INDEX.md`](./spec/INDEX.md) (code wins until specs are updated deliberately).
+**Planning truth:** Use [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) for release-level status. Use this file for **incremental committed work** (including §12 Website Design Wave) and story-level acceptance criteria. Use [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md) for historical sprint summaries. For technical build truth, start at [`spec/INDEX.md`](./spec/INDEX.md) (code wins until specs are updated deliberately).
 
-**Sprint field on stories:** The **Sprint: 1–5** metadata on each story refers to the **reference arc** in [`SPRINT_PLAN.md`](./SPRINT_PLAN.md), not to the calendar sprint counter in [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). Treat those numbers as **ordering and pedagogy**, not “we are still in Sprint 1.”
+**Sprint field on stories:** The **Sprint: 1–5** metadata on each story refers to the **reference arc** in [`SPRINT_PLAN.md`](./planning/SPRINT_PLAN.md), not to the calendar sprint counter in [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md). Treat those numbers as **ordering and pedagogy**, not “we are still in Sprint 1.”
 
 ---
 
 ## Sprint 19 Closeout + Sprint 20 Planning
 
-**Status**: Implementation completed on 2026-04-30, ahead of the planned calendar window. KPI measurement remains post-ship. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for full detail and closeout evidence.
+**Status**: Implementation completed on 2026-04-30, ahead of the planned calendar window. KPI measurement remains post-ship. See [`SPRINT_PLAN.md` §Sprint 19](./planning/SPRINT_PLAN.md) for full detail and closeout evidence.
 
 **Committed items** (43 pts): ✅ WIZ-AI-01, ✅ WIZ-AI-02, ✅ WIZ-OVERVIEW-01, ✅ LAUNCHPAD-01, ✅ AI-VIS-03, ✅ AI-VIS-02, ✅ LAYOUT-DENSITY-01
 
@@ -64,7 +64,7 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
    - ADR-0002: AI streaming transport (SSE vs chunked JSON) — delivered commit 10ee51b
    - ADR-0003: Pre-flight contract (worker vs. DO invariant checks) — delivered commit 10ee51b
 
-**Delivery Confirmation**: All items landed in commit 2452e67 (2026-04-30) and subsequent bug-fix commits. See [`SPRINT_PLAN.md` §Sprint 19](./SPRINT_PLAN.md) for detailed prerequisites and implementation evidence.
+**Delivery Confirmation**: All items landed in commit 2452e67 (2026-04-30) and subsequent bug-fix commits. See [`SPRINT_PLAN.md` §Sprint 19](./planning/SPRINT_PLAN.md) for detailed prerequisites and implementation evidence.
 
 ### Sprint 20 Planning (2026-05-27 to 2026-06-10)
 
@@ -93,7 +93,7 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 **Explicitly deferred**: RBAC depth/custom roles implementation until AUTHZ-ADR-01 is *accepted* (not just drafted); GAM-01 / LIVE energizers until a Durable Object protocol/versioning ADR exists; TPL-CATALOG-* until Sprint 22.
 Microsoft OAuth login is also explicitly removed from sprint scope; the login page must not present a Microsoft sign-in option unless re-approved in a future planning cycle.
 
-See [`SPRINT_PLAN.md` §Sprint 20](./SPRINT_PLAN.md) for detailed acceptance criteria, dependencies, KPIs, and Definition of Done.
+See [`SPRINT_PLAN.md` §Sprint 20](./planning/SPRINT_PLAN.md) for detailed acceptance criteria, dependencies, KPIs, and Definition of Done.
 
 ---
 

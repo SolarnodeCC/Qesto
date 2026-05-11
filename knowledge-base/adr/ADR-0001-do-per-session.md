@@ -3,7 +3,7 @@
 **Date**: 2026-04-20  
 **Status**: Accepted  
 **Deciders**: Architecture team  
-**Implements**: [PREBUILD_AND_DELIVERY.md § Vertical slice v1](../spec/includes/PREBUILD_AND_DELIVERY.md)
+**Implements**: [PREBUILD_AND_DELIVERY.md § Vertical slice v1](../metadata/spec-includes/PREBUILD_AND_DELIVERY.md)
 
 ---
 
