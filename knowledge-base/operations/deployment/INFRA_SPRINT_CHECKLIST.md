@@ -1,3 +1,19 @@
+---
+id: RUNBOOK-INFRA_SPRINT_CHECKLIST
+type: runbook
+category: incident
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - incident-response
+  - operations
+  - procedures
+relates_to:
+  - OBSERVABILITY
+---
+
 # Sprint 20 Infrastructure Checklist
 
 **Timeline:** May 13–27, 2026  

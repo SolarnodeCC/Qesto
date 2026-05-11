@@ -1,3 +1,22 @@
+---
+id: ROADMAP
+type: planning
+domain: product
+category: strategy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - roadmap
+  - planning
+  - strategy
+  - releases
+relates_to:
+  - SPEC_PRODUCT
+  - BACKLOG_MASTER
+---
+
 # Qesto — Roadmap & Release Status (Current)
 
 _Hub: [Documentation map](./README.md)._

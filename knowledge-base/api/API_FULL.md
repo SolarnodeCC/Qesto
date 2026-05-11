@@ -1,3 +1,21 @@
+---
+id: API-FULL
+type: api
+category: reference
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - rest-api
+  - endpoints
+  - authentication
+  - error-handling
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_DATAMODEL
+---
+
 # Qesto — API & Realtime Specification (Current)
 
 _Hub: [Documentation map](./README.md)._

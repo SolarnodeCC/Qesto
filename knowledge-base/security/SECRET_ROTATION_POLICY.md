@@ -1,3 +1,20 @@
+---
+id: SECURITY-SECRET_ROTATION_POLICY
+type: security
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - security
+  - compliance
+  - policy
+  - gdpr
+relates_to:
+  - SECURITY_FULL
+---
+
 # Secret Rotation Policy (Sprint 18 - ID 24)
 
 _Hub: [Documentation map](./README.md)._

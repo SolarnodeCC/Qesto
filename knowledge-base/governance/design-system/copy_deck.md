@@ -1,3 +1,20 @@
+---
+id: GOVERNANCE
+type: guide
+domain: governance
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - governance
+  - policy
+  - guidelines
+relates_to:
+  - CONTRIBUTING
+---
+
 # Qesto copy deck
 
 Canonical sentences for every Qesto surface. Paste directly. Every line here follows the content rules in `README.md` — sentence case, no exclamation points, AI claims focused on business value and privacy.

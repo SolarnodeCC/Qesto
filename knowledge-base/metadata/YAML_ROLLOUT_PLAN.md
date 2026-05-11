@@ -1,3 +1,19 @@
+---
+id: METADATA
+type: schema
+category: templates
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - schema
+  - templates
+  - metadata
+relates_to:
+  - CONTRIBUTING
+---
+
 # YAML Frontmatter Rollout Plan
 
 **Goal**: Add standardized YAML metadata headers to all 141 markdown files in knowledge-base/ for AI RAG optimization, discoverability, and document tracing.

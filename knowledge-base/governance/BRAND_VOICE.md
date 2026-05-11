@@ -1,3 +1,20 @@
+---
+id: GOVERNANCE
+type: guide
+domain: governance
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - governance
+  - policy
+  - guidelines
+relates_to:
+  - CONTRIBUTING
+---
+
 # Qesto Brand Voice — Comprehensive Guide
 
 **Audience for this guide:** marketing, content, product, and i18n teams writing for all customer-facing pages — homepage, features, solutions, use cases, and templates.

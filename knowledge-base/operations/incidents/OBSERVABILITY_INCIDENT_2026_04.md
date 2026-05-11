@@ -1,3 +1,19 @@
+---
+id: RUNBOOK-OBSERVABILITY_INCIDENT_2026_04
+type: runbook
+category: incident
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - incident-response
+  - operations
+  - procedures
+relates_to:
+  - OBSERVABILITY
+---
+
 # Observability Incident: Analytics Engine Schema Gaps
 
 **Date**: 2026-04-24  

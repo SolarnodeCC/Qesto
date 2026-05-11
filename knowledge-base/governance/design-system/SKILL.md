@@ -1,3 +1,20 @@
+---
+id: GOVERNANCE
+type: guide
+domain: governance
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - governance
+  - policy
+  - guidelines
+relates_to:
+  - CONTRIBUTING
+---
+
 # Qesto Design System — skill entry
 
 This skill gives Claude and Claude Code the instructions to produce Qesto-branded design and UI artifacts that match the system shipped in this project.

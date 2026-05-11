@@ -1,3 +1,21 @@
+---
+id: AI-CONTEXT
+type: reference
+domain: ai
+category: agents
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - ai
+  - agents
+  - skills
+  - research
+relates_to:
+  - AGENT_SYSTEM_OVERVIEW
+---
+
 # AI Insights — Competency Score & 4-Week Action Plan
 
 - **Date**: 2026-04-24

@@ -1,3 +1,20 @@
+---
+id: GOVERNANCE
+type: guide
+domain: governance
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - governance
+  - policy
+  - guidelines
+relates_to:
+  - CONTRIBUTING
+---
+
 # I18N Pseudo-Localization Audit (Wave 2) - Cold-Start Drill
 **Date**: 2026-04-24  
 **Purpose**: Validate runbook for identifying UI strings that would truncate or overflow at ~140% string length (German equivalent)  

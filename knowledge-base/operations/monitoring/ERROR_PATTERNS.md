@@ -1,3 +1,19 @@
+---
+id: RUNBOOK-ERROR_PATTERNS
+type: runbook
+category: incident
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - incident-response
+  - operations
+  - procedures
+relates_to:
+  - OBSERVABILITY
+---
+
 # Error Patterns & UX Treatment (Sprint 18 - ID 20)
 
 _Hub: [Documentation map](./README.md)._

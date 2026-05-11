@@ -1,3 +1,22 @@
+---
+id: DESIGN-GRID
+type: guide
+domain: design
+category: layout
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - grid
+  - layout
+  - spacing
+  - responsive
+relates_to:
+  - SPEC_FRONTEND
+  - WEBSITE_DESIGN_SPEC
+---
+
 # Grid Layout Guide — LAYOUT-GRID-01
 
 Qesto uses a **responsive 12-column grid** with **4px baseline alignment** across all screen sizes.

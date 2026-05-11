@@ -1,3 +1,19 @@
+---
+id: RUNBOOK-RUNBOOKS
+type: runbook
+category: incident
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - incident-response
+  - operations
+  - procedures
+relates_to:
+  - OBSERVABILITY
+---
+
 # Operational Runbooks — Incident Response & Recovery (Phase 10 Step 6)
 
 **Last Updated:** 2026-04-21  

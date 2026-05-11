@@ -1,3 +1,22 @@
+---
+id: BACKLOG
+type: planning
+domain: product
+category: backlog
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - backlog
+  - priorities
+  - features
+  - technical-debt
+relates_to:
+  - ROADMAP_FULL
+  - SPRINT_PLAN_MASTER
+---
+
 # Qesto — Product Backlog (Epic-Based)
 
 _Hub: [Documentation map](./README.md)._
