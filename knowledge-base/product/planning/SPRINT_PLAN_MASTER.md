@@ -1,6 +1,6 @@
 # Qesto — Sprint Plan (5-Sprint Roadmap)
 
-_Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](./roadmap/ROADMAP_FULL.md) and [`SPEC.md`](../../specifications/product/SPEC_PRODUCT.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md) (including §12) and [`ARCHIVED_SPRINTS.md`](./releases/ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
+_Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](../roadmap/ROADMAP_FULL.md) and [`SPEC.md`](../../specifications/product/SPEC_PRODUCT.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md) (including §12) and [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
 
 _Last updated: 2026-05-01 (UTC)_
 _**Sprint 18 Plan Added**: 2026-04-23 — see Sprint 18 section below. Five-sprint reference arc remains pedagogical (v0.1→v0.5). Calendar truth: Sprint 17 completed 2026-04-22; Sprint 18 runs 2026-04-29 to 2026-05-13._

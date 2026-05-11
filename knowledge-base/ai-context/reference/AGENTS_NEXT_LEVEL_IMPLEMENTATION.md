@@ -1,6 +1,6 @@
 # Qesto Claude Agents — Step-by-Step Review, Next-Level Updates, and Implementation Spec
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../README.md)._
 
 _Date_: 2026-04-10  
 _Scope reviewed_: `.claude/agents/*`, `.claude/skills/*`, `CLAUDE.md`, `.claude/settings.json`
