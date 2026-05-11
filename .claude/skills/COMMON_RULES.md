@@ -26,7 +26,7 @@ _Last reviewed_: 2026-04-10
 ## 5) Quality Gates Before Commit
 - `npm test` must pass.
 - `npx tsc --noEmit` must pass.
-- Any route/contract/schema change must be reflected in docs (`docs/API_FULL.md`, `docs/ARCHITECTURE.md`, etc.).
+- Any route/contract/schema change must be reflected in docs (`knowledge-base/api/API_FULL.md`, `knowledge-base/architecture/ARCHITECTURE.md`, etc.).
 
 ## 6) Precedence Rule
 If a local agent/skill instruction conflicts with this file, treat this file as the default safety baseline and escalate for explicit override in the task scope.
@@ -107,7 +107,7 @@ If a local agent/skill instruction conflicts with this file, treat this file as 
 ## 9) Documentation Update Obligations
 Every skill file must reference which docs to update:
 - Policy changes → `docs/AGENT_SKILL_GOVERNANCE.md`
-- Architecture changes → `docs/ARCHITECTURE.md`
+- Architecture changes → `knowledge-base/architecture/ARCHITECTURE.md`
 - Security findings → `docs/BACKLOG.md §1` (P0) or `§4 Security`
 - QA/test patterns → `docs/QA_FULL.md §2–3`
 - Flaky tests → `docs/FLAKY_TESTS.md`

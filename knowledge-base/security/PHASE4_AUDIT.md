@@ -1,3 +1,20 @@
+---
+id: SECURITY-PHASE4_AUDIT
+type: security
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - security
+  - compliance
+  - policy
+  - gdpr
+relates_to:
+  - SECURITY_FULL
+---
+
 # Qesto — Phase 4 Security Audit
 
 _Scope: v0.1 vertical slice (auth → DRAFT → LIVE → vote → close → results). Audit date: 2026-04-20._

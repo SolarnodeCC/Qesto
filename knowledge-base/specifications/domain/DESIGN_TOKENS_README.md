@@ -1,3 +1,28 @@
+---
+id: DESIGN-TOKENS
+type: specification
+domain: design
+category: tokens
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - Frontend engineer
+  - Designer
+tags:
+  - design-tokens
+  - tailwind
+  - typography
+  - spacing
+  - colors
+  - css
+relates_to:
+  - SPEC_DESIGN_SYSTEM_OVERVIEW
+  - WEBSITE_DESIGN_SPEC
+  - SPEC_FRONTEND
+---
+
 # Design tokens (`design-tokens.json`)
 
 _Hub: [Documentation map](../README.md)._
@@ -6,9 +31,9 @@ This folder holds the **visual design system** for the public site and dashboard
 
 ## Read next
 
-- **[`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md)** — prose spec: layout, components, KPIs, accessibility as layout, and how tokens are applied.
+- **[`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md)** — prose spec: layout, components, KPIs, accessibility as layout, and how tokens are applied.
 - **[`../README.md`](../README.md)** — how all `docs/` connect (truth hierarchy, reading order).
-- **[`INDEX.md`](./INDEX.md)** — technical specs hub; frontend contract in **`SPEC_FRONTEND.md`** references these artefacts.
+- **[`INDEX.md`](../SPEC_INDEX.md)** — technical specs hub; frontend contract in **`SPEC_FRONTEND.md`** references these artefacts.
 
 ## Engineering rules
 

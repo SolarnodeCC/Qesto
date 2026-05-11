@@ -1,3 +1,31 @@
+---
+id: SPEC-PRODUCT
+type: specification
+domain: product
+category: features
+status: active
+version: 1.5
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - Product owner
+  - Architect
+  - Feature lead
+tags:
+  - product-requirements
+  - features
+  - session-lifecycle
+  - question-types
+  - ai-insights
+  - realtime-tallies
+  - privacy
+relates_to:
+  - SPEC_CORE
+  - SPEC_FRONTEND
+  - SPEC_BACKEND
+  - ROADMAP_FULL
+---
+
 # Qesto — Product Specification (Current)
 
 _Hub: [Documentation map](../README.md)._

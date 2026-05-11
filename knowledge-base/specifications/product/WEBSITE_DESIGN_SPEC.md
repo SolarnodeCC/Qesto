@@ -1,3 +1,30 @@
+---
+id: WEBSITE-DESIGN-SPEC
+type: specification
+domain: design
+category: ui-contract
+status: active
+version: 1.5
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - Frontend engineer
+  - Designer
+  - UI/UX specialist
+tags:
+  - design-spec
+  - visual-design
+  - components
+  - layout
+  - responsive
+  - accessibility
+  - kpi
+relates_to:
+  - SPEC_FRONTEND
+  - SPEC_DESIGN_SYSTEM_OVERVIEW
+  - DESIGN_TOKENS_README
+---
+
 # Qesto — Website Design Spec
 
 _Hub: [Documentation map](../README.md)._
@@ -5,7 +32,7 @@ _Hub: [Documentation map](../README.md)._
 _Last updated: 2026-04-19_
 _Owner: Frontend + PO + Marketing_
 _Status: Draft — pending review_
-_Related: [`design-tokens.README.md`](./design-tokens.README.md) (token file + engineering rules), `docs/spec/SPEC_FRONTEND.md`, `docs/BACKLOG.md` (§12 Website Design Wave)_
+_Related: [`design-tokens.README.md`](../domain/DESIGN_TOKENS_README.md) (token file + engineering rules), `docs/spec/SPEC_FRONTEND.md`, `docs/BACKLOG.md` (§12 Website Design Wave)_
 
 ---
 

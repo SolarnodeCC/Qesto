@@ -1,3 +1,31 @@
+---
+id: SPEC-CORE
+type: specification
+domain: architecture
+category: core
+status: active
+version: 2.1
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - Architect
+  - Backend engineer
+  - Tech lead
+tags:
+  - architecture
+  - system-design
+  - cloudflare-workers
+  - tech-stack
+  - session-state-machine
+  - constraints
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_FRONTEND
+  - SPEC_DATAMODEL
+  - SPEC_REALTIME
+  - ADR-0001-do-per-session
+---
+
 # SPEC_CORE — System Architecture & Design
 
 _Repository hub: [Documentation map](../README.md)._
@@ -12,7 +40,7 @@ Diagrams + constraint list = **intent**; **code wins** on conflict until a spec 
 | **Architect** | **Primary** — state machine, **DRAFT/LIVE** split, hard constraints, trust zones, NFRs. |
 | **Backend Developer** | **Lead** — where truth lives (D1/KV/DO), lifecycle hooks, async `waitUntil` patterns. |
 | **Frontend Developer** | JWT vs public journeys; plan tiers → gating (detail [[SPEC_FRONTEND.md]]). |
-| **UI specialist** | Modes (present/vote/results) + plan limits → skeletons, upsell, disabled tools. UX constraints, colour/typography/spacing tokens, AI sparkle mark iconography, and component specs → [[SPEC_FRONTEND.md]] + [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md). |
+| **UI specialist** | Modes (present/vote/results) + plan limits → skeletons, upsell, disabled tools. UX constraints, colour/typography/spacing tokens, AI sparkle mark iconography, and component specs → [[SPEC_FRONTEND.md]] + [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md). |
 | **Cloudflare specialist** | Binding map: Pages, D1, 7×KV, DO `SessionRoom`, Workers AI, Vectorize, R2, Analytics. |
 | **API & middleware specialist** | Rationale for routes; concrete paths + AuthZ in [[SPEC_BACKEND.md]]. |
 

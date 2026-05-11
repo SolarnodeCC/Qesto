@@ -1,6 +1,32 @@
+---
+id: SPEC-DESIGN-SYSTEM
+type: specification
+domain: design
+category: visual
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - UI/UX specialist
+  - Frontend engineer
+  - Designer
+tags:
+  - design-system
+  - visual-design
+  - tokens
+  - typography
+  - colors
+  - components
+relates_to:
+  - SPEC_FRONTEND
+  - WEBSITE_DESIGN_SPEC
+  - DESIGN_TOKENS_README
+---
+
 # Qesto Design System — Portable overview
 
-_Hub: [Documentation map](../README.md) · Technical specs: [INDEX.md](./INDEX.md) · Detailed UI contract: [WEBSITE_DESIGN_SPEC.md](./WEBSITE_DESIGN_SPEC.md)_
+_Hub: [Documentation map](../README.md) · Technical specs: [INDEX.md](../SPEC_INDEX.md) · Detailed UI contract: [WEBSITE_DESIGN_SPEC.md](../product/WEBSITE_DESIGN_SPEC.md)_
 
 > Qesto is a real-time interactive session platform — **feel the pulse of the room, amplified by AI**. Mentimeter-style live polling, ranking, wordclouds, and consent votes, with Workers AI-backed insights running on Cloudflare's edge.
 
@@ -15,9 +41,9 @@ All visual, copy, and token material was extracted from this repository (no Figm
 - **GitHub:** `SolarnodeCC/Qesto` @ `main` (private)
 - **Key files referenced:**
   - [`design-tokens.json`](./design-tokens.json) — canonical token source (machine-readable)
-  - [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md) — target-state visual and UX spec
-  - [`../BRAND_VOICE.md`](../BRAND_VOICE.md) — tone, vocabulary, CTA rules
-  - [`../DESIGN_GRID_GUIDE.md`](../DESIGN_GRID_GUIDE.md) — 12/8/4 responsive grid, 4px baseline
+  - [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) — target-state visual and UX spec
+  - [`../BRAND_VOICE.md`](../../governance/BRAND_VOICE.md) — tone, vocabulary, CTA rules
+  - [`../DESIGN_GRID_GUIDE.md`](../../architecture/DESIGN_GRID_GUIDE.md) — 12/8/4 responsive grid, 4px baseline
   - `src/styles.css` — @theme block, motion, skeleton shimmer
   - `src/ui/components.tsx`, `src/ui/tailwind-theme.ts` — component primitives
   - `src/pages/Home.tsx`, `src/pages/Dashboard.tsx`, `src/pages/Login.tsx`, `src/pages/Launchpad.tsx`, `src/pages/SessionConfig.tsx` — core surfaces

@@ -1,3 +1,20 @@
+---
+id: SECURITY-README
+type: security
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - security
+  - compliance
+  - policy
+  - gdpr
+relates_to:
+  - SECURITY_FULL
+---
+
 # Security & Compliance
 
 Security policy, data governance, compliance audits, and operational procedures.

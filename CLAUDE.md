@@ -101,7 +101,13 @@ chub annotate cloudflare/workers "finding"  # Add new annotation
 3. **`npm test` must pass** before every commit (Vitest in `tests/unit/`)
 4. **`tsc --noEmit` must pass** — no TypeScript errors
 5. **DRAFT-API for draft state**, WebSocket for LIVE — never mix
-6. **Update this file** when new patterns are discovered
+6. **Documentation location:** All specifications, ADRs, and operational guides are in [`/knowledge-base/`](./knowledge-base/). Reference:
+   - **Specs**: [`/knowledge-base/specifications/domain/SPEC_{BACKEND,FRONTEND,DATAMODEL,REALTIME,INTEGRATIONS,DEPLOYMENT,CORE}.md`](./knowledge-base/specifications/)
+   - **ADRs**: [`/knowledge-base/adr/ADR-{number}-{title}.md`](./knowledge-base/adr/)
+   - **Architecture**: [`/knowledge-base/architecture/ARCHITECTURE.md`](./knowledge-base/architecture/)
+   - **Roadmap**: [`/knowledge-base/product/roadmap/`](./knowledge-base/product/roadmap/)
+   - **Backlog**: [`/knowledge-base/product/backlog/BACKLOG_MASTER.md`](./knowledge-base/product/backlog/)
+7. **Update this file** when new patterns are discovered
 
 ## Deployment
 ```bash
@@ -110,11 +116,11 @@ wrangler pages deploy  # Deploy to Cloudflare Pages (qesto project)
 ```
 
 ## Active Sprint Context
-**Documentation map:** [`docs/README.md`](docs/README.md) — which planning files describe **shipped v2.x** versus **reference sequencing**.
+**Documentation map:** [`/knowledge-base/README.md`](./knowledge-base/README.md) — navigation by role (PO, backend, frontend, devops, security, AI).
 
-- **Shipped / roadmap truth:** [`docs/ROADMAP_FULL.md`](docs/ROADMAP_FULL.md), [`docs/spec/SPEC_PRODUCT.md`](docs/spec/SPEC_PRODUCT.md) (stub [`docs/SPEC.md`](docs/SPEC.md)), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-- **Incremental committed work:** [`docs/BACKLOG.md`](docs/BACKLOG.md) (including Website Design Wave §12), [`docs/ARCHIVED_SPRINTS.md`](docs/ARCHIVED_SPRINTS.md).
-- **Reference five-sprint arc (v0.1 → v0.5):** [`docs/SPRINT_PLAN.md`](docs/SPRINT_PLAN.md) — teaching and dependency template aligned to backlog IDs; **not** a literal greenfield schedule.
+- **Shipped / roadmap truth:** [`/knowledge-base/product/roadmap/ROADMAP_FULL.md`](./knowledge-base/product/roadmap/ROADMAP_FULL.md), [`/knowledge-base/specifications/product/SPEC_PRODUCT.md`](./knowledge-base/specifications/product/SPEC_PRODUCT.md), [`/knowledge-base/architecture/ARCHITECTURE.md`](./knowledge-base/architecture/ARCHITECTURE.md).
+- **Incremental committed work:** [`/knowledge-base/product/backlog/BACKLOG_MASTER.md`](./knowledge-base/product/backlog/BACKLOG_MASTER.md), [`/knowledge-base/product/releases/ARCHIVED_SPRINTS.md`](./knowledge-base/product/releases/ARCHIVED_SPRINTS.md).
+- **Reference five-sprint arc (v0.1 → v0.5):** [`/knowledge-base/product/planning/SPRINT_PLAN_MASTER.md`](./knowledge-base/product/planning/SPRINT_PLAN_MASTER.md) — teaching and dependency template aligned to backlog IDs; **not** a literal greenfield schedule.
 
 **Sprint planning rule:** P0 items first, then P1; stories ≤ 13 pts; aim ~40–50 pts per two-week sprint when using the reference arc for estimation drills.
 

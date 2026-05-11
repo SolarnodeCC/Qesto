@@ -1,3 +1,32 @@
+---
+id: SPEC-REALTIME
+type: specification
+domain: realtime
+category: websocket
+status: active
+version: 1.5
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - Backend engineer
+  - Frontend engineer
+  - Architect
+tags:
+  - durable-objects
+  - websocket
+  - realtime
+  - session-room
+  - protocol
+  - streaming
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_FRONTEND
+  - SPEC_DATAMODEL
+  - ADR-0001-do-per-session
+  - ADR-0005-do-protocol-versioning
+  - ADR-DO-TIMERS
+---
+
 # SPEC_REALTIME — WebSocket, Durable Objects, Live Sessions
 
 _Repository hub: [Documentation map](../README.md)._

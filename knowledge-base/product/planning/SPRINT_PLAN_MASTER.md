@@ -1,6 +1,24 @@
+---
+id: PLAN
+type: planning
+domain: product
+category: planning
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - planning
+  - sprints
+  - implementation
+relates_to:
+  - BACKLOG_MASTER
+  - ROADMAP_FULL
+---
+
 # Qesto — Sprint Plan (5-Sprint Roadmap)
 
-_Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](./BACKLOG.md) (including §12) and [`ARCHIVED_SPRINTS.md`](./ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
+_Document contract: This file is a **reference sequencing model** (releases **v0.1.0 → v0.5.0**) for dependencies, sizing, and sprint mechanics. The **shipped product** is **v2.x** — see [`ROADMAP_FULL.md`](../roadmap/ROADMAP_FULL.md) and [`SPEC.md`](../../specifications/product/SPEC_PRODUCT.md) for live capability status. For committed incremental work, use [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md) (including §12) and [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md). **Documentation map:** [`README.md`](./README.md)._
 
 _Last updated: 2026-05-01 (UTC)_
 _**Sprint 18 Plan Added**: 2026-04-23 — see Sprint 18 section below. Five-sprint reference arc remains pedagogical (v0.1→v0.5). Calendar truth: Sprint 17 completed 2026-04-22; Sprint 18 runs 2026-04-29 to 2026-05-13._
@@ -15,7 +33,7 @@ _**Sprint 20 build package**: 2026-05-04 — ENTITLEMENTS-02, durable Sprint 19 
 
 This plan details **five consecutive reference sprints** (example calendar anchors starting **2026-04-19**) that layer a teaching story onto an **already-shipped** baseline. Each sprint focuses on a coherent slice across one or more epics. The arc walks **auth + core session → realtime + payments → enterprise + SSO → i18n + gamification → hardening + advanced features** as a **pedagogical path**, not a claim that the product is pre-v1.
 
-**Do not** read the dates below as “project start”; they illustrate a **dependency-ordered template** aligned to [`BACKLOG.md`](./BACKLOG.md) story IDs.
+**Do not** read the dates below as “project start”; they illustrate a **dependency-ordered template** aligned to [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md) story IDs.
 
 ---
 
@@ -331,7 +349,7 @@ This plan details **five consecutive reference sprints** (example calendar ancho
 
 # §Calendar Sprints (Actual Project: 2026-04-29+)
 
-**Note**: The 5-sprint reference arc above (v0.1→v0.5) is a pedagogical teaching sequence **not** a literal greenfield schedule. The sections below document actual calendar sprints (17, 18, 19) on the shipped v2.0 baseline. Do not confuse the two "sprint" notions; see [`BACKLOG.md`](./BACKLOG.md) for clarification.
+**Note**: The 5-sprint reference arc above (v0.1→v0.5) is a pedagogical teaching sequence **not** a literal greenfield schedule. The sections below document actual calendar sprints (17, 18, 19) on the shipped v2.0 baseline. Do not confuse the two "sprint" notions; see [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md) for clarification.
 
 ---
 
@@ -691,7 +709,7 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 **Definition of Done**:
 - Existing vote, presenter advance/back, pause/resume, close, and reconnect tests stay green.
 - No public gameplay surface depends on the new frame until staging WebSocket validation passes.
-- `ROADMAP_FULL.md`, `BACKLOG.md`, and [`spec/sprints/SPRINT25_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT25_IMPLEMENTATION_SPEC.md) stay aligned.
+- `ROADMAP_FULL.md`, `BACKLOG.md`, and [`spec/sprints/SPRINT25_IMPLEMENTATION_SPEC.md`](../planning/sprints/SPRINT25_IMPLEMENTATION_SPEC.md) stay aligned.
 
 ## Sprint 26-32: v2.2 Live Engagement to Enterprise Release
 
@@ -701,8 +719,8 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 | Sprint | Goal | Committed Theme | Gate |
 |---|---|---|---|
-| **Sprint 26** | LIVE energizer activation readiness | Presenter controls, disabled/permission UX, activation state replay | Shipped in [`spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md) |
-| **Sprint 27** | First playable LIVE energizer: Quick Finger | Participant answer UI, DO answer validation, score broadcast, reconnect-safe state | Shipped in [`spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md`](./spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md) |
+| **Sprint 26** | LIVE energizer activation readiness | Presenter controls, disabled/permission UX, activation state replay | Shipped in [`spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md`](../planning/sprints/SPRINT26_IMPLEMENTATION_SPEC.md) |
+| **Sprint 27** | First playable LIVE energizer: Quick Finger | Participant answer UI, DO answer validation, score broadcast, reconnect-safe state | Shipped in [`spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md`](../planning/sprints/SPRINT27_IMPLEMENTATION_SPEC.md) |
 | **Sprint 28** | Team Quiz LIVE loop | Quiz state machine, presenter progression, participant answer locking, reconnect tests | Shipped in `SPRINT28_IMPLEMENTATION_SPEC.md` |
 | **Sprint 29** | Leaderboard + badge foundation | Aggregated scoring, live leaderboard broadcast, badge hooks, idempotency tests | Shipped in `SPRINT29_IMPLEMENTATION_SPEC.md` |
 | **Sprint 30** | Admin engagement analytics maturity | Engagement funnel, CSV metrics, realtime health correlation, privacy review | No RC posture until dashboards answer support/admin questions |
@@ -715,7 +733,7 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 ## Website Design Wave (Sprints A / B / C)
 
-The Website Design Wave runs concurrently with (or immediately after) the 5-sprint feature arc above. It is governed by [`docs/spec/WEBSITE_DESIGN_SPEC.md`](./spec/WEBSITE_DESIGN_SPEC.md) and its machine-readable companion [`docs/spec/design-tokens.json`](./spec/design-tokens.json). Full item list, KPIs, and exit criteria are in [`docs/BACKLOG.md §12`](./BACKLOG.md).
+The Website Design Wave runs concurrently with (or immediately after) the 5-sprint feature arc above. It is governed by [`docs/spec/WEBSITE_DESIGN_SPEC.md`](../../specifications/product/WEBSITE_DESIGN_SPEC.md) and its machine-readable companion [`docs/spec/design-tokens.json``design-tokens.json` (not migrated). Full item list, KPIs, and exit criteria are in [`docs/BACKLOG.md §12`](../backlog/BACKLOG_MASTER.md).
 
 | Sprint | Focus | Key items | Gate |
 |---|---|---|---|

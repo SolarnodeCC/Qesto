@@ -1,3 +1,29 @@
+---
+id: SPEC-DEPLOYMENT
+type: specification
+domain: deployment
+category: infrastructure
+status: active
+version: 1.5
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - DevOps engineer
+  - Architect
+  - Backend engineer
+tags:
+  - cloudflare
+  - wrangler
+  - ci-cd
+  - secrets
+  - environments
+  - d1-migrations
+relates_to:
+  - SPEC_CORE
+  - SPEC_DATAMODEL
+  - SPEC_BACKEND
+---
+
 # SPEC_DEPLOYMENT — Build, Config, Secrets, CI/CD, Monitoring
 
 _Repository hub: [Documentation map](../README.md)._
@@ -53,7 +79,7 @@ npm run check:tokens-drift   # Generated token artefact drift check
 
 ### Production Build
 
-> **Design-token build step:** [`design-tokens.json`](./design-tokens.json) is the source of truth for all colour, typography, spacing, radius/elevation/motion, and shadow tokens. The build pipeline must regenerate `src/ui/tokens.ts` and the Tailwind theme from this JSON before `vite build` runs (backlog item `DESIGN-TOK-01`). Drift between the JSON and runtime CSS is a CI-enforced release gate — see [`WEBSITE_DESIGN_SPEC.md`](./WEBSITE_DESIGN_SPEC.md) §7 KPIs and `LAYOUT-GRID-01` for the lint rule that flags non-4-multiple vertical measurements.
+> **Design-token build step:** [`design-tokens.json`](./design-tokens.json) is the source of truth for all colour, typography, spacing, radius/elevation/motion, and shadow tokens. The build pipeline must regenerate `src/ui/tokens.ts` and the Tailwind theme from this JSON before `vite build` runs (backlog item `DESIGN-TOK-01`). Drift between the JSON and runtime CSS is a CI-enforced release gate — see [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) §7 KPIs and `LAYOUT-GRID-01` for the lint rule that flags non-4-multiple vertical measurements.
 
 ```bash
 # Full build pipeline

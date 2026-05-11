@@ -1,3 +1,21 @@
+---
+id: ADR-0008
+title: Integration Foundation
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - integrations
+  - webhooks
+  - external-services
+  - api-contracts
+relates_to:
+  - SPEC_INTEGRATIONS
+  - SPEC_BACKEND
+---
+
 # ADR: Integration Provider Architecture
 
 **Status:** Approved (Agent-Validated)  

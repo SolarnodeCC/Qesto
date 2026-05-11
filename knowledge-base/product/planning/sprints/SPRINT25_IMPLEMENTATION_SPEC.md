@@ -1,3 +1,21 @@
+---
+id: PLAN
+type: planning
+domain: product
+category: planning
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - planning
+  - sprints
+  - implementation
+relates_to:
+  - BACKLOG_MASTER
+  - ROADMAP_FULL
+---
+
 # Sprint 25 Implementation Spec — LIVE Energizer Protocol Foundation
 
 _Started: 2026-05-04._

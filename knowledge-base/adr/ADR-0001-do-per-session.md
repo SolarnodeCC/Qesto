@@ -1,9 +1,27 @@
+---
+id: ADR-0001
+title: Durable Object Per Session (LIVE State)
+domain: architecture
+status: approved
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - durable-objects
+  - session-state
+  - realtime
+  - websocket
+relates_to:
+  - SPEC_REALTIME
+  - ADR-0005-do-protocol-versioning
+---
+
 # ADR-0001: Durable Object Per Session (LIVE State)
 
 **Date**: 2026-04-20  
 **Status**: Accepted  
 **Deciders**: Architecture team  
-**Implements**: [PREBUILD_AND_DELIVERY.md § Vertical slice v1](../spec/includes/PREBUILD_AND_DELIVERY.md)
+**Implements**: [PREBUILD_AND_DELIVERY.md § Vertical slice v1](../metadata/spec-includes/PREBUILD_AND_DELIVERY.md)
 
 ---
 

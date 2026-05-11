@@ -1,3 +1,20 @@
+---
+id: GOVERNANCE
+type: guide
+domain: governance
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - governance
+  - policy
+  - guidelines
+relates_to:
+  - CONTRIBUTING
+---
+
 # Qesto — Archived Sprints (Historical Reference)
 
 _Hub: [Documentation map](./README.md)._
@@ -6,7 +23,7 @@ _Last updated: 2026-04-30 (UTC)_
 
 ## Overview
 
-This document provides historical summaries of completed sprints, including Sprint 19's early implementation closeout. For **calendar / team sprint history**, use this file and [`BACKLOG.md`](./BACKLOG.md). For a **reference five-sprint teaching arc** (v0.1→v0.5) layered on the shipped v2 baseline, see [`SPRINT_PLAN.md`](./SPRINT_PLAN.md) — and read [`README.md`](./README.md) so the two notions of “sprint” are not confused.
+This document provides historical summaries of completed sprints, including Sprint 19's early implementation closeout. For **calendar / team sprint history**, use this file and [`BACKLOG.md`](../backlog/BACKLOG_MASTER.md). For a **reference five-sprint teaching arc** (v0.1→v0.5) layered on the shipped v2 baseline, see [`SPRINT_PLAN.md`](../planning/SPRINT_PLAN_MASTER.md) — and read [`README.md`](./README.md) so the two notions of “sprint” are not confused.
 
 ---
 

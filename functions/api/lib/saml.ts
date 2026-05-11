@@ -16,7 +16,7 @@
 //   • SAML state tokens   — opaque 32-byte hex strings stored in ACTIONS_KV
 //     with a 5-minute TTL to prevent replay and cross-tenant confusion.
 //
-// SECURITY CAVEAT (documented in docs/ARCHITECTURE.md §SAML):
+// SECURITY CAVEAT (documented in knowledge-base/architecture/ARCHITECTURE.md §SAML):
 //   This SP trusts the IdP's TLS transport + RelayState binding. It does NOT
 //   yet verify the XML signature on <saml:Assertion>. For v2.x this is an
 //   acceptable trade-off because customers configure the IdP per-tenant and

@@ -1,3 +1,20 @@
+---
+id: GOVERNANCE
+type: guide
+domain: governance
+category: policy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - governance
+  - policy
+  - guidelines
+relates_to:
+  - CONTRIBUTING
+---
+
 # Page Quality Checklist
 
 Use this checklist before merging any update to solution, feature, use-case, pricing, privacy, or terms pages.

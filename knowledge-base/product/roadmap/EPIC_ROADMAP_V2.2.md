@@ -1,3 +1,22 @@
+---
+id: ROADMAP
+type: planning
+domain: product
+category: strategy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - roadmap
+  - planning
+  - strategy
+  - releases
+relates_to:
+  - SPEC_PRODUCT
+  - BACKLOG_MASTER
+---
+
 # Qesto v2.2 Epic Roadmap (Agent-Validated)
 **Target:** Q3 2026 (June–August) | **Status:** Approved for implementation  
 **Last Updated:** 2026-05-10 (Post-agent validation)  
@@ -350,11 +369,11 @@ If 6-week timeline is at risk, cut in this priority order:
 
 ## Reference Documents
 
-- [ROADMAP_FULL.md](./ROADMAP_FULL.md) — Current v2.x release status
-- [BACKLOG.md](./BACKLOG.md) — All user stories, acceptance criteria, sizing
-- [SPRINT_PLAN.md](./SPRINT_PLAN.md) — Calendar sprints (Sprints 20–27 detailed)
-- [ADR-CIRCUIT-BREAKER.md](./ADR-CIRCUIT-BREAKER.md) — Circuit breaker pattern decision
-- [ADR-INTEGRATION-FOUNDATION.md](./ADR-INTEGRATION-FOUNDATION.md) — Integration provider pattern
-- [ADR-PII-SANITIZATION.md](./ADR-PII-SANITIZATION.md) — Logging security decision
-- [INFRA-SPRINT-20-CHECKLIST.md](./INFRA-SPRINT-20-CHECKLIST.md) — Pre-work tasks
-- [V2_2_ROLLOUT_PLAN.md](./V2_2_ROLLOUT_PLAN.md) — Canary + ramp strategy
+- [ROADMAP_FULL.md](../roadmap/ROADMAP_FULL.md) — Current v2.x release status
+- [BACKLOG.md](../backlog/BACKLOG_MASTER.md) — All user stories, acceptance criteria, sizing
+- [SPRINT_PLAN.md](../planning/SPRINT_PLAN_MASTER.md) — Calendar sprints (Sprints 20–27 detailed)
+- [ADR-CIRCUIT-BREAKER.md](../../adr/ADR-0007-circuit-breaker.md) — Circuit breaker pattern decision
+- [ADR-INTEGRATION-FOUNDATION.md](../../adr/ADR-0008-integration-foundation.md) — Integration provider pattern
+- [ADR-PII-SANITIZATION.md](../../adr/ADR-0009-pii-sanitization.md) — Logging security decision
+- [INFRA-SPRINT-20-CHECKLIST.md](../../operations/deployment/INFRA_SPRINT_CHECKLIST.md) — Pre-work tasks
+- [V2_2_ROLLOUT_PLAN.md](../releases/V2_2_ROLLOUT_PLAN.md) — Canary + ramp strategy

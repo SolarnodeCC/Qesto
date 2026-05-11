@@ -1,3 +1,27 @@
+---
+id: ARCHITECTURE
+type: guide
+domain: architecture
+category: system-design
+status: active
+version: 1.5
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - Architect
+  - Tech lead
+  - All roles
+tags:
+  - system-design
+  - cloudflare-workers
+  - architecture
+  - tech-stack
+  - constraints
+relates_to:
+  - SPEC_CORE
+  - ADR-0001-do-per-session
+---
+
 # Qesto — Architecture (Current)
 
 _Hub: [Documentation map](./README.md)._
@@ -38,7 +62,7 @@ _Last verified: 2026-04-30 (UTC)_
 
 ## 7. Where to go next
 - **[`README.md`](./README.md)** — how `docs/` fits together (truth hierarchy, reading order).
-- **[`spec/INDEX.md`](./spec/INDEX.md)** — domain specifications for implementation detail.
+- **[`spec/INDEX.md`](../specifications/SPEC_INDEX.md)** — domain specifications for implementation detail.
 
 ## 8. 2026-04-22 architecture review addendum
 - UI layer now has a formalised design-token source of truth (`docs/spec/design-tokens.json` → `src/ui/tokens.ts`; token generator CI step in progress per DESIGN-TOK-01).

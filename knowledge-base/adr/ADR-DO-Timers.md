@@ -1,3 +1,21 @@
+---
+id: ADR-DO-TIMERS
+title: Durable Object Timers
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - durable-objects
+  - timers
+  - scheduling
+  - realtime
+relates_to:
+  - ADR-0001-do-per-session
+  - SPEC_REALTIME
+---
+
 # ADR: Timer Semantics in Durable Objects
 
 **Date**: 2026-04-23  

@@ -1,3 +1,21 @@
+---
+id: ADR-0007
+title: Circuit Breaker Pattern
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-05-01
+updated: 2026-05-11
+tags:
+  - resilience
+  - circuit-breaker
+  - error-handling
+  - external-integrations
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_INTEGRATIONS
+---
+
 # ADR: Circuit Breaker Pattern for External Dependencies
 
 **Status:** Approved (Agent-Validated)  
@@ -248,6 +266,6 @@ await c.env.METRICS_AE.writeDataPoint({
 
 ## References
 
-- Jankurai Audit: [RES-08, RES-01, RES-05, RES-06](../JANKURAI_AUDIT.md)
+- Jankurai Audit: [RES-08, RES-01, RES-05, RES-06](../quality/audits/resilience-audit.md)
 - Backend Review: Circuit Breaker Safety (Agent validation)
 - Release Blocker: v2.2 requires resilience hardening before canary

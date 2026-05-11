@@ -1,3 +1,22 @@
+---
+id: ADR-0005
+title: DO Protocol Versioning
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-25
+updated: 2026-05-11
+tags:
+  - durable-objects
+  - protocol
+  - versioning
+  - backward-compatibility
+  - realtime
+relates_to:
+  - ADR-0001-do-per-session
+  - SPEC_REALTIME
+---
+
 # ADR-0005: Durable Object Protocol Versioning
 
 _Status: Accepted for Sprint 24_

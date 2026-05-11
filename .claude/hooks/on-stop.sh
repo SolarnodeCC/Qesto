@@ -43,17 +43,17 @@ CHANGED_DOCS=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'docs/.*\.(md|txt)$' ||
 GATES_TRIGGERED=0
 
 if [[ "$CHANGED_ROUTES" -gt 0 ]]; then
-  echo "QA: API_ROUTES_DOCUMENTED gate triggered — update docs/API_FULL.md (see QA_CHECKLIST.md)" >&2
+  echo "QA: API_ROUTES_DOCUMENTED gate triggered — update knowledge-base/api/API_FULL.md (see QA_CHECKLIST.md)" >&2
   GATES_TRIGGERED=1
 fi
 
 if [[ "$CHANGED_SCHEMA" -gt 0 ]]; then
-  echo "QA: SCHEMA_DOCUMENTED gate triggered — update docs/ARCHITECTURE.md §3.1 (see QA_CHECKLIST.md)" >&2
+  echo "QA: SCHEMA_DOCUMENTED gate triggered — update knowledge-base/architecture/ARCHITECTURE.md §3.1 (see QA_CHECKLIST.md)" >&2
   GATES_TRIGGERED=1
 fi
 
 if [[ "$CHANGED_DO" -gt 0 ]]; then
-  echo "QA: DO_DOCUMENTED gate triggered — update docs/ARCHITECTURE.md and docs/API_FULL.md (see QA_CHECKLIST.md)" >&2
+  echo "QA: DO_DOCUMENTED gate triggered — update knowledge-base/architecture/ARCHITECTURE.md and knowledge-base/api/API_FULL.md (see QA_CHECKLIST.md)" >&2
   GATES_TRIGGERED=1
 fi
 

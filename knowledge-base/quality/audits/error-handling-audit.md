@@ -1,3 +1,19 @@
+---
+id: AUDIT-ERROR_HANDLING_AUDIT
+type: audit
+category: quality
+status: active
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - audit
+  - quality
+  - findings
+relates_to:
+  - REMEDIATION_PLAN
+---
+
 # Error Handling Audit — Qesto Backend
 
 **Date:** 2026-05-02  

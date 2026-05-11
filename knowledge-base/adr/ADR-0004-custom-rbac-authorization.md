@@ -1,3 +1,23 @@
+---
+id: ADR-0004
+title: Custom RBAC Authorization
+domain: architecture
+status: approved
+version: 1.0
+created: 2026-04-25
+updated: 2026-05-11
+tags:
+  - authorization
+  - rbac
+  - roles
+  - access-control
+  - multi-tenant
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_DATAMODEL
+  - SECURITY_FULL
+---
+
 # ADR-0004: Custom RBAC Authorization
 
 _Hub: [../README.md](../README.md)._

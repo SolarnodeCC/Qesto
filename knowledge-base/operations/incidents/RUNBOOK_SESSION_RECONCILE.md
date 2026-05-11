@@ -1,3 +1,19 @@
+---
+id: RUNBOOK-RUNBOOK_SESSION_RECONCILE
+type: runbook
+category: incident
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - incident-response
+  - operations
+  - procedures
+relates_to:
+  - OBSERVABILITY
+---
+
 # Runbook: Session State Reconciliation
 
 **Scope:** Diagnosing and recovering from a split-brain state where a session's

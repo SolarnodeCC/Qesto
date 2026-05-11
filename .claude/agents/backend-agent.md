@@ -122,10 +122,10 @@ Draft questions (`SESSIONS_KV: questions:{id}`) — transient, TTL 30 days, dele
 
 | Change | Doc |
 |---|---|
-| New/modified HTTP routes | `docs/API_FULL.md` |
-| New WebSocket message types | `docs/API_FULL.md` |
-| New KV namespace or schema | `docs/ARCHITECTURE.md` |
-| D1 schema migration | `docs/ARCHITECTURE.md` |
+| New/modified HTTP routes | `knowledge-base/api/API_FULL.md` |
+| New WebSocket message types | `knowledge-base/api/API_FULL.md` |
+| New KV namespace or schema | `knowledge-base/architecture/ARCHITECTURE.md` |
+| D1 schema migration | `knowledge-base/architecture/ARCHITECTURE.md` |
 | New secret or env binding | `docs/CONFIGURATION.txt` + `CLAUDE.md` |
 | Tech debt found | `docs/BACKLOG.md §4` with WSJF |
 | Story shipped | `docs/BACKLOG.md §5` + `docs/SPRINT_PLAN.md` |

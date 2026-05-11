@@ -1,3 +1,18 @@
+---
+id: API-README
+type: api
+category: reference
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - api
+  - endpoints
+relates_to:
+  - SPEC_BACKEND
+---
+
 # API & Integration Documentation
 
 REST endpoints, WebSocket protocol, and external integrations.

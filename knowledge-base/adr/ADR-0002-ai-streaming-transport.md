@@ -1,9 +1,29 @@
+---
+id: ADR-0002
+title: AI Streaming Transport for Wizard Question Generation
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-30
+updated: 2026-05-11
+tags:
+  - ai
+  - streaming
+  - workers-ai
+  - sse
+  - wizard
+relates_to:
+  - SPEC_FRONTEND
+  - SPEC_BACKEND
+  - ADR-0006-workers-ai-capabilities
+---
+
 # ADR-0002: AI Streaming Transport for Wizard Question Generation
 
 **Date**: 2026-04-30
 **Status**: Accepted
 **Deciders**: Architecture (Sprint 19 planning, 2026-04-30)
-**Implements**: [Sprint 19 WIZ-AI-01](../SPRINT_PLAN.md) — AI wizard sub-flow with streaming skeleton
+**Implements**: [Sprint 19 WIZ-AI-01](../product/planning/SPRINT_PLAN_MASTER.md) — AI wizard sub-flow with streaming skeleton
 
 ---
 
@@ -101,4 +121,4 @@ Shared with the existing `POST /questions/generate` bucket: 20 requests / hour /
 - [Cloudflare Workers Streaming](https://developers.cloudflare.com/workers/runtime-apis/streams/)
 - [Hono Streaming Response](https://hono.dev/docs/api/context#streamsseresponse)
 - [Workers AI Streaming](https://developers.cloudflare.com/workers-ai/models/llama-3/)
-- [Sprint 19 WIZ-AI-01 exit criteria](../SPRINT_PLAN.md)
+- [Sprint 19 WIZ-AI-01 exit criteria](../product/planning/SPRINT_PLAN_MASTER.md)

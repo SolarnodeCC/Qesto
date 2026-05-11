@@ -1,3 +1,22 @@
+---
+id: ROADMAP
+type: planning
+domain: product
+category: strategy
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - roadmap
+  - planning
+  - strategy
+  - releases
+relates_to:
+  - SPEC_PRODUCT
+  - BACKLOG_MASTER
+---
+
 # Qesto — Roadmap & Release Status (Current)
 
 _Hub: [Documentation map](./README.md)._
@@ -114,7 +133,7 @@ _Last updated: 2026-05-05 (UTC)_
 | Sprint 31 | Enterprise rollout hardening | No broad rollout until permission-deny and audit paths are clear |
 | Sprint 32 | v2.2 release candidate | Release only after full-stack smoke and staging WebSocket validation |
 
-**Plan:** See [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md).
+**Plan:** See [`SPRINT26_32_PLAN.md`](../planning/SPRINT26_32_PLAN.md).
 
 ### Post-v2.2 Commercial Promise Completion
 

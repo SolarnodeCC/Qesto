@@ -1,6 +1,24 @@
+---
+id: AI-CONTEXT
+type: reference
+domain: ai
+category: agents
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - ai
+  - agents
+  - skills
+  - research
+relates_to:
+  - AGENT_SYSTEM_OVERVIEW
+---
+
 # Qesto Agents Visual Overview
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../README.md)._
 
 This overview separates two things that are easy to blur:
 
@@ -157,7 +175,7 @@ flowchart LR
 
 ## 5. Source Files
 
-- Development framework: [`CLAUDE.md`](../CLAUDE.md), [`.claude/agents/`](../.claude/agents/), [`.claude/skills/`](../.claude/skills/)
-- Governance: [`docs/AGENT_SKILL_GOVERNANCE.md`](./AGENT_SKILL_GOVERNANCE.md), [`docs/AGENT_SKILL_SCORECARD.md`](./AGENT_SKILL_SCORECARD.md), [`docs/AGENT_SKILL_TEMPLATE.md`](./AGENT_SKILL_TEMPLATE.md)
+- Development framework: [`CLAUDE.md`](../../../../Qesto/CLAUDE.md), [`.claude/agents/`](../.claude/agents/), [`.claude/skills/`](../.claude/skills/)
+- Governance: [`docs/AGENT_SKILL_GOVERNANCE.md`](../AGENT_SKILL_GOVERNANCE.md), [`docs/AGENT_SKILL_SCORECARD.md`](../research/AGENT_SKILL_SCORECARD.md), [`docs/AGENT_SKILL_TEMPLATE.md`](./AGENT_SKILL_TEMPLATE.md)
 - Runtime AI: [`functions/api/lib/ai-wizard.ts`](../functions/api/lib/ai-wizard.ts), [`functions/api/lib/ai-insights.ts`](../functions/api/lib/ai-insights.ts), [`functions/api/lib/insights-vectorize.ts`](../functions/api/lib/insights-vectorize.ts)
 - Runtime orchestration: [`functions/api/routes/sessions.ts`](../functions/api/routes/sessions.ts), [`functions/api/routes/ai-insights/`](../functions/api/routes/ai-insights/), [`functions/api/SessionRoom.ts`](../functions/api/SessionRoom.ts), [`worker/index.ts`](../worker/index.ts)

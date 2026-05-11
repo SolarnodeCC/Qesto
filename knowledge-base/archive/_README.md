@@ -29,4 +29,4 @@ Verify `curl http://localhost:8788/api/admin/health` → `{"ok":true,...}`.
 
 ## Build plan
 
-v1 vertical slice per [`docs/spec/includes/PREBUILD_AND_DELIVERY.md`](docs/spec/includes/PREBUILD_AND_DELIVERY.md). Phase 0 (foundation) is in; Phase 1 (magic-link auth) is next. See [`docs/adr/ADR-0001-do-per-session.md`](docs/adr/ADR-0001-do-per-session.md) for the LIVE-state decision.
+v1 vertical slice per [`do../../metadata/spec-includes/PREBUILD_AND_DELIVERY.md`](do../../metadata/spec-includes/PREBUILD_AND_DELIVERY.md). Phase 0 (foundation) is in; Phase 1 (magic-link auth) is next. See [`docs/adr/ADR-0001-do-per-session.md`](docs/adr/ADR-0001-do-per-session.md) for the LIVE-state decision.

@@ -1,3 +1,19 @@
+---
+id: AUDIT-WORKSTREAM_OUTSTANDING
+type: audit
+category: quality
+status: active
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - audit
+  - quality
+  - findings
+relates_to:
+  - REMEDIATION_PLAN
+---
+
 # Outstanding Work Across All Audit Workstreams
 
 **Date:** 2026-05-03 (WS5-WS6 polish: matrix + PollOption sweep + Pricing copy honesty)  

@@ -1,3 +1,21 @@
+---
+id: ADR-KV-TENANT-CONVENTIONS
+title: KV Tenant Conventions
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - kv
+  - multi-tenant
+  - key-patterns
+  - data-isolation
+relates_to:
+  - SPEC_DATAMODEL
+  - SPEC_BACKEND
+---
+
 # ADR: KV Key Scoping & Tenant-Isolation Conventions
 
 **Date**: 2026-04-23  

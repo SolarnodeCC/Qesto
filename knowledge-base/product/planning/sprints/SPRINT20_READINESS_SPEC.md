@@ -1,3 +1,21 @@
+---
+id: PLAN
+type: planning
+domain: product
+category: planning
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+tags:
+  - planning
+  - sprints
+  - implementation
+relates_to:
+  - BACKLOG_MASTER
+  - ROADMAP_FULL
+---
+
 # Sprint 20 Readiness Implementation Spec
 
 _Hub: [Documentation map](./README.md)._
@@ -39,7 +57,7 @@ Sprint 20 converts the Sprint 19 AI wizard and Launchpad delivery into release e
 
 ### Authorization ADR
 
-- `AUTHZ-ADR-01` is captured as [`ADR-0004: Custom RBAC Authorization`](./adr/ADR-0004-custom-rbac-authorization.md).
+- `AUTHZ-ADR-01` is captured as [`ADR-0004: Custom RBAC Authorization`](../../../adr/ADR-0004-custom-rbac-authorization.md).
 - The ADR defines authorization order, permission names, built-in role mapping, route ownership, D1 data-model direction, audit semantics, and contract-test strategy.
 - Status is **Proposed for Sprint 20 review**. Sprint 21 RBAC implementation remains blocked until Product Owner + Architect accept the ADR.
 
