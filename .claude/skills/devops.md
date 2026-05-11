@@ -134,8 +134,8 @@ For every release touching Stripe, Resend, OAuth/SAML, Workers AI, Vectorize, D1
 
 | Change | Doc |
 |---|---|
-| New CF binding | `docs/ARCHITECTURE.md` infra section |
-| New secret | `docs/ARCHITECTURE.md` — name + purpose only, never value |
+| New CF binding | `knowledge-base/architecture/ARCHITECTURE.md` infra section |
+| New secret | `knowledge-base/architecture/ARCHITECTURE.md` — name + purpose only, never value |
 | Deployment process change | This skill file |
 | New incident pattern | This skill file incident runbook |
 | Infra backlog item closed | `docs/BACKLOG.md §4` |

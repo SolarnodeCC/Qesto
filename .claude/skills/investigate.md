@@ -105,7 +105,7 @@ Investigation report with these fields:
 
 ## Docs to Update
 - `docs/KNOWN_ISSUES.md` for recurrent patterns
-- `docs/ARCHITECTURE.md` if DO protocol changes needed
+- `knowledge-base/architecture/ARCHITECTURE.md` if DO protocol changes needed
 - GitHub issue with "investigation" label when root cause found
 
 ## Do Not
