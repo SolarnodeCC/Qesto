@@ -1,6 +1,6 @@
 # Qesto Design System — Portable overview
 
-_Hub: [Documentation map](../README.md) · Technical specs: [INDEX.md](./INDEX.md) · Detailed UI contract: [WEBSITE_DESIGN_SPEC.md](../product/WEBSITE_DESIGN_SPEC.md)_
+_Hub: [Documentation map](../README.md) · Technical specs: [INDEX.md](../SPEC_INDEX.md) · Detailed UI contract: [WEBSITE_DESIGN_SPEC.md](../product/WEBSITE_DESIGN_SPEC.md)_
 
 > Qesto is a real-time interactive session platform — **feel the pulse of the room, amplified by AI**. Mentimeter-style live polling, ranking, wordclouds, and consent votes, with Workers AI-backed insights running on Cloudflare's edge.
 

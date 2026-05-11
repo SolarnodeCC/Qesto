@@ -15,9 +15,9 @@ _**Planning context**: Repository ships v2.x; backlog items are regression contr
 
 This backlog holds **durable user stories** with acceptance criteria (Given / When / Then), grouped under six epics. Items are prioritised with WSJF-style weighting and mapped to a **reference five-sprint sequence** in [`SPRINT_PLAN.md`](./planning/SPRINT_PLAN.md) for dependency ordering and onboarding.
 
-**Shipped baseline:** The repository already ships **v2.x** capabilities summarised in [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) and [`SPEC.md`](./SPEC.md). Many stories describe behaviour that is **already implemented**; they remain as **regression contracts**, refinement targets, and narrative for new contributors.
+**Shipped baseline:** The repository already ships **v2.x** capabilities summarised in [`ROADMAP_FULL.md`](./roadmap/ROADMAP_FULL.md) and [`SPEC.md`](../../specifications/product/SPEC_PRODUCT.md). Many stories describe behaviour that is **already implemented**; they remain as **regression contracts**, refinement targets, and narrative for new contributors.
 
-**Planning truth:** Use [`ROADMAP_FULL.md`](./ROADMAP_FULL.md) for release-level status. Use this file for **incremental committed work** (including §12 Website Design Wave) and story-level acceptance criteria. Use [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md) for historical sprint summaries. For technical build truth, start at [`spec/INDEX.md`](./spec/INDEX.md) (code wins until specs are updated deliberately).
+**Planning truth:** Use [`ROADMAP_FULL.md`](./roadmap/ROADMAP_FULL.md) for release-level status. Use this file for **incremental committed work** (including §12 Website Design Wave) and story-level acceptance criteria. Use [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md) for historical sprint summaries. For technical build truth, start at [`spec/INDEX.md`](./spec/INDEX.md) (code wins until specs are updated deliberately).
 
 **Sprint field on stories:** The **Sprint: 1–5** metadata on each story refers to the **reference arc** in [`SPRINT_PLAN.md`](./planning/SPRINT_PLAN.md), not to the calendar sprint counter in [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md). Treat those numbers as **ordering and pedagogy**, not “we are still in Sprint 1.”
 
@@ -151,7 +151,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](./planning/SPRINT_PLAN.md) for detailed accep
 
 ## Epic Catalog
 
-Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL.md`](./ROADMAP_FULL.md)). This table is **not** a greenfield completion percentage.
+Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL.md`](./roadmap/ROADMAP_FULL.md)). This table is **not** a greenfield completion percentage.
 
 | Epic | Status | Focus | Notes |
 |---|---|---|---|

@@ -248,6 +248,6 @@ await c.env.METRICS_AE.writeDataPoint({
 
 ## References
 
-- Jankurai Audit: [RES-08, RES-01, RES-05, RES-06](../../quality/audits/resilience-audit.md)
+- Jankurai Audit: [RES-08, RES-01, RES-05, RES-06](../quality/audits/resilience-audit.md)
 - Backend Review: Circuit Breaker Safety (Agent validation)
 - Release Blocker: v2.2 requires resilience hardening before canary

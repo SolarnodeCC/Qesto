@@ -12,7 +12,7 @@ Sprint 21 turns the Sprint 20 entitlement evidence and accepted authorization AD
 
 ### AUTHZ-ADR-01
 
-- [`ADR-0004: Custom RBAC Authorization`](./adr/ADR-0004-custom-rbac-authorization.md) is accepted for Sprint 21 implementation.
+- [`ADR-0004: Custom RBAC Authorization`](../../adr/ADR-0004-custom-rbac-authorization.md) is accepted for Sprint 21 implementation.
 - Authorization order remains:
   1. authentication;
   2. plan entitlement;

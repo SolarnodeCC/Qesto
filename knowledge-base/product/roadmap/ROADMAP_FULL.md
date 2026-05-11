@@ -114,7 +114,7 @@ _Last updated: 2026-05-05 (UTC)_
 | Sprint 31 | Enterprise rollout hardening | No broad rollout until permission-deny and audit paths are clear |
 | Sprint 32 | v2.2 release candidate | Release only after full-stack smoke and staging WebSocket validation |
 
-**Plan:** See [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md).
+**Plan:** See [`SPRINT26_32_PLAN.md`](../planning/SPRINT26_32_PLAN.md).
 
 ### Post-v2.2 Commercial Promise Completion
 

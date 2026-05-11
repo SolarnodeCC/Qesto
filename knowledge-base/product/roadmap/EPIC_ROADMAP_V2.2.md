@@ -350,11 +350,11 @@ If 6-week timeline is at risk, cut in this priority order:
 
 ## Reference Documents
 
-- [ROADMAP_FULL.md](./ROADMAP_FULL.md) — Current v2.x release status
-- [BACKLOG.md](./BACKLOG.md) — All user stories, acceptance criteria, sizing
+- [ROADMAP_FULL.md](./roadmap/ROADMAP_FULL.md) — Current v2.x release status
+- [BACKLOG.md](./backlog/BACKLOG_MASTER.md) — All user stories, acceptance criteria, sizing
 - [SPRINT_PLAN.md](./planning/SPRINT_PLAN.md) — Calendar sprints (Sprints 20–27 detailed)
 - [ADR-CIRCUIT-BREAKER.md](../../adr/ADR-0007-circuit-breaker.md) — Circuit breaker pattern decision
 - [ADR-INTEGRATION-FOUNDATION.md](../../adr/ADR-0008-integration-foundation.md) — Integration provider pattern
 - [ADR-PII-SANITIZATION.md](../../adr/ADR-0009-pii-sanitization.md) — Logging security decision
-- [INFRA-SPRINT-20-CHECKLIST.md](./INFRA-SPRINT-20-CHECKLIST.md) — Pre-work tasks
-- [V2_2_ROLLOUT_PLAN.md](./V2_2_ROLLOUT_PLAN.md) — Canary + ramp strategy
+- [INFRA-SPRINT-20-CHECKLIST.md](../../operations/deployment/INFRA_SPRINT_CHECKLIST.md) — Pre-work tasks
+- [V2_2_ROLLOUT_PLAN.md](../releases/V2_2_ROLLOUT_PLAN.md) — Canary + ramp strategy
