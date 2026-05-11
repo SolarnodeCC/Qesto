@@ -1,3 +1,22 @@
+---
+id: ADR-AI-LATENCY
+title: AI Latency Budgets
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - ai
+  - performance
+  - latency
+  - workers-ai
+relates_to:
+  - SPEC_BACKEND
+  - ADR-0002-ai-streaming-transport
+  - ADR-0006-workers-ai-capabilities
+---
+
 # ADR: Workers AI Latency Budgets & Precomputation Strategy
 
 **Date**: 2026-04-23  

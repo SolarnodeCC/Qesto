@@ -1,3 +1,21 @@
+---
+id: ADR-0007
+title: Circuit Breaker Pattern
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-05-01
+updated: 2026-05-11
+tags:
+  - resilience
+  - circuit-breaker
+  - error-handling
+  - external-integrations
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_INTEGRATIONS
+---
+
 # ADR: Circuit Breaker Pattern for External Dependencies
 
 **Status:** Approved (Agent-Validated)  

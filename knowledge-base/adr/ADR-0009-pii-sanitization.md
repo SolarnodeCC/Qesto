@@ -1,3 +1,23 @@
+---
+id: ADR-0009
+title: PII Sanitization
+domain: architecture
+status: approved
+version: 1.0
+created: 2026-05-02
+updated: 2026-05-11
+tags:
+  - security
+  - privacy
+  - pii
+  - sanitization
+  - gdpr
+relates_to:
+  - SECURITY_FULL
+  - SPEC_BACKEND
+  - SPEC_DATAMODEL
+---
+
 # ADR: PII Sanitization in Error Logging
 
 **Status:** Critical (GDPR Blocker)  

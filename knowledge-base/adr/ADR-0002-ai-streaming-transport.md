@@ -1,3 +1,23 @@
+---
+id: ADR-0002
+title: AI Streaming Transport for Wizard Question Generation
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-30
+updated: 2026-05-11
+tags:
+  - ai
+  - streaming
+  - workers-ai
+  - sse
+  - wizard
+relates_to:
+  - SPEC_FRONTEND
+  - SPEC_BACKEND
+  - ADR-0006-workers-ai-capabilities
+---
+
 # ADR-0002: AI Streaming Transport for Wizard Question Generation
 
 **Date**: 2026-04-30

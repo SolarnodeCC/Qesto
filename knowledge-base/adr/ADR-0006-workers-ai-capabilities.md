@@ -1,3 +1,21 @@
+---
+id: ADR-0006
+title: Workers AI Capabilities
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-20
+updated: 2026-05-11
+tags:
+  - ai
+  - workers-ai
+  - llm
+  - cloudflare
+relates_to:
+  - SPEC_BACKEND
+  - ADR-0002-ai-streaming-transport
+---
+
 # ADR — Workers AI Capabilities for Qesto
 
 _Hub: [Documentation map](./README.md)._

@@ -1,3 +1,21 @@
+---
+id: ADR-0003
+title: Preflight Validation Contract
+domain: architecture
+status: accepted
+version: 1.0
+created: 2026-04-30
+updated: 2026-05-11
+tags:
+  - validation
+  - api-contract
+  - error-handling
+  - preflight
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_DATAMODEL
+---
+
 # ADR-0003: Pre-flight Validation Contract (Worker vs. DO)
 
 **Date**: 2026-04-30
