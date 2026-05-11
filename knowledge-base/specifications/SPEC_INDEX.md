@@ -1,3 +1,29 @@
+---
+id: SPEC-INDEX
+type: specification
+domain: architecture
+category: reference
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - All roles
+tags:
+  - specifications
+  - index
+  - navigation
+  - reference
+relates_to:
+  - SPEC_CORE
+  - SPEC_BACKEND
+  - SPEC_FRONTEND
+  - SPEC_DATAMODEL
+  - SPEC_REALTIME
+  - SPEC_INTEGRATIONS
+  - SPEC_DEPLOYMENT
+---
+
 # Qesto Specification Documents — Complete Reference
 
 **Repository documentation hub:** [`../README.md`](../README.md) (how `docs/` fits together, truth hierarchy, reading order).

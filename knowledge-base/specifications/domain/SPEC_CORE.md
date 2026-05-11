@@ -1,3 +1,31 @@
+---
+id: SPEC-CORE
+type: specification
+domain: architecture
+category: core
+status: active
+version: 2.1
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - Architect
+  - Backend engineer
+  - Tech lead
+tags:
+  - architecture
+  - system-design
+  - cloudflare-workers
+  - tech-stack
+  - session-state-machine
+  - constraints
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_FRONTEND
+  - SPEC_DATAMODEL
+  - SPEC_REALTIME
+  - ADR-0001-do-per-session
+---
+
 # SPEC_CORE — System Architecture & Design
 
 _Repository hub: [Documentation map](../README.md)._

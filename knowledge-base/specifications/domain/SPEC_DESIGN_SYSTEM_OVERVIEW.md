@@ -1,3 +1,29 @@
+---
+id: SPEC-DESIGN-SYSTEM
+type: specification
+domain: design
+category: visual
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - UI/UX specialist
+  - Frontend engineer
+  - Designer
+tags:
+  - design-system
+  - visual-design
+  - tokens
+  - typography
+  - colors
+  - components
+relates_to:
+  - SPEC_FRONTEND
+  - WEBSITE_DESIGN_SPEC
+  - DESIGN_TOKENS_README
+---
+
 # Qesto Design System — Portable overview
 
 _Hub: [Documentation map](../README.md) · Technical specs: [INDEX.md](../SPEC_INDEX.md) · Detailed UI contract: [WEBSITE_DESIGN_SPEC.md](../product/WEBSITE_DESIGN_SPEC.md)_

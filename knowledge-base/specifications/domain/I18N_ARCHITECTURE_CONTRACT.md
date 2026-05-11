@@ -1,3 +1,30 @@
+---
+id: SPEC-I18N
+type: specification
+domain: frontend
+category: localization
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - Frontend engineer
+  - i18n specialist
+tags:
+  - i18n
+  - localization
+  - translation
+  - languages
+  - english
+  - dutch
+  - spanish
+  - german
+  - french
+relates_to:
+  - SPEC_FRONTEND
+  - SPEC_PRODUCT
+---
+
 # Qesto i18n Architecture Contract
 
 _Last updated: 2026-04-24_

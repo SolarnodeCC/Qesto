@@ -1,3 +1,24 @@
+---
+id: SPEC-README
+type: specification
+domain: architecture
+category: reference
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - All roles
+tags:
+  - specifications
+  - navigation
+  - index
+  - reference
+relates_to:
+  - SPEC_INDEX
+  - SPEC_CORE
+---
+
 # Domain Specifications & Contracts
 
 Technical specifications for each domain, feature designs, and product specs.

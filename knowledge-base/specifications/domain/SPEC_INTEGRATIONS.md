@@ -1,3 +1,29 @@
+---
+id: SPEC-INTEGRATIONS
+type: specification
+domain: integrations
+category: external
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - Backend engineer
+  - Architect
+  - Integration specialist
+tags:
+  - webhooks
+  - stripe
+  - external-services
+  - api-contracts
+  - error-handling
+relates_to:
+  - SPEC_BACKEND
+  - SPEC_DATAMODEL
+  - ADR-0007-circuit-breaker
+  - ADR-0008-integration-foundation
+---
+
 # SPEC_INTEGRATIONS — Payments, AI, Auth, Webhooks
 
 _Repository hub: [Documentation map](../README.md)._

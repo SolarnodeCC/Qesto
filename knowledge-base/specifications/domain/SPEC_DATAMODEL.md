@@ -1,3 +1,31 @@
+---
+id: SPEC-DATAMODEL
+type: specification
+domain: data
+category: schema
+status: active
+version: 1.5
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - Backend engineer
+  - Architect
+  - Database specialist
+tags:
+  - d1
+  - kv
+  - schema
+  - data-model
+  - persistence
+  - multi-tenant
+  - types
+relates_to:
+  - SPEC_CORE
+  - SPEC_BACKEND
+  - ADR-0009-pii-sanitization
+  - ADR-KV-TENANT-CONVENTIONS
+---
+
 # SPEC_DATAMODEL — Database Schema, KV Patterns, Types
 
 _Repository hub: [Documentation map](../README.md)._

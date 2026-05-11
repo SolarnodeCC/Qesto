@@ -1,3 +1,29 @@
+---
+id: SPEC-DEPLOYMENT
+type: specification
+domain: deployment
+category: infrastructure
+status: active
+version: 1.5
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - DevOps engineer
+  - Architect
+  - Backend engineer
+tags:
+  - cloudflare
+  - wrangler
+  - ci-cd
+  - secrets
+  - environments
+  - d1-migrations
+relates_to:
+  - SPEC_CORE
+  - SPEC_DATAMODEL
+  - SPEC_BACKEND
+---
+
 # SPEC_DEPLOYMENT — Build, Config, Secrets, CI/CD, Monitoring
 
 _Repository hub: [Documentation map](../README.md)._

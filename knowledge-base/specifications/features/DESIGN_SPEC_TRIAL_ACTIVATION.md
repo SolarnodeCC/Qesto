@@ -1,3 +1,28 @@
+---
+id: SPEC-TRIAL-ACTIVATION
+type: specification
+domain: product
+category: features
+status: active
+version: 1.0
+created: 2026-04-15
+updated: 2026-05-11
+audience:
+  - Product owner
+  - Frontend engineer
+  - Backend engineer
+tags:
+  - trial
+  - activation
+  - onboarding
+  - feature-gating
+  - freemium
+relates_to:
+  - SPEC_PRODUCT
+  - SPEC_FRONTEND
+  - SPEC_BACKEND
+---
+
 # Design Spec: Trial Activation Flow Redesign
 # OWNER: Frontend Lead
 # Version: v1.0.0 (Pilot)

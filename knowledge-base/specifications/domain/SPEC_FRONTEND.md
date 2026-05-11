@@ -1,3 +1,31 @@
+---
+id: SPEC-FRONTEND
+type: specification
+domain: frontend
+category: ui
+status: active
+version: 2.0
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - Frontend engineer
+  - UI/UX specialist
+  - Architect
+tags:
+  - react
+  - typescript
+  - tailwind-css
+  - websocket
+  - state-management
+  - routing
+  - i18n
+relates_to:
+  - SPEC_CORE
+  - SPEC_REALTIME
+  - WEBSITE_DESIGN_SPEC
+  - ADR-0002-ai-streaming-transport
+---
+
 # SPEC_FRONTEND — React Architecture, Routing, Hooks, Components
 
 _Repository hub: [Documentation map](../README.md)._

@@ -1,3 +1,32 @@
+---
+id: SPEC-BACKEND
+type: specification
+domain: backend
+category: endpoints
+status: active
+version: 2.0
+created: 2026-03-01
+updated: 2026-05-11
+audience:
+  - Backend engineer
+  - API/middleware lead
+  - Architect
+tags:
+  - hono
+  - cloudflare-workers
+  - api-routes
+  - rest-endpoints
+  - middleware
+  - authorization
+  - error-handling
+relates_to:
+  - SPEC_CORE
+  - SPEC_DATAMODEL
+  - SPEC_INTEGRATIONS
+  - ADR-0003-preflight-validation-contract
+  - ADR-0004-custom-rbac-authorization
+---
+
 # SPEC_BACKEND — API Routes, Services, Middleware
 
 _Repository hub: [Documentation map](../README.md)._

@@ -1,3 +1,28 @@
+---
+id: DESIGN-TOKENS
+type: specification
+domain: design
+category: tokens
+status: active
+version: 1.0
+created: 2026-04-01
+updated: 2026-05-11
+audience:
+  - Frontend engineer
+  - Designer
+tags:
+  - design-tokens
+  - tailwind
+  - typography
+  - spacing
+  - colors
+  - css
+relates_to:
+  - SPEC_DESIGN_SYSTEM_OVERVIEW
+  - WEBSITE_DESIGN_SPEC
+  - SPEC_FRONTEND
+---
+
 # Design tokens (`design-tokens.json`)
 
 _Hub: [Documentation map](../README.md)._
