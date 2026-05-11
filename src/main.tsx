@@ -7,26 +7,29 @@ import { initI18n } from './i18n'
 import { initAnalytics } from './lib/analytics'
 import './styles.css'
 
-amplitude.initAll(import.meta.env.VITE_AMPLITUDE_API_KEY as string, {
-  analytics: {
-    serverUrl: 'https://api.eu.amplitude.com/2/httpapi', // EU data residency endpoint
-    remoteConfig: { fetchRemoteConfig: true }, // remote SDK config from Amplitude
-    autocapture: {
-      attribution: true,           // UTM / referrer attribution events
-      pageViews: true,             // SPA route changes + initial load
-      sessions: true,              // Session start / end events
-      formInteractions: true,      // Form starts + submits
-      fileDownloads: true,         // Downloads of common file types
-      elementInteractions: true,   // Click + change on instrumented els
-      frustrationInteractions: true, // Rage clicks, dead clicks
-      pageUrlEnrichment: true,     // Adds path / search to event props
-      networkTracking: true,       // XHR + fetch request events
-      webVitals: true,             // CWV (LCP, INP, CLS) on page hide
+const amplitudeKey = import.meta.env.VITE_AMPLITUDE_API_KEY as string | undefined
+if (amplitudeKey) {
+  amplitude.initAll(amplitudeKey, {
+    analytics: {
+      serverUrl: 'https://api.eu.amplitude.com/2/httpapi', // EU data residency endpoint
+      remoteConfig: { fetchRemoteConfig: true }, // remote SDK config from Amplitude
+      autocapture: {
+        attribution: true,           // UTM / referrer attribution events
+        pageViews: true,             // SPA route changes + initial load
+        sessions: true,              // Session start / end events
+        formInteractions: true,      // Form starts + submits
+        fileDownloads: true,         // Downloads of common file types
+        elementInteractions: true,   // Click + change on instrumented els
+        frustrationInteractions: true, // Rage clicks, dead clicks
+        pageUrlEnrichment: true,     // Adds path / search to event props
+        networkTracking: true,       // XHR + fetch request events
+        webVitals: true,             // CWV (LCP, INP, CLS) on page hide
+      },
     },
-  },
-  sessionReplay: { sampleRate: 1 }, // Record user sessions; comment out to disable
-  engagement: {},                   // In-product Guides & Surveys; comment out to disable
-})
+    sessionReplay: { sampleRate: 1 }, // Record user sessions; comment out to disable
+    engagement: {},                   // In-product Guides & Surveys; comment out to disable
+  })
+}
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Missing #root')
