@@ -1,6 +1,8 @@
 # Qesto — Codex Project Guide
 
-**Documentation map:** [`docs/README.md`](docs/README.md) — how `docs/`, `docs/spec/`, and planning files connect (truth hierarchy, reading order).
+**Documentation map:** [`/knowledge-base/README.md`](./knowledge-base/README.md) — navigation by role (PO, backend, frontend, devops, security, AI).
+
+**AI Agent & Skill Governance:** See [`/knowledge-base/ai-context/`](./knowledge-base/ai-context/) for agent system overview, skill templates, and research decisions.
 
 ## Stack
 
