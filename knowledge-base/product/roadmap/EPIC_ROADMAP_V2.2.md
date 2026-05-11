@@ -350,7 +350,7 @@ If 6-week timeline is at risk, cut in this priority order:
 
 ## Reference Documents
 
-- [ROADMAP_FULL.md](./roadmap/ROADMAP_FULL.md) — Current v2.x release status
+- [ROADMAP_FULL.md](../roadmap/ROADMAP_FULL.md) — Current v2.x release status
 - [BACKLOG.md](../backlog/BACKLOG_MASTER.md) — All user stories, acceptance criteria, sizing
 - [SPRINT_PLAN.md](../planning/SPRINT_PLAN_MASTER.md) — Calendar sprints (Sprints 20–27 detailed)
 - [ADR-CIRCUIT-BREAKER.md](../../adr/ADR-0007-circuit-breaker.md) — Circuit breaker pattern decision

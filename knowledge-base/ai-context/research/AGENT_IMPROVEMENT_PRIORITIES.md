@@ -1,6 +1,6 @@
 # Agent Improvement Priorities From Audits
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../README.md)._
 
 This document maps the audit outcomes in `audits/` to concrete agent and skill improvements. It is a maintenance checklist for prompt assets, not a runtime remediation plan.
 

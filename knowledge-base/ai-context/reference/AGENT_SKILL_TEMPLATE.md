@@ -1,6 +1,6 @@
 # Agent & Skill Canonical Template (Qesto)
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../README.md)._
 
 ## Agent template
 

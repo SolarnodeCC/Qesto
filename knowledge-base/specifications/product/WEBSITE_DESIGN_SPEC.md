@@ -5,7 +5,7 @@ _Hub: [Documentation map](../README.md)._
 _Last updated: 2026-04-19_
 _Owner: Frontend + PO + Marketing_
 _Status: Draft — pending review_
-_Related: [`design-tokens.README.md`](./domain/DESIGN_TOKENS_README.md) (token file + engineering rules), `docs/spec/SPEC_FRONTEND.md`, `docs/BACKLOG.md` (§12 Website Design Wave)_
+_Related: [`design-tokens.README.md`](../domain/DESIGN_TOKENS_README.md) (token file + engineering rules), `docs/spec/SPEC_FRONTEND.md`, `docs/BACKLOG.md` (§12 Website Design Wave)_
 
 ---
 

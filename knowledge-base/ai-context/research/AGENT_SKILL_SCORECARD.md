@@ -1,6 +1,6 @@
 # Agent & Skill Scorecard Spec
 
-_Hub: [Documentation map](./README.md)._
+_Hub: [Documentation map](../README.md)._
 
 ## Reporting cadence
 - Monthly, published in `docs/` with date-stamped snapshot.
