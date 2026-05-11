@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Live Polling — Qesto</title>
+<link rel="icon" href="../../../assets/favicon.svg">
+<link rel="stylesheet" href="../_shared.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+  .q-preview { background: #FFF; border-radius: 20px; padding: 26px; box-shadow: var(--shadow-elevated); }
+  .q-preview .qh { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+  .q-preview .qh .live { color: var(--teal-700); display: flex; gap: 6px; align-items: center; }
+  .q-preview .qh .live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--teal-500); box-shadow: 0 0 6px var(--teal-500); }
+  .q-preview h3 { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.01em; margin: 0 0 16px; }
+  .q-preview .bar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 14px; }
+  .q-preview .bar .lbl { width: 130px; font-weight: 500; }
+  .q-preview .bar .track { flex: 1; height: 10px; background: var(--pulse-100); border-radius: 5px; overflow: hidden; }
+  .q-preview .bar .fill { height: 100%; background: var(--gradient-brand); border-radius: 5px; }
+  .q-preview .bar .n { width: 30px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+
+  .types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .type { background: #FFF; border-radius: 14px; padding: 22px; box-shadow: var(--shadow-card); display: grid; grid-template-columns: 48px 1fr; gap: 16px; align-items: start; }
+  .type .ic { width: 48px; height: 48px; border-radius: 12px; background: var(--teal-50); color: var(--teal-700); display: grid; place-items: center; }
+  .type h3 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+  .type p { margin: 0; font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; }
+  .type .tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 6px; display: inline-block; }
+
+  .ladder { display: grid; gap: 1px; background: var(--surface-border); border-radius: 16px; overflow: hidden; }
+  .ladder-row { background: #FFF; padding: 18px 24px; display: grid; grid-template-columns: 140px 1fr 120px; gap: 24px; align-items: center; font-size: 14.5px; }
+  .ladder-row .k { font-family: var(--font-mono); font-size: 12px; color: var(--teal-700); font-weight: 600; }
+  .ladder-row .v b { font-weight: 600; }
+  .ladder-row .lat { font-family: var(--font-mono); font-size: 13px; text-align: right; color: var(--pulse-800); }
+  .ladder-row .lat span { display: block; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+
+<nav class="nav" id="nav"><div class="container"><div class="nav-row">
+  <a href="../index.html" class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</a>
+  <div class="nav-links"><a href="./live-polling.html" class="active">Product</a><a href="../solutions/hr.html">Solutions</a><a href="../pricing.html">Pricing</a><a href="#">Docs</a></div>
+  <div class="nav-cta"><a class="btn btn-ghost" href="#">Sign in</a><a class="btn btn-primary" href="#">Start free</a></div>
+</div></div></nav>
+
+<section class="page-hero"><div class="container">
+  <div class="hero-grid">
+    <div>
+      <div class="eyebrow">Live Polling</div>
+      <h1>Tallies that land in <span class="grad">under a second.</span></h1>
+      <p class="lede">Every vote goes to a Durable Object in the same Cloudflare colo as the voter. No central server round-trip, no polling loop, no "results update in 30 seconds." The bar moves when the thumb does.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="#">Start a session</a>
+        <a class="btn btn-secondary btn-lg" href="#">Read the architecture</a>
+      </div>
+    </div>
+    <div class="q-preview">
+      <div class="qh"><span>Question 03 of 07</span><span class="live">Live · 142 voters</span></div>
+      <h3>Which of these should we ship first?</h3>
+      <div class="bar"><span class="lbl">Better onboarding</span><div class="track"><div class="fill" style="width:68%"></div></div><span class="n">96</span></div>
+      <div class="bar"><span class="lbl">Mobile parity</span><div class="track"><div class="fill" style="width:42%"></div></div><span class="n">60</span></div>
+      <div class="bar"><span class="lbl">Integrations</span><div class="track"><div class="fill" style="width:31%"></div></div><span class="n">44</span></div>
+      <div class="bar"><span class="lbl">Perf work</span><div class="track"><div class="fill" style="width:18%"></div></div><span class="n">26</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="eyebrow">Question types</div>
+  <h2>Eight primitives. Every session you'll ever need.</h2>
+  <p class="lede">Not a kitchen sink. These are the shapes a facilitator actually reaches for, sharpened.</p>
+  <div class="types">
+    <div class="type"><div class="ic"><i data-lucide="list"></i></div><div><h3>Multiple choice</h3><p>Single-select with live bar tally. Shuffle options to defeat position bias. 2–12 options.</p><span class="tag">type: mc</span></div></div>
+    <div class="type"><div class="ic"><i data-lucide="check-square"></i></div><div><h3>Multi-select</h3><p>"Pick up to N." Live stacked bars with exact counts. Great for prioritization.</p><span class="tag">type: multi</span></div></div>
+    <div class="type"><div class="ic"><i data-lucide="bar-chart-3"></i></div><div><h3>Likert / scale</h3><p>1–5 or 1–7 with custom endpoint labels. Mean and distribution shown together, never alone.</p><span class="tag">type: scale</span></div></div>
+    <div class="type"><div class="ic"><i data-lucide="message-square"></i></div><div><h3>Open text</h3><p>Free response clustered by AI in 8–15 seconds. Raw rows never shown — themes with counts and representative quotes.</p><span class="tag">type: open</span></div></div>
+    <div class="type"><div class="ic"><i data-lucide="thumbs-up"></i></div><div><h3>Upvote queue</h3><p>Audience submits questions; others upvote. Moderator console shows a ranked queue. Perfect for Q&amp;A.</p><span class="tag">type: queue</span></div></div>
+    <div class="type"><div class="ic"><i data-lucide="move"></i></div><div><h3>Ranking</h3><p>Drag-order items. Tally shows Borda count and positional heatmap.</p><span class="tag">type: rank</span></div></div>
+    <div class="type"><div class="ic"><i data-lucide="cloud"></i></div><div><h3>Word cloud</h3><p>1–3 word responses rendered as a live cloud. Frequency-scaled, stemming on by default.</p><span class="tag">type: cloud</span></div></div>
+    <div class="type"><div class="ic"><i data-lucide="gauge"></i></div><div><h3>Slider</h3><p>Continuous 0–100 input. Tally shows median, IQR, and distribution — never just the mean.</p><span class="tag">type: slider</span></div></div>
+  </div>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="eyebrow">Latency</div>
+  <h2>Because a tally that lags is a tally people don't trust.</h2>
+  <p class="lede">Measured p50 latencies across the Qesto path, from tap to projected bar. Edge-resident state means the wire distance is "to the nearest Cloudflare POP" — usually under 30ms.</p>
+  <div class="ladder">
+    <div class="ladder-row"><span class="k">Hop 01</span><span class="v"><b>Client → edge POP.</b> TLS to the nearest Cloudflare edge. Participant never talks to an origin.</span><span class="lat">~22ms<span>p50 wire</span></span></div>
+    <div class="ladder-row"><span class="k">Hop 02</span><span class="v"><b>Edge → Durable Object.</b> Session state lives in a single DO, pinned to the colo closest to first-mover.</span><span class="lat">~8ms<span>intra-colo</span></span></div>
+    <div class="ladder-row"><span class="k">Hop 03</span><span class="v"><b>DO → WebSocket fan-out.</b> Tally update broadcast to every connected participant over persistent WS.</span><span class="lat">~12ms<span>fanout</span></span></div>
+    <div class="ladder-row"><span class="k">Hop 04</span><span class="v"><b>Render.</b> Bar moves on the projected screen. Same pipe, no client poll.</span><span class="lat">~16ms<span>paint</span></span></div>
+    <div class="ladder-row"><span class="k">Total</span><span class="v"><b>Tap to bar movement.</b> End-to-end, measured across 10k sessions in production.</span><span class="lat" style="color:var(--teal-700);font-weight:700">&lt; 80ms<span>p50 end-to-end</span></span></div>
+  </div>
+</div></section>
+
+<section class="section alt"><div class="container">
+  <div class="eyebrow">Host controls</div>
+  <h2>The console a facilitator actually wants.</h2>
+  <div class="cards">
+    <div class="fc"><div class="ico"><i data-lucide="play"></i></div><h3>Launch, pause, reopen</h3><p>Every question is a state machine. Host controls all transitions; participants never see a broken flow.</p></div>
+    <div class="fc"><div class="ico"><i data-lucide="eye-off"></i></div><h3>Hide tally live</h3><p>Toggle visibility mid-vote. Useful when you want the room to commit before seeing others' answers.</p></div>
+    <div class="fc"><div class="ico"><i data-lucide="shuffle"></i></div><h3>Option shuffle</h3><p>Randomize order per participant. Defeats position bias without randomizing on the projected screen.</p></div>
+    <div class="fc"><div class="ico"><i data-lucide="users"></i></div><h3>Minimum tally gate</h3><p>Results stay hidden until N voters are in. Default 5, configurable. Prevents single-voter exposure.</p></div>
+    <div class="fc"><div class="ico"><i data-lucide="timer"></i></div><h3>Soft timer</h3><p>Optional countdown visible to participants. Expires to close, not to lock — stragglers finish on next question.</p></div>
+    <div class="fc"><div class="ico"><i data-lucide="download"></i></div><h3>One-click export</h3><p>CSV, JSON, or signed PDF with every tally and consent log. Integrates with Workday, HRIS, Notion, Slack.</p></div>
+  </div>
+</div></section>
+
+<div class="cta-band"><div class="container">
+  <h2>Ship the tally. Keep the room.</h2>
+  <p>Start a session free. Paid plans unlock recaps, exports, and longer retention.</p>
+  <a class="btn btn-primary btn-lg" href="#">Launch your first poll</a>
+</div></div>
+
+<footer><div class="container">
+  <div class="cols">
+    <div class="brand-col"><div class="brand"><img src="../../../assets/favicon.svg" alt="">Qesto</div><p>Real-time, AI-amplified, private-by-default sessions.</p></div>
+    <div><h5>Solutions</h5><ul><li><a href="../solutions/hr.html">HR pulse</a></li><li><a href="../solutions/events.html">Events</a></li><li><a href="../solutions/nonprofits.html">Nonprofit boards</a></li><li><a href="../solutions/consulting.html">Consulting</a></li></ul></div>
+    <div><h5>Product</h5><ul><li><a href="./live-polling.html">Live polling</a></li><li><a href="./ai-insights.html">AI insights</a></li><li><a href="./privacy.html">Privacy</a></li><li><a href="../pricing.html">Pricing</a></li></ul></div>
+    <div><h5>Company</h5><ul><li><a href="../legal/privacy.html">Privacy</a></li><li><a href="../legal/terms.html">Terms</a></li></ul></div>
+  </div>
+  <div class="legal"><span>© 2026 Qesto</span><span>qesto.cc</span></div>
+</div></footer>
+
+<script>
+  lucide.createIcons();
+  const nav = document.getElementById('nav');
+  addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8));
+</script>
+</body>
+</html>

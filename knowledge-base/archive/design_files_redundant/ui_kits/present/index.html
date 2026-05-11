@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Qesto · Present</title>
+<link rel="icon" href="../../assets/favicon.svg">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  html, body { margin: 0; background: #FAFAFA; overflow: hidden; }
+
+  /* Scale a 1920x1080 stage into any viewport, letterboxed */
+  .stage-wrap { position: fixed; inset: 0; display: grid; place-items: center; }
+  .stage {
+    width: 1920px; height: 1080px; transform-origin: center; position: relative;
+    background: #FFFFFF;
+    color: var(--text-primary);
+    overflow: hidden;
+  }
+  .stage::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(1400px 700px at 10% -10%, rgba(20,184,166,0.10), transparent 60%),
+      radial-gradient(1200px 600px at 95% 110%, rgba(139,92,246,0.10), transparent 60%);
+    pointer-events: none;
+  }
+  .stage::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px;
+    background: var(--gradient-brand);
+  }
+
+  /* Top bar */
+  .top { position: absolute; top: 44px; left: 64px; right: 64px; display: flex; align-items: center; justify-content: space-between; z-index: 2; }
+  .brand { display: flex; align-items: center; gap: 14px; font-family: var(--font-display); font-weight: 700; font-size: 28px; letter-spacing: -0.02em; color: var(--pulse-900); }
+  .brand img { width: 40px; height: 40px; }
+  .topright { display: flex; gap: 28px; align-items: center; font-size: 20px; color: var(--text-secondary); font-weight: 500; }
+  .topright .sep { width: 1px; height: 20px; background: var(--surface-border); }
+  .topright .live { display: inline-flex; gap: 10px; align-items: center; color: var(--pulse-900); font-weight: 600; }
+  .topright .live::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--signal-success); box-shadow: 0 0 0 0 rgba(34,197,94,0.5); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); } 50% { box-shadow: 0 0 0 10px rgba(34,197,94,0); } }
+
+  /* Question header */
+  .q-head { position: absolute; top: 144px; left: 64px; right: 600px; z-index: 2; }
+  .cap { font-size: 20px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-700); margin-bottom: 20px; }
+  h1.q { font-family: var(--font-display); font-weight: 700; font-size: 76px; line-height: 1.05; letter-spacing: -0.02em; margin: 0; color: var(--pulse-900); text-wrap: balance; }
+  .ann { margin-top: 20px; font-size: 22px; color: var(--text-secondary); display: flex; gap: 36px; }
+  .ann span { display: inline-flex; gap: 8px; align-items: center; }
+  .ann i { color: var(--teal-600); }
+
+  /* Results bars */
+  .bars { position: absolute; top: 460px; left: 64px; right: 600px; display: grid; gap: 28px; z-index: 2; }
+  .bar-row { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: baseline; }
+  .bar-row .lbl { font-size: 32px; font-weight: 600; line-height: 1.2; color: var(--pulse-900); }
+  .bar-row .pct { font-family: var(--font-display); font-weight: 700; font-size: 44px; letter-spacing: -0.02em; color: var(--pulse-900); }
+  .track { grid-column: 1 / -1; height: 24px; background: var(--pulse-100); border-radius: 9999px; overflow: hidden; }
+  .fill { height: 100%; border-radius: 9999px; background: var(--gradient-brand); transition: width 600ms var(--ease-standard); }
+  .bar-row:nth-child(1) .fill { background: linear-gradient(135deg, #14B8A6, #0D9488); }
+  .bar-row:nth-child(2) .fill { background: linear-gradient(135deg, #2DD4BF, #14B8A6); }
+  .bar-row:nth-child(3) .fill { background: linear-gradient(135deg, #A78BFA, #8B5CF6); }
+  .bar-row:nth-child(4) .fill { background: linear-gradient(135deg, #C4B5FD, #A78BFA); }
+
+  /* Join panel (right) */
+  .join {
+    position: absolute; right: 64px; top: 144px; width: 440px; padding: 36px;
+    background: #FFF;
+    border: 1px solid var(--surface-border);
+    border-radius: 32px; z-index: 2;
+    box-shadow: 0 8px 30px rgba(10,15,30,0.06);
+  }
+  .join h3 { font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal-700); margin: 0 0 14px; }
+  .join .url { font-family: var(--font-mono); font-size: 20px; font-weight: 500; color: var(--text-secondary); margin-bottom: 18px; }
+  .join .code {
+    font-family: var(--font-mono); font-size: 52px; font-weight: 500; letter-spacing: 0.12em; line-height: 1; margin-bottom: 22px;
+    background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .qr { width: 100%; aspect-ratio: 1; background: var(--pulse-50); border-radius: 16px; padding: 14px; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--surface-border); }
+  .qr svg { width: 100%; height: 100%; }
+  .count { margin-top: 20px; font-size: 18px; color: var(--text-secondary); text-align: center; }
+  .count b { color: var(--pulse-900); font-size: 26px; font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; }
+
+  /* Bottom chrome */
+  .bottom {
+    position: absolute; bottom: 36px; left: 64px; right: 64px;
+    display: flex; justify-content: space-between; align-items: center; z-index: 2;
+    font-size: 18px; color: var(--text-secondary);
+    padding-top: 24px; border-top: 1px solid var(--surface-border);
+  }
+  .progress { display: flex; gap: 10px; align-items: center; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pulse-200); }
+  .dot.done { background: var(--teal-500); }
+  .dot.cur { background: var(--pulse-900); box-shadow: 0 0 0 4px var(--teal-100); }
+  .anon {
+    display: inline-flex; gap: 10px; align-items: center;
+    padding: 10px 18px; background: var(--violet-50);
+    border: 1px solid var(--violet-200); border-radius: 9999px;
+    font-size: 16px; font-weight: 600; color: var(--violet-700);
+  }
+  .anon i { width: 16px; height: 16px; color: var(--violet-600); }
+  .bottom .right { display: inline-flex; gap: 10px; align-items: center; font-weight: 500; color: var(--text-secondary); }
+  .bottom .right i { color: var(--teal-600); }
+</style>
+</head>
+<body data-screen-label="03 Present mode">
+
+<div class="stage-wrap">
+  <div class="stage" id="stage">
+    <div class="top">
+      <div class="brand"><img src="../../assets/favicon.svg" alt="">Qesto</div>
+      <div class="topright">
+        <span>Q1 roadmap pulse · Engineering all-hands</span>
+        <span class="sep"></span>
+        <span class="live">Live · 12:34</span>
+      </div>
+    </div>
+
+    <div class="q-head">
+      <div class="cap">Question 2 of 5 · Ranked</div>
+      <h1 class="q">Which tension blocks us most this quarter?</h1>
+      <div class="ann">
+        <span><i data-lucide="users"></i>42 responses</span>
+        <span><i data-lucide="clock"></i>Closes in 1:28</span>
+        <span><i data-lucide="lock"></i>Full anonymity</span>
+      </div>
+    </div>
+
+    <div class="bars">
+      <div class="bar-row">
+        <div class="lbl">Cost pressure on hiring</div>
+        <div class="pct">42%</div>
+        <div class="track"><div class="fill" style="width:42%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="lbl">Go-to-market focus</div>
+        <div class="pct">28%</div>
+        <div class="track"><div class="fill" style="width:28%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="lbl">Hiring bar on senior roles</div>
+        <div class="pct">19%</div>
+        <div class="track"><div class="fill" style="width:19%"></div></div>
+      </div>
+      <div class="bar-row">
+        <div class="lbl">Something else</div>
+        <div class="pct">11%</div>
+        <div class="track"><div class="fill" style="width:11%"></div></div>
+      </div>
+    </div>
+
+    <div class="join">
+      <h3>Join this session</h3>
+      <div class="url">qesto.cc/join</div>
+      <div class="code">4X7K-92</div>
+      <div class="qr">
+        <svg viewBox="0 0 29 29" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+          <rect width="29" height="29" fill="#FAFAFA"/>
+          <g fill="#0A0F1E">
+            <rect x="0" y="0" width="7" height="7"/><rect x="1" y="1" width="5" height="5" fill="#FAFAFA"/><rect x="2" y="2" width="3" height="3"/>
+            <rect x="22" y="0" width="7" height="7"/><rect x="23" y="1" width="5" height="5" fill="#FAFAFA"/><rect x="24" y="2" width="3" height="3"/>
+            <rect x="0" y="22" width="7" height="7"/><rect x="1" y="23" width="5" height="5" fill="#FAFAFA"/><rect x="2" y="24" width="3" height="3"/>
+            <rect x="9" y="1" width="1" height="1"/><rect x="11" y="1" width="2" height="1"/><rect x="14" y="1" width="1" height="2"/><rect x="16" y="1" width="1" height="1"/><rect x="18" y="1" width="2" height="1"/>
+            <rect x="9" y="3" width="2" height="1"/><rect x="13" y="3" width="1" height="2"/><rect x="16" y="3" width="3" height="1"/><rect x="20" y="3" width="1" height="2"/>
+            <rect x="10" y="5" width="1" height="2"/><rect x="12" y="5" width="2" height="1"/><rect x="16" y="5" width="1" height="2"/><rect x="19" y="5" width="2" height="1"/>
+            <rect x="0" y="9" width="2" height="1"/><rect x="4" y="9" width="1" height="2"/><rect x="7" y="9" width="1" height="1"/><rect x="9" y="9" width="3" height="2"/><rect x="14" y="9" width="1" height="2"/><rect x="17" y="9" width="1" height="1"/><rect x="20" y="9" width="2" height="1"/><rect x="24" y="9" width="1" height="2"/><rect x="27" y="9" width="1" height="1"/>
+            <rect x="2" y="11" width="2" height="1"/><rect x="6" y="11" width="1" height="2"/><rect x="8" y="11" width="1" height="1"/><rect x="12" y="11" width="2" height="1"/><rect x="16" y="11" width="1" height="2"/><rect x="19" y="11" width="3" height="1"/><rect x="23" y="11" width="1" height="2"/><rect x="26" y="11" width="2" height="1"/>
+            <rect x="0" y="13" width="1" height="2"/><rect x="3" y="13" width="2" height="1"/><rect x="7" y="13" width="2" height="1"/><rect x="10" y="13" width="1" height="2"/><rect x="13" y="13" width="3" height="1"/><rect x="18" y="13" width="1" height="2"/><rect x="21" y="13" width="2" height="1"/><rect x="25" y="13" width="1" height="2"/><rect x="28" y="13" width="1" height="1"/>
+            <rect x="2" y="15" width="1" height="2"/><rect x="5" y="15" width="2" height="1"/><rect x="9" y="15" width="1" height="2"/><rect x="12" y="15" width="3" height="1"/><rect x="17" y="15" width="2" height="1"/><rect x="20" y="15" width="1" height="2"/><rect x="23" y="15" width="3" height="1"/><rect x="27" y="15" width="1" height="2"/>
+            <rect x="0" y="17" width="2" height="1"/><rect x="4" y="17" width="1" height="2"/><rect x="7" y="17" width="1" height="1"/><rect x="11" y="17" width="2" height="1"/><rect x="14" y="17" width="1" height="2"/><rect x="17" y="17" width="3" height="1"/><rect x="21" y="17" width="1" height="2"/><rect x="24" y="17" width="2" height="1"/><rect x="27" y="17" width="1" height="1"/>
+            <rect x="9" y="19" width="1" height="2"/><rect x="12" y="19" width="2" height="1"/><rect x="16" y="19" width="1" height="2"/><rect x="19" y="19" width="3" height="1"/><rect x="23" y="19" width="1" height="2"/><rect x="26" y="19" width="1" height="1"/>
+            <rect x="9" y="23" width="2" height="1"/><rect x="13" y="23" width="1" height="2"/><rect x="16" y="23" width="3" height="1"/><rect x="20" y="23" width="1" height="2"/><rect x="23" y="23" width="1" height="2"/><rect x="26" y="23" width="2" height="1"/>
+            <rect x="10" y="25" width="1" height="2"/><rect x="12" y="25" width="2" height="1"/><rect x="15" y="25" width="1" height="2"/><rect x="18" y="25" width="2" height="1"/><rect x="21" y="25" width="1" height="2"/><rect x="25" y="25" width="3" height="1"/>
+            <rect x="9" y="27" width="3" height="1"/><rect x="13" y="27" width="1" height="1"/><rect x="16" y="27" width="1" height="1"/><rect x="19" y="27" width="2" height="1"/><rect x="22" y="27" width="1" height="1"/><rect x="25" y="27" width="1" height="1"/><rect x="27" y="27" width="2" height="1"/>
+          </g>
+        </svg>
+      </div>
+      <div class="count"><b>34</b> of 38 invited connected</div>
+    </div>
+
+    <div class="bottom">
+      <div class="progress">
+        <span class="dot done"></span>
+        <span class="dot cur"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span style="margin-left:12px">Step 2 of 5</span>
+      </div>
+      <div class="anon">
+        <i data-lucide="sparkles"></i>
+        AI recap at session close · Workers AI on Cloudflare
+      </div>
+      <div class="right">
+        <i data-lucide="lock" style="width:18px;height:18px"></i>
+        Anonymity: Full · Consent recorded
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  lucide.createIcons();
+  const stage = document.getElementById('stage');
+  function fit() {
+    const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = `scale(${s})`;
+  }
+  fit();
+  window.addEventListener('resize', fit);
+</script>
+</body>
+</html>
