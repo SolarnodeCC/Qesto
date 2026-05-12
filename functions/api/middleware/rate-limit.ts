@@ -10,7 +10,7 @@
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 
-export type RateLimitNamespace = 'auth' | 'session-create' | 'join'
+export type RateLimitNamespace = 'auth' | 'session-create' | 'join' | 'kb-search'
 
 export type RateLimitOptions = {
   namespace: RateLimitNamespace

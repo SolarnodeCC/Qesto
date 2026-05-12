@@ -38,7 +38,12 @@ _Last verified: 2026-04-30 (UTC)_
 - **D1**: primary relational source (sessions, billing, events).
 - **KV namespaces**: users/sessions/teams/templates/decisions/audit/actions.
 - **DO Storage**: hot session state during live operations.
-- **Vectorize**: semantic search for decisions.
+- **Vectorize**: two indexes —
+  - `DECISIONS_VECTORIZE` (768-d cosine): post-session decision similarity.
+  - `KB_VECTORIZE` (768-d cosine, ADR-040): semantic search over `knowledge-base/`
+    docs. Index is mirrored by `kb_documents` + `kb_chunks` in D1; chunk text
+    lives in D1 only (Vectorize metadata kept under 1 KB per vector). Query
+    pipeline in `services/kbSearchService.ts`.
 
 ## 3. Status mapping
 - D1/KV: `draft | active | closed | archived`

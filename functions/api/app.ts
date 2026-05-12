@@ -11,6 +11,7 @@ import { mountAIInsightsRoutes } from './routes/ai-insights'
 import { mountTemplateRoutes } from './routes/templates'
 import { mountTeamRoutes } from './routes/teams'
 import { mountUserRoutes } from './routes/users'
+import { mountKnowledgeBaseRoutes } from './routes/knowledge-base'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
@@ -170,6 +171,7 @@ export function createApp() {
   mountGamificationRoutes(app)
   mountAIInsightsRoutes(app)
   mountUserRoutes(app)
+  mountKnowledgeBaseRoutes(app)
 
   return app
 }
