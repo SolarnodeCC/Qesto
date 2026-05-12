@@ -16,6 +16,12 @@ export type InsightsInput = {
   openResponses: string[] // raw free-text responses
   pollBreakdown?: { prompt: string; topLabels: string[] }[] // up to 5 poll prompts with their top labels
   similarSessionTitles?: string[] // from Vectorize semantic search, best-effort
+  /**
+   * Optional RAG context block (markdown) produced by `getRagContext()`.
+   * When present, the prompt is grounded against knowledge-base passages.
+   * Best-effort — the analyzer must work without it.
+   */
+  kbContext?: string
 }
 
 export type InsightTheme = {
