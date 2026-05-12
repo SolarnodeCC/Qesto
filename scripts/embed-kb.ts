@@ -303,8 +303,8 @@ async function embedViaAPI(text: string): Promise<number[]> {
     )
   }
 
-  const result = (await response.json()) as { data?: number[][] }
-  const vector = result.data?.[0]
+  const result = (await response.json()) as { result?: { data?: number[][] } }
+  const vector = result.result?.data?.[0]
   if (!vector || vector.length !== 768) {
     throw new Error('Invalid embedding response')
   }
