@@ -103,6 +103,10 @@ binding = "AI"
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
 
+[[vectorize]]
+binding = "KB_VECTORIZE"
+index_name = "qesto-kb-production"
+
 [[analytics_engine_datasets]]
 binding = "METRICS_AE"
 dataset = "qesto_metrics"
