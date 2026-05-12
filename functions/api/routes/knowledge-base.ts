@@ -5,6 +5,8 @@
 //   GET  /documents/:doc_id        — public metadata for a single document
 //   GET  /documents/:doc_id/chunks — full chunk text (admin only)
 //
+// Bulk vector sync (Phase 1) is in /api/admin/kb-sync (admin routes).
+//
 // This route file is intentionally thin: it parses the body, validates auth,
 // then delegates to `KbSearchService`. Re-ranking, embedding, and IO live in
 // the service / repository layer. Audit gate: route handlers may only do
@@ -12,7 +14,7 @@
 
 import { Hono } from 'hono'
 import { fail, ok } from '../lib/http'
-import { adminMiddleware, type AdminVariables } from '../middleware/admin'
+import { adminMiddleware } from '../middleware/admin'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { RbacVariables } from '../middleware/rbac'
@@ -24,7 +26,7 @@ import type { KbSearchRequest, KbSearchResponse, KbStatus, KbType } from '../typ
 
 // Must match the Vars shape used in app.ts so this sub-router can be
 // composed into the parent without a structural mismatch.
-type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
+type Vars = AuthVariables & PlanVariables & Partial<RbacVariables>
 
 function parseTagsField(value: unknown): string[] | undefined {
   if (value === undefined || value === null) return undefined
@@ -166,64 +168,6 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
       .all<Record<string, unknown>>()
 
     return ok(c, { doc_id: docId, chunks: results ?? [] })
-  })
-
-  // POST /upsert-vectors — Bulk vector sync via Worker Vectorize binding.
-  // Syncs embedding vectors to Vectorize index using the env.KB_VECTORIZE binding.
-  // This is more reliable than the REST API which has persistent 400 errors.
-  app.post('/upsert-vectors', async (c) => {
-    // Auth via KB_ADMIN_KEY secret (set via wrangler versions secret put)
-    const adminKey = c.req.header('x-admin-key')
-    const expectedKey = c.env.KB_ADMIN_KEY
-
-    if (!adminKey || !expectedKey || adminKey !== expectedKey) {
-      return fail(c, 'unauthorized', 'x-admin-key header required and must match', 401)
-    }
-    let payload: unknown
-    try {
-      payload = await c.req.json()
-    } catch {
-      return fail(c, 'invalid_body', 'Body must be valid JSON array', 400)
-    }
-
-    if (!Array.isArray(payload)) {
-      return fail(c, 'invalid_body', 'Body must be an array of vectors', 400)
-    }
-
-    const vectors = payload.filter(
-      (v): v is { id: string; values: number[]; metadata: Record<string, unknown> } =>
-        v && typeof v.id === 'string' && Array.isArray(v.values) && typeof v.metadata === 'object',
-    )
-
-    if (vectors.length === 0) {
-      return fail(c, 'invalid_body', 'No valid vectors in payload', 400)
-    }
-
-    try {
-      const batchSize = 100
-      let upsetCount = 0
-
-      for (let i = 0; i < vectors.length; i += batchSize) {
-        const batch = vectors.slice(i, i + batchSize)
-        // Use Worker binding to upsert (this avoids the REST API content-type issue)
-        await c.env.KB_VECTORIZE.upsert(batch)
-        upsetCount += batch.length
-      }
-
-      return ok(c, {
-        message: 'Vectorize upsert complete',
-        vectorsUpsetCount: upsetCount,
-        batches: Math.ceil(upsetCount / batchSize),
-      })
-    } catch (err) {
-      console.error('[kb-upsert-vectors] Error:', err)
-      return fail(
-        c,
-        'vectorize_error',
-        `Vectorize upsert failed: ${(err as Error).message}`,
-        500,
-      )
-    }
   })
 
   parent.route('/api/knowledge-base', app)
