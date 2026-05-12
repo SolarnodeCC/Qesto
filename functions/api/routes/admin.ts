@@ -14,8 +14,9 @@
 //   GET  /api/admin/ops/summary          — service health + reliability + issue pulse
 //   GET  /api/admin/analytics            — time-series, breakdowns, cost
 //   GET  /api/admin/sprint19-baseline    — AI wizard + Launchpad KPI baseline
+//   POST /api/admin/kb-sync              — Phase 1 bulk vector sync to Vectorize (ADR-040)
 //
-// Auth: authMiddleware + adminMiddleware (owner | admin role).
+// Auth: authMiddleware + adminMiddleware (owner | admin role), except /kb-sync (uses x-admin-key header).
 
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
@@ -1130,6 +1131,109 @@ export function mountAdminRoutes(parent: any) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to compute Sprint 19 baseline'
       return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
+    }
+  })
+
+  // POST /kb-sync — Phase 1 bulk vector sync to Vectorize.
+  // Admin-only endpoint (requires x-admin-key header matching KB_ADMIN_KEY secret).
+  // Accepts JSON array of { id, values: number[], metadata } vectors from embed-kb.ts.
+  // Uses Worker Vectorize binding (more reliable than REST API).
+  app.post('/kb-sync', async (c) => {
+    const traceId = c.get('trace_id')!
+    const adminKey = c.req.header('x-admin-key')
+    const expectedKey = c.env.KB_ADMIN_KEY
+
+    // Verify admin key
+    if (!adminKey || !expectedKey || adminKey !== expectedKey) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'unauthorized', message: 'x-admin-key header required and must match KB_ADMIN_KEY' },
+          trace_id: traceId,
+        },
+        401,
+      )
+    }
+
+    // Parse body
+    let vectors: unknown
+    try {
+      vectors = await c.req.json()
+    } catch {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_body', message: 'Body must be valid JSON array' },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+
+    if (!Array.isArray(vectors)) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_body', message: 'Body must be an array of vectors' },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+
+    // Filter and validate vector objects
+    const validVectors = vectors.filter(
+      (v): v is { id: string; values: number[]; metadata: Record<string, unknown> } =>
+        v && typeof v.id === 'string' && Array.isArray(v.values) && typeof v.metadata === 'object',
+    )
+
+    if (validVectors.length === 0) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_body', message: 'No valid vectors in payload' },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+
+    try {
+      // Upsert to Vectorize using Worker binding
+      const batchSize = 100
+      let totalUpserted = 0
+
+      for (let i = 0; i < validVectors.length; i += batchSize) {
+        const batch = validVectors.slice(i, i + batchSize)
+        await c.env.KB_VECTORIZE.upsert(batch)
+        totalUpserted += batch.length
+      }
+
+      return c.json(
+        {
+          ok: true,
+          data: {
+            message: 'Vectorize upsert complete',
+            vectors_upserted: totalUpserted,
+            batches: Math.ceil(totalUpserted / batchSize),
+          },
+          trace_id: traceId,
+        },
+        200,
+      )
+    } catch (err) {
+      console.error('[kb-sync] Vectorize upsert failed:', err)
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'vectorize_error',
+            message: `Vectorize upsert failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+          },
+          trace_id: traceId,
+        },
+        500,
+      )
     }
   })
 
