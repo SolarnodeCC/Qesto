@@ -1,0 +1,193 @@
+{
+  "main": {
+    "id": "89a1e982edddd1b5",
+    "type": "split",
+    "children": [
+      {
+        "id": "1915d4ac5d156905",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0d97f3b61ef23c06",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "security/PHASE4_AUDIT.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "PHASE4_AUDIT"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "321aef3ceb1bad89",
+    "type": "split",
+    "children": [
+      {
+        "id": "d1eef9a4c807d4bc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "acf3e0838a337e54",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Verkenner"
+            }
+          },
+          {
+            "id": "36543d9b63aab58c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Zoeken"
+            }
+          },
+          {
+            "id": "d2cda525b315d65a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bladwijzers"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "5e82bfbf5fc838cb",
+    "type": "split",
+    "children": [
+      {
+        "id": "d66eef8f3990f97d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "2cadca6cab7a82e4",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "security/PHASE4_AUDIT.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Terugverwijzingen voor PHASE4_AUDIT"
+            }
+          },
+          {
+            "id": "057eb5db56b0c28f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "security/PHASE4_AUDIT.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Uitgaande verwijzingen van PHASE4_AUDIT"
+            }
+          },
+          {
+            "id": "e5599b542e14874d",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Labels"
+            }
+          },
+          {
+            "id": "3ee105dc9ff2b82d",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Alle eigenschappen"
+            }
+          },
+          {
+            "id": "209a943532974a2e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "security/PHASE4_AUDIT.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Overzicht van PHASE4_AUDIT"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open snel wisselen": false,
+      "graph:Open grafiek weergave": false,
+      "canvas:Nieuw doek aanmaken": false,
+      "daily-notes:Open de notitie van vandaag": false,
+      "templates:Sjabloon invoegen": false,
+      "command-palette:Open opdrachtenpaneel": false,
+      "bases:Nieuwe basis maken": false
+    }
+  },
+  "active": "0d97f3b61ef23c06",
+  "lastOpenFiles": [
+    "specifications/domain/I18N_ARCHITECTURE_CONTRACT.md",
+    "specifications/README.md",
+    "api/API_FULL.md",
+    "ai-context/reference/AGENT_SKILL_IMPLEMENTATION_STEPS.md",
+    "adr/ADR-0001-do-per-session.md"
+  ]
+}
