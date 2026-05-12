@@ -168,17 +168,16 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
     return ok(c, { doc_id: docId, chunks: results ?? [] })
   })
 
-  // POST /upsert-vectors — Bulk vector sync endpoint (admin only).
-  // Syncs embedding vectors to Vectorize via Worker binding.
-  // Expected body: array of { id, values: number[], metadata } objects from embed-kb.ts
-  // Expected header: x-api-key with admin token (pass any value for initial sync)
+  // POST /upsert-vectors — Bulk vector sync via Worker Vectorize binding.
+  // Syncs embedding vectors to Vectorize index using the env.KB_VECTORIZE binding.
+  // This is more reliable than the REST API which has persistent 400 errors.
   app.post('/upsert-vectors', async (c) => {
-    // Operational endpoint for Phase 1 bulk embedding sync.
-    // In production, this should be protected by Cloudflare Access or similar.
-    // For now, accept any API key (real auth will be added in Phase 4).
-    const apiKey = c.req.header('x-api-key')
-    if (!apiKey) {
-      return fail(c, 'unauthorized', 'x-api-key header required', 401)
+    // Auth via KB_ADMIN_KEY secret (set via wrangler versions secret put)
+    const adminKey = c.req.header('x-admin-key')
+    const expectedKey = c.env.KB_ADMIN_KEY
+
+    if (!adminKey || !expectedKey || adminKey !== expectedKey) {
+      return fail(c, 'unauthorized', 'x-admin-key header required and must match', 401)
     }
     let payload: unknown
     try {

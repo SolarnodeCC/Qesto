@@ -36,8 +36,9 @@ export type Env = {
   /** Sprint 25 guard: enables versioned LIVE energizer WebSocket broadcasts. */
   LIVE_ENERGIZERS_ENABLED?: string
 
-  // Secrets (wrangler pages secret put ...)
+  // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string
+  KB_ADMIN_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string
   GOOGLE_CLIENT_ID?: string
