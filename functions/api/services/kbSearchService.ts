@@ -24,7 +24,7 @@ import type { KbQueryFilter, KbVectorMatch, KbVectorRepository } from '../reposi
 // we have evaluation telemetry. Keep them in `[0, 1]` and summing to ~1.
 
 export const KB_EMBED_MODEL = '@cf/baai/bge-m3' as const
-export const KB_EMBED_DIM = 768
+export const KB_EMBED_DIM = 1024
 export const KB_EMBED_TIMEOUT_MS = 3_000
 export const KB_DEFAULT_LIMIT = 5
 export const KB_MAX_LIMIT = 20
