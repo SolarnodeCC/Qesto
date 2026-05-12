@@ -414,8 +414,17 @@ async function main() {
 
   if (!isDryRun && vectorUpserts.length > 0) {
     console.log()
-    console.log(`Vectors prepared for Vectorize upsert: ${vectorUpserts.length}`)
-    console.log(`Use POST /api/knowledge-base/upsert-vectors to sync to Vectorize via Worker binding`)
+    console.log(`Saving ${vectorUpserts.length} vectors to disk...`)
+
+    const vectorsPath = path.join(process.cwd(), '.kb-vectors-pending.json')
+    fs.writeFileSync(vectorsPath, JSON.stringify(vectorUpserts, null, 2))
+    console.log(`✓ Vectors saved to ${vectorsPath}`)
+    console.log()
+    console.log(`Next: POST /api/knowledge-base/upsert-vectors with payload to sync to Vectorize`)
+    console.log(`curl -X POST https://api.qesto.cc/api/knowledge-base/upsert-vectors \\`)
+    console.log(`  -H "Authorization: Bearer <token>" \\`)
+    console.log(`  -H "Content-Type: application/json" \\`)
+    console.log(`  -d @.kb-vectors-pending.json`)
   }
 
   console.log()

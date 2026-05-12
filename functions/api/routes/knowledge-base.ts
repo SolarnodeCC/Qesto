@@ -168,6 +168,56 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
     return ok(c, { doc_id: docId, chunks: results ?? [] })
   })
 
+  // POST /upsert-vectors — admin only. Syncs embedding vectors to Vectorize via Worker binding.
+  // Expected body: array of { id, values: number[], metadata } objects from embed-kb.ts
+  app.post('/upsert-vectors', authMiddleware, adminMiddleware, async (c) => {
+    let payload: unknown
+    try {
+      payload = await c.req.json()
+    } catch {
+      return fail(c, 'invalid_body', 'Body must be valid JSON array', 400)
+    }
+
+    if (!Array.isArray(payload)) {
+      return fail(c, 'invalid_body', 'Body must be an array of vectors', 400)
+    }
+
+    const vectors = payload.filter(
+      (v): v is { id: string; values: number[]; metadata: Record<string, unknown> } =>
+        v && typeof v.id === 'string' && Array.isArray(v.values) && typeof v.metadata === 'object',
+    )
+
+    if (vectors.length === 0) {
+      return fail(c, 'invalid_body', 'No valid vectors in payload', 400)
+    }
+
+    try {
+      const batchSize = 100
+      let upsetCount = 0
+
+      for (let i = 0; i < vectors.length; i += batchSize) {
+        const batch = vectors.slice(i, i + batchSize)
+        // Use Worker binding to upsert (this avoids the REST API content-type issue)
+        await c.env.KB_VECTORIZE.upsert(batch)
+        upsetCount += batch.length
+      }
+
+      return ok(c, {
+        message: 'Vectorize upsert complete',
+        vectorsUpsetCount: upsetCount,
+        batches: Math.ceil(upsetCount / batchSize),
+      })
+    } catch (err) {
+      console.error('[kb-upsert-vectors] Error:', err)
+      return fail(
+        c,
+        'vectorize_error',
+        `Vectorize upsert failed: ${(err as Error).message}`,
+        500,
+      )
+    }
+  })
+
   parent.route('/api/knowledge-base', app)
 }
 
