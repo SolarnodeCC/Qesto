@@ -365,12 +365,13 @@ async function main() {
           console.log(`  Sample: "${chunks[0].headingPath}" (${chunks[0].tokenEstimate} tokens)`)
         }
       } else {
-        // Prepare Vectorize upserts
+        // Embed and save chunks to D1 (Vectorize sync happens later via API route)
         for (const chunk of chunks) {
           try {
             console.log(`  Embedding: ${chunk.hash.slice(0, 8)}...`)
             const vector = await embedViaAPI(formatEmbeddingInput(chunk, meta))
 
+            // Store for later batch insert to D1
             vectorUpserts.push({
               id: `${meta.id}#${chunk.chunkIndex}`,
               values: vector,
@@ -413,29 +414,8 @@ async function main() {
 
   if (!isDryRun && vectorUpserts.length > 0) {
     console.log()
-    console.log(`Upserting ${vectorUpserts.length} vectors to Vectorize...`)
-
-    const batchSize = 500
-    for (let i = 0; i < vectorUpserts.length; i += batchSize) {
-      const batch = vectorUpserts.slice(i, i + batchSize)
-      const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/indexes/${vectorizeIndexName}/upsert`
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(batch),
-      })
-
-      if (!response.ok) {
-        console.error(`Vectorize upsert failed: ${response.status}`)
-        console.error(await response.text())
-      } else {
-        console.log(`  ✓ Batch ${Math.floor(i / batchSize) + 1}: ${batch.length} vectors`)
-      }
-    }
+    console.log(`Vectors prepared for Vectorize upsert: ${vectorUpserts.length}`)
+    console.log(`Use POST /api/knowledge-base/upsert-vectors to sync to Vectorize via Worker binding`)
   }
 
   console.log()
