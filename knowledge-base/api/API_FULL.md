@@ -180,3 +180,45 @@ Backed by the `KB_VECTORIZE` index (768-d, cosine, `@cf/baai/bge-m3`) +
 - Returns full chunk text for diagnostics. Not for end-user surfaces — chunk
   bodies may include unreleased product content.
 - Response: `{ doc_id, chunks: [{ chunk_id, chunk_index, heading_path, text, ... }] }`.
+
+## 8. RAG context injection (ADR-040 Phase 3)
+
+The `getRagContext()` helper in `functions/api/lib/rag/getRagContext.ts` is an
+**internal** API (not an HTTP route). It wraps `KbSearchService.search()` with
+a token-budgeted markdown packer so AI endpoints and sub-agents can ground
+prompts in knowledge-base passages.
+
+Signature:
+```ts
+export async function getRagContext(
+  env: Env,
+  query: string,
+  opts?: { maxTokens?: number; domain?: string; type?: KbType; limit?: number },
+): Promise<{ contextBlock: string; sources: KbSource[] }>
+```
+
+See `knowledge-base/ai-context/RAG_USAGE.md` for full usage, token budgeting
+guidance, citation rendering, and troubleshooting.
+
+### POST /api/sessions/:sessionId/insights/analyze — RAG-grounded
+Phase 3 adds a best-effort RAG grounding pass to the existing insights
+analyze endpoint:
+
+- Before calling `extractThemes()`, the route fetches a KB context block via
+  `getRagContext(c.env, sessionTitle, { maxTokens: 800, domain: 'product' })`.
+- The block is injected as a "Background knowledge" section ahead of the
+  free-text responses in the user prompt.
+- Failures (`embedding_unavailable`, `embedding_failed`, etc.) are caught and
+  logged as `rag.context.skip`; the analyzer falls back to ungrounded mode
+  and the user-facing response is unchanged structurally.
+- Response payload gains a new optional field:
+  ```json
+  "kb_sources": [
+    { "doc_id": "ADR-040",
+      "file_path": "/knowledge-base/adr/ADR-040-...md",
+      "title":     "KB Vector Pipeline",
+      "heading_path": "Decision > Index Design",
+      "similarity": 0.91 }
+  ]
+  ```
+  Empty array when RAG returned no hits or was unavailable.

@@ -43,7 +43,10 @@ _Last verified: 2026-04-30 (UTC)_
   - `KB_VECTORIZE` (768-d cosine, ADR-040): semantic search over `knowledge-base/`
     docs. Index is mirrored by `kb_documents` + `kb_chunks` in D1; chunk text
     lives in D1 only (Vectorize metadata kept under 1 KB per vector). Query
-    pipeline in `services/kbSearchService.ts`.
+    pipeline in `services/kbSearchService.ts`. RAG prompt-injection helper for
+    AI endpoints and sub-agents in `lib/rag/getRagContext.ts` (ADR-040 Phase 3) —
+    grounds insights theme extraction with KB excerpts; see
+    `ai-context/RAG_USAGE.md`.
 
 ## 3. Status mapping
 - D1/KV: `draft | active | closed | archived`

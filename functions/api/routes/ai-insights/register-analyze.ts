@@ -11,6 +11,8 @@ import {
   embedAndFindSimilarSessionTitles,
   upsertInsightsSessionVector,
 } from '../../lib/insights-vectorize'
+import { getRagContext } from '../../lib/rag/getRagContext'
+import type { KbSource } from '../../types/knowledge-base'
 import { toInsightsInput, type SessionBundle } from '../../lib/session-bundle'
 import { writeEvent } from '../../lib/observability'
 import { sanitizeError } from '../../lib/error-handler'
@@ -22,6 +24,7 @@ import {
   AI_RATE_LIMIT,
   INSIGHTS_CACHE_TTL_SECONDS,
   INSIGHTS_MODEL,
+  RAG_INSIGHTS_MAX_TOKENS,
   insightsCacheKey,
 } from './constants'
 import type { AiInsightsApp } from './types'
@@ -77,6 +80,41 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         )
       }
 
+      // RAG grounding — best-effort. ADR-040 Phase 3.
+      //   • Query: session title (most semantically dense signal we have
+      //     without burning tokens on the response set).
+      //   • Filter: domain='product' — insights typically map to product/UX
+      //     specs. We do NOT filter by type so any spec/ADR/guide can ground.
+      //   • Failure modes (timeout, embedding down, no hits) all degrade to
+      //     `kbContext = ''` and the analyzer falls back to ungrounded mode.
+      let kbContext = ''
+      let kbSources: KbSource[] = []
+      try {
+        const ragStart = Date.now()
+        const ragResult = await getRagContext(c.env, sessionResult.title, {
+          maxTokens: RAG_INSIGHTS_MAX_TOKENS,
+          domain: 'product',
+        })
+        kbContext = ragResult.contextBlock
+        kbSources = ragResult.sources
+        writeEvent(c.env.METRICS_AE, {
+          name: 'ai.inference',
+          userId: user.sub,
+          plan: userPlan as PlanTier,
+          durationMs: Date.now() - ragStart,
+          traceId: trace_id,
+        })
+      } catch (ragErr) {
+        // Includes embedding_unavailable, embedding_failed, vector_search_failed.
+        // Do not surface to the caller — analyzer must still work without KB.
+        console.log(
+          JSON.stringify({
+            event: 'rag.context.skip',
+            reason: (ragErr as Error).message,
+          }),
+        )
+      }
+
       const bundle: SessionBundle = {
         sessionId,
         sessionTitle: sessionResult.title,
@@ -84,6 +122,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         openResponses,
         pollBreakdown,
         similarSessionTitles,
+        ...(kbContext.length > 0 ? { kbContext } : {}),
       }
 
       const insightsInput = toInsightsInput(bundle)
@@ -123,6 +162,10 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         model: INSIGHTS_MODEL,
         themes,
         follow_ups: [] as string[],
+        // ADR-040 Phase 3: cite KB chunks that grounded the analysis. Empty
+        // when RAG was unavailable or returned no hits; caller treats it as
+        // optional metadata.
+        kb_sources: kbSources,
       }
 
       await writeKvJson(c.env.DECISIONS_KV, insightsCacheKey(sessionId), payload, {

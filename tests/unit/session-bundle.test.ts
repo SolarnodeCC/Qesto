@@ -97,4 +97,22 @@ describe('session-bundle/toInsightsInput', () => {
     toInsightsInput(bundle)
     expect(bundle.pollBreakdown[0].options).toEqual(original)
   })
+
+  // ADR-040 Phase 3: optional RAG grounding pass-through.
+  it('forwards kbContext to InsightsInput when present', () => {
+    const bundle: SessionBundle = { ...BASE, kbContext: '## Knowledge Base Context\n\n### Doc\nBody' }
+    const input = toInsightsInput(bundle)
+    expect(input.kbContext).toBe('## Knowledge Base Context\n\n### Doc\nBody')
+  })
+
+  it('omits kbContext when source bundle has none', () => {
+    const input = toInsightsInput(BASE)
+    expect(input.kbContext).toBeUndefined()
+  })
+
+  it('omits kbContext when source value is whitespace-only', () => {
+    const bundle: SessionBundle = { ...BASE, kbContext: '   \n  ' }
+    const input = toInsightsInput(bundle)
+    expect(input.kbContext).toBeUndefined()
+  })
 })
