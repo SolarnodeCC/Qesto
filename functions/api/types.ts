@@ -59,7 +59,7 @@ export type Env = {
   SESSION_ROOM: DurableObjectNamespace
   AI: Ai
   DECISIONS_VECTORIZE: VectorizeIndex
-  HELP_VECTORIZE?: VectorizeIndex
+  HELP_VECTORIZE: VectorizeIndex
   METRICS_KV?: KVNamespace
   METRICS_AE?: AnalyticsEngineDataset
 }

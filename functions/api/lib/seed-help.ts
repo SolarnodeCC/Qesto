@@ -1,5 +1,4 @@
-import type { D1Database, VectorizeIndex } from '@cloudflare/workers-types'
-import type { Ai } from '@cloudflare/workers-ai'
+import type { D1Database, VectorizeIndex, Ai } from '@cloudflare/workers-types'
 
 // Simple ULID-like ID generator (128-bit timestamp + random)
 function generateId(): string {
@@ -34,12 +33,12 @@ const EMBEDDING_TIMEOUT_MS = 10_000
 async function embedText(ai: Ai, text: string): Promise<number[] | null> {
   try {
     const start = Date.now()
-    const result = await Promise.race([
+    const result = (await Promise.race([
       ai.run(EMBEDDING_MODEL, { text }),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Embedding timeout')), EMBEDDING_TIMEOUT_MS)
       ),
-    ])
+    ])) as any
 
     const elapsed = Date.now() - start
     console.log(`[seed] embedded "${text.substring(0, 50)}..." in ${elapsed}ms`)
@@ -78,7 +77,7 @@ export async function seedHelpDocuments(
 
     // Embed the document (title + excerpt for RAG retrieval)
     const text_to_embed = `${doc.title} ${doc.excerpt}`
-    vector = await embedText(ai, text_to_embed)
+    vector = await embedText(ai as any, text_to_embed)
 
     // Insert into D1
     try {
