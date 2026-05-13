@@ -304,9 +304,27 @@ function rowToCsv(row: MetricsSummaryRow): string {
 export function mountAdminRoutes(parent: any) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
 
-  // All admin routes require auth + admin role.
-  app.use('*', authMiddleware)
-  app.use('*', adminMiddleware)
+  // All admin routes require auth + admin role, EXCEPT /kb-sync which uses x-admin-key header.
+  app.use('*', async (c, next) => {
+    // Bypass auth/admin middleware for /kb-sync endpoint (Phase 1 vector sync)
+    if (c.req.path.endsWith('/kb-sync') && c.req.method === 'POST') {
+      // Set dummy variables so the context matches expected shape
+      c.set('user', {} as AuthVariables['user'])
+      await next()
+      return
+    }
+    // Apply auth middleware to all other admin routes
+    await authMiddleware(c, next)
+  })
+  app.use('*', async (c, next) => {
+    // Skip adminMiddleware for /kb-sync (handled by x-admin-key check instead)
+    if (c.req.path.endsWith('/kb-sync') && c.req.method === 'POST') {
+      await next()
+      return
+    }
+    // Apply admin middleware to all other admin routes
+    await adminMiddleware(c, next)
+  })
 
   // ── GET /api/admin/metrics/live ──────────────────────────────────────────────
   // Returns a KV snapshot for the last 5 minutes.
