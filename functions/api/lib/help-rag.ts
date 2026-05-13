@@ -6,6 +6,7 @@
 import type { D1Database, Ai } from '@cloudflare/workers-types'
 import type { Env } from '../types'
 import { embedAndFindSimilarDocuments } from './help-vectorize'
+import { getActivePrompt } from './help-prompts'
 
 export class HelpAIError extends Error {
   constructor(message: string) {
@@ -115,7 +116,7 @@ export function buildSystemPrompt(
   topic: string,
   userScope: 'free' | 'starter' | 'team',
   documents: HelpDocument[],
-  promptVersion?: { content: string },
+  promptVersion?: { content: string; topic?: string | null } | null,
 ): string {
   const basePrompt = promptVersion?.content ||
     `You are Qesto Help, a friendly assistant helping users with live team session software.
@@ -207,10 +208,12 @@ export async function askHelpAI(
   question: string,
   userScope: 'free' | 'starter' | 'team',
   topic?: string,
-  promptVersion?: { content: string },
 ): Promise<{ answer: string; sources: Array<{ documentId: string; title: string; relevance: number }> }> {
   // Retrieve documents
   const retrieval = await retrieveDocuments(ai, vectorize, db, question, userScope)
+
+  // Get active prompt version (topic-specific or global fallback)
+  const promptVersion = await getActivePrompt(db, topic)
 
   // Build system prompt
   const systemPrompt = buildSystemPrompt(topic || 'general', userScope, retrieval.documents, promptVersion)

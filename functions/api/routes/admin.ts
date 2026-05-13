@@ -24,6 +24,7 @@ import { queryAuditEvents, recordAuditEvent } from '../lib/audit'
 import { ulid } from '../lib/ulid'
 import type { Env } from '../types'
 import { readKvJson } from '../lib/kv'
+import { registerHelpAdminRoutes } from './admin/help'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -304,6 +305,9 @@ export function mountAdminRoutes(parent: any) {
   // All admin routes require auth + admin role.
   app.use('*', authMiddleware)
   app.use('*', adminMiddleware)
+
+  // Register help admin routes (review queue, prompt versions)
+  registerHelpAdminRoutes(app)
 
   // ── GET /api/admin/metrics/live ──────────────────────────────────────────────
   // Returns a KV snapshot for the last 5 minutes.
