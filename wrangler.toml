@@ -105,9 +105,10 @@ binding = "AI"
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
 
-[[vectorize]]
-binding = "HELP_VECTORIZE"
-index_name = "qesto-help"
+# HELP_VECTORIZE will be uncommented once the 'qesto-help' index is created in Cloudflare
+# [[vectorize]]
+# binding = "HELP_VECTORIZE"
+# index_name = "qesto-help"
 
 [[analytics_engine_datasets]]
 binding = "METRICS_AE"
