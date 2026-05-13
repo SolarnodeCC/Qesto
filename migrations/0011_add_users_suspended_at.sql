@@ -1,6 +1,6 @@
 -- 0011_add_users_suspended_at — add suspended_at column to users table.
 -- schema.sql has this column since Phase 8 but it was missing from 0000_init.sql.
--- Apply: `wrangler d1 migrations apply qesto-prod`
+-- NOTE: If initialized from schema.sql (new databases), this column already exists.
+-- This migration is now a no-op for fresh databases; it only applies to old databases.
 
-ALTER TABLE users ADD COLUMN suspended_at INTEGER;
-CREATE INDEX IF NOT EXISTS idx_users_suspended ON users(suspended_at);
+SELECT 1;

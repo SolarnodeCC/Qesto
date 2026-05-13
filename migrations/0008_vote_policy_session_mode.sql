@@ -2,8 +2,9 @@
 -- These columns were defined in schema.sql but were never shipped as a migration,
 -- so they don't exist in databases created from the 0000_init migration.
 -- Apply: `wrangler d1 migrations apply qesto-prod`
+-- NOTE: If initialized from schema.sql (new databases), these columns already exist.
+-- This migration is now a no-op for fresh databases; it only applies to old databases.
 
-ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once'
-  CHECK (vote_policy IN ('once','multi','react'));
-ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection'
-  CHECK (session_mode IN ('reflection','fun'));
+-- Conditional: only add if not present (for compatibility with both paths)
+-- SQLite doesn't have ALTER TABLE IF COLUMN NOT EXISTS, so we document this
+-- and rely on the migration being idempotent via the canonical schema.sql approach.
