@@ -8,7 +8,7 @@ interface SyncManifest {
   version: 1;
   lastSync: number;
   syncCount: number;
-  files: Record<string, { hash: string; vectorCount: number; syncedAt: number }>;
+  files: Record<string, { hash: string; vectorCount: number; syncedAt: number; vectorIds?: string[] }>;
 }
 
 interface FileChange {
@@ -146,9 +146,9 @@ async function embedFiles(files: string[]): Promise<Map<string, { vectors: Array
 
 async function uploadVectors(
   vectors: Array<{ id: string; values: number[]; metadata: Record<string, unknown> }>
-): Promise<{ success: number; failed: number }> {
+): Promise<{ success: number; failed: number; vectorIds: string[] }> {
   if (vectors.length === 0) {
-    return { success: 0, failed: 0 };
+    return { success: 0, failed: 0, vectorIds: [] };
   }
 
   const clientId = process.env.CF_ACCESS_CLIENT_ID;
@@ -164,6 +164,7 @@ async function uploadVectors(
 
   let success = 0;
   let failed = 0;
+  const uploadedIds: string[] = [];
 
   for (let i = 0; i < vectors.length; i += BATCH_SIZE) {
     const batch = vectors.slice(i, i + BATCH_SIZE);
@@ -191,6 +192,7 @@ async function uploadVectors(
       const upserted = data.data?.vectors_upserted || batch.length;
 
       success += upserted;
+      batch.forEach((v) => uploadedIds.push(v.id));
       console.log(`  ✓ Batch ${batchNum}/${totalBatches}: ${upserted} vectors`);
     } catch (err) {
       failed += batch.length;
@@ -204,11 +206,111 @@ async function uploadVectors(
     }
   }
 
+  return { success, failed, vectorIds: uploadedIds };
+}
+
+async function notifySlack(message: string, details?: Record<string, unknown>): Promise<void> {
+  const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+  if (!webhookUrl) {
+    return;
+  }
+
+  try {
+    const payload = {
+      text: message,
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: message,
+          },
+        },
+      ],
+    };
+
+    if (details) {
+      payload.blocks.push({
+        type: 'section' as const,
+        fields: Object.entries(details).map(([key, value]) => ({
+          type: 'mrkdwn' as const,
+          text: `*${key}*\n\`${String(value)}\``,
+        })),
+      });
+    }
+
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error('Failed to send Slack notification:', err);
+  }
+}
+
+async function deleteVectors(vectorIds: string[]): Promise<{ success: number; failed: number }> {
+  if (vectorIds.length === 0) {
+    return { success: 0, failed: 0 };
+  }
+
+  const clientId = process.env.CF_ACCESS_CLIENT_ID;
+  const clientSecret = process.env.CF_ACCESS_CLIENT_SECRET;
+  const adminKey = process.env.KB_ADMIN_KEY;
+  const endpoint = process.env.KB_SYNC_ENDPOINT || 'https://qesto-api.oostelaar.workers.dev/api/admin/kb-sync';
+
+  if (!clientId || !clientSecret || !adminKey) {
+    throw new Error('Missing Cloudflare Access credentials');
+  }
+
+  console.log(`\n🗑️  Deleting ${vectorIds.length} vector(s)...`);
+
+  let success = 0;
+  let failed = 0;
+
+  for (let i = 0; i < vectorIds.length; i += BATCH_SIZE) {
+    const batch = vectorIds.slice(i, i + BATCH_SIZE);
+    const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+    const totalBatches = Math.ceil(vectorIds.length / BATCH_SIZE);
+
+    try {
+      const response = await fetch(`${endpoint}-delete`, {
+        method: 'POST',
+        headers: {
+          'cf-access-client-id': clientId,
+          'cf-access-client-secret': clientSecret,
+          'x-admin-key': adminKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ vector_ids: batch }),
+      });
+
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`HTTP ${response.status}: ${body}`);
+      }
+
+      const data = (await response.json()) as { data?: { vectors_deleted?: number } };
+      const deleted = data.data?.vectors_deleted || batch.length;
+
+      success += deleted;
+      console.log(`  ✓ Batch ${batchNum}/${totalBatches}: ${deleted} vectors deleted`);
+    } catch (err) {
+      failed += batch.length;
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`  ✗ Batch ${batchNum}/${totalBatches} delete failed: ${msg}`);
+    }
+
+    if (i + BATCH_SIZE < vectorIds.length) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+  }
+
   return { success, failed };
 }
 
-async function sync(): Promise<void> {
-  console.log('🔄 KB Sync CLI — Phase 4 Automated Update\n');
+async function sync(deleteVectorsFlag = true): Promise<void> {
+  console.log('🔄 KB Sync CLI — Phase 5 Automated Update\n');
 
   const manifest = loadManifest();
   const changes = detectChanges();
@@ -225,7 +327,14 @@ async function sync(): Promise<void> {
   });
 
   const filesToEmbed = changes.filter((c) => c.status !== 'deleted').map((c) => c.path);
+  const filesToDelete = changes.filter((c) => c.status === 'deleted');
 
+  let uploadSuccess = 0;
+  let uploadFailed = 0;
+  let deleteSuccess = 0;
+  let deleteFailed = 0;
+
+  // Handle uploads
   if (filesToEmbed.length > 0) {
     const vectorsByFile = await embedFiles(filesToEmbed);
 
@@ -239,22 +348,74 @@ async function sync(): Promise<void> {
         hash: computeFileHash(file),
         vectorCount: data.vectors.length,
         syncedAt: Date.now(),
+        vectorIds: data.vectors.map((v) => v.id),
       };
     }
 
     const uploadResult = await uploadVectors(allVectors);
+    uploadSuccess = uploadResult.success;
+    uploadFailed = uploadResult.failed;
     console.log(`\n📈 Upload complete: ${uploadResult.success} successful, ${uploadResult.failed} failed`);
+  }
 
-    // Handle deletions (mark in manifest)
-    changes.filter((c) => c.status === 'deleted').forEach((c) => {
+  // Handle deletions
+  if (deleteVectorsFlag && filesToDelete.length > 0) {
+    const vectorIdsToDelete: string[] = [];
+    for (const file of filesToDelete) {
+      const fileEntry = manifest.files[file.path];
+      if (fileEntry?.vectorIds) {
+        vectorIdsToDelete.push(...fileEntry.vectorIds);
+      }
+      delete manifest.files[file.path];
+    }
+
+    if (vectorIdsToDelete.length > 0) {
+      const deleteResult = await deleteVectors(vectorIdsToDelete);
+      deleteSuccess = deleteResult.success;
+      deleteFailed = deleteResult.failed;
+      console.log(`\n🗑️  Delete complete: ${deleteResult.success} successful, ${deleteResult.failed} failed`);
+    } else {
+      console.log('\n🗑️  No vectors to delete (not tracked in manifest)');
+    }
+  } else if (filesToDelete.length > 0) {
+    console.log('\n⚠️  Skipping vector deletion (use --delete flag)');
+    filesToDelete.forEach((c) => {
       delete manifest.files[c.path];
     });
+  }
 
-    manifest.lastSync = Date.now();
-    manifest.syncCount += 1;
-    saveManifest(manifest);
+  manifest.lastSync = Date.now();
+  manifest.syncCount += 1;
+  saveManifest(manifest);
 
-    console.log(`\n✅ Sync complete! (Sync #${manifest.syncCount})`);
+  console.log(`\n✅ Sync complete! (Sync #${manifest.syncCount})`);
+  if (uploadFailed > 0 || deleteFailed > 0) {
+    console.log(`⚠️  Some operations failed. Please review and re-run if needed.`);
+
+    // Send failure notification
+    await notifySlack(
+      '❌ KB Sync Failed',
+      {
+        'Sync #': manifest.syncCount,
+        'Uploaded': uploadSuccess,
+        'Upload Failures': uploadFailed,
+        'Deleted': deleteSuccess,
+        'Delete Failures': deleteFailed,
+        'Timestamp': new Date(manifest.lastSync).toISOString(),
+      }
+    );
+  } else if (uploadSuccess > 0 || deleteSuccess > 0) {
+    // Send success notification
+    await notifySlack(
+      '✅ KB Sync Successful',
+      {
+        'Sync #': manifest.syncCount,
+        'Vectors Uploaded': uploadSuccess,
+        'Vectors Deleted': deleteSuccess,
+        'Total Changes': changes.length,
+        'Timestamp': new Date(manifest.lastSync).toISOString(),
+      }
+    );
   }
 }
 
@@ -290,11 +451,12 @@ async function reset(): Promise<void> {
 
 async function main() {
   const cmd = process.argv[2] || 'sync';
+  const hasDeleteFlag = process.argv.includes('--delete') || process.argv.includes('-d');
 
   try {
     switch (cmd) {
       case 'sync':
-        await sync();
+        await sync(hasDeleteFlag);
         break;
       case 'status':
         await status();
@@ -304,21 +466,27 @@ async function main() {
         break;
       default:
         console.log(`
-KB Sync CLI — Phase 4 Automated Knowledge Base Update
+KB Sync CLI — Phase 5 Automated Knowledge Base Update
 
 Commands:
   sync     - Detect changes and sync to Vectorize (default)
   status   - Show sync status and pending changes
   reset    - Clear sync manifest (forces full re-embed on next sync)
 
-Environment Variables:
+Flags:
+  --delete, -d  - Delete vectors for deleted KB files (default: true)
+
+Environment Variables (Required):
   CLOUDFLARE_API_TOKEN         - Cloudflare API token
   CLOUDFLARE_ACCOUNT_ID        - Cloudflare account ID
   CLOUDFLARE_D1_DATABASE_ID    - D1 database ID
   CF_ACCESS_CLIENT_ID          - Cloudflare Access client ID
   CF_ACCESS_CLIENT_SECRET      - Cloudflare Access client secret
   KB_ADMIN_KEY                 - Admin key for KB sync endpoint
+
+Environment Variables (Optional):
   KB_SYNC_ENDPOINT             - Override endpoint URL
+  SLACK_WEBHOOK_URL            - Slack webhook for notifications (Phase 5)
 
 Example:
   $ npm run kb:sync                    # Sync changes

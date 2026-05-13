@@ -111,6 +111,11 @@ index_name = "qesto-kb-production"
 binding = "METRICS_AE"
 dataset = "qesto_metrics"
 
+[triggers]
+# Phase 5: Scheduled KB sync via Cloudflare Workers Cron
+# Triggers daily at 02:00 UTC to check for KB changes and auto-sync to Vectorize
+crons = ["0 2 * * *"]
+
 # Preview env is intentionally not defined. Will be re-added in Phase 5 once
 # the staging D1/KV resources are provisioned (docs/DEPLOY_BOOTSTRAP.md).
 # Having a [env.preview] block today would make `wrangler versions upload`
