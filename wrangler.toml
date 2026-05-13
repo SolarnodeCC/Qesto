@@ -55,8 +55,8 @@ RESEND_FROM = "Qesto <login@qesto.cc>"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "qesto_2_db"
-database_id = "45b8f13f-7ba1-416b-bf95-1747fa9d4c12"
+database_name = "qesto_3_db"
+database_id = "d391bdd5-a03d-41bc-bc45-6b5f3bac1b1b"
 migrations_dir = "migrations"
 
 # KV — uncomment after `wrangler kv namespace create <BINDING>` for each and paste each id.
