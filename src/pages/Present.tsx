@@ -320,35 +320,41 @@ export default function Present() {
           {/* ── Results: bars, wordcloud, or open text ── */}
           {state.question?.kind === 'word_cloud' || state.question?.kind === 'open' ? (
             <div className="absolute top-[460px] left-[64px] right-[600px] max-h-96 flex flex-col z-10">
-              {Object.entries(state.results.counts).length > 0 ? (
-                <>
-                  <div className="flex-1 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 overflow-y-auto">
-                    {(() => {
-                      const allWords = Object.entries(state.results.counts)
-                      const topWords = getTopWords(allWords, 25)
-                      const maxCount = Math.max(...topWords.map(w => w[1]), 1)
-                      return topWords.map(([word, count]) => (
-                        <span
-                          key={word}
-                          style={{ fontSize: `${getWordFontSize(count, maxCount)}px` }}
-                          className={`font-bold leading-tight transition-all duration-500 shrink-0 ${hashWordColor(word)}`}
-                          title={`${word}: ${count}`}
-                          aria-label={`${word}, ${count} submission${count !== 1 ? 's' : ''}`}
-                        >
-                          {word}
-                        </span>
-                      ))
-                    })()}
+              {tallyVisible ? (
+                Object.entries(state.results.counts).length > 0 ? (
+                  <>
+                    <div className="flex-1 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 overflow-y-auto">
+                      {(() => {
+                        const allWords = Object.entries(state.results.counts)
+                        const topWords = getTopWords(allWords, 25)
+                        const maxCount = Math.max(...topWords.map(w => w[1]), 1)
+                        return topWords.map(([word, count]) => (
+                          <span
+                            key={word}
+                            style={{ fontSize: `${getWordFontSize(count, maxCount)}px` }}
+                            className={`font-bold leading-tight transition-all duration-500 shrink-0 ${hashWordColor(word)}`}
+                            title={`${word}: ${count}`}
+                            aria-label={`${word}, ${count} submission${count !== 1 ? 's' : ''}`}
+                          >
+                            {word}
+                          </span>
+                        ))
+                      })()}
+                    </div>
+                    {Object.entries(state.results.counts).length > 25 && (
+                      <p className="text-xs text-pulse-400 text-right pr-2 pb-2">
+                        Showing top 25 of {Object.entries(state.results.counts).length} unique responses
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full h-24 flex items-center justify-center">
+                    <p className="text-[24px] text-pulse-400 animate-pulse">Waiting for responses…</p>
                   </div>
-                  {Object.entries(state.results.counts).length > 25 && (
-                    <p className="text-xs text-pulse-400 text-right pr-2 pb-2">
-                      Showing top 25 of {Object.entries(state.results.counts).length} unique responses
-                    </p>
-                  )}
-                </>
+                )
               ) : (
                 <div className="w-full h-24 flex items-center justify-center">
-                  <p className="text-[24px] text-pulse-400 animate-pulse">Waiting for responses…</p>
+                  <p className="text-[24px] text-pulse-400">Tally hidden</p>
                 </div>
               )}
             </div>
