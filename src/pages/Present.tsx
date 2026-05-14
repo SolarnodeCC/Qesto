@@ -27,7 +27,13 @@ function hashWordColor(word: string): string {
 
 function getWordFontSize(count: number, maxCount: number): number {
   const ratio = maxCount > 1 ? (count - 1) / (maxCount - 1) : 0
-  return Math.round(32 + ratio * 64)
+  return Math.round(28 + ratio * 56)
+}
+
+function getTopWords(counts: Record<string, number>, limit: number = 25): Array<[string, number]> {
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
 }
 
 // ── Soft-timer hook ────────────────────────────────────────────────────────
@@ -313,21 +319,33 @@ export default function Present() {
 
           {/* ── Results: bars, wordcloud, or open text ── */}
           {state.question?.kind === 'word_cloud' || state.question?.kind === 'open' ? (
-            <div className="absolute top-[460px] left-[64px] right-[600px] min-h-48 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 z-10">
+            <div className="absolute top-[460px] left-[64px] right-[600px] max-h-96 flex flex-col z-10">
               {Object.entries(state.results.counts).length > 0 ? (
-                Object.entries(state.results.counts)
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([word, count]) => (
-                    <span
-                      key={word}
-                      style={{ fontSize: `${getWordFontSize(count, Math.max(...Object.values(state.results.counts), 1))}px` }}
-                      className={`font-bold leading-tight transition-all duration-500 ${hashWordColor(word)}`}
-                      title={`${word}: ${count}`}
-                      aria-label={`${word}, ${count} submission${count !== 1 ? 's' : ''}`}
-                    >
-                      {word}
-                    </span>
-                  ))
+                <>
+                  <div className="flex-1 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 overflow-y-auto">
+                    {(() => {
+                      const allWords = Object.entries(state.results.counts)
+                      const topWords = getTopWords(allWords, 25)
+                      const maxCount = Math.max(...topWords.map(w => w[1]), 1)
+                      return topWords.map(([word, count]) => (
+                        <span
+                          key={word}
+                          style={{ fontSize: `${getWordFontSize(count, maxCount)}px` }}
+                          className={`font-bold leading-tight transition-all duration-500 shrink-0 ${hashWordColor(word)}`}
+                          title={`${word}: ${count}`}
+                          aria-label={`${word}, ${count} submission${count !== 1 ? 's' : ''}`}
+                        >
+                          {word}
+                        </span>
+                      ))
+                    })()}
+                  </div>
+                  {Object.entries(state.results.counts).length > 25 && (
+                    <p className="text-xs text-pulse-400 text-right pr-2 pb-2">
+                      Showing top 25 of {Object.entries(state.results.counts).length} unique responses
+                    </p>
+                  )}
+                </>
               ) : (
                 <div className="w-full h-24 flex items-center justify-center">
                   <p className="text-[24px] text-pulse-400 animate-pulse">Waiting for responses…</p>
