@@ -311,8 +311,8 @@ export default function Present() {
             </div>
           </div>
 
-          {/* ── Results: bars or wordcloud ── */}
-          {state.question?.kind === 'word_cloud' ? (
+          {/* ── Results: bars, wordcloud, or open text ── */}
+          {state.question?.kind === 'word_cloud' || state.question?.kind === 'open' ? (
             <div className="absolute top-[460px] left-[64px] right-[600px] min-h-48 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 z-10">
               {Object.entries(state.results.counts).length > 0 ? (
                 Object.entries(state.results.counts)
@@ -330,7 +330,7 @@ export default function Present() {
                   ))
               ) : (
                 <div className="w-full h-24 flex items-center justify-center">
-                  <p className="text-[24px] text-pulse-400 animate-pulse">Waiting for words…</p>
+                  <p className="text-[24px] text-pulse-400 animate-pulse">Waiting for responses…</p>
                 </div>
               )}
             </div>
