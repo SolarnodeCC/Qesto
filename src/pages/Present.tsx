@@ -7,6 +7,29 @@ import { useLiveSession, type LivePollOption } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
 import { api, getAuthToken } from '../api/client'
 
+// ── Wordcloud utilities ────────────────────────────────────────────────────
+const WORDCLOUD_COLORS = [
+  'text-teal-600 dark:text-teal-400',
+  'text-violet-600 dark:text-violet-400',
+  'text-orange-500 dark:text-orange-400',
+  'text-pink-500 dark:text-pink-400',
+  'text-blue-600 dark:text-blue-400',
+  'text-emerald-600 dark:text-emerald-400',
+  'text-amber-600 dark:text-amber-400',
+  'text-rose-500 dark:text-rose-400',
+]
+
+function hashWordColor(word: string): string {
+  let h = 0
+  for (let i = 0; i < word.length; i++) h = (h * 31 + word.charCodeAt(i)) & 0xffff
+  return WORDCLOUD_COLORS[h % WORDCLOUD_COLORS.length]
+}
+
+function getWordFontSize(count: number, maxCount: number): number {
+  const ratio = maxCount > 1 ? (count - 1) / (maxCount - 1) : 0
+  return Math.round(32 + ratio * 64)
+}
+
 // ── Soft-timer hook ────────────────────────────────────────────────────────
 function useSoftTimer() {
   const [totalSecs, setTotalSecs] = useState(0)
@@ -288,40 +311,64 @@ export default function Present() {
             </div>
           </div>
 
-          {/* ── Results bars ── */}
-          <div className="absolute top-[460px] left-[64px] right-[600px] grid gap-7 z-10" aria-live="polite">
-            {tallyVisible
-              ? ordered.map((o, i) => {
-                  const pct = max === 0 ? 0 : Math.round((o.count / max) * 100)
-                  return (
+          {/* ── Results: bars or wordcloud ── */}
+          {state.question?.kind === 'word_cloud' ? (
+            <div className="absolute top-[460px] left-[64px] right-[600px] min-h-48 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 z-10">
+              {Object.entries(state.results.counts).length > 0 ? (
+                Object.entries(state.results.counts)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([word, count]) => (
+                    <span
+                      key={word}
+                      style={{ fontSize: `${getWordFontSize(count, Math.max(...Object.values(state.results.counts), 1))}px` }}
+                      className={`font-bold leading-tight transition-all duration-500 ${hashWordColor(word)}`}
+                      title={`${word}: ${count}`}
+                      aria-label={`${word}, ${count} submission${count !== 1 ? 's' : ''}`}
+                    >
+                      {word}
+                    </span>
+                  ))
+              ) : (
+                <div className="w-full h-24 flex items-center justify-center">
+                  <p className="text-[24px] text-pulse-400 animate-pulse">Waiting for words…</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="absolute top-[460px] left-[64px] right-[600px] grid gap-7 z-10" aria-live="polite">
+              {tallyVisible
+                ? ordered.map((o, i) => {
+                    const pct = max === 0 ? 0 : Math.round((o.count / max) * 100)
+                    return (
+                      <div key={o.id} className="grid gap-2">
+                        <div className="grid grid-cols-[1fr_auto] items-baseline gap-5">
+                          <span className="text-[32px] font-semibold leading-snug text-pulse-900">{o.label}</span>
+                          <span className="font-[family-name:var(--font-display)] font-bold text-[44px] tracking-[-0.02em] text-pulse-900 tabular-nums">
+                            {pct}%
+                          </span>
+                        </div>
+                        <div role="img" aria-label={`${o.label}: ${pct}%`} className="h-6 bg-pulse-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-[width] duration-[600ms]"
+                            style={{ width: `${pct}%`, background: fills[i % fills.length] }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })
+                : ordered.map((o) => (
                     <div key={o.id} className="grid gap-2">
                       <div className="grid grid-cols-[1fr_auto] items-baseline gap-5">
                         <span className="text-[32px] font-semibold leading-snug text-pulse-900">{o.label}</span>
-                        <span className="font-[family-name:var(--font-display)] font-bold text-[44px] tracking-[-0.02em] text-pulse-900 tabular-nums">
-                          {pct}%
-                        </span>
+                        <span className="font-[family-name:var(--font-display)] font-bold text-[44px] tracking-[-0.02em] text-pulse-400 tabular-nums">—</span>
                       </div>
-                      <div role="img" aria-label={`${o.label}: ${pct}%`} className="h-6 bg-pulse-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-[width] duration-[600ms]"
-                          style={{ width: `${pct}%`, background: fills[i % fills.length] }}
-                        />
+                      <div className="h-6 bg-pulse-100 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-pulse-200" style={{ width: '0%' }} />
                       </div>
                     </div>
-                  )
-                })
-              : ordered.map((o) => (
-                  <div key={o.id} className="grid gap-2">
-                    <div className="grid grid-cols-[1fr_auto] items-baseline gap-5">
-                      <span className="text-[32px] font-semibold leading-snug text-pulse-900">{o.label}</span>
-                      <span className="font-[family-name:var(--font-display)] font-bold text-[44px] tracking-[-0.02em] text-pulse-400 tabular-nums">—</span>
-                    </div>
-                    <div className="h-6 bg-pulse-100 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-pulse-200" style={{ width: '0%' }} />
-                    </div>
-                  </div>
-                ))}
-          </div>
+                  ))}
+            </div>
+          )}
 
           {/* ── Join panel ── */}
           <div className="absolute right-[64px] top-[144px] w-[440px] p-9 bg-white border border-pulse-200 rounded-[32px] shadow-elevated z-10">
