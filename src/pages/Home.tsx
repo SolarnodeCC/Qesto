@@ -4,7 +4,6 @@ import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
-import { trackCtaClick } from '../lib/analytics'
 
 const FEATURE_STRIP = [
   { icon: Sparkles, label: 'Question ideas ready in under 90 seconds' },
@@ -143,7 +142,6 @@ export default function Home() {
                   <Link
                     to="/login"
                     className="inline-flex items-center gap-2 rounded-md bg-gradient-to-br from-teal-500 to-violet-500 text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-                    onClick={() => trackCtaClick('Launch your next session', '/login')}
                   >
                     Launch your next session
                   </Link>
