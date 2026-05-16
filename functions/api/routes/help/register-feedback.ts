@@ -6,10 +6,7 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { Env } from '../../types'
-import { authMiddleware, type AuthVariables } from '../../middleware/auth'
-import { planMiddleware, type PlanVariables } from '../../middleware/plan'
-
-type Vars = AuthVariables & PlanVariables
+import { verifyJwt } from '../../lib/jwt'
 
 const FeedbackSchema = z.object({
   documentId: z.string().min(1),
@@ -17,10 +14,18 @@ const FeedbackSchema = z.object({
   feedbackText: z.string().max(500).optional(),
 })
 
-export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: Vars }>): void {
-  app.post('/help/feedback', authMiddleware, planMiddleware, async (c) => {
-    const user = c.get('user')
-    const traceId = c.get('trace_id')
+export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env }>): void {
+  app.post('/help/feedback', async (c) => {
+    const traceId = c.get('trace_id') ?? crypto.randomUUID()
+
+    // Auth is optional — anonymous users can submit feedback
+    let userId: string | null = null
+    const authHeader = c.req.header('authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7)
+      const claims = await verifyJwt(token, c.env.JWT_SECRET)
+      if (claims) userId = claims.sub
+    }
 
     // Parse and validate input
     let body: unknown
@@ -60,17 +65,17 @@ export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: 
       const now = Math.floor(Date.now() / 1000)
 
       await c.env.DB.prepare(
-        `INSERT INTO help_feedback (id, user_id, message_id, helpful, comment, created_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO help_feedback (id, user_id, document_id, question, answer, helpful, feedback_text, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
-        .bind(feedbackId, user.sub, documentId, helpful ? 1 : 0, feedbackText || null, now)
+        .bind(feedbackId, userId ?? 'anonymous', documentId, '', '', helpful ? 1 : 0, feedbackText || null, now)
         .run()
 
       // Check if document should be flagged for review (auto-tune trigger)
       const sevenDaysAgo = Math.floor((Date.now() - 7 * 24 * 60 * 60 * 1000) / 1000)
       const downvotes = await c.env.DB.prepare(
         `SELECT COUNT(*) as count FROM help_feedback
-         WHERE message_id = ? AND helpful = 0 AND created_at >= ?`,
+         WHERE document_id = ? AND helpful = 0 AND created_at >= ?`,
       )
         .bind(documentId, sevenDaysAgo)
         .first<{ count: number }>()
@@ -82,8 +87,8 @@ export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: 
         const reviewId = `review-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
         await c.env.DB.prepare(
           `INSERT OR REPLACE INTO help_documents_review_queue
-           (id, document_id, reason, downvote_count, period_days, flagged_at)
-           VALUES (?, ?, 'downvotes_threshold', ?, 7, ?)`,
+           (id, document_id, downvote_count, period_days, flagged_at)
+           VALUES (?, ?, ?, 7, ?)`,
         )
           .bind(reviewId, documentId, downvoteCount, now)
           .run()
@@ -101,7 +106,7 @@ export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: 
       console.log(
         JSON.stringify({
           event: 'help.feedback.ok',
-          user_id: user.sub,
+          user_id: userId ?? 'anonymous',
           document_id: documentId,
           helpful,
           downvote_count: downvoteCount,
