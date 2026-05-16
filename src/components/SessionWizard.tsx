@@ -481,7 +481,10 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         idempotencyKey: crypto.randomUUID(),
       })
       setCreatingSession(false)
-      if (!res.ok) { setError(res.error.message); return }
+      if (!res.ok) {
+        setError(res.error.message)
+        return
+      }
       setSessionId(res.data.session.id)
     }
 

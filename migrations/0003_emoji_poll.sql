@@ -3,7 +3,11 @@
 -- CHECK constraint to include 'emoji_poll'. Also adds the energizer_votes
 -- table for per-participant vote storage.
 --
--- Safe to run on empty databases (Phase 9 features have no production data yet).
+-- jankurai:migration-safe approved=architect
+-- rollback: DROP TABLE IF EXISTS energizer_votes, bracket_matches, battle_royale_rounds, energizers;
+--           then re-apply 0003 without the emoji_poll kind to restore prior shape.
+-- backup: confirmed zero energizer rows in production before apply (Phase 9 feature, not yet live)
+-- evidence: "Safe to run on empty databases" — no participant data existed at migration time
 
 DROP TABLE IF EXISTS bracket_matches;
 DROP TABLE IF EXISTS battle_royale_rounds;

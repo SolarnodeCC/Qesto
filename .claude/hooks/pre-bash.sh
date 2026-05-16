@@ -42,10 +42,12 @@ if echo "$CMD" | grep -qE "git.*(--no-verify|-n).*commit"; then
   exit 1
 fi
 
-# Block git reset --hard without a path (discards all local changes)
-if echo "$CMD" | grep -qE "git reset --hard($| )"; then
-  if ! echo "$CMD" | grep -qE "git reset --hard (HEAD|[a-f0-9]{7,40}) --"; then
-    echo "BLOCKED: git reset --hard discards all local changes. Stash first or confirm with user." >&2
+# Block git reset --hard unless a specific file path follows the ref
+if echo "$CMD" | grep -qE "git reset --hard"; then
+  if ! echo "$CMD" | grep -qE "git reset --hard (HEAD|[a-f0-9]{7,40}) -- .+"; then
+    echo "BLOCKED: git reset --hard requires an explicit file path (e.g. git reset --hard HEAD -- path/to/file)." >&2
+    echo "To discard all changes safely, use: git stash" >&2
+    echo "To restore a specific file, use: git checkout HEAD -- path/to/file" >&2
     exit 1
   fi
 fi

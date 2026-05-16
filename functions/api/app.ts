@@ -12,6 +12,8 @@ import { mountTemplateRoutes } from './routes/templates'
 import { mountTeamRoutes } from './routes/teams'
 import { mountHelpRoutes } from './routes/help'
 import { mountUserRoutes } from './routes/users'
+import { mountKnowledgeBaseRoutes } from './routes/knowledge-base'
+import { registerKBRoutes } from './routes/kb-search'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
@@ -172,6 +174,8 @@ export function createApp() {
   mountAIInsightsRoutes(app)
   mountHelpRoutes(app)
   mountUserRoutes(app)
+  mountKnowledgeBaseRoutes(app)
+  registerKBRoutes(app)
 
   return app
 }

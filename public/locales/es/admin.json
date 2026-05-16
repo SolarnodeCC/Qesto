@@ -186,5 +186,6 @@
   "auditLog": "Registro de auditoría",
   "changeSummary": "Resumen de cambios",
   "sessionsThisMonth": "Sesiones este mes",
-  "totalSessions": "Sesiones totales"
+  "totalSessions": "Sesiones totales",
+  "platformOverview": "[TODO] Platform Overview"
 }

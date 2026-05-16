@@ -11,6 +11,8 @@ import { Hono } from 'hono'
 import { getQuotaUsage } from '../lib/quota'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
+import { validateBody } from '../lib/validate'
+import { BillingSubscriptionSchema } from '../lib/validation'
 import { PLAN_QUOTAS, type Env, type PlanQuotas, type PlanTier } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -290,13 +292,11 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         503,
       )
     }
-    const body = (await c.req.json().catch(() => null)) as { action?: 'upgrade' | 'downgrade' | 'cancel'; priceId?: string; subscriptionItemId?: string } | null
-    if (!body?.action) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'action is required' }, trace_id: c.get('trace_id') },
-        400,
-      )
-    }
+
+    const validated = await validateBody(c, BillingSubscriptionSchema)
+    if ('error' in validated) return validated.error
+    const { data: body } = validated
+
     const subRaw = await c.env.USERS_KV.get(stripeSubscriptionKey(user.sub))
     const subRecord = subRaw ? (JSON.parse(subRaw) as { subscriptionId: string }) : null
     if (!subRecord?.subscriptionId) {
@@ -311,13 +311,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       const cancelled = await stripe.subscriptions.cancel(subRecord.subscriptionId)
       return c.json({ ok: true, data: { subscription: cancelled }, trace_id: c.get('trace_id') })
     }
-    if (!body.priceId || !body.subscriptionItemId) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'priceId and subscriptionItemId are required for upgrade/downgrade' }, trace_id: c.get('trace_id') },
-        400,
-      )
-    }
-    const updated = await stripe.subscriptions.updatePrice(subRecord.subscriptionId, body.subscriptionItemId, body.priceId)
+    const updated = await stripe.subscriptions.updatePrice(subRecord.subscriptionId, body.subscriptionItemId!, body.priceId!)
     return c.json({ ok: true, data: { subscription: updated }, trace_id: c.get('trace_id') })
   })
 

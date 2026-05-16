@@ -186,5 +186,6 @@
   "auditLog": "Journal d'audit",
   "changeSummary": "Résumé des modifications",
   "sessionsThisMonth": "Sessions ce mois-ci",
-  "totalSessions": "Sessions au total"
+  "totalSessions": "Sessions au total",
+  "platformOverview": "[TODO] Platform Overview"
 }

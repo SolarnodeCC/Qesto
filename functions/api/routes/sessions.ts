@@ -23,10 +23,13 @@ import { requireFeature } from '../middleware/feature-gate'
 import { verifyJwt } from '../lib/jwt'
 import { incrementSessionQuota } from '../lib/quota'
 import { denyFeature, featureAllowed, questionKindFeature } from '../lib/entitlements'
+import { validateBody } from '../lib/validate'
 import {
   CreateSessionSchema,
   GenerateQuestionsSchema,
+  JourneyEventSchema,
   PatchSessionSchema,
+  RefineQuestionsSchema,
   ReorderQuestionsSchema,
   AddQuestionSchema,
   autoPopulateOptions,
@@ -543,28 +546,12 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const traceId = c.get('trace_id')
     await patchSchemaIfNeeded(c.env.DB)
 
-    const body = (await c.req.json().catch(() => null)) as
-      | { event?: unknown; sessionId?: unknown; count?: unknown; value?: unknown; durationMs?: unknown }
-      | null
-    const allowed = new Set<Sprint19JourneyEvent>([
-      'wizard.opened',
-      'wizard.completed',
-      'ai.suggestions_resolved',
-      'launchpad.opened',
-    ])
-    if (!body || typeof body.event !== 'string' || !allowed.has(body.event as Sprint19JourneyEvent)) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid Sprint 19 journey event' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
+    const validated = await validateBody(c, JourneyEventSchema)
+    if ('error' in validated) return validated.error
+    const { data: body } = validated
 
     let session: Session | null = null
-    if (typeof body.sessionId === 'string' && body.sessionId.trim().length > 0) {
+    if (body.sessionId) {
       session = await fetchSession(c.env.DB, body.sessionId, user.sub)
       if (!session) {
         return c.json(
@@ -580,9 +567,9 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       sessionId: session?.id,
       teamId: session?.team_id,
       plan: c.get('plan'),
-      count: typeof body.count === 'number' && Number.isFinite(body.count) ? body.count : undefined,
-      value: typeof body.value === 'number' && Number.isFinite(body.value) ? body.value : undefined,
-      durationMs: typeof body.durationMs === 'number' && Number.isFinite(body.durationMs) ? body.durationMs : undefined,
+      count: body.count,
+      value: body.value,
+      durationMs: body.durationMs,
       traceId,
     })
 
@@ -591,18 +578,11 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
   // POST /api/sessions — create DRAFT
   app.post('/', async (c) => {
-    const body = (await c.req.json().catch(() => null)) as unknown
-    const parsed = CreateSessionSchema.safeParse(body)
-    if (!parsed.success) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid session payload', details: parsed.error.flatten() },
-          trace_id: c.get('trace_id'),
-        },
-        400,
-      )
+    const validated = await validateBody(c, CreateSessionSchema)
+    if ('error' in validated) {
+      return validated.error
     }
+    const { data: body } = validated
 
     const user = c.get('user')
     const plan = c.get('plan')
@@ -662,13 +642,13 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
             `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, vote_policy, session_mode, created_at, team_id)
              VALUES (?1, ?2, ?3, ?4, 'draft', 'full', 'once', 'reflection', ?5, ?6)`,
           )
-            .bind(id, user.sub, code, parsed.data.title, now, teamId)
+            .bind(id, user.sub, code, body.title, now, teamId)
             .run()
           const session: Session = {
             id,
             owner_id: user.sub,
             code,
-            title: parsed.data.title,
+            title: body.title,
             status: 'draft',
             anonymity: 'full',
             vote_policy: 'once',
@@ -744,18 +724,12 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const plan = c.get('plan')
     const quotas = c.get('planQuotas')
     const id = c.req.param('id')
-    const body = (await c.req.json().catch(() => null)) as unknown
-    const parsed = PatchSessionSchema.safeParse(body)
-    if (!parsed.success) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid patch payload', details: parsed.error.flatten() },
-          trace_id: c.get('trace_id'),
-        },
-        400,
-      )
+
+    const validated = await validateBody(c, PatchSessionSchema)
+    if ('error' in validated) {
+      return validated.error
     }
+    const { data: body } = validated
 
     const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
     if (!loaded.ok) {
@@ -773,76 +747,76 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
     const session = draftPatch.session
 
-    if (parsed.data.title !== undefined) {
+    if (body.title !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET title = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.title, id, user.sub)
+        .bind(body.title, id, user.sub)
         .run()
-      session.title = parsed.data.title
+      session.title = body.title
     }
-    if (parsed.data.anonymity !== undefined) {
+    if (body.anonymity !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET anonymity = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.anonymity, id, user.sub)
+        .bind(body.anonymity, id, user.sub)
         .run()
-      session.anonymity = parsed.data.anonymity
+      session.anonymity = body.anonymity
     }
-    if (parsed.data.vote_policy !== undefined) {
+    if (body.vote_policy !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET vote_policy = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.vote_policy, id, user.sub)
+        .bind(body.vote_policy, id, user.sub)
         .run()
-      session.vote_policy = parsed.data.vote_policy
+      session.vote_policy = body.vote_policy
     }
-    if (parsed.data.session_mode !== undefined) {
+    if (body.session_mode !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET session_mode = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.session_mode, id, user.sub)
+        .bind(body.session_mode, id, user.sub)
         .run()
-      session.session_mode = parsed.data.session_mode
+      session.session_mode = body.session_mode
     }
-    if (parsed.data.ai_generated !== undefined) {
+    if (body.ai_generated !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET ai_generated = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.ai_generated ? 1 : 0, id, user.sub)
+        .bind(body.ai_generated ? 1 : 0, id, user.sub)
         .run()
-      session.ai_generated = parsed.data.ai_generated ? 1 : 0
+      session.ai_generated = body.ai_generated ? 1 : 0
     }
-    if (parsed.data.ai_consent_at !== undefined) {
+    if (body.ai_consent_at !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET ai_consent_at = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.ai_consent_at, id, user.sub)
+        .bind(body.ai_consent_at, id, user.sub)
         .run()
-      session.ai_consent_at = parsed.data.ai_consent_at
+      session.ai_consent_at = body.ai_consent_at
     }
-    if (parsed.data.ai_grounding_hash !== undefined) {
+    if (body.ai_grounding_hash !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET ai_grounding_hash = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.ai_grounding_hash, id, user.sub)
+        .bind(body.ai_grounding_hash, id, user.sub)
         .run()
-      session.ai_grounding_hash = parsed.data.ai_grounding_hash
+      session.ai_grounding_hash = body.ai_grounding_hash
     }
-    if (parsed.data.ai_accepted_count !== undefined) {
+    if (body.ai_accepted_count !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET ai_accepted_count = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.ai_accepted_count, id, user.sub)
+        .bind(body.ai_accepted_count, id, user.sub)
         .run()
-      session.ai_accepted_count = parsed.data.ai_accepted_count
+      session.ai_accepted_count = body.ai_accepted_count
     }
-    if (parsed.data.ai_dismissed_count !== undefined) {
+    if (body.ai_dismissed_count !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET ai_dismissed_count = ?1 WHERE id = ?2 AND owner_id = ?3`)
-        .bind(parsed.data.ai_dismissed_count, id, user.sub)
+        .bind(body.ai_dismissed_count, id, user.sub)
         .run()
-      session.ai_dismissed_count = parsed.data.ai_dismissed_count
+      session.ai_dismissed_count = body.ai_dismissed_count
     }
     let questions = await fetchQuestions(c.env.DB, id)
-    if (parsed.data.question) {
-      const denied = deniedQuestionFeature(plan, quotas, parsed.data.question.kind)
+    if (body.question) {
+      const denied = deniedQuestionFeature(plan, quotas, body.question.kind)
       if (denied) {
         return c.json({ ok: false, error: denied, trace_id: c.get('trace_id') }, 403)
       }
-      const q = await upsertPollQuestion(c.env.DB, id, parsed.data.question)
+      const q = await upsertPollQuestion(c.env.DB, id, body.question)
       questions = [q]
     }
 
@@ -2049,31 +2023,9 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
     const session = refineDraft.session
 
-    const body = (await c.req.json().catch(() => null)) as
-      | { grounding?: unknown; feedback?: unknown; previous_questions?: unknown[] }
-      | null
-    if (
-      !body ||
-      typeof body.grounding !== 'string' ||
-      body.grounding.trim().length === 0 ||
-      typeof body.feedback !== 'string' ||
-      body.feedback.trim().length === 0
-    ) {
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'validation',
-            message: 'Invalid refine payload',
-            details: { required: ['grounding:string', 'feedback:string'] },
-          },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-    const grounding = body.grounding
-    const feedback = body.feedback
+    const validated = await validateBody(c, RefineQuestionsSchema)
+    if ('error' in validated) return validated.error
+    const { grounding, feedback } = validated.data
 
     const groundingHash = await hashGrounding(grounding)
     const cacheKey = `draft:ai:${id}`

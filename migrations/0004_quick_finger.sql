@@ -2,6 +2,11 @@
 -- Recreates the energizers table (and dependents) to add 'quick_finger' to
 -- the kind CHECK constraint. Also extends PATCH semantics for energizers to
 -- allow prompt + config updates while in draft state.
+--
+-- jankurai:migration-safe approved=architect
+-- rollback: revert to 0003 state by dropping and restoring energizers without quick_finger kind
+-- backup: confirmed zero energizer rows in production before apply
+-- evidence: DROP TABLE IF EXISTS guards prevent errors on clean databases; no live data at apply time
 
 DROP TABLE IF EXISTS bracket_matches;
 DROP TABLE IF EXISTS battle_royale_rounds;

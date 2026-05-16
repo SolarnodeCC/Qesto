@@ -293,7 +293,7 @@ export class SessionRoom implements DurableObject {
     // where one voter can legitimately submit multiple entries (multi_select,
     // upvote, word_cloud) each entry is emitted separately; the caller must
     // relax the UNIQUE constraint at the schema level for those kinds before
-    // all rows will persist. See docs/ARCHITECTURE.md.
+    // all rows will persist. See knowledge-base/architecture/ARCHITECTURE.md.
     const voteList = Object.entries(votes).flatMap(([voterId, optionIds]) =>
       optionIds.map((optionId) => ({ voterId, optionId })),
     )
@@ -739,13 +739,13 @@ export class SessionRoom implements DurableObject {
     if (!this.canActivateEnergizer(att)) {
       ws.send(errorMessage('forbidden', 'Presenter role cannot advance energizers'))
       await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
-      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, { id: data?.energizerId }, { reason: 'permission' })
+      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, data?.energizerId ? { id: data.energizerId } : {}, { reason: 'permission' })
       return
     }
     if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
       ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
       await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
-      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, { id: data?.energizerId }, { reason: 'feature_disabled' })
+      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, data?.energizerId ? { id: data.energizerId } : {}, { reason: 'feature_disabled' })
       return
     }
     const active = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null

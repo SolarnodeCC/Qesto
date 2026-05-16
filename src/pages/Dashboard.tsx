@@ -391,7 +391,7 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState<DashboardSection>('home')
   const { state, refresh } = useSessions()
   const userId = auth.status === 'authenticated' ? auth.user.id : undefined
-  const { data: quotaData, loading: quotaLoading } = useQuotaUsage(userId)
+  const { data: quotaData } = useQuotaUsage(userId)
   const closedSessions =
     state.status === 'ready'
       ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
@@ -619,9 +619,9 @@ export default function Dashboard() {
     <AppShellLayout
       activeSection={activeSection}
       onSectionChange={setActiveSection}
-      planName={activePlan}
-      sessionsUsed={quotaData?.usage.sessions_created}
-      sessionsMax={quotaData?.quotas.max_sessions_per_month}
+      {...(activePlan !== undefined ? { planName: activePlan } : {})}
+      {...(quotaData?.usage.sessions_created !== undefined ? { sessionsUsed: quotaData.usage.sessions_created } : {})}
+      {...(quotaData?.quotas.max_sessions_per_month !== undefined ? { sessionsMax: quotaData.quotas.max_sessions_per_month } : {})}
       isSuperuser={isSuperuser}
     >
       <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-12">
@@ -764,7 +764,7 @@ export default function Dashboard() {
                 </ul>
               ) : insightThemes.length === 0 ? (
                 <div className="space-y-4">
-                  <p className="text-body-s text-pulse-500 dark:text-pulse-400">No insights generated yet. Analyze your closed sessions to surface themes.</p>
+                  <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('insightsEmpty')}</p>
                   <div className="space-y-2">
                     {closedSessions.slice(0, 3).map((s) => (
                       <button

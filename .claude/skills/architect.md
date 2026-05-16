@@ -102,10 +102,10 @@ Use this when designing or approving work in audit-affected areas.
 
 | Change | Doc |
 |---|---|
-| State machine / lifecycle / status mapping | `docs/ARCHITECTURE.md` |
-| KV keys / D1 schema / DO state shape | `docs/ARCHITECTURE.md` |
-| HTTP endpoint contracts | `docs/API_FULL.md` |
-| WebSocket message types | `docs/API_FULL.md` |
+| State machine / lifecycle / status mapping | `knowledge-base/architecture/ARCHITECTURE.md` |
+| KV keys / D1 schema / DO state shape | `knowledge-base/architecture/ARCHITECTURE.md` |
+| HTTP endpoint contracts | `knowledge-base/api/API_FULL.md` |
+| WebSocket message types | `knowledge-base/api/API_FULL.md` |
 | Security controls / threat model | `docs/SECURITY_FULL.md` |
 | Tech debt discovered | `docs/BACKLOG.md §4` |
 

@@ -44,11 +44,11 @@ This is the **single source of truth** for quality gate enforcement. All hooks a
     },
     {
       "id": "API_ROUTES_DOCUMENTED",
-      "name": "API routes documented in docs/API_FULL.md",
+      "name": "API routes documented in knowledge-base/api/API_FULL.md",
       "manual": true,
       "blocking": true,
       "scope": ["functions/api/routes/**/*.ts"],
-      "reminder": "Update docs/API_FULL.md when HTTP routes change",
+      "reminder": "Update knowledge-base/api/API_FULL.md when HTTP routes change",
       "description": "New endpoints must be documented"
     },
     {
@@ -57,7 +57,7 @@ This is the **single source of truth** for quality gate enforcement. All hooks a
       "manual": true,
       "blocking": true,
       "scope": ["schema.sql"],
-      "reminder": "Update docs/ARCHITECTURE.md §3.1 when schema changes",
+      "reminder": "Update knowledge-base/architecture/ARCHITECTURE.md §3.1 when schema changes",
       "description": "Schema migrations must be documented in architecture"
     },
     {
@@ -66,7 +66,7 @@ This is the **single source of truth** for quality gate enforcement. All hooks a
       "manual": true,
       "blocking": true,
       "scope": ["functions/api/SessionRoom.ts"],
-      "reminder": "Update docs/ARCHITECTURE.md §3.3 and docs/API_FULL.md §8",
+      "reminder": "Update knowledge-base/architecture/ARCHITECTURE.md §3.3 and knowledge-base/api/API_FULL.md §8",
       "description": "SessionRoom state or protocol changes must be documented"
     },
     {
@@ -173,7 +173,7 @@ Triggered gates:
 - ✓ `TESTS_PASS` — must pass
 - ✓ `TYPE_CHECK` — must pass
 - ✓ `ROUTES_MOUNTED` — validate it's imported in `[[route]].ts`
-- ⓘ `API_ROUTES_DOCUMENTED` — reminder to update `docs/API_FULL.md`
+- ⓘ `API_ROUTES_DOCUMENTED` — reminder to update `knowledge-base/api/API_FULL.md`
 - ⓘ `TEST_COVERAGE` — reminder to add `tests/unit/decisions.test.ts`
 
 ## Change Log

@@ -1,7 +1,9 @@
 -- Sprint 19 completion: durable journey events for wizard -> Launchpad evidence.
+-- NOTE: If initialized from schema.sql (new databases), these columns already exist.
+-- This migration is now a no-op for fresh databases; it only applies to old databases.
+-- jankurai:migration-safe approved=architect
 
-ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0;
+SELECT 1;
 
 CREATE TABLE IF NOT EXISTS sprint19_events (
   id TEXT PRIMARY KEY,

@@ -152,7 +152,7 @@ Code review report with:
 ## Docs to Update
 - Story (backlog) with review checklist items if new patterns found
 - `docs/CODE_REVIEW_GUIDE.md` if new gate discovered
-- `docs/ARCHITECTURE.md` if architecture change required
+- `knowledge-base/architecture/ARCHITECTURE.md` if architecture change required
 
 ## Do Not
 - Do not approve if tests fail or TS has errors
