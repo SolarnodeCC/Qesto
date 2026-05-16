@@ -26,6 +26,7 @@ import { queryAuditEvents, recordAuditEvent } from '../lib/audit'
 import { ulid } from '../lib/ulid'
 import type { Env } from '../types'
 import { readKvJson } from '../lib/kv'
+import { registerHelpAdminRoutes } from './admin/help'
 import { validateBody } from '../lib/validate'
 import { AdminMetricsExportSchema, AdminCreateUserSchema, AdminPatchUserSchema } from '../lib/validation'
 
@@ -326,6 +327,9 @@ export function mountAdminRoutes(parent: any) {
     // Apply admin middleware to all other admin routes
     await adminMiddleware(c, next)
   })
+
+  // Register help admin routes (review queue, prompt versions)
+  registerHelpAdminRoutes(app)
 
   // ── GET /api/admin/metrics/live ──────────────────────────────────────────────
   // Returns a KV snapshot for the last 5 minutes.

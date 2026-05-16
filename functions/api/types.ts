@@ -56,9 +56,11 @@ export type Env = {
   DECISIONS_KV: KVNamespace
   AUDIT_KV: KVNamespace
   ACTIONS_KV: KVNamespace
+  HELP_CONVERSATIONS_KV?: KVNamespace
   SESSION_ROOM: DurableObjectNamespace
   AI: Ai
   DECISIONS_VECTORIZE: VectorizeIndex
+  HELP_VECTORIZE: VectorizeIndex
   KB_VECTORIZE: VectorizeIndex
   METRICS_KV?: KVNamespace
   METRICS_AE?: AnalyticsEngineDataset
