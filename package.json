@@ -33,7 +33,8 @@
     "test:e2e:headed": "playwright test --config tests/playwright.config.ts --headed",
     "test:e2e:chrome": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
     "kb:embed": "npx tsx scripts/embed-kb.ts",
-    "kb:sync": "npx tsx scripts/kb-sync-cli.ts"
+    "kb:sync": "npx tsx scripts/kb-sync-cli.ts",
+    "help:sync": "npx tsx scripts/sync-help-docs.ts"
   },
   "dependencies": {
     "hono": "^4.12.16",

@@ -1,0 +1,65 @@
+name: Help Docs Sync on Merge
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'knowledge-base/help/**'
+      - 'scripts/sync-help-docs.ts'
+      - '.github/workflows/help-sync-on-merge.yml'
+
+jobs:
+  help-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Help Sync
+        run: npm run help:sync
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+
+      - name: Upload sync manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: help-sync-manifest
+          path: .help-sync-manifest.json
+          retention-days: 30
+
+      - name: Notify Slack (on failure)
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "❌ Help Docs Sync Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Help Docs Sync Failed*\nRepository: ${{ github.repository }}\nBranch: ${{ github.ref }}\nCommit: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\nWorkflow: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
