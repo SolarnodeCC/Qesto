@@ -31,7 +31,6 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
   // GET /api/admin/help/review-queue — List flagged documents
   app.get('/help/review-queue', authMiddleware, adminMiddleware, async (c) => {
     const traceId = c.get('trace_id')
-    const adminUser = c.get('admin_user')
 
     try {
       const entries = await c.env.DB.prepare(
