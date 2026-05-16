@@ -35,6 +35,10 @@ export type Env = {
   RESEND_FROM?: string
   /** Sprint 25 guard: enables versioned LIVE energizer WebSocket broadcasts. */
   LIVE_ENERGIZERS_ENABLED?: string
+  /** v2.2: Circuit breaker for external dependencies (Stripe, Resend, Workers AI). */
+  CIRCUIT_BREAKER_ENABLED?: string
+  /** v2.2: Integration webhooks (Slack, Notion, Airtable). */
+  INTEGRATION_ENABLED?: string
 
   // Secrets (wrangler pages secret put ...)
   JWT_SECRET: string
@@ -60,6 +64,8 @@ export type Env = {
   DECISIONS_VECTORIZE: VectorizeIndex
   METRICS_KV?: KVNamespace
   METRICS_AE?: AnalyticsEngineDataset
+  CIRCUIT_BREAKER_KV?: KVNamespace
+  INTEGRATIONS_KV?: KVNamespace
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
