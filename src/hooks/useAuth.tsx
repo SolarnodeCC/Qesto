@@ -1,5 +1,4 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import * as amplitude from '@amplitude/unified'
 import { api, setAuthToken } from '../api/client'
 
 export type AuthUser = { id: string; email: string }
@@ -27,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     const result = await api<AuthUser>('/api/auth/me')
     if (result.ok) {
-      amplitude.setUserId(result.data.id)
       setState({ status: 'authenticated', user: result.data })
     } else {
       setAuthToken(null)
@@ -51,13 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/login', { method: 'POST', body: { email, password } })
       if (result.ok) {
         setAuthToken(result.data.token)
-        amplitude.setUserId(result.data.id)
-        amplitude.track('User Logged In', { method: 'password' })
         await refresh()
         return 'ok'
       }
       if (result.status === 401) return 'invalid_credentials'
-      amplitude.track('Error Encountered', { error_category: 'auth', error_context: 'login', error_message: 'login_error' })
       return 'error'
     },
     [refresh],
@@ -68,13 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await api<{ id: string; email: string; token: string }>('/api/auth/password/signup', { method: 'POST', body: { email, password, name } })
       if (result.ok) {
         setAuthToken(result.data.token)
-        amplitude.setUserId(result.data.id)
-        amplitude.track('User Signed Up', { method: 'password', has_name: !!name })
         await refresh()
         return 'ok'
       }
       if (result.status === 409) return 'email_taken'
-      amplitude.track('Error Encountered', { error_category: 'auth', error_context: 'signup', error_message: 'signup_error' })
       return 'error'
     },
     [refresh],
@@ -108,8 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api('/api/auth/logout', { method: 'POST' })
     setAuthToken(null)
     setState({ status: 'anonymous' })
-    amplitude.track('User Logged Out')
-    amplitude.reset()
   }, [])
 
   const value = useMemo<AuthApi>(

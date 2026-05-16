@@ -7,6 +7,29 @@ import { api, type ApiError } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 
+// Wordcloud/open text utilities
+const RESULT_COLORS = [
+  'text-teal-600',
+  'text-violet-600',
+  'text-orange-500',
+  'text-pink-500',
+  'text-blue-600',
+  'text-emerald-600',
+  'text-amber-600',
+  'text-rose-500',
+]
+
+function hashColor(word: string): string {
+  let h = 0
+  for (let i = 0; i < word.length; i++) h = (h * 31 + word.charCodeAt(i)) & 0xffff
+  return RESULT_COLORS[h % RESULT_COLORS.length]
+}
+
+function getResultFontSize(count: number, maxCount: number): number {
+  const ratio = maxCount > 1 ? (count - 1) / (maxCount - 1) : 0
+  return Math.round(18 + ratio * 32)
+}
+
 type ResultsPayload = {
   session: {
     id: string
@@ -17,6 +40,7 @@ type ResultsPayload = {
   }
   question: {
     id: string
+    kind: string
     prompt: string
     options: PollOption[]
   } | null
@@ -160,7 +184,31 @@ export default function Results() {
           <h2 className="text-xl font-semibold">{question.prompt}</h2>
           <p className="text-sm text-pulse-500">{t('no_votes')}</p>
         </section>
-      ) : (
+      ) : question.kind === 'word_cloud' || question.kind === 'open' ? (() => {
+        const allEntries = Object.entries(results.counts)
+        const topEntries = allEntries.slice(0, 25)
+        const maxCount = Math.max(...topEntries.map(e => e[1]), 1)
+        return (
+          <section className="rounded-xl border border-pulse-200 p-5 space-y-4">
+            <h2 className="text-xl font-semibold">{question.prompt}</h2>
+            <div className="flex flex-wrap gap-x-3 gap-y-2 items-baseline justify-start py-3">
+              {topEntries.map(([word, count]) => (
+                <span
+                  key={word}
+                  style={{ fontSize: `${getResultFontSize(count, maxCount)}px` }}
+                  className={`font-bold leading-tight ${hashColor(word)}`}
+                  title={`${word}: ${count}`}
+                >
+                  {word}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-pulse-500">
+              Total responses: {results.total} {allEntries.length > 25 ? `(showing top 25 of ${allEntries.length} unique)` : ''} · source {results.source}
+            </p>
+          </section>
+        )
+      })() : (
         <section className="rounded-xl border border-pulse-200 p-5 space-y-4">
           <h2 className="text-xl font-semibold">{question.prompt}</h2>
           <ul className="space-y-3">
