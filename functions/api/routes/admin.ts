@@ -15,8 +15,9 @@
 //   GET  /api/admin/analytics            — time-series, breakdowns, cost
 //   GET  /api/admin/sprint19-baseline    — AI wizard + Launchpad KPI baseline
 //   POST /api/admin/kb-sync              — Phase 1 bulk vector sync to Vectorize (ADR-040)
+//   POST /api/admin/kb-sync-delete       — Phase 5 vector deletion for deleted KB files
 //
-// Auth: authMiddleware + adminMiddleware (owner | admin role), except /kb-sync (uses x-admin-key header).
+// Auth: authMiddleware + adminMiddleware (owner | admin role), except /kb-sync* (uses x-admin-key header).
 
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
@@ -304,10 +305,10 @@ function rowToCsv(row: MetricsSummaryRow): string {
 export function mountAdminRoutes(parent: any) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
 
-  // All admin routes require auth + admin role, EXCEPT /kb-sync which uses x-admin-key header.
+  // All admin routes require auth + admin role, EXCEPT /kb-sync and /kb-sync-delete which use x-admin-key header.
   app.use('*', async (c, next) => {
-    // Bypass auth/admin middleware for /kb-sync endpoint (Phase 1 vector sync)
-    if (c.req.path.endsWith('/kb-sync') && c.req.method === 'POST') {
+    // Bypass auth/admin middleware for /kb-sync and /kb-sync-delete endpoints (Phase 1 & 5 vector ops)
+    if ((c.req.path.endsWith('/kb-sync') || c.req.path.endsWith('/kb-sync-delete')) && c.req.method === 'POST') {
       // Set dummy variables so the context matches expected shape
       c.set('user', {} as AuthVariables['user'])
       await next()
@@ -317,8 +318,8 @@ export function mountAdminRoutes(parent: any) {
     await authMiddleware(c, next)
   })
   app.use('*', async (c, next) => {
-    // Skip adminMiddleware for /kb-sync (handled by x-admin-key check instead)
-    if (c.req.path.endsWith('/kb-sync') && c.req.method === 'POST') {
+    // Skip adminMiddleware for /kb-sync and /kb-sync-delete (handled by x-admin-key check instead)
+    if ((c.req.path.endsWith('/kb-sync') || c.req.path.endsWith('/kb-sync-delete')) && c.req.method === 'POST') {
       await next()
       return
     }
@@ -1247,6 +1248,118 @@ export function mountAdminRoutes(parent: any) {
           error: {
             code: 'vectorize_error',
             message: `Vectorize upsert failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+          },
+          trace_id: traceId,
+        },
+        500,
+      )
+    }
+  })
+
+  // POST /kb-sync-delete — Phase 5 vector deletion for deleted KB files.
+  // Admin-only endpoint (requires x-admin-key header matching KB_ADMIN_KEY secret).
+  // Accepts JSON body with { vector_ids: string[] } array of vector IDs to delete.
+  app.post('/kb-sync-delete', async (c) => {
+    const traceId = c.get('trace_id')!
+    const adminKey = c.req.header('x-admin-key')
+    const expectedKey = c.env.KB_ADMIN_KEY
+
+    // Verify admin key
+    if (!adminKey || !expectedKey || adminKey !== expectedKey) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'unauthorized', message: 'x-admin-key header required and must match KB_ADMIN_KEY' },
+          trace_id: traceId,
+        },
+        401,
+      )
+    }
+
+    // Parse body
+    let payload: unknown
+    try {
+      payload = await c.req.json()
+    } catch {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_body', message: 'Body must be valid JSON' },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+
+    if (!payload || typeof payload !== 'object' || !('vector_ids' in payload)) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_body', message: 'Body must contain vector_ids array' },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+
+    const vectorIds = (payload as Record<string, unknown>).vector_ids
+    if (!Array.isArray(vectorIds) || !vectorIds.every((id): id is string => typeof id === 'string')) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_body', message: 'vector_ids must be an array of strings' },
+          trace_id: traceId,
+        },
+        400,
+      )
+    }
+
+    if (vectorIds.length === 0) {
+      return c.json(
+        {
+          ok: true,
+          data: {
+            message: 'No vectors to delete',
+            vectors_deleted: 0,
+            batches: 0,
+          },
+          trace_id: traceId,
+        },
+        200,
+      )
+    }
+
+    try {
+      // Delete from Vectorize using Worker binding
+      const batchSize = 100
+      let totalDeleted = 0
+
+      for (let i = 0; i < vectorIds.length; i += batchSize) {
+        const batch = vectorIds.slice(i, i + batchSize)
+        await c.env.KB_VECTORIZE.deleteByIds(batch)
+        totalDeleted += batch.length
+      }
+
+      return c.json(
+        {
+          ok: true,
+          data: {
+            message: 'Vectorize delete complete',
+            vectors_deleted: totalDeleted,
+            batches: Math.ceil(totalDeleted / batchSize),
+          },
+          trace_id: traceId,
+        },
+        200,
+      )
+    } catch (err) {
+      console.error('[kb-sync-delete] Vectorize delete failed:', err)
+      return c.json(
+        {
+          ok: false,
+          error: {
+            code: 'vectorize_error',
+            message: `Vectorize delete failed: ${err instanceof Error ? err.message : 'unknown error'}`,
           },
           trace_id: traceId,
         },
