@@ -8,11 +8,13 @@
 
 import { Hono } from 'hono'
 import type { Env } from '../../types'
+import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { registerHelpAskRoute } from './register-ask'
 import { registerHelpFeedbackRoute } from './register-feedback'
 
 export function mountHelpRoutes(parent: any): void {
-  const app = new Hono<{ Bindings: Env }>()
+  const app = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
+  app.use('*', authMiddleware)
 
   registerHelpAskRoute(app)
   registerHelpFeedbackRoute(app)

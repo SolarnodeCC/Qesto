@@ -1,6 +1,6 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useRef, lazy, Suspense } from 'react'
-import { AuthProvider } from './hooks/useAuth'
+import { AuthProvider, useAuth } from './hooks/useAuth'
 import { useColorScheme } from './hooks/useColorScheme'
 import { HelpChatWidget } from './components/HelpChatWidget'
 import Home from './pages/Home'
@@ -66,13 +66,19 @@ function RouteAnnouncer() {
   return null
 }
 
+function AuthenticatedHelpWidget() {
+  const auth = useAuth()
+  if (auth.status !== 'authenticated') return null
+  return <HelpChatWidget />
+}
+
 export default function App() {
   useColorScheme()
   return (
     <AuthProvider>
       {/* Skip link is rendered by MainLayout on each page that uses it. */}
       <RouteAnnouncer />
-      <HelpChatWidget />
+      <AuthenticatedHelpWidget />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
