@@ -6,23 +6,30 @@
 import { Hono } from 'hono'
 import { z } from 'zod'
 import type { Env } from '../../types'
-import { authMiddleware, type AuthVariables } from '../../middleware/auth'
-import { planMiddleware, type PlanVariables } from '../../middleware/plan'
 import { rateLimit } from '../../lib/rate-limit'
 import { askHelpAI, HelpAIError, HelpValidationError } from '../../lib/help-rag'
 import { sanitizeError } from '../../lib/error-handler'
+import { verifyJwt } from '../../lib/jwt'
 
-type Vars = AuthVariables & PlanVariables
+type Vars = Record<string, never>
 
 const AskSchema = z.object({
   question: z.string().min(1).max(500).trim(),
 })
 
 export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: Vars }>): void {
-  app.post('/help/ask', authMiddleware, planMiddleware, async (c) => {
-    const user = c.get('user')
-    const plan = c.get('plan')
-    const traceId = c.get('trace_id')
+  app.post('/help/ask', async (c) => {
+    const traceId = c.get('trace_id') ?? crypto.randomUUID()
+
+    // Auth is optional — anonymous users get free-tier scope
+    let userId: string | null = null
+    const userPlan: 'free' | 'starter' | 'team' = 'free'
+    const authHeader = c.req.header('authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7)
+      const claims = await verifyJwt(token, c.env.JWT_SECRET)
+      if (claims) userId = claims.sub
+    }
 
     // Parse and validate input
     let body: unknown
@@ -56,8 +63,9 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: Vars 
 
     const { question } = parsed.data
 
-    // Rate limiting: 10 questions per minute per user
-    const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, {
+    // Rate limiting: 10 questions per minute (keyed by user ID or IP)
+    const rateLimitKey = userId ?? (c.req.header('cf-connecting-ip') ?? 'anonymous')
+    const rl = await rateLimit(c.env.ACTIONS_KV, rateLimitKey, {
       max: 10,
       windowSeconds: 60,
       prefix: 'help-ask',
@@ -77,15 +85,7 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: Vars 
       )
     }
 
-    // Determine user's plan scope
-    const userScope = (() => {
-      if (plan === 'team') return 'team' as const
-      if (plan === 'starter') return 'starter' as const
-      return 'free' as const
-    })()
-
-    // Check plan entitlements: free users can ask about basic topics only
-    // Full gating happens in prompt (docs are scoped to their tier)
+    const userScope = userPlan
 
     try {
       // Call RAG pipeline
@@ -103,8 +103,8 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: Vars 
       console.log(
         JSON.stringify({
           event: 'help.ask.ok',
-          user_id: user.sub,
-          plan,
+          user_id: userId ?? 'anonymous',
+          plan: userPlan,
           latencyMs,
           source_count: result.sources.length,
         }),

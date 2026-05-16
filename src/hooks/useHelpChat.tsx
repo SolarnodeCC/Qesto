@@ -97,7 +97,7 @@ export function useHelpChat() {
 
     try {
       const result = await api<{ answer: string; sources: Array<{ documentId: string; title: string; relevance: number }> }>(
-        '/help/ask',
+        '/api/help/ask',
         {
           method: 'POST',
           body: { question },
@@ -132,7 +132,7 @@ export function useHelpChat() {
   const submitFeedback = useCallback(
     async (documentId: string, helpful: boolean, feedbackText?: string) => {
       try {
-        const result = await api<{ feedback_id: string }>('/help/feedback', {
+        const result = await api<{ feedback_id: string }>('/api/help/feedback', {
           method: 'POST',
           body: {
             documentId,
