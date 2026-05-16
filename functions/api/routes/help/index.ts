@@ -8,17 +8,11 @@
 
 import { Hono } from 'hono'
 import type { Env } from '../../types'
-import { authMiddleware, type AuthVariables } from '../../middleware/auth'
-import { planMiddleware, type PlanVariables } from '../../middleware/plan'
 import { registerHelpAskRoute } from './register-ask'
 import { registerHelpFeedbackRoute } from './register-feedback'
 
-type Vars = AuthVariables & PlanVariables
-
 export function mountHelpRoutes(parent: any): void {
-  const app = new Hono<{ Bindings: Env; Variables: Vars }>()
-  app.use('*', authMiddleware)
-  app.use('*', planMiddleware)
+  const app = new Hono<{ Bindings: Env }>()
 
   registerHelpAskRoute(app)
   registerHelpFeedbackRoute(app)
