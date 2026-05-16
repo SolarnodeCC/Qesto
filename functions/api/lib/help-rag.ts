@@ -26,7 +26,7 @@ export class HelpValidationError extends Error {
 }
 
 // Constants
-const HELP_MODEL = '@cf/mistral/mistral-7b-instruct-v0.2' as const
+const HELP_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8' as const
 const AI_TIMEOUT_MS = 20_000
 const RETRY_DELAYS_MS = [200, 400] as const
 const MAX_TOKENS = 512
