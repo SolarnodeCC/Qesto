@@ -87,8 +87,8 @@ apply_migrations() {
   # Get the database ID (already in the variable from provision_d1)
   local MIGRATIONS_DIR="migrations"
 
-  # Apply each migration file in order
-  for migration_file in "$MIGRATIONS_DIR"/000*.sql; do
+  # Apply each migration file in order (all numbered migrations, sorted numerically)
+  for migration_file in $(find "$MIGRATIONS_DIR" -maxdepth 1 -name '[0-9]*.sql' | sort -V); do
     if [ -f "$migration_file" ]; then
       local filename=$(basename "$migration_file")
       log_info "Applying $filename..."
