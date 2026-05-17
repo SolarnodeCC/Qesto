@@ -24,11 +24,11 @@ wrangler d1 create qesto-staging --use-remote
 
 **Save the `database_id` for later.**
 
-### Step 1.2: Apply Schema Migrations to Staging D1
+### Step 1.2: Apply Migrations to Staging D1
 
 ```bash
-# Apply the complete schema to staging
-wrangler d1 execute qesto-staging --remote --file schema.sql
+# Apply all migrations to staging (0000_init through latest)
+wrangler d1 migrations apply qesto-staging --remote
 
 # Verify tables exist
 wrangler d1 execute qesto-staging --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name"
@@ -36,13 +36,10 @@ wrangler d1 execute qesto-staging --remote --command "SELECT name FROM sqlite_ma
 # Expected output: sessions, questions, votes, users, teams, audit_events, recaps, custom_roles, etc.
 ```
 
-### Step 1.3: Apply v2.2 Migration
+### Step 1.3: Verify v2.2 Schema
 
 ```bash
-# Apply Sprint 20 v2.2 schema additions
-wrangler d1 execute qesto-staging --remote --file migrations/0020_v2_2_schema.sql
-
-# Verify new columns exist
+# Verify v2.2 columns exist on recaps table
 wrangler d1 execute qesto-staging --remote --command "PRAGMA table_info(recaps)"
 
 # Expected: Should show format_version, ai_model_version, generated_at, evidence_json columns

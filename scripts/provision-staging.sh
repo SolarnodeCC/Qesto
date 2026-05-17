@@ -84,11 +84,8 @@ provision_d1() {
 apply_migrations() {
   log_info "Phase 1b: Applying database migrations..."
 
-  log_info "Applying base schema..."
-  wrangler d1 execute qesto-staging --remote --file schema.sql
-
-  log_info "Applying v2.2 migrations..."
-  wrangler d1 execute qesto-staging --remote --file migrations/0020_v2_2_schema.sql
+  log_info "Running wrangler migrations..."
+  wrangler d1 migrations apply qesto-staging --remote
 
   log_success "Migrations applied"
 }
