@@ -40,8 +40,9 @@ export type Env = {
   /** v2.2: Integration webhooks (Slack, Notion, Airtable). */
   INTEGRATION_ENABLED?: string
 
-  // Secrets (wrangler pages secret put ...)
+  // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string
+  KB_ADMIN_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string
   GOOGLE_CLIENT_ID?: string
@@ -59,9 +60,12 @@ export type Env = {
   DECISIONS_KV: KVNamespace
   AUDIT_KV: KVNamespace
   ACTIONS_KV: KVNamespace
+  HELP_CONVERSATIONS_KV?: KVNamespace
   SESSION_ROOM: DurableObjectNamespace
   AI: Ai
   DECISIONS_VECTORIZE: VectorizeIndex
+  HELP_VECTORIZE: VectorizeIndex
+  KB_VECTORIZE: VectorizeIndex
   METRICS_KV?: KVNamespace
   METRICS_AE?: AnalyticsEngineDataset
   CIRCUIT_BREAKER_KV?: KVNamespace

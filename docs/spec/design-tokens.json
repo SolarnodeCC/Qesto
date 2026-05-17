@@ -1,686 +1,159 @@
 {
-  "$schema": "https://design-tokens.github.io/community-group/format/",
   "$meta": {
-    "name": "qesto-design-tokens",
-    "version": "1.0.0",
-    "description": "Machine-readable design tokens for the Qesto website and dashboard. Companion to docs/spec/WEBSITE_DESIGN_SPEC.md. src/ui/tokens.ts should be generated from this file.",
-    "lastUpdated": "2026-04-19",
-    "owner": "frontend + design"
+    "name": "Qesto Design Tokens",
+    "description": "Machine-readable design tokens for Qesto platform (colors, typography, spacing, shadows, motion, grid)",
+    "version": "1.0",
+    "source": "docs/spec/design-tokens.json",
+    "generated_from": "WEBSITE_DESIGN_SPEC.md",
+    "last_updated": "2026-05-11T14:32:00Z"
   },
   "color": {
     "teal": {
-      "50":  { "value": "#F0FDFA", "type": "color" },
-      "100": { "value": "#CCFBF1", "type": "color" },
-      "200": { "value": "#99F6E4", "type": "color" },
-      "300": { "value": "#5EEAD4", "type": "color" },
-      "400": { "value": "#2DD4BF", "type": "color" },
-      "500": { "value": "#14B8A6", "type": "color", "description": "Primary brand teal — gradient start, hover of 600" },
-      "600": { "value": "#0D9488", "type": "color", "description": "Primary action, focused text" },
-      "700": { "value": "#0F766E", "type": "color" },
-      "800": { "value": "#115E59", "type": "color" },
-      "900": { "value": "#134E4A", "type": "color" }
+      "50": { "value": "#F0FDFA" },
+      "100": { "value": "#CCFBF1" },
+      "200": { "value": "#99F6E4" },
+      "300": { "value": "#5EE7DF" },
+      "400": { "value": "#2DD4BF" },
+      "500": { "value": "#14B8A6" },
+      "600": { "value": "#0D9488" },
+      "700": { "value": "#0F766E" },
+      "800": { "value": "#115E59" },
+      "900": { "value": "#134E4A" }
     },
     "violet": {
-      "50":  { "value": "#F5F3FF", "type": "color" },
-      "100": { "value": "#EDE9FE", "type": "color" },
-      "200": { "value": "#DDD6FE", "type": "color" },
-      "300": { "value": "#C4B5FD", "type": "color" },
-      "400": { "value": "#A78BFA", "type": "color" },
-      "500": { "value": "#8B5CF6", "type": "color", "description": "Accent AI badge fill, link secondary" },
-      "600": { "value": "#7C3AED", "type": "color", "description": "Accent — gradient end, AI emphasis" },
-      "700": { "value": "#6D28D9", "type": "color" },
-      "800": { "value": "#5B21B6", "type": "color" },
-      "900": { "value": "#4C1D95", "type": "color" }
+      "50": { "value": "#F5F3FF" },
+      "100": { "value": "#EDE9FE" },
+      "200": { "value": "#DDD6FE" },
+      "300": { "value": "#C4B5FD" },
+      "400": { "value": "#A78BFA" },
+      "500": { "value": "#8B5CF6" },
+      "600": { "value": "#7C3AED" },
+      "700": { "value": "#6D28D9" },
+      "800": { "value": "#5B21B6" },
+      "900": { "value": "#4C1D95" }
     },
     "pulse": {
-      "50":  { "value": "#FAFAFA", "type": "color" },
-      "100": { "value": "#F5F5F5", "type": "color" },
-      "200": { "value": "#E5E5E5", "type": "color" },
-      "300": { "value": "#D4D4D4", "type": "color" },
-      "400": { "value": "#A3A3A3", "type": "color" },
-      "500": { "value": "#737373", "type": "color" },
-      "600": { "value": "#525252", "type": "color" },
-      "700": { "value": "#404040", "type": "color" },
-      "800": { "value": "#262626", "type": "color" },
-      "900": { "value": "#0A0F1E", "type": "color", "description": "Near-black, text on light backgrounds" }
+      "50": { "value": "#FAFAFA" },
+      "100": { "value": "#F5F5F5" },
+      "200": { "value": "#E5E5E5" },
+      "300": { "value": "#D4D4D4" },
+      "400": { "value": "#A3A3A3" },
+      "500": { "value": "#737373" },
+      "600": { "value": "#525252" },
+      "700": { "value": "#404040" },
+      "800": { "value": "#262626" },
+      "900": { "value": "#0A0F1E" }
     },
     "signal": {
-      "success": { "value": "#22C55E", "type": "color" },
-      "warning": { "value": "#F59E0B", "type": "color" },
-      "error":   { "value": "#DC2626", "type": "color" },
-      "info":    { "value": "#0EA5E9", "type": "color" }
-    },
-    "chart": {
-      "bar0": { "value": "{color.teal.500}",   "type": "color" },
-      "bar1": { "value": "{color.violet.500}", "type": "color" },
-      "bar2": { "value": "{color.signal.info}","type": "color" },
-      "bar3": { "value": "{color.teal.400}",   "type": "color" },
-      "bar4": { "value": "{color.violet.400}", "type": "color" }
+      "success": { "value": "#22C55E" },
+      "warning": { "value": "#F59E0B" },
+      "error": { "value": "#DC2626" },
+      "info": { "value": "#0EA5E9" }
     },
     "surface": {
-      "background":       { "value": "#FFFFFF", "type": "color" },
-      "backgroundSubtle": { "value": "{color.pulse.50}", "type": "color" },
-      "card":             { "value": "#FFFFFF", "type": "color" },
-      "border":           { "value": "{color.pulse.200}", "type": "color" },
-      "borderStrong":     { "value": "{color.pulse.300}", "type": "color" }
+      "background": { "value": "#FFFFFF" },
+      "backgroundSubtle": { "value": "#FAFAFA" },
+      "border": { "value": "#E5E7EB" },
+      "borderStrong": { "value": "#D1D5DB" }
     },
     "text": {
-      "primary":   { "value": "{color.pulse.900}", "type": "color" },
-      "secondary": { "value": "{color.pulse.600}", "type": "color" },
-      "muted":     { "value": "{color.pulse.500}", "type": "color" },
-      "onBrand":   { "value": "#FFFFFF", "type": "color" },
-      "link":      { "value": "{color.teal.600}", "type": "color" },
-      "linkAi":    { "value": "{color.violet.600}", "type": "color" }
-    }
-  },
-  "gradient": {
-    "brand": {
-      "value": "linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)",
-      "type": "gradient",
-      "description": "Primary CTA, hero headline. Teal → violet."
+      "primary": { "value": "#0A0F1E" },
+      "secondary": { "value": "#525252" },
+      "muted": { "value": "#A3A3A3" },
+      "onBrand": { "value": "#FFFFFF" },
+      "link": { "value": "#0D9488" },
+      "linkAi": { "value": "#7C3AED" }
     },
-    "brandSubtle": {
-      "value": "linear-gradient(135deg, #F0FDFA 0%, #F5F3FF 100%)",
-      "type": "gradient",
-      "description": "Card backdrops, empty states."
-    },
-    "ai": {
-      "value": "linear-gradient(135deg, #8B5CF6 0%, #2DD4BF 100%)",
-      "type": "gradient",
-      "description": "Reserved for AI surfaces. Inverted brand direction — violet leads."
-    }
-  },
-  "typography": {
-    "fontFamily": {
-      "display": { "value": "Syne, ui-sans-serif, system-ui, -apple-system, sans-serif", "type": "fontFamily" },
-      "body":    { "value": "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif", "type": "fontFamily", "description": "Replaces DM Sans" },
-      "mono":    { "value": "JetBrains Mono, ui-monospace, SFMono-Regular, monospace", "type": "fontFamily" }
-    },
-    "fontWeight": {
-      "regular":  { "value": 400, "type": "fontWeight" },
-      "medium":   { "value": 500, "type": "fontWeight" },
-      "semibold": { "value": 600, "type": "fontWeight" },
-      "bold":     { "value": 700, "type": "fontWeight" }
-    },
-    "display": {
-      "xl": { "value": { "fontFamily": "{typography.fontFamily.display}", "fontSize": "3.75rem", "lineHeight": 1.05, "fontWeight": 700, "letterSpacing": "-0.02em" }, "type": "typography", "description": "Hero H1" },
-      "l":  { "value": { "fontFamily": "{typography.fontFamily.display}", "fontSize": "3rem",    "lineHeight": 1.1,  "fontWeight": 700, "letterSpacing": "-0.02em" }, "type": "typography", "description": "Section H1" }
-    },
-    "heading": {
-      "l": { "value": { "fontFamily": "{typography.fontFamily.body}", "fontSize": "2rem",    "lineHeight": 1.2,  "fontWeight": 600, "letterSpacing": "-0.01em" }, "type": "typography" },
-      "m": { "value": { "fontFamily": "{typography.fontFamily.body}", "fontSize": "1.5rem",  "lineHeight": 1.3,  "fontWeight": 600, "letterSpacing": "-0.01em" }, "type": "typography" },
-      "s": { "value": { "fontFamily": "{typography.fontFamily.body}", "fontSize": "1.25rem", "lineHeight": 1.35, "fontWeight": 600, "letterSpacing": "0" }, "type": "typography" }
-    },
-    "body": {
-      "l": { "value": { "fontFamily": "{typography.fontFamily.body}", "fontSize": "1.125rem", "lineHeight": 1.55, "fontWeight": 400 }, "type": "typography", "description": "Landing body" },
-      "m": { "value": { "fontFamily": "{typography.fontFamily.body}", "fontSize": "1rem",     "lineHeight": 1.5,  "fontWeight": 400 }, "type": "typography", "description": "Default body" },
-      "s": { "value": { "fontFamily": "{typography.fontFamily.body}", "fontSize": "0.875rem", "lineHeight": 1.5,  "fontWeight": 400 }, "type": "typography", "description": "Dense UI, table" }
-    },
-    "caption": {
-      "value": { "fontFamily": "{typography.fontFamily.body}", "fontSize": "0.75rem", "lineHeight": 1.4, "fontWeight": 500, "letterSpacing": "0.02em" },
-      "type": "typography",
-      "description": "Badge, metadata"
+    "chart": {
+      "default": { "value": "#14B8A6" },
+      "ai": { "value": "#8B5CF6" }
     }
   },
   "space": {
-    "0":  { "value": "0",    "type": "spacing" },
-    "1":  { "value": "4px",  "type": "spacing" },
-    "2":  { "value": "8px",  "type": "spacing" },
-    "3":  { "value": "12px", "type": "spacing" },
-    "4":  { "value": "16px", "type": "spacing" },
-    "5":  { "value": "24px", "type": "spacing" },
-    "6":  { "value": "32px", "type": "spacing" },
-    "8":  { "value": "48px", "type": "spacing" },
-    "10": { "value": "64px", "type": "spacing" },
-    "12": { "value": "96px", "type": "spacing" }
+    "0": { "value": "0" },
+    "1": { "value": "0.25rem" },
+    "2": { "value": "0.5rem" },
+    "3": { "value": "0.75rem" },
+    "4": { "value": "1rem" },
+    "6": { "value": "1.5rem" },
+    "8": { "value": "2rem" },
+    "12": { "value": "3rem" },
+    "16": { "value": "4rem" },
+    "24": { "value": "6rem" },
+    "32": { "value": "8rem" },
+    "48": { "value": "12rem" },
+    "64": { "value": "16rem" },
+    "96": { "value": "24rem" }
   },
   "radius": {
-    "sm":   { "value": "6px",    "type": "borderRadius", "description": "Chips, tags" },
-    "md":   { "value": "10px",   "type": "borderRadius", "description": "Buttons, inputs" },
-    "lg":   { "value": "16px",   "type": "borderRadius", "description": "Cards" },
-    "xl":   { "value": "24px",   "type": "borderRadius", "description": "Hero panels, modals" },
-    "pill": { "value": "9999px", "type": "borderRadius", "description": "Pills, badges" }
+    "sm": { "value": "6px" },
+    "md": { "value": "10px" },
+    "lg": { "value": "16px" },
+    "xl": { "value": "24px" },
+    "pill": { "value": "9999px" }
   },
   "shadow": {
-    "card":     { "value": "0 2px 8px rgba(10,15,30,0.06)",    "type": "shadow", "description": "Default card" },
-    "elevated": { "value": "0 8px 24px rgba(10,15,30,0.10)",   "type": "shadow", "description": "Hover card, modal" },
-    "teal":     { "value": "0 4px 20px rgba(20,184,166,0.25)", "type": "shadow", "description": "Primary CTA hover" },
-    "ai":       { "value": "0 4px 20px rgba(139,92,246,0.25)", "type": "shadow", "description": "AI surface hover" },
-    "focusRing":{ "value": "0 0 0 3px rgba(20,184,166,0.4)",   "type": "shadow", "description": "Keyboard focus" }
+    "card": { "value": "0 2px 8px rgba(10, 15, 30, 0.06)" },
+    "elevated": { "value": "0 8px 24px rgba(10, 15, 30, 0.10)" },
+    "teal": { "value": "0 4px 20px rgba(20, 184, 166, 0.25)" },
+    "ai": { "value": "0 4px 20px rgba(139, 92, 246, 0.25)" },
+    "focusRing": { "value": "0 0 0 3px rgba(20, 184, 166, 0.4)" }
+  },
+  "typography": {
+    "fontFamily": {
+      "display": { "value": "'Syne', sans-serif" },
+      "body": { "value": "'Inter', sans-serif" },
+      "mono": { "value": "'JetBrains Mono', monospace" }
+    },
+    "fontWeight": {
+      "regular": { "value": "400" },
+      "medium": { "value": "500" },
+      "semibold": { "value": "600" },
+      "bold": { "value": "700" }
+    },
+    "fontSize": {
+      "displayXl": { "value": "60px" },
+      "displayLg": { "value": "48px" },
+      "headingLg": { "value": "32px" },
+      "headingMd": { "value": "24px" },
+      "headingSm": { "value": "20px" },
+      "bodyLg": { "value": "18px" },
+      "bodyMd": { "value": "16px" },
+      "bodySm": { "value": "14px" },
+      "caption": { "value": "12px" }
+    },
+    "lineHeight": {
+      "tight": { "value": "1.2" },
+      "normal": { "value": "1.5" },
+      "relaxed": { "value": "1.75" }
+    }
   },
   "motion": {
-    "easing": {
-      "standard": { "value": "cubic-bezier(0.2, 0, 0, 1)", "type": "cubicBezier" },
-      "enter":    { "value": "cubic-bezier(0.0, 0, 0.2, 1)", "type": "cubicBezier" },
-      "exit":     { "value": "cubic-bezier(0.4, 0, 1, 1)", "type": "cubicBezier" }
-    },
     "duration": {
-      "fast": { "value": "120ms", "type": "duration", "description": "Hover, focus" },
-      "base": { "value": "200ms", "type": "duration", "description": "Modals, sheets" },
-      "slow": { "value": "360ms", "type": "duration", "description": "Page transitions" }
+      "fast": { "value": "120ms" },
+      "standard": { "value": "200ms" },
+      "enter": { "value": "300ms" }
+    },
+    "easing": {
+      "standard": { "value": "cubic-bezier(0.2, 0, 0, 1)" },
+      "enter": { "value": "cubic-bezier(0.0, 0, 0.2, 1)" },
+      "exit": { "value": "cubic-bezier(0.4, 0, 1, 1)" },
+      "fast": { "value": "cubic-bezier(0.2, 0, 0.4, 1)" }
     }
   },
-  "breakpoint": {
-    "sm":  { "value": "640px",  "type": "dimension" },
-    "md":  { "value": "768px",  "type": "dimension" },
-    "lg":  { "value": "1024px", "type": "dimension" },
-    "xl":  { "value": "1280px", "type": "dimension" },
-    "2xl": { "value": "1536px", "type": "dimension" }
-  },
-  "layout": {
-    "baseline": { "value": "4px", "type": "dimension", "description": "Every vertical measurement lands on this grid" },
-    "grid": {
-      "mobile": {
-        "minWidth": { "value": "320px", "type": "dimension" },
-        "columns":  { "value": 4, "type": "number" },
-        "gutter":   { "value": "16px", "type": "dimension" },
-        "margin":   { "value": "16px", "type": "dimension" }
-      },
-      "tablet": {
-        "minWidth": { "value": "640px", "type": "dimension" },
-        "columns":  { "value": 8, "type": "number" },
-        "gutter":   { "value": "24px", "type": "dimension" },
-        "margin":   { "value": "32px", "type": "dimension" }
-      },
-      "desktop": {
-        "minWidth": { "value": "1024px", "type": "dimension" },
-        "columns":  { "value": 12, "type": "number" },
-        "gutter":   { "value": "24px", "type": "dimension" },
-        "margin":   { "value": "48px", "type": "dimension" },
-        "maxContent": { "value": "1280px", "type": "dimension" }
-      },
-      "wide": {
-        "minWidth": { "value": "1440px", "type": "dimension" },
-        "columns":  { "value": 12, "type": "number" },
-        "gutter":   { "value": "32px", "type": "dimension" },
-        "margin":   { "value": "80px", "type": "dimension" },
-        "maxContent": { "value": "1280px", "type": "dimension", "description": "Content stays capped; margins grow" }
-      }
+  "grid": {
+    "mobile": {
+      "columns": 4,
+      "gutter": "1rem"
     },
-    "rhythm": {
-      "tight": { "value": "48px",  "type": "spacing", "description": "Adjacent same-hierarchy sections" },
-      "base":  { "value": "96px",  "type": "spacing", "description": "Default between major sections" },
-      "loose": { "value": "160px", "type": "spacing", "description": "Hero-to-first marketing section" },
-      "compressAtTablet": { "value": 0.75, "type": "number" },
-      "compressAtMobile": { "value": 0.5,  "type": "number" }
+    "tablet": {
+      "columns": 8,
+      "gutter": "1.5rem"
     },
-    "density": {
-      "compact": {
-        "rowHeight":    { "value": "32px", "type": "dimension" },
-        "cellPadding":  { "value": "8px",  "type": "dimension" },
-        "iconSize":     { "value": "{icon.size.s}", "type": "dimension" },
-        "font":         { "value": "{typography.body.s}", "type": "typography" }
-      },
-      "comfortable": {
-        "rowHeight":    { "value": "48px", "type": "dimension" },
-        "cellPadding":  { "value": "12px", "type": "dimension" },
-        "iconSize":     { "value": "{icon.size.m}", "type": "dimension" },
-        "font":         { "value": "{typography.body.m}", "type": "typography" },
-        "isDefault":    { "value": true, "type": "other" }
-      },
-      "spacious": {
-        "rowHeight":    { "value": "64px", "type": "dimension" },
-        "cellPadding":  { "value": "16px", "type": "dimension" },
-        "iconSize":     { "value": "{icon.size.l}", "type": "dimension" },
-        "font":         { "value": "{typography.body.l}", "type": "typography" }
-      }
+    "desktop": {
+      "columns": 12,
+      "gutter": "2rem"
     },
-    "template": {
-      "landing": {
-        "header":        { "value": "72px", "type": "dimension", "description": "Fixed top" },
-        "maxContent":    { "value": "{container.content}", "type": "dimension" },
-        "sectionRhythm": { "value": "{layout.rhythm.base}", "type": "spacing" },
-        "footerColumnsDesktop": { "value": 2, "type": "number" }
-      },
-      "dashboard": {
-        "topBar":       { "value": "64px", "type": "dimension" },
-        "sidebar":      { "value": "240px", "type": "dimension" },
-        "sidebarCollapsed": { "value": "64px", "type": "dimension" },
-        "maxContent":   { "value": "{container.app}", "type": "dimension" },
-        "contentGutterDesktop": { "value": "32px", "type": "dimension" },
-        "tabBarHeight": { "value": "48px", "type": "dimension" }
-      },
-      "content": {
-        "maxContent":   { "value": "{container.prose}", "type": "dimension" },
-        "leftNav":      { "value": "240px", "type": "dimension", "description": "Optional" },
-        "rightToc":     { "value": "200px", "type": "dimension", "description": "Optional" },
-        "maxLineLength":{ "value": "70ch", "type": "other" }
-      },
-      "wizard": {
-        "modalWidth":    { "value": "640px", "type": "dimension" },
-        "contentPadding":{ "value": "24px", "type": "dimension" },
-        "contentWidth":  { "value": "592px", "type": "dimension" },
-        "stepRhythm":    { "value": "32px", "type": "spacing" },
-        "fieldGroupGap": { "value": "24px", "type": "spacing" },
-        "labelInputGap": { "value": "16px", "type": "spacing" },
-        "inputHeight":   { "value": "40px", "type": "dimension" },
-        "buttonHeight":  { "value": "48px", "type": "dimension" },
-        "maxHeight":     { "value": "90vh", "type": "dimension" },
-        "mobileIsSheet": { "value": true, "type": "other" }
-      },
-      "present": {
-        "header":       { "value": "72px", "type": "dimension" },
-        "footer":       { "value": "96px", "type": "dimension" },
-        "horizontalPadding": { "value": "5vw", "type": "dimension" },
-        "maxContent":   { "value": "{container.content}", "type": "dimension" },
-        "respectSafeArea": { "value": true, "type": "other" }
-      },
-      "launchpad": {
-        "actionRail": {
-          "widthDesktop":       { "value": "320px", "type": "dimension" },
-          "stickyLaunchCard":   { "value": true, "type": "other", "description": "Launch card pins to bottom of rail at desktop" },
-          "cardGap":            { "value": "{space.5}", "type": "spacing" }
-        },
-        "contentRail": {
-          "maxWidth":           { "value": "{container.content}", "type": "dimension" },
-          "paddingXDesktop":    { "value": "{space.8}", "type": "spacing", "description": "48px between rails" },
-          "blockRhythm":        { "value": "{space.6}", "type": "spacing" }
-        },
-        "layoutPerBreakpoint": {
-          "mobile":             { "value": "single-column; share in bottom sheet; Open lobby fixed bottom", "type": "other" },
-          "tablet":             { "value": "action rail stacked on top (2-col: share|remote); launch card full-width below; content below", "type": "other" },
-          "desktop":            { "value": "two-rail; action 320 + content fluid", "type": "other" },
-          "wide":               { "value": "two-rail; content capped at 1120, extra flows to margins", "type": "other" }
-        }
-      }
-    },
-    "sticky": {
-      "topBar": {
-        "offset":        { "value": "0px", "type": "dimension" },
-        "scrollShadowAfter": { "value": "8px", "type": "dimension" },
-        "zIndex":        { "value": "{zIndex.sticky}", "type": "number" }
-      },
-      "tabs": {
-        "offset":        { "value": "64px", "type": "dimension", "description": "Below topBar" },
-        "zIndex":        { "value": "{zIndex.sticky}", "type": "number" }
-      },
-      "wizardActionBar": {
-        "offset":        { "value": "bottom:0", "type": "other", "description": "mobile only" },
-        "shadow":        { "value": "0 -8px 24px rgba(10,15,30,0.10)", "type": "shadow" },
-        "zIndex":        { "value": "{zIndex.overlay}", "type": "number" }
-      },
-      "toast": {
-        "offsetDesktop": { "value": "top:80px", "type": "other" },
-        "offsetMobile":  { "value": "bottom:16px", "type": "other" },
-        "zIndex":        { "value": "{zIndex.toast}", "type": "number" }
-      }
-    },
-    "skeleton": {
-      "shimmer": {
-        "gradient":  { "value": "linear-gradient(90deg, #F5F5F5 0%, #E5E5E5 50%, #F5F5F5 100%)", "type": "gradient" },
-        "duration":  { "value": "1400ms", "type": "duration" },
-        "timing":    { "value": "linear infinite", "type": "other" }
-      },
-      "radius":      { "value": "{radius.md}", "type": "borderRadius" },
-      "rowHeightDefault": { "value": "48px", "type": "dimension" }
-    },
-    "motion": {
-      "pageEnter": {
-        "translateY":{ "value": "8px", "type": "dimension" },
-        "duration":  { "value": "{motion.duration.base}", "type": "duration" },
-        "easing":    { "value": "{motion.easing.enter}", "type": "cubicBezier" }
-      },
-      "modalEnter": {
-        "scaleFrom": { "value": 0.98, "type": "number" },
-        "duration":  { "value": "{motion.duration.base}", "type": "duration" },
-        "easing":    { "value": "{motion.easing.enter}", "type": "cubicBezier" }
-      },
-      "stagger": {
-        "small":     { "value": "40ms", "type": "duration", "description": "≤6 children" },
-        "large":     { "value": "20ms", "type": "duration", "description": "7–20 children" },
-        "maxChildrenBeforeDisable": { "value": 20, "type": "number" }
-      },
-      "spring": {
-        "stiffness": { "value": 280, "type": "number" },
-        "damping":   { "value": 28,  "type": "number" },
-        "mass":      { "value": 1,   "type": "number" }
-      }
-    },
-    "ratio": {
-      "square":    { "value": "1 / 1", "type": "other" },
-      "portrait":  { "value": "4 / 5", "type": "other" },
-      "landscape": { "value": "16 / 9", "type": "other" },
-      "wide":      { "value": "21 / 9", "type": "other" },
-      "golden":    { "value": "1.618 / 1", "type": "other" }
-    },
-    "safeArea": {
-      "top":    { "value": "env(safe-area-inset-top, 0px)",    "type": "other" },
-      "right":  { "value": "env(safe-area-inset-right, 0px)",  "type": "other" },
-      "bottom": { "value": "env(safe-area-inset-bottom, 0px)", "type": "other" },
-      "left":   { "value": "env(safe-area-inset-left, 0px)",   "type": "other" }
-    },
-    "tapTarget": {
-      "minMobile":  { "value": "44px", "type": "dimension", "description": "iOS HIG" },
-      "minDesktop": { "value": "32px", "type": "dimension", "description": "Secondary controls only" }
-    }
-  },
-  "container": {
-    "prose":   { "value": "680px",  "type": "dimension", "description": "Blog, legal, solutions detail" },
-    "content": { "value": "1120px", "type": "dimension", "description": "Landing, pricing" },
-    "app":     { "value": "1280px", "type": "dimension", "description": "Dashboard" }
-  },
-  "zIndex": {
-    "base":     { "value": 0,    "type": "number" },
-    "dropdown": { "value": 100,  "type": "number" },
-    "sticky":   { "value": 200,  "type": "number" },
-    "overlay":  { "value": 800,  "type": "number" },
-    "modal":    { "value": 900,  "type": "number" },
-    "toast":    { "value": 1000, "type": "number" }
-  },
-  "icon": {
-    "size": {
-      "s": { "value": "16px", "type": "dimension" },
-      "m": { "value": "20px", "type": "dimension" },
-      "l": { "value": "24px", "type": "dimension" }
-    },
-    "strokeWidth": { "value": 1.75, "type": "number" }
-  },
-  "component": {
-    "button": {
-      "primary": {
-        "background":     { "value": "{gradient.brand}", "type": "gradient" },
-        "color":          { "value": "{color.text.onBrand}", "type": "color" },
-        "radius":         { "value": "{radius.md}", "type": "borderRadius" },
-        "paddingY":       { "value": "{space.3}", "type": "spacing" },
-        "paddingX":       { "value": "{space.5}", "type": "spacing" },
-        "shadow":         { "value": "{shadow.card}", "type": "shadow" },
-        "hoverShadow":    { "value": "{shadow.teal}", "type": "shadow" },
-        "hoverTransform": { "value": "scale(1.02)", "type": "other" },
-        "transition":     { "value": "transform 120ms cubic-bezier(0.2,0,0,1), box-shadow 120ms cubic-bezier(0.2,0,0,1)", "type": "other" }
-      },
-      "secondary": {
-        "background":   { "value": "{color.surface.card}", "type": "color" },
-        "color":        { "value": "{color.text.primary}", "type": "color" },
-        "border":       { "value": "1px solid {color.surface.border}", "type": "other" },
-        "radius":       { "value": "{radius.md}", "type": "borderRadius" },
-        "paddingY":     { "value": "{space.3}", "type": "spacing" },
-        "paddingX":     { "value": "{space.5}", "type": "spacing" },
-        "hoverBorder":  { "value": "1px solid {color.surface.borderStrong}", "type": "other" }
-      }
-    },
-    "aiBadge": {
-      "variants": {
-        "assisted": {
-          "background": { "value": "{color.violet.500}",  "type": "color", "description": "Filled violet, text onBrand" },
-          "color":      { "value": "{color.text.onBrand}", "type": "color" },
-          "iconColor":  { "value": "{color.text.onBrand}", "type": "color" },
-          "label":      { "value": "AI-assisted", "type": "other" }
-        },
-        "generated": {
-          "background": { "value": "{color.violet.50}",  "type": "color" },
-          "color":      { "value": "{color.violet.700}", "type": "color" },
-          "iconColor":  { "value": "{color.violet.600}", "type": "color" },
-          "label":      { "value": "AI-generated", "type": "other" }
-        },
-        "analyzed": {
-          "background": { "value": "{color.violet.50}",  "type": "color" },
-          "color":      { "value": "{color.violet.700}", "type": "color" },
-          "iconColor":  { "value": "{color.violet.600}", "type": "color" },
-          "accentDot":  { "value": "{color.teal.500}",   "type": "color" },
-          "label":      { "value": "AI-analyzed", "type": "other" }
-        }
-      },
-      "radius":   { "value": "{radius.pill}", "type": "borderRadius" },
-      "paddingY": { "value": "{space.1}",     "type": "spacing" },
-      "paddingX": { "value": "{space.2}",     "type": "spacing" },
-      "font":     { "value": "{typography.caption}", "type": "typography" },
-      "iconSize": { "value": "{icon.size.s}", "type": "dimension" }
-    },
-    "insightsCard": {
-      "background":    { "value": "{color.surface.card}", "type": "color" },
-      "accentGradient":{ "value": "{gradient.ai}", "type": "gradient", "description": "Left 4px accent bar when card is AI-derived" },
-      "radius":        { "value": "{radius.lg}", "type": "borderRadius" },
-      "padding":       { "value": "{space.5}", "type": "spacing" },
-      "shadow":        { "value": "{shadow.card}", "type": "shadow" },
-      "hoverShadow":   { "value": "{shadow.elevated}", "type": "shadow" }
-    },
-    "hero": {
-      "subheadMaxWidth": { "value": "640px", "type": "dimension" },
-      "featureStrip": {
-        "gap":            { "value": "{space.5}", "type": "spacing" },
-        "iconColor":      { "value": "{color.violet.500}", "type": "color" },
-        "iconSize":       { "value": "{icon.size.m}", "type": "dimension" },
-        "labelFont":      { "value": "{typography.body.m}", "type": "typography" },
-        "items": [
-          "AI suggests follow-ups",
-          "Real-time analysis",
-          "Instant PowerPoint reports"
-        ]
-      }
-    },
-    "wizard": {
-      "modal": {
-        "width":         { "value": "640px", "type": "dimension" },
-        "radius":        { "value": "{radius.xl}", "type": "borderRadius" },
-        "shadow":        { "value": "{shadow.elevated}", "type": "shadow" },
-        "padding":       { "value": "{space.6}", "type": "spacing" },
-        "backdrop":      { "value": "rgba(10,15,30,0.48)", "type": "color" }
-      },
-      "progressBar": {
-        "height":        { "value": "2px", "type": "dimension" },
-        "fill":          { "value": "{gradient.brand}", "type": "gradient" },
-        "track":         { "value": "{color.surface.border}", "type": "color" }
-      },
-      "stepCaption": {
-        "font":          { "value": "{typography.caption}", "type": "typography" },
-        "color":         { "value": "{color.pulse.500}", "type": "color" },
-        "letterSpacing":{ "value": "0.08em", "type": "other" },
-        "textTransform":{ "value": "uppercase", "type": "other" }
-      },
-      "stepCount":       { "value": 5, "type": "number" },
-      "optionCard": {
-        "padding":       { "value": "{space.4}", "type": "spacing" },
-        "radius":        { "value": "{radius.lg}", "type": "borderRadius" },
-        "border":        { "value": "1px solid {color.surface.border}", "type": "other" },
-        "hoverBorder":   { "value": "1px solid {color.surface.borderStrong}", "type": "other" },
-        "hoverShadow":   { "value": "{shadow.elevated}", "type": "shadow" },
-        "transition":    { "value": "border-color 120ms cubic-bezier(0.2,0,0,1), box-shadow 120ms cubic-bezier(0.2,0,0,1)", "type": "other" },
-        "selected": {
-          "border":      { "value": "1.5px solid {color.teal.500}", "type": "other" },
-          "background":  { "value": "{color.teal.50}", "type": "color" }
-        }
-      },
-      "aiGenerateCta": {
-        "background":    { "value": "{gradient.ai}", "type": "gradient" },
-        "color":         { "value": "{color.text.onBrand}", "type": "color" },
-        "radius":        { "value": "{radius.md}", "type": "borderRadius" },
-        "paddingY":      { "value": "{space.3}", "type": "spacing" },
-        "paddingX":      { "value": "{space.5}", "type": "spacing" },
-        "icon":          { "value": "sparkles", "type": "other" },
-        "iconSize":      { "value": "{icon.size.s}", "type": "dimension" },
-        "shadow":        { "value": "{shadow.card}", "type": "shadow" },
-        "hoverShadow":   { "value": "{shadow.ai}", "type": "shadow" },
-        "disabledOpacity": { "value": 0.45, "type": "number" }
-      },
-      "groundingPanel": {
-        "background":    { "value": "{color.surface.backgroundSubtle}", "type": "color" },
-        "radius":        { "value": "{radius.md}", "type": "borderRadius" },
-        "padding":       { "value": "{space.4}", "type": "spacing" },
-        "color":         { "value": "{color.text.secondary}", "type": "color" },
-        "font":          { "value": "{typography.body.m}", "type": "typography" }
-      },
-      "questionRow": {
-        "padding":       { "value": "{space.4}", "type": "spacing" },
-        "radius":        { "value": "{radius.lg}", "type": "borderRadius" },
-        "border":        { "value": "1px solid {color.surface.border}", "type": "other" },
-        "gap":           { "value": "{space.3}", "type": "spacing" },
-        "aiAccentBar": {
-          "width":       { "value": "3px", "type": "dimension" },
-          "gradient":    { "value": "{gradient.ai}", "type": "gradient" }
-        },
-        "typeSwitcher": {
-          "variant":     { "value": "segmented", "type": "other" },
-          "options":     { "value": ["multiple-choice", "ranking", "wordcloud"], "type": "other" },
-          "activeBg":    { "value": "{color.teal.50}", "type": "color" },
-          "activeColor": { "value": "{color.teal.700}", "type": "color" }
-        },
-        "validation": {
-          "errorColor":  { "value": "{color.signal.error}", "type": "color" },
-          "warningColor":{ "value": "{color.signal.warning}", "type": "color" }
-        }
-      },
-      "questionTypeRules": {
-        "multipleChoice": {
-          "minOptions":  { "value": 3, "type": "number", "description": "Hard minimum enforced before Next" },
-          "maxOptions":  { "value": 5, "type": "number", "description": "Hard maximum" },
-          "defaultOptions": { "value": 4, "type": "number" }
-        },
-        "ranking": {
-          "minItems":    { "value": 3, "type": "number" },
-          "maxItems":    { "value": 8, "type": "number" },
-          "defaultItems":{ "value": 5, "type": "number" }
-        },
-        "wordcloud": {
-          "maxChars":    { "value": 20, "type": "number", "description": "Per-participant response length" }
-        }
-      },
-      "energizerGrid": {
-        "columns":       { "value": 2, "type": "number" },
-        "gap":           { "value": "{space.4}", "type": "spacing" },
-        "cardRadius":    { "value": "{radius.lg}", "type": "borderRadius" }
-      },
-      "overviewCard": {
-        "background":    { "value": "{color.surface.card}", "type": "color" },
-        "radius":        { "value": "{radius.lg}", "type": "borderRadius" },
-        "padding":       { "value": "{space.5}", "type": "spacing" },
-        "shadow":        { "value": "{shadow.card}", "type": "shadow" },
-        "editAffordance":{ "value": "pencil icon, top-right, 16px, color.teal.600", "type": "other" }
-      }
-    },
-    "launchpad": {
-      "shareCard": {
-        "background":         { "value": "{color.surface.card}", "type": "color" },
-        "radius":             { "value": "{radius.lg}", "type": "borderRadius" },
-        "padding":            { "value": "{space.5}", "type": "spacing" },
-        "shadow":             { "value": "{shadow.card}", "type": "shadow" },
-        "sectionGap":         { "value": "{space.4}", "type": "spacing" }
-      },
-      "joinCodeDisplay": {
-        "font":               { "value": "{typography.display.l}", "type": "typography" },
-        "fontWeight":         { "value": 700, "type": "fontWeight" },
-        "letterSpacing":      { "value": "0.12em", "type": "other" },
-        "digitGap":           { "value": "{space.3}", "type": "spacing" },
-        "color":              { "value": "{color.text.primary}", "type": "color" },
-        "ariaLabelPattern":   { "value": "Join code {digits spelled out}", "type": "other" }
-      },
-      "qrParticipant": {
-        "size":               { "value": "200px", "type": "dimension" },
-        "padding":            { "value": "{space.3}", "type": "spacing" },
-        "background":         { "value": "{color.surface.background}", "type": "color" },
-        "radius":              { "value": "{radius.md}", "type": "borderRadius" },
-        "altPattern":         { "value": "Scan to join — or go to qesto.cc and enter code {code}", "type": "other" }
-      },
-      "qrRemote": {
-        "size":               { "value": "140px", "type": "dimension" },
-        "border":             { "value": "1px solid {color.violet.400}", "type": "other", "description": "Visually distinct from participant QR" },
-        "background":         { "value": "{color.surface.background}", "type": "color" },
-        "radius":             { "value": "{radius.md}", "type": "borderRadius" }
-      },
-      "remoteCard": {
-        "background":         { "value": "{color.surface.card}", "type": "color" },
-        "radius":             { "value": "{radius.lg}", "type": "borderRadius" },
-        "padding":            { "value": "{space.5}", "type": "spacing" },
-        "shadow":             { "value": "{shadow.card}", "type": "shadow" },
-        "buttonLayout": {
-          "desktop":          { "value": "side-by-side", "type": "other" },
-          "mobile":           { "value": "stacked", "type": "other" }
-        }
-      },
-      "launchCard": {
-        "background":         { "value": "{color.surface.card}", "type": "color" },
-        "radius":             { "value": "{radius.lg}", "type": "borderRadius" },
-        "padding":            { "value": "{space.5}", "type": "spacing" },
-        "shadow":             { "value": "{shadow.card}", "type": "shadow" },
-        "stickyDesktop":      { "value": "bottom", "type": "other" },
-        "stickyMobile":       { "value": "fixed-bottom-action-bar", "type": "other" },
-        "mobileBarHeight":    { "value": "72px", "type": "dimension" },
-        "mobileBarShadow":    { "value": "0 -8px 24px rgba(10,15,30,0.10)", "type": "shadow" }
-      },
-      "openLobbyCta": {
-        "background":         { "value": "{gradient.brand}", "type": "gradient" },
-        "color":              { "value": "{color.text.onBrand}", "type": "color" },
-        "radius":             { "value": "{radius.md}", "type": "borderRadius" },
-        "height":             { "value": "48px", "type": "dimension" },
-        "width":              { "value": "100%", "type": "dimension" },
-        "iconGap":            { "value": "{space.2}", "type": "spacing" },
-        "icon":               { "value": "arrow-right", "type": "other" },
-        "shadow":             { "value": "{shadow.card}", "type": "shadow" },
-        "hoverShadow":        { "value": "{shadow.teal}", "type": "shadow" },
-        "hoverTransform":     { "value": "scale(1.02)", "type": "other" },
-        "transition":         { "value": "transform 120ms cubic-bezier(0.2,0,0,1), box-shadow 120ms cubic-bezier(0.2,0,0,1)", "type": "other" },
-        "disabledOpacity":    { "value": 0.45, "type": "number" }
-      },
-      "backToQuestionsLink": {
-        "font":               { "value": "{typography.body.s}", "type": "typography" },
-        "color":              { "value": "{color.teal.600}", "type": "color" },
-        "hoverUnderline":     { "value": true, "type": "other" },
-        "iconLeft":           { "value": "arrow-left", "type": "other" },
-        "marginTop":          { "value": "{space.2}", "type": "spacing" }
-      },
-      "preFlightStrip": {
-        "font":               { "value": "{typography.caption}", "type": "typography" },
-        "gap":                { "value": "{space.3}", "type": "spacing" },
-        "successColor":       { "value": "{color.signal.success}", "type": "color" },
-        "warningColor":       { "value": "{color.signal.warning}", "type": "color" },
-        "checks": [
-          { "id": "questions", "label": "Questions ready ({count})", "failsWhen": "count === 0" },
-          { "id": "energizer", "label": "Energizer set ({name|None})", "failsWhen": "never" },
-          { "id": "settings",  "label": "Settings saved",              "failsWhen": "never" }
-        ]
-      },
-      "identityBlock": {
-        "titleFont":          { "value": "{typography.heading.l}", "type": "typography" },
-        "titleMaxChars":      { "value": 80, "type": "number" },
-        "titleTextWrap":      { "value": "balance", "type": "other" },
-        "descriptionFont":    { "value": "{typography.body.l}", "type": "typography" },
-        "descriptionColor":   { "value": "{color.text.secondary}", "type": "color" },
-        "descriptionMaxChars":{ "value": 400, "type": "number" },
-        "editAffordance":     { "value": "pencil icon, right-aligned, 16px, color.teal.600, routes to wizard step 1", "type": "other" }
-      },
-      "questionsBlock": {
-        "heading":            { "value": "{typography.heading.m}", "type": "typography" },
-        "addButtonPosition":  { "value": "top-right", "type": "other" },
-        "rowHeight":          { "value": "{layout.density.comfortable.rowHeight}", "type": "dimension" },
-        "rowPadding":         { "value": "{layout.density.comfortable.cellPadding}", "type": "dimension" },
-        "dragHandle": {
-          "icon":             { "value": "grip-vertical", "type": "other" },
-          "visibility":       { "value": "hover-reveal", "type": "other" },
-          "width":            { "value": "24px", "type": "dimension" }
-        },
-        "typeChip": {
-          "font":             { "value": "{typography.caption}", "type": "typography" },
-          "radius":           { "value": "{radius.pill}", "type": "borderRadius" },
-          "paddingX":         { "value": "{space.2}", "type": "spacing" },
-          "paddingY":         { "value": "{space.1}", "type": "spacing" },
-          "variants": {
-            "open":           { "bg": "{color.pulse.100}",  "color": "{color.pulse.700}" },
-            "multipleChoice": { "bg": "{color.teal.50}",    "color": "{color.teal.700}" },
-            "ranking":        { "bg": "{color.violet.50}",  "color": "{color.violet.700}" },
-            "wordcloud":      { "bg": "{color.violet.50}",  "color": "{color.violet.600}" }
-          }
-        },
-        "emptyState": {
-          "illustrationSize": { "value": "80px", "type": "dimension" },
-          "heading":          { "value": "{typography.heading.s}", "type": "typography" },
-          "body":             { "value": "{typography.body.m}", "type": "typography" },
-          "cta":              { "value": "Back to questions", "type": "other" }
-        }
-      },
-      "dangerZone": {
-        "collapsedByDefault": { "value": true, "type": "other" },
-        "label":              { "value": "Delete draft session", "type": "other" },
-        "color":              { "value": "{color.signal.error}", "type": "color" },
-        "positionInPage":     { "value": "bottom of content rail", "type": "other" }
-      }
-    }
-  },
-  "a11y": {
-    "contrast": {
-      "bodyMin":      { "value": 4.5, "type": "number" },
-      "largeTextMin": { "value": 3,   "type": "number" },
-      "uiMin":        { "value": 3,   "type": "number" }
-    },
-    "focusRingMinWidth": { "value": "2px", "type": "dimension" },
-    "respectReducedMotion": { "value": true, "type": "other" }
+    "baseline": { "value": "4px" }
   }
 }

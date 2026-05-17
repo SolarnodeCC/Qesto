@@ -6,6 +6,22 @@ Qesto is a **privacy-first, real-time polling and session platform** built on Cl
 
 This handoff contains the complete design system, marketing website, product UI kits, and supporting docs for implementing Qesto in a real codebase.
 
+## Documentation & Knowledge Base
+
+All technical documentation, specifications, and operational guides have been organized into the **[Knowledge Base](./knowledge-base/)** for easy discovery and AI optimization.
+
+**Quick Links:**
+- **[Knowledge Base Hub](./knowledge-base/README.md)** — Start here for navigation by role
+- **[Architecture & Decisions](./knowledge-base/adr/)** — 12 Architecture Decision Records
+- **[Specifications](./knowledge-base/specifications/)** — Domain, product, and feature specifications
+- **[Product Roadmap](./knowledge-base/product/roadmap/)** — Strategic direction and planning
+- **[API Reference](./knowledge-base/api/)** — REST and WebSocket API documentation
+- **[Security & Compliance](./knowledge-base/security/)** — Policies, audits, and procedures
+- **[Operations & Runbooks](./knowledge-base/operations/)** — Deployment guides and incident response
+- **[Quality & Testing](./knowledge-base/quality/)** — Testing strategy, accessibility, audits
+
+**Contributing?** See [knowledge-base/CONTRIBUTING.md](./knowledge-base/CONTRIBUTING.md) for documentation guidelines.
+
 ## About the Design Files
 
 **The HTML files bundled here are design references, not production code.** They are high-fidelity prototypes showing the intended look, interactions, content, and information architecture. Your job as the implementer is to **recreate these designs inside the target codebase's existing environment** — not to ship the HTML directly.

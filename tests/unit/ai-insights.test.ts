@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   InsightsAIError,
   InsightsValidationError,
+  __internal,
   extractThemes,
 } from '../../functions/api/lib/ai-insights'
 
@@ -74,6 +75,40 @@ describe('ai-insights/extractThemes', () => {
         openResponses: ['a', 'b'],
       }),
     ).rejects.toBeInstanceOf(InsightsAIError)
+  })
+
+  // ADR-040 Phase 3: RAG grounding pass-through.
+  it('injects kbContext into the user prompt when provided', () => {
+    const prompt = __internal.buildUserPrompt({
+      sessionTitle: 'Retro',
+      openResponses: ['Tooling is slow'],
+      kbContext: '## Knowledge Base Context\n\n### Doc › Section\nGrounding body.',
+    })
+    expect(prompt).toContain('Background knowledge')
+    expect(prompt).toContain('### Doc › Section')
+    expect(prompt).toContain('Grounding body.')
+    // Background block must appear before the responses so the model reads it first.
+    const bgIdx = prompt.indexOf('Background knowledge')
+    const responsesIdx = prompt.indexOf('Free-text responses')
+    expect(bgIdx).toBeGreaterThanOrEqual(0)
+    expect(bgIdx).toBeLessThan(responsesIdx)
+  })
+
+  it('omits the background block when kbContext is empty/whitespace', () => {
+    const prompt = __internal.buildUserPrompt({
+      sessionTitle: 'Retro',
+      openResponses: ['x'],
+      kbContext: '   ',
+    })
+    expect(prompt).not.toContain('Background knowledge')
+  })
+
+  it('omits the background block when kbContext is absent', () => {
+    const prompt = __internal.buildUserPrompt({
+      sessionTitle: 'Retro',
+      openResponses: ['x'],
+    })
+    expect(prompt).not.toContain('Background knowledge')
   })
 
   it('retries transient AI failures before returning themes', async () => {

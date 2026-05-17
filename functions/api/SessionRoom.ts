@@ -293,7 +293,7 @@ export class SessionRoom implements DurableObject {
     // where one voter can legitimately submit multiple entries (multi_select,
     // upvote, word_cloud) each entry is emitted separately; the caller must
     // relax the UNIQUE constraint at the schema level for those kinds before
-    // all rows will persist. See docs/ARCHITECTURE.md.
+    // all rows will persist. See knowledge-base/architecture/ARCHITECTURE.md.
     const voteList = Object.entries(votes).flatMap(([voterId, optionIds]) =>
       optionIds.map((optionId) => ({ voterId, optionId })),
     )

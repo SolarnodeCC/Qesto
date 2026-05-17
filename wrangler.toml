@@ -55,8 +55,8 @@ RESEND_FROM = "Qesto <login@qesto.cc>"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "qesto_2_db"
-database_id = "45b8f13f-7ba1-416b-bf95-1747fa9d4c12"
+database_name = "qesto_3_db"
+database_id = "d391bdd5-a03d-41bc-bc45-6b5f3bac1b1b"
 migrations_dir = "migrations"
 
 # KV — uncomment after `wrangler kv namespace create <BINDING>` for each and paste each id.
@@ -99,13 +99,31 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
+# HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
+# [[kv_namespaces]]
+# binding = "HELP_CONVERSATIONS_KV"
+# id = "<to-be-created>"
+
 [[vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
 
+[[vectorize]]
+binding = "HELP_VECTORIZE"
+index_name = "qesto-help"
+
+[[vectorize]]
+binding = "KB_VECTORIZE"
+index_name = "qesto-kb-production"
+
 [[analytics_engine_datasets]]
 binding = "METRICS_AE"
 dataset = "qesto_metrics"
+
+[triggers]
+# Phase 5: Scheduled KB sync via Cloudflare Workers Cron
+# Triggers daily at 02:00 UTC to check for KB changes and auto-sync to Vectorize
+crons = ["0 2 * * *"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Staging (v2.2 pre-work)

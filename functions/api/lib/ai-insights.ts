@@ -16,6 +16,12 @@ export type InsightsInput = {
   openResponses: string[] // raw free-text responses
   pollBreakdown?: { prompt: string; topLabels: string[] }[] // up to 5 poll prompts with their top labels
   similarSessionTitles?: string[] // from Vectorize semantic search, best-effort
+  /**
+   * Optional RAG context block (markdown) produced by `getRagContext()`.
+   * When present, the prompt is grounded against knowledge-base passages.
+   * Best-effort — the analyzer must work without it.
+   */
+  kbContext?: string
 }
 
 export type InsightTheme = {
@@ -64,7 +70,19 @@ Rules:
 - If there are fewer than 3 responses, return one "Insufficient data" theme.`
 
 function buildUserPrompt(input: InsightsInput): string {
-  const lines: string[] = [`Session title: ${input.sessionTitle}`]
+  const lines: string[] = []
+  // RAG grounding goes FIRST so the model reads it before the responses. The
+  // block is already a fenced markdown section (`## Knowledge Base Context`).
+  // We surround it with an explicit usage hint so the analyzer treats it as
+  // background — not as response text to summarise.
+  if (input.kbContext && input.kbContext.trim().length > 0) {
+    lines.push(
+      'Background knowledge (from internal docs — use to interpret the responses, do not summarise it as a theme):',
+    )
+    lines.push(input.kbContext.trim())
+    lines.push('')
+  }
+  lines.push(`Session title: ${input.sessionTitle}`)
   if (input.pollBreakdown && input.pollBreakdown.length > 0) {
     lines.push('\nPoll highlights:')
     for (const pb of input.pollBreakdown) {

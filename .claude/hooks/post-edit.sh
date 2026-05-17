@@ -73,19 +73,19 @@ fi
 # Map edited source files to the docs that should stay in sync with them.
 
 if [[ "$FILE" =~ ^functions/api/routes/.*\.ts$ ]] || [[ "$FILE" == "functions/api/[[route]].ts" ]]; then
-  echo "REMINDER: API route changed — update docs/API_FULL.md if endpoints were added/modified." >&2
+  echo "REMINDER: API route changed — update knowledge-base/api/API_FULL.md if endpoints were added/modified." >&2
 fi
 
 if [[ "$FILE" == functions/api/SessionRoom.ts ]]; then
-  echo "REMINDER: SessionRoom DO changed — update docs/ARCHITECTURE.md (§3.3 DO state, §5 realtime) and docs/API_FULL.md (§8 WS protocol) if needed." >&2
+  echo "REMINDER: SessionRoom DO changed — update knowledge-base/architecture/ARCHITECTURE.md (§3.3 DO state, §5 realtime) and knowledge-base/api/API_FULL.md (§8 WS protocol) if needed." >&2
 fi
 
 if [[ "$FILE" == schema.sql ]]; then
-  echo "REMINDER: schema.sql changed — update docs/ARCHITECTURE.md §3.1 (D1 schema)." >&2
+  echo "REMINDER: schema.sql changed — update knowledge-base/architecture/ARCHITECTURE.md §3.1 (D1 schema)." >&2
 fi
 
 if [[ "$FILE" == functions/api/types.ts ]] || [[ "$FILE" =~ ^functions/api/types/.*\.ts$ ]]; then
-  echo "REMINDER: types changed — update docs/API_FULL.md or docs/ARCHITECTURE.md if the contract changed." >&2
+  echo "REMINDER: types changed — update knowledge-base/api/API_FULL.md or knowledge-base/architecture/ARCHITECTURE.md if the contract changed." >&2
 fi
 
 if [[ "$FILE" =~ ^src/(pages|components)/.*\.tsx$ ]]; then

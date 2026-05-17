@@ -27,6 +27,12 @@ export type SessionBundle = {
   pollBreakdown: QuestionBreakdown[]
   /** Titles of semantically similar past sessions from Vectorize; empty if unavailable. */
   similarSessionTitles: string[]
+  /**
+   * Optional pre-fetched RAG context block (from `getRagContext`), passed
+   * through to `InsightsInput.kbContext`. Best-effort grounding — empty
+   * when KB search is unavailable or produced no hits.
+   */
+  kbContext?: string
 }
 
 /**
@@ -45,10 +51,14 @@ export function toInsightsInput(bundle: SessionBundle): InsightsInput {
     }))
     .filter((pb) => pb.topLabels.length > 0)
 
-  return {
+  const out: InsightsInput = {
     sessionTitle: bundle.sessionTitle,
     openResponses: bundle.openResponses,
     pollBreakdown,
     similarSessionTitles: bundle.similarSessionTitles,
   }
+  if (bundle.kbContext !== undefined && bundle.kbContext.trim().length > 0) {
+    out.kbContext = bundle.kbContext
+  }
+  return out
 }

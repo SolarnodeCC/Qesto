@@ -198,8 +198,8 @@ const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\
 
 | Change | Doc |
 |---|---|
-| New/modified HTTP routes | `docs/API_FULL.md` |
-| New WebSocket message types | `docs/API_FULL.md` |
+| New/modified HTTP routes | `knowledge-base/api/API_FULL.md` |
+| New WebSocket message types | `knowledge-base/api/API_FULL.md` |
 | New KV namespace or schema | `docs/ARCHITECTURE.md` |
 | D1 schema migration | `docs/ARCHITECTURE.md` |
 | New secret or env binding | `docs/CONFIGURATION.txt` + `CLAUDE.md` |
