@@ -65,7 +65,7 @@ provision_d1() {
     DB_ID=$(wrangler d1 list 2>/dev/null | grep "qesto-staging" | awk '{print $NF}')
   else
     log_info "Creating D1 database qesto-staging..."
-    wrangler d1 create qesto-staging --remote
+    wrangler d1 create qesto-staging --use-remote
 
     # Extract database ID from output
     DB_ID=$(wrangler d1 list 2>/dev/null | grep "qesto-staging" | awk '{print $NF}')
