@@ -53,6 +53,11 @@ CHECKOUT_URL = "https://checkout.qesto.cc"
 # Use a branded sender on qesto.cc for production auth emails.
 RESEND_FROM = "Qesto <login@qesto.cc>"
 
+# ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
+# v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
+# Only apply during Sprint 26 release with feature flag approval.
+# See docs/PRODUCTION-DB-MIGRATION-FIX.md for details.
+
 [[d1_databases]]
 binding = "DB"
 database_name = "qesto_3_db"
