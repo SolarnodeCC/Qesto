@@ -1,18 +1,7 @@
--- 0015_v2_2_schema — Sprint 20 v2.2 schema additions
--- Adds AI recap provenance tracking + custom role support
+-- 0020_v2_2_schema — Sprint 20 v2.2 schema additions
+-- Adds custom role support for enterprise delegation
+-- Recap provenance columns are created separately in 0016_recaps_table.sql
 -- See ADR-CIRCUIT-BREAKER, ADR-INTEGRATION-FOUNDATION, INFRA-SPRINT-20-CHECKLIST
-
--- ─────────────────────────────────────────────────────────────────────────────
--- Extend recaps table for AI provenance tracking
--- ─────────────────────────────────────────────────────────────────────────────
-
-ALTER TABLE recaps ADD COLUMN format_version INTEGER NOT NULL DEFAULT 1;
-ALTER TABLE recaps ADD COLUMN ai_model_version TEXT;
-ALTER TABLE recaps ADD COLUMN generated_at INTEGER;
-ALTER TABLE recaps ADD COLUMN evidence_json TEXT;
-
--- Index for version filtering in read path
-CREATE INDEX IF NOT EXISTS idx_recaps_session_format ON recaps(session_id, format_version);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Custom roles table for enterprise team delegation
@@ -20,7 +9,7 @@ CREATE INDEX IF NOT EXISTS idx_recaps_session_format ON recaps(session_id, forma
 
 CREATE TABLE IF NOT EXISTS custom_roles (
   id TEXT PRIMARY KEY,
-  team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  team_id TEXT NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
   permissions TEXT NOT NULL DEFAULT '{}',  -- JSON: { can_create_session: true, can_view_results: true, ... }

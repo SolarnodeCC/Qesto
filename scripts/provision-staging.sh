@@ -84,8 +84,21 @@ provision_d1() {
 apply_migrations() {
   log_info "Phase 1b: Applying database migrations..."
 
-  log_info "Running wrangler migrations..."
-  wrangler d1 migrations apply qesto-staging --remote
+  # Get the database ID (already in the variable from provision_d1)
+  local MIGRATIONS_DIR="migrations"
+
+  # Apply each migration file in order
+  for migration_file in "$MIGRATIONS_DIR"/000*.sql; do
+    if [ -f "$migration_file" ]; then
+      local filename=$(basename "$migration_file")
+      log_info "Applying $filename..."
+      wrangler d1 execute qesto-staging --remote --file "$migration_file"
+      if [ $? -ne 0 ]; then
+        log_error "Failed to apply $filename"
+        return 1
+      fi
+    fi
+  done
 
   log_success "Migrations applied"
 }
