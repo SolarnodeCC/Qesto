@@ -88,7 +88,7 @@ apply_migrations() {
   wrangler d1 execute qesto-staging --remote --file schema.sql
 
   log_info "Applying v2.2 migrations..."
-  wrangler d1 execute qesto-staging --remote --file migrations/0015_v2_2_schema.sql
+  wrangler d1 execute qesto-staging --remote --file migrations/0020_v2_2_schema.sql
 
   log_success "Migrations applied"
 }
