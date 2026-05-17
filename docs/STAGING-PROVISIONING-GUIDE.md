@@ -12,7 +12,7 @@
 
 ```bash
 # Create the staging D1 database
-wrangler d1 create qesto-staging --remote
+wrangler d1 create qesto-staging --use-remote
 
 # Output will show:
 # ✓ Created database qesto-staging
