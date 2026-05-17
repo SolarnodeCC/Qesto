@@ -40,7 +40,7 @@ wrangler d1 execute qesto-staging --remote --command "SELECT name FROM sqlite_ma
 
 ```bash
 # Apply Sprint 20 v2.2 schema additions
-wrangler d1 execute qesto-staging --remote --file migrations/0015_v2_2_schema.sql
+wrangler d1 execute qesto-staging --remote --file migrations/0020_v2_2_schema.sql
 
 # Verify new columns exist
 wrangler d1 execute qesto-staging --remote --command "PRAGMA table_info(recaps)"
