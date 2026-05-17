@@ -125,6 +125,68 @@ dataset = "qesto_metrics"
 # Triggers daily at 02:00 UTC to check for KB changes and auto-sync to Vectorize
 crons = ["0 2 * * *"]
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Staging (v2.2 pre-work)
+# ─────────────────────────────────────────────────────────────────────────────
+# Sprint 20 pre-work: Provision staging D1 + KV via docs/INFRA-SPRINT-20-CHECKLIST.md
+# Then populate the IDs below and uncomment bindings.
+
+[env.staging]
+name = "qesto-staging"
+routes = [
+  { pattern = "staging.qesto.cc/api/*", zone_name = "qesto.cc" }
+]
+
+[env.staging.vars]
+ENV = "staging"
+PAGES_URL = "https://staging.qesto.cc"
+API_URL = "https://staging.qesto.cc"
+CF_ACCESS_AUDIENCE = "0b2fa5d8bb22ac84a34705e0a077ea486cbad83611ca748a630aafdbbf34b9de"
+CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/certs"
+COMMIT_SHA = "staging"
+SAML_SP_ENTITY_ID = "https://staging.qesto.cc"
+SAML_ACS_URL = "https://staging.qesto.cc/api/auth/saml/callback"
+SUPERUSER_EMAIL = "oostelaar@hotmail.com"
+SEED_ADMIN_EMAIL = "qesto@example.com"
+CHECKOUT_URL = "https://checkout-staging.qesto.cc"
+RESEND_FROM = "Qesto Staging <login@staging.qesto.cc>"
+LIVE_ENERGIZERS_ENABLED = "true"
+CIRCUIT_BREAKER_ENABLED = "true"
+INTEGRATION_ENABLED = "true"
+
+# Staging D1 — provision first, then paste ID
+# [[env.staging.d1_databases]]
+# binding = "DB"
+# database_name = "qesto-staging"
+# database_id = "PASTE_STAGING_D1_ID_HERE"
+# migrations_dir = "migrations"
+
+# Staging KV namespaces — provision first, then paste IDs
+# [[env.staging.kv_namespaces]]
+# binding = "USERS_KV"
+# id = "PASTE_ID_HERE"
+# ... (repeat for all KV namespaces)
+
+# Staging Durable Objects (shared session handler)
+[[env.staging.durable_objects.bindings]]
+name = "SESSION_ROOM"
+class_name = "SessionRoom"
+
+# Staging Analytics Engine (shared dataset)
+[[env.staging.analytics_engine_datasets]]
+binding = "METRICS_AE"
+dataset = "qesto_metrics"
+
+# Staging Workers AI
+[env.staging.ai]
+binding = "AI"
+
+# Staging Vectorize
+[[env.staging.vectorize]]
+binding = "DECISIONS_VECTORIZE"
+index_name = "qesto-decisions"
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Preview env is intentionally not defined. Will be re-added in Phase 5 once
 # the staging D1/KV resources are provisioned (docs/DEPLOY_BOOTSTRAP.md).
 # Having a [env.preview] block today would make `wrangler versions upload`
