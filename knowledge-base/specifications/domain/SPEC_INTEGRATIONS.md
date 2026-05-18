@@ -6,7 +6,7 @@ category: external
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-05-18
 audience:
   - Backend engineer
   - Architect
@@ -102,10 +102,10 @@ POST /billing/portal
   ↓
 Backend:
   1. Lookup Stripe customer ID from USERS_KV
-  2. Create Stripe billing portal session
+  2. Create Stripe billing portal session (`return_url` = `${PAGES_URL}/settings`)
   3. Return portal URL
   ↓
-User redirected to Stripe portal (can update card, cancel, etc.)
+User redirected to Stripe portal (can update card, cancel, etc.) → returns to account settings
 ```
 
 **API**:

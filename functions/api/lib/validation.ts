@@ -261,6 +261,7 @@ export const AdminCreateUserSchema = z.object({
   email: z.string().email(),
   display_name: z.string().max(120).optional(),
   plan: z.enum(['free', 'starter', 'team']).optional().default('free'),
+  admin_role: z.enum(['admin', 'owner']).nullable().optional(),
 })
 
 // Admin user patch.

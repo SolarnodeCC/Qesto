@@ -187,5 +187,20 @@
   "changeSummary": "Resumen de cambios",
   "sessionsThisMonth": "Sesiones este mes",
   "totalSessions": "Sesiones totales",
-  "platformOverview": "[TODO] Platform Overview"
+  "platformOverview": "Resumen de la plataforma",
+  "platformAdminTitle": "Admin de plataforma",
+  "applyDateRange": "Aplicar",
+  "viewOps": "Ver detalles OPS",
+  "p95LatencyTrend": "Tendencia de latencia P95",
+  "stubMetricsWarning": "Datos stub — KV de métricas no listo",
+  "allSystemsOperational": "Todos los sistemas operativos",
+  "partialDegradation": "Degradación parcial",
+  "majorOutage": "Interrupción mayor",
+  "dateRangeLabel": "{{start}} – {{end}}",
+  "displayNameLbl": "Nombre para mostrar",
+  "nameOptionalPlaceholder": "Nombre (opcional)",
+  "planOptionFree": "Pulse (Gratis)",
+  "planOptionStarter": "Signal (Starter)",
+  "planOptionTeam": "Chorus (Team)",
+  "cancelBtn": "Cancelar"
 }

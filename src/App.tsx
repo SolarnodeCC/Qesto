@@ -3,9 +3,11 @@ import { useEffect, useRef, lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { useColorScheme } from './hooks/useColorScheme'
 import { HelpChatWidget } from './components/HelpChatWidget'
+import { HelpChatProvider } from './hooks/useHelpChat'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import AccountSettings from './pages/AccountSettings'
 import SessionConfig from './pages/SessionConfig'
 import Launchpad from './pages/Launchpad'
 import AdminDashboard from './pages/AdminDashboard'
@@ -76,10 +78,11 @@ export default function App() {
   useColorScheme()
   return (
     <AuthProvider>
-      {/* Skip link is rendered by MainLayout on each page that uses it. */}
-      <RouteAnnouncer />
-      <AuthenticatedHelpWidget />
-      <Routes>
+      <HelpChatProvider>
+        {/* Skip link is rendered by MainLayout on each page that uses it. */}
+        <RouteAnnouncer />
+        <AuthenticatedHelpWidget />
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -105,6 +108,7 @@ export default function App() {
         <Route path="/use-cases/training" element={<Suspense fallback={<LazyRouteFallback />}><TrainingPage /></Suspense>} />
 
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/settings" element={<AccountSettings />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />
         <Route path="/sessions/:id/launchpad" element={<Launchpad />} />
@@ -118,6 +122,7 @@ export default function App() {
         <Route path="/teams/accept" element={<TeamInvite />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </HelpChatProvider>
     </AuthProvider>
   )
 }

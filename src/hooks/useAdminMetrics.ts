@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { api } from '../api/client'
 import { usePolledApi } from './usePolledApi'
 
@@ -86,12 +86,6 @@ export function useAdminMetrics() {
     }
   }, [])
 
-  useEffect(() => {
-    const endDate = new Date()
-    const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000)
-    void fetchHistorical(startDate, endDate)
-  }, [fetchHistorical])
-
   const error = useMemo(() => liveError ?? localError, [liveError, localError])
 
   const loading = useMemo(
@@ -103,7 +97,11 @@ export function useAdminMetrics() {
     liveMetrics,
     historicalData,
     loading,
+    liveLoading,
+    historicalLoading,
     error,
+    liveError,
+    historicalError: localError,
     fetchLiveMetrics,
     fetchHistorical,
     exportCSV,

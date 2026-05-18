@@ -349,6 +349,17 @@ export class D1PreparedStatementMock {
       this.db.votes.set(id, { id, session_id, question_id, voter_id, option_id, submitted_at })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('DELETE FROM votes WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      let changes = 0
+      for (const [id, row] of this.db.votes) {
+        if (row.session_id === session_id) {
+          this.db.votes.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
     if (this.sql.startsWith('DELETE FROM questions')) {
       const [session_id] = this.args as [string]
       let changes = 0
@@ -359,6 +370,46 @@ export class D1PreparedStatementMock {
         }
       }
       return { meta: { changes } }
+    }
+    if (
+      this.sql.includes('DELETE FROM team_quiz_responses') ||
+      this.sql.includes('DELETE FROM battle_royale_rounds') ||
+      this.sql.includes('DELETE FROM bracket_matches') ||
+      this.sql.includes('DELETE FROM energizer_votes') ||
+      this.sql.includes('DELETE FROM energizers WHERE session_id') ||
+      this.sql.includes('DELETE FROM leaderboard_entries') ||
+      this.sql.includes('DELETE FROM badges WHERE session_id')
+    ) {
+      return { meta: { changes: 0 } }
+    }
+    if (this.sql.startsWith('DELETE FROM insights_daily WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      let changes = 0
+      for (const [id, row] of this.db.insightsDaily) {
+        if (row.session_id === session_id) {
+          this.db.insightsDaily.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM sprint19_events WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      let changes = 0
+      for (const [id, row] of this.db.sprint19Events) {
+        if (row.session_id === session_id) {
+          this.db.sprint19Events.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM sessions WHERE id = ?1 AND owner_id = ?2')) {
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      this.db.sessions.delete(id)
+      return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO questions')) {
       const [id, session_id] = this.args as [string, string]

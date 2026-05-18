@@ -45,7 +45,12 @@ export function useAdminUsers() {
     fetchUsers(search, offset)
   }, [fetchUsers, search, offset])
 
-  const createUser = useCallback(async (data: { email: string; display_name?: string | null | undefined; plan?: string | undefined }) => {
+  const createUser = useCallback(async (data: {
+    email: string
+    display_name?: string | null | undefined
+    plan?: string | undefined
+    admin_role?: 'admin' | 'owner' | null | undefined
+  }) => {
     const res = await api<AdminUser>('/api/admin/users', { method: 'POST', body: data })
     if (res.ok) {
       await fetchUsers(search, offset)

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useAdminUsers, type AdminUser } from '../../hooks/useAdminUsers'
+import { useT } from '../../i18n'
 import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
@@ -65,6 +66,7 @@ function UserModal({
   onClose: () => void
   onSave: (data: Partial<AdminUser> & { email?: string }) => Promise<void>
 }) {
+  const t = useT('admin')
   const isEdit = mode.type === 'edit'
   const user = isEdit ? mode.user : null
 
@@ -78,7 +80,7 @@ function UserModal({
   const [fieldError, setFieldError] = useState<string | null>(null)
 
   async function handleSave() {
-    if (!isEdit && !email.trim()) { setFieldError('Email address is required'); return }
+    if (!isEdit && !email.trim()) { setFieldError(t('nameEmailRequired')); return }
     setSaving(true)
     setFieldError(null)
     try {
@@ -99,13 +101,13 @@ function UserModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
       <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-elevated w-full max-w-md mx-4 p-6 space-y-4">
-        <Heading level="s">{isEdit ? 'Edit account' : 'Create account'}</Heading>
+        <Heading level="s">{isEdit ? t('editUser') : t('createAccountTitle')}</Heading>
 
         {!isEdit && (
           <div className="space-y-1">
-            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Email address</label>
+            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('emailLbl')}</label>
             <TextInput
-              placeholder="user@example.com"
+              placeholder={t('namePlaceholderAdmin')}
               value={email}
               onChange={setEmail}
               type="email"
@@ -116,15 +118,15 @@ function UserModal({
 
         {isEdit && (
           <div className="space-y-1">
-            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Email (read-only)</label>
+            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('emailReadonly')}</label>
             <p className="text-body-s text-pulse-500 dark:text-[#6B7A99] px-3 py-2 rounded-md bg-pulse-50 dark:bg-[#0F1526]">{user?.email}</p>
           </div>
         )}
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Display name</label>
+          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('displayNameLbl')}</label>
           <TextInput
-            placeholder="Name (optional)"
+            placeholder={t('nameOptionalPlaceholder')}
             value={displayName}
             onChange={setDisplayName}
             className="w-full"
@@ -132,37 +134,37 @@ function UserModal({
         </div>
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Plan</label>
+          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('planLbl')}</label>
           <select
             value={plan}
             onChange={(e) => setPlan(e.target.value as AdminUser['plan'])}
             className="w-full border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
           >
-            <option value="free">Pulse (Free)</option>
-            <option value="starter">Signal (Starter)</option>
-            <option value="team">Chorus (Team)</option>
+            <option value="free">{t('planOptionFree')}</option>
+            <option value="starter">{t('planOptionStarter')}</option>
+            <option value="team">{t('planOptionTeam')}</option>
           </select>
         </div>
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">Admin role</label>
+          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('adminRoleLbl')}</label>
           <select
             value={adminRole}
             onChange={(e) => setAdminRole(e.target.value as 'owner' | 'admin' | '')}
             className="w-full border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
           >
-            <option value="">None</option>
-            <option value="admin">Admin</option>
-            <option value="owner">Super Admin</option>
+            <option value="">{t('noAdminRole')}</option>
+            <option value="admin">{t('admin')}</option>
+            <option value="owner">{t('superAdmin')}</option>
           </select>
         </div>
 
         {fieldError && <Body size="s" className="text-red-600">{fieldError}</Body>}
 
         <div className="flex gap-2 justify-end pt-2">
-          <Button variant="ghost" onClick={onClose} disabled={saving}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose} disabled={saving}>{t('cancelBtn')}</Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('saving') : t('save')}
           </Button>
         </div>
       </div>
@@ -173,6 +175,7 @@ function UserModal({
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AdminUsersTab() {
+  const t = useT('admin')
   const {
     users, total, loading, error,
     setSearch, offset, setOffset, limit,
@@ -181,6 +184,7 @@ export default function AdminUsersTab() {
 
   const [modal, setModal] = useState<ModalMode | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function handleSearchChange(val: string) {
@@ -193,13 +197,17 @@ export default function AdminUsersTab() {
 
   async function handleSuspend(user: AdminUser) {
     setActionLoading(user.id)
-    await suspendUser(user.id)
+    setActionError(null)
+    const res = await suspendUser(user.id)
+    if (!res.ok) setActionError(res.error.message)
     setActionLoading(null)
   }
 
   async function handleRestore(user: AdminUser) {
     setActionLoading(user.id)
-    await restoreUser(user.id)
+    setActionError(null)
+    const res = await restoreUser(user.id)
+    if (!res.ok) setActionError(res.error.message)
     setActionLoading(null)
   }
 
@@ -209,6 +217,7 @@ export default function AdminUsersTab() {
         email: data.email!,
         ...(data.display_name != null ? { display_name: data.display_name } : {}),
         ...(data.plan != null ? { plan: data.plan } : {}),
+        admin_role: data.admin_role ?? null,
       })
       if (!res.ok) throw new Error(res.error.message)
     } else if (modal?.type === 'edit') {
@@ -227,9 +236,9 @@ export default function AdminUsersTab() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Heading level="m" className="border-l-4 border-teal-500 pl-3">Users</Heading>
+        <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('users')}</Heading>
         <Button variant="primary" onClick={() => setModal({ type: 'create' })}>
-          + Create account
+          {t('createAccountBtn')}
         </Button>
       </div>
 
@@ -243,6 +252,11 @@ export default function AdminUsersTab() {
       </div>
 
       {error && <Body size="s" className="text-red-600">{error}</Body>}
+      {actionError && (
+        <p className="text-body-s text-red-600" role="alert">
+          {actionError}
+        </p>
+      )}
 
       <Card className="overflow-x-auto p-0">
         <table className="w-full text-body-s">

@@ -6,7 +6,7 @@ category: features
 status: active
 version: 1.5
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-05-18
 audience:
   - Product owner
   - Architect
@@ -30,7 +30,7 @@ relates_to:
 
 _Hub: [Documentation map](../README.md)._
 
-_Last verified: 2026-04-30 (UTC)_
+_Last verified: 2026-05-18 (UTC)_
 
 ## 1. Product lifecycle
 - **DRAFT**: session setup and question curation.
@@ -68,7 +68,7 @@ _Last verified: 2026-04-30 (UTC)_
 - i18n locale bundles for NL/EN/ES/DE/FR.
 - Energizer component set (Balloon Pop, Emoji Pulse, Tug of War, Find Your Match, etc.).
 - Public Solutions pages (`/business`, `/education`, `/enterprise`) use in-repo AI illustrations under `public/images/solutions/*` (no third-party image dependencies).
-- Dashboard UX: personalised greeting, active plan badge, Teams/Templates tabs, session search + status filter, admin panel gating.
+- Dashboard UX: personalised greeting, active plan badge, Teams/Templates tabs, session search + status filter; account hub at `/settings`; platform admin at `/admin` (superuser-gated).
 - Session join flow: QR code scanning, join bar, polished voter experience, language switcher on all pages.
 
 ## 5. Template library UX (next functional requirement)
@@ -115,7 +115,21 @@ See: [`README.md`](../README.md) (documentation map), `ROADMAP_FULL.md`, `BACKLO
 - Language switcher surfaced in header on all pages (i18n UX improvement).
 - Admin panel gated on superuser role; `/admin` route guarded.
 
-## 8. 2026-04-30 Sprint 19 closeout notes
+## 8. Host navigation: Settings vs Admin vs Team (2026-05-18)
+
+Three distinct surfaces; do not conflate in copy or deep links.
+
+| UI label | Route | Audience | Scope |
+|----------|-------|----------|--------|
+| **Settings** (sidebar footer) | `/settings` | Every authenticated host | Personal account: email display, language, list density, Stripe billing portal + invoices, links to team workspaces |
+| **Admin** (sidebar, superuser only) | `/admin` | Platform operator (`VITE_SUPERUSER_EMAIL` ↔ API `SUPERUSER_EMAIL`) | Platform KPIs, live/historical metrics, user CRUD/suspend, OPS health, analytics — **in-page tabs**, not `/admin/users` sub-routes |
+| **Team settings** | `/teams/:id/settings` | Team members with permission | Workspace: members, invites, SAML, custom roles — not personal billing |
+
+**Help:** Sidebar **Help** opens the shared AI help chat (`HelpChatProvider`); same panel as the floating widget when logged in.
+
+**Billing:** Upgrade/limit CTAs should target `/settings` (billing section), not `/settings/billing` or `/billing/*`.
+
+## 9. 2026-04-30 Sprint 19 closeout notes
 - AI wizard generation uses `POST /api/sessions/:id/ai/generate` as an SSE stream (`ready`, `questions`, `done`), with `/api/sessions/:id/ai/refine` for grounding-hash based refinement.
 - Wizard-generated sessions persist AI provenance on the DRAFT session: `ai_generated`, `ai_consent_at`, and `ai_grounding_hash`.
 - Launchpad uses `GET /api/sessions/:id/preflight` as the canonical readiness gate before `Open lobby`.

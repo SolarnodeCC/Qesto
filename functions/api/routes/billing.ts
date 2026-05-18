@@ -256,7 +256,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
     const session = await stripe.billingPortal.sessions.create({
       customer: record.customerId,
-      return_url: c.env.PAGES_URL + '/dashboard',
+      return_url: c.env.PAGES_URL + '/settings',
     })
 
     return c.json({ ok: true, data: { url: session.url }, trace_id: c.get('trace_id') })

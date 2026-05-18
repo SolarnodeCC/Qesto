@@ -6,7 +6,7 @@ category: visual
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-05-18
 audience:
   - UI/UX specialist
   - Frontend engineer
@@ -57,7 +57,7 @@ All visual, copy, and token material was extracted from this repository (no Figm
 Qesto serves **two audiences across two surfaces**:
 
 1. **Marketing website** (unauthenticated) — landing, pricing, solutions (HR, events, nonprofit, consulting), feature pages (AI insights, live polling, privacy). Template T1 (landing) / T3 (content). Sells Workers-AI + edge privacy story.
-2. **Host dashboard + Session tooling** (authenticated) — dashboard, Session Creation Wizard (5 steps), Session Launchpad (pre-live staging), Present (full-viewport), Results, Team Settings, Admin. Templates T2 / T4 / T5 / T6.
+2. **Host dashboard + Session tooling** (authenticated) — `AppShellLayout` hub (`/dashboard`, `/settings`, `/admin`), Session Creation Wizard (5 steps), Session Launchpad (pre-live staging), Present (full-viewport), Results, Team Settings (`/teams/:id/settings`). Templates T2 / T4 / T5 / T6.
 
 The brand promise: **real-time · AI-amplified · private-by-default**, in that order. AI claims must always be anchored to "Workers AI on Cloudflare's edge" — never AI-powered alone.
 

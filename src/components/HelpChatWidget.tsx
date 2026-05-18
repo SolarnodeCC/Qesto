@@ -7,11 +7,18 @@ export function HelpChatWidget() {
   const [input, setInput] = useState('')
   const [feedbackStates, setFeedbackStates] = useState<Record<string, 'helpful' | 'not_helpful' | null>>({})
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const questionInputRef = useRef<HTMLInputElement>(null)
 
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [state.messages])
+
+  useEffect(() => {
+    if (state.isOpen) {
+      questionInputRef.current?.focus()
+    }
+  }, [state.isOpen])
 
   const handleAsk = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,6 +49,7 @@ export function HelpChatWidget() {
         onClick={toggleChat}
         className="w-14 h-14 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center justify-center transition-all duration-200"
         aria-label="Toggle help chat"
+        aria-expanded={state.isOpen}
         title="Ask for help"
       >
         <svg
@@ -177,6 +185,7 @@ export function HelpChatWidget() {
           <div className="border-t dark:border-slate-700 p-4 bg-white dark:bg-slate-800">
             <form onSubmit={handleAsk} className="flex gap-2">
               <input
+                ref={questionInputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}

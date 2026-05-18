@@ -67,6 +67,7 @@ import {
   requireLiveForWebSocket,
 } from '../lib/session-lifecycle'
 import { suggestDuplicateTitle } from '../lib/session-title'
+import { hardDeleteSession } from '../lib/session-delete'
 
 type Vars = AuthVariables & PlanVariables
 // SessionRow mirrors the D1 row shape. Analytics-only column `team_id` (OBS-001)
@@ -1756,9 +1757,13 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         404,
       )
     }
-    await c.env.DB.prepare(`DELETE FROM votes WHERE session_id = ?1`).bind(id).run()
-    await c.env.DB.prepare(`DELETE FROM questions WHERE session_id = ?1`).bind(id).run()
-    await c.env.DB.prepare(`DELETE FROM sessions WHERE id = ?1 AND owner_id = ?2`).bind(id, user.sub).run()
+    const { deleted } = await hardDeleteSession(c.env.DB, id, user.sub)
+    if (!deleted) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
     return c.json({ ok: true, trace_id: c.get('trace_id') })
   })
 

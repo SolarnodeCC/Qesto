@@ -618,7 +618,7 @@ export function mountAdminRoutes(parent: any) {
 
     const validated = await validateBody(c, AdminCreateUserSchema)
     if ('error' in validated) return validated.error
-    const { email: rawEmail, display_name, plan = 'free' } = validated.data
+    const { email: rawEmail, display_name, plan = 'free', admin_role } = validated.data
 
     const id = ulid()
     const now = Date.now()
@@ -628,6 +628,14 @@ export function mountAdminRoutes(parent: any) {
         'INSERT INTO users (id, email, display_name, created_at, plan) VALUES (?1, ?2, ?3, ?4, ?5)',
       ).bind(id, rawEmail.toLowerCase().trim(), display_name ?? null, now, plan).run()
 
+      let assignedAdminRole: AdminUser['admin_role'] = null
+      if (admin_role === 'admin' || admin_role === 'owner') {
+        await c.env.DB.prepare(
+          'INSERT INTO user_roles (id, user_id, role, created_at) VALUES (?1, ?2, ?3, ?4)',
+        ).bind(ulid(), id, admin_role, now).run()
+        assignedAdminRole = admin_role
+      }
+
       const user: AdminUser = {
         id,
         email: rawEmail.toLowerCase().trim(),
@@ -636,7 +644,7 @@ export function mountAdminRoutes(parent: any) {
         created_at: now,
         last_login_at: null,
         suspended_at: null,
-        admin_role: null,
+        admin_role: assignedAdminRole,
       }
 
       await recordAuditEvent(c, {

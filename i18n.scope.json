@@ -18,6 +18,7 @@
     "results",
     "session-config",
     "sessions",
+    "settings",
     "solutions",
     "vote",
     "wizard"
@@ -47,6 +48,7 @@
     "results": "frontend + i18n",
     "session-config": "frontend + i18n",
     "sessions": "frontend + i18n",
+    "settings": "frontend + i18n",
     "solutions": "marketing",
     "vote": "frontend + i18n",
     "wizard": "frontend + i18n"

@@ -5,7 +5,7 @@ category: incident
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-05-18
 tags:
   - incident-response
   - operations
@@ -126,7 +126,7 @@ All API errors follow a standardized format that maps error codes to user-friend
 - **HTTP Status:** 402
 - **Message:** "You've reached your plan limit. Upgrade to continue"
 - **Icon:** ⚡ (warning)
-- **Actions:** Upgrade Plan → `/settings/billing`
+- **Actions:** Upgrade Plan → `/settings` (billing section)
 - **Retryable:** No
 - **When:** Feature gated by plan (max sessions, participants)
 
@@ -358,7 +358,7 @@ try {
 
 2. **USER_ERR_PLAN_LIMIT_REACHED** → Add upgrade link
    - Before: "Plan limit exceeded"
-   - After: "Plan limit reached" + Upgrade Plan button → `/settings/billing`
+   - After: "Plan limit reached" + Upgrade Plan button → `/settings` (billing section)
 
 3. **BUSINESS_INVALID_STATE_TRANSITION** → Explain what happened
    - Before: "Invalid state transition"

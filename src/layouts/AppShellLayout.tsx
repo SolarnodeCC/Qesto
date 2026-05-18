@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { HelpCircle, Home, Lightbulb, Library, Settings, Users } from 'lucide-react'
 import SkipLink from '../components/SkipLink'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { useAuth } from '../hooks/useAuth'
+import { useHelpChat } from '../hooks/useHelpChat'
 import { useColorScheme } from '../hooks/useColorScheme'
 import { useT } from '../i18n'
 
@@ -37,8 +38,12 @@ export default function AppShellLayout({
 }: AppShellLayoutProps) {
   const t = useT('dashboard')
   const auth = useAuth()
+  const { openChat, state: helpChatState } = useHelpChat()
   const { scheme, toggle } = useColorScheme()
   const navigate = useNavigate()
+  const location = useLocation()
+  const onSettingsPage = location.pathname === '/settings'
+  const onAdminPage = location.pathname === '/admin'
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [joinCode, setJoinCode] = useState('')
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false)
@@ -163,7 +168,15 @@ export default function AppShellLayout({
             <li>
               <Link
                 to="/admin"
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium min-h-[44px] text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1 transition-colors"
+                onClick={() => setSidebarOpen(false)}
+                aria-current={onAdminPage ? 'page' : undefined}
+                className={[
+                  'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium min-h-[44px] transition-colors',
+                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-1',
+                  onAdminPage
+                    ? 'border-l-2 border-violet-500 pl-[10px] bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300'
+                    : 'text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10',
+                ].join(' ')}
               >
                 <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="h-[18px] w-[18px] shrink-0">
                   <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
@@ -176,24 +189,40 @@ export default function AppShellLayout({
 
         {/* Account links */}
         <div className="border-t border-pulse-100 dark:border-[#1E2A45] px-2 py-3 space-y-0.5">
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-pulse-500 dark:text-[#6B7A99] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors"
-            title="Coming soon"
+          <Link
+            to="/settings"
+            onClick={() => setSidebarOpen(false)}
+            aria-current={onSettingsPage ? 'page' : undefined}
+            className={[
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm min-h-[44px] transition-colors',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
+              onSettingsPage
+                ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
+                : 'text-pulse-500 dark:text-[#6B7A99] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+            ].join(' ')}
           >
             <Settings size={16} aria-hidden="true" />
             {t('settings')}
-          </a>
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-pulse-500 dark:text-[#6B7A99] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors"
-            title="Coming soon"
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              openChat()
+              setSidebarOpen(false)
+            }}
+            aria-expanded={helpChatState.isOpen}
+            aria-label={t('help')}
+            className={[
+              'w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm min-h-[44px]',
+              'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors',
+              helpChatState.isOpen
+                ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
+                : 'text-pulse-500 dark:text-[#6B7A99] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+            ].join(' ')}
           >
             <HelpCircle size={16} aria-hidden="true" />
             {t('help')}
-          </a>
+          </button>
         </div>
 
         {/* Compact plan indicator */}

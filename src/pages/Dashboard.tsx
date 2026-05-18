@@ -123,8 +123,9 @@ function SessionCard({
   return (
     <article
       className={[
-        'group relative flex flex-col rounded-lg border bg-white dark:bg-[#151C2E] shadow-card overflow-hidden',
+        'group relative flex flex-col rounded-lg border bg-white dark:bg-[#151C2E] shadow-card',
         'hover:shadow-elevated transition-shadow duration-200',
+        menuOpen ? 'z-30' : 'z-0',
         s.status === 'live' ? 'border-teal-400 dark:border-teal-600' : 'border-pulse-200 dark:border-[#1E2A45]',
         s.status === 'live' ? 'border-l-[3px] border-l-teal-500' : '',
       ].join(' ')}
@@ -135,7 +136,7 @@ function SessionCard({
         to={cardLink}
         tabIndex={-1}
         aria-hidden="true"
-        className="block"
+        className="block overflow-hidden rounded-t-lg"
         style={{ aspectRatio: '16/10', background: gradient }}
       />
 
@@ -143,7 +144,7 @@ function SessionCard({
       <div className="absolute top-2 left-2">
         <StatusBadge status={s.status} />
       </div>
-      <div ref={menuRef} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+      <div ref={menuRef} className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         <button
           type="button"
           onClick={() => setMenuOpen((v) => !v)}
@@ -157,7 +158,7 @@ function SessionCard({
         {menuOpen && (
           <ul
             role="menu"
-            className="absolute right-0 top-full mt-1 z-10 min-w-[160px] rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-elevated py-1 animate-page-enter"
+            className="absolute right-0 bottom-full mb-1 z-50 min-w-[180px] max-h-[min(70vh,320px)] overflow-y-auto rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-elevated py-1 animate-page-enter"
           >
             <li role="none">
               <Link

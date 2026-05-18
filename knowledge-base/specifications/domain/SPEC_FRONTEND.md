@@ -6,7 +6,7 @@ category: ui
 status: active
 version: 2.0
 created: 2026-03-01
-updated: 2026-05-11
+updated: 2026-05-18
 audience:
   - Frontend engineer
   - UI/UX specialist
@@ -88,30 +88,37 @@ All routes in `src/App.tsx` via React Router v6. Protected routes use `<Protecte
 | `/solutions/*` | `SolutionsPage.tsx` | No | Industry scenarios | — |
 | **Authenticated Pages** |
 | `/dashboard` | `Dashboard.tsx` | Yes | User hub (sessions, templates, teams) | JWT |
-| `/session/:id/config` | `SessionConfig.tsx` | Yes | Edit session settings (DRAFT only) | JWT + owner |
-| `/ai-creator` | `AICreator.tsx` | Yes | AI question generator | JWT |
-| `/decisions/search` | `DecisionsSearch.tsx` | Yes | Decision history search | JWT |
-| `/billing/*` | `BillingAccount.tsx` | Yes | Subscription management | JWT |
-| `/teams/:id/audit` | `ComplianceAudit.tsx` | Yes | Team audit logs | JWT + team member |
-| `/admin/*` | `AdminPanel.tsx` | Yes | Admin dashboard | JWT + admin role |
-| **Session Pages (Public)** |
-| `/present/:sessionId` | `Present.tsx` | No | Presenter view (full-screen) | — |
-| `/vote/:sessionId` | `Vote.tsx` | No | Participant voting | — |
-| `/remote/:sessionId` | `Remote.tsx` | No | Mobile remote control | — |
-| `/sessions/:id/results` | `SessionResults.tsx` | No | Results (presenter only in JS) | — |
-| `/sessions/:id/results/public` | `PublicResults.tsx` | No | Shareable results link | — |
-| `/j/:code` | `JoinRedirect.tsx` | No | Short link → `/join/:code` | — |
-| `/join/:code` | `JoinPage.tsx` | No | Full join flow | — |
-| `/invite/:code` | `GuestJoin.tsx` | No | Guest invitation | — |
-| `/team/accept` | `TeamAccept.tsx` | No | Team invite acceptance | — |
-| **Admin Pages** |
-| `/admin/dashboard` | `AdminDashboard.tsx` | Yes | KPIs, overview | Admin |
-| `/admin/analytics` | `AdminAnalytics.tsx` | Yes | Usage analytics | Admin |
-| `/admin/users` | `AdminUsers.tsx` | Yes | User management | Admin |
-| `/admin/audit` | `AdminAudit.tsx` | Yes | Audit trails | Admin |
-| `/admin/issues` | `AdminIssues.tsx` | Yes | Error tracking | Admin |
-| `/admin/ops` | `AdminOps.tsx` | Yes | System status | Admin |
-| `/admin/alerts` | `AdminAlertRules.tsx` | Yes | Alert configuration | Admin |
+| `/settings` | `AccountSettings.tsx` | Yes | Account hub (email, language, density, billing, team links) | JWT |
+| `/admin` | `AdminDashboard.tsx` | Yes | Platform admin (tabbed: dashboard, users, OPS, analytics) | JWT + superuser email (`VITE_SUPERUSER_EMAIL`) |
+| `/sessions/:id` | `SessionConfig.tsx` | Yes | Edit draft session (DRAFT) | JWT + owner |
+| `/sessions/:id/launchpad` | `Launchpad.tsx` | Yes | Pre-live staging | JWT + owner |
+| `/sessions/:id/present` | `Present.tsx` | Yes | Presenter view | JWT + host |
+| `/sessions/:id/results` | `Results.tsx` | Yes | Post-session results | JWT + host |
+| `/teams/:id/settings` | `TeamSettings.tsx` | Yes | Team workspace (members, SAML, custom roles) | JWT + team member |
+| `/teams/invite/:token` | `TeamInvite.tsx` | Yes | Team invite acceptance | — |
+| `/teams/accept` | `TeamInvite.tsx` | Yes | Team invite (alias) | — |
+| `/join`, `/j/:code` | `JoinPage.tsx` | No | Participant join | — |
+| `/display/:code` | `Display.tsx` | No | Public display board | — |
+| **Legacy / not in current `App.tsx`** |
+| `/session/:id/config`, `/ai-creator`, `/decisions/search`, `/present/:id`, `/vote/:id`, `/billing/*`, `/admin/*` sub-routes | various | — | Historical or planned; do not document as live without verifying `App.tsx` |
+
+> **Consolidated (2026-05):** Billing UI is a section on `/settings`, not `/billing/*`. Platform admin is a single `/admin` page with in-page tabs — not `/admin/dashboard`, `/admin/users`, etc. **`src/App.tsx` is authoritative.**
+
+---
+
+## Host shell (`AppShellLayout`)
+
+Authenticated **host hub** pages share [`src/layouts/AppShellLayout.tsx`](../../../src/layouts/AppShellLayout.tsx).
+
+| Surface | Route(s) | Notes |
+|---------|----------|--------|
+| Dashboard | `/dashboard` | Main nav: Home, Insights, Teams, Templates; footer: Settings, Help |
+| Account settings | `/settings` | Footer **Settings** → account hub (language, density, Stripe portal, team links) |
+| Platform admin | `/admin` | Nav **Admin** when `auth.user.email === VITE_SUPERUSER_EMAIL` (must match API `SUPERUSER_EMAIL`) |
+
+**Help chat:** `HelpChatProvider` in `App.tsx`; sidebar **Help** and `HelpChatWidget` use `useHelpChat()` for shared open/focus state.
+
+**Other authenticated pages** (e.g. `Launchpad`, `TeamSettings`, `SessionConfig`) use `MainLayout` unless wrapped explicitly in `AppShellLayout`.
 
 ---
 
@@ -122,9 +129,10 @@ All routes in `src/App.tsx` via React Router v6. Protected routes use `<Protecte
 ### Core Layout
 ```
 App.tsx (Router)
-├── ErrorBoundary
-├── AuthProvider (useAuth context)
-├── SessionProvider? (useSession context for LIVE pages)
+├── AuthProvider (useAuth)
+├── HelpChatProvider (useHelpChat — shared help panel state)
+├── RouteAnnouncer
+├── AuthenticatedHelpWidget (portal HelpChatWidget when logged in)
 └── Routes
     ├── Public Routes (no auth)
     │   ├── Home, Login, Pricing, etc.
@@ -132,7 +140,7 @@ App.tsx (Router)
     │
     └── Protected Routes
         ├── ProtectedRoute wrapper (checks JWT)
-        └── Authenticated pages (Dashboard, Config, Billing, Admin)
+        └── Authenticated pages (Dashboard, Settings, Admin, SessionConfig, …)
 ```
 
 ### Page Components (src/pages/)
@@ -143,20 +151,17 @@ pages/
 ├── Login.tsx                   Auth entry point
 ├── AuthCallback.tsx            Magic link handler
 ├── SSOCallback.tsx             OAuth handler
-├── Dashboard.tsx               Main hub (protected)
-│   ├── SessionsTab.tsx         User's sessions list
-│   ├── TemplatesTab.tsx        Saved templates
-│   └── TeamsTab.tsx            Team management
-├── SessionConfig.tsx           Edit draft session (protected)
-├── AdminPanel.tsx              Admin router (protected)
-│   ├── AdminDashboard.tsx      KPIs dashboard
-│   ├── AdminUsers.tsx          User management
-│   ├── AdminAnalytics.tsx      Usage analytics
-│   ├── AdminAudit.tsx          Audit trails
-│   ├── AdminIssues.tsx         Error tracking
-│   ├── AdminOps.tsx            System status
-│   ├── AdminAlertRules.tsx     Alert rules
-│   └── AdminSidebar.tsx        Navigation
+├── Dashboard.tsx               Main hub — wrapped in AppShellLayout
+├── AccountSettings.tsx         Account settings — AppShellLayout
+├── AdminDashboard.tsx          Platform admin (single route, in-page tabs)
+│   ├── tab: dashboard        KPIs, live metrics, historical range + CSV, AuditLogViewer
+│   ├── tab: users            AdminUsersTab (list/create/suspend)
+│   ├── tab: ops              AdminOpsTab
+│   └── tab: analytics        AdminAnalyticsTab
+├── SessionConfig.tsx           Edit draft session
+├── Launchpad.tsx               Pre-live — MainLayout
+├── Results.tsx                 Post-session results
+├── TeamSettings.tsx            Team workspace — MainLayout
 ├── present/
 │   ├── Present.tsx             Main presenter entry
 │   ├── PresenterActive.tsx     Core presenter UI (35KB)

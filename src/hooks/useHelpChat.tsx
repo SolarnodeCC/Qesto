@@ -1,4 +1,12 @@
-import { useCallback, useReducer, useRef } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useReducer,
+  useRef,
+  type ReactNode,
+} from 'react'
 import { api } from '../api/client'
 
 export type HelpMessage = {
@@ -85,7 +93,21 @@ export function helpChatReducer(state: HelpChatState, action: Action): HelpChatS
   }
 }
 
-export function useHelpChat() {
+export type HelpChatApi = {
+  state: HelpChatState
+  askQuestion: (question: string) => Promise<void>
+  submitFeedback: (documentId: string, helpful: boolean, feedbackText?: string) => Promise<void>
+  toggleChat: () => void
+  closeChat: () => void
+  openChat: () => void
+  clearError: () => void
+  clearHistory: () => void
+  cancel: () => void
+}
+
+const HelpChatContext = createContext<HelpChatApi | null>(null)
+
+export function HelpChatProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(helpChatReducer, INITIAL_HELP_STATE)
   const abortControllerRef = useRef<AbortController | null>(null)
 
@@ -179,15 +201,26 @@ export function useHelpChat() {
     dispatch({ kind: 'ask_error', error: 'Request cancelled' })
   }, [])
 
-  return {
-    state,
-    askQuestion,
-    submitFeedback,
-    toggleChat,
-    closeChat,
-    openChat,
-    clearError,
-    clearHistory,
-    cancel,
-  }
+  const value = useMemo<HelpChatApi>(
+    () => ({
+      state,
+      askQuestion,
+      submitFeedback,
+      toggleChat,
+      closeChat,
+      openChat,
+      clearError,
+      clearHistory,
+      cancel,
+    }),
+    [state, askQuestion, submitFeedback, toggleChat, closeChat, openChat, clearError, clearHistory, cancel],
+  )
+
+  return <HelpChatContext.Provider value={value}>{children}</HelpChatContext.Provider>
+}
+
+export function useHelpChat(): HelpChatApi {
+  const ctx = useContext(HelpChatContext)
+  if (!ctx) throw new Error('useHelpChat must be used inside <HelpChatProvider>')
+  return ctx
 }

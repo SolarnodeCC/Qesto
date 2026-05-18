@@ -6,7 +6,7 @@ category: endpoints
 status: active
 version: 2.0
 created: 2026-03-01
-updated: 2026-05-11
+updated: 2026-05-18
 audience:
   - Backend engineer
   - API/middleware lead
@@ -52,7 +52,7 @@ _Repository hub: [Documentation map](../README.md)._
 | `JP` | JWT + **plan** allows feature (middleware) |
 | `JMP` | JWT + member + plan feature |
 | `JOP` | JWT + session owner + **presenter** role (see handler) |
-| `ADM` | JWT + admin role |
+| `ADM` | JWT + platform admin (`SUPERUSER_EMAIL`, `SEED_ADMIN_EMAIL`, or `user_roles` owner/admin) — `adminMiddleware` |
 | `STR` | Stripe-only (signature verification), not user JWT |
 | `DEV` | Development environment only |
 | `WSP` | WebSocket **presenter**: `Sec-WebSocket-Protocol: qesto.bearer.<jwt>`; owner or team member with effective presenter permissions, forwarded internally to `SessionRoom` |
@@ -107,6 +107,17 @@ _Repository hub: [Documentation map](../README.md)._
 | GET | `/auth/sso/saml/metadata` | A | XML | IdP config |
 
 Details: [[SPEC_CORE.md#authentication]], [[SPEC_INTEGRATIONS.md#authentication-flows]]
+
+---
+
+## 1b. User preferences — `functions/api/routes/users.ts`
+
+Account settings UI (`/settings`) persists host UX preferences in `USERS_KV`.
+
+| M | Path | AuthZ | Ret | Notes |
+|---|------|-------|-----|-------|
+| GET | `/users/preferences` | J | `{density?}` | `compact` \| `comfortable` \| `spacious` |
+| PATCH | `/users/preferences` | J | `{density?}` | Partial update; Zod-validated |
 
 ---
 
@@ -213,42 +224,29 @@ Limits: [[SPEC_INTEGRATIONS.md#rate-limiting]], [[SPEC_CORE.md#critical-constrai
 
 ---
 
-## 7. Admin — mount `/admin` — typical `functions/api/routes/admin-*.routes.ts`
+## 7. Admin — mount `/admin` — `functions/api/routes/admin.ts`
 
-**Sensitive**: `/admin/bootstrap` (first-run), `/admin/stream-ticket`, `/admin/ops/summary` — require **ADM** + treat as **high risk**; enforce extra controls in code (audit, rate limits).
+**Shipped (2026-05):** Single route module; UI is one page `/admin` with tabs. **ADM** = `adminMiddleware` (see AuthZ legend).
 
 | M | Path | AuthZ | Ret | Notes |
 |---|------|-------|-----|-------|
-| GET | `/admin/me` | ADM | `{admin}` | |
-| POST | `/admin/bootstrap` | A | `{ok}` | First super_admin only; lock down after |
-| GET | `/admin/users` | ADM | `{users}` | |
-| GET | `/admin/users/:id` | ADM | `{user}` | |
-| POST | `/admin/users` | ADM | `{user}` | |
-| PATCH | `/admin/users/:id` | ADM | `{user}` | |
+| GET | `/admin/metrics/live` | ADM | `{metrics}` | KV snapshot (~5 min) |
+| GET | `/admin/metrics/historical` | ADM | `{series}` | D1 `metrics_summary`; query `start`, `end` |
+| POST | `/admin/metrics/export` | ADM | CSV stream | Historical export |
+| GET | `/admin/audit` | ADM | `{logs}` | Audit events |
+| GET | `/admin/kpis` | ADM | `{kpis}` | Platform KPI totals |
+| GET | `/admin/users` | ADM | `{users}` | Search + pagination |
+| POST | `/admin/users` | ADM | `{user}` | Create user; optional `admin_role` (`owner` \| `admin`) |
+| PATCH | `/admin/users/:id` | ADM | `{user}` | Plan, name, role |
 | POST | `/admin/users/:id/suspend` | ADM | `{ok}` | |
 | POST | `/admin/users/:id/restore` | ADM | `{ok}` | |
-| POST | `/admin/roles` | ADM | `{ok}` | |
-| DELETE | `/admin/roles/:userId` | ADM | `{ok}` | |
-| GET | `/admin/kpis` | ADM | `{kpis}` | |
-| GET | `/admin/stats` | ADM | `{stats}` | |
-| GET | `/admin/metrics` | ADM | `{metrics}` | |
-| GET | `/admin/analytics` | ADM | `{analytics}` | Includes sanitized engagement counters for LIVE energizers and badge breakdown |
-| GET | `/admin/health` | ADM | `{services}` | |
-| GET | `/admin/audit` | ADM | `{logs}` | |
-| GET | `/admin/audit-logs` | ADM | `{logs}` | |
-| GET | `/admin/issues` | ADM | `{issues}` | |
-| POST | `/admin/issues/report` | J | `{issue}` | |
-| GET | `/admin/alerts` | ADM | `{alerts}` | |
-| GET | `/admin/alert-rules` | ADM | `{rules}` | |
-| POST | `/admin/alert-rules` | ADM | `{rule}` | |
-| PUT | `/admin/alert-rules/:id` | ADM | `{rule}` | |
-| DELETE | `/admin/alert-rules/:id` | ADM | `{ok}` | |
-| GET | `/admin/ops/summary` | ADM | stream | |
-| POST | `/admin/stream-ticket` | ADM | `{ticket}` | |
-| GET | `/admin/runbooks` | ADM | `{runbooks}` | |
-| GET | `/admin/runbooks/:category` | ADM | `{runbook}` | |
-| PUT | `/admin/runbooks/:category` | ADM | `{runbook}` | |
-| DELETE | `/admin/runbooks/:category` | ADM | `{ok}` | |
+| GET | `/admin/ops/summary` | ADM | `{services,...}` | Health + reliability pulse |
+| GET | `/admin/analytics` | ADM | `{analytics}` | Time-series, breakdowns, cost; see engagement block below |
+| GET | `/admin/sprint19-baseline` | ADM | `{baseline}` | AI wizard + Launchpad KPI baseline |
+| POST | `/admin/kb-sync` | token | `{ok}` | Vectorize bulk sync (ADR-040); not user JWT |
+| POST | `/admin/kb-sync-delete` | token | `{ok}` | Vector deletion for removed KB files |
+
+**Planned / not in `admin.ts` (do not assume deployed):** `/admin/me`, `/admin/bootstrap`, `/admin/health`, `/admin/issues`, `/admin/alerts`, `/admin/stream-ticket`, `/admin/runbooks`, separate `/admin/stats` vs `/admin/metrics/live`.
 
 ---
 
@@ -289,7 +287,8 @@ The endpoint counts sanitized realtime audit labels, including `ws.energizer_act
 | M | Path | AuthZ | Ret | Notes |
 |---|------|-------|-----|-------|
 | POST | `/billing/checkout` | J | `{session_url}` | Stripe Checkout |
-| POST | `/billing/portal` | J | `{portal_url}` | |
+| POST | `/billing/portal` | J | `{portal_url}` | Stripe Customer Portal; `return_url` = `PAGES_URL + '/settings'` |
+| GET | `/billing/invoices` | J | `{invoices}` | Invoice history for account settings billing section |
 | GET | `/billing/plan` | J | `{plan}` | |
 | GET | `/billing/status` | J | `{plan,usage}` | |
 | POST | `/billing/webhook/stripe` | STR | `{received}` | Idempotent — [[SPEC_INTEGRATIONS.md#webhook-handler-idempotent]] |
