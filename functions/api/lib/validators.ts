@@ -361,6 +361,28 @@ export const CustomerTemplateSchema = z.object({
 
 export type ValidCustomerTemplate = z.infer<typeof CustomerTemplateSchema>
 
+// ── SAML Validators ──────────────────────────────────────────────────────────
+
+export const SamlStateTokenSchema = z.object({
+  teamId: z.string(),
+  idpSsoUrl: z.string().url(),
+  createdAt: z.number().optional(),
+})
+
+export type ValidSamlStateToken = z.infer<typeof SamlStateTokenSchema>
+
+// ── AI & Vector Validators ───────────────────────────────────────────────────
+
+export const AiEmbeddingResponseSchema = z.object({
+  data: z.array(z.number()),
+})
+
+export type ValidAiEmbeddingResponse = z.infer<typeof AiEmbeddingResponseSchema>
+
+export const VectorMetadataSchema = z.record(z.unknown())
+
+export type ValidVectorMetadata = z.infer<typeof VectorMetadataSchema>
+
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
   raw: string | null,

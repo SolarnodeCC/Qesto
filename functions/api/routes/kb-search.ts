@@ -10,6 +10,7 @@
 import { Hono } from 'hono'
 import type { Env } from '../types'
 import { ulid } from '../lib/ulid'
+import { validateData, AiEmbeddingResponseSchema, VectorMetadataSchema } from '../lib/validators'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,21 +73,25 @@ export function registerKBRoutes(parent: Hono<{ Bindings: Env }>) {
         text: query,
       })
 
-      if (!aiResponse || typeof aiResponse !== 'object' || !('data' in aiResponse)) {
+      const validated = validateData(aiResponse, AiEmbeddingResponseSchema)
+      if (!validated?.data) {
         throw new Error('Invalid AI response format')
       }
 
-      const queryEmbedding = (aiResponse as unknown as { data: number[] }).data
+      const queryEmbedding = validated.data
 
       // Query Vectorize with the embedding
       const vectorizeResults = await c.env.KB_VECTORIZE.query(queryEmbedding, { topK })
 
-      const results: KBSearchResult[] = vectorizeResults.map((match) => ({
-        id: match.id,
-        score: match.score,
-        metadata: (match.metadata || {}) as KBSearchResult['metadata'],
-        content: (match.metadata as unknown as Record<string, unknown>)?.content as string | undefined,
-      }))
+      const results: KBSearchResult[] = vectorizeResults.map((match) => {
+        const meta = validateData(match.metadata || {}, VectorMetadataSchema) ?? {}
+        return {
+          id: match.id,
+          score: match.score,
+          metadata: meta as KBSearchResult['metadata'],
+          content: typeof meta.content === 'string' ? meta.content : undefined,
+        }
+      })
 
       return c.json(
         {

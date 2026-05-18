@@ -18,6 +18,8 @@ import { adminMiddleware } from '../middleware/admin'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { RbacVariables } from '../middleware/rbac'
+import { validateData, StringArraySchema } from '../lib/validators'
+import { z } from 'zod'
 import { rateLimit } from '../middleware/rate-limit'
 import { KbVectorRepository } from '../repositories/kbVectorRepository'
 import { KbSearchError, KbSearchService } from '../services/kbSearchService'
@@ -143,8 +145,8 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
       version: row.version,
       owner: row.owner,
       title: row.title,
-      tags: safeJsonParse(row.tags_json, []),
-      relates_to: safeJsonParse(row.relates_to_json, []),
+      tags: safeJsonParse(row.tags_json, [], StringArraySchema),
+      relates_to: safeJsonParse(row.relates_to_json, [], StringArraySchema),
       chunk_count: row.chunk_count,
       created_at: row.created_at,
       updated_at: row.updated_at,
@@ -173,10 +175,14 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
   parent.route('/api/knowledge-base', app)
 }
 
-function safeJsonParse<T>(raw: unknown, fallback: T): T {
+function safeJsonParse<T>(raw: unknown, fallback: T, schema?: z.ZodSchema<T>): T {
   if (typeof raw !== 'string') return fallback
   try {
-    return JSON.parse(raw) as T
+    const parsed = JSON.parse(raw)
+    if (schema) {
+      return validateData(parsed, schema) ?? fallback
+    }
+    return parsed as T
   } catch {
     return fallback
   }
