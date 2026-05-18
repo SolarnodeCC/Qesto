@@ -159,18 +159,41 @@ LIVE_ENERGIZERS_ENABLED = "true"
 CIRCUIT_BREAKER_ENABLED = "true"
 INTEGRATION_ENABLED = "true"
 
-# Staging D1 — provision first, then paste ID
-# [[env.staging.d1_databases]]
-# binding = "DB"
-# database_name = "qesto-staging"
-# database_id = "PASTE_STAGING_D1_ID_HERE"
-# migrations_dir = "migrations"
+# Staging D1 — provisioned with all migrations applied
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "qesto-staging"
+database_id = "345adbff-4a31-47c0-98d4-0dd9368157a6"
+migrations_dir = "migrations"
 
-# Staging KV namespaces — provision first, then paste IDs
-# [[env.staging.kv_namespaces]]
-# binding = "USERS_KV"
-# id = "PASTE_ID_HERE"
-# ... (repeat for all KV namespaces)
+# Staging KV namespaces — all 9 provisioned and ready
+[[env.staging.kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "56c48553a1e34c0bbf0f997a49fa8f37"
+[[env.staging.kv_namespaces]]
+binding = "USERS_KV"
+id = "73581d12fc054aa8a1afba1c36f38c9e"
+[[env.staging.kv_namespaces]]
+binding = "TEAMS_KV"
+id = "ebf1f7531f8c4deaaaba41cdc8590314"
+[[env.staging.kv_namespaces]]
+binding = "TEMPLATES_KV"
+id = "0d069151db124062bb20f41888f1f1844"
+[[env.staging.kv_namespaces]]
+binding = "DECISIONS_KV"
+id = "0caedda4137b4a40aa708b0ebba053be"
+[[env.staging.kv_namespaces]]
+binding = "AUDIT_KV"
+id = "591ff4417cbf74a829bef4e6abc92a16e"
+[[env.staging.kv_namespaces]]
+binding = "CIRCUIT_BREAKER_KV"
+id = "ceadfb7ec03845979acb84827fca0bdd"
+[[env.staging.kv_namespaces]]
+binding = "INTEGRATIONS_KV"
+id = "08440c11db614cb4817b679f87bebf4a"
+[[env.staging.kv_namespaces]]
+binding = "METRICS_KV"
+id = "c0b05bde687f4740a85caa1294009c4b"
 
 # Staging Durable Objects (shared session handler)
 [[env.staging.durable_objects.bindings]]
