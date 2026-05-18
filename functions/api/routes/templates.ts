@@ -13,7 +13,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/validate'
 import { CreateTemplateSchema } from '../lib/validation'
-import { validateData, validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
+import { validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
 import type { Env, Question } from '../types'
 
 type Vars = AuthVariables & PlanVariables

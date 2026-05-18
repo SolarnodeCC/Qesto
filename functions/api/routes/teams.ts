@@ -35,7 +35,7 @@ import {
 import { recordAuditEvent } from '../lib/audit'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { validateBody } from '../lib/validate'
-import { validateData, validateKvJson, PermissionArraySchema, TeamInviteTokenSchema } from '../lib/validators'
+import { validateKvJson, PermissionArraySchema, TeamInviteTokenSchema } from '../lib/validators'
 import { TEAM_INVITE_TTL_SECONDS } from '../lib/constants'
 import { teamDocumentKey, teamInviteKey, userTeamsIndexKey } from '../lib/kv-keys'
 import type { Env } from '../types'
