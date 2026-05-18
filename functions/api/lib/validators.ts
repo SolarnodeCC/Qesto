@@ -185,6 +185,65 @@ export const CachedQuestionsSchema = z.object({
 
 export type ValidCachedQuestions = z.infer<typeof CachedQuestionsSchema>
 
+// ── OAuth/External Service Validators ─────────────────────────────────────
+
+export const GoogleTokenResponseSchema = z.object({
+  id_token: z.string().optional(),
+  access_token: z.string().optional(),
+  token_type: z.string().optional(),
+  expires_in: z.number().optional(),
+})
+
+export type ValidGoogleTokenResponse = z.infer<typeof GoogleTokenResponseSchema>
+
+export const MicrosoftTokenResponseSchema = z.object({
+  id_token: z.string(),
+  access_token: z.string().optional(),
+  token_type: z.string().optional(),
+  expires_in: z.number().optional(),
+})
+
+export type ValidMicrosoftTokenResponse = z.infer<typeof MicrosoftTokenResponseSchema>
+
+// JWT payload schemas for Google and Microsoft ID tokens
+export const GoogleIdTokenPayloadSchema = z.object({
+  email: z.string().optional(),
+  sub: z.string().optional(),
+  email_verified: z.boolean().optional(),
+  aud: z.union([z.string(), z.array(z.string())]).optional(),
+  exp: z.number().optional(),
+  iss: z.string().optional(),
+  iat: z.number().optional(),
+})
+
+export type ValidGoogleIdTokenPayload = z.infer<typeof GoogleIdTokenPayloadSchema>
+
+export const MicrosoftIdTokenPayloadSchema = z.object({
+  email: z.string().optional(),
+  preferred_username: z.string().optional(),
+  oid: z.string().optional(),
+  aud: z.union([z.string(), z.array(z.string())]).optional(),
+  exp: z.number().optional(),
+  iss: z.string().optional(),
+  iat: z.number().optional(),
+})
+
+export type ValidMicrosoftIdTokenPayload = z.infer<typeof MicrosoftIdTokenPayloadSchema>
+
+export const JwtHeaderSchema = z.object({
+  alg: z.string().optional(),
+  kid: z.string().optional(),
+  typ: z.string().optional(),
+})
+
+export type ValidJwtHeader = z.infer<typeof JwtHeaderSchema>
+
+export const JwksResponseSchema = z.object({
+  keys: z.array(z.record(z.string(), z.unknown())).optional(),
+})
+
+export type ValidJwksResponse = z.infer<typeof JwksResponseSchema>
+
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
   raw: string | null,
@@ -211,6 +270,15 @@ export function parseClientMessage(text: string): ValidClientMessage | null {
       return ClientMessageSchema.parse(envelope) as ValidClientMessage
     }
     return null
+  } catch {
+    return null
+  }
+}
+
+// Validate already-parsed object with a schema
+export function validateData<T>(data: unknown, schema: z.ZodSchema<T>): T | null {
+  try {
+    return schema.parse(data)
   } catch {
     return null
   }
