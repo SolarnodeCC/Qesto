@@ -21,9 +21,6 @@ interface AppShellLayoutProps {
   children: ReactNode
   activeSection: DashboardSection
   onSectionChange: (section: DashboardSection) => void
-  planName?: string
-  sessionsUsed?: number
-  sessionsMax?: number
   isSuperuser?: boolean
 }
 
@@ -31,9 +28,6 @@ export default function AppShellLayout({
   children,
   activeSection,
   onSectionChange,
-  planName,
-  sessionsUsed,
-  sessionsMax,
   isSuperuser = false,
 }: AppShellLayoutProps) {
   const t = useT('dashboard')
@@ -97,10 +91,6 @@ export default function AppShellLayout({
       if (el) el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' })
     }
   }
-
-  const usagePercent = sessionsUsed !== undefined && sessionsMax && sessionsMax > 0
-    ? Math.min(100, Math.round((sessionsUsed / sessionsMax) * 100))
-    : null
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--color-bg)] dark:bg-[#0A0F1E]">
@@ -225,36 +215,6 @@ export default function AppShellLayout({
           </button>
         </div>
 
-        {/* Compact plan indicator */}
-        {planName && (
-          <div className="border-t border-pulse-100 dark:border-[#1E2A45] px-4 py-3">
-            <div className="flex items-center justify-between gap-2 text-xs">
-              <Link
-                to="/pricing"
-                className="font-semibold capitalize text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
-              >
-                {planName}
-              </Link>
-              {sessionsUsed !== undefined && sessionsMax !== undefined && (
-                <span className="text-pulse-400 dark:text-[#6B7A99] tabular-nums">
-                  {sessionsUsed}/{sessionsMax}
-                </span>
-              )}
-            </div>
-            {usagePercent !== null && (
-              <div className="mt-1.5 h-1 w-full rounded-full bg-pulse-200 dark:bg-pulse-800 overflow-hidden">
-                <div
-                  className={[
-                    'h-full rounded-full transition-all',
-                    usagePercent >= 90 ? 'bg-red-500' : usagePercent >= 70 ? 'bg-amber-500' : 'bg-teal-500',
-                  ].join(' ')}
-                  style={{ width: `${usagePercent}%` }}
-                  aria-hidden="true"
-                />
-              </div>
-            )}
-          </div>
-        )}
       </nav>
 
       {/* ── Right column ── */}

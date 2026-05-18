@@ -249,9 +249,6 @@ export default function AdminDashboard() {
     <AppShellLayout
       activeSection="home"
       onSectionChange={handleSectionChange}
-      {...(activePlan !== undefined ? { planName: activePlan } : {})}
-      {...(quotaData?.usage.sessions_created !== undefined ? { sessionsUsed: quotaData.usage.sessions_created } : {})}
-      {...(quotaData?.quotas.max_sessions_per_month !== undefined ? { sessionsMax: quotaData.quotas.max_sessions_per_month } : {})}
       isSuperuser={isSuperuser}
     >
       <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">

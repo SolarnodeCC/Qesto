@@ -51,7 +51,7 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
 
   if (c.env.SUPERUSER_EMAIL && user.email === c.env.SUPERUSER_EMAIL) {
     c.set('plan', 'team')
-    c.set('planQuotas', { ...QUOTAS_MAP['team'], maxSessionsPerMonth: Number.MAX_SAFE_INTEGER })
+    c.set('planQuotas', QUOTAS_MAP['team'])
     await next()
     return
   }

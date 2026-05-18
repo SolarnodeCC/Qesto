@@ -614,9 +614,6 @@ export default function Dashboard() {
     <AppShellLayout
       activeSection={activeSection}
       onSectionChange={setActiveSection}
-      {...(activePlan !== undefined ? { planName: activePlan } : {})}
-      {...(quotaData?.usage.sessions_created !== undefined ? { sessionsUsed: quotaData.usage.sessions_created } : {})}
-      {...(quotaData?.quotas.max_sessions_per_month !== undefined ? { sessionsMax: quotaData.quotas.max_sessions_per_month } : {})}
       isSuperuser={isSuperuser}
     >
       <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-12">
