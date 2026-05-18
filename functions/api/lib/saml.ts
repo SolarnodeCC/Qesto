@@ -23,7 +23,7 @@
 //   the callback URL is over HTTPS. XML-DSig verification is tracked in
 //   BACKLOG §4 (SEC-SAML-01) and MUST ship before the "SAML SSO GA" badge.
 
-import { validateData, SamlStateTokenSchema } from './validators'
+import { validateKvJson, SamlStateTokenSchema } from './validators'
 
 const SAML_STATE_TTL_SECONDS = 5 * 60 // 5 min
 
@@ -162,7 +162,7 @@ export async function consumeSamlState(
   if (!raw) return null
   // Single-use — delete before returning so replay attempts fail.
   await kv.delete(STATE_KEY(token))
-  const parsed = validateData(JSON.parse(raw), SamlStateTokenSchema)
+  const parsed = validateKvJson(raw, SamlStateTokenSchema)
   if (!parsed) return null
   return { teamId: parsed.teamId, idpSsoUrl: parsed.idpSsoUrl }
 }

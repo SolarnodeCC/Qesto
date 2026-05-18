@@ -6,7 +6,7 @@
  */
 
 import { TokenResponse } from './types'
-import { validateData, StoredTokenSchema } from '../validators'
+import { validateKvJson, StoredTokenSchema } from '../validators'
 
 interface StoredToken {
   access_token: string
@@ -66,7 +66,7 @@ export class EncryptedTokenStore {
 
     if (!raw) return null
 
-    const stored = validateData(JSON.parse(raw), StoredTokenSchema)
+    const stored = validateKvJson(raw, StoredTokenSchema)
     if (!stored) return null
 
     // Check expiration

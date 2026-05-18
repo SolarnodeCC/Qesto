@@ -1,7 +1,6 @@
-import type { EmojiPollConfig, QuickFingerConfig, TeamQuizConfig } from '../../lib/gamification'
 import { sanitizeError } from '../../lib/error-handler'
 import type { EnergizerApp } from './types'
-import { validateData, EnergizerConfigSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
+import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
 
 export function registerEnergizerActiveRoute(app: EnergizerApp): void {
   app.get('/sessions/:sessionId/energizers/active', async (c) => {
@@ -27,7 +26,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         return c.json({ ok: false, error: { code: 'invalid_config', message: 'Malformed energizer config' }, trace_id }, 500)
       }
 
-      const validConfig = validateData(config, EnergizerConfigSchema)
+      const validConfig = validateData(config, EnergizerConfigEnvelopeSchema)
       if (!validConfig) {
         return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid energizer config' }, trace_id }, 500)
       }

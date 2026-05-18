@@ -4,7 +4,7 @@
  */
 
 import type { QuestionBreakdown } from './session-bundle'
-import { validateData, PollOptionArraySchema } from './validators'
+import { validateKvJson, PollOptionArraySchema } from './validators'
 
 export async function fetchInsightsVoteContext(
   db: D1Database,
@@ -49,7 +49,7 @@ export async function fetchInsightsVoteContext(
 
     let options: { id: string; label: string }[] = []
     try {
-      options = validateData(JSON.parse(q.options_json), PollOptionArraySchema) ?? []
+      options = validateKvJson(q.options_json, PollOptionArraySchema) ?? []
     } catch {
       options = []
     }

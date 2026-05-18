@@ -35,7 +35,7 @@ import {
 import { recordAuditEvent } from '../lib/audit'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { validateBody } from '../lib/validate'
-import { validateData, PermissionArraySchema, TeamInviteTokenSchema } from '../lib/validators'
+import { validateData, validateKvJson, PermissionArraySchema, TeamInviteTokenSchema } from '../lib/validators'
 import { TEAM_INVITE_TTL_SECONDS } from '../lib/constants'
 import { teamDocumentKey, teamInviteKey, userTeamsIndexKey } from '../lib/kv-keys'
 import type { Env } from '../types'
@@ -194,7 +194,7 @@ function roleDto(row: CustomRoleRow): {
   createdAt: number
   updatedAt: number
 } {
-  const permissions = validateData(JSON.parse(row.permissions_json), PermissionArraySchema) ?? []
+  const permissions = validateKvJson(row.permissions_json, PermissionArraySchema) ?? []
   return {
     id: row.id,
     teamId: row.team_id,
@@ -798,7 +798,7 @@ export async function consumeInvite(
   const raw = await kv.get(teamInviteKey(tokenHash))
   if (!raw) return null
   await kv.delete(teamInviteKey(tokenHash))
-  const invite = validateData(JSON.parse(raw), TeamInviteTokenSchema)
+  const invite = validateKvJson(raw, TeamInviteTokenSchema)
   if (!invite) return null
   return { teamId: invite.teamId, email: invite.email, role: invite.role as Role }
 }

@@ -2,14 +2,12 @@ import {
   advanceBattleRoyaleRound,
   advanceBracketRound,
   determineBadgesAwarded,
-  type EmojiPollConfig,
-  type QuickFingerConfig,
 } from '../../lib/gamification'
 import { recordAuditEvent } from '../../lib/audit'
 import { sanitizeError } from '../../lib/error-handler'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
-import { validateData, EnergizerConfigSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/validators'
+import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/validators'
 
 export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/advance', async (c) => {
@@ -52,7 +50,7 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         return c.json({ ok: false, error: { code: 'invalid_config', message: 'Malformed energizer config' }, trace_id }, 500)
       }
 
-      const config = validateData(configParsed, EnergizerConfigSchema)
+      const config = validateData(configParsed, EnergizerConfigEnvelopeSchema)
       if (!config) {
         return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid energizer config' }, trace_id }, 500)
       }
@@ -177,7 +175,7 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         return c.json({ ok: false, error: { code: 'invalid_config', message: 'Malformed energizer config' }, trace_id }, 500)
       }
 
-      const config = validateData(configParsed, EnergizerConfigSchema)
+      const config = validateData(configParsed, EnergizerConfigEnvelopeSchema)
       if (!config) {
         return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid energizer config' }, trace_id }, 500)
       }

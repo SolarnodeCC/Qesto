@@ -76,6 +76,9 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
 
       const credRaw = user ? await c.env.USERS_KV.get(pwdKey(user.id)) : null
       const cred = credRaw ? validateKvJson(credRaw, PasswordCredentialSchema) : null
+      if (credRaw && !cred) {
+        console.warn(JSON.stringify({ event: 'auth.kv_invalid', kind: 'password_cred', user_id: user?.id }))
+      }
 
       const valid = cred ? await verifyPassword(password, cred.hash) : false
 

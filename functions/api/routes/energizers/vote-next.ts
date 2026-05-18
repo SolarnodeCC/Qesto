@@ -1,4 +1,3 @@
-import type { EmojiPollConfig, QuickFingerConfig, TeamQuizConfig } from '../../lib/gamification'
 import { recordAuditEvent } from '../../lib/audit'
 import { sanitizeError } from '../../lib/error-handler'
 import { z } from 'zod'

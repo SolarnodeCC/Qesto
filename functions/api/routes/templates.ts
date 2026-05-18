@@ -13,7 +13,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/validate'
 import { CreateTemplateSchema } from '../lib/validation'
-import { validateData, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
+import { validateData, validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
 import type { Env, Question } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -427,13 +427,13 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     // For Phase 1, we'll store templates with sequential IDs.
     const listKey = `customer_templates_list:${userId}`
     const listRaw = await c.env.TEMPLATES_KV.get(listKey)
-    const list = listRaw ? (validateData(JSON.parse(listRaw), TemplateIdArraySchema) ?? []) : []
+    const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
 
     for (const templateId of list) {
       const key = `customer_template:${userId}:${templateId}`
       const raw = await c.env.TEMPLATES_KV.get(key)
       if (raw) {
-        const template = validateData(JSON.parse(raw), CustomerTemplateSchema)
+        const template = validateKvJson(raw, CustomerTemplateSchema)
         if (template) {
           templates.push(template as CustomerTemplate)
         }
@@ -492,7 +492,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const questions = (questionRows ?? []).map((row: Record<string, unknown>) => {
       let options: Array<{ id: string; label: string }> = []
       try {
-        options = validateData(JSON.parse(row.options_json as string), PollOptionArraySchema) ?? []
+        options = validateKvJson(row.options_json as string, PollOptionArraySchema) ?? []
       } catch {
         options = []
       }
@@ -525,7 +525,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     // Update list
     const listKey = `customer_templates_list:${userId}`
     const listRaw = await c.env.TEMPLATES_KV.get(listKey)
-    const list = listRaw ? (validateData(JSON.parse(listRaw), TemplateIdArraySchema) ?? []) : []
+    const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
     list.push(templateId)
     await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: 86400 * 365 })
 
@@ -561,7 +561,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     // Update list
     const listKey = `customer_templates_list:${userId}`
     const listRaw = await c.env.TEMPLATES_KV.get(listKey)
-    const list = listRaw ? (validateData(JSON.parse(listRaw), TemplateIdArraySchema) ?? []) : []
+    const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
     const idx = list.indexOf(templateId)
     if (idx >= 0) {
       list.splice(idx, 1)

@@ -131,7 +131,9 @@ export type ValidVersionedClientEnvelope = z.infer<typeof VersionedClientEnvelop
 
 export const AuthClaimsSchema = z.object({
   sub: z.string(),
-  email: z.string().email(),
+  // Intentionally coarse: RFC email validation belongs at the OAuth/SAML edge.
+  // Microsoft preferred_username can be a non-RFC-email UPN on some tenants.
+  email: z.string().min(1),
   jti: z.string().optional(),
   iat: z.number(),
   exp: z.number(),
@@ -319,10 +321,12 @@ export const RoleSchema = z.enum(['owner', 'admin', 'member', 'viewer'])
 
 export type ValidRole = z.infer<typeof RoleSchema>
 
+// Intentionally excludes 'owner': invite creation never writes owner role,
+// so accepting it from KV would allow a crafted entry to grant owner via invite.
 export const TeamInviteTokenSchema = z.object({
   teamId: z.string(),
   email: z.string().email(),
-  role: RoleSchema,
+  role: z.enum(['admin', 'member', 'viewer']),
 })
 
 export type ValidTeamInviteToken = z.infer<typeof TeamInviteTokenSchema>
@@ -376,7 +380,7 @@ export type ValidSamlStateToken = z.infer<typeof SamlStateTokenSchema>
 export const InsightThemeSchema = z.object({
   theme: z.string(),
   count: z.number().int().nonnegative(),
-  examples: z.array(z.string()),
+  examples: z.array(z.string()).min(0).max(8),
 })
 
 export type ValidInsightTheme = z.infer<typeof InsightThemeSchema>
@@ -461,18 +465,12 @@ export const BracketConfigSchema = z.object({
 
 export type ValidBracketConfig = z.infer<typeof BracketConfigSchema>
 
-// Union of all energizer configs for flexible parsing
-export const EnergizerConfigSchema = z.union([
-  EmojiPollConfigSchema,
-  QuickFingerConfigSchema,
-  TeamQuizConfigSchema,
-  WordCloudConfigSchema,
-  BattleRoyaleConfigSchema,
-  BracketConfigSchema,
-  z.record(z.string(), z.unknown()),
-])
+// Permissive envelope: proves the value is a non-null object without
+// checking kind-specific fields. Kind-specific validation must be done
+// separately via the per-kind schemas above.
+export const EnergizerConfigEnvelopeSchema = z.record(z.string(), z.unknown())
 
-export type ValidEnergizerConfig = z.infer<typeof EnergizerConfigSchema>
+export type ValidEnergizerConfigEnvelope = z.infer<typeof EnergizerConfigEnvelopeSchema>
 
 // ── Cache & Rate Limit Validators ───────────────────────────────────────────
 

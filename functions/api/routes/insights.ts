@@ -21,7 +21,7 @@ import {
 } from '../lib/ai-insights'
 import { sanitizeError } from '../lib/error-handler'
 import { rateLimit } from '../lib/rate-limit'
-import { validateData, PollOptionArraySchema, CachedInsightsSchema } from '../lib/validators'
+import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/validators'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -125,7 +125,7 @@ async function fetchPollBreakdown(
       )
       .bind(q.id)
       .all<{ option_id: string; n: number }>()
-    const options = validateData(JSON.parse(q.options_json), PollOptionArraySchema) ?? []
+    const options = validateKvJson(q.options_json, PollOptionArraySchema) ?? []
     const topLabels: string[] = []
     for (const c of counts ?? []) {
       const match = options.find((o) => o.id === c.option_id)

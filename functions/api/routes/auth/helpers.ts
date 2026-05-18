@@ -28,6 +28,7 @@ export async function upsertOAuthUser(
       await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, oauthState.userId).run()
       return oauthState.userId
     }
+    console.warn(JSON.stringify({ event: 'auth.kv_invalid', kind: 'oauth_state', provider, sub: providerSub }))
   }
 
   const emailNorm = email.toLowerCase().trim()
