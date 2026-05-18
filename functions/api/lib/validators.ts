@@ -379,9 +379,23 @@ export const AiEmbeddingResponseSchema = z.object({
 
 export type ValidAiEmbeddingResponse = z.infer<typeof AiEmbeddingResponseSchema>
 
-export const VectorMetadataSchema = z.record(z.unknown())
+export const VectorMetadataSchema = z.record(z.string(), z.unknown())
 
 export type ValidVectorMetadata = z.infer<typeof VectorMetadataSchema>
+
+// ── Integration Token Validators ─────────────────────────────────────────────
+
+export const StoredTokenSchema = z.object({
+  access_token: z.string(),
+  refresh_token: z.string().optional(),
+  expires_in: z.number().optional(),
+  token_type: z.string().optional(),
+  scope: z.string().optional(),
+  stored_at: z.number(),
+  expires_at: z.number().optional(),
+})
+
+export type ValidStoredToken = z.infer<typeof StoredTokenSchema>
 
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
