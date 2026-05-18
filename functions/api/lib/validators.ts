@@ -371,6 +371,27 @@ export const SamlStateTokenSchema = z.object({
 
 export type ValidSamlStateToken = z.infer<typeof SamlStateTokenSchema>
 
+// ── Insights Cache Validators ───────────────────────────────────────────────────
+
+export const InsightThemeSchema = z.object({
+  theme: z.string(),
+  count: z.number().int().nonnegative(),
+  examples: z.array(z.string()),
+})
+
+export type ValidInsightTheme = z.infer<typeof InsightThemeSchema>
+
+export const CachedInsightsSchema = z.object({
+  themes: z.array(InsightThemeSchema),
+  trend: z.object({
+    '7d': z.number(),
+    '30d': z.number(),
+  }),
+  cached_at: z.number(),
+})
+
+export type ValidCachedInsights = z.infer<typeof CachedInsightsSchema>
+
 // ── AI & Vector Validators ───────────────────────────────────────────────────
 
 export const AiEmbeddingResponseSchema = z.object({
