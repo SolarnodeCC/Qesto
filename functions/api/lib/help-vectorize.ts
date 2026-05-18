@@ -4,6 +4,7 @@
  */
 
 import type { Env } from '../types'
+import { validateData, AiBatchEmbeddingResponseSchema } from './validators'
 
 export type HelpVectorizeBindings = Pick<Env, 'AI' | 'HELP_VECTORIZE'>
 
@@ -15,7 +16,8 @@ export const HELP_EMBED_TIMEOUT_MS = 10_000
 export const HELP_VECTORIZE_TIMEOUT_MS = 5_000
 
 function firstVector(result: unknown): number[] | undefined {
-  const data = (result as { data?: number[][] })?.data?.[0]
+  const validated = validateData(result, AiBatchEmbeddingResponseSchema)
+  const data = validated?.data?.[0]
   return data?.length === HELP_EMBED_DIM ? data : undefined
 }
 

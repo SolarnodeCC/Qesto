@@ -1,6 +1,7 @@
 import type { EmojiPollConfig, QuickFingerConfig, TeamQuizConfig } from '../../lib/gamification'
 import { sanitizeError } from '../../lib/error-handler'
 import type { EnergizerApp } from './types'
+import { validateData, EnergizerConfigSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
 
 export function registerEnergizerActiveRoute(app: EnergizerApp): void {
   app.get('/sessions/:sessionId/energizers/active', async (c) => {
@@ -19,12 +20,27 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         return c.json({ ok: true, data: { energizer: null }, trace_id })
       }
 
-      const config = JSON.parse(energizer.config_json)
+      let config: unknown
+      try {
+        config = JSON.parse(energizer.config_json)
+      } catch {
+        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Malformed energizer config' }, trace_id }, 500)
+      }
+
+      const validConfig = validateData(config, EnergizerConfigSchema)
+      if (!validConfig) {
+        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid energizer config' }, trace_id }, 500)
+      }
+
       let results: Record<string, number> = {}
       let rankings: Array<{ voter_id: string; value: string; correct: boolean; speed_ms: number; rank: number }> | undefined
       const activatedAt = energizer.updated_at as number
 
       if (energizer.kind === 'emoji_poll') {
+        const emojiConfig = validateData(config, EmojiPollConfigSchema)
+        if (!emojiConfig) {
+          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid emoji poll config' }, trace_id }, 500)
+        }
         const votes = await (c.env.DB.prepare as any)(
           `SELECT value, COUNT(*) as count FROM energizer_votes
            WHERE energizer_id = ?1 GROUP BY value`,
@@ -32,15 +48,18 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
           .bind(energizer.id)
           .all()
 
-        for (const emoji of (config as EmojiPollConfig).emojis) {
+        for (const emoji of emojiConfig.emojis) {
           results[emoji] = 0
         }
         for (const row of (votes.results ?? []) as { value: string; count: number }[]) {
           results[row.value] = row.count
         }
       } else if (energizer.kind === 'quick_finger') {
-        const qf = config as QuickFingerConfig
-        const correctAnswer = qf.options[qf.correct_index]
+        const qfConfig = validateData(config, QuickFingerConfigSchema)
+        if (!qfConfig) {
+          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid quick finger config' }, trace_id }, 500)
+        }
+        const correctAnswer = qfConfig.options[qfConfig.correct_index]
 
         const votes = await (c.env.DB.prepare as any)(
           `SELECT voter_id, value, created_at FROM energizer_votes
@@ -61,7 +80,11 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
           }
         })
       } else if (energizer.kind === 'team_quiz') {
-        const tq = config as TeamQuizConfig
+        const tqConfig = validateData(config, TeamQuizConfigSchema)
+        if (!tqConfig) {
+          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid team quiz config' }, trace_id }, 500)
+        }
+        const tq = tqConfig
         const qi = tq.current_index
         let responseCount = 0
         if (qi >= 0 && qi < tq.questions.length) {
@@ -86,7 +109,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         return c.json({
           ok: true,
           data: {
-            energizer: { id: energizer.id, kind: energizer.kind, prompt: energizer.prompt, config, state: energizer.state },
+            energizer: { id: energizer.id, kind: energizer.kind, prompt: energizer.prompt, config: validConfig, state: energizer.state },
             response_count: responseCount,
             scores,
           },
@@ -106,7 +129,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         return c.json({
           ok: true,
           data: {
-            energizer: { id: energizer.id, kind: energizer.kind, prompt: energizer.prompt, config, state: energizer.state },
+            energizer: { id: energizer.id, kind: energizer.kind, prompt: energizer.prompt, config: validConfig, state: energizer.state },
             words,
           },
           trace_id,
@@ -120,7 +143,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
             id: energizer.id,
             kind: energizer.kind,
             prompt: energizer.prompt,
-            config,
+            config: validConfig,
             state: energizer.state,
           },
           results,

@@ -379,9 +379,79 @@ export const AiEmbeddingResponseSchema = z.object({
 
 export type ValidAiEmbeddingResponse = z.infer<typeof AiEmbeddingResponseSchema>
 
+export const AiBatchEmbeddingResponseSchema = z.object({
+  data: z.array(z.array(z.number())).optional(),
+})
+
+export type ValidAiBatchEmbeddingResponse = z.infer<typeof AiBatchEmbeddingResponseSchema>
+
 export const VectorMetadataSchema = z.record(z.string(), z.unknown())
 
 export type ValidVectorMetadata = z.infer<typeof VectorMetadataSchema>
+
+// ── Energizer Config Validators ──────────────────────────────────────────────
+
+export const EmojiPollConfigSchema = z.object({
+  emojis: z.array(z.string()),
+})
+
+export type ValidEmojiPollConfig = z.infer<typeof EmojiPollConfigSchema>
+
+export const QuickFingerConfigSchema = z.object({
+  options: z.array(z.string()),
+  correct_index: z.number(),
+})
+
+export type ValidQuickFingerConfig = z.infer<typeof QuickFingerConfigSchema>
+
+export const TeamQuizQuestionSchema = z.object({
+  prompt: z.string(),
+  options: z.array(z.string()),
+  correct_index: z.number(),
+})
+
+export const TeamQuizConfigSchema = z.object({
+  questions: z.array(TeamQuizQuestionSchema),
+  current_index: z.number(),
+})
+
+export type ValidTeamQuizConfig = z.infer<typeof TeamQuizConfigSchema>
+
+export const WordCloudConfigSchema = z.object({
+  max_words_per_participant: z.number(),
+})
+
+export type ValidWordCloudConfig = z.infer<typeof WordCloudConfigSchema>
+
+export const BattleRoyaleConfigSchema = z.object({
+  num_rounds: z.number(),
+  participants: z.array(z.string()),
+  scoring_multiplier: z.number(),
+  elimination_threshold: z.number(),
+})
+
+export type ValidBattleRoyaleConfig = z.infer<typeof BattleRoyaleConfigSchema>
+
+export const BracketConfigSchema = z.object({
+  bracket_size: z.union([z.literal(4), z.literal(8), z.literal(16)]),
+  participants: z.array(z.string()),
+  match_format: z.union([z.literal('single_elimination'), z.literal('double_elimination')]),
+})
+
+export type ValidBracketConfig = z.infer<typeof BracketConfigSchema>
+
+// Union of all energizer configs for flexible parsing
+export const EnergizerConfigSchema = z.union([
+  EmojiPollConfigSchema,
+  QuickFingerConfigSchema,
+  TeamQuizConfigSchema,
+  WordCloudConfigSchema,
+  BattleRoyaleConfigSchema,
+  BracketConfigSchema,
+  z.record(z.string(), z.unknown()),
+])
+
+export type ValidEnergizerConfig = z.infer<typeof EnergizerConfigSchema>
 
 // ── Integration Token Validators ─────────────────────────────────────────────
 
