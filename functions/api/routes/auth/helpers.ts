@@ -1,4 +1,5 @@
 import { ulid } from '../../lib/ulid'
+import { validateKvJson, OAuthStateSchema } from '../../lib/validators'
 
 /** USERS_KV: pwd:{userId} → { hash: string } */
 export const pwdKey = (userId: string) => `pwd:${userId}`
@@ -22,12 +23,10 @@ export async function upsertOAuthUser(
 
   const stored = await kv.get(key)
   if (stored) {
-    try {
-      const { userId } = JSON.parse(stored) as { userId: string }
-      await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, userId).run()
-      return userId
-    } catch (parseErr) {
-      console.warn(`[auth] failed to parse oauth state for ${provider}/${providerSub}:`, parseErr)
+    const oauthState = validateKvJson(stored, OAuthStateSchema)
+    if (oauthState) {
+      await db.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`).bind(now, oauthState.userId).run()
+      return oauthState.userId
     }
   }
 

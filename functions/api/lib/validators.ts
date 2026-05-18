@@ -139,6 +139,28 @@ export const AuthClaimsSchema = z.object({
 
 export type ValidAuthClaims = z.infer<typeof AuthClaimsSchema>
 
+// ── Auth KV Validators ───────────────────────────────────────────────────────
+
+export const OAuthStateSchema = z.object({
+  userId: z.string(),
+  email: z.string().email(),
+})
+
+export type ValidOAuthState = z.infer<typeof OAuthStateSchema>
+
+export const PasswordCredentialSchema = z.object({
+  hash: z.string(),
+})
+
+export type ValidPasswordCredential = z.infer<typeof PasswordCredentialSchema>
+
+export const PasswordResetSchema = z.object({
+  userId: z.string(),
+  email: z.string().email(),
+})
+
+export type ValidPasswordReset = z.infer<typeof PasswordResetSchema>
+
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
   raw: string | null,
