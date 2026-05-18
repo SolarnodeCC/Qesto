@@ -161,6 +161,30 @@ export const PasswordResetSchema = z.object({
 
 export type ValidPasswordReset = z.infer<typeof PasswordResetSchema>
 
+// ── Database Result Validators ───────────────────────────────────────────────
+
+export const PollOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+})
+
+export type ValidPollOption = z.infer<typeof PollOptionSchema>
+
+export const PollOptionArraySchema = z.array(PollOptionSchema)
+
+export type ValidPollOptionArray = z.infer<typeof PollOptionArraySchema>
+
+export const StringArraySchema = z.array(z.string())
+
+export type ValidStringArray = z.infer<typeof StringArraySchema>
+
+export const CachedQuestionsSchema = z.object({
+  questions: z.unknown(),
+  confidence: z.number().optional(),
+})
+
+export type ValidCachedQuestions = z.infer<typeof CachedQuestionsSchema>
+
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
   raw: string | null,
