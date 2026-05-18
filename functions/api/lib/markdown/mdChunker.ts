@@ -31,7 +31,6 @@ export interface Chunk {
 }
 
 const YAML_FRONTMATTER_REGEX = /^---\n([\s\S]*?)\n---\n/
-const HEADING_REGEX = /^(#{1,3})\s+(.+)$/gm
 const PARAGRAPH_SPLIT_REGEX = /\n\n+/
 
 /** Estimate token count using chars/4 heuristic. */

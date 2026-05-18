@@ -306,35 +306,13 @@ function rowToCsv(row: MetricsSummaryRow): string {
 export function mountAdminRoutes(parent: any) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
 
-  // All admin routes require auth + admin role, EXCEPT /kb-sync and /kb-sync-delete which use x-admin-key header.
-  app.use('*', async (c, next) => {
-    // Bypass auth/admin middleware for /kb-sync and /kb-sync-delete endpoints (Phase 1 & 5 vector ops)
-    if ((c.req.path.endsWith('/kb-sync') || c.req.path.endsWith('/kb-sync-delete')) && c.req.method === 'POST') {
-      // Set dummy variables so the context matches expected shape
-      c.set('user', {} as AuthVariables['user'])
-      await next()
-      return
-    }
-    // Apply auth middleware to all other admin routes
-    await authMiddleware(c, next)
-  })
-  app.use('*', async (c, next) => {
-    // Skip adminMiddleware for /kb-sync and /kb-sync-delete (handled by x-admin-key check instead)
-    if ((c.req.path.endsWith('/kb-sync') || c.req.path.endsWith('/kb-sync-delete')) && c.req.method === 'POST') {
-      await next()
-      return
-    }
-    // Apply admin middleware to all other admin routes
-    await adminMiddleware(c, next)
-  })
-
   // Register help admin routes (review queue, prompt versions)
   registerHelpAdminRoutes(app)
 
   // ── GET /api/admin/metrics/live ──────────────────────────────────────────────
   // Returns a KV snapshot for the last 5 minutes.
   // p95 target: < 200 ms (KV reads are ~1-5 ms at edge).
-  app.get('/metrics/live', async (c) => {
+  app.get('/metrics/live', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
 
     // METRICS_KV may not exist until Step 1 ships.  Degrade gracefully.
@@ -371,7 +349,7 @@ export function mountAdminRoutes(parent: any) {
   // Query D1 metrics_summary with 5-min granularity.
   // Uses indexes: idx_metrics_ts, idx_metrics_route.
   // p95 target: < 1 s.
-  app.get('/metrics/historical', async (c) => {
+  app.get('/metrics/historical', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const startParam = c.req.query('start')
     const endParam = c.req.query('end')
@@ -451,7 +429,7 @@ export function mountAdminRoutes(parent: any) {
 
   // ── POST /api/admin/metrics/export ──────────────────────────────────────────
   // Streams D1 metrics_summary as CSV.  Max 10 000 rows, <5 MB.
-  app.post('/metrics/export', async (c) => {
+  app.post('/metrics/export', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
 
     const validated = await validateBody(c, AdminMetricsExportSchema)
@@ -517,7 +495,7 @@ export function mountAdminRoutes(parent: any) {
   // ── GET /api/admin/audit ────────────────────────────────────────────────────
   // Query audit events with filtering by actor, action, date range.
   // p95 target: < 1 s.
-  app.get('/audit', async (c) => {
+  app.get('/audit', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 100
     const offset = c.req.query('offset') ? parseInt(c.req.query('offset')!) : 0
@@ -536,7 +514,7 @@ export function mountAdminRoutes(parent: any) {
 
   // ── GET /api/admin/kpis ─────────────────────────────────────────────────────
   // Platform-wide KPI totals — user count, session counts, cost estimate.
-  app.get('/kpis', async (c) => {
+  app.get('/kpis', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const todayStart = new Date()
     todayStart.setUTCHours(0, 0, 0, 0)
@@ -586,7 +564,7 @@ export function mountAdminRoutes(parent: any) {
 
   // ── GET /api/admin/users ─────────────────────────────────────────────────────
   // List all users with optional search + pagination. Joins user_roles for admin_role.
-  app.get('/users', async (c) => {
+  app.get('/users', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const search = c.req.query('search') ?? ''
     const limit = Math.min(parseInt(c.req.query('limit') ?? '50'), 100)
@@ -635,7 +613,7 @@ export function mountAdminRoutes(parent: any) {
 
   // ── POST /api/admin/users ────────────────────────────────────────────────────
   // Create a new user account.
-  app.post('/users', async (c) => {
+  app.post('/users', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
 
     const validated = await validateBody(c, AdminCreateUserSchema)
@@ -681,7 +659,7 @@ export function mountAdminRoutes(parent: any) {
 
   // ── PATCH /api/admin/users/:id ───────────────────────────────────────────────
   // Update user plan, display_name, or admin_role.
-  app.patch('/users/:id', async (c) => {
+  app.patch('/users/:id', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const userId = c.req.param('id')
 
@@ -760,7 +738,7 @@ export function mountAdminRoutes(parent: any) {
   })
 
   // ── POST /api/admin/users/:id/suspend ────────────────────────────────────────
-  app.post('/users/:id/suspend', async (c) => {
+  app.post('/users/:id/suspend', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const userId = c.req.param('id')
     const now = Date.now()
@@ -783,7 +761,7 @@ export function mountAdminRoutes(parent: any) {
   })
 
   // ── POST /api/admin/users/:id/restore ────────────────────────────────────────
-  app.post('/users/:id/restore', async (c) => {
+  app.post('/users/:id/restore', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const userId = c.req.param('id')
 
@@ -806,7 +784,7 @@ export function mountAdminRoutes(parent: any) {
 
   // ── GET /api/admin/ops/summary ───────────────────────────────────────────────
   // Service health probes + realtime reliability + issue pulse.
-  app.get('/ops/summary', async (c) => {
+  app.get('/ops/summary', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const now = Date.now()
     const since24h = now - 24 * 60 * 60 * 1000
@@ -891,7 +869,7 @@ export function mountAdminRoutes(parent: any) {
 
   // ── GET /api/admin/analytics ─────────────────────────────────────────────────
   // Comprehensive analytics: time-series, breakdowns, cost/usage.
-  app.get('/analytics', async (c) => {
+  app.get('/analytics', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const now = Date.now()
     const todayStart = new Date()
@@ -1063,7 +1041,7 @@ export function mountAdminRoutes(parent: any) {
   // Sprint 20 measurement endpoint for the Sprint 19 AI wizard + Launchpad work.
   // D1 provides durable baseline proxies; Analytics Engine/log-derived fields
   // are returned as null with explicit gaps until the S20 evidence query is wired.
-  app.get('/sprint19-baseline', async (c) => {
+  app.get('/sprint19-baseline', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     await patchSprint19SchemaIfNeeded(c.env.DB)
     const startParam = c.req.query('start')
