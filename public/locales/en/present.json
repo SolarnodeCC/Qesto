@@ -45,5 +45,6 @@
   "teamQuiz.optionB": "Option B",
   "teamQuiz.optionC": "Option C",
   "teamQuiz.optionD": "Option D",
-  "leaderboard.title": "Leaderboard"
+  "leaderboard.title": "Leaderboard",
+  "tallyHidden": "Tally hidden"
 }

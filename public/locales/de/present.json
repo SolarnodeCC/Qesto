@@ -45,5 +45,6 @@
   "teamQuiz.optionB": "Option B",
   "teamQuiz.optionC": "Option C",
   "teamQuiz.optionD": "Option D",
-  "leaderboard.title": "Rangliste"
+  "leaderboard.title": "Rangliste",
+  "tallyHidden": "Ergebnis verborgen"
 }
