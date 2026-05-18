@@ -158,9 +158,8 @@ async function embedDocumentWithCF(text: string): Promise<number[]> {
   const data = (await response.json()) as {
     result?: { data?: Array<{ embeddings?: number[] }> } | { embeddings?: number[] };
   };
-  const embeddings =
-    data.result?.data?.[0]?.embeddings ||
-    (Array.isArray(data.result?.data) ? data.result.data[0]?.embeddings : data.result?.embeddings);
+  const result = data.result as any
+  const embeddings = result?.data?.[0]?.embeddings || result?.embeddings
 
   if (!embeddings || !Array.isArray(embeddings)) {
     throw new Error('Invalid embedding response from Cloudflare');

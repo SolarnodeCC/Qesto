@@ -42,8 +42,8 @@ export interface KBSearchResponse {
 
 // ─── Routes ────────────────────────────────────────────────────────────────────
 
-export function registerKBRoutes(parent: Hono<{ Bindings: Env }>) {
-  const app = new Hono<{ Bindings: Env }>()
+export function registerKBRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
+  const app = new Hono<{ Bindings: Env; Variables: { trace_id: string } }>()
 
   // GET /api/kb-search?q=...
   // Semantic search against KB vectors using Vectorize.
@@ -83,13 +83,13 @@ export function registerKBRoutes(parent: Hono<{ Bindings: Env }>) {
       // Query Vectorize with the embedding
       const vectorizeResults = await c.env.KB_VECTORIZE.query(queryEmbedding, { topK })
 
-      const results: KBSearchResult[] = vectorizeResults.map((match) => {
+      const results: KBSearchResult[] = vectorizeResults.matches.map((match) => {
         const meta = validateData(match.metadata || {}, VectorMetadataSchema) ?? {}
         return {
           id: match.id,
           score: match.score,
           metadata: meta as KBSearchResult['metadata'],
-          content: typeof meta.content === 'string' ? meta.content : undefined,
+          ...(typeof meta.content === 'string' ? { content: meta.content } : {}),
         }
       })
 
@@ -149,7 +149,7 @@ export function registerKBRoutes(parent: Hono<{ Bindings: Env }>) {
       const placeholder = new Array(1024).fill(0)
       const vectorizeResults = await c.env.KB_VECTORIZE.query(placeholder, { topK: 100 })
 
-      const docChunks = vectorizeResults
+      const docChunks = vectorizeResults.matches
         .filter((match) => (match.metadata as unknown as Record<string, unknown>)?.doc_id === docId)
         .sort((a, b) => {
           const aChunk = parseInt((a.metadata as unknown as Record<string, unknown>)?.chunk_id as string) || 0

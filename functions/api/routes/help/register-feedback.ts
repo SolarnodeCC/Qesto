@@ -7,6 +7,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import type { Env } from '../../types'
 import { verifyJwt } from '../../lib/jwt'
+import type { AuthVariables } from '../../middleware/auth'
 
 const FeedbackSchema = z.object({
   documentId: z.string().min(1),
@@ -14,7 +15,7 @@ const FeedbackSchema = z.object({
   feedbackText: z.string().max(500).optional(),
 })
 
-export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env }>): void {
+export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: AuthVariables }>): void {
   app.post('/help/feedback', async (c) => {
     const traceId = c.get('trace_id') ?? crypto.randomUUID()
 

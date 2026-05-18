@@ -325,8 +325,7 @@ export default function Present() {
                   <>
                     <div className="flex-1 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 overflow-y-auto">
                       {(() => {
-                        const allWords = Object.entries(state.results.counts)
-                        const topWords = getTopWords(allWords, 25)
+                        const topWords = getTopWords(state.results.counts, 25)
                         const maxCount = Math.max(...topWords.map(w => w[1]), 1)
                         return topWords.map(([word, count]) => (
                           <span

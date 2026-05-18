@@ -113,7 +113,7 @@ async function embedFiles(files: string[]): Promise<Map<string, { vectors: Array
     fs.writeFileSync(tempList, JSON.stringify(files));
 
     // Use the existing embed script with file filtering
-    const result = execSync(`npx tsx scripts/embed-kb.ts`, {
+    execSync(`npx tsx scripts/embed-kb.ts`, {
       env: { ...process.env, ...env, KB_EMBED_FILES: tempList },
       encoding: 'utf-8',
     });
@@ -230,10 +230,10 @@ async function notifySlack(message: string, details?: Record<string, unknown>): 
     };
 
     if (details) {
-      payload.blocks.push({
-        type: 'section' as const,
+      (payload.blocks as any[]).push({
+        type: 'section',
         fields: Object.entries(details).map(([key, value]) => ({
-          type: 'mrkdwn' as const,
+          type: 'mrkdwn',
           text: `*${key}*\n\`${String(value)}\``,
         })),
       });
