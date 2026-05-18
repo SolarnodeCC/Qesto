@@ -25,17 +25,16 @@ import {
   CLOSE_NORMAL,
   CLOSE_POLICY_VIOLATION,
   LIVE_PROTOCOL_VERSION,
-  type ClientMessage,
   type LiveEnergizerState,
   type LiveQuestion,
   type LiveSessionSummary,
   type ServerMessage,
-  type VersionedClientEnvelope,
 } from './realtime'
 import type { Env, VotePolicy, SessionMode, PlanTier } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
 import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
+import { parseClientMessage, type ValidClientMessage } from './lib/validators'
 
 // Tell tsc the env binding exists on the DO class — Phase 4+ will reach for
 // `this.env.DB` inside `close()` to persist totals. Kept as a typed field now
@@ -122,7 +121,7 @@ function errorMessage(code: string, message: string): string {
 }
 
 // ── DurableObject ───────────────────────────────────────────────────────────
-type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ClientMessage) => Promise<void>
+type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ValidClientMessage) => Promise<void>
 
 export class SessionRoom implements DurableObject {
   private readonly ctx: DurableObjectState
@@ -130,7 +129,7 @@ export class SessionRoom implements DurableObject {
   private resultsDirty = false
   private _voters: Votes | null = null
   private _votersInitPromise: Promise<void> | null = null
-  private readonly clientWsHandlers: Record<ClientMessage['type'], ClientWsHandler>
+  private readonly clientWsHandlers: Record<ValidClientMessage['type'], ClientWsHandler>
 
   constructor(ctx: DurableObjectState, env: Env) {
     this.ctx = ctx
@@ -159,7 +158,7 @@ export class SessionRoom implements DurableObject {
       },
       energizer_activate: async (ws, att, msg) => {
         if (msg.type !== 'energizer_activate') return
-        await this.handleEnergizerActivate(ws, att, msg.data.energizer)
+        await this.handleEnergizerActivate(ws, att, msg.data.energizer as LiveEnergizerState)
       },
       energizer_answer: async (ws, att, msg) => {
         if (msg.type !== 'energizer_answer') return
@@ -412,23 +411,16 @@ export class SessionRoom implements DurableObject {
   // ── Hibernation callbacks ─────────────────────────────────────────────────
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
     const text = typeof message === 'string' ? message : new TextDecoder().decode(message)
-    let parsed: ClientMessage | null = null
-    try {
-      parsed = JSON.parse(text) as ClientMessage
-    } catch {
-      ws.send(errorMessage('bad_json', 'Message is not valid JSON'))
+    const parsed = parseClientMessage(text)
+    if (!parsed) {
+      ws.send(errorMessage('bad_message', 'Invalid or malformed message'))
       return
     }
-    if (!parsed || typeof parsed.type !== 'string') {
-      ws.send(errorMessage('bad_message', 'Missing type'))
+    if (parsed.v !== undefined && parsed.v !== LIVE_PROTOCOL_VERSION) {
+      ws.send(errorMessage('unsupported_protocol', `Unsupported LIVE protocol version: ${parsed.v}`))
       return
     }
-    const version = (parsed as VersionedClientEnvelope).v
-    if (version !== undefined && version !== LIVE_PROTOCOL_VERSION) {
-      ws.send(errorMessage('unsupported_protocol', `Unsupported LIVE protocol version: ${version}`))
-      return
-    }
-    const att = ws.deserializeAttachment() as Attachment | null
+    const att = ws.deserializeAttachment()
     if (!att) {
       ws.close(CLOSE_POLICY_VIOLATION, 'missing attachment')
       return
@@ -436,7 +428,7 @@ export class SessionRoom implements DurableObject {
 
     const handler = this.clientWsHandlers[parsed.type]
     if (!handler) {
-      ws.send(errorMessage('unknown_type', `Unknown type: ${(parsed as { type?: string }).type}`))
+      ws.send(errorMessage('unknown_type', `Unknown type: ${parsed.type}`))
       return
     }
     await handler(ws, att, parsed)

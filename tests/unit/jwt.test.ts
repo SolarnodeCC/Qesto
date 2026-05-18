@@ -14,24 +14,24 @@ describe('jwt', () => {
   })
 
   it('round-trips claims when signed and verified with the same secret', async () => {
-    const token = await signJwt({ sub: 'user_1', email: 'a@b.c' }, SECRET, 3600)
+    const token = await signJwt({ sub: 'user_1', email: 'test@example.com' }, SECRET, 3600)
     const claims = await verifyJwt(token, SECRET)
     expect(claims).not.toBeNull()
     expect(claims?.sub).toBe('user_1')
-    expect(claims?.email).toBe('a@b.c')
+    expect(claims?.email).toBe('test@example.com')
     expect(claims?.exp).toBeGreaterThan(claims?.iat ?? 0)
   })
 
   it('rejects a token signed with a different secret', async () => {
-    const token = await signJwt({ sub: 'u', email: 'a@b.c' }, SECRET, 3600)
+    const token = await signJwt({ sub: 'u', email: 'test@example.com' }, SECRET, 3600)
     const claims = await verifyJwt(token, OTHER)
     expect(claims).toBeNull()
   })
 
   it('rejects a tampered payload', async () => {
-    const token = await signJwt({ sub: 'u', email: 'a@b.c' }, SECRET, 3600)
+    const token = await signJwt({ sub: 'u', email: 'test@example.com' }, SECRET, 3600)
     const [h, , s] = token.split('.')
-    const fakePayload = btoa(JSON.stringify({ sub: 'attacker', email: 'x@y.z', iat: 0, exp: 9_999_999_999 }))
+    const fakePayload = btoa(JSON.stringify({ sub: 'attacker', email: 'attacker@example.com', iat: 0, exp: 9_999_999_999 }))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '')
@@ -40,7 +40,7 @@ describe('jwt', () => {
   })
 
   it('rejects an expired token', async () => {
-    const token = await signJwt({ sub: 'u', email: 'a@b.c' }, SECRET, 60)
+    const token = await signJwt({ sub: 'u', email: 'test@example.com' }, SECRET, 60)
     vi.setSystemTime(new Date('2026-04-20T13:00:00Z')) // +1h, > 60s
     const claims = await verifyJwt(token, SECRET)
     expect(claims).toBeNull()

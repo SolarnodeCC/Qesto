@@ -9,6 +9,7 @@ import { setAuthSessionCookie } from './cookie'
 import { pwdKey, resetKey } from './helpers'
 import { authEmailRequestSchema, passwordSchema, signupSchema } from './schemas'
 import { authJsonInternalError } from './errors'
+import { validateKvJson, PasswordCredentialSchema, PasswordResetSchema } from '../../lib/validators'
 import type { AuthApp } from './types'
 
 export function registerPasswordAuthRoutes(app: AuthApp): void {
@@ -74,13 +75,9 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         .first<{ id: string }>()
 
       const credRaw = user ? await c.env.USERS_KV.get(pwdKey(user.id)) : null
-      let cred: { hash: string } | null = null
-      if (credRaw) {
-        try {
-          cred = JSON.parse(credRaw) as { hash: string }
-        } catch (parseErr) {
-          console.warn(`[auth] failed to parse password credential for user ${user?.id}:`, parseErr)
-        }
+      const cred = credRaw ? validateKvJson(credRaw, PasswordCredentialSchema) : null
+      if (credRaw && !cred) {
+        console.warn(JSON.stringify({ event: 'auth.kv_invalid', kind: 'password_cred', user_id: user?.id }))
       }
 
       const valid = cred ? await verifyPassword(password, cred.hash) : false
@@ -173,16 +170,12 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
           400,
         )
       }
-      let userId: string
-      let email: string
-      try {
-        const payload = JSON.parse(rawKv) as { userId: string; email: string }
-        userId = payload.userId
-        email = payload.email
-      } catch (parseErr) {
-        console.error('[auth] failed to parse reset token data:', parseErr)
-        return authJsonInternalError(c, parseErr, '[auth] password reset-confirm corrupt token')
+      const payload = validateKvJson(rawKv, PasswordResetSchema)
+      if (!payload) {
+        console.error('[auth] corrupt reset token data in KV')
+        return authJsonInternalError(c, new Error('corrupt_reset_token'), '[auth] password reset-confirm corrupt token')
       }
+      const { userId, email } = payload
 
       await c.env.ACTIONS_KV.delete(kvKey)
 

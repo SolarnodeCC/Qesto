@@ -48,8 +48,9 @@ import {
 } from '../lib/session-bundle'
 import { rateLimit } from '../lib/rate-limit'
 import { sanitizeError } from '../lib/error-handler'
+import { validateKvJson, PollOptionArraySchema, StringArraySchema, CachedQuestionsSchema } from '../lib/validators'
 import type { LiveQuestion } from '../realtime'
-import type { Env, PlanQuotas, PlanTier, PollOption, Question, Session } from '../types'
+import type { Env, PlanQuotas, PlanTier, Question, Session } from '../types'
 import type { Team } from './teams'
 import { effectiveTeamPermissionsForUser, type Permission } from '../lib/authz'
 import { readKvJson } from '../lib/kv'
@@ -135,12 +136,7 @@ type QuestionRow = {
 }
 
 function rowToQuestion(row: QuestionRow): Question {
-  let parsed: PollOption[] = []
-  try {
-    parsed = JSON.parse(row.options_json) as PollOption[]
-  } catch (parseErr) {
-    console.warn(`[sessions] failed to parse options for question ${row.id}:`, parseErr)
-  }
+  const parsed = validateKvJson(row.options_json, PollOptionArraySchema) ?? []
   return {
     id: row.id,
     session_id: row.session_id,
@@ -349,11 +345,7 @@ async function precomputeInsights(
       .all<{ option_id: string; votes: number }>()
 
     let options: { id: string; label: string }[] = []
-    try {
-      options = JSON.parse(q.options_json) as { id: string; label: string }[]
-    } catch {
-      options = []
-    }
+    options = validateKvJson(q.options_json, PollOptionArraySchema) ?? []
 
     pollBreakdown.push({
       questionId: q.id,
@@ -631,8 +623,8 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
           try {
             const raw = await c.env.TEAMS_KV.get(`user-teams:${user.sub}`)
             if (raw) {
-              const ids = JSON.parse(raw) as string[]
-              teamId = Array.isArray(ids) && ids.length > 0 ? ids[0] : null
+              const ids = validateKvJson(raw, StringArraySchema)
+              teamId = ids && ids.length > 0 ? ids[0] : null
             }
           } catch {
             // KV lookup is best-effort analytics attribution — never blocks session creation.
@@ -2034,15 +2026,13 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     if (session.ai_grounding_hash && session.ai_grounding_hash === groundingHash) {
       const cachedRaw = await c.env.SESSIONS_KV.get(cacheKey)
       if (cachedRaw) {
-        try {
-          const cached = JSON.parse(cachedRaw) as { questions: unknown; confidence?: number }
+        const cached = validateKvJson(cachedRaw, CachedQuestionsSchema)
+        if (cached) {
           return c.json({
             ok: true,
             data: { questions: cached.questions, confidence: cached.confidence ?? 1, cached: true },
             trace_id: traceId,
           })
-        } catch {
-          // fall through to regenerate on parse error
         }
       }
     }

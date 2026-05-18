@@ -5,6 +5,8 @@
 //   { sub: userId, email, iat, exp }
 // Extend in Phase 2+ only when routes actually need new claims.
 
+import { validateData, AuthClaimsSchema } from './validators'
+
 const ALG = 'HS256'
 const HEADER = { alg: ALG, typ: 'JWT' }
 const HEADER_B64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(HEADER)))
@@ -12,7 +14,7 @@ const HEADER_B64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(HEADE
 export type AuthClaims = {
   sub: string
   email: string
-  jti?: string
+  jti?: string | undefined
   iat: number
   exp: number
 }
@@ -34,15 +36,16 @@ export async function verifyJwt(token: string, secret: string): Promise<AuthClai
   if (headerB64 !== HEADER_B64) return null
   const expected = await hmacSign(secret, `${headerB64}.${payloadB64}`)
   if (!timingSafeEqual(sig, expected)) return null
-  let claims: AuthClaims
+  let parsed: unknown
   try {
-    claims = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64))) as AuthClaims
+    parsed = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64)))
   } catch {
     return null
   }
+  const claims = validateData(parsed, AuthClaimsSchema)
+  if (!claims) return null
   const now = Math.floor(Date.now() / 1000)
-  if (typeof claims.exp !== 'number' || claims.exp < now) return null
-  if (typeof claims.sub !== 'string' || typeof claims.email !== 'string') return null
+  if (claims.exp < now) return null
   return claims
 }
 
