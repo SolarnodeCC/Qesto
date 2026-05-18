@@ -1,8 +1,10 @@
-export async function readKvJson<T>(kv: KVNamespace, key: string): Promise<T | null> {
+import type { ZodSchema } from 'zod'
+import { validateKvJson } from './validators'
+
+export async function readKvJson<T>(kv: KVNamespace, key: string, schema?: ZodSchema<T>): Promise<T | null> {
   try {
     const raw = await kv.get(key)
-    if (!raw) return null
-    return JSON.parse(raw) as T
+    return validateKvJson(raw, schema)
   } catch {
     return null
   }
