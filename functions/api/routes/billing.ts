@@ -13,6 +13,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/validate'
 import { BillingSubscriptionSchema } from '../lib/validation'
+import { validateData, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema } from '../lib/validators'
 import { PLAN_QUOTAS, type Env, type PlanQuotas, type PlanTier } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -243,7 +244,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     // Look up Stripe customer ID stored in USERS_KV
     const raw = await c.env.USERS_KV.get(stripeCustomerKey(user.sub))
-    const record = raw ? (JSON.parse(raw) as { customerId: string }) : null
+    const record = raw ? validateData(JSON.parse(raw), StripeCustomerRecordSchema) : null
 
     if (!record?.customerId) {
       return c.json(
@@ -271,7 +272,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
     const raw = await c.env.USERS_KV.get(stripeCustomerKey(user.sub))
-    const record = raw ? (JSON.parse(raw) as { customerId: string }) : null
+    const record = raw ? validateData(JSON.parse(raw), StripeCustomerRecordSchema) : null
     if (!record?.customerId) {
       return c.json(
         { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },
@@ -298,7 +299,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const { data: body } = validated
 
     const subRaw = await c.env.USERS_KV.get(stripeSubscriptionKey(user.sub))
-    const subRecord = subRaw ? (JSON.parse(subRaw) as { subscriptionId: string }) : null
+    const subRecord = subRaw ? validateData(JSON.parse(subRaw), StripeSubscriptionRecordSchema) : null
     if (!subRecord?.subscriptionId) {
       return c.json(
         { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },

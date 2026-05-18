@@ -327,6 +327,40 @@ export const TeamInviteTokenSchema = z.object({
 
 export type ValidTeamInviteToken = z.infer<typeof TeamInviteTokenSchema>
 
+// ── Billing & Stripe Validators ──────────────────────────────────────────────
+
+export const StripeCustomerRecordSchema = z.object({
+  customerId: z.string(),
+})
+
+export type ValidStripeCustomerRecord = z.infer<typeof StripeCustomerRecordSchema>
+
+export const StripeSubscriptionRecordSchema = z.object({
+  subscriptionId: z.string(),
+})
+
+export type ValidStripeSubscriptionRecord = z.infer<typeof StripeSubscriptionRecordSchema>
+
+// ── Template Validators ──────────────────────────────────────────────────────
+
+export const TemplateIdArraySchema = z.array(z.string())
+
+export type ValidTemplateIdArray = z.infer<typeof TemplateIdArraySchema>
+
+export const CustomerTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  questions: z.array(z.object({
+    id: z.string().optional(),
+    position: z.number().optional(),
+    kind: z.string(),
+    prompt: z.string(),
+    options_json: z.string().optional(),
+  })),
+})
+
+export type ValidCustomerTemplate = z.infer<typeof CustomerTemplateSchema>
+
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
   raw: string | null,
