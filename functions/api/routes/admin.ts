@@ -1206,7 +1206,7 @@ export function mountAdminRoutes(parent: any) {
 
       for (let i = 0; i < validVectors.length; i += batchSize) {
         const batch = validVectors.slice(i, i + batchSize)
-        await c.env.KB_VECTORIZE.upsert(batch)
+        await c.env.KB_VECTORIZE.upsert(batch as VectorizeVector[])
         totalUpserted += batch.length
       }
 

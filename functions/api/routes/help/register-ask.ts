@@ -10,14 +10,13 @@ import { rateLimit } from '../../lib/rate-limit'
 import { askHelpAI, HelpAIError, HelpValidationError } from '../../lib/help-rag'
 import { sanitizeError } from '../../lib/error-handler'
 import { verifyJwt } from '../../lib/jwt'
-
-type Vars = Record<string, never>
+import type { AuthVariables } from '../../middleware/auth'
 
 const AskSchema = z.object({
   question: z.string().min(1).max(500).trim(),
 })
 
-export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: Vars }>): void {
+export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthVariables }>): void {
   app.post('/help/ask', async (c) => {
     const traceId = c.get('trace_id') ?? crypto.randomUUID()
 

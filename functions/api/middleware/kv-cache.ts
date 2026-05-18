@@ -17,6 +17,7 @@ import {
   cacheUserRolesKey,
 } from '../lib/kv-keys'
 import type { AuthVariables } from './auth'
+import { validateData, CachedDataSchema } from '../lib/validators'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
 export function kvNamespaceForCacheKey(key: string): 'USERS_KV' | 'TEAMS_KV' | 'SESSIONS_KV' {
@@ -111,7 +112,8 @@ export async function getPlanUsageWithCache(
 
   // Try cache first
   try {
-    const cached = await c.env.USERS_KV.get(key, 'json') as { data: Record<string, unknown>; expires_at: number } | null
+    const raw = await c.env.USERS_KV.get(key, 'json')
+    const cached = validateData(raw, CachedDataSchema)
     if (cached && cached.expires_at && cached.expires_at > Date.now()) {
       return cached.data as Record<string, any>
     }

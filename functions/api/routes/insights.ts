@@ -21,6 +21,7 @@ import {
 } from '../lib/ai-insights'
 import { sanitizeError } from '../lib/error-handler'
 import { rateLimit } from '../lib/rate-limit'
+import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/validators'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -124,12 +125,7 @@ async function fetchPollBreakdown(
       )
       .bind(q.id)
       .all<{ option_id: string; n: number }>()
-    let options: { id: string; label: string }[] = []
-    try {
-      options = JSON.parse(q.options_json) as { id: string; label: string }[]
-    } catch {
-      options = []
-    }
+    const options = validateKvJson(q.options_json, PollOptionArraySchema) ?? []
     const topLabels: string[] = []
     for (const c of counts ?? []) {
       const match = options.find((o) => o.id === c.option_id)
@@ -198,17 +194,19 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     // Cache check before rate limit — hits don't consume AI quota.
     const cached = await c.env.SESSIONS_KV.get(cacheKey(id), 'json')
     if (cached) {
-      const ci = cached as CachedInsights
-      return c.json({
-        ok: true,
-        data: {
-          themes: ci.themes,
-          trend: ci.trend,
-          cached: true,
-          cached_at: ci.cached_at,
-        },
-        trace_id: c.get('trace_id'),
-      })
+      const ci = validateData(cached, CachedInsightsSchema)
+      if (ci) {
+        return c.json({
+          ok: true,
+          data: {
+            themes: ci.themes,
+            trend: ci.trend,
+            cached: true,
+            cached_at: ci.cached_at,
+          },
+          trace_id: c.get('trace_id'),
+        })
+      }
     }
 
     // Rate limit only applies to fresh AI calls.

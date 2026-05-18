@@ -2,13 +2,12 @@ import {
   advanceBattleRoyaleRound,
   advanceBracketRound,
   determineBadgesAwarded,
-  type EmojiPollConfig,
-  type QuickFingerConfig,
 } from '../../lib/gamification'
 import { recordAuditEvent } from '../../lib/audit'
 import { sanitizeError } from '../../lib/error-handler'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
+import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/validators'
 
 export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/advance', async (c) => {
@@ -44,17 +43,32 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         )
       }
 
-      const config = JSON.parse(energizer.config_json)
+      let configParsed: unknown
+      try {
+        configParsed = JSON.parse(energizer.config_json)
+      } catch {
+        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Malformed energizer config' }, trace_id }, 500)
+      }
+
+      const config = validateData(configParsed, EnergizerConfigEnvelopeSchema)
+      if (!config) {
+        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid energizer config' }, trace_id }, 500)
+      }
+
       let nextState = energizer.state
       let winners = null
       let nextRound = null
 
       if (energizer.kind === 'battle_royale') {
+        const brConfig = validateData(config, BattleRoyaleConfigSchema)
+        if (!brConfig) {
+          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid battle royale config' }, trace_id }, 500)
+        }
         const { advancing, scaledScores } = advanceBattleRoyaleRound(
-          config.participants,
+          brConfig.participants,
           body.scores,
-          config.elimination_threshold ?? 0.5,
-          config.scoring_multiplier ?? 1
+          brConfig.elimination_threshold ?? 0.5,
+          brConfig.scoring_multiplier ?? 1
         )
 
         if (advancing.length === 1) {
@@ -62,9 +76,13 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
           winners = { champion: advancing[0], scores: scaledScores }
         } else {
           nextRound = { round: body.round + 1, participants: advancing, scores: scaledScores }
-          config.participants = advancing
+          brConfig.participants = advancing
         }
       } else if (energizer.kind === 'bracket') {
+        const bracketConfig = validateData(config, BracketConfigSchema)
+        if (!bracketConfig) {
+          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid bracket config' }, trace_id }, 500)
+        }
         const winnerIds = Object.entries(body.scores)
           .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
           .slice(0, Object.keys(body.scores).length / 2)
@@ -150,22 +168,40 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         )
       }
 
-      const config = JSON.parse(result.config_json)
+      let configParsed: unknown
+      try {
+        configParsed = JSON.parse(result.config_json)
+      } catch {
+        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Malformed energizer config' }, trace_id }, 500)
+      }
+
+      const config = validateData(configParsed, EnergizerConfigEnvelopeSchema)
+      if (!config) {
+        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid energizer config' }, trace_id }, 500)
+      }
+
       const extra: Record<string, unknown> = {}
 
       if (result.kind === 'emoji_poll') {
+        const emojiConfig = validateData(config, EmojiPollConfigSchema)
+        if (!emojiConfig) {
+          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid emoji poll config' }, trace_id }, 500)
+        }
         const votes = await (c.env.DB.prepare as any)(
           `SELECT value, COUNT(*) as count FROM energizer_votes WHERE energizer_id = ?1 GROUP BY value`,
         )
           .bind(energizerId)
           .all()
         const r: Record<string, number> = {}
-        for (const emoji of (config as EmojiPollConfig).emojis) r[emoji] = 0
+        for (const emoji of emojiConfig.emojis) r[emoji] = 0
         for (const row of (votes.results ?? []) as { value: string; count: number }[]) r[row.value] = row.count
         extra.results = r
       } else if (result.kind === 'quick_finger') {
-        const qf = config as QuickFingerConfig
-        const correctAnswer = qf.options[qf.correct_index]
+        const qfConfig = validateData(config, QuickFingerConfigSchema)
+        if (!qfConfig) {
+          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid quick finger config' }, trace_id }, 500)
+        }
+        const correctAnswer = qfConfig.options[qfConfig.correct_index]
         const votes = await (c.env.DB.prepare as any)(
           `SELECT voter_id, value, created_at FROM energizer_votes WHERE energizer_id = ?1 ORDER BY created_at ASC`,
         )

@@ -13,7 +13,6 @@
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
-import { execSync } from 'child_process'
 
 // Local imports (must build/transpile mdChunker first or inline here)
 // For now, we'll inline the essentials to avoid require() complexity in ts-node
@@ -62,13 +61,10 @@ const isDryRun = args.includes('--dry-run')
 const limitFiles = args.find((a) => a.startsWith('--limit'))
   ? parseInt(args[args.indexOf('--limit') + 1], 10)
   : undefined
-const isVerify = args.includes('--verify')
-
 const kbRoot = path.join(process.cwd(), 'knowledge-base')
 const apiKey = process.env.CLOUDFLARE_API_TOKEN || ''
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
 const dbId = process.env.CLOUDFLARE_D1_DATABASE_ID || ''
-const vectorizeIndexName = 'kb-production'
 
 if (!isDryRun && (!apiKey || !accountId || !dbId)) {
   console.error(
@@ -159,10 +155,10 @@ function parseFrontmatter(markdown: string): {
       status: String(parsed.status || 'draft'),
       tags: (parsed.tags as string[]) || [],
       relates_to: (parsed.relates_to as string[]) || [],
-      title: parsed.title ? String(parsed.title) : undefined,
-      version: parsed.version ? String(parsed.version) : undefined,
-      owner: parsed.owner ? String(parsed.owner) : undefined,
-      category: parsed.category ? String(parsed.category) : undefined,
+      ...(parsed.title ? { title: String(parsed.title) } : {}),
+      ...(parsed.version ? { version: String(parsed.version) } : {}),
+      ...(parsed.owner ? { owner: String(parsed.owner) } : {}),
+      ...(parsed.category ? { category: String(parsed.category) } : {}),
     },
     body,
   }

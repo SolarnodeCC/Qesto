@@ -2,6 +2,9 @@
 // No third-party deps — uses fetch + WebCrypto.
 // State tokens are stored in ACTIONS_KV with a 10-minute TTL.
 
+import { z } from 'zod'
+import { validateData, GoogleTokenResponseSchema, MicrosoftTokenResponseSchema, GoogleIdTokenPayloadSchema, MicrosoftIdTokenPayloadSchema, JwtHeaderSchema, JwksResponseSchema } from './validators'
+
 const STATE_TTL_SECONDS = 10 * 60
 const DEFAULT_JWKS_TTL_MS = 5 * 60 * 1000
 const jwksCache = new Map<string, { keys: JsonWebKey[]; expiresAt: number }>()
@@ -45,18 +48,21 @@ export async function exchangeGoogleCode(
     clearTimeout(googleTimeout)
   }
   if (!tokenRes.ok) throw new Error(`Google token exchange failed: ${tokenRes.status}`)
-  const tokens = (await tokenRes.json()) as { id_token?: string }
-  if (!tokens.id_token) throw new Error('Google token response missing id_token')
+  const tokens = validateData(await tokenRes.json(), GoogleTokenResponseSchema)
+  if (!tokens?.id_token) throw new Error('Google token response missing id_token')
 
   const payload = await verifyJwtWithJwks(tokens.id_token, {
     audience: clientId,
     issuer: (iss) => iss === 'https://accounts.google.com' || iss === 'accounts.google.com',
     jwksUri: 'https://www.googleapis.com/oauth2/v3/certs',
-  }) as { email?: string; sub?: string; email_verified?: boolean }
+    validator: GoogleIdTokenPayloadSchema,
+  })
 
-  if (!payload.email || !payload.sub) throw new Error('Google id_token missing email or sub')
-  if (payload.email_verified === false) throw new Error('Google id_token email not verified')
-  return { email: payload.email, sub: payload.sub }
+  const email = (payload as Record<string, unknown>).email
+  const sub = (payload as Record<string, unknown>).sub
+  if (typeof email !== 'string' || typeof sub !== 'string') throw new Error('Google id_token missing email or sub')
+  if ((payload as Record<string, unknown>).email_verified === false) throw new Error('Google id_token email not verified')
+  return { email, sub }
 }
 
 export function buildMicrosoftAuthUrl(
@@ -106,23 +112,21 @@ export async function exchangeMicrosoftCode(
     clearTimeout(msTimeout)
   }
   if (!tokenRes.ok) throw new Error(`Microsoft token exchange failed: ${tokenRes.status}`)
-  const tokens = (await tokenRes.json()) as { id_token: string }
-  if (!tokens.id_token) throw new Error('Microsoft token response missing id_token')
+  const tokens = validateData(await tokenRes.json(), MicrosoftTokenResponseSchema)
+  if (!tokens?.id_token) throw new Error('Microsoft token response missing id_token')
 
   const payload = await verifyJwtWithJwks(tokens.id_token, {
     audience: clientId,
     issuer: (iss) => iss.startsWith('https://login.microsoftonline.com/') && iss.endsWith('/v2.0'),
     jwksUri: `https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`,
-  }) as {
-    aud?: string
-    email?: string
-    preferred_username?: string
-    oid?: string
-  }
+    validator: MicrosoftIdTokenPayloadSchema,
+  })
 
-  const email = payload.email ?? payload.preferred_username
-  if (!email || !payload.oid) throw new Error('Microsoft id_token missing email or oid')
-  return { email, sub: payload.oid }
+  const p = payload as Record<string, unknown>
+  const email = (typeof p.email === 'string' ? p.email : undefined) ?? (typeof p.preferred_username === 'string' ? p.preferred_username : undefined)
+  const oid = typeof p.oid === 'string' ? p.oid : undefined
+  if (!email || !oid) throw new Error('Microsoft id_token missing email or oid')
+  return { email, sub: oid }
 }
 
 export async function generateOAuthState(kv: KVNamespace): Promise<string> {
@@ -139,31 +143,31 @@ export async function consumeOAuthState(kv: KVNamespace, state: string): Promise
   return true
 }
 
-type JwtHeader = {
-  alg?: string
-  kid?: string
-}
-
 async function verifyJwtWithJwks(
   token: string,
   opts: {
     audience: string
     issuer: ((iss: string) => boolean) | string
     jwksUri: string
+    validator?: z.ZodSchema
   },
 ): Promise<Record<string, unknown>> {
   const parts = token.split('.')
   if (parts.length !== 3) throw new Error('Invalid JWT format')
   const [headerB64, payloadB64, sigB64] = parts
 
-  const header = decodePart<JwtHeader>(headerB64)
+  const headerRaw = decodePart(headerB64)
+  const header = validateData(headerRaw, JwtHeaderSchema)
+  if (!header) throw new Error('Invalid JWT header')
   if (header.alg !== 'RS256') throw new Error(`Unsupported JWT alg: ${header.alg ?? 'unknown'}`)
   if (!header.kid) throw new Error('JWT header missing kid')
 
-  const payload = decodePart<Record<string, unknown>>(payloadB64)
-  const aud = payload.aud
-  const exp = payload.exp
-  const iss = payload.iss
+  const payloadRaw = decodePart(payloadB64)
+  const payload = opts.validator ? validateData(payloadRaw, opts.validator) : (payloadRaw as Record<string, unknown>)
+  if (opts.validator && !payload) throw new Error('Invalid JWT payload')
+  const aud = (payload as Record<string, unknown>).aud
+  const exp = (payload as Record<string, unknown>).exp
+  const iss = (payload as Record<string, unknown>).iss
 
   const audienceValid = typeof aud === 'string'
     ? aud === opts.audience
@@ -201,7 +205,7 @@ async function verifyJwtWithJwks(
   )
   if (!valid) throw new Error('Invalid JWT signature')
 
-  return payload
+  return payload as Record<string, unknown>
 }
 
 async function getJwks(uri: string): Promise<JsonWebKey[]> {
@@ -218,18 +222,19 @@ async function getJwks(uri: string): Promise<JsonWebKey[]> {
     clearTimeout(jwksTimeout)
   }
   if (!res.ok) throw new Error(`JWKS fetch failed: ${res.status}`)
-  const data = (await res.json()) as { keys?: JsonWebKey[] }
-  if (!Array.isArray(data.keys) || data.keys.length === 0) throw new Error('JWKS response missing keys')
+  const data = validateData(await res.json(), JwksResponseSchema)
+  if (!data?.keys || !Array.isArray(data.keys) || data.keys.length === 0) throw new Error('JWKS response missing keys')
 
   const cacheControl = res.headers.get('cache-control') ?? ''
   const maxAgeSec = cacheControl.match(/max-age=(\d+)/)?.[1]
   const ttl = maxAgeSec ? Number(maxAgeSec) * 1000 : DEFAULT_JWKS_TTL_MS
-  jwksCache.set(uri, { keys: data.keys, expiresAt: now + ttl })
-  return data.keys
+  const keys = data.keys as JsonWebKey[]
+  jwksCache.set(uri, { keys, expiresAt: now + ttl })
+  return keys
 }
 
-function decodePart<T>(part: string): T {
-  return JSON.parse(bytesToString(base64UrlToBytes(part))) as T
+function decodePart(part: string): unknown {
+  return JSON.parse(bytesToString(base64UrlToBytes(part)))
 }
 
 function base64UrlToBytes(value: string): Uint8Array {

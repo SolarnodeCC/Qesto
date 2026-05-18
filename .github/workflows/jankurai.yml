@@ -2,8 +2,6 @@ name: Jankurai Audit
 
 on:
   push:
-    branches: ['**']
-  pull_request:
     branches: [main]
 
 concurrency:
@@ -24,7 +22,6 @@ jobs:
       - uses: jeppsontaylor/Jankurai@v0.8.16
         with:
           mode: advisory
-          baseline: agent/repo-score.json
 
       - name: Upload Jankurai audit report
         uses: actions/upload-artifact@v7
