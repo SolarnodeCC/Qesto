@@ -244,6 +244,51 @@ export const JwksResponseSchema = z.object({
 
 export type ValidJwksResponse = z.infer<typeof JwksResponseSchema>
 
+// ── Audit Event Validators ───────────────────────────────────────────────────
+
+export const AuditActionSchema = z.enum([
+  'session.create',
+  'session.start',
+  'session.close',
+  'session.archive',
+  'session.update',
+  'question.create',
+  'question.update',
+  'question.delete',
+  'user.role_change',
+  'team.create',
+  'team.update',
+  'team.delete',
+  'team.role.create',
+  'team.role.update',
+  'team.role.delete',
+  'team.role.assign',
+  'team.role.unassign',
+  'team.permission_denied',
+  'auth.login',
+  'auth.logout',
+  'billing.plan_change',
+  'insights.generate',
+  'energizer.create',
+  'energizer.advance',
+  'energizer.activate',
+  'energizer.complete',
+  'energizer.activation_denied',
+  'ws.energizer_activated',
+  'ws.energizer_activation_denied',
+  'ws.energizer_advance_denied',
+  'ws.energizer_answered',
+  'ws.energizer_advanced',
+  'ws.energizer_completed',
+  'session.close_with_badges',
+  'user.create',
+  'user.update',
+  'user.suspend',
+  'user.restore',
+])
+
+export type ValidAuditAction = z.infer<typeof AuditActionSchema>
+
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
   raw: string | null,
