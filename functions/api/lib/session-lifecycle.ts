@@ -52,6 +52,25 @@ export function requireDraft(session: Session, reason: DraftGateReason): Lifecyc
   return { ok: true, session }
 }
 
+/** PATCH title — draft, closed, or archived (D1 label only; no live/energizing). */
+export function requireEditableTitle(session: Session): LifecycleOk | LifecycleErr {
+  if (
+    session.status === 'draft' ||
+    session.status === 'closed' ||
+    session.status === 'archived'
+  ) {
+    return { ok: true, session }
+  }
+  return {
+    ok: false,
+    error: {
+      code: 'conflict',
+      message: 'Session title cannot be changed while the session is active',
+      status: 409,
+    },
+  }
+}
+
 export function requireLiveForClose(session: Session): LifecycleOk | LifecycleErr {
   if (session.status !== 'energizing' && session.status !== 'live') {
     return {

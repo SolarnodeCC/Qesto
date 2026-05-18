@@ -19,6 +19,8 @@
   },
   "no_question": "Diese Sitzung hat keine Frage zugeordnet.",
   "no_votes": "Es wurden keine Stimmen aufgezeichnet.",
+  "title_save_error": "Titel konnte nicht gespeichert werden",
+  "title_saving": "Speichern…",
   "responses_one": "{count} Antwort",
   "responses_other": "{count} Antworten"
 }

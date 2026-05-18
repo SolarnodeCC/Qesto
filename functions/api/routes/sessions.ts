@@ -26,9 +26,11 @@ import { denyFeature, featureAllowed, questionKindFeature } from '../lib/entitle
 import { validateBody } from '../lib/validate'
 import {
   CreateSessionSchema,
+  DuplicateSessionSchema,
   GenerateQuestionsSchema,
   JourneyEventSchema,
   PatchSessionSchema,
+  isPatchBodyTitleOnly,
   RefineQuestionsSchema,
   ReorderQuestionsSchema,
   AddQuestionSchema,
@@ -59,10 +61,12 @@ import {
   rejectDraftForResults,
   requireClosedOrArchivedForInsights,
   requireDraft,
+  requireEditableTitle,
   requireFound,
   requireLiveForClose,
   requireLiveForWebSocket,
 } from '../lib/session-lifecycle'
+import { suggestDuplicateTitle } from '../lib/session-title'
 
 type Vars = AuthVariables & PlanVariables
 // SessionRow mirrors the D1 row shape. Analytics-only column `team_id` (OBS-001)
@@ -217,6 +221,14 @@ async function fetchSession(db: D1Database, id: string, ownerId: string): Promis
     .bind(id, ownerId)
     .first<SessionRow>()
   return row ?? null
+}
+
+async function fetchOwnerSessionTitles(db: D1Database, ownerId: string): Promise<string[]> {
+  const { results } = await db
+    .prepare(`SELECT title FROM sessions WHERE owner_id = ?1`)
+    .bind(ownerId)
+    .all<{ title: string }>()
+  return (results ?? []).map((r) => r.title)
 }
 
 async function fetchQuestions(db: D1Database, sessionId: string): Promise<Question[]> {
@@ -710,7 +722,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') })
   })
 
-  // PATCH /api/sessions/:id — DRAFT-only write
+  // PATCH /api/sessions/:id — DRAFT full write; closed/archived title-only
   app.patch('/:id', async (c) => {
     const user = c.get('user')
     const plan = c.get('plan')
@@ -730,14 +742,28 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         loaded.error.status,
       )
     }
-    const draftPatch = requireDraft(loaded.session, 'patch')
-    if (!draftPatch.ok) {
-      return c.json(
-        { ok: false, error: { code: draftPatch.error.code, message: draftPatch.error.message }, trace_id: c.get('trace_id') },
-        draftPatch.error.status,
-      )
+
+    const titleOnly = isPatchBodyTitleOnly(body)
+    let session: Session
+    if (titleOnly) {
+      const titlePatch = requireEditableTitle(loaded.session)
+      if (!titlePatch.ok) {
+        return c.json(
+          { ok: false, error: { code: titlePatch.error.code, message: titlePatch.error.message }, trace_id: c.get('trace_id') },
+          titlePatch.error.status,
+        )
+      }
+      session = titlePatch.session
+    } else {
+      const draftPatch = requireDraft(loaded.session, 'patch')
+      if (!draftPatch.ok) {
+        return c.json(
+          { ok: false, error: { code: draftPatch.error.code, message: draftPatch.error.message }, trace_id: c.get('trace_id') },
+          draftPatch.error.status,
+        )
+      }
+      session = draftPatch.session
     }
-    const session = draftPatch.session
 
     if (body.title !== undefined) {
       await c.env.DB
@@ -746,6 +772,12 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         .run()
       session.title = body.title
     }
+
+    if (titleOnly) {
+      const questions = await fetchQuestions(c.env.DB, id)
+      return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') })
+    }
+
     if (body.anonymity !== undefined) {
       await c.env.DB
         .prepare(`UPDATE sessions SET anonymity = ?1 WHERE id = ?2 AND owner_id = ?3`)
@@ -1730,11 +1762,17 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     return c.json({ ok: true, trace_id: c.get('trace_id') })
   })
 
-  // POST /api/sessions/:id/duplicate — create a DRAFT copy with same title + questions
+  // POST /api/sessions/:id/duplicate — create a DRAFT copy (optional body.title)
   app.post('/:id/duplicate', async (c) => {
     const user = c.get('user')
     const id = c.req.param('id')
     const quotas = c.get('planQuotas')
+
+    const validated = await validateBody(c, DuplicateSessionSchema)
+    if ('error' in validated) {
+      return validated.error
+    }
+    const { data: body } = validated
 
     const session = await fetchSession(c.env.DB, id, user.sub)
     if (!session) {
@@ -1752,10 +1790,13 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       )
     }
 
+    const existingTitles = await fetchOwnerSessionTitles(c.env.DB, user.sub)
+    const title =
+      body.title ?? suggestDuplicateTitle(session.title, existingTitles)
+
     const newId = ulid()
     const code = generateJoinCode()
     const now = Date.now()
-    const title = `Copy of ${session.title}`
 
     await c.env.DB
       .prepare(

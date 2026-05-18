@@ -19,6 +19,8 @@
   },
   "no_question": "Cette séance n'a pas de question associée.",
   "no_votes": "Aucun vote n'a été enregistré.",
+  "title_save_error": "Impossible d'enregistrer le titre",
+  "title_saving": "Enregistrement…",
   "responses_one": "{count} reponse",
   "responses_other": "{count} reponses"
 }

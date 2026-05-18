@@ -753,6 +753,13 @@ export class D1PreparedStatementMock {
         results: [...counts.entries()].map(([status, count]) => ({ status, count })) as unknown as T[],
       }
     }
+    if (this.sql.startsWith('SELECT title FROM sessions WHERE owner_id')) {
+      const [owner_id] = this.args as [string]
+      const rows = [...this.db.sessions.values()]
+        .filter((s) => s.owner_id === owner_id)
+        .map((s) => ({ title: s.title }))
+      return { results: rows as unknown as T[] }
+    }
     if (this.sql.startsWith('SELECT id, owner_id, code, title, status, anonymity')) {
       // List form: WHERE owner_id = ?1 AND status != 'archived'
       const [owner_id] = this.args as [string]

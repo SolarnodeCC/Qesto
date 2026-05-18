@@ -26,6 +26,13 @@ export const CreateSessionSchema = z.object({
   title: trimmed(1, 120),
 })
 
+export const DuplicateSessionSchema = z.preprocess(
+  (v) => (v === null || v === undefined ? {} : v),
+  z.object({
+    title: trimmed(1, 120).optional(),
+  }),
+)
+
 export const SessionOptionsSchema = z.object({
   anonymity: z.enum(['full', 'partial', 'none']).optional(),
   vote_policy: z.enum(['once', 'multi', 'react']).optional(),
@@ -183,7 +190,24 @@ export function autoPopulateOptions(
 export type PollOptionInput = z.infer<typeof PollOptionSchema>
 export type PollQuestionInput = z.infer<typeof PollQuestionSchema>
 export type CreateSessionInput = z.infer<typeof CreateSessionSchema>
+export type DuplicateSessionInput = z.infer<typeof DuplicateSessionSchema>
 export type PatchSessionInput = z.infer<typeof PatchSessionSchema>
+
+/** True when PATCH body only updates title (allowed for closed/archived). */
+export function isPatchBodyTitleOnly(body: PatchSessionInput): boolean {
+  return (
+    body.title !== undefined &&
+    body.question === undefined &&
+    body.anonymity === undefined &&
+    body.vote_policy === undefined &&
+    body.session_mode === undefined &&
+    body.ai_generated === undefined &&
+    body.ai_consent_at === undefined &&
+    body.ai_grounding_hash === undefined &&
+    body.ai_accepted_count === undefined &&
+    body.ai_dismissed_count === undefined
+  )
+}
 export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsSchema>
 export type AIQuestionInput = z.infer<typeof AIQuestionSchema>
 export type AIQuestionsOutput = z.infer<typeof AIQuestionsOutputSchema>

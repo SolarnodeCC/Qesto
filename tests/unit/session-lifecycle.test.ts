@@ -3,6 +3,7 @@ import {
   rejectDraftForResults,
   requireClosedOrArchivedForInsights,
   requireDraft,
+  requireEditableTitle,
   requireFound,
   requireLiveForClose,
   requireLiveForWebSocket,
@@ -73,5 +74,20 @@ describe('session-lifecycle', () => {
     expect(requireClosedOrArchivedForInsights(sess({ id: '1', status: 'live' })).ok).toBe(false)
     expect(requireClosedOrArchivedForInsights(sess({ id: '2', status: 'closed' })).ok).toBe(true)
     expect(requireClosedOrArchivedForInsights(sess({ id: '3', status: 'archived' })).ok).toBe(true)
+  })
+
+  it('requireEditableTitle allows draft, closed, and archived', () => {
+    expect(requireEditableTitle(sess({ id: '1', status: 'draft' })).ok).toBe(true)
+    expect(requireEditableTitle(sess({ id: '2', status: 'closed' })).ok).toBe(true)
+    expect(requireEditableTitle(sess({ id: '3', status: 'archived' })).ok).toBe(true)
+  })
+
+  it('requireEditableTitle rejects live and energizing', () => {
+    const live = requireEditableTitle(sess({ id: '1', status: 'live' }))
+    expect(live.ok).toBe(false)
+    if (!live.ok) expect(live.error.message).toContain('active')
+
+    const energizing = requireEditableTitle(sess({ id: '2', status: 'energizing' }))
+    expect(energizing.ok).toBe(false)
   })
 })

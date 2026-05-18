@@ -19,6 +19,8 @@
   },
   "no_question": "Esta sesión no tiene ninguna pregunta adjunta.",
   "no_votes": "No se registraron votos.",
+  "title_save_error": "No se pudo guardar el título",
+  "title_saving": "Guardando…",
   "responses_one": "{count} respuesta",
   "responses_other": "{count} respuestas"
 }

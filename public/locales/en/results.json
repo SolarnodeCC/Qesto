@@ -19,6 +19,8 @@
   },
   "no_question": "This session has no question attached.",
   "no_votes": "No votes were recorded.",
+  "title_save_error": "Could not save title",
+  "title_saving": "Saving…",
   "responses_one": "{count} response",
   "responses_other": "{count} responses"
 }

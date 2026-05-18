@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { BookOpen, Check, FileText, Library, MoreHorizontal, Sparkles, UserRound, X } from 'lucide-react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useInsights } from '../hooks/useInsights'
@@ -14,6 +14,7 @@ import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
 import AINarrative from '../components/AINarrative'
 import SessionWizard from '../components/SessionWizard'
+import DuplicateSessionModal from '../components/DuplicateSessionModal'
 import { sessionGradient } from '../utils/sessionGradient'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
@@ -67,7 +68,7 @@ interface SessionCardProps {
   actionLoading: Record<string, string>
   actionFeedback: Record<string, { message: string; isError: boolean }>
   confirmDeleteId: string | null
-  onDuplicate: (id: string) => void
+  onDuplicate: (id: string, title: string) => void
   onExportCSV: (id: string, title: string) => void
   onSaveAsTemplate: (id: string, title: string) => void
   onDelete: (id: string) => void
@@ -184,7 +185,7 @@ function SessionCard({
                 type="button"
                 role="menuitem"
                 disabled={!!actionLoading[s.id]}
-                onClick={() => { setMenuOpen(false); onDuplicate(s.id) }}
+                onClick={() => { setMenuOpen(false); onDuplicate(s.id, s.title) }}
                 className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
               >
                 {actionLoading[s.id] === 'duplicate' ? t('duplicating') : t('duplicate')}
@@ -385,8 +386,11 @@ function TemplateGroup({
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
+type DuplicateModalState = { sourceId: string; sourceTitle: string } | null
+
 export default function Dashboard() {
   const auth = useAuth()
+  const navigate = useNavigate()
   const t = useT('dashboard')
   const [activeSection, setActiveSection] = useState<DashboardSection>('home')
   const { state, refresh } = useSessions()
@@ -413,6 +417,7 @@ export default function Dashboard() {
   const [actionLoading, setActionLoading] = useState<Record<string, string>>({})
   const [actionFeedback, setActionFeedback] = useState<Record<string, { message: string; isError: boolean }>>({})
   const [teamsLoading, setTeamsLoading] = useState(true)
+  const [duplicateModal, setDuplicateModal] = useState<DuplicateModalState>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -563,19 +568,8 @@ export default function Dashboard() {
     }
   }
 
-  async function handleDuplicate(sessionId: string) {
-    setActionLoading((prev) => ({ ...prev, [sessionId]: 'duplicate' }))
-    try {
-      const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/duplicate`, { method: 'POST' })
-      if (res.ok) {
-        await refresh()
-        setFeedback(sessionId, 'Duplicated!', false)
-      } else {
-        setFeedback(sessionId, res.error.message, true)
-      }
-    } finally {
-      setActionLoading((prev) => { const next = { ...prev }; delete next[sessionId]; return next })
-    }
+  function openDuplicateModal(sourceId: string, sourceTitle: string) {
+    setDuplicateModal({ sourceId, sourceTitle })
   }
 
   async function handleSaveAsTemplate(sessionId: string, title: string) {
@@ -608,7 +602,7 @@ export default function Dashboard() {
     actionLoading,
     actionFeedback,
     confirmDeleteId,
-    onDuplicate: (id: string) => void handleDuplicate(id),
+    onDuplicate: (id: string, title: string) => openDuplicateModal(id, title),
     onExportCSV: handleExportCSV,
     onSaveAsTemplate: (id: string, title: string) => void handleSaveAsTemplate(id, title),
     onDelete: (id: string) => void handleDelete(id),
@@ -964,6 +958,18 @@ export default function Dashboard() {
         onClose={() => { setWizardOpen(false); setSelectedTemplate(null) }}
         onSessionCreated={() => { setSelectedTemplate(null); void refresh() }}
         initialTemplate={wizardInitialTemplate}
+      />
+
+      <DuplicateSessionModal
+        open={duplicateModal !== null}
+        sourceId={duplicateModal?.sourceId ?? ''}
+        sourceTitle={duplicateModal?.sourceTitle ?? ''}
+        existingTitles={state.status === 'ready' ? state.sessions.map((s) => s.title) : []}
+        onClose={() => setDuplicateModal(null)}
+        onSuccess={(newSessionId) => {
+          void refresh()
+          navigate(`/sessions/${newSessionId}/launchpad`)
+        }}
       />
     </AppShellLayout>
   )

@@ -65,6 +65,14 @@
   "exportExcel": "Als Excel/CSV exportieren",
   "duplicate": "Duplizieren",
   "duplicating": "Wird dupliziert…",
+  "duplicateTitleModal": {
+    "title": "Sitzung duplizieren",
+    "label": "Sitzungstitel",
+    "placeholder": "Name für die neue Sitzung",
+    "confirm": "Duplizieren",
+    "cancel": "Abbrechen",
+    "duplicateNameWarning": "Du hast bereits eine Sitzung mit diesem Titel. Du kannst trotzdem fortfahren."
+  },
   "template": "Als Vorlage speichern",
   "saving": "Wird gespeichert…",
   "confirmDelete": "Löschen?",

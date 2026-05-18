@@ -486,6 +486,15 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
         return
       }
       setSessionId(res.data.session.id)
+    } else {
+      const patchRes = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}`, {
+        method: 'PATCH',
+        body: { title: title.trim() },
+      })
+      if (!patchRes.ok) {
+        setError(patchRes.error.message)
+        return
+      }
     }
 
     if (jumpedFrom5) { setStep(5); setJumpedFrom5(false) } else { setStep(2) }

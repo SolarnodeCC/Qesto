@@ -11,6 +11,7 @@ import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/E
 import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
 import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
 import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
+import SessionTitleField from '../components/SessionTitleField'
 
 type PreFlightItem = {
   key: string
@@ -436,10 +437,18 @@ export default function Launchpad() {
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Page header */}
         <header>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8]">
-            {data.session.title}
-          </h1>
-          <p className="text-caption text-pulse-500 mt-1">{t('title')}</p>
+          <SessionTitleField
+            sessionId={id!}
+            title={data.session.title}
+            editable={data.session.status === 'draft'}
+            label={t('session_title_label')}
+            saveErrorLabel={t('title_save_error')}
+            savingLabel={t('title_saving')}
+            onSaved={() => {
+              void reload()
+              void refreshPreFlight()
+            }}
+          />
         </header>
 
         {/* Pre-flight strip — horizontal checklist bar */}

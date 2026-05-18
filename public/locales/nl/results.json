@@ -19,6 +19,8 @@
   },
   "no_question": "Deze sessie heeft geen vraag gekoppeld.",
   "no_votes": "Er zijn geen stemmen geregistreerd.",
+  "title_save_error": "Titel opslaan mislukt",
+  "title_saving": "Opslaan…",
   "responses_one": "{count} antwoord",
   "responses_other": "{count} antwoorden"
 }

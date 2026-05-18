@@ -6,6 +6,7 @@ import type { PollOption, SessionStatus } from '@/types/session'
 import { api, type ApiError } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
+import SessionTitleField from '../components/SessionTitleField'
 
 // Wordcloud/open text utilities
 const RESULT_COLORS = [
@@ -153,7 +154,21 @@ export default function Results() {
       <div className="animate-page-enter space-y-6">
       <header className="space-y-1">
         <div className="flex items-center justify-between">
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none">{session.title}</h1>
+          <SessionTitleField
+            sessionId={session.id}
+            title={session.title}
+            editable={session.status === 'closed' || session.status === 'archived'}
+            saveErrorLabel={t('title_save_error')}
+            savingLabel={t('title_saving')}
+            onSaved={(nextTitle) => {
+              setState((prev) =>
+                prev.status === 'ready'
+                  ? { ...prev, data: { ...prev.data, session: { ...prev.data.session, title: nextTitle } } }
+                  : prev,
+              )
+            }}
+            className="flex-1 min-w-0"
+          />
           <span
             className={
               'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +

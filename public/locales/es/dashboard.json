@@ -65,6 +65,14 @@
   "exportExcel": "Exportar Excel/CSV",
   "duplicate": "Duplicar",
   "duplicating": "Duplicando…",
+  "duplicateTitleModal": {
+    "title": "Duplicar sesión",
+    "label": "Título de la sesión",
+    "placeholder": "Nombre de la nueva sesión",
+    "confirm": "Duplicar",
+    "cancel": "Cancelar",
+    "duplicateNameWarning": "Ya tienes una sesión con este título. Puedes continuar igualmente."
+  },
   "template": "Guardar como plantilla",
   "saving": "Guardando…",
   "confirmDelete": "¿Eliminar?",
