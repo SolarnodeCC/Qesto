@@ -189,7 +189,6 @@ describe('Help Assistant Auto-Tuning Flow', () => {
       // But NOT for "getting-started"
       // Expected: Use global active prompt
 
-      const topic = 'getting-started'
       const topicSpecificPrompt = null // Not found
       const globalPrompt = {
         id: 'prompt-global-v1',

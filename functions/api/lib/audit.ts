@@ -4,6 +4,7 @@
 // Deduplicates on trace_id + action + subject_id to prevent duplicate logging under retries.
 
 import type { Env } from '../types'
+import { validateData, AuditActionSchema } from './validators'
 
 export type AuditAction =
   | 'session.create'
@@ -63,6 +64,13 @@ export interface AuditContext {
  */
 export async function recordAuditEvent(c: any, ctx: AuditContext): Promise<void> {
   try {
+    // Validate audit action enum before persisting
+    const validAction = validateData(ctx.action, AuditActionSchema)
+    if (!validAction) {
+      console.warn(`[audit] Invalid action: ${ctx.action}`)
+      return
+    }
+
     const now = Date.now()
     const event_id = crypto.randomUUID()
     const user = c.get('user') as any

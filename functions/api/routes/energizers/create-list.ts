@@ -10,6 +10,7 @@ import { recordAuditEvent } from '../../lib/audit'
 import { sanitizeError } from '../../lib/error-handler'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
+import { validateKvJson, EnergizerConfigEnvelopeSchema } from '../../lib/validators'
 
 export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers', async (c) => {
@@ -113,7 +114,7 @@ export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
         id: e.id,
         kind: e.kind,
         prompt: e.prompt,
-        config: JSON.parse(e.config_json),
+        config: validateKvJson(e.config_json, EnergizerConfigEnvelopeSchema) ?? {},
         state: e.state,
         position: e.position,
         created_at: e.created_at,
