@@ -13,7 +13,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/validate'
 import { CreateTemplateSchema } from '../lib/validation'
-import { validateData, TemplateIdArraySchema, CustomerTemplateSchema } from '../lib/validators'
+import { validateData, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
 import type { Env, Question } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -489,11 +489,19 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       .bind(sessionId)
       .all()
 
-    const questions = (questionRows ?? []).map((row: Record<string, unknown>) => ({
-      kind: row.kind as Question['kind'],
-      prompt: row.prompt as string,
-      options: JSON.parse(row.options_json as string),
-    }))
+    const questions = (questionRows ?? []).map((row: Record<string, unknown>) => {
+      let options: Array<{ id: string; label: string }> = []
+      try {
+        options = validateData(JSON.parse(row.options_json as string), PollOptionArraySchema) ?? []
+      } catch {
+        options = []
+      }
+      return {
+        kind: row.kind as Question['kind'],
+        prompt: row.prompt as string,
+        options,
+      }
+    })
 
     // Create template
     const templateId = ulid()

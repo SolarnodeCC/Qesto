@@ -3,6 +3,7 @@ import { recordAuditEvent } from '../../lib/audit'
 import { sanitizeError } from '../../lib/error-handler'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
+import { validateData, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
 
 export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/vote', async (c) => {
@@ -46,7 +47,16 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
       }
 
       if (energizer.kind === 'emoji_poll') {
-        const config = JSON.parse(energizer.config_json) as EmojiPollConfig
+        let configParsed: unknown
+        try {
+          configParsed = JSON.parse(energizer.config_json)
+        } catch {
+          return c.json({ ok: false, error: { code: 'validation', message: 'Invalid energizer config' }, trace_id }, 400)
+        }
+        const config = validateData(configParsed, EmojiPollConfigSchema)
+        if (!config) {
+          return c.json({ ok: false, error: { code: 'validation', message: 'Invalid emoji poll config' }, trace_id }, 400)
+        }
         if (!config.emojis.includes(body.value)) {
           return c.json(
             { ok: false, error: { code: 'validation', message: 'Invalid emoji choice' }, trace_id },
@@ -54,7 +64,16 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
           )
         }
       } else if (energizer.kind === 'quick_finger') {
-        const config = JSON.parse(energizer.config_json) as QuickFingerConfig
+        let configParsed: unknown
+        try {
+          configParsed = JSON.parse(energizer.config_json)
+        } catch {
+          return c.json({ ok: false, error: { code: 'validation', message: 'Invalid energizer config' }, trace_id }, 400)
+        }
+        const config = validateData(configParsed, QuickFingerConfigSchema)
+        if (!config) {
+          return c.json({ ok: false, error: { code: 'validation', message: 'Invalid quick finger config' }, trace_id }, 400)
+        }
         if (!config.options.includes(body.value)) {
           return c.json(
             { ok: false, error: { code: 'validation', message: 'Invalid answer choice' }, trace_id },
@@ -72,7 +91,16 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
       }
 
       if (energizer.kind === 'team_quiz') {
-        const config = JSON.parse(energizer.config_json) as TeamQuizConfig
+        let configParsed: unknown
+        try {
+          configParsed = JSON.parse(energizer.config_json)
+        } catch {
+          return c.json({ ok: false, error: { code: 'validation', message: 'Invalid energizer config' }, trace_id }, 400)
+        }
+        const config = validateData(configParsed, TeamQuizConfigSchema)
+        if (!config) {
+          return c.json({ ok: false, error: { code: 'validation', message: 'Invalid team quiz config' }, trace_id }, 400)
+        }
         const qi = config.current_index
         if (qi < 0 || qi >= config.questions.length) {
           return c.json(
@@ -141,7 +169,16 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
         )
       }
 
-      const config = JSON.parse(energizer.config_json) as TeamQuizConfig
+      let configParsed: unknown
+      try {
+        configParsed = JSON.parse(energizer.config_json)
+      } catch {
+        return c.json({ ok: false, error: { code: 'validation', message: 'Invalid energizer config' }, trace_id }, 400)
+      }
+      const config = validateData(configParsed, TeamQuizConfigSchema)
+      if (!config) {
+        return c.json({ ok: false, error: { code: 'validation', message: 'Invalid team quiz config' }, trace_id }, 400)
+      }
       const nextIndex = config.current_index + 1
       const isDone = nextIndex >= config.questions.length
       const newState = isDone ? 'completed' : 'active'
