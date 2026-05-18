@@ -354,7 +354,7 @@ export default function Present() {
                 )
               ) : (
                 <div className="w-full h-24 flex items-center justify-center">
-                  <p className="text-[24px] text-pulse-400">Tally hidden</p>
+                  <p className="text-[24px] text-pulse-400">{t('tallyHidden')}</p>
                 </div>
               )}
             </div>
