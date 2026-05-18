@@ -1,0 +1,1 @@
+../../../knowledge-base/product/planning/sprints/SPRINT27_IMPLEMENTATION_SPEC.md

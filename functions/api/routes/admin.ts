@@ -315,8 +315,8 @@ export function mountAdminRoutes(parent: any) {
       await next()
       return
     }
-    // Apply auth middleware to all other admin routes
-    await authMiddleware(c, next)
+    // Apply auth middleware to all other admin routes (cast context to AuthVariables for middleware compatibility)
+    await authMiddleware(c as any, next)
   })
   app.use('*', async (c, next) => {
     // Skip adminMiddleware for /kb-sync and /kb-sync-delete (handled by x-admin-key check instead)
@@ -324,8 +324,8 @@ export function mountAdminRoutes(parent: any) {
       await next()
       return
     }
-    // Apply admin middleware to all other admin routes
-    await adminMiddleware(c, next)
+    // Apply admin middleware to all other admin routes (cast context for middleware compatibility)
+    await adminMiddleware(c as any, next)
   })
 
   // Register help admin routes (review queue, prompt versions)

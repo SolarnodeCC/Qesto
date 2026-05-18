@@ -108,7 +108,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
   // POST /api/admin/help/prompt-versions — Create new system prompt version
   app.post('/help/prompt-versions', authMiddleware, adminMiddleware, async (c) => {
     const traceId = c.get('trace_id')
-    const adminUser = c.get('admin_user')
+    const user = c.get('user')
 
     let body: unknown
     try {
@@ -157,7 +157,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
          (id, version, content, trigger_event, triggered_by, topic, active, created_at)
          VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
       )
-        .bind(promptId, nextVersion, content, trigger_event, adminUser.sub, topic || null, now)
+        .bind(promptId, nextVersion, content, trigger_event, user.sub, topic || null, now)
         .run()
 
       console.log(
@@ -167,7 +167,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
           version: nextVersion,
           topic,
           trigger_event,
-          admin_user: adminUser.sub,
+          admin_user: user.sub,
         }),
       )
 
@@ -328,7 +328,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
   // POST /api/admin/help/documents/dismiss-flag — Mark review as completed
   app.post('/help/documents/dismiss-flag', authMiddleware, adminMiddleware, async (c) => {
     const traceId = c.get('trace_id')
-    const adminUser = c.get('admin_user')
+    const user = c.get('user')
 
     let body: unknown
     try {
@@ -368,7 +368,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
          SET reviewed_at = ?, reviewed_by = ?, action = ?
          WHERE document_id = ? AND reviewed_at IS NULL`,
       )
-        .bind(now, adminUser.sub, action, documentId)
+        .bind(now, user.sub, action, documentId)
         .run()
 
       console.log(
@@ -376,7 +376,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
           event: 'help.feedback.review_resolved',
           document_id: documentId,
           action,
-          admin_user: adminUser.sub,
+          admin_user: user.sub,
         }),
       )
 
