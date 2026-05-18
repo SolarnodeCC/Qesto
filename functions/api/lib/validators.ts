@@ -453,6 +453,22 @@ export const EnergizerConfigSchema = z.union([
 
 export type ValidEnergizerConfig = z.infer<typeof EnergizerConfigSchema>
 
+// ── Cache & Rate Limit Validators ───────────────────────────────────────────
+
+export const RateLimitCounterSchema = z.object({
+  count: z.number().int().nonnegative(),
+  resetAt: z.number(),
+})
+
+export type ValidRateLimitCounter = z.infer<typeof RateLimitCounterSchema>
+
+export const CachedDataSchema = z.object({
+  data: z.unknown(),
+  expires_at: z.number(),
+})
+
+export type ValidCachedData = z.infer<typeof CachedDataSchema>
+
 // ── Integration Token Validators ─────────────────────────────────────────────
 
 export const StoredTokenSchema = z.object({

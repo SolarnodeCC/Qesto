@@ -16,6 +16,8 @@
 // For stronger semantics (Durable-Object-backed atomic counter) see ADR-0001
 // and the future WebSocket rate limiter in SessionRoom.
 
+import { validateData, RateLimitCounterSchema } from './validators'
+
 export type RateLimitResult = {
   allowed: boolean
   remaining: number
@@ -52,7 +54,7 @@ export async function rateLimit(
     const key = kvKey(opts.prefix, id)
     const raw = await kv.get(key, 'json')
     const now = Date.now()
-    const existing = raw as { count: number; resetAt: number } | null
+    const existing = validateData(raw, RateLimitCounterSchema)
 
     if (existing && existing.resetAt > now) {
       if (existing.count >= opts.max) {
