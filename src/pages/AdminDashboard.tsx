@@ -7,7 +7,6 @@ import { useAdminKpis } from '../hooks/useAdminKpis'
 import { useAdminOps, type OpsSummary } from '../hooks/useAdminOps'
 import { useQuotaUsage } from '../hooks/useQuotaUsage'
 import { useT } from '../i18n'
-import { api } from '../api/client'
 import AppShellLayout, { type DashboardSection } from '../layouts/AppShellLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import { Heading, Body, Caption, Button, Card, MetricCard, StatCard, Section, SkeletonCard } from '../ui/components'
@@ -20,8 +19,6 @@ import BuildStamp from '../components/BuildStamp'
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 
 type AdminTab = 'dashboard' | 'users' | 'ops' | 'analytics'
-
-type TeamRow = { id: string; name: string; plan: string }
 
 const TAB_CONFIG: Array<{
   id: AdminTab
@@ -194,15 +191,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard')
 
   const userId = auth.status === 'authenticated' ? auth.user.id : undefined
-  const { data: quotaData } = useQuotaUsage(userId)
-  const [teams, setTeams] = useState<TeamRow[]>([])
-
-  useEffect(() => {
-    if (auth.status !== 'authenticated') return
-    void api<{ teams: TeamRow[] }>('/api/teams').then((res) => {
-      if (res.ok) setTeams(res.data.teams)
-    })
-  }, [auth.status])
+  void useQuotaUsage(userId)
 
   useEffect(() => {
     void fetchHistorical(initialRange.startDate, initialRange.endDate)
@@ -220,9 +209,6 @@ export default function AdminDashboard() {
   if (auth.user.email !== SUPERUSER_EMAIL) return <Navigate to="/dashboard" replace />
 
   const isSuperuser = true
-  const activeTeamId = localStorage.getItem('activeTeamId')
-  const activePlan =
-    (teams.find((team) => team.id === activeTeamId)?.plan ?? teams[0]?.plan ?? quotaData?.plan) as string | undefined
 
   const latencyTrend = computeTrend(historicalData, 'p95_ms')
   const errorTrend = computeTrend(historicalData, 'error_count')
