@@ -9,6 +9,7 @@
 - devops-agent.md — DevOps
 - frontend-agent.md — Frontend Lead
 - i18n-agent.md — Frontend Lead
+- market-research-agent.md — Product Owner
 - marketing-agent.md — Growth Lead
 - po-agent.md — Product Owner
 - tester-agent.md — QA Lead
@@ -26,6 +27,7 @@
 - frontend-dev.md — Frontend Lead
 - i18n.md — Frontend Lead
 - investigate.md — QA Lead
+- market-research.md — Product Owner
 - marketing.md — Growth Lead
 - product-owner.md — Product Owner
 - review.md — QA Lead
