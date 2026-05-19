@@ -43,6 +43,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 
 - **[Roadmap](./product/roadmap/)** — Strategic direction, epics, version planning
 - **[Backlog](./product/backlog/)** — Product backlog (master reference at `BACKLOG_MASTER.md`)
+- **[Market Research](./product/research/)** — Competitive intelligence, customer insights, market trends (updated quarterly)
 - **[Release Notes](./product/releases/)** — Version history, release plans, audit outcomes
 - **[Planning](./product/planning/)** — Sprint plans, implementation specs (sprints 19-32)
 
@@ -80,6 +81,8 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 |---|---|---|
 | **"How do we build X?"** | [Specifications](./specifications/) | [ADRs](./adr/) |
 | **"What's coming next?"** | [Roadmap](./product/roadmap/) | [Backlog](./product/backlog/) |
+| **"What do customers need?"** | [Market Research](./product/research/) | [Backlog](./product/backlog/) |
+| **"How are competitors positioned?"** | [Market Research](./product/research/) | [SPEC_PRODUCT](./specifications/product/SPEC_PRODUCT.md) |
 | **"What broke?"** | [Operations](./operations/incidents/) | [Error Patterns](./operations/monitoring/ERROR_PATTERNS.md) |
 | **"How is X approved?"** | [ADRs](./adr/) | [Security](./security/) |
 | **"What are the standards?"** | [Governance](./governance/) | [Design System](./governance/design-system/) |
@@ -107,10 +110,11 @@ knowledge-base/
 │   ├── deployment/               # Bootstrap, infrastructure checklists
 │   ├── incidents/                # Runbooks, incident response
 │   └── monitoring/               # Observability, error patterns
-├── product/                      # Roadmap, backlog, releases, planning
+├── product/                      # Roadmap, backlog, releases, planning, market research
 │   ├── roadmap/                  # Strategic direction and epics
-│   ├── releases/                 # Version history and rollout plans
 │   ├── backlog/                  # Product backlog (master reference)
+│   ├── research/                 # Market research, competitive analysis, customer insights
+│   ├── releases/                 # Version history and rollout plans
 │   └── planning/                 # Sprint plans and implementation specs
 ├── governance/                   # Brand, i18n, database policy, design system
 ├── ai-context/                   # Agent system, skill governance, research
@@ -162,8 +166,9 @@ tags:
 
 ### Product Owner / Manager
 1. Start: [Roadmap](./product/roadmap/)
-2. Drill down: [Backlog](./product/backlog/)
-3. Reference: [ADRs](./adr/) for constraints
+2. Customer research: [Market Research](./product/research/) for competitive context and customer insights
+3. Drill down: [Backlog](./product/backlog/)
+4. Reference: [ADRs](./adr/) for constraints
 
 ### Backend Developer
 1. Start: [SPEC_BACKEND](./specifications/domain/SPEC_BACKEND.md)
