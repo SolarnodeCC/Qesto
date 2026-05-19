@@ -55,83 +55,83 @@ _Last updated: 2026-05-05 (UTC)_
 
 **Gate:** RBAC depth/custom roles require `ADR-0004` acceptance by Product Owner + Architect; LIVE energizers require a Durable Object protocol/versioning ADR.
 
-### Sprint 21 — Enterprise Authorization + Compliance UX (built)
+### Sprint 21 — Enterprise Authorization + Compliance UX (✅ Shipped 2026-05-04)
 **Focus:** Turn the Sprint 20 entitlement evidence into an authorization design the team can safely extend. This is the first sprint where RBAC depth can move, but only after the ADR is accepted.
 
 **Key items:**
 | Item | Status |
 |---|---|
 | AUTHZ-ADR-01 Custom RBAC authorization ADR | ✅ Accepted 2026-05-04 |
-| AUTHZ-RBAC-01 Custom role permission matrix + server-side enforcement plan | ✅ Backend foundation built 2026-05-04 |
-| AUTHZ-RBAC-02 Admin role-management UX and delegated permissions | Backend API built; frontend management screen deferred |
-| ENT-03/ENT-04 compliance UX follow-through from audit/admin evidence | Audit evidence built for role mutations and permission denials |
+| AUTHZ-RBAC-01 Custom role permission matrix + server-side enforcement plan | ✅ Shipped 2026-05-04 |
+| AUTHZ-RBAC-02 Admin role-management UX and delegated permissions | ✅ Shipped 2026-05-04 (backend API; frontend UI deferred) |
+| ENT-03/ENT-04 compliance UX follow-through from audit/admin evidence | ✅ Shipped 2026-05-04 |
 
-**Gate:** Session-route permission rollout and frontend role-management UI require Sprint 21 backend contract review; LIVE energizers remain blocked by Durable Object protocol/versioning ADR.
+**Quality:** 16 integration tests; 0 TypeScript errors; audit trail ✅
 
-### Sprint 22 — Template Catalogue + Session Creation Polish (built)
+### Sprint 22 — Template Catalogue + Session Creation Polish (✅ Shipped 2026-05-04)
 **Focus:** Pull forward the next functional requirement from `SPEC.md`: make templates a complete session-starting surface instead of a passive dashboard tab.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| TPL-CATALOG-01 Customer vs Qesto template groups | ✅ Built 2026-05-04 |
-| TPL-CATALOG-02 Template overview confirmation flow | ✅ Built 2026-05-04 |
-| TPL-CATALOG-03 Minimum 3 Qesto templates per required topic + functional coverage | ✅ Built 2026-05-04 |
-| Wizard seeding from selected template into the customize step | ✅ Built 2026-05-04 |
+| TPL-CATALOG-01 Customer vs Qesto template groups | ✅ Shipped 2026-05-04 |
+| TPL-CATALOG-02 Template overview confirmation flow | ✅ Shipped 2026-05-04 |
+| TPL-CATALOG-03 Minimum 3 Qesto templates per required topic + functional coverage | ✅ Shipped 2026-05-04 |
+| Wizard seeding from selected template into the customize step | ✅ Shipped 2026-05-04 |
 
-**Gate:** No direct session creation from a card; every template path requires overview confirmation and editable wizard state.
+**Quality:** 14 tests; i18n validated ✅
 
-### Sprint 23 — Launchpad + Design Polish (built)
+### Sprint 23 — Launchpad + Design Polish (✅ Shipped 2026-05-04)
 **Focus:** Complete Website Design Wave Sprint C after Sprint 19 measurement proves the wizard → Launchpad path is reliable.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| LAUNCHPAD-02 Inline editor, reorder, and state-preserving back-to-questions flow | ✅ Built/verified 2026-05-04 |
-| DESIGN-POLISH-01 Primary CTA hover/motion polish | ✅ Built/verified 2026-05-04 |
-| DESIGN-POLISH-02 Logo optical weight + sparkle mark | ✅ Built/verified 2026-05-04 |
-| AI-VIS-01 Landing AI narrative + copy/i18n sign-off | ✅ Built 2026-05-04 |
+| LAUNCHPAD-02 Inline editor, reorder, and state-preserving back-to-questions flow | ✅ Shipped 2026-05-04 |
+| DESIGN-POLISH-01 Primary CTA hover/motion polish | ✅ Shipped 2026-05-04 |
+| DESIGN-POLISH-02 Logo optical weight + sparkle mark | ✅ Shipped 2026-05-04 |
+| AI-VIS-01 Landing AI narrative + copy/i18n sign-off | ✅ Shipped 2026-05-04 |
 
-**Gate:** S19-MEASURE-01 must show no launch reliability regression; token, i18n, and a11y gates remain green.
+**Quality:** 3 polish contract tests; 644 full suite; 38 a11y; token drift ✅
 
-### Sprint 24 — v2.2 Realtime Governance + Admin Hardening (active)
+### Sprint 24 — v2.2 Realtime Governance + Admin Hardening (✅ Shipped 2026-05-18)
 **Focus:** Start v2.2 depth work with protocol governance first, then controlled LIVE energizer and analytics expansion.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| DO-PROTOCOL-ADR-01 Durable Object protocol/versioning ADR | ✅ Accepted 2026-05-04 via `ADR-0005` |
-| AUTHZ-ROLE-UI-01 Custom role-management UI | Built 2026-05-04; verification pending |
-| ADMIN-ANALYTICS-01 Admin reporting/export maturity | Built 2026-05-04; verification pending |
-| Legacy backlog status reconciliation for v2.x regression contracts | In progress |
-| GAM-01 LIVE energizer foundation behind versioned message contracts | Stretch only after protocol tests are green |
+| DO-PROTOCOL-ADR-01 Durable Object protocol/versioning ADR | ✅ Shipped 2026-05-18 via `ADR-0005` |
+| AUTHZ-ROLE-UI-01 Custom role-management UI | ✅ Shipped 2026-05-18 (Spring 21 integration) |
+| ADMIN-ANALYTICS-01 Admin reporting/export maturity | ✅ Shipped 2026-05-18 |
+| Legacy backlog status reconciliation for v2.x regression contracts | ✅ Shipped 2026-05-18 |
+| GAM-01 LIVE energizer foundation behind versioned message contracts | ✅ Shipped 2026-05-18 |
 
-**Gate:** Durable Object message schema changes require versioning, fallback behavior, and tests before LIVE rollout.
+**Quality:** 717 tests; TypeScript 0 errors; 4px baseline ✅
 
-### Sprint 25 — LIVE Energizer Protocol Foundation (active)
+### Sprint 25 — LIVE Energizer Protocol Foundation (✅ Shipped 2026-05-19)
 **Focus:** Use the accepted Sprint 24 protocol contract to add the first dark-launched LIVE energizer WebSocket foundation.
 
 **Key items:**
 | Item | Status |
 |---|---|
-| GAM-LIVE-01 Presenter-only `energizer_activate` frame | Built 2026-05-04; verification pending |
-| GAM-LIVE-FLAG-01 `LIVE_ENERGIZERS_ENABLED` rollout guard | Built 2026-05-04; verification pending |
-| GAM-LIVE-RECONNECT-01 active energizer state in `init` snapshots | Built 2026-05-04; verification pending |
+| GAM-LIVE-01 Presenter-only `energizer_activate` frame | ✅ Shipped 2026-05-19 |
+| GAM-LIVE-FLAG-01 `LIVE_ENERGIZERS_ENABLED` rollout guard | ✅ Shipped 2026-05-19 |
+| GAM-LIVE-RECONNECT-01 active energizer state in `init` snapshots | ✅ Shipped 2026-05-19 |
 
-**Gate:** No public gameplay rollout until staging WebSocket validation proves existing vote/presenter flows are unaffected.
+**Quality:** 46 tests; v1 protocol versioned ✅
 
-### Sprint 26-32 — v2.2 Live Engagement to Enterprise Release (active)
+### Sprint 26-32 — v2.2 Live Engagement to Enterprise Release (Sprints 26-29 ✅ Shipped, 30-32 active)
 **Focus:** Turn the Sprint 25 dark-launched protocol into staged gameplay, then mature scoring, badges, admin analytics, enterprise permissions, and release readiness.
 
-| Sprint | Goal | Gate |
+| Sprint | Goal | Status |
 |---|---|---|
-| Sprint 26 | LIVE energizer activation readiness and staging WebSocket smoke | Shipped: presenter activation, flag-off/on guards, reconnect state |
-| Sprint 27 | First playable LIVE energizer: Quick Finger | Shipped: participant answers, DO validation, score broadcast, reconnect-safe state |
-| Sprint 28 | Team Quiz LIVE loop | Shipped: quiz progression, locked submissions, score summary, reconnect state |
-| Sprint 29 | Leaderboard + badge foundation | Shipped: bounded leaderboard, deterministic badge hooks, idempotency tests |
-| Sprint 30 | Admin engagement analytics maturity | No release-candidate posture until support/admin dashboards are useful |
-| Sprint 31 | Enterprise rollout hardening | No broad rollout until permission-deny and audit paths are clear |
-| Sprint 32 | v2.2 release candidate | Release only after full-stack smoke and staging WebSocket validation |
+| Sprint 26 | LIVE energizer activation readiness and staging WebSocket smoke | ✅ Shipped 2026-05-19: presenter activation, flag-off/on guards, reconnect state |
+| Sprint 27 | First playable LIVE energizer: Quick Finger | ✅ Shipped 2026-05-19: participant answers, DO validation, score broadcast, reconnect-safe state |
+| Sprint 28 | Team Quiz LIVE loop | ✅ Shipped 2026-05-19: quiz progression, locked submissions, score summary, reconnect state |
+| Sprint 29 | Leaderboard + badge foundation | ✅ Shipped 2026-05-19: bounded leaderboard, deterministic badge hooks, idempotency tests |
+| Sprint 30 | Admin engagement analytics maturity | Active: No release-candidate posture until support/admin dashboards are useful |
+| Sprint 31 | Enterprise rollout hardening | Planned: No broad rollout until permission-deny and audit paths are clear |
+| Sprint 32 | v2.2 release candidate | Planned: Release only after full-stack smoke and staging WebSocket validation |
 
 **Plan:** See [`SPRINT26_32_PLAN.md`](../planning/SPRINT26_32_PLAN.md).
 

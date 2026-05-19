@@ -19,7 +19,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-04-30 (UTC)_
+_Last updated: 2026-05-19 (UTC)_
 
 ## Overview
 
@@ -44,6 +44,105 @@ This document provides historical summaries of completed sprints, including Spri
 - Focused tests: `npx vitest run tests/unit/sessions-new-routes.test.ts tests/unit/ai-wizard.test.ts tests/integration/user-preferences.test.ts` — 47 tests green.
 - TypeScript: 0 errors (`npm run typecheck`).
 - KPI measurement remains post-ship; implementation evidence is captured in `SPRINT_PLAN.md` §Sprint 19.
+
+---
+
+## Sprints 21-29 — Enterprise Authorization + LIVE Engagement (Completed 2026-05-04 to 2026-05-19)
+
+### Sprint 21 — Custom RBAC Authorization ✅ (Merged 2026-05-04)
+
+**Focus**: Turn Sprint 20 entitlement evidence into a safe, production-grade custom RBAC implementation.
+
+**Delivered**:
+- ✅ **ADR-0004**: Custom RBAC Authorization accepted
+- ✅ **AUTHZ-RBAC-01**: D1-backed custom roles table + authorization library (`hasTeamPermission()`)
+- ✅ **AUTHZ-RBAC-02**: 6 backend API endpoints (GET/POST/PATCH/DELETE roles, assign/unassign)
+- ✅ **Compliance**: Audit events for role mutations, permission denials, assignments
+
+**Quality**: 16 integration tests passing (custom-rbac, teams-crud, entitlement-contracts)
+
+---
+
+### Sprint 22 — Template Catalogue + Session Creation Polish ✅ (Merged 2026-05-04)
+
+**Focus**: Complete the template path — confirmation flow + wizard seeding.
+
+**Delivered**:
+- ✅ **TPL-CATALOG-01**: Customer vs Qesto template groups (Dashboard separation)
+- ✅ **TPL-CATALOG-02**: Template overview confirmation before "Use template"
+- ✅ **TPL-CATALOG-03**: 3+ curated templates per topic (team, product, learning)
+- ✅ **TPL-WIZARD-01**: SessionWizard accepts `initialTemplate` prop, all fields editable
+
+**Quality**: 14 tests (template-catalogue, templates-crud); i18n validated
+
+---
+
+### Sprint 23 — Launchpad + Design Polish ✅ (Merged 2026-05-04)
+
+**Focus**: Complete Launchpad inline editing + design consistency.
+
+**Delivered**:
+- ✅ **LAUNCHPAD-02**: Inline add/edit/reorder via `PUT /questions/reorder` + preflight refresh
+- ✅ **DESIGN-POLISH-01**: `.btn-motion` tokenized motion (120ms, scale 1.02, --shadow-teal)
+- ✅ **DESIGN-POLISH-02**: Logo sparkle mark + optical weight
+- ✅ **AI-VIS-01**: Workers AI narrative accuracy (i18n-keyed)
+
+**Quality**: 3 polish contract tests; 644 full suite; 38 a11y tests; token drift ✅
+
+---
+
+### Sprint 24 — v2.2 Realtime Governance + Admin Hardening ✅ (Merged 2026-05-18)
+
+**Focus**: Protocol governance + admin maturity before LIVE energizers.
+
+**Delivered**:
+- ✅ **DO-PROTOCOL-ADR-01**: ADR-0005 accepted; v1 protocol with unsupported-version rejection
+- ✅ **AUTHZ-ROLE-UI-01**: Team settings custom role CRUD (Sprint 21 integration)
+- ✅ **ADMIN-ANALYTICS-01**: Admin CSV export + KPI dashboard
+- ✅ **S21-S23-VERIFY-01**: Realtime protocol + template/Launchpad surfaces validated
+
+**Quality**: 717 tests; TypeScript 0 errors; 4px baseline ✅
+
+---
+
+### Sprints 25-29 — LIVE Energizer Complete ✅ (All on main, 2026-05-19)
+
+#### Sprint 25: LIVE Energizer Protocol Foundation
+- ✅ **GAM-LIVE-01**: `energizer_activate` (presenter-only) + `energizer_state` broadcast (v1)
+- ✅ **GAM-LIVE-FLAG-01**: `LIVE_ENERGIZERS_ENABLED=true` feature gate
+- ✅ **GAM-LIVE-RECONNECT-01**: `init` snapshots include active energizer state
+- ✅ **GAM-LIVE-QA-01**: 46 tests covering flag, permission, broadcast, reconnect
+
+#### Sprint 26: LIVE Energizer Activation
+- ✅ Presenter activation controls in Present.tsx wired to `sendEnergizerActivate`
+- ✅ Active energizer persisted + replayed on reconnect
+- ✅ Participant page WebSocket preference over REST fallback
+
+#### Sprint 27: Quick Finger Playable Loop
+- ✅ Participant `energizer_answer` submission validation + duplicate rejection
+- ✅ Speed-based ranking (rank 1..n for correct, rank 0 for incorrect)
+- ✅ Reconnect snapshots preserve answer state + scoreboards
+- ✅ 29 session-room tests covering answers, validation, state persistence
+
+#### Sprint 28: Team Quiz LIVE Loop
+- ✅ Multi-question Team Quiz with presenter `energizer_advance` (no main-session drift)
+- ✅ Question-level submission tracking (one answer per question per voter)
+- ✅ `completed` flag when final question advanced
+- ✅ Reconnect snapshots include question index, submissions, completion state
+
+#### Sprint 29: Leaderboard & Badge Foundation
+- ✅ Bounded top-10 leaderboard (anonymous labels: "Player 1", etc.)
+- ✅ 4-type badges: `first_answer`, `speedster`, `perfect_trivia`, `engaged`
+- ✅ Deterministic, idempotent badge creation + stable IDs
+- ✅ Duplicate answer rejection (cannot duplicate scores/badges)
+- ✅ 10+ tests for leaderboard, badges, idempotency
+
+**Combined Quality (Sprints 25-29)**:
+- 717 full test suite
+- Feature flag guards all LIVE energizer mutations
+- Role-based access control (presenter vs voter)
+- Reconnect state persistence across all energizer types
+- Idempotent badge/score derivation
 
 ---
 
