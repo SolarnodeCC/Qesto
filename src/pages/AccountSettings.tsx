@@ -102,11 +102,6 @@ export default function AccountSettings() {
   }
 
   const isSuperuser = auth.user.email === SUPERUSER_EMAIL
-  const activeTeamId = localStorage.getItem('activeTeamId')
-  const activePlan =
-    (teams.find((team) => team.id === activeTeamId)?.plan ?? teams[0]?.plan ?? quotaData?.plan) as
-      | string
-      | undefined
 
   function handleSectionChange(section: DashboardSection) {
     navigate('/dashboard')

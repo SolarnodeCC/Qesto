@@ -396,7 +396,7 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState<DashboardSection>('home')
   const { state, refresh } = useSessions()
   const userId = auth.status === 'authenticated' ? auth.user.id : undefined
-  const { data: quotaData } = useQuotaUsage(userId)
+  void useQuotaUsage(userId)
   const closedSessions =
     state.status === 'ready'
       ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
@@ -496,8 +496,6 @@ export default function Dashboard() {
 
   const isSuperuser = auth.user.email === SUPERUSER_EMAIL
   const userName = auth.user.email.split('@')[0]
-  const activeTeamId = localStorage.getItem('activeTeamId')
-  const activePlan = (teams.find((t) => t.id === activeTeamId)?.plan ?? teams[0]?.plan) as string | undefined
 
   const customerTemplates = templates.filter((tmpl) => tmpl.type === 'customer')
   const qestoTemplates = templates.filter((tmpl) => tmpl.type !== 'customer')

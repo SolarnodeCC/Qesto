@@ -168,7 +168,7 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     expect(body.error.code).toBe('validation')
   })
 
-  it('rejects PATCH on non-DRAFT sessions with 409', async () => {
+  it('allows title-only PATCH on closed sessions but rejects full writes with 409', async () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
@@ -188,7 +188,8 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
       archived_at: null,
     })
 
-    const res = await app.fetch(
+    // Title-only patch should succeed on closed sessions
+    const res1 = await app.fetch(
       new Request('http://local/api/sessions/sess_closed', {
         method: 'PATCH',
         headers: { 'content-type': 'application/json', cookie },
@@ -196,8 +197,19 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
       }),
       env,
     )
-    expect(res.status).toBe(409)
-    const body = (await res.json()) as { error: { code: string } }
+    expect(res1.status).toBe(200)
+
+    // Non-title patch should fail on closed sessions
+    const res2 = await app.fetch(
+      new Request('http://local/api/sessions/sess_closed', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ anonymity: 'none' }),
+      }),
+      env,
+    )
+    expect(res2.status).toBe(409)
+    const body = (await res2.json()) as { error: { code: string } }
     expect(body.error.code).toBe('conflict')
   })
 })
