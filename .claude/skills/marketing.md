@@ -29,6 +29,8 @@ Company size sweet spot: 10–500 employees. Enterprise (500+) via SSO + audit t
 
 **Positioning statement**: Qesto is the privacy-first, edge-native alternative to Mentimeter — built for teams that need real-time audience insights without sacrificing performance or data sovereignty.
 
+**Note**: For deep competitive positioning and customer research, consult `/market-research` agent. Market research informs competitor pages (`/vs/[competitor]`), messaging pillars, and ICP positioning. See `/knowledge-base/product/research/` for ongoing competitor profiles, customer pain points, and win/loss analysis.
+
 ## Pricing Tiers
 
 | Tier | Target | Key limits | Stripe var |
