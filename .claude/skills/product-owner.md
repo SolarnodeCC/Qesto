@@ -19,7 +19,16 @@ Before finalizing roadmap or prioritizing features, invoke `/market-research` to
 - **Win/loss data**: Why do customers choose Qesto vs. alternatives?
 - **Market trends**: What's emerging in the facilitation/engagement space?
 
-Backlog stories should be annotated with research context (e.g., `MARKET-RESEARCH: X% of trainers struggle with [pain]`). See `/knowledge-base/product/research/` for ongoing competitive analysis, customer insights, and weekly market pulse.
+Backlog stories should be annotated with research context (e.g., `MARKET-RESEARCH: X% of trainers struggle with [pain]`). 
+
+**Workflow**: See `knowledge-base/product/MARKET_PULSE_TO_BACKLOG_WORKFLOW.md` for step-by-step guidance on:
+- Reading the weekly market pulse every Monday
+- Updating sprint priorities based on customer demand signals
+- Linking stories to research evidence
+- Creating new stories from unmet customer needs
+- Briefing team on market context
+
+See `/knowledge-base/product/research/` for ongoing competitive analysis, customer insights, and weekly market pulse.
 
 ## Writing Acceptance Criteria
 
