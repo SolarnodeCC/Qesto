@@ -388,7 +388,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
   const [energizerId, setEnergizerId] = useState<string | null>(null)
 
   // Step 4
-  const [anonymity, setAnonymity] = useState<'full' | 'partial' | 'none'>('partial')
+  const [anonymity, setAnonymity] = useState<'full' | 'partial' | 'none' | 'zero_knowledge'>('partial')
   const [votePolicy, setVotePolicy] = useState<'once' | 'multi' | 'react'>('once')
   const [sessionMode, setSessionMode] = useState<'reflection' | 'fun'>('reflection')
 
@@ -1090,7 +1090,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
               <fieldset className="space-y-2">
                 <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.anonymity.label')}</legend>
                 <div className="flex gap-2 flex-wrap">
-                  {(['full', 'partial', 'none'] as const).map((val) => (
+                  {(['full', 'partial', 'none', 'zero_knowledge'] as const).map((val) => (
                     <button
                       key={val}
                       type="button"

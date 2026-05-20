@@ -1,4 +1,5 @@
 import { sanitizeError } from '../../lib/error-handler'
+import { safeLogContext } from '../../lib/log'
 import type { EnergizerApp } from './types'
 import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
 
@@ -151,7 +152,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         trace_id,
       })
     } catch (err) {
-      console.error('[energizers] active failed:', err)
+      safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }

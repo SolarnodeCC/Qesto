@@ -57,11 +57,24 @@ export const adminMiddleware: MiddlewareHandler<{
   }
 
   // Query user_roles table.  The index idx_user_roles_user_id covers this lookup.
-  const row = await c.env.DB.prepare(
-    `SELECT role FROM user_roles WHERE user_id = ?1 AND role IN ('owner', 'admin') LIMIT 1`,
-  )
-    .bind(user.sub)
-    .first<UserRoleRow>()
+  // D1 transient failure → safe deny (403), not 500.
+  let row: UserRoleRow | null = null
+  try {
+    row = await c.env.DB.prepare(
+      `SELECT role FROM user_roles WHERE user_id = ?1 AND role IN ('owner', 'admin') LIMIT 1`,
+    )
+      .bind(user.sub)
+      .first<UserRoleRow>()
+  } catch {
+    return c.json(
+      {
+        ok: false,
+        error: { code: 'forbidden', message: 'Admin access required' },
+        trace_id: c.get('trace_id'),
+      },
+      403,
+    )
+  }
 
   if (!row || !(ADMIN_ROLES as readonly string[]).includes(row.role)) {
     return c.json(

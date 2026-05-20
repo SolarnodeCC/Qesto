@@ -129,6 +129,7 @@ export type QestoEvent = {
     | 'rate_limit.hit'
     | 'error.api'
     | 'error.ai_timeout'
+    | 'ws.vote_submitted'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

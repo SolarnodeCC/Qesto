@@ -1,0 +1,13 @@
+{
+  "integrations": "Integrationen",
+  "slack_title": "Slack",
+  "slack_description": "Sende Sitzungsergebnisse an deinen Slack-Arbeitsbereich, wenn Sitzungen geschlossen werden.",
+  "slack_connected": "Verbunden mit {{channel}}",
+  "slack_not_connected": "Nicht verbunden",
+  "slack_connect": "Slack verbinden",
+  "slack_disconnect": "Trennen",
+  "slack_test": "Testnachricht senden",
+  "slack_test_sent": "Testnachricht gesendet",
+  "slack_notify_close": "Benachrichtigung bei Sitzungsende",
+  "slack_notify_energizer": "Benachrichtigung bei Energizer-Abschluss"
+}

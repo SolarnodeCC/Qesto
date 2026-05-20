@@ -14,6 +14,7 @@ import {
 import { setAuthSessionCookie } from './cookie'
 import { authEmailRequestSchema } from './schemas'
 import { authJsonInternalError, authRedirectLoginServerError } from './errors'
+import { safeLogContext } from '../../lib/log'
 import type { AuthApp } from './types'
 
 export function registerMagicLinkRoutes(app: AuthApp): void {
@@ -77,7 +78,7 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
           ...(c.env.RESEND_FROM ? { from: c.env.RESEND_FROM } : {}),
         })
       } catch (err) {
-        console.error(`[auth] email delivery failed: ${(err as Error).message}`)
+        safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] magic-link/email', errorClass: err instanceof Error ? err.name : 'UnknownError' })
       }
 
       return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') }, 202)

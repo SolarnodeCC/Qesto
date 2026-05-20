@@ -1,4 +1,4 @@
-import { useAdminOps, type ServiceStatus } from '../../hooks/useAdminOps'
+import { useAdminOps, useAdminOpsCorrelation, type ServiceStatus } from '../../hooks/useAdminOps'
 import { Heading, Body, Card, SkeletonCard } from '../../ui/components'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -53,6 +53,62 @@ function ServiceRow({ name, status }: { name: string; status: ServiceStatus }) {
       </div>
       <Body size="s" className={`font-medium ${textColor[status]}`}>{statusText[status]}</Body>
     </div>
+  )
+}
+
+// ─── Health Correlation ───────────────────────────────────────────────────────
+
+function HealthCorrelationSection() {
+  const { correlation, loading } = useAdminOpsCorrelation()
+
+  if (loading && !correlation) {
+    return (
+      <Card>
+        <Heading level="s" className="mb-3 border-l-4 border-teal-500 pl-3">Health correlation — last 24h</Heading>
+        <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Loading…</Body>
+      </Card>
+    )
+  }
+
+  return (
+    <Card>
+      <div className="mb-3 flex items-center justify-between">
+        <Heading level="s" className="border-l-4 border-teal-500 pl-3">Health correlation — last 24h</Heading>
+        <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] text-xs">Energizer activity vs WebSocket health</Body>
+      </div>
+      {!correlation || correlation.length === 0 ? (
+        <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">No correlation data available for this period.</Body>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-pulse-100 dark:border-[#1E2A45]">
+                <th className="py-2 pr-4 text-left font-medium text-pulse-500 dark:text-[#6B7A99]">Hour (UTC)</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">Activations</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">Answers</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">Reconnects</th>
+                <th className="py-2 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">WS Errors</th>
+              </tr>
+            </thead>
+            <tbody>
+              {correlation.map((row) => (
+                <tr key={row.hour} className="border-b border-pulse-100 dark:border-[#1E2A45] last:border-0">
+                  <td className="py-2 pr-4 font-mono text-xs text-pulse-600 dark:text-[#A8B3CC]">
+                    {row.hour.slice(11, 16)}
+                  </td>
+                  <td className="py-2 pr-4 text-right font-semibold">{row.energizer_activations}</td>
+                  <td className="py-2 pr-4 text-right">{row.energizer_answers}</td>
+                  <td className="py-2 pr-4 text-right">{row.ws_reconnects}</td>
+                  <td className={`py-2 text-right font-medium ${row.ws_errors > 0 ? 'text-red-600 dark:text-red-400' : ''}`}>
+                    {row.ws_errors}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Card>
   )
 }
 
@@ -124,6 +180,9 @@ export default function AdminOpsTab() {
           </div>
         </Card>
       </div>
+
+      {/* Health correlation */}
+      <HealthCorrelationSection />
 
       {/* Issue pulse */}
       <Card>

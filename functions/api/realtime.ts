@@ -8,7 +8,7 @@
 // `timestamp` is the sender's epoch-ms clock (for latency tracing only —
 // never trusted for ordering).
 
-import type { PollOption, QuestionKind, VotePolicy, SessionMode } from './types'
+import type { PollOption, QuestionKind, VotePolicy, SessionMode, Anonymity } from './types'
 
 export const LIVE_PROTOCOL_VERSION = 1
 export type LiveProtocolVersion = typeof LIVE_PROTOCOL_VERSION
@@ -103,6 +103,7 @@ export type LiveSessionSummary = {
   status: 'live' | 'closed'
   votePolicy: VotePolicy
   sessionMode: SessionMode
+  anonymity?: Anonymity
 }
 
 export type ServerMessage =

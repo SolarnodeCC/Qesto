@@ -76,7 +76,7 @@ Go-live remains blocked on deployment/staging evidence:
 
 ## Local Regression Evidence
 
-Completed on 2026-05-05:
+Completed on 2026-05-05 (Sprint 30–31 baseline):
 
 - `npm run typecheck`
 - `npm run check:i18n`
@@ -85,3 +85,33 @@ Completed on 2026-05-05:
 - `npm test` — 526 tests passed
 - `npm run test:a11y`
 - `npm run build`
+
+## Sprint 32 RC Regression Pass (RC-REGRESSION-01)
+
+Completed on 2026-05-20:
+
+- `npm run typecheck` — 0 errors
+- `npm test` — **797 tests passed** (80 test files; +271 tests from Sprint 30–32 additions)
+- Circuit breaker unit tests: 18/18 green (CB-01/CB-02, ADR-0007)
+- Enterprise permission regression bundle: 41/41 green (QA-ENT-02)
+- Privacy gamification tests: 21/21 green (PRIVACY-GAM-01)
+- Build: clean (no blocking errors)
+
+### Sprint 32 Additions (RC scope)
+
+| Item | Status | Evidence |
+|---|---|---|
+| CB-01/CB-02 Circuit breakers | Shipped | 18 unit tests; wired into billing.ts, email.ts, ai-insights.ts, oauth.ts |
+| RES-PII-01 PII sanitization | Shipped | 21 privacy tests; `safeLogContext()` in lib/log.ts |
+| RES-TIMEOUT-01 Workers AI 25s timeout | Shipped | ai-insights.ts, circuit-breaker.ts config |
+| AUTHZ-GAM-01 Energizer permission gate | Shipped (pre-existing) | QA-ENT-02 tests |
+| ANON-DEPTH-01 Zero-knowledge mode | Shipped | Full type chain + JoinPage trust badge + i18n |
+| AUDIT-GAM-01 Audit UX badges | Shipped | AuditLogViewer color-coded badges |
+| SLACK-01 Slack integration | Shipped (Sprint 32) | SlackProvider + OAuth routes |
+| EXPORT-RICH-01-A Rich export | Shipped (Sprint 32) | /export.json + /export.csv endpoints |
+| PERF-PROOF-01 Latency baseline | Shipped (Sprint 32) | AQL queries in LATENCY_BENCHMARKS.md |
+
+### v2.2 Go-Live Gate
+
+All local gates pass. Remaining: Cloudflare staging WebSocket smoke with `LIVE_ENERGIZERS_ENABLED=true`.
+See `knowledge-base/operations/STAGING_MIGRATION_CHECKLIST.md` for the full checklist.

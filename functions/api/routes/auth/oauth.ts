@@ -1,4 +1,5 @@
 import { signJwt } from '../../lib/jwt'
+import { safeLogContext } from '../../lib/log'
 import {
   buildGoogleAuthUrl,
   exchangeGoogleCode,
@@ -16,15 +17,10 @@ function redirectProviderNotConfigured(
     env: { PAGES_URL: string; API_URL: string }
     redirect: (location: string, status?: 301 | 302 | 303 | 307 | 308) => Response
   },
-  provider: 'google',
-  missing: string[],
+  _provider: 'google',
+  _missing: string[],
 ): Response {
-  console.error('[auth] oauth provider_not_configured', {
-    provider,
-    missing,
-    pagesUrl: c.env.PAGES_URL,
-    apiUrl: c.env.API_URL,
-  })
+  safeLogContext(new Error('oauth provider_not_configured'), { traceId: 'unknown', route: '[auth] oauth', errorClass: 'ProviderNotConfigured' })
   return c.redirect(`${c.env.PAGES_URL}/login?error=provider_not_configured`, 302)
 }
 
@@ -49,11 +45,7 @@ export function registerOAuthRoutes(app: AuthApp): void {
       const error = c.req.query('error')
 
       if (error || !code || !state) {
-        console.error('[auth] google callback missing params or provider error', {
-          hasError: Boolean(error),
-          hasCode: Boolean(code),
-          hasState: Boolean(state),
-        })
+        safeLogContext(new Error('google callback missing params or provider error'), { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] google/callback', errorClass: 'OAuthParamsError' })
         return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
       }
       if (!c.env.GOOGLE_CLIENT_ID || !c.env.GOOGLE_CLIENT_SECRET) {
@@ -64,7 +56,7 @@ export function registerOAuthRoutes(app: AuthApp): void {
         return redirectProviderNotConfigured(c, 'google', missing)
       }
       if (!(await consumeOAuthState(c.env.ACTIONS_KV, state))) {
-        console.error('[auth] google callback oauth state invalid', { statePrefix: state.slice(0, 8) })
+        safeLogContext(new Error('google callback oauth state invalid'), { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] google/callback', errorClass: 'OAuthStateInvalid' })
         return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
       }
 
@@ -77,7 +69,7 @@ export function registerOAuthRoutes(app: AuthApp): void {
           c.env.GOOGLE_CLIENT_SECRET,
         )
       } catch (err) {
-        console.error('[auth] google callback token exchange failed', err)
+        safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] google/callback/token-exchange', errorClass: err instanceof Error ? err.name : 'UnknownError' })
         return c.redirect(`${c.env.PAGES_URL}/login?error=sso_failed`, 302)
       }
 

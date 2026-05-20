@@ -66,5 +66,7 @@
   "leaderboard.title": "Leaderboard",
   "leaderboard.you": "You",
   "leaderboard.points": "{score} pts",
-  "badges.earned": "Earned badges"
+  "badges.earned": "Earned badges",
+  "trust_badge": "Zero-knowledge mode: your identity is never stored",
+  "trust_badge_short": "Zero-knowledge"
 }

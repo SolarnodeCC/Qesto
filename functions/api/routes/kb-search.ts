@@ -10,6 +10,7 @@
 import { Hono } from 'hono'
 import type { Env } from '../types'
 import { ulid } from '../lib/ulid'
+import { safeLogContext } from '../lib/log'
 import { validateData, AiEmbeddingResponseSchema, VectorMetadataSchema } from '../lib/validators'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -107,7 +108,7 @@ export function registerKBRoutes(parent: Hono<{ Bindings: Env; Variables: any }>
         200,
       )
     } catch (err) {
-      console.error('[kb-search] Error:', err)
+      safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
@@ -185,7 +186,7 @@ export function registerKBRoutes(parent: Hono<{ Bindings: Env; Variables: any }>
         200,
       )
     } catch (err) {
-      console.error('[kb-search] Error:', err)
+      safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,

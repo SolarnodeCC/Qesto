@@ -30,7 +30,7 @@ import {
   type LiveSessionSummary,
   type ServerMessage,
 } from './realtime'
-import type { Env, VotePolicy, SessionMode, PlanTier } from './types'
+import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
 import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
@@ -57,11 +57,13 @@ const FUN_MODE_QUESTION_MS = 60_000
 type Meta = {
   sessionId: string
   ownerId: string
+  teamId?: string
   code: string
   title: string
   startedAt: number
   votePolicy: VotePolicy
   sessionMode: SessionMode
+  anonymity?: Anonymity
   /** Owner's plan tier — used to enforce per-session voter capacity. */
   plan?: PlanTier
   /** Unix ms when the current question expires in fun mode. */
@@ -220,12 +222,14 @@ export class SessionRoom implements DurableObject {
       | {
           sessionId?: string
           ownerId?: string
+          teamId?: string
           code?: string
           title?: string
           question?: LiveQuestion | null
           questions?: LiveQuestion[]
           votePolicy?: VotePolicy
           sessionMode?: SessionMode
+          anonymity?: Anonymity
           plan?: PlanTier
         }
       | null
@@ -237,11 +241,13 @@ export class SessionRoom implements DurableObject {
     const meta: Meta = {
       sessionId: body.sessionId,
       ownerId: body.ownerId,
+      ...(body.teamId ? { teamId: body.teamId } : {}),
       code: body.code,
       title: body.title,
       startedAt: nowMs,
       votePolicy: body.votePolicy ?? 'once',
       sessionMode,
+      ...(body.anonymity ? { anonymity: body.anonymity } : {}),
       ...(body.plan ? { plan: body.plan } : {}),
       ...(sessionMode === 'fun' ? { questionExpiresAt: nowMs + FUN_MODE_QUESTION_MS } : {}),
     }
@@ -779,6 +785,7 @@ export class SessionRoom implements DurableObject {
     att: Attachment,
     data: { questionId?: string; optionId?: string },
   ): Promise<void> {
+    const t0 = Date.now()
     const meta = await this.ctx.storage.get<Meta>(K_META)
     // Token-bucket rate limit (S5).
     const nowMs = now()
@@ -852,6 +859,14 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_COUNTS, counts)
 
     await this.scheduleResultsBroadcast()
+
+    writeEvent(this.env.METRICS_AE, {
+      name: 'ws.vote_submitted',
+      sessionId: meta?.sessionId,
+      teamId: meta?.teamId,
+      plan: meta?.plan ?? 'free',
+      durationMs: Date.now() - t0,
+    })
   }
 
   private async scheduleResultsBroadcast(): Promise<void> {
@@ -887,6 +902,7 @@ export class SessionRoom implements DurableObject {
       status: 'live',
       votePolicy: meta.votePolicy,
       sessionMode: meta.sessionMode,
+      ...(meta.anonymity ? { anonymity: meta.anonymity } : {}),
     }
     ws.send(
       serverMessage({
@@ -980,6 +996,8 @@ export class SessionRoom implements DurableObject {
     writeEvent(this.env.METRICS_AE, {
       name,
       sessionId: meta?.sessionId,
+      teamId: meta?.teamId,
+      plan: meta?.plan ?? 'free',
       count,
       traceId: energizerId,
     })

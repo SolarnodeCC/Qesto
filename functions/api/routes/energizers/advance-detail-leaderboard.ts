@@ -5,6 +5,7 @@ import {
 } from '../../lib/gamification'
 import { recordAuditEvent } from '../../lib/audit'
 import { sanitizeError } from '../../lib/error-handler'
+import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/validators'
@@ -139,7 +140,7 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         200
       )
     } catch (err) {
-      console.error('[energizers] advance failed:', err)
+      safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
         { ok: false, error: { code: 'internal', message }, trace_id },
@@ -251,7 +252,7 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         200,
       )
     } catch (err) {
-      console.error('[energizers] get failed:', err)
+      safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json(
         { ok: false, error: { code: 'internal', message }, trace_id },
@@ -277,7 +278,7 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         200,
       )
     } catch (err) {
-      console.error('[leaderboard] get failed:', err)
+      safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }

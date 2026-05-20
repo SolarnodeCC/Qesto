@@ -7,6 +7,7 @@ import type { D1Database, Ai } from '@cloudflare/workers-types'
 import type { Env } from '../types'
 import { embedAndFindSimilarDocuments } from './help-vectorize'
 import { getActivePrompt } from './help-prompts'
+import { safeLogContext } from './log'
 
 export class HelpAIError extends Error {
   constructor(message: string) {
@@ -104,7 +105,7 @@ export async function retrieveDocuments(
         documents.push(doc)
       }
     } catch (err) {
-      console.error(`Failed to fetch document ${match.documentId}:`, err)
+      safeLogContext(err, { traceId: 'system', route: 'lib/help-rag/fetch-document', errorClass: err instanceof Error ? err.name : 'UnknownError' })
     }
   }
 

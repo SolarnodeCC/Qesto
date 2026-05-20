@@ -590,6 +590,20 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           {title}
         </h1>
 
+        {/* Zero-knowledge trust badge */}
+        {state.session?.anonymity === 'zero_knowledge' && (
+          <div
+            role="status"
+            aria-label={t('trust_badge')}
+            className="flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-700 dark:bg-teal-900/20 dark:text-teal-300"
+          >
+            <svg aria-hidden="true" className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-2.027-.505-3.938-1.396-5.617" />
+            </svg>
+            <span>{t('trust_badge')}</span>
+          </div>
+        )}
+
         {/* Connecting skeleton */}
         {state.connection === 'connecting' && (
           <div className="space-y-3 animate-pulse">

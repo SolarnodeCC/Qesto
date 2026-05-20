@@ -68,6 +68,9 @@ import {
 } from '../lib/session-lifecycle'
 import { suggestDuplicateTitle } from '../lib/session-title'
 import { hardDeleteSession } from '../lib/session-delete'
+import { notifySlackSessionClosed, notifyTeamsSessionClosed } from './integrations'
+import { deliverTeamWebhooks } from '../lib/webhooks'
+import { mountExportRoutes } from './sessions/exports'
 
 type Vars = AuthVariables & PlanVariables
 // SessionRow mirrors the D1 row shape. Analytics-only column `team_id` (OBS-001)
@@ -950,12 +953,14 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       doRes = await postDO(c.env, id, '/init', {
         sessionId: session.id,
         ownerId: session.owner_id,
+        teamId: session.team_id ?? undefined,
         code: session.code,
         title: session.title,
         question: liveQ,
         questions: questions.map(questionToLive),
         votePolicy: session.vote_policy,
         sessionMode: session.session_mode,
+        anonymity: session.anonymity ?? undefined,
         plan: c.get('plan'),
       })
     } catch (doNetworkErr) {
@@ -1160,6 +1165,62 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       // No ExecutionContext available (test environment) — skip background work.
     }
 
+    // SLACK-01: best-effort Slack notification on session close. Runs in the
+    // background via waitUntil so it never delays the close response; ignored
+    // when integrations are disabled or no Slack token is bound to this team.
+    if (c.env.INTEGRATION_ENABLED === '1' && c.env.INTEGRATIONS_KV) {
+      try {
+        c.executionCtx.waitUntil(
+          notifySlackSessionClosed(c.env, id, session.title, session.team_id ?? null, counts, total).catch((err) => {
+            console.error(
+              JSON.stringify({ event: 'slack.notify.error', sessionId: id, error: String(err) }),
+            )
+          }),
+        )
+      } catch {
+        // No ExecutionContext available (test environment) — skip background work.
+      }
+    }
+
+    // TEAMS-01: best-effort Microsoft Teams Adaptive Card notification on close.
+    // Mirrors the Slack hook above; skipped silently when no Teams config exists.
+    if (c.env.INTEGRATION_ENABLED === '1' && c.env.INTEGRATIONS_KV) {
+      try {
+        c.executionCtx.waitUntil(
+          notifyTeamsSessionClosed(c.env, id, session.title, session.team_id ?? null, counts, total).catch((err) => {
+            console.error(
+              JSON.stringify({ event: 'teams.notify.error', sessionId: id, error: String(err) }),
+            )
+          }),
+        )
+      } catch {
+        // No ExecutionContext available (test environment) — skip background work.
+      }
+    }
+
+    // WEBHOOK-01: fire generic outbound webhooks on session close. Best-effort,
+    // runs via waitUntil so it never delays the close response. Per-webhook
+    // failures land in the delivery log (admin-readable) and do not propagate.
+    if (c.env.INTEGRATIONS_KV) {
+      try {
+        c.executionCtx.waitUntil(
+          deliverTeamWebhooks(c.env, session.team_id ?? null, 'session.closed', {
+            sessionId: id,
+            sessionTitle: session.title,
+            teamId: session.team_id ?? null,
+            totalVotes: total,
+            durationMs: session.started_at ? closedAt - session.started_at : 0,
+          }).catch((err) =>
+            console.error(
+              JSON.stringify({ event: 'webhook.deliver.error', sessionId: id, error: String(err) }),
+            ),
+          ),
+        )
+      } catch {
+        // No ExecutionContext available (test environment) — skip background work.
+      }
+    }
+
     return c.json({
       ok: true,
       data: { session, results: { counts, total } },
@@ -1227,6 +1288,10 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       trace_id: traceId,
     })
   })
+
+  // EXPORT-RICH-01-A + EXPORT-PDF-01 — Rich session exports extracted to subrouter.
+  // Routes: export.json, export.csv, export.html (print-ready signed HTML).
+  mountExportRoutes(app, fetchSession)
 
   // GET /api/sessions/:id/results — aggregate persisted totals (CLOSED) or the
   // live DO snapshot (LIVE). DRAFT sessions have no results to show.
@@ -1844,54 +1909,9 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     )
   })
 
-  // GET /api/sessions/:id/export.csv — download session results as CSV
-  app.get('/:id/export.csv', requireFeature('resultsExport'), async (c) => {
-    const user = c.get('user')
-    const id = c.req.param('id')
-    const session = await fetchSession(c.env.DB, id, user.sub)
-    if (!session) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
-    }
-
-    const questions = await fetchQuestions(c.env.DB, id)
-    const rows: string[] = ['Question,Option,Votes']
-
-    for (const q of questions) {
-      const { results: voteRows } = await c.env.DB
-        .prepare(`SELECT option_id, COUNT(*) AS n FROM votes WHERE question_id = ?1 GROUP BY option_id`)
-        .bind(q.id)
-        .all<{ option_id: string; n: number }>()
-
-      const voteCounts: Record<string, number> = {}
-      for (const row of voteRows ?? []) {
-        voteCounts[row.option_id] = row.n
-      }
-
-      if (q.options.length > 0) {
-        for (const opt of q.options) {
-          const prompt = q.prompt.replace(/"/g, '""')
-          const label = opt.label.replace(/"/g, '""')
-          rows.push(`"${prompt}","${label}",${voteCounts[opt.id] ?? 0}`)
-        }
-      } else {
-        const prompt = q.prompt.replace(/"/g, '""')
-        const total = Object.values(voteCounts).reduce((a, b) => a + b, 0)
-        rows.push(`"${prompt}","(open answer)",${total}`)
-      }
-    }
-
-    const csv = rows.join('\n')
-    const filename = `${session.title.replace(/[^a-z0-9]/gi, '-')}-${session.code}.csv`
-    return new Response(csv, {
-      headers: {
-        'content-type': 'text/csv; charset=utf-8',
-        'content-disposition': `attachment; filename="${filename}"`,
-      },
-    })
-  })
+  // (Former GET /api/sessions/:id/export.csv handler removed —
+  //  superseded by the team-gated rich CSV defined above as part of
+  //  EXPORT-RICH-01-A. See v2.2 audit outcomes.)
 
   // ──────────────────────────────────────────────────────────────────────────
   // S18 prereq: GET /api/sessions/:id/preflight

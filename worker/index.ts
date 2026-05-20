@@ -6,6 +6,7 @@
 
 import { createApp } from '../functions/api/app'
 import type { Env } from '../functions/api/types'
+import { safeLogContext } from '../functions/api/lib/log'
 
 export { SessionRoom } from '../functions/api/SessionRoom'
 
@@ -21,7 +22,7 @@ async function handleScheduled(event: ScheduledEvent, env: Env, ctx: ExecutionCo
   const clientSecret = env.CF_ACCESS_CLIENT_SECRET
 
   if (!adminKey || !clientId || !clientSecret) {
-    console.error('[kb-sync-cron] Missing credentials')
+    safeLogContext(new Error('Missing credentials'), { traceId: 'cron', route: 'worker/kb-sync-cron', errorClass: 'MissingCredentials' })
     return
   }
 
@@ -36,7 +37,7 @@ async function handleScheduled(event: ScheduledEvent, env: Env, ctx: ExecutionCo
     // For now, log the intent
     console.log('[kb-sync-cron] Scheduled sync ready. Awaiting git webhook trigger.')
   } catch (err) {
-    console.error('[kb-sync-cron] Error:', err instanceof Error ? err.message : String(err))
+    safeLogContext(err, { traceId: 'cron', route: 'worker/kb-sync-cron', errorClass: err instanceof Error ? err.name : 'UnknownError' })
   }
 }
 

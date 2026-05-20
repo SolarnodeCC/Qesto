@@ -1115,6 +1115,76 @@ Decision tree (from product-owner.md Wave 2):
 
 ---
 
+## Sprint 30–34 Story Registry (added 2026-05-20)
+
+_Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 integrations + compliance + AI depth)._
+
+### EPIC-RES — Resilience
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|---|---|---:|---|---|---|
+| RES-PII-01 | PII sanitization: `safeLogContext()` + CI gate (ADR-0009) | 8 | P0 | S30 | ✅ Delivered |
+| RES-TIMEOUT-01 | Workers AI AbortController (25s) for ai-insights.ts | 5 | P0 | S30 | ✅ Pre-existing |
+| RES-D1-01 | Admin middleware D1 try/catch with safe 403 fallback | 3 | P0 | S30 | ✅ Delivered |
+| RES-RETRY-01 | Shared `invokeAIWithRetry()` for insights route | 3 | P1 | S30 | ✅ Pre-existing |
+| RES-ERR-01 | Wire `sanitizeError()` into `app.onError` globally | 3 | P0 | S30 | ✅ Pre-existing |
+| CB-01 | Circuit breaker: Stripe + Resend (ADR-0007) | 8 | P0 | S31 | Planned |
+| CB-02 | Circuit breaker: Workers AI + JWKS (ADR-0007) | 5 | P0 | S31 | Planned |
+
+### EPIC-INT — Integrations
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|---|---|---:|---|---|---|
+| INT-PROVIDER-01 | Integration provider library (ADR-0008) | 8 | P0 | S31 | Planned |
+| SLACK-01 | Slack: session results push notification | 8 | P1 | S32 | Planned |
+| SLACK-02 | Slack: settings UI + OAuth management | 8 | P1 | S33 | Planned |
+| TEAMS-01 | Microsoft Teams: session results adaptive card | 8 | P1 | S33 | Planned |
+| WEBHOOK-01 | Generic webhook + HMAC signing + retry + admin log | 8 | P0 | S33 | Planned |
+| ZOOM-01 | Zoom integration (stretch S33 or S34) | 8 | P2 | S34 | Stretch |
+
+### EPIC-EXPORT — Exports
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|---|---|---:|---|---|---|
+| EXPORT-RICH-01-A | Structured JSON + enhanced CSV with metadata | 8 | P1 | S32 | Planned |
+| EXPORT-PDF-01 | PDF signed session summary | 8 | P1 | S33 | Planned |
+
+### EPIC-ENT — Enterprise
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|---|---|---:|---|---|---|
+| ANON-DEPTH-01 | Zero-knowledge mode session config + trust badge | 5 | P1 | S31 | Planned |
+| ANON-DEPTH-02 | Trust documentation + Vevox competitive proof | 5 | P1 | S34 | Planned |
+| ENT-RESIDENCY-01 | EU routing evidence + DPA template | 8 | P0 | S34 | Planned |
+| COMPLIANCE-01 | SOC 2 evidence framework + sub-processor registry | 5 | P1 | S33 | Planned |
+| COMPLIANCE-02 | DPA/SCC template + compliance claim CI gate | 5 | P0 | S34 | Planned |
+| GDPR-BADGE-01 | GDPR badge + deletion test + runbook | 5 | P1 | S34 | Planned |
+
+### EPIC-AI — AI Depth
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|---|---|---:|---|---|---|
+| AI-RECAP-PROV-01 | AI recap provenance (edit history, model, timestamp, export) | 8 | P1 | S34 | Planned |
+| AI-SENTIMENT-01 | Real-time session sentiment tracking (per-question mood signal) | 8 | P1 | S34 | Planned |
+| AI-COACHING-01 | Post-session facilitator coaching suggestions (stretch S34) | 5 | P2 | S34+ | Stretch |
+
+### EPIC-DX — Developer Experience
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|---|---|---:|---|---|---|
+| CODE-SPLIT-01 | Split sessions.routes.ts (81 KB) into subrouters | 5 | P1 | S33 | Planned |
+| PERF-PROOF-01 | Cloudflare latency benchmark data capture | 3 | P1 | S32 | Planned |
+
+### EPIC-OBS — Observability (Sprint 30 delivery)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|---|---|---:|---|---|---|
+| OBS-VOTE-01 | ws.vote_submitted AE event with sessionId, teamId, plan, latency | 5 | P1 | S30 | ✅ Delivered |
+| PRIVACY-GAM-01 | 21 privacy tests: energizer AE events + export payloads contain no PII | 3 | P0 | S30 | ✅ Delivered |
+| ADMIN-OPS-02 | Hourly health correlation table: energizer activity vs WS errors/reconnects | 5 | P1 | S30 | ✅ Delivered |
+
+---
+
 **See also**:
 - `README.md` — documentation map (truth hierarchy, reading order)
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
@@ -1122,4 +1192,5 @@ Decision tree (from product-owner.md Wave 2):
 - `ROADMAP_FULL.md` — release timeline + version targets
 - `CLAUDE.md` — L1 project context + hard rules
 - `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
+- `SPRINT33_34_PLAN.md` — Sprint 33–34 detailed plan (v2.3 integrations + compliance + AI depth)
 - `spec/design-tokens.json` — design-token source of truth

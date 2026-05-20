@@ -24,6 +24,7 @@
     "report:i18n:gaps": "node scripts/i18n-gap-report.mjs",
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
     "check:tokens-drift": "node scripts/check-tokens-drift.mjs",
+    "check:pii-log": "bash scripts/check-pii-log.sh",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "test:e2e": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",

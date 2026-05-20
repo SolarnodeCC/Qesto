@@ -194,7 +194,7 @@ export const CircuitBreakers = {
   }),
 
   ai: new CircuitBreaker('ai', {
-    timeout: 10000, // Longer for inference
+    timeout: 25000, // Matches RES-TIMEOUT-01 (25s proven in production)
     failureThreshold: 3,
     openDurationMs: 45000,
     halfOpenProbeDelayMs: 45000,
@@ -225,19 +225,21 @@ export const CircuitBreakers = {
 
 /**
  * Initialize circuit breakers with KV namespace.
- * Call this once at worker startup.
+ * Idempotent — safe to call on every request; only wires KV once per isolate.
  *
- * @param kv CIRCUIT_BREAKER_KV namespace
+ * @param kv ACTIONS_KV namespace (or any shared KV)
  * @param environment 'production' | 'staging' | 'dev'
  */
-export function initCircuitBreakers(kv: KVNamespace | undefined, environment: string): void {
-  if (!kv) return // If no KV, breakers stay in-memory only
+let _breakersKvInitialized = false
 
-  // Re-initialize existing breakers with KV binding
+export function initCircuitBreakers(kv: KVNamespace | undefined, environment: string): void {
+  if (!kv || _breakersKvInitialized) return
+  _breakersKvInitialized = true
+
+  // Re-initialize existing breakers with KV binding (once per isolate)
   const entries = Object.entries(CircuitBreakers) as Array<[string, CircuitBreaker | Function]>
   for (const [_key, breaker] of entries) {
     if (breaker instanceof CircuitBreaker) {
-      // Create new breaker instance with KV binding
       const newBreaker = new CircuitBreaker(breaker.name, breaker.config, kv, environment)
       Object.assign(breaker, newBreaker)
     }

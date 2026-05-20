@@ -25,6 +25,7 @@ import { KbVectorRepository } from '../repositories/kbVectorRepository'
 import { KbSearchError, KbSearchService } from '../services/kbSearchService'
 import type { Env } from '../types'
 import type { KbSearchRequest, KbSearchResponse, KbStatus, KbType } from '../types/knowledge-base'
+import { safeLogContext } from '../lib/log'
 
 // Must match the Vars shape used in app.ts so this sub-router can be
 // composed into the parent without a structural mismatch.
@@ -107,11 +108,11 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
         if (err instanceof KbSearchError) {
           const mapped = mapKbErrorToStatus(err)
           if (mapped.status >= 500) {
-            console.error('[kb-search] service error:', err.code, err.message, err.cause)
+            safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: c.req.path, errorClass: 'KbSearchError', statusCode: mapped.status })
           }
           return fail(c, mapped.code, mapped.message, mapped.status)
         }
-        console.error('[kb-search] unexpected error:', err)
+        safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
         return fail(c, 'internal_error', 'Internal error', 500)
       }
     },

@@ -10,6 +10,7 @@ import { pwdKey, resetKey } from './helpers'
 import { authEmailRequestSchema, passwordSchema, signupSchema } from './schemas'
 import { authJsonInternalError } from './errors'
 import { validateKvJson, PasswordCredentialSchema, PasswordResetSchema } from '../../lib/validators'
+import { safeLogContext } from '../../lib/log'
 import type { AuthApp } from './types'
 
 export function registerPasswordAuthRoutes(app: AuthApp): void {
@@ -137,7 +138,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
             ...(c.env.RESEND_FROM ? { from: c.env.RESEND_FROM } : {}),
           })
         } catch (err) {
-          console.error(`[auth] reset email delivery failed: ${(err as Error).message}`)
+          safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] password/reset-email', errorClass: err instanceof Error ? err.name : 'UnknownError' })
         }
       }
 
@@ -172,7 +173,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       }
       const payload = validateKvJson(rawKv, PasswordResetSchema)
       if (!payload) {
-        console.error('[auth] corrupt reset token data in KV')
+        safeLogContext(new Error('corrupt_reset_token'), { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] password/reset-confirm', errorClass: 'CorruptKvData' })
         return authJsonInternalError(c, new Error('corrupt_reset_token'), '[auth] password reset-confirm corrupt token')
       }
       const { userId, email } = payload
