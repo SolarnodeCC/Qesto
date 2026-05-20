@@ -69,27 +69,52 @@ describe('Sprint 20 entitlement contracts', () => {
     env = makeEnv(db, sessionsKv, teamsKv)
   })
 
-  it('denies results export on free and allows it on starter', async () => {
+  it('denies rich export on free/starter and allows it on team (EXPORT-RICH-01-A)', async () => {
+    // Rich export (JSON + CSV with metadata) is team-plan only per EXPORT-RICH-01-A.
     addUser(db, 'free_export', 'free')
     addUser(db, 'starter_export', 'starter')
+    addUser(db, 'team_export', 'team')
     const freeCookie = await cookieFor('free_export', 'free_export@example.com')
     const starterCookie = await cookieFor('starter_export', 'starter_export@example.com')
+    const teamCookie = await cookieFor('team_export', 'team_export@example.com')
 
     const freeSessionId = await createSession(app, env, freeCookie, 'free export')
     const starterSessionId = await createSession(app, env, starterCookie, 'starter export')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team export')
 
-    const freeRes = await app.fetch(
+    // free → 403 on both formats
+    const freeCsvRes = await app.fetch(
       new Request(`http://local/api/sessions/${freeSessionId}/export.csv`, { headers: { cookie: freeCookie } }),
       env,
     )
-    expect(freeRes.status).toBe(403)
+    expect(freeCsvRes.status).toBe(403)
 
-    const starterRes = await app.fetch(
+    const freeJsonRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/export.json`, { headers: { cookie: freeCookie } }),
+      env,
+    )
+    expect(freeJsonRes.status).toBe(403)
+
+    // starter → 403 (rich export is team-only)
+    const starterCsvRes = await app.fetch(
       new Request(`http://local/api/sessions/${starterSessionId}/export.csv`, { headers: { cookie: starterCookie } }),
       env,
     )
-    expect(starterRes.status).toBe(200)
-    expect(starterRes.headers.get('content-type')).toContain('text/csv')
+    expect(starterCsvRes.status).toBe(403)
+
+    // team → allowed (session must be closed; draft returns 409)
+    const teamCsvRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/export.csv`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    // Draft session → 409 session_not_closed (plan gate passes; status gate blocks)
+    expect(teamCsvRes.status).toBe(409)
+
+    const teamJsonRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/export.json`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    expect(teamJsonRes.status).toBe(409)
   })
 
   it('denies ranking and consent question writes on free and allows ranking on starter', async () => {

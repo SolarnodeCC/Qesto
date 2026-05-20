@@ -50,6 +50,9 @@ export type Env = {
   MICROSOFT_CLIENT_ID?: string
   MICROSOFT_CLIENT_SECRET?: string
   MICROSOFT_TENANT_ID?: string
+  /** SLACK-01: Slack OAuth2 app credentials (set via `wrangler pages secret put`). */
+  SLACK_CLIENT_ID?: string
+  SLACK_CLIENT_SECRET?: string
 
   // Bindings
   DB: D1Database

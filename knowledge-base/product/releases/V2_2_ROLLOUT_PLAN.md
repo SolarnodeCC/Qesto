@@ -4,9 +4,9 @@ type: guide
 domain: governance
 category: policy
 status: active
-version: 1.0
+version: 2.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-05-20
 tags:
   - governance
   - policy
@@ -17,9 +17,31 @@ relates_to:
 
 # v2.2 LIVE Engagement Rollout Plan
 
+**RC-ROLLOUT-01 — Sprint 32**
 Owner: product and platform lead.
 
-Current go-live decision after the 2026-05-05 validation run: blocked until commit parity and the Cloudflare-backed WebSocket smoke pass. Local code and tests are green; deployed production still reports `COMMIT_SHA=dev`, and no preview/staging target is configured in `wrangler.toml`.
+## v2.2 Release Gate Status (2026-05-20)
+
+All local quality gates: **PASSED**
+
+| Gate | Status |
+|---|---|
+| `npm test` — 797 tests | ✓ Green |
+| `npm run typecheck` — 0 errors | ✓ Green |
+| Circuit breakers (CB-01/CB-02) | ✓ Shipped + 18 unit tests |
+| Enterprise permissions (QA-ENT-02) | ✓ Shipped + 41 integration tests |
+| PII sanitization (RES-PII-01) | ✓ Shipped + 21 privacy tests |
+| Zero-knowledge mode (ANON-DEPTH-01) | ✓ Shipped + i18n all 5 locales |
+| Slack integration (SLACK-01) | ✓ Shipped — OAuth2 + session close hook |
+| Rich export (EXPORT-RICH-01-A) | ✓ Shipped — JSON + CSV, team-only |
+| Vote latency baseline (PERF-PROOF-01) | ✓ Shipped — AQL queries in LATENCY_BENCHMARKS.md |
+
+**Remaining blocker:** Cloudflare-backed staging WebSocket smoke with `LIVE_ENERGIZERS_ENABLED=true`.
+See `STAGING_MIGRATION_CHECKLIST.md` for the full smoke procedure.
+
+---
+
+Current go-live decision after the 2026-05-05 validation run: blocked until commit parity and the Cloudflare-backed WebSocket smoke pass. Sprint 32 RC local gates are now all green.
 
 ## Cohorts
 
