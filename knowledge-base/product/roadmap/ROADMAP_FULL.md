@@ -24,9 +24,11 @@ _Hub: [Documentation map](./README.md)._
 _Last updated: 2026-05-05 (UTC)_
 
 ## Release status
-- **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
-- **v2.1 (target)**: stabilization + entitlement enforcement + enterprise/compliance readiness + translation QA hardening.
-- **v2.2 (target)**: template catalogue polish, Launchpad/design polish, advanced gamification depth, and admin analytics maturity.
+- **v2.0.0 (shipped)**: core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, broad automated testing.
+- **v2.1 (shipped)**: stabilization, entitlement enforcement, enterprise/compliance readiness, translation QA hardening.
+- **v2.2 (target — Sprints 30–32, ships 2026-07-08)**: LIVE engagement depth + resilience P0 hardening + Slack integration + rich export. Gate: regression pass, staging WebSocket smoke, PII CI gate merged.
+- **v2.3 (target — Sprints 33–34, ships 2026-08-05)**: Integration ecosystem (Slack full, Teams, webhooks) + SOC 2 / EU compliance evidence + AI depth (recap provenance, real-time sentiment). Gate: v2.2 clean; SLACK-01 staging smoke; SOC 2 evidence framework started.
+- **v2.4 (est. Sprint 35+, 2026-09)**: Zoom + Salesforce integrations; AI facilitator coaching; tournament mechanics; white-label; LDAP/AD sync.
 
 ## Epic status summary
 -  **Core Session Platform** (session lifecycle, realtime voting, presenter controls)
@@ -129,25 +131,38 @@ _Last updated: 2026-05-05 (UTC)_
 | Sprint 27 | First playable LIVE energizer: Quick Finger | ✅ Shipped 2026-05-19: participant answers, DO validation, score broadcast, reconnect-safe state |
 | Sprint 28 | Team Quiz LIVE loop | ✅ Shipped 2026-05-19: quiz progression, locked submissions, score summary, reconnect state |
 | Sprint 29 | Leaderboard + badge foundation | ✅ Shipped 2026-05-19: bounded leaderboard, deterministic badge hooks, idempotency tests |
-| Sprint 30 | Admin engagement analytics maturity | Active: No release-candidate posture until support/admin dashboards are useful |
-| Sprint 31 | Enterprise rollout hardening | Planned: No broad rollout until permission-deny and audit paths are clear |
-| Sprint 32 | v2.2 release candidate | Planned: Release only after full-stack smoke and staging WebSocket validation |
+| Sprint 30 | Admin engagement analytics + resilience P0 | Active (branch sprint/sprint-30): RES-PII-01, RES-D1-01, OBS-VOTE-01, PRIVACY-GAM-01, ADMIN-OPS-02 delivered |
+| Sprint 31 | Enterprise hardening + circuit breakers + integration library | Planned: CB-01, CB-02, INT-PROVIDER-01, ANON-DEPTH-01 |
+| Sprint 32 | v2.2 RC + Slack + rich export | Planned: SLACK-01, EXPORT-RICH-01-A, PERF-PROOF-01 |
 
 **Plan:** See [`SPRINT26_32_PLAN.md`](../planning/SPRINT26_32_PLAN.md).
 
-### Post-v2.2 Commercial Promise Completion
+### Sprint 33–34 — v2.3 Integration Suite + Compliance + AI Depth
 
-**Focus:** Keep go-live copy honest while sequencing the higher-value promises that were removed or marked roadmap during the marketing promise audit.
+**Window:** 2026-07-08 to 2026-08-05
+**Focus:** Fill the #1 lost-deal reason (integrations), start EU compliance story, deepen AI moat.
 
-| Item | Status |
-|---|---|
-| MKT-PROMISE-01 Launch-safe marketing promise audit and copy correction | ✅ Implemented 2026-05-05; public pages now avoid unsupported compliance, export, integration, latency, and AI provenance claims |
-| EXPORT-RICH-01 Rich export formats | Future: JSON, signed PDF, DOCX, and Notion-ready exports need backend routes, UI, tests, and plan gates |
-| INT-WEBHOOK-01 Webhook/integration suite | Future: Slack, Notion, Workday, BambooHR, and generic webhooks need auth, retries, audit logs, and failure handling |
-| ENT-COMPLIANCE-01 Compliance evidence packet | Future: SOC 2, penetration-test summary, DPA/SCC packet, and sub-processor evidence must exist before procurement claims go live |
-| ENT-RESIDENCY-01 Residency and customer-managed keys | Future: residency guarantees and CMK support need design, operations, and tests before marketing promotion |
-| AI-RECAP-PROV-01 AI recap evidence/edit provenance | Future: evidence-linked summaries, edit history, and export provenance need implementation before public AI recap claims return |
-| PERF-PROOF-01 Production latency evidence | Future: Cloudflare-backed benchmark data required before numeric latency claims return |
+| Sprint | Goal | Key Items |
+|---|---|---|
+| Sprint 33 | Integration suite + compliance foundation | SLACK-02, TEAMS-01, WEBHOOK-01, EXPORT-PDF-01, COMPLIANCE-01, CODE-SPLIT-01 |
+| Sprint 34 | Compliance evidence + AI depth + anonymous leadership | ENT-RESIDENCY-01, COMPLIANCE-02, AI-RECAP-PROV-01, AI-SENTIMENT-01, ANON-DEPTH-02, GDPR-BADGE-01 |
+
+**Plan:** See [`SPRINT33_34_PLAN.md`](../planning/SPRINT33_34_PLAN.md).
+
+### Commercial Promise Completion Schedule (updated 2026-05-20)
+
+| Promise | Sprint | Status |
+|---|---|---|
+| MKT-PROMISE-01 Launch-safe marketing promise audit | — | ✅ Delivered 2026-05-05 |
+| EXPORT-RICH-01-A Structured JSON + enhanced CSV | S32 | Planned |
+| EXPORT-PDF-01 Signed PDF session summary | S33 | Planned |
+| INT-WEBHOOK-01 Generic webhook + HMAC signing | S33 | Planned |
+| SLACK-01/02 Slack integration | S32/S33 | Planned |
+| TEAMS-01 Microsoft Teams integration | S33 | Planned |
+| ENT-COMPLIANCE-01 SOC 2 evidence framework | S33 | Planned (COMPLIANCE-01) |
+| ENT-RESIDENCY-01 EU data residency + DPA template | S34 | Planned |
+| AI-RECAP-PROV-01 AI recap provenance | S34 | Planned |
+| PERF-PROOF-01 Latency benchmark evidence | S32 | Planned |
 
 **Gate:** Any claim moved from roadmap to public launch copy must have a matching implementation path, tests, and documentation evidence in the same PR.
 
