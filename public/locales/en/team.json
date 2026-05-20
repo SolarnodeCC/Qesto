@@ -1,0 +1,13 @@
+{
+  "integrations": "Integrations",
+  "slack_title": "Slack",
+  "slack_description": "Send session results to your Slack workspace when sessions close.",
+  "slack_connected": "Connected to {{channel}}",
+  "slack_not_connected": "Not connected",
+  "slack_connect": "Connect Slack",
+  "slack_disconnect": "Disconnect",
+  "slack_test": "Send test",
+  "slack_test_sent": "Test message sent",
+  "slack_notify_close": "Notify on session close",
+  "slack_notify_energizer": "Notify on energizer completion"
+}

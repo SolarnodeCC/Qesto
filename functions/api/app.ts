@@ -15,6 +15,7 @@ import { mountUserRoutes } from './routes/users'
 import { mountKnowledgeBaseRoutes } from './routes/knowledge-base'
 import { registerKBRoutes } from './routes/kb-search'
 import { mountIntegrationRoutes } from './routes/integrations'
+import { mountWebhookRoutes } from './routes/webhooks'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
@@ -181,6 +182,7 @@ export function createApp() {
   mountKnowledgeBaseRoutes(app)
   registerKBRoutes(app)
   mountIntegrationRoutes(app)
+  mountWebhookRoutes(app)
 
   return app
 }

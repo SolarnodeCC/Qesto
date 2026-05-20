@@ -602,5 +602,16 @@
   "samlConfiguration": "Configuración SAML",
   "customRolesTitle": "Roles personalizados",
   "customRolesEmpty": "Aún no hay roles personalizados.",
-  "customRolesChooseMember": "Elegir miembro"
+  "customRolesChooseMember": "Elegir miembro",
+  "integrations": "Integraciones",
+  "slack_title": "Slack",
+  "slack_description": "Envía los resultados de las sesiones a tu espacio de trabajo de Slack cuando se cierren.",
+  "slack_connected": "Conectado a {{channel}}",
+  "slack_not_connected": "No conectado",
+  "slack_connect": "Conectar con Slack",
+  "slack_disconnect": "Desconectar",
+  "slack_test": "Enviar prueba",
+  "slack_test_sent": "Mensaje de prueba enviado",
+  "slack_notify_close": "Notificar al cerrar sesión",
+  "slack_notify_energizer": "Notificar al completar energizador"
 }

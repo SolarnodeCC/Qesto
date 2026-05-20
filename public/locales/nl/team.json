@@ -1,0 +1,13 @@
+{
+  "integrations": "Koppelingen",
+  "slack_title": "Slack",
+  "slack_description": "Stuur sessieresultaten naar je Slack-werkruimte wanneer sessies worden afgesloten.",
+  "slack_connected": "Verbonden met {{channel}}",
+  "slack_not_connected": "Niet verbonden",
+  "slack_connect": "Slack koppelen",
+  "slack_disconnect": "Verbreken",
+  "slack_test": "Testbericht sturen",
+  "slack_test_sent": "Testbericht verzonden",
+  "slack_notify_close": "Melding bij afsluiting sessie",
+  "slack_notify_energizer": "Melding bij voltooiing energizer"
+}
