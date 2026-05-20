@@ -4,6 +4,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types'
+import { safeLogContext } from './log'
 
 export interface PromptVersion {
   id: string
@@ -83,7 +84,7 @@ export async function getActivePrompt(db: D1Database, topic?: string): Promise<P
 
     return null
   } catch (err) {
-    console.error('Error fetching active prompt:', err)
+    safeLogContext(err, { traceId: 'system', route: 'lib/help-prompts/get-active', errorClass: err instanceof Error ? err.name : 'UnknownError' })
     return null
   }
 }
@@ -132,7 +133,7 @@ export async function listPromptVersions(
       total: countResult?.count ?? 0,
     }
   } catch (err) {
-    console.error('Error listing prompt versions:', err)
+    safeLogContext(err, { traceId: 'system', route: 'lib/help-prompts/list-versions', errorClass: err instanceof Error ? err.name : 'UnknownError' })
     return { versions: [], total: 0 }
   }
 }
@@ -176,7 +177,7 @@ export async function activatePromptVersion(db: D1Database, promptId: string): P
 
     return true
   } catch (err) {
-    console.error('Error activating prompt version:', err)
+    safeLogContext(err, { traceId: 'system', route: 'lib/help-prompts/activate-version', errorClass: err instanceof Error ? err.name : 'UnknownError' })
     return false
   }
 }

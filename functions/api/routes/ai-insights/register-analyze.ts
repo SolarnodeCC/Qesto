@@ -16,6 +16,7 @@ import type { KbSource } from '../../types/knowledge-base'
 import { toInsightsInput, type SessionBundle } from '../../lib/session-bundle'
 import { writeEvent } from '../../lib/observability'
 import { sanitizeError } from '../../lib/error-handler'
+import { safeLogContext } from '../../lib/log'
 import { fetchSessionTitleForOwner } from '../../lib/session-repository'
 import { fail, ok } from '../../lib/http'
 import { writeKvJson } from '../../lib/kv'
@@ -202,7 +203,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
 
       return ok(c, payload)
     } catch (err) {
-      console.error('[ai-insights] analyze failed:', err)
+      safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
       return fail(c, 'internal', message, 500)
     }

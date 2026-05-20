@@ -1,5 +1,6 @@
 import { recordAuditEvent } from '../../lib/audit'
 import { sanitizeError } from '../../lib/error-handler'
+import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
 
@@ -76,7 +77,7 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
 
       return c.json({ ok: true, data: { state: body.state }, trace_id })
     } catch (err) {
-      console.error('[energizers] patch failed:', err)
+      safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
       return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
     }

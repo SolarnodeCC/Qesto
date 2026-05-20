@@ -12,6 +12,7 @@ import { JWT_TTL_SECONDS } from './constants'
 import { setAuthSessionCookie } from './cookie'
 import { authRedirectSamlFailed } from './errors'
 import type { AuthApp } from './types'
+import { safeLogContext } from '../../lib/log'
 
 export function registerSamlRoutes(app: AuthApp): void {
   app.get('/saml/metadata', (c) => {
@@ -27,7 +28,7 @@ export function registerSamlRoutes(app: AuthApp): void {
         },
       })
     } catch (err) {
-      console.error('[auth] saml/metadata:', err)
+      safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[auth] saml/metadata', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 503 })
       return new Response('Service unavailable', {
         status: 503,
         headers: { 'content-type': 'text/plain; charset=utf-8' },

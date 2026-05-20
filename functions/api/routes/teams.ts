@@ -39,6 +39,7 @@ import { validateKvJson, PermissionArraySchema, TeamInviteTokenSchema } from '..
 import { TEAM_INVITE_TTL_SECONDS } from '../lib/constants'
 import { teamDocumentKey, teamInviteKey, userTeamsIndexKey } from '../lib/kv-keys'
 import type { Env } from '../types'
+import { safeLogContext } from '../lib/log'
 
 type Role = 'owner' | 'admin' | 'member' | 'viewer'
 
@@ -707,7 +708,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         html: `<p><strong>${user.email}</strong> invited you to join <strong>${team.name}</strong> on Qesto.</p><p>The invite is valid for 24 hours.</p><p><a href="${inviteUrl}">Accept invite</a></p>`,
       })
     } catch (err) {
-      console.error(`[teams] invite email delivery failed: ${(err as Error).message}`)
+      safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: '[teams] invite/email', errorClass: err instanceof Error ? err.name : 'UnknownError' })
     }
     await recordAuditEvent(c, {
       action: 'team.role.assign',

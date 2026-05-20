@@ -57,6 +57,7 @@ const FUN_MODE_QUESTION_MS = 60_000
 type Meta = {
   sessionId: string
   ownerId: string
+  teamId?: string
   code: string
   title: string
   startedAt: number
@@ -220,6 +221,7 @@ export class SessionRoom implements DurableObject {
       | {
           sessionId?: string
           ownerId?: string
+          teamId?: string
           code?: string
           title?: string
           question?: LiveQuestion | null
@@ -237,6 +239,7 @@ export class SessionRoom implements DurableObject {
     const meta: Meta = {
       sessionId: body.sessionId,
       ownerId: body.ownerId,
+      ...(body.teamId ? { teamId: body.teamId } : {}),
       code: body.code,
       title: body.title,
       startedAt: nowMs,
@@ -779,6 +782,7 @@ export class SessionRoom implements DurableObject {
     att: Attachment,
     data: { questionId?: string; optionId?: string },
   ): Promise<void> {
+    const t0 = Date.now()
     const meta = await this.ctx.storage.get<Meta>(K_META)
     // Token-bucket rate limit (S5).
     const nowMs = now()
@@ -852,6 +856,14 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_COUNTS, counts)
 
     await this.scheduleResultsBroadcast()
+
+    writeEvent(this.env.METRICS_AE, {
+      name: 'ws.vote_submitted',
+      sessionId: meta?.sessionId,
+      teamId: meta?.teamId,
+      plan: meta?.plan ?? 'free',
+      count: Date.now() - t0,
+    })
   }
 
   private async scheduleResultsBroadcast(): Promise<void> {
@@ -980,6 +992,8 @@ export class SessionRoom implements DurableObject {
     writeEvent(this.env.METRICS_AE, {
       name,
       sessionId: meta?.sessionId,
+      teamId: meta?.teamId,
+      plan: meta?.plan ?? 'free',
       count,
       traceId: energizerId,
     })

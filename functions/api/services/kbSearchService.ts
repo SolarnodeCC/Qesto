@@ -18,6 +18,7 @@ import type {
   KbStatus,
 } from '../types/knowledge-base'
 import type { KbQueryFilter, KbVectorMatch, KbVectorRepository } from '../repositories/kbVectorRepository'
+import { safeLogContext } from '../lib/log'
 
 // ─── Tunable constants ────────────────────────────────────────────────────
 // The re-ranking weights are deliberately exposed: tuning is expected once
@@ -198,7 +199,7 @@ export class KbSearchService {
         filter,
       })
     } catch (err) {
-      console.error('[kb-search] vectorize query failed:', err)
+      safeLogContext(err, { traceId: 'system', route: 'kb-search/vectorize-query', errorClass: err instanceof Error ? err.name : 'UnknownError' })
       return []
     }
     if (matches.length === 0) return []

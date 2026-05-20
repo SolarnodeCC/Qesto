@@ -8,6 +8,7 @@ import { z } from 'zod'
 import type { Env } from '../../types'
 import { verifyJwt } from '../../lib/jwt'
 import type { AuthVariables } from '../../middleware/auth'
+import { safeLogContext } from '../../lib/log'
 
 const FeedbackSchema = z.object({
   documentId: z.string().min(1),
@@ -123,7 +124,7 @@ export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: 
         200,
       )
     } catch (err) {
-      console.error('Help feedback error:', err)
+      safeLogContext(err, { traceId: traceId, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
 
       return c.json(
         {

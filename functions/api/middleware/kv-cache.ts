@@ -8,6 +8,7 @@
 
 import { MiddlewareHandler } from 'hono'
 import type { Env, PlanTier } from '../types'
+import { safeLogContext } from '../lib/log'
 import { PLAN_QUOTAS } from '../types'
 import { getQuotaUsage } from '../lib/quota'
 import {
@@ -97,7 +98,7 @@ export async function cachePlanUsage(
       { expirationTtl: ttl }
     )
   } catch (err) {
-    console.error(`[kv-cache] Failed to cache plan usage:`, err)
+    safeLogContext(err, { traceId: 'system', route: 'kv-cache/plan-usage', errorClass: err instanceof Error ? err.name : 'UnknownError' })
   }
 }
 
@@ -162,7 +163,7 @@ export async function cacheTeamMetadata(
       { expirationTtl: ttl }
     )
   } catch (err) {
-    console.error(`[kv-cache] Failed to cache team metadata:`, err)
+    safeLogContext(err, { traceId: 'system', route: 'kv-cache/team-metadata', errorClass: err instanceof Error ? err.name : 'UnknownError' })
   }
 }
 
@@ -184,7 +185,7 @@ export async function cacheUserRoles(
       { expirationTtl: ttl }
     )
   } catch (err) {
-    console.error(`[kv-cache] Failed to cache user roles:`, err)
+    safeLogContext(err, { traceId: 'system', route: 'kv-cache/user-roles', errorClass: err instanceof Error ? err.name : 'UnknownError' })
   }
 }
 
@@ -206,7 +207,7 @@ export async function cacheLeaderboard(
       { expirationTtl: ttl }
     )
   } catch (err) {
-    console.error(`[kv-cache] Failed to cache leaderboard:`, err)
+    safeLogContext(err, { traceId: 'system', route: 'kv-cache/leaderboard', errorClass: err instanceof Error ? err.name : 'UnknownError' })
   }
 }
 

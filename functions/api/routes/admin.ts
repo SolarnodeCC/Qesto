@@ -29,6 +29,7 @@ import { readKvJson } from '../lib/kv'
 import { registerHelpAdminRoutes } from './admin/help'
 import { validateBody } from '../lib/validate'
 import { AdminMetricsExportSchema, AdminCreateUserSchema, AdminPatchUserSchema } from '../lib/validation'
+import { safeLogContext } from '../lib/log'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,6 +80,15 @@ export type PlatformKpis = {
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
 
+export type HourlyCorrelation = {
+  hour: string
+  energizer_activations: number
+  energizer_answers: number
+  ws_reconnects: number
+  ws_errors: number
+  ws_capacity_exceeded: number
+}
+
 export type OpsSummary = {
   status: ServiceStatus
   sev1: number
@@ -98,6 +108,7 @@ export type OpsSummary = {
     vote_p95_ms: number | null
   }
   issues: Array<{ action: string; count: number }>
+  correlation?: HourlyCorrelation[]
   updated_at: number
 }
 
@@ -850,6 +861,39 @@ export function mountAdminRoutes(parent: any) {
       worstService.includes('degraded') || sev1 > 0 ? 'degraded' :
       'healthy'
 
+    // Optional time-series correlation (?timeseries=1)
+    let correlation: HourlyCorrelation[] | undefined
+    if (c.req.query('timeseries') === '1') {
+      try {
+        type HourRow = {
+          hour: string
+          energizer_activations: number
+          energizer_answers: number
+        }
+        const { results: hourRows } = await c.env.DB.prepare(
+          `SELECT
+             strftime('%Y-%m-%dT%H:00:00Z', ts / 1000, 'unixepoch') as hour,
+             SUM(CASE WHEN action IN ('ws.energizer_activated', 'energizer.activate') THEN 1 ELSE 0 END) as energizer_activations,
+             SUM(CASE WHEN action = 'ws.energizer_answered' THEN 1 ELSE 0 END) as energizer_answers
+           FROM audit_events
+           WHERE ts >= ?1
+           GROUP BY hour
+           ORDER BY hour ASC`,
+        ).bind(since24h).all<HourRow>()
+
+        correlation = hourRows
+          .filter(r => r.energizer_activations > 0 || r.energizer_answers > 0)
+          .map(r => ({
+            hour: r.hour,
+            energizer_activations: r.energizer_activations,
+            energizer_answers: r.energizer_answers,
+            ws_reconnects: 0,
+            ws_errors: 0,
+            ws_capacity_exceeded: 0,
+          }))
+      } catch { /* audit_events may not exist in all environments */ }
+    }
+
     const summary: OpsSummary = {
       status: overallStatus,
       sev1,
@@ -869,6 +913,7 @@ export function mountAdminRoutes(parent: any) {
         vote_p95_ms: voteP95,
       },
       issues,
+      ...(correlation !== undefined ? { correlation } : {}),
       updated_at: now,
     }
 
@@ -1231,7 +1276,7 @@ export function mountAdminRoutes(parent: any) {
         200,
       )
     } catch (err) {
-      console.error('[kb-sync] Vectorize upsert failed:', err)
+      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/vectorize-upsert', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
@@ -1343,7 +1388,7 @@ export function mountAdminRoutes(parent: any) {
         200,
       )
     } catch (err) {
-      console.error('[kb-sync-delete] Vectorize delete failed:', err)
+      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/vectorize-delete', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,

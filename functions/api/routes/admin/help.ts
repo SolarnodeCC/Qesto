@@ -13,6 +13,7 @@ import { z } from 'zod'
 import type { Env } from '../../types'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
+import { safeLogContext } from '../../lib/log'
 
 type Vars = AuthVariables & AdminVariables
 
@@ -90,7 +91,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
         200,
       )
     } catch (err) {
-      console.error('Help review queue error:', err)
+      safeLogContext(err, { traceId: traceId ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
@@ -188,7 +189,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
         201,
       )
     } catch (err) {
-      console.error('Help prompt version creation error:', err)
+      safeLogContext(err, { traceId: traceId ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
@@ -243,7 +244,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
         200,
       )
     } catch (err) {
-      console.error('Help prompt versions list error:', err)
+      safeLogContext(err, { traceId: traceId ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
@@ -310,7 +311,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
         200,
       )
     } catch (err) {
-      console.error('Help prompt version fetch error:', err)
+      safeLogContext(err, { traceId: traceId ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
@@ -389,7 +390,7 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
         200,
       )
     } catch (err) {
-      console.error('Help review dismiss error:', err)
+      safeLogContext(err, { traceId: traceId ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,

@@ -10,6 +10,7 @@ import { rateLimit } from '../../lib/rate-limit'
 import { askHelpAI, HelpAIError, HelpValidationError } from '../../lib/help-rag'
 import { sanitizeError } from '../../lib/error-handler'
 import { verifyJwt } from '../../lib/jwt'
+import { safeLogContext } from '../../lib/log'
 import type { AuthVariables } from '../../middleware/auth'
 
 const AskSchema = z.object({
@@ -122,7 +123,7 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthV
         200,
       )
     } catch (err) {
-      console.error('Help ask error:', err)
+      safeLogContext(err, { traceId: traceId, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
 
       if (err instanceof HelpValidationError) {
         return c.json(

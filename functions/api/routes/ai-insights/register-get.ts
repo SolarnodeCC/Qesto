@@ -1,4 +1,5 @@
 import { sanitizeError } from '../../lib/error-handler'
+import { safeLogContext } from '../../lib/log'
 import { fail, ok } from '../../lib/http'
 import { readKvJson } from '../../lib/kv'
 import { sessionOwnedBy } from '../../lib/session-repository'
@@ -29,7 +30,7 @@ export function registerInsightsGetRoute(app: AiInsightsApp): void {
 
       return ok(c, cached)
     } catch (err) {
-      console.error('[ai-insights] get failed:', err)
+      safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
       return fail(c, 'internal', message, 500)
     }

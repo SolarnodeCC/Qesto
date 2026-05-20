@@ -142,6 +142,7 @@ export function safeLogContext(err: Error | unknown, ctx: SafeLogContext): void 
 export function detectPII(message: string): string[] {
   const found: string[] = []
   for (const { name, pattern } of REDACTION_PATTERNS) {
+    pattern.lastIndex = 0  // reset g-flag regex state between calls
     if (pattern.test(message)) {
       found.push(name)
     }

@@ -1,4 +1,5 @@
 import type { D1Database, VectorizeIndex, Ai } from '@cloudflare/workers-types'
+import { safeLogContext } from './log'
 
 // Simple ULID-like ID generator (128-bit timestamp + random)
 function generateId(): string {
@@ -49,7 +50,7 @@ async function embedText(ai: Ai, text: string): Promise<number[] | null> {
     }
     return null
   } catch (err) {
-    console.error(`[seed] embedding failed: ${err instanceof Error ? err.message : String(err)}`)
+    safeLogContext(err, { traceId: 'system', route: 'seed/embed-text', errorClass: err instanceof Error ? err.name : 'UnknownError' })
     return null
   }
 }
@@ -103,7 +104,7 @@ export async function seedHelpDocuments(
       docs_inserted++
       console.log(`[seed] inserted document: ${doc.id}`)
     } catch (err) {
-      console.error(`[seed] failed to insert ${doc.id}: ${err instanceof Error ? err.message : String(err)}`)
+      safeLogContext(err, { traceId: 'system', route: 'seed/insert-document', errorClass: err instanceof Error ? err.name : 'UnknownError' })
       continue
     }
 
@@ -126,9 +127,7 @@ export async function seedHelpDocuments(
         embeddings_created++
         console.log(`[seed] upserted embedding: ${embedding_id} for ${doc.id}`)
       } catch (err) {
-        console.error(
-          `[seed] failed to upsert embedding for ${doc.id}: ${err instanceof Error ? err.message : String(err)}`,
-        )
+        safeLogContext(err, { traceId: 'system', route: 'seed/upsert-embedding', errorClass: err instanceof Error ? err.name : 'UnknownError' })
       }
     }
   }
