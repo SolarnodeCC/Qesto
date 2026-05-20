@@ -30,7 +30,7 @@ import {
   type LiveSessionSummary,
   type ServerMessage,
 } from './realtime'
-import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity } from './types'
+import type { Env, VotePolicy, SessionMode, PlanTier } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
 import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
@@ -63,7 +63,6 @@ type Meta = {
   startedAt: number
   votePolicy: VotePolicy
   sessionMode: SessionMode
-  anonymity?: Anonymity
   /** Owner's plan tier — used to enforce per-session voter capacity. */
   plan?: PlanTier
   /** Unix ms when the current question expires in fun mode. */
@@ -229,7 +228,6 @@ export class SessionRoom implements DurableObject {
           questions?: LiveQuestion[]
           votePolicy?: VotePolicy
           sessionMode?: SessionMode
-          anonymity?: Anonymity
           plan?: PlanTier
         }
       | null
@@ -247,7 +245,6 @@ export class SessionRoom implements DurableObject {
       startedAt: nowMs,
       votePolicy: body.votePolicy ?? 'once',
       sessionMode,
-      ...(body.anonymity ? { anonymity: body.anonymity } : {}),
       ...(body.plan ? { plan: body.plan } : {}),
       ...(sessionMode === 'fun' ? { questionExpiresAt: nowMs + FUN_MODE_QUESTION_MS } : {}),
     }
@@ -865,7 +862,7 @@ export class SessionRoom implements DurableObject {
       sessionId: meta?.sessionId,
       teamId: meta?.teamId,
       plan: meta?.plan ?? 'free',
-      durationMs: Date.now() - t0,
+      count: Date.now() - t0,
     })
   }
 
@@ -902,7 +899,6 @@ export class SessionRoom implements DurableObject {
       status: 'live',
       votePolicy: meta.votePolicy,
       sessionMode: meta.sessionMode,
-      ...(meta.anonymity ? { anonymity: meta.anonymity } : {}),
     }
     ws.send(
       serverMessage({
