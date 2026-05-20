@@ -865,7 +865,7 @@ export class SessionRoom implements DurableObject {
       sessionId: meta?.sessionId,
       teamId: meta?.teamId,
       plan: meta?.plan ?? 'free',
-      count: Date.now() - t0,
+      durationMs: Date.now() - t0,
     })
   }
 
