@@ -135,24 +135,24 @@ Sprints 26-32 take Qesto from hidden LIVE energizer transport to a controlled v2
 **Total committed: 44 pts**
 **Deferrals:** Specific integration providers (Slack in Sprint 32), compliance evidence (Sprint 33).
 
-## Sprint 32 — v2.2 Release Candidate + Slack Integration + Rich Export ✓ SHIPPED
+## Sprint 32 — v2.2 Release Candidate + Slack Integration + Rich Export
 
-**Window:** 2026-06-24 to 2026-07-08 (executed 2026-05-20)
+**Window:** 2026-06-24 to 2026-07-08
 **Goal:** Quality gate everything, ship v2.2, deliver the #1 commercial request (Slack). Slack is additive — no v2.2 rollback risk.
 
-| Item | Size | Epic | Status | Acceptance Signal |
-|---|---:|---|---|---|
-| RC-REGRESSION-01: Full regression pass | 8 | QA | ✓ | 797 tests green, 0 typecheck errors |
-| RC-DOCS-01: Spec and runbook closeout | 5 | DOCS/OPS | ✓ | V2_2_AUDIT_OUTCOMES, V2_2_ROLLOUT_PLAN updated |
-| RC-ROLLOUT-01: Feature-flag rollout plan | 3 | OPS | ✓ | Cohorts, metrics, rollback trigger in V2_2_ROLLOUT_PLAN |
-| RC-OBS-01: Release health dashboard checklist | 3 | OPS | ✓ | RELEASE_HEALTH_DASHBOARD.md with AQL queries |
-| SLACK-01: Slack session results push notification (ADR-0008) | 8 | INT | ✓ | SlackProvider + OAuth routes + session close hook |
-| EXPORT-RICH-01-A: Structured JSON + enhanced CSV with metadata | 8 | ENT | ✓ | `/export.json` + `/export.csv`, team-only |
-| PERF-PROOF-01: Cloudflare latency benchmark data capture | 3 | OPS | ✓ | LATENCY_BENCHMARKS.md with AQL p50/p95/p99 queries |
+| Item | Size | Epic | Acceptance Signal |
+|---|---:|---|---|
+| RC-REGRESSION-01: Full regression pass | 8 | QA | Unit, a11y, typecheck, i18n, token drift, build, and full-stack smoke gates are green or documented with accepted exceptions. |
+| RC-DOCS-01: Spec and runbook closeout | 5 | DOCS/OPS | `SPEC_REALTIME`, `SPEC_BACKEND`, `SPEC_FRONTEND`, roadmap, backlog, and release notes reflect shipped behavior. |
+| RC-ROLLOUT-01: Feature-flag rollout plan | 3 | OPS | Rollout steps define cohorts, metrics watched, rollback trigger, and owner. |
+| RC-OBS-01: Release health dashboard checklist | 3 | OPS | Admin/ops surfaces answer: active sessions, reconnects, errors, activation rate, participation, and completion. |
+| SLACK-01: Slack session results push notification (ADR-0008) | 8 | INT | Host connects Slack workspace; session close triggers summary to channel; OAuth2 complete; token encrypted. |
+| EXPORT-RICH-01-A: Structured JSON + enhanced CSV with metadata | 8 | ENT | `GET /api/sessions/:id/export.json` returns full session; CSV includes question text, labels, timing; plan-gated. |
+| PERF-PROOF-01: Cloudflare latency benchmark data capture | 3 | OPS | Analytics Engine query produces p50/p95/p99 latency data for vote submissions. |
 
-**Total committed: 38 pts — all shipped**
-**Stretch:** NOTION-01, EXPORT-PDF-01-A deferred to Sprint 33.
-**v2.2 Release Gate:** All RC local gates green. Remaining: staging WebSocket smoke + SLACK-01 staging smoke.
+**Total committed: 38 pts**
+**Stretch (do not start until RC gates green):** NOTION-01 (5 pts), EXPORT-PDF-01-A (3 pts)
+**v2.2 Release Gate:** All RC items green + staging WebSocket smoke + SLACK-01 staging smoke + 0 new P0 regressions.
 
 ## Cross-Sprint Verification
 
