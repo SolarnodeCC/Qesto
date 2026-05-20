@@ -21,14 +21,13 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-05 (UTC)_
+_Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (security, architect, backend, frontend, analytics, tester, DevOps, product-owner, market research, AI strategy)._
 
 ## Release status
-- **v2.0.0 (shipped)**: core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, broad automated testing.
-- **v2.1 (shipped)**: stabilization, entitlement enforcement, enterprise/compliance readiness, translation QA hardening.
-- **v2.2 (target — Sprints 30–32, ships 2026-07-08)**: LIVE engagement depth + resilience P0 hardening + Slack integration + rich export. Gate: regression pass, staging WebSocket smoke, PII CI gate merged.
-- **v2.3 (target — Sprints 33–34, ships 2026-08-05)**: Integration ecosystem (Slack full, Teams, webhooks) + SOC 2 / EU compliance evidence + AI depth (recap provenance, real-time sentiment). Gate: v2.2 clean; SLACK-01 staging smoke; SOC 2 evidence framework started.
-- **v2.4 (est. Sprint 35+, 2026-09)**: Zoom + Salesforce integrations; AI facilitator coaching; tournament mechanics; white-label; LDAP/AD sync.
+- **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
+- **v2.1 (shipped)**: stabilization + entitlement enforcement + enterprise/compliance readiness + translation QA hardening.
+- **v2.2 (target — Sprints 30-32, ships 2026-07-08)**: LIVE engagement depth (Quick Finger, Team Quiz, leaderboard, badges), resilience P0 (PII sanitization, AI timeouts, circuit-breaker wiring), admin analytics maturity, enterprise hardening, integration provider foundation.
+- **v2.3 (target — Sprints 33-34, ships 2026-08-05)**: Integration ecosystem (Slack, Teams, generic webhooks), compliance evidence (EU residency docs, GDPR badge, SOC 2 framework), AI depth (recap provenance, real-time session sentiment), anonymous engagement leadership (zero-knowledge mode depth).
 
 ## Epic status summary
 -  **Core Session Platform** (session lifecycle, realtime voting, presenter controls)
@@ -123,7 +122,7 @@ _Last updated: 2026-05-05 (UTC)_
 **Quality:** 46 tests; v1 protocol versioned ✅
 
 ### Sprint 26-32 — v2.2 Live Engagement to Enterprise Release (Sprints 26-29 ✅ Shipped, 30-32 active)
-**Focus:** Turn the Sprint 25 dark-launched protocol into staged gameplay, then mature scoring, badges, admin analytics, enterprise permissions, and release readiness.
+**Focus:** Turn the Sprint 25 dark-launched protocol into staged gameplay, then mature scoring, badges, resilience hardening, enterprise permissions, and release readiness. Sprints 30-32 revised 2026-05-20 to incorporate specialist agent review findings (ADMIN-ENGAGE-01/02 already shipped; resilience P0 items added; Sprint 32 de-risked by moving Slack to Sprint 33).
 
 | Sprint | Goal | Status |
 |---|---|---|
@@ -131,40 +130,50 @@ _Last updated: 2026-05-05 (UTC)_
 | Sprint 27 | First playable LIVE energizer: Quick Finger | ✅ Shipped 2026-05-19: participant answers, DO validation, score broadcast, reconnect-safe state |
 | Sprint 28 | Team Quiz LIVE loop | ✅ Shipped 2026-05-19: quiz progression, locked submissions, score summary, reconnect state |
 | Sprint 29 | Leaderboard + badge foundation | ✅ Shipped 2026-05-19: bounded leaderboard, deterministic badge hooks, idempotency tests |
-| Sprint 30 | Admin engagement analytics + resilience P0 | Active (branch sprint/sprint-30): RES-PII-01, RES-D1-01, OBS-VOTE-01, PRIVACY-GAM-01, ADMIN-OPS-02 delivered |
-| Sprint 31 | Enterprise hardening + circuit breakers + integration library | Planned: CB-01, CB-02, INT-PROVIDER-01, ANON-DEPTH-01 |
-| Sprint 32 | v2.2 RC + Slack + rich export | Planned: SLACK-01, EXPORT-RICH-01-A, PERF-PROOF-01 |
+| Sprint 30 | Resilience P0 + analytics observability | Active: PII sanitization CI gate, AI timeouts, vote.submitted AE event; ADMIN-ENGAGE-01/02 already shipped |
+| Sprint 31 | Enterprise hardening + circuit-breaker wiring + integration foundation | Planned: circuit breakers (ADR-0007), INT-PROVIDER-01 with real encryption, ANON-DEPTH-01 (ADR-0010 gate) |
+| Sprint 32 | v2.2 RC + code quality + export foundation | Planned: Full regression (840+ tests), CODE-SPLIT-01, EXPORT-RICH-01-A, PERF-PROOF-01 |
 
 **Plan:** See [`SPRINT26_32_PLAN.md`](../planning/SPRINT26_32_PLAN.md).
 
-### Sprint 33–34 — v2.3 Integration Suite + Compliance + AI Depth
+### Sprint 33-34 — v2.3 Integration Suite, Compliance & AI Depth (Planned)
+**Focus:** Fill the #1 lost-deal reason (integrations), start the enterprise compliance evidence story, extend AI from generation-only to session-aware inference.
 
-**Window:** 2026-07-08 to 2026-08-05
-**Focus:** Fill the #1 lost-deal reason (integrations), start EU compliance story, deepen AI moat.
-
-| Sprint | Goal | Key Items |
+| Sprint | Goal | Status |
 |---|---|---|
-| Sprint 33 | Integration suite + compliance foundation | SLACK-02, TEAMS-01, WEBHOOK-01, EXPORT-PDF-01, COMPLIANCE-01, CODE-SPLIT-01 |
-| Sprint 34 | Compliance evidence + AI depth + anonymous leadership | ENT-RESIDENCY-01, COMPLIANCE-02, AI-RECAP-PROV-01, AI-SENTIMENT-01, ANON-DEPTH-02, GDPR-BADGE-01 |
+| Sprint 33 | Integration suite (Slack, Teams, webhooks) + AI context schema + ADR-0011 | Planned: 2026-07-08 to 2026-07-22 |
+| Sprint 34 | Compliance evidence + AI depth (sentiment, recap provenance) + anonymous leadership | Planned: 2026-07-22 to 2026-08-05 |
 
 **Plan:** See [`SPRINT33_34_PLAN.md`](../planning/SPRINT33_34_PLAN.md).
 
-### Commercial Promise Completion Schedule (updated 2026-05-20)
+### Post-v2.2 Commercial Promise Completion
 
-| Promise | Sprint | Status |
+**Focus:** Keep go-live copy honest while sequencing the higher-value promises that were removed or marked roadmap during the marketing promise audit. Promises now have sprint assignments following the 2026-05-20 planning refresh.
+
+| Item | Status | Sprint |
 |---|---|---|
-| MKT-PROMISE-01 Launch-safe marketing promise audit | — | ✅ Delivered 2026-05-05 |
-| EXPORT-RICH-01-A Structured JSON + enhanced CSV | S32 | Planned |
-| EXPORT-PDF-01 Signed PDF session summary | S33 | Planned |
-| INT-WEBHOOK-01 Generic webhook + HMAC signing | S33 | Planned |
-| SLACK-01/02 Slack integration | S32/S33 | Planned |
-| TEAMS-01 Microsoft Teams integration | S33 | Planned |
-| ENT-COMPLIANCE-01 SOC 2 evidence framework | S33 | Planned (COMPLIANCE-01) |
-| ENT-RESIDENCY-01 EU data residency + DPA template | S34 | Planned |
-| AI-RECAP-PROV-01 AI recap provenance | S34 | Planned |
-| PERF-PROOF-01 Latency benchmark evidence | S32 | Planned |
+| MKT-PROMISE-01 Launch-safe marketing promise audit and copy correction | ✅ Implemented 2026-05-05; public pages now avoid unsupported compliance, export, integration, latency, and AI provenance claims | — |
+| EXPORT-RICH-01-A Structured JSON + enhanced CSV export | Planned: Sprint 32 | S32 |
+| EXPORT-PDF-01 Signed PDF session summary | Planned: Sprint 33 stretch or Sprint 34 stretch | S33+ |
+| SLACK-01/02 Slack integration (session results + settings) | Planned: Sprint 33 | S33 |
+| TEAMS-01 Microsoft Teams integration | Planned: Sprint 33 | S33 |
+| WEBHOOK-01 Generic webhook with HMAC + SSRF controls | Planned: Sprint 33 | S33 |
+| INT-WEBHOOK-01 (full suite) Workday, BambooHR, Notion webhooks | Future: Sprint 35+ | S35+ |
+| ENT-COMPLIANCE-01 SOC 2 evidence framework scaffolding | Planned: Sprint 34 | S34 |
+| COMPLIANCE-03 SOC 2 Type I full audit | Future: Sprint 35+ (13 pts) | S35+ |
+| ENT-RESIDENCY-01 EU residency: routing evidence + DPA template | Planned: Sprint 34 (documentation deliverable; D1 location irreversible) | S34 |
+| COMPLIANCE-02 DPA/SCC template + compliance CI claim gate | Planned: Sprint 34 | S34 |
+| AI-RECAP-PROV-01 AI recap evidence/edit provenance | Planned: Sprint 34 (extends AI-CONTEXT-01 from Sprint 33) | S34 |
+| AI-SENTIMENT-01 Real-time session sentiment (Workers AI) | Planned: Sprint 34 (requires ADR-0011 accepted in Sprint 33) | S34 |
+| PERF-PROOF-01 Production latency benchmark evidence | Planned: Sprint 32 (requires OBS-VOTE-01 from Sprint 30 for 30d of data) | S32 |
+| GDPR-BADGE-01 GDPR compliance badge + deletion automation | Planned: Sprint 34 | S34 |
 
-**Gate:** Any claim moved from roadmap to public launch copy must have a matching implementation path, tests, and documentation evidence in the same PR.
+**Gate:** Any claim moved from roadmap to public launch copy must have a matching implementation path, tests, and documentation evidence in the same PR. Sprint 34 compliance claim CI gate (COMPLIANCE-02) enforces this automatically.
+
+**New ADRs required before implementation:**
+- ADR-0010 (zero-knowledge mode) — Sprint 31 gate for ANON-DEPTH-01
+- ADR-0011 (live sentiment inference + DPIA) — Sprint 33, required before Sprint 34 AI-SENTIMENT-01
+- ADR-0007 amendment (CircuitBreaker.INTEGRATIONS) — Sprint 31 gate for CB-01 wiring
 
 ### Sprint A — Layout + Token Foundation (mostly shipped; verify in Sprint 20)
 **Focus:** Design-token source of truth, layout primitives, a11y baseline, i18n bug fixes.

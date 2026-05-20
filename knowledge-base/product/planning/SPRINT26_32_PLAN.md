@@ -97,62 +97,105 @@ Sprints 26-32 take Qesto from hidden LIVE energizer transport to a controlled v2
 
 **Deferrals:** Battle royale, bracket tournaments, referral mechanics.
 
-## Sprint 30 — Admin Engagement Analytics + Resilience P0
+## Sprint 30 — Resilience P0 + Analytics Observability
+
+**Goal:** Eliminate GDPR-risk PII leaks, add production-grade error containment, and wire the observability events analytics depends on. ADMIN-ENGAGE-01/02 shipped in the v2.2 RC branch (Sprint 29 closeout); removed from scope.
 
 **Window:** 2026-05-27 to 2026-06-10
-**Status:** In progress (branch `sprint/sprint-30`; core implementation delivered 2026-05-20)
-**Goal:** Make engagement and realtime health visible to admins AND eliminate GDPR-risk PII leaks. No v2.2 RC posture until resilience P0 items are merged.
+**Release posture:** No LIVE energizer flag-on until PRIVACY-GAM-01 passes. No v2.2 RC posture until RES-PII-01 CI gate is merged.
 
-| Item | Size | Epic | Acceptance Signal | Status |
+| Item | Size | Epic | Pri | Acceptance Signal |
 |---|---:|---|---|---|
-| ADMIN-ENGAGE-01: Energizer engagement funnel | 5 | ENT/OPS | Admin analytics shows activation, participation, completion, and dropout counts. | ✅ Shipped S29 |
-| ADMIN-ENGAGE-02: Exportable engagement metrics | 5 | ENT/OPS | CSV export includes session-level energizer metrics using sanitized labels. | ✅ Shipped S29 |
-| ADMIN-OPS-02: Realtime health correlation | 5 | OPS | Admin can compare energizer activity with WebSocket capacity, reconnect, and error signals. | ✅ Delivered |
-| PRIVACY-GAM-01: Engagement analytics privacy review | 3 | SECURITY | 21 privacy tests confirm no PII in energizer AE events or export payloads. | ✅ Delivered |
-| RES-PII-01: PII sanitization — safeLogContext() + CI gate | 8 | SEC | CI blocks raw `console.error(err)` outside `lib/log.ts`; 9 denylist patterns redact emails, JWTs, Stripe keys, SAML, AI prompts. ADR-0009 compliance. | ✅ Delivered |
-| RES-D1-01: Plan + admin middleware D1 safe fallback | 3 | OPS | D1 transient failure → 403 deny (not 500) in admin middleware. | ✅ Delivered |
-| OBS-VOTE-01: ws.vote_submitted Analytics Engine event | 5 | OPS | SessionRoom emits ws.vote_submitted with sessionId, teamId, plan, latency_ms after every vote. | ✅ Delivered |
+| ADMIN-OPS-02: Realtime health correlation | 5 | OPS | P1 | Admin can compare energizer activity with WebSocket capacity, reconnect, and error signals via `/api/admin/ops/summary` time-series view. |
+| PRIVACY-GAM-01: Engagement analytics privacy review | 3 | SEC | P0 | Tests confirm no PII in analytics/export payloads; energizer events verified with sanitized labels only. |
+| RES-PII-01: PII call site replacement + CI gate | 5 | SEC | P0 | ~24 raw `console.error(err)` call sites replaced with `safeLogContext()`; CI grep gate blocks new violations; ADR-0009 compliance test added. `safeLogContext()` exists in `lib/log.ts` — this is call-site work, not greenfield. |
+| RES-TIMEOUT-01: Workers AI AbortController (25s) | 5 | OPS | P0 | `ai-insights.ts:140` and `:244` wrapped in `AbortController` with 25s timeout; test confirms timeout fires and returns graceful error. |
+| RES-D1-01: admin middleware D1 safe fallback | 3 | OPS | P0 | `middleware/admin.ts` D1 query catches transient failures and denies access (not 500); plan middleware pattern already done — match it. |
+| RES-RETRY-01: Shared `invokeAIWithRetry()` for insights | 3 | OPS | P1 | Insights route uses same retry wrapper as wizard (200ms/400ms backoff, 3 attempts, then 503). |
+| RES-ERR-01: Verify `sanitizeError()` wiring | 1 | SEC | P0 | Confirm `app.ts:101` wiring is complete; add any missing 5xx paths; no raw `err.message` or stack traces reach client. `sanitizeError` already wired — verify completeness only. |
+| OBS-VOTE-01: `vote.submitted` AE event in SessionRoom | 3 | OPS | P0 | `ws.vote_submitted` event with `durationMs` (DO storage round-trip), `teamId`, `plan` emitted from `SessionRoom.webSocketMessage` vote branch. Required for Sprint 32 PERF-PROOF-01 latency benchmark. |
+| OBS-ENERGIZER-FIX-01: Add `teamId`+`plan` to `emitEnergizerMetric()` | 2 | OPS | P1 | All energizer AE events gain `teamId` and `plan` fields; plan-segmentation AQL queries become valid. |
 
-**Already complete (pre-Sprint 30):** RES-TIMEOUT-01 (25s timeout in ai-insights.ts), RES-ERR-01 (sanitizeError in app.ts), RES-RETRY-01 (runInsightsAI retry)
-**Deferrals to Sprint 31:** Circuit breakers (CB-01, CB-02), integration provider library (INT-PROVIDER-01).
+**Note:** ADMIN-ENGAGE-01 (energizer funnel) and ADMIN-ENGAGE-02 (exportable metrics CSV) are already shipped in `src/components/admin/AdminAnalyticsTab.tsx`. No Sprint 30 action required.
+
+**Total committed: ~30 pts**
+
+**Deferrals:** Circuit breakers (Sprint 31), integration library (Sprint 31), new feature routes.
+
+**Quality gates:**
+- `npm test` (717+ tests green)
+- `npm run typecheck` (0 errors)
+- `npm run check:i18n`
+- `npm run check:tokens-drift`
+- CI grep gate for PII sanitization (RES-PII-01 gate enforced)
 
 ## Sprint 31 — Enterprise Hardening + Circuit Breakers + Integration Foundation
 
+**Goal:** Apply enterprise controls to the realtime surface, arm the resilience circuit-breaker layer (ADR-0007 lib exists but zero call sites in production), and build the integration provider foundation (ADR-0008 — token encryption is currently plaintext TODO at `lib/integrations/token-store.ts:53`).
+
 **Window:** 2026-06-10 to 2026-06-24
-**Goal:** Lock the enterprise surface, arm the resilience layer, build the integration highway. LIVE energizers stay behind flag. No broad rollout until permission-deny + audit paths are clear.
+**Release posture:** v2.2 prep. LIVE energizers stay behind flag. No broad rollout until permission-deny + audit paths are clear.
 
-| Item | Size | Epic | Acceptance Signal |
-|---|---:|---|---|
-| AUTHZ-GAM-01: Permission gate for energizer activation | 5 | ENT/AUTH | Custom roles can allow/deny energizer activation separately from session close/launch. |
-| AUDIT-GAM-01: Audit UX polish for realtime actions | 5 | ENT/OPS | Audit viewer clearly distinguishes activation, answer-window changes, completion, and denials. |
-| DEPLOY-GAM-01: Staging migration/flag checklist | 3 | OPS | Staging checklist covers D1/KV compatibility, flag state, rollback, and WebSocket smoke. |
-| QA-ENT-02: Enterprise permission regression bundle | 5 | QA | Owner/admin/member/custom-role allow/deny paths cover session + energizer actions. |
-| CB-01: Circuit breaker — Stripe + Resend (ADR-0007) | 8 | OPS | CLOSED/OPEN/HALF_OPEN state machine for both; KV-backed; 5 failures/60s → OPEN; 5s timeouts. |
-| CB-02: Circuit breaker — Workers AI + JWKS (ADR-0007) | 5 | OPS | Workers AI 10s/3 failures; JWKS 5s/3 failures; graceful degrade (free plan on JWKS OPEN). |
-| INT-PROVIDER-01: Integration provider library (ADR-0008) | 8 | INT | Typed provider interface; OAuth2Client, EncryptedTokenStore, IntegrationHttpClient, webhook-verify. |
-| ANON-DEPTH-01: Zero-knowledge mode session config + trust badge | 5 | UX | Session config shows anonymity level selector; trust badge visible to participants; i18n validated. |
+**Pre-condition gate:** ADR-0010 (zero-knowledge mode) must be accepted before ANON-DEPTH-01 implementation starts. ADR-0007 amendment (CircuitBreaker.INTEGRATIONS) must be accepted before CB-01 wiring.
 
-**Total committed: 44 pts**
-**Deferrals:** Specific integration providers (Slack in Sprint 32), compliance evidence (Sprint 33).
+**DevOps provisioning required (before CB-01/CB-02 merge):**
+- `wrangler kv namespace create CIRCUIT_BREAKER_KV` (production)
+- `wrangler kv namespace create INTEGRATIONS_KV` (production)
+- `wrangler pages secret put OAUTH_TOKEN_MEK` (prod + staging) — AES-GCM master encryption key
 
-## Sprint 32 — v2.2 Release Candidate + Slack Integration + Rich Export ✓ SHIPPED
-
-**Window:** 2026-06-24 to 2026-07-08 (executed 2026-05-20)
-**Goal:** Quality gate everything, ship v2.2, deliver the #1 commercial request (Slack). Slack is additive — no v2.2 rollback risk.
-
-| Item | Size | Epic | Status | Acceptance Signal |
+| Item | Size | Epic | Pri | Acceptance Signal |
 |---|---:|---|---|---|
-| RC-REGRESSION-01: Full regression pass | 8 | QA | ✓ | 797 tests green, 0 typecheck errors |
-| RC-DOCS-01: Spec and runbook closeout | 5 | DOCS/OPS | ✓ | V2_2_AUDIT_OUTCOMES, V2_2_ROLLOUT_PLAN updated |
-| RC-ROLLOUT-01: Feature-flag rollout plan | 3 | OPS | ✓ | Cohorts, metrics, rollback trigger in V2_2_ROLLOUT_PLAN |
-| RC-OBS-01: Release health dashboard checklist | 3 | OPS | ✓ | RELEASE_HEALTH_DASHBOARD.md with AQL queries |
-| SLACK-01: Slack session results push notification (ADR-0008) | 8 | INT | ✓ | SlackProvider + OAuth routes + session close hook |
-| EXPORT-RICH-01-A: Structured JSON + enhanced CSV with metadata | 8 | ENT | ✓ | `/export.json` + `/export.csv`, team-only |
-| PERF-PROOF-01: Cloudflare latency benchmark data capture | 3 | OPS | ✓ | LATENCY_BENCHMARKS.md with AQL p50/p95/p99 queries |
+| AUTHZ-GAM-01: Permission gate for energizer activation | 5 | ENT/AUTH | P0 | Custom roles can allow/deny energizer activation separately from session:launch; audit event fires. |
+| AUDIT-GAM-01: Audit UX polish for realtime actions | 5 | ENT/OPS | P1 | Audit viewer clearly distinguishes activation, answer-window changes, completion, and denials. |
+| DEPLOY-GAM-01: Staging migration/flag checklist | 3 | OPS | P0 | Staging checklist covers D1/KV compatibility, flag state, rollback, and WebSocket smoke. |
+| QA-ENT-02: Enterprise permission regression bundle | 5 | QA | P0 | Owner/admin/member/custom-role allow/deny paths cover session + energizer actions. |
+| ADR-0010: Zero-knowledge anonymity mode ADR | 3 | ARCH | P0 | ADR defines voter dedup without PII, session config options, UI trust indicators, and DO protocol impact; accepted before ANON-DEPTH-01 starts. |
+| CB-01: Wire CircuitBreaker into Stripe + Resend | 8 | OPS | P0 | `initCircuitBreakers()` called in `app.ts createApp()`; `billing.ts:36/59` raw Stripe fetch wrapped; `email.ts:22` Resend fetch wrapped; state machine: 5 failures in 60s → OPEN; Stripe 5s timeout, Resend 5s timeout; CIRCUIT_BREAKER_KV provisioned in production. |
+| CB-02: Wire CircuitBreaker for Workers AI + JWKS | 5 | OPS | P0 | Workers AI 10s timeout, 3 failures in 60s → OPEN; JWKS 5s, 3/30s; graceful degrade (free plan on JWKS OPEN). |
+| INT-PROVIDER-01: Integration provider library with real encryption | 9 | INT | P0 | `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK` (not plaintext — fixes TODO at `token-store.ts:53`); `IntegrationHttpClient` timeout bug fixed (inverted logic at `http-client.ts:80`); `OAuth2Client` typed; `webhook-verify` HMAC tested; all downstream providers extend typed interface. |
+| ANON-DEPTH-01: Zero-knowledge mode session config + trust indicator | 8 | UX | P1 | Session config shows anonymity level selector (none/standard/zero-knowledge); participant-visible trust badge; i18n in 5 locales validated. Gate: ADR-0010 accepted. |
 
-**Total committed: 38 pts — all shipped**
-**Stretch:** NOTION-01, EXPORT-PDF-01-A deferred to Sprint 33.
-**v2.2 Release Gate:** All RC local gates green. Remaining: staging WebSocket smoke + SLACK-01 staging smoke.
+**Total committed: ~51 pts** | **Stretch (if ADR-0010 slips):** Defer ANON-DEPTH-01 to Sprint 32 stretch.
+
+**Quality gates (adds to Sprint 30 baseline):**
+- Staging WebSocket smoke (energizer LIVE path)
+- 16+ enterprise permission integration tests green
+- Circuit breaker unit tests: state transitions, KV sync, graceful fallback
+- Token encryption round-trip test: encrypt → store → retrieve → decrypt in staging
+
+**Deferrals:** Specific integration providers (Slack in Sprint 33), compliance evidence (Sprint 33-34), billing UI changes.
+
+## Sprint 32 — v2.2 Release Candidate + Code Quality + Export Foundation
+
+**Goal:** Freeze the v2.2 release candidate with documentation, rollout, and rollback readiness. Add CODE-SPLIT-01 (reducing sessions.ts 81KB risk) and EXPORT-RICH-01-A (partial commercial promise fulfillment). Slack integration moved to Sprint 33 — combining RC with a new integration was too high risk (PO decision).
+
+**Window:** 2026-06-24 to 2026-07-08
+**Release posture:** v2.2 ships this sprint.
+
+| Item | Size | Epic | Pri | Acceptance Signal |
+|---|---:|---|---|---|
+| RC-REGRESSION-01: Full regression pass | 8 | QA | P0 | Unit, a11y, typecheck, i18n, token drift, build, full-stack smoke all green (target: 840+ tests) or documented with accepted exceptions. |
+| RC-DOCS-01: Spec + runbook closeout | 5 | DOCS | P0 | `SPEC_REALTIME`, `SPEC_BACKEND`, `SPEC_FRONTEND`, roadmap, backlog, and release notes reflect shipped behavior. |
+| RC-ROLLOUT-01: Feature-flag rollout plan (LIVE energizers) | 3 | OPS | P0 | Rollout steps, cohorts, metrics watched, rollback trigger, and owner defined. |
+| RC-OBS-01: Release health dashboard checklist | 3 | OPS | P0 | Admin surfaces: active sessions, reconnects, errors, activation rate, participation, completion. |
+| CODE-SPLIT-01: Split sessions.routes.ts (81KB) into subrouters | 5 | DX | P1 | DRAFT-state routes, LIVE-state routes, session lifecycle routes in separate files under `routes/sessions/`; existing 717+ tests stay green; no behavior change. |
+| EXPORT-RICH-01-A: Structured JSON + enhanced CSV export | 8 | ENT | P1 | `GET /api/sessions/:id/export.json` returns full session structure; CSV includes question text, response labels, timing metadata; plan-gated; CSRF + auth security controls in place. |
+| PERF-PROOF-01: AE latency benchmark data capture | 3 | OPS | P1 | AQL query on `qesto_metrics` produces p50/p95/p99 latency data from `vote.submitted` events (requires OBS-VOTE-01 from Sprint 30 to have 30+ days of data). |
+
+**Total committed: ~35 pts**
+
+**Stretch (do not start until RC gates green):**
+- ANON-DEPTH-01 (8 pts) — if deferred from Sprint 31
+- NOTION-01: Notion export (5 pts)
+
+**v2.2 Release Gate:**
+- All RC items green
+- Staging WebSocket validation passes (LIVE energizers on + off)
+- CODE-SPLIT-01: zero test regressions
+- EXPORT-RICH-01-A: CSRF headers verified, plan gate tested
+- 0 new P0 regressions
+
+**Detailed Plan (Sprints 33-34):** See [`SPRINT33_34_PLAN.md`](./SPRINT33_34_PLAN.md).
 
 ## Cross-Sprint Verification
 
@@ -172,3 +215,17 @@ Sprints 26-32 take Qesto from hidden LIVE energizer transport to a controlled v2
 - External AI provider integration.
 - Broad redesign of dashboard or marketing pages.
 - Billing/pricing changes unrelated to energizer entitlement evidence.
+- Slack/Teams integration providers (Sprint 33).
+- PDF export (Sprint 33).
+- Compliance evidence packs (Sprint 33-34).
+- AI sentiment inference (Sprint 34 — requires ADR-0011 accepted first).
+- EU residency documentation (Sprint 34).
+
+## New ADRs Required (Sprints 30-32)
+
+| ADR | Title | Required Before | Sprint |
+|---|---|---|---|
+| ADR-0007 amendment | Clarify `CircuitBreaker.INTEGRATIONS` scope | CB-01 wiring | 31 |
+| ADR-0010 | Zero-knowledge anonymity mode | ANON-DEPTH-01 | 31 |
+
+**Continued in Sprint 33-34:** ADR-0011 (live sentiment inference) required before AI-SENTIMENT-01 in Sprint 34.

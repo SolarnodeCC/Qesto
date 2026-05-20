@@ -713,9 +713,9 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 
 ## Sprint 26-32: v2.2 Live Engagement to Enterprise Release
 
-**Context**: Sprint 24 accepted the Durable Object protocol/versioning ADR, and Sprint 25 added dark-launched LIVE energizer transport. Sprints 26-32 now sequence the remaining v2.2 engagement work from staging validation through release candidate.
+**Context**: Sprint 24 accepted the Durable Object protocol/versioning ADR, and Sprint 25 added dark-launched LIVE energizer transport. Sprints 26-32 now sequence the remaining v2.2 engagement work from staging validation through release candidate. Plan refreshed 2026-05-20 following specialist agent review (see [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md) for revised scope).
 
-**Arc Goal**: Turn LIVE energizer transport into staged gameplay, then harden scoring, badges, admin analytics, enterprise permissions, and rollout quality without regressing the core voting flow.
+**Arc Goal**: Turn LIVE energizer transport into staged gameplay, then harden scoring, badges, admin analytics, enterprise permissions, resilience, and rollout quality without regressing the core voting flow.
 
 | Sprint | Goal | Committed Theme | Gate |
 |---|---|---|---|
@@ -723,11 +723,44 @@ _These were originally additions to Sprint 18 scope. They are retained here as t
 | **Sprint 27** | First playable LIVE energizer: Quick Finger | Participant answer UI, DO answer validation, score broadcast, reconnect-safe state | Shipped in [`spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md`](../planning/sprints/SPRINT27_IMPLEMENTATION_SPEC.md) |
 | **Sprint 28** | Team Quiz LIVE loop | Quiz state machine, presenter progression, participant answer locking, reconnect tests | Shipped in `SPRINT28_IMPLEMENTATION_SPEC.md` |
 | **Sprint 29** | Leaderboard + badge foundation | Aggregated scoring, live leaderboard broadcast, badge hooks, idempotency tests | Shipped in `SPRINT29_IMPLEMENTATION_SPEC.md` |
-| **Sprint 30** | Admin engagement analytics maturity | Engagement funnel, CSV metrics, realtime health correlation, privacy review | No RC posture until dashboards answer support/admin questions |
-| **Sprint 31** | Enterprise rollout hardening | Energizer activation permission gate, audit UX polish, staging checklist, enterprise regression | No broad rollout until permission-deny and audit paths are clear |
-| **Sprint 32** | v2.2 release candidate | Full regression, spec/runbook closeout, feature-flag rollout, rollback plan | Release only after full-stack smoke and staging WebSocket validation |
+| **Sprint 30** | Resilience P0 + analytics observability | PII call-site replacement + CI gate, AI AbortController timeouts, D1 safe fallbacks, `vote.submitted` AE event, energizer plan-segmentation fix. ADMIN-ENGAGE-01/02 already shipped. | No v2.2 RC until RES-PII-01 CI gate merged and OBS-VOTE-01 event instrumented |
+| **Sprint 31** | Enterprise hardening + circuit breakers + integration foundation | AUTHZ-GAM-01, ADR-0010, CB-01/CB-02 wiring (lib exists, no call sites), INT-PROVIDER-01 real encryption, ANON-DEPTH-01 | No broad rollout until permission-deny, audit paths, and circuit-breaker call sites are clear; ADR-0010 accepted before ANON-DEPTH-01 |
+| **Sprint 32** | v2.2 release candidate + code quality + export foundation | Full regression (840+ tests), CODE-SPLIT-01 (sessions.ts 81KB split), EXPORT-RICH-01-A, PERF-PROOF-01 | Release only after full-stack smoke, staging WebSocket validation, and sessions.ts split zero regressions |
 
 **Detailed Plan**: [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md)
+
+---
+
+## Sprint 33-34: v2.3 Integration Suite, Compliance & AI Depth (2026-07-08 to 2026-08-05)
+
+**Context**: v2.2 ships at end of Sprint 32. Sprints 33-34 address the three most urgent competitive gaps identified by win/loss analysis and market pulse: integration ecosystem (#1 lost-deal reason), compliance evidence (EU enterprise pipeline blocker), and AI depth (Vevox/Mentimeter counter-positioning).
+
+**Arc Goal**: Ship Slack + Teams + generic webhook integrations; accumulate EU residency, GDPR, and SOC 2 evidence; extend AI from generation-only to session-aware inference; own the zero-knowledge anonymous engagement leadership position.
+
+| Sprint | Goal | Committed Theme | Gate |
+|---|---|---|---|
+| **Sprint 33** | Integration suite + AI context schema | Slack (01+02), Teams, WEBHOOK-01 (SSRF controls required), AI-CONTEXT-01 schema, ADR-0011 + DPIA | v2.2 clean; INT-PROVIDER-01 merged; ADR-0011 accepted before Sprint 34 AI-SENTIMENT-01 |
+| **Sprint 34** | Compliance evidence + AI depth + anonymous leadership | ENT-RESIDENCY-01 (docs), COMPLIANCE-01/02, AI-RECAP-PROV-01, AI-SENTIMENT-01 (10 pts, k≥5, English-only, ZK-disabled), ANON-DEPTH-02, GDPR-BADGE-01 | DPIA complete; ADR-0011 accepted; ANON-DEPTH-01 merged; compliance claim gate CI enforced |
+
+**v2.3 Release Gate (Sprint 34 close):**
+- EU residency claim gate passes before marketing copy update
+- AI-SENTIMENT-01 DPIA completed and feature flag-enabled in production
+- GDPR deletion test green
+- All AE events for integrations (webhook.delivery_attempted, integration.connected) visible in AQL
+
+**Detailed Plan**: [`SPRINT33_34_PLAN.md`](./SPRINT33_34_PLAN.md)
+
+---
+
+## Sprint 35+ Horizon (v2.4, est. 2026-09+)
+
+- AI facilitator coaching (AI-COACHING-01, if not in Sprint 34 stretch; Vectorize gate: ≥100 embeddings in staging)
+- Zoom + Salesforce integrations
+- White-label / custom branding
+- Tournament mechanics (battle royale, brackets) public rollout
+- Microsoft LDAP/AD sync for enterprise
+- SOC 2 Type I full audit (COMPLIANCE-03, 13 pts)
+- KB RAG pipeline for agent grounding (ADR-040)
 
 ---
 
