@@ -8,8 +8,13 @@
 // If Vectorize is available we additionally fetch semantically similar
 // responses for each theme example to enrich the "examples" list. This is
 // best-effort; the handler falls back to the pure-text summary on error.
+//
+// CB-02: Workers AI circuit breaker wraps runInsightsAI — 3 failures in 60s → OPEN.
+// The breaker uses a no-op signal because Workers AI.run() doesn't accept AbortSignal;
+// per-call timeout is handled by withTimeout(AI_TIMEOUT_MS=25s).
 
 import { z } from 'zod'
+import { CircuitBreakers } from './resilience/circuit-breaker'
 
 export type InsightsInput = {
   sessionTitle: string
@@ -214,14 +219,14 @@ export async function extractThemes(
 
   const userPrompt = buildUserPrompt(input)
   const approxInputChars = THEME_SYSTEM_PROMPT.length + userPrompt.length
-  const raw = await runInsightsAI(
-    ai,
-    model,
-    [
-      { role: 'system', content: THEME_SYSTEM_PROMPT },
-      { role: 'user', content: userPrompt },
-    ],
-    approxInputChars,
+  const messages = [
+    { role: 'system' as const, content: THEME_SYSTEM_PROMPT },
+    { role: 'user' as const, content: userPrompt },
+  ]
+  // CB-02: circuit breaker tracks failures across the retry loop; opens at 3 failures.
+  const raw = await CircuitBreakers.ai.execute(
+    (_signal) => runInsightsAI(ai, model, messages, approxInputChars),
+    () => { throw new InsightsAIError('Workers AI unavailable (circuit open)') },
   )
 
   const cleaned = extractJson(raw)

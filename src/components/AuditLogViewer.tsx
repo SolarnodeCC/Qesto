@@ -174,6 +174,28 @@ export default function AuditLogViewer() {
     }
   }
 
+  const getActionBadge = (action: string) => {
+    if (action.startsWith('ws.energizer_activation_denied') || action.startsWith('ws.energizer_advance_denied')) {
+      return 'rounded bg-red-100 px-2 py-1 text-xs text-red-700 font-mono'
+    }
+    if (action.startsWith('ws.energizer_activated') || action.startsWith('energizer.activate')) {
+      return 'rounded bg-teal-100 px-2 py-1 text-xs text-teal-700 font-mono'
+    }
+    if (action.startsWith('ws.energizer_completed') || action.startsWith('energizer.complete')) {
+      return 'rounded bg-violet-100 px-2 py-1 text-xs text-violet-700 font-mono'
+    }
+    if (action.startsWith('ws.energizer_advanced') || action.startsWith('energizer.advance')) {
+      return 'rounded bg-blue-100 px-2 py-1 text-xs text-blue-700 font-mono'
+    }
+    if (action.startsWith('ws.energizer_answered') || action.startsWith('ws.energizer')) {
+      return 'rounded bg-amber-100 px-2 py-1 text-xs text-amber-700 font-mono'
+    }
+    if (action.startsWith('energizer.')) {
+      return 'rounded bg-teal-50 px-2 py-1 text-xs text-teal-700 font-mono border border-teal-200'
+    }
+    return 'rounded bg-pulse-100 px-2 py-1 text-xs text-pulse-700 font-mono'
+  }
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -319,7 +341,7 @@ export default function AuditLogViewer() {
                       {event.actor_id || 'system'}
                     </td>
                     <td className="px-4 py-3">
-                      <code className="rounded bg-pulse-100 px-2 py-1 text-xs text-pulse-700">
+                      <code className={getActionBadge(event.action)}>
                         {event.action}
                       </code>
                     </td>

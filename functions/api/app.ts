@@ -24,6 +24,7 @@ import { rateLimit } from './middleware/rate-limit'
 import { writeEvent } from './lib/observability'
 import { sanitizeError } from './lib/error-handler'
 import { resolveExpectedOrigin } from './lib/origin'
+import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import type { Env } from './types'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -42,6 +43,8 @@ export function createApp() {
     c.set('trace_id', trace_id)
     c.header('x-trace-id', trace_id)
     c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
+    // Wire circuit breakers with KV — idempotent, runs once per isolate.
+    initCircuitBreakers(c.env.ACTIONS_KV, c.env.ENV ?? 'production')
     await next()
   })
 

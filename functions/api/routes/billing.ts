@@ -15,6 +15,7 @@ import { validateBody } from '../lib/validate'
 import { BillingSubscriptionSchema } from '../lib/validation'
 import { validateKvJson, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema } from '../lib/validators'
 import { PLAN_QUOTAS, type Env, type PlanQuotas, type PlanTier } from '../types'
+import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -29,52 +30,48 @@ const stripeSubscriptionKey = (userId: string) => `stripe:subscription:${userId}
  */
 function makeStripeClient(secretKey: string) {
   async function get<T>(pathWithQuery: string): Promise<T> {
-    const ac = new AbortController()
-    const timeout = setTimeout(() => ac.abort(), 10_000)
-    let res: Response
-    try {
-      res = await fetch(`https://api.stripe.com/v1${pathWithQuery}`, {
-        method: 'GET',
-        headers: { Authorization: `Bearer ${secretKey}` },
-        signal: ac.signal,
-      })
-    } finally {
-      clearTimeout(timeout)
-    }
-    if (!res.ok) {
-      const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
-        error?: { message?: string }
-      }
-      throw new Error(err?.error?.message ?? 'Stripe API error')
-    }
-    return res.json() as Promise<T>
+    return CircuitBreakers.stripe.execute(
+      async (signal) => {
+        const res = await fetch(`https://api.stripe.com/v1${pathWithQuery}`, {
+          method: 'GET',
+          headers: { Authorization: `Bearer ${secretKey}` },
+          signal,
+        })
+        if (!res.ok) {
+          const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
+            error?: { message?: string }
+          }
+          throw new Error(err?.error?.message ?? 'Stripe API error')
+        }
+        return res.json() as Promise<T>
+      },
+      () => { throw new Error('Stripe circuit open') },
+    )
   }
 
   async function post<T>(path: string, body: Record<string, string>): Promise<T> {
     const params = new URLSearchParams(body).toString()
-    const ac = new AbortController()
-    const timeout = setTimeout(() => ac.abort(), 10_000)
-    let res: Response
-    try {
-      res = await fetch(`https://api.stripe.com/v1${path}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${secretKey}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params,
-        signal: ac.signal,
-      })
-    } finally {
-      clearTimeout(timeout)
-    }
-    if (!res.ok) {
-      const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
-        error?: { message?: string }
-      }
-      throw new Error(err?.error?.message ?? 'Stripe API error')
-    }
-    return res.json() as Promise<T>
+    return CircuitBreakers.stripe.execute(
+      async (signal) => {
+        const res = await fetch(`https://api.stripe.com/v1${path}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${secretKey}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: params,
+          signal,
+        })
+        if (!res.ok) {
+          const err = (await res.json().catch(() => ({ error: { message: 'Stripe error' } }))) as {
+            error?: { message?: string }
+          }
+          throw new Error(err?.error?.message ?? 'Stripe API error')
+        }
+        return res.json() as Promise<T>
+      },
+      () => { throw new Error('Stripe circuit open') },
+    )
   }
   return {
     billingPortal: {

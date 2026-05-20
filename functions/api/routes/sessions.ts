@@ -950,12 +950,14 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       doRes = await postDO(c.env, id, '/init', {
         sessionId: session.id,
         ownerId: session.owner_id,
+        teamId: session.team_id ?? undefined,
         code: session.code,
         title: session.title,
         question: liveQ,
         questions: questions.map(questionToLive),
         votePolicy: session.vote_policy,
         sessionMode: session.session_mode,
+        anonymity: session.anonymity ?? undefined,
         plan: c.get('plan'),
       })
     } catch (doNetworkErr) {

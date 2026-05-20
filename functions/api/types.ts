@@ -83,7 +83,7 @@ export type QuestionKind =
   | 'upvote'
   | 'word_cloud'
   | 'slider'
-export type Anonymity = 'full' | 'partial' | 'none'
+export type Anonymity = 'full' | 'partial' | 'none' | 'zero_knowledge'
 export type VotePolicy = 'once' | 'multi' | 'react'
 export type SessionMode = 'reflection' | 'fun'
 

@@ -123,7 +123,8 @@
       "label": "Anonymat",
       "full": "Entièrement anonyme",
       "partial": "Partiel",
-      "none": "Pas anonyme"
+      "none": "Pas anonyme",
+      "zero_knowledge": "Mode zéro connaissance"
     },
     "votePolicy": {
       "label": "Politique de vote",

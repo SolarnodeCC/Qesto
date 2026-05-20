@@ -66,5 +66,7 @@
   "leaderboard.title": "Rangliste",
   "leaderboard.you": "Du",
   "leaderboard.points": "{score} Pkt.",
-  "badges.earned": "Verdiente Badges"
+  "badges.earned": "Verdiente Badges",
+  "trust_badge": "Zero-Knowledge-Modus: Ihre Identität wird niemals gespeichert",
+  "trust_badge_short": "Zero-Knowledge"
 }

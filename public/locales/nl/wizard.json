@@ -123,7 +123,8 @@
       "label": "Anonimiteit",
       "full": "Volledig anoniem",
       "partial": "Gedeeltelijk",
-      "none": "Niet anoniem"
+      "none": "Niet anoniem",
+      "zero_knowledge": "Zero-knowledge modus"
     },
     "votePolicy": {
       "label": "Stembeleid",

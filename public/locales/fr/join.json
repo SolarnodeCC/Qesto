@@ -66,5 +66,7 @@
   "leaderboard.title": "Classement",
   "leaderboard.you": "Vous",
   "leaderboard.points": "{score} pts",
-  "badges.earned": "Badges gagnés"
+  "badges.earned": "Badges gagnés",
+  "trust_badge": "Mode zéro connaissance : votre identité n'est jamais stockée",
+  "trust_badge_short": "Zéro connaissance"
 }

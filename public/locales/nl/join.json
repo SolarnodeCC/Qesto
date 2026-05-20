@@ -66,5 +66,7 @@
   "leaderboard.title": "Ranglijst",
   "leaderboard.you": "Jij",
   "leaderboard.points": "{score} pt",
-  "badges.earned": "Verdiende badges"
+  "badges.earned": "Verdiende badges",
+  "trust_badge": "Zero-knowledge modus: uw identiteit wordt nooit opgeslagen",
+  "trust_badge_short": "Zero-knowledge"
 }

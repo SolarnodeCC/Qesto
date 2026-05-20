@@ -4,6 +4,7 @@
 
 import { z } from 'zod'
 import { validateData, GoogleTokenResponseSchema, MicrosoftTokenResponseSchema, GoogleIdTokenPayloadSchema, MicrosoftIdTokenPayloadSchema, JwtHeaderSchema, JwksResponseSchema } from './validators'
+import { CircuitBreakers } from './resilience/circuit-breaker'
 
 const STATE_TTL_SECONDS = 10 * 60
 const DEFAULT_JWKS_TTL_MS = 5 * 60 * 1000
@@ -213,24 +214,26 @@ async function getJwks(uri: string): Promise<JsonWebKey[]> {
   const now = Date.now()
   if (cached && cached.expiresAt > now) return cached.keys
 
-  const jwksAc = new AbortController()
-  const jwksTimeout = setTimeout(() => jwksAc.abort(), 10_000)
-  let res: Response
-  try {
-    res = await fetch(uri, { headers: { accept: 'application/json' }, signal: jwksAc.signal })
-  } finally {
-    clearTimeout(jwksTimeout)
-  }
-  if (!res.ok) throw new Error(`JWKS fetch failed: ${res.status}`)
-  const data = validateData(await res.json(), JwksResponseSchema)
-  if (!data?.keys || !Array.isArray(data.keys) || data.keys.length === 0) throw new Error('JWKS response missing keys')
+  return CircuitBreakers.jwks.execute(
+    async (signal) => {
+      const res = await fetch(uri, { headers: { accept: 'application/json' }, signal })
+      if (!res.ok) throw new Error(`JWKS fetch failed: ${res.status}`)
+      const data = validateData(await res.json(), JwksResponseSchema)
+      if (!data?.keys || !Array.isArray(data.keys) || data.keys.length === 0) throw new Error('JWKS response missing keys')
 
-  const cacheControl = res.headers.get('cache-control') ?? ''
-  const maxAgeSec = cacheControl.match(/max-age=(\d+)/)?.[1]
-  const ttl = maxAgeSec ? Number(maxAgeSec) * 1000 : DEFAULT_JWKS_TTL_MS
-  const keys = data.keys as JsonWebKey[]
-  jwksCache.set(uri, { keys, expiresAt: now + ttl })
-  return keys
+      const cacheControl = res.headers.get('cache-control') ?? ''
+      const maxAgeSec = cacheControl.match(/max-age=(\d+)/)?.[1]
+      const ttl = maxAgeSec ? Number(maxAgeSec) * 1000 : DEFAULT_JWKS_TTL_MS
+      const keys = data.keys as JsonWebKey[]
+      jwksCache.set(uri, { keys, expiresAt: now + ttl })
+      return keys
+    },
+    () => {
+      // JWKS circuit open — graceful degrade: throw so SSO login fails cleanly
+      // (the calling verifyOAuthIdToken will catch this and return null → auth denies)
+      throw new Error('JWKS service unavailable (circuit open)')
+    },
+  )
 }
 
 function decodePart(part: string): unknown {

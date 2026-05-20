@@ -81,6 +81,7 @@ export type LiveSessionSummary = {
   code: string
   title: string
   status: 'live' | 'closed'
+  anonymity?: 'full' | 'partial' | 'none' | 'zero_knowledge'
 }
 
 export type LiveState = {

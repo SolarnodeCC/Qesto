@@ -34,7 +34,7 @@ export const DuplicateSessionSchema = z.preprocess(
 )
 
 export const SessionOptionsSchema = z.object({
-  anonymity: z.enum(['full', 'partial', 'none']).optional(),
+  anonymity: z.enum(['full', 'partial', 'none', 'zero_knowledge']).optional(),
   vote_policy: z.enum(['once', 'multi', 'react']).optional(),
   session_mode: z.enum(['reflection', 'fun']).optional(),
 })
@@ -43,7 +43,7 @@ export const PatchSessionSchema = z
   .object({
     title: trimmed(1, 120).optional(),
     question: PollQuestionSchema.optional(),
-    anonymity: z.enum(['full', 'partial', 'none']).optional(),
+    anonymity: z.enum(['full', 'partial', 'none', 'zero_knowledge']).optional(),
     vote_policy: z.enum(['once', 'multi', 'react']).optional(),
     session_mode: z.enum(['reflection', 'fun']).optional(),
     ai_generated: z.boolean().optional(),

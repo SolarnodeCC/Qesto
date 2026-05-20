@@ -1,6 +1,8 @@
 // Email delivery via Resend. In dev (no RESEND_API_KEY), log the magic link
 // to console so developers can sign in without a mailbox.
 
+import { CircuitBreakers } from './resilience/circuit-breaker'
+
 export type SendEmailArgs = {
   to: string
   subject: string
@@ -15,34 +17,37 @@ export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs)
     return { delivered: false }
   }
   const from = args.from?.trim() || 'Qesto <noreply@qesto.cc>'
-  const ac = new AbortController()
-  const timeout = setTimeout(() => ac.abort(), 10_000)
-  let res: Response
-  try {
-    res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        from,
-        to: [args.to],
-        subject: args.subject,
-        html: args.html,
-        text: args.text,
-      }),
-      signal: ac.signal,
-    })
-  } finally {
-    clearTimeout(timeout)
-  }
-  if (!res.ok) {
-    const body = await res.text()
-    throw new Error(`resend ${res.status}: ${body}`)
-  }
-  const json = (await res.json()) as { id?: string }
-  return json.id ? { delivered: true, id: json.id } : { delivered: true }
+
+  return CircuitBreakers.resend.execute<{ delivered: boolean; id?: string }>(
+    async (signal) => {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          from,
+          to: [args.to],
+          subject: args.subject,
+          html: args.html,
+          text: args.text,
+        }),
+        signal,
+      })
+      if (!res.ok) {
+        const body = await res.text()
+        throw new Error(`resend ${res.status}: ${body}`)
+      }
+      const json = (await res.json()) as { id?: string }
+      return json.id ? { delivered: true, id: json.id } : { delivered: true }
+    },
+    () => {
+      // Resend circuit open — log and return undelivered (caller decides whether to retry later)
+      console.error(JSON.stringify({ event: 'email.circuit_open', to_hash: args.to.length }))
+      return { delivered: false }
+    },
+  )
 }
 
 export function magicLinkEmail(appUrl: string, token: string) {
