@@ -69,9 +69,9 @@ Sprints 33-34 take Qesto from v2.2 to the v2.3 integration + compliance + AI dep
 | ADR-0011 | Live sentiment inference ADR + DPIA scope | ARCH | 3 | P0 | ADR defines model choice (`distilbert-sst-2-int8`, English-only gate), aggregate-only output (k≥5 respondents before signal emitted), disabled in zero-knowledge sessions, DPIA scope documented; accepted before Sprint 34 AI-SENTIMENT-01 starts. |
 
 **Stretch (do not start until committed items pass QA):**
+- ZOOM-01: Zoom integration (8 pts) — **Market research flag: Zoom is the #2 loss reason for event organizers (WIN_LOSS_ANALYSIS "Loss 3") and #1 integration gap for trainers. Without Zoom, the event-organizer GTM motion should be deferred to post-v2.3. If Zoom does not ship in Sprint 33 stretch or Sprint 34, explicitly defer event-organizer sales/marketing campaigns until it does — shipping without it is a credibility loss in that segment.**
 - EXPORT-PDF-01: PDF signed session summary (8 pts)
 - COMPLIANCE-01: SOC 2 evidence framework scaffolding (5 pts)
-- ZOOM-01: Zoom integration stub (3 pts)
 
 **Total committed: ~43 pts | With stretch: 59 pts (pick max 1 stretch item)**
 

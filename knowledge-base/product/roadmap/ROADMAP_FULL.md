@@ -166,7 +166,9 @@ _Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (secu
 | AI-RECAP-PROV-01 AI recap evidence/edit provenance | Planned: Sprint 34 (extends AI-CONTEXT-01 from Sprint 33) | S34 |
 | AI-SENTIMENT-01 Real-time session sentiment (Workers AI) | Planned: Sprint 34 (requires ADR-0011 accepted in Sprint 33) | S34 |
 | PERF-PROOF-01 Production latency benchmark evidence | Planned: Sprint 32 (requires OBS-VOTE-01 from Sprint 30 for 30d of data) | S32 |
+| GDPR-TRUST-PAGE-01 GDPR compliance trust page (marketing artifact, no engineering) | Planned: Sprint 31 — ship early to capture Mentimeter GDPR churn wave; engineering badge follows in Sprint 34 | S31 |
 | GDPR-BADGE-01 GDPR compliance badge + deletion automation | Planned: Sprint 34 | S34 |
+| ZOOM-01 Zoom integration | Planned: Sprint 33 stretch or Sprint 34 — **market research flag (WIN_LOSS_ANALYSIS): Zoom is #2 loss reason for event organizers; without it, event-organizer GTM must be deferred** | S33+/S34 |
 
 **Gate:** Any claim moved from roadmap to public launch copy must have a matching implementation path, tests, and documentation evidence in the same PR. Sprint 34 compliance claim CI gate (COMPLIANCE-02) enforces this automatically.
 

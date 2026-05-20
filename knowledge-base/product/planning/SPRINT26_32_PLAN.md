@@ -153,9 +153,10 @@ Sprints 26-32 take Qesto from hidden LIVE energizer transport to a controlled v2
 | CB-01: Wire CircuitBreaker into Stripe + Resend | 8 | OPS | P0 | `initCircuitBreakers()` called in `app.ts createApp()`; `billing.ts:36/59` raw Stripe fetch wrapped; `email.ts:22` Resend fetch wrapped; state machine: 5 failures in 60s → OPEN; Stripe 5s timeout, Resend 5s timeout; CIRCUIT_BREAKER_KV provisioned in production. |
 | CB-02: Wire CircuitBreaker for Workers AI + JWKS | 5 | OPS | P0 | Workers AI 10s timeout, 3 failures in 60s → OPEN; JWKS 5s, 3/30s; graceful degrade (free plan on JWKS OPEN). |
 | INT-PROVIDER-01: Integration provider library with real encryption | 9 | INT | P0 | `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK` (not plaintext — fixes TODO at `token-store.ts:53`); `IntegrationHttpClient` timeout bug fixed (inverted logic at `http-client.ts:80`); `OAuth2Client` typed; `webhook-verify` HMAC tested; all downstream providers extend typed interface. |
-| ANON-DEPTH-01: Zero-knowledge mode session config + trust indicator | 8 | UX | P1 | Session config shows anonymity level selector (none/standard/zero-knowledge); participant-visible trust badge; i18n in 5 locales validated. Gate: ADR-0010 accepted. |
+| ANON-DEPTH-01: Zero-knowledge mode session config + trust indicator | 8 | UX | P1 | Session config shows anonymity level selector (none/standard/zero-knowledge); participant-visible trust badge; i18n in 5 locales validated. Gate: ADR-0010 accepted. Pre-ship: commission Vevox deep-dive audit (market research task) to confirm zero-knowledge mode closes the full gap vs. Vevox's anonymous Q&A moderation, live discussion, and employee voice analytics features — or scopes what ANON-DEPTH-02 must add. |
+| GDPR-TRUST-PAGE-01: GDPR compliance trust page (marketing, no engineering) | 2 | MKT | P1 | Static documentation page covering Qesto's GDPR architecture, EU data residency evidence, sub-processor list draft, and anonymity guarantees; linked from pricing and landing. Ships this sprint to begin capturing Mentimeter GDPR churn wave while GDPR-BADGE-01 engineering work lands in Sprint 34. Market research: GDPR pressure on Mentimeter is structural (18-24 month window, not a 3-month spike). |
 
-**Total committed: ~51 pts** | **Stretch (if ADR-0010 slips):** Defer ANON-DEPTH-01 to Sprint 32 stretch.
+**Total committed: ~53 pts** | **Stretch (if ADR-0010 slips):** Defer ANON-DEPTH-01 and GDPR-TRUST-PAGE-01 to Sprint 32 stretch.
 
 **Quality gates (adds to Sprint 30 baseline):**
 - Staging WebSocket smoke (energizer LIVE path)
