@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6 # v6
 
-      - uses: jeppsontaylor/Jankurai@v0.8.15 # v0.8.15
+      - uses: jeppsontaylor/Jankurai@v0.8.16 # v0.8.15
         with:
           mode: advisory
 
