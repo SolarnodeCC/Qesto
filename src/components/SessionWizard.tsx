@@ -391,6 +391,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
   const [anonymity, setAnonymity] = useState<'full' | 'partial' | 'none' | 'zero_knowledge'>('partial')
   const [votePolicy, setVotePolicy] = useState<'once' | 'multi' | 'react'>('once')
   const [sessionMode, setSessionMode] = useState<'reflection' | 'fun'>('reflection')
+  const [isPublic, setIsPublic] = useState(true)
 
   // Async
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -437,6 +438,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
     setAnonymity('partial')
     setVotePolicy('once')
     setSessionMode('reflection')
+    setIsPublic(true)
     setSessionId(null)
     setGeneratedAiGroundingHash(null)
     setCreatingSession(false)
@@ -614,7 +616,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
 
     // Persist session options chosen in step 4.
     const usedAiQuestions = activeQuestions.some((q) => q.fromAI)
-    const optionsBody: Record<string, unknown> = { anonymity, vote_policy: votePolicy, session_mode: sessionMode }
+    const optionsBody: Record<string, unknown> = { anonymity, vote_policy: votePolicy, session_mode: sessionMode, is_public: isPublic ? 1 : 0 }
     if (usedAiQuestions) {
       optionsBody.ai_generated = true
       optionsBody.ai_consent_at = Date.now()
@@ -1157,6 +1159,33 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
                   <p className="text-caption text-pulse-500">{t('step4.mode.fun_desc')}</p>
                 )}
               </fieldset>
+
+              {/* Template gallery opt-out */}
+              <div className="flex items-start gap-3 pt-2 border-t border-pulse-100 dark:border-white/10">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isPublic}
+                  onClick={() => setIsPublic(!isPublic)}
+                  className={[
+                    'relative shrink-0 mt-0.5 w-10 h-6 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+                    isPublic
+                      ? 'bg-teal-500'
+                      : 'bg-pulse-300 dark:bg-white/20',
+                  ].join(' ')}
+                >
+                  <span
+                    className={[
+                      'block w-4 h-4 rounded-full bg-white shadow transition-transform absolute top-1',
+                      isPublic ? 'translate-x-5' : 'translate-x-1',
+                    ].join(' ')}
+                  />
+                </button>
+                <div>
+                  <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.isPublic.label')}</p>
+                  <p className="text-caption text-pulse-500">{t('step4.isPublic.description')}</p>
+                </div>
+              </div>
             </div>
           )}
 

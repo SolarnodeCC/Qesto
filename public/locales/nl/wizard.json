@@ -137,6 +137,10 @@
       "reflection_title": "Reflectie Mode",
       "fun_title": "Snelle Modus",
       "fun_desc": "Versnelling met automatische vraagvoering"
+    },
+    "isPublic": {
+      "label": "Opnemen in template galerij",
+      "description": "Na sluiting kan een geanonimiseerde versie van deze sessie in de publieke template galerij verschijnen."
     }
   },
   "step5": {

@@ -40,6 +40,10 @@ const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage')
 const WorkshopsPage = lazy(() => import('./pages/use-cases/WorkshopsPage'))
 const TrainingPage = lazy(() => import('./pages/use-cases/TrainingPage'))
 
+// Template gallery
+const TemplateGallery = lazy(() => import('./pages/TemplateGallery'))
+const TemplateDetail = lazy(() => import('./pages/TemplateDetail'))
+
 function LazyRouteFallback() {
   return (
     <div
@@ -106,6 +110,10 @@ export default function App() {
         <Route path="/use-cases/team-meetings" element={<Suspense fallback={<LazyRouteFallback />}><TeamMeetingsPage /></Suspense>} />
         <Route path="/use-cases/workshops" element={<Suspense fallback={<LazyRouteFallback />}><WorkshopsPage /></Suspense>} />
         <Route path="/use-cases/training" element={<Suspense fallback={<LazyRouteFallback />}><TrainingPage /></Suspense>} />
+
+        {/* Template gallery */}
+        <Route path="/templates" element={<Suspense fallback={<LazyRouteFallback />}><TemplateGallery /></Suspense>} />
+        <Route path="/templates/:id" element={<Suspense fallback={<LazyRouteFallback />}><TemplateDetail /></Suspense>} />
 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/settings" element={<AccountSettings />} />

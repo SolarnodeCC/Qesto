@@ -92,6 +92,9 @@ id = "afe3946dc37d4b2ea506ef41a246396b"
 [[kv_namespaces]]
 binding = "HELP_CONVERSATIONS_KV"
 id = "8d08b7883b6c451b88a653ce8ba55c13"
+[[kv_namespaces]]
+binding = "MARKETING_KV"
+id = "marketing-kv-prod-id"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
@@ -103,6 +106,9 @@ new_sqlite_classes = ["SessionRoom"]
 
 [ai]
 binding = "AI"
+
+[workflows]
+binding = "WORKFLOWS"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
@@ -194,6 +200,9 @@ id = "08440c11db614cb4817b679f87bebf4a"
 [[env.staging.kv_namespaces]]
 binding = "METRICS_KV"
 id = "c0b05bde687f4740a85caa1294009c4b"
+[[env.staging.kv_namespaces]]
+binding = "MARKETING_KV"
+id = "marketing-kv-staging-id"
 
 # Staging Durable Objects (shared session handler)
 [[env.staging.durable_objects.bindings]]
@@ -208,6 +217,10 @@ dataset = "qesto_metrics"
 # Staging Workers AI
 [env.staging.ai]
 binding = "AI"
+
+# Staging Workflows
+[env.staging.workflows]
+binding = "WORKFLOWS"
 
 # Staging Vectorize
 [[env.staging.vectorize]]
