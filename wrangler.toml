@@ -94,7 +94,7 @@ binding = "HELP_CONVERSATIONS_KV"
 id = "8d08b7883b6c451b88a653ce8ba55c13"
 [[kv_namespaces]]
 binding = "MARKETING_KV"
-id = "marketing-kv-prod-id"
+id = "4ce59ef235b04802a7e9e218928bb022"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
@@ -107,8 +107,10 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
-[workflows]
-binding = "WORKFLOWS"
+# [[workflows]]
+# binding = "WORKFLOWS"
+# class_name = "Workflows"
+# Note: Workflows DO not yet implemented; uncomment when class_name is available
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
@@ -202,7 +204,7 @@ binding = "METRICS_KV"
 id = "c0b05bde687f4740a85caa1294009c4b"
 [[env.staging.kv_namespaces]]
 binding = "MARKETING_KV"
-id = "marketing-kv-staging-id"
+id = "f7bff720ab4547c8b11ac0044279a949"
 
 # Staging Durable Objects (shared session handler)
 [[env.staging.durable_objects.bindings]]

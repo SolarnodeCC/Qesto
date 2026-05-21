@@ -417,7 +417,6 @@ export default function Launchpad() {
       try {
         await navigator.clipboard.writeText(url)
       } catch {
-        // Fallback to showing the URL
       }
     }
     setSharing(false)

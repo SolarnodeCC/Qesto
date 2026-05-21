@@ -9,5 +9,6 @@
   "slack_test": "Testnachricht senden",
   "slack_test_sent": "Testnachricht gesendet",
   "slack_notify_close": "Benachrichtigung bei Sitzungsende",
-  "slack_notify_energizer": "Benachrichtigung bei Energizer-Abschluss"
+  "slack_notify_energizer": "Benachrichtigung bei Energizer-Abschluss",
+  "slack_notification_events": "Benachrichtigungsereignisse"
 }

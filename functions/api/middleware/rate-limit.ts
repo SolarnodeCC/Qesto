@@ -89,7 +89,7 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
       )
     }
 
-    // Suppress unused-var lint when KV was skipped.
+    
     void kvAvailable
     await next()
   }

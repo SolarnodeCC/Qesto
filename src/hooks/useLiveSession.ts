@@ -245,10 +245,9 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     ws.addEventListener('open', () => dispatch({ kind: 'open' }))
     ws.addEventListener('message', (ev) => {
       try {
-        const msg = JSON.parse(ev.data as string) as {
-          type: string
-          data: Record<string, unknown>
-        }
+        const raw = JSON.parse(ev.data as string)
+        if (!raw || typeof raw.type !== 'string' || typeof raw.data !== 'object') return
+        const msg = raw as { type: string; data: Record<string, unknown> }
         switch (msg.type) {
           case 'init':
             dispatch({

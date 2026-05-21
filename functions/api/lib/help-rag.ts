@@ -213,7 +213,7 @@ export async function askHelpAI(
   // Retrieve documents
   const retrieval = await retrieveDocuments(ai, vectorize, db, question, userScope)
 
-  // Get active prompt version (topic-specific or global fallback)
+  
   const promptVersion = await getActivePrompt(db, topic)
 
   // Build system prompt

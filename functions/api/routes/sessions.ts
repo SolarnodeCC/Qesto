@@ -964,7 +964,7 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         plan: c.get('plan'),
       })
     } catch (doNetworkErr) {
-      // DO stub.fetch() threw at the network level (not the DO returning 500).
+      
       // Roll back the DB transition so the session remains startable.
       console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'error', event: 'session.start.do_network_error', ...logCtx, err: String(doNetworkErr) }))
       try {
@@ -1278,7 +1278,6 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
       const stub = await doStub(c.env, id)
       await stub.fetch('https://do.internal/transition-to-live', { method: 'POST' })
     } catch {
-      // Best effort — if DO doesn't respond, session state is still updated in DB
     }
 
     session.status = 'live'

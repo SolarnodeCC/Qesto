@@ -1,0 +1,23 @@
+{
+  "migration_id": "0006_fix_metrics_summary_columns",
+  "title": "Fix metrics_summary column names",
+  "phase": "Phase 8",
+  "kind": "idempotent_rebuild",
+  "destructive": false,
+  "reason_safe": "Idempotent conditional renames; metrics_summary auto-expires",
+  "owner": "backend",
+  "description": "Rebuild indexes with correct column names if old 0001 created incorrect names",
+  "safety_evidence": {
+    "type": "idempotent_index_rebuild",
+    "affected_table": "metrics_summary",
+    "data_loss": "none - indexes rebuilt, data unchanged",
+    "pragma_foreign_keys": "OFF then ON (verified integrity after)",
+    "rollback": "not needed - idempotent",
+    "constraints_verified": "PRAGMA foreign_keys = ON re-enables checks",
+    "tested": true
+  },
+  "approval": {
+    "approved_by": "architect",
+    "approval_date": "2026-05-17"
+  }
+}

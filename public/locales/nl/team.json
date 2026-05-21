@@ -9,5 +9,6 @@
   "slack_test": "Testbericht sturen",
   "slack_test_sent": "Testbericht verzonden",
   "slack_notify_close": "Melding bij afsluiting sessie",
-  "slack_notify_energizer": "Melding bij voltooiing energizer"
+  "slack_notify_energizer": "Melding bij voltooiing energizer",
+  "slack_notification_events": "Meldingsgebeurtenissen"
 }

@@ -88,11 +88,11 @@ async function fetchNamespace(language: string, namespace: string): Promise<[str
     const res = await fetch(`/locales/${language}/${namespace}.json`)
     if (res.ok) {
       const data = await res.json() as Record<string, string>
-      // Guard against Pages returning index.html (SPA fallback) instead of JSON.
+      
       if (typeof data === 'object' && data !== null) localizedData = data
     }
   } catch {
-    // Network error or JSON parse failure (e.g. Pages served HTML fallback).
+    
   }
 
   // Use English as baseline and overlay locale keys to prevent raw-key rendering
@@ -107,7 +107,7 @@ async function fetchNamespace(language: string, namespace: string): Promise<[str
         }
       }
     } catch {
-      // Ignore fallback failure and continue to best effort below.
+      
     }
   }
 

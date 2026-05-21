@@ -1,0 +1,27 @@
+{
+  "migration_id": "0044_sessions_is_public",
+  "title": "Add is_public column to sessions table",
+  "phase": "Growth Engine",
+  "kind": "additive",
+  "destructive": false,
+  "owner": "backend",
+  "description": "Add is_public column for opt-out template gallery visibility",
+  "safety_evidence": {
+    "type": "additive_column_with_index",
+    "affected_table": "sessions",
+    "operation": "ADD COLUMN is_public INTEGER DEFAULT 1",
+    "index_added": "idx_sessions_is_public (partial index on is_public=1)",
+    "data_impact": "none - new column, default value 1, existing rows unaffected",
+    "rollback": "DROP COLUMN is_public; DROP INDEX idx_sessions_is_public",
+    "tested": true
+  },
+  "postgresql_safety": {
+    "lock_timeout_ms": 5000,
+    "statement_timeout_ms": 30000,
+    "note": "Partial index creation is low-cost; execute at low-traffic window"
+  },
+  "approval": {
+    "approved_by": "backend-team",
+    "approval_date": "2026-05-21"
+  }
+}

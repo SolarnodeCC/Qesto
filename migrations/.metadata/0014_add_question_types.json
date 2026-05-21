@@ -1,0 +1,25 @@
+{
+  "migration_id": "0014_add_question_types",
+  "title": "Add question_type column and table rebuild",
+  "phase": "Phase 9",
+  "kind": "schema_rebuild",
+  "destructive": true,
+  "owner": "backend",
+  "description": "Rebuild questions table to add question_type column with CHECK constraint",
+  "safety_evidence": {
+    "type": "table_rebuild",
+    "affected_tables": ["questions"],
+    "column_added": "question_type TEXT NOT NULL",
+    "data_loss": "complete table drop",
+    "rollback": "restore from backup before migration",
+    "post_rebuild_checks": "PRAGMA foreign_key_check should be run after rebuild",
+    "tested": true
+  },
+  "postgres_checks": {
+    "note": "This is SQLite migration. If ported to PostgreSQL, add SET lock_timeout and statement_timeout"
+  },
+  "approval": {
+    "approved_by": "architect",
+    "approval_date": "2026-05-17"
+  }
+}

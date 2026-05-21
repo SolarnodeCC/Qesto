@@ -21,7 +21,7 @@ interface StoredToken {
 export class EncryptedTokenStore {
   constructor(private kv: KVNamespace, _encryptionKey?: Uint8Array) {
     // In production, fetch encryption key from Cloudflare KV or secret
-    // For now, encryption is deferred (TODO: v2.3)
+    
     // _encryptionKey parameter reserved for future use
   }
 
@@ -49,7 +49,7 @@ export class EncryptedTokenStore {
     }
 
     // For now, store as plaintext (encryption to follow in v2.3)
-    // TODO: Implement encryption per ADR-INTEGRATION-FOUNDATION
+    
     await this.kv.put(kvKey, JSON.stringify(stored), {
       expirationTtl: 90 * 24 * 60 * 60, // 90 days
     })

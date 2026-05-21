@@ -9,5 +9,6 @@
   "slack_test": "Envoyer un test",
   "slack_test_sent": "Message de test envoyé",
   "slack_notify_close": "Notifier à la clôture de session",
-  "slack_notify_energizer": "Notifier à la fin d'un énergiseur"
+  "slack_notify_energizer": "Notifier à la fin d'un énergiseur",
+  "slack_notification_events": "Événements de notification"
 }

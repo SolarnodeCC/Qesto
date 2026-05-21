@@ -9,5 +9,6 @@
   "slack_test": "Send test",
   "slack_test_sent": "Test message sent",
   "slack_notify_close": "Notify on session close",
-  "slack_notify_energizer": "Notify on energizer completion"
+  "slack_notify_energizer": "Notify on energizer completion",
+  "slack_notification_events": "Notification events"
 }

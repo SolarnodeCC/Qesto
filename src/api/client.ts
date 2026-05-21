@@ -4,32 +4,19 @@
 import { getLanguageHeader } from '../i18n'
 import { API_BASE_URL } from '../config/api'
 
-// In-memory token store. Backed by sessionStorage so it survives page
-// refreshes within the same tab but is cleared when the tab is closed.
-// This is the fallback auth path for browsers that block third-party cookies
-// (e.g. Chrome Privacy Sandbox) when the API is on a different origin.
-const TOKEN_KEY = 'qesto_token'
+// In-memory token store (XSS-resistant).
+// Tokens are stored ONLY in memory (not in localStorage/sessionStorage to prevent XSS theft).
+// Backend sets HttpOnly Secure SameSite cookies, which the browser auto-includes on requests.
+// This module maintains an in-memory reference for UI state (e.g., showing auth status).
+// On page refresh, the cookie survives and can be used to restore session via /api/auth/me.
+
 let _token: string | null = null
 
 export function setAuthToken(token: string | null): void {
   _token = token
-  try {
-    if (token) sessionStorage.setItem(TOKEN_KEY, token)
-    else sessionStorage.removeItem(TOKEN_KEY)
-  } catch {
-    // Storage unavailable; token remains in memory only
-    console.warn('[api] Failed to persist auth token to sessionStorage')
-  }
 }
 
 export function getAuthToken(): string | null {
-  if (_token) return _token
-  try {
-    const stored = sessionStorage.getItem(TOKEN_KEY)
-    if (stored) _token = stored
-  } catch {
-    // Storage unavailable; continue with in-memory token
-  }
   return _token
 }
 

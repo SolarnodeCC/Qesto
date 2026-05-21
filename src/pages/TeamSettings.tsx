@@ -106,6 +106,7 @@ export default function TeamSettings() {
   const { id } = useParams<{ id: string }>()
   const auth = useAuth()
   const t = useT('sessions')
+  const tTeam = useT('team')
 
   const [team, setTeam] = useState<Team | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -1016,7 +1017,7 @@ export default function TeamSettings() {
                   {/* Event filter preferences (local state — backend config endpoint ships in Sprint 34) */}
                   {slackStatus?.connected ? (
                     <fieldset className="space-y-2 border-t border-pulse-100 pt-3">
-                      <legend className="text-sm font-medium text-pulse-700 mb-2">Notification events</legend>
+                      <legend className="text-sm font-medium text-pulse-700 mb-2">{tTeam('slack_notification_events')}</legend>
                       <label className="flex items-center gap-3 text-sm cursor-pointer">
                         <input
                           type="checkbox"

@@ -1,4 +1,4 @@
-// Energizers API — modular registration (PR-D). Behaviour matches legacy single-file router.
+
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import type { Env } from '../../types'

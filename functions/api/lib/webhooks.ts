@@ -19,6 +19,10 @@
 
 import type { Env } from '../types'
 import { ulid } from './ulid'
+import { z } from 'zod'
+import { validateData, WebhookConfigSchema } from './validators'
+
+const WebhookTeamIndexSchema = z.array(z.string())
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -121,7 +125,7 @@ async function readDeliveryLog(kv: KVNamespace, webhookId: string): Promise<Deli
   try {
     const raw = await kv.get(webhookDeliveryKey(webhookId))
     if (!raw) return []
-    const parsed = JSON.parse(raw) as unknown
+    const parsed = JSON.parse(raw)
     return Array.isArray(parsed) ? (parsed as DeliveryEntry[]) : []
   } catch {
     return []
@@ -261,8 +265,7 @@ async function loadTeamWebhookIds(kv: KVNamespace, teamId: string): Promise<stri
   try {
     const raw = await kv.get(webhookTeamIndexKey(teamId))
     if (!raw) return []
-    const parsed = JSON.parse(raw) as unknown
-    return Array.isArray(parsed) ? (parsed.filter((v) => typeof v === 'string') as string[]) : []
+    return validateData(JSON.parse(raw), WebhookTeamIndexSchema) ?? []
   } catch {
     return []
   }
@@ -276,7 +279,8 @@ async function loadWebhookConfig(
   try {
     const raw = await kv.get(webhookConfigKey(teamId, webhookId))
     if (!raw) return null
-    return JSON.parse(raw) as WebhookConfig
+    const parsed = JSON.parse(raw)
+    return validateData(parsed, WebhookConfigSchema)
   } catch {
     return null
   }
