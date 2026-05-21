@@ -10,18 +10,29 @@ on:
       - 'scripts/embed-kb.ts'
       - '.github/workflows/kb-sync-on-merge.yml'
 
+permissions:
+  contents: read
+  issues: read
+
+concurrency:
+  group: kb-sync-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   kb-sync:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@a12a3943b4dfdd168d7e2849847953ccc978c31b # v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@26b4a4fa0b3fb6659e8f0bcb2bafb3cff6dd15cce9b30ee # v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -41,7 +52,7 @@ jobs:
 
       - name: Upload sync manifest
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344541640fca541ffb4ee3465a6 # v7
         with:
           name: kb-sync-manifest
           path: .kb-sync-manifest.json
@@ -49,7 +60,7 @@ jobs:
 
       - name: Comment on PR (if failure)
         if: failure()
-        uses: actions/github-script@v9
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3b285bbf # v9
         with:
           script: |
             github.rest.issues.createComment({
@@ -61,7 +72,7 @@ jobs:
 
       - name: Notify Slack (on failure)
         if: failure()
-        uses: slackapi/slack-github-action@v3.0.3
+        uses: slackapi/slack-github-action@70cd7be8b0a21b47ef0afd309e3a00e1d3e90106 # v3
         with:
           payload: |
             {
