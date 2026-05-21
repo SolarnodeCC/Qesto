@@ -226,7 +226,10 @@ binding = "AI"
 # Staging Workflows
 [[env.staging.workflows]]
 binding = "WORKFLOWS"
+<<<<<<< HEAD
 name = "WORKFLOWS"
+=======
+>>>>>>> 68b9d75 (Growth Engine Phase 1: Backend Foundation)
 class_name = "TemplateGenerationWorkflow"
 
 # Staging Vectorize
