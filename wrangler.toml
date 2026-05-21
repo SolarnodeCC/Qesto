@@ -92,10 +92,9 @@ id = "afe3946dc37d4b2ea506ef41a246396b"
 [[kv_namespaces]]
 binding = "HELP_CONVERSATIONS_KV"
 id = "8d08b7883b6c451b88a653ce8ba55c13"
-# [[kv_namespaces]]
-# binding = "MARKETING_KV"
-# id = "marketing-kv-prod-id"
-# Note: MARKETING_KV will be provisioned once marketing endpoints are implemented
+[[kv_namespaces]]
+binding = "MARKETING_KV"
+id = "4ce59ef235b04802a7e9e218928bb022"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
