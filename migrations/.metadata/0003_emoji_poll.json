@@ -1,0 +1,24 @@
+{
+  "migration_id": "0003_emoji_poll",
+  "title": "Add emoji_poll kind to energizers table",
+  "phase": "Phase 9",
+  "kind": "schema_rebuild",
+  "destructive": true,
+  "reason_safe": "Applied when energizers table was empty (feature not yet live in Phase 9)",
+  "owner": "backend",
+  "description": "Drop and recreate energizers, battle_royale_rounds, bracket_matches tables to add emoji_poll CHECK constraint",
+  "safety_evidence": {
+    "type": "table_rebuild",
+    "affected_tables": ["energizers", "energizer_votes", "bracket_matches", "battle_royale_rounds"],
+    "data_loss": "complete table drop",
+    "pre_condition": "energizers table verified empty before apply",
+    "rollback": "restore from pre-migration backup or re-apply 0002",
+    "constraints_verified": "foreign keys checked after rebuild",
+    "tested": true
+  },
+  "approval": {
+    "approved_by": "architect",
+    "approval_date": "2026-05-17",
+    "jira_ticket": "Phase-9"
+  }
+}

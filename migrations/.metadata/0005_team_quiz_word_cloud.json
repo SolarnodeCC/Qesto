@@ -1,0 +1,22 @@
+{
+  "migration_id": "0005_team_quiz_word_cloud",
+  "title": "Add team_quiz and word_cloud energizer support",
+  "phase": "Phase 9",
+  "kind": "schema_rebuild",
+  "destructive": true,
+  "reason_safe": "Applied when energizers table was empty",
+  "owner": "backend",
+  "description": "Recreate energizers table to extend KIND CHECK constraint",
+  "safety_evidence": {
+    "type": "table_rebuild",
+    "affected_tables": ["energizers"],
+    "data_loss": "complete table drop",
+    "pre_condition": "verified empty before apply",
+    "rollback": "restore from backup",
+    "tested": true
+  },
+  "approval": {
+    "approved_by": "architect",
+    "approval_date": "2026-05-17"
+  }
+}

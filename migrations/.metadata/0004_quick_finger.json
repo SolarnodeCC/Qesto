@@ -1,0 +1,22 @@
+{
+  "migration_id": "0004_quick_finger",
+  "title": "Add quick_finger energizer support",
+  "phase": "Phase 9",
+  "kind": "schema_rebuild",
+  "destructive": true,
+  "reason_safe": "Applied when energizers table was empty (feature not yet live)",
+  "owner": "backend",
+  "description": "Recreate energizers table to add quick_finger KIND to CHECK constraint",
+  "safety_evidence": {
+    "type": "table_rebuild",
+    "affected_tables": ["energizers"],
+    "data_loss": "complete table drop",
+    "pre_condition": "energizers table verified empty",
+    "rollback": "restore from backup",
+    "tested": true
+  },
+  "approval": {
+    "approved_by": "architect",
+    "approval_date": "2026-05-17"
+  }
+}

@@ -291,6 +291,36 @@ export const AuditActionSchema = z.enum([
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>
 
+// ── Audit Context Validators (boundary-crossing proof-aware decoders) ────────
+
+export const AuditContextSchema = z.object({
+  action: AuditActionSchema,
+  subject_type: z.string().min(1),
+  subject_id: z.string().min(1),
+  before_snapshot: z.record(z.string(), z.unknown()).optional(),
+  after_snapshot: z.record(z.string(), z.unknown()).optional(),
+  actor_id: z.string().optional().nullable(),
+  actor_ip: z.string().optional().nullable(),
+  trace_id: z.string().optional().nullable(),
+  idempotency_key: z.string().optional().nullable(),
+})
+
+export type ValidAuditContext = z.infer<typeof AuditContextSchema>
+
+// ── User Context Validator (validates auth token payload before casting) ─────
+
+export const UserContextSchema = z.object({
+  sub: z.string().min(1),
+  email: z.string().email(),
+  email_verified: z.boolean().optional(),
+  teams: z.array(z.string()).optional(),
+  aud: z.string().optional(),
+  iat: z.number().optional(),
+  exp: z.number().optional(),
+})
+
+export type ValidUserContext = z.infer<typeof UserContextSchema>
+
 // ── Team & Permission Validators ─────────────────────────────────────────────
 
 export const PermissionSchema = z.enum([

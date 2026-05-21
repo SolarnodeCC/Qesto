@@ -4,7 +4,7 @@
 // Deduplicates on trace_id + action + subject_id to prevent duplicate logging under retries.
 
 import type { Env } from '../types'
-import { validateData, AuditActionSchema } from './validators'
+import { validateData, AuditContextSchema, UserContextSchema } from './validators'
 
 export type AuditAction =
   | 'session.create'
@@ -60,44 +60,56 @@ export interface AuditContext {
 
 /**
  * Record an audit event with before/after snapshots.
- * Fail-safe: errors are logged but don't crash the request.
+ * Validates all inputs before persistence; fail-safe on errors.
  */
-export async function recordAuditEvent(c: any, ctx: AuditContext): Promise<void> {
+export async function recordAuditEvent(
+  c: { get(key: string): unknown; req: { header(h: string): string | undefined }; env: { DB: D1Database } },
+  ctx: AuditContext,
+): Promise<void> {
   try {
-    // Validate audit action enum before persisting
-    const validAction = validateData(ctx.action, AuditActionSchema)
-    if (!validAction) {
-      console.warn(`[audit] Invalid action: ${ctx.action}`)
+    // Validate context against schema (proof-aware decoder)
+    const validCtx = validateData(ctx, AuditContextSchema)
+    if (!validCtx) {
+      console.warn(`[audit] Invalid audit context`)
+      return
+    }
+
+    // Validate user context from middleware
+    const rawUser = c.get('user')
+    const validUser = validateData(rawUser, UserContextSchema)
+    if (!validUser) {
+      console.warn(`[audit] Invalid user context`)
       return
     }
 
     const now = Date.now()
     const event_id = crypto.randomUUID()
-    const user = c.get('user') as any
-    const actor_id = ctx.actor_id || user?.sub || null
-    const actor_ip = ctx.actor_ip || c.req.header('cf-connecting-ip') || 'unknown'
-    const trace_id = ctx.trace_id || c.get('trace_id') || 'unknown'
-    const idempotency_key = ctx.idempotency_key || null
+    const actor_id = validCtx.actor_id || validUser.sub || null
+    const actor_ip = validCtx.actor_ip || c.req.header('cf-connecting-ip') || 'unknown'
+    const trace_id = validCtx.trace_id || c.get('trace_id') || 'unknown'
+    const idempotency_key = validCtx.idempotency_key || null
 
     // Serialize snapshots (safe even if undefined)
-    const before_snapshot = ctx.before_snapshot ? JSON.stringify(ctx.before_snapshot) : '{}'
-    const after_snapshot = ctx.after_snapshot ? JSON.stringify(ctx.after_snapshot) : '{}'
+    const before_snapshot = validCtx.before_snapshot ? JSON.stringify(validCtx.before_snapshot) : '{}'
+    const after_snapshot = validCtx.after_snapshot ? JSON.stringify(validCtx.after_snapshot) : '{}'
 
-    // Insert into audit_events (idempotency: trace_id+action+subject_id must be unique)
-    await (c.env.DB.prepare as any)(
-      `INSERT INTO audit_events
+    // Insert into audit_events (parameterized, idempotency: trace_id+action+subject_id unique)
+    const db = c.env.DB
+    await db
+      .prepare(
+        `INSERT INTO audit_events
        (id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key)
        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
        ON CONFLICT DO NOTHING`,
-    )
+      )
       .bind(
         event_id,
         now,
         actor_id,
         actor_ip,
-        ctx.action,
-        ctx.subject_type,
-        ctx.subject_id,
+        validCtx.action,
+        validCtx.subject_type,
+        validCtx.subject_id,
         before_snapshot,
         after_snapshot,
         trace_id,

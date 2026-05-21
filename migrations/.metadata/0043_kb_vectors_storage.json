@@ -1,0 +1,27 @@
+{
+  "migration_id": "0043_kb_vectors_storage",
+  "title": "Add vector storage column to kb_chunks",
+  "phase": "ADR-040 Phase 1",
+  "kind": "additive",
+  "destructive": false,
+  "owner": "backend",
+  "description": "Add vector_json TEXT column for embedding persistence without data loss or rebuild",
+  "safety_evidence": {
+    "type": "additive_column",
+    "affected_table": "kb_chunks",
+    "operation": "ADD COLUMN vector_json TEXT",
+    "data_impact": "none - new column, nullable, no existing data affected",
+    "rollback": "DROP COLUMN vector_json",
+    "tested": true,
+    "constraints_checked": "no foreign keys altered, no table rebuilds"
+  },
+  "postgres_timeouts": {
+    "lock_timeout_ms": 5000,
+    "statement_timeout_ms": 30000
+  },
+  "approval": {
+    "approved_by": "backend-team",
+    "approval_date": "2026-05-17",
+    "jira_ticket": "ADR-040"
+  }
+}
