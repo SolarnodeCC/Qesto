@@ -1,22 +1,9 @@
 import type { Team } from '../routes/teams'
-import { validateData, PermissionArraySchema } from './validators'
+import { validateData, PermissionSchema, PermissionArraySchema } from './validators'
 
-export type Permission =
-  | 'session:create'
-  | 'session:update'
-  | 'session:launch'
-  | 'session:close'
-  | 'session:archive'
-  | 'session:export'
-  | 'energizer:activate'
-  | 'template:read'
-  | 'template:write'
-  | 'team:manage_members'
-  | 'team:manage_auth'
-  | 'team:read_audit'
-  | 'billing:manage'
-  | 'admin:read'
-  | 'admin:write'
+// Derived from PermissionSchema — single source of truth, no manual drift possible
+import { z } from 'zod'
+export type Permission = z.infer<typeof PermissionSchema>
 
 const ALL_TEAM_PERMISSIONS: Permission[] = [
   'session:create',
@@ -130,11 +117,7 @@ export async function hasTeamPermission(
 }
 
 export function validatePermissions(input: unknown): Permission[] | null {
-  if (!Array.isArray(input)) return null
-  const out: Permission[] = []
-  for (const item of input) {
-    if (typeof item !== 'string' || !KNOWN_PERMISSIONS.has(item as Permission)) return null
-    out.push(item as Permission)
-  }
-  return [...new Set(out)]
+  const validated = validateData(input, PermissionArraySchema)
+  if (!validated) return null
+  return [...new Set(validated)] as Permission[]
 }

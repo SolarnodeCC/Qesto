@@ -192,9 +192,9 @@ async function resolvePrimaryTeamId(env: Env, userId: string): Promise<string | 
   const raw = await env.TEAMS_KV.get(`user-teams:${userId}`)
   if (!raw) return null
   try {
-    const ids = JSON.parse(raw) as unknown
-    if (!Array.isArray(ids) || ids.length === 0) return null
-    const first = ids[0]
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed) || parsed.length === 0) return null
+    const first = parsed[0]
     return typeof first === 'string' ? first : null
   } catch {
     return null

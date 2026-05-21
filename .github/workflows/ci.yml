@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@a12a3943b4dfdd168d7e2849847953ccc978c31b # v6
 
-      - uses: actions/setup-node@26b4a4fa0b3fb6659e8f0bcb2bafb3cff6dd15cce9b30ee # v6
+      - uses: actions/setup-node@1d0ff469b12fd286b950b1282ef2f049f9e3c84e # v6
         with:
           node-version: '20'
           cache: 'npm'
@@ -53,6 +53,39 @@ jobs:
             echo "ERROR: Raw console.error(err) detected outside safeLogContext()"
             echo "Use: safeLogContext(err, { traceId, route, errorClass, ... })"
             echo "See ADR-PII-SANITIZATION.md for details."
+            exit 1
+          fi
+
+      - name: "Security: Block unchecked JSON.parse casts (HLT-031 gate)"
+        run: |
+          # Flag JSON.parse(...) followed by a concrete type assertion (not `as unknown`)
+          # Safe patterns: validateData(...), Schema.parse(...), as unknown (intentionally wide)
+          # Pattern: JSON.parse(...) as ConcreteType — the cast is on the *result*
+          # Exclude: "as string" or "as unknown" before ) which are input casts not output casts
+          HITS=$(grep -rEn "JSON\.parse\([^)]*\)\s+as\s+[A-Z]" functions/api/lib functions/api/routes functions/api/middleware src \
+            --include="*.ts" --include="*.tsx" 2>/dev/null \
+            | grep -v "\.test\." \
+            | grep -v "validateData\|validateKvJson\|validateJson\|schema\.parse\|Schema\.parse\|WebhookTeamIndexSchema\|\.safeParse" \
+            | grep -v "^[^:]*:\s*//" || true)
+          if [ -n "$HITS" ]; then
+            echo "ERROR: Unchecked JSON.parse() cast to concrete type detected (HLT-031)."
+            echo "Wrap with validateData(parsed, MySchema) or Schema.safeParse(parsed)."
+            echo "See docs/VALIDATION_PATTERNS.md for the pattern."
+            echo ""
+            echo "$HITS"
+            exit 1
+          fi
+
+      - name: "Security: Validate action SHA lengths (supply chain)"
+        run: |
+          HITS=$(grep -rn "uses:.*@[a-f0-9]*" .github/workflows --include="*.yml" \
+            | grep -v "uses:.*@[a-f0-9]\{40\}" \
+            | grep -v "#" || true)
+          if [ -n "$HITS" ]; then
+            echo "ERROR: GitHub action not pinned to a 40-char commit SHA."
+            echo "Update the action to use the full commit SHA."
+            echo ""
+            echo "$HITS"
             exit 1
           fi
 
@@ -92,7 +125,7 @@ jobs:
     steps:
       - uses: actions/checkout@a12a3943b4dfdd168d7e2849847953ccc978c31b # v6
 
-      - uses: actions/setup-node@26b4a4fa0b3fb6659e8f0bcb2bafb3cff6dd15cce9b30ee # v6
+      - uses: actions/setup-node@1d0ff469b12fd286b950b1282ef2f049f9e3c84e # v6
         with:
           node-version: '20'
           cache: 'npm'

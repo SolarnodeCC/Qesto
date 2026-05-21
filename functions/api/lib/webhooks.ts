@@ -19,7 +19,10 @@
 
 import type { Env } from '../types'
 import { ulid } from './ulid'
+import { z } from 'zod'
 import { validateData, WebhookConfigSchema } from './validators'
+
+const WebhookTeamIndexSchema = z.array(z.string())
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -262,8 +265,7 @@ async function loadTeamWebhookIds(kv: KVNamespace, teamId: string): Promise<stri
   try {
     const raw = await kv.get(webhookTeamIndexKey(teamId))
     if (!raw) return []
-    const parsed = JSON.parse(raw) as unknown
-    return Array.isArray(parsed) ? (parsed.filter((v) => typeof v === 'string') as string[]) : []
+    return validateData(JSON.parse(raw), WebhookTeamIndexSchema) ?? []
   } catch {
     return []
   }

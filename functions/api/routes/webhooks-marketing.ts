@@ -45,10 +45,16 @@ const secret = c.env.JWT_SECRET
       return c.json({ error: 'Invalid signature' }, 401)
     }
 
-    // Parse and validate payload
+    // Parse and validate payload with the Zod schema (proof-aware decoder)
     let payload: SessionWebhookPayload
     try {
-      payload = JSON.parse(body) as SessionWebhookPayload
+      const raw = JSON.parse(body)
+      const result = SessionWebhookPayload.safeParse(raw)
+      if (!result.success) {
+        console.log({ event: 'webhook.marketing.parse_error', issues: result.error.issues })
+        return c.json({ error: 'Invalid JSON' }, 400)
+      }
+      payload = result.data
     } catch {
       console.log({ event: 'webhook.marketing.parse_error' })
       return c.json({ error: 'Invalid JSON' }, 400)

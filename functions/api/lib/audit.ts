@@ -197,15 +197,15 @@ export async function queryAuditEvents(
     const offIdx = nextPlaceholderIndex + 1
 
     const countSql = `SELECT COUNT(*) as count FROM audit_events ${whereSql}`
-    const countResult = await (c.env.DB.prepare as any)(countSql)
+    const countResult = await c.env.DB.prepare(countSql)
       .bind(...bindValues)
-      .first()
+      .first<{ count: number }>()
 
     const listSql =
       `SELECT id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key
        FROM audit_events ${whereSql} ORDER BY ts DESC LIMIT ?${limIdx} OFFSET ?${offIdx}`
 
-    const listStmt = (c.env.DB.prepare as any)(listSql).bind(...bindValues, limit, offset)
+    const listStmt = c.env.DB.prepare(listSql).bind(...bindValues, limit, offset)
 
     const result = await listStmt.all()
     return {
