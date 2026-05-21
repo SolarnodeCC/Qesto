@@ -92,9 +92,10 @@ id = "afe3946dc37d4b2ea506ef41a246396b"
 [[kv_namespaces]]
 binding = "HELP_CONVERSATIONS_KV"
 id = "8d08b7883b6c451b88a653ce8ba55c13"
-[[kv_namespaces]]
-binding = "MARKETING_KV"
-id = "marketing-kv-prod-id"
+# [[kv_namespaces]]
+# binding = "MARKETING_KV"
+# id = "marketing-kv-prod-id"
+# Note: MARKETING_KV will be provisioned once marketing endpoints are implemented
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
@@ -202,9 +203,10 @@ id = "08440c11db614cb4817b679f87bebf4a"
 [[env.staging.kv_namespaces]]
 binding = "METRICS_KV"
 id = "c0b05bde687f4740a85caa1294009c4b"
-[[env.staging.kv_namespaces]]
-binding = "MARKETING_KV"
-id = "marketing-kv-staging-id"
+# [[env.staging.kv_namespaces]]
+# binding = "MARKETING_KV"
+# id = "marketing-kv-staging-id"
+# Note: MARKETING_KV will be provisioned once marketing endpoints are implemented
 
 # Staging Durable Objects (shared session handler)
 [[env.staging.durable_objects.bindings]]
