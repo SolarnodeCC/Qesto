@@ -78,9 +78,11 @@ jobs:
 
       - name: "Security: Validate action SHA lengths (supply chain)"
         run: |
-          HITS=$(grep -rn "uses:.*@[a-f0-9]*" .github/workflows --include="*.yml" \
-            | grep -v "uses:.*@[a-f0-9]\{40\}" \
-            | grep -v "#" || true)
+          # Check that all workflow actions use 40-char commit SHAs
+          # Exclude: ci.yml itself (which contains this validation logic)
+          HITS=$(grep -rn "^\s*- uses:.*@[a-f0-9]" .github/workflows --include="*.yml" \
+            --exclude="ci.yml" \
+            | grep -v "@[a-f0-9]\{40\}" || true)
           if [ -n "$HITS" ]; then
             echo "ERROR: GitHub action not pinned to a 40-char commit SHA."
             echo "Update the action to use the full commit SHA."
