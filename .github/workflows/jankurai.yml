@@ -17,14 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@a12a3943b4dfdd168d7e2849847953ccc978c31b # v6
+      - uses: actions/checkout@v6 # v6
 
-      - uses: jeppsontaylor/Jankurai@d6e29b7f7c5e3a8f4a2c9e1f5d8a0c7b3e9f1a2d # v0.8.15
+      - uses: jeppsontaylor/Jankurai@v0.8.15 # v0.8.15
         with:
           mode: advisory
 
       - name: Upload Jankurai audit report
-        uses: actions/upload-artifact@65462800fd760344541640fca541ffb4ee3465a6 # v7
+        uses: actions/upload-artifact@v7 # v7
         if: always()
         with:
           name: jankurai-audit
