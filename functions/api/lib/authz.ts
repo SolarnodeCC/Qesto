@@ -1,4 +1,5 @@
 import type { Team } from '../routes/teams'
+import { validateData, PermissionArraySchema } from './validators'
 
 export type Permission =
   | 'session:create'
@@ -52,9 +53,9 @@ type CustomRolePermissionRow = {
 
 function parsePermissions(value: string): Permission[] {
   try {
-    const parsed = JSON.parse(value) as unknown
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter((item): item is Permission => typeof item === 'string' && KNOWN_PERMISSIONS.has(item as Permission))
+    const parsed = JSON.parse(value)
+    const validated = validateData(parsed, PermissionArraySchema)
+    return validated || []
   } catch {
     return []
   }
