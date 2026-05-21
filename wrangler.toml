@@ -107,8 +107,9 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
-[workflows]
+[[workflows]]
 binding = "WORKFLOWS"
+name = "qesto-workflows"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
