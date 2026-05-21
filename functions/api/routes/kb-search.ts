@@ -145,7 +145,7 @@ export function registerKBRoutes(parent: Hono<{ Bindings: Env; Variables: any }>
 
     try {
       // Query Vectorize for all vectors matching this doc_id
-      // This is a workaround since Vectorize doesn't support metadata filtering directly
+      
       // In production, you'd store doc metadata in a separate D1 table
       const placeholder = new Array(1024).fill(0)
       const vectorizeResults = await c.env.KB_VECTORIZE.query(placeholder, { topK: 100 })

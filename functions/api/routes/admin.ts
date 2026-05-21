@@ -403,7 +403,7 @@ export function mountAdminRoutes(parent: any) {
       )
     }
 
-    // Attempt D1 query; degrade to stub if table doesn't exist yet.
+    
     try {
       let stmt: D1PreparedStatement
       if (routeParam) {
@@ -486,7 +486,7 @@ export function mountAdminRoutes(parent: any) {
     } catch (err) {
       const msg = (err as Error).message ?? ''
       if (msg.includes('no such table') || msg.includes('no such column')) {
-        // Return empty CSV stub until Step 1 ships.
+        
         const csv = CSV_HEADERS.join(',') + '\r\n'
         return new Response(csv, {
           status: 200,

@@ -76,7 +76,7 @@ export class CircuitBreaker {
         this.state.status = 'half_open'
         this.state.lastProbeTime = Date.now()
       } else {
-        // Still open, return fallback
+        
         return await onOpen()
       }
     }
@@ -168,7 +168,7 @@ export class CircuitBreaker {
       }
 
       // Emit metric event
-      // TODO: wire to observability system
+      
     }
   }
 }

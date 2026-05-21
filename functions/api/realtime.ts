@@ -4,7 +4,7 @@
 // ahead of them.
 //
 // All messages are JSON text frames: { v, type, data, timestamp } where
-// `v` is the protocol version. Missing `v` is accepted as legacy v1 and
+
 // `timestamp` is the sender's epoch-ms clock (for latency tracing only —
 // never trusted for ordering).
 

@@ -549,6 +549,82 @@ export function validateKvJson<T>(
   }
 }
 
+// ── Webhook Validators (HLT-031: input boundary crossing) ───────────────────
+
+export const WebhookEventSchema = z.enum(['session.closed', 'session.started', 'session.energizer'])
+
+export const WebhookConfigSchema = z.object({
+  id: z.string().min(1),
+  teamId: z.string().min(1),
+  url: z.string().url(),
+  secret: z.string().min(32),
+  events: z.array(WebhookEventSchema).min(1),
+  enabled: z.boolean(),
+  createdAt: z.number().positive(),
+  updatedAt: z.number().positive(),
+  createdBy: z.string().min(1),
+})
+
+export type ValidWebhookConfig = z.infer<typeof WebhookConfigSchema>
+
+export const WebhookPayloadSchema = z.object({
+  event: WebhookEventSchema,
+  timestamp: z.number().positive(),
+  data: z.record(z.string(), z.unknown()),
+})
+
+export type ValidWebhookPayload = z.infer<typeof WebhookPayloadSchema>
+
+// ── Authorization/Permission Validators ──────────────────────────────────────
+// (PermissionSchema, ValidPermission, and PermissionArraySchema already defined above)
+
+// ── Common Route Parameter Validators ────────────────────────────────────────
+
+export const SessionIdSchema = z.string().ulid()
+export const TeamIdSchema = z.string().ulid()
+export const UserIdSchema = z.string().ulid()
+export const PaginationSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+})
+
+export type ValidPagination = z.infer<typeof PaginationSchema>
+
+// ── Integration Payload Validators ───────────────────────────────────────────
+
+export const SlackIntegrationPayloadSchema = z.object({
+  teamId: TeamIdSchema,
+  webhookUrl: z.string().url(),
+  events: z.array(z.string()).optional(),
+  enabled: z.boolean().default(true),
+})
+
+export type ValidSlackIntegrationPayload = z.infer<typeof SlackIntegrationPayloadSchema>
+
+// ── Energizer Validators ────────────────────────────────────────────────────
+
+export const EnergizerSchema = z.object({
+  id: z.string().min(1),
+  sessionId: z.string().min(1),
+  kind: z.enum(['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud']),
+  prompt: z.string().min(1),
+  state: z.enum(['draft', 'active', 'completed']),
+  createdAt: z.number().positive(),
+})
+
+export type ValidEnergizer = z.infer<typeof EnergizerSchema>
+
+// ── Trace/Observability Validators ──────────────────────────────────────────
+
+export const TraceContextSchema = z.object({
+  trace_id: z.string().min(1),
+  span_id: z.string().min(1).optional(),
+  parent_span_id: z.string().min(1).optional(),
+  sampled: z.boolean().optional(),
+})
+
+export type ValidTraceContext = z.infer<typeof TraceContextSchema>
+
 // Safely parse client message with type guard
 // Validates before returning to ensure type safety at boundary
 export function parseClientMessage(text: string): ValidClientMessage | null {

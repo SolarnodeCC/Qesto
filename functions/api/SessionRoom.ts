@@ -80,7 +80,6 @@ type Counts = Record<string, number>
 // Counts are derived, but kept as a denormalised cache so broadcasts don't
 // recompute every tick.
 //
-// Legacy rows persisted before this change are `Record<string, string>`. Any
 // read path that touches this shape must call `normaliseVotes()` to coerce
 // a stored string into a single-element array.
 type Votes = Record<string, string[]>

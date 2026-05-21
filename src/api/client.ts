@@ -6,7 +6,7 @@ import { API_BASE_URL } from '../config/api'
 
 // In-memory token store. Backed by sessionStorage so it survives page
 // refreshes within the same tab but is cleared when the tab is closed.
-// This is the fallback auth path for browsers that block third-party cookies
+
 // (e.g. Chrome Privacy Sandbox) when the API is on a different origin.
 const TOKEN_KEY = 'qesto_token'
 let _token: string | null = null

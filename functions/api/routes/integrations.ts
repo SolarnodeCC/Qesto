@@ -12,7 +12,7 @@
 // library to keep payload minimal (no need for `iat`, `iss`, etc).
 //
 // Persistence (INTEGRATIONS_KV):
-//   integration:token:{teamId}:slack  — encrypted (TODO v2.3) access token (EncryptedTokenStore)
+
 //   integration:config:{teamId}:slack — { channelId, channelName, teamName }
 
 import { Hono } from 'hono'

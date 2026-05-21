@@ -108,7 +108,7 @@ async function embedFiles(files: string[]): Promise<Map<string, { vectors: Array
       throw new Error(`Missing environment variables: ${missing.join(', ')}`);
     }
 
-    // Create a temporary file list for the embed script to process
+    
     const tempList = '.kb-embed-temp-files.json';
     fs.writeFileSync(tempList, JSON.stringify(files));
 

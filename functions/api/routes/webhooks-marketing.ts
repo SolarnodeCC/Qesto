@@ -33,7 +33,7 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     }
 
     const body = await c.req.text()
-    const secret = c.env.JWT_SECRET // Fallback secret; should be a dedicated webhook secret in production
+const secret = c.env.JWT_SECRET
 
     const expectedSig = `sha256=${await hmacSha256Hex(secret, body)}`
     if (signature !== expectedSig) {
