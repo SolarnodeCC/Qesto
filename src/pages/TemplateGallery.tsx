@@ -143,7 +143,7 @@ export default function TemplateGallery() {
     params.set('lang', lang)
     params.set('limit', '60')
 
-    api<{ data: TemplateRecord[]; pagination: unknown }>(`/api/templates?${params}`, { signal: controller.signal })
+    api<{ data: TemplateRecord[]; pagination: unknown }>(`/api/gallery?${params}`, { signal: controller.signal })
       .then((result) => {
         if (result.ok) setTemplates(result.data.data)
         else setError(result.error.message)

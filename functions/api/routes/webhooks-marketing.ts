@@ -33,7 +33,7 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     }
 
     const body = await c.req.text()
-const secret = c.env.JWT_SECRET
+    const secret = c.env.MARKETING_WEBHOOK_SECRET || c.env.JWT_SECRET
 
     const expectedSig = `sha256=${await hmacSha256Hex(secret, body)}`
     if (signature !== expectedSig) {
@@ -45,7 +45,7 @@ const secret = c.env.JWT_SECRET
       return c.json({ error: 'Invalid signature' }, 401)
     }
 
-    // Parse and validate payload with the Zod schema (proof-aware decoder)
+    // Parse and validate payload with the Zod schema
     let payload: SessionWebhookPayload
     try {
       const raw = JSON.parse(body)

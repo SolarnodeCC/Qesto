@@ -108,7 +108,7 @@ export default function TemplateDetail() {
   useEffect(() => {
     if (!id) return
     setLoading(true)
-    api<TemplateRecord>(`/api/templates/${id}`)
+    api<TemplateRecord>(`/api/gallery/${id}`)
       .then((result) => {
         if (result.ok) setTemplate(result.data)
         else setError(result.error.message)
@@ -120,7 +120,7 @@ export default function TemplateDetail() {
     if (!id) return
     setUsing(true)
     const result = await api<{ sessionId: string; magicLink: string; expiresIn: number }>(
-      `/api/templates/${id}/use`,
+      `/api/gallery/${id}/use`,
       { method: 'POST' }
     )
     if (result.ok) {

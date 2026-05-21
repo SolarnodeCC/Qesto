@@ -107,10 +107,9 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
-# [[workflows]]
-# binding = "WORKFLOWS"
-# class_name = "Workflows"
-# Note: Workflows DO not yet implemented; uncomment when class_name is available
+[[workflows]]
+binding = "WORKFLOWS"
+class_name = "TemplateGenerationWorkflow"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
@@ -221,8 +220,9 @@ dataset = "qesto_metrics"
 binding = "AI"
 
 # Staging Workflows
-[env.staging.workflows]
+[[env.staging.workflows]]
 binding = "WORKFLOWS"
+class_name = "TemplateGenerationWorkflow"
 
 # Staging Vectorize
 [[env.staging.vectorize]]

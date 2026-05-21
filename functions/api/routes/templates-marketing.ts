@@ -169,7 +169,7 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
       })),
     }
 
-    
+    // Store session in SESSIONS_KV (temporary store)
     await sessionsKv.put(`session:${sessionId}`, JSON.stringify(session), {
       expirationTtl: 3600, // 1 hour
     })
