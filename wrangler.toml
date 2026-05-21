@@ -202,10 +202,9 @@ id = "08440c11db614cb4817b679f87bebf4a"
 [[env.staging.kv_namespaces]]
 binding = "METRICS_KV"
 id = "c0b05bde687f4740a85caa1294009c4b"
-# [[env.staging.kv_namespaces]]
-# binding = "MARKETING_KV"
-# id = "marketing-kv-staging-id"
-# Note: MARKETING_KV will be provisioned once marketing endpoints are implemented
+[[env.staging.kv_namespaces]]
+binding = "MARKETING_KV"
+id = "f7bff720ab4547c8b11ac0044279a949"
 
 # Staging Durable Objects (shared session handler)
 [[env.staging.durable_objects.bindings]]
