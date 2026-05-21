@@ -146,16 +146,61 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | GAM-QF-01 | Quick Finger LIVE gameplay | P0 | Sprint 27 | Shipped: participants answer a Quick Finger energizer, server validates answers, and score state broadcasts safely |
 | GAM-TQ-01 | Team Quiz LIVE loop | P0 | Sprint 28 | Shipped: multi-question quiz state, presenter progression, participant locking, score summaries, and reconnect snapshots work |
 | GAM-SCORE-01 | Leaderboard and badge foundation | P1 | Sprint 29 | Shipped: aggregated scores, leaderboard broadcasts, and badge hooks are idempotent and PII-safe |
-| ADMIN-ENGAGE-01 | Admin engagement analytics maturity | P1 | Sprint 30 | Admin can inspect/export energizer activation, participation, completion, and realtime health metrics |
-| AUTHZ-GAM-01 | Enterprise permission gate for energizer activation | P1 | Sprint 31 | Custom roles can allow/deny energizer activation with audit evidence |
-| RC-REGRESSION-01 | v2.2 release candidate regression and rollout plan | P0 | Sprint 32 | Full quality gates, specs, release notes, rollout plan, and rollback plan are ready |
-| MKT-PROMISE-01 | Launch-safe marketing promise audit and copy correction | P0 | Sprint 32 | Public pricing, privacy, terms, feature, and solution pages only promise implemented launch capabilities |
-| EXPORT-RICH-01 | Rich export formats for commercial plans | P1 | Future commercial-readiness sprint | JSON, signed PDF, DOCX, and Notion-ready exports have routes, UI entry points, tests, and plan gates before public copy promotes them |
-| INT-WEBHOOK-01 | Slack, Notion, Workday, BambooHR, and generic webhook integrations | P1 | Future commercial-readiness sprint | Configurable outbound webhooks exist with auth, retries, audit logs, failure states, and docs before integration copy moves out of roadmap status |
-| ENT-COMPLIANCE-01 | Enterprise compliance evidence packet | P0 | Future enterprise-readiness sprint | SOC 2, pen-test summary, DPA/SCC packet, sub-processor list, and security review materials exist before legal/procurement pages claim them |
-| ENT-RESIDENCY-01 | Residency guarantees and customer-managed keys | P1 | Future enterprise-readiness sprint | Environment routing, contractual residency language, key-management design, and operational tests exist before residency/CMK marketing claims go live |
-| AI-RECAP-PROV-01 | AI recap evidence links and edit provenance | P1 | Future AI-readiness sprint | AI-generated summaries expose evidence links, host edit history, PDF/export provenance, and participant disclosure tests before recap provenance is promoted |
-| PERF-PROOF-01 | Production latency benchmark evidence | P1 | Future reliability sprint | Cloudflare-backed benchmark data exists for live voting and energizers before numeric latency claims appear on marketing pages |
+| ADMIN-ENGAGE-01 | Admin engagement analytics maturity | P1 | ✅ Shipped (v2.2 RC branch) | Energizer funnel and exportable CSV metrics shipped in `AdminAnalyticsTab.tsx` — no Sprint 30 action required |
+| ADMIN-OPS-02 | Realtime health correlation dashboard | P1 | Sprint 30 | Admin can compare energizer activity with reconnects, capacity, and errors via time-series view |
+| PRIVACY-GAM-01 | Engagement analytics privacy review | P0 | Sprint 30 | Tests confirm no PII in analytics/export payloads |
+| RES-PII-01 | PII call site replacement + CI grep gate (ADR-0009) | P0 | Sprint 30 | ~24 raw `console.error(err)` → `safeLogContext()`; CI blocks new violations; `safeLogContext()` already in `lib/log.ts` |
+| RES-TIMEOUT-01 | Workers AI AbortController (25s) for ai-insights.ts | P0 | Sprint 30 | `ai-insights.ts:140` and `:244` wrapped; timeout fires gracefully |
+| RES-D1-01 | admin middleware D1 safe fallback | P0 | Sprint 30 | `middleware/admin.ts` D1 failure → deny (not 500) |
+| RES-RETRY-01 | Shared `invokeAIWithRetry()` for insights route | P1 | Sprint 30 | Insights route uses same retry wrapper as wizard |
+| RES-ERR-01 | Verify `sanitizeError()` wiring completeness | P0 | Sprint 30 | `app.ts:101` verified; no raw `err.message` reaches client in any route |
+| OBS-VOTE-01 | `vote.submitted` AE event in SessionRoom | P0 | Sprint 30 | Event with `durationMs`, `teamId`, `plan` emitted from DO vote branch; required for Sprint 32 PERF-PROOF-01 |
+| OBS-ENERGIZER-FIX-01 | Add `teamId`+`plan` to `emitEnergizerMetric()` | P1 | Sprint 30 | All energizer AE events gain plan-segmentation fields |
+| AUTHZ-GAM-01 | Enterprise permission gate for energizer activation | P0 | Sprint 31 | Custom roles can allow/deny energizer activation with audit evidence |
+| AUDIT-GAM-01 | Audit UX polish for realtime actions | P1 | Sprint 31 | Audit viewer distinguishes activation, answer-window changes, completion, and denials |
+| DEPLOY-GAM-01 | Staging migration/flag checklist | P0 | Sprint 31 | Checklist covers D1/KV compatibility, flag state, rollback, WebSocket smoke |
+| QA-ENT-02 | Enterprise permission regression bundle | P0 | Sprint 31 | Owner/admin/member/custom-role allow/deny paths cover session + energizer |
+| ADR-0010 | Zero-knowledge anonymity mode ADR | P0 | Sprint 31 | ADR defines voter dedup without PII, session config, UI indicators, DO protocol impact; required before ANON-DEPTH-01 |
+| CB-01 | Wire CircuitBreaker into Stripe + Resend (ADR-0007) | P0 | Sprint 31 | `billing.ts:36/59` and `email.ts:22` wrapped; state machine wired in `createApp()`; CIRCUIT_BREAKER_KV provisioned in production |
+| CB-02 | Wire CircuitBreaker for Workers AI + JWKS (ADR-0007) | P0 | Sprint 31 | Workers AI 10s/3-failure OPEN; JWKS 5s/3-failure OPEN; graceful free-plan fallback |
+| INT-PROVIDER-01 | Integration provider library with AES-GCM encryption (ADR-0008) | P0 | Sprint 31 | `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK`; `IntegrationHttpClient` timeout bug fixed (`http-client.ts:80`); typed interface; INTEGRATIONS_KV provisioned in production |
+| ANON-DEPTH-01 | Zero-knowledge mode session config + trust indicator | P1 | Sprint 31 | Anonymity level selector; participant trust badge; i18n; gate: ADR-0010 accepted |
+| GDPR-TRUST-PAGE-01 | GDPR compliance trust page (marketing artifact, no new engineering) | P1 | Sprint 31 | Static documentation page covering Qesto's GDPR architecture, EU data residency evidence (Cloudflare edge), sub-processor list draft, and anonymity guarantees; linked from pricing and landing pages; ship this sprint to begin capturing Mentimeter GDPR churn wave ahead of Sprint 34 engineering badge |
+| ADR-0007-AMEND | ADR-0007 amendment: clarify CircuitBreaker.INTEGRATIONS scope | P0 | Sprint 31 | Amendment accepted before CB-01 wiring; defines which integration call sites (Stripe, Resend, Workers AI, JWKS) are in scope and which state machine parameters apply to each |
+| DEVOPS-CB-KV-01 | Production KV namespace provisioning for resilience + integrations | P0 | Sprint 31 | `wrangler kv namespace create CIRCUIT_BREAKER_KV` (prod); `wrangler kv namespace create INTEGRATIONS_KV` (prod); `wrangler pages secret put OAUTH_TOKEN_MEK` (prod + staging); must be done before CB-01/CB-02/INT-PROVIDER-01 merge |
+| MARKET-RESEARCH-VEVOX-01 | Vevox deep-dive competitive feature audit | P1 | Sprint 31 | COMPETITOR_PROFILES.md has no Vevox profile; market research task (not engineering) to document Vevox's anonymous Q&A moderation, anonymous live discussion, and employee voice analytics features; required before ANON-DEPTH-01 ships to confirm zero-knowledge mode closes the segment gap or scopes what ANON-DEPTH-02 must add; Vevox rated #1 on G2/Capterra/Trustpilot for anonymous engagement |
+| I18N-SPRINT31-01 | i18n strings for zero-knowledge mode (ANON-DEPTH-01) in 5 locales | P1 | Sprint 31 | All UI strings for anonymity level selector (none/standard/zero-knowledge), participant trust badge, and GDPR trust page in EN/NL/DE/FR/ES; CI `check:i18n` passes; no raw keys visible to users |
+| RC-DOCS-01 | Spec + runbook closeout for v2.2 | P0 | Sprint 32 | `SPEC_REALTIME`, `SPEC_BACKEND`, `SPEC_FRONTEND`, roadmap, backlog, and release notes updated to reflect all shipped v2.2 behavior |
+| RC-ROLLOUT-01 | Feature-flag rollout plan for LIVE energizers | P0 | Sprint 32 | Rollout steps, cohorts, metrics watched, rollback trigger, and rollback owner defined; staging WebSocket smoke passes with flag on and off |
+| RC-OBS-01 | Release health dashboard checklist for v2.2 | P0 | Sprint 32 | Admin surfaces answer: active sessions, reconnects, errors, energizer activation rate, energizer participation, energizer completion |
+| ZOOM-01 | Zoom: session results integration | P2 | Sprint 33 stretch / Sprint 34 | OAuth2 Zoom authorization; session close posts summary to Zoom chat or webhook; token encrypted. **Market research flag (WIN_LOSS_ANALYSIS):** Zoom is the #2 loss reason for event organizers and a stated loss reason for trainers; event-organizer GTM motion must be deferred until this ships |
+| EXPORT-PDF-01 | PDF signed session summary export | P1 | Sprint 33 stretch / Sprint 34 | `GET /api/sessions/:id/export.pdf` returns signed PDF with full results; plan-gated; R2 staging for signed blob; extends EXPORT-RICH-01-A |
+| DEVOPS-INT-SECRETS-01 | Integration OAuth secrets provisioning + webhook retry decision | P0 | Sprint 33 | `wrangler pages secret put SLACK_CLIENT_ID/SECRET` (prod + staging); `wrangler pages secret put TEAMS_CLIENT_ID/SECRET` (prod + staging); decision documented: webhook retry uses DO alarm pattern (preferred) vs. `*/5` cron — must be made before WEBHOOK-01 implementation starts |
+| OBS-WS-VOTER-01 | `ws.voter_joined` call site in SessionRoom | P1 | Sprint 33 | `ws.voter_joined` event emitted from `SessionRoom.onConnect()` when participant successfully joins (not only on capacity rejection); `ws.voter_disconnected` emitted from `webSocketClose`; enables participant count and reconnect rate measurement in AE rather than relying solely on ephemeral METRICS_KV |
+| OBS-INTEGRATION-01 | Integration funnel AE events: `integration.connected` + `export.initiated` | P1 | Sprint 33 | `integration.connected` event with `blob6=integration_type` (slack/teams/generic), `teamId`, `plan` on each successful OAuth completion; `export.initiated` with `blob6=format`, `teamId`, `plan` on each export request; `export.completed` with `durationMs`; required to measure whether integrations and exports drive retention or plan upgrades |
+| I18N-SPRINT33-01 | i18n strings for integrations sprint (Slack, Teams, webhook admin) in 5 locales | P1 | Sprint 33 | OAuth consent copy for Slack and Teams; webhook CRUD admin UI strings; event filter selector labels; delivery log status messages — all in EN/NL/DE/FR/ES; CI `check:i18n` passes |
+| I18N-SPRINT34-01 | i18n strings for compliance + AI sprint in 5 locales | P1 | Sprint 34 | AI sentiment mood signal labels (positive/neutral/concerning); AI recap provenance disclosure text; GDPR compliance badge copy; DPA download link text; zero-knowledge proof page — all in EN/NL/DE/FR/ES; CI `check:i18n` passes |
+| CODE-SPLIT-01 | Split sessions.routes.ts (81KB) into subrouters | P1 | Sprint 32 | DRAFT/LIVE/lifecycle routes in separate files; zero test regressions; no behavior change |
+| EXPORT-RICH-01-A | Structured JSON + enhanced CSV export (partial EXPORT-RICH-01) | P1 | Sprint 32 | `export.json` route; CSV with question text + labels + timing; plan-gated; security controls |
+| PERF-PROOF-01 | Production latency benchmark evidence | P1 | Sprint 32 | AQL on `qesto_metrics` produces p50/p95/p99 from `vote.submitted` events (requires OBS-VOTE-01 30d data) |
+| MKT-PROMISE-01 | Launch-safe marketing promise audit and copy correction | P0 | ✅ Implemented 2026-05-05 | Public pages avoid unsupported compliance, export, integration, latency, and AI provenance claims |
+| SLACK-01 | Slack: session results push notification | P1 | Sprint 33 | Host connects Slack via OAuth2; session close triggers channel summary; token encrypted; i18n consent copy |
+| SLACK-02 | Slack: settings UI + OAuth management + event filtering | P1 | Sprint 33 | Team Settings shows Slack connection; event filter selector; disconnect flow |
+| TEAMS-01 | Microsoft Teams: session results adaptive card | P1 | Sprint 33 | OAuth2 Teams authorization; session close sends adaptive card; token encrypted |
+| WEBHOOK-01 | Generic webhook + HMAC-SHA256 + SSRF controls + retry + delivery log | P0 | Sprint 33 | CRUD; SSRF controls (allowlist, RFC1918 block, domain confirmation); DO alarm retry; `webhook.delivery_attempted` AE event; admin delivery log |
+| AI-CONTEXT-01 | `SessionAIContext` schema + `aiPipeline()` + `aiOverride()` helpers | P1 | Sprint 33 | Foundation schema for all Sprint 34 AI features; typed; plan-aware model selection |
+| ADR-0011 | Live sentiment inference ADR + DPIA scope | P0 | Sprint 33 | Model: `distilbert-sst-2-int8`; aggregate-only (k≥5); disabled in ZK sessions; DPIA documented; required before Sprint 34 AI-SENTIMENT-01 |
+| ENT-RESIDENCY-01 | EU data residency: routing evidence + DPA template | P0 | Sprint 34 | Documentation + contractual deliverable (D1 location hint irreversible); routing evidence; DPA template; ops runbook |
+| COMPLIANCE-01 | SOC 2 evidence framework + sub-processor registry | P1 | Sprint 34 | `/knowledge-base/security/SOC2_EVIDENCE.md`; control inventory; sub-processor list; gaps with sprint assignments |
+| COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | Sprint 34 | CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
+| AI-RECAP-PROV-01 | AI recap provenance: edit history + evidence links + export metadata | P1 | Sprint 34 | Recap shows model/timestamp/edit flag; export JSON includes provenance block; extends AI-CONTEXT-01 |
+| AI-SENTIMENT-01 | Real-time session sentiment via Workers AI | P1 | Sprint 34 | `distilbert-sst-2-int8`; aggregate mood signal (k≥5); English-only; ZK-disabled; no individual attribution; gate: ADR-0011 + DPIA complete |
+| ANON-DEPTH-02 | Zero-knowledge trust documentation + Vevox competitive proof | P1 | Sprint 34 | KB technical proof doc; sales comparison vs. Vevox; gate: ANON-DEPTH-01 merged |
+| GDPR-BADGE-01 | GDPR compliance badge + deletion automation test | P1 | Sprint 34 | Evidence doc; deletion test; `gdpr.deletion_requested`/`gdpr.deletion_completed` AE events; data-subject runbook |
+| EXPORT-RICH-01 | Rich export formats (full: JSON, PDF, DOCX, Notion-ready) | P1 | Sprint 33 stretch / Sprint 34 stretch | Complete export suite; EXPORT-RICH-01-A (Sprint 32) + EXPORT-PDF-01 (Sprint 33+) are milestones toward this |
+| ENT-COMPLIANCE-01 | Enterprise compliance evidence packet (SOC 2, pen-test, DPA, sub-processors) | P0 | Sprint 33-34 (partial) | COMPLIANCE-01 + COMPLIANCE-02 in Sprint 34; COMPLIANCE-03 (Type I audit, 13 pts) in Sprint 35+ |
+| COMPLIANCE-03 | SOC 2 Type I full audit work | P1 | Sprint 35+ (13 pts) | Full Type I audit engagement; requires COMPLIANCE-01 framework complete |
+| AI-COACHING-01 | Post-session facilitator coaching suggestions | P2 | Sprint 34 stretch / Sprint 35+ | Vectorize gate: ≥100 closed-session embeddings in staging required before starting |
 
 **Dependencies and gates**:
 - ENTITLEMENTS-02 must be green before Sprint 21 expands role enforcement.
@@ -165,6 +210,14 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 - Sprint 26 activation readiness now unblocks Sprint 27 participant gameplay.
 - Leaderboard and badge primitives now unblock admin engagement analytics.
 - Token/i18n/a11y gates must stay green before Sprint 23 design polish expands affected surfaces.
+- **OBS-VOTE-01 (Sprint 30) must ship ≥30 days before Sprint 32 PERF-PROOF-01 to accumulate meaningful latency data.**
+- **ADR-0010 must be accepted before ANON-DEPTH-01 implementation starts (Sprint 31).**
+- **INT-PROVIDER-01 (Sprint 31) must be merged before any integration provider (SLACK-01, TEAMS-01, WEBHOOK-01) can start in Sprint 33.**
+- **ADR-0011 + DPIA must be completed in Sprint 33 before AI-SENTIMENT-01 implementation starts in Sprint 34.**
+- **ANON-DEPTH-01 (Sprint 31/32) must be merged before ANON-DEPTH-02 (Sprint 34).**
+- **AI-CONTEXT-01 (Sprint 33) is required by AI-RECAP-PROV-01 and AI-SENTIMENT-01 in Sprint 34.**
+- **COMPLIANCE-02 CI gate must be in place before any marketing copy adds EU residency or compliance claims.**
+- **CIRCUIT_BREAKER_KV, INTEGRATIONS_KV, and OAUTH_TOKEN_MEK must be provisioned in production (DevOps) before Sprint 31 circuit-breaker and encryption stories merge.**
 
 ---
 
