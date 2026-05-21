@@ -20,6 +20,7 @@
     "sessions",
     "settings",
     "solutions",
+    "team",
     "vote",
     "wizard"
   ],
@@ -50,6 +51,7 @@
     "sessions": "frontend + i18n",
     "settings": "frontend + i18n",
     "solutions": "marketing",
+    "team": "frontend + i18n",
     "vote": "frontend + i18n",
     "wizard": "frontend + i18n"
   }
