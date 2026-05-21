@@ -137,6 +137,10 @@
       "reflection_title": "Reflexionsmodus",
       "fun_title": "Schnellmodus",
       "fun_desc": "Beschleunigen Sie mit automatischer Fragenerstellung"
+    },
+    "isPublic": {
+      "label": "In Vorlagen-Galerie aufnehmen",
+      "description": "Nach dem Schließen kann eine anonymisierte Version dieser Sitzung in der öffentlichen Galerie erscheinen."
     }
   },
   "step5": {

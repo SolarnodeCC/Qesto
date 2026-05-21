@@ -137,6 +137,10 @@
       "reflection_title": "Modo Reflexión",
       "fun_title": "Modo Rápido",
       "fun_desc": "Acelera con temporización automática de preguntas"
+    },
+    "isPublic": {
+      "label": "Incluir en la galería de plantillas",
+      "description": "Tras el cierre, una versión anonimizada de esta sesión puede aparecer en la galería pública."
     }
   },
   "step5": {

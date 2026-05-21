@@ -137,6 +137,10 @@
       "reflection_title": "Reflection Mode",
       "fun_title": "Quick Mode",
       "fun_desc": "Speed up with automatic question timing"
+    },
+    "isPublic": {
+      "label": "Include in template gallery",
+      "description": "After closing, an anonymised version of this session may appear in the public template gallery."
     }
   },
   "step5": {
