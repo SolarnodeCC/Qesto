@@ -16,6 +16,10 @@ import { mountKnowledgeBaseRoutes } from './routes/knowledge-base'
 import { registerKBRoutes } from './routes/kb-search'
 import { mountIntegrationRoutes } from './routes/integrations'
 import { mountGdprRoutes } from './routes/gdpr'
+import { mountTournamentRoutes } from './routes/tournaments'
+import { mountLdapRoutes } from './routes/ldap'
+import { mountAgentGroundingRoutes } from './routes/agent-grounding'
+import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
 import { mountWebhookRoutes } from './routes/webhooks'
 import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
 import { mountMarketingTemplateRoutes } from './routes/templates-marketing'
@@ -203,6 +207,10 @@ export function createApp() {
   registerKBRoutes(app)
   mountIntegrationRoutes(app)
   mountWebhookRoutes(app)
+  mountWebhookTemplateRoutes(app)
+  mountTournamentRoutes(app)
+  mountLdapRoutes(app)
+  mountAgentGroundingRoutes(app)
 
   return app
 }

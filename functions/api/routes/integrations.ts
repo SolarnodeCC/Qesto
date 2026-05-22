@@ -24,6 +24,8 @@ import { createEncryptedTokenStore } from '../lib/integrations/token-store'
 import { SlackProvider } from '../lib/integrations/providers/slack'
 import { TeamsProvider } from '../lib/integrations/providers/teams'
 import { getZoomProvider } from '../lib/integrations/providers/zoom'
+import { getSalesforceProvider } from '../lib/integrations/providers/salesforce'
+import { getNotionProvider } from '../lib/integrations/providers/notion'
 import { generatePKCEPair } from '../lib/integrations/oauth'
 import type { ProviderConfig } from '../lib/integrations/types'
 import { readKvJson, writeKvJson } from '../lib/kv'
@@ -710,6 +712,50 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
       },
       501,
     )
+  })
+
+  app.get('/salesforce/status', authMiddleware, async (c) => {
+    return c.json({ ok: true, data: { connected: false, phase: 'skeleton' }, trace_id: c.get('trace_id') })
+  })
+
+  app.get('/salesforce/connect', authMiddleware, async (c) => {
+    const provider = getSalesforceProvider(c.env)
+    if (!provider) {
+      return c.json(
+        { ok: false, error: { code: 'salesforce_not_configured', message: 'Salesforce OAuth not configured' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+    const user = c.get('user')
+    const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
+    if (!teamId) {
+      return c.json({ ok: false, error: { code: 'team_required', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+    }
+    const exp = Math.floor(Date.now() / 1000) + STATE_TTL_SECONDS
+    const state = await signState({ teamId, userId: user.sub, exp }, c.env.JWT_SECRET)
+    return c.redirect(provider.getAuthUrl(state, ''), 302)
+  })
+
+  app.get('/notion/status', authMiddleware, async (c) => {
+    return c.json({ ok: true, data: { connected: false, phase: 'skeleton' }, trace_id: c.get('trace_id') })
+  })
+
+  app.get('/notion/connect', authMiddleware, async (c) => {
+    const provider = getNotionProvider(c.env)
+    if (!provider) {
+      return c.json(
+        { ok: false, error: { code: 'notion_not_configured', message: 'Notion OAuth not configured' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+    const user = c.get('user')
+    const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
+    if (!teamId) {
+      return c.json({ ok: false, error: { code: 'team_required', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+    }
+    const exp = Math.floor(Date.now() / 1000) + STATE_TTL_SECONDS
+    const state = await signState({ teamId, userId: user.sub, exp }, c.env.JWT_SECRET)
+    return c.redirect(provider.getAuthUrl(state, ''), 302)
   })
 
   parent.route('/api/integrations', app)

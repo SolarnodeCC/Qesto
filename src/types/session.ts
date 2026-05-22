@@ -29,8 +29,15 @@ export type SessionDetail = {
 }
 
 /** Public join lookup (`GET /api/sessions/by-code/:code`) before session goes live. */
+export type SessionBranding = {
+  logoUrl?: string | null
+  primaryColor?: string
+  secondaryColor?: string
+}
+
 export type SessionLookupByCode = Pick<Session, 'id' | 'title' | 'code'> & {
   status: Extract<SessionStatus, 'draft' | 'live'>
+  branding?: SessionBranding
 }
 
 /**

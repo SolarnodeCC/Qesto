@@ -137,6 +137,8 @@ ENT-RESIDENCY-01, COMPLIANCE-01, AI-RECAP-PROV-01, AI-SENTIMENT-01, ANON-DEPTH-0
 
 ## Sprint 36 — White-Label + Branding
 
+**Status (2026-05-22):** `feat/sprint-36-39-v24` — see [`sprints/SPRINT36_39_IMPLEMENTATION_SPEC.md`](./sprints/SPRINT36_39_IMPLEMENTATION_SPEC.md).
+
 **Window:** 2026-08-19 → 2026-09-02 | **~42 pts**
 
 BRAND-01/02/03, ADR-0016, SEC-RATELIMIT-01, DX-SERVICE-01.
@@ -144,6 +146,8 @@ BRAND-01/02/03, ADR-0016, SEC-RATELIMIT-01, DX-SERVICE-01.
 ---
 
 ## Sprint 37 — Mobile PWA + Salesforce
+
+**Status (2026-05-22):** Same branch — PWA manifest/SW, touch CSS, Salesforce skeleton.
 
 **Window:** 2026-09-02 → 2026-09-16 | **~44 pts**
 
@@ -153,6 +157,8 @@ MOBILE-01/02/03, SF-01/02, ADR-0015, SEC-WS-CAP-01.
 
 ## Sprint 38 — LDAP + Enterprise Integrations
 
+**Status (2026-05-22):** LDAP/Notion skeletons, webhook HR templates, COMPLIANCE-04 doc.
+
 **Window:** 2026-09-16 → 2026-09-30 | **~46 pts**
 
 LDAP-01/02, INT-WEBHOOK-02, NOTION-01, ADR-0019, COMPLIANCE-04.
@@ -160,6 +166,8 @@ LDAP-01/02, INT-WEBHOOK-02, NOTION-01, ADR-0019, COMPLIANCE-04.
 ---
 
 ## Sprint 39 — Tournaments + AI Coaching + v2.4 Close
+
+**Status (2026-05-22):** Bracket API, coaching endpoint, agent grounding, v2.4 RC notes.
 
 **Window:** 2026-09-30 → 2026-10-14 | **~47 pts** | **🚀 v2.4**
 

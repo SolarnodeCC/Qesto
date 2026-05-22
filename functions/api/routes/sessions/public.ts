@@ -10,6 +10,7 @@ import {
   type SessionRow,
   type SessionVars,
 } from './shared'
+import { loadTeamBranding } from '../../lib/team-branding'
 import type { Env } from '../../types'
 import type { Permission } from '../../lib/authz'
 
@@ -34,9 +35,16 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
       )
     }
     console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'join.success', session_id: session.id, status: session.status, trace_id: traceId }))
+    const branding = await loadTeamBranding(c.env.TEAMS_KV, session.team_id)
     return c.json({
       ok: true,
-      data: { id: session.id, title: session.title, code: session.code, status: session.status as 'draft' | 'live' },
+      data: {
+        id: session.id,
+        title: session.title,
+        code: session.code,
+        status: session.status as 'draft' | 'live',
+        ...(branding ? { branding } : {}),
+      },
       trace_id: traceId,
     })
   })

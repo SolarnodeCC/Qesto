@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle2, Sparkles } from 'lucide-react'
 import type { PollOption, SessionLookupByCode } from '@/types/session'
+import { applyBrandingToDocument, cacheJoinSession } from '../lib/branding'
 import { api } from '../api/client'
 import { useLiveSession, type LiveEnergizerState } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -146,6 +147,8 @@ export default function JoinPage() {
       `/api/sessions/by-code/${encodeURIComponent(c.toUpperCase())}`,
     )
     if (res.ok) {
+      if (res.data.branding) applyBrandingToDocument(res.data.branding)
+      cacheJoinSession(c, res.data as unknown as Record<string, unknown>)
       if (res.data.status === 'live') {
         if (pollRef.current) {
           clearInterval(pollRef.current)

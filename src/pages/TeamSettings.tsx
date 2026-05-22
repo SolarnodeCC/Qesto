@@ -22,6 +22,12 @@ interface TeamMember {
   joinedAt: number
 }
 
+interface TeamBranding {
+  logoUrl?: string | null
+  primaryColor?: string
+  secondaryColor?: string
+}
+
 interface Team {
   id: string
   name: string
@@ -29,6 +35,7 @@ interface Team {
   members: TeamMember[]
   plan: 'free' | 'starter' | 'team'
   samlConfig: SamlConfig | null
+  branding?: TeamBranding | null
   createdAt: number
 }
 
@@ -1036,6 +1043,49 @@ export default function TeamSettings() {
                 className="self-start inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
                 {samlSaving ? 'Saving…' : 'Save SAML configuration'}
+              </button>
+            </form>
+          </section>
+        )}
+
+        {/* ── Branding (BRAND-01) ───────────────────────────────────────────── */}
+        {team && (
+          <section aria-labelledby="section-branding" className="space-y-4 rounded-xl border border-pulse-200 p-6">
+            <h2 id="section-branding" className="text-lg font-semibold">Branding</h2>
+            <p className="text-sm text-pulse-500">Logo and colors appear on join pages and signed exports (Team plan).</p>
+            <form
+              className="grid gap-3 max-w-md"
+              onSubmit={async (e) => {
+                e.preventDefault()
+                if (!id) return
+                const fd = new FormData(e.currentTarget)
+                const res = await api<{ team: Team }>(`/api/teams/${encodeURIComponent(id)}`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({
+                    branding: {
+                      logoUrl: (fd.get('logoUrl') as string) || null,
+                      primaryColor: (fd.get('primaryColor') as string) || undefined,
+                      secondaryColor: (fd.get('secondaryColor') as string) || undefined,
+                    },
+                  }),
+                })
+                if (res.ok) setTeam(res.data.team)
+              }}
+            >
+              <label className="text-sm font-medium text-pulse-700">
+                Logo URL
+                <input name="logoUrl" type="url" defaultValue={team.branding?.logoUrl ?? ''} className="mt-1 w-full border border-pulse-300 rounded-lg px-3 py-2 text-sm" />
+              </label>
+              <label className="text-sm font-medium text-pulse-700">
+                Primary color
+                <input name="primaryColor" type="text" pattern="#[0-9A-Fa-f]{6}" defaultValue={team.branding?.primaryColor ?? '#0D9488'} className="mt-1 w-full border border-pulse-300 rounded-lg px-3 py-2 text-sm font-mono" />
+              </label>
+              <label className="text-sm font-medium text-pulse-700">
+                Secondary color
+                <input name="secondaryColor" type="text" pattern="#[0-9A-Fa-f]{6}" defaultValue={team.branding?.secondaryColor ?? '#8B5CF6'} className="mt-1 w-full border border-pulse-300 rounded-lg px-3 py-2 text-sm font-mono" />
+              </label>
+              <button type="submit" className="self-start min-h-[44px] rounded-lg bg-teal-600 text-white px-4 py-2 text-sm font-medium hover:bg-teal-700">
+                Save branding
               </button>
             </form>
           </section>

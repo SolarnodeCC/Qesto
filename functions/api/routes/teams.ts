@@ -56,6 +56,12 @@ export type TeamMember = {
   joinedAt: number
 }
 
+export type TeamBranding = {
+  logoUrl?: string | null
+  primaryColor?: string
+  secondaryColor?: string
+}
+
 export type Team = {
   id: string
   name: string
@@ -63,6 +69,7 @@ export type Team = {
   members: TeamMember[]
   plan: 'free' | 'starter' | 'team'
   samlConfig: SamlConfig | null
+  branding?: TeamBranding | null
   createdAt: number
 }
 
@@ -143,9 +150,16 @@ const SamlConfigSchema = z.object({
   idpCertificate: z.string().max(16_384).optional(),
 })
 
+const BrandingSchema = z.object({
+  logoUrl: z.string().url().max(2048).nullable().optional(),
+  primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+})
+
 const PatchTeamSchema = z.object({
   name: z.string().min(1).max(100).trim().optional(),
   samlConfig: SamlConfigSchema.nullable().optional(),
+  branding: BrandingSchema.nullable().optional(),
 })
 
 const InviteMemberSchema = z.object({
@@ -626,6 +640,15 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         return c.json({ ok: false, error: denyFeature(plan, 'samlSso'), trace_id: c.get('trace_id') }, 403)
       }
       team.samlConfig = parsed.data.samlConfig
+    }
+    if (parsed.data.branding !== undefined) {
+      const denied = await requireTeamPermission(c, team, 'team:manage_members', 'Manage members permission required')
+      if (denied) return denied
+      const quotas = c.get('planQuotas')
+      if (parsed.data.branding !== null && !featureAllowed(quotas, 'customBranding')) {
+        return c.json({ ok: false, error: denyFeature(c.get('plan'), 'customBranding'), trace_id: c.get('trace_id') }, 403)
+      }
+      team.branding = parsed.data.branding
     }
 
     await saveTeam(c.env.TEAMS_KV, team)

@@ -10,6 +10,7 @@ import { planMiddleware } from '../../middleware/plan'
 import type { Env } from '../../types'
 import { registerInsightsAnalyzeRoute } from './register-analyze'
 import { registerInsightsGetRoute } from './register-get'
+import { registerCoachingRoute } from './register-coaching'
 import type { AiInsightsVars } from './types'
 
 export function mountAIInsightsRoutes(parent: any): void {
@@ -19,6 +20,7 @@ export function mountAIInsightsRoutes(parent: any): void {
 
   registerInsightsAnalyzeRoute(app)
   registerInsightsGetRoute(app)
+  registerCoachingRoute(app)
 
   parent.route('/api', app)
 }

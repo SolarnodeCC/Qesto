@@ -1047,8 +1047,8 @@ export class SessionRoom implements DurableObject {
     // Remove old timestamps outside the window
     const recentTimestamps = timestamps.filter((ts) => ts > cutoffMs)
 
-    // Check if limit exceeded (increased from 5 to 15 to allow multiple retry attempts per user)
-    const limitExceeded = recentTimestamps.length >= 15
+    const maxPerMin = Number.parseInt(this.env.WS_CONNECT_PER_IP_PER_MIN ?? '15', 10) || 15
+    const limitExceeded = recentTimestamps.length >= maxPerMin
 
     if (!limitExceeded) {
       // Record this connection attempt

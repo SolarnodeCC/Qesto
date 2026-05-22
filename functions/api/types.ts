@@ -41,6 +41,10 @@ export type Env = {
   INTEGRATION_ENABLED?: string
   /** AI-SENTIMENT-01: enable aggregate mood signals in LIVE sessions. */
   SENTIMENT_ENABLED?: string
+  /** SEC-RATELIMIT-01: return 503 when ACTIONS_KV rate limiter fails. */
+  RATE_LIMIT_FAIL_CLOSED?: string
+  /** SEC-WS-CAP-01: max WebSocket connects per IP per minute (default 15). */
+  WS_CONNECT_PER_IP_PER_MIN?: string
   /** GROWTH-ENGINE: IndexNow API key for SEO indexing (optional). */
   INDEXNOW_KEY?: string
 
@@ -60,6 +64,13 @@ export type Env = {
   /** ZOOM-01: Zoom OAuth app (Sprint 35 skeleton). */
   ZOOM_CLIENT_ID?: string
   ZOOM_CLIENT_SECRET?: string
+  SALESFORCE_CLIENT_ID?: string
+  SALESFORCE_CLIENT_SECRET?: string
+  NOTION_CLIENT_ID?: string
+  NOTION_CLIENT_SECRET?: string
+  LDAP_URL?: string
+  LDAP_BIND_DN?: string
+  LDAP_BIND_PASSWORD?: string
   /** GROWTH-ENGINE: HMAC secret for internal marketing webhook trigger. */
   MARKETING_WEBHOOK_SECRET?: string
   /** INT-PROVIDER-01: AES-GCM master key for integration OAuth tokens at rest. */
