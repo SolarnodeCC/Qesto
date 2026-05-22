@@ -111,6 +111,7 @@ new_sqlite_classes = ["SessionRoom"]
 binding = "AI"
 
 [[workflows]]
+binding = "WORKFLOWS"
 name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
@@ -224,6 +225,7 @@ binding = "AI"
 
 # Staging Workflows
 [[env.staging.workflows]]
+binding = "WORKFLOWS"
 name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
