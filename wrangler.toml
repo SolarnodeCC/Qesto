@@ -111,7 +111,7 @@ new_sqlite_classes = ["SessionRoom"]
 binding = "AI"
 
 [[workflows]]
-binding = "WORKFLOWS"
+name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
@@ -224,7 +224,7 @@ binding = "AI"
 
 # Staging Workflows
 [[env.staging.workflows]]
-binding = "WORKFLOWS"
+name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
 # Staging Vectorize
