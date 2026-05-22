@@ -82,7 +82,7 @@ Warm up your audience with a fun activity before questions start.
 
 1. Click **"Close"** when done
 2. See response summaries immediately
-3. For Team+ plans: Get AI insights on open responses
+3. For Starter+ plans: Get AI insights on open responses
 
 That's it! You've run your first session.
 

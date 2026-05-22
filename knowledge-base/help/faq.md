@@ -53,6 +53,51 @@ A: See our pricing page for a detailed comparison.
 **Q: Can I cancel anytime?**
 A: Yes, no lock-in contracts. You can downgrade or cancel anytime.
 
+**Q: Do participants need an account?**
+A: No. Participants join via link or code without signing up. Only hosts and team collaborators need accounts.
+
+**Q: How do I join a session?**
+A: Open the link your host shared, or go to qesto.cc/join and enter the short code. Enter a display name and wait for the host to start.
+
+**Q: Can I change my vote after submitting?**
+A: Usually no — the default is one vote per question. Hosts can set **Reactions** policy to allow updates while a question is open, or use multi-select/upvote types for multiple choices.
+
+**Q: What languages does Qesto support?**
+A: English, Dutch, Spanish, German, and French. Change language in Settings or the header language switcher.
+
+**Q: How do I duplicate a session?**
+A: Dashboard → select a session → **Duplicate**. A new DRAFT copy is created with the same questions.
+
+**Q: What's the difference between DRAFT, LIVE, and CLOSED?**
+A: DRAFT = setup only (not joinable). LIVE = participants can vote. CLOSED = interaction ended; results and insights available.
+
+**Q: Can I use templates?**
+A: Yes. Dashboard → Templates → pick a Qesto or team template → **Use template** → customize in the wizard.
+
+**Q: How does AI question generation work?**
+A: In the session wizard, describe your goal and AI suggests questions. Review and edit before saving. You consent to AI processing when prompted.
+
+**Q: When are AI insights available?**
+A: After a session closes, on Starter+ plans. You need open-ended responses — polls alone won't generate themes.
+
+**Q: How do I invite someone to my team?**
+A: Teams → your team → Settings → **Invite member**. They accept the email link while logged in.
+
+**Q: What is SAML SSO?**
+A: Single sign-on through your company identity provider (Starter+). Configure under Team settings → Authentication.
+
+**Q: I didn't receive my magic link email — what now?**
+A: Check spam, wait a few minutes, confirm the email address, and request a new link. Or sign in with password if you have one.
+
+**Q: Can I delete my account or session data?**
+A: Email support@qesto.cc for account deletion. Hosts can delete DRAFT sessions from the dashboard. Closed session data is retained up to 1 year unless deleted earlier.
+
+**Q: Does Qesto work with Zoom, Teams, or Meet?**
+A: Qesto handles polls and Q&A; pair it with your video call for audio/video. Share the Qesto link in the meeting chat.
+
+**Q: Can multiple people host the same session?**
+A: Add co-hosts to your team with **Launch session** permission. Only one presenter controls the live flow at a time.
+
 Have more questions? Contact support@qesto.cc
 
 ---

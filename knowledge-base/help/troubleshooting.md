@@ -532,3 +532,53 @@ Email support@qesto.cc with:
 - When it started
 
 We'll help troubleshoot!
+
+---
+
+## Host-Specific Issues
+
+### Participants Can't Join — "Session Not Found"
+
+The session is still in **DRAFT**. Participants can only join after the host clicks **Start**.
+
+1. Host: open Launchpad → click **Start** or **Open lobby**
+2. Share the link again after the session is ENERGIZING or LIVE
+3. Confirm participants use the full link (not a dashboard edit URL)
+
+### Stuck in Energizing — Questions Won't Start
+
+The session has energizers and is waiting for the host to transition.
+
+1. Host: Launchpad → click **Start Questions**
+2. Or complete/skip active energizers first
+3. Session moves to **LIVE** and questions appear for participants
+
+### Host Lost Presenter Controls
+
+Presenter connection dropped but session is still live.
+
+1. Reopen the Launchpad or Present view from the dashboard
+2. Refresh the page — you reconnect as presenter via your account token
+3. Do not start a second session for the same event
+
+### QR Code Not Scanning
+
+1. Ensure the session is started (not DRAFT)
+2. Increase screen brightness for projector sharing
+3. Copy the link manually as a fallback
+4. Short join code works at qesto.cc/join
+
+### Wrong Results on Presenter Screen
+
+Host view out of sync with participants.
+
+1. Host: hard refresh (Ctrl+Shift+R / Cmd+Shift+R)
+2. Do not refresh all participant devices — only the host
+3. Check you are on the correct question index
+
+### Can't Export — Button Missing or Greyed Out
+
+1. Confirm session status is **Closed**
+2. CSV export requires **Starter+** plan
+3. Need **Export sessions** permission on team workspaces (Team custom roles)
+

@@ -160,6 +160,18 @@ If your card declines:
 - International: VAT/GST varies by country
 - Non-profit: Email support for discount
 
+**Q: Do you offer nonprofit or education discounts?**
+A: Email support@qesto.cc with your organization details. We review discount requests case by case.
+
+**Q: Can I get a VAT invoice for my company?**
+A: Yes. EU B2B customers may use reverse charge. Invoices include tax details — download from Settings → Billing → Invoices.
+
+**Q: What happens to my sessions if payment fails?**
+A: After 5 days with a declined card, your plan downgrades to Free. Sessions and data are preserved; new sessions are limited to 50 participants.
+
+**Q: Can I switch from monthly to annual billing?**
+A: Yes. Settings → Billing → Change Plan → select annual. Prorated credit applies to the switch.
+
 ## Questions?
 
 Email billing@qesto.cc with:
