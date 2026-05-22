@@ -410,6 +410,18 @@ export class SessionRoom implements DurableObject {
     await this.sendInit(server, attachment)
     await this.broadcastParticipants()
 
+    if (role === 'voter') {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      const voterCount = this.ctx.getWebSockets('role:voter').length
+      writeEvent(this.env.METRICS_AE, {
+        name: 'ws.voter_joined',
+        sessionId: meta?.sessionId,
+        teamId: meta?.teamId,
+        plan: meta?.plan ?? 'free',
+        count: voterCount,
+      })
+    }
+
     return new Response(null, { status: 101, webSocket: client })
   }
 
@@ -462,10 +474,21 @@ export class SessionRoom implements DurableObject {
   }
 
   async webSocketClose(ws: WebSocket, _code: number, _reason: string, _wasClean: boolean): Promise<void> {
+    const att = ws.deserializeAttachment() as Attachment | null
     try {
       ws.close(CLOSE_NORMAL, 'bye')
     } catch {
       /* already closed */
+    }
+    if (att?.role === 'voter') {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      writeEvent(this.env.METRICS_AE, {
+        name: 'ws.voter_disconnected',
+        sessionId: meta?.sessionId,
+        teamId: meta?.teamId,
+        plan: meta?.plan ?? 'free',
+        count: this.ctx.getWebSockets('role:voter').length,
+      })
     }
     await this.broadcastParticipants()
   }

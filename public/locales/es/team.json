@@ -10,5 +10,21 @@
   "slack_test_sent": "Mensaje de prueba enviado",
   "slack_notify_close": "Notificar al cerrar sesión",
   "slack_notify_energizer": "Notificar al completar energizador",
-  "slack_notification_events": "Eventos de notificación"
+  "slack_notification_events": "Eventos de notificación",
+  "slack_prefs_error": "No se pudieron guardar las preferencias de notificación.",
+  "teams_title": "Microsoft Teams",
+  "teams_description": "Publicar resúmenes de sesión en un canal de Teams al cerrar.",
+  "teams_connected": "Canal: {{channel}}",
+  "teams_not_connected": "No conectado",
+  "teams_needs_channel": "Conectado — selecciona un canal abajo",
+  "teams_connect": "Conectar Teams",
+  "teams_disconnect": "Desconectar",
+  "teams_channel_config": "Canal de entrega",
+  "teams_group_id": "ID de equipo / grupo",
+  "teams_channel_id": "ID del canal",
+  "teams_channel_name": "Nombre visible del canal",
+  "teams_save_channel": "Guardar canal",
+  "teams_status_error": "Error al cargar el estado de Teams.",
+  "teams_disconnect_error": "Error al desconectar.",
+  "teams_config_error": "No se pudo guardar la configuración del canal."
 }

@@ -84,6 +84,8 @@ See [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md) §Sprint 31 and [`sprints/SPR
 
 ## Sprint 32 — v2.2 Release Candidate
 
+**Status (2026-05-22):** `feat/sprint-32-v22-rc` — CODE-SPLIT-01 complete; run `npm run check:rc` before merge.
+
 **Window:** 2026-06-24 → 2026-07-08 | **~38 pts** | **🚀 v2.2**
 
 RC-REGRESSION-01, RC-DOCS-01, RC-ROLLOUT-01, RC-OBS-01, EXPORT-RICH-01-A, PERF-PROOF-01, CODE-SPLIT-01 (land in S31 week 2, verify in S32).
@@ -93,6 +95,8 @@ RC-REGRESSION-01, RC-DOCS-01, RC-ROLLOUT-01, RC-OBS-01, EXPORT-RICH-01-A, PERF-P
 ---
 
 ## Sprint 33 — Integration Suite + AI Context
+
+**Status (2026-05-22):** `feat/sprint-33-v23-integrations` — AI-CONTEXT-01, ADR-0011, SSRF, AE events, Slack prefs, Teams UI. See [`sprints/SPRINT33_IMPLEMENTATION_SPEC.md`](./sprints/SPRINT33_IMPLEMENTATION_SPEC.md).
 
 **Window:** 2026-07-08 → 2026-07-22 | **~43 pts**
 

@@ -18,6 +18,7 @@
 // to the per-webhook delivery log and do not propagate to the caller.
 
 import type { Env } from '../types'
+import { writeEvent } from './observability'
 import { ulid } from './ulid'
 import { z } from 'zod'
 import { validateData, WebhookConfigSchema } from './validators'
@@ -203,6 +204,7 @@ export async function deliverWebhook(
   config: WebhookConfig,
   payload: WebhookPayload,
   integrationsKv: KVNamespace,
+  metricsEnv?: Pick<Env, 'METRICS_AE'>,
 ): Promise<void> {
   if (!config.enabled) return
   if (!config.events.includes(payload.event)) return
@@ -248,6 +250,14 @@ export async function deliverWebhook(
     } catch {
       /* ignore */
     }
+
+    writeEvent(metricsEnv?.METRICS_AE, {
+      name: 'webhook.delivery_attempted',
+      teamId: config.teamId,
+      durationMs: result.durationMs,
+      count: attempt,
+      detail: `${config.id}:${result.success ? 'ok' : 'fail'}`,
+    })
 
     if (result.success) return
 
@@ -316,7 +326,7 @@ export async function deliverTeamWebhooks(
     if (!config.enabled) continue
     if (!config.events.includes(event)) continue
     tasks.push(
-      deliverWebhook(config, payload, env.INTEGRATIONS_KV).catch((err) => {
+      deliverWebhook(config, payload, env.INTEGRATIONS_KV, env).catch((err) => {
         console.error(
           JSON.stringify({
             event: 'webhook.deliver.error',

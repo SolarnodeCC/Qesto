@@ -18,7 +18,7 @@ relates_to:
 
 # Sprint 32 Implementation Spec — v2.2 Release Candidate
 
-Status: release candidate prepared.
+Status: in progress — CODE-SPLIT-01 landed on `feat/sprint-32-v22-rc`; RC gates pending local `npm run check:rc`.
 
 ## Release Candidate Contents
 
@@ -63,9 +63,26 @@ Admins and operators must be able to answer:
 
 Cloudflare-authenticated checks can fail locally when `CLOUDFLARE_API_TOKEN` is unavailable. Durable Object realtime smoke tests are constrained locally because `SESSION_ROOM` points at the external `qesto` worker.
 
+## CODE-SPLIT-01 (2026-05-22)
+
+`functions/api/routes/sessions.ts` is now a re-export; implementation modules:
+
+| Module | ~lines | Responsibility |
+|---|---:|---|
+| `sessions/shared.ts` | 328 | D1 helpers, DO stubs, insights precompute, schema patch |
+| `sessions/public.ts` | 146 | Join-by-code, WebSocket upgrade |
+| `sessions/crud.ts` | 314 | Journey events, create/list/get/patch |
+| `sessions/lifecycle.ts` | 469 | start, close, transition-to-live |
+| `sessions/exports.ts` | 345 | JSON/CSV/HTML export (EXPORT-RICH-01-A) |
+| `sessions/results.ts` | 64 | Live results |
+| `sessions/wizard.ts` | 835 | AI wizard, questions CRUD, duplicate, preflight, insights themes |
+| `sessions/index.ts` | 30 | Composes routers (same route order as monolith) |
+
+Regenerate after editing the monolith backup: `node scripts/split-sessions-routes.mjs` (restore `sessions.ts` from git first).
+
 ## Local Regression Result
 
-Completed on 2026-05-05:
+Prior baseline completed on 2026-05-05:
 
 - `npm run typecheck`
 - `npm run check:i18n`
