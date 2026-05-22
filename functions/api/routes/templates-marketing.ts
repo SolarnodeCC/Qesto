@@ -262,5 +262,5 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
   }
   })
 
-  parent.route('/api/templates', app)
+  parent.route('/api/gallery', app)
 }
