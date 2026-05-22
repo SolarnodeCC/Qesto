@@ -23,6 +23,7 @@ import { validateBody } from '../lib/validate'
 import { ok, fail } from '../lib/http'
 import type { Env } from '../types'
 import type { Team } from './teams'
+import { validateWebhookTargetUrl } from '../lib/webhook-url'
 import {
   KNOWN_WEBHOOK_EVENTS,
   WEBHOOK_LIMIT_PER_TEAM,
@@ -113,6 +114,11 @@ export function mountWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     if ('error' in validated) return validated.error
     const { data: body } = validated
 
+    const urlCheck = validateWebhookTargetUrl(body.url)
+    if (!urlCheck.ok) {
+      return fail(c, urlCheck.code, urlCheck.message, urlCheck.code === 'ssrf_blocked' ? 403 : 400)
+    }
+
     const current = await countTeamWebhooks(kv, teamId)
     if (current >= WEBHOOK_LIMIT_PER_TEAM) {
       return fail(
@@ -180,6 +186,13 @@ export function mountWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const validated = await validateBody(c, PatchWebhookSchema)
     if ('error' in validated) return validated.error
     const { data: patch } = validated
+
+    if (patch.url !== undefined) {
+      const urlCheck = validateWebhookTargetUrl(patch.url)
+      if (!urlCheck.ok) {
+        return fail(c, urlCheck.code, urlCheck.message, urlCheck.code === 'ssrf_blocked' ? 403 : 400)
+      }
+    }
 
     const next: WebhookConfig = {
       ...existing,

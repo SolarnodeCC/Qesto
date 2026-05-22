@@ -10,5 +10,21 @@
   "slack_test_sent": "Test message sent",
   "slack_notify_close": "Notify on session close",
   "slack_notify_energizer": "Notify on energizer completion",
-  "slack_notification_events": "Notification events"
+  "slack_notification_events": "Notification events",
+  "slack_prefs_error": "Could not save notification preferences.",
+  "teams_title": "Microsoft Teams",
+  "teams_description": "Post session summaries to a Teams channel when sessions close.",
+  "teams_connected": "Delivery channel: {{channel}}",
+  "teams_not_connected": "Not connected",
+  "teams_needs_channel": "Connected — select a channel below",
+  "teams_connect": "Connect Teams",
+  "teams_disconnect": "Disconnect",
+  "teams_channel_config": "Delivery channel",
+  "teams_group_id": "Team / group ID",
+  "teams_channel_id": "Channel ID",
+  "teams_channel_name": "Channel display name",
+  "teams_save_channel": "Save channel",
+  "teams_status_error": "Failed to load Teams status.",
+  "teams_disconnect_error": "Disconnect failed.",
+  "teams_config_error": "Could not save channel configuration."
 }

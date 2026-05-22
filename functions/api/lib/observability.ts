@@ -107,7 +107,12 @@ export type QestoEvent = {
     | 'session.started'
     | 'session.closed'
     | 'ws.voter_joined'
+    | 'ws.voter_disconnected'
     | 'ws.capacity_exceeded'
+    | 'integration.connected'
+    | 'export.initiated'
+    | 'export.completed'
+    | 'webhook.delivery_attempted'
     | 'ws.token_bucket_contention'
     | 'ws.energizer_activated'
     | 'ws.energizer_activation_denied'
@@ -141,6 +146,8 @@ export type QestoEvent = {
   count?: number | undefined
   value?: number | undefined
   traceId?: string | undefined
+  /** blob6 — integration type, export format, model id, webhook id, etc. */
+  detail?: string | undefined
 }
 
 /**
@@ -157,6 +164,7 @@ export function writeEvent(ae: AnalyticsEngineDataset | undefined, event: QestoE
     event.teamId || '',
     event.plan || '',
     event.traceId || '',
+    ...(event.detail ? [event.detail] : []),
   ]
   const doubles: number[] = [
     event.durationMs ?? 0,

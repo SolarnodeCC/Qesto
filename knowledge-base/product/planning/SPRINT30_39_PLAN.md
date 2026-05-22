@@ -63,17 +63,28 @@ Ten two-week sprints take Qesto from **v2.2 resilience + RC** (S30–S32) throug
 
 ## Sprint 31 — Enterprise + Circuit Breakers + Integration Foundation
 
-**Window:** 2026-06-10 → 2026-06-24 | **~48 pts**
+**Window:** 2026-06-10 → 2026-06-24 | **~48 pts** | **Status:** Implementation in progress (2026-05-22)
 
-See SPRINT26_32 §Sprint 31. **Agent adjustment:** **COMPLIANCE-02** pulled forward (CI claim gate before GDPR trust page).
+See [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md) §Sprint 31 and [`sprints/SPRINT31_IMPLEMENTATION_SPEC.md`](./sprints/SPRINT31_IMPLEMENTATION_SPEC.md).
 
-**DevOps blockers (before merge):** `CIRCUIT_BREAKER_KV`, `INTEGRATIONS_KV`, `OAUTH_TOKEN_MEK`.
+| ID | Status |
+|----|--------|
+| INT-PROVIDER-01 | ✅ AES-GCM token store |
+| CB-01 / CB-02 | ✅ Wired; KV binding prefers `CIRCUIT_BREAKER_KV` |
+| AUTHZ-GAM-01 | ✅ Pre-shipped v2.2 RC |
+| ADR-0010 / ADR-0007-amend | ✅ Accepted |
+| GDPR-TRUST-PAGE-01 | ✅ `/trust/gdpr` |
+| AUDIT-GAM-01 | ✅ Action labels + `ws.energizer_answered` |
+| DEPLOY-GAM-01 / QA-ENT-02 | Checklists + tests exist; staging smoke manual |
+| ANON-DEPTH-01 | Stretch → S32 (wizard + join badge already live) |
 
-**ADR gates:** ADR-0010, ADR-0007-amend.
+**DevOps blockers (before prod merge):** `CIRCUIT_BREAKER_KV`, `INTEGRATIONS_KV`, `OAUTH_TOKEN_MEK`.
 
 ---
 
 ## Sprint 32 — v2.2 Release Candidate
+
+**Status (2026-05-22):** `feat/sprint-32-v22-rc` — CODE-SPLIT-01 complete; run `npm run check:rc` before merge.
 
 **Window:** 2026-06-24 → 2026-07-08 | **~38 pts** | **🚀 v2.2**
 
@@ -84,6 +95,8 @@ RC-REGRESSION-01, RC-DOCS-01, RC-ROLLOUT-01, RC-OBS-01, EXPORT-RICH-01-A, PERF-P
 ---
 
 ## Sprint 33 — Integration Suite + AI Context
+
+**Status (2026-05-22):** `feat/sprint-33-v23-integrations` — AI-CONTEXT-01, ADR-0011, SSRF, AE events, Slack prefs, Teams UI. See [`sprints/SPRINT33_IMPLEMENTATION_SPEC.md`](./sprints/SPRINT33_IMPLEMENTATION_SPEC.md).
 
 **Window:** 2026-07-08 → 2026-07-22 | **~43 pts**
 

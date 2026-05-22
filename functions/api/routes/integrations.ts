@@ -26,7 +26,8 @@ import { TeamsProvider } from '../lib/integrations/providers/teams'
 import { generatePKCEPair } from '../lib/integrations/oauth'
 import type { ProviderConfig } from '../lib/integrations/types'
 import { readKvJson, writeKvJson } from '../lib/kv'
-import type { Env } from '../types'
+import { writeEvent } from '../lib/observability'
+import type { Env, PlanTier } from '../types'
 
 // Match the Vars shape used in app.ts so this sub-router composes cleanly.
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -39,6 +40,10 @@ export interface SlackIntegrationConfig {
   teamName?: string
   connectedAt: number
   connectedBy: string
+  /** SLACK-02: when false, session close does not post to Slack (default true). */
+  notifyOnClose?: boolean
+  /** SLACK-02: energizer completion notifications (default false). */
+  notifyOnEnergizer?: boolean
 }
 
 // ─── Slack-config KV key helpers ──────────────────────────────────────────────
@@ -184,6 +189,24 @@ function integrationsDisabled(env: Env): boolean {
   return env.INTEGRATION_ENABLED !== '1' || !env.INTEGRATIONS_KV
 }
 
+async function emitIntegrationConnected(
+  env: Env,
+  userId: string,
+  teamId: string,
+  integrationType: 'slack' | 'teams',
+): Promise<void> {
+  const row = await env.DB.prepare(`SELECT plan FROM users WHERE id = ?1`)
+    .bind(userId)
+    .first<{ plan: PlanTier }>()
+  writeEvent(env.METRICS_AE, {
+    name: 'integration.connected',
+    userId,
+    teamId,
+    plan: row?.plan,
+    detail: integrationType,
+  })
+}
+
 // ─── Caller team resolution ───────────────────────────────────────────────────
 
 async function resolvePrimaryTeamId(env: Env, userId: string): Promise<string | null> {
@@ -275,6 +298,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
           expirationTtl: 90 * 24 * 60 * 60,
         })
       }
+      await emitIntegrationConnected(c.env, verified.userId, verified.teamId, 'slack')
       console.log(
         JSON.stringify({
           event: 'slack.connected',
@@ -283,7 +307,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
           channelId: channelId ?? null,
         }),
       )
-      return c.redirect(`${c.env.PAGES_URL}/integrations?connected=slack`, 302)
+      return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=slack`, 302)
     } catch (err) {
       console.error(
         JSON.stringify({
@@ -315,6 +339,54 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
         connected: token !== null,
         ...(config?.channelName ? { channel: config.channelName } : {}),
         ...(config?.teamName ? { teamName: config.teamName } : {}),
+        notifyOnClose: config?.notifyOnClose !== false,
+        notifyOnEnergizer: config?.notifyOnEnergizer === true,
+      },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  // PATCH /api/integrations/slack/preferences — SLACK-02 event filters
+  app.patch('/slack/preferences', authMiddleware, async (c) => {
+    if (integrationsDisabled(c.env)) {
+      return c.json(
+        { ok: false, error: { code: 'integrations_disabled', message: 'Integrations are not enabled' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+    const user = c.get('user')
+    const body = (await c.req.json().catch(() => ({}))) as {
+      teamId?: string
+      notifyOnClose?: boolean
+      notifyOnEnergizer?: boolean
+    }
+    const teamId = body.teamId ?? (await resolvePrimaryTeamId(c.env, user.sub))
+    if (!teamId) {
+      return c.json(
+        { ok: false, error: { code: 'team_required', message: 'teamId required' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const config = await readKvJson<SlackIntegrationConfig>(c.env.INTEGRATIONS_KV!, slackConfigKey(teamId))
+    if (!config) {
+      return c.json(
+        { ok: false, error: { code: 'not_connected', message: 'Slack is not connected for this team' }, trace_id: c.get('trace_id') },
+        409,
+      )
+    }
+    const next: SlackIntegrationConfig = {
+      ...config,
+      ...(body.notifyOnClose !== undefined ? { notifyOnClose: body.notifyOnClose } : {}),
+      ...(body.notifyOnEnergizer !== undefined ? { notifyOnEnergizer: body.notifyOnEnergizer } : {}),
+    }
+    await writeKvJson(c.env.INTEGRATIONS_KV!, slackConfigKey(teamId), next, {
+      expirationTtl: 90 * 24 * 60 * 60,
+    })
+    return c.json({
+      ok: true,
+      data: {
+        notifyOnClose: next.notifyOnClose !== false,
+        notifyOnEnergizer: next.notifyOnEnergizer === true,
       },
       trace_id: c.get('trace_id'),
     })
@@ -470,6 +542,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
       const token = await provider.exchangeCode(code, codeVerifier)
       const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
       await store.storeToken(verified.teamId, 'teams', token)
+      await emitIntegrationConnected(c.env, verified.userId, verified.teamId, 'teams')
       console.log(
         JSON.stringify({
           event: 'teams.connected',
@@ -477,9 +550,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
           userId: verified.userId,
         }),
       )
-      // Microsoft does not return channel binding from the token endpoint, so
-      // the UI must follow up with POST /teams/config to select the channel.
-      return c.redirect(`${c.env.PAGES_URL}/integrations?connected=teams&configure=1`, 302)
+      return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=teams&configure=1`, 302)
     } catch (err) {
       console.error(
         JSON.stringify({
@@ -615,6 +686,7 @@ export async function notifySlackSessionClosed(
   if (!token) return
   const config = await readKvJson<SlackIntegrationConfig>(env.INTEGRATIONS_KV, slackConfigKey(teamId))
   if (!config) return
+  if (config.notifyOnClose === false) return
 
   // Build a minimal SessionResults payload — we deliberately avoid extra D1
   // round-trips on the close hot path. Vote tallies come from the DO snapshot.

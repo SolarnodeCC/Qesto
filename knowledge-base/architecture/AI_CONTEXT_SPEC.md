@@ -19,7 +19,7 @@ relates_to:
 # Session AI Context — Interface Specification (Draft)
 
 **Backlog:** AI-CONTEXT-01 (Sprint 33)  
-**Status:** Draft for Sprint 32 RC review — implementation in Sprint 33
+**Status:** Implemented — `functions/api/lib/ai/session-context.ts` (Sprint 33)
 
 ## Purpose
 

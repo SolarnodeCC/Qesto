@@ -10,5 +10,21 @@
   "slack_test_sent": "Testbericht verzonden",
   "slack_notify_close": "Melding bij afsluiting sessie",
   "slack_notify_energizer": "Melding bij voltooiing energizer",
-  "slack_notification_events": "Meldingsgebeurtenissen"
+  "slack_notification_events": "Meldingsgebeurtenissen",
+  "slack_prefs_error": "Voorkeuren voor meldingen opslaan mislukt.",
+  "teams_title": "Microsoft Teams",
+  "teams_description": "Plaats sessiesamenvattingen in een Teams-kanaal bij afsluiting.",
+  "teams_connected": "Kanaal: {{channel}}",
+  "teams_not_connected": "Niet verbonden",
+  "teams_needs_channel": "Verbonden — kies hieronder een kanaal",
+  "teams_connect": "Teams koppelen",
+  "teams_disconnect": "Verbreken",
+  "teams_channel_config": "Afleverkanaal",
+  "teams_group_id": "Team- / groeps-ID",
+  "teams_channel_id": "Kanaal-ID",
+  "teams_channel_name": "Weergavenaam kanaal",
+  "teams_save_channel": "Kanaal opslaan",
+  "teams_status_error": "Teams-status laden mislukt.",
+  "teams_disconnect_error": "Verbreken mislukt.",
+  "teams_config_error": "Kanaalconfiguratie opslaan mislukt."
 }

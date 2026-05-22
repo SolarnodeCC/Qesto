@@ -6,7 +6,9 @@
 //   GET /api/sessions/:id/export.html — print-ready signed HTML export (EXPORT-PDF-01)
 
 import { Hono } from 'hono'
+import type { Context } from 'hono'
 import { requireFound } from '../../lib/session-lifecycle'
+import { writeEvent } from '../../lib/observability'
 import { csvRow, escapeCsvCell } from '../../lib/csv'
 import { generateSessionHtmlExport } from '../../lib/export-pdf'
 import type { Env } from '../../types'
@@ -17,6 +19,25 @@ import type { PlanVariables } from '../../middleware/plan'
 type Vars = AuthVariables & PlanVariables
 
 type FetchSession = (db: D1Database, id: string, ownerId: string) => Promise<Session | null>
+
+function trackExport(
+  c: Context<{ Bindings: Env; Variables: Vars }>,
+  phase: 'initiated' | 'completed',
+  format: string,
+  sessionId: string,
+  teamId: string | null | undefined,
+  durationMs?: number,
+): void {
+  writeEvent(c.env.METRICS_AE, {
+    name: phase === 'initiated' ? 'export.initiated' : 'export.completed',
+    userId: c.get('user').sub,
+    sessionId,
+    teamId: teamId ?? undefined,
+    plan: c.get('plan'),
+    detail: format,
+    ...(durationMs !== undefined ? { durationMs } : {}),
+  })
+}
 
 async function loadExportVoteMap(
   db: D1Database,
@@ -91,6 +112,9 @@ export function mountExportRoutes(
       )
     }
 
+    const exportStarted = Date.now()
+    trackExport(c, 'initiated', 'json', id, session.team_id)
+
     const { results: questionRows } = await c.env.DB
       .prepare(
         `SELECT id, position, kind, prompt, options_json
@@ -143,6 +167,8 @@ export function mountExportRoutes(
       total_votes: totalVotes,
     }
 
+    trackExport(c, 'completed', 'json', id, session.team_id, Date.now() - exportStarted)
+
     return new Response(JSON.stringify(exportPayload, null, 2), {
       headers: {
         'content-type': 'application/json',
@@ -186,6 +212,9 @@ export function mountExportRoutes(
         409,
       )
     }
+
+    const exportStarted = Date.now()
+    trackExport(c, 'initiated', 'csv', id, session.team_id)
 
     const { results: questionRows } = await c.env.DB
       .prepare(
@@ -235,6 +264,8 @@ export function mountExportRoutes(
       }
     }
 
+    trackExport(c, 'completed', 'csv', id, session.team_id, Date.now() - exportStarted)
+
     return new Response(csvRows.join('\r\n'), {
       headers: {
         'content-type': 'text/csv; charset=utf-8',
@@ -279,6 +310,9 @@ export function mountExportRoutes(
         409,
       )
     }
+
+    const exportStarted = Date.now()
+    trackExport(c, 'initiated', 'html', id, session.team_id)
 
     const { results: questionRows } = await c.env.DB
       .prepare(
@@ -333,6 +367,8 @@ export function mountExportRoutes(
       },
       c.env.JWT_SECRET,
     )
+
+    trackExport(c, 'completed', 'html', id, session.team_id, Date.now() - exportStarted)
 
     return new Response(html, {
       headers: {

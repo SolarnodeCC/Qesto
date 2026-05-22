@@ -145,15 +145,30 @@ export default function TeamSettings() {
   const [samlFeedback, setSamlFeedback] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null)
 
   // Integrations — Slack section state
-  const [slackStatus, setSlackStatus] = useState<{ connected: boolean; channel?: string; teamName?: string } | null>(null)
+  const [slackStatus, setSlackStatus] = useState<{
+    connected: boolean
+    channel?: string
+    teamName?: string
+    notifyOnClose?: boolean
+    notifyOnEnergizer?: boolean
+  } | null>(null)
   const [slackLoading, setSlackLoading] = useState(false)
   const [slackError, setSlackError] = useState<string | null>(null)
   const [slackTestSent, setSlackTestSent] = useState(false)
   const [slackDisconnecting, setSlackDisconnecting] = useState(false)
   const [slackTesting, setSlackTesting] = useState(false)
-  // Event filter preferences (local state only; backend config endpoint ships in Sprint 34)
   const [slackNotifyClose, setSlackNotifyClose] = useState(true)
   const [slackNotifyEnergizer, setSlackNotifyEnergizer] = useState(false)
+  const [slackPrefsSaving, setSlackPrefsSaving] = useState(false)
+
+  const [teamsStatus, setTeamsStatus] = useState<{ connected: boolean; channelName?: string } | null>(null)
+  const [teamsLoading, setTeamsLoading] = useState(false)
+  const [teamsError, setTeamsError] = useState<string | null>(null)
+  const [teamsDisconnecting, setTeamsDisconnecting] = useState(false)
+  const [teamsGroupId, setTeamsGroupId] = useState('')
+  const [teamsChannelId, setTeamsChannelId] = useState('')
+  const [teamsChannelName, setTeamsChannelName] = useState('')
+  const [teamsConfigSaving, setTeamsConfigSaving] = useState(false)
 
   const h1Ref = useRef<HTMLHeadingElement>(null)
 
@@ -201,9 +216,20 @@ export default function TeamSettings() {
           setSlackError('Failed to load Slack status.')
           return
         }
-        const json = await res.json() as { ok: boolean; data: { connected: boolean; channel?: string; teamName?: string } }
+        const json = await res.json() as {
+          ok: boolean
+          data: {
+            connected: boolean
+            channel?: string
+            teamName?: string
+            notifyOnClose?: boolean
+            notifyOnEnergizer?: boolean
+          }
+        }
         if (json.ok) {
           setSlackStatus(json.data)
+          setSlackNotifyClose(json.data.notifyOnClose !== false)
+          setSlackNotifyEnergizer(json.data.notifyOnEnergizer === true)
         } else {
           setSlackError('Failed to load Slack status.')
         }
@@ -211,6 +237,23 @@ export default function TeamSettings() {
       .catch(() => setSlackError('Failed to load Slack status.'))
       .finally(() => setSlackLoading(false))
   }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    setTeamsLoading(true)
+    setTeamsError(null)
+    void fetch(`/api/integrations/teams/status?teamId=${encodeURIComponent(id)}`)
+      .then(async (res) => {
+        const json = (await res.json()) as {
+          ok: boolean
+          data?: { connected: boolean; channelName?: string }
+        }
+        if (json.ok && json.data) setTeamsStatus(json.data)
+        else setTeamsError(tTeam('teams_status_error'))
+      })
+      .catch(() => setTeamsError(tTeam('teams_status_error')))
+      .finally(() => setTeamsLoading(false))
+  }, [id, tTeam])
 
   // ── Guard: redirect unauthenticated users ─────────────────────────────────
 
@@ -452,6 +495,88 @@ export default function TeamSettings() {
       setSlackError('Disconnect failed. Please try again.')
     } finally {
       setSlackDisconnecting(false)
+    }
+  }
+
+  async function saveSlackPreferences(notifyOnClose: boolean, notifyOnEnergizer: boolean) {
+    if (!id) return
+    setSlackPrefsSaving(true)
+    setSlackError(null)
+    try {
+      const res = await fetch('/api/integrations/slack/preferences', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ teamId: id, notifyOnClose, notifyOnEnergizer }),
+      })
+      const json = (await res.json()) as { ok: boolean; error?: { message?: string } }
+      if (!json.ok) {
+        setSlackError(json.error?.message ?? tTeam('slack_prefs_error'))
+      }
+    } catch {
+      setSlackError(tTeam('slack_prefs_error'))
+    } finally {
+      setSlackPrefsSaving(false)
+    }
+  }
+
+  async function handleSlackNotifyCloseChange(checked: boolean) {
+    setSlackNotifyClose(checked)
+    await saveSlackPreferences(checked, slackNotifyEnergizer)
+  }
+
+  async function handleSlackNotifyEnergizerChange(checked: boolean) {
+    setSlackNotifyEnergizer(checked)
+    await saveSlackPreferences(slackNotifyClose, checked)
+  }
+
+  async function handleTeamsDisconnect() {
+    if (!id) return
+    setTeamsDisconnecting(true)
+    setTeamsError(null)
+    try {
+      const res = await fetch('/api/integrations/teams/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ teamId: id }),
+      })
+      const json = (await res.json()) as { ok: boolean }
+      if (json.ok) setTeamsStatus({ connected: false })
+      else setTeamsError(tTeam('teams_disconnect_error'))
+    } catch {
+      setTeamsError(tTeam('teams_disconnect_error'))
+    } finally {
+      setTeamsDisconnecting(false)
+    }
+  }
+
+  async function handleTeamsConfigSave() {
+    if (!id || !teamsGroupId.trim() || !teamsChannelId.trim()) return
+    setTeamsConfigSaving(true)
+    setTeamsError(null)
+    try {
+      const res = await fetch('/api/integrations/teams/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          teamId: id,
+          groupId: teamsGroupId.trim(),
+          channelId: teamsChannelId.trim(),
+          channelName: teamsChannelName.trim() || teamsChannelId.trim(),
+        }),
+      })
+      const json = (await res.json()) as { ok: boolean; error?: { message?: string } }
+      if (json.ok) {
+        setTeamsStatus({ connected: true, channelName: teamsChannelName.trim() || teamsChannelId.trim() })
+      } else {
+        setTeamsError(json.error?.message ?? tTeam('teams_config_error'))
+      }
+    } catch {
+      setTeamsError(tTeam('teams_config_error'))
+    } finally {
+      setTeamsConfigSaving(false)
     }
   }
 
@@ -1014,7 +1139,6 @@ export default function TeamSettings() {
                     )}
                   </div>
 
-                  {/* Event filter preferences (local state — backend config endpoint ships in Sprint 34) */}
                   {slackStatus?.connected ? (
                     <fieldset className="space-y-2 border-t border-pulse-100 pt-3">
                       <legend className="text-sm font-medium text-pulse-700 mb-2">{tTeam('slack_notification_events')}</legend>
@@ -1022,7 +1146,8 @@ export default function TeamSettings() {
                         <input
                           type="checkbox"
                           checked={slackNotifyClose}
-                          onChange={(e) => setSlackNotifyClose(e.target.checked)}
+                          onChange={(e) => void handleSlackNotifyCloseChange(e.target.checked)}
+                          disabled={slackPrefsSaving}
                           className="h-4 w-4 rounded border-pulse-300 text-teal-600 focus:ring-teal-500"
                         />
                         {t('slack_notify_close')}
@@ -1031,12 +1156,119 @@ export default function TeamSettings() {
                         <input
                           type="checkbox"
                           checked={slackNotifyEnergizer}
-                          onChange={(e) => setSlackNotifyEnergizer(e.target.checked)}
+                          onChange={(e) => void handleSlackNotifyEnergizerChange(e.target.checked)}
+                          disabled={slackPrefsSaving}
                           className="h-4 w-4 rounded border-pulse-300 text-teal-600 focus:ring-teal-500"
                         />
                         {t('slack_notify_energizer')}
                       </label>
                     </fieldset>
+                  ) : null}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Microsoft Teams card */}
+          <div className="flex items-start gap-4 rounded-lg border border-pulse-200 p-4">
+            <div
+              aria-hidden="true"
+              className="shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded bg-[#464EB8] text-xs font-bold text-white"
+            >
+              T
+            </div>
+            <div className="flex-1 min-w-0 space-y-3">
+              <div>
+                <h3 className="font-medium text-pulse-900">{tTeam('teams_title')}</h3>
+                <p className="text-sm text-pulse-500 mt-0.5">{tTeam('teams_description')}</p>
+              </div>
+              {teamsLoading ? (
+                <div className="h-5 w-40 rounded bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
+              ) : (
+                <>
+                  <p className="text-sm">
+                    {teamsStatus?.connected && teamsStatus.channelName ? (
+                      <span className="inline-flex items-center gap-1.5 text-teal-700 font-medium">
+                        <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full bg-teal-500" />
+                        {tTeam('teams_connected', { channel: teamsStatus.channelName })}
+                      </span>
+                    ) : teamsStatus?.connected ? (
+                      <span className="text-amber-700">{tTeam('teams_needs_channel')}</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-pulse-500">
+                        <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full bg-pulse-300" />
+                        {tTeam('teams_not_connected')}
+                      </span>
+                    )}
+                  </p>
+                  {teamsError ? (
+                    <p role="alert" className="text-sm text-red-600">{teamsError}</p>
+                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    {teamsStatus?.connected ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleTeamsDisconnect()}
+                        disabled={teamsDisconnecting}
+                        className="min-h-[44px] rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 hover:border-red-400 disabled:opacity-60"
+                      >
+                        {teamsDisconnecting ? '…' : tTeam('teams_disconnect')}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (id) window.location.href = `/api/integrations/teams/connect?teamId=${encodeURIComponent(id)}`
+                        }}
+                        className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-4 py-2 text-sm font-medium text-white"
+                      >
+                        {tTeam('teams_connect')}
+                      </button>
+                    )}
+                  </div>
+                  {teamsStatus?.connected ? (
+                    <form
+                      className="space-y-2 border-t border-pulse-100 pt-3"
+                      onSubmit={(e) => {
+                        e.preventDefault()
+                        void handleTeamsConfigSave()
+                      }}
+                    >
+                      <p className="text-sm font-medium text-pulse-700">{tTeam('teams_channel_config')}</p>
+                      <label className="block text-sm">
+                        <span className="text-pulse-600">{tTeam('teams_group_id')}</span>
+                        <input
+                          value={teamsGroupId}
+                          onChange={(e) => setTeamsGroupId(e.target.value)}
+                          className="mt-1 w-full rounded border border-pulse-200 px-3 py-2"
+                          required
+                        />
+                      </label>
+                      <label className="block text-sm">
+                        <span className="text-pulse-600">{tTeam('teams_channel_id')}</span>
+                        <input
+                          value={teamsChannelId}
+                          onChange={(e) => setTeamsChannelId(e.target.value)}
+                          className="mt-1 w-full rounded border border-pulse-200 px-3 py-2"
+                          required
+                        />
+                      </label>
+                      <label className="block text-sm">
+                        <span className="text-pulse-600">{tTeam('teams_channel_name')}</span>
+                        <input
+                          value={teamsChannelName}
+                          onChange={(e) => setTeamsChannelName(e.target.value)}
+                          className="mt-1 w-full rounded border border-pulse-200 px-3 py-2"
+                        />
+                      </label>
+                      <button
+                        type="submit"
+                        disabled={teamsConfigSaving}
+                        className="min-h-[44px] rounded-lg border border-pulse-300 px-4 py-2 text-sm font-medium"
+                      >
+                        {teamsConfigSaving ? '…' : tTeam('teams_save_channel')}
+                      </button>
+                    </form>
                   ) : null}
                 </>
               )}

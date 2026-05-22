@@ -10,5 +10,21 @@
   "slack_test_sent": "Message de test envoyé",
   "slack_notify_close": "Notifier à la clôture de session",
   "slack_notify_energizer": "Notifier à la fin d'un énergiseur",
-  "slack_notification_events": "Événements de notification"
+  "slack_notification_events": "Événements de notification",
+  "slack_prefs_error": "Impossible d'enregistrer les préférences de notification.",
+  "teams_title": "Microsoft Teams",
+  "teams_description": "Publier les résumés de session dans un canal Teams à la clôture.",
+  "teams_connected": "Canal : {{channel}}",
+  "teams_not_connected": "Non connecté",
+  "teams_needs_channel": "Connecté — choisir un canal ci-dessous",
+  "teams_connect": "Connecter Teams",
+  "teams_disconnect": "Déconnecter",
+  "teams_channel_config": "Canal de livraison",
+  "teams_group_id": "ID équipe / groupe",
+  "teams_channel_id": "ID du canal",
+  "teams_channel_name": "Nom d'affichage du canal",
+  "teams_save_channel": "Enregistrer le canal",
+  "teams_status_error": "Échec du chargement du statut Teams.",
+  "teams_disconnect_error": "Échec de la déconnexion.",
+  "teams_config_error": "Impossible d'enregistrer la configuration du canal."
 }

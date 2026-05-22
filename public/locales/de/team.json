@@ -10,5 +10,21 @@
   "slack_test_sent": "Testnachricht gesendet",
   "slack_notify_close": "Benachrichtigung bei Sitzungsende",
   "slack_notify_energizer": "Benachrichtigung bei Energizer-Abschluss",
-  "slack_notification_events": "Benachrichtigungsereignisse"
+  "slack_notification_events": "Benachrichtigungsereignisse",
+  "slack_prefs_error": "Benachrichtigungseinstellungen konnten nicht gespeichert werden.",
+  "teams_title": "Microsoft Teams",
+  "teams_description": "Sitzungszusammenfassungen bei Abschluss in einen Teams-Kanal senden.",
+  "teams_connected": "Zielkanal: {{channel}}",
+  "teams_not_connected": "Nicht verbunden",
+  "teams_needs_channel": "Verbunden — Kanal unten auswählen",
+  "teams_connect": "Teams verbinden",
+  "teams_disconnect": "Trennen",
+  "teams_channel_config": "Zielkanal",
+  "teams_group_id": "Team- / Gruppen-ID",
+  "teams_channel_id": "Kanal-ID",
+  "teams_channel_name": "Anzeigename des Kanals",
+  "teams_save_channel": "Kanal speichern",
+  "teams_status_error": "Teams-Status konnte nicht geladen werden.",
+  "teams_disconnect_error": "Trennen fehlgeschlagen.",
+  "teams_config_error": "Kanalkonfiguration konnte nicht gespeichert werden."
 }
