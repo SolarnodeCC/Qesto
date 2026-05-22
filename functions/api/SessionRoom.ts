@@ -415,28 +415,50 @@ export class SessionRoom implements DurableObject {
 
   // ── Hibernation callbacks ─────────────────────────────────────────────────
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
-    const text = typeof message === 'string' ? message : new TextDecoder().decode(message)
-    const parsed = parseClientMessage(text)
-    if (!parsed) {
-      ws.send(errorMessage('bad_message', 'Invalid or malformed message'))
-      return
-    }
-    if (parsed.v !== undefined && parsed.v !== LIVE_PROTOCOL_VERSION) {
-      ws.send(errorMessage('unsupported_protocol', `Unsupported LIVE protocol version: ${parsed.v}`))
-      return
-    }
-    const att = ws.deserializeAttachment()
-    if (!att) {
-      ws.close(CLOSE_POLICY_VIOLATION, 'missing attachment')
-      return
-    }
+    try {
+      const text = typeof message === 'string' ? message : new TextDecoder().decode(message)
+      const parsed = parseClientMessage(text)
+      if (!parsed) {
+        ws.send(errorMessage('bad_message', 'Invalid or malformed message'))
+        return
+      }
+      if (parsed.v !== undefined && parsed.v !== LIVE_PROTOCOL_VERSION) {
+        ws.send(errorMessage('unsupported_protocol', `Unsupported LIVE protocol version: ${parsed.v}`))
+        return
+      }
+      const att = ws.deserializeAttachment()
+      if (!att) {
+        ws.close(CLOSE_POLICY_VIOLATION, 'missing attachment')
+        return
+      }
 
-    const handler = this.clientWsHandlers[parsed.type]
-    if (!handler) {
-      ws.send(errorMessage('unknown_type', `Unknown type: ${parsed.type}`))
-      return
+      const handler = this.clientWsHandlers[parsed.type]
+      if (!handler) {
+        ws.send(errorMessage('unknown_type', `Unknown type: ${parsed.type}`))
+        return
+      }
+      await handler(ws, att, parsed)
+    } catch (err) {
+      console.log(
+        JSON.stringify({
+          event: 'do.ws_message_fault',
+          errorClass: err instanceof Error ? err.name : 'UnknownError',
+          errorMessage: err instanceof Error ? err.message : String(err),
+        }),
+      )
+      const meta = await this.ctx.storage.get<Meta>(K_META).catch(() => null)
+      writeEvent(this.env.METRICS_AE, {
+        name: 'do.storage_fault',
+        sessionId: meta?.sessionId,
+        teamId: meta?.teamId,
+        plan: meta?.plan ?? 'free',
+      })
+      try {
+        ws.send(errorMessage('internal', 'Message processing failed'))
+      } catch {
+        /* socket already closed */
+      }
     }
-    await handler(ws, att, parsed)
   }
 
   async webSocketClose(ws: WebSocket, _code: number, _reason: string, _wasClean: boolean): Promise<void> {

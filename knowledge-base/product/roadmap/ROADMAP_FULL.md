@@ -146,6 +146,18 @@ _Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (secu
 
 **Plan:** See [`SPRINT33_34_PLAN.md`](../planning/SPRINT33_34_PLAN.md).
 
+### Sprint 30-39 — Ten-Sprint Horizon (v2.2 → v2.4)
+
+**Focus:** Committed S30–S34 execution plus groomed S35–S39 backlog (SOC 2 Type I, Zoom, white-label, mobile PWA, Salesforce, LDAP, tournaments, AI coaching).
+
+| Sprint range | Release | Status |
+|---|---|---|
+| Sprint 30-32 | v2.2 | S30 active; S31-32 planned |
+| Sprint 33-34 | v2.3 | Planned |
+| Sprint 35-39 | v2.4 foundation | Backlog groomed; ADRs 0012–0019 |
+
+**Plan:** See [`SPRINT30_39_PLAN.md`](../planning/SPRINT30_39_PLAN.md).
+
 ### Post-v2.2 Commercial Promise Completion
 
 **Focus:** Keep go-live copy honest while sequencing the higher-value promises that were removed or marked roadmap during the marketing promise audit. Promises now have sprint assignments following the 2026-05-20 planning refresh.

@@ -45,7 +45,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 - **[Backlog](./product/backlog/)** — Product backlog (master reference at `BACKLOG_MASTER.md`)
 - **[Market Research](./product/research/)** — Competitive intelligence, customer insights, market trends (updated quarterly)
 - **[Release Notes](./product/releases/)** — Version history, release plans, audit outcomes
-- **[Planning](./product/planning/)** — Sprint plans, implementation specs (sprints 19-32)
+- **[Planning](./product/planning/)** — Sprint plans, implementation specs (S19–S39 horizon: [`SPRINT30_39_PLAN.md`](./product/planning/SPRINT30_39_PLAN.md))
 
 ### Quality & Operations
 
