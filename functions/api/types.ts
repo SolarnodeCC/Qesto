@@ -39,6 +39,8 @@ export type Env = {
   CIRCUIT_BREAKER_ENABLED?: string
   /** v2.2: Integration webhooks (Slack, Notion, Airtable). */
   INTEGRATION_ENABLED?: string
+  /** AI-SENTIMENT-01: enable aggregate mood signals in LIVE sessions. */
+  SENTIMENT_ENABLED?: string
   /** GROWTH-ENGINE: IndexNow API key for SEO indexing (optional). */
   INDEXNOW_KEY?: string
 
@@ -55,6 +57,9 @@ export type Env = {
   /** SLACK-01: Slack OAuth2 app credentials (set via `wrangler pages secret put`). */
   SLACK_CLIENT_ID?: string
   SLACK_CLIENT_SECRET?: string
+  /** ZOOM-01: Zoom OAuth app (Sprint 35 skeleton). */
+  ZOOM_CLIENT_ID?: string
+  ZOOM_CLIENT_SECRET?: string
   /** GROWTH-ENGINE: HMAC secret for internal marketing webhook trigger. */
   MARKETING_WEBHOOK_SECRET?: string
   /** INT-PROVIDER-01: AES-GCM master key for integration OAuth tokens at rest. */
@@ -137,6 +142,10 @@ export type Session = {
   ai_accepted_count?: number
   /** S19-MEASURE-01: count of AI-suggested questions the host dismissed. */
   ai_dismissed_count?: number
+  /** AI-RECAP-PROV-01: model id used for last recap/insights generation. */
+  ai_recap_model?: string | null
+  /** AI-RECAP-PROV-01: epoch ms when host edited AI-generated recap text. */
+  ai_recap_edited_at?: number | null
 }
 
 export type User = {

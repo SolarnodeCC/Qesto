@@ -46,5 +46,9 @@
   "teamQuiz.optionC": "Option C",
   "teamQuiz.optionD": "Option D",
   "leaderboard.title": "Leaderboard",
-  "tallyHidden": "Tally hidden"
+  "tallyHidden": "Tally hidden",
+  "sentiment.positive": "Room mood: positive",
+  "sentiment.neutral": "Room mood: neutral",
+  "sentiment.concerning": "Room mood: needs attention",
+  "sentiment.hint": "Aggregate signal from {count} open responses (no individual attribution)"
 }

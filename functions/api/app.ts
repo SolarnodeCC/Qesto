@@ -15,6 +15,7 @@ import { mountUserRoutes } from './routes/users'
 import { mountKnowledgeBaseRoutes } from './routes/knowledge-base'
 import { registerKBRoutes } from './routes/kb-search'
 import { mountIntegrationRoutes } from './routes/integrations'
+import { mountGdprRoutes } from './routes/gdpr'
 import { mountWebhookRoutes } from './routes/webhooks'
 import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
 import { mountMarketingTemplateRoutes } from './routes/templates-marketing'
@@ -197,6 +198,7 @@ export function createApp() {
   mountAIInsightsRoutes(app)
   mountHelpRoutes(app)
   mountUserRoutes(app)
+  mountGdprRoutes(app)
   mountKnowledgeBaseRoutes(app)
   registerKBRoutes(app)
   mountIntegrationRoutes(app)

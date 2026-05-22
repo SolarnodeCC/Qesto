@@ -122,6 +122,8 @@ export type ServerMessage =
         energizer: LiveEnergizerState | null
         /** Unix ms when the current question auto-advances (fun mode only). */
         expiresAt: number | null
+        /** Aggregate mood for open questions (presenter only, AI-SENTIMENT-01). */
+        sentiment: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
       }
       timestamp: number
     }
@@ -183,6 +185,12 @@ export type ServerMessage =
       v?: LiveProtocolVersion
       type: 'session_energizing_complete'
       data: Record<string, never>
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'sentiment_signal'
+      data: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }
       timestamp: number
     }
   | {

@@ -51,6 +51,7 @@ export const PatchSessionSchema = z
     ai_grounding_hash: z.string().min(1).max(128).optional(),
     ai_accepted_count: z.number().int().nonnegative().max(100).optional(),
     ai_dismissed_count: z.number().int().nonnegative().max(100).optional(),
+    ai_recap_edited: z.boolean().optional(),
   })
   .refine(
     (v) =>
@@ -63,7 +64,8 @@ export const PatchSessionSchema = z
       v.ai_consent_at !== undefined ||
       v.ai_grounding_hash !== undefined ||
       v.ai_accepted_count !== undefined ||
-      v.ai_dismissed_count !== undefined,
+      v.ai_dismissed_count !== undefined ||
+      v.ai_recap_edited !== undefined,
     { message: 'at least one field must be provided' },
   )
 
@@ -205,7 +207,8 @@ export function isPatchBodyTitleOnly(body: PatchSessionInput): boolean {
     body.ai_consent_at === undefined &&
     body.ai_grounding_hash === undefined &&
     body.ai_accepted_count === undefined &&
-    body.ai_dismissed_count === undefined
+      body.ai_dismissed_count === undefined &&
+      body.ai_recap_edited === undefined
   )
 }
 export type GenerateQuestionsInput = z.infer<typeof GenerateQuestionsSchema>

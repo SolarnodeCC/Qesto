@@ -169,6 +169,7 @@ RESEND_FROM = "Qesto Staging <login@staging.qesto.cc>"
 LIVE_ENERGIZERS_ENABLED = "true"
 CIRCUIT_BREAKER_ENABLED = "true"
 INTEGRATION_ENABLED = "true"
+SENTIMENT_ENABLED = "true"
 
 # Staging D1 — provisioned with all migrations applied
 [[env.staging.d1_databases]]

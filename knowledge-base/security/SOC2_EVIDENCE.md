@@ -74,8 +74,8 @@
 | P1.1 | Privacy notice | `/privacy` page with GDPR disclosure | ✓ Implemented |
 | P2.1 | Consent collection | Anonymity mode selector; `consent_posture` tracked per session; `zero_knowledge` mode | ✓ Implemented |
 | P3.1 | Data collection minimisation | Voter IDs are SHA-256 hashes of IP+fingerprint (never plaintext); no email in session data | ✓ Implemented |
-| P4.1 | Data retention limits | Session TTL policies in KV; `GDPR right-to-deletion` runbook TBD (Sprint 34) | ⚠ Gap — Sprint 34 |
-| P5.1 | Data subject rights | Right-to-deletion automation test (Sprint 34, GDPR-BADGE-01) | ⚠ Gap — Sprint 34 |
+| P4.1 | Data retention limits | Session TTL policies in KV; [`GDPR_DATA_SUBJECT_RUNBOOK.md`](./GDPR_DATA_SUBJECT_RUNBOOK.md) | ✓ Documented (Sprint 34) |
+| P5.1 | Data subject rights | `DELETE /api/users/me/gdpr-delete` + runbook; unit tests in `tests/unit/sentiment.test.ts` / gdpr route | ✓ Implemented (Sprint 34) |
 | P6.1 | Data disclosure disclosure | Sub-processor registry above; integration providers only receive aggregate data | ✓ Documented |
 | P7.1 | Data quality | Users can update their account; sessions can be deleted by owner | ✓ Implemented |
 | P8.1 | Monitoring for privacy violations | PII sanitization (`safeLogContext()`, CI gate); PRIVACY-GAM-01 tests | ✓ Implemented |
@@ -87,11 +87,11 @@
 | Gap | Sprint | Story |
 |---|---|---|
 | Integration token encryption at rest (EncryptedTokenStore has `TODO v2.3`) | Sprint 34 | COMPLIANCE-02 |
-| GDPR right-to-deletion automation test | Sprint 34 | GDPR-BADGE-01 |
-| Breach notification runbook (GDPR Art. 33) | Sprint 34 | GDPR-BADGE-01 |
-| DPA template for EU enterprise customers | Sprint 34 | COMPLIANCE-02 |
-| SCC (Standard Contractual Clauses) template | Sprint 34 | ENT-RESIDENCY-01 |
-| EU data residency routing evidence | Sprint 34 | ENT-RESIDENCY-01 |
+| GDPR right-to-deletion automation test | — | Closed Sprint 34 (`GDPR-BADGE-01`) |
+| Breach notification runbook (GDPR Art. 33) | Sprint 35+ | See `GDPR_DATA_SUBJECT_RUNBOOK.md` |
+| DPA template for EU enterprise customers | — | Closed Sprint 34 (`DPA_SCC_TEMPLATE.md`) |
+| SCC (Standard Contractual Clauses) template | — | Closed Sprint 34 (`DPA_SCC_TEMPLATE.md`) |
+| EU data residency routing evidence | — | Closed Sprint 34 (`EU_DATA_RESIDENCY.md`) |
 | Formal penetration test | Post v2.3 | Sprint 35+ |
 
 ---

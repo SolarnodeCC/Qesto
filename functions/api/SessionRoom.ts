@@ -33,6 +33,8 @@ import {
 import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
+import { analyzeOpenResponseSentiment, SENTIMENT_COOLDOWN_MS } from './lib/ai/sentiment'
+import { sentimentContextFromMeta } from './lib/ai/session-context'
 import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
 import { parseClientMessage, type ValidClientMessage } from './lib/validators'
 
@@ -50,6 +52,8 @@ const K_VOTERS = 'voters'
 const K_STATUS = 'status'
 const K_IP_RATE_LIMIT = 'ip_rate_limit' // Maps ipHash → timestamps[] for per-minute rate limiting
 const K_ACTIVE_ENERGIZER = 'active_energizer'
+const K_SENTIMENT_MOOD = 'sentiment:mood'
+const K_SENTIMENT_LAST = 'sentiment:last'
 
 // Fun-mode: 60 s per question before auto-advance signal.
 const FUN_MODE_QUESTION_MS = 60_000
@@ -570,6 +574,8 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_COUNTS, {} as Counts)
     await this.ctx.storage.put(K_VOTERS, {} as Votes)
     await this.ctx.storage.delete(K_ACTIVE_ENERGIZER)
+    await this.ctx.storage.delete(K_SENTIMENT_MOOD)
+    await this.ctx.storage.delete(K_SENTIMENT_LAST)
     this._voters = {}
     this._votersInitPromise = null
     const advanceMsg = serverMessage({
@@ -911,6 +917,60 @@ export class SessionRoom implements DurableObject {
       plan: meta?.plan ?? 'free',
       durationMs: Date.now() - t0,
     })
+
+    if (question.kind === 'open' && meta) {
+      void this.maybeAnalyzeSentiment(meta, question.id, voters).catch(() => {})
+    }
+  }
+
+  private async maybeAnalyzeSentiment(meta: Meta, questionId: string, voters: Votes): Promise<void> {
+    if (this.env.SENTIMENT_ENABLED !== 'true') return
+    if (meta.anonymity === 'zero_knowledge') return
+
+    const last = (await this.ctx.storage.get<number>(K_SENTIMENT_LAST)) ?? 0
+    if (Date.now() - last < SENTIMENT_COOLDOWN_MS) return
+
+    const responses: string[] = []
+    for (const texts of Object.values(voters)) {
+      for (const t of texts) {
+        if (typeof t === 'string' && t.trim()) responses.push(t.trim())
+      }
+    }
+    if (responses.length < 5) return
+
+    const ctx = sentimentContextFromMeta({
+      sessionId: meta.sessionId,
+      teamId: meta.teamId,
+      plan: meta.plan,
+      anonymity: meta.anonymity,
+    })
+    const result = await analyzeOpenResponseSentiment(this.env, ctx, responses)
+    if (!result) return
+
+    await this.ctx.storage.put(K_SENTIMENT_LAST, Date.now())
+    await this.ctx.storage.put(K_SENTIMENT_MOOD, result)
+
+    writeEvent(this.env.METRICS_AE, {
+      name: 'ai.sentiment_analysis',
+      sessionId: meta.sessionId,
+      teamId: meta.teamId,
+      plan: meta.plan ?? 'free',
+      count: result.sampleSize,
+      detail: result.mood,
+    })
+
+    const msg = serverMessage({
+      type: 'sentiment_signal',
+      data: { mood: result.mood, sampleSize: result.sampleSize },
+      timestamp: now(),
+    })
+    for (const ws of this.ctx.getWebSockets('role:presenter')) {
+      try {
+        ws.send(msg)
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   private async scheduleResultsBroadcast(): Promise<void> {
@@ -938,6 +998,12 @@ export class SessionRoom implements DurableObject {
     const questionIndex = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
     const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
     const energizer = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
+    const sentiment =
+      att.role === 'presenter'
+        ? ((await this.ctx.storage.get<{ mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }>(
+            K_SENTIMENT_MOOD,
+          )) ?? null)
+        : null
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const session: LiveSessionSummary = {
       id: meta.sessionId,
@@ -962,6 +1028,7 @@ export class SessionRoom implements DurableObject {
           participants: this.ctx.getWebSockets().length,
           energizer,
           expiresAt: meta.questionExpiresAt ?? null,
+          sentiment,
         },
         timestamp: now(),
       }),

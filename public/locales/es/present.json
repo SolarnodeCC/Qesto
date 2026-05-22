@@ -46,5 +46,9 @@
   "teamQuiz.optionC": "Opción C",
   "teamQuiz.optionD": "Opción D",
   "leaderboard.title": "Clasificación",
-  "tallyHidden": "Recuento oculto"
+  "tallyHidden": "Recuento oculto",
+  "sentiment.positive": "Ambiente: positivo",
+  "sentiment.neutral": "Ambiente: neutro",
+  "sentiment.concerning": "Ambiente: requiere atención",
+  "sentiment.hint": "Señal agregada de {count} respuestas abiertas (sin atribución individual)"
 }

@@ -108,6 +108,8 @@ WEBHOOK-01, SLACK-01/02, TEAMS-01, AI-CONTEXT-01, ADR-0011. Stretch: ZOOM-01 (co
 
 ## Sprint 34 — Compliance + AI Depth
 
+**Status (2026-05-22):** `feat/sprint-34-35-v24` — GDPR delete API, AI sentiment (presenter), recap provenance export, compliance KB. See [`sprints/SPRINT34_IMPLEMENTATION_SPEC.md`](./sprints/SPRINT34_IMPLEMENTATION_SPEC.md).
+
 **Window:** 2026-07-22 → 2026-08-05 | **~43 pts** | **🚀 v2.3**
 
 ENT-RESIDENCY-01, COMPLIANCE-01, AI-RECAP-PROV-01, AI-SENTIMENT-01, ANON-DEPTH-02, GDPR-BADGE-01.
@@ -117,6 +119,8 @@ ENT-RESIDENCY-01, COMPLIANCE-01, AI-RECAP-PROV-01, AI-SENTIMENT-01, ANON-DEPTH-0
 ---
 
 ## Sprint 35 — SOC 2 + Zoom + Export Completion
+
+**Status (2026-05-22):** Same branch — GAM-06 CSV export, Zoom OAuth skeleton, ADR-0013, COMPLIANCE-03 scaffold. See [`sprints/SPRINT35_IMPLEMENTATION_SPEC.md`](./sprints/SPRINT35_IMPLEMENTATION_SPEC.md).
 
 **Window:** 2026-08-05 → 2026-08-19 | **~45 pts**
 

@@ -46,5 +46,9 @@
   "teamQuiz.optionC": "Optie C",
   "teamQuiz.optionD": "Optie D",
   "leaderboard.title": "Ranglijst",
-  "tallyHidden": "Telling verborgen"
+  "tallyHidden": "Telling verborgen",
+  "sentiment.positive": "Sfeer: positief",
+  "sentiment.neutral": "Sfeer: neutraal",
+  "sentiment.concerning": "Sfeer: aandacht nodig",
+  "sentiment.hint": "Geaggregeerd signaal uit {count} open antwoorden (geen individuele attributie)"
 }

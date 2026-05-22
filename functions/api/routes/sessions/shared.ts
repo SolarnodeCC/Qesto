@@ -48,6 +48,8 @@ export async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT`).run().catch(() => {})
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
   await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_model TEXT`).run().catch(() => {})
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN ai_recap_edited_at INTEGER`).run().catch(() => {})
   await db.prepare(
     `CREATE TABLE IF NOT EXISTS sprint19_events (
       id TEXT PRIMARY KEY,
@@ -163,7 +165,8 @@ export async function fetchSession(db: D1Database, id: string, ownerId: string):
       `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
               created_at, started_at, closed_at, archived_at, team_id,
               ai_generated, ai_consent_at, ai_grounding_hash,
-              ai_accepted_count, ai_dismissed_count
+              ai_accepted_count, ai_dismissed_count,
+              ai_recap_model, ai_recap_edited_at
          FROM sessions
         WHERE id = ?1 AND owner_id = ?2`,
     )

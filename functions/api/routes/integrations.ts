@@ -23,6 +23,7 @@ import type { RbacVariables } from '../middleware/rbac'
 import { createEncryptedTokenStore } from '../lib/integrations/token-store'
 import { SlackProvider } from '../lib/integrations/providers/slack'
 import { TeamsProvider } from '../lib/integrations/providers/teams'
+import { getZoomProvider } from '../lib/integrations/providers/zoom'
 import { generatePKCEPair } from '../lib/integrations/oauth'
 import type { ProviderConfig } from '../lib/integrations/types'
 import { readKvJson, writeKvJson } from '../lib/kv'
@@ -657,6 +658,58 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
       expirationTtl: 90 * 24 * 60 * 60,
     })
     return c.json({ ok: true, data: { configured: true }, trace_id: c.get('trace_id') })
+  })
+
+  // ZOOM-01 — OAuth skeleton (full flow when ZOOM_CLIENT_ID + ZOOM_CLIENT_SECRET configured)
+  app.get('/zoom/connect', authMiddleware, async (c) => {
+    const provider = getZoomProvider(c.env)
+    if (!provider) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'zoom_not_configured', message: 'Zoom OAuth credentials are not configured' },
+          trace_id: c.get('trace_id'),
+        },
+        503,
+      )
+    }
+    const user = c.get('user')
+    const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
+    if (!teamId) {
+      return c.json(
+        { ok: false, error: { code: 'team_required', message: 'teamId required' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const exp = Math.floor(Date.now() / 1000) + STATE_TTL_SECONDS
+    const state = await signState({ teamId, userId: user.sub, exp }, c.env.JWT_SECRET)
+    return c.redirect(provider.getAuthUrl(state, ''), 302)
+  })
+
+  app.get('/zoom/status', authMiddleware, async (c) => {
+    const user = c.get('user')
+    const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
+    if (!teamId || !c.env.INTEGRATIONS_KV) {
+      return c.json({ ok: true, data: { connected: false, phase: 'skeleton' }, trace_id: c.get('trace_id') })
+    }
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV, c.env)
+    const token = await store.getToken(teamId, 'zoom')
+    return c.json({
+      ok: true,
+      data: { connected: token !== null, phase: 'skeleton' },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  app.get('/zoom/callback', authMiddleware, async (c) => {
+    return c.json(
+      {
+        ok: false,
+        error: { code: 'zoom_oauth_pending', message: 'Zoom token exchange is not implemented yet' },
+        trace_id: c.get('trace_id'),
+      },
+      501,
+    )
   })
 
   parent.route('/api/integrations', app)

@@ -115,6 +115,16 @@ export default function Present() {
   )
   const max = ordered.reduce((m, o) => Math.max(m, o.count), 0)
   const tallyVisible = !hideTally && state.results.total >= minGate
+  const showSentiment =
+    state.role === 'presenter' &&
+    state.question?.kind === 'open' &&
+    state.sentiment !== null
+  const sentimentLabelKey =
+    state.sentiment?.mood === 'positive'
+      ? 'sentiment.positive'
+      : state.sentiment?.mood === 'concerning'
+        ? 'sentiment.concerning'
+        : 'sentiment.neutral'
 
   const [scale, setScale] = useState(1)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -294,6 +304,18 @@ export default function Present() {
                 />
                 {state.connection === 'open' ? 'Live' : state.connection}
               </span>
+              {showSentiment && state.sentiment && (
+                <>
+                  <span className="w-px h-5 bg-pulse-200" />
+                  <span
+                    className="flex items-center gap-2 rounded-full px-4 py-1 text-[16px] font-semibold bg-violet-50 text-violet-800"
+                    title={t('sentiment.hint', { count: state.sentiment.sampleSize })}
+                  >
+                    <Sparkles size={18} aria-hidden="true" />
+                    {t(sentimentLabelKey)}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 

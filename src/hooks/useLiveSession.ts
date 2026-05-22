@@ -100,6 +100,8 @@ export type LiveState = {
   energizer: LiveEnergizerState | null
   questionIndex: number
   questionTotal: number
+  /** Presenter-only aggregate mood (AI-SENTIMENT-01). */
+  sentiment: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
 }
 
 type Action =
@@ -119,7 +121,9 @@ type Action =
       results: { counts: Record<string, number>; total: number }
       participants: number
       energizer?: LiveEnergizerState | null
+      sentiment?: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
     }
+  | { kind: 'sentiment'; mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }
   | { kind: 'question'; question: LiveQuestion; index: number; total: number }
   | { kind: 'results'; counts: Record<string, number>; total: number }
   | { kind: 'participants'; count: number }
@@ -147,6 +151,7 @@ export const INITIAL: LiveState = {
   energizer: null,
   questionIndex: 0,
   questionTotal: 0,
+  sentiment: null,
 }
 
 export function reducer(state: LiveState, action: Action): LiveState {
@@ -173,12 +178,15 @@ export function reducer(state: LiveState, action: Action): LiveState {
         results: action.results,
         participants: action.participants,
         energizer: action.energizer ?? null,
+        sentiment: action.sentiment ?? null,
         reconnectAttempts: 0,
         error: null,
         paused: false,
       }
+    case 'sentiment':
+      return { ...state, sentiment: { mood: action.mood, sampleSize: action.sampleSize } }
     case 'question':
-      return { ...state, question: action.question, lastVote: null, allDone: false, questionIndex: action.index, questionTotal: action.total }
+      return { ...state, question: action.question, lastVote: null, allDone: false, questionIndex: action.index, questionTotal: action.total, sentiment: null }
     case 'results':
       return { ...state, results: { counts: action.counts, total: action.total } }
     case 'participants':
@@ -261,6 +269,16 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
               results: msg.data.results as { counts: Record<string, number>; total: number },
               participants: msg.data.participants as number,
               energizer: (msg.data.energizer as LiveEnergizerState | null | undefined) ?? null,
+              sentiment:
+                (msg.data.sentiment as { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null | undefined) ??
+                null,
+            })
+            break
+          case 'sentiment_signal':
+            dispatch({
+              kind: 'sentiment',
+              mood: msg.data.mood as 'positive' | 'neutral' | 'concerning',
+              sampleSize: (msg.data.sampleSize as number) ?? 0,
             })
             break
           case 'question':
