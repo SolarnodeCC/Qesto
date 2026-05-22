@@ -1,12 +1,18 @@
 /**
  * KV-backed encrypted token storage for integration credentials.
  *
- * Tokens are encrypted before storage; encryption keys are per-deployment.
- * All tokens are scoped by team + service.
+ * Tokens are encrypted with AES-GCM (OAUTH_TOKEN_MEK) before storage.
+ * Legacy plaintext blobs (pre–Sprint 31) are read once and re-written encrypted on rotate.
  */
 
 import { TokenResponse } from './types'
 import { validateKvJson, StoredTokenSchema } from '../validators'
+import {
+  decryptTokenPayload,
+  deriveAesKeyFromMek,
+  encryptTokenPayload,
+  isLegacyPlaintextTokenBlob,
+} from './token-crypto'
 
 interface StoredToken {
   access_token: string
@@ -19,24 +25,53 @@ interface StoredToken {
 }
 
 export class EncryptedTokenStore {
-  constructor(private kv: KVNamespace, _encryptionKey?: Uint8Array) {
-    // In production, fetch encryption key from Cloudflare KV or secret
-    
-    // _encryptionKey parameter reserved for future use
+  private aesKey: CryptoKey | null = null
+  private readonly encryptionRequired: boolean
+
+  constructor(
+    private kv: KVNamespace,
+    private mek?: string,
+    environment: 'production' | 'preview' | 'dev' | 'staging' = 'production',
+  ) {
+    this.encryptionRequired = environment === 'production' || environment === 'staging'
   }
 
-  /**
-   * Store an access token encrypted in KV.
-   *
-   * @param teamId Team that owns this integration
-   * @param service Integration service (slack, notion, airtable, etc.)
-   * @param token Token from OAuth exchange
-   */
-  async storeToken(
-    teamId: string,
-    service: string,
-    token: TokenResponse
-  ): Promise<void> {
+  private async getAesKey(): Promise<CryptoKey | null> {
+    if (!this.mek) {
+      if (this.encryptionRequired) {
+        throw new Error('OAUTH_TOKEN_MEK is required for integration token storage')
+      }
+      return null
+    }
+    if (!this.aesKey) {
+      this.aesKey = await deriveAesKeyFromMek(this.mek)
+    }
+    return this.aesKey
+  }
+
+  private async serializeForKv(stored: StoredToken): Promise<string> {
+    const plaintext = JSON.stringify(stored)
+    const key = await this.getAesKey()
+    if (!key) return plaintext
+    return encryptTokenPayload(plaintext, key)
+  }
+
+  private async deserializeFromKv(raw: string): Promise<StoredToken | null> {
+    const key = await this.getAesKey()
+    let plaintext = raw
+    if (key) {
+      if (isLegacyPlaintextTokenBlob(raw)) {
+        plaintext = raw
+      } else {
+        const decrypted = await decryptTokenPayload(raw, key)
+        if (!decrypted) return null
+        plaintext = decrypted
+      }
+    }
+    return validateKvJson(plaintext, StoredTokenSchema)
+  }
+
+  async storeToken(teamId: string, service: string, token: TokenResponse): Promise<void> {
     const kvKey = this.getKVKey(teamId, service)
     const stored: StoredToken = {
       access_token: token.access_token,
@@ -48,75 +83,53 @@ export class EncryptedTokenStore {
       ...(token.expires_in && { expires_at: Date.now() + token.expires_in * 1000 }),
     }
 
-    // For now, store as plaintext (encryption to follow in v2.3)
-    
-    await this.kv.put(kvKey, JSON.stringify(stored), {
-      expirationTtl: 90 * 24 * 60 * 60, // 90 days
+    await this.kv.put(kvKey, await this.serializeForKv(stored), {
+      expirationTtl: 90 * 24 * 60 * 60,
     })
   }
 
-  /**
-   * Retrieve token from KV.
-   *
-   * @returns Token or null if not found / expired
-   */
   async getToken(teamId: string, service: string): Promise<TokenResponse | null> {
     const kvKey = this.getKVKey(teamId, service)
     const raw = await this.kv.get(kvKey)
-
     if (!raw) return null
 
-    const stored = validateKvJson(raw, StoredTokenSchema)
+    const stored = await this.deserializeFromKv(raw)
     if (!stored) return null
 
-    // Check expiration
     if (stored.expires_at && stored.expires_at < Date.now()) {
       return null
     }
 
-    const token: TokenResponse = {
-      access_token: stored.access_token,
-    }
-
-    if (stored.refresh_token) token.refresh_token = stored.refresh_token
-    if (stored.expires_in) token.expires_in = stored.expires_in
-    if (stored.token_type) token.token_type = stored.token_type
-    if (stored.scope) token.scope = stored.scope
-
-    return token
+    const out: TokenResponse = { access_token: stored.access_token }
+    if (stored.refresh_token) out.refresh_token = stored.refresh_token
+    if (stored.expires_in) out.expires_in = stored.expires_in
+    if (stored.token_type) out.token_type = stored.token_type
+    if (stored.scope) out.scope = stored.scope
+    return out
   }
 
-  /**
-   * Rotate token (e.g., after refresh).
-   */
-  async rotateToken(
-    teamId: string,
-    service: string,
-    newToken: TokenResponse
-  ): Promise<void> {
+  async rotateToken(teamId: string, service: string, newToken: TokenResponse): Promise<void> {
     await this.storeToken(teamId, service, newToken)
   }
 
-  /**
-   * Revoke token (delete from KV).
-   */
   async revokeToken(teamId: string, service: string): Promise<void> {
-    const kvKey = this.getKVKey(teamId, service)
-    await this.kv.delete(kvKey)
+    await this.kv.delete(this.getKVKey(teamId, service))
   }
 
-  /**
-   * Check if team has configured integration.
-   */
   async isConfigured(teamId: string, service: string): Promise<boolean> {
-    const token = await this.getToken(teamId, service)
-    return token !== null
+    return (await this.getToken(teamId, service)) !== null
   }
 
-  /**
-   * KV key format: {prefix}:{teamId}:{service}
-   */
   private getKVKey(teamId: string, service: string): string {
     return `integration:token:${teamId}:${service}`
   }
+}
+
+/** Factory matching route Env bindings. */
+export function createEncryptedTokenStore(
+  kv: KVNamespace,
+  env: { OAUTH_TOKEN_MEK?: string; ENV?: string },
+): EncryptedTokenStore {
+  const environment = (env.ENV ?? 'production') as 'production' | 'preview' | 'dev' | 'staging'
+  return new EncryptedTokenStore(kv, env.OAUTH_TOKEN_MEK, environment)
 }

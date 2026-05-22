@@ -4,52 +4,53 @@ type: planning
 domain: product
 category: planning
 status: active
-version: 1.0
+version: 1.1
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-05-22
 tags:
   - planning
   - sprints
-  - implementation
+  - sprint-31
 relates_to:
+  - SPRINT30_39_PLAN
   - BACKLOG_MASTER
-  - ROADMAP_FULL
 ---
 
-# Sprint 31 Implementation Spec — Enterprise Realtime Controls
+# Sprint 31 Implementation Spec — Enterprise Hardening + Integration Foundation
 
-Status: shipped in the v2.2 release-candidate branch.
+**Status:** In progress (2026-05-22)
 
-## Scope
+## Shipped in this branch
 
-Sprint 31 adds enterprise controls for the LIVE energizer surface. `energizer:activate` is a first-class permission, separate from `session:launch` and `session:close`, so custom roles can grant session lifecycle access without automatically granting energizer activation.
+| ID | Deliverable |
+|----|-------------|
+| INT-PROVIDER-01 | AES-GCM `EncryptedTokenStore` + `OAUTH_TOKEN_MEK`; legacy plaintext read in dev |
+| CB-01/CB-02 | Already wired; `initCircuitBreakers` now prefers `CIRCUIT_BREAKER_KV` |
+| ADR-0010 | Zero-knowledge mode ADR accepted |
+| ADR-0007-amend | Integration circuit breaker scope |
+| COMPLIANCE-02 | MVP `check:compliance-claims` (Sprint 30 carry-in) |
+| GDPR-TRUST-PAGE-01 | `/trust/gdpr` marketing page |
+| AUDIT-GAM-01 | Energizer action labels + `ws.energizer_answered` filter |
+| AUTHZ-GAM-01 | Pre-shipped (v2.2 RC); `tests/unit/enterprise-permissions.test.ts` |
 
-## Permission Behavior
+## DevOps gates (manual before prod merge)
 
-- Built-in `owner` and `admin` roles can activate energizers.
-- Built-in `member` keeps session participation/lifecycle access but does not receive `energizer:activate` by default.
-- `viewer` remains read-only.
-- Custom roles can include or omit `energizer:activate`.
-- Team-session presenter sockets carry an explicit `permissions` attachment resolved by the session WebSocket route from team membership and custom roles.
-- Realtime presenter sockets with a `permissions` attachment are denied activation unless the list includes `energizer:activate`.
-- Legacy presenter sockets without a permission list continue to work so existing activation flows are not broken while auth plumbing rolls forward.
+```bash
+wrangler kv namespace create CIRCUIT_BREAKER_KV
+wrangler kv namespace create INTEGRATIONS_KV
+wrangler pages secret put OAUTH_TOKEN_MEK
+```
 
-## Audit And Observability Labels
+See [`GAM_STAGING_SMOKE_CHECKLIST.md`](../../../operations/GAM_STAGING_SMOKE_CHECKLIST.md) and [`STAGING_MIGRATION_CHECKLIST.md`](../../../operations/STAGING_MIGRATION_CHECKLIST.md).
 
-The audit filter and realtime metrics distinguish:
+## Tests
 
-- `energizer.activate`
-- `energizer.advance`
-- `energizer.complete`
-- `energizer.activation_denied`
-- `ws.energizer_activated`
-- `ws.energizer_activation_denied`
-- `ws.energizer_answered`
-- `ws.energizer_advanced`
-- `ws.energizer_completed`
+- `tests/unit/token-store-encryption.test.ts`
+- `tests/unit/webhook-verify.test.ts`
+- `tests/unit/integration-http-client.test.ts`
+- `tests/unit/circuit-breaker.test.ts`
+- `tests/unit/enterprise-permissions.test.ts`
 
-These labels are intentionally sanitized and contain no prompt text or participant answers.
+## Deferred to Sprint 32 stretch
 
-## Regression Coverage
-
-`tests/unit/session-room.test.ts` covers custom permission deny/allow behavior and sanitized realtime audit writes. `tests/integration/session-lifecycle.test.ts` verifies the real session WebSocket route forwards effective team permissions into the Durable Object path. `tests/functional/ui/sprint30-32-contract.test.ts` protects the permission vocabulary, Team Settings permission picker, audit filter labels, and Durable Object enforcement hook.
+- ANON-DEPTH-01 additional i18n polish (core UI already in SessionWizard + JoinPage)

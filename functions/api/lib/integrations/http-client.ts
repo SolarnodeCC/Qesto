@@ -75,15 +75,20 @@ export class IntegrationHttpClient {
     options: RequestInit & { signal?: AbortSignal }
   ): Promise<T> {
     const controller = new AbortController()
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      options.signal ? this.defaultTimeout : 0
-    )
+    const timeoutId = setTimeout(() => controller.abort(), this.defaultTimeout)
+
+    if (options.signal) {
+      if (options.signal.aborted) {
+        controller.abort()
+      } else {
+        options.signal.addEventListener('abort', () => controller.abort(), { once: true })
+      }
+    }
 
     try {
       const response = await fetch(url, {
         ...options,
-        signal: options.signal || controller.signal,
+        signal: controller.signal,
       })
 
       if (!response.ok) {
