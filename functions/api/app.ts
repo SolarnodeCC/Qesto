@@ -172,6 +172,8 @@ export function createApp() {
   mountAuthRoutes(app)
   mountSessionRoutes(app)
   mountTemplateRoutes(app)
+  mountMarketingTemplateRoutes(app)
+  mountMarketingWebhookRoutes(app)
   mountTeamRoutes(app)
   mountBillingRoutes(app)
   mountInsightsRoutes(app)
@@ -185,8 +187,6 @@ export function createApp() {
   registerKBRoutes(app)
   mountIntegrationRoutes(app)
   mountWebhookRoutes(app)
-  mountMarketingWebhookRoutes(app)
-  mountMarketingTemplateRoutes(app)
 
   return app
 }
