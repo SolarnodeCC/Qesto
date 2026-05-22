@@ -70,6 +70,7 @@ import { suggestDuplicateTitle } from '../lib/session-title'
 import { hardDeleteSession } from '../lib/session-delete'
 import { notifySlackSessionClosed, notifyTeamsSessionClosed } from './integrations'
 import { deliverTeamWebhooks } from '../lib/webhooks'
+import { deliverMarketingWebhook } from '../lib/webhooks-marketing'
 import { mountExportRoutes } from './sessions/exports'
 
 type Vars = AuthVariables & PlanVariables
@@ -1213,6 +1214,42 @@ export function mountSessionRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
           }).catch((err) =>
             console.error(
               JSON.stringify({ event: 'webhook.deliver.error', sessionId: id, error: String(err) }),
+            ),
+          ),
+        )
+      } catch {
+        // No ExecutionContext available (test environment) — skip background work.
+      }
+    }
+
+    // GROWTH-ENGINE: Internal marketing webhook trigger on session close.
+    // Fires only if is_public=1 (default) and MARKETING_WEBHOOK_SECRET is set.
+    // Best-effort via waitUntil — never delays the close response.
+    if ((session.is_public ?? 1) && c.env.MARKETING_WEBHOOK_SECRET) {
+      try {
+        const questionsResult = await c.env.DB
+          .prepare('SELECT COUNT(*) as cnt FROM questions WHERE session_id = ?')
+          .bind(id)
+          .first<{ cnt: number }>()
+        const questionCount = questionsResult?.cnt ?? 0
+        const durationMinutes = session.started_at
+          ? Math.round((closedAt - session.started_at) / 60000)
+          : 0
+        c.executionCtx.waitUntil(
+          deliverMarketingWebhook(c.env, {
+            sessionId: id,
+            isPublic: Boolean(session.is_public ?? 1),
+            language: 'en' as const,
+            sessionMode: session.session_mode ?? 'reflection',
+            questionCount,
+            participantCount: total,
+            responseRate: total > 0 ? 1.0 : 0.0,
+            durationMinutes,
+            templateUsed: null,
+            energizerUsed: false,
+          }).catch((err) =>
+            console.error(
+              JSON.stringify({ event: 'webhook.marketing.error', sessionId: id, error: String(err) }),
             ),
           ),
         )

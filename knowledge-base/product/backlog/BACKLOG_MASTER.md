@@ -1227,6 +1227,8 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 |---|---|---:|---|---|---|
 | CODE-SPLIT-01 | Split sessions.routes.ts (81 KB) into subrouters | 5 | P1 | S33 | Planned |
 | PERF-PROOF-01 | Cloudflare latency benchmark data capture | 3 | P1 | S32 | Planned |
+| ARCH-HONO-01 | Fix sub-app mount paths: energizers/gamification/ai-insights/help mount at `/api` root but own scoped prefixes; moving each to its actual prefix (e.g. `/api/sessions` for energizers) scopes their `app.use('*', authMiddleware)` wildcard correctly and eliminates ordering sensitivity in `app.ts` | 5 | P1 | S33 | Planned |
+| ARCH-HONO-02 | Centralize auth policy in `app.ts`: replace distributed `app.use('*', authMiddleware)` inside sub-apps with explicit path-pattern registrations (`app.use('/api/sessions/*', authMiddleware)` etc.) — single source of truth for which routes are public vs protected; discovered via Growth Engine `/api/gallery` 401 incident (2026-05-22) | 8 | P2 | S34 | Planned |
 
 ### EPIC-OBS — Observability (Sprint 30 delivery)
 

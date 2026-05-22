@@ -39,6 +39,8 @@ export type Env = {
   CIRCUIT_BREAKER_ENABLED?: string
   /** v2.2: Integration webhooks (Slack, Notion, Airtable). */
   INTEGRATION_ENABLED?: string
+  /** GROWTH-ENGINE: IndexNow API key for SEO indexing (optional). */
+  INDEXNOW_KEY?: string
 
   // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string
@@ -53,6 +55,8 @@ export type Env = {
   /** SLACK-01: Slack OAuth2 app credentials (set via `wrangler pages secret put`). */
   SLACK_CLIENT_ID?: string
   SLACK_CLIENT_SECRET?: string
+  /** GROWTH-ENGINE: HMAC secret for internal marketing webhook trigger. */
+  MARKETING_WEBHOOK_SECRET?: string
 
   // Bindings
   DB: D1Database

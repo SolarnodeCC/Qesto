@@ -169,9 +169,21 @@ export function createApp() {
     return c.json({ ok: true, data: { id: user.sub, email: user.email }, trace_id: c.get('trace_id') })
   })
 
+  // ── Route mount order matters (Hono v4) ────────────────────────────────────
+  // Several sub-apps call app.use('*', authMiddleware) internally and mount at
+  // the /api root. In Hono v4, middleware is evaluated in registration order:
+  // routes registered AFTER a wildcard auth entry inherit it; routes registered
+  // BEFORE are unaffected. PUBLIC routes must be mounted before the first
+  // auth-middleware sub-app (mountEnergizerRoutes). See ARCH-HONO-01/02 in
+  // BACKLOG_MASTER.md for the planned structural fix.
+  // ──────────────────────────────────────────────────────────────────────────
   mountAuthRoutes(app)
   mountSessionRoutes(app)
   mountTemplateRoutes(app)
+  // ↓ PUBLIC routes — must stay above the auth-middleware sub-apps below
+  mountMarketingTemplateRoutes(app)
+  mountMarketingWebhookRoutes(app)
+  // ↓ Auth-middleware sub-apps — inject app.use('*', authMiddleware) at /api/*
   mountTeamRoutes(app)
   mountBillingRoutes(app)
   mountInsightsRoutes(app)
@@ -185,8 +197,6 @@ export function createApp() {
   registerKBRoutes(app)
   mountIntegrationRoutes(app)
   mountWebhookRoutes(app)
-  mountMarketingWebhookRoutes(app)
-  mountMarketingTemplateRoutes(app)
 
   return app
 }

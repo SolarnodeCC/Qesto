@@ -52,6 +52,9 @@ CHECKOUT_URL = "https://checkout.qesto.cc"
 # Resend sender identity; must be a verified sender/domain in your Resend account.
 # Use a branded sender on qesto.cc for production auth emails.
 RESEND_FROM = "Qesto <login@qesto.cc>"
+# GROWTH-ENGINE: IndexNow API key for SEO indexing (optional; template pages auto-index if set).
+# Get from https://www.bing.com/indexnow (register domain, get key, paste here).
+# INDEXNOW_KEY = ""
 
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
@@ -107,10 +110,10 @@ new_sqlite_classes = ["SessionRoom"]
 [ai]
 binding = "AI"
 
-# [[workflows]]
-# binding = "WORKFLOWS"
-# class_name = "Workflows"
-# Note: Workflows DO not yet implemented; uncomment when class_name is available
+[[workflows]]
+binding = "WORKFLOWS"
+name = "WORKFLOWS"
+class_name = "TemplateGenerationWorkflow"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
@@ -221,8 +224,10 @@ dataset = "qesto_metrics"
 binding = "AI"
 
 # Staging Workflows
-[env.staging.workflows]
+[[env.staging.workflows]]
 binding = "WORKFLOWS"
+name = "WORKFLOWS"
+class_name = "TemplateGenerationWorkflow"
 
 # Staging Vectorize
 [[env.staging.vectorize]]

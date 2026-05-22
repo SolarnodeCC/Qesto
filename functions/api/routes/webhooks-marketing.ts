@@ -33,7 +33,7 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     }
 
     const body = await c.req.text()
-const secret = c.env.JWT_SECRET
+    const secret = c.env.MARKETING_WEBHOOK_SECRET || c.env.JWT_SECRET
 
     const expectedSig = `sha256=${await hmacSha256Hex(secret, body)}`
     if (signature !== expectedSig) {
@@ -45,7 +45,7 @@ const secret = c.env.JWT_SECRET
       return c.json({ error: 'Invalid signature' }, 401)
     }
 
-    // Parse and validate payload with the Zod schema (proof-aware decoder)
+    // Parse and validate payload with the Zod schema
     let payload: SessionWebhookPayload
     try {
       const raw = JSON.parse(body)
@@ -69,19 +69,24 @@ const secret = c.env.JWT_SECRET
     // Queue Cloudflare Workflow (async, non-blocking)
     try {
       if (c.env.WORKFLOWS) {
-        const workflowHandle = await c.env.WORKFLOWS.create({
-          trigger: 'sessionClosed',
-          params: payload,
+        // Trigger TemplateGenerationWorkflow with session pipeline payload
+        // The payload becomes event.payload in the workflow's run() method
+        await c.env.WORKFLOWS.create({
+          sessionId: payload.sessionId,
+          language: payload.language,
+          questionCount: payload.questionCount,
+          participantCount: payload.participantCount,
+          durationMinutes: payload.durationMinutes,
         })
         console.log({
           event: 'workflow.queued',
           sessionId: payload.sessionId,
-          workflowId: workflowHandle.id,
         })
       } else {
         console.log({
           event: 'workflow.not_available',
           sessionId: payload.sessionId,
+          note: 'WORKFLOWS binding not configured; template generation skipped',
         })
       }
     } catch (err) {
