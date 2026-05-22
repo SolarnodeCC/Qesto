@@ -225,15 +225,8 @@ binding = "AI"
 
 # Staging Workflows
 [[env.staging.workflows]]
-<<<<<<< HEAD
 binding = "WORKFLOWS"
-<<<<<<< HEAD
 name = "WORKFLOWS"
-=======
->>>>>>> 68b9d75 (Growth Engine Phase 1: Backend Foundation)
-=======
-name = "WORKFLOWS"
->>>>>>> 9c05243 (Fix: Cloudflare Workflows binding format (use 'name' not 'binding'))
 class_name = "TemplateGenerationWorkflow"
 
 # Staging Vectorize
