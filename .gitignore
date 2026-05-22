@@ -35,3 +35,4 @@ amplitude-setup-report.previous.md
 .claude/skills/discover-analytics-patterns/
 .claude/skills/wizard-prompt-supplement/
 .kb-vectors-pending.json
+worker-configuration.d.ts
