@@ -63,22 +63,13 @@ Ten two-week sprints take Qesto from **v2.2 resilience + RC** (S30–S32) throug
 
 ## Sprint 31 — Enterprise + Circuit Breakers + Integration Foundation
 
-**Window:** 2026-06-10 → 2026-06-24 | **~48 pts** | **Status:** Implementation in progress (2026-05-22)
+**Window:** 2026-06-10 → 2026-06-24 | **~48 pts**
 
-See [`SPRINT26_32_PLAN.md`](./SPRINT26_32_PLAN.md) §Sprint 31 and [`sprints/SPRINT31_IMPLEMENTATION_SPEC.md`](./sprints/SPRINT31_IMPLEMENTATION_SPEC.md).
+See SPRINT26_32 §Sprint 31. **Agent adjustment:** **COMPLIANCE-02** pulled forward (CI claim gate before GDPR trust page).
 
-| ID | Status |
-|----|--------|
-| INT-PROVIDER-01 | ✅ AES-GCM token store |
-| CB-01 / CB-02 | ✅ Wired; KV binding prefers `CIRCUIT_BREAKER_KV` |
-| AUTHZ-GAM-01 | ✅ Pre-shipped v2.2 RC |
-| ADR-0010 / ADR-0007-amend | ✅ Accepted |
-| GDPR-TRUST-PAGE-01 | ✅ `/trust/gdpr` |
-| AUDIT-GAM-01 | ✅ Action labels + `ws.energizer_answered` |
-| DEPLOY-GAM-01 / QA-ENT-02 | Checklists + tests exist; staging smoke manual |
-| ANON-DEPTH-01 | Stretch → S32 (wizard + join badge already live) |
+**DevOps blockers (before merge):** `CIRCUIT_BREAKER_KV`, `INTEGRATIONS_KV`, `OAUTH_TOKEN_MEK`.
 
-**DevOps blockers (before prod merge):** `CIRCUIT_BREAKER_KV`, `INTEGRATIONS_KV`, `OAUTH_TOKEN_MEK`.
+**ADR gates:** ADR-0010, ADR-0007-amend.
 
 ---
 
