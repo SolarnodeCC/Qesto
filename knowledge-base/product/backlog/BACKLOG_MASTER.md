@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-05 (UTC)_
+_Last updated: 2026-05-22 (UTC)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -192,7 +192,10 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | ADR-0011 | Live sentiment inference ADR + DPIA scope | P0 | Sprint 33 | Model: `distilbert-sst-2-int8`; aggregate-only (k≥5); disabled in ZK sessions; DPIA documented; required before Sprint 34 AI-SENTIMENT-01 |
 | ENT-RESIDENCY-01 | EU data residency: routing evidence + DPA template | P0 | Sprint 34 | Documentation + contractual deliverable (D1 location hint irreversible); routing evidence; DPA template; ops runbook |
 | COMPLIANCE-01 | SOC 2 evidence framework + sub-processor registry | P1 | Sprint 34 | `/knowledge-base/security/SOC2_EVIDENCE.md`; control inventory; sub-processor list; gaps with sprint assignments |
-| COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | Sprint 34 | CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
+| COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | Sprint 31 (pulled forward) | `npm run check:compliance-claims`; CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
+| RES-DO-01 | DO WebSocket resilience: outer try/catch + `do.storage_fault` AE | P0 | Sprint 30 | `webSocketMessage` catches storage/handler faults; client receives `internal` error; no silent WS close |
+| SEC-CSV-01 | CSV formula-injection escape in client + server exports | P0 | Sprint 30 | `lib/csv.ts` guards `=+-@` prefixes; Results + `export.csv` use shared helper |
+| GAM-STAGING-SMOKE-01 | Cloudflare staging WebSocket smoke for LIVE energizers | P0 | Sprint 32 gate | Checklist: `knowledge-base/operations/GAM_STAGING_SMOKE_CHECKLIST.md`; blocks RC rollout |
 | AI-RECAP-PROV-01 | AI recap provenance: edit history + evidence links + export metadata | P1 | Sprint 34 | Recap shows model/timestamp/edit flag; export JSON includes provenance block; extends AI-CONTEXT-01 |
 | AI-SENTIMENT-01 | Real-time session sentiment via Workers AI | P1 | Sprint 34 | `distilbert-sst-2-int8`; aggregate mood signal (k≥5); English-only; ZK-disabled; no individual attribution; gate: ADR-0011 + DPIA complete |
 | ANON-DEPTH-02 | Zero-knowledge trust documentation + Vevox competitive proof | P1 | Sprint 34 | KB technical proof doc; sales comparison vs. Vevox; gate: ANON-DEPTH-01 merged |
@@ -216,7 +219,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 - **ADR-0011 + DPIA must be completed in Sprint 33 before AI-SENTIMENT-01 implementation starts in Sprint 34.**
 - **ANON-DEPTH-01 (Sprint 31/32) must be merged before ANON-DEPTH-02 (Sprint 34).**
 - **AI-CONTEXT-01 (Sprint 33) is required by AI-RECAP-PROV-01 and AI-SENTIMENT-01 in Sprint 34.**
-- **COMPLIANCE-02 CI gate must be in place before any marketing copy adds EU residency or compliance claims.**
+- **COMPLIANCE-02 CI gate must be in place before any marketing copy adds EU residency or compliance claims (target Sprint 31; MVP script shipped 2026-05-22).**
 - **CIRCUIT_BREAKER_KV, INTEGRATIONS_KV, and OAUTH_TOKEN_MEK must be provisioned in production (DevOps) before Sprint 31 circuit-breaker and encryption stories merge.**
 
 ---
@@ -1237,6 +1240,46 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 | OBS-VOTE-01 | ws.vote_submitted AE event with sessionId, teamId, plan, latency | 5 | P1 | S30 | ✅ Delivered |
 | PRIVACY-GAM-01 | 21 privacy tests: energizer AE events + export payloads contain no PII | 3 | P0 | S30 | ✅ Delivered |
 | ADMIN-OPS-02 | Hourly health correlation table: energizer activity vs WS errors/reconnects | 5 | P1 | S30 | ✅ Delivered |
+| RES-DO-01 | DO WS outer try/catch + `do.storage_fault` event | 3 | P0 | S30 | ✅ Delivered |
+| SEC-CSV-01 | CSV formula-injection guard (`lib/csv.ts`) | 2 | P0 | S30 | ✅ Delivered |
+| COMPLIANCE-02 | Compliance claim CI gate (`check:compliance-claims`) | 5 | P0 | S31 | ✅ MVP script; DPA template pending |
+| ADR-0012 | Route → Service → Repository boundaries | 3 | P0 | S32 | Proposed — `knowledge-base/adr/ADR-0012-route-service-repository.md` |
+
+### Sprint 35–39 Story Registry (added 2026-05-22)
+
+| ID | Item | Pts | Pri | Sprint |
+|---|---|---:|---|---|
+| COMPLIANCE-03 | SOC 2 Type I audit engagement | 13 | P0 | S35 |
+| ZOOM-01 | Zoom integration | 8 | P1 | S35 |
+| EXPORT-PDF-01 | PDF/HTML signed session export | 8 | P1 | S35 |
+| GAM-06 | Gamification analytics dashboard | 5 | P1 | S35 |
+| ADR-0013 | Energizer strategy pattern ADR | 3 | P0 | S35 |
+| BRAND-01 | Custom branding: logo + primary color | 8 | P1 | S36 |
+| BRAND-02 | Branded participant join + session header | 8 | P1 | S36 |
+| BRAND-03 | Branded exports + email templates | 5 | P1 | S36 |
+| ADR-0016 | White-label scoping ADR | 3 | P0 | S36 |
+| SEC-RATELIMIT-01 | Rate-limit fail-closed on KV failure | 3 | P0 | S36 |
+| MOBILE-01 | PWA install + offline join cache | 5 | P1 | S37 |
+| MOBILE-02 | Touch-optimized participant UI | 8 | P1 | S37 |
+| MOBILE-03 | Presenter mobile controls | 8 | P1 | S37 |
+| SF-01 | Salesforce session results push | 8 | P1 | S37 |
+| SF-02 | Salesforce settings + field mapping | 8 | P1 | S37 |
+| ADR-0015 | Mobile client contract ADR | 3 | P0 | S37 |
+| SEC-WS-CAP-01 | Per-IP WebSocket connect cap | 2 | P1 | S37 |
+| LDAP-01 | LDAP/AD directory sync | 13 | P1 | S38 |
+| LDAP-02 | LDAP group → team role mapping | 8 | P1 | S38 |
+| INT-WEBHOOK-02 | Workday + BambooHR webhook templates | 8 | P2 | S38 |
+| ADR-0019 | LDAP/Salesforce sync model ADR | 3 | P0 | S38 |
+| GAM-05 | Battle royale + bracket tournaments | 8 | P1 | S39 |
+| GAM-05-QA | Tournament idempotency tests | 5 | P0 | S39 |
+| AI-COACHING-01 | Post-session facilitator coaching | 5 | P1 | S39 |
+| AI-COACHING-02 | Coaching UI in Insights | 5 | P1 | S39 |
+| ADR-0017 | Tournament state machines ADR | 3 | P0 | S39 |
+| ADR-0018 | KB RAG activation (ADR-040) | 3 | P0 | S39 |
+| KB-RAG-01 | Agent grounding via DECISIONS_VECTORIZE | 8 | P2 | S39 |
+| RC-V24-01 | v2.4 regression + release notes | 5 | P0 | S39 |
+
+**Horizon plan:** [`SPRINT30_39_PLAN.md`](../planning/SPRINT30_39_PLAN.md)
 
 ---
 
@@ -1245,6 +1288,7 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
 - `ARCHITECTURE.md` — system design + data model
 - `ROADMAP_FULL.md` — release timeline + version targets
+- `SPRINT30_39_PLAN.md` — ten-sprint horizon S30–S39
 - `CLAUDE.md` — L1 project context + hard rules
 - `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
 - `SPRINT33_34_PLAN.md` — Sprint 33–34 detailed plan (v2.3 integrations + compliance + AI depth)

@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import type { PollOption, SessionStatus } from '@/types/session'
 import { api, type ApiError } from '../api/client'
+import { csvRow } from '@api/lib/csv'
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import SessionTitleField from '../components/SessionTitleField'
@@ -58,9 +59,7 @@ type State =
   | { status: 'error'; error: ApiError }
 
 function toCsv(rows: string[][]): string {
-  return rows
-    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
-    .join('\n')
+  return rows.map((row) => csvRow(row)).join('\n')
 }
 
 export default function Results() {

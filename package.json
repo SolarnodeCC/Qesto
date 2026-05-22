@@ -25,6 +25,7 @@
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
     "check:tokens-drift": "node scripts/check-tokens-drift.mjs",
     "check:pii-log": "bash scripts/check-pii-log.sh",
+    "check:compliance-claims": "node scripts/check-compliance-claims.mjs",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "test:e2e": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",

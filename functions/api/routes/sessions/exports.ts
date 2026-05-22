@@ -7,6 +7,7 @@
 
 import { Hono } from 'hono'
 import { requireFound } from '../../lib/session-lifecycle'
+import { csvRow, escapeCsvCell } from '../../lib/csv'
 import { generateSessionHtmlExport } from '../../lib/export-pdf'
 import type { Env } from '../../types'
 import type { Session } from '../../types'
@@ -198,26 +199,23 @@ export function mountExportRoutes(
 
     const voteMap = await loadExportVoteMap(c.env.DB, id)
 
-    const csvEscape = (s: string): string => `"${String(s).replace(/"/g, '""')}"`
     const startedAt = session.started_at ?? null
     const closedAt = session.closed_at ?? null
     const durationMs = startedAt !== null && closedAt !== null ? String(closedAt - startedAt) : ''
 
     const csvRows: string[] = []
-    csvRows.push(['# Session Export', csvEscape(session.title)].join(','))
-    csvRows.push(['# Session ID', csvEscape(id)].join(','))
-    csvRows.push(['# Status', csvEscape(session.status)].join(','))
+    csvRows.push(csvRow(['# Session Export', session.title]))
+    csvRows.push(csvRow(['# Session ID', id]))
+    csvRows.push(csvRow(['# Status', session.status]))
     csvRows.push(['# Started', startedAt !== null ? new Date(startedAt).toISOString() : ''].join(','))
     csvRows.push(['# Closed', closedAt !== null ? new Date(closedAt).toISOString() : ''].join(','))
     csvRows.push(['# Duration (ms)', durationMs].join(','))
-    csvRows.push(['# Anonymity', csvEscape(session.anonymity)].join(','))
+    csvRows.push(csvRow(['# Anonymity', session.anonymity]))
     csvRows.push(['# Exported', new Date().toISOString()].join(','))
     csvRows.push('')
 
     csvRows.push(
-      ['Question #', 'Question Kind', 'Question Prompt', 'Option Label', 'Vote Count', 'Vote %']
-        .map(csvEscape)
-        .join(','),
+      csvRow(['Question #', 'Question Kind', 'Question Prompt', 'Option Label', 'Vote Count', 'Vote %']),
     )
 
     for (const q of questionRows ?? []) {
@@ -227,24 +225,13 @@ export function mountExportRoutes(
       const positionLabel = String(q.position + 1)
 
       if (options.length === 0) {
-        csvRows.push(
-          [positionLabel, csvEscape(q.kind), csvEscape(q.prompt), '', '0', ''].join(','),
-        )
+        csvRows.push(csvRow([positionLabel, q.kind, q.prompt, '', '0', '']))
         continue
       }
       for (const opt of options) {
         const count = qVotes.get(opt.id) ?? 0
         const pct = totalVotes > 0 ? ((count / totalVotes) * 100).toFixed(1) : '0.0'
-        csvRows.push(
-          [
-            positionLabel,
-            csvEscape(q.kind),
-            csvEscape(q.prompt),
-            csvEscape(opt.label),
-            String(count),
-            pct,
-          ].join(','),
-        )
+        csvRows.push(csvRow([positionLabel, q.kind, q.prompt, opt.label, count, pct]))
       }
     }
 
