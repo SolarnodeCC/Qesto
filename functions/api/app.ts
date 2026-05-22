@@ -48,7 +48,11 @@ export function createApp() {
     c.header('x-trace-id', trace_id)
     c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
     // Wire circuit breakers with KV — idempotent, runs once per isolate.
-    initCircuitBreakers(c.env.ACTIONS_KV, c.env.ENV ?? 'production')
+    const cbKv =
+      c.env.CIRCUIT_BREAKER_ENABLED === 'true' && c.env.CIRCUIT_BREAKER_KV
+        ? c.env.CIRCUIT_BREAKER_KV
+        : c.env.ACTIONS_KV
+    initCircuitBreakers(cbKv, c.env.ENV ?? 'production')
     await next()
   })
 

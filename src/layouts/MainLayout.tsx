@@ -333,6 +333,14 @@ export default function MainLayout({
                 </li>
                 <li>
                   <Link
+                    to="/trust/gdpr"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                  >
+                    GDPR trust center
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/privacy"
                     className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >

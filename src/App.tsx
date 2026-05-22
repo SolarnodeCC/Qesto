@@ -34,6 +34,7 @@ const ConsultingPage = lazy(() => import('./pages/solutions/ConsultingPage'))
 const AIInsightsPage = lazy(() => import('./pages/features/AIInsightsPage'))
 const LivePollingPage = lazy(() => import('./pages/features/LivePollingPage'))
 const PrivacyFeaturePage = lazy(() => import('./pages/features/PrivacyFeaturePage'))
+const GdprTrustPage = lazy(() => import('./pages/GdprTrustPage'))
 
 // Use-case pages
 const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage'))
@@ -105,6 +106,7 @@ export default function App() {
         <Route path="/features/ai-insights" element={<Suspense fallback={<LazyRouteFallback />}><AIInsightsPage /></Suspense>} />
         <Route path="/features/live-polling" element={<Suspense fallback={<LazyRouteFallback />}><LivePollingPage /></Suspense>} />
         <Route path="/features/privacy" element={<Suspense fallback={<LazyRouteFallback />}><PrivacyFeaturePage /></Suspense>} />
+        <Route path="/trust/gdpr" element={<Suspense fallback={<LazyRouteFallback />}><GdprTrustPage /></Suspense>} />
 
         {/* Use-case pages */}
         <Route path="/use-cases/team-meetings" element={<Suspense fallback={<LazyRouteFallback />}><TeamMeetingsPage /></Suspense>} />
