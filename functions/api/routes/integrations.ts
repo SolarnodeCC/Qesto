@@ -20,7 +20,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
-import { EncryptedTokenStore } from '../lib/integrations/token-store'
+import { createEncryptedTokenStore } from '../lib/integrations/token-store'
 import { SlackProvider } from '../lib/integrations/providers/slack'
 import { TeamsProvider } from '../lib/integrations/providers/teams'
 import { generatePKCEPair } from '../lib/integrations/oauth'
@@ -259,7 +259,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     }
     try {
       const { token, teamName, channelId, channelName } = await provider.exchangeCodeWithMetadata(code)
-      const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+      const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
       await store.storeToken(verified.teamId, 'slack', token)
       // Persist channel binding (separate KV record so we don't need to read the
       // encrypted token blob just to render UI).
@@ -306,7 +306,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     if (!teamId) {
       return c.json({ ok: true, data: { connected: false }, trace_id: c.get('trace_id') })
     }
-    const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
     const token = await store.getToken(teamId, 'slack')
     const config = await readKvJson<SlackIntegrationConfig>(c.env.INTEGRATIONS_KV!, slackConfigKey(teamId))
     return c.json({
@@ -334,7 +334,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
         400,
       )
     }
-    const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
     await store.revokeToken(teamId, 'slack')
     await c.env.INTEGRATIONS_KV!.delete(slackConfigKey(teamId))
     return c.json({ ok: true, data: { disconnected: true }, trace_id: c.get('trace_id') })
@@ -364,7 +364,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
         400,
       )
     }
-    const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
     const token = await store.getToken(teamId, 'slack')
     const config = await readKvJson<SlackIntegrationConfig>(c.env.INTEGRATIONS_KV!, slackConfigKey(teamId))
     if (!token || !config) {
@@ -468,7 +468,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     await c.env.INTEGRATIONS_KV!.delete(pkceKey)
     try {
       const token = await provider.exchangeCode(code, codeVerifier)
-      const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+      const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
       await store.storeToken(verified.teamId, 'teams', token)
       console.log(
         JSON.stringify({
@@ -502,7 +502,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     if (!teamId) {
       return c.json({ ok: true, data: { connected: false }, trace_id: c.get('trace_id') })
     }
-    const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
     const token = await store.getToken(teamId, 'teams')
     const config = await readKvJson<TeamsIntegrationConfig>(
       c.env.INTEGRATIONS_KV!,
@@ -533,7 +533,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
         400,
       )
     }
-    const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
     await store.revokeToken(teamId, 'teams')
     await c.env.INTEGRATIONS_KV!.delete(teamsConfigKey(teamId))
     return c.json({ ok: true, data: { disconnected: true }, trace_id: c.get('trace_id') })
@@ -565,7 +565,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
       )
     }
     // Must have an OAuth token before we can store a delivery target.
-    const store = new EncryptedTokenStore(c.env.INTEGRATIONS_KV!)
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
     const token = await store.getToken(teamId, 'teams')
     if (!token) {
       return c.json(
@@ -610,7 +610,7 @@ export async function notifySlackSessionClosed(
   const provider = getSlackProvider(env)
   if (!provider) return
 
-  const store = new EncryptedTokenStore(env.INTEGRATIONS_KV)
+  const store = createEncryptedTokenStore(env.INTEGRATIONS_KV, env)
   const token = await store.getToken(teamId, 'slack')
   if (!token) return
   const config = await readKvJson<SlackIntegrationConfig>(env.INTEGRATIONS_KV, slackConfigKey(teamId))
@@ -668,7 +668,7 @@ export async function notifyTeamsSessionClosed(
   const provider = getTeamsProvider(env)
   if (!provider) return
 
-  const store = new EncryptedTokenStore(env.INTEGRATIONS_KV)
+  const store = createEncryptedTokenStore(env.INTEGRATIONS_KV, env)
   const token = await store.getToken(teamId, 'teams')
   if (!token) return
   const config = await readKvJson<TeamsIntegrationConfig>(

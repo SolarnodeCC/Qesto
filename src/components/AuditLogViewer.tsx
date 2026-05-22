@@ -47,7 +47,24 @@ const ACTIONS = [
   'ws.energizer_activation_denied',
   'ws.energizer_advanced',
   'ws.energizer_completed',
+  'ws.energizer_answered',
 ]
+
+const ACTION_LABELS: Record<string, string> = {
+  'energizer.activate': 'Energizer — activate (REST)',
+  'energizer.advance': 'Energizer — advance question',
+  'energizer.complete': 'Energizer — complete',
+  'energizer.activation_denied': 'Energizer — activation denied',
+  'ws.energizer_activated': 'WS — energizer activated',
+  'ws.energizer_activation_denied': 'WS — activation denied (permission)',
+  'ws.energizer_answered': 'WS — participant answered',
+  'ws.energizer_advanced': 'WS — question advanced',
+  'ws.energizer_completed': 'WS — energizer completed',
+}
+
+function formatActionLabel(action: string): string {
+  return ACTION_LABELS[action] ?? action
+}
 
 const SUBJECT_TYPES = ['session', 'question', 'user', 'team', 'auth', 'billing', 'insights', 'energizer']
 
@@ -219,7 +236,7 @@ export default function AuditLogViewer() {
               <option value="">All actions</option>
               {ACTIONS.map((a) => (
                 <option key={a} value={a}>
-                  {a}
+                  {formatActionLabel(a)}
                 </option>
               ))}
             </select>
@@ -341,8 +358,8 @@ export default function AuditLogViewer() {
                       {event.actor_id || 'system'}
                     </td>
                     <td className="px-4 py-3">
-                      <code className={getActionBadge(event.action)}>
-                        {event.action}
+                      <code className={getActionBadge(event.action)} title={event.action}>
+                        {formatActionLabel(event.action)}
                       </code>
                     </td>
                     <td className="px-4 py-3 text-pulse-700">{event.subject_type}</td>

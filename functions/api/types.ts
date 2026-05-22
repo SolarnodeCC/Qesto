@@ -57,6 +57,8 @@ export type Env = {
   SLACK_CLIENT_SECRET?: string
   /** GROWTH-ENGINE: HMAC secret for internal marketing webhook trigger. */
   MARKETING_WEBHOOK_SECRET?: string
+  /** INT-PROVIDER-01: AES-GCM master key for integration OAuth tokens at rest. */
+  OAUTH_TOKEN_MEK?: string
 
   // Bindings
   DB: D1Database
