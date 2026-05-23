@@ -1,0 +1,9 @@
+[project]
+name = "qesto-sdk"
+version = "1.0.0"
+description = "Qesto Public API v1 Python client"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qesto*"]
