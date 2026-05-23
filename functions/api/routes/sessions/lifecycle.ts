@@ -16,7 +16,7 @@ import {
 import { writeEvent } from '../../lib/observability'
 import { notifySlackSessionClosed, notifyTeamsSessionClosed } from '../integrations'
 import { deliverTeamWebhooks } from '../../lib/webhooks'
-import { deliverMarketingWebhook } from '../webhooks-marketing'
+import { deliverMarketingWebhook } from '../../lib/webhooks-marketing'
 
 export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   app.post('/:id/start', async (c) => {
