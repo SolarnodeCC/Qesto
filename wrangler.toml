@@ -170,6 +170,8 @@ LIVE_ENERGIZERS_ENABLED = "true"
 CIRCUIT_BREAKER_ENABLED = "true"
 INTEGRATION_ENABLED = "true"
 SENTIMENT_ENABLED = "true"
+RATE_LIMIT_FAIL_CLOSED = "false"
+WS_CONNECT_PER_IP_PER_MIN = "15"
 
 # Staging D1 — provisioned with all migrations applied
 [[env.staging.d1_databases]]

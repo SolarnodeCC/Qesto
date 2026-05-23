@@ -10,6 +10,7 @@ import type { Context } from 'hono'
 import { requireFound } from '../../lib/session-lifecycle'
 import { writeEvent } from '../../lib/observability'
 import { buildAiRecapProvenance } from '../../lib/ai/recap-provenance'
+import { loadTeamBranding } from '../../lib/team-branding'
 import { csvRow, escapeCsvCell } from '../../lib/csv'
 import { generateSessionHtmlExport } from '../../lib/export-pdf'
 import type { Env } from '../../types'
@@ -73,6 +74,76 @@ function parseQuestionOptions(rawJson: string | null): { id: string; label: stri
     // Malformed options_json — treat as open-answer with no options.
   }
   return []
+}
+
+async function renderSignedHtmlExport(
+  c: Context<{ Bindings: Env; Variables: Vars }>,
+  session: Session,
+  format: 'html' | 'pdf',
+): Promise<Response> {
+  const id = session.id
+  const exportStarted = Date.now()
+  trackExport(c, 'initiated', format, id, session.team_id)
+
+  const { results: questionRows } = await c.env.DB.prepare(
+    `SELECT id, position, kind, prompt, options_json FROM questions WHERE session_id = ?1 ORDER BY position ASC`,
+  )
+    .bind(id)
+    .all<{ id: string; position: number; kind: string; prompt: string; options_json: string | null }>()
+
+  const voteMap = await loadExportVoteMap(c.env.DB, id)
+  const startedAt = session.started_at ?? null
+  const closedAt = session.closed_at ?? null
+  const durationMs = startedAt !== null && closedAt !== null ? closedAt - startedAt : null
+
+  const questions = (questionRows ?? []).map((q) => {
+    const options = parseQuestionOptions(q.options_json)
+    const qVotes = voteMap.get(q.id) ?? new Map<string, number>()
+    const optionsWithVotes = options.map((o) => ({
+      id: o.id,
+      label: o.label,
+      votes: qVotes.get(o.id) ?? 0,
+    }))
+    const totalVotes = optionsWithVotes.reduce((s, o) => s + o.votes, 0)
+    return {
+      id: q.id,
+      position: q.position,
+      kind: q.kind,
+      prompt: q.prompt,
+      options: optionsWithVotes,
+      total_votes: totalVotes,
+    }
+  })
+
+  const branding = await loadTeamBranding(c.env.TEAMS_KV, session.team_id)
+  const html = await generateSessionHtmlExport(
+    {
+      id: session.id,
+      title: session.title,
+      status: session.status,
+      anonymity: session.anonymity,
+      team_id: session.team_id ?? null,
+      branding,
+      created_at: session.created_at,
+      started_at: startedAt,
+      closed_at: closedAt,
+      duration_ms: durationMs,
+      questions,
+      total_votes: questions.reduce((s, q) => s + q.total_votes, 0),
+    },
+    c.env.JWT_SECRET,
+  )
+
+  trackExport(c, 'completed', format, id, session.team_id, Date.now() - exportStarted)
+  const ext = format === 'pdf' ? 'pdf.html' : 'html'
+  return new Response(html, {
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'content-disposition': `attachment; filename="session-${id}.${ext}"`,
+      'cache-control': 'private, no-store',
+      ...(format === 'pdf' ? { 'x-export-hint': 'Open in browser and print to PDF' } : {}),
+    },
+  })
 }
 
 export function mountExportRoutes(
@@ -313,71 +384,33 @@ export function mountExportRoutes(
       )
     }
 
-    const exportStarted = Date.now()
-    trackExport(c, 'initiated', 'html', id, session.team_id)
+    return renderSignedHtmlExport(c, session, 'html')
+  })
 
-    const { results: questionRows } = await c.env.DB
-      .prepare(
-        `SELECT id, position, kind, prompt, options_json
-           FROM questions
-          WHERE session_id = ?1
-       ORDER BY position ASC`,
+  app.get('/:id/export.pdf', async (c) => {
+    const traceId = c.get('trace_id')
+    if (c.get('plan') !== 'team') {
+      return c.json(
+        { ok: false, error: { code: 'upgrade_required', message: 'PDF export requires the Team plan' }, trace_id: traceId },
+        403,
       )
-      .bind(id)
-      .all<{ id: string; position: number; kind: string; prompt: string; options_json: string | null }>()
-
-    const voteMap = await loadExportVoteMap(c.env.DB, id)
-
-    const startedAt = session.started_at ?? null
-    const closedAt = session.closed_at ?? null
-    const durationMs = startedAt !== null && closedAt !== null ? closedAt - startedAt : null
-
-    const questions = (questionRows ?? []).map((q) => {
-      const options = parseQuestionOptions(q.options_json)
-      const qVotes = voteMap.get(q.id) ?? new Map<string, number>()
-      const optionsWithVotes = options.map((o) => ({
-        id: o.id,
-        label: o.label,
-        votes: qVotes.get(o.id) ?? 0,
-      }))
-      const totalVotes = optionsWithVotes.reduce((s, o) => s + o.votes, 0)
-      return {
-        id: q.id,
-        position: q.position,
-        kind: q.kind,
-        prompt: q.prompt,
-        options: optionsWithVotes,
-        total_votes: totalVotes,
-      }
-    })
-
-    const totalVotes = questions.reduce((s, q) => s + q.total_votes, 0)
-
-    const html = await generateSessionHtmlExport(
-      {
-        id: session.id,
-        title: session.title,
-        status: session.status,
-        anonymity: session.anonymity,
-        team_id: session.team_id ?? null,
-        created_at: session.created_at,
-        started_at: startedAt,
-        closed_at: closedAt,
-        duration_ms: durationMs,
-        questions,
-        total_votes: totalVotes,
-      },
-      c.env.JWT_SECRET,
-    )
-
-    trackExport(c, 'completed', 'html', id, session.team_id, Date.now() - exportStarted)
-
-    return new Response(html, {
-      headers: {
-        'content-type': 'text/html; charset=utf-8',
-        'content-disposition': `attachment; filename="session-${id}.html"`,
-        'cache-control': 'private, no-store',
-      },
-    })
+    }
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!loaded.ok) {
+      return c.json(
+        { ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id: traceId },
+        loaded.error.status,
+      )
+    }
+    const session = loaded.session
+    if (session.status !== 'closed' && session.status !== 'archived') {
+      return c.json(
+        { ok: false, error: { code: 'session_not_closed', message: 'Session must be closed to export' }, trace_id: traceId },
+        409,
+      )
+    }
+    return renderSignedHtmlExport(c, session, 'pdf')
   })
 }

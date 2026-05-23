@@ -41,10 +41,12 @@ function kvKey(prefix: string, id: string): string {
  * Increment the counter for `id`, returning whether the call is allowed.
  * If `kv` is undefined (tests / pre-bootstrap), always allow.
  */
+export type RateLimitKvOptions = RateLimitOptions & { failClosed?: boolean }
+
 export async function rateLimit(
   kv: KVNamespace | undefined,
   id: string,
-  opts: RateLimitOptions,
+  opts: RateLimitKvOptions,
 ): Promise<RateLimitResult> {
   const fallbackResetAt = () => Date.now() + opts.windowSeconds * 1000
   if (!kv) {
@@ -81,7 +83,9 @@ export async function rateLimit(
         error: err instanceof Error ? err.message : String(err),
       }),
     )
-    // KV unavailable — fail open, matching middleware/rate-limit.ts.
+    if (opts.failClosed) {
+      return { allowed: false, remaining: 0, resetAt: fallbackResetAt() }
+    }
     return { allowed: true, remaining: opts.max, resetAt: fallbackResetAt() }
   }
 }

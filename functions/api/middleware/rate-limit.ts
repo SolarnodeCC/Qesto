@@ -4,8 +4,8 @@
 // `windowStart` means each key lives at most `windowSec` and is GC'd
 // automatically via `expirationTtl = windowSec * 2`.
 //
-// Fail-open: if KV throws (transient outage) we log the error and allow the
-// request through rather than locking legit traffic out.
+// Default fail-open on KV errors. Set RATE_LIMIT_FAIL_CLOSED=true (SEC-RATELIMIT-01)
+// to return 503 when ACTIONS_KV is unavailable.
 
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
@@ -75,7 +75,6 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
 
       await c.env.ACTIONS_KV.put(key, String(count + 1), { expirationTtl: windowSec * 2 })
     } catch (err) {
-      // Deny-open: KV failure must not block legit traffic.
       kvAvailable = false
       console.log(
         JSON.stringify({
@@ -87,9 +86,18 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
           error: (err as Error).message,
         }),
       )
+      if (c.env.RATE_LIMIT_FAIL_CLOSED === 'true') {
+        return c.json(
+          {
+            ok: false,
+            error: { code: 'rate_limit_unavailable', message: 'Rate limiting temporarily unavailable' },
+            trace_id: c.get('trace_id') ?? 'unknown',
+          },
+          503,
+        )
+      }
     }
 
-    
     void kvAvailable
     await next()
   }

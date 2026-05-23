@@ -25,6 +25,7 @@ export interface ExportSessionData {
   status: string
   anonymity?: string
   team_id?: string | null
+  branding?: { primaryColor?: string; secondaryColor?: string; logoUrl?: string | null } | null
   created_at: number
   started_at?: number | null
   closed_at?: number | null
@@ -120,6 +121,12 @@ export async function generateSessionHtmlExport(
     )
     .join('')
 
+  const brandPrimary = session.branding?.primaryColor ?? '#0D9488'
+  const brandLogo =
+    session.branding?.logoUrl && session.branding.logoUrl.length > 0
+      ? `<img src="${escapeHtml(session.branding.logoUrl)}" alt="" style="max-height:48px;margin-bottom:12px" />`
+      : ''
+
   const anonymityLabel =
     session.anonymity === 'zero_knowledge'
       ? 'Zero-Knowledge (identity never stored)'
@@ -140,7 +147,7 @@ export async function generateSessionHtmlExport(
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, sans-serif; color: #111; background: #fff; padding: 32px; max-width: 800px; margin: 0 auto; }
-    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; color: ${brandPrimary}; }
     .meta { font-size: 12px; color: #666; margin-bottom: 24px; }
     .meta td { padding: 2px 16px 2px 0; vertical-align: top; }
     .meta-label { color: #999; font-weight: 500; }
@@ -155,6 +162,7 @@ export async function generateSessionHtmlExport(
   </style>
 </head>
 <body>
+  ${brandLogo}
   <h1>${escapeHtml(session.title)}</h1>
   <p class="meta" style="color:#666;font-size:13px;margin-bottom:16px">Session export · Generated ${formatDate(exportedAt)}</p>
 
