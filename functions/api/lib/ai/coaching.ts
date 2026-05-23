@@ -17,22 +17,36 @@ export type CoachingSuggestion = {
   headline: string
   bullets: string[]
   model: string
+  confidence?: number
+  followUps?: string[]
+}
+
+export type CoachingTurn = {
+  role: 'user' | 'assistant'
+  content: string
+  at: number
 }
 
 export async function generateFacilitatorCoaching(
   env: Env,
   ctx: SessionAIContext,
   input: CoachingInput,
+  options?: { followUp?: string; history?: CoachingTurn[] },
 ): Promise<CoachingSuggestion | null> {
   if (input.anonymity === 'zero_knowledge') return null
   if (input.questionSummaries.length === 0) return null
 
   const ctxAi = aiOverride(ctx, { model: COACHING_MODEL })
+  const historyBlock =
+    options?.history?.length ?
+      `\nPrior turns:\n${options.history.map((t) => `${t.role}: ${t.content}`).join('\n')}\n`
+    : ''
+  const followUpBlock = options?.followUp ? `\nFacilitator follow-up: ${options.followUp}\n` : ''
   const prompt = `You are a facilitation coach. Session: "${input.sessionTitle}".
 Total votes: ${input.totalVotes}. Questions:
 ${input.questionSummaries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
-
-Reply as JSON only: {"headline":"...","bullets":["...","..."]} (2-4 bullets, actionable, no PII).`
+${historyBlock}${followUpBlock}
+Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1.0,"followUps":["optional question"]} (2-4 bullets, actionable, no PII).`
 
   const result = await aiPipeline(env, ctxAi, async (model, _signal) => {
     return env.AI.run(model, { messages: [{ role: 'user', content: prompt }] })
@@ -57,6 +71,12 @@ Reply as JSON only: {"headline":"...","bullets":["...","..."]} (2-4 bullets, act
       headline: parsed.headline.slice(0, 200),
       bullets: parsed.bullets.slice(0, 5).map((b) => String(b).slice(0, 300)),
       model: COACHING_MODEL,
+      ...(typeof (parsed as { confidence?: number }).confidence === 'number' ?
+        { confidence: Math.min(1, Math.max(0, (parsed as { confidence: number }).confidence)) }
+      : {}),
+      ...(Array.isArray((parsed as { followUps?: string[] }).followUps) ?
+        { followUps: (parsed as { followUps: string[] }).followUps.slice(0, 3).map((f) => String(f).slice(0, 200)) }
+      : {}),
     }
   } catch {
     return {

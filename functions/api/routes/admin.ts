@@ -1169,6 +1169,49 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
+  // ── GET /api/admin/audit/forensic.csv (AUDIT-EXPORT-FORENSIC-01) ─────────
+  app.get('/audit/forensic.csv', authMiddleware, adminMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    const limit = Math.min(5000, Math.max(1, Number(c.req.query('limit') ?? 1000)))
+    const rows = await c.env.DB.prepare(
+      `SELECT ts, actor_id, action, subject_type, subject_id, before_json, after_json
+       FROM audit_events ORDER BY ts DESC LIMIT ?1`,
+    )
+      .bind(limit)
+      .all<{
+        ts: number
+        actor_id: string
+        action: string
+        subject_type: string
+        subject_id: string
+        before_json: string | null
+        after_json: string | null
+      }>()
+    const header = 'ts,actor_id,action,subject_type,subject_id,before_json,after_json\n'
+    const body = (rows.results ?? [])
+      .map((r) =>
+        [
+          r.ts,
+          r.actor_id,
+          r.action,
+          r.subject_type,
+          r.subject_id,
+          JSON.stringify(r.before_json ?? ''),
+          JSON.stringify(r.after_json ?? ''),
+        ]
+          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+          .join(','),
+      )
+      .join('\n')
+    return new Response(header + body, {
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="qesto-audit-forensic.csv"',
+        'X-Trace-Id': trace_id,
+      },
+    })
+  })
+
   // ── GET /api/admin/sprint19-baseline ─────────────────────────────────────
   // Sprint 20 measurement endpoint for the Sprint 19 AI wizard + Launchpad work.
   // D1 provides durable baseline proxies; Analytics Engine/log-derived fields
