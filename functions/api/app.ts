@@ -18,6 +18,7 @@ import { mountIntegrationRoutes } from './routes/integrations'
 import { mountGdprRoutes } from './routes/gdpr'
 import { mountTournamentRoutes } from './routes/tournaments'
 import { mountLdapRoutes } from './routes/ldap'
+import { mountOrganizationRoutes } from './routes/organizations'
 import { mountAgentGroundingRoutes } from './routes/agent-grounding'
 import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
 import { mountWebhookRoutes } from './routes/webhooks'
@@ -210,6 +211,7 @@ export function createApp() {
   mountWebhookTemplateRoutes(app)
   mountTournamentRoutes(app)
   mountLdapRoutes(app)
+  mountOrganizationRoutes(app)
   mountAgentGroundingRoutes(app)
 
   return app

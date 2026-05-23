@@ -27,13 +27,25 @@ const WebhookTeamIndexSchema = z.array(z.string())
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type WebhookEvent = 'session.closed' | 'session.started' | 'session.energizer'
+export type WebhookEvent =
+  | 'session.closed'
+  | 'session.started'
+  | 'session.energizer'
+  | 'energizer.activated'
+  | 'sentiment.threshold'
+  | 'leaderboard.milestone'
 
 export const KNOWN_WEBHOOK_EVENTS: readonly WebhookEvent[] = [
   'session.closed',
   'session.started',
   'session.energizer',
+  'energizer.activated',
+  'sentiment.threshold',
+  'leaderboard.milestone',
 ] as const
+
+/** Target: 95% of deliveries complete within 5 minutes (INT-WEBHOOK-MATURITY-01). */
+export const WEBHOOK_DELIVERY_SLA_MS = 5 * 60 * 1000
 
 export interface WebhookConfig {
   id: string
@@ -266,6 +278,24 @@ export async function deliverWebhook(
       const wait = RETRY_BACKOFF_MS[attempt - 1] ?? 0
       if (wait > 0) await sleep(wait)
     }
+  }
+
+  // Dead-letter: persist final failure for operator replay (7-day TTL).
+  try {
+    await integrationsKv.put(
+      `webhook:dead-letter:${config.id}:${ulid()}`,
+      JSON.stringify({
+        webhookId: config.id,
+        teamId: config.teamId,
+        event: payload.event,
+        url: config.url,
+        failedAt: Date.now(),
+        slaMs: WEBHOOK_DELIVERY_SLA_MS,
+      }),
+      { expirationTtl: 7 * 24 * 60 * 60 },
+    )
+  } catch {
+    /* ignore */
   }
 }
 

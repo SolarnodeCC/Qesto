@@ -27,7 +27,7 @@ import { getZoomProvider } from '../lib/integrations/providers/zoom'
 import { getSalesforceProvider } from '../lib/integrations/providers/salesforce'
 import { getNotionProvider } from '../lib/integrations/providers/notion'
 import { generatePKCEPair } from '../lib/integrations/oauth'
-import type { ProviderConfig } from '../lib/integrations/types'
+import type { ProviderConfig, TokenResponse } from '../lib/integrations/types'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { writeEvent } from '../lib/observability'
 import type { Env, PlanTier } from '../types'
@@ -72,6 +72,28 @@ export interface TeamsIntegrationConfig {
 
 export function teamsConfigKey(teamId: string): string {
   return `integration:config:${teamId}:teams`
+}
+
+export function zoomConfigKey(teamId: string): string {
+  return `integration:config:${teamId}:zoom`
+}
+
+export interface ZoomIntegrationConfig {
+  connectedAt: number
+  connectedBy: string
+  zoomUserId?: string
+  notifyOnClose?: boolean
+}
+
+export function salesforceConfigKey(teamId: string): string {
+  return `integration:config:${teamId}:salesforce`
+}
+
+export interface SalesforceIntegrationConfig {
+  instanceUrl: string
+  connectedAt: number
+  connectedBy: string
+  notifyOnClose?: boolean
 }
 
 // PKCE verifiers are stashed in KV between /connect and /callback because
@@ -196,7 +218,7 @@ async function emitIntegrationConnected(
   env: Env,
   userId: string,
   teamId: string,
-  integrationType: 'slack' | 'teams',
+  integrationType: string,
 ): Promise<void> {
   const row = await env.DB.prepare(`SELECT plan FROM users WHERE id = ?1`)
     .bind(userId)
@@ -692,30 +714,124 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     const user = c.get('user')
     const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
     if (!teamId || !c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: true, data: { connected: false, phase: 'skeleton' }, trace_id: c.get('trace_id') })
+      return c.json({ ok: true, data: { connected: false }, trace_id: c.get('trace_id') })
     }
     const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV, c.env)
     const token = await store.getToken(teamId, 'zoom')
+    const config = await readKvJson<ZoomIntegrationConfig>(c.env.INTEGRATIONS_KV, zoomConfigKey(teamId))
     return c.json({
       ok: true,
-      data: { connected: token !== null, phase: 'skeleton' },
+      data: { connected: token !== null, ...(config ? { connectedAt: config.connectedAt } : {}) },
       trace_id: c.get('trace_id'),
     })
   })
 
-  app.get('/zoom/callback', authMiddleware, async (c) => {
-    return c.json(
-      {
-        ok: false,
-        error: { code: 'zoom_oauth_pending', message: 'Zoom token exchange is not implemented yet' },
-        trace_id: c.get('trace_id'),
-      },
-      501,
-    )
+  app.get('/zoom/callback', async (c) => {
+    if (integrationsDisabled(c.env)) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=integrations_disabled`, 302)
+    }
+    const provider = getZoomProvider(c.env)
+    if (!provider) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=zoom_not_configured`, 302)
+    }
+    const code = c.req.query('code')
+    const state = c.req.query('state')
+    const oauthErr = c.req.query('error')
+    if (oauthErr) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=${encodeURIComponent(oauthErr)}`, 302)
+    }
+    if (!code || !state) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=invalid_callback`, 302)
+    }
+    const verified = await verifyState(state, c.env.JWT_SECRET)
+    if (!verified) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=invalid_state`, 302)
+    }
+    try {
+      const token = await provider.exchangeCode(code, '')
+      const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
+      await store.storeToken(verified.teamId, 'zoom', token)
+      const config: ZoomIntegrationConfig = {
+        connectedAt: Date.now(),
+        connectedBy: verified.userId,
+        notifyOnClose: true,
+      }
+      await writeKvJson(c.env.INTEGRATIONS_KV!, zoomConfigKey(verified.teamId), config, {
+        expirationTtl: 90 * 24 * 60 * 60,
+      })
+      writeEvent(c.env.METRICS_AE, {
+        name: 'integration.connected',
+        userId: verified.userId,
+        teamId: verified.teamId,
+        detail: 'zoom',
+      })
+      return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=zoom`, 302)
+    } catch (err) {
+      console.error(JSON.stringify({ event: 'zoom.callback.error', error: String(err) }))
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=zoom_oauth_failed`, 302)
+    }
   })
 
   app.get('/salesforce/status', authMiddleware, async (c) => {
-    return c.json({ ok: true, data: { connected: false, phase: 'skeleton' }, trace_id: c.get('trace_id') })
+    const user = c.get('user')
+    const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
+    if (!teamId || !c.env.INTEGRATIONS_KV) {
+      return c.json({ ok: true, data: { connected: false }, trace_id: c.get('trace_id') })
+    }
+    const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV, c.env)
+    const token = await store.getToken(teamId, 'salesforce')
+    const config = await readKvJson<SalesforceIntegrationConfig>(
+      c.env.INTEGRATIONS_KV,
+      salesforceConfigKey(teamId),
+    )
+    return c.json({
+      ok: true,
+      data: {
+        connected: token !== null,
+        ...(config?.instanceUrl ? { instanceUrl: config.instanceUrl } : {}),
+      },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  app.get('/salesforce/callback', async (c) => {
+    if (integrationsDisabled(c.env)) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=integrations_disabled`, 302)
+    }
+    const provider = getSalesforceProvider(c.env)
+    if (!provider) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=salesforce_not_configured`, 302)
+    }
+    const code = c.req.query('code')
+    const state = c.req.query('state')
+    if (!code || !state) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=invalid_callback`, 302)
+    }
+    const verified = await verifyState(state, c.env.JWT_SECRET)
+    if (!verified) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=invalid_state`, 302)
+    }
+    try {
+      const token = (await provider.exchangeCode(code, '')) as TokenResponse & { instance_url?: string }
+      const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
+      await store.storeToken(verified.teamId, 'salesforce', token)
+      if (!token.instance_url) {
+        return c.redirect(`${c.env.PAGES_URL}/integrations?error=salesforce_missing_instance`, 302)
+      }
+      const config: SalesforceIntegrationConfig = {
+        instanceUrl: token.instance_url,
+        connectedAt: Date.now(),
+        connectedBy: verified.userId,
+        notifyOnClose: true,
+      }
+      await writeKvJson(c.env.INTEGRATIONS_KV!, salesforceConfigKey(verified.teamId), config, {
+        expirationTtl: 90 * 24 * 60 * 60,
+      })
+      return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=salesforce`, 302)
+    } catch (err) {
+      console.error(JSON.stringify({ event: 'salesforce.callback.error', error: String(err) }))
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=salesforce_oauth_failed`, 302)
+    }
   })
 
   app.get('/salesforce/connect', authMiddleware, async (c) => {
