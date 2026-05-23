@@ -20,6 +20,8 @@ import { mountTournamentRoutes } from './routes/tournaments'
 import { mountLdapRoutes } from './routes/ldap'
 import { mountOrganizationRoutes } from './routes/organizations'
 import { mountAgentGroundingRoutes } from './routes/agent-grounding'
+import { mountApiKeyRoutes } from './routes/api-keys'
+import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
 import { mountWebhookRoutes } from './routes/webhooks'
 import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
@@ -99,6 +101,8 @@ export function createApp() {
     await next()
   })
   app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 20, windowSec: 60 }))
+
+  mountPublicApiV1Routes(app)
 
   // RBAC enforcement — role-based access control for all API routes (Phase 8).
   // Checks user roles against permission matrix; defaults to viewer if no explicit role.
@@ -212,6 +216,7 @@ export function createApp() {
   mountTournamentRoutes(app)
   mountLdapRoutes(app)
   mountOrganizationRoutes(app)
+  mountApiKeyRoutes(app)
   mountAgentGroundingRoutes(app)
 
   return app
