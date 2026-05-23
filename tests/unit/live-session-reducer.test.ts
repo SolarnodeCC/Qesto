@@ -215,4 +215,22 @@ describe('useLiveSession reducer', () => {
       expect(next.energizer?.leaderboard?.[0].badges[0].kind).toBe('first_answer')
     })
   })
+
+  describe('sentiment (AI-SENTIMENT-01)', () => {
+    it('stores aggregate mood', () => {
+      const next = reducer(INITIAL, { kind: 'sentiment', mood: 'positive', sampleSize: 12 })
+      expect(next.sentiment).toEqual({ mood: 'positive', sampleSize: 12 })
+    })
+
+    it('clears mood when question advances', () => {
+      const withMood = reducer(INITIAL, { kind: 'sentiment', mood: 'neutral', sampleSize: 8 })
+      const next = reducer(withMood, {
+        kind: 'question',
+        question: QUESTION,
+        index: 1,
+        total: 3,
+      })
+      expect(next.sentiment).toBeNull()
+    })
+  })
 })

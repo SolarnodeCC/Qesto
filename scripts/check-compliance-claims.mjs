@@ -19,7 +19,13 @@ const CLAIM_CHECKS = [
   {
     id: 'eu-hosted',
     pattern: /\bEU[- ]hosted\b/i,
-    evidence: 'knowledge-base/security/SOC2_EVIDENCE.md',
+    evidence: 'knowledge-base/security/EU_DATA_RESIDENCY.md',
+    scanDirs: ['src/pages'],
+  },
+  {
+    id: 'eu-residency',
+    pattern: /\bEU\s+data\s+residen/i,
+    evidence: 'knowledge-base/security/EU_DATA_RESIDENCY.md',
     scanDirs: ['src/pages'],
   },
   {

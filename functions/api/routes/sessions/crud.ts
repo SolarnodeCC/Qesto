@@ -319,6 +319,14 @@ export function mountSessionCrudRoutes(app: Hono<{ Bindings: Env; Variables: Ses
         .run()
       session.ai_dismissed_count = body.ai_dismissed_count
     }
+    if (body.ai_recap_edited === true) {
+      const editedAt = Date.now()
+      await c.env.DB
+        .prepare(`UPDATE sessions SET ai_recap_edited_at = ?1 WHERE id = ?2 AND owner_id = ?3`)
+        .bind(editedAt, id, user.sub)
+        .run()
+      session.ai_recap_edited_at = editedAt
+    }
     let questions = await fetchQuestions(c.env.DB, id)
     if (body.question) {
       const denied = deniedQuestionFeature(plan, quotas, body.question.kind)

@@ -13,6 +13,7 @@
 //   POST /api/admin/users/:id/restore    — restore suspended account
 //   GET  /api/admin/ops/summary          — service health + reliability + issue pulse
 //   GET  /api/admin/analytics            — time-series, breakdowns, cost
+//   GET  /api/admin/engagement/export.csv — GAM-06 gamification metrics CSV
 //   GET  /api/admin/sprint19-baseline    — AI wizard + Launchpad KPI baseline
 //   POST /api/admin/kb-sync              — Phase 1 bulk vector sync to Vectorize (ADR-040)
 //   POST /api/admin/kb-sync-delete       — Phase 5 vector deletion for deleted KB files
@@ -28,6 +29,7 @@ import type { Env } from '../types'
 import { readKvJson } from '../lib/kv'
 import { registerHelpAdminRoutes } from './admin/help'
 import { validateBody } from '../lib/validate'
+import { buildEngagementCsv } from '../lib/admin-engagement-csv'
 import { AdminMetricsExportSchema, AdminCreateUserSchema, AdminPatchUserSchema } from '../lib/validation'
 import { safeLogContext } from '../lib/log'
 
@@ -1088,6 +1090,44 @@ export function mountAdminRoutes(parent: any) {
       }
       return c.json({ ok: true, data: empty, trace_id }, 200)
     }
+  })
+
+  // ── GET /api/admin/engagement/export.csv (GAM-06) ─────────────────────────
+  app.get('/engagement/export.csv', authMiddleware, adminMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    let engagement = {
+      energizer_activations: 0,
+      energizer_participants: 0,
+      energizer_completions: 0,
+      energizer_dropouts: 0,
+      leaderboard_participants: 0,
+      badges_awarded: 0,
+      ws_error_rate: 0,
+      reconnect_rate: 0,
+    }
+    let badgeBreakdown: Array<{ kind: string; count: number }> = []
+    try {
+      const badgeRes = await c.env.DB.prepare(
+        'SELECT badge_type as kind, COUNT(*) as count FROM badges GROUP BY badge_type ORDER BY count DESC',
+      ).all<{ kind: string; count: number }>()
+      badgeBreakdown = badgeRes.results ?? []
+      engagement.badges_awarded = badgeBreakdown.reduce((sum, row) => sum + row.count, 0)
+      const participantRes = await c.env.DB.prepare('SELECT COUNT(DISTINCT voter_id) as n FROM energizer_votes').first<{ n: number }>()
+      engagement.energizer_participants = participantRes?.n ?? 0
+      const leaderboardRes = await c.env.DB.prepare('SELECT COUNT(DISTINCT user_id) as n FROM leaderboard_entries').first<{ n: number }>()
+      engagement.leaderboard_participants = leaderboardRes?.n ?? 0
+    } catch {
+      /* gamification tables optional in local dev */
+    }
+    const csv = buildEngagementCsv({ engagement, badge_breakdown: badgeBreakdown })
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="qesto-engagement.csv"',
+        'X-Trace-Id': trace_id,
+      },
+    })
   })
 
   // ── GET /api/admin/sprint19-baseline ─────────────────────────────────────

@@ -46,5 +46,9 @@
   "teamQuiz.optionC": "Option C",
   "teamQuiz.optionD": "Option D",
   "leaderboard.title": "Classement",
-  "tallyHidden": "Dépouillement masqué"
+  "tallyHidden": "Dépouillement masqué",
+  "sentiment.positive": "Ambiance : positive",
+  "sentiment.neutral": "Ambiance : neutre",
+  "sentiment.concerning": "Ambiance : à surveiller",
+  "sentiment.hint": "Signal agrégé à partir de {count} réponses ouvertes (sans attribution individuelle)"
 }

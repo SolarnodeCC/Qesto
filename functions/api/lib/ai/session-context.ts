@@ -35,6 +35,23 @@ export function aiOverride(ctx: SessionAIContext, override: AIOverride): Session
   return { ...ctx, ...override }
 }
 
+export function sentimentContextFromMeta(meta: {
+  sessionId: string
+  teamId?: string
+  plan?: PlanTier
+  anonymity?: Anonymity
+}): SessionAIContext {
+  return {
+    sessionId: meta.sessionId,
+    teamId: meta.teamId ?? null,
+    plan: meta.plan ?? 'free',
+    anonymity: meta.anonymity ?? 'partial',
+    locale: 'en',
+    model: modelForPlan(meta.plan ?? 'free'),
+    promptVersion: PROMPT_VERSION,
+  }
+}
+
 export async function buildSessionAIContext(
   c: Context<{ Bindings: Env }>,
   sessionId: string,

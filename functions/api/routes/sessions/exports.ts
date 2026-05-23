@@ -9,6 +9,7 @@ import { Hono } from 'hono'
 import type { Context } from 'hono'
 import { requireFound } from '../../lib/session-lifecycle'
 import { writeEvent } from '../../lib/observability'
+import { buildAiRecapProvenance } from '../../lib/ai/recap-provenance'
 import { csvRow, escapeCsvCell } from '../../lib/csv'
 import { generateSessionHtmlExport } from '../../lib/export-pdf'
 import type { Env } from '../../types'
@@ -165,6 +166,7 @@ export function mountExportRoutes(
       duration_ms: durationMs,
       questions: questionsExport,
       total_votes: totalVotes,
+      ai_provenance: buildAiRecapProvenance(session),
     }
 
     trackExport(c, 'completed', 'json', id, session.team_id, Date.now() - exportStarted)

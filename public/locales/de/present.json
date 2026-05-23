@@ -46,5 +46,9 @@
   "teamQuiz.optionC": "Option C",
   "teamQuiz.optionD": "Option D",
   "leaderboard.title": "Rangliste",
-  "tallyHidden": "Ergebnis verborgen"
+  "tallyHidden": "Ergebnis verborgen",
+  "sentiment.positive": "Stimmung: positiv",
+  "sentiment.neutral": "Stimmung: neutral",
+  "sentiment.concerning": "Stimmung: Aufmerksamkeit nötig",
+  "sentiment.hint": "Aggregiertes Signal aus {count} offenen Antworten (keine Einzelzuordnung)"
 }
