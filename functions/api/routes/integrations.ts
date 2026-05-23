@@ -758,6 +758,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     return c.redirect(provider.getAuthUrl(state, ''), 302)
   })
 
+
   parent.route('/api/integrations', app)
 }
 
