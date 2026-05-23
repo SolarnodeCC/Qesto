@@ -7,6 +7,7 @@
 
 import type { PollOption, QuestionKind } from '@api/types'
 import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { enqueueOfflineVote, flushOfflineVoteQueue } from '../lib/offline-vote-queue'
 import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
 
 const LIVE_PROTOCOL_VERSION = 1
@@ -250,7 +251,10 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     const ws = new WebSocket(url, subprotocols)
     wsRef.current = ws
 
-    ws.addEventListener('open', () => dispatch({ kind: 'open' }))
+    ws.addEventListener('open', () => {
+      flushOfflineVoteQueue(sessionId, (payload) => sendWsJson(ws, payload))
+      dispatch({ kind: 'open' })
+    })
     ws.addEventListener('message', (ev) => {
       try {
         const raw = JSON.parse(ev.data as string)
@@ -371,18 +375,18 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     (optionId: string) => {
       const ws = wsRef.current
       if (!state.question) return
-      if (
-        !sendWsJson(ws, {
-          v: LIVE_PROTOCOL_VERSION,
-          type: 'vote',
-          data: { questionId: state.question.id, optionId },
-          timestamp: Date.now(),
-        })
-      )
-        return
+      const payload = {
+        v: LIVE_PROTOCOL_VERSION,
+        type: 'vote',
+        data: { questionId: state.question.id, optionId },
+        timestamp: Date.now(),
+      }
+      if (!sendWsJson(ws, payload)) {
+        enqueueOfflineVote(sessionId, payload)
+      }
       dispatch({ kind: 'vote_sent', optionId })
     },
-    [state.question],
+    [sessionId, state.question],
   )
 
   const requestState = useCallback(() => {

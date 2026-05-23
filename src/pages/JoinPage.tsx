@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle2, Sparkles } from 'lucide-react'
 import type { PollOption, SessionLookupByCode } from '@/types/session'
-import { applyBrandingToDocument, cacheJoinSession } from '../lib/branding'
+import { applyBrandingToDocument, cacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
 import { useLiveSession, type LiveEnergizerState } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -159,6 +159,15 @@ export default function JoinPage() {
         setLookup({ status: 'waiting', sessionId: res.data.id, title: res.data.title })
       }
     } else if (!silent) {
+      const cached = readCachedJoinSession(c)
+      if (cached && typeof cached.id === 'string') {
+        setLookup({
+          status: cached.status === 'live' ? 'ready' : 'waiting',
+          sessionId: String(cached.id),
+          title: typeof cached.title === 'string' ? cached.title : 'Session',
+        })
+        return
+      }
       setLookup({ status: 'error', message: res.error.message })
     }
   }, [])
