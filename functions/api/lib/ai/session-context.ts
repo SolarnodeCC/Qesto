@@ -37,9 +37,9 @@ export function aiOverride(ctx: SessionAIContext, override: AIOverride): Session
 
 export function sentimentContextFromMeta(meta: {
   sessionId: string
-  teamId?: string
-  plan?: PlanTier
-  anonymity?: Anonymity
+  teamId?: string | undefined
+  plan?: PlanTier | undefined
+  anonymity?: Anonymity | undefined
 }): SessionAIContext {
   return {
     sessionId: meta.sessionId,
