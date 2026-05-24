@@ -909,6 +909,21 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
   })
 
 
+  // Partner skeletons (Sprint 45) — status endpoints until full OAuth ships
+  for (const partner of ['workday', 'jira', 'mattermost'] as const) {
+    app.get(`/${partner}/status`, authMiddleware, async (c) => {
+      const store = c.env.INTEGRATIONS_KV ? createEncryptedTokenStore(c.env.INTEGRATIONS_KV, c.env) : null
+      const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, c.get('user').sub))
+      const connected =
+        store && teamId ? (await store.getToken(teamId, partner)) !== null : false
+      return c.json({
+        ok: true,
+        data: { connected, partner, phase: connected ? 'connected' : 'skeleton' },
+        trace_id: c.get('trace_id'),
+      })
+    })
+  }
+
   parent.route('/api/integrations', app)
 }
 

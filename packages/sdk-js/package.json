@@ -1,0 +1,9 @@
+{
+  "name": "@qesto/sdk",
+  "version": "1.0.0",
+  "description": "Qesto Public API v1 JavaScript client",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": ["index.js", "index.d.ts"]
+}
