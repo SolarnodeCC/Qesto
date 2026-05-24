@@ -21,12 +21,11 @@ import {
   patchSchemaIfNeeded,
   recordSprint19JourneyEvent,
   upsertPollQuestion,
-  rowToQuestion,
   deniedQuestionFeature,
   type SessionRow,
+  type Sprint19JourneyEvent,
 } from './shared'
 import type { Session, Question } from '../../types'
-import type { PollQuestionInput } from '../../lib/validation'
 
 export function mountSessionCrudRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   // POST /api/sessions/journey-events — client-side Sprint 19 journey signals.

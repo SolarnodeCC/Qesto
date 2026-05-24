@@ -26,5 +26,6 @@
   "teams_save_channel": "Guardar canal",
   "teams_status_error": "Error al cargar el estado de Teams.",
   "teams_disconnect_error": "Error al desconectar.",
-  "teams_config_error": "No se pudo guardar la configuración del canal."
+  "teams_config_error": "No se pudo guardar la configuración del canal.",
+  "branding_description": "El logotipo y los colores aparecen en las páginas de acceso y en los exports firmados (plan Team)."
 }
