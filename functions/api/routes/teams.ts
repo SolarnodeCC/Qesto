@@ -57,11 +57,11 @@ export type TeamMember = {
 }
 
 export type TeamBranding = {
-  logoUrl?: string | null
-  primaryColor?: string
-  secondaryColor?: string
+  logoUrl?: string | null | undefined
+  primaryColor?: string | undefined
+  secondaryColor?: string | undefined
   /** BRAND-CUSTOM-DOMAINS-COMPLETE — CNAME target join.qesto.cc (DNS at customer). */
-  customDomain?: string | null
+  customDomain?: string | null | undefined
 }
 
 export type Team = {
