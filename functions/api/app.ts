@@ -44,7 +44,9 @@ import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionConfig, resolveReadRegion } from './lib/multi-region'
 import type { Env } from './types'
 
-type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables> & {
+  parent_trace_id?: string
+}
 
 export function createApp() {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
