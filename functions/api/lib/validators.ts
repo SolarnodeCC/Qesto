@@ -551,7 +551,14 @@ export function validateKvJson<T>(
 
 // ── Webhook Validators (HLT-031: input boundary crossing) ───────────────────
 
-export const WebhookEventSchema = z.enum(['session.closed', 'session.started', 'session.energizer'])
+export const WebhookEventSchema = z.enum([
+  'session.closed',
+  'session.started',
+  'session.energizer',
+  'energizer.activated',
+  'sentiment.threshold',
+  'leaderboard.milestone',
+])
 
 export const WebhookConfigSchema = z.object({
   id: z.string().min(1),
