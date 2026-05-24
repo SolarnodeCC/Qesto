@@ -4,6 +4,10 @@
  */
 import { Hono } from 'hono'
 import type { Context, Next } from 'hono'
+import type { AuthVariables } from '../middleware/auth'
+import type { PlanVariables } from '../middleware/plan'
+import type { AdminVariables } from '../middleware/admin'
+import type { RbacVariables } from '../middleware/rbac'
 import {
   ApiKeyRecordSchema,
   apiKeyHashIndexKey,
@@ -38,7 +42,9 @@ async function apiKeyMiddleware(c: Context<{ Bindings: Env; Variables: ApiKeyVar
   await next()
 }
 
-export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env }>) {
+type PublicApiV2Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
+
+export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env; Variables: PublicApiV2Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: ApiKeyVars }>()
   app.use('*', apiKeyMiddleware)
 
