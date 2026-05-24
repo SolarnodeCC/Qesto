@@ -1,5 +1,5 @@
 /* MOBILE-PWA-02 — app shell cache + offline join fallback */
-const CACHE = 'qesto-pwa-v2'
+const CACHE = 'qesto-pwa-v3'
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -17,6 +17,10 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
   const url = new URL(event.request.url)
+  // Only intercept same-origin assets — cross-origin (Google Fonts, analytics,
+  // Cloudflare beacons, etc.) must bypass the SW so they hit their real
+  // host and CSP `font-src` / `style-src` rules apply correctly.
+  if (url.origin !== self.location.origin) return
   if (url.pathname.startsWith('/api/')) return
   event.respondWith(
     caches.match(event.request).then((cached) => {
