@@ -1,11 +1,15 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
+import type { PlanVariables } from '../middleware/plan'
+import type { AdminVariables } from '../middleware/admin'
+import type { RbacVariables } from '../middleware/rbac'
 import { writeEvent } from '../lib/observability'
 import { deleteUserGdprData } from '../lib/gdpr-delete-user'
-import { ok, fail } from '../lib/http'
+import { ok } from '../lib/http'
 import type { Env } from '../types'
 
-type Vars = AuthVariables
+// Match the Vars shape used in app.ts so this sub-router composes cleanly.
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
 
 export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
