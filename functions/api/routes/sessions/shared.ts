@@ -5,6 +5,7 @@ import type { AuthVariables } from '../../middleware/auth'
 import type { PlanVariables } from '../../middleware/plan'
 import { denyFeature, featureAllowed, questionKindFeature } from '../../lib/entitlements'
 import { validateKvJson, PollOptionArraySchema } from '../../lib/validators'
+import type { PollQuestionInput } from '../../lib/validation'
 import { extractThemes } from '../../lib/ai-insights'
 import {
   toInsightsInput,
@@ -21,7 +22,7 @@ import { teamDocumentKey } from '../../lib/kv-keys'
 export type SessionVars = AuthVariables & PlanVariables
 export type SessionRow = Session & { team_id: string | null }
 
-type Sprint19JourneyEvent =
+export type Sprint19JourneyEvent =
   | 'wizard.opened'
   | 'wizard.completed'
   | 'ai.suggestions_resolved'

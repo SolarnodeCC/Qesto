@@ -6,6 +6,7 @@ import {
   DEFAULT_AI_MODEL,
   type SessionAIContext,
 } from '../../functions/api/lib/ai/session-context'
+import type { Env } from '../../functions/api/types'
 import { CircuitBreakers } from '../../functions/api/lib/resilience/circuit-breaker'
 
 describe('session-context (AI-CONTEXT-01)', () => {
@@ -38,14 +39,14 @@ describe('session-context (AI-CONTEXT-01)', () => {
 
     it('returns ai_unavailable when circuit is open', async () => {
       vi.spyOn(CircuitBreakers.ai, 'execute').mockImplementation(async (_fn, onOpen) => onOpen())
-      const result = await aiPipeline(baseCtx, { METRICS_AE: undefined }, async () => 'ok')
+      const result = await aiPipeline(baseCtx, { METRICS_AE: undefined } as unknown as Env, async () => 'ok')
       expect(result.ok).toBe(false)
       if (!result.ok) expect(result.code).toBe('ai_unavailable')
     })
 
     it('returns data on successful run', async () => {
       vi.spyOn(CircuitBreakers.ai, 'execute').mockImplementation(async (fn) => fn(new AbortController().signal))
-      const result = await aiPipeline(baseCtx, { METRICS_AE: undefined }, async () => ({ themes: [] }))
+      const result = await aiPipeline(baseCtx, { METRICS_AE: undefined } as unknown as Env, async () => ({ themes: [] }))
       expect(result.ok).toBe(true)
       if (result.ok) {
         expect(result.data).toEqual({ themes: [] })

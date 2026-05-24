@@ -923,7 +923,7 @@ export class SessionRoom implements DurableObject {
     }
   }
 
-  private async maybeAnalyzeSentiment(meta: Meta, questionId: string, voters: Votes): Promise<void> {
+  private async maybeAnalyzeSentiment(meta: Meta, _questionId: string, voters: Votes): Promise<void> {
     if (this.env.SENTIMENT_ENABLED !== 'true') return
     if (meta.anonymity === 'zero_knowledge') return
 
