@@ -74,7 +74,7 @@ export class NotionProvider implements IntegrationProvider {
       body: JSON.stringify({
         parent: { page_id: pageId },
         properties: {
-          title: { title: [{ text: { content: results.sessionTitle.slice(0, 100) } } }] },
+          title: { title: [{ text: { content: results.sessionTitle.slice(0, 100) } }] },
         },
         children: [
           {

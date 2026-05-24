@@ -62,7 +62,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
         totalVotes: voteRow?.n ?? 0,
         anonymity: session.anonymity,
       },
-      { followUp: parsed.data.followUp, history },
+      parsed.data.followUp !== undefined ? { followUp: parsed.data.followUp, history } : { history },
     )
 
     if (!coaching) {
@@ -76,7 +76,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
       ...history,
       ...(parsed.data.followUp ? [{ role: 'user' as const, content: parsed.data.followUp, at: Date.now() }] : []),
       {
-        role: 'assistant',
+        role: 'assistant' as const,
         content: `${coaching.headline}\n${coaching.bullets.join('\n')}`,
         at: Date.now(),
       },

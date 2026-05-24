@@ -1052,7 +1052,7 @@ export default function TeamSettings() {
         {team && (
           <section aria-labelledby="section-branding" className="space-y-4 rounded-xl border border-pulse-200 p-6">
             <h2 id="section-branding" className="text-lg font-semibold">Branding</h2>
-            <p className="text-sm text-pulse-500">Logo and colors appear on join pages and signed exports (Team plan).</p>
+            <p className="text-sm text-pulse-500">{tTeam('branding_description')}</p>
             <form
               className="grid gap-3 max-w-md"
               onSubmit={async (e) => {

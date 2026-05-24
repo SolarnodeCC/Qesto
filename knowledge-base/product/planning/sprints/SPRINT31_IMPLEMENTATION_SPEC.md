@@ -31,7 +31,7 @@ relates_to:
 | COMPLIANCE-02 | MVP `check:compliance-claims` (Sprint 30 carry-in) |
 | GDPR-TRUST-PAGE-01 | `/trust/gdpr` marketing page |
 | AUDIT-GAM-01 | Energizer action labels + `ws.energizer_answered` filter |
-| AUTHZ-GAM-01 | Pre-shipped (v2.2 RC); `tests/unit/enterprise-permissions.test.ts` |
+| AUTHZ-GAM-01 | Pre-shipped (v2.2 RC); `'energizer:activate'` permission in `authz.ts`; `tests/unit/enterprise-permissions.test.ts` |
 
 ## DevOps gates (manual before prod merge)
 

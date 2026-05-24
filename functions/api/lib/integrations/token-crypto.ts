@@ -64,9 +64,9 @@ export async function decryptTokenPayload(serialized: string, key: CryptoKey): P
   const { iv, ct } = parsed as TokenEnvelope
   try {
     const plain = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: base64ToBytes(iv) },
+      { name: 'AES-GCM', iv: base64ToBytes(iv) as BufferSource },
       key,
-      base64ToBytes(ct),
+      base64ToBytes(ct) as BufferSource,
     )
     return new TextDecoder().decode(plain)
   } catch {
