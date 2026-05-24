@@ -16,12 +16,12 @@ import {
 
 interface StoredToken {
   access_token: string
-  refresh_token?: string
-  expires_in?: number
-  token_type?: string
-  scope?: string
+  refresh_token?: string | undefined
+  expires_in?: number | undefined
+  token_type?: string | undefined
+  scope?: string | undefined
   stored_at: number
-  expires_at?: number
+  expires_at?: number | undefined
 }
 
 export class EncryptedTokenStore {
