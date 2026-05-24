@@ -36,13 +36,17 @@ import { rbacMiddleware, type RbacVariables } from './middleware/rbac'
 import { loggerMiddleware } from './middleware/logger'
 import { rateLimit } from './middleware/rate-limit'
 import { writeEvent } from './lib/observability'
+import { parseTraceHeaders } from './lib/distributed-trace'
+import { securityHeadersMiddleware } from './middleware/security-headers'
 import { sanitizeError } from './lib/error-handler'
 import { resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionConfig, resolveReadRegion } from './lib/multi-region'
 import type { Env } from './types'
 
-type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables> & {
+  parent_trace_id?: string
+}
 
 export function createApp() {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -53,9 +57,12 @@ export function createApp() {
   // ──────────────────────────────────────────────────────────────────────────
 
   app.use('*', async (c, next) => {
-    const incoming = c.req.header('x-trace-id')
-    const trace_id = incoming && /^[a-zA-Z0-9_-]{8,128}$/.test(incoming) ? incoming : crypto.randomUUID()
+    const { trace_id, parent_trace_id } = parseTraceHeaders((name) => c.req.header(name))
     c.set('trace_id', trace_id)
+    if (parent_trace_id) {
+      c.set('parent_trace_id', parent_trace_id)
+      c.header('x-parent-trace-id', parent_trace_id)
+    }
     c.header('x-trace-id', trace_id)
     c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
     // Wire circuit breakers with KV — idempotent, runs once per isolate.
@@ -81,11 +88,13 @@ export function createApp() {
         return null
       },
       allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'idempotency-key'],
+      allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'x-parent-trace-id', 'idempotency-key'],
       credentials: true,
       maxAge: 600,
     }),
   )
+
+  app.use('*', securityHeadersMiddleware)
 
   // Structured JSON log line per request (silent in dev).
   app.use('*', loggerMiddleware)

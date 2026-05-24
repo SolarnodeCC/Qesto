@@ -1124,6 +1124,91 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
+  // ── GET /api/admin/perf/sub100ms-proof (PERF-SUB100MS-PROOF-01) ───────────
+  app.get('/perf/sub100ms-proof', authMiddleware, adminMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    const since = Date.now() - 7 * 24 * 60 * 60 * 1000
+    let voteSamples: number[] = []
+    try {
+      await patchSprint19SchemaIfNeeded(c.env.DB)
+      const res = await c.env.DB.prepare(
+        `SELECT duration_ms FROM sprint19_events
+         WHERE event_name = 'ws.vote_submitted' AND duration_ms > 0 AND created_at >= ?1
+         ORDER BY duration_ms ASC LIMIT 5000`,
+      )
+        .bind(since)
+        .all<{ duration_ms: number }>()
+      voteSamples = (res.results ?? []).map((r) => r.duration_ms)
+    } catch {
+      /* optional */
+    }
+    const sorted = [...voteSamples].sort((a, b) => a - b)
+    const p95 = sorted.length > 0 ? sorted[Math.floor(sorted.length * 0.95)] ?? sorted[sorted.length - 1]! : null
+    const p99 = sorted.length > 0 ? sorted[Math.floor(sorted.length * 0.99)] ?? sorted[sorted.length - 1]! : null
+    const targetP95Ms = 100
+    return c.json({
+      ok: true,
+      data: {
+        targetP95Ms,
+        sampleCount: sorted.length,
+        p95Ms: p95,
+        p99Ms: p99,
+        meetsTarget: p95 !== null ? p95 <= targetP95Ms : null,
+        methodology: 'knowledge-base/operations/SUB100MS_PROOF.md',
+        aeQueryHint: "blob1 = 'ws.vote_submitted' — quantileWeighted(0.95)(double1)",
+      },
+      trace_id,
+    })
+  })
+
+  // ── GET /api/admin/analytics/activation-funnel (ANALYTICS-ACTIVATION-FUNNEL-01)
+  app.get('/analytics/activation-funnel', authMiddleware, adminMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    await patchSprint19SchemaIfNeeded(c.env.DB)
+    const since = Date.now() - 30 * 24 * 60 * 60 * 1000
+    let signups = 0
+    let teams = 0
+    let firstSessions = 0
+    let paid = 0
+    try {
+      const [usersRes, eventsRes] = await Promise.all([
+        c.env.DB.prepare(`SELECT COUNT(*) as n FROM users WHERE created_at >= ?1`).bind(since).first<{ n: number }>(),
+        c.env.DB.prepare(
+          `SELECT event_name, COUNT(*) as n FROM sprint19_events
+           WHERE created_at >= ?1 AND event_name IN ('signup','team_created','first_session_started','first_paid')
+           GROUP BY event_name`,
+        )
+          .bind(since)
+          .all<{ event_name: string; n: number }>(),
+      ])
+      signups = usersRes?.n ?? 0
+      const counts = new Map((eventsRes.results ?? []).map((r) => [r.event_name, r.n]))
+      teams = counts.get('team_created') ?? 0
+      firstSessions = counts.get('first_session_started') ?? 0
+      paid = counts.get('first_paid') ?? 0
+    } catch {
+      /* partial data ok */
+    }
+    const funnel = [
+      { stage: 'signup', count: signups },
+      { stage: 'team_created', count: teams },
+      { stage: 'first_session_started', count: firstSessions },
+      { stage: 'first_paid', count: paid },
+    ]
+    return c.json({
+      ok: true,
+      data: {
+        windowDays: 30,
+        funnel,
+        conversionRates: {
+          signupToTeam: signups > 0 ? teams / signups : null,
+          teamToFirstSession: teams > 0 ? firstSessions / teams : null,
+          sessionToPaid: firstSessions > 0 ? paid / firstSessions : null,
+        },
+      },
+      trace_id,
+    })
+  })
 
   // ── GET /api/admin/perf/latency-dashboard (ANALYTICS-LATENCY-DASHBOARD-01) ─
   app.get('/perf/latency-dashboard', authMiddleware, adminMiddleware, async (c) => {
