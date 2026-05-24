@@ -57,9 +57,9 @@ export type TeamMember = {
 }
 
 export type TeamBranding = {
-  logoUrl?: string | null
-  primaryColor?: string
-  secondaryColor?: string
+  logoUrl?: string | null | undefined
+  primaryColor?: string | undefined
+  secondaryColor?: string | undefined
 }
 
 export type Team = {
