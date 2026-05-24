@@ -1124,6 +1124,7 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
+
   // ── GET /api/admin/perf/latency-dashboard (ANALYTICS-LATENCY-DASHBOARD-01) ─
   app.get('/perf/latency-dashboard', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')

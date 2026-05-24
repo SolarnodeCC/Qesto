@@ -25,7 +25,7 @@ export async function deleteUserGdprData(
     .all<{ id: string }>()
 
   let sessionsDeleted = 0
-  for (const row of sessions.results ?? []) {
+  for (const row of sessions ?? []) {
     const { deleted } = await hardDeleteSession(env.DB, row.id, userId)
     if (deleted) sessionsDeleted++
   }
