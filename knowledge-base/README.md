@@ -27,6 +27,8 @@ relates_to:
 
 This is the centralized knowledge base for the Qesto project. All documentation, specifications, architecture decisions, roadmaps, and operational guides are organized here for easy discovery and AI-powered retrieval.
 
+**Authoring tool:** Open this folder as an **[Obsidian](https://obsidian.md/) vault**. Do **not** use Notion for internal specs or planning — see [Obsidian KB Standard](./governance/OBSIDIAN_KB_STANDARD.md). Vault settings live in [`.obsidian/`](./.obsidian/).
+
 **Note**: The Claude Code agent/skill runtime system (`/.claude/agents/`, `/.claude/skills/`) remains at the repository root and is NOT part of this structure.
 
 ---
@@ -45,7 +47,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 - **[Backlog](./product/backlog/)** — Product backlog (master reference at `BACKLOG_MASTER.md`)
 - **[Market Research](./product/research/)** — Competitive intelligence, customer insights, market trends (updated quarterly)
 - **[Release Notes](./product/releases/)** — Version history, release plans, audit outcomes
-- **[Planning](./product/planning/)** — Sprint plans, implementation specs (S19–S39 horizon: [`SPRINT30_39_PLAN.md`](./product/planning/SPRINT30_39_PLAN.md))
+- **[Planning](./product/planning/)** — Sprint plans (S51–S60: [`SPRINT51_60_PLAN.md`](./product/planning/SPRINT51_60_PLAN.md); S30–S39: [`SPRINT30_39_PLAN.md`](./product/planning/SPRINT30_39_PLAN.md))
 
 ### Quality & Operations
 
@@ -60,7 +62,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 
 ### Governance & Standards
 
-- **[Governance](./governance/)** — Brand voice, design system, i18n, compliance
+- **[Governance](./governance/)** — Brand voice, design system, i18n, compliance, [Obsidian KB standard](./governance/OBSIDIAN_KB_STANDARD.md)
 - **[Database Governance](./governance/DATABASE_GOVERNANCE.md)** — Data policy, schema versioning
 - **[Design System](./governance/design-system/)** — UI kits, components, tokens, brand assets
 

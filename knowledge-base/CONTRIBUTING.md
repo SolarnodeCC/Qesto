@@ -19,6 +19,8 @@ relates_to:
 
 Guidelines for adding, updating, and maintaining documentation.
 
+**Tooling:** Edit docs in **Obsidian** (vault = this `knowledge-base/` folder). **Do not** create or update internal specs in Notion. See [OBSIDIAN_KB_STANDARD.md](./governance/OBSIDIAN_KB_STANDARD.md).
+
 ## When Adding Documents
 
 1. **Choose the right folder** based on type and domain

@@ -152,11 +152,38 @@ _Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (secu
 
 | Sprint range | Release | Status |
 |---|---|---|
-| Sprint 30-32 | v2.2 | S30 active; S31-32 planned |
-| Sprint 33-34 | v2.3 | Planned |
-| Sprint 35-39 | v2.4 foundation | Backlog groomed; ADRs 0012–0019 |
+| Sprint 30-32 | v2.2 | ✅ Shipped |
+| Sprint 33-34 | v2.3 | ✅ Shipped |
+| Sprint 35-39 | v2.4 | ✅ Shipped |
 
 **Plan:** See [`SPRINT30_39_PLAN.md`](../planning/SPRINT30_39_PLAN.md).
+
+### Sprint 40-50 — Platform Scale (v2.5 → v3.0 RC)
+
+**Focus:** Enterprise integrations (Zoom, Salesforce, Notion), Public API v1/v2, multi-region foundation, observability hardening, partner tier docs.
+
+| Sprint range | Release | Status |
+|---|---|---|
+| Sprint 40-44 | v2.5 | ✅ Shipped |
+| Sprint 45-47 | v2.6 preview / RC | ✅ Shipped |
+| Sprint 48-49 | v3.0 foundations | ✅ Shipped |
+| Sprint 50 | v3.0 RC | ✅ Built (`feat/sprint-50-v30-rc`) |
+
+**Specs:** [`product/planning/sprints/`](../planning/sprints/) (SPRINT40–SPRINT49 implementation specs).
+
+### Sprint 51-60 — Post-v3.0 Horizon (v3.1 → v3.5)
+
+**Focus:** Multi-region write sharding (ADR-0022 Phase 2), LDAP full sync, vendor webhooks (Workday/BambooHR), LIVE tournaments, AI coaching + KB-RAG maturity, SOC 2 Type II + partner GTM.
+
+| Sprint range | Release (target) | Status |
+|---|---|---|
+| Sprint 51-52 | v3.1 | Planned — 2027-04-28 |
+| Sprint 53-54 | v3.2 | Planned — 2027-05-26 |
+| Sprint 55-57 | v3.3 | Planned — 2027-07-07 |
+| Sprint 58-59 | v3.4 | Planned — 2027-08-04 |
+| Sprint 60 | v3.5 | Planned — 2027-08-18 |
+
+**Plan:** See [`SPRINT51_60_PLAN.md`](../planning/SPRINT51_60_PLAN.md).
 
 ### Post-v2.2 Commercial Promise Completion
 

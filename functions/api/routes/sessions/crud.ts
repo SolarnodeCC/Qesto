@@ -26,6 +26,7 @@ import {
   type Sprint19JourneyEvent,
 } from './shared'
 import type { Session, Question } from '../../types'
+import { emitMultiRegionWrite } from '../../lib/multi-region-telemetry'
 
 export function mountSessionCrudRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   // POST /api/sessions/journey-events — client-side Sprint 19 journey signals.
@@ -132,6 +133,8 @@ export function mountSessionCrudRoutes(app: Hono<{ Bindings: Env; Variables: Ses
           )
             .bind(id, user.sub, code, body.title, now, teamId)
             .run()
+          const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
+          void emitMultiRegionWrite(c.env, colo, 'sessions.create', c.get('trace_id'))
           const session: Session = {
             id,
             owner_id: user.sub,

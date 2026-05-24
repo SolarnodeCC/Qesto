@@ -8,5 +8,32 @@
   "trend": {
     "title": "30-day trend"
   },
-  "loadError": "Failed to load insights"
+  "loadError": "Failed to load insights",
+  "coaching": {
+    "title": "Facilitator coaching",
+    "getSuggestions": "Get suggestions",
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "unavailable": "Coaching unavailable",
+    "loadError": "Could not load coaching",
+    "accept": "Accept",
+    "saveTemplate": "Save to template",
+    "dismiss": "Dismiss",
+    "emailExport": "Email export",
+    "emailSending": "Sending…",
+    "emailSent": "Coaching export emailed to your account.",
+    "emailFailed": "Could not send email export.",
+    "accepted": "Suggestion recorded — thanks for the feedback.",
+    "dismissed": "Suggestion dismissed.",
+    "savedTemplate": "Saved for your template library.",
+    "priorSuggestions": "Prior suggestions ({{count}})"
+  },
+  "similar": {
+    "title": "Similar sessions",
+    "description": "Find past sessions with comparable themes using knowledge-base RAG.",
+    "placeholder": "Theme or outcome…",
+    "search": "Search",
+    "searching": "Searching…",
+    "loadError": "Could not load similar sessions"
+  }
 }

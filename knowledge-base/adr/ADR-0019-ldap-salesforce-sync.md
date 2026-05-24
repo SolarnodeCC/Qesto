@@ -11,7 +11,7 @@ created: 2026-05-22
 1. **LDAP** — `LDAP_URL` + bind credentials via secrets; `POST /api/ldap/sync` triggers directory import (skeleton).
 2. **Group mapping** — LDAP groups map to Qesto team roles via config KV (LDAP-02 follow-up).
 3. **Salesforce** — OAuth provider pushes closed-session JSON summary to configured object (SF-01 skeleton).
-4. **Notion** — parallel OAuth skeleton for page export (NOTION-01).
+4. **Notion** — legacy customer export OAuth only; **internal docs use Obsidian** (`OBSIDIAN_KB_STANDARD.md`), not Notion.
 
 ## Consequences
 

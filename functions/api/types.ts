@@ -51,6 +51,13 @@ export type Env = {
   MULTI_REGION_ENABLED?: string
   MULTI_REGION_PRIMARY?: string
   MULTI_REGION_REPLICAS?: string
+  MULTI_REGION_FAILOVER_ENABLED?: string
+  /** LDAP-01: default team for directory provisioning. */
+  LDAP_TEAM_ID?: string
+  /** LDAP-01: use built-in mock directory (dev/staging). */
+  LDAP_SYNC_MOCK?: string
+  /** LDAP-01: HTTP bridge for on-prem LDAP search (optional). */
+  LDAP_BRIDGE_URL?: string
 
   // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string
@@ -101,6 +108,8 @@ export type Env = {
   METRICS_AE?: AnalyticsEngineDataset
   CIRCUIT_BREAKER_KV?: KVNamespace
   INTEGRATIONS_KV?: KVNamespace
+  /** ADR-0022 Phase 2: failover drill state. */
+  MULTI_REGION_STATE_KV?: KVNamespace
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'

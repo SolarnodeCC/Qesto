@@ -20,7 +20,13 @@ export type VersionedClientEnvelope = {
   timestamp?: number
 }
 
-export type LiveEnergizerKind = 'quick_finger' | 'team_quiz' | 'emoji_poll' | 'word_cloud'
+export type LiveEnergizerKind =
+  | 'quick_finger'
+  | 'team_quiz'
+  | 'emoji_poll'
+  | 'word_cloud'
+  | 'bracket'
+  | 'battle_royale'
 export type LiveEnergizerAnswer = {
   voterId: string
   value: string

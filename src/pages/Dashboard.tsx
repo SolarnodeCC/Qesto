@@ -13,6 +13,8 @@ import AppShellLayout, { type DashboardSection } from '../layouts/AppShellLayout
 import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
 import AINarrative from '../components/AINarrative'
+import { CoachingCard } from '../components/CoachingCard'
+import { SimilarSessionsPanel } from '../components/SimilarSessionsPanel'
 import SessionWizard from '../components/SessionWizard'
 import DuplicateSessionModal from '../components/DuplicateSessionModal'
 import { sessionGradient } from '../utils/sessionGradient'
@@ -732,6 +734,16 @@ export default function Dashboard() {
           </h2>
           <div className="space-y-6">
             <AINarrative />
+            {closedSessions[0] && !planGated && (
+              <>
+                <CoachingCard sessionId={closedSessions[0].id} enabled={!insightsLoading} />
+                <SimilarSessionsPanel
+                  sessionId={closedSessions[0].id}
+                  defaultQuery={closedSessions[0].title}
+                  enabled={!insightsLoading}
+                />
+              </>
+            )}
             <div className="space-y-3">
               <h3 className="text-heading-s font-semibold dark:text-pulse-100">{t('topThemes')}</h3>
               {planGated ? (

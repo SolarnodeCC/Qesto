@@ -1281,6 +1281,30 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 
 **Horizon plan:** [`SPRINT30_39_PLAN.md`](../planning/SPRINT30_39_PLAN.md)
 
+### Sprint 51–60 Story Registry (added 2026-05-24)
+
+_Post-v3.0 RC horizon. Full sprint tables, gates, and ADR calendar: [`SPRINT51_60_PLAN.md`](../planning/SPRINT51_60_PLAN.md)._
+
+| ID | Item | Pts | Pri | Sprint |
+|---|---|---:|---|---|
+| KB-OBSIDIAN-01 | Obsidian vault standard + community plugins + team onboarding | 8 | P0 | S51 |
+| KB-NOTION-DEPRECATE-01 | Notion workspace sunset; archive imports; no internal Notion docs | 3 | P0 | S51 |
+| ADR-0022-PHASE-2 | Write sharding amendment (D1 primary + replica reads) | 3 | P0 | S51 |
+| MULTI-REGION-WRITE-01 | Write routing for session mutations | 8 | P0 | S51 |
+| MULTI-REGION-FAILOVER-01 | Failover detection + promotion | 5 | P0 | S51 |
+| LDAP-01 | Full LDAP/AD directory sync | 13 | P1 | S51 |
+| LDAP-02 | LDAP group → team role mapping | 8 | P1 | S52 |
+| ARCH-HONO-02 | Centralized auth policy in `app.ts` | 8 | P2 | S53 |
+| INT-WEBHOOK-02 | Workday + BambooHR webhook templates | 8 | P2 | S53 |
+| PARTNER-INTEG-01 | Partner OAuth beyond status routes (Workday/Jira/Mattermost) | 8 | P1 | S54 |
+| API-V2-EXPAND-01 | Public API v2 session create + results | 5 | P1 | S54 |
+| GAM-05-LIVE-01 | LIVE bracket + battle royale in SessionRoom | 13 | P1 | S55 |
+| GAM-05-QA | Tournament idempotency + reconnect tests | 5 | P0 | S55 |
+| KB-RAG-01 | Vectorize grounding for coaching + agent | 8 | P2 | S56 |
+| AI-COACHING-02 | Coaching card in Insights | 5 | P1 | S55 |
+| COMPLIANCE-05 | SOC 2 Type II audit execution | 13 | P0 | S58–S59 |
+| PARTNER-MARKETPLACE-01 | Partner app marketplace | 5 | P1 | S58 |
+
 ---
 
 **See also**:
@@ -1289,6 +1313,7 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 - `ARCHITECTURE.md` — system design + data model
 - `ROADMAP_FULL.md` — release timeline + version targets
 - `SPRINT30_39_PLAN.md` — ten-sprint horizon S30–S39
+- `SPRINT51_60_PLAN.md` — ten-sprint horizon S51–S60 (v3.1 → v3.5)
 - `CLAUDE.md` — L1 project context + hard rules
 - `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
 - `SPRINT33_34_PLAN.md` — Sprint 33–34 detailed plan (v2.3 integrations + compliance + AI depth)
