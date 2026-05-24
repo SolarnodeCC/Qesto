@@ -60,6 +60,8 @@ export type TeamBranding = {
   logoUrl?: string | null | undefined
   primaryColor?: string | undefined
   secondaryColor?: string | undefined
+  /** BRAND-CUSTOM-DOMAINS-COMPLETE — CNAME target join.qesto.cc (DNS at customer). */
+  customDomain?: string | null | undefined
 }
 
 export type Team = {
@@ -154,7 +156,17 @@ const BrandingSchema = z.object({
   logoUrl: z.string().url().max(2048).nullable().optional(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  customDomain: z
+    .string()
+    .regex(/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$/i)
+    .max(253)
+    .nullable()
+    .optional(),
 })
+
+function teamDomainKey(host: string): string {
+  return `team-domain:${host.toLowerCase()}`
+}
 
 const PatchTeamSchema = z.object({
   name: z.string().min(1).max(100).trim().optional(),
@@ -246,6 +258,23 @@ async function requireTeamPermission(
 
 export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
+
+  app.get('/resolve-domain', async (c) => {
+    const host = (c.req.query('host') ?? '').trim().toLowerCase()
+    if (!host) {
+      return c.json({ ok: false, error: { code: 'bad_request', message: 'host query required' }, trace_id: c.get('trace_id') }, 400)
+    }
+    const teamId = await c.env.TEAMS_KV.get(teamDomainKey(host))
+    if (!teamId) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Domain not mapped' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const team = await loadTeam(c.env.TEAMS_KV, teamId)
+    return c.json({
+      ok: true,
+      data: { teamId, branding: team?.branding ?? null, cnameTarget: 'join.qesto.cc' },
+      trace_id: c.get('trace_id'),
+    })
+  })
 
   // All team routes require authentication + plan context.
   app.use('*', authMiddleware)
@@ -648,7 +677,15 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       if (parsed.data.branding !== null && !featureAllowed(quotas, 'customBranding')) {
         return c.json({ ok: false, error: denyFeature(c.get('plan'), 'customBranding'), trace_id: c.get('trace_id') }, 403)
       }
+      const prevHost = team.branding?.customDomain ?? null
       team.branding = parsed.data.branding
+      const nextHost = parsed.data.branding?.customDomain ?? null
+      if (prevHost && prevHost !== nextHost) {
+        await c.env.TEAMS_KV.delete(teamDomainKey(prevHost))
+      }
+      if (nextHost) {
+        await c.env.TEAMS_KV.put(teamDomainKey(nextHost), team.id)
+      }
     }
 
     await saveTeam(c.env.TEAMS_KV, team)

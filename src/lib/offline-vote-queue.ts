@@ -13,7 +13,7 @@ function readAll(): QueuedVote[] {
   try {
     const raw = localStorage.getItem(QUEUE_KEY)
     if (!raw) return []
-    const parsed = JSON.parse(raw) as QueuedVote[]
+    const parsed = JSON.parse(raw) as unknown as QueuedVote[]
     return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
