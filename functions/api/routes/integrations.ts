@@ -874,6 +874,40 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     return c.redirect(provider.getAuthUrl(state, ''), 302)
   })
 
+  app.get('/notion/callback', async (c) => {
+    if (integrationsDisabled(c.env)) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=integrations_disabled`, 302)
+    }
+    const provider = getNotionProvider(c.env)
+    if (!provider) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=notion_not_configured`, 302)
+    }
+    const code = c.req.query('code')
+    const state = c.req.query('state')
+    if (!code || !state) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=invalid_callback`, 302)
+    }
+    const verified = await verifyState(state, c.env.JWT_SECRET)
+    if (!verified) {
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=invalid_state`, 302)
+    }
+    try {
+      const token = await provider.exchangeCode(code, '')
+      const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
+      await store.storeToken(verified.teamId, 'notion', token)
+      await writeKvJson(
+        c.env.INTEGRATIONS_KV!,
+        `integration:config:${verified.teamId}:notion`,
+        { connectedAt: Date.now(), connectedBy: verified.userId },
+        { expirationTtl: 90 * 24 * 60 * 60 },
+      )
+      return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=notion`, 302)
+    } catch (err) {
+      console.error(JSON.stringify({ event: 'notion.callback.error', error: String(err) }))
+      return c.redirect(`${c.env.PAGES_URL}/integrations?error=notion_oauth_failed`, 302)
+    }
+  })
+
 
   parent.route('/api/integrations', app)
 }

@@ -30,6 +30,7 @@ import { readKvJson } from '../lib/kv'
 import { registerHelpAdminRoutes } from './admin/help'
 import { validateBody } from '../lib/validate'
 import { buildEngagementCsv } from '../lib/admin-engagement-csv'
+import { buildEngagementSummary, type EnergizerKindMetric } from '../lib/admin-engagement-summary'
 import { AdminMetricsExportSchema, AdminCreateUserSchema, AdminPatchUserSchema } from '../lib/validation'
 import { safeLogContext } from '../lib/log'
 
@@ -1092,7 +1093,42 @@ export function mountAdminRoutes(parent: any) {
     }
   })
 
-  // ── GET /api/admin/engagement/export.csv (GAM-06) ─────────────────────────
+  // ── GET /api/admin/engagement/summary (ADMIN-ENGAGEMENT-COMPLETE-01) ───────
+  app.get('/engagement/summary', authMiddleware, adminMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    let rows: EnergizerKindMetric[] = []
+    try {
+      const res = await c.env.DB.prepare(
+        `SELECT e.kind,
+                COUNT(*) as total,
+                SUM(CASE WHEN e.state = 'active' THEN 1 ELSE 0 END) as active,
+                SUM(CASE WHEN e.state = 'completed' THEN 1 ELSE 0 END) as completed,
+                COUNT(DISTINCT ev.voter_id) as participants
+         FROM energizers e
+         LEFT JOIN energizer_votes ev ON ev.energizer_id = e.id
+         GROUP BY e.kind
+         ORDER BY total DESC`,
+      ).all<{
+        kind: string
+        total: number
+        active: number
+        completed: number
+        participants: number
+      }>()
+      rows = (res.results ?? []).map((r) => ({
+        kind: r.kind,
+        total: r.total,
+        active: r.active,
+        completed: r.completed,
+        participants: r.participants,
+      }))
+    } catch {
+      /* optional tables in local dev */
+    }
+    return c.json({ ok: true, data: buildEngagementSummary(rows), trace_id })
+  })
+
+  // ── GET /api/admin/engagement/export.csv (GAM-06 + ADMIN-EXPORT-ADV-01) ───
   app.get('/engagement/export.csv', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     let engagement = {
@@ -1119,12 +1155,15 @@ export function mountAdminRoutes(parent: any) {
     } catch {
       /* gamification tables optional in local dev */
     }
+    const fromMs = Number(c.req.query('from') ?? 0)
+    const toMs = Number(c.req.query('to') ?? Date.now())
     const csv = buildEngagementCsv({ engagement, badge_breakdown: badgeBreakdown })
-    return new Response(csv, {
+    const rangeNote = `# export_range_ms,${fromMs},${toMs}\n`
+    return new Response(rangeNote + csv, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="qesto-engagement.csv"',
+        'Content-Disposition': `attachment; filename="qesto-engagement-${fromMs}-${toMs}.csv"`,
         'X-Trace-Id': trace_id,
       },
     })
