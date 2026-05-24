@@ -47,6 +47,10 @@ export type Env = {
   WS_CONNECT_PER_IP_PER_MIN?: string
   /** GROWTH-ENGINE: IndexNow API key for SEO indexing (optional). */
   INDEXNOW_KEY?: string
+  /** ADR-0022: multi-region read replica routing (S46+). */
+  MULTI_REGION_ENABLED?: string
+  MULTI_REGION_PRIMARY?: string
+  MULTI_REGION_REPLICAS?: string
 
   // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string

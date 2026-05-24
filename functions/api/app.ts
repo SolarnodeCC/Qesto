@@ -37,6 +37,7 @@ import { writeEvent } from './lib/observability'
 import { sanitizeError } from './lib/error-handler'
 import { resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
+import { getMultiRegionConfig, resolveReadRegion } from './lib/multi-region'
 import type { Env } from './types'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -164,18 +165,22 @@ export function createApp() {
   )
 
   // Health — no auth, cheap, always on.
-  app.get('/api/admin/health', (c) =>
-    c.json({
+  app.get('/api/admin/health', (c) => {
+    const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
+    const mr = getMultiRegionConfig(c.env)
+    return c.json({
       ok: true,
       data: {
         env: c.env.ENV,
         ts: Date.now(),
-        region: (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null,
+        region: colo,
+        readRegion: resolveReadRegion(colo, mr),
+        multiRegion: mr,
         commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
       },
       trace_id: c.get('trace_id')!,
-    }),
-  )
+    })
+  })
 
   // Authenticated identity probe.
   app.get('/api/me', authMiddleware, (c) => {

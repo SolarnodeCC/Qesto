@@ -1093,6 +1093,35 @@ export function mountAdminRoutes(parent: any) {
     }
   })
 
+  // ── GET /api/admin/perf/latency-dashboard (ANALYTICS-LATENCY-DASHBOARD-01) ─
+  app.get('/perf/latency-dashboard', authMiddleware, adminMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    const since = Date.now() - 24 * 60 * 60 * 1000
+    let buckets: Array<{ bucket_ts: number; request_count: number; error_count: number }> = []
+    try {
+      const res = await c.env.DB.prepare(
+        `SELECT bucket_ts, request_count, error_count FROM metrics_summary WHERE bucket_ts >= ?1 ORDER BY bucket_ts ASC LIMIT 288`,
+      )
+        .bind(since)
+        .all<{ bucket_ts: number; request_count: number; error_count: number }>()
+      buckets = res.results ?? []
+    } catch {
+      /* metrics_summary optional */
+    }
+    const totalReq = buckets.reduce((s, b) => s + b.request_count, 0)
+    const totalErr = buckets.reduce((s, b) => s + b.error_count, 0)
+    return c.json({
+      ok: true,
+      data: {
+        windowHours: 24,
+        buckets,
+        errorRate: totalReq > 0 ? totalErr / totalReq : 0,
+        targetP99Ms: 200,
+      },
+      trace_id,
+    })
+  })
+
   // ── GET /api/admin/engagement/summary (ADMIN-ENGAGEMENT-COMPLETE-01) ───────
   app.get('/engagement/summary', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
