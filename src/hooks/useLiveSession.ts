@@ -382,7 +382,7 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
         timestamp: Date.now(),
       }
       if (!sendWsJson(ws, payload)) {
-        enqueueOfflineVote(sessionId, payload)
+        if (sessionId) enqueueOfflineVote(sessionId, payload)
       }
       dispatch({ kind: 'vote_sent', optionId })
     },
