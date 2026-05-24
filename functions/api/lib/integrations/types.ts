@@ -19,7 +19,7 @@ export interface WebhookEvent {
 
 export interface ProviderConfig {
   teamId: string
-  service: 'slack' | 'notion' | 'airtable'
+  service: 'slack' | 'notion' | 'airtable' | 'teams' | 'zoom' | 'salesforce'
   channel?: string // For Slack
   databaseId?: string // For Notion
   baseId?: string // For Airtable
