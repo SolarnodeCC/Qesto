@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import type { Env } from '../../types'
+import type { Env, Session } from '../../types'
 import type { SessionVars } from './shared'
 
 import { rateLimit } from '../../lib/rate-limit'
@@ -19,15 +19,18 @@ import { validateKvJson, CachedQuestionsSchema } from '../../lib/validators'
 import { hardDeleteSession } from '../../lib/session-delete'
 import { suggestDuplicateTitle } from '../../lib/session-title'
 import { requireFound, requireDraft, requireClosedOrArchivedForInsights } from '../../lib/session-lifecycle'
+import { ulid } from '../../lib/ulid'
+import { generateJoinCode } from '../../lib/code'
+import { incrementSessionQuota } from '../../lib/quota'
+import { writeEvent } from '../../lib/observability'
 import {
   fetchOwnerSessionTitles,
   fetchSession,
   fetchQuestions,
   hashGrounding,
-  rowToQuestion,
   deniedQuestionFeature,
+  recordSprint19JourneyEvent,
 } from './shared'
-import type { PollQuestionInput } from '../../lib/validation'
 
 export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   // ──────────────────────────────────────────────────────────────────────────
