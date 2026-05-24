@@ -5,7 +5,6 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
-import { featureAllowed } from '../lib/entitlements'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { ulid } from '../lib/ulid'
 import { validateBody } from '../lib/validate'
@@ -33,8 +32,7 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
   app.use('*', planMiddleware)
 
   app.post('/', async (c) => {
-    const quotas = c.get('planQuotas')
-    if (c.get('plan') !== 'team' && !featureAllowed(quotas, 'webhooks')) {
+    if (c.get('plan') !== 'team') {
       return c.json({ ok: false, error: { code: 'upgrade_required', message: 'API keys require Team plan' }, trace_id: c.get('trace_id') }, 403)
     }
     if (!c.env.INTEGRATIONS_KV) {

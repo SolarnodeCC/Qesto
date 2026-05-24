@@ -3,10 +3,14 @@
  */
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
+import type { PlanVariables } from '../middleware/plan'
+import type { AdminVariables } from '../middleware/admin'
+import type { RbacVariables } from '../middleware/rbac'
 import { queryDecisionGrounding } from '../lib/agent-grounding'
 import type { Env } from '../types'
 
-type Vars = AuthVariables
+// Match the Vars shape used in app.ts so this sub-router composes cleanly.
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
 
 export function mountAgentGroundingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()

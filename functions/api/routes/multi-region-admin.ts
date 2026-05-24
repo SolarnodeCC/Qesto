@@ -4,11 +4,14 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
+import type { PlanVariables } from '../middleware/plan'
+import type { RbacVariables } from '../middleware/rbac'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { getMultiRegionConfig, resolveReadRegion } from '../lib/multi-region'
 import type { Env } from '../types'
 
-type Vars = AuthVariables & AdminVariables
+// Match the Vars shape used in app.ts so this sub-router composes cleanly.
+type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
 
 type OptInRecord = {
   teamId: string

@@ -3,7 +3,7 @@
  */
 import { ulid } from './ulid'
 
-export type BracketParticipant = { id: string; label?: string }
+export type BracketParticipant = { id: string; label?: string | undefined }
 
 export type BracketMatchSeed = {
   id: string
