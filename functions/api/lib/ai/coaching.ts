@@ -34,7 +34,7 @@ ${input.questionSummaries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
 
 Reply as JSON only: {"headline":"...","bullets":["...","..."]} (2-4 bullets, actionable, no PII).`
 
-  const result = await aiPipeline(env, ctxAi, async (model, _signal) => {
+  const result = await aiPipeline(ctxAi, env, async (model, _signal) => {
     return env.AI.run(model, { messages: [{ role: 'user', content: prompt }] })
   })
   if (!result.ok) return null

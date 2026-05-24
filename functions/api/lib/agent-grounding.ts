@@ -28,10 +28,14 @@ export async function queryDecisionGrounding(
   const vector = firstVector(embedResult)
   if (!vector) return []
   const matches = await env.DECISIONS_VECTORIZE.query(vector, { topK, returnMetadata: true })
-  return (matches.matches ?? []).map((m) => ({
-    id: String(m.id),
-    score: m.score ?? 0,
-    text: String((m.metadata as { text?: string } | undefined)?.text ?? m.id),
-    sessionId: (m.metadata as { sessionId?: string } | undefined)?.sessionId,
-  }))
+  return (matches.matches ?? []).map((m) => {
+    const sessionId = (m.metadata as { sessionId?: string } | undefined)?.sessionId
+    const chunk: GroundingChunk = {
+      id: String(m.id),
+      score: m.score ?? 0,
+      text: String((m.metadata as { text?: string } | undefined)?.text ?? m.id),
+    }
+    if (sessionId) chunk.sessionId = sessionId
+    return chunk
+  })
 }

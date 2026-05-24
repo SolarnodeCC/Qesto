@@ -48,7 +48,7 @@ export async function analyzeOpenResponseSentiment(
   const labels: DistilbertLabel[] = []
   for (const text of sample) {
     const trimmed = text.slice(0, 512)
-    const result = await aiPipeline(env, ctxSentiment, async (model, _signal) => {
+    const result = await aiPipeline(ctxSentiment, env, async (model, _signal) => {
       return env.AI.run(model, { text: trimmed })
     })
     if (!result.ok) continue
