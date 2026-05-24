@@ -186,6 +186,18 @@ This document provides historical summaries of completed sprints, including Spri
 
 ---
 
+## Sprints 48–50 (v3.0 arc — 2026-05)
+
+| Sprint | Branch | Focus |
+|--------|--------|-------|
+| 48 | `feat/sprint-48-multiregion-api-v2` | API v2 realtime, multi-region opt-in (ADR-0024) |
+| 49 | `feat/sprint-49-observability-hardening` | Distributed tracing, sub-100ms proof, activation funnel |
+| 50 | `feat/sprint-50-v30-rc` | v3.0.0 RC, partner tiers, launch pack |
+
+Specs: `knowledge-base/product/planning/sprints/SPRINT{48,49,50}_IMPLEMENTATION_SPEC.md`
+
+---
+
 ## For New Context
 
 When starting fresh on Qesto (after Phase 4 LIVE spike), refer to:
