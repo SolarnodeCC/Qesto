@@ -1093,6 +1093,38 @@ export function mountAdminRoutes(parent: any) {
     }
   })
 
+  // ── GET /api/admin/perf/reporting (PERF-REPORTING-DASHBOARD-01) ────────────
+  app.get('/perf/reporting', authMiddleware, adminMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    const teamId = c.req.query('teamId')
+    let sessionCount = 0
+    let liveCount = 0
+    try {
+      if (teamId) {
+        const row = await c.env.DB.prepare(
+          `SELECT COUNT(*) as total, SUM(CASE WHEN status = 'live' THEN 1 ELSE 0 END) as live FROM sessions WHERE team_id = ?1`,
+        )
+          .bind(teamId)
+          .first<{ total: number; live: number }>()
+        sessionCount = row?.total ?? 0
+        liveCount = row?.live ?? 0
+      }
+    } catch {
+      /* optional */
+    }
+    return c.json({
+      ok: true,
+      data: {
+        teamId: teamId ?? null,
+        sessions: sessionCount,
+        liveSessions: liveCount,
+        targets: { voteP99Ms: 200, sub100msP95: 100 },
+      },
+      trace_id,
+    })
+  })
+
+
   // ── GET /api/admin/perf/latency-dashboard (ANALYTICS-LATENCY-DASHBOARD-01) ─
   app.get('/perf/latency-dashboard', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
