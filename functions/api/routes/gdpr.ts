@@ -48,5 +48,24 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     })
   })
 
+  app.get('/me/data-export', authMiddleware, async (c) => {
+    const user = c.get('user')
+    const sessions = await c.env.DB.prepare(
+      `SELECT id, title, status, created_at, closed_at FROM sessions WHERE owner_id = ?1 ORDER BY created_at DESC LIMIT 500`,
+    )
+      .bind(user.sub)
+      .all()
+    const profile = await c.env.DB.prepare(`SELECT id, email, created_at FROM users WHERE id = ?1`)
+      .bind(user.sub)
+      .first()
+    return ok(c, {
+      exportedAt: Date.now(),
+      format: 'json-portability-v1',
+      profile: profile ?? { id: user.sub, email: user.email },
+      sessions: sessions.results ?? [],
+      note: 'Machine-readable GDPR portability export; does not include vote-level PII for team anonymity modes.',
+    })
+  })
+
   parent.route('/api/users', app)
 }
