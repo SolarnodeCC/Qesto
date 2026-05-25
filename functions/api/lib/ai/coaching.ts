@@ -11,6 +11,10 @@ export type CoachingInput = {
   questionSummaries: string[]
   totalVotes: number
   anonymity: string
+  profileStyle?: 'concise' | 'detailed' | undefined
+  teamVertical?: string | undefined
+  similarSessions?: string[] | undefined
+  historicalInsight?: string | undefined
 }
 
 export type CoachingSuggestion = {
@@ -42,10 +46,17 @@ export async function generateFacilitatorCoaching(
       `\nPrior turns:\n${options.history.map((t) => `${t.role}: ${t.content}`).join('\n')}\n`
     : ''
   const followUpBlock = options?.followUp ? `\nFacilitator follow-up: ${options.followUp}\n` : ''
+  const styleHint = input.profileStyle ? `\nCoach style preference: ${input.profileStyle}.` : ''
+  const verticalHint = input.teamVertical ? `\nTeam vertical: ${input.teamVertical}. Tailor examples to this use case.` : ''
+  const historyHint = input.historicalInsight ? `\nHistorical pattern: ${input.historicalInsight}\n` : ''
+  const ragHint =
+    input.similarSessions?.length ?
+      `\nSimilar past sessions (for context only):\n${input.similarSessions.join('\n')}\n`
+    : ''
   const prompt = `You are a facilitation coach. Session: "${input.sessionTitle}".
 Total votes: ${input.totalVotes}. Questions:
 ${input.questionSummaries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
-${historyBlock}${followUpBlock}
+${styleHint}${verticalHint}${historyHint}${ragHint}${historyBlock}${followUpBlock}
 Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1.0,"followUps":["optional question"]} (2-4 bullets, actionable, no PII).`
 
   const result = await aiPipeline(ctxAi, env, async (model, _signal) => {

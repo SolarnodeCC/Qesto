@@ -45,6 +45,9 @@ jobs:
       - name: Baseline metric assertions
         run: npm run check:baseline
 
+      - name: Sprint 51-60 DoD file gate
+        run: npm run check:sprint-51-60
+
       - name: "Security: Block raw error logging (PII gate)"
         run: |
           if grep -r "console\.error\(err\)" functions/api --include="*.ts" \

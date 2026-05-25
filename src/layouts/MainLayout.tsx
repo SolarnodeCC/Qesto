@@ -341,6 +341,22 @@ export default function MainLayout({
                 </li>
                 <li>
                   <Link
+                    to="/trust/soc2"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                  >
+                    SOC 2 trust center
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/marketplace"
+                    className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                  >
+                    Partner marketplace
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/privacy"
                     className="hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
