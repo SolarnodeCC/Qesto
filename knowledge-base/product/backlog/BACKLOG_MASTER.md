@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-25 (UTC) — Market Pulse integration (Week of May 19, 2026)_
+_Last updated: 2026-05-25 (UTC) — Sprint 60–70 master plan (3× capacity); Market Pulse integration (Week of May 19, 2026)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -1296,6 +1296,163 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 
 ---
 
+### Sprint 60–70 — Post-v3.0 Platform Arc (added 2026-05-25)
+
+**Master plan (all agents, 120–150 pts/sprint):** [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md) — v3.1 (S60–62) → v3.2 (S63–66) → v4.0 (S67–70).
+
+**Role deep-dives:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md) (DEVOPS pool ~1,434 pts — **~25–35 pts committed per sprint**, not full catalog), [`QA_COMMITMENT_SPRINTS_60_70.md`](./QA_COMMITMENT_SPRINTS_60_70.md), [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md), [`docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md).
+
+#### Sprint 60–70 Story Registry — Infrastructure Scale-Out (DEVOPS backlog pool)
+
+_Added per DevOps planning horizon covering Sprints 60–70 (v3.1-infra → v3.4-infra): multi-region prod rollout, D1 sharding, SLO dashboards, staging parity, chaos drills, partner env isolation. **Groom ~25–35 pts/sprint from this pool per [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md).**
+
+**Infra detail:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md)
+
+#### EPIC-INFRA — Multi-Region (MR)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-MR-01 | Activate MULTI_REGION_ENABLED prod + health probe expansion | 5 | P0 | S60 | Planned |
+| DEVOPS-MR-02 | EU D1 read replica binding + resolveReadRegion() routing | 13 | P0 | S60 | Planned |
+| DEVOPS-MR-03 | Multi-region canary rollout + MULTI_REGION_REPLICA_PCT var | 8 | P0 | S60 | Planned |
+| DEVOPS-MR-04 | Regional read path AE events (colo_id, read_region, durationMs) | 8 | P0 | S60 | Planned |
+| DEVOPS-MR-05 | APAC D1 read replica binding + colo routing extension | 13 | P1 | S63 | Planned |
+| DEVOPS-MR-06 | EU read failover runbook | 5 | P0 | S60 | Planned |
+| DEVOPS-MR-07 | Cross-region session consistency check (EU lag measurement) | 8 | P1 | S61 | Planned |
+| DEVOPS-MR-08 | /api/admin/multi-region/status endpoint | 8 | P0 | S61 | Planned |
+| DEVOPS-MR-09 | Write-path audit: enforce US-primary for all mutations | 13 | P0 | S62 | Planned |
+| DEVOPS-MR-10 | Multi-region read skew detection + Slack alerting | 8 | P1 | S63 | Planned |
+
+#### EPIC-INFRA — D1 Sharding (DB)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-DB-01 | D1 sharding ADR review + wrangler.toml binding schema design | 8 | P0 | S60 | Planned |
+| DEVOPS-DB-02 | D1 shard 0 + shard 1 bindings (prod + staging) | 13 | P0 | S61 | Planned |
+| DEVOPS-DB-03 | Hash-based shard router service (lib/db/shard-router.ts) | 13 | P0 | S61 | Planned |
+| DEVOPS-DB-04 | Shard health probes in /api/admin/health | 8 | P0 | S61 | Planned |
+| DEVOPS-DB-05 | Cross-shard admin aggregation queries | 13 | P1 | S63 | Planned |
+| DEVOPS-DB-06 | Tenant-to-shard assignment + migration toolkit | 13 | P0 | S65 | Planned |
+| DEVOPS-DB-07 | Per-shard R2 backup cron | 8 | P1 | S61 | Planned |
+| DEVOPS-DB-08 | Per-shard AE events + SLO dashboard entry | 8 | P1 | S63 | Planned |
+| DEVOPS-DB-09 | Shard 2 (APAC) binding + routing extension | 13 | P1 | S64 | Planned |
+| DEVOPS-DB-10 | D1 shard forward-fix protocol | 8 | P1 | S61 | Planned |
+
+#### EPIC-INFRA — SLO Dashboards (SLO)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-SLO-01 | SLO dashboard v1: vote latency P50/P95/P99 | 8 | P0 | S60 | Planned |
+| DEVOPS-SLO-02 | API availability SLO + 28-day error budget | 8 | P0 | S60 | Planned |
+| DEVOPS-SLO-03 | D1 query latency SLO (P95 ≤ 50ms) | 5 | P1 | S60 | Planned |
+| DEVOPS-SLO-04 | WebSocket connect latency SLO (P95 ≤ 200ms) | 5 | P1 | S60 | Planned |
+| DEVOPS-SLO-05 | SLO alerting: Slack when error budget ≥80% consumed | 8 | P0 | S61 | Planned |
+| DEVOPS-SLO-06 | Per-region SLO breakdown (EU vs US vs APAC) | 8 | P1 | S62 | Planned |
+| DEVOPS-SLO-07 | SLO v2: composite multi-service SLO | 8 | P1 | S62 | Planned |
+| DEVOPS-SLO-08 | SLO burn rate alerts (1h + 6h multi-window) | 5 | P0 | S61 | Planned |
+| DEVOPS-SLO-09 | SLO documentation + on-call response thresholds | 8 | P1 | S60 | Planned |
+| DEVOPS-SLO-10 | Monthly SLO report automation (cron → Slack + R2) | 5 | P2 | S63 | Planned |
+
+#### EPIC-INFRA — Staging Parity (STG)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-STG-01 | Staging multi-region flag + EU D1 binding parity | 5 | P0 | S60 | Planned |
+| DEVOPS-STG-02 | Staging D1 shard bindings (shard 0 + 1) | 8 | P0 | S61 | Planned |
+| DEVOPS-STG-03 | Staging partner namespace isolation | 8 | P1 | S63 | Planned |
+| DEVOPS-STG-04 | Staging chaos injection flag support | 8 | P1 | S62 | Planned |
+| DEVOPS-STG-05 | wrangler.toml staging/prod drift CI gate | 5 | P0 | S60 | Planned |
+| DEVOPS-STG-06 | Automated staging → prod promotion pipeline | 8 | P1 | S62 | Planned |
+| DEVOPS-STG-07 | Staging full multi-region parity (EU + US replicas) | 13 | P1 | S63 | Planned |
+| DEVOPS-STG-08 | Staging seed data pipeline (anonymized snapshot) | 5 | P2 | S64 | Planned |
+| DEVOPS-STG-09 | Staging SLO dashboard (relaxed targets) | 8 | P1 | S64 | Planned |
+
+#### EPIC-INFRA — Chaos Engineering (CHX)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-CHX-01 | Chaos library v1: D1 latency injection (withChaosD1) | 13 | P0 | S62 | Planned |
+| DEVOPS-CHX-02 | Chaos drill: KV timeout simulation (CHAOS_KV_FAIL_RATE) | 8 | P1 | S62 | Planned |
+| DEVOPS-CHX-03 | Chaos drill: DO restart under load | 8 | P1 | S62 | Planned |
+| DEVOPS-CHX-04 | Chaos drill: multi-region read failover (EU kill → US fallback) | 13 | P0 | S63 | Planned |
+| DEVOPS-CHX-05 | Chaos drill runbook template + evidence format | 5 | P0 | S61 | Planned |
+| DEVOPS-CHX-06 | Chaos drill CI gate (monthly cron + Slack) | 5 | P1 | S64 | Planned |
+| DEVOPS-CHX-07 | Chaos drill: Stripe circuit breaker trip + recovery | 8 | P1 | S62 | Planned |
+| DEVOPS-CHX-08 | Chaos drill: AI inference timeout simulation | 8 | P1 | S64 | Planned |
+| DEVOPS-CHX-09 | Chaos drill: D1 shard failure (one shard down) | 8 | P1 | S65 | Planned |
+
+#### EPIC-INFRA — Partner Env Isolation (PRT)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-PRT-01 | Partner D1 provisioning runbook + wrangler.toml template | 13 | P0 | S63 | Planned |
+| DEVOPS-PRT-02 | Partner KV namespace isolation pattern | 8 | P1 | S63 | Planned |
+| DEVOPS-PRT-03 | Partner routing middleware (X-Partner-Org → binding) | 13 | P0 | S64 | Planned |
+| DEVOPS-PRT-04 | Partner secret management (per-partner JWT_SECRET) | 8 | P0 | S64 | Planned |
+| DEVOPS-PRT-05 | Partner onboarding runbook (provision → deploy → smoke) | 5 | P0 | S63 | Planned |
+| DEVOPS-PRT-06 | Partner observability (partner_id AE dimension) | 8 | P1 | S63 | Planned |
+| DEVOPS-PRT-07 | Partner staging sandbox (demo env) | 13 | P1 | S64 | Planned |
+| DEVOPS-PRT-08 | Partner SLO tracking (per-org breakdown) | 8 | P1 | S65 | Planned |
+| DEVOPS-PRT-09 | Partner backup isolation (per-partner R2 prefix) | 8 | P1 | S65 | Planned |
+| DEVOPS-PRT-10 | Partner decommission runbook | 5 | P2 | S66 | Planned |
+
+#### EPIC-INFRA — CI/CD (CI)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-CI-01 | Vitest shard split (--shard=N/4, CI parallelism) | 5 | P1 | S60 | Planned |
+| DEVOPS-CI-02 | Production deploy canary gate (CF traffic split) | 8 | P0 | S61 | Planned |
+| DEVOPS-CI-03 | Multi-region deploy pipeline (US → EU → APAC staged) | 8 | P1 | S62 | Planned |
+| DEVOPS-CI-04 | Commit SHA injection fix (COMMIT_SHA from git rev-parse) | 5 | P0 | S60 | Planned |
+| DEVOPS-CI-05 | Blue/green deploy for Pages Functions | 8 | P1 | S62 | Planned |
+| DEVOPS-CI-06 | Post-deploy automated smoke tests + rollback trigger | 5 | P0 | S61 | Planned |
+
+#### EPIC-INFRA — Observability (OBS)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-OBS-01 | x-trace-id propagation to R2 log tail + AE events | 8 | P0 | S60 | Planned |
+| DEVOPS-OBS-02 | CF AE real-time infra health AQL dashboard library | 8 | P1 | S61 | Planned |
+| DEVOPS-OBS-03 | Per-region latency heatmap (colo-level AE grouping) | 8 | P1 | S62 | Planned |
+| DEVOPS-OBS-04 | AQL on-call emergency query playbook | 5 | P1 | S60 | Planned |
+| DEVOPS-OBS-05 | Partner-scoped observability (partner_id on all AE events) | 8 | P1 | S63 | Planned |
+
+#### EPIC-INFRA — Security/Secrets (SEC)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-SEC-01 | Secret rotation automation (quarterly reminder + wrangler script) | 8 | P1 | S62 | Planned |
+| DEVOPS-SEC-02 | R2 cross-region backup EU replication | 8 | P0 | S60 | Planned |
+| DEVOPS-SEC-03 | OAUTH_TOKEN_MEK rotation procedure + staging test | 5 | P0 | S61 | Planned |
+| DEVOPS-SEC-04 | Secrets-in-vars CI audit check | 5 | P0 | S60 | Planned |
+
+#### Sprint Summary Table
+
+| Sprint | Pts | Theme |
+|--------|-----|-------|
+| S60 | 130 | Multi-region prod activation + SLO foundation + CI baseline |
+| S61 | 135 | D1 shard bindings v1 + canary deploy gate + SLO alerting |
+| S62 | 128 | Chaos library v1 + SLO v2 + blue-green deploy + write-path audit |
+| S63 | 136 | APAC replica + cross-shard queries + partner env design |
+| S64 | 130 | Partner env isolation v1 + D1 shard 3 + chaos CI gate |
+| S65 | 134 | D1 write sharding + tenant migration + partner SLO/backup |
+| S66 | 125 | Partner decommission + multi-region write routing + chaos shard |
+| S67 | 130 | SLO automation + error budget + staging full parity |
+| S68 | 128 | Partner secret hardening + infra health dashboard v2 |
+| S69 | 130 | Global deploy pipeline + APAC failover + chaos monthly gate |
+| S70 | 128 | Infra hardening + runbook finalization + v3.4-infra release |
+| **Total** | **1,434** | |
+
+**Dependencies and gates:**
+- ADR-0023 (D1 write sharding) must be accepted by architect before DEVOPS-DB-01 implementation starts.
+- ADR-0024 (partner env isolation) must be accepted before DEVOPS-PRT-01 through PRT-10.
+- DEVOPS-DB-03 (shard router) must land in S61 before any S62+ route migration to shards.
+- DEVOPS-CHX-01 chaos library must be in staging before any chaos drill (CHX-02 through CHX-09).
+- `MULTI_REGION_REPLICA_PCT` must reach 100% before DEVOPS-MR-09 write-path audit can be treated as complete.
+- Per SPRINT60_70_INFRA_PLAN.md: multi-region D1 sharding was explicitly out-of-scope for S30–S39 (SPRINT30_39_PLAN.md line 199); S60 is the correct activation window.
+
+---
+
 **See also**:
 - `README.md` — documentation map (truth hierarchy, reading order)
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
@@ -1305,4 +1462,6 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 - `CLAUDE.md` — L1 project context + hard rules
 - `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
 - `SPRINT33_34_PLAN.md` — Sprint 33–34 detailed plan (v2.3 integrations + compliance + AI depth)
+- `SPRINT60_70_PLAN.md` — master eleven-sprint plan S60–S70 (3× capacity, all agents)
+- `SPRINT60_70_INFRA_PLAN.md` — DEVOPS story pool S60–S70 (multi-region, D1 sharding, SLO, chaos, partner env)
 - `spec/design-tokens.json` — design-token source of truth
