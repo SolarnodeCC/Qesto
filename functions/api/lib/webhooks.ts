@@ -19,6 +19,7 @@
 
 import type { Env } from '../types'
 import { writeEvent } from './observability'
+import { checkWebhookRateLimit } from './webhook-rate-limit'
 import { ulid } from './ulid'
 import { z } from 'zod'
 import { validateData, WebhookConfigSchema } from './validators'
@@ -221,6 +222,16 @@ export async function deliverWebhook(
   if (!config.enabled) return
   if (!config.events.includes(payload.event)) return
 
+  const allowed = await checkWebhookRateLimit(integrationsKv, config.teamId)
+  if (!allowed) {
+    writeEvent(metricsEnv?.METRICS_AE, {
+      name: 'webhook.failed',
+      teamId: config.teamId,
+      detail: `${config.id}:rate_limited`,
+    })
+    return
+  }
+
   const body = JSON.stringify(payload)
   let signature: string
   try {
@@ -270,8 +281,24 @@ export async function deliverWebhook(
       count: attempt,
       detail: `${config.id}:${result.success ? 'ok' : 'fail'}`,
     })
+    if (attempt > 1) {
+      writeEvent(metricsEnv?.METRICS_AE, {
+        name: 'webhook.retried',
+        teamId: config.teamId,
+        count: attempt,
+        detail: config.id,
+      })
+    }
 
-    if (result.success) return
+    if (result.success) {
+      writeEvent(metricsEnv?.METRICS_AE, {
+        name: 'webhook.delivered',
+        teamId: config.teamId,
+        durationMs: result.durationMs,
+        detail: config.id,
+      })
+      return
+    }
 
     // Backoff before next attempt (no sleep after final attempt).
     if (attempt < MAX_DELIVERY_ATTEMPTS) {
@@ -297,6 +324,12 @@ export async function deliverWebhook(
   } catch {
     /* ignore */
   }
+
+  writeEvent(metricsEnv?.METRICS_AE, {
+    name: 'webhook.failed',
+    teamId: config.teamId,
+    detail: config.id,
+  })
 }
 
 // ─── Team-scoped fan-out ─────────────────────────────────────────────────────

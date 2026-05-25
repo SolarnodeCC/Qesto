@@ -1,4 +1,4 @@
-﻿import { Hono } from 'hono'
+import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { mountAuthRoutes } from './routes/auth'
 import { mountSessionRoutes } from './routes/sessions'
@@ -29,6 +29,10 @@ import { mountComplianceRoutes } from './routes/compliance'
 import { mountPartnerPortalRoutes } from './routes/partner-portal'
 import { mountMultiRegionAdminRoutes } from './routes/multi-region-admin'
 import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
+import { mountPartnerAppRoutes } from './routes/partner-apps'
+import { mountWebhookAdminRoutes } from './routes/webhook-admin'
+import { mountWebhookTestingRoutes } from './routes/webhook-testing'
+import { mountPartnerIntegrationStatusRoutes } from './routes/partner-integration-status'
 import { mountWebhookRoutes } from './routes/webhooks'
 import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
 import { mountMarketingTemplateRoutes } from './routes/templates-marketing'
@@ -55,10 +59,10 @@ type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<Rb
 export function createApp() {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
-  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
-  // Middleware stack (order matters ÔÇö SPEC_BACKEND.md)
-  // trace-id ÔåÆ CORS ÔåÆ error envelope ÔåÆ (rate-limit) ÔåÆ (auth) ÔåÆ routes
-  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ──────────────────────────────────────────────────────────────────────────
+  // Middleware stack (order matters — SPEC_BACKEND.md)
+  // trace-id → CORS → error envelope → (rate-limit) → (auth) → routes
+  // ──────────────────────────────────────────────────────────────────────────
 
   app.use('*', async (c, next) => {
     const { trace_id, parent_trace_id } = parseTraceHeaders((name) => c.req.header(name))
@@ -69,7 +73,7 @@ export function createApp() {
     }
     c.header('x-trace-id', trace_id)
     c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
-    // Wire circuit breakers with KV ÔÇö idempotent, runs once per isolate.
+    // Wire circuit breakers with KV — idempotent, runs once per isolate.
     const cbKv =
       c.env.CIRCUIT_BREAKER_ENABLED === 'true' && c.env.CIRCUIT_BREAKER_KV
         ? c.env.CIRCUIT_BREAKER_KV
@@ -122,7 +126,7 @@ export function createApp() {
   mountPublicApiV2Routes(app)
   mountPublicApiV3Routes(app)
 
-  // RBAC enforcement ÔÇö role-based access control for all API routes (Phase 8).
+  // RBAC enforcement — role-based access control for all API routes (Phase 8).
   // Checks user roles against permission matrix; defaults to viewer if no explicit role.
   app.use('/api/*', rbacMiddleware)
 
@@ -181,7 +185,7 @@ export function createApp() {
     }),
   )
 
-  // Health ÔÇö no auth, cheap, always on.
+  // Health — no auth, cheap, always on.
   app.get('/api/admin/health', async (c) => {
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
     const routing = await getMultiRegionRoutingSnapshot(c.env, colo)
@@ -191,7 +195,10 @@ export function createApp() {
         env: c.env.ENV,
         ts: Date.now(),
         region: colo,
-        readRegion: routing.readRegion,`n        writeRegion: routing.writeRegion,`n        failoverActive: routing.failoverActive,`n        multiRegion: routing.config,
+        readRegion: routing.readRegion,
+        writeRegion: routing.writeRegion,
+        failoverActive: routing.failoverActive,
+        multiRegion: routing.config,
         commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
       },
       trace_id: c.get('trace_id')!,
@@ -204,21 +211,21 @@ export function createApp() {
     return c.json({ ok: true, data: { id: user.sub, email: user.email }, trace_id: c.get('trace_id') })
   })
 
-  // ÔöÇÔöÇ Route mount order matters (Hono v4) ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ── Route mount order matters (Hono v4) ────────────────────────────────────
   // Several sub-apps call app.use('*', authMiddleware) internally and mount at
   // the /api root. In Hono v4, middleware is evaluated in registration order:
   // routes registered AFTER a wildcard auth entry inherit it; routes registered
   // BEFORE are unaffected. PUBLIC routes must be mounted before the first
   // auth-middleware sub-app (mountEnergizerRoutes). See ARCH-HONO-01/02 in
   // BACKLOG_MASTER.md for the planned structural fix.
-  // ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  // ──────────────────────────────────────────────────────────────────────────
   mountAuthRoutes(app)
   mountSessionRoutes(app)
   mountTemplateRoutes(app)
-  // Ôåô PUBLIC routes ÔÇö must stay above the auth-middleware sub-apps below
+  // ↓ PUBLIC routes — must stay above the auth-middleware sub-apps below
   mountMarketingTemplateRoutes(app)
   mountMarketingWebhookRoutes(app)
-  // Ôåô Auth-middleware sub-apps ÔÇö inject app.use('*', authMiddleware) at /api/*
+  // ↓ Auth-middleware sub-apps — inject app.use('*', authMiddleware) at /api/*
   mountTeamRoutes(app)
   mountBillingRoutes(app)
   mountInsightsRoutes(app)
@@ -235,6 +242,10 @@ export function createApp() {
   mountIntegrationRoutes(app)
   mountWebhookRoutes(app)
   mountWebhookTemplateRoutes(app)
+  mountWebhookAdminRoutes(app)
+  mountWebhookTestingRoutes(app)
+  mountPartnerAppRoutes(app)
+  mountPartnerIntegrationStatusRoutes(app)
   mountTournamentRoutes(app)
   mountLdapRoutes(app)
   mountOrganizationRoutes(app)
