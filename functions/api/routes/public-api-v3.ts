@@ -112,7 +112,7 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
   app.get('/residency', async (c) => {
     const teamId = c.get('apiKey').teamId
     const config = await getTeamRegionConfig(c.env.TEAMS_KV, teamId)
-    const binding = resolveWriteBinding(c.env, config)
+    const binding = resolveWriteBinding(c.env, config, teamId)
     return c.json({
       ok: true,
       data: {
@@ -122,6 +122,7 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
         writeBinding: binding.binding,
         effectiveRegion: binding.region,
         residencyLocked: binding.residencyLocked,
+        euWriteCohort: binding.euCohort,
         proof: {
           checkedAt: Date.now(),
           source: 'kv:team:region',

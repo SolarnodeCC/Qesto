@@ -11,7 +11,33 @@
 import type { PollOption, QuestionKind, VotePolicy, SessionMode, Anonymity } from './types'
 
 export const LIVE_PROTOCOL_VERSION = 1
-export type LiveProtocolVersion = typeof LIVE_PROTOCOL_VERSION
+export const LIVE_PROTOCOL_VERSION_V2 = 2
+export type LiveProtocolVersion = 1 | 2
+
+export const SUPPORTED_LIVE_PROTOCOL_VERSIONS: LiveProtocolVersion[] = [1, 2]
+
+export function defaultLiveProtocolVersion(env: {
+  REALTIME_V2_DEFAULT?: string
+  REALTIME_V2_ENABLED?: string
+}): LiveProtocolVersion {
+  if (env.REALTIME_V2_DEFAULT === 'true' && env.REALTIME_V2_ENABLED !== 'false') return 2
+  return 1
+}
+
+export function isLiveProtocolSupported(
+  version: number | undefined,
+  env: { REALTIME_V2_ENABLED?: string; REALTIME_V2_DEFAULT?: string },
+): boolean {
+  const v = version ?? defaultLiveProtocolVersion(env)
+  if (v === 1) return true
+  if (v === 2) return env.REALTIME_V2_ENABLED === 'true' || env.REALTIME_V2_DEFAULT === 'true'
+  return false
+}
+
+export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
+  if (version === 2) return ['delta_results', 'participants_delta']
+  return []
+}
 
 export type VersionedClientEnvelope = {
   v?: LiveProtocolVersion
@@ -120,6 +146,8 @@ export type ServerMessage =
         session: LiveSessionSummary
         role: 'presenter' | 'voter'
         voterId: string
+        protocolVersion?: LiveProtocolVersion
+        features?: string[]
         question: LiveQuestion | null
         questionIndex: number
         questionTotal: number

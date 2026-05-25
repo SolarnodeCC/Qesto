@@ -25,6 +25,11 @@ import {
   CLOSE_NORMAL,
   CLOSE_POLICY_VIOLATION,
   LIVE_PROTOCOL_VERSION,
+  LIVE_PROTOCOL_VERSION_V2,
+  isLiveProtocolSupported,
+  liveProtocolFeatures,
+  defaultLiveProtocolVersion,
+  type LiveProtocolVersion,
   type LiveEnergizerState,
   type LiveQuestion,
   type LiveSessionSummary,
@@ -112,6 +117,7 @@ type Attachment = {
   permissions?: string[]
   /** OBS-COLO-01 — edge colo at WebSocket connect time. */
   colo?: string
+  protocolVersion?: LiveProtocolVersion
 }
 
 const PER_IP_CONCURRENT_CAP = 10  // Increased from 5 to support shared IPs better
@@ -407,11 +413,17 @@ export class SessionRoom implements DurableObject {
     const [client, server] = Object.values(pair) as [WebSocket, WebSocket]
 
     const coloHeader = req.headers.get('x-qesto-colo')?.trim() || undefined
+    const protoHeader = req.headers.get('x-qesto-protocol-v')
+    const requestedProto = protoHeader ? Number(protoHeader) : undefined
+    const protocolVersion: LiveProtocolVersion = isLiveProtocolSupported(requestedProto, this.env)
+      ? ((requestedProto === 2 ? 2 : 1) as LiveProtocolVersion)
+      : defaultLiveProtocolVersion(this.env)
     const attachment: Attachment = {
       role,
       voterId,
       ipHash,
       bucket: { tokens: VOTE_BUCKET_CAPACITY, lastAt: now() },
+      protocolVersion,
       ...(coloHeader ? { colo: coloHeader } : {}),
       ...(role === 'presenter' && permissionsHeader !== null
         ? { permissions: permissionsHeader.split(',').map((p) => p.trim()).filter(Boolean) }
@@ -435,6 +447,15 @@ export class SessionRoom implements DurableObject {
         count: voterCount,
       })
     }
+    if (protocolVersion === LIVE_PROTOCOL_VERSION_V2) {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      writeEvent(this.env.METRICS_AE, {
+        name: 'realtime.v2_negotiated',
+        sessionId: meta?.sessionId,
+        teamId: meta?.teamId,
+        detail: attachment.colo ? `colo:${attachment.colo}` : 'v2',
+      })
+    }
 
     return new Response(null, { status: 101, webSocket: client })
   }
@@ -448,7 +469,7 @@ export class SessionRoom implements DurableObject {
         ws.send(errorMessage('bad_message', 'Invalid or malformed message'))
         return
       }
-      if (parsed.v !== undefined && parsed.v !== LIVE_PROTOCOL_VERSION) {
+      if (parsed.v !== undefined && !isLiveProtocolSupported(parsed.v, this.env)) {
         ws.send(errorMessage('unsupported_protocol', `Unsupported LIVE protocol version: ${parsed.v}`))
         return
       }
@@ -1082,6 +1103,8 @@ export class SessionRoom implements DurableObject {
           session,
           role: att.role,
           voterId: att.voterId,
+          protocolVersion: att.protocolVersion ?? LIVE_PROTOCOL_VERSION,
+          features: liveProtocolFeatures(att.protocolVersion ?? LIVE_PROTOCOL_VERSION),
           question,
           questionIndex,
           questionTotal: allQs.length,
