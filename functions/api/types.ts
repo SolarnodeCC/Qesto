@@ -56,6 +56,9 @@ export type Env = {
 
   // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string
+  /** SEC-JWT-ROTATE-01: previous signing secret during rotation window. */
+  JWT_SECRET_PREV?: string
+  MULTI_REGION_WRITES_ENABLED?: string
   KB_ADMIN_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string

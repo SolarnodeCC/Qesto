@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
-import { verifyJwt, type AuthClaims } from '../lib/jwt'
+import { jwtVerificationSecrets, verifyJwtWithSecrets, type AuthClaims } from '../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../lib/session-token'
 import { isPublicApiPath } from '../lib/public-api-paths'
 import type { Env } from '../types'
@@ -42,7 +42,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
       401,
     )
   }
-  const claims = await verifyJwt(token, c.env.JWT_SECRET)
+  const claims = await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env))
   if (!claims) {
     return c.json(
       { ok: false, error: { code: 'unauthenticated', message: 'Invalid or expired session' }, trace_id: c.get('trace_id') },
