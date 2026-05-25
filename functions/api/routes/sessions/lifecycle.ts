@@ -17,6 +17,7 @@ import { writeEvent } from '../../lib/observability'
 import { notifySlackSessionClosed, notifyTeamsSessionClosed } from '../integrations'
 import { deliverTeamWebhooks } from '../../lib/webhooks'
 import { deliverMarketingWebhook } from '../../lib/webhooks-marketing'
+import { trackSessionWrite } from '../../lib/multi-region-mutation'
 
 export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   app.post('/:id/start', async (c) => {
@@ -234,6 +235,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       // Best-effort analytics — never fail the start response.
     }
 
+    trackSessionWrite(c, 'sessions.start')
     return c.json({
       ok: true,
       data: { session, question: liveQ },
@@ -424,6 +426,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       }
     }
 
+    trackSessionWrite(c, 'sessions.close')
     return c.json({
       ok: true,
       data: { session, results: { counts, total } },
