@@ -104,6 +104,8 @@ type Attachment = {
   ipHash: string
   bucket: { tokens: number; lastAt: number }
   permissions?: string[]
+  /** OBS-COLO-01 — edge colo at WebSocket connect time. */
+  colo?: string
 }
 
 const PER_IP_CONCURRENT_CAP = 10  // Increased from 5 to support shared IPs better
@@ -398,11 +400,13 @@ export class SessionRoom implements DurableObject {
     const pair = new WebSocketPair()
     const [client, server] = Object.values(pair) as [WebSocket, WebSocket]
 
+    const coloHeader = req.headers.get('x-qesto-colo')?.trim() || undefined
     const attachment: Attachment = {
       role,
       voterId,
       ipHash,
       bucket: { tokens: VOTE_BUCKET_CAPACITY, lastAt: now() },
+      ...(coloHeader ? { colo: coloHeader } : {}),
       ...(role === 'presenter' && permissionsHeader !== null
         ? { permissions: permissionsHeader.split(',').map((p) => p.trim()).filter(Boolean) }
         : {}),
@@ -916,6 +920,7 @@ export class SessionRoom implements DurableObject {
       teamId: meta?.teamId,
       plan: meta?.plan ?? 'free',
       durationMs: Date.now() - t0,
+      detail: att.colo ? `colo:${att.colo}` : undefined,
     })
 
     if (question.kind === 'open' && meta) {

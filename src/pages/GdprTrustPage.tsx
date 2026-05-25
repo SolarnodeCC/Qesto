@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
+import { TrustBadge } from '../components/TrustBadge'
 
 /**
  * GDPR-TRUST-PAGE-01 — Marketing trust page (no new engineering APIs).
@@ -19,6 +20,10 @@ export default function GdprTrustPage() {
         <h1 className="text-4xl font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8]">
           GDPR-ready by design
         </h1>
+        <div className="not-prose flex flex-wrap gap-2 py-2">
+          <TrustBadge variant="gdpr" />
+          <TrustBadge variant="edge" />
+        </div>
         <p className="text-lg text-pulse-600 dark:text-[#9AA8C7] leading-relaxed">
           Qesto runs on Cloudflare&apos;s edge network. Session data is processed close to participants with
           privacy-by-default anonymity modes — including zero-knowledge sessions where individual identity is never stored.

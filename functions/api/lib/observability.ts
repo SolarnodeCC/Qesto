@@ -112,6 +112,7 @@ export type QestoEvent = {
     | 'integration.connected'
     | 'export.initiated'
     | 'export.completed'
+    | 'api.request'
     | 'webhook.delivery_attempted'
     | 'ai.sentiment_analysis'
     | 'gdpr.deletion_requested'

@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { SESSION_COOKIE } from '../../middleware/auth'
-import { verifyJwt } from '../../lib/jwt'
+import { jwtVerificationSecrets, verifyJwtWithSecrets } from '../../lib/jwt'
 import { deriveVoterIdentity } from '../../lib/voter'
 import { requireLiveForWebSocket } from '../../lib/session-lifecycle'
 import {
@@ -98,7 +98,7 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
     let presenterUserId: string | null = null
     let presenterPermissions: Permission[] | undefined
     if (token) {
-      const claims = await verifyJwt(token, c.env.JWT_SECRET)
+      const claims = await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env))
       if (claims) {
         const teamPermissions = await presenterPermissionsForSession(c.env, session, claims.sub)
         const canPresentTeamSession =
@@ -119,6 +119,7 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
     const identity = await deriveVoterIdentity(c.req.raw)
     const voterId = role === 'presenter' && presenterUserId ? `host_${presenterUserId}` : identity.voterId
 
+    const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? ''
     const stub = await doStub(c.env, id)
     const upgraded = await stub.fetch('https://do.internal/ws', {
       headers: {
@@ -126,6 +127,7 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
         'x-qesto-role': role,
         'x-qesto-voter': voterId,
         'x-qesto-ip-hash': identity.ipHash,
+        ...(colo ? { 'x-qesto-colo': colo } : {}),
         ...(role === 'presenter' && presenterPermissions !== undefined
           ? { 'x-qesto-permissions': presenterPermissions.join(',') }
           : {}),

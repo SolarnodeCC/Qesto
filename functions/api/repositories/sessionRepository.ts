@@ -1,0 +1,75 @@
+/**
+ * REPO-LAYER-01 — D1 session accessors (ADR-0026).
+ * Routes should import from here instead of inline prepare().
+ */
+
+export type SessionRow = {
+  id: string
+  title: string
+  status: string
+  code: string | null
+  team_id: string | null
+  owner_id: string
+  created_at: number
+  closed_at: number | null
+}
+
+export async function fetchSessionTitleForOwner(
+  db: D1Database,
+  sessionId: string,
+  ownerId: string,
+): Promise<{ id: string; title: string } | null> {
+  const row = await db
+    .prepare(`SELECT id, title FROM sessions WHERE id = ?1 AND owner_id = ?2`)
+    .bind(sessionId, ownerId)
+    .first<{ id: string; title: string }>()
+  return row ?? null
+}
+
+export async function sessionOwnedBy(db: D1Database, sessionId: string, ownerId: string): Promise<boolean> {
+  const row = await db
+    .prepare(`SELECT id FROM sessions WHERE id = ?1 AND owner_id = ?2`)
+    .bind(sessionId, ownerId)
+    .first<{ id: string }>()
+  return !!row
+}
+
+export async function fetchSessionForTeam(
+  db: D1Database,
+  sessionId: string,
+  teamId: string,
+): Promise<SessionRow | null> {
+  const row = await db
+    .prepare(
+      `SELECT id, title, status, code, team_id, owner_id, created_at, closed_at
+         FROM sessions WHERE id = ?1 AND team_id = ?2`,
+    )
+    .bind(sessionId, teamId)
+    .first<SessionRow>()
+  return row ?? null
+}
+
+export async function listSessionsForTeam(db: D1Database, teamId: string, limit = 100): Promise<SessionRow[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT id, title, status, code, team_id, owner_id, created_at, closed_at
+         FROM sessions WHERE team_id = ?1 ORDER BY created_at DESC LIMIT ?2`,
+    )
+    .bind(teamId, limit)
+    .all<SessionRow>()
+  return results ?? []
+}
+
+export async function createDraftSessionForTeam(
+  db: D1Database,
+  params: { id: string; teamId: string; ownerId: string; title: string; code: string },
+): Promise<void> {
+  const now = Date.now()
+  await db
+    .prepare(
+      `INSERT INTO sessions (id, title, status, code, team_id, owner_id, created_at, anonymity, vote_policy, session_mode)
+       VALUES (?1, ?2, 'draft', ?3, ?4, ?5, ?6, 'full', 'once', 'reflection')`,
+    )
+    .bind(params.id, params.title, params.code, params.teamId, params.ownerId, now)
+    .run()
+}

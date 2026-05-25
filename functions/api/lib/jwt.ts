@@ -30,12 +30,26 @@ export async function signJwt(claims: Omit<AuthClaims, 'iat' | 'exp'>, secret: s
 }
 
 export async function verifyJwt(token: string, secret: string): Promise<AuthClaims | null> {
+  return verifyJwtWithSecrets(token, [secret])
+}
+
+/** SEC-JWT-ROTATE-01 — accept tokens signed with current or previous secret. */
+export async function verifyJwtWithSecrets(token: string, secrets: string[]): Promise<AuthClaims | null> {
   const parts = token.split('.')
   if (parts.length !== 3) return null
   const [headerB64, payloadB64, sig] = parts
   if (headerB64 !== HEADER_B64) return null
-  const expected = await hmacSign(secret, `${headerB64}.${payloadB64}`)
-  if (!timingSafeEqual(sig, expected)) return null
+  const data = `${headerB64}.${payloadB64}`
+  let signatureOk = false
+  for (const secret of secrets) {
+    if (!secret) continue
+    const expected = await hmacSign(secret, data)
+    if (timingSafeEqual(sig, expected)) {
+      signatureOk = true
+      break
+    }
+  }
+  if (!signatureOk) return null
   let parsed: unknown
   try {
     parsed = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64)))
@@ -47,6 +61,13 @@ export async function verifyJwt(token: string, secret: string): Promise<AuthClai
   const now = Math.floor(Date.now() / 1000)
   if (claims.exp < now) return null
   return claims
+}
+
+export function jwtVerificationSecrets(env: { JWT_SECRET: string; JWT_SECRET_PREV?: string }): string[] {
+  const out: string[] = []
+  if (env.JWT_SECRET) out.push(env.JWT_SECRET)
+  if (env.JWT_SECRET_PREV && env.JWT_SECRET_PREV !== env.JWT_SECRET) out.push(env.JWT_SECRET_PREV)
+  return out
 }
 
 async function hmacSign(secret: string, data: string): Promise<string> {

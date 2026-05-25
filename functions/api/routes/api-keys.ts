@@ -14,6 +14,7 @@ import {
   apiKeyHashIndexKey,
   apiKeyKvKey,
   teamApiKeyIndexKey,
+  isApiKeyActive,
   type ApiKeyRecord,
 } from '../lib/api-keys'
 import type { Env } from '../types'
@@ -71,9 +72,59 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
     const keys: ApiKeyRecord[] = []
     for (const id of index) {
       const rec = await readKvJson<ApiKeyRecord>(c.env.INTEGRATIONS_KV, apiKeyKvKey(id))
-      if (rec) keys.push(rec)
+      if (rec && isApiKeyActive(rec)) keys.push(rec)
     }
     return c.json({ ok: true, data: { keys }, trace_id: c.get('trace_id') })
+  })
+
+  app.delete('/:keyId', async (c) => {
+    if (!c.env.INTEGRATIONS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'INTEGRATIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+    const keyId = c.req.param('keyId')
+    const record = await readKvJson<ApiKeyRecord>(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId))
+    if (!record) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'API key not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const updated: ApiKeyRecord = { ...record, revokedAt: Date.now() }
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), updated)
+    return c.json({ ok: true, data: { revoked: true, record: updated }, trace_id: c.get('trace_id') })
+  })
+
+  app.post('/:keyId/rotate', async (c) => {
+    if (c.get('plan') !== 'team') {
+      return c.json({ ok: false, error: { code: 'upgrade_required', message: 'API keys require Team plan' }, trace_id: c.get('trace_id') }, 403)
+    }
+    if (!c.env.INTEGRATIONS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'INTEGRATIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+    const keyId = c.req.param('keyId')
+    const record = await readKvJson<ApiKeyRecord>(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId))
+    if (!record || !isApiKeyActive(record)) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'API key not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const revoked: ApiKeyRecord = { ...record, revokedAt: Date.now() }
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), revoked)
+    const { raw, prefix } = generateApiKey()
+    const newId = ulid()
+    const replacement: ApiKeyRecord = {
+      ...record,
+      id: newId,
+      prefix,
+      createdAt: Date.now(),
+      createdBy: c.get('user').sub,
+      rotatedAt: Date.now(),
+      revokedAt: undefined,
+      lastUsedAt: undefined,
+    }
+    const hash = await hashApiKey(raw)
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(newId), replacement)
+    await c.env.INTEGRATIONS_KV.put(apiKeyHashIndexKey(hash), newId)
+    const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId))) ?? []
+    const nextIndex = index.filter((id) => id !== keyId)
+    nextIndex.push(newId)
+    await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId), nextIndex)
+    return c.json({ ok: true, data: { key: raw, record: replacement, previousKeyId: keyId }, trace_id: c.get('trace_id') }, 201)
   })
 
   parent.route('/api/api-keys', app)
