@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-25 (UTC) — Market Pulse integration (Week of May 19, 2026)_
+_Last updated: 2026-05-25 (UTC) — Sprint 60–70 master plan (3× capacity); Market Pulse integration (Week of May 19, 2026)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -1296,11 +1296,17 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 
 ---
 
-### Sprint 60–70 Story Registry — Infrastructure Scale-Out (added 2026-05-25)
+### Sprint 60–70 — Post-v3.0 Platform Arc (added 2026-05-25)
 
-_Added per DevOps planning horizon covering Sprints 60–70 (v3.1-infra → v3.4-infra): multi-region prod rollout, D1 sharding, SLO dashboards, staging parity, chaos drills, partner env isolation._
+**Master plan (all agents, 120–150 pts/sprint):** [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md) — v3.1 (S60–62) → v3.2 (S63–66) → v4.0 (S67–70).
 
-**Full plan:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md)
+**Role deep-dives:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md) (DEVOPS pool ~1,434 pts — **~25–35 pts committed per sprint**, not full catalog), [`QA_COMMITMENT_SPRINTS_60_70.md`](./QA_COMMITMENT_SPRINTS_60_70.md), [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md), [`docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md).
+
+#### Sprint 60–70 Story Registry — Infrastructure Scale-Out (DEVOPS backlog pool)
+
+_Added per DevOps planning horizon covering Sprints 60–70 (v3.1-infra → v3.4-infra): multi-region prod rollout, D1 sharding, SLO dashboards, staging parity, chaos drills, partner env isolation. **Groom ~25–35 pts/sprint from this pool per [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md).**
+
+**Infra detail:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md)
 
 #### EPIC-INFRA — Multi-Region (MR)
 
@@ -1494,6 +1500,7 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 - `CLAUDE.md` — L1 project context + hard rules
 - `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
 - `SPRINT33_34_PLAN.md` — Sprint 33–34 detailed plan (v2.3 integrations + compliance + AI depth)
-- `SPRINT60_70_INFRA_PLAN.md` — eleven-sprint infrastructure horizon S60–S70 (multi-region, D1 sharding, SLO, chaos, partner env)
+- `SPRINT60_70_PLAN.md` — master eleven-sprint plan S60–S70 (3× capacity, all agents)
+- `SPRINT60_70_INFRA_PLAN.md` — DEVOPS story pool S60–S70 (multi-region, D1 sharding, SLO, chaos, partner env)
 - `SPRINT60_70_FRONTEND_PROPOSAL.md` — eleven-sprint frontend horizon S60–S70 (mobile PWA v3, white-label UI, admin analytics v3, trust/scale proof, partner portal, developer portal, compliance dashboard) — **1,424 pts, 120–150 pts/sprint**
 - `spec/design-tokens.json` — design-token source of truth

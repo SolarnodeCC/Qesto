@@ -158,6 +158,28 @@ _Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (secu
 
 **Plan:** See [`SPRINT30_39_PLAN.md`](../planning/SPRINT30_39_PLAN.md).
 
+### Sprint 40–50 — v3.0 Platform RC
+
+**Focus:** Multi-region read activation, Public API v2 realtime, SDK/partner tiers, observability hardening ([`v3.0.0-RC.md`](../releases/v3.0.0-RC.md)).
+
+| Sprint range | Release | Status |
+|---|---|---|
+| Sprint 40–45 | v2.6 / integrations depth | Shipped specs in `planning/sprints/SPRINT40_*` … `SPRINT46_*` |
+| Sprint 46–49 | Multi-region + API v2 + tracing | Shipped |
+| Sprint 50 | v3.0.0 RC | Shipped |
+
+### Sprint 60–70 — Post-v3.0 Platform Arc (3× capacity)
+
+**Focus:** API v3, repository/DO decomposition, multi-region **writes**, SOC 2 Type II, federation, edge AI coach, 50k scale proof. **120–150 pts per 2-week sprint** (vs 40–50 in S30–S39).
+
+| Sprint range | Release | Target |
+|---|---|---|
+| Sprint 60–62 | v3.1 | API v3 draft + platform boundaries |
+| Sprint 63–66 | v3.2 | Governance + marketplace + Type II |
+| Sprint 67–70 | v4.0 | Federation + platform GA |
+
+**Plan:** [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md) (2026-05-25, all-agent synthesis).
+
 ### Post-v2.2 Commercial Promise Completion
 
 **Focus:** Keep go-live copy honest while sequencing the higher-value promises that were removed or marked roadmap during the marketing promise audit. Promises now have sprint assignments following the 2026-05-20 planning refresh.
