@@ -1447,6 +1447,44 @@ _Added per DevOps planning horizon covering Sprints 60–70 (v3.1-infra → v3.4
 
 ---
 
+### Sprint 60–70 Story Registry — Frontend v3.0 (added 2026-05-25)
+
+_Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin analytics maturity, and MARKET PULSE trust/scale signals (May 19, 2026)._
+
+**Full plan:** [`SPRINT60_70_FRONTEND_PROPOSAL.md`](../planning/SPRINT60_70_FRONTEND_PROPOSAL.md) — **1,424 pts total, 120–150 pts/sprint, 3–4 parallel frontend engineers**
+
+**New i18n namespaces (EN first; NL/DE/FR/ES completed in S69):**
+`mobile.json` (~180 keys), `branding.json` (~70 keys), `partner.json` (~145 keys), `trust.json` (~60 keys), `developer.json` (~65 keys), `compliance.json` (~80 keys)
+
+**New ADR required:** ADR-0020 (PWA Push Notification Architecture) — must be accepted before S68.
+
+#### Sprint Summary Table (Frontend S60–S70)
+
+| Sprint | Pts | Theme | Release |
+|--------|-----|-------|---------|
+| S60 | 128 | Mobile PWA v3: app shell, offline UX, install flow, push scaffold | v3.0-alpha |
+| S61 | 132 | White-label v3: brand configurator, live preview, custom domain, email | v3.0-alpha |
+| S62 | 134 | Admin analytics v3: time-series dashboard, funnel, plan signals, export center | v3.0-alpha |
+| S63 | 123 | Trust badges + scale proof: GDPR/ZK/SOC2 badge system, 10k proof page | v3.0-alpha |
+| S64 | 125 | Mobile presenter controls v3 + partner portal foundation + sandbox UI | v3.0-beta |
+| S65 | 132 | Developer portal: API key management, webhook event log, API docs frame | v3.0-beta |
+| S66 | 139 | Enterprise compliance dashboard: SOC2 tracker, GDPR timeline, DPA, forensic | v3.0-beta |
+| S67 | 128 | Partner integration configurator: OAuth app, field mapping, test events, LDAP | v3.0-beta |
+| S68 | 126 | PWA push inbox, notification preferences, background sync UX | v3.0 |
+| S69 | 123 | i18n completeness (6 ns × 5 locales) + full WCAG 2.1 AA audit sweep | v3.0 |
+| S70 | 134 | Release polish: motion, empty states, E2E QA, marketing surfaces, release notes | v3.0 🚀 |
+| **Total** | **1,424** | | |
+
+**Key gates:**
+- BRAND-01/02/03 APIs (✅ S36) unblock BRAND3-CONF-01 (S61)
+- MOBILE-PWA-02 SW v2 (✅ S41) unblocks PWA3-SW-01, PWA3-PUSH-* (S60)
+- ANON-DEPTH-01 ZK API (planned S31) unblocks TRUST3-ZK-* (S63)
+- AI-COACHING-MATURITY-01 (✅ S42) unblocks ENT3-COACHING-UX-01 (S66)
+- AUDIT-EXPORT-FORENSIC-01 (✅ S42) unblocks ENT3-FORENSIC-01 UI (S66)
+- ADR-0020 (push architecture, new) must be accepted before S68
+
+---
+
 **See also**:
 - `README.md` — documentation map (truth hierarchy, reading order)
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
@@ -1457,4 +1495,5 @@ _Added per DevOps planning horizon covering Sprints 60–70 (v3.1-infra → v3.4
 - `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
 - `SPRINT33_34_PLAN.md` — Sprint 33–34 detailed plan (v2.3 integrations + compliance + AI depth)
 - `SPRINT60_70_INFRA_PLAN.md` — eleven-sprint infrastructure horizon S60–S70 (multi-region, D1 sharding, SLO, chaos, partner env)
+- `SPRINT60_70_FRONTEND_PROPOSAL.md` — eleven-sprint frontend horizon S60–S70 (mobile PWA v3, white-label UI, admin analytics v3, trust/scale proof, partner portal, developer portal, compliance dashboard) — **1,424 pts, 120–150 pts/sprint**
 - `spec/design-tokens.json` — design-token source of truth
