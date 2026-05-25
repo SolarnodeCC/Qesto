@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6 # v6
 
-      - uses: jeppsontaylor/Jankurai@v0.8.16 # v0.8.15
+      - uses: neverhuman/jankurai@v1.5.1 # v1.5.1
         with:
           mode: advisory
 
@@ -28,8 +28,5 @@ jobs:
         if: always()
         with:
           name: jankurai-audit
-          path: |
-            agent/repo-score.json
-            agent/repo-score.md
-            target/jankurai/
+          path: target/jankurai/
           retention-days: 7
