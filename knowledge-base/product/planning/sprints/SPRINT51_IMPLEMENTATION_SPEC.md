@@ -5,6 +5,12 @@ branch: feat/sprint-51-v31-multi-region-ldap
 
 # Sprint 51 — Obsidian KB + Multi-Region Write + LDAP Sync Start
 
+## Design
+
+- **KB:** Obsidian vault at `knowledge-base/`; Notion exports → `archive/notion-import/`.
+- **Multi-region:** `resolveWriteRegion()` + `emitMultiRegionWrite()` on session create; failover KV via `POST /api/admin/multi-region/failover`.
+- **LDAP:** `fetchLdapDirectory` (mock/bridge) → `syncLdapDirectoryToTeam`; Enterprise plan gate.
+
 **Window:** 2027-03-31 → 2027-04-14
 
 | ID | Status |
