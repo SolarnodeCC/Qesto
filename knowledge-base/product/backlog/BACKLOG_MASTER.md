@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-22 (UTC)_
+_Last updated: 2026-05-25 (UTC) — Sprint 60–70 master plan (3× capacity); Market Pulse integration (Week of May 19, 2026)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -39,6 +39,17 @@ This backlog holds **durable user stories** with acceptance criteria (Given / Wh
 **Planning truth:** Use [`ROADMAP_FULL.md`](../roadmap/ROADMAP_FULL.md) for release-level status. Use this file for **incremental committed work** (including §12 Website Design Wave) and story-level acceptance criteria. Use [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md) for historical sprint summaries. For technical build truth, start at [`spec/INDEX.md`](../../specifications/SPEC_INDEX.md) (code wins until specs are updated deliberately).
 
 **Sprint field on stories:** The **Sprint: 1–5** metadata on each story refers to the **reference arc** in [`SPRINT_PLAN.md`](../planning/SPRINT_PLAN_MASTER.md), not to the calendar sprint counter in [`ARCHIVED_SPRINTS.md`](../releases/ARCHIVED_SPRINTS.md). Treat those numbers as **ordering and pedagogy**, not “we are still in Sprint 1.”
+
+### Market Pulse Integration (Week of May 19, 2026)
+
+**Workflow:** [`MARKET_PULSE_TO_BACKLOG_WORKFLOW.md`](../MARKET_PULSE_TO_BACKLOG_WORKFLOW.md)  
+**Integration log:** [`research/MARKET_PULSE_INTEGRATION_2026-05-19.md`](../research/MARKET_PULSE_INTEGRATION_2026-05-19.md)
+
+| Change | Stories | Rationale |
+|--------|---------|-----------|
+| **P0 boost** | `ANON-DEPTH-01` (was P1) | Vevox owns anonymous HR segment; 60+ review mentions; Mentimeter trust erosion |
+| **New story** | `SCALE-PROOF-01` (P1, S32) | Poll Everywhere 700-cap churn; market needs load-test + GTM proof for 10k+ edge scale |
+| **Tagged, no sprint move** | `GDPR-TRUST-PAGE-01`, `ENT-RESIDENCY-01`, `GDPR-BADGE-01`, `ADR-0011`, `AI-SENTIMENT-01` | Compliance + AI sentiment validated; engineering sequence unchanged (DPIA/ADR gates) |
 
 ---
 
@@ -160,15 +171,16 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | AUDIT-GAM-01 | Audit UX polish for realtime actions | P1 | Sprint 31 | Audit viewer distinguishes activation, answer-window changes, completion, and denials |
 | DEPLOY-GAM-01 | Staging migration/flag checklist | P0 | Sprint 31 | Checklist covers D1/KV compatibility, flag state, rollback, WebSocket smoke |
 | QA-ENT-02 | Enterprise permission regression bundle | P0 | Sprint 31 | Owner/admin/member/custom-role allow/deny paths cover session + energizer |
-| ADR-0010 | Zero-knowledge anonymity mode ADR | P0 | Sprint 31 | ADR defines voter dedup without PII, session config, UI indicators, DO protocol impact; required before ANON-DEPTH-01 |
+| ADR-0010 | Zero-knowledge anonymity mode ADR | P0 | Sprint 31 | ADR defines voter dedup without PII, session config, UI indicators, DO protocol impact; required before ANON-DEPTH-01; **MARKET-RESEARCH:PRIVACY** — Vevox segment leadership, Mentimeter trust gap (pulse 2026-05-19) |
 | CB-01 | Wire CircuitBreaker into Stripe + Resend (ADR-0007) | P0 | Sprint 31 | `billing.ts:36/59` and `email.ts:22` wrapped; state machine wired in `createApp()`; CIRCUIT_BREAKER_KV provisioned in production |
 | CB-02 | Wire CircuitBreaker for Workers AI + JWKS (ADR-0007) | P0 | Sprint 31 | Workers AI 10s/3-failure OPEN; JWKS 5s/3-failure OPEN; graceful free-plan fallback |
 | INT-PROVIDER-01 | Integration provider library with AES-GCM encryption (ADR-0008) | P0 | Sprint 31 | `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK`; `IntegrationHttpClient` timeout bug fixed (`http-client.ts:80`); typed interface; INTEGRATIONS_KV provisioned in production |
-| ANON-DEPTH-01 | Zero-knowledge mode session config + trust indicator | P1 | Sprint 31 | Anonymity level selector; participant trust badge; i18n; gate: ADR-0010 accepted |
-| GDPR-TRUST-PAGE-01 | GDPR compliance trust page (marketing artifact, no new engineering) | P1 | Sprint 31 | Static documentation page covering Qesto's GDPR architecture, EU data residency evidence (Cloudflare edge), sub-processor list draft, and anonymity guarantees; linked from pricing and landing pages; ship this sprint to begin capturing Mentimeter GDPR churn wave ahead of Sprint 34 engineering badge |
+| ANON-DEPTH-01 | Zero-knowledge mode session config + trust indicator | P0 | Sprint 31 | Anonymity level selector; participant trust badge; i18n; gate: ADR-0010 accepted + MARKET-RESEARCH-VEVOX-01 complete; **MARKET-RESEARCH:PRIVACY** — 60+ monthly anonymous-feedback mentions; Vevox #1 on G2/Capterra/Trustpilot (pulse 2026-05-19) |
+| GDPR-TRUST-PAGE-01 | GDPR compliance trust page (marketing artifact, no new engineering) | P1 | Sprint 31 | Static documentation page covering Qesto's GDPR architecture, EU data residency evidence (Cloudflare edge), sub-processor list draft, and anonymity guarantees; linked from pricing and landing pages; **MARKET-RESEARCH:COMPLIANCE** — Mentimeter US residency churn; ship before Sprint 34 `GDPR-BADGE-01` |
 | ADR-0007-AMEND | ADR-0007 amendment: clarify CircuitBreaker.INTEGRATIONS scope | P0 | Sprint 31 | Amendment accepted before CB-01 wiring; defines which integration call sites (Stripe, Resend, Workers AI, JWKS) are in scope and which state machine parameters apply to each |
 | DEVOPS-CB-KV-01 | Production KV namespace provisioning for resilience + integrations | P0 | Sprint 31 | `wrangler kv namespace create CIRCUIT_BREAKER_KV` (prod); `wrangler kv namespace create INTEGRATIONS_KV` (prod); `wrangler pages secret put OAUTH_TOKEN_MEK` (prod + staging); must be done before CB-01/CB-02/INT-PROVIDER-01 merge |
-| MARKET-RESEARCH-VEVOX-01 | Vevox deep-dive competitive feature audit | P1 | Sprint 31 | COMPETITOR_PROFILES.md has no Vevox profile; market research task (not engineering) to document Vevox's anonymous Q&A moderation, anonymous live discussion, and employee voice analytics features; required before ANON-DEPTH-01 ships to confirm zero-knowledge mode closes the segment gap or scopes what ANON-DEPTH-02 must add; Vevox rated #1 on G2/Capterra/Trustpilot for anonymous engagement |
+| MARKET-RESEARCH-VEVOX-01 | Vevox deep-dive competitive feature audit | P1 | Sprint 31 | COMPETITOR_PROFILES.md has no Vevox profile; market research task (not engineering) to document Vevox's anonymous Q&A moderation, anonymous live discussion, and employee voice analytics features; **hard gate** before ANON-DEPTH-01 merge; **MARKET-RESEARCH:PRIVACY** (pulse 2026-05-19) |
+| SCALE-PROOF-01 | Enterprise participant scaling evidence + GTM claims | P1 | Sprint 32 | Documented load test for 10,000+ concurrent voters; plan quota matrix vs Poll Everywhere (700 cap); pricing/competitor comparison copy passes `check:compliance-claims`; **MARKET-RESEARCH:SCALING** — enterprise scaling + sovereignty high signal (pulse 2026-05-19) |
 | I18N-SPRINT31-01 | i18n strings for zero-knowledge mode (ANON-DEPTH-01) in 5 locales | P1 | Sprint 31 | All UI strings for anonymity level selector (none/standard/zero-knowledge), participant trust badge, and GDPR trust page in EN/NL/DE/FR/ES; CI `check:i18n` passes; no raw keys visible to users |
 | RC-DOCS-01 | Spec + runbook closeout for v2.2 | P0 | Sprint 32 | `SPEC_REALTIME`, `SPEC_BACKEND`, `SPEC_FRONTEND`, roadmap, backlog, and release notes updated to reflect all shipped v2.2 behavior |
 | RC-ROLLOUT-01 | Feature-flag rollout plan for LIVE energizers | P0 | Sprint 32 | Rollout steps, cohorts, metrics watched, rollback trigger, and rollback owner defined; staging WebSocket smoke passes with flag on and off |
@@ -189,17 +201,17 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | TEAMS-01 | Microsoft Teams: session results adaptive card | P1 | Sprint 33 | OAuth2 Teams authorization; session close sends adaptive card; token encrypted |
 | WEBHOOK-01 | Generic webhook + HMAC-SHA256 + SSRF controls + retry + delivery log | P0 | Sprint 33 | CRUD; SSRF controls (allowlist, RFC1918 block, domain confirmation); DO alarm retry; `webhook.delivery_attempted` AE event; admin delivery log |
 | AI-CONTEXT-01 | `SessionAIContext` schema + `aiPipeline()` + `aiOverride()` helpers | P1 | Sprint 33 | Foundation schema for all Sprint 34 AI features; typed; plan-aware model selection |
-| ADR-0011 | Live sentiment inference ADR + DPIA scope | P0 | Sprint 33 | Model: `distilbert-sst-2-int8`; aggregate-only (k≥5); disabled in ZK sessions; DPIA documented; required before Sprint 34 AI-SENTIMENT-01 |
-| ENT-RESIDENCY-01 | EU data residency: routing evidence + DPA template | P0 | Sprint 34 | Documentation + contractual deliverable (D1 location hint irreversible); routing evidence; DPA template; ops runbook |
+| ADR-0011 | Live sentiment inference ADR + DPIA scope | P0 | Sprint 33 | Model: `distilbert-sst-2-int8`; aggregate-only (k≥5); disabled in ZK sessions; DPIA documented; required before Sprint 34 AI-SENTIMENT-01; **MARKET-RESEARCH:AI-ENGAGEMENT** — emotionally-aware CX trend (pulse 2026-05-19) |
+| ENT-RESIDENCY-01 | EU data residency: routing evidence + DPA template | P0 | Sprint 34 | Documentation + contractual deliverable (D1 location hint irreversible); routing evidence; DPA template; ops runbook; **MARKET-RESEARCH:COMPLIANCE** — competitive moat vs Mentimeter/Slido cloud egress; do not defer without PO sign-off |
 | COMPLIANCE-01 | SOC 2 evidence framework + sub-processor registry | P1 | Sprint 34 | `/knowledge-base/security/SOC2_EVIDENCE.md`; control inventory; sub-processor list; gaps with sprint assignments |
 | COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | Sprint 31 (pulled forward) | `npm run check:compliance-claims`; CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
 | RES-DO-01 | DO WebSocket resilience: outer try/catch + `do.storage_fault` AE | P0 | Sprint 30 | `webSocketMessage` catches storage/handler faults; client receives `internal` error; no silent WS close |
 | SEC-CSV-01 | CSV formula-injection escape in client + server exports | P0 | Sprint 30 | `lib/csv.ts` guards `=+-@` prefixes; Results + `export.csv` use shared helper |
 | GAM-STAGING-SMOKE-01 | Cloudflare staging WebSocket smoke for LIVE energizers | P0 | Sprint 32 gate | Checklist: `knowledge-base/operations/GAM_STAGING_SMOKE_CHECKLIST.md`; blocks RC rollout |
 | AI-RECAP-PROV-01 | AI recap provenance: edit history + evidence links + export metadata | P1 | Sprint 34 | Recap shows model/timestamp/edit flag; export JSON includes provenance block; extends AI-CONTEXT-01 |
-| AI-SENTIMENT-01 | Real-time session sentiment via Workers AI | P1 | Sprint 34 | `distilbert-sst-2-int8`; aggregate mood signal (k≥5); English-only; ZK-disabled; no individual attribution; gate: ADR-0011 + DPIA complete |
-| ANON-DEPTH-02 | Zero-knowledge trust documentation + Vevox competitive proof | P1 | Sprint 34 | KB technical proof doc; sales comparison vs. Vevox; gate: ANON-DEPTH-01 merged |
-| GDPR-BADGE-01 | GDPR compliance badge + deletion automation test | P1 | Sprint 34 | Evidence doc; deletion test; `gdpr.deletion_requested`/`gdpr.deletion_completed` AE events; data-subject runbook |
+| AI-SENTIMENT-01 | Real-time session sentiment via Workers AI | P1 | Sprint 34 | `distilbert-sst-2-int8`; aggregate mood signal (k≥5); English-only; ZK-disabled; no individual attribution; gate: ADR-0011 + DPIA complete; **MARKET-RESEARCH:AI-ENGAGEMENT** — privacy-first alternative to cloud-dependent sentiment APIs (pulse 2026-05-19) |
+| ANON-DEPTH-02 | Zero-knowledge trust documentation + Vevox competitive proof | P1 | Sprint 34 | KB technical proof doc; sales comparison vs. Vevox; gate: ANON-DEPTH-01 merged; **MARKET-RESEARCH:PRIVACY** |
+| GDPR-BADGE-01 | GDPR compliance badge + deletion automation test | P1 | Sprint 34 | Evidence doc; deletion test; `gdpr.deletion_requested`/`gdpr.deletion_completed` AE events; data-subject runbook; **MARKET-RESEARCH:COMPLIANCE** — follows `GDPR-TRUST-PAGE-01` marketing surface |
 | EXPORT-RICH-01 | Rich export formats (full: JSON, PDF, DOCX, Notion-ready) | P1 | Sprint 33 stretch / Sprint 34 stretch | Complete export suite; EXPORT-RICH-01-A (Sprint 32) + EXPORT-PDF-01 (Sprint 33+) are milestones toward this |
 | ENT-COMPLIANCE-01 | Enterprise compliance evidence packet (SOC 2, pen-test, DPA, sub-processors) | P0 | Sprint 33-34 (partial) | COMPLIANCE-01 + COMPLIANCE-02 in Sprint 34; COMPLIANCE-03 (Type I audit, 13 pts) in Sprint 35+ |
 | COMPLIANCE-03 | SOC 2 Type I full audit work | P1 | Sprint 35+ (13 pts) | Full Type I audit engagement; requires COMPLIANCE-01 framework complete |
@@ -1209,7 +1221,8 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 
 | ID | Item | Pts | Pri | Sprint | Status |
 |---|---|---:|---|---|---|
-| ANON-DEPTH-01 | Zero-knowledge mode session config + trust badge | 5 | P1 | S31 | Planned |
+| ANON-DEPTH-01 | Zero-knowledge mode session config + trust badge | 5 | P0 | S31 | Planned |
+| SCALE-PROOF-01 | Enterprise participant scaling evidence + GTM claims | 8 | P1 | S32 | Planned |
 | ANON-DEPTH-02 | Trust documentation + Vevox competitive proof | 5 | P1 | S34 | Planned |
 | ENT-RESIDENCY-01 | EU routing evidence + DPA template | 8 | P0 | S34 | Planned |
 | COMPLIANCE-01 | SOC 2 evidence framework + sub-processor registry | 5 | P1 | S33 | Planned |
@@ -1221,7 +1234,7 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 | ID | Item | Pts | Pri | Sprint | Status |
 |---|---|---:|---|---|---|
 | AI-RECAP-PROV-01 | AI recap provenance (edit history, model, timestamp, export) | 8 | P1 | S34 | Planned |
-| AI-SENTIMENT-01 | Real-time session sentiment tracking (per-question mood signal) | 8 | P1 | S34 | Planned |
+| AI-SENTIMENT-01 | Real-time session sentiment tracking (per-question mood signal) | 8 | P1 | S34 | Planned; MARKET-RESEARCH:AI-ENGAGEMENT |
 | AI-COACHING-01 | Post-session facilitator coaching suggestions (stretch S34) | 5 | P2 | S34+ | Stretch |
 
 ### EPIC-DX — Developer Experience
@@ -1283,6 +1296,201 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 
 ---
 
+### Sprint 60–70 — Post-v3.0 Platform Arc (added 2026-05-25)
+
+**Master plan (all agents, 120–150 pts/sprint):** [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md) — v3.1 (S60–62) → v3.2 (S63–66) → v4.0 (S67–70).
+
+**Role deep-dives:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md) (DEVOPS pool ~1,434 pts — **~25–35 pts committed per sprint**, not full catalog), [`QA_COMMITMENT_SPRINTS_60_70.md`](./QA_COMMITMENT_SPRINTS_60_70.md), [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md), [`docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md).
+
+#### Sprint 60–70 Story Registry — Infrastructure Scale-Out (DEVOPS backlog pool)
+
+_Added per DevOps planning horizon covering Sprints 60–70 (v3.1-infra → v3.4-infra): multi-region prod rollout, D1 sharding, SLO dashboards, staging parity, chaos drills, partner env isolation. **Groom ~25–35 pts/sprint from this pool per [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md).**
+
+**Infra detail:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md)
+
+#### EPIC-INFRA — Multi-Region (MR)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-MR-01 | Activate MULTI_REGION_ENABLED prod + health probe expansion | 5 | P0 | S60 | Planned |
+| DEVOPS-MR-02 | EU D1 read replica binding + resolveReadRegion() routing | 13 | P0 | S60 | Planned |
+| DEVOPS-MR-03 | Multi-region canary rollout + MULTI_REGION_REPLICA_PCT var | 8 | P0 | S60 | Planned |
+| DEVOPS-MR-04 | Regional read path AE events (colo_id, read_region, durationMs) | 8 | P0 | S60 | Planned |
+| DEVOPS-MR-05 | APAC D1 read replica binding + colo routing extension | 13 | P1 | S63 | Planned |
+| DEVOPS-MR-06 | EU read failover runbook | 5 | P0 | S60 | Planned |
+| DEVOPS-MR-07 | Cross-region session consistency check (EU lag measurement) | 8 | P1 | S61 | Planned |
+| DEVOPS-MR-08 | /api/admin/multi-region/status endpoint | 8 | P0 | S61 | Planned |
+| DEVOPS-MR-09 | Write-path audit: enforce US-primary for all mutations | 13 | P0 | S62 | Planned |
+| DEVOPS-MR-10 | Multi-region read skew detection + Slack alerting | 8 | P1 | S63 | Planned |
+
+#### EPIC-INFRA — D1 Sharding (DB)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-DB-01 | D1 sharding ADR review + wrangler.toml binding schema design | 8 | P0 | S60 | Planned |
+| DEVOPS-DB-02 | D1 shard 0 + shard 1 bindings (prod + staging) | 13 | P0 | S61 | Planned |
+| DEVOPS-DB-03 | Hash-based shard router service (lib/db/shard-router.ts) | 13 | P0 | S61 | Planned |
+| DEVOPS-DB-04 | Shard health probes in /api/admin/health | 8 | P0 | S61 | Planned |
+| DEVOPS-DB-05 | Cross-shard admin aggregation queries | 13 | P1 | S63 | Planned |
+| DEVOPS-DB-06 | Tenant-to-shard assignment + migration toolkit | 13 | P0 | S65 | Planned |
+| DEVOPS-DB-07 | Per-shard R2 backup cron | 8 | P1 | S61 | Planned |
+| DEVOPS-DB-08 | Per-shard AE events + SLO dashboard entry | 8 | P1 | S63 | Planned |
+| DEVOPS-DB-09 | Shard 2 (APAC) binding + routing extension | 13 | P1 | S64 | Planned |
+| DEVOPS-DB-10 | D1 shard forward-fix protocol | 8 | P1 | S61 | Planned |
+
+#### EPIC-INFRA — SLO Dashboards (SLO)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-SLO-01 | SLO dashboard v1: vote latency P50/P95/P99 | 8 | P0 | S60 | Planned |
+| DEVOPS-SLO-02 | API availability SLO + 28-day error budget | 8 | P0 | S60 | Planned |
+| DEVOPS-SLO-03 | D1 query latency SLO (P95 ≤ 50ms) | 5 | P1 | S60 | Planned |
+| DEVOPS-SLO-04 | WebSocket connect latency SLO (P95 ≤ 200ms) | 5 | P1 | S60 | Planned |
+| DEVOPS-SLO-05 | SLO alerting: Slack when error budget ≥80% consumed | 8 | P0 | S61 | Planned |
+| DEVOPS-SLO-06 | Per-region SLO breakdown (EU vs US vs APAC) | 8 | P1 | S62 | Planned |
+| DEVOPS-SLO-07 | SLO v2: composite multi-service SLO | 8 | P1 | S62 | Planned |
+| DEVOPS-SLO-08 | SLO burn rate alerts (1h + 6h multi-window) | 5 | P0 | S61 | Planned |
+| DEVOPS-SLO-09 | SLO documentation + on-call response thresholds | 8 | P1 | S60 | Planned |
+| DEVOPS-SLO-10 | Monthly SLO report automation (cron → Slack + R2) | 5 | P2 | S63 | Planned |
+
+#### EPIC-INFRA — Staging Parity (STG)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-STG-01 | Staging multi-region flag + EU D1 binding parity | 5 | P0 | S60 | Planned |
+| DEVOPS-STG-02 | Staging D1 shard bindings (shard 0 + 1) | 8 | P0 | S61 | Planned |
+| DEVOPS-STG-03 | Staging partner namespace isolation | 8 | P1 | S63 | Planned |
+| DEVOPS-STG-04 | Staging chaos injection flag support | 8 | P1 | S62 | Planned |
+| DEVOPS-STG-05 | wrangler.toml staging/prod drift CI gate | 5 | P0 | S60 | Planned |
+| DEVOPS-STG-06 | Automated staging → prod promotion pipeline | 8 | P1 | S62 | Planned |
+| DEVOPS-STG-07 | Staging full multi-region parity (EU + US replicas) | 13 | P1 | S63 | Planned |
+| DEVOPS-STG-08 | Staging seed data pipeline (anonymized snapshot) | 5 | P2 | S64 | Planned |
+| DEVOPS-STG-09 | Staging SLO dashboard (relaxed targets) | 8 | P1 | S64 | Planned |
+
+#### EPIC-INFRA — Chaos Engineering (CHX)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-CHX-01 | Chaos library v1: D1 latency injection (withChaosD1) | 13 | P0 | S62 | Planned |
+| DEVOPS-CHX-02 | Chaos drill: KV timeout simulation (CHAOS_KV_FAIL_RATE) | 8 | P1 | S62 | Planned |
+| DEVOPS-CHX-03 | Chaos drill: DO restart under load | 8 | P1 | S62 | Planned |
+| DEVOPS-CHX-04 | Chaos drill: multi-region read failover (EU kill → US fallback) | 13 | P0 | S63 | Planned |
+| DEVOPS-CHX-05 | Chaos drill runbook template + evidence format | 5 | P0 | S61 | Planned |
+| DEVOPS-CHX-06 | Chaos drill CI gate (monthly cron + Slack) | 5 | P1 | S64 | Planned |
+| DEVOPS-CHX-07 | Chaos drill: Stripe circuit breaker trip + recovery | 8 | P1 | S62 | Planned |
+| DEVOPS-CHX-08 | Chaos drill: AI inference timeout simulation | 8 | P1 | S64 | Planned |
+| DEVOPS-CHX-09 | Chaos drill: D1 shard failure (one shard down) | 8 | P1 | S65 | Planned |
+
+#### EPIC-INFRA — Partner Env Isolation (PRT)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-PRT-01 | Partner D1 provisioning runbook + wrangler.toml template | 13 | P0 | S63 | Planned |
+| DEVOPS-PRT-02 | Partner KV namespace isolation pattern | 8 | P1 | S63 | Planned |
+| DEVOPS-PRT-03 | Partner routing middleware (X-Partner-Org → binding) | 13 | P0 | S64 | Planned |
+| DEVOPS-PRT-04 | Partner secret management (per-partner JWT_SECRET) | 8 | P0 | S64 | Planned |
+| DEVOPS-PRT-05 | Partner onboarding runbook (provision → deploy → smoke) | 5 | P0 | S63 | Planned |
+| DEVOPS-PRT-06 | Partner observability (partner_id AE dimension) | 8 | P1 | S63 | Planned |
+| DEVOPS-PRT-07 | Partner staging sandbox (demo env) | 13 | P1 | S64 | Planned |
+| DEVOPS-PRT-08 | Partner SLO tracking (per-org breakdown) | 8 | P1 | S65 | Planned |
+| DEVOPS-PRT-09 | Partner backup isolation (per-partner R2 prefix) | 8 | P1 | S65 | Planned |
+| DEVOPS-PRT-10 | Partner decommission runbook | 5 | P2 | S66 | Planned |
+
+#### EPIC-INFRA — CI/CD (CI)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-CI-01 | Vitest shard split (--shard=N/4, CI parallelism) | 5 | P1 | S60 | Planned |
+| DEVOPS-CI-02 | Production deploy canary gate (CF traffic split) | 8 | P0 | S61 | Planned |
+| DEVOPS-CI-03 | Multi-region deploy pipeline (US → EU → APAC staged) | 8 | P1 | S62 | Planned |
+| DEVOPS-CI-04 | Commit SHA injection fix (COMMIT_SHA from git rev-parse) | 5 | P0 | S60 | Planned |
+| DEVOPS-CI-05 | Blue/green deploy for Pages Functions | 8 | P1 | S62 | Planned |
+| DEVOPS-CI-06 | Post-deploy automated smoke tests + rollback trigger | 5 | P0 | S61 | Planned |
+
+#### EPIC-INFRA — Observability (OBS)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-OBS-01 | x-trace-id propagation to R2 log tail + AE events | 8 | P0 | S60 | Planned |
+| DEVOPS-OBS-02 | CF AE real-time infra health AQL dashboard library | 8 | P1 | S61 | Planned |
+| DEVOPS-OBS-03 | Per-region latency heatmap (colo-level AE grouping) | 8 | P1 | S62 | Planned |
+| DEVOPS-OBS-04 | AQL on-call emergency query playbook | 5 | P1 | S60 | Planned |
+| DEVOPS-OBS-05 | Partner-scoped observability (partner_id on all AE events) | 8 | P1 | S63 | Planned |
+
+#### EPIC-INFRA — Security/Secrets (SEC)
+
+| ID | Item | Pts | Pri | Sprint | Status |
+|----|------|-----|-----|--------|--------|
+| DEVOPS-SEC-01 | Secret rotation automation (quarterly reminder + wrangler script) | 8 | P1 | S62 | Planned |
+| DEVOPS-SEC-02 | R2 cross-region backup EU replication | 8 | P0 | S60 | Planned |
+| DEVOPS-SEC-03 | OAUTH_TOKEN_MEK rotation procedure + staging test | 5 | P0 | S61 | Planned |
+| DEVOPS-SEC-04 | Secrets-in-vars CI audit check | 5 | P0 | S60 | Planned |
+
+#### Sprint Summary Table
+
+| Sprint | Pts | Theme |
+|--------|-----|-------|
+| S60 | 130 | Multi-region prod activation + SLO foundation + CI baseline |
+| S61 | 135 | D1 shard bindings v1 + canary deploy gate + SLO alerting |
+| S62 | 128 | Chaos library v1 + SLO v2 + blue-green deploy + write-path audit |
+| S63 | 136 | APAC replica + cross-shard queries + partner env design |
+| S64 | 130 | Partner env isolation v1 + D1 shard 3 + chaos CI gate |
+| S65 | 134 | D1 write sharding + tenant migration + partner SLO/backup |
+| S66 | 125 | Partner decommission + multi-region write routing + chaos shard |
+| S67 | 130 | SLO automation + error budget + staging full parity |
+| S68 | 128 | Partner secret hardening + infra health dashboard v2 |
+| S69 | 130 | Global deploy pipeline + APAC failover + chaos monthly gate |
+| S70 | 128 | Infra hardening + runbook finalization + v3.4-infra release |
+| **Total** | **1,434** | |
+
+**Dependencies and gates:**
+- ADR-0023 (D1 write sharding) must be accepted by architect before DEVOPS-DB-01 implementation starts.
+- ADR-0024 (partner env isolation) must be accepted before DEVOPS-PRT-01 through PRT-10.
+- DEVOPS-DB-03 (shard router) must land in S61 before any S62+ route migration to shards.
+- DEVOPS-CHX-01 chaos library must be in staging before any chaos drill (CHX-02 through CHX-09).
+- `MULTI_REGION_REPLICA_PCT` must reach 100% before DEVOPS-MR-09 write-path audit can be treated as complete.
+- Per SPRINT60_70_INFRA_PLAN.md: multi-region D1 sharding was explicitly out-of-scope for S30–S39 (SPRINT30_39_PLAN.md line 199); S60 is the correct activation window.
+
+---
+
+### Sprint 60–70 Story Registry — Frontend v3.0 (added 2026-05-25)
+
+_Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin analytics maturity, and MARKET PULSE trust/scale signals (May 19, 2026)._
+
+**Full plan:** [`SPRINT60_70_FRONTEND_PROPOSAL.md`](../planning/SPRINT60_70_FRONTEND_PROPOSAL.md) — **1,424 pts total, 120–150 pts/sprint, 3–4 parallel frontend engineers**
+
+**New i18n namespaces (EN first; NL/DE/FR/ES completed in S69):**
+`mobile.json` (~180 keys), `branding.json` (~70 keys), `partner.json` (~145 keys), `trust.json` (~60 keys), `developer.json` (~65 keys), `compliance.json` (~80 keys)
+
+**New ADR required:** ADR-0020 (PWA Push Notification Architecture) — must be accepted before S68.
+
+#### Sprint Summary Table (Frontend S60–S70)
+
+| Sprint | Pts | Theme | Release |
+|--------|-----|-------|---------|
+| S60 | 128 | Mobile PWA v3: app shell, offline UX, install flow, push scaffold | v3.0-alpha |
+| S61 | 132 | White-label v3: brand configurator, live preview, custom domain, email | v3.0-alpha |
+| S62 | 134 | Admin analytics v3: time-series dashboard, funnel, plan signals, export center | v3.0-alpha |
+| S63 | 123 | Trust badges + scale proof: GDPR/ZK/SOC2 badge system, 10k proof page | v3.0-alpha |
+| S64 | 125 | Mobile presenter controls v3 + partner portal foundation + sandbox UI | v3.0-beta |
+| S65 | 132 | Developer portal: API key management, webhook event log, API docs frame | v3.0-beta |
+| S66 | 139 | Enterprise compliance dashboard: SOC2 tracker, GDPR timeline, DPA, forensic | v3.0-beta |
+| S67 | 128 | Partner integration configurator: OAuth app, field mapping, test events, LDAP | v3.0-beta |
+| S68 | 126 | PWA push inbox, notification preferences, background sync UX | v3.0 |
+| S69 | 123 | i18n completeness (6 ns × 5 locales) + full WCAG 2.1 AA audit sweep | v3.0 |
+| S70 | 134 | Release polish: motion, empty states, E2E QA, marketing surfaces, release notes | v3.0 🚀 |
+| **Total** | **1,424** | | |
+
+**Key gates:**
+- BRAND-01/02/03 APIs (✅ S36) unblock BRAND3-CONF-01 (S61)
+- MOBILE-PWA-02 SW v2 (✅ S41) unblocks PWA3-SW-01, PWA3-PUSH-* (S60)
+- ANON-DEPTH-01 ZK API (planned S31) unblocks TRUST3-ZK-* (S63)
+- AI-COACHING-MATURITY-01 (✅ S42) unblocks ENT3-COACHING-UX-01 (S66)
+- AUDIT-EXPORT-FORENSIC-01 (✅ S42) unblocks ENT3-FORENSIC-01 UI (S66)
+- ADR-0020 (push architecture, new) must be accepted before S68
+
+---
+
 **See also**:
 - `README.md` — documentation map (truth hierarchy, reading order)
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
@@ -1292,4 +1500,7 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 - `CLAUDE.md` — L1 project context + hard rules
 - `spec/WEBSITE_DESIGN_SPEC.md` — design spec for website + dashboard
 - `SPRINT33_34_PLAN.md` — Sprint 33–34 detailed plan (v2.3 integrations + compliance + AI depth)
+- `SPRINT60_70_PLAN.md` — master eleven-sprint plan S60–S70 (3× capacity, all agents)
+- `SPRINT60_70_INFRA_PLAN.md` — DEVOPS story pool S60–S70 (multi-region, D1 sharding, SLO, chaos, partner env)
+- `SPRINT60_70_FRONTEND_PROPOSAL.md` — eleven-sprint frontend horizon S60–S70 (mobile PWA v3, white-label UI, admin analytics v3, trust/scale proof, partner portal, developer portal, compliance dashboard) — **1,424 pts, 120–150 pts/sprint**
 - `spec/design-tokens.json` — design-token source of truth
