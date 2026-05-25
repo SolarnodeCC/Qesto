@@ -51,6 +51,8 @@ export type Env = {
   MULTI_REGION_ENABLED?: string
   MULTI_REGION_PRIMARY?: string
   MULTI_REGION_REPLICAS?: string
+  /** ADR-0022 / S51: multi-region failover and state KV. */
+  MULTI_REGION_FAILOVER_ENABLED?: string
 
   // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string
@@ -78,6 +80,10 @@ export type Env = {
   LDAP_URL?: string
   LDAP_BIND_DN?: string
   LDAP_BIND_PASSWORD?: string
+  /** S52: LDAP bridge integration. */
+  LDAP_BRIDGE_URL?: string
+  LDAP_TEAM_ID?: string
+  LDAP_SYNC_MOCK?: string
   /** GROWTH-ENGINE: HMAC secret for internal marketing webhook trigger. */
   MARKETING_WEBHOOK_SECRET?: string
   /** INT-PROVIDER-01: AES-GCM master key for integration OAuth tokens at rest. */
@@ -104,6 +110,8 @@ export type Env = {
   METRICS_AE?: AnalyticsEngineDataset
   CIRCUIT_BREAKER_KV?: KVNamespace
   INTEGRATIONS_KV?: KVNamespace
+  /** ADR-0022 / S51: multi-region state and DO cross-region mirror. */
+  MULTI_REGION_STATE_KV?: KVNamespace
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'

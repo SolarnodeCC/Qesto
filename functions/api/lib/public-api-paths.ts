@@ -6,12 +6,17 @@ export const PUBLIC_API_PATH_PREFIXES = [
   '/api/auth/',
   '/api/admin/health',
   '/api/version',
+  '/api/webhooks/marketing',
   '/api/integrations/slack/callback',
   '/api/integrations/teams/callback',
   '/api/integrations/zoom/callback',
   '/api/integrations/salesforce/callback',
   '/api/integrations/notion/callback',
   '/api/sessions/by-code/',
+  '/api/v1/',
+  '/api/v2/',
+  '/api/marketplace/',
+  '/api/partner/sla',
 ] as const
 
 export function isPublicApiPath(pathname: string): boolean {

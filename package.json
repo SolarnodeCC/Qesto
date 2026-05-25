@@ -26,6 +26,7 @@
     "check:tokens-drift": "node scripts/check-tokens-drift.mjs",
     "check:pii-log": "bash scripts/check-pii-log.sh",
     "check:compliance-claims": "node scripts/check-compliance-claims.mjs",
+    "check:sprint-51-60": "node scripts/check-sprint-51-60-dod.mjs",
     "check:rc": "npm run typecheck && npm run check:i18n && npm run check:tokens-drift && npm run check:baseline && npm test && npm run test:a11y && npm run build",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
@@ -40,7 +41,7 @@
     "help:sync": "npx tsx scripts/sync-help-docs.ts"
   },
   "dependencies": {
-    "hono": "^4.12.22",
+    "hono": "^4.12.23",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -49,7 +50,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260522.1",
+    "@cloudflare/workers-types": "^4.20260525.1",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "^4.3.0",
     "@types/node": "^24.12.4",
@@ -62,6 +63,6 @@
     "typescript": "^6.0.3",
     "vite": "^7.0.0",
     "vitest": "^4.1.7",
-    "wrangler": "^4.92.0"
+    "wrangler": "^4.94.0"
   }
 }

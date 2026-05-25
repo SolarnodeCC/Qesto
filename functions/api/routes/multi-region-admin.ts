@@ -7,7 +7,13 @@ import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import type { PlanVariables } from '../middleware/plan'
 import type { RbacVariables } from '../middleware/rbac'
 import { readKvJson, writeKvJson } from '../lib/kv'
-import { getMultiRegionConfig, resolveReadRegion } from '../lib/multi-region'
+import {
+  getMultiRegionConfig,
+  getMultiRegionRoutingSnapshot,
+  resolveReadRegion,
+  setMultiRegionFailoverActive,
+} from '../lib/multi-region'
+import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 
 // Match the Vars shape used in app.ts so this sub-router composes cleanly.
@@ -24,23 +30,62 @@ function optInKey(teamId: string): string {
   return `multi-region:opt-in:${teamId}`
 }
 
-export function mountMultiRegionAdminRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
+export function mountMultiRegionAdminRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', adminMiddleware)
 
   app.get('/multi-region/status', async (c) => {
-    const cfg = getMultiRegionConfig(c.env)
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
+    const routing = await getMultiRegionRoutingSnapshot(c.env, colo)
     return c.json({
       ok: true,
       data: {
-        config: cfg,
-        colo,
-        resolvedReadRegion: resolveReadRegion(colo, cfg),
+        config: routing.config,
+        colo: routing.colo,
+        resolvedReadRegion: routing.readRegion,
+        writeRegion: routing.writeRegion,
+        failoverActive: routing.failoverActive,
       },
       trace_id: c.get('trace_id'),
     })
+  })
+
+  app.post('/multi-region/failover', async (c) => {
+    if (c.env.MULTI_REGION_FAILOVER_ENABLED !== 'true') {
+      return c.json(
+        { ok: false, error: { code: 'disabled', message: 'Failover drill disabled' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    const kv = c.env.MULTI_REGION_STATE_KV
+    if (!kv) {
+      return c.json(
+        { ok: false, error: { code: 'not_configured', message: 'MULTI_REGION_STATE_KV not bound' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+    await setMultiRegionFailoverActive(kv, true)
+    const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
+    const routing = await getMultiRegionRoutingSnapshot(c.env, colo)
+    writeEvent(c.env.METRICS_AE, {
+      name: 'multi_region.failover_triggered',
+      traceId: c.get('trace_id'),
+      detail: `admin_drill:write=${routing.writeRegion}`,
+    })
+    return c.json({ ok: true, data: { failoverActive: true, writeRegion: routing.writeRegion }, trace_id: c.get('trace_id') })
+  })
+
+  app.delete('/multi-region/failover', async (c) => {
+    const kv = c.env.MULTI_REGION_STATE_KV
+    if (!kv) {
+      return c.json(
+        { ok: false, error: { code: 'not_configured', message: 'MULTI_REGION_STATE_KV not bound' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+    await setMultiRegionFailoverActive(kv, false)
+    return c.json({ ok: true, data: { failoverActive: false }, trace_id: c.get('trace_id') })
   })
 
   app.post('/multi-region/teams/:teamId/opt-in', async (c) => {

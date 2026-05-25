@@ -29,6 +29,12 @@ import { mountComplianceRoutes } from './routes/compliance'
 import { mountPartnerPortalRoutes } from './routes/partner-portal'
 import { mountMultiRegionAdminRoutes } from './routes/multi-region-admin'
 import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
+import { mountPartnerAppRoutes } from './routes/partner-apps'
+import { mountWebhookAdminRoutes } from './routes/webhook-admin'
+import { mountPartnerMarketplaceRoutes } from './routes/partner-marketplace'
+import { mountPartnerSlaRoutes } from './routes/partner-sla'
+import { mountPartnerBrandingRoutes } from './routes/partner-branding'
+import { mountComplianceAdminRoutes } from './routes/compliance-admin'
 import { mountWebhookRoutes } from './routes/webhooks'
 import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
 import { mountMarketingTemplateRoutes } from './routes/templates-marketing'
@@ -45,7 +51,7 @@ import { securityHeadersMiddleware } from './middleware/security-headers'
 import { sanitizeError } from './lib/error-handler'
 import { resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
-import { getMultiRegionConfig, resolveReadRegion } from './lib/multi-region'
+import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
 import type { Env } from './types'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables> & {
@@ -182,17 +188,19 @@ export function createApp() {
   )
 
   // Health — no auth, cheap, always on.
-  app.get('/api/admin/health', (c) => {
+  app.get('/api/admin/health', async (c) => {
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
-    const mr = getMultiRegionConfig(c.env)
+    const routing = await getMultiRegionRoutingSnapshot(c.env, colo)
     return c.json({
       ok: true,
       data: {
         env: c.env.ENV,
         ts: Date.now(),
         region: colo,
-        readRegion: resolveReadRegion(colo, mr),
-        multiRegion: mr,
+        readRegion: routing.readRegion,
+        writeRegion: routing.writeRegion,
+        failoverActive: routing.failoverActive,
+        multiRegion: routing.config,
         commit: c.env.COMMIT_SHA ?? c.env.CF_PAGES_COMMIT_SHA ?? 'unknown',
       },
       trace_id: c.get('trace_id')!,
@@ -219,6 +227,8 @@ export function createApp() {
   // ↓ PUBLIC routes — must stay above the auth-middleware sub-apps below
   mountMarketingTemplateRoutes(app)
   mountMarketingWebhookRoutes(app)
+  mountPartnerMarketplaceRoutes(app)
+  mountPartnerSlaRoutes(app)
   // ↓ Auth-middleware sub-apps — inject app.use('*', authMiddleware) at /api/*
   mountTeamRoutes(app)
   mountBillingRoutes(app)
@@ -236,6 +246,10 @@ export function createApp() {
   mountIntegrationRoutes(app)
   mountWebhookRoutes(app)
   mountWebhookTemplateRoutes(app)
+  mountWebhookAdminRoutes(app)
+  mountPartnerAppRoutes(app)
+  mountPartnerBrandingRoutes(app)
+  mountComplianceAdminRoutes(app)
   mountTournamentRoutes(app)
   mountLdapRoutes(app)
   mountOrganizationRoutes(app)
