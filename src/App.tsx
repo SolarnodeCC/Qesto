@@ -35,6 +35,9 @@ const AIInsightsPage = lazy(() => import('./pages/features/AIInsightsPage'))
 const LivePollingPage = lazy(() => import('./pages/features/LivePollingPage'))
 const PrivacyFeaturePage = lazy(() => import('./pages/features/PrivacyFeaturePage'))
 const GdprTrustPage = lazy(() => import('./pages/GdprTrustPage'))
+const Soc2TrustPage = lazy(() => import('./pages/Soc2TrustPage'))
+const MarketplacePage = lazy(() => import('./pages/MarketplacePage'))
+const PartnerSlaPage = lazy(() => import('./pages/PartnerSlaPage'))
 
 // Use-case pages
 const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage'))
@@ -107,6 +110,9 @@ export default function App() {
         <Route path="/features/live-polling" element={<Suspense fallback={<LazyRouteFallback />}><LivePollingPage /></Suspense>} />
         <Route path="/features/privacy" element={<Suspense fallback={<LazyRouteFallback />}><PrivacyFeaturePage /></Suspense>} />
         <Route path="/trust/gdpr" element={<Suspense fallback={<LazyRouteFallback />}><GdprTrustPage /></Suspense>} />
+        <Route path="/trust/soc2" element={<Suspense fallback={<LazyRouteFallback />}><Soc2TrustPage /></Suspense>} />
+        <Route path="/marketplace" element={<Suspense fallback={<LazyRouteFallback />}><MarketplacePage /></Suspense>} />
+        <Route path="/partner/sla" element={<Suspense fallback={<LazyRouteFallback />}><PartnerSlaPage /></Suspense>} />
 
         {/* Use-case pages */}
         <Route path="/use-cases/team-meetings" element={<Suspense fallback={<LazyRouteFallback />}><TeamMeetingsPage /></Suspense>} />
