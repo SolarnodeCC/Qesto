@@ -139,6 +139,13 @@ export type QestoEvent = {
     | 'error.ai_timeout'
     | 'ws.vote_submitted'
     | 'do.storage_fault'
+    | 'multi_region.write_routed'
+    | 'multi_region.failover_triggered'
+    | 'webhook.delivered'
+    | 'webhook.failed'
+    | 'webhook.retried'
+    | 'tournament.started'
+    | 'tournament.completed'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined
