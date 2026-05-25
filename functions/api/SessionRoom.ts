@@ -33,6 +33,12 @@ import {
 import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
+import { mirrorEnergizerToKv } from './lib/session-room-cross-region'
+import {
+  maybeAdvanceBattleRoyale,
+  recordBracketPick,
+  bracketReadyToAdvance,
+} from './lib/tournament-live'
 import { analyzeOpenResponseSentiment, SENTIMENT_COOLDOWN_MS } from './lib/ai/sentiment'
 import { sentimentContextFromMeta } from './lib/ai/session-context'
 import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
@@ -699,6 +705,52 @@ export class SessionRoom implements DurableObject {
       await this.handleTeamQuizAnswer(ws, att, active, data.value)
       return
     }
+    if (active.kind === 'bracket' || active.kind === 'battle_royale') {
+      const value = typeof data.value === 'string' ? data.value.trim() : ''
+      if (!value) {
+        ws.send(errorMessage('bad_energizer_answer', 'Missing bracket pick'))
+        return
+      }
+      const existing = active.answers ?? []
+      if (existing.some((answer) => answer.voterId === att.voterId)) {
+        ws.send(errorMessage('duplicate_energizer_answer', 'You already answered this energizer'))
+        return
+      }
+      let answered =
+        active.kind === 'bracket' ? recordBracketPick(active, att.voterId, value) : {
+          ...active,
+          answers: [
+            ...existing,
+            { voterId: att.voterId, value, correct: true, speedMs: 0, rank: existing.length + 1 },
+          ],
+        }
+
+      if (active.kind === 'battle_royale') {
+        const advance = maybeAdvanceBattleRoyale(answered)
+        if (advance) {
+          answered = advance.state
+          if (advance.type === 'completed') {
+            writeEvent(this.env.METRICS_AE, {
+              name: 'tournament.completed',
+              sessionId: this.sessionId,
+              detail: advance.winnerId,
+            })
+          }
+        }
+      } else if (bracketReadyToAdvance(answered)) {
+        writeEvent(this.env.METRICS_AE, {
+          name: 'tournament.completed',
+          sessionId: this.sessionId,
+          detail: 'bracket_match',
+        })
+      }
+
+      await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
+      await mirrorEnergizerToKv(this.env.MULTI_REGION_STATE_KV, this.sessionId, answered)
+      await this.broadcastEnergizer(answered)
+      await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
+      return
+    }
     if (active.kind !== 'quick_finger') {
       ws.send(errorMessage('unsupported_energizer', 'This energizer does not accept live answers yet'))
       return
@@ -1202,7 +1254,9 @@ function isValidLiveEnergizer(value: unknown): value is LiveEnergizerState {
     candidate.id.length > 0 &&
     typeof candidate.title === 'string' &&
     candidate.title.length > 0 &&
-    ['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud'].includes(candidate.kind ?? '') &&
+    ['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud', 'bracket', 'battle_royale'].includes(
+      candidate.kind ?? '',
+    ) &&
     (candidate.status === undefined || candidate.status === 'active' || candidate.status === 'completed')
   if (!baseValid) return false
   if (candidate.kind === 'team_quiz') {
