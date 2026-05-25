@@ -126,6 +126,22 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     return c.json({ ok: true, data: { teamId, map: body }, trace_id: c.get('trace_id') })
   })
 
+  app.get('/onboard', async (c) => {
+    return c.json({
+      ok: true,
+      data: {
+        steps: [
+          { id: 'status', title: 'Check LDAP connectivity', route: 'GET /api/ldap/status' },
+          { id: 'filter', title: 'Configure OU/group filter', route: 'PUT /api/ldap/teams/:teamId/filter' },
+          { id: 'group-map', title: 'Map LDAP groups to roles', route: 'PUT /api/ldap/teams/:teamId/group-map' },
+          { id: 'dry-run', title: 'Dry-run sync', route: 'POST /api/ldap/sync { dryRun: true }' },
+          { id: 'sync', title: 'Run production sync', route: 'POST /api/ldap/sync' },
+        ],
+      },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
   app.put('/teams/:teamId/filter', async (c) => {
     const teamId = c.req.param('teamId')
     const body = (await c.req.json().catch(() => null)) as LdapSyncFilter | null
