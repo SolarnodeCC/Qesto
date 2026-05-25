@@ -31,8 +31,10 @@ import { mountMultiRegionAdminRoutes } from './routes/multi-region-admin'
 import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
 import { mountPartnerAppRoutes } from './routes/partner-apps'
 import { mountWebhookAdminRoutes } from './routes/webhook-admin'
-import { mountWebhookTestingRoutes } from './routes/webhook-testing'
-import { mountPartnerIntegrationStatusRoutes } from './routes/partner-integration-status'
+import { mountPartnerMarketplaceRoutes } from './routes/partner-marketplace'
+import { mountPartnerSlaRoutes } from './routes/partner-sla'
+import { mountPartnerBrandingRoutes } from './routes/partner-branding'
+import { mountComplianceAdminRoutes } from './routes/compliance-admin'
 import { mountWebhookRoutes } from './routes/webhooks'
 import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
 import { mountMarketingTemplateRoutes } from './routes/templates-marketing'
@@ -225,6 +227,8 @@ export function createApp() {
   // ↓ PUBLIC routes — must stay above the auth-middleware sub-apps below
   mountMarketingTemplateRoutes(app)
   mountMarketingWebhookRoutes(app)
+  mountPartnerMarketplaceRoutes(app)
+  mountPartnerSlaRoutes(app)
   // ↓ Auth-middleware sub-apps — inject app.use('*', authMiddleware) at /api/*
   mountTeamRoutes(app)
   mountBillingRoutes(app)
@@ -243,9 +247,9 @@ export function createApp() {
   mountWebhookRoutes(app)
   mountWebhookTemplateRoutes(app)
   mountWebhookAdminRoutes(app)
-  mountWebhookTestingRoutes(app)
   mountPartnerAppRoutes(app)
-  mountPartnerIntegrationStatusRoutes(app)
+  mountPartnerBrandingRoutes(app)
+  mountComplianceAdminRoutes(app)
   mountTournamentRoutes(app)
   mountLdapRoutes(app)
   mountOrganizationRoutes(app)
