@@ -47,7 +47,7 @@ function partnerAppKey(appId: string): string {
   return `partner:app:${appId}`
 }
 
-export function mountPartnerMarketplaceRoutes(parent: Hono<{ Bindings: Env; Variables: { trace_id: string } }>) {
+export function mountPartnerMarketplaceRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
   const app = new Hono<{ Bindings: Env; Variables: { trace_id: string } }>()
 
   app.get('/apps', async (c) => {

@@ -27,7 +27,7 @@ function slaKvKey(): string {
   return 'partner:sla:snapshot'
 }
 
-export function mountPartnerSlaRoutes(parent: Hono<{ Bindings: Env; Variables: { trace_id: string } }>) {
+export function mountPartnerSlaRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
   const app = new Hono<{ Bindings: Env; Variables: { trace_id: string } }>()
 
   app.get('/', async (c) => {

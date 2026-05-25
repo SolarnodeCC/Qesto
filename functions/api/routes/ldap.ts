@@ -27,7 +27,7 @@ const LdapSyncBodySchema = z.object({
   dryRun: z.boolean().optional(),
 })
 
-export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
+export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
@@ -90,7 +90,12 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       })
       return c.json({ ok: true, data: result, trace_id: traceId })
     } catch (err) {
-      safeLogContext('ldap_sync_failed', { teamId, err: err instanceof Error ? err.message : 'unknown' })
+      safeLogContext(err, {
+        traceId,
+        route: '/api/teams/:teamId/ldap/sync',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+        teamId,
+      })
       const message = err instanceof Error ? err.message : 'ldap_sync_failed'
       const code =
         message === 'team_not_found'

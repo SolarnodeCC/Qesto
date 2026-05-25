@@ -25,7 +25,7 @@ const DEFAULT_STATUS: CompliancePrepStatus = {
   updatedAt: Date.now(),
 }
 
-export function mountComplianceAdminRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
+export function mountComplianceAdminRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', adminMiddleware)

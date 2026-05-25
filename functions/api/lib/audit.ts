@@ -45,6 +45,7 @@ export type AuditAction =
   | 'user.update'
   | 'user.suspend'
   | 'user.restore'
+  | 'ldap.sync.completed'
 
 export interface AuditContext {
   action: AuditAction
