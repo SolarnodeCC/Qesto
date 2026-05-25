@@ -2,11 +2,65 @@
 
 Quick digest of competitive activity, customer sentiment, and backlog recommendations. Published ~weekly for Product Owner.
 
+**Latest integration:** Week of May 19, 2026 → [`MARKET_PULSE_INTEGRATION_2026-05-19.md`](./MARKET_PULSE_INTEGRATION_2026-05-19.md) (2026-05-25)
+
+---
+
+## Current Week
+
+### Week of May 26, 2026
+
+_Pending publication by Market Research Agent. After publish, PO runs [`MARKET_PULSE_TO_BACKLOG_WORKFLOW.md`](../MARKET_PULSE_TO_BACKLOG_WORKFLOW.md)._
+
+#### Competitor Activity
+- _(awaiting scan)_
+
+#### Customer Sentiment This Week
+- _(awaiting scan)_
+
+#### Market Trend Update
+- _(awaiting scan)_
+
+#### Top Backlog Recommendations
+- _(awaiting scan)_
+
+#### Qesto Positioning Opportunity
+- _(awaiting scan)_
+
 ---
 
 ## Template (Copy for each week)
 
+```markdown
+### Week of [Date]
+
+#### Competitor Activity
+- **[Competitor]**: [Activity] — [implication]
+
+#### Customer Sentiment This Week
+- **Top conversation**: *[theme]*
+- Platform: [sources]
+- Frequency: [N mentions]
+- Quote: "[quote]"
+- Insight: [implication]
+
+#### Market Trend Update
+- [Trend]: [direction] | Qesto action: [yes/no]
+
+#### Top Backlog Recommendations
+1. **[STORY-ID or theme]** — [signal] → [action]
+
+#### Qesto Positioning Opportunity
+[1–3 sentences]
+```
+
+---
+
+## Historical Pulses
+
 ### Week of May 19, 2026
+
+**Integrated:** 2026-05-25 → [`MARKET_PULSE_INTEGRATION_2026-05-19.md`](./MARKET_PULSE_INTEGRATION_2026-05-19.md)
 
 #### Competitor Activity
 - **Mentimeter**: No major releases announced; remains market leader for polling/webinars but faces GDPR scrutiny due to US-based infrastructure despite EU headquarters. Losing ground on anonymous engagement to Vevox.
@@ -38,32 +92,25 @@ Quick digest of competitive activity, customer sentiment, and backlog recommenda
 - **Qesto opportunity**: Real-time AI-powered sentiment analysis + insights generation using Workers AI, without third-party data exposure
 
 #### Top Backlog Recommendations
-1. **PARTICIPANT-SCALING-UNLIMITED** — Market signal: Poll Everywhere's 700-participant cap is a churn driver. Qesto's serverless edge architecture supports 10,000+ in pilot; market this as core differentiator vs. Poll Everywhere.
-2. **AI-INSIGHTS-SENTIMENT-ANALYSIS** — Market trend: 55% of users want emotionally aware engagement. Develop real-time AI sentiment extraction + attendee mood tracking using Workers AI; position as privacy-first alternative to cloud-dependent competitors.
-3. **GDPR-PRIVACY-COMPLIANCE-BADGE** — Market signal: Mentimeter losing enterprise customers due to US data residency concerns. Qesto's edge-first, EU-compliant architecture is an immediate competitive moat; create compliance documentation and certifications.
-4. **ANONYMOUS-MODE-EXPANSION** — Customer sentiment: Vevox dominates anonymous feedback; Qesto anonymity modes underutilized. Expand anonymity guarantees in marketing + add "psychological safety" positioning for HR/team-building sessions.
+1. **PARTICIPANT-SCALING-UNLIMITED** → integrated as **`SCALE-PROOF-01`** (S32)
+2. **AI-INSIGHTS-SENTIMENT-ANALYSIS** → validates **`AI-SENTIMENT-01`** + **`ADR-0011`**
+3. **GDPR-PRIVACY-COMPLIANCE-BADGE** → validates **`GDPR-TRUST-PAGE-01`**, **`GDPR-BADGE-01`**, **`ENT-RESIDENCY-01`**
+4. **ANONYMOUS-MODE-EXPANSION** → **`ANON-DEPTH-01`** boosted to P0
 
 #### Qesto Positioning Opportunity
 **"Privacy-First, Real-Time, AI-Ready Engagement Platform"**
 
-Qesto can own three competitive vectors competitors can't easily replicate:
-1. **Data Sovereignty**: Mentimeter/Slido/Kahoot rely on cloud; Qesto's Cloudflare Workers edge means 0 data egress, GDPR-native, faster response. Market as "Your data never leaves your region."
+1. **Data Sovereignty**: Mentimeter/Slido/Kahoot rely on cloud; Qesto's Cloudflare Workers edge means 0 data egress, GDPR-native, faster response.
 2. **Anonymous Feedback at Scale**: Vevox dominates anonymity but has scaling limits; Qesto can support 10,000+ anonymous participants with real-time insights.
-3. **AI Insights Without the Data Risk**: Position Workers AI sentiment analysis as the alternative to competitors funneling participant data to third-party APIs. "Insights, not surveillance."
+3. **AI Insights Without the Data Risk**: Workers AI sentiment analysis as alternative to third-party participant data APIs.
 
-**Immediate narrative to own**: "The engagement platform that respects your participants' privacy while making your insights smarter."
-
----
-
-## Historical Pulses
-
-(Archive of previous weekly pulses will be maintained here for trend analysis)
+**Immediate narrative**: "The engagement platform that respects your participants' privacy while making your insights smarter."
 
 ---
 
 ## How to Read This
 
-- **For PO**: Quick 5-min scan to see what's happening in market + backlog implications
+- **For PO**: Quick 5-min scan → run [`MARKET_PULSE_TO_BACKLOG_WORKFLOW.md`](../MARKET_PULSE_TO_BACKLOG_WORKFLOW.md)
 - **For Marketing**: Customer conversation themes + positioning angles
 - **For Engineering**: Competitor feature activity to inform technical decisions
 
