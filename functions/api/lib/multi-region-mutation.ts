@@ -5,10 +5,13 @@ import type { Context } from 'hono'
 import { emitMultiRegionWrite } from './multi-region-telemetry'
 import type { Env } from '../types'
 
-export function requestColo(c: Context<{ Bindings: Env }>): string | null {
+type AnyEnv = { Bindings: Env; Variables: any }
+
+export function requestColo(c: Context<AnyEnv>): string | null {
   return (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
 }
 
-export function trackSessionWrite(c: Context<{ Bindings: Env; Variables: { trace_id?: string } }>, op: string): void {
-  void emitMultiRegionWrite(c.env, requestColo(c), op, c.get('trace_id'))
+export function trackSessionWrite(c: Context<AnyEnv>, op: string): void {
+  const traceId = c.get('trace_id')
+  void emitMultiRegionWrite(c.env, requestColo(c), op, typeof traceId === 'string' ? traceId : undefined)
 }

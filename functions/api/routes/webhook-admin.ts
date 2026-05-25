@@ -43,7 +43,7 @@ export function mountWebhookAdminRoutes(parent: Hono<{ Bindings: Env; Variables:
       for (const entry of log.slice(0, 10)) {
         total++
         if (entry.success) success++
-        recent.push({ webhookId: cfg.id, ...entry })
+        recent.push({ ...entry, webhookId: cfg.id })
       }
     }
     const successRate = total > 0 ? Math.round((success / total) * 100) : 100

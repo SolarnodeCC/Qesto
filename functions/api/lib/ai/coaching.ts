@@ -11,10 +11,10 @@ export type CoachingInput = {
   questionSummaries: string[]
   totalVotes: number
   anonymity: string
-  profileStyle?: 'concise' | 'detailed'
-  teamVertical?: string
-  similarSessions?: string[]
-  historicalInsight?: string
+  profileStyle?: 'concise' | 'detailed' | undefined
+  teamVertical?: string | undefined
+  similarSessions?: string[] | undefined
+  historicalInsight?: string | undefined
 }
 
 export type CoachingSuggestion = {

@@ -2,7 +2,6 @@
  * LDAP-01 — directory sync (mock + HTTP bridge). No raw LDAP TCP on Workers.
  */
 import { ulid } from './ulid'
-import { safeLogContext } from './log'
 import type { Team, TeamMember } from '../routes/teams'
 import { teamDocumentKey, userTeamsIndexKey } from './kv-keys'
 import { readKvJson, writeKvJson } from './kv'
@@ -175,6 +174,5 @@ export async function syncLdapDirectoryToTeam(
   await writeKvJson(teamsKv, ldapProvisionedKey(teamId), [...activeExternalIds])
 
   await writeKvJson(teamsKv, teamDocumentKey(teamId), team)
-  safeLogContext('ldap_sync_complete', { teamId, ...result })
-  return { ...result, auditEvent: 'ldap.sync.completed' as const }
+  return result
 }

@@ -22,8 +22,8 @@ export default function MarketplacePage() {
   useEffect(() => {
     const params = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ''
     fetch(`/api/marketplace/apps${params}`)
-      .then((r) => r.json())
-      .then((json: { ok?: boolean; data?: { apps: MarketplaceApp[] } }) => {
+      .then((r) => r.json() as Promise<{ ok?: boolean; data?: { apps: MarketplaceApp[] } }>)
+      .then((json) => {
         if (json.ok && json.data) setApps(json.data.apps)
       })
       .finally(() => setLoading(false))

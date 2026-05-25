@@ -721,6 +721,8 @@ export class SessionRoom implements DurableObject {
           ],
         }
 
+      const tournamentMeta = await this.ctx.storage.get<Meta>(K_META)
+      const tournamentSessionId = tournamentMeta?.sessionId
       if (active.kind === 'battle_royale') {
         const advance = maybeAdvanceBattleRoyale(answered)
         if (advance) {
@@ -728,7 +730,7 @@ export class SessionRoom implements DurableObject {
           if (advance.type === 'completed') {
             writeEvent(this.env.METRICS_AE, {
               name: 'tournament.completed',
-              sessionId: this.sessionId,
+              sessionId: tournamentSessionId,
               detail: advance.winnerId,
             })
           }
@@ -736,13 +738,15 @@ export class SessionRoom implements DurableObject {
       } else if (bracketReadyToAdvance(answered)) {
         writeEvent(this.env.METRICS_AE, {
           name: 'tournament.completed',
-          sessionId: this.sessionId,
+          sessionId: tournamentSessionId,
           detail: 'bracket_match',
         })
       }
 
       await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
-      await mirrorEnergizerToKv(this.env.MULTI_REGION_STATE_KV, this.sessionId, answered)
+      if (tournamentSessionId) {
+        await mirrorEnergizerToKv(this.env.MULTI_REGION_STATE_KV, tournamentSessionId, answered)
+      }
       await this.broadcastEnergizer(answered)
       await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
       return

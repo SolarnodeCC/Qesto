@@ -30,7 +30,7 @@ function optInKey(teamId: string): string {
   return `multi-region:opt-in:${teamId}`
 }
 
-export function mountMultiRegionAdminRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
+export function mountMultiRegionAdminRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', adminMiddleware)

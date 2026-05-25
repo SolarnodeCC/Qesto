@@ -18,8 +18,8 @@ export default function PartnerSlaPage() {
 
   useEffect(() => {
     fetch('/api/partner/sla')
-      .then((r) => r.json())
-      .then((json: { ok?: boolean; data?: { sla: SlaSnapshot } }) => {
+      .then((r) => r.json() as Promise<{ ok?: boolean; data?: { sla: SlaSnapshot } }>)
+      .then((json) => {
         if (json.ok && json.data) setSla(json.data.sla)
       })
       .catch(() => {})

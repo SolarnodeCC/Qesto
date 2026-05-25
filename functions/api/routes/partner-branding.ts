@@ -55,10 +55,14 @@ export function mountPartnerBrandingRoutes(parent: Hono<{ Bindings: Env; Variabl
     const teamId = c.req.param('teamId')
     const validated = await validateBody(c, BrandingSchema)
     if ('error' in validated) return validated.error
+    const data = validated.data
     const branding: PartnerBranding = {
       teamId,
-      ...validated.data,
+      primaryColor: data.primaryColor,
+      accentColor: data.accentColor,
       updatedAt: Date.now(),
+      ...(data.logoUrl !== undefined && { logoUrl: data.logoUrl }),
+      ...(data.emailFooter !== undefined && { emailFooter: data.emailFooter }),
     }
     await writeKvJson(c.env.INTEGRATIONS_KV, brandingKey(teamId), branding)
     return c.json({ ok: true, data: { branding }, trace_id: c.get('trace_id') })
