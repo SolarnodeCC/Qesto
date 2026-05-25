@@ -40,7 +40,7 @@
     "help:sync": "npx tsx scripts/sync-help-docs.ts"
   },
   "dependencies": {
-    "hono": "^4.12.22",
+    "hono": "^4.12.23",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
