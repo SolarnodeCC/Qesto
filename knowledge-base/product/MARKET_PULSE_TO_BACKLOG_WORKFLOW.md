@@ -364,4 +364,6 @@ Track over time:
 
 **Owner**: Product Owner  
 **Cadence**: Weekly pulse → bi-weekly sprint planning → monthly strategy  
-**Next update**: After first 4 weeks of pulse publications (refine based on experience)
+**Integration logs**: [`research/MARKET_PULSE_INTEGRATION_*.md`](./research/) (one per integrated pulse week)
+
+**Latest run**: 2026-05-25 — [Week of May 19, 2026](./research/MARKET_PULSE_INTEGRATION_2026-05-19.md)
