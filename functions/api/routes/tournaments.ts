@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { seedSingleEliminationBracket } from '../lib/tournament-bracket'
+import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -65,7 +66,39 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
         .run()
     }
 
+    writeEvent(c.env.METRICS_AE, {
+      name: 'tournament.started',
+      sessionId: c.req.param('sessionId'),
+      count: seeds.length,
+      detail: energizerId,
+    })
     return c.json({ ok: true, data: { matchCount: seeds.length, matchIds: seeds.map((s) => s.id) }, trace_id: c.get('trace_id') }, 201)
+  })
+
+  app.get('/sessions/:sessionId/bracket/:energizerId/export', async (c) => {
+    const energizerId = c.req.param('energizerId')
+    const { results } = await c.env.DB.prepare(
+      `SELECT round_number, match_number, participant_a_id, participant_b_id, winner_id, score_a, score_b, state
+         FROM bracket_matches WHERE energizer_id = ?1 ORDER BY round_number, match_number`,
+    )
+      .bind(energizerId)
+      .all()
+    const lines = [
+      `# Tournament export`,
+      `energizer: ${energizerId}`,
+      '',
+      ...(results ?? []).map(
+        (m) =>
+          `R${(m as { round_number: number }).round_number} M${(m as { match_number: number }).match_number}: ${(m as { participant_a_id: string }).participant_a_id} vs ${(m as { participant_b_id: string }).participant_b_id} → winner ${(m as { winner_id: string | null }).winner_id ?? 'pending'}`,
+      ),
+    ]
+    writeEvent(c.env.METRICS_AE, { name: 'tournament.completed', detail: energizerId, count: results?.length ?? 0 })
+    return new Response(lines.join('\n'), {
+      headers: {
+        'Content-Type': 'text/markdown; charset=utf-8',
+        'Content-Disposition': `attachment; filename="tournament-${energizerId}.md"`,
+      },
+    })
   })
 
   app.patch('/matches/:matchId', async (c) => {
@@ -88,6 +121,14 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
     )
       .bind(body.data.winnerId, body.data.scoreA ?? null, body.data.scoreB ?? null, id)
       .run()
+    const remaining = await c.env.DB.prepare(
+      `SELECT COUNT(*) as n FROM bracket_matches WHERE energizer_id = (SELECT energizer_id FROM bracket_matches WHERE id = ?1) AND state != 'completed'`,
+    )
+      .bind(id)
+      .first<{ n: number }>()
+    if ((remaining?.n ?? 1) === 0) {
+      writeEvent(c.env.METRICS_AE, { name: 'tournament.completed', detail: id })
+    }
     return c.json({ ok: true, data: { updated: true }, trace_id: c.get('trace_id') })
   })
 
