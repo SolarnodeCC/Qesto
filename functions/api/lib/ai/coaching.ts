@@ -2,6 +2,7 @@
  * AI-COACHING-01 — post-session facilitator coaching (Workers AI, ADR-0011 scope).
  */
 import type { Env } from '../../types'
+import { validateData, CoachingAiResponseSchema } from '../validators'
 import { aiOverride, aiPipeline, type SessionAIContext } from './session-context'
 
 const COACHING_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
@@ -65,28 +66,30 @@ Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1
   if (!result.ok) return null
 
   const raw = result.data
-  const text =
-    typeof raw === 'string'
-      ? raw
-      : raw && typeof raw === 'object' && 'response' in raw
-        ? String((raw as { response?: string }).response ?? '')
-        : JSON.stringify(raw)
+  let text = ''
+  if (typeof raw === 'string') {
+    text = raw
+  } else if (raw && typeof raw === 'object' && 'response' in raw) {
+    const response = (raw as Record<string, unknown>).response
+    text = typeof response === 'string' ? response : ''
+  } else {
+    text = JSON.stringify(raw)
+  }
 
   try {
-    const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, '').trim()) as {
-      headline?: string
-      bullets?: string[]
-    }
-    if (!parsed.headline || !Array.isArray(parsed.bullets)) return null
+    const jsonText = text.replace(/^```json\s*|\s*```$/g, '').trim()
+    const untrusted = JSON.parse(jsonText) as unknown
+    const parsed = validateData(untrusted, CoachingAiResponseSchema)
+    if (!parsed) return null
     return {
       headline: parsed.headline.slice(0, 200),
       bullets: parsed.bullets.slice(0, 5).map((b) => String(b).slice(0, 300)),
       model: COACHING_MODEL,
-      ...(typeof (parsed as { confidence?: number }).confidence === 'number' ?
-        { confidence: Math.min(1, Math.max(0, (parsed as { confidence: number }).confidence)) }
+      ...(parsed.confidence !== undefined ?
+        { confidence: Math.min(1, Math.max(0, parsed.confidence)) }
       : {}),
-      ...(Array.isArray((parsed as { followUps?: string[] }).followUps) ?
-        { followUps: (parsed as { followUps: string[] }).followUps.slice(0, 3).map((f) => String(f).slice(0, 200)) }
+      ...(parsed.followUps ?
+        { followUps: parsed.followUps.slice(0, 3).map((f) => String(f).slice(0, 200)) }
       : {}),
     }
   } catch {

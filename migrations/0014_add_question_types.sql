@@ -31,3 +31,8 @@ ALTER TABLE questions_new RENAME TO questions;
 -- Step 5: Recreate indexes (same as original schema)
 CREATE INDEX IF NOT EXISTS idx_questions_session ON questions(session_id);
 CREATE INDEX IF NOT EXISTS idx_questions_session_position ON questions(session_id, position);
+
+-- Post-rebuild integrity verification (HLT-030)
+-- jankurai:migration-safe verify foreign_key_check quick_check
+PRAGMA foreign_key_check;
+PRAGMA quick_check;

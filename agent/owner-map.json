@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "owners": {
+    "functions/api/": { "team": "backend", "proof": "npm test" },
+    "src/": { "team": "frontend", "proof": "npm run typecheck && npm test" },
+    "migrations/": { "team": "backend", "proof": "npm run e2e:db:local" },
+    "ops/": { "team": "devops", "proof": "bash ops/ci/quality-gates.sh" },
+    "contracts/": { "team": "architect", "proof": "npm run check:contracts" },
+    "packages/sdk-js/": { "team": "platform", "proof": "npm test" },
+    "worker/": { "team": "backend", "proof": "npm test" },
+    "tests/": { "team": "qa", "proof": "npm test" }
+  }
+}

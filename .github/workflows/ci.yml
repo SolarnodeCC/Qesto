@@ -35,13 +35,15 @@ jobs:
       - name: Run quality gates
         run: bash ops/ci/quality-gates.sh
 
-      # Audit lane — jankurai scoring
+      - name: Secret pattern scan
+        run: bash ops/ci/secret-scan.sh
+
+      - name: Contract drift check
+        run: npx tsx scripts/check-contract-drift.ts
+
+      # Audit lane — jankurai scoring (delegates to ops/ci/jankurai.sh)
       - name: Run jankurai audit
-        run: |
-          mkdir -p agent
-          # Install jankurai globally if not present
-          npm list -g jankurai || npm install -g jankurai
-          jankurai . --json agent/repo-score.json --md agent/repo-score.md
+        run: bash ops/ci/jankurai.sh
         continue-on-error: true
 
       # Upload audit artifacts for agent repair routing

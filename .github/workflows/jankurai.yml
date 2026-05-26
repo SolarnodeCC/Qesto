@@ -33,7 +33,10 @@ jobs:
         if: always()
         with:
           name: jankurai-audit
-          path: target/jankurai/
+          path: |
+            agent/repo-score.json
+            agent/repo-score.md
+            target/jankurai/
           retention-days: 7
 
   security:

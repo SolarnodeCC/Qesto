@@ -1,0 +1,27 @@
+# Agent boundary map — cross-runtime seams and proof lanes
+# See also: agent/owner-map.json, agent/test-map.json
+
+[boundaries.api]
+owns = ["functions/api/"]
+forbidden = ["src/", "python/"]
+proof = "npm run typecheck && npm test"
+
+[boundaries.web]
+owns = ["src/", "apps/web/"]
+forbidden = ["functions/api/lib/", "migrations/"]
+proof = "npm run typecheck && npm run test:a11y"
+
+[boundaries.db]
+owns = ["migrations/", "schema.sql", "db/"]
+forbidden = ["src/components/"]
+proof = "npm run e2e:db:local"
+
+[boundaries.contracts]
+owns = ["contracts/", "functions/api/lib/openapi-v3-spec.ts"]
+forbidden = []
+proof = "npm run check:contracts"
+
+[boundaries.ops]
+owns = ["ops/", ".github/workflows/"]
+forbidden = []
+proof = "bash scripts/ci-local.sh quality-gates"

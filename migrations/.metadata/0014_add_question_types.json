@@ -12,7 +12,8 @@
     "column_added": "question_type TEXT NOT NULL",
     "data_loss": "complete table drop",
     "rollback": "restore from backup before migration",
-    "post_rebuild_checks": "PRAGMA foreign_key_check should be run after rebuild",
+    "post_rebuild_checks": "PRAGMA foreign_key_check; PRAGMA quick_check; embedded in 0014_add_question_types.sql",
+    "verify_sql": "PRAGMA foreign_key_check; PRAGMA quick_check;",
     "tested": true
   },
   "postgres_checks": {

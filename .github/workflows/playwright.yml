@@ -21,32 +21,11 @@ jobs:
     - uses: actions/setup-node@60edb5dd545a775178f3159f25d48a7b09cbd043
       with:
         node-version: '20'
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install chrome --with-deps
-    - name: Build app
-      run: npm run build
-    - name: Apply local D1 schema and migrations
-      run: npm run e2e:db:local
+        cache: 'npm'
+    - name: Run Playwright lane
+      run: bash ops/ci/playwright.sh
       env:
         CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-    - name: Start full-stack Pages dev server
-      run: |
-        npm run e2e:serve:fullstack > wrangler-pages-dev.log 2>&1 &
-        echo $! > wrangler-pages-dev.pid
-        for i in {1..60}; do
-          if curl --fail --silent http://localhost:8788/ > /dev/null; then
-            exit 0
-          fi
-          sleep 2
-        done
-        cat wrangler-pages-dev.log
-        exit 1
-      env:
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-    - name: Run Playwright tests
-      run: npm run test:e2e:fullstack
     - uses: actions/upload-artifact@6bc7d64a6f01890e8e7f6e1fa2080c6cc5192b55
       if: ${{ !cancelled() }}
       with:

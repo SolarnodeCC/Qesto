@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "routes": [
+    { "path": "functions/api/", "proof": "npm test" },
+    { "path": "src/", "proof": "npm run typecheck && npm test" },
+    { "path": "migrations/", "proof": "npm run e2e:db:local" },
+    { "path": "ops/", "proof": "bash scripts/ci-local.sh quality-gates" },
+    { "path": "contracts/", "proof": "npm run check:contracts" },
+    { "path": "scripts/embed-kb.ts", "proof": "npm run kb:embed -- --dry-run" },
+    { "path": "scripts/kb-sync-cli.ts", "proof": "npm run kb:sync -- --dry-run" },
+    { "path": "scripts/sync-help-docs.ts", "proof": "npm run help:sync -- --dry-run" }
+  ]
+}
