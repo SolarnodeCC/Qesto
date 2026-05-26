@@ -185,14 +185,12 @@
   "sessionRoles.roleUpdated": "Role updated",
   "sessionRoles.roleUpdateFailed": "Failed to update role",
   "changeSummary": "Change Summary",
-  "sessionsThisMonth": "Sessions this month",
   "totalSessions": "Total sessions",
   "platformOverview": "Platform Overview",
   "platformAdminTitle": "Platform admin",
   "applyDateRange": "Apply",
   "viewOps": "View OPS details",
   "p95LatencyTrend": "P95 latency trend",
-  "stubMetricsWarning": "Stub data — metrics KV not ready",
   "allSystemsOperational": "All systems operational",
   "partialDegradation": "Partial degradation",
   "majorOutage": "Major outage",
@@ -202,5 +200,6 @@
   "planOptionFree": "Pulse (Free)",
   "planOptionStarter": "Signal (Starter)",
   "planOptionTeam": "Chorus (Team)",
-  "cancelBtn": "Cancel"
+  "cancelBtn": "Cancel",
+  "syntheticMetricsWarning": "Synthetic data — metrics KV not ready"
 }

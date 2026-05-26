@@ -9,7 +9,7 @@ export type LiveMetrics = {
   p95_latency_ms: number
   error_rate: number
   refresh_ts: number
-  stub?: boolean
+  isSynthetic?: boolean
 }
 
 export type HistoricalBucket = {

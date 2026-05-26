@@ -185,14 +185,12 @@
   "requests": "Requêtes",
   "auditLog": "Journal d'audit",
   "changeSummary": "Résumé des modifications",
-  "sessionsThisMonth": "Sessions ce mois-ci",
   "totalSessions": "Sessions au total",
   "platformOverview": "Vue d'ensemble de la plateforme",
   "platformAdminTitle": "Admin plateforme",
   "applyDateRange": "Appliquer",
   "viewOps": "Voir les détails OPS",
   "p95LatencyTrend": "Tendance latence P95",
-  "stubMetricsWarning": "Données stub — KV métriques non prêt",
   "allSystemsOperational": "Tous les systèmes opérationnels",
   "partialDegradation": "Dégradation partielle",
   "majorOutage": "Panne majeure",
@@ -202,5 +200,6 @@
   "planOptionFree": "Pulse (Gratuit)",
   "planOptionStarter": "Signal (Starter)",
   "planOptionTeam": "Chorus (Team)",
-  "cancelBtn": "Annuler"
+  "cancelBtn": "Annuler",
+  "syntheticMetricsWarning": "Données synthétiques — KV métriques non prêt"
 }

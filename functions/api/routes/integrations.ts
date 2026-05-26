@@ -21,6 +21,7 @@ import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
 import { createEncryptedTokenStore } from '../lib/integrations/token-store'
+import { validateData, OAuthStatePayloadSchema } from '../lib/validators'
 import { SlackProvider } from '../lib/integrations/providers/slack'
 import { TeamsProvider } from '../lib/integrations/providers/teams'
 import { getZoomProvider } from '../lib/integrations/providers/zoom'
@@ -130,16 +131,8 @@ async function verifyState(state: string, secret: string): Promise<StatePayload 
   } catch {
     return null
   }
-  if (
-    !parsed ||
-    typeof parsed !== 'object' ||
-    typeof (parsed as StatePayload).teamId !== 'string' ||
-    typeof (parsed as StatePayload).userId !== 'string' ||
-    typeof (parsed as StatePayload).exp !== 'number'
-  ) {
-    return null
-  }
-  const p = parsed as StatePayload
+  const p = validateData(parsed, OAuthStatePayloadSchema)
+  if (!p) return null
   if (p.exp < Math.floor(Date.now() / 1000)) return null
   return p
 }

@@ -126,7 +126,7 @@ export async function initI18n(): Promise<void> {
     try {
       await loadLanguage(language)
     } catch (err) {
-      console.error('[i18n] Failed to load translations, UI will show keys as fallback:', err)
+      console.error('[i18n] Failed to load translations, UI will show keys as recovery:', err)
       notifyI18nChanged()
     }
   })()

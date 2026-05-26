@@ -185,14 +185,12 @@
   "requests": "Anfragen",
   "auditLog": "Audit-Protokoll",
   "changeSummary": "Änderungszusammenfassung",
-  "sessionsThisMonth": "Sitzungen diesen Monat",
   "totalSessions": "Sitzungen gesamt",
   "platformOverview": "Plattformübersicht",
   "platformAdminTitle": "Plattform-Admin",
   "applyDateRange": "Anwenden",
   "viewOps": "OPS-Details anzeigen",
   "p95LatencyTrend": "P95-Latenz-Trend",
-  "stubMetricsWarning": "Stub-Daten — Metrics-KV nicht bereit",
   "allSystemsOperational": "Alle Systeme betriebsbereit",
   "partialDegradation": "Teilweise Beeinträchtigung",
   "majorOutage": "Schwerer Ausfall",
@@ -202,5 +200,6 @@
   "planOptionFree": "Pulse (Free)",
   "planOptionStarter": "Signal (Starter)",
   "planOptionTeam": "Chorus (Team)",
-  "cancelBtn": "Abbrechen"
+  "cancelBtn": "Abbrechen",
+  "syntheticMetricsWarning": "Synthetische Daten — Metrics-KV nicht bereit"
 }
