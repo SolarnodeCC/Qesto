@@ -36,3 +36,10 @@ amplitude-setup-report.previous.md
 .claude/skills/wizard-prompt-supplement/
 .kb-vectors-pending.json
 worker-configuration.d.ts
+
+# Runtime sync manifests (generated during help/kb sync operations)
+.help-sync-manifest.json
+.kb-sync-manifest.json
+
+# Agent audit outputs (generated during jankurai scanning)
+agent/

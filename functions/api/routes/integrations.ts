@@ -30,6 +30,7 @@ import { generatePKCEPair } from '../lib/integrations/oauth'
 import type { ProviderConfig, TokenResponse } from '../lib/integrations/types'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { writeEvent } from '../lib/observability'
+import { base64UrlEncode, base64UrlDecode, timingSafeEqual, hmacSign } from '../lib/shared/crypto'
 import type { Env, PlanTier } from '../types'
 
 // Match the Vars shape used in app.ts so this sub-router composes cleanly.
@@ -110,42 +111,10 @@ interface StatePayload {
   exp: number
 }
 
-async function hmacSha256(secret: string, data: string): Promise<string> {
-  const key = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  )
-  const mac = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data))
-  return base64UrlEncode(new Uint8Array(mac))
-}
-
-function base64UrlEncode(bytes: Uint8Array): string {
-  let bin = ''
-  for (const b of bytes) bin += String.fromCharCode(b)
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
-}
-
-function base64UrlDecode(s: string): Uint8Array {
-  const padded = s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4)
-  const bin = atob(padded)
-  const out = new Uint8Array(bin.length)
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
-  return out
-}
-
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  let diff = 0
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return diff === 0
-}
 
 async function signState(payload: StatePayload, secret: string): Promise<string> {
   const body = base64UrlEncode(new TextEncoder().encode(JSON.stringify(payload)))
-  const sig = await hmacSha256(secret, body)
+  const sig = await hmacSign(secret, body)
   return `${body}.${sig}`
 }
 

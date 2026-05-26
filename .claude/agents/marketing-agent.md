@@ -63,7 +63,27 @@ Load the matching skill from `coreyhaines31/marketingskills/skills/<name>/SKILL.
 1. **Deliverable**: Produce artifact in correct `docs/` location (per marketing skill)
 2. **Backlog update**: Mark MKTG item as ✅ closed in `docs/BACKLOG.md`
 3. **Summary**: What was created, key decisions, what to validate next
-4. **Never**: Commit untested competitor claims or fabricated social proof
+4. **Evidence required**: All claims must cite sources; competitor analysis must reference public URLs; customer claims must reference research artifacts in `docs/RESEARCH/`
+
+## Verification & Evidence
+
+All marketing claims must be verifiable. Before committing:
+
+- **Competitor claims** → cite public URLs (e.g., `Mentimeter pricing: https://www.mentimeter.com/plans` as of YYYY-MM-DD)
+- **Market sizing** → cite reports or research (e.g., `Forrester Q2 2026 report on employee engagement tools`)
+- **Customer claims** → reference raw interview notes in `docs/RESEARCH/CUSTOMER_INTERVIEWS.md`
+- **Positioning statements** → align with brand strategy in `docs/BRAND_GUIDELINES.md` (if exists)
+- **Conversion claims** → reference A/B test results or analytics queries run on platform
+- **Feature comparisons** → include replayable demo steps or screenshot dates
+
+Run validation before commit:
+```bash
+# Verify all [CITATION NEEDED] tags are resolved
+grep -r "\[CITATION NEEDED\]" docs/ && echo "BLOCKED: Unresolved citations" || echo "Citations valid"
+
+# Verify no competitor URLs are stale (spot-check a few)
+curl -sI https://www.mentimeter.com/plans | head -1
+```
 
 ## Escalation Triggers
 
