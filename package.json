@@ -38,7 +38,8 @@
     "test:e2e:chrome": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
     "kb:embed": "npx tsx scripts/embed-kb.ts",
     "kb:sync": "npx tsx scripts/kb-sync-cli.ts",
-    "help:sync": "npx tsx scripts/sync-help-docs.ts"
+    "help:sync": "npx tsx scripts/sync-help-docs.ts",
+    "contracts:generate": "openapi-typescript contracts/openapi/qesto-api.yaml -o contracts/generated/api.d.ts"
   },
   "dependencies": {
     "hono": "^4.12.23",
@@ -59,6 +60,7 @@
     "@vitejs/plugin-react": "^4.3.0",
     "axe-core": "^4.11.4",
     "jsdom": "^29.1.1",
+    "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
     "vite": "^7.0.0",

@@ -73,21 +73,20 @@ Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1
         : JSON.stringify(raw)
 
   try {
-    const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, '').trim()) as {
-      headline?: string
-      bullets?: string[]
-    }
-    if (!parsed.headline || !Array.isArray(parsed.bullets)) return null
+    const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, '').trim())
+    if (!parsed || typeof parsed !== 'object') return null
+    const obj = parsed as Record<string, unknown>
+    const headline = typeof obj.headline === 'string' ? obj.headline : null
+    const bulletsRaw = Array.isArray(obj.bullets) ? obj.bullets : null
+    if (!headline || !bulletsRaw) return null
     return {
-      headline: parsed.headline.slice(0, 200),
-      bullets: parsed.bullets.slice(0, 5).map((b) => String(b).slice(0, 300)),
+      headline: headline.slice(0, 200),
+      bullets: bulletsRaw.slice(0, 5).map((b) => String(b).slice(0, 300)),
       model: COACHING_MODEL,
-      ...(typeof (parsed as { confidence?: number }).confidence === 'number' ?
-        { confidence: Math.min(1, Math.max(0, (parsed as { confidence: number }).confidence)) }
-      : {}),
-      ...(Array.isArray((parsed as { followUps?: string[] }).followUps) ?
-        { followUps: (parsed as { followUps: string[] }).followUps.slice(0, 3).map((f) => String(f).slice(0, 200)) }
-      : {}),
+      ...(typeof obj.confidence === 'number' ? { confidence: Math.min(1, Math.max(0, obj.confidence)) } : {}),
+      ...(Array.isArray(obj.followUps)
+        ? { followUps: obj.followUps.slice(0, 3).map((f) => String(f).slice(0, 200)) }
+        : {}),
     }
   } catch {
     return {

@@ -20,12 +20,12 @@ export async function saveLdapGroupMap(kv: KVNamespace, teamId: string, map: Lda
   await writeKvJson(kv, ldapGroupMapKey(teamId), map)
 }
 
-export function resolveRoleForGroups(groups: string[], map: LdapGroupMap, fallback: LdapGroupRole = 'member'): LdapGroupRole {
+export function resolveRoleForGroups(groups: string[], map: LdapGroupMap, defaultRole: LdapGroupRole = 'member'): LdapGroupRole {
   for (const g of groups) {
     const role = map[g] ?? map[g.toLowerCase()]
     if (role) return role
   }
-  return fallback
+  return defaultRole
 }
 
 export type LdapSyncFilter = {

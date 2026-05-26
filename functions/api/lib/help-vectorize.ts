@@ -48,7 +48,7 @@ export async function embedAndFindSimilarDocuments(
   },
 ): Promise<{ vector?: number[]; similarDocuments: HelpQueryMatch[] }> {
   const embedResult = await withTimeout(
-    env.AI.run(HELP_EMBED_MODEL, { text: params.question }) as Promise<unknown>,
+    env.AI.run(HELP_EMBED_MODEL, { text: params.question }),
     HELP_EMBED_TIMEOUT_MS,
     'Help question embedding',
   )

@@ -3,6 +3,7 @@
 import { Hono } from 'hono'
 import { nanoid } from 'nanoid'
 import { getTemplate, listTemplates, incrementUsageCount, type Industry, type Theme, type Lang } from '../lib/templates-kv'
+import { Industry as IndustrySchema, Theme as ThemeSchema, Lang as LangSchema } from '../lib/template-schemas'
 import type { Env } from '../types'
 import { type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
@@ -29,9 +30,12 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
     return c.json({ error: 'MARKETING_KV not available' }, 503)
   }
 
-  const industry = c.req.query('industry') as Industry | undefined
-  const theme = c.req.query('theme') as Theme | undefined
-  const lang = c.req.query('lang') as Lang | undefined
+  const industryRaw = c.req.query('industry')
+  const themeRaw = c.req.query('theme')
+  const langRaw = c.req.query('lang')
+  const industry = industryRaw ? IndustrySchema.safeParse(industryRaw).data : undefined
+  const theme = themeRaw ? ThemeSchema.safeParse(themeRaw).data : undefined
+  const lang = langRaw ? LangSchema.safeParse(langRaw).data : undefined
   const limit = parseInt(c.req.query('limit') || '20', 10)
   const offset = parseInt(c.req.query('offset') || '0', 10)
 

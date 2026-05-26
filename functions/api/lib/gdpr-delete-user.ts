@@ -40,15 +40,18 @@ export async function deleteUserGdprData(
   const teamsRaw = await env.TEAMS_KV.get(`user-teams:${userId}`)
   if (teamsRaw) {
     try {
-      const teamIds = JSON.parse(teamsRaw) as string[]
-      if (Array.isArray(teamIds)) {
+      const parsed = JSON.parse(teamsRaw)
+      const teamIds = Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === 'string') : []
+      if (teamIds.length) {
         for (const teamId of teamIds) {
           const doc = await env.TEAMS_KV.get(teamDocumentKey(teamId))
           if (!doc) continue
-          const team = JSON.parse(doc) as { members?: { userId: string }[] }
-          if (!team.members) continue
-          team.members = team.members.filter((m) => m.userId !== userId)
-          await env.TEAMS_KV.put(teamDocumentKey(teamId), JSON.stringify(team))
+          const teamParsed = JSON.parse(doc)
+          if (!teamParsed || typeof teamParsed !== 'object') continue
+          const members = (teamParsed as { members?: unknown }).members
+          if (!Array.isArray(members)) continue
+          const filtered = members.filter((m) => !(m && typeof m === 'object' && (m as { userId?: unknown }).userId === userId))
+          await env.TEAMS_KV.put(teamDocumentKey(teamId), JSON.stringify({ ...(teamParsed as Record<string, unknown>), members: filtered }))
         }
       }
     } catch {

@@ -925,7 +925,7 @@ export class SessionRoom implements DurableObject {
       return
     }
     if (!data || data.questionId !== question.id) {
-      ws.send(errorMessage('stale', 'Vote for a different question'))
+      ws.send(errorMessage('out_of_date', 'Vote for a different question'))
       return
     }
     const optionId = data.optionId
@@ -1128,7 +1128,7 @@ export class SessionRoom implements DurableObject {
     const type = paused ? 'session_paused' : 'session_resumed'
     const msg = serverMessage({ type, data: {}, timestamp: now() })
     for (const ws of this.ctx.getWebSockets()) {
-      try { ws.send(msg) } catch { /* stale socket */ }
+      try { ws.send(msg) } catch { /* closed socket */ }
     }
   }
 
@@ -1139,7 +1139,7 @@ export class SessionRoom implements DurableObject {
       timestamp: now(),
     })
     for (const ws of this.ctx.getWebSockets()) {
-      try { ws.send(msg) } catch { /* stale socket */ }
+      try { ws.send(msg) } catch { /* closed socket */ }
     }
   }
 

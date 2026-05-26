@@ -76,8 +76,10 @@ export async function decryptTokenPayload(serialized: string, key: CryptoKey): P
 
 export function isLegacyPlaintextTokenBlob(raw: string): boolean {
   try {
-    const parsed = JSON.parse(raw) as { access_token?: unknown; v?: unknown }
-    return typeof parsed?.access_token === 'string' && parsed.v === undefined
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return false
+    const obj = parsed as { access_token?: unknown; v?: unknown }
+    return typeof obj.access_token === 'string' && obj.v === undefined
   } catch {
     return false
   }

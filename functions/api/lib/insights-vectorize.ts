@@ -69,7 +69,7 @@ export async function upsertInsightsSessionVector(
   let vector = params.existingVector
   if (!vector) {
     const upsertEmbedResult = await withTimeout(
-      env.AI.run(DECISIONS_EMBED_MODEL, { text: params.sessionTitle }) as Promise<unknown>,
+      env.AI.run(DECISIONS_EMBED_MODEL, { text: params.sessionTitle }),
       DECISIONS_EMBED_TIMEOUT_MS,
       'Decision upsert embedding',
     )

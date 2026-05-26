@@ -35,6 +35,9 @@ jobs:
       - name: Run quality gates
         run: bash ops/ci/quality-gates.sh
 
+      - name: Contracts drift check
+        run: bash ops/ci/contracts.sh
+
       # Audit lane — jankurai scoring (shared ops/ci script)
       - name: Run jankurai audit
         run: bash ops/ci/jankurai.sh

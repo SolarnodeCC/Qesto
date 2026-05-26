@@ -3,7 +3,7 @@ import type { Env } from '../../types'
 import type { SessionVars } from './shared'
 
 import { requireFound, rejectDraftForResults } from '../../lib/session-lifecycle'
-import { fetchSession, fetchQuestions, doStub } from './shared'
+import { fetchSession, fetchQuestions, getSessionRoomStub } from './shared'
 
 export function mountResultsRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   app.get('/:id/results', async (c) => {
@@ -29,8 +29,8 @@ export function mountResultsRoutes(app: Hono<{ Bindings: Env; Variables: Session
 
     if (session.status === 'live') {
       // Live: pull current snapshot from the DO.
-      const stub = await doStub(c.env, id)
-      const snap = await stub.fetch('https://do.internal/state')
+      const room = await getSessionRoomStub(c.env, id)
+      const snap = await room.fetch('https://do.internal/state')
       const body = (await snap.json().catch(() => null)) as
         | { ok: true; data: { counts: Record<string, number>; voterCount: number } }
         | null

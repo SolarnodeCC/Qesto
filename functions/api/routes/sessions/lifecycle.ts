@@ -9,7 +9,7 @@ import {
   fetchQuestions,
   questionToLive,
   postDO,
-  doStub,
+  getSessionRoomStub,
   recordSprint19JourneyEvent,
   precomputeInsights,
 } from './shared'
@@ -262,8 +262,8 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       )
     }
     const session = liveClose.session
-    const stub = await doStub(c.env, id)
-    const doRes = await stub.fetch('https://do.internal/close', { method: 'POST' })
+    const room = await getSessionRoomStub(c.env, id)
+    const doRes = await room.fetch('https://do.internal/close', { method: 'POST' })
     const parsed = (await doRes.json().catch(() => null)) as
       | {
           ok: true
@@ -481,8 +481,8 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
 
     // Notify DO to update its internal state (if it exists)
     try {
-      const stub = await doStub(c.env, id)
-      await stub.fetch('https://do.internal/transition-to-live', { method: 'POST' })
+      const room = await getSessionRoomStub(c.env, id)
+      await room.fetch('https://do.internal/transition-to-live', { method: 'POST' })
     } catch {
     }
 

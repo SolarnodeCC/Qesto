@@ -242,14 +242,14 @@ export function questionToLive(q: Question): LiveQuestion {
   return { id: q.id, kind: q.kind, prompt: q.prompt, options: q.options }
 }
 
-export async function doStub(env: Env, sessionId: string): Promise<DurableObjectStub> {
+export async function getSessionRoomStub(env: Env, sessionId: string): Promise<DurableObjectStub> {
   const id = env.SESSION_ROOM.idFromName(sessionId)
   return env.SESSION_ROOM.get(id)
 }
 
 export async function postDO(env: Env, sessionId: string, path: string, body: unknown): Promise<Response> {
-  const stub = await doStub(env, sessionId)
-  return stub.fetch(`https://do.internal${path}`, {
+  const room = await getSessionRoomStub(env, sessionId)
+  return room.fetch(`https://do.internal${path}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),

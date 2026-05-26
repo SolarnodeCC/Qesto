@@ -59,7 +59,7 @@ export async function recordSpan<T>(
 
 /**
  * Non-throwing variant — useful when the caller wants to branch on the result
- * without try/catch (e.g. DO fetch with a user-facing fallback).
+ * without try/catch (e.g. DO fetch with a user-facing default response).
  */
 export async function recordSpanSafe<T>(
   name: string,

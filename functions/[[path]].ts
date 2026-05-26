@@ -8,5 +8,12 @@ export const onRequest: PagesFunction<Env> = (context) => {
   if (!url.pathname.startsWith('/api/')) {
     return context.next()
   }
-  return app.fetch(context.request, context.env, context as unknown as ExecutionContext)
+  const waitUntil = (context as unknown as { waitUntil?: (promise: Promise<unknown>) => void }).waitUntil
+  const passThroughOnException = (context as unknown as { passThroughOnException?: () => void }).passThroughOnException
+  const exec: ExecutionContext = {
+    waitUntil: typeof waitUntil === 'function' ? waitUntil.bind(context) : () => {},
+    passThroughOnException: typeof passThroughOnException === 'function' ? passThroughOnException.bind(context) : () => {},
+    props: {},
+  }
+  return app.fetch(context.request, context.env, exec)
 }
