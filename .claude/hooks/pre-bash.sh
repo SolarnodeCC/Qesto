@@ -36,14 +36,16 @@ if echo "$CMD" | grep -qE "rm\s+-rf(\s+--)?\s+.*\b(src|functions|worker|tests|\.
   exit 1
 fi
 
-# Block skipping git hooks — explicit pattern only
-if echo "$CMD" | grep -qE "git\s+(commit|rebase|push).*--no-verify"; then
+# Block skipping git hooks — explicit pattern only (detects, does not run)
+# jankurai:allow git-bad-behavior reason=safety-gate-detects-no-verify expires=never
+if echo "$CMD" | grep -qE 'git[[:space:]]+(commit|rebase|push)[[:space:]].*--no-verify'; then
   echo "BLOCKED: Do not skip git hooks (--no-verify). Fix the underlying issue instead." >&2
   exit 1
 fi
 
-# Block destructive working tree mutations
-if echo "$CMD" | grep -qE "git reset --hard"; then
+# Block destructive working tree mutations (detects bare reset without path list)
+# jankurai:allow git-bad-behavior reason=safety-gate-blocks-bare-reset-hard expires=never
+if echo "$CMD" | grep -qE 'git[[:space:]]+reset[[:space:]]+--hard([[:space:]]|$)'; then
   echo "BLOCKED: Destructive working tree reset detected. Use safer alternatives:" >&2
   echo "  • To discard all changes: git stash" >&2
   echo "  • To restore specific files: git checkout HEAD -- path/to/file" >&2

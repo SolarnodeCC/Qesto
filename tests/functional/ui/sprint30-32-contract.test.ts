@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 describe('Sprint 30-32 enterprise release contract', () => {
   it('keeps admin engagement analytics aggregate and export-safe', () => {
-    const adminRoutes = readFileSync('functions/api/routes/admin.ts', 'utf8')
+    const adminRoutes = readFileSync('functions/api/routes/admin/platform-routes.ts', 'utf8')
     const analyticsTab = readFileSync('src/components/admin/AdminAnalyticsTab.tsx', 'utf8')
 
     expect(adminRoutes).toContain('energizer_activations')

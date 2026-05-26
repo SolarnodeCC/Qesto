@@ -1,4 +1,5 @@
 # Qesto development toolchain
+# Canonical proof lanes: setup · check · test · verify · fast · score · security
 # Run: just <target>
 
 set shell := ["bash", "-c"]
@@ -7,58 +8,43 @@ set shell := ["bash", "-c"]
 doctor:
     bash scripts/ci-doctor.sh
 
-# Setup development environment
+# One-command setup (deps + git hooks)
 setup:
-    #!/bin/bash
-    set -e
-    echo "Installing dependencies..."
     npm ci
-    echo "Configuring git hooks..."
     git config core.hooksPath ops/git-hooks
-    echo "Setup complete. Run 'just doctor' to verify environment."
+
+# Fast typecheck + unit tests (pre-commit default)
+check:
+    npm run typecheck
+    npm run check:contracts
+    npm test
+
+# Unit tests only
+test:
+    npm test
+
+# Narrow agent iteration lane (typecheck + contracts, no full test suite)
+fast:
+    npm run typecheck
+    npm run check:contracts
+
+# Full verification: quality gates + build
+verify:
+    bash ops/ci/quality-gates.sh
+    npm run build
+
+# Jankurai repo score (JSON + Markdown artifacts)
+score:
+    bash ops/ci/jankurai.sh
 
 # Pre-push quality gates (type check + test)
 quality-gates:
     bash ops/ci/quality-gates.sh
 
-# Run test suite (local)
-test:
-    #!/bin/bash
-    set -e
-    echo "Running unit tests..."
-    npm test -- --run
-    echo "Tests passed."
-
-# Fast verification (type check + build, skip tests)
-fast: quality-gates
-    #!/bin/bash
-    set -e
-    echo "Building..."
-    npm run build
-    echo "Fast verification complete."
-
-# Full CI simulation: quality gates + audit + build
-verify: quality-gates
-    #!/bin/bash
-    set -e
-    mkdir -p agent
-    npm list -g jankurai || npm install -g jankurai
-    echo "Running jankurai audit..."
-    jankurai . --json agent/repo-score.json --md agent/repo-score.md || true
-    echo "Building..."
-    npm run build
-    echo "Full verification complete."
-
-# Security audit: npm + jankurai
+# Security audit lane
 security:
-    #!/bin/bash
-    set -e
-    echo "Security checks..."
-    npm audit --audit-level=moderate || true
-    mkdir -p agent
-    npm list -g jankurai || npm install -g jankurai
-    echo "Running jankurai security audit..."
-    jankurai . --json agent/repo-score.json --md agent/repo-score.md || true
+    bash ops/ci/secret-scan.sh
+    bash ops/ci/supply-chain.sh
 
 # Run dev server (frontend only)
 dev-frontend:
@@ -68,13 +54,8 @@ dev-frontend:
 dev-stack:
     wrangler pages dev
 
-# Format code (if available)
-fmt:
-    npm run fmt --if-present || echo "Formatter not configured"
-
 # Clean build artifacts
 clean:
-    rm -rf dist/ node_modules/.vite/ .cloudflare/ agent/
+    rm -rf dist/ node_modules/.vite/ .cloudflare/ agent/ target/
 
-# Default target
-default: doctor
+default: check

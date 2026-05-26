@@ -10,6 +10,7 @@ report_lane_start "secret-scan"
 mkdir -p target/security
 
 PATTERNS=(
+  'eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+'
   'sk_live_[a-zA-Z0-9]+'
   'sk_test_[a-zA-Z0-9]+'
   'ANTHROPIC_AUTH_TOKEN='
@@ -25,12 +26,13 @@ for pattern in "${PATTERNS[@]}"; do
     ':!target/' \
     ':!node_modules/' \
     ':!dist/' \
+    ':!ops/ci/secret-scan.sh' \
     ':!knowledge-base/' \
     ':!tests/' \
     ':!docs/' \
     ':!.dev.vars.example' \
     ':!package.json' \
-    ':!.github/SECURITY_INCIDENT.md' \
+    ':!.claude/settings.local.json.example' \
     ':!REMEDIATION_SUMMARY.md' \
     ':!SECURITY_AUDIT_FINDINGS.md' 2>/dev/null; then
     FOUND=1

@@ -9,10 +9,14 @@
 - Security incidents: `.github/SECURITY_INCIDENT.md`
 
 ## Release process
-1. `npm run verify` — typecheck, unit tests, build (see root `justfile` `verify` for full audit)
-2. `npm run check:rc` — RC gate (i18n, tokens, a11y, build)
+1. `just verify` — typecheck, unit tests, build (see `docs/testing.md`)
+2. `just check` — RC gate subset: `npm run check:rc`
 3. `npm run build && npm run deploy:frontend` — Pages static assets
 4. `npm run deploy:api` — API worker (requires Cloudflare credentials)
+
+## Changelog
+- Product releases: `knowledge-base/product/releases/ARCHIVED_SPRINTS.md`
+- Version source: `package.json` `version` field
 
 ## CI evidence
 - `.github/workflows/ci.yml` — quality gates + contract drift + audit artifacts
