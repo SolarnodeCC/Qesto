@@ -8,6 +8,7 @@ import type { Env } from '../types'
 import { embedAndFindSimilarDocuments } from './help-vectorize'
 import { getActivePrompt } from './help-prompts'
 import { safeLogContext } from './log'
+import { sleep, withTimeout } from './shared/async'
 
 export class HelpAIError extends Error {
   constructor(message: string) {
@@ -32,25 +33,6 @@ const AI_TIMEOUT_MS = 20_000
 const RETRY_DELAYS_MS = [200, 400] as const
 const MAX_TOKENS = 512
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  label: string,
-): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${label} timed out after ${timeoutMs}ms`)), timeoutMs)
-  })
-  try {
-    return await Promise.race([promise, timeout])
-  } finally {
-    if (timer) clearTimeout(timer)
-  }
-}
 
 export interface HelpDocument {
   id: string
