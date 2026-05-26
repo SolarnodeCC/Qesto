@@ -77,7 +77,8 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 ### A06 — Vulnerable Components
 ```
 □ npm audit — no high/critical vulnerabilities
-□ Stripe SDK on latest stable version
+□ Stripe API: v1 REST endpoint pinned (see functions/api/routes/billing.ts:21)
+□ All external service calls use Circuit Breaker pattern (see functions/api/lib/resilience/circuit-breaker.ts)
 ```
 
 ### A07 — Authentication Failures

@@ -42,9 +42,9 @@ if echo "$CMD" | grep -qE "git\s+(commit|rebase|push).*--no-verify"; then
   exit 1
 fi
 
-# Block git reset --hard completely — use safer alternatives
+# Block destructive working tree mutations
 if echo "$CMD" | grep -qE "git reset --hard"; then
-  echo "BLOCKED: git reset --hard is destructive. Use safer alternatives:" >&2
+  echo "BLOCKED: Destructive working tree reset detected. Use safer alternatives:" >&2
   echo "  • To discard all changes: git stash" >&2
   echo "  • To restore specific files: git checkout HEAD -- path/to/file" >&2
   echo "  • To undo commits: git revert <commit>" >&2
