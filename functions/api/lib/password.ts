@@ -2,6 +2,8 @@
 // Runs natively on Cloudflare Workers and Node 20+ (Vitest).
 // Format: `${saltHex}:${hashHex}` (16-byte salt, 32-byte key, 100k iterations)
 
+import { timingSafeEqual } from './shared/crypto'
+
 const ITERATIONS = 100_000
 const KEY_LENGTH = 256 // bits
 const SALT_BYTES = 16
@@ -16,12 +18,6 @@ function fromHex(hex: string): Uint8Array {
   return out
 }
 
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false
-  let diff = 0
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i)
-  return diff === 0
-}
 
 async function pbkdf2(password: string, salt: Uint8Array): Promise<Uint8Array> {
   const keyMaterial = await crypto.subtle.importKey(

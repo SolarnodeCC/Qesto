@@ -1,0 +1,10 @@
+#!/bin/bash
+# ops/git-hooks/pre-push — Mandatory pre-push verification gate
+# Runs quality gates before allowing push to any branch.
+# Install: git config core.hooksPath ops/git-hooks
+
+set -e
+
+bash ops/ci/quality-gates.sh
+
+exit 0

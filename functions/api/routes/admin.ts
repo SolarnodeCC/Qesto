@@ -1,38 +1,27 @@
 // Admin routes — Platform management (Phase 8)
 //
-// Routes:
-//   GET  /api/admin/metrics/live         — KV snapshot for last 5 min
-//   GET  /api/admin/metrics/historical   — D1 metrics_summary (5-min buckets)
-//   POST /api/admin/metrics/export       — stream D1 metrics_summary as CSV
-//   GET  /api/admin/audit                — query audit events
-//   GET  /api/admin/kpis                 — platform-wide KPI totals
-//   GET  /api/admin/users                — list all users (search, paginate)
-//   POST /api/admin/users                — create user account
-//   PATCH /api/admin/users/:id           — update user (plan, name, role)
-//   POST /api/admin/users/:id/suspend    — suspend user account
-//   POST /api/admin/users/:id/restore    — restore suspended account
-//   GET  /api/admin/ops/summary          — service health + reliability + issue pulse
-//   GET  /api/admin/analytics            — time-series, breakdowns, cost
-//   GET  /api/admin/engagement/export.csv — GAM-06 gamification metrics CSV
-//   GET  /api/admin/sprint19-baseline    — AI wizard + Launchpad KPI baseline
-//   POST /api/admin/kb-sync              — Phase 1 bulk vector sync to Vectorize (ADR-040)
-//   POST /api/admin/kb-sync-delete       — Phase 5 vector deletion for deleted KB files
+// Routes organized by module:
+//   Metrics: GET /api/admin/metrics/* — KV/D1 metrics + export
+//   Users: GET/POST/PATCH /api/admin/users/* — user management
+//   Audit: GET /api/admin/audit* — audit queries + forensic CSV
+//   KV Sync: POST /api/admin/kb-sync* — knowledge base vectorization
+//   Analytics: GET /api/admin/analytics, /kpis, /ops/summary — platform metrics
+//   Performance: GET /api/admin/perf/*, /engagement/* — performance + engagement analytics
+//   Sprint 19: GET /api/admin/sprint19-baseline — AI wizard baseline metrics
 //
 // Auth: authMiddleware + adminMiddleware (owner | admin role), except /kb-sync* (uses x-admin-key header).
 
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
-import { queryAuditEvents, recordAuditEvent } from '../lib/audit'
-import { ulid } from '../lib/ulid'
 import type { Env } from '../types'
-import { readKvJson } from '../lib/kv'
 import { registerHelpAdminRoutes } from './admin/help'
-import { validateBody } from '../lib/validate'
 import { buildEngagementCsv } from '../lib/admin-engagement-csv'
 import { buildEngagementSummary, type EnergizerKindMetric } from '../lib/admin-engagement-summary'
-import { AdminMetricsExportSchema, AdminCreateUserSchema, AdminPatchUserSchema } from '../lib/validation'
-import { safeLogContext } from '../lib/log'
+import { mountMetricsRoutes, aggregateLiveMetrics } from './admin/metrics'
+import { mountUserRoutes } from './admin/users'
+import { mountAuditRoutes } from './admin/audit'
+import { mountKbSyncRoutes } from './admin/kb-sync'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -176,358 +165,18 @@ export type Sprint19Baseline = {
   measurement_gaps: string[]
 }
 
-export type LiveMetrics = {
-  active_sessions: number
-  total_participants: number
-  revenue_24h_cents: number
-  p95_latency_ms: number
-  error_rate: number
-  reconnect_rate: number
-  energizer_activations: number
-  energizer_participants: number
-  energizer_completions: number
-  leaderboard_participants: number
-  badges_awarded: number
-  refresh_ts: number
-  stub?: boolean
-}
-
-export type HistoricalBucket = {
-  bucket_ts: number  // Unix ms, start of 5-min window
-  route: string | null
-  request_count: number
-  error_count: number
-  p50_ms: number
-  p95_ms: number
-  p99_ms: number
-}
-
-type MetricsSummaryRow = {
-  bucket_ts: number
-  route: string | null
-  request_count: number
-  error_count: number
-  p50_ms: number
-  p95_ms: number
-  p99_ms: number
-}
-
-// ─── KV key helpers (matches Step 1 observability schema) ─────────────────────
-
-/**
- * Aggregate KV snapshot buckets for the last `windowMinutes` minutes.
- * Key pattern: `metrics:live:<YYYYMMDDTHHMM>` (1-min buckets).
- */
-async function aggregateLiveMetrics(
-  kv: KVNamespace,
-  windowMinutes = 5,
-): Promise<Omit<LiveMetrics, 'refresh_ts' | 'stub'>> {
-  const now = Date.now()
-  const samples: Array<{
-    active_sessions?: number
-    total_participants?: number
-    revenue_24h_cents?: number
-    p95_latency_ms?: number
-    error_count?: number
-    request_count?: number
-    reconnect_count?: number
-    connection_count?: number
-    energizer_activations?: number
-    energizer_participants?: number
-    energizer_completions?: number
-    leaderboard_participants?: number
-    badges_awarded?: number
-  }> = []
-
-  for (let i = 0; i < windowMinutes; i++) {
-    const bucketMs = now - i * 60_000
-    const d = new Date(bucketMs)
-    const key = `metrics:live:${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}T${String(d.getUTCHours()).padStart(2, '0')}${String(d.getUTCMinutes()).padStart(2, '0')}`
-    const bucket = await readKvJson<{
-      active_sessions?: number
-      total_participants?: number
-      revenue_24h_cents?: number
-      p95_latency_ms?: number
-      error_count?: number
-      request_count?: number
-      reconnect_count?: number
-      connection_count?: number
-      energizer_activations?: number
-      energizer_participants?: number
-      energizer_completions?: number
-      leaderboard_participants?: number
-      badges_awarded?: number
-    }>(kv, key)
-    if (bucket) samples.push(bucket)
-  }
-
-  if (samples.length === 0) {
-    return {
-      active_sessions: 0,
-      total_participants: 0,
-      revenue_24h_cents: 0,
-      p95_latency_ms: 0,
-      error_rate: 0,
-      reconnect_rate: 0,
-      energizer_activations: 0,
-      energizer_participants: 0,
-      energizer_completions: 0,
-      leaderboard_participants: 0,
-      badges_awarded: 0,
-    }
-  }
-
-  // Most-recent wins for point-in-time fields; sum for counts.
-  const latest = samples[0]
-  const totalRequests = samples.reduce((s, b) => s + (b.request_count ?? 0), 0)
-  const totalErrors = samples.reduce((s, b) => s + (b.error_count ?? 0), 0)
-  const totalConnections = samples.reduce((s, b) => s + (b.connection_count ?? 0), 0)
-  const totalReconnects = samples.reduce((s, b) => s + (b.reconnect_count ?? 0), 0)
-
-  return {
-    active_sessions: latest.active_sessions ?? 0,
-    total_participants: latest.total_participants ?? 0,
-    revenue_24h_cents: latest.revenue_24h_cents ?? 0,
-    p95_latency_ms: latest.p95_latency_ms ?? 0,
-    error_rate: totalRequests > 0 ? totalErrors / totalRequests : 0,
-    reconnect_rate: totalConnections > 0 ? totalReconnects / totalConnections : 0,
-    energizer_activations: samples.reduce((s, b) => s + (b.energizer_activations ?? 0), 0),
-    energizer_participants: samples.reduce((s, b) => s + (b.energizer_participants ?? 0), 0),
-    energizer_completions: samples.reduce((s, b) => s + (b.energizer_completions ?? 0), 0),
-    leaderboard_participants: samples.reduce((s, b) => s + (b.leaderboard_participants ?? 0), 0),
-    badges_awarded: samples.reduce((s, b) => s + (b.badges_awarded ?? 0), 0),
-  }
-}
-
-// ─── CSV serialisation ────────────────────────────────────────────────────────
-
-const CSV_HEADERS = ['bucket_ts', 'route', 'request_count', 'error_count', 'p50_ms', 'p95_ms', 'p99_ms'] as const
-
-function rowToCsv(row: MetricsSummaryRow): string {
-  const escape = (v: string | number | null): string => {
-    if (v === null || v === undefined) return ''
-    const s = String(v)
-    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-      return `"${s.replace(/"/g, '""')}"`
-    }
-    return s
-  }
-  return CSV_HEADERS.map((h) => escape(row[h] as string | number | null)).join(',')
-}
-
 // ─── Route mount ──────────────────────────────────────────────────────────────
 
 export function mountAdminRoutes(parent: any) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
 
-  // Register help admin routes (review queue, prompt versions)
   registerHelpAdminRoutes(app)
-
-  // ── GET /api/admin/metrics/live ──────────────────────────────────────────────
-  // Returns a KV snapshot for the last 5 minutes.
-  // p95 target: < 200 ms (KV reads are ~1-5 ms at edge).
-  app.get('/metrics/live', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-
-    // METRICS_KV may not exist until Step 1 ships.  Degrade gracefully.
-    const kv = (c.env as unknown as Record<string, KVNamespace | undefined>)['METRICS_KV']
-    if (!kv) {
-      const stub: LiveMetrics = {
-        active_sessions: 0,
-        total_participants: 0,
-        revenue_24h_cents: 0,
-        p95_latency_ms: 0,
-        error_rate: 0,
-        reconnect_rate: 0,
-        energizer_activations: 0,
-        energizer_participants: 0,
-        energizer_completions: 0,
-        leaderboard_participants: 0,
-        badges_awarded: 0,
-        refresh_ts: Date.now(),
-        stub: true,
-      }
-      return c.json({ ok: true, data: stub, trace_id }, 200)
-    }
-
-    const aggregated = await aggregateLiveMetrics(kv)
-    const live: LiveMetrics = {
-      ...aggregated,
-      refresh_ts: Date.now(),
-    }
-
-    return c.json({ ok: true, data: live, trace_id }, 200)
-  })
-
-  // ── GET /api/admin/metrics/historical ─────────────────────────────────────
-  // Query D1 metrics_summary with 5-min granularity.
-  // Uses indexes: idx_metrics_ts, idx_metrics_route.
-  // p95 target: < 1 s.
-  app.get('/metrics/historical', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-    const startParam = c.req.query('start')
-    const endParam = c.req.query('end')
-    const routeParam = c.req.query('route') ?? null
-
-    if (!startParam || !endParam) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'start and end query params are required (ISO 8601)' },
-          trace_id,
-        },
-        400,
-      )
-    }
-
-    const startMs = Date.parse(startParam)
-    const endMs = Date.parse(endParam)
-    if (isNaN(startMs) || isNaN(endMs) || startMs >= endMs) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid date range — start must be before end' },
-          trace_id,
-        },
-        400,
-      )
-    }
-
-    // Cap range to 30 days to keep query bounded.
-    const MAX_RANGE_MS = 30 * 24 * 60 * 60 * 1000
-    if (endMs - startMs > MAX_RANGE_MS) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Date range must not exceed 30 days' },
-          trace_id,
-        },
-        400,
-      )
-    }
-
-    
-    try {
-      let stmt: D1PreparedStatement
-      if (routeParam) {
-        // idx_metrics_route covers (route, bucket_ts)
-        stmt = c.env.DB.prepare(
-          `SELECT bucket_ts, route, request_count, error_count, p50_ms, p95_ms, p99_ms
-           FROM metrics_summary
-           WHERE bucket_ts >= ?1 AND bucket_ts <= ?2 AND route = ?3
-           ORDER BY bucket_ts ASC
-           LIMIT 8641`,
-        ).bind(startMs, endMs, routeParam)
-      } else {
-        // idx_metrics_ts covers (bucket_ts)
-        stmt = c.env.DB.prepare(
-          `SELECT bucket_ts, route, request_count, error_count, p50_ms, p95_ms, p99_ms
-           FROM metrics_summary
-           WHERE bucket_ts >= ?1 AND bucket_ts <= ?2
-           ORDER BY bucket_ts ASC
-           LIMIT 8641`,
-        ).bind(startMs, endMs)
-      }
-
-      const { results } = await stmt.all<MetricsSummaryRow>()
-      return c.json({ ok: true, data: results, trace_id }, 200)
-    } catch (err) {
-      // Degrade gracefully if table or column doesn't exist yet (Step 1 not shipped).
-      const msg = (err as Error).message ?? ''
-      if (msg.includes('no such table') || msg.includes('no such column')) {
-        return c.json({ ok: true, data: [], stub: true, trace_id }, 200)
-      }
-      throw err
-    }
-  })
-
-  // ── POST /api/admin/metrics/export ──────────────────────────────────────────
-  // Streams D1 metrics_summary as CSV.  Max 10 000 rows, <5 MB.
-  app.post('/metrics/export', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-
-    const validated = await validateBody(c, AdminMetricsExportSchema)
-    if ('error' in validated) return validated.error
-    const { start: startParam, end: endParam } = validated.data
-
-    const startMs = Date.parse(startParam)
-    const endMs = Date.parse(endParam)
-    if (startMs >= endMs) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'start must be before end' }, trace_id },
-        400,
-      )
-    }
-
-    const MAX_ROWS = 10_000
-
-    try {
-      const { results } = await c.env.DB.prepare(
-        `SELECT bucket_ts, route, request_count, error_count, p50_ms, p95_ms, p99_ms
-         FROM metrics_summary
-         WHERE bucket_ts >= ?1 AND bucket_ts <= ?2
-         ORDER BY bucket_ts ASC
-         LIMIT ?3`,
-      )
-        .bind(startMs, endMs, MAX_ROWS)
-        .all<MetricsSummaryRow>()
-
-      const lines = [CSV_HEADERS.join(','), ...results.map(rowToCsv)]
-      const csv = lines.join('\r\n')
-
-      const filename = `qesto-metrics-${new Date(startMs).toISOString().slice(0, 10)}-to-${new Date(endMs).toISOString().slice(0, 10)}.csv`
-
-      return new Response(csv, {
-        status: 200,
-        headers: {
-          'content-type': 'text/csv; charset=utf-8',
-          'content-disposition': `attachment; filename="${filename}"`,
-          'x-trace-id': trace_id,
-          'x-row-count': String(results.length),
-        },
-      })
-    } catch (err) {
-      const msg = (err as Error).message ?? ''
-      if (msg.includes('no such table') || msg.includes('no such column')) {
-        
-        const csv = CSV_HEADERS.join(',') + '\r\n'
-        return new Response(csv, {
-          status: 200,
-          headers: {
-            'content-type': 'text/csv; charset=utf-8',
-            'content-disposition': 'attachment; filename="qesto-metrics-stub.csv"',
-            'x-trace-id': trace_id,
-            'x-row-count': '0',
-            'x-stub': 'true',
-          },
-        })
-      }
-      throw err
-    }
-  })
-
-  // ── GET /api/admin/audit ────────────────────────────────────────────────────
-  // Query audit events with filtering by actor, action, date range.
-  // p95 target: < 1 s.
-  app.get('/audit', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-    const limit = c.req.query('limit') ? parseInt(c.req.query('limit')!) : 100
-    const offset = c.req.query('offset') ? parseInt(c.req.query('offset')!) : 0
-
-    const opts: any = { limit, offset }
-    if (c.req.query('actor_id')) opts.actor_id = c.req.query('actor_id')
-    if (c.req.query('action')) opts.action = c.req.query('action')
-    if (c.req.query('subject_type')) opts.subject_type = c.req.query('subject_type')
-    if (c.req.query('since_ts')) opts.since_ts = parseInt(c.req.query('since_ts')!)
-    if (c.req.query('until_ts')) opts.until_ts = parseInt(c.req.query('until_ts')!)
-
-    const result = await queryAuditEvents(c, opts)
-
-    return c.json({ ok: true, data: result, trace_id }, 200)
-  })
+  mountMetricsRoutes(app)
+  mountUserRoutes(app)
+  mountAuditRoutes(app)
+  mountKbSyncRoutes(app)
 
   // ── GET /api/admin/kpis ─────────────────────────────────────────────────────
-  // Platform-wide KPI totals — user count, session counts, cost estimate.
   app.get('/kpis', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const todayStart = new Date()
@@ -536,7 +185,6 @@ export function mountAdminRoutes(parent: any) {
     monthStart.setUTCDate(1)
     monthStart.setUTCHours(0, 0, 0, 0)
 
-    // Live sessions from KV (best-effort)
     let liveSessions = 0
     const kv = (c.env as unknown as Record<string, KVNamespace | undefined>)['METRICS_KV']
     if (kv) {
@@ -563,7 +211,6 @@ export function mountAdminRoutes(parent: any) {
       }
       return c.json({ ok: true, data: kpis, trace_id }, 200)
     } catch {
-      // Degrade gracefully if DB not ready
       const stub: PlatformKpis = {
         live_sessions: liveSessions,
         total_users: 0,
@@ -576,250 +223,19 @@ export function mountAdminRoutes(parent: any) {
     }
   })
 
-  // ── GET /api/admin/users ─────────────────────────────────────────────────────
-  // List all users with optional search + pagination. Joins user_roles for admin_role.
-  app.get('/users', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-    const search = c.req.query('search') ?? ''
-    const limit = Math.min(parseInt(c.req.query('limit') ?? '50'), 100)
-    const offset = parseInt(c.req.query('offset') ?? '0')
-
-    try {
-      const searchLike = search ? `%${search}%` : null
-      const baseWhere = searchLike
-        ? 'WHERE (u.email LIKE ?3 OR u.display_name LIKE ?3)'
-        : ''
-
-      const sql = `
-        SELECT u.id, u.email, u.display_name, u.plan, u.created_at, u.last_login_at, u.suspended_at,
-               ur.role as admin_role
-        FROM users u
-        LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role IN ('owner', 'admin')
-        ${baseWhere}
-        ORDER BY u.created_at DESC
-        LIMIT ?1 OFFSET ?2
-      `
-      const countSql = `
-        SELECT COUNT(*) as n FROM users u ${baseWhere}
-      `
-
-      let stmt: D1PreparedStatement
-      let countStmt: D1PreparedStatement
-      if (searchLike) {
-        stmt = c.env.DB.prepare(sql).bind(limit, offset, searchLike)
-        countStmt = c.env.DB.prepare(countSql).bind(searchLike)
-      } else {
-        stmt = c.env.DB.prepare(sql).bind(limit, offset)
-        countStmt = c.env.DB.prepare(countSql)
-      }
-
-      const [{ results }, countRow] = await Promise.all([
-        stmt.all<AdminUser>(),
-        countStmt.first<{ n: number }>(),
-      ])
-
-      return c.json({ ok: true, data: { users: results, total: countRow?.n ?? 0 }, trace_id }, 200)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch users'
-      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
-    }
-  })
-
-  // ── POST /api/admin/users ────────────────────────────────────────────────────
-  // Create a new user account.
-  app.post('/users', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-
-    const validated = await validateBody(c, AdminCreateUserSchema)
-    if ('error' in validated) return validated.error
-    const { email: rawEmail, display_name, plan = 'free', admin_role } = validated.data
-
-    const id = ulid()
-    const now = Date.now()
-
-    try {
-      await c.env.DB.prepare(
-        'INSERT INTO users (id, email, display_name, created_at, plan) VALUES (?1, ?2, ?3, ?4, ?5)',
-      ).bind(id, rawEmail.toLowerCase().trim(), display_name ?? null, now, plan).run()
-
-      let assignedAdminRole: AdminUser['admin_role'] = null
-      if (admin_role === 'admin' || admin_role === 'owner') {
-        await c.env.DB.prepare(
-          'INSERT INTO user_roles (id, user_id, role, created_at) VALUES (?1, ?2, ?3, ?4)',
-        ).bind(ulid(), id, admin_role, now).run()
-        assignedAdminRole = admin_role
-      }
-
-      const user: AdminUser = {
-        id,
-        email: rawEmail.toLowerCase().trim(),
-        display_name: display_name ?? null,
-        plan: plan as AdminUser['plan'],
-        created_at: now,
-        last_login_at: null,
-        suspended_at: null,
-        admin_role: assignedAdminRole,
-      }
-
-      await recordAuditEvent(c, {
-        action: 'user.create',
-        subject_type: 'user',
-        subject_id: id,
-        after_snapshot: user,
-        trace_id,
-      })
-
-      return c.json({ ok: true, data: user, trace_id }, 201)
-    } catch (err) {
-      const msg = (err as Error).message ?? ''
-      if (msg.includes('UNIQUE constraint')) {
-        return c.json({ ok: false, error: { code: 'conflict', message: 'Email already exists' }, trace_id }, 409)
-      }
-      throw err
-    }
-  })
-
-  // ── PATCH /api/admin/users/:id ───────────────────────────────────────────────
-  // Update user plan, display_name, or admin_role.
-  app.patch('/users/:id', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-    const userId = c.req.param('id')
-
-    const validated = await validateBody(c, AdminPatchUserSchema)
-    if ('error' in validated) return validated.error
-    const body = validated.data
-
-    const existing = await c.env.DB.prepare(
-      'SELECT id, email, display_name, plan, created_at, last_login_at, suspended_at FROM users WHERE id = ?1',
-    ).bind(userId).first<Omit<AdminUser, 'admin_role'>>()
-
-    if (!existing) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
-    }
-
-    const updates: string[] = []
-    const values: (string | number | null)[] = []
-    let paramIdx = 1
-
-    if (body.display_name !== undefined) {
-      updates.push(`display_name = ?${paramIdx++}`)
-      values.push(body.display_name ?? null)
-    }
-    if (body.plan !== undefined && ['free', 'starter', 'team'].includes(body.plan)) {
-      updates.push(`plan = ?${paramIdx++}`)
-      values.push(body.plan)
-    }
-
-    if (updates.length > 0) {
-      values.push(userId)
-      await c.env.DB.prepare(
-        `UPDATE users SET ${updates.join(', ')} WHERE id = ?${paramIdx}`,
-      ).bind(...values).run()
-    }
-
-    // Handle admin_role change
-    if ('admin_role' in body) {
-      if (body.admin_role === null) {
-        await c.env.DB.prepare(
-          "DELETE FROM user_roles WHERE user_id = ?1 AND role IN ('owner', 'admin')",
-        ).bind(userId).run()
-      } else if (body.admin_role === 'admin' || body.admin_role === 'owner') {
-        await c.env.DB.prepare(
-          "INSERT INTO user_roles (id, user_id, role, created_at) VALUES (?1, ?2, ?3, ?4) ON CONFLICT(user_id, role) DO NOTHING",
-        ).bind(ulid(), userId, body.admin_role, Date.now()).run()
-      }
-
-      await recordAuditEvent(c, {
-        action: 'user.role_change',
-        subject_type: 'user',
-        subject_id: userId,
-        before_snapshot: { admin_role: null },
-        after_snapshot: { admin_role: body.admin_role },
-        trace_id,
-      })
-    } else if (updates.length > 0) {
-      await recordAuditEvent(c, {
-        action: 'user.update',
-        subject_type: 'user',
-        subject_id: userId,
-        before_snapshot: existing,
-        after_snapshot: { ...existing, ...body },
-        trace_id,
-      })
-    }
-
-    const updated = await c.env.DB.prepare(
-      `SELECT u.id, u.email, u.display_name, u.plan, u.created_at, u.last_login_at, u.suspended_at,
-              ur.role as admin_role
-       FROM users u
-       LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role IN ('owner', 'admin')
-       WHERE u.id = ?1`,
-    ).bind(userId).first<AdminUser>()
-
-    return c.json({ ok: true, data: updated, trace_id }, 200)
-  })
-
-  // ── POST /api/admin/users/:id/suspend ────────────────────────────────────────
-  app.post('/users/:id/suspend', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-    const userId = c.req.param('id')
-    const now = Date.now()
-
-    const existing = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?1').bind(userId).first()
-    if (!existing) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
-    }
-
-    await c.env.DB.prepare('UPDATE users SET suspended_at = ?1 WHERE id = ?2').bind(now, userId).run()
-    await recordAuditEvent(c, {
-      action: 'user.suspend',
-      subject_type: 'user',
-      subject_id: userId,
-      after_snapshot: { suspended_at: now },
-      trace_id,
-    })
-
-    return c.json({ ok: true, data: { suspended_at: now }, trace_id }, 200)
-  })
-
-  // ── POST /api/admin/users/:id/restore ────────────────────────────────────────
-  app.post('/users/:id/restore', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-    const userId = c.req.param('id')
-
-    const existing = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?1').bind(userId).first()
-    if (!existing) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
-    }
-
-    await c.env.DB.prepare('UPDATE users SET suspended_at = NULL WHERE id = ?1').bind(userId).run()
-    await recordAuditEvent(c, {
-      action: 'user.restore',
-      subject_type: 'user',
-      subject_id: userId,
-      after_snapshot: { suspended_at: null },
-      trace_id,
-    })
-
-    return c.json({ ok: true, data: { suspended_at: null }, trace_id }, 200)
-  })
-
   // ── GET /api/admin/ops/summary ───────────────────────────────────────────────
-  // Service health probes + realtime reliability + issue pulse.
   app.get('/ops/summary', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const now = Date.now()
     const since24h = now - 24 * 60 * 60 * 1000
     const since1h = now - 60 * 60 * 1000
 
-    // Parallel service health probes
     const [d1Health, kvHealth, aiHealth] = await Promise.all([
       c.env.DB.prepare('SELECT 1').first().then(() => 'healthy' as ServiceStatus).catch(() => 'down' as ServiceStatus),
       c.env.SESSIONS_KV.get('__health_probe__').then(() => 'healthy' as ServiceStatus).catch(() => 'degraded' as ServiceStatus),
-      Promise.resolve<ServiceStatus>('healthy'), // Workers AI binding always present if configured
+      Promise.resolve<ServiceStatus>('healthy'),
     ])
 
-    // Realtime metrics from KV
     let wsErrorRate = 0
     let reconnectRate = 0
     let voteP95: number | null = null
@@ -833,7 +249,6 @@ export function mountAdminRoutes(parent: any) {
       voteP95 = agg.p95_latency_ms || null
     }
 
-    // SEV counts from recent metrics_summary — error rate thresholds
     let sev1 = 0; let sev2 = 0; let sev3 = 0
     try {
       const { results: sevRows } = await c.env.DB.prepare(
@@ -848,7 +263,6 @@ export function mountAdminRoutes(parent: any) {
       }
     } catch { /* metrics_summary may not exist yet */ }
 
-    // Issue pulse — recent audit event action counts (last 24h)
     let issues: Array<{ action: string; count: number }> = []
     try {
       const { results: issueRows } = await c.env.DB.prepare(
@@ -857,14 +271,12 @@ export function mountAdminRoutes(parent: any) {
       issues = issueRows
     } catch { /* audit_events may not exist yet */ }
 
-    // Overall status
     const worstService = [d1Health, kvHealth, aiHealth]
     const overallStatus: ServiceStatus =
       worstService.includes('down') ? 'down' :
       worstService.includes('degraded') || sev1 > 0 ? 'degraded' :
       'healthy'
 
-    // Optional time-series correlation (?timeseries=1)
     let correlation: HourlyCorrelation[] | undefined
     if (c.req.query('timeseries') === '1') {
       try {
@@ -924,7 +336,6 @@ export function mountAdminRoutes(parent: any) {
   })
 
   // ── GET /api/admin/analytics ─────────────────────────────────────────────────
-  // Comprehensive analytics: time-series, breakdowns, cost/usage.
   app.get('/analytics', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const now = Date.now()
@@ -978,7 +389,6 @@ export function mountAdminRoutes(parent: any) {
       }
       let badgeBreakdown: Array<{ kind: string; count: number }> = []
 
-      // Decisions per day derived from audit_events
       let decisionsPerDay: DailyBucket[] = []
       try {
         const { results: dpd } = await c.env.DB.prepare(
@@ -1093,7 +503,7 @@ export function mountAdminRoutes(parent: any) {
     }
   })
 
-  // ── GET /api/admin/perf/reporting (PERF-REPORTING-DASHBOARD-01) ────────────
+  // ── GET /api/admin/perf/reporting ────────────────────────────────────────────
   app.get('/perf/reporting', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const teamId = c.req.query('teamId')
@@ -1124,7 +534,7 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
-  // ── GET /api/admin/perf/sub100ms-proof (PERF-SUB100MS-PROOF-01) ───────────
+  // ── GET /api/admin/perf/sub100ms-proof ────────────────────────────────────
   app.get('/perf/sub100ms-proof', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const since = Date.now() - 7 * 24 * 60 * 60 * 1000
@@ -1161,7 +571,7 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
-  // ── GET /api/admin/analytics/activation-funnel (ANALYTICS-ACTIVATION-FUNNEL-01)
+  // ── GET /api/admin/analytics/activation-funnel ────────────────────────────
   app.get('/analytics/activation-funnel', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     await patchSprint19SchemaIfNeeded(c.env.DB)
@@ -1210,7 +620,7 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
-  // ── GET /api/admin/perf/latency-dashboard (ANALYTICS-LATENCY-DASHBOARD-01) ─
+  // ── GET /api/admin/perf/latency-dashboard ───────────────────────────────
   app.get('/perf/latency-dashboard', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const since = Date.now() - 24 * 60 * 60 * 1000
@@ -1239,7 +649,7 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
-  // ── GET /api/admin/engagement/summary (ADMIN-ENGAGEMENT-COMPLETE-01) ───────
+  // ── GET /api/admin/engagement/summary ─────────────────────────────────────
   app.get('/engagement/summary', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     let rows: EnergizerKindMetric[] = []
@@ -1274,7 +684,7 @@ export function mountAdminRoutes(parent: any) {
     return c.json({ ok: true, data: buildEngagementSummary(rows), trace_id })
   })
 
-  // ── GET /api/admin/engagement/export.csv (GAM-06 + ADMIN-EXPORT-ADV-01) ───
+  // ── GET /api/admin/engagement/export.csv ──────────────────────────────────
   app.get('/engagement/export.csv', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     let engagement = {
@@ -1315,53 +725,7 @@ export function mountAdminRoutes(parent: any) {
     })
   })
 
-  // ── GET /api/admin/audit/forensic.csv (AUDIT-EXPORT-FORENSIC-01) ─────────
-  app.get('/audit/forensic.csv', authMiddleware, adminMiddleware, async (c) => {
-    const trace_id = c.get('trace_id')
-    const limit = Math.min(5000, Math.max(1, Number(c.req.query('limit') ?? 1000)))
-    const rows = await c.env.DB.prepare(
-      `SELECT ts, actor_id, action, subject_type, subject_id, before_json, after_json
-       FROM audit_events ORDER BY ts DESC LIMIT ?1`,
-    )
-      .bind(limit)
-      .all<{
-        ts: number
-        actor_id: string
-        action: string
-        subject_type: string
-        subject_id: string
-        before_json: string | null
-        after_json: string | null
-      }>()
-    const header = 'ts,actor_id,action,subject_type,subject_id,before_json,after_json\n'
-    const body = (rows.results ?? [])
-      .map((r) =>
-        [
-          r.ts,
-          r.actor_id,
-          r.action,
-          r.subject_type,
-          r.subject_id,
-          JSON.stringify(r.before_json ?? ''),
-          JSON.stringify(r.after_json ?? ''),
-        ]
-          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-          .join(','),
-      )
-      .join('\n')
-    return new Response(header + body, {
-      headers: {
-        'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': 'attachment; filename="qesto-audit-forensic.csv"',
-        'X-Trace-Id': trace_id,
-      },
-    })
-  })
-
-  // ── GET /api/admin/sprint19-baseline ─────────────────────────────────────
-  // Sprint 20 measurement endpoint for the Sprint 19 AI wizard + Launchpad work.
-  // D1 provides durable baseline proxies; Analytics Engine/log-derived fields
-  // are returned as null with explicit gaps until the S20 evidence query is wired.
+  // ── GET /api/admin/sprint19-baseline ──────────────────────────────────────
   app.get('/sprint19-baseline', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     await patchSprint19SchemaIfNeeded(c.env.DB)
@@ -1453,221 +817,6 @@ export function mountAdminRoutes(parent: any) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to compute Sprint 19 baseline'
       return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
-    }
-  })
-
-  // POST /kb-sync — Phase 1 bulk vector sync to Vectorize.
-  // Admin-only endpoint (requires x-admin-key header matching KB_ADMIN_KEY secret).
-  // Accepts JSON array of { id, values: number[], metadata } vectors from embed-kb.ts.
-  // Uses Worker Vectorize binding (more reliable than REST API).
-  app.post('/kb-sync', async (c) => {
-    const traceId = c.get('trace_id')!
-    const adminKey = c.req.header('x-admin-key')
-    const expectedKey = c.env.KB_ADMIN_KEY
-
-    // Verify admin key
-    if (!adminKey || !expectedKey || adminKey !== expectedKey) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'unauthorized', message: 'x-admin-key header required and must match KB_ADMIN_KEY' },
-          trace_id: traceId,
-        },
-        401,
-      )
-    }
-
-    // Parse body
-    let vectors: unknown
-    try {
-      vectors = await c.req.json()
-    } catch {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'invalid_body', message: 'Body must be valid JSON array' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-
-    if (!Array.isArray(vectors)) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'invalid_body', message: 'Body must be an array of vectors' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-
-    // Filter and validate vector objects
-    const validVectors = vectors.filter(
-      (v): v is { id: string; values: number[]; metadata: Record<string, unknown> } =>
-        v && typeof v.id === 'string' && Array.isArray(v.values) && typeof v.metadata === 'object',
-    )
-
-    if (validVectors.length === 0) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'invalid_body', message: 'No valid vectors in payload' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-
-    try {
-      // Upsert to Vectorize using Worker binding
-      const batchSize = 100
-      let totalUpserted = 0
-
-      for (let i = 0; i < validVectors.length; i += batchSize) {
-        const batch = validVectors.slice(i, i + batchSize)
-        await c.env.KB_VECTORIZE.upsert(batch as VectorizeVector[])
-        totalUpserted += batch.length
-      }
-
-      return c.json(
-        {
-          ok: true,
-          data: {
-            message: 'Vectorize upsert complete',
-            vectors_upserted: totalUpserted,
-            batches: Math.ceil(totalUpserted / batchSize),
-          },
-          trace_id: traceId,
-        },
-        200,
-      )
-    } catch (err) {
-      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/vectorize-upsert', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'vectorize_error',
-            message: `Vectorize upsert failed: ${err instanceof Error ? err.message : 'unknown error'}`,
-          },
-          trace_id: traceId,
-        },
-        500,
-      )
-    }
-  })
-
-  // POST /kb-sync-delete — Phase 5 vector deletion for deleted KB files.
-  // Admin-only endpoint (requires x-admin-key header matching KB_ADMIN_KEY secret).
-  // Accepts JSON body with { vector_ids: string[] } array of vector IDs to delete.
-  app.post('/kb-sync-delete', async (c) => {
-    const traceId = c.get('trace_id')!
-    const adminKey = c.req.header('x-admin-key')
-    const expectedKey = c.env.KB_ADMIN_KEY
-
-    // Verify admin key
-    if (!adminKey || !expectedKey || adminKey !== expectedKey) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'unauthorized', message: 'x-admin-key header required and must match KB_ADMIN_KEY' },
-          trace_id: traceId,
-        },
-        401,
-      )
-    }
-
-    // Parse body
-    let payload: unknown
-    try {
-      payload = await c.req.json()
-    } catch {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'invalid_body', message: 'Body must be valid JSON' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-
-    if (!payload || typeof payload !== 'object' || !('vector_ids' in payload)) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'invalid_body', message: 'Body must contain vector_ids array' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-
-    const vectorIds = (payload as Record<string, unknown>).vector_ids
-    if (!Array.isArray(vectorIds) || !vectorIds.every((id): id is string => typeof id === 'string')) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'invalid_body', message: 'vector_ids must be an array of strings' },
-          trace_id: traceId,
-        },
-        400,
-      )
-    }
-
-    if (vectorIds.length === 0) {
-      return c.json(
-        {
-          ok: true,
-          data: {
-            message: 'No vectors to delete',
-            vectors_deleted: 0,
-            batches: 0,
-          },
-          trace_id: traceId,
-        },
-        200,
-      )
-    }
-
-    try {
-      // Delete from Vectorize using Worker binding
-      const batchSize = 100
-      let totalDeleted = 0
-
-      for (let i = 0; i < vectorIds.length; i += batchSize) {
-        const batch = vectorIds.slice(i, i + batchSize)
-        await c.env.KB_VECTORIZE.deleteByIds(batch)
-        totalDeleted += batch.length
-      }
-
-      return c.json(
-        {
-          ok: true,
-          data: {
-            message: 'Vectorize delete complete',
-            vectors_deleted: totalDeleted,
-            batches: Math.ceil(totalDeleted / batchSize),
-          },
-          trace_id: traceId,
-        },
-        200,
-      )
-    } catch (err) {
-      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/vectorize-delete', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'vectorize_error',
-            message: `Vectorize delete failed: ${err instanceof Error ? err.message : 'unknown error'}`,
-          },
-          trace_id: traceId,
-        },
-        500,
-      )
     }
   })
 
