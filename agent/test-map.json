@@ -1,0 +1,61 @@
+{
+  "version": "1.0.0",
+  "standard": "jankurai-0.9.0",
+  "lanes": [
+    {
+      "path": "src/**",
+      "lane": "web",
+      "command": "just ux-qa"
+    },
+    {
+      "path": "apps/web/**",
+      "lane": "web",
+      "command": "just ux-qa"
+    },
+    {
+      "path": "functions/api/**",
+      "lane": "fast",
+      "command": "just fast"
+    },
+    {
+      "path": "worker/**",
+      "lane": "fast",
+      "command": "just fast"
+    },
+    {
+      "path": "migrations/**",
+      "lane": "db",
+      "command": "npm test -- --run tests/unit/migrations"
+    },
+    {
+      "path": "schema.sql",
+      "lane": "db",
+      "command": "npm test -- --run"
+    },
+    {
+      "path": "ops/**",
+      "lane": "security",
+      "command": "just security"
+    },
+    {
+      "path": ".github/workflows/**",
+      "lane": "security",
+      "command": "just security"
+    },
+    {
+      "path": "contracts/**",
+      "lane": "contract",
+      "command": "just check"
+    },
+    {
+      "path": "tests/**",
+      "lane": "e2e",
+      "command": "npx playwright test --config tests/playwright.config.ts"
+    },
+    {
+      "path": "**",
+      "lane": "fast",
+      "command": "just fast"
+    }
+  ]
+}

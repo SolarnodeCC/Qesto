@@ -38,7 +38,7 @@ import type {
 
 // ─── Tunables ─────────────────────────────────────────────────────────────
 
-/** Default token budget for the packed context block. */
+/** Default max-token budget for the packed context block. */
 export const RAG_DEFAULT_MAX_TOKENS = 1500
 /** Headroom we leave under the requested budget (90%) to allow the caller
  *  to stitch the rest of the prompt without overflowing the model window. */

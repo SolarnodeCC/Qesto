@@ -74,8 +74,8 @@ git commit                                       # Now hook allows it
 # You created: functions/api/routes/decisions.routes.ts
 # Hook says: "Not mounted in [[route]].ts"
 
-# ❌ WRONG — bypass hook with unbounded add
-SKIP_HOOK=1 git add .
+# ❌ WRONG — bypass hook with unbounded staging (entire working tree)
+# SKIP_HOOK=1 + git add with "." — never stage unreviewed paths
 
 # ✅ RIGHT — mount the route, then add specific files
 echo "app.route('/api', decisionsRoutes)" >> functions/api/[[route]].ts

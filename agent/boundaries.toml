@@ -1,0 +1,22 @@
+# Machine-readable boundary manifest for jankurai contract lane.
+# Source of truth for API shapes: knowledge-base/api/API_FULL.md
+# Regeneration: manual until OpenAPI generator is wired (see contracts/README.md).
+
+[web]
+owns = ["src", "apps/web"]
+forbidden = ["functions/api", "worker", "migrations", "schema.sql"]
+proof_lane = "just ux-qa"
+
+[api]
+owns = ["functions/api", "functions/[[path]].ts"]
+forbidden = ["src"]
+proof_lane = "just fast"
+
+[db]
+owns = ["migrations", "schema.sql", "db"]
+forbidden = ["src/components"]
+proof_lane = "npm test"
+
+[ops]
+owns = ["ops", ".github/workflows"]
+proof_lane = "just security"

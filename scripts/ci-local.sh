@@ -29,13 +29,25 @@ case "$LANE" in
     bash scripts/ci-doctor.sh
     ;;
 
+  ux-qa)
+    report_lane_start "ux-qa (Playwright SPA)"
+    bash ops/ci/ux-qa.sh
+    ;;
+
+  score)
+    report_lane_start "jankurai score"
+    just score
+    ;;
+
   *)
-    echo "Usage: bash scripts/ci-local.sh [quality-gates|full|doctor]"
+    echo "Usage: bash scripts/ci-local.sh [quality-gates|full|doctor|ux-qa|score]"
     echo ""
     echo "Lanes:"
     echo "  quality-gates  — Type check + tests (pre-push requirement)"
     echo "  full           — Quality gates + build (full CI simulation)"
     echo "  doctor         — Environment health check"
+    echo "  ux-qa          — Playwright SPA rendered UX lane"
+    echo "  score          — Jankurai audit artifacts in agent/"
     exit 1
     ;;
 esac

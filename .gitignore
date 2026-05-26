@@ -42,4 +42,6 @@ worker-configuration.d.ts
 .kb-sync-manifest.json
 
 # Agent audit outputs (generated during jankurai scanning)
-agent/
+agent/repo-score.json
+agent/repo-score.md
+target/jankurai/

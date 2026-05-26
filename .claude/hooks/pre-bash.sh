@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# jankurai:allow HLT-035-GIT-BAD-BEHAVIOR reason=safety-hook-blocklist-not-automation expires=2027-06-01
 # L3 Hook: PreToolUse(Bash) — Safety gate for shell commands
 # Blocks destructive and dangerous commands before execution.
 
