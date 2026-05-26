@@ -3,39 +3,62 @@
 
 set shell := ["bash", "-c"]
 
+# Environment check — verify local setup matches CI
+doctor:
+    bash scripts/ci-doctor.sh
+
 # Setup development environment
 setup:
     #!/bin/bash
     set -e
     echo "Installing dependencies..."
-    npm install
-    echo "Setup complete. Run 'just check' to validate."
+    npm ci
+    echo "Configuring git hooks..."
+    git config core.hooksPath ops/git-hooks
+    echo "Setup complete. Run 'just doctor' to verify environment."
 
-# Check code quality: TypeScript, linting, formatting
-check:
-    #!/bin/bash
-    set -e
-    echo "Type checking..."
-    npm run type-check
-    echo "Linting..."
-    npm run lint --if-present || true
-    echo "Check complete."
+# Pre-push quality gates (type check + test)
+quality-gates:
+    bash ops/ci/quality-gates.sh
 
-# Run test suite
+# Run test suite (local)
 test:
     #!/bin/bash
     set -e
-    echo "Running tests..."
-    npm test
+    echo "Running unit tests..."
+    npm test -- --run
     echo "Tests passed."
 
-# Full verification: build, check, test
-verify: check test
+# Fast verification (type check + build, skip tests)
+fast: quality-gates
     #!/bin/bash
     set -e
     echo "Building..."
     npm run build
-    echo "Verification complete."
+    echo "Fast verification complete."
+
+# Full CI simulation: quality gates + audit + build
+verify: quality-gates
+    #!/bin/bash
+    set -e
+    mkdir -p agent
+    npm list -g jankurai || npm install -g jankurai
+    echo "Running jankurai audit..."
+    jankurai . --json agent/repo-score.json --md agent/repo-score.md || true
+    echo "Building..."
+    npm run build
+    echo "Full verification complete."
+
+# Security audit: npm + jankurai
+security:
+    #!/bin/bash
+    set -e
+    echo "Security checks..."
+    npm audit --audit-level=moderate || true
+    mkdir -p agent
+    npm list -g jankurai || npm install -g jankurai
+    echo "Running jankurai security audit..."
+    jankurai . --json agent/repo-score.json --md agent/repo-score.md || true
 
 # Run dev server (frontend only)
 dev-frontend:
@@ -51,15 +74,7 @@ fmt:
 
 # Clean build artifacts
 clean:
-    rm -rf dist/ node_modules/.vite/ .cloudflare/
-
-# Fast verification (type check + build only, skip tests)
-fast: check
-    npm run build
+    rm -rf dist/ node_modules/.vite/ .cloudflare/ agent/
 
 # Default target
-default: check
-
-# CI simulation — run checks that CI would run
-ci: setup verify
-    echo "CI verification passed"
+default: doctor
