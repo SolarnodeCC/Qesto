@@ -317,7 +317,7 @@ export default function AdminDashboard() {
                   />
                 </div>
               ) : null}
-              {liveMetrics?.stub && <Caption className="text-amber-600">{t('stubMetricsWarning')}</Caption>}
+              {liveMetrics?.isSynthetic && <Caption className="text-amber-600">{t('syntheticMetricsWarning')}</Caption>}
             </Section>
 
             <Section>

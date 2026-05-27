@@ -444,6 +444,16 @@ export const VectorMetadataSchema = z.record(z.string(), z.unknown())
 
 export type ValidVectorMetadata = z.infer<typeof VectorMetadataSchema>
 
+// ── OAuth state token validator (integrations) ───────────────────────────────
+
+export const OAuthStatePayloadSchema = z.object({
+  teamId: z.string().min(1),
+  userId: z.string().min(1),
+  exp: z.number(),
+})
+
+export type ValidOAuthStatePayload = z.infer<typeof OAuthStatePayloadSchema>
+
 // ── Energizer Config Validators ──────────────────────────────────────────────
 
 export const EmojiPollConfigSchema = z.object({

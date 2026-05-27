@@ -26,7 +26,9 @@ export async function getTemplate(
   templateId: string
 ): Promise<TemplateRecord | null> {
   const raw = await kv.get(templateKey(templateId), 'json')
-  return raw as TemplateRecord | null
+  if (!raw) return null
+  const parsed = TemplateRecord.safeParse(raw)
+  return parsed.success ? parsed.data : null
 }
 
 export async function listTemplates(
@@ -35,7 +37,7 @@ export async function listTemplates(
 ): Promise<TemplateRecord[]> {
   // Fetch the main index to get all template IDs
   const indexRaw = await kv.get('templates:index', 'json')
-  const allIds = (indexRaw as string[] | null) || []
+  const allIds = Array.isArray(indexRaw) ? indexRaw.filter((v): v is string => typeof v === 'string') : []
 
   const templates: TemplateRecord[] = []
 

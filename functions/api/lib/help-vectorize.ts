@@ -17,9 +17,13 @@ export const HELP_EMBED_TIMEOUT_MS = 10_000
 export const HELP_VECTORIZE_TIMEOUT_MS = 5_000
 
 function firstVector(result: unknown): number[] | undefined {
+  // Validate envelope with Zod, but return the original vector reference.
   const validated = validateData(result, AiBatchEmbeddingResponseSchema)
-  const data = validated?.data?.[0]
-  return data?.length === HELP_EMBED_DIM ? data : undefined
+  if (!validated) return undefined
+  const raw = result as { data?: unknown }
+  const first = Array.isArray(raw.data) ? raw.data[0] : undefined
+  if (!Array.isArray(first) || first.length !== HELP_EMBED_DIM) return undefined
+  return first.every((v) => typeof v === 'number') ? (first as number[]) : undefined
 }
 
 
@@ -108,7 +112,7 @@ export async function upsertHelpVector(
   if (!vector) {
     const textToEmbed = `${params.title} ${params.content?.substring(0, 500) || ''}`
     const upsertEmbedResult = await withTimeout(
-      env.AI.run(HELP_EMBED_MODEL, { text: textToEmbed }) as Promise<unknown>,
+      env.AI.run(HELP_EMBED_MODEL, { text: textToEmbed }),
       HELP_EMBED_TIMEOUT_MS,
       'Help document upsert embedding',
     )

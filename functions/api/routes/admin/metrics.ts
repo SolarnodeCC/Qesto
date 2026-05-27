@@ -19,7 +19,7 @@ export type LiveMetrics = {
   leaderboard_participants: number
   badges_awarded: number
   refresh_ts: number
-  is_sample?: boolean
+  isSynthetic?: boolean
 }
 
 export type HistoricalBucket = {
@@ -47,7 +47,7 @@ const CSV_HEADERS = ['bucket_ts', 'route', 'request_count', 'error_count', 'p50_
 async function aggregateLiveMetrics(
   kv: KVNamespace,
   windowMinutes = 5,
-): Promise<Omit<LiveMetrics, 'refresh_ts' | 'is_sample'>> {
+): Promise<Omit<LiveMetrics, 'refresh_ts' | 'isSynthetic'>> {
   const now = Date.now()
   const samples: Array<{
     active_sessions?: number
@@ -141,7 +141,7 @@ export function mountMetricsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVar
     const trace_id = c.get('trace_id')
     const kv = (c.env as unknown as Record<string, KVNamespace | undefined>)['METRICS_KV']
     if (!kv) {
-      const sample: LiveMetrics = {
+      const live: LiveMetrics = {
         active_sessions: 0,
         total_participants: 0,
         revenue_24h_cents: 0,
@@ -154,9 +154,9 @@ export function mountMetricsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVar
         leaderboard_participants: 0,
         badges_awarded: 0,
         refresh_ts: Date.now(),
-        is_sample: true,
+        isSynthetic: true,
       }
-      return c.json({ ok: true, data: sample, trace_id }, 200)
+      return c.json({ ok: true, data: live, trace_id }, 200)
     }
 
     const aggregated = await aggregateLiveMetrics(kv)
@@ -235,7 +235,7 @@ export function mountMetricsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVar
     } catch (err) {
       const msg = (err as Error).message ?? ''
       if (msg.includes('no such table') || msg.includes('no such column')) {
-        return c.json({ ok: true, data: [], is_sample: true, trace_id }, 200)
+        return c.json({ ok: true, data: [], isSynthetic: true, trace_id }, 200)
       }
       throw err
     }
@@ -290,10 +290,10 @@ export function mountMetricsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVar
           status: 200,
           headers: {
             'content-type': 'text/csv; charset=utf-8',
-            'content-disposition': 'attachment; filename="qesto-metrics-sample.csv"',
+            'content-disposition': 'attachment; filename="qesto-metrics-synthetic.csv"',
             'x-trace-id': trace_id,
             'x-row-count': '0',
-            'x-sample': 'true',
+            'x-synthetic': 'true',
           },
         })
       }

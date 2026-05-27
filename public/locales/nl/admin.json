@@ -185,14 +185,12 @@
   "requests": "Verzoeken",
   "auditLog": "Auditlog",
   "changeSummary": "Wijzigingssamenvatting",
-  "sessionsThisMonth": "Sessies deze maand",
   "totalSessions": "Sessies totaal",
   "platformOverview": "Platformoverzicht",
   "platformAdminTitle": "Platformbeheer",
   "applyDateRange": "Toepassen",
   "viewOps": "Bekijk OPS-details",
   "p95LatencyTrend": "P95-latentietrend",
-  "stubMetricsWarning": "Stubdata — metrics KV niet gereed",
   "allSystemsOperational": "Alle systemen operationeel",
   "partialDegradation": "Gedeeltelijke verstoring",
   "majorOutage": "Grote storing",
@@ -202,5 +200,6 @@
   "planOptionFree": "Pulse (Gratis)",
   "planOptionStarter": "Signal (Starter)",
   "planOptionTeam": "Chorus (Team)",
-  "cancelBtn": "Annuleren"
+  "cancelBtn": "Annuleren",
+  "syntheticMetricsWarning": "Synthetische data — metrics KV niet gereed"
 }

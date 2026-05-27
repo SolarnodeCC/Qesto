@@ -4,6 +4,7 @@
  */
 
 import type { Env } from '../types'
+import { validateData, AiBatchEmbeddingResponseSchema } from './validators'
 import { withTimeout } from './shared/async'
 
 export type InsightsVectorizeBindings = Pick<Env, 'AI' | 'DECISIONS_VECTORIZE'>
@@ -16,8 +17,14 @@ export const DECISIONS_EMBED_TIMEOUT_MS = 10_000
 export const DECISIONS_VECTORIZE_TIMEOUT_MS = 5_000
 
 function firstVector(result: unknown): number[] | undefined {
-  const data = (result as { data?: number[][] })?.data?.[0]
-  return data?.length === DECISIONS_EMBED_DIM ? data : undefined
+  // Validate envelope with Zod, but return the original vector reference.
+  // This avoids accidental copying and keeps behavior stable for callers/tests.
+  const validated = validateData(result, AiBatchEmbeddingResponseSchema)
+  if (!validated) return undefined
+  const raw = result as { data?: unknown }
+  const first = Array.isArray(raw.data) ? raw.data[0] : undefined
+  if (!Array.isArray(first) || first.length !== DECISIONS_EMBED_DIM) return undefined
+  return first.every((v) => typeof v === 'number') ? (first as number[]) : undefined
 }
 
 
@@ -28,7 +35,7 @@ export async function embedAndFindSimilarSessionTitles(
 ): Promise<{ vector?: number[]; similarSessionTitles: string[] }> {
   const embedText = `${params.sessionTitle}: ${params.openResponses.slice(0, 10).join('. ')}`
   const embedResult = await withTimeout(
-    env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }) as Promise<unknown>,
+    env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
     DECISIONS_EMBED_TIMEOUT_MS,
     'Decision embedding',
   )

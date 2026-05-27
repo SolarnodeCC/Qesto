@@ -33,6 +33,7 @@ export default defineConfig({
       testMatch: [
         /public-routes\.spec\.ts/,
         /protected-routes\.spec\.ts/,
+        /visual_smoke\.spec\.ts/,
       ],
       use: {
         ...devices['Desktop Chrome'],

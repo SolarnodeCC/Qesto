@@ -27,31 +27,34 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
 
     try {
       const searchLike = search ? `%${search}%` : null
-      const baseWhere = searchLike
-        ? 'WHERE (u.email LIKE ?3 OR u.display_name LIKE ?3)'
-        : ''
-
-      const sql = `
+      const sqlNoSearch = `
         SELECT u.id, u.email, u.display_name, u.plan, u.created_at, u.last_login_at, u.suspended_at,
                ur.role as admin_role
         FROM users u
         LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role IN ('owner', 'admin')
-        ${baseWhere}
         ORDER BY u.created_at DESC
         LIMIT ?1 OFFSET ?2
       `
-      const countSql = `
-        SELECT COUNT(*) as n FROM users u ${baseWhere}
+      const sqlSearch = `
+        SELECT u.id, u.email, u.display_name, u.plan, u.created_at, u.last_login_at, u.suspended_at,
+               ur.role as admin_role
+        FROM users u
+        LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role IN ('owner', 'admin')
+        WHERE (u.email LIKE ?3 OR u.display_name LIKE ?3)
+        ORDER BY u.created_at DESC
+        LIMIT ?1 OFFSET ?2
       `
+      const countSqlNoSearch = `SELECT COUNT(*) as n FROM users u`
+      const countSqlSearch = `SELECT COUNT(*) as n FROM users u WHERE (u.email LIKE ?1 OR u.display_name LIKE ?1)`
 
       let stmt: D1PreparedStatement
       let countStmt: D1PreparedStatement
       if (searchLike) {
-        stmt = c.env.DB.prepare(sql).bind(limit, offset, searchLike)
-        countStmt = c.env.DB.prepare(countSql).bind(searchLike)
+        stmt = c.env.DB.prepare(sqlSearch).bind(limit, offset, searchLike)
+        countStmt = c.env.DB.prepare(countSqlSearch).bind(searchLike)
       } else {
-        stmt = c.env.DB.prepare(sql).bind(limit, offset)
-        countStmt = c.env.DB.prepare(countSql)
+        stmt = c.env.DB.prepare(sqlNoSearch).bind(limit, offset)
+        countStmt = c.env.DB.prepare(countSqlNoSearch)
       }
 
       const [{ results }, countRow] = await Promise.all([
@@ -132,24 +135,29 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
       return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
     }
 
-    const updates: string[] = []
-    const values: (string | number | null)[] = []
-    let paramIdx = 1
-
     if (body.display_name !== undefined) {
-      updates.push(`display_name = ?${paramIdx++}`)
-      values.push(body.display_name ?? null)
+      // validated by schema
     }
     if (body.plan !== undefined && ['free', 'starter', 'team'].includes(body.plan)) {
-      updates.push(`plan = ?${paramIdx++}`)
-      values.push(body.plan)
+      // validated by schema + allowlist
     }
 
-    if (updates.length > 0) {
-      values.push(userId)
-      await c.env.DB.prepare(
-        `UPDATE users SET ${updates.join(', ')} WHERE id = ?${paramIdx}`,
-      ).bind(...values).run()
+    if (body.display_name !== undefined || body.plan !== undefined) {
+      const hasName = body.display_name !== undefined
+      const hasPlan = body.plan !== undefined && ['free', 'starter', 'team'].includes(body.plan)
+      if (hasName && hasPlan) {
+        await c.env.DB.prepare('UPDATE users SET display_name = ?1, plan = ?2 WHERE id = ?3')
+          .bind(body.display_name ?? null, body.plan, userId)
+          .run()
+      } else if (hasName) {
+        await c.env.DB.prepare('UPDATE users SET display_name = ?1 WHERE id = ?2')
+          .bind(body.display_name ?? null, userId)
+          .run()
+      } else if (hasPlan) {
+        await c.env.DB.prepare('UPDATE users SET plan = ?1 WHERE id = ?2')
+          .bind(body.plan, userId)
+          .run()
+      }
     }
 
     if ('admin_role' in body) {
@@ -171,7 +179,7 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
         after_snapshot: { admin_role: body.admin_role },
         trace_id,
       })
-    } else if (updates.length > 0) {
+    } else if (body.display_name !== undefined || body.plan !== undefined) {
       await recordAuditEvent(c, {
         action: 'user.update',
         subject_type: 'user',
