@@ -7,6 +7,7 @@ import { useT } from '../i18n'
 import { api } from '../api/client'
 import AppShellLayout, { type DashboardSection } from '../layouts/AppShellLayout'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { AppearanceThemeControl } from '../components/AppearanceThemeControl'
 import { createBillingPortalSession, fetchBillingInvoices, type InvoiceRow } from '../lib/account-billing'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
@@ -184,7 +185,9 @@ export default function AccountSettings() {
           title={t('appearance.title')}
           description={t('appearance.description')}
         >
-          <div className="flex flex-wrap gap-2" role="group" aria-label={t('appearance.title')}>
+          <AppearanceThemeControl />
+          <p className="mt-6 text-sm font-medium text-pulse-800 dark:text-[#A8B3CC]">{t('appearance.densityLabel')}</p>
+          <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t('appearance.densityLabel')}>
             {DENSITY_OPTIONS.map((option) => {
               const selected = density === option
               return (

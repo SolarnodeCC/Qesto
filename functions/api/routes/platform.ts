@@ -58,13 +58,15 @@ export function mountPlatformRoutes(parent: any) {
     c.json({
       ok: true,
       data: {
-        targetVoters: 50_000,
+        targetVoters: 100_000,
         evidenceStatus: 'synthetic_baseline',
+        nextGate: { sprint: 75, voters: 100_000, story: 'SCALE-PROOF-100K-01' },
         milestones: [
           { sprint: 60, voters: 10_000, status: 'recorded' },
           { sprint: 64, voters: 25_000, status: 'recorded' },
-          { sprint: 68, voters: 50_000, status: 'planned' },
-          { sprint: 70, voters: 50_000, status: 'gate' },
+          { sprint: 68, voters: 50_000, status: 'recorded' },
+          { sprint: 71, voters: 50_000, status: 'in_progress', harness: 'tests/load/k6-smoke.js' },
+          { sprint: 75, voters: 100_000, status: 'planned' },
         ],
         sessionRoom: { voteEngineExtracted: true, coordinatorPattern: 'adr-0025' },
       },
@@ -97,10 +99,16 @@ export function mountPlatformRoutes(parent: any) {
       ok: true,
       data: {
         audits: [
+          { id: 'SEC-PEN3-01', status: 'in_progress', scope: 'Pentest #3 (S71–S72)', sprint: 71 },
           { id: 'API-PLAT-AUDIT-01', status: 'scheduled', scope: 'Public API v3' },
           { id: 'WEBHOOK-AUDIT-01', status: 'scheduled', scope: 'Webhook signing + DLQ' },
           { id: 'LDAP-AUDIT-EXTERNAL-01', status: 'scheduled', scope: 'LDAP bridge' },
         ],
+        pentest: {
+          engagement: 3,
+          status: 'prep',
+          checklistPath: 'knowledge-base/quality/security/PENTEST_3_PREP.md',
+        },
       },
       trace_id: c.get('trace_id'),
     }),

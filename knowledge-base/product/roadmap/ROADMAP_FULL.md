@@ -180,6 +180,19 @@ _Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (secu
 
 **Plan:** [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md) (2026-05-25, all-agent synthesis).
 
+### Sprint 71–80 — Post-v4.0 Platform Maturity Arc (3× capacity)
+
+**Focus:** Dark mode GA, Zoom/Slack at scale, 100k load proof, EU residency enforce, copilot multi-turn + edge, audit API, realtime v3, FedRAMP path (docs), v5.0 GA certification. **120–150 pts per 2-week sprint.**
+
+| Sprint range | Release | Target |
+|---|---|---|
+| Sprint 71–73 | v4.1 | Experience GA + event integrators + dev portal v2 |
+| Sprint 74–76 | v4.2 | Federation depth + metering + 100k proof + copilot GA |
+| Sprint 77–79 | v5.0-rc | Tenant isolation + audit/CMK + realtime v3 + compliance closure |
+| Sprint 80 | v5.0 GA | Platform certification + DR drill + AAA conformance |
+
+**Plan:** [`SPRINT71_80_PLAN.md`](../planning/SPRINT71_80_PLAN.md) (2026-05-27, all-agent synthesis). Role plans: [`SPRINT71_80_INFRA_PLAN.md`](../planning/SPRINT71_80_INFRA_PLAN.md), [`SPRINT71_80_FRONTEND_PROPOSAL.md`](../planning/SPRINT71_80_FRONTEND_PROPOSAL.md), [`QA_COMMITMENT_SPRINTS_71_80.md`](../backlog/QA_COMMITMENT_SPRINTS_71_80.md), [`MARKETING_SPRINTS_71_80.md`](../marketing/MARKETING_SPRINTS_71_80.md), [`I18N_SPRINT_71_80_PLAN.md`](../../I18N_SPRINT_71_80_PLAN.md).
+
 ### Post-v2.2 Commercial Promise Completion
 
 **Focus:** Keep go-live copy honest while sequencing the higher-value promises that were removed or marked roadmap during the marketing promise audit. Promises now have sprint assignments following the 2026-05-20 planning refresh.
