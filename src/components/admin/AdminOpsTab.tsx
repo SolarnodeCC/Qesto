@@ -1,5 +1,6 @@
 import { useAdminOps, useAdminOpsCorrelation, type ServiceStatus } from '../../hooks/useAdminOps'
 import { Heading, Body, Card, SkeletonCard } from '../../ui/components'
+import { SloDashboardPanel } from '../SloDashboardPanel'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -205,6 +206,11 @@ export default function AdminOpsTab() {
             ))}
           </div>
         )}
+      </Card>
+
+      <Card className="space-y-3">
+        <Heading level="m">SLO error budgets</Heading>
+        <SloDashboardPanel />
       </Card>
     </div>
   )

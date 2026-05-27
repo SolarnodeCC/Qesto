@@ -27,6 +27,11 @@ import { mountPublicApiV3Routes } from './routes/public-api-v3'
 import { mountWorkflowRoutes } from './routes/workflows'
 import { mountComplianceRoutes } from './routes/compliance'
 import { mountPartnerPortalRoutes } from './routes/partner-portal'
+import { mountFederationRoutes } from './routes/federation'
+import { mountScimRoutes } from './routes/scim'
+import { mountPlatformRoutes } from './routes/platform'
+import { mountCustomActionRoutes } from './routes/custom-actions'
+import { mountAgentCoachRoutes } from './routes/agent-coach'
 import { mountMultiRegionAdminRoutes } from './routes/multi-region-admin'
 import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
 import { mountPartnerAppRoutes } from './routes/partner-apps'
@@ -127,6 +132,8 @@ export function createApp() {
   mountPublicApiV1Routes(app)
   mountPublicApiV2Routes(app)
   mountPublicApiV3Routes(app)
+  mountScimRoutes(app)
+  mountPlatformRoutes(app)
 
   // RBAC enforcement — role-based access control for all API routes (Phase 8).
   // Checks user roles against permission matrix; defaults to viewer if no explicit role.
@@ -257,6 +264,9 @@ export function createApp() {
   mountWorkflowRoutes(app)
   mountComplianceRoutes(app)
   mountPartnerPortalRoutes(app)
+  mountFederationRoutes(app)
+  mountCustomActionRoutes(app)
+  mountAgentCoachRoutes(app)
   mountAgentGroundingRoutes(app)
 
   return app
