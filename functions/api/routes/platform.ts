@@ -15,6 +15,7 @@ const RELEASES = [
   { version: '4.0.0', codename: 'v4.0', status: 'ga', sprint: 70 },
   { version: '4.1.0-rc.1', codename: 'v4.1-rc', status: 'rc', sprint: 73 },
   { version: '4.2.0-rc.1', codename: 'v4.2-rc', status: 'rc', sprint: 76 },
+  { version: '5.0.0-rc.1', codename: 'v5.0-rc', status: 'rc', sprint: 79 },
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -25,9 +26,11 @@ export function mountPlatformRoutes(parent: any) {
     c.json({
       ok: true,
       data: {
-        api: '4.1.0-rc.1',
-        realtimeDefault: c.env.REALTIME_V2_DEFAULT === 'true' ? 2 : 1,
+        api: '5.0.0-rc.1',
+        realtimeDefault:
+          c.env.REALTIME_V3_ENABLED === 'true' ? 3 : c.env.REALTIME_V2_DEFAULT === 'true' ? 2 : 1,
         realtimeV2Enabled: c.env.REALTIME_V2_ENABLED === 'true',
+        realtimeV3Enabled: c.env.REALTIME_V3_ENABLED === 'true',
         publicApi: { v1: 'deprecated', v2: 'maintained', v3: 'ga' },
         commit: c.env.COMMIT_SHA ?? 'unknown',
       },
@@ -71,6 +74,20 @@ export function mountPlatformRoutes(parent: any) {
           { sprint: 75, voters: 100_000, status: 'recorded', harness: 'tests/load/k6-smoke.js', note: 'synthetic until k6 100k run' },
         ],
         sessionRoom: { voteEngineExtracted: true, coordinatorPattern: 'adr-0025' },
+      },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
+  pub.get('/fedramp-path', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        tier: 'moderate',
+        status: 'documentation_only',
+        controlsMapped: 325,
+        atoTarget: 'S81+',
+        docPath: 'knowledge-base/adr/ADR-0043-fedramp-moderate-path.md',
       },
       trace_id: c.get('trace_id'),
     }),

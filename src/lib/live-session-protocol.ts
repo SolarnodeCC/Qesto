@@ -26,6 +26,15 @@ export function parseServerEnvelope(raw: unknown): ParsedServerEnvelope | null {
   return envelope.data
 }
 
+export const LIVE_PROTOCOL_V3 = 3
+
+export function parseResultsDelta(data: Record<string, unknown>) {
+  const questionId = typeof data.questionId === 'string' ? data.questionId : null
+  const delta = data.delta
+  if (!questionId || typeof delta !== 'object' || delta === null) return null
+  return { questionId, delta: delta as Record<string, number> }
+}
+
 export function parseInitPayload(data: Record<string, unknown>) {
   const session = LiveSessionSummarySchema.safeParse(data.session)
   const role = z.enum(['presenter', 'voter']).safeParse(data.role)

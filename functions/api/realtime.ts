@@ -12,9 +12,10 @@ import type { PollOption, QuestionKind, VotePolicy, SessionMode, Anonymity } fro
 
 export const LIVE_PROTOCOL_VERSION = 1
 export const LIVE_PROTOCOL_VERSION_V2 = 2
-export type LiveProtocolVersion = 1 | 2
+export const LIVE_PROTOCOL_VERSION_V3 = 3
+export type LiveProtocolVersion = 1 | 2 | 3
 
-export const SUPPORTED_LIVE_PROTOCOL_VERSIONS: LiveProtocolVersion[] = [1, 2]
+export const SUPPORTED_LIVE_PROTOCOL_VERSIONS: LiveProtocolVersion[] = [1, 2, 3]
 
 export function defaultLiveProtocolVersion(env: {
   REALTIME_V2_DEFAULT?: string
@@ -31,11 +32,13 @@ export function isLiveProtocolSupported(
   const v = version ?? defaultLiveProtocolVersion(env)
   if (v === 1) return true
   if (v === 2) return env.REALTIME_V2_ENABLED === 'true' || env.REALTIME_V2_DEFAULT === 'true'
+  if (v === 3) return env.REALTIME_V3_ENABLED === 'true'
   return false
 }
 
 export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
   if (version === 2) return ['delta_results', 'participants_delta']
+  if (version === 3) return ['delta_results', 'participants_delta', 'results_delta']
   return []
 }
 
