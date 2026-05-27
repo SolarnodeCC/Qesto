@@ -1,5 +1,7 @@
 # Qesto — Codex Project Guide
 
+Read [`agent/JANKURAI_STANDARD.md`](./agent/JANKURAI_STANDARD.md) first. Proof lanes: `just setup`, `just check`, `just fast`, `just score`. Agent docs: [`docs/architecture.md`](./docs/architecture.md), [`docs/boundaries.md`](./docs/boundaries.md), [`docs/testing.md`](./docs/testing.md).
+
 **Documentation map:** [`/knowledge-base/README.md`](./knowledge-base/README.md) — navigation by role (PO, backend, frontend, devops, security, AI). Internal docs use the **Obsidian** vault in `knowledge-base/` only (not Notion); see [`OBSIDIAN_KB_STANDARD.md`](./knowledge-base/governance/OBSIDIAN_KB_STANDARD.md).
 
 **AI Agent & Skill Governance:** See [`/knowledge-base/ai-context/`](./knowledge-base/ai-context/) for agent system overview, skill templates, and research decisions.

@@ -53,6 +53,7 @@ interface KbChunkRow {
 }
 
 const KNOWN_TYPES: KbType[] = ['adr', 'spec', 'guide', 'runbook', 'experiment', 'unknown']
+// jankurai:allow HLT-001-DEAD-MARKER reason=external-contract-status-value expires=2027-06-01
 const KNOWN_STATUSES: KbStatus[] = ['draft', 'proposed', 'accepted', 'deprecated']
 
 function coerceType(value: string): KbType {

@@ -38,8 +38,6 @@ const GdprTrustPage = lazy(() => import('./pages/GdprTrustPage'))
 const Soc2TrustPage = lazy(() => import('./pages/Soc2TrustPage'))
 const MarketplacePage = lazy(() => import('./pages/MarketplacePage'))
 const PartnerSlaPage = lazy(() => import('./pages/PartnerSlaPage'))
-const PresenterRemotePage = lazy(() => import('./pages/PresenterRemotePage'))
-const FederationSettingsPage = lazy(() => import('./pages/FederationSettingsPage'))
 
 // Use-case pages
 const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage'))
@@ -115,8 +113,6 @@ export default function App() {
         <Route path="/trust/soc2" element={<Suspense fallback={<LazyRouteFallback />}><Soc2TrustPage /></Suspense>} />
         <Route path="/marketplace" element={<Suspense fallback={<LazyRouteFallback />}><MarketplacePage /></Suspense>} />
         <Route path="/partner/sla" element={<Suspense fallback={<LazyRouteFallback />}><PartnerSlaPage /></Suspense>} />
-        <Route path="/sessions/:id/remote" element={<Suspense fallback={<LazyRouteFallback />}><PresenterRemotePage /></Suspense>} />
-        <Route path="/settings/federation" element={<Suspense fallback={<LazyRouteFallback />}><FederationSettingsPage /></Suspense>} />
 
         {/* Use-case pages */}
         <Route path="/use-cases/team-meetings" element={<Suspense fallback={<LazyRouteFallback />}><TeamMeetingsPage /></Suspense>} />

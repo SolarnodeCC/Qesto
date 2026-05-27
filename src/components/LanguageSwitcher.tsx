@@ -25,14 +25,14 @@ const LANGUAGE_SHORT: Record<SupportedLanguage, string> = {
 
 export default function LanguageSwitcher() {
   const [open, setOpen] = useState(false)
-  const langRaw = getCurrentLanguage()
-  const current: SupportedLanguage = isSupportedLanguage(langRaw) ? langRaw : 'en'
+  const raw = getCurrentLanguage()
+  const current: SupportedLanguage = SUPPORTED_LANGUAGES.includes(raw as SupportedLanguage) ? (raw as SupportedLanguage) : 'en'
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
     function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (containerRef.current && e.target instanceof Node && !containerRef.current.contains(e.target)) {
         setOpen(false)
       }
     }

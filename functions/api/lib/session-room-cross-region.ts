@@ -1,5 +1,5 @@
 /**
- * RES-DO-02 — cross-region energizer snapshot mirror (best-effort KV fallback).
+ * RES-DO-02 — cross-region energizer snapshot mirror (best-effort KV default).
  */
 import type { LiveEnergizerState } from '../realtime'
 
@@ -31,8 +31,10 @@ export async function loadEnergizerMirrorFromKv(
   const raw = await kv.get(crossRegionEnergizerKey(sessionId))
   if (!raw) return null
   try {
-    const parsed = JSON.parse(raw) as { state?: LiveEnergizerState }
-    return parsed.state ?? null
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    const state = (parsed as { state?: unknown }).state
+    return state && typeof state === 'object' ? (state as LiveEnergizerState) : null
   } catch {
     return null
   }

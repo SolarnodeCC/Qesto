@@ -1,15 +1,61 @@
 {
-  "version": 1,
-  "routes": [
-    { "path": "functions/api/", "proof": "npm test" },
-    { "path": "functions/api/routes/admin/", "proof": "npm test -- tests/unit/admin" },
-    { "path": "src/", "proof": "npm run typecheck && npm test" },
-    { "path": "migrations/", "proof": "npm run e2e:db:local" },
-    { "path": "ops/", "proof": "bash scripts/ci-local.sh quality-gates" },
-    { "path": ".github/workflows/", "proof": "bash scripts/ci-local.sh full" },
-    { "path": "contracts/", "proof": "npm run check:contracts" },
-    { "path": "scripts/embed-kb.ts", "proof": "npm run kb:embed -- --dry-run" },
-    { "path": "scripts/kb-sync-cli.ts", "proof": "npm run kb:sync -- --dry-run" },
-    { "path": "scripts/sync-help-docs.ts", "proof": "npm run help:sync -- --dry-run" }
+  "version": "1.0.0",
+  "standard": "jankurai-0.9.0",
+  "lanes": [
+    {
+      "path": "src/**",
+      "lane": "web",
+      "command": "just ux-qa"
+    },
+    {
+      "path": "apps/web/**",
+      "lane": "web",
+      "command": "just ux-qa"
+    },
+    {
+      "path": "functions/api/**",
+      "lane": "fast",
+      "command": "just fast"
+    },
+    {
+      "path": "worker/**",
+      "lane": "fast",
+      "command": "just fast"
+    },
+    {
+      "path": "migrations/**",
+      "lane": "db",
+      "command": "npm test -- --run tests/unit/migrations"
+    },
+    {
+      "path": "schema.sql",
+      "lane": "db",
+      "command": "npm test -- --run"
+    },
+    {
+      "path": "ops/**",
+      "lane": "security",
+      "command": "just security"
+    },
+    {
+      "path": ".github/workflows/**",
+      "lane": "security",
+      "command": "just security"
+    },
+    {
+      "path": "contracts/**",
+      "lane": "contract",
+      "command": "just check"
+    },
+    {
+      "path": "tests/**",
+      "lane": "e2e",
+      "command": "npx playwright test --config tests/playwright.config.ts"
+    },
+    {
+      "path": "**",
+      "lane": "fast",
+      "command": "just fast"
+    }
   ]
 }

@@ -1,59 +1,43 @@
 # Testing and proof lanes
 
-## Canonical commands
+## One-command entry points
 
-| Goal | Command |
-|------|---------|
-| Setup | `just setup` or `npm run setup` |
-| Fast iteration | `just fast` |
-| Pre-commit | `just check` |
-| Full unit suite | `just test` or `npm test` |
-| Pre-push / CI parity | `just verify` or `bash ops/ci/quality-gates.sh` |
-| Repo audit score | `just score` |
-| Security scan | `just security` |
+| Command | Purpose |
+|---------|---------|
+| `just setup` | `npm ci` + configure `ops/git-hooks` |
+| `just doctor` | Verify local tools match CI |
+| `just check` | Typecheck + unit tests (pre-merge default) |
+| `just fast` | Quality gates + production build |
+| `just test` | Unit tests only |
+| `just score` | Jankurai audit → `agent/repo-score.json` |
+| `just security` | npm audit + jankurai security lane |
+| `just ux-qa` | Playwright smoke (rendered UX evidence) |
+| `just verify` | Full local CI simulation |
 
-## Repair receipts
+Local CI runner: `bash scripts/ci-local.sh [quality-gates|full|doctor]`
 
-Do not accept summary claims without rerunning proof:
+## Lane mapping
 
-```bash
-# Standard green path (record exit codes in PR)
-just fast && just check && npm run build
-```
+Path → command routing lives in `agent/test-map.json`.
 
-Raw CI logs and artifact paths:
-- Unit tests: Vitest output from `npm test`
-- Typecheck: `npm run typecheck`
-- Contracts: `npm run check:contracts`
-- Jankurai: `agent/repo-score.json`, `agent/repo-score.md`
-- Secrets: `bash ops/ci/secret-scan.sh`
+## CI parity
 
-## Cost budgets (paid / unbounded operations)
+GitHub Actions call the same scripts as local:
 
-| Surface | Budget | Stop condition |
-|---------|--------|----------------|
-| Workers AI (`c.env.AI.run`) | Dev: local unsupported; prod: plan-gated | Circuit breaker in `functions/api/lib/resilience/` |
-| Vectorize queries | TopK ≤ 20 per request | Timeout in help/insights vectorize libs |
-| KB embed script | `--limit N` for dry runs | `npm run kb:embed -- --dry-run` |
-| Playwright CI | 60 min job timeout | `playwright.yml` |
-| npm audit / gitleaks | Advisory in supply-chain lane | `continue-on-error` only where documented |
+- `bash ops/ci/quality-gates.sh` — typecheck + Vitest
+- `bash ops/ci/jankurai.sh` — advisory audit artifacts under `target/jankurai/`
+- `bash ops/ci/supply-chain.sh` — dependency / secret posture
 
-Kill switch: set `CIRCUIT_BREAKER_ENABLED=false` or disable AI routes via plan middleware.
+Pre-push: `git config core.hooksPath ops/git-hooks` (runs quality gates).
 
-## Human review evidence (marketing / claims)
+## Evidence for reviews
 
-Marketing agents must attach replayable proof for factual claims:
-- Competitor comparisons: link to primary source + date accessed
-- Performance claims: `just check` green + link to benchmark doc
-- Never commit untested competitor claims or fabricated social proof without a cited source
+- Attach **raw CI logs** or job URLs, not summaries-only claims.
+- Playwright: traces under `tests/playwright/` and CI artifact `playwright-report`.
+- Jankurai: upload `agent/repo-score.json` + `agent/repo-score.md` from `just score`.
 
-## Web / E2E
+## References
 
-```bash
-npm run test:e2e:fullstack   # requires local full stack — see tests/docs/playwright-local.md
-npm run test:a11y            # axe via Vitest
-```
-
-## Route → proof map
-
-See `agent/test-map.json` for path-level proof routing.
+- [knowledge-base/quality/](../knowledge-base/quality/)
+- [VALIDATION_PATTERNS.md](./VALIDATION_PATTERNS.md)
+- [VALIDATION_STRATEGY.md](./VALIDATION_STRATEGY.md)

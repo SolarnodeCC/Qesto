@@ -1,27 +1,22 @@
-# Agent boundary map — cross-runtime seams and proof lanes
-# See also: agent/owner-map.json, agent/test-map.json
+# Machine-readable boundary manifest for jankurai contract lane.
+# Source of truth for API shapes: knowledge-base/api/API_FULL.md
+# Regeneration: manual until OpenAPI generator is wired (see contracts/README.md).
 
-[boundaries.api]
-owns = ["functions/api/"]
-forbidden = ["src/", "python/"]
-proof = "npm run typecheck && npm test"
+[web]
+owns = ["src", "apps/web"]
+forbidden = ["functions/api", "worker", "migrations", "schema.sql"]
+proof_lane = "just ux-qa"
 
-[boundaries.web]
-owns = ["src/", "apps/web/"]
-forbidden = ["functions/api/lib/", "migrations/"]
-proof = "npm run typecheck && npm run test:a11y"
+[api]
+owns = ["functions/api", "functions/[[path]].ts"]
+forbidden = ["src"]
+proof_lane = "just fast"
 
-[boundaries.db]
-owns = ["migrations/", "schema.sql", "db/"]
-forbidden = ["src/components/"]
-proof = "npm run e2e:db:local"
+[db]
+owns = ["migrations", "schema.sql", "db"]
+forbidden = ["src/components"]
+proof_lane = "npm test"
 
-[boundaries.contracts]
-owns = ["contracts/", "functions/api/lib/openapi-v3-spec.ts"]
-forbidden = []
-proof = "npm run check:contracts"
-
-[boundaries.ops]
-owns = ["ops/", ".github/workflows/"]
-forbidden = []
-proof = "bash scripts/ci-local.sh quality-gates"
+[ops]
+owns = ["ops", ".github/workflows"]
+proof_lane = "just security"

@@ -5,7 +5,7 @@ import { deriveVoterIdentity } from '../../lib/voter'
 import { requireLiveForWebSocket } from '../../lib/session-lifecycle'
 import {
   fetchSessionByCode,
-  doStub,
+  getSessionRoomStub,
   presenterPermissionsForSession,
   type SessionRow,
   type SessionVars,
@@ -136,16 +136,14 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
     const voterId = role === 'presenter' && presenterUserId ? `host_${presenterUserId}` : identity.voterId
 
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? ''
-    const proto = c.req.query('proto') ?? c.req.header('x-qesto-protocol-v') ?? ''
-    const stub = await doStub(c.env, id)
-    const upgraded = await stub.fetch('https://do.internal/ws', {
+    const room = await getSessionRoomStub(c.env, id)
+    const upgraded = await room.fetch('https://do.internal/ws', {
       headers: {
         upgrade: 'websocket',
         'x-qesto-role': role,
         'x-qesto-voter': voterId,
         'x-qesto-ip-hash': identity.ipHash,
         ...(colo ? { 'x-qesto-colo': colo } : {}),
-        ...(proto ? { 'x-qesto-protocol-v': proto } : {}),
         ...(role === 'presenter' && presenterPermissions !== undefined
           ? { 'x-qesto-permissions': presenterPermissions.join(',') }
           : {}),

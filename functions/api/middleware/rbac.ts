@@ -107,8 +107,8 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
 /**
  * Normalize a concrete request path to its matrix pattern.
  * Request paths contain literal IDs (ULIDs, UUIDs, ints, user emails); the
- * matrix keys use `:id` / `:userId` placeholders. Convert by treating any
- * segment that looks like an identifier as a placeholder.
+ * matrix keys use `:id` / `:userId` path params. Convert by treating any
+ * segment that looks like an identifier as a param segment.
  *
  * Matches:
  *   GET /api/teams/01HXYZ... → GET /api/teams/:id

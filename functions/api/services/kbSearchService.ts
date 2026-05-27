@@ -174,7 +174,7 @@ export class KbSearchService {
     let vector: number[]
     try {
       const result = await withTimeout(
-        this.ai.run(KB_EMBED_MODEL, { text: query }) as Promise<unknown>,
+        this.ai.run(KB_EMBED_MODEL, { text: query }),
         KB_EMBED_TIMEOUT_MS,
         'KB query embedding',
       )

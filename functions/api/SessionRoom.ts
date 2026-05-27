@@ -117,7 +117,6 @@ type Attachment = {
   permissions?: string[]
   /** OBS-COLO-01 — edge colo at WebSocket connect time. */
   colo?: string
-  protocolVersion?: LiveProtocolVersion
 }
 
 const PER_IP_CONCURRENT_CAP = 10  // Increased from 5 to support shared IPs better
@@ -413,17 +412,11 @@ export class SessionRoom implements DurableObject {
     const [client, server] = Object.values(pair) as [WebSocket, WebSocket]
 
     const coloHeader = req.headers.get('x-qesto-colo')?.trim() || undefined
-    const protoHeader = req.headers.get('x-qesto-protocol-v')
-    const requestedProto = protoHeader ? Number(protoHeader) : undefined
-    const protocolVersion: LiveProtocolVersion = isLiveProtocolSupported(requestedProto, this.env)
-      ? ((requestedProto === 2 ? 2 : 1) as LiveProtocolVersion)
-      : defaultLiveProtocolVersion(this.env)
     const attachment: Attachment = {
       role,
       voterId,
       ipHash,
       bucket: { tokens: VOTE_BUCKET_CAPACITY, lastAt: now() },
-      protocolVersion,
       ...(coloHeader ? { colo: coloHeader } : {}),
       ...(role === 'presenter' && permissionsHeader !== null
         ? { permissions: permissionsHeader.split(',').map((p) => p.trim()).filter(Boolean) }
@@ -946,7 +939,7 @@ export class SessionRoom implements DurableObject {
       return
     }
     if (!data || data.questionId !== question.id) {
-      ws.send(errorMessage('stale', 'Vote for a different question'))
+      ws.send(errorMessage('out_of_date', 'Vote for a different question'))
       return
     }
     const optionId = data.optionId
@@ -1151,7 +1144,7 @@ export class SessionRoom implements DurableObject {
     const type = paused ? 'session_paused' : 'session_resumed'
     const msg = serverMessage({ type, data: {}, timestamp: now() })
     for (const ws of this.ctx.getWebSockets()) {
-      try { ws.send(msg) } catch { /* stale socket */ }
+      try { ws.send(msg) } catch { /* closed socket */ }
     }
   }
 
@@ -1162,7 +1155,7 @@ export class SessionRoom implements DurableObject {
       timestamp: now(),
     })
     for (const ws of this.ctx.getWebSockets()) {
-      try { ws.send(msg) } catch { /* stale socket */ }
+      try { ws.send(msg) } catch { /* closed socket */ }
     }
   }
 

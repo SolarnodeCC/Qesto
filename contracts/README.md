@@ -1,10 +1,23 @@
 # API contracts
 
-Generated and checked boundary artifacts for public HTTP surfaces.
+Public HTTP/WebSocket contracts for Qesto. **Do not hand-edit** files under `generated/`.
 
-| Artifact | Source | Drift check |
-|----------|--------|-------------|
-| `openapi-v3.json` | `functions/api/lib/openapi-v3-spec.ts` | `npm run check:contracts` |
-| `public-api-v1.md` | Hand-maintained overview | Review on route changes |
+## Source of truth (interim)
 
-Product runtime truth lives in TypeScript (`functions/api/`) and SQL (`migrations/`, `schema.sql`), not in handwritten client copies.
+Until OpenAPI generation is fully wired, authoritative API documentation lives in:
+
+- [knowledge-base/api/API_FULL.md](../knowledge-base/api/API_FULL.md)
+- TypeScript types in `functions/api/types.ts`
+
+## Regeneration (planned)
+
+```bash
+# Future: generate clients from OpenAPI
+# npm run contracts:generate
+```
+
+Declared generated zone: `agent/generated-zones.toml` → `contracts/generated/**`
+
+## Drift checks
+
+Run `just check` — includes typecheck which validates TS boundaries against server types.

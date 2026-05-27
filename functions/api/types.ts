@@ -59,15 +59,6 @@ export type Env = {
   /** SEC-JWT-ROTATE-01: previous signing secret during rotation window. */
   JWT_SECRET_PREV?: string
   MULTI_REGION_WRITES_ENABLED?: string
-  /** S68: EU write opt-in cohort (team ids comma-separated or *). */
-  MR_WRITE_EU_COHORT?: string
-  /** S67/S70: LIVE protocol v2 shadow and default-on. */
-  REALTIME_V2_ENABLED?: string
-  REALTIME_V2_DEFAULT?: string
-  /** S67: SCIM bearer token (enterprise). */
-  SCIM_BEARER_TOKEN?: string
-  /** S68: Require join captcha token on by-code join. */
-  JOIN_CAPTCHA_ENABLED?: string
   KB_ADMIN_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string
@@ -167,7 +158,7 @@ export type Session = {
   team_id?: string | null
   /** Growth Engine: opt-out flag for public template gallery (defaults 1/true). */
   is_public?: number
-  /** Sprint 18 prereq: AI provenance — 1 if session questions were AI-wizard assisted. */
+  /** Sprint 18 prereq: wizard provenance — 1 if questions came from the AI wizard. */
   ai_generated?: number
   /** Sprint 18 prereq: GDPR consent timestamp (epoch ms). NULL if no consent given. */
   ai_consent_at?: number | null

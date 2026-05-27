@@ -5,12 +5,12 @@
 import { recordSpan } from '../lib/observability'
 import type { Context } from 'hono'
 
-export async function fetchWithTracing<T>(
-  stub: DurableObjectStub,
+export async function fetchWithTracing(
+  roomStub: DurableObjectStub,
   url: string,
   options: RequestInit & { traceId: string; userId?: string; operation: string },
   c: Context,
-): Promise<T> {
+): Promise<unknown> {
   const { traceId, userId, operation, ...fetchOpts } = options
 
   // Propagate trace_id via custom header
@@ -18,7 +18,7 @@ export async function fetchWithTracing<T>(
   headers.set('cf-session-trace-id', traceId)
 
   const response = await recordSpan(operation, async () => {
-    return stub.fetch(url, { ...fetchOpts, headers })
+    return roomStub.fetch(url, { ...fetchOpts, headers })
   }, {
     trace_id: traceId,
     ...(userId ? { user_id: userId } : {}),
@@ -29,5 +29,5 @@ export async function fetchWithTracing<T>(
     throw new Error(`DO fetch failed: ${response.status} ${response.statusText}`)
   }
 
-  return response.json() as Promise<T>
+  return response.json()
 }

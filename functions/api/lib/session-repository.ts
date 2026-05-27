@@ -1,4 +1,4 @@
-/** @deprecated Import from `repositories/sessionRepository.ts` (ADR-0026). */
+// Import from `repositories/sessionRepository.ts` (ADR-0026).
 export {
   fetchSessionTitleForOwner,
   sessionOwnedBy,

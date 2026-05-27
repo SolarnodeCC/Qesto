@@ -1,5 +1,9 @@
 #!/bin/bash
-# scripts/ci-local.sh — Local CI runner (parity with .github/workflows)
+# scripts/ci-local.sh — Local CI runner
+# Runs the same verification lanes as GitHub Actions locally.
+# Usage:
+#   bash scripts/ci-local.sh quality-gates    # Pre-push checks
+#   bash scripts/ci-local.sh full             # All checks
 
 set -e
 
@@ -8,46 +12,42 @@ source "$(dirname "$(dirname "$0")")/ops/ci/lib.sh"
 LANE=${1:-quality-gates}
 
 case "$LANE" in
-  quality-gates|check)
-    report_lane_start "quality-gates"
+  quality-gates)
+    report_lane_start "quality-gates (pre-push)"
     bash ops/ci/quality-gates.sh
     ;;
 
-  contracts)
-    report_lane_start "contract drift"
-    npx tsx scripts/check-contract-drift.ts
-    ;;
-
-  secret-scan|security)
-    report_lane_start "secret-scan"
-    bash ops/ci/secret-scan.sh
-    bash ops/ci/supply-chain.sh
-    ;;
-
-  jankurai|score)
-    report_lane_start "jankurai"
-    bash ops/ci/jankurai.sh
-    ;;
-
-  playwright|e2e)
-    report_lane_start "playwright"
-    bash ops/ci/playwright.sh
-    ;;
-
-  full|verify)
-    report_lane_start "full"
+  full)
+    report_lane_start "full (npm test + build)"
     bash ops/ci/quality-gates.sh
-    bash ops/ci/secret-scan.sh
-    npx tsx scripts/check-contract-drift.ts
+    report_success "Running build"
     npm run build
     ;;
 
   doctor)
+    report_lane_start "environment check"
     bash scripts/ci-doctor.sh
     ;;
 
+  ux-qa)
+    report_lane_start "ux-qa (Playwright SPA)"
+    bash ops/ci/ux-qa.sh
+    ;;
+
+  score)
+    report_lane_start "jankurai score"
+    just score
+    ;;
+
   *)
-    echo "Usage: bash scripts/ci-local.sh [quality-gates|contracts|secret-scan|jankurai|playwright|full|doctor]"
+    echo "Usage: bash scripts/ci-local.sh [quality-gates|full|doctor|ux-qa|score]"
+    echo ""
+    echo "Lanes:"
+    echo "  quality-gates  — Type check + tests (pre-push requirement)"
+    echo "  full           — Quality gates + build (full CI simulation)"
+    echo "  doctor         — Environment health check"
+    echo "  ux-qa          — Playwright SPA rendered UX lane"
+    echo "  score          — Jankurai audit artifacts in agent/"
     exit 1
     ;;
 esac

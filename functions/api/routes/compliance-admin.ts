@@ -63,20 +63,6 @@ export function mountComplianceAdminRoutes(parent: Hono<{ Bindings: Env; Variabl
     })
   })
 
-  app.get('/compliance/type2/audit-ready', async (c) => {
-    return c.json({
-      ok: true,
-      data: {
-        auditReady: true,
-        evidencePack: '/api/compliance/evidence-pack',
-        controlsAutomated: ['access-control', 'audit-trail', 'gdpr-deletion', 'api-key-lifecycle'],
-        openFindings: 0,
-        targetEngagement: 'SOC2 Type II',
-      },
-      trace_id: c.get('trace_id'),
-    })
-  })
-
   app.post('/compliance/pentest/resolve', async (c) => {
     writeEvent(c.env.METRICS_AE, {
       name: 'compliance.pentest_resolved',
