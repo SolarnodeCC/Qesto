@@ -17,7 +17,7 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
 
 const LANG_STORAGE_KEY = 'qesto_lang'
 
-function isSupportedLanguage(value: string | null | undefined): value is SupportedLanguage {
+export function isSupportedLanguage(value: string | null | undefined): value is SupportedLanguage {
   return !!value && SUPPORTED_LANGUAGES.includes(value as SupportedLanguage)
 }
 

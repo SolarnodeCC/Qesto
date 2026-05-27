@@ -42,4 +42,11 @@ worker-configuration.d.ts
 .kb-sync-manifest.json
 
 # Agent audit outputs (generated during jankurai scanning)
-agent/
+agent/*
+!agent/boundaries.toml
+!agent/owner-map.json
+!agent/test-map.json
+
+# Local Claude settings (may contain credentials — never commit)
+.claude/settings.local.json
+target/

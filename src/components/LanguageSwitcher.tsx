@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { getCurrentLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n'
+import {
+  getCurrentLanguage,
+  setLanguage,
+  SUPPORTED_LANGUAGES,
+  isSupportedLanguage,
+  type SupportedLanguage,
+} from '../i18n'
 
 const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   en: 'English',
@@ -19,7 +25,8 @@ const LANGUAGE_SHORT: Record<SupportedLanguage, string> = {
 
 export default function LanguageSwitcher() {
   const [open, setOpen] = useState(false)
-  const current = getCurrentLanguage() as SupportedLanguage
+  const langRaw = getCurrentLanguage()
+  const current: SupportedLanguage = isSupportedLanguage(langRaw) ? langRaw : 'en'
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

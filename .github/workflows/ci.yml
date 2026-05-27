@@ -22,11 +22,11 @@ jobs:
       contents: read
     steps:
       # Pin to full commit SHA — tag refs can change without review
-      - uses: actions/checkout@e0f025ddd1d4a93d97883a6e90b90c6f02a12d31
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@60edb5dd545a775178f3159f25d48a7b09cbd043
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: '20'
           cache: 'npm'
@@ -35,18 +35,20 @@ jobs:
       - name: Run quality gates
         run: bash ops/ci/quality-gates.sh
 
-      # Audit lane — jankurai scoring
+      - name: Secret pattern scan
+        run: bash ops/ci/secret-scan.sh
+
+      - name: Contract drift check
+        run: npx tsx scripts/check-contract-drift.ts
+
+      # Audit lane — jankurai scoring (delegates to ops/ci/jankurai.sh)
       - name: Run jankurai audit
-        run: |
-          mkdir -p agent
-          # Install jankurai globally if not present
-          npm list -g jankurai || npm install -g jankurai
-          jankurai . --json agent/repo-score.json --md agent/repo-score.md
+        run: bash ops/ci/jankurai.sh
         continue-on-error: true
 
       # Upload audit artifacts for agent repair routing
       - name: Upload audit artifacts
-        uses: actions/upload-artifact@6bc7d64a6f01890e8e7f6e1fa2080c6cc5192b55
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: audit-results
@@ -57,7 +59,7 @@ jobs:
 
       # Upload coverage artifacts
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@6bc7d64a6f01890e8e7f6e1fa2080c6cc5192b55
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: coverage-report
@@ -73,9 +75,9 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@e0f025ddd1d4a93d97883a6e90b90c6f02a12d31
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - uses: actions/setup-node@60edb5dd545a775178f3159f25d48a7b09cbd043
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version: '20'
           cache: 'npm'

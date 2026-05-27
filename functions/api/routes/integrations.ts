@@ -122,7 +122,7 @@ async function verifyState(state: string, secret: string): Promise<StatePayload 
   const parts = state.split('.')
   if (parts.length !== 2) return null
   const [body, sig] = parts
-  const expected = await hmacSha256(secret, body)
+  const expected = await hmacSign(secret, body)
   if (!timingSafeEqual(sig, expected)) return null
   let parsed: unknown
   try {

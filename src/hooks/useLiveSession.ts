@@ -8,6 +8,7 @@
 import type { PollOption, QuestionKind } from '@api/types'
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { enqueueOfflineVote, flushOfflineVoteQueue } from '../lib/offline-vote-queue'
+import { parseInitPayload, parseServerEnvelope } from '../lib/live-session-protocol'
 import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
 
 const LIVE_PROTOCOL_VERSION = 1
@@ -257,34 +258,44 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     })
     ws.addEventListener('message', (ev) => {
       try {
-        const raw = JSON.parse(ev.data as string)
-        if (!raw || typeof raw.type !== 'string' || typeof raw.data !== 'object') return
-        const msg = raw as { type: string; data: Record<string, unknown> }
+        const text = typeof ev.data === 'string' ? ev.data : String(ev.data)
+        const rawUnknown: unknown = JSON.parse(text)
+        const msg = parseServerEnvelope(rawUnknown)
+        if (!msg) return
         switch (msg.type) {
-          case 'init':
+          case 'init': {
+            const init = parseInitPayload(msg.data)
+            if (!init) return
             dispatch({
               kind: 'init',
-              session: msg.data.session as LiveSessionSummary,
-              role: msg.data.role as 'presenter' | 'voter',
-              voterId: msg.data.voterId as string,
-              question: (msg.data.question as LiveQuestion | null) ?? null,
-              questionIndex: (msg.data.questionIndex as number) ?? 0,
-              questionTotal: (msg.data.questionTotal as number) ?? 0,
-              results: msg.data.results as { counts: Record<string, number>; total: number },
-              participants: msg.data.participants as number,
-              energizer: (msg.data.energizer as LiveEnergizerState | null | undefined) ?? null,
+              session: init.session as LiveSessionSummary,
+              role: init.role,
+              voterId: init.voterId,
+              question: (init.question as LiveQuestion | null) ?? null,
+              questionIndex: init.questionIndex,
+              questionTotal: init.questionTotal,
+              results: init.results,
+              participants: init.participants,
+              energizer: (init.energizer as LiveEnergizerState | null | undefined) ?? null,
               sentiment:
-                (msg.data.sentiment as { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null | undefined) ??
+                (init.sentiment as { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null | undefined) ??
                 null,
             })
             break
-          case 'sentiment_signal':
+          }
+          case 'sentiment_signal': {
+            const mood =
+              msg.data.mood === 'positive' || msg.data.mood === 'neutral' || msg.data.mood === 'concerning'
+                ? msg.data.mood
+                : null
+            if (!mood) return
             dispatch({
               kind: 'sentiment',
-              mood: msg.data.mood as 'positive' | 'neutral' | 'concerning',
-              sampleSize: (msg.data.sampleSize as number) ?? 0,
+              mood,
+              sampleSize: typeof msg.data.sampleSize === 'number' ? msg.data.sampleSize : 0,
             })
             break
+          }
           case 'question':
             dispatch({
               kind: 'question',
