@@ -12,6 +12,7 @@ import {
   createFederationLink,
   listTeamFederationLinks,
 } from '../lib/federation'
+import { listFederationLibrary } from '../lib/federation-library'
 import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 
@@ -64,6 +65,18 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
     }
     writeEvent(c.env.METRICS_AE, { name: 'federation.consent_granted', teamId: link.targetTeamId, detail: link.id })
     return c.json({ ok: true, data: { link }, trace_id: c.get('trace_id') })
+  })
+
+  app.get('/library', async (c) => {
+    const teamId = c.req.query('teamId')
+    if (!teamId || !c.env.TEAMS_KV || !c.env.TEMPLATES_KV) {
+      return c.json(
+        { ok: false, error: { code: 'bad_request', message: 'teamId required' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const entries = await listFederationLibrary(c.env.TEAMS_KV, c.env.TEMPLATES_KV, teamId)
+    return c.json({ ok: true, data: { entries }, trace_id: c.get('trace_id') })
   })
 
   parent.route('/api/federation', app)
