@@ -67,6 +67,18 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
     return c.json({ ok: true, data: { link }, trace_id: c.get('trace_id') })
   })
 
+  app.get('/beta', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        federationV1Beta: true,
+        scopes: ['read_sessions', 'share_templates'],
+        consentRequired: true,
+      },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
   app.get('/library', async (c) => {
     const teamId = c.req.query('teamId')
     if (!teamId || !c.env.TEAMS_KV || !c.env.TEMPLATES_KV) {

@@ -40,6 +40,7 @@ const MarketplacePage = lazy(() => import('./pages/MarketplacePage'))
 const PartnerSlaPage = lazy(() => import('./pages/PartnerSlaPage'))
 const ZoomSessionEmbedPage = lazy(() => import('./pages/ZoomSessionEmbedPage'))
 const DeveloperPortalPage = lazy(() => import('./pages/DeveloperPortalPage'))
+const PresenterRemotePage = lazy(() => import('./pages/PresenterRemotePage'))
 
 // Use-case pages
 const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage'))
@@ -140,6 +141,14 @@ export default function App() {
           }
         />
         <Route path="/sessions/:id/present" element={<Present />} />
+        <Route
+          path="/sessions/:id/remote"
+          element={
+            <Suspense fallback={<LazyRouteFallback />}>
+              <PresenterRemotePage />
+            </Suspense>
+          }
+        />
         <Route path="/sessions/:id/results" element={<Results />} />
         <Route path="/join" element={<JoinPage />} />
         <Route path="/j/:code" element={<JoinPage />} />
