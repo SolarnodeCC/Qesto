@@ -14,6 +14,7 @@ const RELEASES = [
   { version: '4.0.0-rc.1', codename: 'v4.0-rc', status: 'rc', sprint: 69 },
   { version: '4.0.0', codename: 'v4.0', status: 'ga', sprint: 70 },
   { version: '4.1.0-rc.1', codename: 'v4.1-rc', status: 'rc', sprint: 73 },
+  { version: '4.2.0-rc.1', codename: 'v4.2-rc', status: 'rc', sprint: 76 },
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
