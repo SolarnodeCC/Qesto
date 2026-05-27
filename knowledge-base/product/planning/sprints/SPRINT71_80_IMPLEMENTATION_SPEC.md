@@ -28,7 +28,17 @@ created: 2026-05-27
 | FE-DM-CI-01 | Shipped | `npm run check:dark-mode` marketing page gate |
 | SEC-PEN3-02 | Shipped | Pentest #3 findings on `/api/admin/platform/audits` |
 
-## Deferred (S73+)
+## Sprint 73
+
+| Story | Status | Implementation |
+|-------|--------|----------------|
+| FE-DEV2-OAS-01 | Shipped | `/developers`, `/api/developer/openapi.json` |
+| PUSH-SLA-01 | Shipped | `GET /api/pwa/push/sla` |
+| SLACK-SCALE-01 | Shipped | `GET /api/integrations/slack/scale` |
+| RC-V41-01 | Shipped | Platform `4.1.0-rc.1` release entry |
+| ADR-0042 | Accepted | Capacitor shell strategy doc |
+
+## Deferred (S74+)
 
 - Actual Web Push send (requires VAPID secrets in prod)
 - 50k/100k load evidence artifacts (S75)
