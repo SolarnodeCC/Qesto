@@ -1,7 +1,7 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { useEffect, useRef, lazy, Suspense } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
-import { useColorScheme } from './hooks/useColorScheme'
+import { ColorSchemeProvider } from './hooks/ColorSchemeProvider'
 import { HelpChatWidget } from './components/HelpChatWidget'
 import { HelpChatProvider } from './hooks/useHelpChat'
 import Home from './pages/Home'
@@ -83,8 +83,8 @@ function AuthenticatedHelpWidget() {
 }
 
 export default function App() {
-  useColorScheme()
   return (
+    <ColorSchemeProvider>
     <AuthProvider>
       <HelpChatProvider>
         {/* Skip link is rendered by MainLayout on each page that uses it. */}
@@ -140,5 +140,6 @@ export default function App() {
       </Routes>
       </HelpChatProvider>
     </AuthProvider>
+    </ColorSchemeProvider>
   )
 }

@@ -61,6 +61,8 @@ export type Env = {
   SCIM_BEARER_TOKEN?: string
   /** JOIN-CAPTCHA: enable reCAPTCHA verification on session join. */
   JOIN_CAPTCHA_ENABLED?: string
+  /** PWA-PUSH-HARDENING-01: VAPID public key (safe to expose to clients). */
+  VAPID_PUBLIC_KEY?: string
 
   // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string
@@ -96,6 +98,8 @@ export type Env = {
   MARKETING_WEBHOOK_SECRET?: string
   /** INT-PROVIDER-01: AES-GCM master key for integration OAuth tokens at rest. */
   OAUTH_TOKEN_MEK?: string
+  /** PWA push — VAPID private key (wrangler secret). */
+  VAPID_PRIVATE_KEY?: string
 
   // Bindings
   DB: D1Database
