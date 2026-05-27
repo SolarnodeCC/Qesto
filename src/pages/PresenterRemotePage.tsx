@@ -15,18 +15,22 @@ export default function PresenterRemotePage() {
         </p>
         <div className="grid gap-3">
           <Link
-            to={id ? `/present/${id}` : '/dashboard'}
+            to={id ? `/sessions/${id}/present` : '/dashboard'}
             className="rounded-lg bg-teal-600 px-4 py-3 text-center text-white font-medium"
           >
             Open presenter view
           </Link>
           <Link
             to={id ? `/sessions/${id}/launchpad` : '/dashboard'}
-            className="rounded-lg border border-pulse-200 px-4 py-3 text-center text-pulse-800 dark:text-[#F0F2F8]"
+            className="rounded-lg border border-pulse-200 dark:border-[#2A3858] px-4 py-3 text-center text-pulse-800 dark:text-[#F0F2F8]"
           >
             Launchpad
           </Link>
         </div>
+        <section aria-label="Q&A queue" className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-4">
+          <h2 className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">Q&A queue</h2>
+          <p className="mt-2 text-xs text-pulse-500 dark:text-[#6B7A99]">Moderation UI ships in host console; remote shows live link only (S75).</p>
+        </section>
       </div>
     </MainLayout>
   )
