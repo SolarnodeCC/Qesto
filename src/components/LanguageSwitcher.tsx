@@ -3,7 +3,6 @@ import {
   getCurrentLanguage,
   setLanguage,
   SUPPORTED_LANGUAGES,
-  isSupportedLanguage,
   type SupportedLanguage,
 } from '../i18n'
 

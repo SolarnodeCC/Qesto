@@ -2,7 +2,6 @@
  * AI-COACHING-01 — post-session facilitator coaching (Workers AI, ADR-0011 scope).
  */
 import type { Env } from '../../types'
-import { validateData, CoachingAiResponseSchema } from '../validators'
 import { aiOverride, aiPipeline, type SessionAIContext } from './session-context'
 
 const COACHING_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'

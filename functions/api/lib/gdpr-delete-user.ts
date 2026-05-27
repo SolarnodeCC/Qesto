@@ -3,11 +3,6 @@
  */
 import { hardDeleteSession } from './session-delete'
 import { teamDocumentKey, userPrefsKey } from './kv-keys'
-import {
-  validateKvJson,
-  TeamIdsIndexSchema,
-  TeamDocumentSchema,
-} from './validators'
 
 export type GdprDeleteResult = {
   sessionsDeleted: number
