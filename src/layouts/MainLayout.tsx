@@ -141,11 +141,13 @@ export default function MainLayout({
   const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 
-  const MARKETING_PATHS = ['/', '/pricing', '/events', '/hr', '/nonprofit', '/consulting', '/privacy', '/terms']
+  const MARKETING_PATHS = ['/', '/pricing', '/events', '/hr', '/nonprofit', '/consulting', '/privacy', '/terms', '/marketplace']
   const isMarketingPage =
     MARKETING_PATHS.includes(location.pathname) ||
     location.pathname.startsWith('/features/') ||
-    location.pathname.startsWith('/use-cases/')
+    location.pathname.startsWith('/use-cases/') ||
+    location.pathname.startsWith('/trust/') ||
+    location.pathname.startsWith('/partner/')
 
   const t = useT('solutions')
   const solutionLinks = [
@@ -163,6 +165,11 @@ export default function MainLayout({
     { label: t('navLinks.teamMeetings'), href: '/use-cases/team-meetings' },
     { label: t('navLinks.workshops'), href: '/use-cases/workshops' },
     { label: t('navLinks.training'), href: '/use-cases/training' },
+  ]
+  const trustLinks = [
+    { label: 'GDPR trust center', href: '/trust/gdpr' },
+    { label: 'SOC 2 trust center', href: '/trust/soc2' },
+    { label: 'Partner marketplace', href: '/marketplace' },
   ]
 
   return (
@@ -198,6 +205,7 @@ export default function MainLayout({
                   <NavDropdown label={t('nav.solutions')} links={solutionLinks} />
                   <NavDropdown label={t('nav.features')} links={featureLinks} />
                   <NavDropdown label={t('nav.useCases')} links={useCaseLinks} />
+                  <NavDropdown label="Trust" links={trustLinks} />
                   <Link
                     to="/pricing"
                     className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 px-2 py-1 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2"
