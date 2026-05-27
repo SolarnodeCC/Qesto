@@ -159,6 +159,9 @@ export type QestoEvent = {
     | 'partner.secret_rotated'
     | 'partner.marketplace_viewed'
     | 'kb_rag.similar_sessions'
+    | 'realtime.v2_negotiated'
+    | 'federation.link_created'
+    | 'federation.consent_granted'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined
