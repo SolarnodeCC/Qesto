@@ -4,6 +4,8 @@
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { validateBody } from '../lib/validate'
+import { computePushSla } from '../lib/push-sla'
+import { readKvJson } from '../lib/kv'
 import {
   PushSubscriptionSchema,
   deletePushSubscription,
@@ -20,6 +22,17 @@ type Vars = AuthVariables
 export function mountPwaPushRoutes(parent: any) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
+
+  app.get('/sla', async (c) => {
+    const counters = c.env.METRICS_KV
+      ? await readKvJson<{ delivered: number; failed: number; p99Ms?: number }>(c.env.METRICS_KV, 'push:sla:24h')
+      : null
+    return c.json({
+      ok: true,
+      data: { sla: computePushSla(counters ?? undefined) },
+      trace_id: c.get('trace_id'),
+    })
+  })
 
   app.get('/status', (c) => {
     const configured = isPushConfigured(c.env)

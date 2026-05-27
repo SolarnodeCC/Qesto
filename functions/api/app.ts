@@ -28,6 +28,7 @@ import { mountCustomActionRoutes } from './routes/custom-actions'
 import { mountPwaPushRoutes } from './routes/pwa-push'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
+import { mountDeveloperPortalRoutes } from './routes/developer-portal'
 import { mountApiKeyRoutes } from './routes/api-keys'
 import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountPublicApiV2Routes } from './routes/public-api-v2'
@@ -136,6 +137,7 @@ export function createApp() {
   mountPublicApiV2Routes(app)
   mountPublicApiV3Routes(app)
   mountPlatformRoutes(app)
+  mountDeveloperPortalRoutes(app)
   mountScimRoutes(app)
 
   // RBAC enforcement — role-based access control for all API routes (Phase 8).

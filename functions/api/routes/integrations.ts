@@ -871,6 +871,25 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
   })
 
 
+  // SLACK-SCALE-01 — webhook throughput snapshot for enterprise scale proof (S73)
+  app.get('/slack/scale', authMiddleware, async (c) => {
+    const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, c.get('user').sub))
+    const counters = c.env.METRICS_KV
+      ? await readKvJson<{ eventsPerMinute: number; peak24h: number }>(c.env.METRICS_KV, `slack:scale:${teamId ?? 'global'}`)
+      : null
+    return c.json({
+      ok: true,
+      data: {
+        teamId: teamId ?? null,
+        eventsPerMinute: counters?.eventsPerMinute ?? 0,
+        peak24h: counters?.peak24h ?? 0,
+        capacityTarget: 5000,
+        status: (counters?.eventsPerMinute ?? 0) < 5000 ? 'within_capacity' : 'review',
+      },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
   // Partner skeletons (Sprint 45) — status endpoints until full OAuth ships
   for (const partner of ['workday', 'jira', 'mattermost'] as const) {
     app.get(`/${partner}/status`, authMiddleware, async (c) => {

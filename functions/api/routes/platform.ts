@@ -13,6 +13,7 @@ const RELEASES = [
   { version: '3.2.0', codename: 'v3.2', status: 'ga', sprint: 66 },
   { version: '4.0.0-rc.1', codename: 'v4.0-rc', status: 'rc', sprint: 69 },
   { version: '4.0.0', codename: 'v4.0', status: 'ga', sprint: 70 },
+  { version: '4.1.0-rc.1', codename: 'v4.1-rc', status: 'rc', sprint: 73 },
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,7 +24,7 @@ export function mountPlatformRoutes(parent: any) {
     c.json({
       ok: true,
       data: {
-        api: '4.0.0',
+        api: '4.1.0-rc.1',
         realtimeDefault: c.env.REALTIME_V2_DEFAULT === 'true' ? 2 : 1,
         realtimeV2Enabled: c.env.REALTIME_V2_ENABLED === 'true',
         publicApi: { v1: 'deprecated', v2: 'maintained', v3: 'ga' },
