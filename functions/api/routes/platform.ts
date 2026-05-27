@@ -106,8 +106,12 @@ export function mountPlatformRoutes(parent: any) {
         ],
         pentest: {
           engagement: 3,
-          status: 'prep',
+          status: 'execution',
           checklistPath: 'knowledge-base/quality/security/PENTEST_3_PREP.md',
+          findings: [
+            { id: 'PEN3-F01', severity: 'medium', status: 'open', title: 'Review push subscription TTL' },
+            { id: 'PEN3-F02', severity: 'low', status: 'remediated', title: 'Mount platform routes in app.ts' },
+          ],
         },
       },
       trace_id: c.get('trace_id'),
