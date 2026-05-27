@@ -80,7 +80,8 @@ export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env; Variables: 
     return c.json({
       ok: true,
       data: {
-        protocolVersion: 1,
+        protocolVersion: c.env.REALTIME_V2_DEFAULT === 'true' ? 2 : 1,
+        supportedVersions: [1, 2],
         websocketUrl: `${wsBase}/api/sessions/${encodeURIComponent(sessionId)}/ws`,
         events: ['init', 'question', 'results', 'participants', 'session_closed'],
         note: 'Connect with standard browser WebSocket; voter fingerprint via ?fp= query param.',

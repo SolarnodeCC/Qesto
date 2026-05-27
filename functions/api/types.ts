@@ -59,6 +59,15 @@ export type Env = {
   /** SEC-JWT-ROTATE-01: previous signing secret during rotation window. */
   JWT_SECRET_PREV?: string
   MULTI_REGION_WRITES_ENABLED?: string
+  /** S68: EU write opt-in cohort (team ids comma-separated or *). */
+  MR_WRITE_EU_COHORT?: string
+  /** S67/S70: LIVE protocol v2 shadow and default-on. */
+  REALTIME_V2_ENABLED?: string
+  REALTIME_V2_DEFAULT?: string
+  /** S67: SCIM bearer token (enterprise). */
+  SCIM_BEARER_TOKEN?: string
+  /** S68: Require join captcha token on by-code join. */
+  JOIN_CAPTCHA_ENABLED?: string
   KB_ADMIN_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string

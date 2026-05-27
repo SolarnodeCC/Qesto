@@ -8,6 +8,7 @@ import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
 import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-api-auth'
 import { listSessionsForTeam, fetchSessionForTeam } from '../repositories/sessionRepository'
+import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 
 type PublicApiVars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -15,6 +16,13 @@ type PublicApiVars = AuthVariables & PlanVariables & Partial<AdminVariables> & P
 export function mountPublicApiV1Routes(parent: Hono<{ Bindings: Env; Variables: PublicApiVars }>) {
   const app = new Hono<{ Bindings: Env; Variables: ApiKeyVars }>()
   app.use('*', publicApiKeyMiddleware)
+  app.use('*', async (c, next) => {
+    c.header('Deprecation', 'true')
+    c.header('Sunset', '2027-12-31')
+    c.header('Link', '</api/v3/openapi.json>; rel="successor-version"')
+    writeEvent(c.env.METRICS_AE, { name: 'platform.v1_deprecated_call', detail: c.req.path })
+    await next()
+  })
 
   app.get('/sessions', async (c) => {
     const sessions = await listSessionsForTeam(c.env.DB, c.get('apiKey').teamId)

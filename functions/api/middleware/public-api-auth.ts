@@ -13,6 +13,8 @@ import {
   type ApiKeyRecord,
 } from '../lib/api-keys'
 import { writeEvent } from '../lib/observability'
+import { clientIpHash, isApiAbuseBlocked, recordApiAbuseSignal } from '../lib/api-abuse'
+import { checkTenantApiQuota, incrementTenantApiUsage } from '../lib/tenant-quota'
 import type { Env } from '../types'
 
 export type ApiKeyVars = { apiKey: ApiKeyRecord }
@@ -31,8 +33,13 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
   }
   const hash = await hashApiKey(raw)
   const keyId = await c.env.INTEGRATIONS_KV.get(apiKeyHashIndexKey(hash))
+  const ipHash = clientIpHash(c.req.raw)
   if (!keyId) {
+    await recordApiAbuseSignal(c.env.ACTIONS_KV, ipHash, 'unknown', 'auth_fail')
     return c.json({ ok: false, error: { code: 'unauthenticated', message: 'Invalid API key' } }, 401)
+  }
+  if (await isApiAbuseBlocked(c.env.ACTIONS_KV, ipHash, keyId)) {
+    return c.json({ ok: false, error: { code: 'abuse_blocked', message: 'API access temporarily blocked' } }, 403)
   }
   const record = await readKvJson<ApiKeyRecord>(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId))
   const parsed = record ? ApiKeyRecordSchema.safeParse(record) : null
@@ -45,6 +52,7 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
   const rlKey = apiKeyRateLimitKey(parsed.data.id, windowStart)
   const count = Number((await rlKv.get(rlKey)) ?? '0')
   if (count >= KEY_LIMIT_PER_MIN) {
+    await recordApiAbuseSignal(c.env.ACTIONS_KV, ipHash, parsed.data.id, 'rate_limit')
     writeEvent(c.env.METRICS_AE, {
       name: 'rate_limit.hit',
       teamId: parsed.data.teamId,
@@ -57,6 +65,16 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
     )
   }
   await rlKv.put(rlKey, String(count + 1), { expirationTtl: KEY_WINDOW_SEC * 2 })
+
+  const tenantQuota = await checkTenantApiQuota(c.env.ACTIONS_KV ?? c.env.INTEGRATIONS_KV, parsed.data.teamId)
+  if (!tenantQuota.allowed) {
+    writeEvent(c.env.METRICS_AE, { name: 'tenant.quota_exceeded', teamId: parsed.data.teamId })
+    return c.json(
+      { ok: false, error: { code: 'tenant_quota_exceeded', message: 'Team API daily quota exceeded' } },
+      429,
+    )
+  }
+  if (c.env.ACTIONS_KV) await incrementTenantApiUsage(c.env.ACTIONS_KV, parsed.data.teamId)
 
   const updated: ApiKeyRecord = { ...parsed.data, lastUsedAt: Date.now() }
   await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(parsed.data.id), updated)
