@@ -28,27 +28,27 @@ export async function setTeamRegionConfig(
   await writeKvJson(kv, teamRegionKvKey(teamId), { ...config, updatedAt: Date.now() })
 }
 
-export function isTeamInEuWriteCohort(env: { MR_WRITE_EU_COHORT?: string }, teamId: string): boolean {
-  const cohort = env.MR_WRITE_EU_COHORT?.trim()
-  if (!cohort) return false
-  if (cohort === '*') return true
-  return cohort.split(',').map((s) => s.trim()).includes(teamId)
-}
-
 export function resolveWriteBinding(
-  env: { MULTI_REGION_WRITES_ENABLED?: string; MULTI_REGION_PRIMARY?: string; MR_WRITE_EU_COHORT?: string },
+  env: { MULTI_REGION_WRITES_ENABLED?: string; MULTI_REGION_PRIMARY?: string },
   teamConfig: TeamRegionConfig,
-  teamId?: string,
-): { binding: 'primary'; region: HomeRegion; residencyLocked: boolean; euCohort: boolean } {
+): { binding: 'primary'; region: HomeRegion; residencyLocked: boolean } {
   const primary = (env.MULTI_REGION_PRIMARY as HomeRegion) || 'us'
   const enabled = env.MULTI_REGION_WRITES_ENABLED === 'true'
-  const euCohort = teamId ? isTeamInEuWriteCohort(env, teamId) : false
-  let region: HomeRegion = enabled ? teamConfig.homeRegion : primary
-  if (euCohort && teamConfig.homeRegion === 'eu') region = 'eu'
+  const region = enabled ? teamConfig.homeRegion : primary
   return {
     binding: 'primary',
     region,
     residencyLocked: teamConfig.regionLock === 'eu',
-    euCohort,
   }
+}
+
+export function isTeamInEuWriteCohort(
+  env: { MR_WRITE_EU_COHORT?: string },
+  teamId: string,
+): boolean {
+  const cohort = env.MR_WRITE_EU_COHORT
+  if (!cohort) return false
+  if (cohort === '*') return true
+  const teamIds = cohort.split(',').map((t) => t.trim())
+  return teamIds.includes(teamId)
 }

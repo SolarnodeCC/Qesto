@@ -1,0 +1,26 @@
+# Generated file zones — DO NOT EDIT BY HAND in these paths.
+
+[[zone]]
+path = "src/ui/tokens.ts"
+generator = "npm run tokens:build"
+source = "docs/spec/design-tokens.json"
+
+[[zone]]
+path = "src/ui/tailwind-theme.ts"
+generator = "npm run tokens:build"
+source = "docs/spec/design-tokens.json"
+
+[[zone]]
+path = "contracts/generated/**"
+generator = "contracts:generate (planned)"
+source = "contracts/openapi/qesto-api.yaml"
+
+[[zone]]
+path = "agent/repo-score.json"
+generator = "jankurai"
+source = "repository audit"
+
+[[zone]]
+path = "agent/repo-score.md"
+generator = "jankurai"
+source = "repository audit"

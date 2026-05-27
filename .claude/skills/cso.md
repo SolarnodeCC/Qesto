@@ -77,7 +77,8 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 ### A06 — Vulnerable Components
 ```
 □ npm audit — no high/critical vulnerabilities
-□ Stripe API: v1 REST endpoint pinned (see functions/api/routes/billing.ts:21)
+□ Stripe API: pinned REST version header (see functions/api/routes/billing.ts:21)
+□ Stripe SDK: not used in this repo today (Stripe calls are REST); if introduced, pin to latest stable and verify via `npm ls stripe @stripe/stripe-js`
 □ All external service calls use Circuit Breaker pattern (see functions/api/lib/resilience/circuit-breaker.ts)
 ```
 

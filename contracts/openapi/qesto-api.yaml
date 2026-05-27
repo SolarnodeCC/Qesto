@@ -1,0 +1,10 @@
+openapi: 3.1.0
+info:
+  title: Qesto API
+  version: 0.0.0-placeholder
+  description: |
+    Placeholder OpenAPI root for jankurai contract lane.
+    Full surface documented in knowledge-base/api/API_FULL.md until generation is automated.
+servers:
+  - url: https://qesto.cc/api
+paths: {}

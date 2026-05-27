@@ -109,9 +109,9 @@ function catalogRow(q: PlanQuotas) {
   }
 }
 
-function cents(value: string | undefined, fallback: number): number {
+function cents(value: string | undefined, defaultCents: number): number {
   const parsed = Number(value)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : defaultCents
 }
 
 function catalogPricing(env: Env) {

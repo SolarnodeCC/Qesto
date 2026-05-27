@@ -2,7 +2,6 @@
  * AI-COACHING-01 — post-session facilitator coaching (Workers AI, ADR-0011 scope).
  */
 import type { Env } from '../../types'
-import { validateData, CoachingAiResponseSchema } from '../validators'
 import { aiOverride, aiPipeline, type SessionAIContext } from './session-context'
 
 const COACHING_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
@@ -77,20 +76,20 @@ Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1
   }
 
   try {
-    const jsonText = text.replace(/^```json\s*|\s*```$/g, '').trim()
-    const untrusted = JSON.parse(jsonText) as unknown
-    const parsed = validateData(untrusted, CoachingAiResponseSchema)
-    if (!parsed) return null
+    const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, '').trim())
+    if (!parsed || typeof parsed !== 'object') return null
+    const obj = parsed as Record<string, unknown>
+    const headline = typeof obj.headline === 'string' ? obj.headline : null
+    const bulletsRaw = Array.isArray(obj.bullets) ? obj.bullets : null
+    if (!headline || !bulletsRaw) return null
     return {
-      headline: parsed.headline.slice(0, 200),
-      bullets: parsed.bullets.slice(0, 5).map((b) => String(b).slice(0, 300)),
+      headline: headline.slice(0, 200),
+      bullets: bulletsRaw.slice(0, 5).map((b) => String(b).slice(0, 300)),
       model: COACHING_MODEL,
-      ...(parsed.confidence !== undefined ?
-        { confidence: Math.min(1, Math.max(0, parsed.confidence)) }
-      : {}),
-      ...(parsed.followUps ?
-        { followUps: parsed.followUps.slice(0, 3).map((f) => String(f).slice(0, 200)) }
-      : {}),
+      ...(typeof obj.confidence === 'number' ? { confidence: Math.min(1, Math.max(0, obj.confidence)) } : {}),
+      ...(Array.isArray(obj.followUps)
+        ? { followUps: obj.followUps.slice(0, 3).map((f) => String(f).slice(0, 200)) }
+        : {}),
     }
   } catch {
     return {

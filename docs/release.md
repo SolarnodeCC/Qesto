@@ -1,33 +1,42 @@
-# Release control surface
+# Release process
 
 ## Version source
-- `package.json` — application semver (`version` field)
-- Cloudflare Pages project `qesto` — production deploy target
+
+- Application version: `package.json` `version` field.
+- Deploy target: Cloudflare Pages (`wrangler pages deploy` after `npm run build`).
+
+## Pre-release checklist
+
+1. `just verify` — quality gates, build, advisory jankurai score.
+2. CI green on `main`: `.github/workflows/ci.yml`, `playwright.yml`, `jankurai.yml`.
+3. Migrations applied to staging D1 before production (see [knowledge-base/product/releases/RELEASE_GUIDE.md](../knowledge-base/product/releases/RELEASE_GUIDE.md)).
+4. Secrets rotated per [ops/PROFILE.md](../ops/PROFILE.md) — never committed in `wrangler.toml`.
 
 ## Changelog
-- Product releases: `knowledge-base/product/releases/ARCHIVED_SPRINTS.md`
-- Security incidents: `.github/SECURITY_INCIDENT.md`
 
-## Release process
-1. `just verify` — typecheck, unit tests, build (see `docs/testing.md`)
-2. `just check` — RC gate subset: `npm run check:rc`
-3. `npm run build && npm run deploy:frontend` — Pages static assets
-4. `npm run deploy:api` — API worker (requires Cloudflare credentials)
+- User-facing changes: note in PR description and `knowledge-base/product/releases/` as appropriate.
+- Security fixes: follow `.github/SECURITY_INCIDENT.md` if credentials were exposed.
 
-## Changelog
-- Product releases: `knowledge-base/product/releases/ARCHIVED_SPRINTS.md`
-- Version source: `package.json` `version` field
+## Artifacts and integrity
 
-## CI evidence
-- `.github/workflows/ci.yml` — quality gates + contract drift + audit artifacts
-- `.github/workflows/jankurai.yml` — advisory repo score
-- `ops/ci/supply-chain.sh` — npm audit + gitleaks (when Docker available)
-
-## Integrity / provenance
-- `package-lock.json` — lockfile; `npm ci` in CI
-- GitHub Actions pinned to full commit SHAs (HLT-034)
+| Artifact | Location |
+|----------|----------|
+| Production build | `dist/` from `npm run build` |
+| Audit score | `agent/repo-score.json` (CI artifact / `just score`) |
+| Playwright report | CI artifact `playwright-report` |
 
 ## Rollback
-- **Frontend:** redeploy previous Pages deployment from Cloudflare dashboard
-- **API:** `wrangler deployments list` then rollback to prior deployment ID
-- **D1:** restore from backup before applying destructive migrations; see `migrations/.metadata/README.md`
+
+1. Revert merge commit on `main` or redeploy previous Pages deployment from Cloudflare dashboard.
+2. D1: forward-only migrations; rollback uses documented steps in `migrations/.metadata/*.json`.
+3. KV/DO: no automatic rollback — follow runbook in `knowledge-base/operations/`.
+
+## Budgets and stop conditions
+
+- Workers AI calls: bounded by session plan middleware and rate limits in API routes.
+- CI: workflow `timeout-minutes` caps; cancel-in-progress concurrency on all workflows.
+- Agent sessions: stop after `just check` fails; do not bypass hooks with `--no-verify`.
+
+## Detailed guide
+
+[knowledge-base/product/releases/RELEASE_GUIDE.md](../knowledge-base/product/releases/RELEASE_GUIDE.md)

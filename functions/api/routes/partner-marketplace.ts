@@ -92,19 +92,5 @@ export function mountPartnerMarketplaceRoutes(parent: Hono<{ Bindings: Env; Vari
     })
   })
 
-  app.post('/apps/:listingId/install', async (c) => {
-    const listingId = c.req.param('listingId')
-    const teamId = c.req.query('teamId')
-    if (!teamId) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
-    }
-    writeEvent(c.env.METRICS_AE, { name: 'partner.marketplace_viewed', teamId, detail: `install:${listingId}` })
-    return c.json({
-      ok: true,
-      data: { installed: true, listingId, teamId, redirect: `/integrations?partner=${listingId}` },
-      trace_id: c.get('trace_id'),
-    })
-  })
-
   parent.route('/api/marketplace', app)
 }

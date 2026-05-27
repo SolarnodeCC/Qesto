@@ -275,7 +275,7 @@ async function invokeAI(
   )
 }
 
-async function invokeWithFallback(
+async function invokeWithSecondaryModel(
   ai: Ai,
   model: string,
   messages: Array<{ role: string; content: string }>,
@@ -285,9 +285,7 @@ async function invokeWithFallback(
     return await invokeAI(ai, model, messages, approxInputChars)
   } catch (primaryErr) {
     if (model !== QUALITY_FALLBACK_MODEL) {
-      console.log(
-        JSON.stringify({ event: 'ai.wizard.fallback', primaryModel: model, fallbackModel: QUALITY_FALLBACK_MODEL }),
-      )
+      console.log(JSON.stringify({ event: 'ai.wizard.secondary_model', primaryModel: model, secondaryModel: QUALITY_FALLBACK_MODEL }))
       return await invokeAI(ai, QUALITY_FALLBACK_MODEL, messages, approxInputChars)
     }
     throw primaryErr
@@ -369,14 +367,14 @@ export async function generateQuestions(
 ): Promise<GenerateResult> {
   if (model !== FAST_MODEL) {
     const { messages, approxInputChars } = buildMessages(input)
-    const raw = await invokeWithFallback(ai, model, messages, approxInputChars)
+    const raw = await invokeWithSecondaryModel(ai, model, messages, approxInputChars)
     return parseAIQuestions(raw)
   }
 
   const settled = await Promise.allSettled(
     PARALLEL_BATCH_FOCI.map(async (batchFocus) => {
       const { messages, approxInputChars } = buildMessages(input, batchFocus)
-      const raw = await invokeWithFallback(ai, model, messages, approxInputChars)
+      const raw = await invokeWithSecondaryModel(ai, model, messages, approxInputChars)
       return parseAIQuestions(raw)
     }),
   )

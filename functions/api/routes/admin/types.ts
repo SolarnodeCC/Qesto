@@ -1,3 +1,5 @@
+import type { EnergizerKindMetric } from '../../lib/admin-engagement-summary'
+
 export type AdminUser = {
   id: string
   email: string
@@ -112,3 +114,20 @@ export type Sprint19Baseline = {
   }
   measurement_gaps: string[]
 }
+
+export type EngagementSummary = {
+  from_ms: number
+  to_ms: number
+  totals: {
+    sessions: number
+    active_energizers: number
+    energizer_activations: number
+    energizer_participants: number
+    energizer_completions: number
+    energizer_dropouts: number
+    leaderboard_participants: number
+    badges_awarded: number
+  }
+  energizer_kinds: EnergizerKindMetric[]
+}
+

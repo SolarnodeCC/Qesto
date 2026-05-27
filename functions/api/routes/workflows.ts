@@ -12,7 +12,6 @@ import {
   createTeamWorkflow,
   listTeamWorkflows,
 } from '../lib/workflow-engine'
-import { WORKFLOW_TEMPLATES } from '../lib/workflow-templates'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -28,10 +27,6 @@ export function mountWorkflowRoutes(parent: Hono<{ Bindings: Env; Variables: Var
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
-
-  app.get('/templates', async (c) => {
-    return c.json({ ok: true, data: { templates: WORKFLOW_TEMPLATES }, trace_id: c.get('trace_id') })
-  })
 
   app.get('/', async (c) => {
     const teamId = c.req.query('teamId')

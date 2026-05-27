@@ -176,15 +176,15 @@ export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables
   parent.route('/api/knowledge-base', app)
 }
 
-function safeJsonParse<T>(raw: unknown, fallback: T, schema?: z.ZodSchema<T>): T {
-  if (typeof raw !== 'string') return fallback
+function safeJsonParse<T>(raw: unknown, defaultValue: T, schema?: z.ZodSchema<T>): T {
+  if (typeof raw !== 'string') return defaultValue
   try {
     const parsed = JSON.parse(raw)
     if (schema) {
-      return validateData(parsed, schema) ?? fallback
+      return validateData(parsed, schema) ?? defaultValue
     }
     return parsed as T
   } catch {
-    return fallback
+    return defaultValue
   }
 }

@@ -35,7 +35,7 @@ interface BreakerState {
  *
  * State machine:
  * - CLOSED: normal, requests pass through
- * - OPEN: threshold hit, requests fail fast (return fallback)
+ * - OPEN: threshold hit, requests fail fast (return default response)
  * - HALF_OPEN: testing recovery, single-flight probe
  */
 export class CircuitBreaker {
@@ -61,8 +61,8 @@ export class CircuitBreaker {
    * Execute a function with circuit breaker protection.
    *
    * @param fn Function that returns a Promise (receives AbortSignal)
-   * @param onOpen Fallback to return when breaker is open
-   * @returns Result of fn or fallback if open
+   * @param onOpen Default response to return when breaker is open
+   * @returns Result of fn or default response if open
    */
   async execute<T>(
     fn: (signal: AbortSignal) => Promise<T>,

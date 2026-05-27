@@ -3,11 +3,6 @@
  */
 import { hardDeleteSession } from './session-delete'
 import { teamDocumentKey, userPrefsKey } from './kv-keys'
-import {
-  validateKvJson,
-  TeamIdsIndexSchema,
-  TeamDocumentSchema,
-} from './validators'
 
 export type GdprDeleteResult = {
   sessionsDeleted: number
@@ -44,16 +39,23 @@ export async function deleteUserGdprData(
 
   const teamsRaw = await env.TEAMS_KV.get(`user-teams:${userId}`)
   if (teamsRaw) {
-    const teamIds = validateKvJson(teamsRaw, TeamIdsIndexSchema)
-    if (teamIds) {
-      for (const teamId of teamIds) {
-        const doc = await env.TEAMS_KV.get(teamDocumentKey(teamId))
-        if (!doc) continue
-        const team = validateKvJson(doc, TeamDocumentSchema)
-        if (!team?.members) continue
-        const members = team.members.filter((m) => m.userId !== userId)
-        await env.TEAMS_KV.put(teamDocumentKey(teamId), JSON.stringify({ ...team, members }))
+    try {
+      const parsed = JSON.parse(teamsRaw)
+      const teamIds = Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === 'string') : []
+      if (teamIds.length) {
+        for (const teamId of teamIds) {
+          const doc = await env.TEAMS_KV.get(teamDocumentKey(teamId))
+          if (!doc) continue
+          const teamParsed = JSON.parse(doc)
+          if (!teamParsed || typeof teamParsed !== 'object') continue
+          const members = (teamParsed as { members?: unknown }).members
+          if (!Array.isArray(members)) continue
+          const filtered = members.filter((m) => !(m && typeof m === 'object' && (m as { userId?: unknown }).userId === userId))
+          await env.TEAMS_KV.put(teamDocumentKey(teamId), JSON.stringify({ ...(teamParsed as Record<string, unknown>), members: filtered }))
+        }
       }
+    } catch {
+      // Ignore JSON parse errors
     }
     await env.TEAMS_KV.delete(`user-teams:${userId}`)
   }

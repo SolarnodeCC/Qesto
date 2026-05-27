@@ -1,16 +1,25 @@
-# db/ — data truth and migration guidance
+# Database layer (`db/`)
 
-## Owns
-- `schema.sql` — canonical D1 schema snapshot
-- `migrations/` — versioned SQL migrations with `.metadata/` safety evidence
-- Local adapter notes (no direct SQL from `src/` components)
+**Owns:** `migrations/`, `schema.sql`, D1 constraint definitions  
+**Forbidden:** React/UI imports, ad-hoc SQL from `src/`  
+**Proof lane:** `npm test` (migration and schema unit tests)
 
-## Forbidden
-- Frontend or REST handlers issuing raw SQL outside `functions/api/`
-- Destructive migrations without same-stem `.metadata/*.json` + verify SQL
+## Layout
 
-## Proof lane
+| Path | Role |
+|------|------|
+| `migrations/*.sql` | Forward D1 migrations (apply with wrangler) |
+| `migrations/.metadata/` | Destructive migration safety evidence |
+| `schema.sql` | Full schema snapshot for local `--local` dev |
+
+## Commands
+
 ```bash
-npm run e2e:db:local
-# After destructive rebuild migrations, confirm PRAGMA foreign_key_check / quick_check in SQL
+npx wrangler d1 execute qesto_2_db --local --file=schema.sql
+npx wrangler d1 migrations apply qesto_2_db --local
 ```
+
+## References
+
+- [docs/boundaries.md](../docs/boundaries.md)
+- [knowledge-base/specifications/domain/SPEC_DATAMODEL.md](../knowledge-base/specifications/domain/SPEC_DATAMODEL.md)
