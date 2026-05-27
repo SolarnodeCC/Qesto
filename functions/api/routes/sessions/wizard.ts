@@ -12,6 +12,7 @@ import {
   AddQuestionSchema,
   autoPopulateOptions,
 } from '../../lib/validation'
+import { ensurePersonalTeam } from '../teams'
 import { WizardAIError, WizardValidationError, generateQuestions } from '../../lib/ai-wizard'
 import { sanitizeError } from '../../lib/error-handler'
 import { requireFeature } from '../../middleware/feature-gate'
@@ -546,12 +547,22 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     const code = generateJoinCode()
     const now = Date.now()
 
+    let duplicateTeamId: string | null = (session as { team_id?: string | null }).team_id ?? null
+    if (!duplicateTeamId) {
+      try {
+        const personal = await ensurePersonalTeam(c.env.TEAMS_KV, c.env.DB, user.sub, user.email)
+        duplicateTeamId = personal.id
+      } catch {
+        duplicateTeamId = null
+      }
+    }
+
     await c.env.DB
       .prepare(
-        `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, created_at)
-         VALUES (?1, ?2, ?3, ?4, 'draft', ?5, ?6)`,
+        `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, vote_policy, session_mode, created_at, team_id)
+         VALUES (?1, ?2, ?3, ?4, 'draft', ?5, ?6, ?7, ?8, ?9)`,
       )
-      .bind(newId, user.sub, code, title, session.anonymity, now)
+      .bind(newId, user.sub, code, title, session.anonymity, session.vote_policy, session.session_mode, now, duplicateTeamId)
       .run()
 
     const questions = await fetchQuestions(c.env.DB, id)
@@ -579,6 +590,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
       started_at: null,
       closed_at: null,
       archived_at: null,
+      team_id: duplicateTeamId,
     }
     const newQuestions = await fetchQuestions(c.env.DB, newId)
     return c.json(

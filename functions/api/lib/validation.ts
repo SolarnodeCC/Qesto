@@ -24,6 +24,7 @@ export const PollQuestionSchema = z.object({
 
 export const CreateSessionSchema = z.object({
   title: trimmed(1, 120),
+  teamId: z.string().min(1).max(128).optional(),
 })
 
 export const DuplicateSessionSchema = z.preprocess(

@@ -13,7 +13,7 @@ import {
   PatchSessionSchema,
   isPatchBodyTitleOnly,
 } from '../../lib/validation'
-import { validateKvJson, StringArraySchema } from '../../lib/validators'
+import { loadTeam, ensurePersonalTeam } from '../teams'
 import { requireFound, requireDraft, requireEditableTitle } from '../../lib/session-lifecycle'
 import {
   fetchSession,
@@ -114,18 +114,21 @@ export function mountSessionCrudRoutes(app: Hono<{ Bindings: Env; Variables: Ses
           const id = ulid()
           const code = generateJoinCode()
           const now = Date.now()
-          // OBS-001: attribute new session to the user's first team (if any).
-          // TEAMS_KV key `user-teams:{userId}` stores `string[]` of teamIds.
-          // Null is valid — individual (team-less) sessions remain supported.
           let teamId: string | null = null
           try {
-            const raw = await c.env.TEAMS_KV.get(`user-teams:${user.sub}`)
-            if (raw) {
-              const ids = validateKvJson(raw, StringArraySchema)
-              teamId = ids && ids.length > 0 ? ids[0] : null
+            const requestedId = body.teamId ?? null
+            if (requestedId) {
+              const team = await loadTeam(c.env.TEAMS_KV, requestedId)
+              const isMember =
+                team !== null &&
+                (team.ownerId === user.sub || team.members.some((m) => m.userId === user.sub))
+              if (isMember) teamId = requestedId
+            }
+            if (!teamId) {
+              const personal = await ensurePersonalTeam(c.env.TEAMS_KV, c.env.DB, user.sub, user.email)
+              teamId = personal.id
             }
           } catch {
-            // KV lookup is best-effort analytics attribution — never blocks session creation.
             teamId = null
           }
           await c.env.DB.prepare(
