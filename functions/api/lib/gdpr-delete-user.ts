@@ -59,6 +59,8 @@ export async function deleteUserGdprData(
           await env.TEAMS_KV.put(teamDocumentKey(teamId), JSON.stringify({ ...(teamParsed as Record<string, unknown>), members: filtered }))
         }
       }
+    } catch {
+      // Ignore JSON parse errors
     }
     await env.TEAMS_KV.delete(`user-teams:${userId}`)
   }
