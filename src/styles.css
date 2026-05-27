@@ -107,6 +107,20 @@
   --shadow-focus-ring:      0 0 0 3px rgba(20,184,166,0.4);
 }
 
+[data-high-contrast='true'] {
+  --color-border: #000000;
+  --color-border-strong: #000000;
+  --text-primary: #000000;
+  --text-secondary: #000000;
+}
+
+[data-theme='dark'][data-high-contrast='true'] {
+  --color-border: #ffffff;
+  --color-border-strong: #ffffff;
+  --text-primary: #ffffff;
+  --text-secondary: #ffffff;
+}
+
 [data-theme="dark"] {
   --color-bg:               #0A0F1E;
   --color-bg-subtle:        #0F1525;
