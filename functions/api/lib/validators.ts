@@ -608,6 +608,31 @@ export const SlackIntegrationPayloadSchema = z.object({
 
 export type ValidSlackIntegrationPayload = z.infer<typeof SlackIntegrationPayloadSchema>
 
+// ── AI coaching response (Workers AI JSON boundary) ─────────────────────────
+
+export const CoachingAiResponseSchema = z.object({
+  headline: z.string().min(1),
+  bullets: z.array(z.string()).min(1),
+  confidence: z.number().min(0).max(1).optional(),
+  followUps: z.array(z.string()).max(3).optional(),
+})
+
+export type ValidCoachingAiResponse = z.infer<typeof CoachingAiResponseSchema>
+
+// ── GDPR / KV team documents ─────────────────────────────────────────────────
+
+export const TeamIdsIndexSchema = z.array(z.string().min(1))
+
+export const TeamDocumentMemberSchema = z.object({
+  userId: z.string().min(1),
+})
+
+export const TeamDocumentSchema = z.object({
+  members: z.array(TeamDocumentMemberSchema).optional(),
+})
+
+export type ValidTeamDocument = z.infer<typeof TeamDocumentSchema>
+
 // ── Energizer Validators ────────────────────────────────────────────────────
 
 export const EnergizerSchema = z.object({

@@ -2,6 +2,7 @@
  * AI-COACHING-01 — post-session facilitator coaching (Workers AI, ADR-0011 scope).
  */
 import type { Env } from '../../types'
+import { validateData, CoachingAiResponseSchema } from '../validators'
 import { aiOverride, aiPipeline, type SessionAIContext } from './session-context'
 
 const COACHING_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
@@ -65,12 +66,15 @@ Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1
   if (!result.ok) return null
 
   const raw = result.data
-  const text =
-    typeof raw === 'string'
-      ? raw
-      : raw && typeof raw === 'object' && 'response' in raw
-        ? String((raw as { response?: string }).response ?? '')
-        : JSON.stringify(raw)
+  let text = ''
+  if (typeof raw === 'string') {
+    text = raw
+  } else if (raw && typeof raw === 'object' && 'response' in raw) {
+    const response = (raw as Record<string, unknown>).response
+    text = typeof response === 'string' ? response : ''
+  } else {
+    text = JSON.stringify(raw)
+  }
 
   try {
     const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, '').trim())

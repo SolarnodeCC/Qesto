@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { getCurrentLanguage, setLanguage, SUPPORTED_LANGUAGES, type SupportedLanguage } from '../i18n'
+import {
+  getCurrentLanguage,
+  setLanguage,
+  SUPPORTED_LANGUAGES,
+  isSupportedLanguage,
+  type SupportedLanguage,
+} from '../i18n'
 
 const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   en: 'English',

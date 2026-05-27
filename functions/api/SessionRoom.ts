@@ -25,6 +25,11 @@ import {
   CLOSE_NORMAL,
   CLOSE_POLICY_VIOLATION,
   LIVE_PROTOCOL_VERSION,
+  LIVE_PROTOCOL_VERSION_V2,
+  isLiveProtocolSupported,
+  liveProtocolFeatures,
+  defaultLiveProtocolVersion,
+  type LiveProtocolVersion,
   type LiveEnergizerState,
   type LiveQuestion,
   type LiveSessionSummary,
@@ -435,6 +440,15 @@ export class SessionRoom implements DurableObject {
         count: voterCount,
       })
     }
+    if (protocolVersion === LIVE_PROTOCOL_VERSION_V2) {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      writeEvent(this.env.METRICS_AE, {
+        name: 'realtime.v2_negotiated',
+        sessionId: meta?.sessionId,
+        teamId: meta?.teamId,
+        detail: attachment.colo ? `colo:${attachment.colo}` : 'v2',
+      })
+    }
 
     return new Response(null, { status: 101, webSocket: client })
   }
@@ -448,7 +462,7 @@ export class SessionRoom implements DurableObject {
         ws.send(errorMessage('bad_message', 'Invalid or malformed message'))
         return
       }
-      if (parsed.v !== undefined && parsed.v !== LIVE_PROTOCOL_VERSION) {
+      if (parsed.v !== undefined && !isLiveProtocolSupported(parsed.v, this.env)) {
         ws.send(errorMessage('unsupported_protocol', `Unsupported LIVE protocol version: ${parsed.v}`))
         return
       }
@@ -1082,6 +1096,8 @@ export class SessionRoom implements DurableObject {
           session,
           role: att.role,
           voterId: att.voterId,
+          protocolVersion: att.protocolVersion ?? LIVE_PROTOCOL_VERSION,
+          features: liveProtocolFeatures(att.protocolVersion ?? LIVE_PROTOCOL_VERSION),
           question,
           questionIndex,
           questionTotal: allQs.length,

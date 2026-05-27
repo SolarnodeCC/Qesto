@@ -98,7 +98,12 @@ function parseSseEvent(raw: string): { event: string; data: unknown } | null {
     if (line.startsWith('data:')) dataLines.push(line.slice('data:'.length).trim())
   }
   if (dataLines.length === 0) return null
-  return { event, data: JSON.parse(dataLines.join('\n')) as unknown }
+  try {
+    const data: unknown = JSON.parse(dataLines.join('\n'))
+    return { event, data }
+  } catch {
+    return null
+  }
 }
 
 function normalizeQuestionKind(kind: string): WizardQuestionKind {

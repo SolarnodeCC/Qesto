@@ -3,6 +3,8 @@
  * Master key: OAUTH_TOKEN_MEK secret (SHA-256 derived to 256-bit AES key).
  */
 
+import { z } from 'zod'
+
 const ENVELOPE_VERSION = 1
 
 export type TokenEnvelope = {
@@ -10,6 +12,12 @@ export type TokenEnvelope = {
   iv: string
   ct: string
 }
+
+const TokenEnvelopeSchema = z.object({
+  v: z.literal(ENVELOPE_VERSION),
+  iv: z.string().min(1),
+  ct: z.string().min(1),
+})
 
 export async function deriveAesKeyFromMek(mek: string): Promise<CryptoKey> {
   const raw = new TextEncoder().encode(mek)
@@ -52,16 +60,9 @@ export async function decryptTokenPayload(serialized: string, key: CryptoKey): P
   } catch {
     return null
   }
-  if (
-    !parsed ||
-    typeof parsed !== 'object' ||
-    (parsed as TokenEnvelope).v !== ENVELOPE_VERSION ||
-    typeof (parsed as TokenEnvelope).iv !== 'string' ||
-    typeof (parsed as TokenEnvelope).ct !== 'string'
-  ) {
-    return null
-  }
-  const { iv, ct } = parsed as TokenEnvelope
+  const envelope = TokenEnvelopeSchema.safeParse(parsed)
+  if (!envelope.success) return null
+  const { iv, ct } = envelope.data
   try {
     const plain = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: base64ToBytes(iv) as BufferSource },

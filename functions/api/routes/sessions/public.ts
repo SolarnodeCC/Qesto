@@ -11,6 +11,7 @@ import {
   type SessionVars,
 } from './shared'
 import { loadTeamBranding } from '../../lib/team-branding'
+import { issueJoinCaptchaToken, verifyJoinCaptchaToken } from '../../lib/join-captcha'
 import type { Env } from '../../types'
 import type { Permission } from '../../lib/authz'
 
@@ -33,6 +34,21 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
         { ok: false, error: { code: 'not_found', message: 'No active session for that code' }, trace_id: traceId },
         404,
       )
+    }
+    if (c.env.JOIN_CAPTCHA_ENABLED === 'true') {
+      const token = c.req.header('x-qesto-join-token')
+      if (!token || !(await verifyJoinCaptchaToken(c.env, token, code))) {
+        const joinToken = await issueJoinCaptchaToken(c.env, code)
+        return c.json(
+          {
+            ok: false,
+            error: { code: 'captcha_required', message: 'Join token required' },
+            data: { joinToken },
+            trace_id: traceId,
+          },
+          428,
+        )
+      }
     }
     console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'join.success', session_id: session.id, status: session.status, trace_id: traceId }))
     const branding = await loadTeamBranding(c.env.TEAMS_KV, session.team_id)
