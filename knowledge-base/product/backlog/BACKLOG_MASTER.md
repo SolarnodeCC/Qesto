@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-25 (UTC) — Sprint 60–70 master plan (3× capacity); Market Pulse integration (Week of May 19, 2026)_
+_Last updated: 2026-05-27 (UTC) — Sprint 71–80 master plan (3× capacity); Sprint 60–70 master plan; Market Pulse integration (Week of May 19, 2026)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -1491,6 +1491,43 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 
 ---
 
+### Sprint 71–80 — Post-v4.0 Platform Maturity Arc (added 2026-05-27)
+
+**Master plan (all agents, 120–150 pts/sprint):** [`SPRINT71_80_PLAN.md`](../planning/SPRINT71_80_PLAN.md) — v4.1 (S71–S73) → v4.2 (S74–S76) → v5.0-rc (S77–S79) → v5.0 GA (S80).
+
+**Role deep-dives:** [`SPRINT71_80_INFRA_PLAN.md`](../planning/SPRINT71_80_INFRA_PLAN.md) (312 pts DevOps committed across S71–S80, ~28–35 pts/sprint), [`QA_COMMITMENT_SPRINTS_71_80.md`](./QA_COMMITMENT_SPRINTS_71_80.md), [`I18N_SPRINT_71_80_PLAN.md`](../../I18N_SPRINT_71_80_PLAN.md), [`MARKETING_SPRINTS_71_80.md`](../marketing/MARKETING_SPRINTS_71_80.md), [`SPRINT71_80_FRONTEND_PROPOSAL.md`](../planning/SPRINT71_80_FRONTEND_PROPOSAL.md).
+
+**Ten epics:** E71 Experience GA · E72 Event & Integrator · E73 Engagement Reliability · E74 Enterprise Identity · E75 Scale & Sovereignty · E76 Intelligent Facilitation · E77 Platform Isolation · E78 Trust & Forensics · E79 Realtime & Gov Cloud · E80 Platform Certification.
+
+#### Sprint 71–80 — Agent consensus story registry (product)
+
+| ID | Item | Pts | Pri | Sprint | Notes |
+|----|------|-----|-----|--------|-------|
+| `DARK-MODE-GA-01` | Full dark mode token layer + core surfaces | 13 | P0 | S71–S72 | Deferred from S60–S70 frontend |
+| `ZOOM-EMBED-01` | Zoom in-meeting embed + sync | 21 | P0 | S72 | Market pulse — event GTM |
+| `SCALE-PROOF-100K-01` | 100k voter load evidence doc | 21 | P0 | S75 | Replaces 10k marketing cap |
+| `RESIDENCY-ENFORCE-01` | EU-only tenant pinning enforce | 13 | P0 | S75 | ADR-0036 dependency |
+| `AI-COPILOT-MULTITURN-01` | Multi-turn facilitator copilot GA | 21 | P0 | S76 | Workers AI only |
+| `AI-COPILOT-EDGE-01` | Edge-native copilot inference path | 21 | P0 | S77 | ADR-0039 |
+| `AUDIT-API-QUERY-01` | Forensic audit query API | 21 | P0 | S78 | Enterprise forensics |
+| `REALTIME-V3-PROTOCOL-01` | Delta broadcast wire format | 21 | P0 | S79 | ADR-0038 |
+| `FEDRAMP-INITIAL-ATO-01` | FedRAMP Moderate control mapping (path) | 21 | P1 | S79 | Docs only; no full ATO |
+| `PLATFORM-CERTIFICATION-01` | v5.0 GA certification bundle | 16 | P0 | S80 | SOC2 Type II + DR evidence |
+| `SEC-PEN3-01` | Pentest #3 engagement | 13 | P0 | S71–S72 | Security track |
+| `SEC-CMK-01` | Customer-managed keys envelope | 13 | P0 | S78 | ADR-0041 |
+| `SEC-BREACH-01` | GDPR Art. 33 breach automation | 13 | P0 | S79 | |
+| `TENANT-COST-01` | Per-tenant cost attribution model | 13 | P0 | S74 | ADR cost metering |
+| `WEBHOOK-DELIVERY-SLA-01` | Webhook 99.95% delivery SLA | 13 | P0 | S78 | Partner ecosystem |
+| `FE-DEV2-OAS-01` | Developer portal v2 OpenAPI explorer | 13 | P0 | S73 | |
+| `LOAD-FRAMEWORK-71` | k6 load harness + 50k path | 8 | P0 | S71 | QA/DevOps |
+| `ANON-DEPTH-04` | Anonymous mode depth (Vevox parity) | 8 | P1 | S75 | Market pulse |
+
+**AI stories AI-401–AI-440:** Groomed in [`SPRINT71_80_PLAN.md`](../planning/SPRINT71_80_PLAN.md) per-sprint tables (copilot schema S71 → L4 maturity closeout S80).
+
+**Hard gate:** ADR-0035 (SessionRoom DO split) and ADR-0036 (MR write GA) must **not** land in the same sprint.
+
+---
+
 **See also**:
 - `README.md` — documentation map (truth hierarchy, reading order)
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
@@ -1503,4 +1540,7 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 - `SPRINT60_70_PLAN.md` — master eleven-sprint plan S60–S70 (3× capacity, all agents)
 - `SPRINT60_70_INFRA_PLAN.md` — DEVOPS story pool S60–S70 (multi-region, D1 sharding, SLO, chaos, partner env)
 - `SPRINT60_70_FRONTEND_PROPOSAL.md` — eleven-sprint frontend horizon S60–S70 (mobile PWA v3, white-label UI, admin analytics v3, trust/scale proof, partner portal, developer portal, compliance dashboard) — **1,424 pts, 120–150 pts/sprint**
+- `SPRINT71_80_PLAN.md` — master ten-sprint plan S71–S80 (3× capacity, all agents)
+- `SPRINT71_80_INFRA_PLAN.md` — DevOps committed work S71–S80 (MR write GA, 50k/100k load, DR automation, SLO paging, v5 infra)
+- `SPRINT71_80_FRONTEND_PROPOSAL.md` — ten-sprint frontend horizon S71–S80 (dark mode GA, Zoom, dev portal v2, federation UI, scale/trust, copilot UX, audit surfaces)
 - `spec/design-tokens.json` — design-token source of truth
