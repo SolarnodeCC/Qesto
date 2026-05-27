@@ -12,7 +12,18 @@ import {
   copilotContextKvKey,
 } from '../lib/copilot-context'
 import { readKvJson, writeKvJson } from '../lib/kv'
+import {
+  appendTurn,
+  copilotThreadKvKey,
+  CopilotThreadSchema,
+  type CopilotThread,
+  type CopilotTurn,
+} from '../lib/copilot-multturn'
 import type { Env } from '../types'
+
+const TurnBodySchema = z.object({
+  message: z.string().min(1).max(2000),
+})
 
 type Vars = AuthVariables & PlanVariables
 
@@ -74,6 +85,48 @@ export function mountCopilotContextRoutes(parent: any) {
     }
 
     return c.json({ ok: true, data: { context, source: 'built' }, trace_id: c.get('trace_id') })
+  })
+
+  app.post('/sessions/:sessionId/turn', async (c) => {
+    const sessionId = c.req.param('sessionId')
+    if (c.get('plan') !== 'team' && c.get('plan') !== 'starter') {
+      return c.json(
+        { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    const parsed = await validateBody(c, TurnBodySchema)
+    if ('error' in parsed) return parsed.error
+    if (!c.env.SESSIONS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'SESSIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+    const key = copilotThreadKvKey(sessionId)
+    const existing = await readKvJson<CopilotThread>(c.env.SESSIONS_KV, key)
+    let thread =
+      existing ??
+      CopilotThreadSchema.parse({ sessionId, turns: [], updatedAt: Date.now() })
+    const userTurn: CopilotTurn = { role: 'user', content: parsed.data.message, at: Date.now() }
+    thread = appendTurn(thread, userTurn)
+
+    let assistantText =
+      'Consider summarizing participant themes before closing, and ask one follow-up open question.'
+    if (c.env.AI) {
+      try {
+        const result = (await c.env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+          messages: [
+            { role: 'system', content: 'You are a facilitation copilot. Be concise and emotion-safe.' },
+            ...thread.turns.map((t) => ({ role: t.role, content: t.content })),
+          ],
+        })) as { response?: string }
+        if (result?.response?.trim()) assistantText = result.response.trim().slice(0, 2000)
+      } catch {
+        /* fallback text */
+      }
+    }
+    const assistantTurn: CopilotTurn = { role: 'assistant', content: assistantText, at: Date.now() }
+    thread = appendTurn(thread, assistantTurn)
+    await writeKvJson(c.env.SESSIONS_KV, key, thread, { expirationTtl: 86400 })
+    return c.json({ ok: true, data: { thread, latest: assistantTurn }, trace_id: c.get('trace_id') })
   })
 
   app.post('/validate', async (c) => {
