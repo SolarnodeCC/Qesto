@@ -53,6 +53,14 @@ export type Env = {
   MULTI_REGION_REPLICAS?: string
   /** ADR-0022 / S51: multi-region failover and state KV. */
   MULTI_REGION_FAILOVER_ENABLED?: string
+  /** REALTIME-V2: enable Realtime V2 protocol negotiation. */
+  REALTIME_V2_ENABLED?: string
+  /** REALTIME-V2: default protocol version when client doesn't specify. */
+  REALTIME_V2_DEFAULT?: string
+  /** SCIM API bearer token for identity provider integration. */
+  SCIM_BEARER_TOKEN?: string
+  /** JOIN-CAPTCHA: enable reCAPTCHA verification on session join. */
+  JOIN_CAPTCHA_ENABLED?: string
 
   // Secrets (wrangler pages secret put ... / wrangler versions secret put ...)
   JWT_SECRET: string

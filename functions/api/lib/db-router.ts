@@ -41,3 +41,14 @@ export function resolveWriteBinding(
     residencyLocked: teamConfig.regionLock === 'eu',
   }
 }
+
+export function isTeamInEuWriteCohort(
+  env: { MR_WRITE_EU_COHORT?: string },
+  teamId: string,
+): boolean {
+  const cohort = env.MR_WRITE_EU_COHORT
+  if (!cohort) return false
+  if (cohort === '*') return true
+  const teamIds = cohort.split(',').map((t) => t.trim())
+  return teamIds.includes(teamId)
+}

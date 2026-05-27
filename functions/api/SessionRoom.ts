@@ -28,7 +28,6 @@ import {
   LIVE_PROTOCOL_VERSION_V2,
   isLiveProtocolSupported,
   liveProtocolFeatures,
-  defaultLiveProtocolVersion,
   type LiveProtocolVersion,
   type LiveEnergizerState,
   type LiveQuestion,
@@ -117,6 +116,8 @@ type Attachment = {
   permissions?: string[]
   /** OBS-COLO-01 — edge colo at WebSocket connect time. */
   colo?: string
+  /** Protocol version negotiated at WebSocket connect time. */
+  protocolVersion?: number
 }
 
 const PER_IP_CONCURRENT_CAP = 10  // Increased from 5 to support shared IPs better
@@ -412,12 +413,15 @@ export class SessionRoom implements DurableObject {
     const [client, server] = Object.values(pair) as [WebSocket, WebSocket]
 
     const coloHeader = req.headers.get('x-qesto-colo')?.trim() || undefined
+    const protocolVersionHeader = req.headers.get('x-qesto-protocol-version')?.trim()
+    const protocolVersion = protocolVersionHeader ? parseInt(protocolVersionHeader, 10) : undefined
     const attachment: Attachment = {
       role,
       voterId,
       ipHash,
       bucket: { tokens: VOTE_BUCKET_CAPACITY, lastAt: now() },
       ...(coloHeader ? { colo: coloHeader } : {}),
+      ...(protocolVersion ? { protocolVersion } : {}),
       ...(role === 'presenter' && permissionsHeader !== null
         ? { permissions: permissionsHeader.split(',').map((p) => p.trim()).filter(Boolean) }
         : {}),
@@ -440,7 +444,7 @@ export class SessionRoom implements DurableObject {
         count: voterCount,
       })
     }
-    if (protocolVersion === LIVE_PROTOCOL_VERSION_V2) {
+    if (attachment.protocolVersion === LIVE_PROTOCOL_VERSION_V2) {
       const meta = await this.ctx.storage.get<Meta>(K_META)
       writeEvent(this.env.METRICS_AE, {
         name: 'realtime.v2_negotiated',
@@ -1089,6 +1093,7 @@ export class SessionRoom implements DurableObject {
       sessionMode: meta.sessionMode,
       ...(meta.anonymity ? { anonymity: meta.anonymity } : {}),
     }
+    const pv = (att.protocolVersion ?? LIVE_PROTOCOL_VERSION) as unknown as LiveProtocolVersion
     ws.send(
       serverMessage({
         type: 'init',
@@ -1096,8 +1101,8 @@ export class SessionRoom implements DurableObject {
           session,
           role: att.role,
           voterId: att.voterId,
-          protocolVersion: att.protocolVersion ?? LIVE_PROTOCOL_VERSION,
-          features: liveProtocolFeatures(att.protocolVersion ?? LIVE_PROTOCOL_VERSION),
+          protocolVersion: pv,
+          features: liveProtocolFeatures(pv),
           question,
           questionIndex,
           questionTotal: allQs.length,
