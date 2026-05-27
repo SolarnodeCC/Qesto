@@ -9,7 +9,7 @@ export default function Soc2TrustPage() {
   const t = useT('common')
 
   return (
-    <>
+    <div className="dark:bg-[#0A0F1E] dark:text-[#A8B3CC]">
       <PageSeo
         title={t('soc2.seoTitle')}
         description={t('soc2.seoDescription')}
@@ -49,6 +49,6 @@ export default function Soc2TrustPage() {
           primaryCta: { label: 'Get started', href: '/login' },
         }}
       />
-    </>
+    </div>
   )
 }

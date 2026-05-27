@@ -27,6 +27,7 @@ import { mountAgentCoachRoutes } from './routes/agent-coach'
 import { mountCustomActionRoutes } from './routes/custom-actions'
 import { mountPwaPushRoutes } from './routes/pwa-push'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
+import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountApiKeyRoutes } from './routes/api-keys'
 import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountPublicApiV2Routes } from './routes/public-api-v2'
@@ -272,6 +273,7 @@ export function createApp() {
   mountCustomActionRoutes(app)
   mountPwaPushRoutes(app)
   mountCopilotContextRoutes(app)
+  mountZoomEmbedRoutes(app)
 
   return app
 }
