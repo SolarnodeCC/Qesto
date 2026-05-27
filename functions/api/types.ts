@@ -57,6 +57,8 @@ export type Env = {
   REALTIME_V2_ENABLED?: string
   /** REALTIME-V2: default protocol version when client doesn't specify. */
   REALTIME_V2_DEFAULT?: string
+  /** REALTIME-V3: enable protocol v3 (results_delta) negotiation (S79). */
+  REALTIME_V3_ENABLED?: string
   /** SCIM API bearer token for identity provider integration. */
   SCIM_BEARER_TOKEN?: string
   /** JOIN-CAPTCHA: enable reCAPTCHA verification on session join. */
