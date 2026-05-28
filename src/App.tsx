@@ -38,6 +38,7 @@ const GdprTrustPage = lazy(() => import('./pages/GdprTrustPage'))
 const Soc2TrustPage = lazy(() => import('./pages/Soc2TrustPage'))
 const MarketplacePage = lazy(() => import('./pages/MarketplacePage'))
 const PartnerSlaPage = lazy(() => import('./pages/PartnerSlaPage'))
+const ZoomSessionEmbedPage = lazy(() => import('./pages/ZoomSessionEmbedPage'))
 
 // Use-case pages
 const TeamMeetingsPage = lazy(() => import('./pages/use-cases/TeamMeetingsPage'))
@@ -128,6 +129,14 @@ export default function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/sessions/:id" element={<SessionConfig />} />
         <Route path="/sessions/:id/launchpad" element={<Launchpad />} />
+        <Route
+          path="/sessions/:id/zoom-embed"
+          element={
+            <Suspense fallback={<LazyRouteFallback />}>
+              <ZoomSessionEmbedPage />
+            </Suspense>
+          }
+        />
         <Route path="/sessions/:id/present" element={<Present />} />
         <Route path="/sessions/:id/results" element={<Results />} />
         <Route path="/join" element={<JoinPage />} />

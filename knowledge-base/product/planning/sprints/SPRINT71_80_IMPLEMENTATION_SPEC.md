@@ -20,12 +20,18 @@ created: 2026-05-27
 | ADR-0034 | Accepted | `ADR-0034-pwa-offline-push.md` |
 | S66–S70 route wiring | Shipped | `app.ts` mounts platform, federation, SCIM, coach, custom-actions |
 
-## Deferred (S72+)
+## Sprint 72
 
-- Full dark mode on all marketing surfaces (S72 `FE-DM-FINAL-AUDIT-01`)
-- Zoom embed (S72)
+| Story | Status | Implementation |
+|-------|--------|----------------|
+| ZOOM-EMBED-01 | Shipped | `/api/integrations/zoom/sessions/:id/embed`, `ZoomSessionEmbedPage` |
+| FE-DM-CI-01 | Shipped | `npm run check:dark-mode` marketing page gate |
+| SEC-PEN3-02 | Shipped | Pentest #3 findings on `/api/admin/platform/audits` |
+
+## Deferred (S73+)
+
 - Actual Web Push send (requires VAPID secrets in prod)
-- 50k load evidence artifacts (S75)
+- 50k/100k load evidence artifacts (S75)
 
 ## Verification
 
