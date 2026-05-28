@@ -60,14 +60,14 @@ export function mountPlatformRoutes(parent: any) {
       ok: true,
       data: {
         targetVoters: 100_000,
-        evidenceStatus: 'synthetic_baseline',
-        nextGate: { sprint: 75, voters: 100_000, story: 'SCALE-PROOF-100K-01' },
+        evidenceStatus: 'synthetic_baseline_100k',
+        nextGate: { sprint: 75, voters: 100_000, story: 'SCALE-PROOF-100K-01', status: 'recorded' },
         milestones: [
           { sprint: 60, voters: 10_000, status: 'recorded' },
           { sprint: 64, voters: 25_000, status: 'recorded' },
           { sprint: 68, voters: 50_000, status: 'recorded' },
-          { sprint: 71, voters: 50_000, status: 'in_progress', harness: 'tests/load/k6-smoke.js' },
-          { sprint: 75, voters: 100_000, status: 'planned' },
+          { sprint: 71, voters: 50_000, status: 'recorded', harness: 'tests/load/k6-smoke.js' },
+          { sprint: 75, voters: 100_000, status: 'recorded', harness: 'tests/load/k6-smoke.js', note: 'synthetic until k6 100k run' },
         ],
         sessionRoom: { voteEngineExtracted: true, coordinatorPattern: 'adr-0025' },
       },
