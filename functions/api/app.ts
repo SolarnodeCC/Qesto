@@ -29,6 +29,7 @@ import { mountPwaPushRoutes } from './routes/pwa-push'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
+import { mountTenantCostRoutes } from './routes/tenant-cost'
 import { mountApiKeyRoutes } from './routes/api-keys'
 import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountPublicApiV2Routes } from './routes/public-api-v2'
@@ -271,6 +272,7 @@ export function createApp() {
   mountPartnerPortalRoutes(app)
   mountAgentGroundingRoutes(app)
   mountFederationRoutes(app)
+  mountTenantCostRoutes(app)
   mountAgentCoachRoutes(app)
   mountCustomActionRoutes(app)
   mountPwaPushRoutes(app)
