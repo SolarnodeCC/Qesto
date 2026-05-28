@@ -32,6 +32,7 @@ import { mountDeveloperPortalRoutes } from './routes/developer-portal'
 import { mountTenantCostRoutes } from './routes/tenant-cost'
 import { mountResidencyRoutes } from './routes/residency'
 import { mountTenantNamespaceRoutes } from './routes/tenant-namespace'
+import { mountForensicsRoutes } from './routes/forensics'
 import { mountApiKeyRoutes } from './routes/api-keys'
 import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountPublicApiV2Routes } from './routes/public-api-v2'
@@ -277,6 +278,7 @@ export function createApp() {
   mountTenantCostRoutes(app)
   mountResidencyRoutes(app)
   mountTenantNamespaceRoutes(app)
+  mountForensicsRoutes(app)
   mountAgentCoachRoutes(app)
   mountCustomActionRoutes(app)
   mountPwaPushRoutes(app)
