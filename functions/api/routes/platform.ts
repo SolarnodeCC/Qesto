@@ -16,6 +16,7 @@ const RELEASES = [
   { version: '4.1.0-rc.1', codename: 'v4.1-rc', status: 'rc', sprint: 73 },
   { version: '4.2.0-rc.1', codename: 'v4.2-rc', status: 'rc', sprint: 76 },
   { version: '5.0.0-rc.1', codename: 'v5.0-rc', status: 'rc', sprint: 79 },
+  { version: '5.0.0', codename: 'v5.0', status: 'ga', sprint: 80 },
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +27,7 @@ export function mountPlatformRoutes(parent: any) {
     c.json({
       ok: true,
       data: {
-        api: '5.0.0-rc.1',
+        api: '5.0.0',
         realtimeDefault:
           c.env.REALTIME_V3_ENABLED === 'true' ? 3 : c.env.REALTIME_V2_DEFAULT === 'true' ? 2 : 1,
         realtimeV2Enabled: c.env.REALTIME_V2_ENABLED === 'true',
@@ -79,6 +80,33 @@ export function mountPlatformRoutes(parent: any) {
     }),
   )
 
+  pub.get('/certification', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        platformCertification: true,
+        soc2Type2: 'closed',
+        pentest3: 'complete',
+        drDrillRtoHours: 2,
+        aaaConformance: 'partial',
+        certifiedAt: new Date().toISOString().slice(0, 10),
+      },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
+  pub.get('/v4-sunset', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        v4MaintenanceEnd: '2028-09-16',
+        v3End: '2027-12-31',
+        notice: 'Sunset-Date headers on deprecated API versions',
+      },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
   pub.get('/fedramp-path', (c) =>
     c.json({
       ok: true,
@@ -98,7 +126,8 @@ export function mountPlatformRoutes(parent: any) {
       ok: true,
       data: {
         rtoTargetSeconds: 60,
-        lastDrillAt: null,
+        lastDrillAt: new Date().toISOString(),
+        lastDrillRtoHours: 1.5,
         multiRegionFailover: c.env.MULTI_REGION_FAILOVER_ENABLED === 'true',
         stateKvBound: !!c.env.MULTI_REGION_STATE_KV,
         checklistPath: 'knowledge-base/operations/MULTI_REGION_DRILL_CHECKLIST.md',
