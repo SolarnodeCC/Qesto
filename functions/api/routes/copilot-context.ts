@@ -129,6 +129,19 @@ export function mountCopilotContextRoutes(parent: any) {
     return c.json({ ok: true, data: { thread, latest: assistantTurn }, trace_id: c.get('trace_id') })
   })
 
+  app.get('/edge/status', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        mode: 'workers_ai_edge',
+        inference: 'on-device-colo',
+        multturn: true,
+        emotionSafe: true,
+      },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
   app.post('/validate', async (c) => {
     const parsed = await validateBody(c, ValidateBodySchema)
     if ('error' in parsed) return parsed.error
