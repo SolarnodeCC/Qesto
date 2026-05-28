@@ -73,6 +73,7 @@ export type Team = {
   samlConfig: SamlConfig | null
   branding?: TeamBranding | null
   createdAt: number
+  personal?: true
 }
 
 type Vars = AuthVariables & PlanVariables
@@ -825,6 +826,41 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     return c.json({ ok: true, data: { removed: true, userId: targetId }, trace_id: c.get('trace_id') })
   })
 
+  // DELETE /api/teams/:id — delete team (owner only, personal team is protected)
+  app.delete('/:id', async (c) => {
+    const user = c.get('user')
+    const team = await loadTeam(c.env.TEAMS_KV, c.req.param('id'))
+    if (!team) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (!isOwner(team, user.sub)) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Only the owner can delete a team' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    if (team.personal === true) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Personal team cannot be deleted' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    await c.env.TEAMS_KV.delete(teamDocumentKey(team.id))
+    for (const m of team.members) {
+      await removeUserTeam(c.env.TEAMS_KV, m.userId, team.id)
+    }
+    await recordAuditEvent(c, {
+      action: 'team.delete',
+      subject_type: 'team',
+      subject_id: team.id,
+      before_snapshot: { name: team.name, ownerId: team.ownerId },
+    })
+    return c.json({ ok: true, data: { deleted: true }, trace_id: c.get('trace_id') })
+  })
+
   parent.route('/api/teams', app)
 }
 
@@ -834,6 +870,41 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
  * Attach a user to a team (called when a SAML callback or invite acceptance
  * successfully identifies the team + user). Idempotent.
  */
+/**
+ * Idempotently ensure the user has a personal team in TEAMS_KV.
+ * If any team in the user's list already has `personal: true`, returns it.
+ * Otherwise creates a new team named "Personal" with personal: true.
+ * Safe to call on every signup and on every session create — will no-op if
+ * the personal team already exists.
+ */
+export async function ensurePersonalTeam(
+  kv: KVNamespace,
+  db: D1Database,
+  userId: string,
+  email: string,
+): Promise<Team> {
+  const ids = await loadUserTeamIds(kv, userId)
+  for (const id of ids) {
+    const t = await loadTeam(kv, id)
+    if (t?.personal === true) return t
+  }
+  const now = Date.now()
+  const team: Team = {
+    id: ulid(),
+    name: 'Personal',
+    ownerId: userId,
+    members: [{ userId, email, role: 'owner', joinedAt: now }],
+    plan: 'free',
+    samlConfig: null,
+    createdAt: now,
+    personal: true,
+  }
+  await saveTeam(kv, team)
+  await addUserTeam(kv, userId, team.id)
+  await upsertUserRole(db, userId, 'owner')
+  return team
+}
+
 export async function attachUserToTeam(
   kv: KVNamespace,
   db: D1Database,
@@ -864,4 +935,4 @@ export async function consumeInvite(
   return { teamId: invite.teamId, email: invite.email, role: invite.role as Role }
 }
 
-export { loadTeam, saveTeam }
+export { loadTeam, saveTeam, loadUserTeamIds, addUserTeam }
