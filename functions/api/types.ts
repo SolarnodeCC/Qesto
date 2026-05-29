@@ -59,6 +59,8 @@ export type Env = {
   REALTIME_V2_DEFAULT?: string
   /** REALTIME-V3: enable protocol v3 (results_delta) negotiation (S79). */
   REALTIME_V3_ENABLED?: string
+  /** TOWNHALL (ADR-0044): enable the moderated anonymous Q&A board message family. */
+  REALTIME_TOWNHALL_ENABLED?: string
   /** SCIM API bearer token for identity provider integration. */
   SCIM_BEARER_TOKEN?: string
   /** JOIN-CAPTCHA: enable reCAPTCHA verification on session join. */
