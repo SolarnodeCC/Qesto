@@ -1042,13 +1042,13 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | TOWNHALL-04 | DO core: branch `SessionRoom` on `mode=townhall`; submit/upvote/moderate handlers; `session:moderate` guard | 13 | **Landed** |
 | TOWNHALL-05 | DO delta broadcast: snapshot on init/request_state; coalesced upvotes; pre/post tag-targeting; `th:rev` | 13 | Partial — eager deltas + tag-targeting + rev landed; alarm-coalescing + 5k load-test pending |
 | TOWNHALL-06 | REST `routes/townhall/*`: config (draft), questions fallback, export, DELETE; entitlement + audit; start re-check | 8 | Partial — config GET/POST (Team-gated, draft-only, audit) + start→DO wiring landed; export/DELETE/fallback deferred with persist-on-close (11) |
-| TOWNHALL-07 | `useTownhallSession` hook: reducer, delta apply, rev-gap resync, optimistic upvote | 8 | Todo |
-| TOWNHALL-08 | `TownhallPresent` moderation console: queue, approve/dismiss/answer/group/spotlight, pre/post tabs, aria-live | 13 | Todo |
-| TOWNHALL-09 | `TownhallJoin` (submit + display-name toggle + upvote) + shared `TownhallQuestionCard` | 8 | Todo |
-| TOWNHALL-10 | `TownhallDisplay` big-screen: sorted approved + spotlight highlight | 5 | Todo |
+| TOWNHALL-07 | `useTownhallSession` hook: reducer, delta apply, rev-gap resync, optimistic upvote | 8 | **Landed** |
+| TOWNHALL-08 | `TownhallPresent` moderation console: tabbed queue, approve/dismiss/answer/spotlight, aria-live | 13 | **Landed** (group/ungroup UI deferred) |
+| TOWNHALL-09 | `TownhallJoin` (submit + display-name toggle + upvote) + shared `TownhallQuestionCard` | 8 | **Landed** |
+| TOWNHALL-10 | `TownhallDisplay` big-screen: sorted approved + spotlight highlight | 5 | **Landed** |
 | TOWNHALL-11 | Export CSV/JSON + persist-on-close + checkpoint alarm + GDPR delete | 8 | Todo |
 | TOWNHALL-12 | Workers-AI profanity screening (async, per-session toggle, non-blocking ack) | 8 | Todo |
-| TOWNHALL-13 | i18n namespace `townhall` × EN/NL/ES/DE/FR | 3 | Todo |
+| TOWNHALL-13 | i18n namespace `townhall` × EN/NL/ES/DE/FR | 3 | Partial — namespace + EN bundle landed; NL/ES/DE/FR seeded as EN baseline pending translation |
 | TOWNHALL-14 | Hardening: submit token bucket, dedupe/spam, abuse + a11y + back-compat tests | 8 | Todo |
 
 **Epic acceptance**: Team host configures pre/post in draft (non-team 403); anonymous-default submit + upvote (no double-upvote); pre-mod audience sees approved-only, post-mod sees all-but-dismissed; console actions reflect on audience+display within one debounce; reconnect resyncs board with no loss/dupes; steady-state is deltas only; close persists + export correct; GDPR delete purges DO+D1; existing poll/energizer flows unchanged.
