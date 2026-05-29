@@ -127,7 +127,7 @@ function invalid(action: TownhallModerateAction, status: TownhallItemStatus): Mo
 export function applyTownhallModeration(
   item: TownhallItem,
   action: TownhallModerateAction,
-  opts: { rev: number; groupParentId?: string },
+  opts: { rev: number; groupParentId?: string | undefined },
 ): ModerationOutcome {
   const rev = opts.rev
   switch (action) {

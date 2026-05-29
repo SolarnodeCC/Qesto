@@ -1039,8 +1039,8 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | TOWNHALL-01 | Migration `0046` + schema: `session_mode+=townhall`, `townhall_moderation` col, `townhall_questions` table, `zero_knowledge` CHECK | 5 | **Landed** |
 | TOWNHALL-02 | Types + Zod + `townhall_board` feature + `townhallQA` entitlement + `session:moderate` permission | 5 | **Landed** |
 | TOWNHALL-03 | Strategy module `session-room-townhall.ts` — board state machine, grouping (upvoter-set union), dedupe | 8 | **Landed** |
-| TOWNHALL-04 | DO core: branch `SessionRoom` on `mode=townhall`; submit/upvote/moderate handlers; `session:moderate` guard | 13 | Todo |
-| TOWNHALL-05 | DO delta broadcast: snapshot on init/request_state; coalesced upvotes; pre/post tag-targeting; `th:rev` | 13 | Todo |
+| TOWNHALL-04 | DO core: branch `SessionRoom` on `mode=townhall`; submit/upvote/moderate handlers; `session:moderate` guard | 13 | **Landed** |
+| TOWNHALL-05 | DO delta broadcast: snapshot on init/request_state; coalesced upvotes; pre/post tag-targeting; `th:rev` | 13 | Partial — eager deltas + tag-targeting + rev landed; alarm-coalescing + 5k load-test pending |
 | TOWNHALL-06 | REST `routes/townhall/*`: config (draft), questions fallback, export, DELETE; entitlement + audit; start re-check | 8 | Todo |
 | TOWNHALL-07 | `useTownhallSession` hook: reducer, delta apply, rev-gap resync, optimistic upvote | 8 | Todo |
 | TOWNHALL-08 | `TownhallPresent` moderation console: queue, approve/dismiss/answer/group/spotlight, pre/post tabs, aria-live | 13 | Todo |
