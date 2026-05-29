@@ -129,6 +129,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         votePolicy: session.vote_policy,
         sessionMode: session.session_mode,
         anonymity: session.anonymity ?? undefined,
+        townhallModeration: session.townhall_moderation ?? undefined,
         plan: c.get('plan'),
       })
     } catch (doNetworkErr) {
