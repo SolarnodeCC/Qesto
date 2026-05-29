@@ -45,6 +45,23 @@ async function initTownhall(room: SessionRoom, moderation: 'pre' | 'post' = 'pre
   expect(res.status).toBe(200)
 }
 
+async function initPoll(room: SessionRoom) {
+  const res = await room.fetch(
+    new Request('https://do.internal/init', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: 'sess_poll',
+        ownerId: 'user_host',
+        code: 'POLL01',
+        title: 'Poll session',
+        sessionMode: 'reflection',
+      }),
+    }),
+  )
+  expect(res.status).toBe(200)
+}
+
 function connectVoter(state: MockDurableObjectState, voterId: string, ipHash = 'ipv'): MockWebSocket {
   const ws = new MockWebSocket()
   ws.serializeAttachment({ role: 'voter', voterId, ipHash, bucket: { tokens: 10, lastAt: 0 } })
@@ -170,6 +187,80 @@ describe('moderation permission', () => {
 
     await send(room, noPerms, { type: 'townhall_moderate', data: { itemId, action: 'approve' }, timestamp: 0 })
     expect(last(noPerms, 'error')?.data.code).toBe('forbidden')
+  })
+})
+
+describe('back-compat & abuse (TOWNHALL-14)', () => {
+  it('rejects townhall messages on a non-townhall (poll) session', async () => {
+    const { room, state } = await buildRoom() // flag on, but session is reflection mode
+    await initPoll(room)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'townhall_submit', data: { body: 'Should not work' }, timestamp: 0 })
+    expect(last(voter, 'error')?.data.code).toBe('unsupported_feature')
+  })
+
+  it('enforces the submit token bucket (4th rapid submit rejected)', async () => {
+    const { room, state } = await buildRoom()
+    await initTownhall(room, 'post')
+    const voter = connectVoter(state, 'v1')
+    for (const body of ['One?', 'Two?', 'Three?']) {
+      await send(room, voter, { type: 'townhall_submit', data: { body }, timestamp: 0 })
+    }
+    await send(room, voter, { type: 'townhall_submit', data: { body: 'Four?' }, timestamp: 0 })
+    expect(last(voter, 'error')?.data.code).toBe('rate_limited')
+  })
+
+  it('suppresses duplicate question bodies', async () => {
+    const { room, state } = await buildRoom()
+    await initTownhall(room, 'post')
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'townhall_submit', data: { body: 'Same question?' }, timestamp: 0 })
+    await send(room, voter, { type: 'townhall_submit', data: { body: 'same   QUESTION?' }, timestamp: 0 })
+    expect(last(voter, 'error')?.data.code).toBe('duplicate')
+  })
+
+  it('groups a duplicate under a parent, merging upvotes and hiding the child', async () => {
+    const { room, state } = await buildRoom()
+    await initTownhall(room, 'post')
+    const presenter = connectPresenter(state)
+    const a = connectVoter(state, 'va', 'ipa')
+    const b = connectVoter(state, 'vb', 'ipb')
+    await send(room, a, { type: 'townhall_submit', data: { body: 'Parent question?' }, timestamp: 0 })
+    const parentId = last(presenter, 'townhall_question_added')!.data.item.id
+    await send(room, b, { type: 'townhall_submit', data: { body: 'Child duplicate?' }, timestamp: 0 })
+    const childId = last(presenter, 'townhall_question_added')!.data.item.id
+    // Same voter upvotes both → union must not double-count.
+    await send(room, a, { type: 'townhall_upvote', data: { itemId: parentId }, timestamp: 0 })
+    await send(room, a, { type: 'townhall_upvote', data: { itemId: childId }, timestamp: 0 })
+
+    await send(room, presenter, {
+      type: 'townhall_moderate',
+      data: { itemId: childId, action: 'group', groupParentId: parentId },
+      timestamp: 0,
+    })
+
+    // Audience loses the child; parent reflects the merged (union) count + grouped badge.
+    expect(last(a, 'townhall_question_removed')?.data.itemId).toBe(childId)
+    const parentUpdate = frames(presenter)
+      .filter((m) => m.type === 'townhall_question_updated' && m.data.item?.id === parentId)
+      .at(-1)
+    expect(parentUpdate?.data.item.groupedCount).toBe(1)
+    expect(parentUpdate?.data.item.upvotes).toBe(1) // union of {va} and {va}
+
+    // Ungroup restores the child to the audience.
+    await send(room, presenter, { type: 'townhall_moderate', data: { itemId: childId, action: 'ungroup' }, timestamp: 0 })
+    expect(last(a, 'townhall_question_added')?.data.item.id).toBe(childId)
+  })
+
+  it('resyncs the full board on request_state', async () => {
+    const { room, state } = await buildRoom()
+    await initTownhall(room, 'post')
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'townhall_submit', data: { body: 'On the board' }, timestamp: 0 })
+    await send(room, voter, { type: 'request_state', data: {}, timestamp: 0 })
+    const snap = last(voter, 'townhall_state')
+    expect(snap?.data.items.length).toBe(1)
+    expect(snap?.data.items[0].body).toBe('On the board')
   })
 })
 
