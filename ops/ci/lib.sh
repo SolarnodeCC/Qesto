@@ -8,7 +8,7 @@ set -e
 # These are the contract between local development and CI.
 # If tools change, update both here and in scripts/ci-doctor.sh
 
-NODE_VERSION="20"
+NODE_VERSION="24"
 NPM_MIN_VERSION="10.0.0"
 BASH_MIN_VERSION="5.0"
 GIT_MIN_VERSION="2.40"
