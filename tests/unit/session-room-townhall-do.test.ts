@@ -8,7 +8,7 @@ import type { Env } from '../../functions/api/types'
 import { MockDurableObjectState, MockWebSocket } from '../helpers/do-mock'
 import { D1Mock } from '../helpers/d1-mock'
 
-function makeEnv(townhall = true): Env {
+function makeEnv(townhall = true, db: D1Mock = new D1Mock()): Env {
   return {
     ENV: 'dev',
     PAGES_URL: 'http://local',
@@ -16,14 +16,15 @@ function makeEnv(townhall = true): Env {
     JWT_SECRET: 'irrelevant',
     LIVE_ENERGIZERS_ENABLED: 'false',
     ...(townhall ? { REALTIME_TOWNHALL_ENABLED: 'true' } : {}),
-    DB: new D1Mock() as unknown as D1Database,
+    DB: db as unknown as D1Database,
   } as unknown as Env
 }
 
 async function buildRoom(townhall = true) {
   const state = new MockDurableObjectState()
-  const room = new SessionRoom(state as unknown as DurableObjectState, makeEnv(townhall))
-  return { room, state }
+  const db = new D1Mock()
+  const room = new SessionRoom(state as unknown as DurableObjectState, makeEnv(townhall, db))
+  return { room, state, db }
 }
 
 async function initTownhall(room: SessionRoom, moderation: 'pre' | 'post' = 'pre') {
@@ -169,6 +170,30 @@ describe('moderation permission', () => {
 
     await send(room, noPerms, { type: 'townhall_moderate', data: { itemId, action: 'approve' }, timestamp: 0 })
     expect(last(noPerms, 'error')?.data.code).toBe('forbidden')
+  })
+})
+
+describe('persist-on-close', () => {
+  it('writes the board to D1 with merged upvotes and spotlight history', async () => {
+    const { room, state, db } = await buildRoom()
+    await initTownhall(room, 'post')
+    const presenter = connectPresenter(state)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'townhall_submit', data: { body: 'Persist me' }, timestamp: 0 })
+    const itemId = last(presenter, 'townhall_question_added')!.data.item.id
+    await send(room, voter, { type: 'townhall_upvote', data: { itemId }, timestamp: 0 })
+    await send(room, presenter, { type: 'townhall_moderate', data: { itemId, action: 'spotlight' }, timestamp: 0 })
+    await send(room, presenter, { type: 'townhall_moderate', data: { itemId, action: 'answer' }, timestamp: 0 })
+
+    await room.fetch(new Request('https://do.internal/close', { method: 'POST' }))
+
+    const row = db.townhallQuestions.get(itemId)
+    expect(row).toBeTruthy()
+    expect(row?.upvotes).toBe(1)
+    expect(row?.was_spotlit).toBe(1)
+    expect(row?.status).toBe('answered')
+    expect(row?.resolved_at).not.toBeNull()
+    expect(row?.author_hash).toBe('v1')
   })
 })
 

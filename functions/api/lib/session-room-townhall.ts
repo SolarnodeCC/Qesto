@@ -15,6 +15,7 @@ export const TOWNHALL_KEYS = {
   meta: 'th:meta',
   index: 'th:index',
   spotlight: 'th:spotlight',
+  spotlitHistory: 'th:spotlit_history',
   groups: 'th:groups',
   rev: 'th:rev',
   item: (id: string) => `th:item:${id}`,

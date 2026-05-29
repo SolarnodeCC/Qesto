@@ -88,10 +88,148 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
   })
 }
 
+type TownhallQuestionRow = {
+  id: string
+  body: string
+  display_name: string | null
+  status: string
+  upvotes: number
+  group_parent: string | null
+  was_spotlit: number
+  created_at: number
+  resolved_at: number | null
+}
+
+const CSV_COLUMNS = [
+  'question_id',
+  'body',
+  'display_name',
+  'status',
+  'upvotes',
+  'grouped_count',
+  'was_spotlit',
+  'created_at',
+  'resolved_at',
+] as const
+
+function csvCell(value: unknown): string {
+  const s = value === null || value === undefined ? '' : String(value)
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+}
+
+/**
+ * TOWNHALL (ADR-0044) data retention: export the persisted board (post-close) and
+ * GDPR removal. The live board lives in the DO; these read/write the D1 archive tier
+ * populated on session close. author_hash is never exported (anonymity).
+ */
+export function registerTownhallDataRoutes(app: Hono<{ Bindings: Env; Variables: Vars }>): void {
+  app.get('/sessions/:id/townhall/export', async (c) => {
+    const trace_id = c.get('trace_id')
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const quotas = c.get('planQuotas')
+    if (!featureAllowed(quotas, 'townhallQA')) {
+      return c.json({ ok: false, error: denyFeature(c.get('plan'), 'townhallQA'), trace_id }, 403)
+    }
+    if (!featureAllowed(quotas, 'resultsExport')) {
+      return c.json({ ok: false, error: denyFeature(c.get('plan'), 'resultsExport'), trace_id }, 403)
+    }
+    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!loaded.ok) {
+      return c.json({ ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id }, loaded.error.status)
+    }
+
+    const { results } = await c.env.DB
+      .prepare(
+        `SELECT id, body, display_name, status, upvotes, group_parent, was_spotlit, created_at, resolved_at
+           FROM townhall_questions WHERE session_id = ?1 ORDER BY created_at ASC`,
+      )
+      .bind(id)
+      .all<TownhallQuestionRow>()
+    const rows = results ?? []
+    const groupedCount: Record<string, number> = {}
+    for (const r of rows) if (r.group_parent) groupedCount[r.group_parent] = (groupedCount[r.group_parent] ?? 0) + 1
+
+    const format = c.req.query('format') === 'csv' ? 'csv' : 'json'
+    if (format === 'json') {
+      return c.json({
+        ok: true,
+        data: {
+          questions: rows.map((r) => ({
+            id: r.id,
+            body: r.body,
+            displayName: r.display_name,
+            status: r.status,
+            upvotes: r.upvotes,
+            groupedCount: groupedCount[r.id] ?? 0,
+            wasSpotlit: r.was_spotlit === 1,
+            createdAt: r.created_at,
+            resolvedAt: r.resolved_at,
+          })),
+        },
+        trace_id,
+      })
+    }
+    const lines = [CSV_COLUMNS.join(',')]
+    for (const r of rows) {
+      lines.push(
+        [
+          r.id,
+          r.body,
+          r.display_name,
+          r.status,
+          r.upvotes,
+          groupedCount[r.id] ?? 0,
+          r.was_spotlit,
+          r.created_at,
+          r.resolved_at,
+        ]
+          .map(csvCell)
+          .join(','),
+      )
+    }
+    return new Response(lines.join('\n'), {
+      headers: {
+        'content-type': 'text/csv; charset=utf-8',
+        'content-disposition': `attachment; filename="townhall-${id}.csv"`,
+      },
+    })
+  })
+
+  app.delete('/sessions/:id/townhall/questions/:itemId', async (c) => {
+    const trace_id = c.get('trace_id')
+    const user = c.get('user')
+    const id = c.req.param('id')
+    const itemId = c.req.param('itemId')
+    if (!featureAllowed(c.get('planQuotas'), 'townhallQA')) {
+      return c.json({ ok: false, error: denyFeature(c.get('plan'), 'townhallQA'), trace_id }, 403)
+    }
+    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!loaded.ok) {
+      return c.json({ ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id }, loaded.error.status)
+    }
+    const res = await c.env.DB
+      .prepare(`DELETE FROM townhall_questions WHERE id = ?1 AND session_id = ?2`)
+      .bind(itemId, id)
+      .run()
+    if ((res.meta?.changes ?? 0) === 0) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Question not found' }, trace_id }, 404)
+    }
+    await recordAuditEvent(c, {
+      action: 'townhall.question.delete',
+      subject_type: 'townhall_question',
+      subject_id: itemId,
+      trace_id,
+    })
+    return c.json({ ok: true, data: { deleted: true }, trace_id })
+  })
+}
+
 export function mountTownhallRoutes(parent: any): void {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
   registerTownhallConfigRoutes(app)
+  registerTownhallDataRoutes(app)
   parent.route('/api', app)
 }

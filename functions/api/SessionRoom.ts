@@ -351,6 +351,15 @@ export class SessionRoom implements DurableObject {
       }
     }
     await this.ctx.storage.put(K_STATUS, 'closed')
+    // TOWNHALL (ADR-0044): persist the board to D1 on close — the export + GDPR-erasure tier.
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (meta?.townhallModeration) {
+      try {
+        await this.persistTownhallBoard(meta.sessionId, now())
+      } catch (err) {
+        console.log(JSON.stringify({ event: 'townhall.persist_failed', sessionId: meta.sessionId, err: String(err) }))
+      }
+    }
     const questionId = (await this.ctx.storage.get<LiveQuestion>(K_QUESTION))?.id ?? null
     // Flatten voterId → optionId[] into one row per (voter, optionId) so the
     // D1 schema (UNIQUE(question_id, voter_id) … wait, actually the caller
@@ -1449,6 +1458,13 @@ export class SessionRoom implements DurableObject {
 
     if (outcome.kind === 'spotlight') {
       await this.ctx.storage.put(TOWNHALL_KEYS.spotlight, outcome.spotlightId)
+      if (outcome.spotlightId) {
+        // Track every item that was ever spotlighted, for the persist-on-close archive.
+        const history = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.spotlitHistory)) ?? []
+        if (!history.includes(outcome.spotlightId)) {
+          await this.ctx.storage.put(TOWNHALL_KEYS.spotlitHistory, [...history, outcome.spotlightId])
+        }
+      }
       const frame = serverMessage({
         type: 'townhall_spotlight_changed',
         data: { spotlightId: outcome.spotlightId, rev },
@@ -1499,6 +1515,52 @@ export class SessionRoom implements DurableObject {
         })
       }
     }
+  }
+
+  /**
+   * Persist the live board to D1 `townhall_questions` on close. Parents store their merged
+   * upvote total (union of own + grouped children's upvoter sets); children store their raw
+   * count + group_parent. This is the export + GDPR-erasure tier — the live board never
+   * round-trips to D1 (ADR-0044).
+   */
+  private async persistTownhallBoard(sessionId: string, closedAt: number): Promise<void> {
+    const index = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.index)) ?? []
+    if (index.length === 0) return
+    const groups = await this.loadTownhallGroups()
+    const spotlitHistory = new Set((await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.spotlitHistory)) ?? [])
+    const statements: D1PreparedStatement[] = []
+    for (const id of index) {
+      const item = await this.loadTownhallItem(id)
+      if (!item) continue
+      let upvotes = item.upvotes
+      const childIds = groups[item.id] ?? []
+      if (childIds.length > 0) {
+        const sets: string[][] = [await this.loadTownhallUpvoters(item.id)]
+        for (const cid of childIds) sets.push(await this.loadTownhallUpvoters(cid))
+        upvotes = mergedUpvoteCount(sets)
+      }
+      const resolvedAt = item.status === 'answered' || item.status === 'dismissed' ? closedAt : null
+      statements.push(
+        this.env.DB.prepare(
+          `INSERT OR REPLACE INTO townhall_questions
+             (id, session_id, body, display_name, author_hash, status, upvotes, group_parent, was_spotlit, created_at, resolved_at)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`,
+        ).bind(
+          item.id,
+          sessionId,
+          item.body,
+          item.displayName,
+          item.authorHash,
+          item.status,
+          upvotes,
+          item.groupParent,
+          spotlitHistory.has(item.id) ? 1 : 0,
+          item.createdAt,
+          resolvedAt,
+        ),
+      )
+    }
+    if (statements.length > 0) await this.env.DB.batch(statements)
   }
 
   private canActivateEnergizer(att: Attachment): boolean {
