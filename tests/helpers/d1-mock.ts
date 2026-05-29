@@ -43,6 +43,20 @@ type SessionRow = {
   ai_dismissed_count?: number
 }
 
+export type TownhallQuestionRow = {
+  id: string
+  session_id: string
+  body: string
+  display_name: string | null
+  author_hash: string
+  status: string
+  upvotes: number
+  group_parent: string | null
+  was_spotlit: number
+  created_at: number
+  resolved_at: number | null
+}
+
 type QuestionRow = {
   id: string
   session_id: string
@@ -162,6 +176,7 @@ export class D1Mock {
   readonly sprint19Events = new Map<string, Sprint19EventRow>()
   readonly customRoles = new Map<string, CustomRoleRow>()
   readonly teamRoleAssignments = new Map<string, TeamRoleAssignmentRow>()
+  readonly townhallQuestions = new Map<string, TownhallQuestionRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -392,6 +407,31 @@ export class D1PreparedStatementMock {
       this.sql.includes('DELETE FROM badges WHERE session_id')
     ) {
       return { meta: { changes: 0 } }
+    }
+    if (this.sql.startsWith('INSERT OR REPLACE INTO townhall_questions')) {
+      const [id, session_id, body, display_name, author_hash, status, upvotes, group_parent, was_spotlit, created_at, resolved_at] =
+        this.args as [string, string, string, string | null, string, string, number, string | null, number, number, number | null]
+      this.db.townhallQuestions.set(id, {
+        id,
+        session_id,
+        body,
+        display_name,
+        author_hash,
+        status,
+        upvotes,
+        group_parent,
+        was_spotlit,
+        created_at,
+        resolved_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM townhall_questions WHERE id')) {
+      const [id, session_id] = this.args as [string, string]
+      const row = this.db.townhallQuestions.get(id)
+      if (!row || row.session_id !== session_id) return { meta: { changes: 0 } }
+      this.db.townhallQuestions.delete(id)
+      return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('DELETE FROM insights_daily WHERE session_id')) {
       const [session_id] = this.args as [string]
@@ -735,6 +775,13 @@ export class D1PreparedStatementMock {
   }
 
   async all<T = unknown>(): Promise<{ results: T[] }> {
+    if (this.sql.includes('FROM townhall_questions WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      const rows = [...this.db.townhallQuestions.values()]
+        .filter((r) => r.session_id === session_id)
+        .sort((a, b) => a.created_at - b.created_at)
+      return { results: rows as unknown as T[] }
+    }
     if (this.sql.startsWith('SELECT role FROM user_roles WHERE user_id')) {
       const [user_id] = this.args as [string]
       const rows = [...this.db.userRoles.values()].filter((r) => r.user_id === user_id)

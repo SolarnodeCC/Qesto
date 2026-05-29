@@ -132,3 +132,95 @@ describe('POST /api/sessions/:id/townhall/config', () => {
     expect(body.data).toMatchObject({ sessionMode: 'townhall', moderation: 'post' })
   })
 })
+
+function seedQuestion(db: D1Mock, over: Partial<import('../helpers/d1-mock').TownhallQuestionRow> = {}) {
+  const row = {
+    id: 'q1',
+    session_id: 'sess_1',
+    body: 'How is Q3 tracking?',
+    display_name: null,
+    author_hash: 'voterhash',
+    status: 'answered',
+    upvotes: 5,
+    group_parent: null,
+    was_spotlit: 1,
+    created_at: 1000,
+    resolved_at: 2000,
+    ...over,
+  }
+  db.townhallQuestions.set(row.id, row)
+  return row
+}
+
+describe('GET /api/sessions/:id/townhall/export', () => {
+  it('returns JSON without author_hash', async () => {
+    const db = new D1Mock()
+    seed(db, 'team', 'live')
+    seedQuestion(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/townhall/export?format=json', { headers: { cookie: await cookie() } }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { data: { questions: Array<Record<string, unknown>> } }
+    expect(body.data.questions).toHaveLength(1)
+    expect(body.data.questions[0]).toMatchObject({ id: 'q1', upvotes: 5, wasSpotlit: true })
+    expect(body.data.questions[0]).not.toHaveProperty('author_hash')
+    expect(body.data.questions[0]).not.toHaveProperty('authorHash')
+  })
+
+  it('returns CSV with a header row', async () => {
+    const db = new D1Mock()
+    seed(db, 'team', 'live')
+    seedQuestion(db, { body: 'Has, a comma' })
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/townhall/export?format=csv', { headers: { cookie: await cookie() } }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toContain('text/csv')
+    const text = await res.text()
+    expect(text.split('\n')[0]).toContain('question_id')
+    expect(text).toContain('"Has, a comma"') // comma escaped
+  })
+
+  it('blocks non-Team plans', async () => {
+    const db = new D1Mock()
+    seed(db, 'starter', 'live')
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/townhall/export', { headers: { cookie: await cookie() } }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(403)
+  })
+})
+
+describe('DELETE /api/sessions/:id/townhall/questions/:itemId', () => {
+  it('purges a persisted question (GDPR)', async () => {
+    const db = new D1Mock()
+    seed(db, 'team', 'live')
+    seedQuestion(db)
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/townhall/questions/q1', {
+        method: 'DELETE',
+        headers: { cookie: await cookie() },
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(200)
+    expect(db.townhallQuestions.has('q1')).toBe(false)
+  })
+
+  it('404s for an unknown question', async () => {
+    const db = new D1Mock()
+    seed(db, 'team', 'live')
+    const res = await createApp().fetch(
+      new Request('http://local/api/sessions/sess_1/townhall/questions/nope', {
+        method: 'DELETE',
+        headers: { cookie: await cookie() },
+      }),
+      makeEnv(db),
+    )
+    expect(res.status).toBe(404)
+  })
+})
