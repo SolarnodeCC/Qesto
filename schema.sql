@@ -47,11 +47,11 @@ CREATE TABLE IF NOT EXISTS sessions (
   status TEXT NOT NULL DEFAULT 'draft'
     CHECK (status IN ('draft','live','closed','archived')),
   anonymity TEXT NOT NULL DEFAULT 'full'
-    CHECK (anonymity IN ('full','partial','none')),
+    CHECK (anonymity IN ('full','partial','none','zero_knowledge')),
   vote_policy TEXT NOT NULL DEFAULT 'once'
     CHECK (vote_policy IN ('once','multi','react')),
   session_mode TEXT NOT NULL DEFAULT 'reflection'
-    CHECK (session_mode IN ('reflection','fun')),
+    CHECK (session_mode IN ('reflection','fun','townhall')),
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,
@@ -72,6 +72,11 @@ ALTER TABLE sessions ADD COLUMN ai_consent_at INTEGER;           -- epoch ms; NU
 ALTER TABLE sessions ADD COLUMN ai_grounding_hash TEXT;          -- sha256 of generation prompt context
 ALTER TABLE sessions ADD COLUMN ai_accepted_count INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE sessions ADD COLUMN ai_dismissed_count INTEGER NOT NULL DEFAULT 0;
+
+-- TOWNHALL-01 (ADR-0044): per-session moderation mode for townhall Q&A sessions.
+-- NULL unless session_mode = 'townhall'. 'pre' = hidden until approved; 'post' = visible immediately.
+ALTER TABLE sessions ADD COLUMN townhall_moderation TEXT
+  CHECK (townhall_moderation IN ('pre','post'));
 
 -- Sprint 19 journey events — durable measurement for wizard → Launchpad evidence.
 CREATE TABLE IF NOT EXISTS sprint19_events (
@@ -159,6 +164,30 @@ CREATE TABLE IF NOT EXISTS votes (
   UNIQUE(question_id, voter_id)                                -- one vote per voter per question
 );
 CREATE INDEX IF NOT EXISTS idx_votes_session ON votes(session_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- townhall_questions — TOWNHALL-01 (ADR-0044). Audience-submitted Q&A board.
+-- LIVE board state lives in the SessionRoom DO; this table is the persist-on-close
+-- archive/export tier and the GDPR-erasure surface. author_hash = opaque voterId
+-- (sha256(ip || fingerprint)), never PII — enables targeted per-author erasure.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS townhall_questions (
+  id            TEXT PRIMARY KEY,                              -- DO-generated item id
+  session_id    TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  body          TEXT NOT NULL,                                 -- question text (erasable)
+  display_name  TEXT,                                          -- NULL = anonymous (default)
+  author_hash   TEXT NOT NULL,                                 -- opaque voterId, no PII
+  status        TEXT NOT NULL
+                  CHECK (status IN ('pending','approved','dismissed','answered','grouped')),
+  upvotes       INTEGER NOT NULL DEFAULT 0,                    -- final merged count at close
+  group_parent  TEXT,                                          -- canonical item id, NULL if not grouped
+  was_spotlit   INTEGER NOT NULL DEFAULT 0,                    -- 1 if ever spotlighted
+  created_at    INTEGER NOT NULL,                              -- epoch ms
+  resolved_at   INTEGER,                                       -- when answered/dismissed
+  FOREIGN KEY (group_parent) REFERENCES townhall_questions(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_townhall_q_session ON townhall_questions(session_id, status);
+CREATE INDEX IF NOT EXISTS idx_townhall_q_author ON townhall_questions(author_hash);
 CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
 -- Phase 10 Step 2: Compound index for vote aggregation by question
 CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);

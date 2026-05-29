@@ -248,6 +248,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | **EPIC-ENT** | In progress | Audit, RBAC depth, admin, multi-tenant | Enterprise / compliance completion per roadmap |
 | **EPIC-I18N** | In progress | Locales, key validation, translation QA | Bundles shipped; CI and QA hardening ongoing |
 | **EPIC-GAM** | In progress | Energizers, leaderboard, badges, referrals | Base gamification live; depth and analytics queued |
+| **EPIC-TOWNHALL** | Proposed (new) | Moderated anonymous Q&A at scale | Competitive epic #1 (ADR-0044); foundation TOWNHALL-01/02 landed |
 
 ---
 
@@ -1024,6 +1025,33 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 - Observability events added (if applicable)
 - Docs updated (if API changes)
 - AC demonstrated in PR review
+
+---
+
+## EPIC-TOWNHALL: Moderated Anonymous Q&A at Scale
+
+**Goal**: Turn Qesto from a presenter-driven poll tool into an audience-driven Q&A platform for all-hands / town halls / AMAs. Competitive epic #1 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Architecture: [`ADR-0044`](../../adr/ADR-0044-townhall-qa-board.md).
+
+**Locked decisions**: dedicated `session_mode='townhall'`; host-configurable pre/post moderation; Team-tier only (`townhallQA`). MVP = TOWNHALL-01–10; 11–14 are polish + hardening. Ships behind `REALTIME_TOWNHALL_ENABLED` until back-compat tests pass (ADR-0005).
+
+| ID | Story | Size | Status |
+|---|---|---|---|
+| TOWNHALL-01 | Migration `0046` + schema: `session_mode+=townhall`, `townhall_moderation` col, `townhall_questions` table, `zero_knowledge` CHECK | 5 | **Landed** |
+| TOWNHALL-02 | Types + Zod + `townhall_board` feature + `townhallQA` entitlement + `session:moderate` permission | 5 | **Landed** |
+| TOWNHALL-03 | Strategy module `session-room-townhall.ts` — board state machine, grouping (upvoter-set union), dedupe | 8 | Todo |
+| TOWNHALL-04 | DO core: branch `SessionRoom` on `mode=townhall`; submit/upvote/moderate handlers; `session:moderate` guard | 13 | Todo |
+| TOWNHALL-05 | DO delta broadcast: snapshot on init/request_state; coalesced upvotes; pre/post tag-targeting; `th:rev` | 13 | Todo |
+| TOWNHALL-06 | REST `routes/townhall/*`: config (draft), questions fallback, export, DELETE; entitlement + audit; start re-check | 8 | Todo |
+| TOWNHALL-07 | `useTownhallSession` hook: reducer, delta apply, rev-gap resync, optimistic upvote | 8 | Todo |
+| TOWNHALL-08 | `TownhallPresent` moderation console: queue, approve/dismiss/answer/group/spotlight, pre/post tabs, aria-live | 13 | Todo |
+| TOWNHALL-09 | `TownhallJoin` (submit + display-name toggle + upvote) + shared `TownhallQuestionCard` | 8 | Todo |
+| TOWNHALL-10 | `TownhallDisplay` big-screen: sorted approved + spotlight highlight | 5 | Todo |
+| TOWNHALL-11 | Export CSV/JSON + persist-on-close + checkpoint alarm + GDPR delete | 8 | Todo |
+| TOWNHALL-12 | Workers-AI profanity screening (async, per-session toggle, non-blocking ack) | 8 | Todo |
+| TOWNHALL-13 | i18n namespace `townhall` × EN/NL/ES/DE/FR | 3 | Todo |
+| TOWNHALL-14 | Hardening: submit token bucket, dedupe/spam, abuse + a11y + back-compat tests | 8 | Todo |
+
+**Epic acceptance**: Team host configures pre/post in draft (non-team 403); anonymous-default submit + upvote (no double-upvote); pre-mod audience sees approved-only, post-mod sees all-but-dismissed; console actions reflect on audience+display within one debounce; reconnect resyncs board with no loss/dupes; steady-state is deltas only; close persists + export correct; GDPR delete purges DO+D1; existing poll/energizer flows unchanged.
 
 ---
 

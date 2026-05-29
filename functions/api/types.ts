@@ -141,7 +141,12 @@ export type QuestionKind =
   | 'slider'
 export type Anonymity = 'full' | 'partial' | 'none' | 'zero_knowledge'
 export type VotePolicy = 'once' | 'multi' | 'react'
-export type SessionMode = 'reflection' | 'fun'
+export type SessionMode = 'reflection' | 'fun' | 'townhall'
+
+/** TOWNHALL (ADR-0044): per-session moderation model, chosen at draft. */
+export type TownhallModeration = 'pre' | 'post'
+/** TOWNHALL item lifecycle. `spotlight` is a separate O(1) pointer, not a status. */
+export type TownhallItemStatus = 'pending' | 'approved' | 'dismissed' | 'answered' | 'grouped'
 
 export type PollOption = { id: string; label: string }
 
@@ -208,6 +213,8 @@ export interface PlanQuotas {
     consentMode: boolean
     rankingQuestions: boolean
     samlSso: boolean
+    /** TOWNHALL (ADR-0044): moderated anonymous Q&A sessions — Team tier only. */
+    townhallQA: boolean
   }
 }
 
@@ -223,6 +230,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       consentMode: false,
       rankingQuestions: false,
       samlSso: false,
+      townhallQA: false,
     },
   },
   starter: {
@@ -236,6 +244,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       consentMode: true,
       rankingQuestions: true,
       samlSso: false,
+      townhallQA: false,
     },
   },
   team: {
@@ -249,6 +258,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       consentMode: true,
       rankingQuestions: true,
       samlSso: true,
+      townhallQA: true,
     },
   },
 }
