@@ -1049,7 +1049,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | TOWNHALL-11 | Export CSV/JSON + persist-on-close + checkpoint alarm + GDPR delete | 8 | **Landed** (checkpoint alarm deferred; DO storage durable + persist-on-close cover RPO) |
 | TOWNHALL-12 | Workers-AI profanity screening (async, per-session toggle, non-blocking ack) | 8 | Todo |
 | TOWNHALL-13 | i18n namespace `townhall` × EN/NL/ES/DE/FR | 3 | **Landed** — all 5 locales translated (28 keys, parity test green) |
-| TOWNHALL-14 | Hardening: submit token bucket, dedupe/spam, abuse + a11y + back-compat tests | 8 | Todo |
+| TOWNHALL-14 | Hardening: submit token bucket, dedupe/spam, abuse + a11y + back-compat tests | 8 | **Landed** — back-compat matrix (non-townhall rejection, request_state resync), rate-limit/dedupe/group-flow DO tests; a11y in components. Group/ungroup *console UI* (parent-picker) deferred |
 
 **Epic acceptance**: Team host configures pre/post in draft (non-team 403); anonymous-default submit + upvote (no double-upvote); pre-mod audience sees approved-only, post-mod sees all-but-dismissed; console actions reflect on audience+display within one debounce; reconnect resyncs board with no loss/dupes; steady-state is deltas only; close persists + export correct; GDPR delete purges DO+D1; existing poll/energizer flows unchanged.
 
