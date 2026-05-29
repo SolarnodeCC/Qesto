@@ -6,6 +6,7 @@ import { mountBillingRoutes } from './routes/billing'
 import { mountInsightsRoutes } from './routes/insights'
 import { mountAdminRoutes } from './routes/admin'
 import { mountEnergizerRoutes } from './routes/energizers'
+import { mountTownhallRoutes } from './routes/townhall'
 import { mountGamificationRoutes } from './routes/gamification'
 import { mountAIInsightsRoutes } from './routes/ai-insights'
 import { mountTemplateRoutes } from './routes/templates'
@@ -253,6 +254,7 @@ export function createApp() {
   mountAdminRoutes(app)
   mountMultiRegionAdminRoutes(app)
   mountEnergizerRoutes(app)
+  mountTownhallRoutes(app)
   mountGamificationRoutes(app)
   mountAIInsightsRoutes(app)
   mountHelpRoutes(app)

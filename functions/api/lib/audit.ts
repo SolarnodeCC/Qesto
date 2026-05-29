@@ -41,6 +41,8 @@ export type AuditAction =
   | 'ws.energizer_advanced'
   | 'ws.energizer_completed'
   | 'session.close_with_badges'
+  | 'townhall.config'
+  | 'townhall.question.delete'
   | 'user.create'
   | 'user.update'
   | 'user.suspend'

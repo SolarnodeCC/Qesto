@@ -171,6 +171,8 @@ export type Session = {
   anonymity: Anonymity
   vote_policy: VotePolicy
   session_mode: SessionMode
+  /** TOWNHALL (ADR-0044): moderation model when session_mode = 'townhall'. */
+  townhall_moderation?: TownhallModeration | null
   created_at: number
   started_at: number | null
   closed_at: number | null

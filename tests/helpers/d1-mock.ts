@@ -29,7 +29,8 @@ type SessionRow = {
   status: 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
   anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none'
   vote_policy?: 'once' | 'multi' | 'react'
-  session_mode?: 'reflection' | 'fun'
+  session_mode?: 'reflection' | 'fun' | 'townhall'
+  townhall_moderation?: 'pre' | 'post' | null
   created_at: number
   started_at: number | null
   closed_at: number | null
@@ -296,6 +297,16 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
       row.session_mode = session_mode
+      return { meta: { changes: 1 } }
+    }
+    // TOWNHALL-06: UPDATE sessions SET townhall_moderation = ?2, session_mode = 'townhall'[, anonymity = ?3] WHERE id = ?1
+    if (this.sql.startsWith('UPDATE sessions SET townhall_moderation')) {
+      const [id, moderation, anonymity] = this.args as [string, 'pre' | 'post', SessionRow['anonymity'] | undefined]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.townhall_moderation = moderation
+      row.session_mode = 'townhall'
+      if (anonymity !== undefined) row.anonymity = anonymity
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE sessions SET status = ?1, started_at = ?2')) {

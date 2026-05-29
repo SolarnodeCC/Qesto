@@ -24,6 +24,7 @@ export type DraftGateReason =
   | 'add_question'
   | 'ai_refine'
   | 'preflight'
+  | 'townhall_config'
 
 const DRAFT_MESSAGES: Record<DraftGateReason, string> = {
   patch: 'Only DRAFT sessions can be edited via REST',
@@ -33,6 +34,7 @@ const DRAFT_MESSAGES: Record<DraftGateReason, string> = {
   add_question: 'Only DRAFT sessions can be edited via REST',
   ai_refine: 'Only DRAFT sessions can be refined',
   preflight: 'Preflight only valid for DRAFT sessions',
+  townhall_config: 'Townhall can only be configured while the session is in DRAFT',
 }
 
 export function requireFound(session: Session | null): LifecycleOk | LifecycleErr {
