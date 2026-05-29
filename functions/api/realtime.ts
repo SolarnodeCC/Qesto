@@ -8,7 +8,15 @@
 // `timestamp` is the sender's epoch-ms clock (for latency tracing only —
 // never trusted for ordering).
 
-import type { PollOption, QuestionKind, VotePolicy, SessionMode, Anonymity } from './types'
+import type {
+  PollOption,
+  QuestionKind,
+  VotePolicy,
+  SessionMode,
+  Anonymity,
+  TownhallModeration,
+  TownhallItemStatus,
+} from './types'
 
 export const LIVE_PROTOCOL_VERSION = 1
 export const LIVE_PROTOCOL_VERSION_V2 = 2
@@ -27,7 +35,7 @@ export function defaultLiveProtocolVersion(env: {
 
 export function isLiveProtocolSupported(
   version: number | undefined,
-  env: { REALTIME_V2_ENABLED?: string; REALTIME_V2_DEFAULT?: string },
+  env: { REALTIME_V2_ENABLED?: string; REALTIME_V2_DEFAULT?: string; REALTIME_V3_ENABLED?: string },
 ): boolean {
   const v = version ?? defaultLiveProtocolVersion(env)
   if (v === 1) return true
@@ -40,6 +48,16 @@ export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
   if (version === 2) return ['delta_results', 'participants_delta']
   if (version === 3) return ['delta_results', 'participants_delta', 'results_delta']
   return []
+}
+
+// TOWNHALL (ADR-0044). Townhall messages are an additive family on v1, gated by an
+// env flag rather than a protocol version bump. The DO appends this string to the
+// `init.features` array when the flag is on and the session is in townhall mode, so
+// clients capability-detect the same way they do for `delta_results`.
+export const TOWNHALL_FEATURE = 'townhall_board'
+
+export function townhallEnabled(env: { REALTIME_TOWNHALL_ENABLED?: string }): boolean {
+  return env.REALTIME_TOWNHALL_ENABLED === 'true'
 }
 
 export type VersionedClientEnvelope = {
@@ -111,6 +129,50 @@ export type LiveEnergizerState = {
   badges?: Record<string, LiveBadgeAward[]>
 }
 
+// ── TOWNHALL board (ADR-0044) ────────────────────────────────────────────────
+// Moderator actions on a single board item. `spotlight`/`clear_spotlight` move an
+// O(1) pointer; `group` requires a `groupParentId`.
+export type TownhallModerateAction =
+  | 'approve'
+  | 'dismiss'
+  | 'restore'
+  | 'answer'
+  | 'spotlight'
+  | 'clear_spotlight'
+  | 'group'
+  | 'ungroup'
+
+// Server-internal item (full record kept in DO storage; includes authorHash).
+export type TownhallItem = {
+  id: string
+  body: string
+  displayName: string | null
+  authorHash: string
+  status: TownhallItemStatus
+  upvotes: number
+  groupParent: string | null
+  createdAt: number
+  rev: number
+}
+
+// Audience/console-facing projection — never carries authorHash.
+export type TownhallBoardItem = {
+  id: string
+  body: string
+  displayName: string | null
+  upvotes: number
+  status: Exclude<TownhallItemStatus, 'grouped'>
+  isSpotlit: boolean
+  groupedCount: number
+  createdAt: number
+}
+
+export type TownhallMeta = {
+  moderation: TownhallModeration
+  anonymity: Anonymity
+  version: number
+}
+
 // ── Client → Server ─────────────────────────────────────────────────────────
 export type ClientMessage =
   | { v?: LiveProtocolVersion; type: 'vote'; data: { questionId: string; optionId: string }; timestamp: number }
@@ -122,6 +184,15 @@ export type ClientMessage =
   | { v?: LiveProtocolVersion; type: 'energizer_activate'; data: { energizer: LiveEnergizerState }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'energizer_answer'; data: { energizerId: string; value: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'energizer_advance'; data: { energizerId: string }; timestamp: number }
+  // TOWNHALL (ADR-0044). submit/upvote open to voters; moderate requires presenter + session:moderate.
+  | { v?: LiveProtocolVersion; type: 'townhall_submit'; data: { body: string; displayName?: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'townhall_upvote'; data: { itemId: string }; timestamp: number }
+  | {
+      v?: LiveProtocolVersion
+      type: 'townhall_moderate'
+      data: { itemId: string; action: TownhallModerateAction; groupParentId?: string }
+      timestamp: number
+    }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
@@ -228,6 +299,39 @@ export type ServerMessage =
       v?: LiveProtocolVersion
       type: 'sentiment_signal'
       data: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }
+      timestamp: number
+    }
+  // TOWNHALL (ADR-0044). Full snapshot only on init/request_state; everything else is a
+  // delta carrying the monotonic board revision `rev`. Audience sockets receive only
+  // visible items (pre-mod: approved+; post-mod: all-but-dismissed).
+  | {
+      v?: LiveProtocolVersion
+      type: 'townhall_state'
+      data: { moderation: TownhallModeration; items: TownhallBoardItem[]; spotlightId: string | null; rev: number }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'townhall_question_added'
+      data: { item: TownhallBoardItem; rev: number }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'townhall_question_updated'
+      data: { item: TownhallBoardItem; rev: number }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'townhall_question_removed'
+      data: { itemId: string; rev: number }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'townhall_spotlight_changed'
+      data: { spotlightId: string | null; rev: number }
       timestamp: number
     }
   | {

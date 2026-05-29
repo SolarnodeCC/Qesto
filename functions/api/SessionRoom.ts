@@ -187,6 +187,17 @@ export class SessionRoom implements DurableObject {
         if (msg.type !== 'energizer_advance') return
         await this.handleEnergizerAdvance(ws, att, msg.data)
       },
+      // TOWNHALL (ADR-0044). Contract is wired now; board logic lands in TOWNHALL-04/05.
+      // Until then these reject so the protocol surface is honest behind the feature flag.
+      townhall_submit: async (ws, _att, _msg) => {
+        ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
+      },
+      townhall_upvote: async (ws, _att, _msg) => {
+        ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
+      },
+      townhall_moderate: async (ws, _att, _msg) => {
+        ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
+      },
     }
   }
 

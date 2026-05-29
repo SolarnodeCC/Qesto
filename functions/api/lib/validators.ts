@@ -113,6 +113,45 @@ export const ClientMessageSchema = z.union([
     data: z.object({ energizerId: z.string() }),
     timestamp: z.number(),
   }),
+  // TOWNHALL (ADR-0044). submit/upvote open to voters; moderate is presenter-gated in the DO.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('townhall_submit'),
+    data: z.object({
+      body: z.string().trim().min(3).max(500),
+      displayName: z.string().trim().min(1).max(40).optional(),
+    }),
+    timestamp: z.number(),
+  }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('townhall_upvote'),
+    data: z.object({ itemId: z.string().min(1) }),
+    timestamp: z.number(),
+  }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('townhall_moderate'),
+    data: z
+      .object({
+        itemId: z.string().min(1),
+        action: z.enum([
+          'approve',
+          'dismiss',
+          'restore',
+          'answer',
+          'spotlight',
+          'clear_spotlight',
+          'group',
+          'ungroup',
+        ]),
+        groupParentId: z.string().min(1).optional(),
+      })
+      .refine((d) => d.action !== 'group' || !!d.groupParentId, {
+        message: 'group action requires groupParentId',
+      }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>
@@ -330,6 +369,7 @@ export const PermissionSchema = z.enum([
   'session:close',
   'session:archive',
   'session:export',
+  'session:moderate',
   'energizer:activate',
   'template:read',
   'template:write',
