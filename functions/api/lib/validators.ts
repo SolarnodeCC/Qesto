@@ -152,6 +152,29 @@ export const ClientMessageSchema = z.union([
       }),
     timestamp: z.number(),
   }),
+  // COPILOT-06 (ADR-0046): presenter injects a copilot-drafted question into the live set.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('add_question'),
+    data: z.object({
+      question: z.object({
+        kind: z.enum([
+          'poll',
+          'ranking',
+          'consent',
+          'open',
+          'multi_select',
+          'likert',
+          'upvote',
+          'word_cloud',
+          'slider',
+        ]),
+        prompt: z.string().trim().min(1).max(500),
+        options: z.array(z.object({ label: z.string().trim().min(1).max(200) })).max(10),
+      }),
+    }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>

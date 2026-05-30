@@ -81,6 +81,8 @@
     "kind_followup_question": "Vervolgvraag",
     "kind_poll_draft": "Poll-idee",
     "kind_disengagement_alert": "Let op",
-    "kind_pacing": "Tempo"
+    "kind_pacing": "Tempo",
+    "add_to_session": "Aan sessie toevoegen",
+    "added": "Toegevoegd aan sessie"
   }
 }

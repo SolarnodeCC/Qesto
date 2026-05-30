@@ -81,6 +81,8 @@
     "kind_followup_question": "Question de suivi",
     "kind_poll_draft": "Idée de sondage",
     "kind_disengagement_alert": "Attention",
-    "kind_pacing": "Rythme"
+    "kind_pacing": "Rythme",
+    "add_to_session": "Ajouter à la session",
+    "added": "Ajoutée à la session"
   }
 }

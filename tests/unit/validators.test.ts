@@ -344,4 +344,33 @@ describe('parseClientMessage', () => {
     const msg = JSON.stringify({ type: 'advance', data: {} })
     expect(parseClientMessage(msg)).toBeNull()
   })
+
+  // COPILOT-06: add_question presenter message (ADR-0046).
+  it('parses a valid add_question message', () => {
+    const msg = JSON.stringify({
+      type: 'add_question',
+      data: { question: { kind: 'poll', prompt: 'Which option?', options: [{ label: 'A' }, { label: 'B' }] } },
+      timestamp: Date.now(),
+    })
+    const result = parseClientMessage(msg)
+    expect(result?.type).toBe('add_question')
+  })
+
+  it('rejects add_question with an invalid kind', () => {
+    const msg = JSON.stringify({
+      type: 'add_question',
+      data: { question: { kind: 'nonsense', prompt: 'x', options: [{ label: 'A' }] } },
+      timestamp: Date.now(),
+    })
+    expect(parseClientMessage(msg)).toBeNull()
+  })
+
+  it('rejects add_question with an empty prompt', () => {
+    const msg = JSON.stringify({
+      type: 'add_question',
+      data: { question: { kind: 'poll', prompt: '', options: [{ label: 'A' }] } },
+      timestamp: Date.now(),
+    })
+    expect(parseClientMessage(msg)).toBeNull()
+  })
 })

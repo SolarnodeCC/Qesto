@@ -7,7 +7,7 @@
  * into the running session is COPILOT-06.
  */
 import { useEffect, useRef, useState } from 'react'
-import { Sparkles, X, Loader2, RefreshCw, Lightbulb, AlertTriangle, Gauge, ListPlus } from 'lucide-react'
+import { Sparkles, X, Loader2, RefreshCw, Lightbulb, AlertTriangle, Gauge, ListPlus, Check } from 'lucide-react'
 import { useT } from '../i18n'
 import { useCopilot, type CopilotActionKind } from '../hooks/useCopilot'
 
@@ -15,6 +15,8 @@ type Props = {
   sessionId: string | undefined
   /** True only when the viewer is the presenter and the session is live. */
   enabled: boolean
+  /** COPILOT-06: inject an accepted draft into the live session over the WS. */
+  onAddQuestion?: (question: { kind: string; prompt: string; options: { label: string }[] }) => void
 }
 
 const KIND_ICON: Record<CopilotActionKind, typeof Lightbulb> = {
@@ -24,10 +26,11 @@ const KIND_ICON: Record<CopilotActionKind, typeof Lightbulb> = {
   pacing: Gauge,
 }
 
-export function CopilotPanel({ sessionId, enabled }: Props) {
+export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
   const t = useT('present')
   const [open, setOpen] = useState(false)
   const [intent, setIntent] = useState('')
+  const [addedPrompt, setAddedPrompt] = useState<string | null>(null)
   const {
     context,
     loading,
@@ -227,6 +230,26 @@ export function CopilotPanel({ sessionId, enabled }: Props) {
                             <li key={o.id}>{o.label}</li>
                           ))}
                         </ul>
+                        {onAddQuestion &&
+                          (addedPrompt === draft.draft.prompt ? (
+                            <p className="inline-flex items-center gap-1 text-xs font-medium text-teal-700">
+                              <Check size={14} aria-hidden="true" />
+                              {t('copilot.added')}
+                            </p>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const d = draft.draft
+                                if (!d) return
+                                onAddQuestion({ kind: d.kind, prompt: d.prompt, options: d.options.map((o) => ({ label: o.label })) })
+                                setAddedPrompt(d.prompt)
+                              }}
+                              className="inline-flex items-center gap-1 rounded bg-teal-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+                            >
+                              {t('copilot.add_to_session')}
+                            </button>
+                          ))}
                       </div>
                     ) : (
                       <p className="text-sm text-pulse-500">{t('copilot.draft_unavailable')}</p>

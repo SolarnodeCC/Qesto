@@ -81,6 +81,8 @@
     "kind_followup_question": "Follow-up",
     "kind_poll_draft": "Poll idea",
     "kind_disengagement_alert": "Heads up",
-    "kind_pacing": "Pacing"
+    "kind_pacing": "Pacing",
+    "add_to_session": "Add to session",
+    "added": "Added to session"
   }
 }
