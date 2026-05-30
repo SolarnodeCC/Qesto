@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { BookOpen, Check, FileText, Library, MoreHorizontal, Sparkles, UserRound, X } from 'lucide-react'
+import { BookOpen, Check, ChevronDown, FileText, Library, Megaphone, MoreHorizontal, Sparkles, UserRound, X } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
@@ -421,6 +421,9 @@ export default function Dashboard() {
   const [actionFeedback, setActionFeedback] = useState<Record<string, { message: string; isError: boolean }>>({})
   const [teamsLoading, setTeamsLoading] = useState(true)
   const [duplicateModal, setDuplicateModal] = useState<DuplicateModalState>(null)
+  const [newMenuOpen, setNewMenuOpen] = useState(false)
+  const [creatingTownhall, setCreatingTownhall] = useState(false)
+  const newMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -456,6 +459,23 @@ export default function Dashboard() {
       body: { event: 'wizard.opened' },
     })
   }, [wizardOpen])
+
+  // Close the "New session" dropdown on outside click or Escape.
+  useEffect(() => {
+    if (!newMenuOpen) return
+    function onPointer(e: MouseEvent) {
+      if (newMenuRef.current && !newMenuRef.current.contains(e.target as Node)) setNewMenuOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setNewMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onPointer)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onPointer)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [newMenuOpen])
 
   // IntersectionObserver: update activeSection as user scrolls
   useEffect(() => {
@@ -498,6 +518,45 @@ export default function Dashboard() {
 
   const isSuperuser = auth.user.email === SUPERUSER_EMAIL
   const userName = auth.user.email.split('@')[0]
+  // Town hall is a Team-plan feature behind a server flag. Show the entry point
+  // only when the flag is on; non-Team users see it as an upsell.
+  const townhallFeatureEnabled = auth.user.townhallEnabled === true
+  const isTeamPlan = teams.some((tm) => tm.plan === 'team')
+
+  async function onCreateTownhall() {
+    if (!isTeamPlan) {
+      navigate('/pricing')
+      return
+    }
+    setError(null)
+    setCreatingTownhall(true)
+    const activeTeamId = localStorage.getItem('activeTeamId') ?? undefined
+    const created = await api<{ session: { id: string } }>('/api/sessions', {
+      method: 'POST',
+      body: { title: t('townhallDefaultTitle'), ...(activeTeamId ? { teamId: activeTeamId } : {}) },
+      idempotencyKey: crypto.randomUUID(),
+    })
+    if (!created.ok) {
+      setCreatingTownhall(false)
+      setError(created.error.message)
+      return
+    }
+    const sessionId = created.data.session.id
+    const configured = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/townhall/config`, {
+      method: 'POST',
+      body: { moderation: 'pre' },
+    })
+    setCreatingTownhall(false)
+    if (!configured.ok) {
+      if (configured.status === 403) {
+        navigate('/pricing')
+        return
+      }
+      setError(configured.error.message)
+      return
+    }
+    navigate(`/sessions/${encodeURIComponent(sessionId)}/townhall`)
+  }
 
   const customerTemplates = templates.filter((tmpl) => tmpl.type === 'customer')
   const qestoTemplates = templates.filter((tmpl) => tmpl.type !== 'customer')
@@ -631,14 +690,74 @@ export default function Dashboard() {
             {t('sessionSubtext')}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setWizardOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg bg-pulse-900 dark:bg-[#F0F2F8] text-white dark:text-pulse-900 px-5 py-2.5 text-sm font-semibold shadow-card hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-opacity"
-            >
-              <Sparkles size={15} aria-hidden="true" />
-              {t('newSession').replace('+ ', '')}
-            </button>
+            {townhallFeatureEnabled ? (
+              <div ref={newMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setNewMenuOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={newMenuOpen}
+                  disabled={creatingTownhall}
+                  className="inline-flex items-center gap-2 rounded-lg bg-pulse-900 dark:bg-[#F0F2F8] text-white dark:text-pulse-900 px-5 py-2.5 text-sm font-semibold shadow-card hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Sparkles size={15} aria-hidden="true" />
+                  {t('newSession').replace('+ ', '')}
+                  <ChevronDown
+                    size={15}
+                    aria-hidden="true"
+                    className={`transition-transform ${newMenuOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+                {newMenuOpen && (
+                  <div
+                    role="menu"
+                    aria-label={t('chooseSessionType')}
+                    className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#0F1729] p-1.5 shadow-lg"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setNewMenuOpen(false); setWizardOpen(true) }}
+                      className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-pulse-50 dark:hover:bg-[#1A2440] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    >
+                      <Sparkles size={18} className="mt-0.5 shrink-0 text-teal-600 dark:text-teal-400" aria-hidden="true" />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('interactiveSession')}</span>
+                        <span className="block text-xs text-pulse-500 dark:text-[#A8B3CC]">{t('interactiveSessionDesc')}</span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setNewMenuOpen(false); void onCreateTownhall() }}
+                      className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-pulse-50 dark:hover:bg-[#1A2440] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    >
+                      <Megaphone size={18} className="mt-0.5 shrink-0 text-violet-600 dark:text-violet-400" aria-hidden="true" />
+                      <span className="min-w-0">
+                        <span className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('townhallSession')}</span>
+                          {!isTeamPlan && (
+                            <span className="rounded-full bg-violet-100 dark:bg-violet-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
+                              {t('teamBadge')}
+                            </span>
+                          )}
+                        </span>
+                        <span className="block text-xs text-pulse-500 dark:text-[#A8B3CC]">{t('townhallSessionDesc')}</span>
+                      </span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setWizardOpen(true)}
+                className="inline-flex items-center gap-2 rounded-lg bg-pulse-900 dark:bg-[#F0F2F8] text-white dark:text-pulse-900 px-5 py-2.5 text-sm font-semibold shadow-card hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-opacity"
+              >
+                <Sparkles size={15} aria-hidden="true" />
+                {t('newSession').replace('+ ', '')}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
