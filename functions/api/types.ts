@@ -47,6 +47,8 @@ export type Env = {
   WS_CONNECT_PER_IP_PER_MIN?: string
   /** GROWTH-ENGINE: IndexNow API key for SEO indexing (optional). */
   INDEXNOW_KEY?: string
+  /** SEO-INDEXNOW: IndexNow key filename for Option 1 (e.g., 'e8964e65669d47a69dd02b32bfe2a64e'). */
+  INDEXNOW_KEY_FILE?: string
   /** ADR-0022: multi-region read replica routing (S46+). */
   MULTI_REGION_ENABLED?: string
   MULTI_REGION_PRIMARY?: string

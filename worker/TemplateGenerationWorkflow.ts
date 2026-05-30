@@ -454,6 +454,9 @@ Output ONLY as JSON (no markdown, no preamble):
 
     // ──────────────────────────────────────────────────────────────────────
     // Step 8: IndexNow ping (SEO — tell search engines about new page)
+    // Supports both Options:
+    // - Option 1: Key file at domain root with name matching key (e.g., /e8964e65.txt)
+    // - Option 2: Key file at standard location (/.well-known/indexnow or /indexnow.txt)
     // ──────────────────────────────────────────────────────────────────────
     await steps.do('index-now-ping', async () => {
       try {
@@ -463,18 +466,29 @@ Output ONLY as JSON (no markdown, no preamble):
           return
         }
 
+        // Determine keyLocation based on INDEXNOW_KEY_FILE env var
+        let keyLocation = 'https://qesto.cc/indexnow.txt' // Default: Option 2
+        if (env.INDEXNOW_KEY_FILE) {
+          // Option 1: Use key filename (e.g., 'e8964e65...txt')
+          keyLocation = `https://qesto.cc/${env.INDEXNOW_KEY_FILE}`
+        }
+
+        const payload = {
+          host: 'qesto.cc',
+          key: indexNowKey,
+          keyLocation,
+          urlList: [`https://qesto.cc/templates/${templateId}`],
+        }
+
         await fetch('https://api.indexnow.org/indexnow', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            host: 'qesto.cc',
-            key: indexNowKey,
-            keyLocation: 'https://qesto.cc/indexnow.txt',
-            urlList: [`https://qesto.cc/templates/${templateId}`],
-          }),
+          body: JSON.stringify(payload),
         })
 
-        console.log(`[workflow] IndexNow ping sent for template ${templateId}`)
+        console.log(`[workflow] IndexNow ping sent for template ${templateId}`, {
+          keyLocation,
+        })
       } catch (err) {
         console.warn('[workflow] IndexNow ping failed (non-blocking):', err)
       }
