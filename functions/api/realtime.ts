@@ -185,6 +185,13 @@ export type ClientMessage =
   | { v?: LiveProtocolVersion; type: 'energizer_activate'; data: { energizer: LiveEnergizerState }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'energizer_answer'; data: { energizerId: string; value: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'energizer_advance'; data: { energizerId: string }; timestamp: number }
+  // COPILOT-06 (ADR-0046). Presenter injects a copilot-drafted question into the live set.
+  | {
+      v?: LiveProtocolVersion
+      type: 'add_question'
+      data: { question: { kind: QuestionKind; prompt: string; options: { label: string }[] } }
+      timestamp: number
+    }
   // TOWNHALL (ADR-0044). submit/upvote open to voters; moderate requires presenter + session:moderate.
   | { v?: LiveProtocolVersion; type: 'townhall_submit'; data: { body: string; displayName?: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'townhall_upvote'; data: { itemId: string }; timestamp: number }

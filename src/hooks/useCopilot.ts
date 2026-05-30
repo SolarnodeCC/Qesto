@@ -35,6 +35,15 @@ export type DraftPollResult = {
   source: 'ai' | 'unavailable'
 }
 
+export type CopilotActionKind = 'followup_question' | 'poll_draft' | 'disengagement_alert' | 'pacing'
+
+export type CopilotAction = {
+  kind: CopilotActionKind
+  title: string
+  body: string
+  intent?: string
+}
+
 /** Live-context refresh cadence while the panel is open (ms). */
 export const COPILOT_REFRESH_MS = 15_000
 
@@ -49,6 +58,9 @@ export function useCopilot(sessionId: string | undefined, enabled: boolean) {
   const [state, setState] = useState<CopilotState>({ context: null, loading: false, planGated: false, error: null })
   const [drafting, setDrafting] = useState(false)
   const [draft, setDraft] = useState<DraftPollResult | null>(null)
+  const [suggestions, setSuggestions] = useState<CopilotAction[]>([])
+  const [suggestSource, setSuggestSource] = useState<'ai' | 'fallback' | 'none' | null>(null)
+  const [suggestLoading, setSuggestLoading] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const refresh = useCallback(async () => {
@@ -92,5 +104,34 @@ export function useCopilot(sessionId: string | undefined, enabled: boolean) {
 
   const clearDraft = useCallback(() => setDraft(null), [])
 
-  return { ...state, refresh, draftPoll, drafting, draft, clearDraft }
+  const fetchSuggestions = useCallback(async () => {
+    if (!sessionId) return
+    setSuggestLoading(true)
+    const res = await api<{ suggestions: CopilotAction[]; source: 'ai' | 'fallback' | 'none' }>(
+      `/api/agent/copilot/sessions/${sessionId}/suggest`,
+      { method: 'POST' },
+    )
+    setSuggestLoading(false)
+    if (res.ok) {
+      setSuggestions(res.data.suggestions)
+      setSuggestSource(res.data.source)
+    } else if (res.status === 403) {
+      setState((s) => ({ ...s, planGated: true }))
+    } else {
+      setState((s) => ({ ...s, error: res.error.message }))
+    }
+  }, [sessionId])
+
+  return {
+    ...state,
+    refresh,
+    draftPoll,
+    drafting,
+    draft,
+    clearDraft,
+    suggestions,
+    suggestSource,
+    suggestLoading,
+    fetchSuggestions,
+  }
 }

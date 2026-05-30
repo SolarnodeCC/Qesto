@@ -71,6 +71,18 @@
     "draft_heading": "Voorgestelde poll",
     "plan_gated": "De live-copiloot is beschikbaar in betaalde abonnementen.",
     "loading": "De zaal lezen…",
-    "waiting": "Wachten tot de sessie live gaat."
+    "waiting": "Wachten tot de sessie live gaat.",
+    "suggestions_title": "Suggesties",
+    "suggestions_refresh": "Suggesties vernieuwen",
+    "suggestions_loading": "Aan het denken…",
+    "suggestions_empty": "Nog geen suggesties.",
+    "suggestions_fallback": "offline",
+    "suggestion_use": "Gebruiken",
+    "kind_followup_question": "Vervolgvraag",
+    "kind_poll_draft": "Poll-idee",
+    "kind_disengagement_alert": "Let op",
+    "kind_pacing": "Tempo",
+    "add_to_session": "Aan sessie toevoegen",
+    "added": "Toegevoegd aan sessie"
   }
 }

@@ -28,13 +28,52 @@ import {
   buildLiveContext,
   emptyLiveContext,
   parseSnapshotResponse,
+  type CopilotLiveContext,
 } from '../lib/copilot-live-context'
+import {
+  buildSuggestMessages,
+  parseSuggestions,
+  fallbackSuggestions,
+  COPILOT_MODEL,
+} from '../lib/copilot-suggest'
 import { getSessionRoomStub } from './sessions/shared'
 import { WizardAIError, WizardValidationError } from '../lib/ai-wizard'
 import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
 import { featureAllowed } from '../lib/entitlements'
 import { sanitizeError } from '../lib/error-handler'
 import type { Env } from '../types'
+
+type LiveContextResult =
+  | { ok: true; context: CopilotLiveContext }
+  | { ok: false; status: 404 | 403; code: string; message: string }
+
+/**
+ * Resolve the aggregate live context for a session: owner-checks it, returns an
+ * empty context for non-live sessions, otherwise reads the DO snapshot (COPILOT-01).
+ * Shared by the live-context and suggest endpoints (ADR-0046).
+ */
+async function loadLiveContext(env: Env, sessionId: string, userId: string): Promise<LiveContextResult> {
+  const session = await env.DB.prepare(`SELECT id, status, owner_id FROM sessions WHERE id = ?1`)
+    .bind(sessionId)
+    .first<{ id: string; status: string; owner_id: string }>()
+
+  if (!session) return { ok: false, status: 404, code: 'not_found', message: 'Session not found' }
+  if (session.owner_id !== userId) return { ok: false, status: 403, code: 'forbidden', message: 'Not session owner' }
+
+  if (session.status !== 'live' && session.status !== 'energizing') {
+    return { ok: true, context: emptyLiveContext(sessionId) }
+  }
+
+  let snapshot = null
+  try {
+    const room = await getSessionRoomStub(env, sessionId)
+    const res = await room.fetch('https://do.internal/copilot/snapshot')
+    snapshot = parseSnapshotResponse(await res.json().catch(() => null))
+  } catch {
+    snapshot = null
+  }
+  return { ok: true, context: snapshot ? buildLiveContext(sessionId, snapshot) : emptyLiveContext(sessionId) }
+}
 
 const TurnBodySchema = z.object({
   message: z.string().min(1).max(2000),
@@ -231,49 +270,58 @@ export function mountCopilotContextRoutes(parent: any) {
 
   // COPILOT-01 — live-context snapshot read from the DO (ADR-0046).
   app.get('/sessions/:sessionId/live-context', async (c) => {
-    const sessionId = c.req.param('sessionId')
-    const userId = c.get('user').sub
-
     if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
       return c.json(
         { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
         403,
       )
     }
-
-    const session = await c.env.DB.prepare(`SELECT id, status, owner_id FROM sessions WHERE id = ?1`)
-      .bind(sessionId)
-      .first<{ id: string; status: string; owner_id: string }>()
-
-    if (!session) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+    const r = await loadLiveContext(c.env, c.req.param('sessionId'), c.get('user').sub)
+    if (!r.ok) {
+      return c.json({ ok: false, error: { code: r.code, message: r.message }, trace_id: c.get('trace_id') }, r.status)
     }
-    if (session.owner_id !== userId) {
+    return c.json({ ok: true, data: { context: r.context }, trace_id: c.get('trace_id') })
+  })
+
+  // COPILOT-02 — structured suggestion engine grounded in the live snapshot (ADR-0046).
+  app.post('/sessions/:sessionId/suggest', async (c) => {
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
       return c.json(
-        { ok: false, error: { code: 'forbidden', message: 'Not session owner' }, trace_id: c.get('trace_id') },
+        { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
         403,
       )
     }
+    const r = await loadLiveContext(c.env, c.req.param('sessionId'), c.get('user').sub)
+    if (!r.ok) {
+      return c.json({ ok: false, error: { code: r.code, message: r.message }, trace_id: c.get('trace_id') }, r.status)
+    }
+    const context = r.context
 
-    // Only live/energizing sessions have a DO to read; otherwise return an empty context.
-    if (session.status !== 'live' && session.status !== 'energizing') {
-      return c.json({ ok: true, data: { context: emptyLiveContext(sessionId) }, trace_id: c.get('trace_id') })
+    // Nothing to read the room from until the session is live.
+    if (!context.isLive) {
+      return c.json({ ok: true, data: { suggestions: [], source: 'none' }, trace_id: c.get('trace_id') })
     }
 
-    let snapshot = null
-    try {
-      const room = await getSessionRoomStub(c.env, sessionId)
-      const res = await room.fetch('https://do.internal/copilot/snapshot')
-      snapshot = parseSnapshotResponse(await res.json().catch(() => null))
-    } catch {
-      snapshot = null
+    const ai = c.env.AI
+    let actions = null
+    if (ai) {
+      try {
+        // ADR-0046: copilot inference runs off the DO hot path, behind the AI circuit breaker.
+        const text = await CircuitBreakers.ai.execute(
+          async () => {
+            const result = (await ai.run(COPILOT_MODEL, { messages: buildSuggestMessages(context) })) as { response?: string }
+            return result?.response ?? ''
+          },
+          () => '',
+        )
+        actions = text ? parseSuggestions(text) : null
+      } catch {
+        actions = null
+      }
     }
 
-    const context = snapshot ? buildLiveContext(sessionId, snapshot) : emptyLiveContext(sessionId)
-    return c.json({ ok: true, data: { context }, trace_id: c.get('trace_id') })
+    const suggestions = actions ?? fallbackSuggestions(context)
+    return c.json({ ok: true, data: { suggestions, source: actions ? 'ai' : 'fallback' }, trace_id: c.get('trace_id') })
   })
 
   app.get('/edge/status', (c) =>

@@ -420,6 +420,19 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     sendWsJson(wsRef.current, { v: LIVE_PROTOCOL_VERSION, type: 'resume', data: {}, timestamp: Date.now() })
   }, [])
 
+  // COPILOT-06: presenter injects a copilot-drafted question into the live set.
+  const sendAddQuestion = useCallback(
+    (question: { kind: string; prompt: string; options: { label: string }[] }) => {
+      sendWsJson(wsRef.current, {
+        v: LIVE_PROTOCOL_VERSION,
+        type: 'add_question',
+        data: { question },
+        timestamp: Date.now(),
+      })
+    },
+    [],
+  )
+
   const sendEnergizerActivate = useCallback((energizer: LiveEnergizerState) => {
     sendWsJson(wsRef.current, {
       v: LIVE_PROTOCOL_VERSION,
@@ -455,6 +468,7 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     sendBack,
     sendPause,
     sendResume,
+    sendAddQuestion,
     sendEnergizerActivate,
     sendEnergizerAnswer,
     sendEnergizerAdvance,

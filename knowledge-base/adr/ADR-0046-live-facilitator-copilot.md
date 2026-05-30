@@ -60,8 +60,13 @@ sessions (ADR-0010) leak no per-response content; no PII reaches the model (ADR-
    generator. The existing free-text `/turn` chat endpoint stays for the post-session use
    case and is unchanged (back-compat).
 
-4. **Accept → inject over the existing WS path.** When a presenter accepts a `poll_draft`,
-   the frontend sends the existing LIVE `add_question` `ClientMessage` over the WebSocket.
+4. **Accept → inject via an additive `add_question` WS message.** When a presenter accepts
+   a `poll_draft`, the frontend sends an `add_question` `ClientMessage` over the WebSocket;
+   the DO appends it to the live question set (best-effort D1 persistence) so the presenter
+   can advance to it. *(Implementation note (COPILOT-06): no `add_question` message existed,
+   so it was added as an **additive message family on protocol v1** — permitted by ADR-0005
+   without a version bump, the same precedent as energizers/townhall — not a reuse of a
+   pre-existing path as originally assumed.)*
    **No new DO protocol version** (ADR-0005): the copilot adds an additive HTTP action
    surface, and the only realtime mutation reuses a message that already exists.
 
