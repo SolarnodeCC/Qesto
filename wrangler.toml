@@ -52,6 +52,9 @@ CHECKOUT_URL = "https://checkout.qesto.cc"
 # Resend sender identity; must be a verified sender/domain in your Resend account.
 # Use a branded sender on qesto.cc for production auth emails.
 RESEND_FROM = "Qesto <login@qesto.cc>"
+
+# Feature flags (production)
+REALTIME_TOWNHALL_ENABLED = "true"
 # GROWTH-ENGINE: IndexNow API key for SEO indexing (optional; template pages auto-index if set).
 # Get from https://www.bing.com/indexnow (register domain, get key, paste here).
 # INDEXNOW_KEY = ""
