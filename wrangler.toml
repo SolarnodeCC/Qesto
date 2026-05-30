@@ -105,6 +105,9 @@ id = "4ce59ef235b04802a7e9e218928bb022"
 [[kv_namespaces]]
 binding = "CIRCUIT_BREAKER_KV"
 id = "5e11b7876c4e4935b502f7826a494e6b"
+[[kv_namespaces]]
+binding = "INTEGRATIONS_KV"
+id = "f68cece22851406d8c27c2b0a818c44d"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
