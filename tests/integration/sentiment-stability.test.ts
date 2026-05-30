@@ -1,68 +1,16 @@
 // Integration tests for SENTIMENT_ENABLED stability (error logging, retry, circuit breaker).
 // Covers: success path, failure paths, retry logic, circuit breaker respect, cooldown enforcement.
 
-import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { SessionRoom } from '../../functions/api/SessionRoom'
-import { analyzeOpenResponseSentiment, type SentimentAnalysisResult } from '../../functions/api/lib/ai/sentiment'
-import type { Env } from '../../functions/api/types'
-import { KVMock } from '../helpers/kv-mock'
+import { describe, expect, it } from 'vitest'
+import type { SentimentAnalysisResult } from '../../functions/api/lib/ai/sentiment'
 
-const SECRET = 'test-secret-at-least-32-bytes!'
 const SENTIMENT_COOLDOWN_MS = 30_000
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function makeEnv(overrides?: Partial<Env>): Env {
-  return {
-    ENV: 'dev',
-    PAGES_URL: 'http://local',
-    API_URL: 'http://local',
-    JWT_SECRET: SECRET,
-    SENTIMENT_ENABLED: 'true',
-    CIRCUIT_BREAKER_ENABLED: 'true',
-    ...overrides,
-  } as unknown as Env
-}
-
-function kv(): KVNamespace {
-  return new KVMock() as unknown as KVNamespace
-}
-
-// Mock AI response
-function mockAISuccess(): unknown {
-  return [
-    { label: 'POSITIVE', score: 0.95 },
-  ]
-}
-
-function mockAIFailure(): Error {
-  return new Error('AI service timeout')
-}
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('Sentiment Analysis Stability', () => {
   describe('Success path', () => {
     it('analyzes sufficient English responses successfully', async () => {
-      const env = makeEnv()
-      const ctx = {
-        sessionId: 'session-123',
-        teamId: 'team-123',
-        plan: 'team' as const,
-        anonymity: 'partial' as const,
-        locale: 'en',
-        model: '@cf/meta/distilbert-sst-2-int8',
-        promptVersion: 'v1',
-      }
-      const responses = [
-        'Great experience!',
-        'Really enjoyed this',
-        'This was fantastic',
-        'Absolutely wonderful',
-        'Best session ever',
-      ]
-
-      // Mock aiPipeline to return success
       const result: SentimentAnalysisResult = {
         ok: true,
         mood: 'positive',
@@ -81,18 +29,6 @@ describe('Sentiment Analysis Stability', () => {
 
   describe('Failure paths', () => {
     it('returns insufficient_responses when fewer than 5 responses', async () => {
-      const env = makeEnv()
-      const ctx = {
-        sessionId: 'session-123',
-        teamId: 'team-123',
-        plan: 'team' as const,
-        anonymity: 'partial' as const,
-        locale: 'en',
-        model: '@cf/meta/distilbert-sst-2-int8',
-        promptVersion: 'v1',
-      }
-      const responses = ['response 1', 'response 2', 'response 3']
-
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'insufficient_responses',
@@ -106,19 +42,6 @@ describe('Sentiment Analysis Stability', () => {
     })
 
     it('returns insufficient_responses when insufficient English content', async () => {
-      const env = makeEnv()
-      const ctx = {
-        sessionId: 'session-123',
-        teamId: 'team-123',
-        plan: 'team' as const,
-        anonymity: 'partial' as const,
-        locale: 'en',
-        model: '@cf/meta/distilbert-sst-2-int8',
-        promptVersion: 'v1',
-      }
-      // Non-English responses
-      const responses = ['你好世界', '你好世界', '你好世界', '你好世界', '你好世界']
-
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'insufficient_responses',
@@ -131,24 +54,6 @@ describe('Sentiment Analysis Stability', () => {
     })
 
     it('returns insufficient_responses when zero_knowledge anonymity', async () => {
-      const env = makeEnv()
-      const ctx = {
-        sessionId: 'session-123',
-        teamId: 'team-123',
-        plan: 'team' as const,
-        anonymity: 'zero_knowledge' as const,
-        locale: 'en',
-        model: '@cf/meta/distilbert-sst-2-int8',
-        promptVersion: 'v1',
-      }
-      const responses = [
-        'Great experience!',
-        'Really enjoyed this',
-        'This was fantastic',
-        'Absolutely wonderful',
-        'Best session ever',
-      ]
-
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'insufficient_responses',
@@ -161,17 +66,6 @@ describe('Sentiment Analysis Stability', () => {
     })
 
     it('returns timeout when AI requests exceed timeout threshold', async () => {
-      const env = makeEnv()
-      const ctx = {
-        sessionId: 'session-123',
-        teamId: 'team-123',
-        plan: 'team' as const,
-        anonymity: 'partial' as const,
-        locale: 'en',
-        model: '@cf/meta/distilbert-sst-2-int8',
-        promptVersion: 'v1',
-      }
-
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'timeout',
@@ -185,17 +79,6 @@ describe('Sentiment Analysis Stability', () => {
     })
 
     it('returns circuit_breaker when AI unavailable', async () => {
-      const env = makeEnv()
-      const ctx = {
-        sessionId: 'session-123',
-        teamId: 'team-123',
-        plan: 'team' as const,
-        anonymity: 'partial' as const,
-        locale: 'en',
-        model: '@cf/meta/distilbert-sst-2-int8',
-        promptVersion: 'v1',
-      }
-
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'circuit_breaker',
@@ -210,9 +93,6 @@ describe('Sentiment Analysis Stability', () => {
 
   describe('Retry queue behavior', () => {
     it('queues retry on transient failure', async () => {
-      const env = makeEnv()
-
-      // Simulate failure that should trigger retry
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'timeout',
@@ -225,8 +105,6 @@ describe('Sentiment Analysis Stability', () => {
     })
 
     it('does not retry on circuit breaker', async () => {
-      const env = makeEnv()
-
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'circuit_breaker',
@@ -239,8 +117,6 @@ describe('Sentiment Analysis Stability', () => {
     })
 
     it('does not retry on insufficient responses', async () => {
-      const env = makeEnv()
-
       const result: SentimentAnalysisResult = {
         ok: false,
         reason: 'insufficient_responses',
