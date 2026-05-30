@@ -58,6 +58,8 @@ REALTIME_TOWNHALL_ENABLED = "true"
 # GROWTH-ENGINE: IndexNow API key for SEO indexing (optional; template pages auto-index if set).
 # Get from https://www.bing.com/indexnow (register domain, get key, paste here).
 # INDEXNOW_KEY = ""
+# Integrations: Slack/Teams notifications (gates integration checks in routes).
+INTEGRATION_ENABLED = "1"
 
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
@@ -171,7 +173,7 @@ CHECKOUT_URL = "https://checkout-staging.qesto.cc"
 RESEND_FROM = "Qesto Staging <login@staging.qesto.cc>"
 LIVE_ENERGIZERS_ENABLED = "true"
 CIRCUIT_BREAKER_ENABLED = "true"
-INTEGRATION_ENABLED = "true"
+INTEGRATION_ENABLED = "1"
 SENTIMENT_ENABLED = "true"
 REALTIME_TOWNHALL_ENABLED = "true"
 RATE_LIMIT_FAIL_CLOSED = "false"
