@@ -1103,9 +1103,9 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 | ID | Story | Size | Pri | Status |
 |---|---|---:|---|---|
-| INSIGHTS-00 | **ADR-0045** — cross-session intelligence architecture: aggregation store, embedding reuse, ZK exclusion, k-anonymity floor, plan gating, async rollup model. Gate for INSIGHTS-02+ | 3 | P0 | Todo |
-| INSIGHTS-01 | D1 migration + schema: `session_insights` + `team_insight_rollup`; repository layer; backfill script for existing closed sessions (ZK-excluded) | 8 | P0 | Todo |
-| INSIGHTS-02 | Aggregation pipeline: on session close, distil themes (reuse `ai-insights`), upsert embedding to `DECISIONS_VECTORIZE`, write `session_insights`; **idempotent**; ZK sessions skipped; emits `insight.aggregated` | 13 | P0 | Todo |
+| INSIGHTS-00 | **ADR-0045** — cross-session intelligence architecture: aggregation store, embedding reuse, ZK exclusion, k-anonymity floor, plan gating, async rollup model. Gate for INSIGHTS-02+ | 3 | P0 | ✅ Drafted — [`adr/ADR-0045-cross-session-intelligence.md`](../../adr/ADR-0045-cross-session-intelligence.md) (proposed) |
+| INSIGHTS-01 | D1 migration `0047`: **reuse** `insights_daily` (+ `team_id`, `embedding_ref`) per ADR-0045; add `team_insight_rollup(team_id, kind, window, payload_json, computed_at)`; repository layer; ZK-excluded backfill | 8 | P0 | Todo |
+| INSIGHTS-02 | Tier-1 pipeline: extend `precomputeInsights()` on close — distil themes (reuse `ai-insights`), upsert embedding via `insights-vectorize.ts` with `team_id` metadata, write `insights_daily`; **idempotent**; **ZK guard** skips `zero_knowledge`; emits `insight.aggregated` | 13 | P0 | Todo |
 | INSIGHTS-03 | Recurring-topic detection: Vectorize semantic clustering across a team's session embeddings → recurring themes with frequency + first/last-seen; k-anonymity floor enforced | 13 | P1 | Todo |
 | INSIGHTS-04 | Longitudinal trend API `GET /api/teams/:id/insights/trends` (30/90/180d windows): engagement + theme trend lines; plan-gated; KV-cached; AE event | 8 | P1 | Todo |
 | INSIGHTS-05 | Facilitator scorecard API + model: per-facilitator sessions-run, avg participation, response rate, theme diversity, mood trend (non-ZK only); team-scoped | 8 | P1 | Todo |
