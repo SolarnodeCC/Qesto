@@ -5,6 +5,7 @@ import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
 import { api } from '../api/client'
 import { useT } from '../i18n'
+import { generateOgImageUrl } from '../utils/og-image-generator'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -26,6 +27,7 @@ interface TemplateRecord {
   topic: string
   usageCount: number
   createdAt: string
+  updatedAt: string
 }
 
 function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }) {
@@ -159,12 +161,64 @@ export default function TemplateDetail() {
   const bestUsedFor = template.bestUsedFor[lang] || template.bestUsedFor.en || []
   const whatYoullLearn = template.whatYoullLearn[lang] || template.whatYoullLearn.en || []
 
+  // SEO: Structured data
+  const breadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Templates',
+        item: 'https://qesto.cc/templates',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: title,
+        item: `https://qesto.cc/templates/${template.id}`,
+      },
+    ],
+  }
+
+  const creativeWork = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: title,
+    description: purpose,
+    keywords: `${template.industry}, ${template.theme}, ${template.topic}, template, session`,
+    about: {
+      '@type': 'Thing',
+      name: template.industry.replace(/-/g, ' '),
+    },
+    author: {
+      '@type': 'Organization',
+      name: 'Qesto',
+    },
+    datePublished: template.createdAt,
+    dateModified: template.updatedAt,
+    inLanguage: lang,
+    potentialAction: {
+      '@type': 'UseAction',
+      name: 'Use Template',
+    },
+  }
+
+  const ogImage = generateOgImageUrl({
+    title,
+    subtitle: purpose,
+    industry: template.industry,
+    theme: template.theme,
+  })
+
   return (
     <MainLayout>
       <PageSeo
         title={`${title} — Qesto Template`}
         description={purpose}
         canonicalPath={`/templates/${template.id}`}
+        ogImage={ogImage}
+        jsonLd={[breadcrumb, creativeWork]}
       />
 
       {magicLink && (

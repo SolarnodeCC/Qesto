@@ -50,5 +50,27 @@
   "sentiment.positive": "Stimmung: positiv",
   "sentiment.neutral": "Stimmung: neutral",
   "sentiment.concerning": "Stimmung: Aufmerksamkeit nötig",
-  "sentiment.hint": "Aggregiertes Signal aus {count} offenen Antworten (keine Einzelzuordnung)"
+  "sentiment.hint": "Aggregiertes Signal aus {count} offenen Antworten (keine Einzelzuordnung)",
+  "copilot": {
+    "title": "KI-Copilot",
+    "open": "KI-Copilot öffnen",
+    "close": "KI-Copilot schließen",
+    "room_read": "Stimmungsbild",
+    "responses": "Antworten",
+    "participation": "Teilnahme",
+    "mood": "Stimmung",
+    "mood_positive": "Positiv",
+    "mood_neutral": "Neutral",
+    "mood_concerning": "Aufmerksamkeit nötig",
+    "mood_none": "Noch nicht genügend Antworten",
+    "draft_label": "Umfrage aus einem Satz entwerfen",
+    "draft_placeholder": "z. B. das Team zur Top-Priorität befragen",
+    "draft_button": "Umfrage entwerfen",
+    "drafting": "Wird entworfen…",
+    "draft_unavailable": "Derzeit kein Entwurf verfügbar. Formuliere es um.",
+    "draft_heading": "Vorgeschlagene Umfrage",
+    "plan_gated": "Der Live-Copilot ist in kostenpflichtigen Tarifen verfügbar.",
+    "loading": "Der Raum wird gelesen…",
+    "waiting": "Warten, bis die Sitzung live geht."
+  }
 }

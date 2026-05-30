@@ -47,6 +47,8 @@ export type Env = {
   WS_CONNECT_PER_IP_PER_MIN?: string
   /** GROWTH-ENGINE: IndexNow API key for SEO indexing (optional). */
   INDEXNOW_KEY?: string
+  /** SEO-INDEXNOW: IndexNow key filename for Option 1 (e.g., 'e8964e65669d47a69dd02b32bfe2a64e'). */
+  INDEXNOW_KEY_FILE?: string
   /** ADR-0022: multi-region read replica routing (S46+). */
   MULTI_REGION_ENABLED?: string
   MULTI_REGION_PRIMARY?: string
@@ -219,6 +221,8 @@ export interface PlanQuotas {
     samlSso: boolean
     /** TOWNHALL (ADR-0044): moderated anonymous Q&A sessions — Team tier only. */
     townhallQA: boolean
+    /** COPILOT (ADR-0046): live facilitator copilot — paid tiers (starter + team). */
+    liveCopilot: boolean
   }
 }
 
@@ -235,6 +239,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       rankingQuestions: false,
       samlSso: false,
       townhallQA: false,
+      liveCopilot: false,
     },
   },
   starter: {
@@ -249,6 +254,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       rankingQuestions: true,
       samlSso: false,
       townhallQA: false,
+      liveCopilot: true,
     },
   },
   team: {
@@ -263,6 +269,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       rankingQuestions: true,
       samlSso: true,
       townhallQA: true,
+      liveCopilot: true,
     },
   },
 }

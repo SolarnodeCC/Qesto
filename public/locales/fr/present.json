@@ -50,5 +50,27 @@
   "sentiment.positive": "Ambiance : positive",
   "sentiment.neutral": "Ambiance : neutre",
   "sentiment.concerning": "Ambiance : à surveiller",
-  "sentiment.hint": "Signal agrégé à partir de {count} réponses ouvertes (sans attribution individuelle)"
+  "sentiment.hint": "Signal agrégé à partir de {count} réponses ouvertes (sans attribution individuelle)",
+  "copilot": {
+    "title": "Copilote IA",
+    "open": "Ouvrir le copilote IA",
+    "close": "Fermer le copilote IA",
+    "room_read": "Lecture de la salle",
+    "responses": "Réponses",
+    "participation": "Participation",
+    "mood": "Humeur",
+    "mood_positive": "Positive",
+    "mood_neutral": "Neutre",
+    "mood_concerning": "Attention requise",
+    "mood_none": "Pas encore assez de réponses",
+    "draft_label": "Rédiger un sondage à partir d’une intention",
+    "draft_placeholder": "ex. sonder l’équipe sur notre priorité",
+    "draft_button": "Rédiger le sondage",
+    "drafting": "Rédaction…",
+    "draft_unavailable": "Aucun brouillon disponible pour le moment. Reformulez.",
+    "draft_heading": "Sondage suggéré",
+    "plan_gated": "Le copilote en direct est disponible sur les forfaits payants.",
+    "loading": "Lecture de la salle…",
+    "waiting": "En attente du démarrage de la session."
+  }
 }

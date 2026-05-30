@@ -13,6 +13,7 @@ export type PlanCatalogApiRow = {
     rankingQuestions: boolean
     samlSso: boolean
     townhallQA: boolean
+    liveCopilot: boolean
   }
 }
 

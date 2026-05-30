@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
+import PageSeo from '../components/PageSeo'
 
 const FEATURE_STRIP = [
   { icon: Sparkles, label: 'Question ideas ready in under 90 seconds' },
@@ -80,6 +81,11 @@ export default function Home() {
 
   return (
     <MainLayout navSlot={navSlot}>
+      <PageSeo
+        title="Qesto — Real-time Feedback & AI Insights for Teams"
+        description="Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate."
+        canonicalPath="/"
+      />
       <div className="animate-page-enter">
 
         {/* ── Hero ─────────────────────────────────────────────────────────────── */}

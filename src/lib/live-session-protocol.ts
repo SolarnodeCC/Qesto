@@ -9,6 +9,7 @@ const LiveQuestionSchema = z.object({
 
 const LiveSessionSummarySchema = z.object({
   id: z.string(),
+  code: z.string(),
   title: z.string(),
   status: z.string(),
 })

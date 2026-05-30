@@ -82,6 +82,12 @@ const K_IP_RATE_LIMIT = 'ip_rate_limit' // Maps ipHash → timestamps[] for per-
 const K_ACTIVE_ENERGIZER = 'active_energizer'
 const K_SENTIMENT_MOOD = 'sentiment:mood'
 const K_SENTIMENT_LAST = 'sentiment:last'
+const K_SENTIMENT_RETRY_QUEUE = 'sentiment:retry_queue'
+const K_SENTIMENT_RETRY_COUNT = 'sentiment:retry_count'
+const K_ENERGIZER_ACTIVATED_AT = 'energizer:activated_at'
+const SENTIMENT_RETRY_DELAY_MS = 5_000
+const SENTIMENT_MAX_RETRIES = 1
+const ENERGIZER_TIMEOUT_MS = 5 * 60_000 // 5 minutes
 
 // Fun-mode: 60 s per question before auto-advance signal.
 const FUN_MODE_QUESTION_MS = 60_000
@@ -229,6 +235,7 @@ export class SessionRoom implements DurableObject {
     if (url.pathname === '/close' && req.method === 'POST') return this.handleClose()
     if (url.pathname === '/transition-to-live' && req.method === 'POST') return this.handleTransitionToLive()
     if (url.pathname === '/state' && req.method === 'GET') return this.handleState()
+    if (url.pathname === '/copilot/snapshot' && req.method === 'GET') return this.handleCopilotSnapshot()
     if (url.pathname === '/ws' && req.headers.get('upgrade') === 'websocket') {
       return this.handleUpgrade(req)
     }
@@ -414,6 +421,37 @@ export class SessionRoom implements DurableObject {
       connections: this.ctx.getWebSockets().length,
       energizer,
       status,
+    })
+  }
+
+  // ── /copilot/snapshot (COPILOT-01, ADR-0046) ──────────────────────────────
+  // Aggregate, PII-free read of the live room for the facilitator copilot.
+  // Inference happens off the DO in the Pages Function; this only exposes state
+  // the DO already holds. Sentiment mood is omitted in zero-knowledge sessions.
+  private async handleCopilotSnapshot(): Promise<Response> {
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
+    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    const voters = await this.ensureVoters()
+    const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? 'uninitialised'
+    const isZeroKnowledge = meta?.anonymity === 'zero_knowledge'
+    const mood = isZeroKnowledge
+      ? null
+      : (await this.ctx.storage.get<{ mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }>(K_SENTIMENT_MOOD)) ?? null
+
+    const voterCount = Object.keys(voters).length
+    const responseCount = Object.values(counts).reduce((sum, n) => sum + (typeof n === 'number' ? n : 0), 0)
+
+    return this.jsonOk({
+      status,
+      currentQuestion: question
+        ? { id: question.id, kind: question.kind, prompt: question.prompt, optionCount: question.options?.length ?? 0 }
+        : null,
+      responseCount,
+      voterCount,
+      participationRate: voterCount > 0 ? Math.min(1, responseCount / voterCount) : 0,
+      connections: this.ctx.getWebSockets().length,
+      mood,
     })
   }
 
@@ -603,6 +641,97 @@ export class SessionRoom implements DurableObject {
       }
     }
 
+    // Sentiment analysis retry: if a retry job is queued, process it
+    const sentimentRetry = await this.ctx.storage.get<{
+      responses: string[]
+      sessionId: string
+      teamId?: string
+      plan?: PlanTier
+      attempt: number
+      enqueuedAt: number
+    }>(K_SENTIMENT_RETRY_QUEUE)
+    if (sentimentRetry && sentimentRetry.enqueuedAt + SENTIMENT_RETRY_DELAY_MS <= nowMs) {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      if (meta) {
+        const ctx = sentimentContextFromMeta({
+          sessionId: meta.sessionId,
+          teamId: meta.teamId,
+          plan: meta.plan,
+          anonymity: meta.anonymity,
+        })
+        const result = await analyzeOpenResponseSentiment(this.env, ctx, sentimentRetry.responses)
+        if (result.ok) {
+          // Success: clear retry queue and update sentiment
+          await this.ctx.storage.put(K_SENTIMENT_LAST, nowMs)
+          await this.ctx.storage.put(K_SENTIMENT_MOOD, result)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
+          writeEvent(this.env.METRICS_AE, {
+            name: 'ai.sentiment_analysis',
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan ?? 'free',
+            count: result.sampleSize,
+            detail: result.mood,
+          })
+          const msg = serverMessage({
+            type: 'sentiment_signal',
+            data: { mood: result.mood, sampleSize: result.sampleSize },
+            timestamp: nowMs,
+          })
+          for (const ws of this.ctx.getWebSockets('role:presenter')) {
+            try { ws.send(msg) } catch { /* ignore */ }
+          }
+        } else if (result.reason === 'circuit_breaker') {
+          // Don't retry if circuit breaker is open
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
+          writeEvent(this.env.METRICS_AE, {
+            name: 'ai.sentiment_retry_exhausted',
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan ?? 'free',
+            detail: 'circuit_breaker',
+          })
+        } else {
+          // Transient failure: don't retry further (max retries exhausted)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
+          writeEvent(this.env.METRICS_AE, {
+            name: 'ai.sentiment_retry_exhausted',
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan ?? 'free',
+            detail: result.reason,
+          })
+        }
+      }
+    }
+
+    // Energizer timeout: auto-complete if energizer has been active > timeout threshold
+    const energizer = await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)
+    const energizerActivatedAt = await this.ctx.storage.get<number>(K_ENERGIZER_ACTIVATED_AT)
+    if (energizer && energizerActivatedAt && energizerActivatedAt + ENERGIZER_TIMEOUT_MS <= nowMs) {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      energizer.status = 'completed'
+      await this.ctx.storage.put(K_ACTIVE_ENERGIZER, energizer)
+      await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
+      const timeoutMsg = serverMessage({
+        type: 'energizer_state',
+        data: { energizer },
+        timestamp: nowMs,
+      })
+      for (const ws of this.ctx.getWebSockets()) {
+        try { ws.send(timeoutMsg) } catch { /* ignore */ }
+      }
+      writeEvent(this.env.METRICS_AE, {
+        name: 'ws.energizer_timeout',
+        sessionId: meta?.sessionId,
+        teamId: meta?.teamId,
+        detail: `auto_completed_after_${Math.round((nowMs - energizerActivatedAt) / 1000)}s`,
+      })
+    }
+
     // Fun-mode: broadcast question_timeout when the countdown expires.
     const meta = await this.ctx.storage.get<Meta>(K_META)
     if (meta?.sessionMode === 'fun' && meta.questionExpiresAt) {
@@ -743,7 +872,10 @@ export class SessionRoom implements DurableObject {
       return
     }
     const active = withScoreArtifacts(initialiseLiveEnergizer(energizer))
+    const nowMs = now()
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
+    await this.ctx.storage.put(K_ENERGIZER_ACTIVATED_AT, nowMs)
+    await this.scheduleAlarm(nowMs + ENERGIZER_TIMEOUT_MS)
     await this.emitEnergizerMetric('ws.energizer_activated', active.id, active.leaderboard?.length ?? 0)
     await this.recordEnergizerAudit('ws.energizer_activated', att, active)
     await this.broadcastEnergizer(active)
@@ -946,6 +1078,9 @@ export class SessionRoom implements DurableObject {
         ? withScoreArtifacts({ ...active, status: 'completed', currentIndex })
         : withScoreArtifacts({ ...active, currentIndex: currentIndex + 1 })
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, next)
+    if (next.status === 'completed') {
+      await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
+    }
     await this.emitEnergizerMetric(
       next.status === 'completed' ? 'ws.energizer_completed' : 'ws.energizer_advanced',
       next.id,
@@ -1076,10 +1211,40 @@ export class SessionRoom implements DurableObject {
       anonymity: meta.anonymity,
     })
     const result = await analyzeOpenResponseSentiment(this.env, ctx, responses)
-    if (!result) return
+    if (!result.ok) {
+      // Log failure and queue retry if not circuit breaker
+      writeEvent(this.env.METRICS_AE, {
+        name: 'ai.sentiment_analysis_failed',
+        sessionId: meta.sessionId,
+        teamId: meta.teamId,
+        plan: meta.plan ?? 'free',
+        count: result.sampleSize,
+        detail: result.reason,
+      })
+
+      // Queue retry unless circuit breaker is open
+      if (result.reason !== 'circuit_breaker') {
+        const retryCount = (await this.ctx.storage.get<number>(K_SENTIMENT_RETRY_COUNT)) ?? 0
+        if (retryCount < SENTIMENT_MAX_RETRIES) {
+          await this.ctx.storage.put(K_SENTIMENT_RETRY_QUEUE, {
+            responses,
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan,
+            attempt: retryCount + 1,
+            enqueuedAt: Date.now(),
+          })
+          await this.ctx.storage.put(K_SENTIMENT_RETRY_COUNT, retryCount + 1)
+          await this.scheduleAlarm(Date.now() + SENTIMENT_RETRY_DELAY_MS)
+        }
+      }
+      return
+    }
 
     await this.ctx.storage.put(K_SENTIMENT_LAST, Date.now())
     await this.ctx.storage.put(K_SENTIMENT_MOOD, result)
+    await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+    await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
 
     writeEvent(this.env.METRICS_AE, {
       name: 'ai.sentiment_analysis',

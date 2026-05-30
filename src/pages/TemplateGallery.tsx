@@ -5,6 +5,7 @@ import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
 import { api } from '../api/client'
 import { useT } from '../i18n'
+import { generateOgImageUrl } from '../utils/og-image-generator'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -154,12 +155,42 @@ export default function TemplateGallery() {
     return () => controller.abort()
   }, [industry, theme, lang])
 
+  // SEO: Collection page schema
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Qesto Template Gallery',
+    description: 'Browse ready-to-use session templates for team engagement, learning, and insights.',
+    url: 'https://qesto.cc/templates',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'Qesto',
+      url: 'https://qesto.cc',
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://qesto.cc/templates?industry={industry}&theme={theme}',
+      },
+      'query-input': 'required name=industry,theme',
+    },
+  }
+
+  const galleryOgImage = generateOgImageUrl({
+    title: 'Qesto Template Gallery',
+    subtitle: 'Browse ready-to-use session templates',
+    color: 'teal',
+  })
+
   return (
     <MainLayout>
       <PageSeo
         title={t('templates.galleryTitle')}
         description={t('templates.galleryDescription')}
         canonicalPath="/templates"
+        ogImage={galleryOgImage}
+        jsonLd={collectionSchema}
       />
 
       {/* Hero */}

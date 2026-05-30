@@ -6,6 +6,10 @@ import { aiOverride, aiPipeline, SENTIMENT_MODEL, type SessionAIContext } from '
 
 export type SessionMood = 'positive' | 'neutral' | 'concerning'
 
+export type SentimentAnalysisResult =
+  | { ok: true; mood: SessionMood; sampleSize: number; analysisDurationMs: number }
+  | { ok: false; reason: 'timeout' | 'circuit_breaker' | 'insufficient_responses' | 'ai_error'; message: string; sampleSize: number }
+
 const MIN_RESPONSES = 5
 const ANALYSIS_COOLDOWN_MS = 30_000
 
@@ -35,23 +39,37 @@ export async function analyzeOpenResponseSentiment(
   env: Env,
   ctx: SessionAIContext,
   responses: string[],
-): Promise<{ mood: SessionMood; sampleSize: number } | null> {
-  if (ctx.anonymity === 'zero_knowledge') return null
-  if (responses.length < MIN_RESPONSES) return null
+): Promise<SentimentAnalysisResult> {
+  if (ctx.anonymity === 'zero_knowledge') {
+    return { ok: false, reason: 'insufficient_responses', message: 'zero_knowledge anonymity disables sentiment', sampleSize: 0 }
+  }
+  if (responses.length < MIN_RESPONSES) {
+    return { ok: false, reason: 'insufficient_responses', message: `need ${MIN_RESPONSES} responses, got ${responses.length}`, sampleSize: responses.length }
+  }
 
   const english = responses.filter(isMostlyEnglish)
-  if (english.length < MIN_RESPONSES) return null
+  if (english.length < MIN_RESPONSES) {
+    return { ok: false, reason: 'insufficient_responses', message: `insufficient English responses: ${english.length}/${responses.length}`, sampleSize: english.length }
+  }
 
   const sample = english.slice(0, 40)
   const ctxSentiment = aiOverride(ctx, { model: SENTIMENT_MODEL })
+  const startMs = Date.now()
 
   const labels: DistilbertLabel[] = []
+  let hasTimeout = false
+  let hasUnavailable = false
+
   for (const text of sample) {
     const trimmed = text.slice(0, 512)
     const result = await aiPipeline(ctxSentiment, env, async (model, _signal) => {
       return env.AI.run(model, { text: trimmed })
     })
-    if (!result.ok) continue
+    if (!result.ok) {
+      if (result.code === 'ai_timeout') hasTimeout = true
+      if (result.code === 'ai_unavailable') hasUnavailable = true
+      continue
+    }
     const raw = result.data
     if (Array.isArray(raw)) {
       for (const item of raw) {
@@ -64,9 +82,21 @@ export async function analyzeOpenResponseSentiment(
     }
   }
 
-  if (labels.length < MIN_RESPONSES) return null
+  const durationMs = Date.now() - startMs
 
-  return { mood: moodFromLabels(labels), sampleSize: sample.length }
+  if (hasUnavailable) {
+    return { ok: false, reason: 'circuit_breaker', message: 'AI service unavailable (circuit open or rate limited)', sampleSize: sample.length }
+  }
+
+  if (hasTimeout) {
+    return { ok: false, reason: 'timeout', message: `timeout during AI analysis, got ${labels.length}/${sample.length} labels`, sampleSize: sample.length }
+  }
+
+  if (labels.length < MIN_RESPONSES) {
+    return { ok: false, reason: 'ai_error', message: `insufficient labels collected: ${labels.length}/${MIN_RESPONSES}`, sampleSize: sample.length }
+  }
+
+  return { ok: true, mood: moodFromLabels(labels), sampleSize: sample.length, analysisDurationMs: durationMs }
 }
 
 export const SENTIMENT_MIN_RESPONSES = MIN_RESPONSES

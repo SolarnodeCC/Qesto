@@ -50,5 +50,27 @@
   "sentiment.positive": "Sfeer: positief",
   "sentiment.neutral": "Sfeer: neutraal",
   "sentiment.concerning": "Sfeer: aandacht nodig",
-  "sentiment.hint": "Geaggregeerd signaal uit {count} open antwoorden (geen individuele attributie)"
+  "sentiment.hint": "Geaggregeerd signaal uit {count} open antwoorden (geen individuele attributie)",
+  "copilot": {
+    "title": "AI-copiloot",
+    "open": "AI-copiloot openen",
+    "close": "AI-copiloot sluiten",
+    "room_read": "Sfeerbeeld",
+    "responses": "Reacties",
+    "participation": "Deelname",
+    "mood": "Stemming",
+    "mood_positive": "Positief",
+    "mood_neutral": "Neutraal",
+    "mood_concerning": "Aandacht nodig",
+    "mood_none": "Nog te weinig reacties",
+    "draft_label": "Stel een poll op uit één zin",
+    "draft_placeholder": "bijv. peil het team over onze topprioriteit",
+    "draft_button": "Poll opstellen",
+    "drafting": "Bezig met opstellen…",
+    "draft_unavailable": "Nu geen concept beschikbaar. Herformuleer je intentie.",
+    "draft_heading": "Voorgestelde poll",
+    "plan_gated": "De live-copiloot is beschikbaar in betaalde abonnementen.",
+    "loading": "De zaal lezen…",
+    "waiting": "Wachten tot de sessie live gaat."
+  }
 }
