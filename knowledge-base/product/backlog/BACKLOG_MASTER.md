@@ -129,6 +129,14 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 
 ## Next Five Calendar Sprints (Sprint 20 to Sprint 24)
 
+> **⚠️ RECONCILIATION NOTE (2026-05-30): This forward-looking section is historical.**
+> A code-vs-backlog audit on 2026-05-30 confirmed the codebase has shipped **through Sprint 80 (v5.0 GA)** plus the post-S80 **Townhall** epic. Every sprint registry below (S20–S34 "Active Backlog Additions", the S30–34, S35–39, S60–70 and S71–80 registries) is **delivered**. These tables are retained as an as-built record, not as open work.
+>
+> **The only forward-looking / uncommitted feature list is [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)** (status: *proposed*). See **[§Current Frontier & Next Epic](#current-frontier--next-epic)** at the end of this section for the true next epic.
+>
+> **Verified-shipped Sprint 31 items** (file evidence): ADR-0010 (`adr/ADR-0010-zero-knowledge-mode.md`, accepted), ANON-DEPTH-01 (`Anonymity` type + `SessionWizard` selector + `JoinPage` trust badge + DO enforcement in `SessionRoom.ts`), I18N-SPRINT31-01 (`zero_knowledge`/`trust_badge` keys in all 5 `wizard`+`join` locales), CB-01/CB-02 (`CircuitBreakers` wired in `email.ts`/`billing.ts`/`ai/session-context.ts`/`oauth.ts`), INT-PROVIDER-01 (`integrations/token-store.ts` + `token-crypto.ts`), GDPR-TRUST-PAGE-01 (`/trust/gdpr` route), ADR-0007-AMEND + COMPLIANCE-02 (`check:compliance-claims`).
+> **Genuine residual gaps:** MARKET-RESEARCH-VEVOX-01 (no Vevox profile in `COMPETITOR_PROFILES.md`) and TOWNHALL-12 (Workers-AI profanity screening — `Todo`).
+
 **Planning status**: Agent-assisted planning refresh completed 2026-05-01. Sprint 20 is the committed readiness sprint; Sprints 21–24 are sequenced backlog intent and should be revalidated at each sprint planning ceremony.
 
 | Sprint | Window | Product goal | Backlog posture |
@@ -171,17 +179,17 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | AUDIT-GAM-01 | Audit UX polish for realtime actions | P1 | Sprint 31 | Audit viewer distinguishes activation, answer-window changes, completion, and denials |
 | DEPLOY-GAM-01 | Staging migration/flag checklist | P0 | Sprint 31 | Checklist covers D1/KV compatibility, flag state, rollback, WebSocket smoke |
 | QA-ENT-02 | Enterprise permission regression bundle | P0 | Sprint 31 | Owner/admin/member/custom-role allow/deny paths cover session + energizer |
-| ADR-0010 | Zero-knowledge anonymity mode ADR | P0 | Sprint 31 | ADR defines voter dedup without PII, session config, UI indicators, DO protocol impact; required before ANON-DEPTH-01; **MARKET-RESEARCH:PRIVACY** — Vevox segment leadership, Mentimeter trust gap (pulse 2026-05-19) |
-| CB-01 | Wire CircuitBreaker into Stripe + Resend (ADR-0007) | P0 | Sprint 31 | `billing.ts:36/59` and `email.ts:22` wrapped; state machine wired in `createApp()`; CIRCUIT_BREAKER_KV provisioned in production |
-| CB-02 | Wire CircuitBreaker for Workers AI + JWKS (ADR-0007) | P0 | Sprint 31 | Workers AI 10s/3-failure OPEN; JWKS 5s/3-failure OPEN; graceful free-plan fallback |
-| INT-PROVIDER-01 | Integration provider library with AES-GCM encryption (ADR-0008) | P0 | Sprint 31 | `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK`; `IntegrationHttpClient` timeout bug fixed (`http-client.ts:80`); typed interface; INTEGRATIONS_KV provisioned in production |
-| ANON-DEPTH-01 | Zero-knowledge mode session config + trust indicator | P0 | Sprint 31 | Anonymity level selector; participant trust badge; i18n; gate: ADR-0010 accepted + MARKET-RESEARCH-VEVOX-01 complete; **MARKET-RESEARCH:PRIVACY** — 60+ monthly anonymous-feedback mentions; Vevox #1 on G2/Capterra/Trustpilot (pulse 2026-05-19) |
-| GDPR-TRUST-PAGE-01 | GDPR compliance trust page (marketing artifact, no new engineering) | P1 | Sprint 31 | Static documentation page covering Qesto's GDPR architecture, EU data residency evidence (Cloudflare edge), sub-processor list draft, and anonymity guarantees; linked from pricing and landing pages; **MARKET-RESEARCH:COMPLIANCE** — Mentimeter US residency churn; ship before Sprint 34 `GDPR-BADGE-01` |
-| ADR-0007-AMEND | ADR-0007 amendment: clarify CircuitBreaker.INTEGRATIONS scope | P0 | Sprint 31 | Amendment accepted before CB-01 wiring; defines which integration call sites (Stripe, Resend, Workers AI, JWKS) are in scope and which state machine parameters apply to each |
+| ADR-0010 | Zero-knowledge anonymity mode ADR | P0 | ✅ Shipped (verified 2026-05-30) | ✅ Accepted in `adr/ADR-0010-zero-knowledge-mode.md` (2026-05-22). ADR defines voter dedup without PII, session config, UI indicators, DO protocol impact; required before ANON-DEPTH-01; **MARKET-RESEARCH:PRIVACY** — Vevox segment leadership, Mentimeter trust gap (pulse 2026-05-19) |
+| CB-01 | Wire CircuitBreaker into Stripe + Resend (ADR-0007) | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `CircuitBreakers.resend` in `lib/email.ts:21`; `routes/billing.ts` wrapped; state machine in `lib/resilience/circuit-breaker.ts`. `billing.ts:36/59` and `email.ts:22` wrapped; state machine wired in `createApp()`; CIRCUIT_BREAKER_KV provisioned in production |
+| CB-02 | Wire CircuitBreaker for Workers AI + JWKS (ADR-0007) | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `CircuitBreakers.ai` in `lib/ai/session-context.ts:90` + `lib/ai-insights.ts:209`; JWKS path in `lib/oauth.ts`. Workers AI 10s/3-failure OPEN; JWKS 5s/3-failure OPEN; graceful free-plan fallback |
+| INT-PROVIDER-01 | Integration provider library with AES-GCM encryption (ADR-0008) | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `lib/integrations/token-store.ts` + `token-crypto.ts` (AES-GCM) + `http-client.ts`; Slack/Teams/Zoom/Notion/Salesforce providers present. `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK`; `IntegrationHttpClient` timeout bug fixed (`http-client.ts:80`); typed interface; INTEGRATIONS_KV provisioned in production |
+| ANON-DEPTH-01 | Zero-knowledge mode session config + trust indicator | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `Anonymity` type incl. `zero_knowledge` (`types.ts:144`); `SessionWizard` selector; `JoinPage.tsx:606` trust badge; DO enforcement (`SessionRoom.ts:1059,1371` — no display names, sentiment/coaching disabled). Anonymity level selector; participant trust badge; i18n; gate: ADR-0010 accepted + MARKET-RESEARCH-VEVOX-01 complete; **MARKET-RESEARCH:PRIVACY** — 60+ monthly anonymous-feedback mentions; Vevox #1 on G2/Capterra/Trustpilot (pulse 2026-05-19) |
+| GDPR-TRUST-PAGE-01 | GDPR compliance trust page (marketing artifact, no new engineering) | P1 | ✅ Shipped (verified 2026-05-30) | ✅ `src/pages/GdprTrustPage.tsx` at route `/trust/gdpr` (`App.tsx:118`). Static documentation page covering Qesto's GDPR architecture, EU data residency evidence (Cloudflare edge), sub-processor list draft, and anonymity guarantees; linked from pricing and landing pages; **MARKET-RESEARCH:COMPLIANCE** — Mentimeter US residency churn; ship before Sprint 34 `GDPR-BADGE-01` |
+| ADR-0007-AMEND | ADR-0007 amendment: clarify CircuitBreaker.INTEGRATIONS scope | P0 | ✅ Shipped (verified 2026-05-30) | ✅ Accepted in `adr/ADR-0007-amend-integrations-scope.md` (2026-05-22). Amendment accepted before CB-01 wiring; defines which integration call sites (Stripe, Resend, Workers AI, JWKS) are in scope and which state machine parameters apply to each |
 | DEVOPS-CB-KV-01 | Production KV namespace provisioning for resilience + integrations | P0 | Sprint 31 | `wrangler kv namespace create CIRCUIT_BREAKER_KV` (prod); `wrangler kv namespace create INTEGRATIONS_KV` (prod); `wrangler pages secret put OAUTH_TOKEN_MEK` (prod + staging); must be done before CB-01/CB-02/INT-PROVIDER-01 merge |
 | MARKET-RESEARCH-VEVOX-01 | Vevox deep-dive competitive feature audit | P1 | Sprint 31 | COMPETITOR_PROFILES.md has no Vevox profile; market research task (not engineering) to document Vevox's anonymous Q&A moderation, anonymous live discussion, and employee voice analytics features; **hard gate** before ANON-DEPTH-01 merge; **MARKET-RESEARCH:PRIVACY** (pulse 2026-05-19) |
 | SCALE-PROOF-01 | Enterprise participant scaling evidence + GTM claims | P1 | Sprint 32 | Documented load test for 10,000+ concurrent voters; plan quota matrix vs Poll Everywhere (700 cap); pricing/competitor comparison copy passes `check:compliance-claims`; **MARKET-RESEARCH:SCALING** — enterprise scaling + sovereignty high signal (pulse 2026-05-19) |
-| I18N-SPRINT31-01 | i18n strings for zero-knowledge mode (ANON-DEPTH-01) in 5 locales | P1 | Sprint 31 | All UI strings for anonymity level selector (none/standard/zero-knowledge), participant trust badge, and GDPR trust page in EN/NL/DE/FR/ES; CI `check:i18n` passes; no raw keys visible to users |
+| I18N-SPRINT31-01 | i18n strings for zero-knowledge mode (ANON-DEPTH-01) in 5 locales | P1 | ✅ Shipped (verified 2026-05-30) | ✅ `zero_knowledge` in all 5 `wizard.json` + `trust_badge` in all 5 `join.json` (EN/NL/DE/FR/ES). All UI strings for anonymity level selector (none/standard/zero-knowledge), participant trust badge, and GDPR trust page in EN/NL/DE/FR/ES; CI `check:i18n` passes; no raw keys visible to users |
 | RC-DOCS-01 | Spec + runbook closeout for v2.2 | P0 | Sprint 32 | `SPEC_REALTIME`, `SPEC_BACKEND`, `SPEC_FRONTEND`, roadmap, backlog, and release notes updated to reflect all shipped v2.2 behavior |
 | RC-ROLLOUT-01 | Feature-flag rollout plan for LIVE energizers | P0 | Sprint 32 | Rollout steps, cohorts, metrics watched, rollback trigger, and rollback owner defined; staging WebSocket smoke passes with flag on and off |
 | RC-OBS-01 | Release health dashboard checklist for v2.2 | P0 | Sprint 32 | Admin surfaces answer: active sessions, reconnects, errors, energizer activation rate, energizer participation, energizer completion |
@@ -204,7 +212,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | ADR-0011 | Live sentiment inference ADR + DPIA scope | P0 | Sprint 33 | Model: `distilbert-sst-2-int8`; aggregate-only (k≥5); disabled in ZK sessions; DPIA documented; required before Sprint 34 AI-SENTIMENT-01; **MARKET-RESEARCH:AI-ENGAGEMENT** — emotionally-aware CX trend (pulse 2026-05-19) |
 | ENT-RESIDENCY-01 | EU data residency: routing evidence + DPA template | P0 | Sprint 34 | Documentation + contractual deliverable (D1 location hint irreversible); routing evidence; DPA template; ops runbook; **MARKET-RESEARCH:COMPLIANCE** — competitive moat vs Mentimeter/Slido cloud egress; do not defer without PO sign-off |
 | COMPLIANCE-01 | SOC 2 evidence framework + sub-processor registry | P1 | Sprint 34 | `/knowledge-base/security/SOC2_EVIDENCE.md`; control inventory; sub-processor list; gaps with sprint assignments |
-| COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | Sprint 31 (pulled forward) | `npm run check:compliance-claims`; CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
+| COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `check:compliance-claims` script in `package.json`; `security/DPA_SCC_TEMPLATE.md`. `npm run check:compliance-claims`; CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
 | RES-DO-01 | DO WebSocket resilience: outer try/catch + `do.storage_fault` AE | P0 | Sprint 30 | `webSocketMessage` catches storage/handler faults; client receives `internal` error; no silent WS close |
 | SEC-CSV-01 | CSV formula-injection escape in client + server exports | P0 | Sprint 30 | `lib/csv.ts` guards `=+-@` prefixes; Results + `export.csv` use shared helper |
 | GAM-STAGING-SMOKE-01 | Cloudflare staging WebSocket smoke for LIVE energizers | P0 | Sprint 32 gate | Checklist: `knowledge-base/operations/GAM_STAGING_SMOKE_CHECKLIST.md`; blocks RC rollout |
@@ -236,6 +244,26 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 
 ---
 
+## Current Frontier & Next Epic
+
+**As-built position (audited 2026-05-30):** All committed roadmap arcs are delivered — v2.x → **v5.0 GA (Sprint 80)** — including the post-S80 **Townhall** epic (`session_mode='townhall'`, ADR-0044). The forward sprint registries above are an as-built record, not open work.
+
+**The only uncommitted feature list is [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)** — 11 proposed new-business epics, status *proposed / for PO review*. Build status of its ranked set:
+
+| # | Epic | Status |
+|---|------|--------|
+| 1 | TOWNHALL | ✅ Shipped (ADR-0044; residual TOWNHALL-12 profanity screening) |
+| 2 | COPILOT — Live AI facilitator co-pilot | 🟡 Largely covered by shipped `AI-COPILOT-MULTITURN-01` (S76) + `AI-COPILOT-EDGE-01` (S77); confirm parity vs. epic pitch |
+| 3 | **INSIGHTS+ — Cross-session intelligence** | ⬜ **Not started — TRUE NEXT EPIC** (no cross-session aggregation store; reuses DECISIONS_VECTORIZE) |
+| 4 | STAGE — Hybrid event suite | ⬜ Not started (no event/agenda orchestration layer) |
+| 5 | RETRO — Agile retrospectives | ⬜ Not started (no `retro` session mode) |
+| 6 | IDEATE — Brainstorm & prioritization | ⬜ Not started (no idea-board) |
+| 7–10, ★ | DELIBERATE / REACTIONS / CAPTIONS / EMBED / CANVAS | ⬜ Not started |
+
+**→ Next epic to work on: `INSIGHTS+` (Cross-Session Intelligence)** — the highest-ranked un-built epic in the 🟢 near-term cluster (Value 4 / Change 3). Per the strategy doc's PO next-steps, it must first be **promoted into this backlog with an `EPIC-NN` ID and broken into ≤13-pt stories**. (COPILOT #2 should be triaged first to confirm whether shipped AI-copilot work already satisfies it.)
+
+---
+
 ## Epic Catalog
 
 Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL.md`](../roadmap/ROADMAP_FULL.md)). This table is **not** a greenfield completion percentage.
@@ -248,7 +276,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | **EPIC-ENT** | In progress | Audit, RBAC depth, admin, multi-tenant | Enterprise / compliance completion per roadmap |
 | **EPIC-I18N** | In progress | Locales, key validation, translation QA | Bundles shipped; CI and QA hardening ongoing |
 | **EPIC-GAM** | In progress | Energizers, leaderboard, badges, referrals | Base gamification live; depth and analytics queued |
-| **EPIC-TOWNHALL** | Proposed (new) | Moderated anonymous Q&A at scale | Competitive epic #1 (ADR-0044); foundation TOWNHALL-01/02 landed |
+| **EPIC-TOWNHALL** | ✅ Shipped (verified 2026-05-30) | Moderated anonymous Q&A at scale | Competitive epic #1 (ADR-0044); `session_mode='townhall'` live; TOWNHALL-01–11/13/14 Landed. Residual: TOWNHALL-12 (Workers-AI profanity, `Todo`), TOWNHALL-05 5k load-test + group/ungroup console UI deferred |
 
 ---
 
