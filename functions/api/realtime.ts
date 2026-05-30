@@ -28,6 +28,7 @@ export const SUPPORTED_LIVE_PROTOCOL_VERSIONS: LiveProtocolVersion[] = [1, 2, 3]
 export function defaultLiveProtocolVersion(env: {
   REALTIME_V2_DEFAULT?: string
   REALTIME_V2_ENABLED?: string
+  REALTIME_V3_ENABLED?: string
 }): LiveProtocolVersion {
   if (env.REALTIME_V2_DEFAULT === 'true' && env.REALTIME_V2_ENABLED !== 'false') return 2
   return 1

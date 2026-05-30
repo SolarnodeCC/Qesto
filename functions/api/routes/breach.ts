@@ -13,7 +13,7 @@ export function mountBreachRoutes(parent: any) {
   admin.use('*', adminMiddleware)
 
   admin.post('/report', async (c) => {
-    const body = await c.req.json<{ summary?: string }>().catch(() => ({}) as { summary?: string })
+    const body = await c.req.json<{ summary?: string }>().catch((): { summary?: string } => ({}))
     return c.json({
       ok: true,
       data: {
