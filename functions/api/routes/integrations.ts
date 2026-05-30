@@ -173,7 +173,7 @@ function getTeamsProvider(env: Env): TeamsProvider | null {
 }
 
 function integrationsDisabled(env: Env): boolean {
-  return env.INTEGRATION_ENABLED !== '1' || !env.INTEGRATIONS_KV
+  return env.INTEGRATION_ENABLED !== 'true' || !env.INTEGRATIONS_KV
 }
 
 async function emitIntegrationConnected(
@@ -923,7 +923,7 @@ export async function notifySlackSessionClosed(
   total: number,
 ): Promise<void> {
   if (!teamId) return
-  if (env.INTEGRATION_ENABLED !== '1' || !env.INTEGRATIONS_KV) return
+  if (env.INTEGRATION_ENABLED !== 'true' || !env.INTEGRATIONS_KV) return
   const provider = getSlackProvider(env)
   if (!provider) return
 
@@ -982,7 +982,7 @@ export async function notifyTeamsSessionClosed(
   total: number,
 ): Promise<void> {
   if (!teamId) return
-  if (env.INTEGRATION_ENABLED !== '1' || !env.INTEGRATIONS_KV) return
+  if (env.INTEGRATION_ENABLED !== 'true' || !env.INTEGRATIONS_KV) return
   const provider = getTeamsProvider(env)
   if (!provider) return
 
