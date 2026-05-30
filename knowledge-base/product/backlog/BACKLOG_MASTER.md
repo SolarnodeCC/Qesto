@@ -1084,6 +1084,8 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ---
 
+<<<<<<< HEAD
+=======
 ## EPIC-INSIGHTS+: Cross-Session Intelligence
 
 **Goal**: Lift analytics above the single session into a longitudinal **Voice-of-Customer / L&D intelligence** product — theme clustering across all of a team's sessions, engagement trend lines, recurring-topic detection, and a per-facilitator scorecard. Competitive epic #3 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Highest-ranked **un-built** epic in the 🟢 near-term cluster (Value 4 / Change 3); an ARPU + retention lever that sells to research, CX and L&D buyers.
@@ -1175,6 +1177,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ---
 
+>>>>>>> origin/main
 ## Appendix: Migration Path
 
 If migrating from old Sprint A/B/C structure:

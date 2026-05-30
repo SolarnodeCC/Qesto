@@ -338,7 +338,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     // SLACK-01: best-effort Slack notification on session close. Runs in the
     // background via waitUntil so it never delays the close response; ignored
     // when integrations are disabled or no Slack token is bound to this team.
-    if (c.env.INTEGRATION_ENABLED === '1' && c.env.INTEGRATIONS_KV) {
+    if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
       try {
         c.executionCtx.waitUntil(
           notifySlackSessionClosed(c.env, id, session.title, session.team_id ?? null, counts, total).catch((err) => {
@@ -354,7 +354,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
 
     // TEAMS-01: best-effort Microsoft Teams Adaptive Card notification on close.
     // Mirrors the Slack hook above; skipped silently when no Teams config exists.
-    if (c.env.INTEGRATION_ENABLED === '1' && c.env.INTEGRATIONS_KV) {
+    if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
       try {
         c.executionCtx.waitUntil(
           notifyTeamsSessionClosed(c.env, id, session.title, session.team_id ?? null, counts, total).catch((err) => {

@@ -25,7 +25,7 @@ Repeat for staging project if applicable.
 
 In `wrangler.toml` / Pages env:
 
-- `INTEGRATION_ENABLED=1`
+- `INTEGRATION_ENABLED=true`
 - `MICROSOFT_TENANT_ID=common` (or tenant GUID for single-tenant lockdown)
 
 ## Webhook retry decision
