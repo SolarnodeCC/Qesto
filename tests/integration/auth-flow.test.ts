@@ -92,9 +92,14 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
       env,
     )
     expect(meRes.status).toBe(200)
-    const meBody = (await meRes.json()) as { ok: boolean; data: { id: string; email: string } }
+    const meBody = (await meRes.json()) as {
+      ok: boolean
+      data: { id: string; email: string; townhallEnabled: boolean }
+    }
     expect(meBody.ok).toBe(true)
     expect(meBody.data.email).toBe('host@example.com')
+    // /me surfaces the town hall feature flag so the dashboard can gate its entry point.
+    expect(meBody.data.townhallEnabled).toBe(env.REALTIME_TOWNHALL_ENABLED === 'true')
 
     // 4. Replaying the same token is rejected (token was consumed).
     const replay = await app.fetch(
