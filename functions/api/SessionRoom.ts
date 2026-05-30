@@ -28,14 +28,32 @@ import {
   LIVE_PROTOCOL_VERSION_V2,
   isLiveProtocolSupported,
   liveProtocolFeatures,
+  TOWNHALL_FEATURE,
+  townhallEnabled,
   type LiveProtocolVersion,
   type LiveEnergizerState,
   type LiveQuestion,
   type LiveSessionSummary,
   type ServerMessage,
+  type TownhallItem,
+  type TownhallBoardItem,
 } from './realtime'
-import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity } from './types'
+import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity, TownhallModeration } from './types'
 import { PLAN_QUOTAS } from './types'
+import {
+  TOWNHALL_KEYS,
+  newSubmitBucket,
+  consumeSubmitToken,
+  nextRev,
+  createTownhallItem,
+  isDuplicateBody,
+  applyTownhallUpvote,
+  applyTownhallModeration,
+  isAudienceVisible,
+  mergedUpvoteCount,
+  toBoardItem,
+  type TokenBucket,
+} from './lib/session-room-townhall'
 import { writeEvent } from './lib/observability'
 import { mirrorEnergizerToKv } from './lib/session-room-cross-region'
 import {
@@ -64,6 +82,12 @@ const K_IP_RATE_LIMIT = 'ip_rate_limit' // Maps ipHash → timestamps[] for per-
 const K_ACTIVE_ENERGIZER = 'active_energizer'
 const K_SENTIMENT_MOOD = 'sentiment:mood'
 const K_SENTIMENT_LAST = 'sentiment:last'
+const K_SENTIMENT_RETRY_QUEUE = 'sentiment:retry_queue'
+const K_SENTIMENT_RETRY_COUNT = 'sentiment:retry_count'
+const K_ENERGIZER_ACTIVATED_AT = 'energizer:activated_at'
+const SENTIMENT_RETRY_DELAY_MS = 5_000
+const SENTIMENT_MAX_RETRIES = 1
+const ENERGIZER_TIMEOUT_MS = 5 * 60_000 // 5 minutes
 
 // Fun-mode: 60 s per question before auto-advance signal.
 const FUN_MODE_QUESTION_MS = 60_000
@@ -84,6 +108,8 @@ type Meta = {
   questionExpiresAt?: number
   /** When true, vote messages are rejected until the presenter resumes. */
   paused?: boolean
+  /** TOWNHALL (ADR-0044): moderation model for townhall-mode sessions. */
+  townhallModeration?: TownhallModeration
 }
 
 type Counts = Record<string, number>
@@ -187,6 +213,19 @@ export class SessionRoom implements DurableObject {
         if (msg.type !== 'energizer_advance') return
         await this.handleEnergizerAdvance(ws, att, msg.data)
       },
+      // TOWNHALL (ADR-0044). Board state machine lives in lib/session-room-townhall.ts.
+      townhall_submit: async (ws, att, msg) => {
+        if (msg.type !== 'townhall_submit') return
+        await this.handleTownhallSubmit(ws, att, msg.data)
+      },
+      townhall_upvote: async (ws, att, msg) => {
+        if (msg.type !== 'townhall_upvote') return
+        await this.handleTownhallUpvote(ws, att, msg.data)
+      },
+      townhall_moderate: async (ws, att, msg) => {
+        if (msg.type !== 'townhall_moderate') return
+        await this.handleTownhallModerate(ws, att, msg.data)
+      },
     }
   }
 
@@ -248,6 +287,7 @@ export class SessionRoom implements DurableObject {
           sessionMode?: SessionMode
           anonymity?: Anonymity
           plan?: PlanTier
+          townhallModeration?: TownhallModeration
         }
       | null
     if (!body || !body.sessionId || !body.ownerId || !body.code || !body.title) {
@@ -255,6 +295,7 @@ export class SessionRoom implements DurableObject {
     }
     const nowMs = now()
     const sessionMode: SessionMode = body.sessionMode ?? 'reflection'
+    const isTownhall = sessionMode === 'townhall' && townhallEnabled(this.env)
     const meta: Meta = {
       sessionId: body.sessionId,
       ownerId: body.ownerId,
@@ -266,9 +307,17 @@ export class SessionRoom implements DurableObject {
       sessionMode,
       ...(body.anonymity ? { anonymity: body.anonymity } : {}),
       ...(body.plan ? { plan: body.plan } : {}),
+      ...(isTownhall ? { townhallModeration: body.townhallModeration ?? 'pre' } : {}),
       ...(sessionMode === 'fun' ? { questionExpiresAt: nowMs + FUN_MODE_QUESTION_MS } : {}),
     }
     await this.ctx.storage.put(K_META, meta)
+    if (isTownhall) {
+      // Seed an empty persistent board. Items/upvoters are point-addressable keys
+      // written on demand; the index + spotlight + rev are the board's spine.
+      await this.ctx.storage.put(TOWNHALL_KEYS.index, [] as string[])
+      await this.ctx.storage.put(TOWNHALL_KEYS.spotlight, null)
+      await this.ctx.storage.put(TOWNHALL_KEYS.rev, 0)
+    }
     await this.ctx.storage.put(K_STATUS, 'live')
     await this.ctx.storage.put(K_COUNTS, {} as Counts)
     await this.ctx.storage.put(K_VOTERS, {} as Votes)
@@ -308,6 +357,15 @@ export class SessionRoom implements DurableObject {
       }
     }
     await this.ctx.storage.put(K_STATUS, 'closed')
+    // TOWNHALL (ADR-0044): persist the board to D1 on close — the export + GDPR-erasure tier.
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (meta?.townhallModeration) {
+      try {
+        await this.persistTownhallBoard(meta.sessionId, now())
+      } catch (err) {
+        console.log(JSON.stringify({ event: 'townhall.persist_failed', sessionId: meta.sessionId, err: String(err) }))
+      }
+    }
     const questionId = (await this.ctx.storage.get<LiveQuestion>(K_QUESTION))?.id ?? null
     // Flatten voterId → optionId[] into one row per (voter, optionId) so the
     // D1 schema (UNIQUE(question_id, voter_id) … wait, actually the caller
@@ -551,6 +609,97 @@ export class SessionRoom implements DurableObject {
       }
     }
 
+    // Sentiment analysis retry: if a retry job is queued, process it
+    const sentimentRetry = await this.ctx.storage.get<{
+      responses: string[]
+      sessionId: string
+      teamId?: string
+      plan?: PlanTier
+      attempt: number
+      enqueuedAt: number
+    }>(K_SENTIMENT_RETRY_QUEUE)
+    if (sentimentRetry && sentimentRetry.enqueuedAt + SENTIMENT_RETRY_DELAY_MS <= nowMs) {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      if (meta) {
+        const ctx = sentimentContextFromMeta({
+          sessionId: meta.sessionId,
+          teamId: meta.teamId,
+          plan: meta.plan,
+          anonymity: meta.anonymity,
+        })
+        const result = await analyzeOpenResponseSentiment(this.env, ctx, sentimentRetry.responses)
+        if (result.ok) {
+          // Success: clear retry queue and update sentiment
+          await this.ctx.storage.put(K_SENTIMENT_LAST, nowMs)
+          await this.ctx.storage.put(K_SENTIMENT_MOOD, result)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
+          writeEvent(this.env.METRICS_AE, {
+            name: 'ai.sentiment_analysis',
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan ?? 'free',
+            count: result.sampleSize,
+            detail: result.mood,
+          })
+          const msg = serverMessage({
+            type: 'sentiment_signal',
+            data: { mood: result.mood, sampleSize: result.sampleSize },
+            timestamp: nowMs,
+          })
+          for (const ws of this.ctx.getWebSockets('role:presenter')) {
+            try { ws.send(msg) } catch { /* ignore */ }
+          }
+        } else if (result.reason === 'circuit_breaker') {
+          // Don't retry if circuit breaker is open
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
+          writeEvent(this.env.METRICS_AE, {
+            name: 'ai.sentiment_retry_exhausted',
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan ?? 'free',
+            detail: 'circuit_breaker',
+          })
+        } else {
+          // Transient failure: don't retry further (max retries exhausted)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+          await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
+          writeEvent(this.env.METRICS_AE, {
+            name: 'ai.sentiment_retry_exhausted',
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan ?? 'free',
+            detail: result.reason,
+          })
+        }
+      }
+    }
+
+    // Energizer timeout: auto-complete if energizer has been active > timeout threshold
+    const energizer = await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)
+    const energizerActivatedAt = await this.ctx.storage.get<number>(K_ENERGIZER_ACTIVATED_AT)
+    if (energizer && energizerActivatedAt && energizerActivatedAt + ENERGIZER_TIMEOUT_MS <= nowMs) {
+      const meta = await this.ctx.storage.get<Meta>(K_META)
+      energizer.status = 'completed'
+      await this.ctx.storage.put(K_ACTIVE_ENERGIZER, energizer)
+      await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
+      const timeoutMsg = serverMessage({
+        type: 'energizer_state',
+        data: { energizer },
+        timestamp: nowMs,
+      })
+      for (const ws of this.ctx.getWebSockets()) {
+        try { ws.send(timeoutMsg) } catch { /* ignore */ }
+      }
+      writeEvent(this.env.METRICS_AE, {
+        name: 'ws.energizer_timeout',
+        sessionId: meta?.sessionId,
+        teamId: meta?.teamId,
+        detail: `auto_completed_after_${Math.round((nowMs - energizerActivatedAt) / 1000)}s`,
+      })
+    }
+
     // Fun-mode: broadcast question_timeout when the countdown expires.
     const meta = await this.ctx.storage.get<Meta>(K_META)
     if (meta?.sessionMode === 'fun' && meta.questionExpiresAt) {
@@ -691,7 +840,10 @@ export class SessionRoom implements DurableObject {
       return
     }
     const active = withScoreArtifacts(initialiseLiveEnergizer(energizer))
+    const nowMs = now()
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
+    await this.ctx.storage.put(K_ENERGIZER_ACTIVATED_AT, nowMs)
+    await this.scheduleAlarm(nowMs + ENERGIZER_TIMEOUT_MS)
     await this.emitEnergizerMetric('ws.energizer_activated', active.id, active.leaderboard?.length ?? 0)
     await this.recordEnergizerAudit('ws.energizer_activated', att, active)
     await this.broadcastEnergizer(active)
@@ -894,6 +1046,9 @@ export class SessionRoom implements DurableObject {
         ? withScoreArtifacts({ ...active, status: 'completed', currentIndex })
         : withScoreArtifacts({ ...active, currentIndex: currentIndex + 1 })
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, next)
+    if (next.status === 'completed') {
+      await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
+    }
     await this.emitEnergizerMetric(
       next.status === 'completed' ? 'ws.energizer_completed' : 'ws.energizer_advanced',
       next.id,
@@ -1024,10 +1179,40 @@ export class SessionRoom implements DurableObject {
       anonymity: meta.anonymity,
     })
     const result = await analyzeOpenResponseSentiment(this.env, ctx, responses)
-    if (!result) return
+    if (!result.ok) {
+      // Log failure and queue retry if not circuit breaker
+      writeEvent(this.env.METRICS_AE, {
+        name: 'ai.sentiment_analysis_failed',
+        sessionId: meta.sessionId,
+        teamId: meta.teamId,
+        plan: meta.plan ?? 'free',
+        count: result.sampleSize,
+        detail: result.reason,
+      })
+
+      // Queue retry unless circuit breaker is open
+      if (result.reason !== 'circuit_breaker') {
+        const retryCount = (await this.ctx.storage.get<number>(K_SENTIMENT_RETRY_COUNT)) ?? 0
+        if (retryCount < SENTIMENT_MAX_RETRIES) {
+          await this.ctx.storage.put(K_SENTIMENT_RETRY_QUEUE, {
+            responses,
+            sessionId: meta.sessionId,
+            teamId: meta.teamId,
+            plan: meta.plan,
+            attempt: retryCount + 1,
+            enqueuedAt: Date.now(),
+          })
+          await this.ctx.storage.put(K_SENTIMENT_RETRY_COUNT, retryCount + 1)
+          await this.scheduleAlarm(Date.now() + SENTIMENT_RETRY_DELAY_MS)
+        }
+      }
+      return
+    }
 
     await this.ctx.storage.put(K_SENTIMENT_LAST, Date.now())
     await this.ctx.storage.put(K_SENTIMENT_MOOD, result)
+    await this.ctx.storage.delete(K_SENTIMENT_RETRY_QUEUE)
+    await this.ctx.storage.delete(K_SENTIMENT_RETRY_COUNT)
 
     writeEvent(this.env.METRICS_AE, {
       name: 'ai.sentiment_analysis',
@@ -1094,6 +1279,8 @@ export class SessionRoom implements DurableObject {
       ...(meta.anonymity ? { anonymity: meta.anonymity } : {}),
     }
     const pv = (att.protocolVersion ?? LIVE_PROTOCOL_VERSION) as unknown as LiveProtocolVersion
+    const isTownhall = !!meta.townhallModeration
+    const features = isTownhall ? [...liveProtocolFeatures(pv), TOWNHALL_FEATURE] : liveProtocolFeatures(pv)
     ws.send(
       serverMessage({
         type: 'init',
@@ -1102,7 +1289,7 @@ export class SessionRoom implements DurableObject {
           role: att.role,
           voterId: att.voterId,
           protocolVersion: pv,
-          features: liveProtocolFeatures(pv),
+          features,
           question,
           questionIndex,
           questionTotal: allQs.length,
@@ -1115,6 +1302,9 @@ export class SessionRoom implements DurableObject {
         timestamp: now(),
       }),
     )
+    // TOWNHALL (ADR-0044): the board is a separate persistent surface — follow `init`
+    // with a full `townhall_state` snapshot scoped to this connection's role.
+    if (isTownhall) await this.sendTownhallSnapshot(ws, att, meta.townhallModeration!)
   }
 
   private async checkIpRateLimit(ipHash: string): Promise<boolean> {
@@ -1162,6 +1352,348 @@ export class SessionRoom implements DurableObject {
     for (const ws of this.ctx.getWebSockets()) {
       try { ws.send(msg) } catch { /* closed socket */ }
     }
+  }
+
+  // ── TOWNHALL board handlers (ADR-0044) ──────────────────────────────────────
+  private canModerate(att: Attachment): boolean {
+    if (att.role !== 'presenter') return false
+    return att.permissions === undefined || att.permissions.includes('session:moderate')
+  }
+
+  private async townhallModerationMode(): Promise<TownhallModeration | null> {
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    return meta?.townhallModeration ?? null
+  }
+
+  private async loadTownhallItem(id: string): Promise<TownhallItem | null> {
+    return (await this.ctx.storage.get<TownhallItem>(TOWNHALL_KEYS.item(id))) ?? null
+  }
+
+  private async loadTownhallUpvoters(id: string): Promise<string[]> {
+    return (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.upvoters(id))) ?? []
+  }
+
+  private async loadTownhallGroups(): Promise<Record<string, string[]>> {
+    return (await this.ctx.storage.get<Record<string, string[]>>(TOWNHALL_KEYS.groups)) ?? {}
+  }
+
+  private async bumpTownhallRev(): Promise<number> {
+    const rev = nextRev((await this.ctx.storage.get<number>(TOWNHALL_KEYS.rev)) ?? 0)
+    await this.ctx.storage.put(TOWNHALL_KEYS.rev, rev)
+    return rev
+  }
+
+  /** Project an internal item to the wire shape, merging grouped children's upvoter sets. */
+  private async projectTownhallItem(
+    item: TownhallItem,
+    spotlightId: string | null,
+    groups: Record<string, string[]>,
+  ): Promise<TownhallBoardItem> {
+    const childIds = groups[item.id] ?? []
+    let mergedUpvotes = item.upvotes
+    if (childIds.length > 0) {
+      const sets: string[][] = [await this.loadTownhallUpvoters(item.id)]
+      for (const cid of childIds) sets.push(await this.loadTownhallUpvoters(cid))
+      mergedUpvotes = mergedUpvoteCount(sets)
+    }
+    return toBoardItem(item, { isSpotlit: spotlightId === item.id, groupedCount: childIds.length, mergedUpvotes })
+  }
+
+  private async sendTownhallSnapshot(ws: WebSocket, att: Attachment, moderation: TownhallModeration): Promise<void> {
+    const index = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.index)) ?? []
+    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
+    const groups = await this.loadTownhallGroups()
+    const rev = (await this.ctx.storage.get<number>(TOWNHALL_KEYS.rev)) ?? 0
+    const isPresenter = att.role === 'presenter'
+    const items: TownhallBoardItem[] = []
+    for (const id of index) {
+      const item = await this.loadTownhallItem(id)
+      if (!item) continue
+      if (item.status === 'grouped') continue // children are represented via the parent's groupedCount
+      if (!isPresenter && !isAudienceVisible(item.status)) continue
+      items.push(await this.projectTownhallItem(item, spotlightId, groups))
+    }
+    ws.send(serverMessage({ type: 'townhall_state', data: { moderation, items, spotlightId, rev }, timestamp: now() }))
+  }
+
+  /**
+   * Emit add/update/remove deltas for one item with pre/post visibility tag-targeting.
+   * Presenters see all non-grouped items; the audience (`role:voter`) sees only
+   * approved/answered items, so pre-moderated content never reaches the audience wire.
+   * (TOWNHALL-05 will coalesce bursty upvote deltas through the alarm; this emits eagerly.)
+   */
+  private async broadcastTownhallItemChange(params: {
+    item: TownhallItem
+    wasAudienceVisible: boolean
+    isNew: boolean
+    rev: number
+    spotlightId: string | null
+    groups: Record<string, string[]>
+  }): Promise<void> {
+    const { item, wasAudienceVisible, isNew, rev, spotlightId, groups } = params
+    const ts = now()
+
+    if (item.status === 'grouped') {
+      // The child collapses under its parent — drop it from the presenter console list too.
+      const rm = serverMessage({ type: 'townhall_question_removed', data: { itemId: item.id, rev }, timestamp: ts })
+      for (const s of this.ctx.getWebSockets('role:presenter')) {
+        try { s.send(rm) } catch { /* ignore */ }
+      }
+    } else {
+      const projected = await this.projectTownhallItem(item, spotlightId, groups)
+      const presenterFrame = serverMessage({
+        type: isNew ? 'townhall_question_added' : 'townhall_question_updated',
+        data: { item: projected, rev },
+        timestamp: ts,
+      })
+      for (const s of this.ctx.getWebSockets('role:presenter')) {
+        try { s.send(presenterFrame) } catch { /* ignore */ }
+      }
+    }
+
+    const nowVisible = isAudienceVisible(item.status)
+    let voterFrame: string | null = null
+    if (nowVisible) {
+      const projected = await this.projectTownhallItem(item, spotlightId, groups)
+      voterFrame = serverMessage({
+        type: wasAudienceVisible ? 'townhall_question_updated' : 'townhall_question_added',
+        data: { item: projected, rev },
+        timestamp: ts,
+      })
+    } else if (wasAudienceVisible) {
+      voterFrame = serverMessage({ type: 'townhall_question_removed', data: { itemId: item.id, rev }, timestamp: ts })
+    }
+    if (voterFrame) {
+      for (const s of this.ctx.getWebSockets('role:voter')) {
+        try { s.send(voterFrame) } catch { /* ignore */ }
+      }
+    }
+  }
+
+  private async handleTownhallSubmit(
+    ws: WebSocket,
+    att: Attachment,
+    data: { body: string; displayName?: string | undefined },
+  ): Promise<void> {
+    const moderation = await this.townhallModerationMode()
+    if (!moderation) {
+      ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
+      return
+    }
+    // Separate, tighter submit bucket (3 burst, ~3/min) — distinct from the vote bucket.
+    const bucketKey = TOWNHALL_KEYS.submitRate(att.voterId)
+    const bucket = (await this.ctx.storage.get<TokenBucket>(bucketKey)) ?? newSubmitBucket(now())
+    const consumed = consumeSubmitToken(bucket, now())
+    await this.ctx.storage.put(bucketKey, consumed.bucket)
+    if (!consumed.ok) {
+      ws.send(errorMessage('rate_limited', 'You are submitting questions too quickly'))
+      return
+    }
+    const index = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.index)) ?? []
+    // Soft duplicate suppression against recent items.
+    const recentBodies: string[] = []
+    for (const id of index.slice(-50)) {
+      const it = await this.loadTownhallItem(id)
+      if (it) recentBodies.push(it.body)
+    }
+    if (isDuplicateBody(recentBodies, data.body)) {
+      ws.send(errorMessage('duplicate', 'That question has already been asked'))
+      return
+    }
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    const allowName = meta?.anonymity !== 'zero_knowledge' // zero-knowledge forbids display names
+    const rev = await this.bumpTownhallRev()
+    const id = crypto.randomUUID()
+    const item = createTownhallItem({
+      id,
+      body: data.body,
+      displayName: allowName ? (data.displayName ?? null) : null,
+      authorHash: att.voterId,
+      moderation,
+      now: now(),
+      rev,
+    })
+    await this.ctx.storage.put(TOWNHALL_KEYS.item(id), item)
+    await this.ctx.storage.put(TOWNHALL_KEYS.upvoters(id), [])
+    await this.ctx.storage.put(TOWNHALL_KEYS.index, [...index, id])
+    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
+    const groups = await this.loadTownhallGroups()
+    await this.broadcastTownhallItemChange({ item, wasAudienceVisible: false, isNew: true, rev, spotlightId, groups })
+  }
+
+  private async handleTownhallUpvote(ws: WebSocket, att: Attachment, data: { itemId: string }): Promise<void> {
+    const moderation = await this.townhallModerationMode()
+    if (!moderation) {
+      ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
+      return
+    }
+    const item = await this.loadTownhallItem(data.itemId)
+    if (!item) {
+      ws.send(errorMessage('not_found', 'Question not found'))
+      return
+    }
+    const upvoters = await this.loadTownhallUpvoters(item.id)
+    const result = applyTownhallUpvote(item, upvoters, att.voterId, item.rev)
+    if (!result.ok) {
+      ws.send(errorMessage('duplicate', 'You already upvoted this question'))
+      return
+    }
+    const rev = await this.bumpTownhallRev()
+    const updated = { ...result.item, rev }
+    await this.ctx.storage.put(TOWNHALL_KEYS.item(item.id), updated)
+    await this.ctx.storage.put(TOWNHALL_KEYS.upvoters(item.id), result.upvoters)
+    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
+    const groups = await this.loadTownhallGroups()
+    // A grouped child's upvote raises the parent's merged total — emit the visible item.
+    const displayItem = updated.groupParent ? await this.loadTownhallItem(updated.groupParent) : updated
+    if (displayItem) {
+      await this.broadcastTownhallItemChange({
+        item: displayItem,
+        wasAudienceVisible: isAudienceVisible(displayItem.status),
+        isNew: false,
+        rev,
+        spotlightId,
+        groups,
+      })
+    }
+  }
+
+  private async handleTownhallModerate(
+    ws: WebSocket,
+    att: Attachment,
+    data: {
+      itemId: string
+      action: import('./realtime').TownhallModerateAction
+      groupParentId?: string | undefined
+    },
+  ): Promise<void> {
+    const moderation = await this.townhallModerationMode()
+    if (!moderation) {
+      ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
+      return
+    }
+    if (!this.canModerate(att)) {
+      ws.send(errorMessage('forbidden', 'You do not have permission to moderate this session'))
+      return
+    }
+    const item = await this.loadTownhallItem(data.itemId)
+    if (!item) {
+      ws.send(errorMessage('not_found', 'Question not found'))
+      return
+    }
+    const wasVisible = isAudienceVisible(item.status)
+    const outcome = applyTownhallModeration(item, data.action, { rev: item.rev, groupParentId: data.groupParentId })
+    if (!outcome.ok) {
+      ws.send(errorMessage(outcome.code, outcome.message))
+      return
+    }
+    const rev = await this.bumpTownhallRev()
+
+    if (outcome.kind === 'spotlight') {
+      await this.ctx.storage.put(TOWNHALL_KEYS.spotlight, outcome.spotlightId)
+      if (outcome.spotlightId) {
+        // Track every item that was ever spotlighted, for the persist-on-close archive.
+        const history = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.spotlitHistory)) ?? []
+        if (!history.includes(outcome.spotlightId)) {
+          await this.ctx.storage.put(TOWNHALL_KEYS.spotlitHistory, [...history, outcome.spotlightId])
+        }
+      }
+      const frame = serverMessage({
+        type: 'townhall_spotlight_changed',
+        data: { spotlightId: outcome.spotlightId, rev },
+        timestamp: now(),
+      })
+      for (const s of this.ctx.getWebSockets()) {
+        try { s.send(frame) } catch { /* ignore */ }
+      }
+      return
+    }
+
+    const updated = { ...outcome.item, rev }
+    await this.ctx.storage.put(TOWNHALL_KEYS.item(updated.id), updated)
+    const groups = await this.loadTownhallGroups()
+    let parentToRefresh: string | null = null
+    if (data.action === 'group' && updated.groupParent) {
+      const kids = groups[updated.groupParent] ?? []
+      if (!kids.includes(updated.id)) groups[updated.groupParent] = [...kids, updated.id]
+      await this.ctx.storage.put(TOWNHALL_KEYS.groups, groups)
+      parentToRefresh = updated.groupParent
+    } else if (data.action === 'ungroup') {
+      for (const [pid, kids] of Object.entries(groups)) {
+        if (kids.includes(item.id)) groups[pid] = kids.filter((k) => k !== item.id)
+      }
+      await this.ctx.storage.put(TOWNHALL_KEYS.groups, groups)
+      parentToRefresh = item.groupParent // the old parent, before ungroup cleared it
+    }
+    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
+    await this.broadcastTownhallItemChange({
+      item: updated,
+      wasAudienceVisible: wasVisible,
+      isNew: false,
+      rev,
+      spotlightId,
+      groups,
+    })
+    // Grouping changes the parent's merged count / groupedCount badge — refresh it too.
+    if (parentToRefresh) {
+      const parent = await this.loadTownhallItem(parentToRefresh)
+      if (parent) {
+        await this.broadcastTownhallItemChange({
+          item: parent,
+          wasAudienceVisible: isAudienceVisible(parent.status),
+          isNew: false,
+          rev,
+          spotlightId,
+          groups,
+        })
+      }
+    }
+  }
+
+  /**
+   * Persist the live board to D1 `townhall_questions` on close. Parents store their merged
+   * upvote total (union of own + grouped children's upvoter sets); children store their raw
+   * count + group_parent. This is the export + GDPR-erasure tier — the live board never
+   * round-trips to D1 (ADR-0044).
+   */
+  private async persistTownhallBoard(sessionId: string, closedAt: number): Promise<void> {
+    const index = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.index)) ?? []
+    if (index.length === 0) return
+    const groups = await this.loadTownhallGroups()
+    const spotlitHistory = new Set((await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.spotlitHistory)) ?? [])
+    const statements: D1PreparedStatement[] = []
+    for (const id of index) {
+      const item = await this.loadTownhallItem(id)
+      if (!item) continue
+      let upvotes = item.upvotes
+      const childIds = groups[item.id] ?? []
+      if (childIds.length > 0) {
+        const sets: string[][] = [await this.loadTownhallUpvoters(item.id)]
+        for (const cid of childIds) sets.push(await this.loadTownhallUpvoters(cid))
+        upvotes = mergedUpvoteCount(sets)
+      }
+      const resolvedAt = item.status === 'answered' || item.status === 'dismissed' ? closedAt : null
+      statements.push(
+        this.env.DB.prepare(
+          `INSERT OR REPLACE INTO townhall_questions
+             (id, session_id, body, display_name, author_hash, status, upvotes, group_parent, was_spotlit, created_at, resolved_at)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`,
+        ).bind(
+          item.id,
+          sessionId,
+          item.body,
+          item.displayName,
+          item.authorHash,
+          item.status,
+          upvotes,
+          item.groupParent,
+          spotlitHistory.has(item.id) ? 1 : 0,
+          item.createdAt,
+          resolvedAt,
+        ),
+      )
+    }
+    if (statements.length > 0) await this.env.DB.batch(statements)
   }
 
   private canActivateEnergizer(att: Attachment): boolean {

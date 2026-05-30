@@ -40,9 +40,10 @@ export function useSessions() {
   const create = useCallback(
     async (title: string) => {
       const idemKey = crypto.randomUUID()
+      const activeTeamId = localStorage.getItem('activeTeamId') ?? undefined
       const res = await api<SessionDetail>('/api/sessions', {
         method: 'POST',
-        body: { title },
+        body: { title, ...(activeTeamId ? { teamId: activeTeamId } : {}) },
         idempotencyKey: idemKey,
       })
       if (res.ok) await refresh()

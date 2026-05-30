@@ -4,6 +4,7 @@ import { sendEmail } from '../../lib/email'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
 import { hashPassword, verifyPassword } from '../../lib/password'
+import { ensurePersonalTeam } from '../teams'
 import { JWT_TTL_SECONDS, PASSWORD_RESET_TTL_SECONDS } from './constants'
 import { setAuthSessionCookie } from './cookie'
 import { pwdKey, resetKey } from './helpers'
@@ -49,6 +50,12 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
 
       const passwordHash = await hashPassword(password)
       await c.env.USERS_KV.put(pwdKey(userId), JSON.stringify({ hash: passwordHash }))
+
+      try {
+        await ensurePersonalTeam(c.env.TEAMS_KV, c.env.DB, userId, normalEmail)
+      } catch {
+        // Non-fatal: session creation falls back to ensurePersonalTeam as well
+      }
 
       const jwt = await signJwt({ sub: userId, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)

@@ -129,6 +129,14 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 
 ## Next Five Calendar Sprints (Sprint 20 to Sprint 24)
 
+> **⚠️ RECONCILIATION NOTE (2026-05-30): This forward-looking section is historical.**
+> A code-vs-backlog audit on 2026-05-30 confirmed the codebase has shipped **through Sprint 80 (v5.0 GA)** plus the post-S80 **Townhall** epic. Every sprint registry below (S20–S34 "Active Backlog Additions", the S30–34, S35–39, S60–70 and S71–80 registries) is **delivered**. These tables are retained as an as-built record, not as open work.
+>
+> **The only forward-looking / uncommitted feature list is [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)** (status: *proposed*). See **[§Current Frontier & Next Epic](#current-frontier--next-epic)** at the end of this section for the true next epic.
+>
+> **Verified-shipped Sprint 31 items** (file evidence): ADR-0010 (`adr/ADR-0010-zero-knowledge-mode.md`, accepted), ANON-DEPTH-01 (`Anonymity` type + `SessionWizard` selector + `JoinPage` trust badge + DO enforcement in `SessionRoom.ts`), I18N-SPRINT31-01 (`zero_knowledge`/`trust_badge` keys in all 5 `wizard`+`join` locales), CB-01/CB-02 (`CircuitBreakers` wired in `email.ts`/`billing.ts`/`ai/session-context.ts`/`oauth.ts`), INT-PROVIDER-01 (`integrations/token-store.ts` + `token-crypto.ts`), GDPR-TRUST-PAGE-01 (`/trust/gdpr` route), ADR-0007-AMEND + COMPLIANCE-02 (`check:compliance-claims`).
+> **Genuine residual gaps:** MARKET-RESEARCH-VEVOX-01 (no Vevox profile in `COMPETITOR_PROFILES.md`) and TOWNHALL-12 (Workers-AI profanity screening — `Todo`).
+
 **Planning status**: Agent-assisted planning refresh completed 2026-05-01. Sprint 20 is the committed readiness sprint; Sprints 21–24 are sequenced backlog intent and should be revalidated at each sprint planning ceremony.
 
 | Sprint | Window | Product goal | Backlog posture |
@@ -171,17 +179,17 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | AUDIT-GAM-01 | Audit UX polish for realtime actions | P1 | Sprint 31 | Audit viewer distinguishes activation, answer-window changes, completion, and denials |
 | DEPLOY-GAM-01 | Staging migration/flag checklist | P0 | Sprint 31 | Checklist covers D1/KV compatibility, flag state, rollback, WebSocket smoke |
 | QA-ENT-02 | Enterprise permission regression bundle | P0 | Sprint 31 | Owner/admin/member/custom-role allow/deny paths cover session + energizer |
-| ADR-0010 | Zero-knowledge anonymity mode ADR | P0 | Sprint 31 | ADR defines voter dedup without PII, session config, UI indicators, DO protocol impact; required before ANON-DEPTH-01; **MARKET-RESEARCH:PRIVACY** — Vevox segment leadership, Mentimeter trust gap (pulse 2026-05-19) |
-| CB-01 | Wire CircuitBreaker into Stripe + Resend (ADR-0007) | P0 | Sprint 31 | `billing.ts:36/59` and `email.ts:22` wrapped; state machine wired in `createApp()`; CIRCUIT_BREAKER_KV provisioned in production |
-| CB-02 | Wire CircuitBreaker for Workers AI + JWKS (ADR-0007) | P0 | Sprint 31 | Workers AI 10s/3-failure OPEN; JWKS 5s/3-failure OPEN; graceful free-plan fallback |
-| INT-PROVIDER-01 | Integration provider library with AES-GCM encryption (ADR-0008) | P0 | Sprint 31 | `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK`; `IntegrationHttpClient` timeout bug fixed (`http-client.ts:80`); typed interface; INTEGRATIONS_KV provisioned in production |
-| ANON-DEPTH-01 | Zero-knowledge mode session config + trust indicator | P0 | Sprint 31 | Anonymity level selector; participant trust badge; i18n; gate: ADR-0010 accepted + MARKET-RESEARCH-VEVOX-01 complete; **MARKET-RESEARCH:PRIVACY** — 60+ monthly anonymous-feedback mentions; Vevox #1 on G2/Capterra/Trustpilot (pulse 2026-05-19) |
-| GDPR-TRUST-PAGE-01 | GDPR compliance trust page (marketing artifact, no new engineering) | P1 | Sprint 31 | Static documentation page covering Qesto's GDPR architecture, EU data residency evidence (Cloudflare edge), sub-processor list draft, and anonymity guarantees; linked from pricing and landing pages; **MARKET-RESEARCH:COMPLIANCE** — Mentimeter US residency churn; ship before Sprint 34 `GDPR-BADGE-01` |
-| ADR-0007-AMEND | ADR-0007 amendment: clarify CircuitBreaker.INTEGRATIONS scope | P0 | Sprint 31 | Amendment accepted before CB-01 wiring; defines which integration call sites (Stripe, Resend, Workers AI, JWKS) are in scope and which state machine parameters apply to each |
+| ADR-0010 | Zero-knowledge anonymity mode ADR | P0 | ✅ Shipped (verified 2026-05-30) | ✅ Accepted in `adr/ADR-0010-zero-knowledge-mode.md` (2026-05-22). ADR defines voter dedup without PII, session config, UI indicators, DO protocol impact; required before ANON-DEPTH-01; **MARKET-RESEARCH:PRIVACY** — Vevox segment leadership, Mentimeter trust gap (pulse 2026-05-19) |
+| CB-01 | Wire CircuitBreaker into Stripe + Resend (ADR-0007) | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `CircuitBreakers.resend` in `lib/email.ts:21`; `routes/billing.ts` wrapped; state machine in `lib/resilience/circuit-breaker.ts`. `billing.ts:36/59` and `email.ts:22` wrapped; state machine wired in `createApp()`; CIRCUIT_BREAKER_KV provisioned in production |
+| CB-02 | Wire CircuitBreaker for Workers AI + JWKS (ADR-0007) | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `CircuitBreakers.ai` in `lib/ai/session-context.ts:90` + `lib/ai-insights.ts:209`; JWKS path in `lib/oauth.ts`. Workers AI 10s/3-failure OPEN; JWKS 5s/3-failure OPEN; graceful free-plan fallback |
+| INT-PROVIDER-01 | Integration provider library with AES-GCM encryption (ADR-0008) | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `lib/integrations/token-store.ts` + `token-crypto.ts` (AES-GCM) + `http-client.ts`; Slack/Teams/Zoom/Notion/Salesforce providers present. `EncryptedTokenStore` uses AES-GCM with `OAUTH_TOKEN_MEK`; `IntegrationHttpClient` timeout bug fixed (`http-client.ts:80`); typed interface; INTEGRATIONS_KV provisioned in production |
+| ANON-DEPTH-01 | Zero-knowledge mode session config + trust indicator | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `Anonymity` type incl. `zero_knowledge` (`types.ts:144`); `SessionWizard` selector; `JoinPage.tsx:606` trust badge; DO enforcement (`SessionRoom.ts:1059,1371` — no display names, sentiment/coaching disabled). Anonymity level selector; participant trust badge; i18n; gate: ADR-0010 accepted + MARKET-RESEARCH-VEVOX-01 complete; **MARKET-RESEARCH:PRIVACY** — 60+ monthly anonymous-feedback mentions; Vevox #1 on G2/Capterra/Trustpilot (pulse 2026-05-19) |
+| GDPR-TRUST-PAGE-01 | GDPR compliance trust page (marketing artifact, no new engineering) | P1 | ✅ Shipped (verified 2026-05-30) | ✅ `src/pages/GdprTrustPage.tsx` at route `/trust/gdpr` (`App.tsx:118`). Static documentation page covering Qesto's GDPR architecture, EU data residency evidence (Cloudflare edge), sub-processor list draft, and anonymity guarantees; linked from pricing and landing pages; **MARKET-RESEARCH:COMPLIANCE** — Mentimeter US residency churn; ship before Sprint 34 `GDPR-BADGE-01` |
+| ADR-0007-AMEND | ADR-0007 amendment: clarify CircuitBreaker.INTEGRATIONS scope | P0 | ✅ Shipped (verified 2026-05-30) | ✅ Accepted in `adr/ADR-0007-amend-integrations-scope.md` (2026-05-22). Amendment accepted before CB-01 wiring; defines which integration call sites (Stripe, Resend, Workers AI, JWKS) are in scope and which state machine parameters apply to each |
 | DEVOPS-CB-KV-01 | Production KV namespace provisioning for resilience + integrations | P0 | Sprint 31 | `wrangler kv namespace create CIRCUIT_BREAKER_KV` (prod); `wrangler kv namespace create INTEGRATIONS_KV` (prod); `wrangler pages secret put OAUTH_TOKEN_MEK` (prod + staging); must be done before CB-01/CB-02/INT-PROVIDER-01 merge |
 | MARKET-RESEARCH-VEVOX-01 | Vevox deep-dive competitive feature audit | P1 | Sprint 31 | COMPETITOR_PROFILES.md has no Vevox profile; market research task (not engineering) to document Vevox's anonymous Q&A moderation, anonymous live discussion, and employee voice analytics features; **hard gate** before ANON-DEPTH-01 merge; **MARKET-RESEARCH:PRIVACY** (pulse 2026-05-19) |
 | SCALE-PROOF-01 | Enterprise participant scaling evidence + GTM claims | P1 | Sprint 32 | Documented load test for 10,000+ concurrent voters; plan quota matrix vs Poll Everywhere (700 cap); pricing/competitor comparison copy passes `check:compliance-claims`; **MARKET-RESEARCH:SCALING** — enterprise scaling + sovereignty high signal (pulse 2026-05-19) |
-| I18N-SPRINT31-01 | i18n strings for zero-knowledge mode (ANON-DEPTH-01) in 5 locales | P1 | Sprint 31 | All UI strings for anonymity level selector (none/standard/zero-knowledge), participant trust badge, and GDPR trust page in EN/NL/DE/FR/ES; CI `check:i18n` passes; no raw keys visible to users |
+| I18N-SPRINT31-01 | i18n strings for zero-knowledge mode (ANON-DEPTH-01) in 5 locales | P1 | ✅ Shipped (verified 2026-05-30) | ✅ `zero_knowledge` in all 5 `wizard.json` + `trust_badge` in all 5 `join.json` (EN/NL/DE/FR/ES). All UI strings for anonymity level selector (none/standard/zero-knowledge), participant trust badge, and GDPR trust page in EN/NL/DE/FR/ES; CI `check:i18n` passes; no raw keys visible to users |
 | RC-DOCS-01 | Spec + runbook closeout for v2.2 | P0 | Sprint 32 | `SPEC_REALTIME`, `SPEC_BACKEND`, `SPEC_FRONTEND`, roadmap, backlog, and release notes updated to reflect all shipped v2.2 behavior |
 | RC-ROLLOUT-01 | Feature-flag rollout plan for LIVE energizers | P0 | Sprint 32 | Rollout steps, cohorts, metrics watched, rollback trigger, and rollback owner defined; staging WebSocket smoke passes with flag on and off |
 | RC-OBS-01 | Release health dashboard checklist for v2.2 | P0 | Sprint 32 | Admin surfaces answer: active sessions, reconnects, errors, energizer activation rate, energizer participation, energizer completion |
@@ -204,7 +212,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | ADR-0011 | Live sentiment inference ADR + DPIA scope | P0 | Sprint 33 | Model: `distilbert-sst-2-int8`; aggregate-only (k≥5); disabled in ZK sessions; DPIA documented; required before Sprint 34 AI-SENTIMENT-01; **MARKET-RESEARCH:AI-ENGAGEMENT** — emotionally-aware CX trend (pulse 2026-05-19) |
 | ENT-RESIDENCY-01 | EU data residency: routing evidence + DPA template | P0 | Sprint 34 | Documentation + contractual deliverable (D1 location hint irreversible); routing evidence; DPA template; ops runbook; **MARKET-RESEARCH:COMPLIANCE** — competitive moat vs Mentimeter/Slido cloud egress; do not defer without PO sign-off |
 | COMPLIANCE-01 | SOC 2 evidence framework + sub-processor registry | P1 | Sprint 34 | `/knowledge-base/security/SOC2_EVIDENCE.md`; control inventory; sub-processor list; gaps with sprint assignments |
-| COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | Sprint 31 (pulled forward) | `npm run check:compliance-claims`; CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
+| COMPLIANCE-02 | DPA/SCC template + compliance CI claim gate | P0 | ✅ Shipped (verified 2026-05-30) | ✅ `check:compliance-claims` script in `package.json`; `security/DPA_SCC_TEMPLATE.md`. `npm run check:compliance-claims`; CI rejects marketing PRs adding compliance claims without matching evidence file; DPA/SCC template published |
 | RES-DO-01 | DO WebSocket resilience: outer try/catch + `do.storage_fault` AE | P0 | Sprint 30 | `webSocketMessage` catches storage/handler faults; client receives `internal` error; no silent WS close |
 | SEC-CSV-01 | CSV formula-injection escape in client + server exports | P0 | Sprint 30 | `lib/csv.ts` guards `=+-@` prefixes; Results + `export.csv` use shared helper |
 | GAM-STAGING-SMOKE-01 | Cloudflare staging WebSocket smoke for LIVE energizers | P0 | Sprint 32 gate | Checklist: `knowledge-base/operations/GAM_STAGING_SMOKE_CHECKLIST.md`; blocks RC rollout |
@@ -236,6 +244,26 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 
 ---
 
+## Current Frontier & Next Epic
+
+**As-built position (audited 2026-05-30):** All committed roadmap arcs are delivered — v2.x → **v5.0 GA (Sprint 80)** — including the post-S80 **Townhall** epic (`session_mode='townhall'`, ADR-0044). The forward sprint registries above are an as-built record, not open work.
+
+**The only uncommitted feature list is [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)** — 11 proposed new-business epics, status *proposed / for PO review*. Build status of its ranked set:
+
+| # | Epic | Status |
+|---|------|--------|
+| 1 | TOWNHALL | ✅ Shipped (ADR-0044; residual TOWNHALL-12 profanity screening) |
+| 2 | COPILOT — Live AI facilitator co-pilot | 🟡 Largely covered by shipped `AI-COPILOT-MULTITURN-01` (S76) + `AI-COPILOT-EDGE-01` (S77); confirm parity vs. epic pitch |
+| 3 | **INSIGHTS+ — Cross-session intelligence** | 🟢 **Promoted → [EPIC-INSIGHTS+](#epic-insights-cross-session-intelligence)** (groomed 2026-05-30; 11 stories / ~95 pts; gate ADR-0045) |
+| 4 | STAGE — Hybrid event suite | ⬜ Not started (no event/agenda orchestration layer) |
+| 5 | RETRO — Agile retrospectives | ⬜ Not started (no `retro` session mode) |
+| 6 | IDEATE — Brainstorm & prioritization | ⬜ Not started (no idea-board) |
+| 7–10, ★ | DELIBERATE / REACTIONS / CAPTIONS / EMBED / CANVAS | ⬜ Not started |
+
+**→ Next epic to work on: `INSIGHTS+` (Cross-Session Intelligence)** — the highest-ranked un-built epic in the 🟢 near-term cluster (Value 4 / Change 3). **Promoted + groomed on 2026-05-30** → see **[EPIC-INSIGHTS+](#epic-insights-cross-session-intelligence)** (11 stories / ~95 pts, all ≤13 pts; gate ADR-0045). Ready for PO commit + sprint allocation. (COPILOT #2 should be triaged first to confirm whether shipped AI-copilot work already satisfies it.)
+
+---
+
 ## Epic Catalog
 
 Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL.md`](../roadmap/ROADMAP_FULL.md)). This table is **not** a greenfield completion percentage.
@@ -248,6 +276,8 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | **EPIC-ENT** | In progress | Audit, RBAC depth, admin, multi-tenant | Enterprise / compliance completion per roadmap |
 | **EPIC-I18N** | In progress | Locales, key validation, translation QA | Bundles shipped; CI and QA hardening ongoing |
 | **EPIC-GAM** | In progress | Energizers, leaderboard, badges, referrals | Base gamification live; depth and analytics queued |
+| **EPIC-TOWNHALL** | ✅ Shipped (verified 2026-05-30) | Moderated anonymous Q&A at scale | Competitive epic #1 (ADR-0044); `session_mode='townhall'` live; TOWNHALL-01–11/13/14 Landed. Residual: TOWNHALL-12 (Workers-AI profanity, `Todo`), TOWNHALL-05 5k load-test + group/ungroup console UI deferred |
+| **EPIC-INSIGHTS+** | Groomed (next) | Cross-session intelligence (themes, trends, recurring topics, facilitator scorecard) | Competitive epic #3; **true next epic** (2026-05-30). 11 stories / ~95 pts; gate ADR-0045; reuses `DECISIONS_VECTORIZE` + `ai-insights` |
 
 ---
 
@@ -1024,6 +1054,76 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 - Observability events added (if applicable)
 - Docs updated (if API changes)
 - AC demonstrated in PR review
+
+---
+
+## EPIC-TOWNHALL: Moderated Anonymous Q&A at Scale
+
+**Goal**: Turn Qesto from a presenter-driven poll tool into an audience-driven Q&A platform for all-hands / town halls / AMAs. Competitive epic #1 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Architecture: [`ADR-0044`](../../adr/ADR-0044-townhall-qa-board.md).
+
+**Locked decisions**: dedicated `session_mode='townhall'`; host-configurable pre/post moderation; Team-tier only (`townhallQA`). MVP = TOWNHALL-01–10; 11–14 are polish + hardening. Ships behind `REALTIME_TOWNHALL_ENABLED` until back-compat tests pass (ADR-0005).
+
+| ID | Story | Size | Status |
+|---|---|---|---|
+| TOWNHALL-01 | Migration `0046` + schema: `session_mode+=townhall`, `townhall_moderation` col, `townhall_questions` table, `zero_knowledge` CHECK | 5 | **Landed** |
+| TOWNHALL-02 | Types + Zod + `townhall_board` feature + `townhallQA` entitlement + `session:moderate` permission | 5 | **Landed** |
+| TOWNHALL-03 | Strategy module `session-room-townhall.ts` — board state machine, grouping (upvoter-set union), dedupe | 8 | **Landed** |
+| TOWNHALL-04 | DO core: branch `SessionRoom` on `mode=townhall`; submit/upvote/moderate handlers; `session:moderate` guard | 13 | **Landed** |
+| TOWNHALL-05 | DO delta broadcast: snapshot on init/request_state; coalesced upvotes; pre/post tag-targeting; `th:rev` | 13 | Partial — eager deltas + tag-targeting + rev landed; alarm-coalescing + 5k load-test pending |
+| TOWNHALL-06 | REST `routes/townhall/*`: config (draft), questions fallback, export, DELETE; entitlement + audit; start re-check | 8 | **Landed** — config + export (CSV/JSON) + GDPR DELETE + start→DO wiring; non-WS live fallback deferred |
+| TOWNHALL-07 | `useTownhallSession` hook: reducer, delta apply, rev-gap resync, optimistic upvote | 8 | **Landed** |
+| TOWNHALL-08 | `TownhallPresent` moderation console: tabbed queue, approve/dismiss/answer/spotlight, aria-live | 13 | **Landed** (group/ungroup UI deferred) |
+| TOWNHALL-09 | `TownhallJoin` (submit + display-name toggle + upvote) + shared `TownhallQuestionCard` | 8 | **Landed** |
+| TOWNHALL-10 | `TownhallDisplay` big-screen: sorted approved + spotlight highlight | 5 | **Landed** |
+| TOWNHALL-11 | Export CSV/JSON + persist-on-close + checkpoint alarm + GDPR delete | 8 | **Landed** (checkpoint alarm deferred; DO storage durable + persist-on-close cover RPO) |
+| TOWNHALL-12 | Workers-AI profanity screening (async, per-session toggle, non-blocking ack) | 8 | Todo |
+| TOWNHALL-13 | i18n namespace `townhall` × EN/NL/ES/DE/FR | 3 | **Landed** — all 5 locales translated (28 keys, parity test green) |
+| TOWNHALL-14 | Hardening: submit token bucket, dedupe/spam, abuse + a11y + back-compat tests | 8 | **Landed** — back-compat matrix (non-townhall rejection, request_state resync), rate-limit/dedupe/group-flow DO tests; a11y in components. Group/ungroup *console UI* (parent-picker) deferred |
+
+**Epic acceptance**: Team host configures pre/post in draft (non-team 403); anonymous-default submit + upvote (no double-upvote); pre-mod audience sees approved-only, post-mod sees all-but-dismissed; console actions reflect on audience+display within one debounce; reconnect resyncs board with no loss/dupes; steady-state is deltas only; close persists + export correct; GDPR delete purges DO+D1; existing poll/energizer flows unchanged.
+
+---
+
+## EPIC-INSIGHTS+: Cross-Session Intelligence
+
+**Goal**: Lift analytics above the single session into a longitudinal **Voice-of-Customer / L&D intelligence** product — theme clustering across all of a team's sessions, engagement trend lines, recurring-topic detection, and a per-facilitator scorecard. Competitive epic #3 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Highest-ranked **un-built** epic in the 🟢 near-term cluster (Value 4 / Change 3); an ARPU + retention lever that sells to research, CX and L&D buyers.
+
+**Status**: Promoted from ideation (2026-05-30); **groomed, awaiting PO commit + sprint allocation**. Triage COPILOT (#2) first to confirm it isn't already satisfied by shipped `AI-COPILOT-MULTITURN-01`.
+
+**Reuses (effort-honest)**: `DECISIONS_VECTORIZE` (768d cosine — no new index), the `lib/ai-insights.ts` distillation pipeline + `routes/ai-insights/*`, the existing `useInsights` hook + `InsightThemeCard` (today derives team themes client-side — this epic moves aggregation server-side and adds trends/recurrence/scorecard), `AdminAnalyticsTab` export plumbing, and the `worker/` scheduled handler for rollup jobs.
+
+**Net-new**: a cross-session aggregation store (D1 + KV cache), recurring-topic clustering, longitudinal trend + scorecard APIs, and the dashboard surfaces that render them.
+
+**Locked/proposed decisions** (ratify in ADR-0045):
+- New D1 tables `session_insights` (per closed session: distilled themes, embedding ref, engagement metrics) and `team_insight_rollup` (materialized team aggregates); **reuse** `DECISIONS_VECTORIZE`, no new vector index.
+- **Zero-knowledge sessions are hard-excluded** from every cross-session store and aggregate (consistent with ADR-0010 + ADR-0011); a **k-anonymity floor** (k≥3 sessions, k≥5 respondents) gates any surfaced signal.
+- Aggregation is **async** — on session close + a scheduled `worker/` rollup; **zero added latency on the close path**.
+- **Workers AI only** for clustering/distillation (hard rule #1); no third-party egress.
+- Plan-gated behind a new `crossSessionInsights` entitlement (Team tier+); free/starter see an upsell empty-state.
+
+| ID | Story | Size | Pri | Status |
+|---|---|---:|---|---|
+| INSIGHTS-00 | **ADR-0045** — cross-session intelligence architecture: aggregation store, embedding reuse, ZK exclusion, k-anonymity floor, plan gating, async rollup model. Gate for INSIGHTS-02+ | 3 | P0 | ✅ Drafted — [`adr/ADR-0045-cross-session-intelligence.md`](../../adr/ADR-0045-cross-session-intelligence.md) (proposed) |
+| INSIGHTS-01 | D1 migration `0047`: **reuse** `insights_daily` (+ `team_id`, `embedding_ref`) per ADR-0045; add `team_insight_rollup(team_id, kind, window, payload_json, computed_at)`; repository layer; ZK-excluded backfill | 8 | P0 | Todo |
+| INSIGHTS-02 | Tier-1 pipeline: extend `precomputeInsights()` on close — distil themes (reuse `ai-insights`), upsert embedding via `insights-vectorize.ts` with `team_id` metadata, write `insights_daily`; **idempotent**; **ZK guard** skips `zero_knowledge`; emits `insight.aggregated` | 13 | P0 | Todo |
+| INSIGHTS-03 | Recurring-topic detection: Vectorize semantic clustering across a team's session embeddings → recurring themes with frequency + first/last-seen; k-anonymity floor enforced | 13 | P1 | Todo |
+| INSIGHTS-04 | Longitudinal trend API `GET /api/teams/:id/insights/trends` (30/90/180d windows): engagement + theme trend lines; plan-gated; KV-cached; AE event | 8 | P1 | Todo |
+| INSIGHTS-05 | Facilitator scorecard API + model: per-facilitator sessions-run, avg participation, response rate, theme diversity, mood trend (non-ZK only); team-scoped | 8 | P1 | Todo |
+| INSIGHTS-06 | Frontend: extend Dashboard **Insights** tab → cross-session view — trend lines, recurring-topic list, facilitator scorecard; reuse `useInsights`/`InsightThemeCard`; loading/empty/plan-gated states; WCAG 2.1 AA | 13 | P1 | Todo |
+| INSIGHTS-07 | Export: cross-session intelligence report (JSON + enhanced CSV; PDF stretch) extending `EXPORT-RICH`; plan-gated; CSV formula-injection safe (`lib/csv.ts`) | 8 | P1 | Todo |
+| INSIGHTS-08 | Observability: `insight.aggregated`, `insight.trends_viewed`, `insight.scorecard_viewed` AE events with `teamId`+`plan`; adoption funnel (KPI: ≥40% of eligible teams open the cross-session view in 14 days) | 5 | P1 | Todo |
+| INSIGHTS-09 | Privacy/ZK guardrails + tests: ZK sessions excluded from all stores/aggregates; k-anonymity floor; no PII in rollups; privacy review + regression bundle | 8 | P0 | Todo |
+| INSIGHTS-10 | Plan gating + entitlement: `crossSessionInsights` (Team tier+); upsell empty-state for lower tiers; entitlement contract tests | 5 | P0 | Todo |
+| I18N-INSIGHTS-01 | i18n strings — trend labels, recurring topics, scorecard, export — in EN/NL/DE/FR/ES; `check:i18n` green | 3 | P1 | Todo |
+
+**Total**: ~95 pts (≈ two sprints at the reference 40–50 pts/sprint cadence).
+
+**Epic acceptance**: A Team-tier facilitator opens the Insights tab and sees, across all their team's **non-ZK** closed sessions, (a) recurring themes with frequency + trend, (b) engagement trend lines over a selectable window, and (c) a per-facilitator scorecard — all rendered within 2s p95 for a team with ≥3 closed sessions; zero-knowledge sessions never contribute to any aggregate; no signal surfaces below the k-anonymity floor; lower-tier teams see an upsell empty-state (no data leak); export produces a structured report; aggregation adds no latency to session close; all AI inference stays on Workers AI; existing single-session insights are unchanged.
+
+**Dependencies/gates**:
+- **ADR-0045 (INSIGHTS-00) must be accepted before INSIGHTS-02+ implementation starts.**
+- Reuses the ADR-0011 sentiment foundation for the scorecard mood-trend metric (non-ZK sessions only).
+- Triage COMPETITIVE_EPICS #2 COPILOT before final prioritization (may already be satisfied by shipped AI-copilot work).
 
 ---
 

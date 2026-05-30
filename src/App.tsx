@@ -20,6 +20,9 @@ import TeamSettings from './pages/TeamSettings'
 import TeamInvite from './pages/TeamInvite'
 
 const Display = lazy(() => import('./pages/Display'))
+const TownhallJoin = lazy(() => import('./pages/TownhallJoin'))
+const TownhallPresent = lazy(() => import('./pages/TownhallPresent'))
+const TownhallDisplay = lazy(() => import('./pages/TownhallDisplay'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -153,6 +156,10 @@ export default function App() {
         <Route path="/join" element={<JoinPage />} />
         <Route path="/j/:code" element={<JoinPage />} />
         <Route path="/display/:code" element={<Suspense fallback={<LazyRouteFallback />}><Display /></Suspense>} />
+        {/* TOWNHALL (ADR-0044) — moderated anonymous Q&A */}
+        <Route path="/sessions/:id/townhall" element={<Suspense fallback={<LazyRouteFallback />}><TownhallPresent /></Suspense>} />
+        <Route path="/th/:code" element={<Suspense fallback={<LazyRouteFallback />}><TownhallJoin /></Suspense>} />
+        <Route path="/th/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><TownhallDisplay /></Suspense>} />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />
         <Route path="/teams/accept" element={<TeamInvite />} />

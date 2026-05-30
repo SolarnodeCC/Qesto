@@ -6,6 +6,7 @@ import { mountBillingRoutes } from './routes/billing'
 import { mountInsightsRoutes } from './routes/insights'
 import { mountAdminRoutes } from './routes/admin'
 import { mountEnergizerRoutes } from './routes/energizers'
+import { mountTownhallRoutes } from './routes/townhall'
 import { mountGamificationRoutes } from './routes/gamification'
 import { mountAIInsightsRoutes } from './routes/ai-insights'
 import { mountTemplateRoutes } from './routes/templates'
@@ -31,6 +32,9 @@ import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
 import { mountTenantCostRoutes } from './routes/tenant-cost'
 import { mountResidencyRoutes } from './routes/residency'
+import { mountTenantNamespaceRoutes } from './routes/tenant-namespace'
+import { mountForensicsRoutes } from './routes/forensics'
+import { mountBreachRoutes } from './routes/breach'
 import { mountApiKeyRoutes } from './routes/api-keys'
 import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountPublicApiV2Routes } from './routes/public-api-v2'
@@ -250,6 +254,7 @@ export function createApp() {
   mountAdminRoutes(app)
   mountMultiRegionAdminRoutes(app)
   mountEnergizerRoutes(app)
+  mountTownhallRoutes(app)
   mountGamificationRoutes(app)
   mountAIInsightsRoutes(app)
   mountHelpRoutes(app)
@@ -275,6 +280,9 @@ export function createApp() {
   mountFederationRoutes(app)
   mountTenantCostRoutes(app)
   mountResidencyRoutes(app)
+  mountTenantNamespaceRoutes(app)
+  mountForensicsRoutes(app)
+  mountBreachRoutes(app)
   mountAgentCoachRoutes(app)
   mountCustomActionRoutes(app)
   mountPwaPushRoutes(app)

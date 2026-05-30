@@ -52,9 +52,20 @@ CHECKOUT_URL = "https://checkout.qesto.cc"
 # Resend sender identity; must be a verified sender/domain in your Resend account.
 # Use a branded sender on qesto.cc for production auth emails.
 RESEND_FROM = "Qesto <login@qesto.cc>"
+
+# Feature flags (production)
+REALTIME_TOWNHALL_ENABLED = "true"
 # GROWTH-ENGINE: IndexNow API key for SEO indexing (optional; template pages auto-index if set).
 # Get from https://www.bing.com/indexnow (register domain, get key, paste here).
 # INDEXNOW_KEY = ""
+# Integrations: Slack/Teams notifications (gates integration checks in routes).
+INTEGRATION_ENABLED = "1"
+# Circuit breaker: fail-closed pattern for safeguarding against traffic spikes or abuse.
+CIRCUIT_BREAKER_ENABLED = "true"
+# Energizers: warm-up activities before live questions (DRAFT→ENERGIZING state machine).
+LIVE_ENERGIZERS_ENABLED = "true"
+# Sentiment analysis: AI-powered response sentiment scoring (Workers AI per response).
+SENTIMENT_ENABLED = "true"
 
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
@@ -98,6 +109,12 @@ id = "8d08b7883b6c451b88a653ce8ba55c13"
 [[kv_namespaces]]
 binding = "MARKETING_KV"
 id = "4ce59ef235b04802a7e9e218928bb022"
+[[kv_namespaces]]
+binding = "CIRCUIT_BREAKER_KV"
+id = "5e11b7876c4e4935b502f7826a494e6b"
+[[kv_namespaces]]
+binding = "INTEGRATIONS_KV"
+id = "f68cece22851406d8c27c2b0a818c44d"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
@@ -168,8 +185,9 @@ CHECKOUT_URL = "https://checkout-staging.qesto.cc"
 RESEND_FROM = "Qesto Staging <login@staging.qesto.cc>"
 LIVE_ENERGIZERS_ENABLED = "true"
 CIRCUIT_BREAKER_ENABLED = "true"
-INTEGRATION_ENABLED = "true"
+INTEGRATION_ENABLED = "1"
 SENTIMENT_ENABLED = "true"
+REALTIME_TOWNHALL_ENABLED = "true"
 RATE_LIMIT_FAIL_CLOSED = "false"
 WS_CONNECT_PER_IP_PER_MIN = "15"
 

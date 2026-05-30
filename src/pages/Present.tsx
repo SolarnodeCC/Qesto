@@ -92,6 +92,7 @@ export default function Present() {
   // ── Presenter controls (local state) ─────────────────────────────────────
   const [localPaused, setLocalPaused] = useState(false)
   const [hideTally, setHideTally] = useState(false)
+  const [hideSentiment, setHideSentiment] = useState(true) // Default: sentiment hidden (off)
   const [minGate, setMinGate] = useState(0)
   const [shuffledOptions, setShuffledOptions] = useState<LivePollOption[]>([])
   const [timerInput, setTimerInput] = useState('2')
@@ -118,7 +119,8 @@ export default function Present() {
   const showSentiment =
     state.role === 'presenter' &&
     state.question?.kind === 'open' &&
-    state.sentiment !== null
+    state.sentiment !== null &&
+    !hideSentiment
   const sentimentLabelKey =
     state.sentiment?.mood === 'positive'
       ? 'sentiment.positive'
@@ -543,6 +545,23 @@ export default function Present() {
           {hideTally ? <EyeOff size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
           {hideTally ? 'Tally hidden' : 'Hide tally'}
         </button>
+
+        {/* Show sentiment (default off) */}
+        {state.question?.kind === 'open' && (
+          <button
+            type="button"
+            onClick={() => setHideSentiment((v) => !v)}
+            aria-pressed={!hideSentiment}
+            className={[
+              'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
+              !hideSentiment ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-pulse-700 text-white hover:bg-pulse-600',
+            ].join(' ')}
+            title="Show or hide AI sentiment analysis"
+          >
+            <Sparkles size={14} aria-hidden="true" />
+            {!hideSentiment ? 'Sentiment shown' : 'Show sentiment'}
+          </button>
+        )}
 
         {/* Option shuffle */}
         <button

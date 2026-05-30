@@ -22,13 +22,13 @@ jobs:
       contents: read
     steps:
       # Pin to full commit SHA — tag refs can change without review
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       # Quality gates — runs local quality-gates.sh script
@@ -45,7 +45,7 @@ jobs:
 
       # Upload audit artifacts for agent repair routing
       - name: Upload audit artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: audit-results
@@ -56,7 +56,7 @@ jobs:
 
       # Upload coverage artifacts
       - name: Upload coverage artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-report
@@ -72,11 +72,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - run: npm ci

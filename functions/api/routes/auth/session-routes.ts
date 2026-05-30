@@ -2,6 +2,7 @@ import { deleteCookie } from 'hono/cookie'
 import { signJwt } from '../../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
 import { authMiddleware, SESSION_COOKIE } from '../../middleware/auth'
+import { townhallEnabled } from '../../realtime'
 import { JWT_TTL_SECONDS } from './constants'
 import { setAuthSessionCookie } from './cookie'
 import type { AuthApp } from './types'
@@ -9,7 +10,11 @@ import type { AuthApp } from './types'
 export function registerAuthSessionRoutes(app: AuthApp): void {
   app.get('/me', authMiddleware, (c) => {
     const user = c.get('user')
-    return c.json({ ok: true, data: { id: user.sub, email: user.email }, trace_id: c.get('trace_id') })
+    return c.json({
+      ok: true,
+      data: { id: user.sub, email: user.email, townhallEnabled: townhallEnabled(c.env) },
+      trace_id: c.get('trace_id'),
+    })
   })
 
   app.post('/logout', async (c) => {

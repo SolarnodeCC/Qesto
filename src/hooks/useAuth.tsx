@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, setAuthToken } from '../api/client'
 
-export type AuthUser = { id: string; email: string }
+export type AuthUser = { id: string; email: string; townhallEnabled?: boolean }
 
 type AuthState =
   | { status: 'loading' }

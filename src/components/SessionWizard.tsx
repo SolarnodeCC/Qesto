@@ -482,9 +482,10 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
 
     if (!sessionId) {
       setCreatingSession(true)
+      const activeTeamId = localStorage.getItem('activeTeamId') ?? undefined
       const res = await api<{ session: { id: string }; questions: unknown[] }>('/api/sessions', {
         method: 'POST',
-        body: { title: title.trim() },
+        body: { title: title.trim(), ...(activeTeamId ? { teamId: activeTeamId } : {}) },
         idempotencyKey: crypto.randomUUID(),
       })
       setCreatingSession(false)

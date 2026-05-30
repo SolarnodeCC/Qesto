@@ -57,6 +57,10 @@ export type Env = {
   REALTIME_V2_ENABLED?: string
   /** REALTIME-V2: default protocol version when client doesn't specify. */
   REALTIME_V2_DEFAULT?: string
+  /** REALTIME-V3: enable protocol v3 (results_delta) negotiation (S79). */
+  REALTIME_V3_ENABLED?: string
+  /** TOWNHALL (ADR-0044): enable the moderated anonymous Q&A board message family. */
+  REALTIME_TOWNHALL_ENABLED?: string
   /** SCIM API bearer token for identity provider integration. */
   SCIM_BEARER_TOKEN?: string
   /** JOIN-CAPTCHA: enable reCAPTCHA verification on session join. */
@@ -139,7 +143,12 @@ export type QuestionKind =
   | 'slider'
 export type Anonymity = 'full' | 'partial' | 'none' | 'zero_knowledge'
 export type VotePolicy = 'once' | 'multi' | 'react'
-export type SessionMode = 'reflection' | 'fun'
+export type SessionMode = 'reflection' | 'fun' | 'townhall'
+
+/** TOWNHALL (ADR-0044): per-session moderation model, chosen at draft. */
+export type TownhallModeration = 'pre' | 'post'
+/** TOWNHALL item lifecycle. `spotlight` is a separate O(1) pointer, not a status. */
+export type TownhallItemStatus = 'pending' | 'approved' | 'dismissed' | 'answered' | 'grouped'
 
 export type PollOption = { id: string; label: string }
 
@@ -162,6 +171,8 @@ export type Session = {
   anonymity: Anonymity
   vote_policy: VotePolicy
   session_mode: SessionMode
+  /** TOWNHALL (ADR-0044): moderation model when session_mode = 'townhall'. */
+  townhall_moderation?: TownhallModeration | null
   created_at: number
   started_at: number | null
   closed_at: number | null
@@ -206,6 +217,8 @@ export interface PlanQuotas {
     consentMode: boolean
     rankingQuestions: boolean
     samlSso: boolean
+    /** TOWNHALL (ADR-0044): moderated anonymous Q&A sessions — Team tier only. */
+    townhallQA: boolean
   }
 }
 
@@ -221,6 +234,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       consentMode: false,
       rankingQuestions: false,
       samlSso: false,
+      townhallQA: false,
     },
   },
   starter: {
@@ -234,6 +248,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       consentMode: true,
       rankingQuestions: true,
       samlSso: false,
+      townhallQA: false,
     },
   },
   team: {
@@ -247,6 +262,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       consentMode: true,
       rankingQuestions: true,
       samlSso: true,
+      townhallQA: true,
     },
   },
 }

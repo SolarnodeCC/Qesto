@@ -86,6 +86,7 @@ export interface PlanConfig extends PlanDisplayMeta {
     consentMode: boolean
     rankingQuestions: boolean
     samlSso: boolean
+    townhallQA: boolean
   }
 }
 

@@ -4,6 +4,7 @@ import { rateLimit } from '../../lib/rate-limit'
 import { ulid } from '../../lib/ulid'
 import { writeEvent } from '../../lib/observability'
 import { signJwt } from '../../lib/jwt'
+import { ensurePersonalTeam } from '../teams'
 import {
   JWT_TTL_SECONDS,
   MAGIC_LINK_MAX_PER_EMAIL,
@@ -136,6 +137,11 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
           plan: 'free',
           traceId: c.get('trace_id'),
         })
+        try {
+          await ensurePersonalTeam(c.env.TEAMS_KV, c.env.DB, userId, row.email)
+        } catch {
+          // Non-fatal: session creation falls back to ensurePersonalTeam as well
+        }
       }
 
       const jwt = await signJwt({ sub: userId, email: row.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)

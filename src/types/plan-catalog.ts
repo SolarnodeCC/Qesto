@@ -12,6 +12,7 @@ export type PlanCatalogApiRow = {
     consentMode: boolean
     rankingQuestions: boolean
     samlSso: boolean
+    townhallQA: boolean
   }
 }
 
