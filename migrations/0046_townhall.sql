@@ -2,9 +2,7 @@
 -- Apply: `wrangler d1 migrations apply qesto-prod`
 -- Safety: additive column + new table + additive indexes. No data backfill.
 -- jankurai:migration-safe approved=architect
-
-SET lock_timeout = '5s';
-SET statement_timeout = '30s';
+-- SQLite-compatible (removed PostgreSQL-specific timeout settings)
 
 -- (1) Per-session townhall moderation mode. Additive, NULL unless mode='townhall'.
 ALTER TABLE sessions ADD COLUMN townhall_moderation TEXT
@@ -37,6 +35,3 @@ CREATE INDEX IF NOT EXISTS idx_townhall_q_author ON townhall_questions(author_ha
 --                                                  types.ts vs schema.sql discrepancy)
 -- Old databases that enforce the narrower CHECK require a table rebuild to widen it;
 -- new databases already have the correct constraint from schema.sql.
-
-RESET lock_timeout;
-RESET statement_timeout;
