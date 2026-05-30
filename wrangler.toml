@@ -59,6 +59,10 @@ RESEND_FROM = "Qesto <login@qesto.cc>"
 INTEGRATION_ENABLED = "1"
 # Circuit breaker: fail-closed pattern for safeguarding against traffic spikes or abuse.
 CIRCUIT_BREAKER_ENABLED = "true"
+# Energizers: warm-up activities before live questions (DRAFT→ENERGIZING state machine).
+LIVE_ENERGIZERS_ENABLED = "true"
+# Sentiment analysis: AI-powered response sentiment scoring (Workers AI per response).
+SENTIMENT_ENABLED = "true"
 
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
