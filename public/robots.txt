@@ -1,4 +1,13 @@
+# Block API routes, admin, and auth-required pages from search engines
 User-agent: *
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /login
+Disallow: /reset-password
+Disallow: /sessions/*/present
+Disallow: /sessions/*/results
 Allow: /
 
 Sitemap: https://qesto.cc/sitemap.xml
