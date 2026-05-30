@@ -253,7 +253,7 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | # | Epic | Status |
 |---|------|--------|
 | 1 | TOWNHALL | ✅ Shipped (ADR-0044; residual TOWNHALL-12 profanity screening) |
-| 2 | COPILOT — Live AI facilitator co-pilot | 🟢 **Promoted → [EPIC-COPILOT](#epic-copilot-live-ai-facilitator-co-pilot)** (groomed 2026-05-30). Audit: S76/S77 shipped only a **post-session standalone chat API** + sentiment broadcast — the **live presenter panel that reads the room & acts is NOT built**; gate ADR-0046 |
+| 2 | COPILOT — Live AI facilitator co-pilot | 🟡 Largely covered by shipped `AI-COPILOT-MULTITURN-01` (S76) + `AI-COPILOT-EDGE-01` (S77); confirm parity vs. epic pitch |
 | 3 | **INSIGHTS+ — Cross-session intelligence** | 🟢 **Promoted → [EPIC-INSIGHTS+](#epic-insights-cross-session-intelligence)** (groomed 2026-05-30; 11 stories / ~95 pts; gate ADR-0045) |
 | 4 | STAGE — Hybrid event suite | ⬜ Not started (no event/agenda orchestration layer) |
 | 5 | RETRO — Agile retrospectives | ⬜ Not started (no `retro` session mode) |
@@ -278,7 +278,6 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | **EPIC-GAM** | In progress | Energizers, leaderboard, badges, referrals | Base gamification live; depth and analytics queued |
 | **EPIC-TOWNHALL** | ✅ Shipped (verified 2026-05-30) | Moderated anonymous Q&A at scale | Competitive epic #1 (ADR-0044); `session_mode='townhall'` live; TOWNHALL-01–11/13/14 Landed. Residual: TOWNHALL-12 (Workers-AI profanity, `Todo`), TOWNHALL-05 5k load-test + group/ungroup console UI deferred |
 | **EPIC-INSIGHTS+** | Groomed (next) | Cross-session intelligence (themes, trends, recurring topics, facilitator scorecard) | Competitive epic #3; **true next epic** (2026-05-30). 11 stories / ~95 pts; gate ADR-0045; reuses `DECISIONS_VECTORIZE` + `ai-insights` |
-| **EPIC-COPILOT** | Groomed | Live AI facilitator co-pilot (in-session suggestions, disengagement flags, on-the-fly poll draft) | Competitive epic #2. Audit (2026-05-30): S76/S77 shipped only a post-session chat API + sentiment broadcast; live panel NOT built. 12 stories / ~95 pts; gate ADR-0046; reuses `ai-wizard` + sentiment + `add_question` WS |
 
 ---
 
@@ -1125,54 +1124,6 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 - **ADR-0045 (INSIGHTS-00) must be accepted before INSIGHTS-02+ implementation starts.**
 - Reuses the ADR-0011 sentiment foundation for the scorecard mood-trend metric (non-ZK sessions only).
 - Triage COMPETITIVE_EPICS #2 COPILOT before final prioritization (may already be satisfied by shipped AI-copilot work).
-
----
-
-## EPIC-COPILOT: Live AI Facilitator Co-pilot
-
-**Goal**: A presenter-side AI panel **during a LIVE session** that reads the room and acts — suggests the next follow-up question, flags disengagement/confusion, and drafts an on-the-fly poll from a one-line intent, all without leaving the run screen. Competitive epic #2 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Wedge against Mentimeter's "AI facilitator coaching"; native-AI moat (Workers AI only, no transcript egress).
-
-**Status**: Promoted from ideation (2026-05-30); **groomed, awaiting PO commit + sprint allocation**. Gate: ADR-0046.
-
-**Audit finding (2026-05-30) — what already exists vs. the gap**: S71/S76/S77 shipped a **post-session, standalone multi-turn chat API**, *not* the live copilot. Concretely:
-- ✅ Shipped: context-bundle endpoint `GET /api/agent/copilot/sessions/:id`, multi-turn chat `POST .../turn` (`routes/copilot-context.ts`), edge-status stub `GET .../edge/status`, plan gating (team/starter), and the ADR-0011 **sentiment** foundation — `SessionRoom.ts:1094` broadcasts `sentiment_signal` to `role:presenter` sockets, rendered as a mood badge in `Present.tsx`.
-- ❌ Not built: the chat endpoint **doesn't even receive session context** (it passes only chat history to the model — `copilot-context.ts:116`); **no live room-read**, **no structured suggestions**, **no disengagement flag**, **no poll drafting**, **no presenter panel UI**, **no wiring to the live loop**. `ADR-0039` (referenced by `AI-COPILOT-EDGE-01`) was never written.
-
-**Reuses (effort-honest)**: the existing `/api/agent/copilot` surface (`app.ts:289`) + `copilot-context.ts`/`copilot-multturn.ts`; `generateQuestions()` (`lib/ai-wizard.ts:363`) for poll drafting; the `sentiment_signal` broadcast + `Present.tsx` mood badge; the existing LIVE `add_question` `ClientMessage` WS path for injecting an accepted poll.
-
-**Net-new**: an aggregate **live-context snapshot** from the DO, a **structured suggestion/action protocol**, disengagement derivation, and the **presenter copilot panel UI**.
-
-**Locked/proposed decisions** (ratify in ADR-0046):
-- **Inference stays in the stateless Pages Function, not inside the DO.** The DO exposes an **aggregate live snapshot** (current question, tallies, response count, latest sentiment mood); the copilot route reads it and runs Workers AI off the hot path. Rejects the epic's literal "inference loop wired into the DO" (would block the single-threaded DO).
-- **Presenter-triggered + debounced pull**, not continuous push on every vote (cost/noise control).
-- **Structured action protocol**: copilot returns typed actions `{ kind: 'followup_question' | 'poll_draft' | 'disengagement_alert' | 'pacing', ... }`; `poll_draft` payload reuses `generateQuestions()`.
-- **Accept → inject via the existing `add_question` WS message** — no new DO protocol version (ADR-0005).
-- **Aggregate-only to the model** (tallies, counts, mood) — never raw per-voter responses; in **zero-knowledge** sessions sentiment is off (ADR-0010/0011) so disengagement falls back to participation metrics; no PII to AI (ADR-0009).
-- **Plan-gated** behind a `liveCopilot` `featuresUnlocked` key (keep team/starter parity with the existing `/turn` gate).
-
-| ID | Story | Size | Pri | Status |
-|---|---|---:|---|---|
-| COPILOT-00 | **ADR-0046** — live facilitator copilot: DO aggregate-snapshot vs. in-DO inference, structured action protocol, accept→`add_question` reuse, privacy/ZK, plan gate. Gate for COPILOT-02+ | 3 | P0 | ✅ Accepted — [`adr/ADR-0046-live-facilitator-copilot.md`](../../adr/ADR-0046-live-facilitator-copilot.md) (2026-05-30) |
-| COPILOT-01 | Live-context snapshot: DO exposes an aggregate read (`current question`, tallies, response count, latest `sentiment_signal` mood); extend `buildCopilotContext` to carry it; ZK-safe (aggregate-only) | 13 | P0 | Todo |
-| COPILOT-02 | Structured suggestion engine: extend the copilot turn/suggest endpoint to emit typed actions grounded in the live snapshot (reuse `ai-wizard` prompt patterns); Workers AI only | 13 | P0 | Todo |
-| COPILOT-03 | On-the-fly poll draft: `POST /api/agent/copilot/sessions/:id/draft-poll` from a one-line intent, reusing `generateQuestions()`; returns a draft question schema; plan-gated | 8 | P0 | ✅ Shipped — `lib/copilot-draft-poll.ts` + route in `routes/copilot-context.ts`; AI circuit-breaker + graceful fallback; owner-checked; `tests/unit/copilot-draft-poll.test.ts` |
-| COPILOT-04 | Disengagement/confusion detection: derive from sentiment `concerning` (k≥5) + response-rate / vote-latency drop off the DO snapshot; emit `disengagement_alert`; no per-participant tracking | 8 | P1 | Todo |
-| COPILOT-05 | Presenter copilot panel UI in `Present.tsx`: live suggestions + mood, accept/dismiss, draft-poll input; presenter-only; debounced refresh; WCAG 2.1 AA | 13 | P0 | Todo |
-| COPILOT-06 | Accept→inject: wire an accepted `poll_draft` into the LIVE session via the existing `add_question` `ClientMessage` (no new DO protocol); optimistic UI + confirm | 8 | P1 | Todo |
-| COPILOT-07 | Observability: `copilot.suggestion_emitted`, `copilot.suggestion_accepted`, `copilot.poll_drafted` AE events with `teamId`+`plan`; adoption funnel (KPI: ≥35% of eligible LIVE sessions open the panel) | 5 | P1 | Todo |
-| COPILOT-08 | Privacy/ZK guardrails + tests: aggregate-only to AI; ZK disengagement falls back to participation; no PII in prompts or AE; privacy review + regression bundle | 8 | P0 | Todo |
-| COPILOT-09 | Plan gating + entitlement: `liveCopilot` `featuresUnlocked` key (team/starter); lower tiers get an upsell affordance; contract tests | 5 | P0 | Todo |
-| COPILOT-10 | Integration tests: live vote → `sentiment_signal` → copilot suggestion → presenter display → accept → `add_question` injected | 8 | P1 | Todo |
-| I18N-COPILOT-01 | i18n strings — suggestion labels, action kinds, disengagement copy, draft-poll UI — in EN/NL/DE/FR/ES; `check:i18n` green | 3 | P1 | Todo |
-
-**Total**: ~95 pts (≈ two sprints at the reference 40–50 pts/sprint cadence).
-
-**Epic acceptance**: During a LIVE session a presenter opens the copilot panel and, grounded in the live room state, sees (a) a suggested next follow-up question, (b) a disengagement/confusion flag when sentiment is `concerning` or participation drops, and (c) can type a one-line intent and get a drafted poll they accept into the running session — all without leaving the run screen; only aggregate signals reach the model; zero-knowledge sessions surface no per-response content and no sentiment-derived flag; the panel is plan-gated; AI inference stays on Workers AI and off the DO hot path; existing poll/energizer/voting flows and the post-session chat API are unchanged.
-
-**Dependencies/gates**:
-- **ADR-0046 (COPILOT-00) must be accepted before COPILOT-02+ implementation starts.**
-- Builds on the ADR-0011 sentiment foundation (shipped) and the existing `/api/agent/copilot` surface.
-- COPILOT-06 reuses the existing LIVE `add_question` WS path (ADR-0005) — no protocol bump.
 
 ---
 

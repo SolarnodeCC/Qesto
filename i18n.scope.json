@@ -21,6 +21,7 @@
     "settings",
     "solutions",
     "team",
+    "townhall",
     "vote",
     "wizard"
   ],
@@ -52,6 +53,7 @@
     "settings": "frontend + i18n",
     "solutions": "marketing",
     "team": "frontend + i18n",
+    "townhall": "frontend + i18n",
     "vote": "frontend + i18n",
     "wizard": "frontend + i18n"
   }
