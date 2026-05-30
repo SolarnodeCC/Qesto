@@ -71,6 +71,16 @@
     "draft_heading": "Sondage suggéré",
     "plan_gated": "Le copilote en direct est disponible sur les forfaits payants.",
     "loading": "Lecture de la salle…",
-    "waiting": "En attente du démarrage de la session."
+    "waiting": "En attente du démarrage de la session.",
+    "suggestions_title": "Suggestions",
+    "suggestions_refresh": "Actualiser les suggestions",
+    "suggestions_loading": "Réflexion…",
+    "suggestions_empty": "Pas encore de suggestions.",
+    "suggestions_fallback": "hors ligne",
+    "suggestion_use": "Utiliser",
+    "kind_followup_question": "Question de suivi",
+    "kind_poll_draft": "Idée de sondage",
+    "kind_disengagement_alert": "Attention",
+    "kind_pacing": "Rythme"
   }
 }

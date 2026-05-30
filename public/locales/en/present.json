@@ -71,6 +71,16 @@
     "draft_heading": "Suggested poll",
     "plan_gated": "The live copilot is available on paid plans.",
     "loading": "Reading the room…",
-    "waiting": "Waiting for the session to go live."
+    "waiting": "Waiting for the session to go live.",
+    "suggestions_title": "Suggestions",
+    "suggestions_refresh": "Refresh suggestions",
+    "suggestions_loading": "Thinking…",
+    "suggestions_empty": "No suggestions yet.",
+    "suggestions_fallback": "offline",
+    "suggestion_use": "Use",
+    "kind_followup_question": "Follow-up",
+    "kind_poll_draft": "Poll idea",
+    "kind_disengagement_alert": "Heads up",
+    "kind_pacing": "Pacing"
   }
 }

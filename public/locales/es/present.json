@@ -71,6 +71,16 @@
     "draft_heading": "Encuesta sugerida",
     "plan_gated": "El copiloto en vivo está disponible en planes de pago.",
     "loading": "Leyendo la sala…",
-    "waiting": "Esperando a que la sesión esté en vivo."
+    "waiting": "Esperando a que la sesión esté en vivo.",
+    "suggestions_title": "Sugerencias",
+    "suggestions_refresh": "Actualizar sugerencias",
+    "suggestions_loading": "Pensando…",
+    "suggestions_empty": "Aún no hay sugerencias.",
+    "suggestions_fallback": "sin conexión",
+    "suggestion_use": "Usar",
+    "kind_followup_question": "Seguimiento",
+    "kind_poll_draft": "Idea de encuesta",
+    "kind_disengagement_alert": "Atención",
+    "kind_pacing": "Ritmo"
   }
 }

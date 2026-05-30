@@ -6,10 +6,10 @@
  * presenter draft a poll from a one-line intent (COPILOT-03). Accepting a draft
  * into the running session is COPILOT-06.
  */
-import { useState } from 'react'
-import { Sparkles, X, Loader2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Sparkles, X, Loader2, RefreshCw, Lightbulb, AlertTriangle, Gauge, ListPlus } from 'lucide-react'
 import { useT } from '../i18n'
-import { useCopilot } from '../hooks/useCopilot'
+import { useCopilot, type CopilotActionKind } from '../hooks/useCopilot'
 
 type Props = {
   sessionId: string | undefined
@@ -17,13 +17,43 @@ type Props = {
   enabled: boolean
 }
 
+const KIND_ICON: Record<CopilotActionKind, typeof Lightbulb> = {
+  followup_question: Lightbulb,
+  poll_draft: ListPlus,
+  disengagement_alert: AlertTriangle,
+  pacing: Gauge,
+}
+
 export function CopilotPanel({ sessionId, enabled }: Props) {
   const t = useT('present')
   const [open, setOpen] = useState(false)
   const [intent, setIntent] = useState('')
-  const { context, loading, planGated, draftPoll, drafting, draft } = useCopilot(sessionId, enabled && open)
+  const {
+    context,
+    loading,
+    planGated,
+    draftPoll,
+    drafting,
+    draft,
+    suggestions,
+    suggestSource,
+    suggestLoading,
+    fetchSuggestions,
+  } = useCopilot(sessionId, enabled && open)
+
+  // Auto-fetch suggestions once per live open (heavier LLM call — not on the 15s poll).
+  const fetchedRef = useRef(false)
+  useEffect(() => {
+    if (open && context?.isLive && !fetchedRef.current) {
+      fetchedRef.current = true
+      void fetchSuggestions()
+    }
+    if (!open) fetchedRef.current = false
+  }, [open, context?.isLive, fetchSuggestions])
 
   if (!enabled) return null
+
+  const kindLabel = (kind: CopilotActionKind): string => t(`copilot.kind_${kind}`)
 
   const moodLabel =
     context?.mood === 'positive'
@@ -92,6 +122,66 @@ export function CopilotPanel({ sessionId, enabled }: Props) {
                     </div>
                   )}
                 </div>
+
+                {/* Suggestions (COPILOT-02) */}
+                {context?.isLive && (
+                  <div aria-live="polite" className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-semibold uppercase tracking-wide text-pulse-500">
+                        {t('copilot.suggestions_title')}
+                        {suggestSource === 'fallback' && (
+                          <span className="ml-1 font-normal normal-case text-pulse-400">· {t('copilot.suggestions_fallback')}</span>
+                        )}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => void fetchSuggestions()}
+                        disabled={suggestLoading}
+                        aria-label={t('copilot.suggestions_refresh')}
+                        className="inline-flex items-center gap-1 rounded p-1 text-pulse-500 hover:text-violet-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 disabled:opacity-40"
+                      >
+                        <RefreshCw size={14} className={suggestLoading ? 'animate-spin' : ''} aria-hidden="true" />
+                      </button>
+                    </div>
+                    {suggestLoading && suggestions.length === 0 ? (
+                      <p className="text-sm text-pulse-500">{t('copilot.suggestions_loading')}</p>
+                    ) : suggestions.length === 0 ? (
+                      <p className="text-sm text-pulse-500">{t('copilot.suggestions_empty')}</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {suggestions.map((s, i) => {
+                          const Icon = KIND_ICON[s.kind]
+                          const alert = s.kind === 'disengagement_alert'
+                          return (
+                            <li
+                              key={`${s.kind}-${i}`}
+                              className={`rounded-lg border p-2.5 text-sm ${alert ? 'border-amber-200 bg-amber-50' : 'border-pulse-200 bg-white'}`}
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <Icon size={14} className={alert ? 'text-amber-600' : 'text-violet-600'} aria-hidden="true" />
+                                <span className="text-[11px] font-semibold uppercase tracking-wide text-pulse-500">{kindLabel(s.kind)}</span>
+                              </div>
+                              <p className="mt-1 font-medium text-pulse-900">{s.title}</p>
+                              <p className="text-pulse-600">{s.body}</p>
+                              {s.kind === 'poll_draft' && s.intent && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIntent(s.intent ?? '')
+                                    void draftPoll(s.intent ?? '')
+                                  }}
+                                  className="mt-1.5 inline-flex items-center gap-1 rounded bg-violet-100 px-2 py-1 text-xs font-medium text-violet-700 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                                >
+                                  {t('copilot.suggestion_use')}
+                                </button>
+                              )}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                )}
 
                 {/* Draft a poll from a one-line intent */}
                 <form

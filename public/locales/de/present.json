@@ -71,6 +71,16 @@
     "draft_heading": "Vorgeschlagene Umfrage",
     "plan_gated": "Der Live-Copilot ist in kostenpflichtigen Tarifen verfügbar.",
     "loading": "Der Raum wird gelesen…",
-    "waiting": "Warten, bis die Sitzung live geht."
+    "waiting": "Warten, bis die Sitzung live geht.",
+    "suggestions_title": "Vorschläge",
+    "suggestions_refresh": "Vorschläge aktualisieren",
+    "suggestions_loading": "Denkt nach…",
+    "suggestions_empty": "Noch keine Vorschläge.",
+    "suggestions_fallback": "offline",
+    "suggestion_use": "Verwenden",
+    "kind_followup_question": "Anschlussfrage",
+    "kind_poll_draft": "Umfrage-Idee",
+    "kind_disengagement_alert": "Achtung",
+    "kind_pacing": "Tempo"
   }
 }
