@@ -1152,10 +1152,10 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 | ID | Story | Size | Pri | Status |
 |---|---|---:|---|---|
-| COPILOT-00 | **ADR-0046** — live facilitator copilot: DO aggregate-snapshot vs. in-DO inference, structured action protocol, accept→`add_question` reuse, privacy/ZK, plan gate. Gate for COPILOT-02+ | 3 | P0 | ✅ Drafted — [`adr/ADR-0046-live-facilitator-copilot.md`](../../adr/ADR-0046-live-facilitator-copilot.md) (proposed) |
+| COPILOT-00 | **ADR-0046** — live facilitator copilot: DO aggregate-snapshot vs. in-DO inference, structured action protocol, accept→`add_question` reuse, privacy/ZK, plan gate. Gate for COPILOT-02+ | 3 | P0 | ✅ Accepted — [`adr/ADR-0046-live-facilitator-copilot.md`](../../adr/ADR-0046-live-facilitator-copilot.md) (2026-05-30) |
 | COPILOT-01 | Live-context snapshot: DO exposes an aggregate read (`current question`, tallies, response count, latest `sentiment_signal` mood); extend `buildCopilotContext` to carry it; ZK-safe (aggregate-only) | 13 | P0 | Todo |
 | COPILOT-02 | Structured suggestion engine: extend the copilot turn/suggest endpoint to emit typed actions grounded in the live snapshot (reuse `ai-wizard` prompt patterns); Workers AI only | 13 | P0 | Todo |
-| COPILOT-03 | On-the-fly poll draft: `POST /api/agent/copilot/sessions/:id/draft-poll` from a one-line intent, reusing `generateQuestions()`; returns a draft question schema; plan-gated | 8 | P0 | Todo |
+| COPILOT-03 | On-the-fly poll draft: `POST /api/agent/copilot/sessions/:id/draft-poll` from a one-line intent, reusing `generateQuestions()`; returns a draft question schema; plan-gated | 8 | P0 | ✅ Shipped — `lib/copilot-draft-poll.ts` + route in `routes/copilot-context.ts`; AI circuit-breaker + graceful fallback; owner-checked; `tests/unit/copilot-draft-poll.test.ts` |
 | COPILOT-04 | Disengagement/confusion detection: derive from sentiment `concerning` (k≥5) + response-rate / vote-latency drop off the DO snapshot; emit `disengagement_alert`; no per-participant tracking | 8 | P1 | Todo |
 | COPILOT-05 | Presenter copilot panel UI in `Present.tsx`: live suggestions + mood, accept/dismiss, draft-poll input; presenter-only; debounced refresh; WCAG 2.1 AA | 13 | P0 | Todo |
 | COPILOT-06 | Accept→inject: wire an accepted `poll_draft` into the LIVE session via the existing `add_question` `ClientMessage` (no new DO protocol); optimistic UI + confirm | 8 | P1 | Todo |

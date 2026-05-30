@@ -1,7 +1,8 @@
 ---
 id: ADR-0046
-status: proposed
+status: accepted
 created: 2026-05-30
+accepted: 2026-05-30
 relates_to: ADR-0001-do-per-session, ADR-0005-do-protocol-versioning, ADR-0009-pii-sanitization, ADR-0010-zero-knowledge-mode, ADR-0011-live-sentiment-inference, ADR-0029-ai-workflows
 supersedes: ADR-0039 (referenced by AI-COPILOT-EDGE-01 but never written)
 ---
