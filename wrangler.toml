@@ -57,6 +57,8 @@ RESEND_FROM = "Qesto <login@qesto.cc>"
 # INDEXNOW_KEY = ""
 # Integrations: Slack/Teams notifications (gates integration checks in routes).
 INTEGRATION_ENABLED = "1"
+# Circuit breaker: fail-closed pattern for safeguarding against traffic spikes or abuse.
+CIRCUIT_BREAKER_ENABLED = "true"
 
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
@@ -100,6 +102,9 @@ id = "8d08b7883b6c451b88a653ce8ba55c13"
 [[kv_namespaces]]
 binding = "MARKETING_KV"
 id = "4ce59ef235b04802a7e9e218928bb022"
+[[kv_namespaces]]
+binding = "CIRCUIT_BREAKER_KV"
+id = "5e11b7876c4e4935b502f7826a494e6b"
 
 [[durable_objects.bindings]]
 name = "SESSION_ROOM"
