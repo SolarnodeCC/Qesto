@@ -221,6 +221,8 @@ export interface PlanQuotas {
     samlSso: boolean
     /** TOWNHALL (ADR-0044): moderated anonymous Q&A sessions — Team tier only. */
     townhallQA: boolean
+    /** COPILOT (ADR-0046): live facilitator copilot — paid tiers (starter + team). */
+    liveCopilot: boolean
   }
 }
 
@@ -237,6 +239,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       rankingQuestions: false,
       samlSso: false,
       townhallQA: false,
+      liveCopilot: false,
     },
   },
   starter: {
@@ -251,6 +254,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       rankingQuestions: true,
       samlSso: false,
       townhallQA: false,
+      liveCopilot: true,
     },
   },
   team: {
@@ -265,6 +269,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       rankingQuestions: true,
       samlSso: true,
       townhallQA: true,
+      liveCopilot: true,
     },
   },
 }

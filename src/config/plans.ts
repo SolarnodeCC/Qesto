@@ -87,6 +87,7 @@ export interface PlanConfig extends PlanDisplayMeta {
     rankingQuestions: boolean
     samlSso: boolean
     townhallQA: boolean
+    liveCopilot: boolean
   }
 }
 
