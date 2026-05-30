@@ -254,13 +254,13 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 |---|------|--------|
 | 1 | TOWNHALL | ✅ Shipped (ADR-0044; residual TOWNHALL-12 profanity screening) |
 | 2 | COPILOT — Live AI facilitator co-pilot | 🟡 Largely covered by shipped `AI-COPILOT-MULTITURN-01` (S76) + `AI-COPILOT-EDGE-01` (S77); confirm parity vs. epic pitch |
-| 3 | **INSIGHTS+ — Cross-session intelligence** | ⬜ **Not started — TRUE NEXT EPIC** (no cross-session aggregation store; reuses DECISIONS_VECTORIZE) |
+| 3 | **INSIGHTS+ — Cross-session intelligence** | 🟢 **Promoted → [EPIC-INSIGHTS+](#epic-insights-cross-session-intelligence)** (groomed 2026-05-30; 11 stories / ~95 pts; gate ADR-0045) |
 | 4 | STAGE — Hybrid event suite | ⬜ Not started (no event/agenda orchestration layer) |
 | 5 | RETRO — Agile retrospectives | ⬜ Not started (no `retro` session mode) |
 | 6 | IDEATE — Brainstorm & prioritization | ⬜ Not started (no idea-board) |
 | 7–10, ★ | DELIBERATE / REACTIONS / CAPTIONS / EMBED / CANVAS | ⬜ Not started |
 
-**→ Next epic to work on: `INSIGHTS+` (Cross-Session Intelligence)** — the highest-ranked un-built epic in the 🟢 near-term cluster (Value 4 / Change 3). Per the strategy doc's PO next-steps, it must first be **promoted into this backlog with an `EPIC-NN` ID and broken into ≤13-pt stories**. (COPILOT #2 should be triaged first to confirm whether shipped AI-copilot work already satisfies it.)
+**→ Next epic to work on: `INSIGHTS+` (Cross-Session Intelligence)** — the highest-ranked un-built epic in the 🟢 near-term cluster (Value 4 / Change 3). **Promoted + groomed on 2026-05-30** → see **[EPIC-INSIGHTS+](#epic-insights-cross-session-intelligence)** (11 stories / ~95 pts, all ≤13 pts; gate ADR-0045). Ready for PO commit + sprint allocation. (COPILOT #2 should be triaged first to confirm whether shipped AI-copilot work already satisfies it.)
 
 ---
 
@@ -277,6 +277,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | **EPIC-I18N** | In progress | Locales, key validation, translation QA | Bundles shipped; CI and QA hardening ongoing |
 | **EPIC-GAM** | In progress | Energizers, leaderboard, badges, referrals | Base gamification live; depth and analytics queued |
 | **EPIC-TOWNHALL** | ✅ Shipped (verified 2026-05-30) | Moderated anonymous Q&A at scale | Competitive epic #1 (ADR-0044); `session_mode='townhall'` live; TOWNHALL-01–11/13/14 Landed. Residual: TOWNHALL-12 (Workers-AI profanity, `Todo`), TOWNHALL-05 5k load-test + group/ungroup console UI deferred |
+| **EPIC-INSIGHTS+** | Groomed (next) | Cross-session intelligence (themes, trends, recurring topics, facilitator scorecard) | Competitive epic #3; **true next epic** (2026-05-30). 11 stories / ~95 pts; gate ADR-0045; reuses `DECISIONS_VECTORIZE` + `ai-insights` |
 
 ---
 
@@ -1080,6 +1081,49 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | TOWNHALL-14 | Hardening: submit token bucket, dedupe/spam, abuse + a11y + back-compat tests | 8 | **Landed** — back-compat matrix (non-townhall rejection, request_state resync), rate-limit/dedupe/group-flow DO tests; a11y in components. Group/ungroup *console UI* (parent-picker) deferred |
 
 **Epic acceptance**: Team host configures pre/post in draft (non-team 403); anonymous-default submit + upvote (no double-upvote); pre-mod audience sees approved-only, post-mod sees all-but-dismissed; console actions reflect on audience+display within one debounce; reconnect resyncs board with no loss/dupes; steady-state is deltas only; close persists + export correct; GDPR delete purges DO+D1; existing poll/energizer flows unchanged.
+
+---
+
+## EPIC-INSIGHTS+: Cross-Session Intelligence
+
+**Goal**: Lift analytics above the single session into a longitudinal **Voice-of-Customer / L&D intelligence** product — theme clustering across all of a team's sessions, engagement trend lines, recurring-topic detection, and a per-facilitator scorecard. Competitive epic #3 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Highest-ranked **un-built** epic in the 🟢 near-term cluster (Value 4 / Change 3); an ARPU + retention lever that sells to research, CX and L&D buyers.
+
+**Status**: Promoted from ideation (2026-05-30); **groomed, awaiting PO commit + sprint allocation**. Triage COPILOT (#2) first to confirm it isn't already satisfied by shipped `AI-COPILOT-MULTITURN-01`.
+
+**Reuses (effort-honest)**: `DECISIONS_VECTORIZE` (768d cosine — no new index), the `lib/ai-insights.ts` distillation pipeline + `routes/ai-insights/*`, the existing `useInsights` hook + `InsightThemeCard` (today derives team themes client-side — this epic moves aggregation server-side and adds trends/recurrence/scorecard), `AdminAnalyticsTab` export plumbing, and the `worker/` scheduled handler for rollup jobs.
+
+**Net-new**: a cross-session aggregation store (D1 + KV cache), recurring-topic clustering, longitudinal trend + scorecard APIs, and the dashboard surfaces that render them.
+
+**Locked/proposed decisions** (ratify in ADR-0045):
+- New D1 tables `session_insights` (per closed session: distilled themes, embedding ref, engagement metrics) and `team_insight_rollup` (materialized team aggregates); **reuse** `DECISIONS_VECTORIZE`, no new vector index.
+- **Zero-knowledge sessions are hard-excluded** from every cross-session store and aggregate (consistent with ADR-0010 + ADR-0011); a **k-anonymity floor** (k≥3 sessions, k≥5 respondents) gates any surfaced signal.
+- Aggregation is **async** — on session close + a scheduled `worker/` rollup; **zero added latency on the close path**.
+- **Workers AI only** for clustering/distillation (hard rule #1); no third-party egress.
+- Plan-gated behind a new `crossSessionInsights` entitlement (Team tier+); free/starter see an upsell empty-state.
+
+| ID | Story | Size | Pri | Status |
+|---|---|---:|---|---|
+| INSIGHTS-00 | **ADR-0045** — cross-session intelligence architecture: aggregation store, embedding reuse, ZK exclusion, k-anonymity floor, plan gating, async rollup model. Gate for INSIGHTS-02+ | 3 | P0 | Todo |
+| INSIGHTS-01 | D1 migration + schema: `session_insights` + `team_insight_rollup`; repository layer; backfill script for existing closed sessions (ZK-excluded) | 8 | P0 | Todo |
+| INSIGHTS-02 | Aggregation pipeline: on session close, distil themes (reuse `ai-insights`), upsert embedding to `DECISIONS_VECTORIZE`, write `session_insights`; **idempotent**; ZK sessions skipped; emits `insight.aggregated` | 13 | P0 | Todo |
+| INSIGHTS-03 | Recurring-topic detection: Vectorize semantic clustering across a team's session embeddings → recurring themes with frequency + first/last-seen; k-anonymity floor enforced | 13 | P1 | Todo |
+| INSIGHTS-04 | Longitudinal trend API `GET /api/teams/:id/insights/trends` (30/90/180d windows): engagement + theme trend lines; plan-gated; KV-cached; AE event | 8 | P1 | Todo |
+| INSIGHTS-05 | Facilitator scorecard API + model: per-facilitator sessions-run, avg participation, response rate, theme diversity, mood trend (non-ZK only); team-scoped | 8 | P1 | Todo |
+| INSIGHTS-06 | Frontend: extend Dashboard **Insights** tab → cross-session view — trend lines, recurring-topic list, facilitator scorecard; reuse `useInsights`/`InsightThemeCard`; loading/empty/plan-gated states; WCAG 2.1 AA | 13 | P1 | Todo |
+| INSIGHTS-07 | Export: cross-session intelligence report (JSON + enhanced CSV; PDF stretch) extending `EXPORT-RICH`; plan-gated; CSV formula-injection safe (`lib/csv.ts`) | 8 | P1 | Todo |
+| INSIGHTS-08 | Observability: `insight.aggregated`, `insight.trends_viewed`, `insight.scorecard_viewed` AE events with `teamId`+`plan`; adoption funnel (KPI: ≥40% of eligible teams open the cross-session view in 14 days) | 5 | P1 | Todo |
+| INSIGHTS-09 | Privacy/ZK guardrails + tests: ZK sessions excluded from all stores/aggregates; k-anonymity floor; no PII in rollups; privacy review + regression bundle | 8 | P0 | Todo |
+| INSIGHTS-10 | Plan gating + entitlement: `crossSessionInsights` (Team tier+); upsell empty-state for lower tiers; entitlement contract tests | 5 | P0 | Todo |
+| I18N-INSIGHTS-01 | i18n strings — trend labels, recurring topics, scorecard, export — in EN/NL/DE/FR/ES; `check:i18n` green | 3 | P1 | Todo |
+
+**Total**: ~95 pts (≈ two sprints at the reference 40–50 pts/sprint cadence).
+
+**Epic acceptance**: A Team-tier facilitator opens the Insights tab and sees, across all their team's **non-ZK** closed sessions, (a) recurring themes with frequency + trend, (b) engagement trend lines over a selectable window, and (c) a per-facilitator scorecard — all rendered within 2s p95 for a team with ≥3 closed sessions; zero-knowledge sessions never contribute to any aggregate; no signal surfaces below the k-anonymity floor; lower-tier teams see an upsell empty-state (no data leak); export produces a structured report; aggregation adds no latency to session close; all AI inference stays on Workers AI; existing single-session insights are unchanged.
+
+**Dependencies/gates**:
+- **ADR-0045 (INSIGHTS-00) must be accepted before INSIGHTS-02+ implementation starts.**
+- Reuses the ADR-0011 sentiment foundation for the scorecard mood-trend metric (non-ZK sessions only).
+- Triage COMPETITIVE_EPICS #2 COPILOT before final prioritization (may already be satisfied by shipped AI-copilot work).
 
 ---
 
