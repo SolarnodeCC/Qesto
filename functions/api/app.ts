@@ -53,6 +53,8 @@ import { mountComplianceAdminRoutes } from './routes/compliance-admin'
 import { mountWebhookRoutes } from './routes/webhooks'
 import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
 import { mountMarketingTemplateRoutes } from './routes/templates-marketing'
+import { mountSeoRoutes } from './routes/seo-sitemap'
+import { mountOgImageRoutes } from './routes/og-image'
 import { authMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
@@ -245,6 +247,8 @@ export function createApp() {
   // ↓ PUBLIC routes — must stay above the auth-middleware sub-apps below
   mountMarketingTemplateRoutes(app)
   mountMarketingWebhookRoutes(app)
+  mountSeoRoutes(app)
+  mountOgImageRoutes(app)
   mountPartnerMarketplaceRoutes(app)
   mountPartnerSlaRoutes(app)
   // ↓ Auth-middleware sub-apps — inject app.use('*', authMiddleware) at /api/*
