@@ -235,6 +235,7 @@ export class SessionRoom implements DurableObject {
     if (url.pathname === '/close' && req.method === 'POST') return this.handleClose()
     if (url.pathname === '/transition-to-live' && req.method === 'POST') return this.handleTransitionToLive()
     if (url.pathname === '/state' && req.method === 'GET') return this.handleState()
+    if (url.pathname === '/copilot/snapshot' && req.method === 'GET') return this.handleCopilotSnapshot()
     if (url.pathname === '/ws' && req.headers.get('upgrade') === 'websocket') {
       return this.handleUpgrade(req)
     }
@@ -420,6 +421,37 @@ export class SessionRoom implements DurableObject {
       connections: this.ctx.getWebSockets().length,
       energizer,
       status,
+    })
+  }
+
+  // ── /copilot/snapshot (COPILOT-01, ADR-0046) ──────────────────────────────
+  // Aggregate, PII-free read of the live room for the facilitator copilot.
+  // Inference happens off the DO in the Pages Function; this only exposes state
+  // the DO already holds. Sentiment mood is omitted in zero-knowledge sessions.
+  private async handleCopilotSnapshot(): Promise<Response> {
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
+    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    const voters = await this.ensureVoters()
+    const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? 'uninitialised'
+    const isZeroKnowledge = meta?.anonymity === 'zero_knowledge'
+    const mood = isZeroKnowledge
+      ? null
+      : (await this.ctx.storage.get<{ mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }>(K_SENTIMENT_MOOD)) ?? null
+
+    const voterCount = Object.keys(voters).length
+    const responseCount = Object.values(counts).reduce((sum, n) => sum + (typeof n === 'number' ? n : 0), 0)
+
+    return this.jsonOk({
+      status,
+      currentQuestion: question
+        ? { id: question.id, kind: question.kind, prompt: question.prompt, optionCount: question.options?.length ?? 0 }
+        : null,
+      responseCount,
+      voterCount,
+      participationRate: voterCount > 0 ? Math.min(1, responseCount / voterCount) : 0,
+      connections: this.ctx.getWebSockets().length,
+      mood,
     })
   }
 

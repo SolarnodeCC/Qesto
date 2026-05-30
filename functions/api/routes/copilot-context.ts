@@ -24,8 +24,15 @@ import {
   DRAFT_POLL_INTENT_MAX,
   DRAFT_POLL_FOCUS_MAX,
 } from '../lib/copilot-draft-poll'
+import {
+  buildLiveContext,
+  emptyLiveContext,
+  parseSnapshotResponse,
+} from '../lib/copilot-live-context'
+import { getSessionRoomStub } from './sessions/shared'
 import { WizardAIError, WizardValidationError } from '../lib/ai-wizard'
 import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
+import { featureAllowed } from '../lib/entitlements'
 import { sanitizeError } from '../lib/error-handler'
 import type { Env } from '../types'
 
@@ -103,7 +110,7 @@ export function mountCopilotContextRoutes(parent: any) {
 
   app.post('/sessions/:sessionId/turn', async (c) => {
     const sessionId = c.req.param('sessionId')
-    if (c.get('plan') !== 'team' && c.get('plan') !== 'starter') {
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
       return c.json(
         { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
         403,
@@ -148,8 +155,8 @@ export function mountCopilotContextRoutes(parent: any) {
     const sessionId = c.req.param('sessionId')
     const userId = c.get('user').sub
 
-    // Plan gate — copilot is paid-only (mirrors the /turn endpoint).
-    if (c.get('plan') !== 'team' && c.get('plan') !== 'starter') {
+    // Plan gate — copilot is paid-only (liveCopilot entitlement, ADR-0046 / COPILOT-09).
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
       return c.json(
         { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
         403,
@@ -220,6 +227,53 @@ export function mountCopilotContextRoutes(parent: any) {
       }
       throw err
     }
+  })
+
+  // COPILOT-01 — live-context snapshot read from the DO (ADR-0046).
+  app.get('/sessions/:sessionId/live-context', async (c) => {
+    const sessionId = c.req.param('sessionId')
+    const userId = c.get('user').sub
+
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
+      return c.json(
+        { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+
+    const session = await c.env.DB.prepare(`SELECT id, status, owner_id FROM sessions WHERE id = ?1`)
+      .bind(sessionId)
+      .first<{ id: string; status: string; owner_id: string }>()
+
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.owner_id !== userId) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Not session owner' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+
+    // Only live/energizing sessions have a DO to read; otherwise return an empty context.
+    if (session.status !== 'live' && session.status !== 'energizing') {
+      return c.json({ ok: true, data: { context: emptyLiveContext(sessionId) }, trace_id: c.get('trace_id') })
+    }
+
+    let snapshot = null
+    try {
+      const room = await getSessionRoomStub(c.env, sessionId)
+      const res = await room.fetch('https://do.internal/copilot/snapshot')
+      snapshot = parseSnapshotResponse(await res.json().catch(() => null))
+    } catch {
+      snapshot = null
+    }
+
+    const context = snapshot ? buildLiveContext(sessionId, snapshot) : emptyLiveContext(sessionId)
+    return c.json({ ok: true, data: { context }, trace_id: c.get('trace_id') })
   })
 
   app.get('/edge/status', (c) =>
