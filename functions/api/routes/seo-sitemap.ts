@@ -74,25 +74,63 @@ export async function getSitemapIndex(c: Context<{ Bindings: Env }>) {
 }
 
 /**
- * SEO-SITEMAP-03: IndexNow key file endpoint
- * Required by IndexNow API; served at /.well-known/indexnow
- * Cloudflare needs to serve this from the domain root
+ * SEO-INDEXNOW-01: IndexNow key file endpoint
+ * Serves at multiple locations for flexibility:
+ * - /.well-known/indexnow (Option 2 - recommended)
+ * - /indexnow.txt (Option 2 - alternative)
+ * - /{key}.txt (Option 1 - if INDEXNOW_KEY_FILE env var matches)
+ *
+ * Returns plain UTF-8 text file (not JSON/HTML wrapped)
+ * Required by IndexNow API specification
  */
 export function getIndexNowKey(c: Context<{ Bindings: Env }>) {
   const key = c.env.INDEXNOW_KEY
   if (!key) {
     return c.text('IndexNow key not configured', 404)
   }
-  c.header('Content-Type', 'text/plain')
-  return c.text(key)
+  // Serve as plain text file, not wrapped in any markup
+  c.header('Content-Type', 'text/plain; charset=utf-8')
+  c.header('Cache-Control', 'public, max-age=604800') // 7 days
+  return c.text(key, 200)
+}
+
+/**
+ * SEO-INDEXNOW-02: Dynamic key file endpoint for Option 1
+ * Serves key at /{INDEXNOW_KEY_FILE}.txt if configured
+ * Allows hosting key file with dynamic filename matching the key itself
+ */
+export function getIndexNowKeyFile(c: Context<{ Bindings: Env }>) {
+  const key = c.env.INDEXNOW_KEY
+  const keyFilename = c.env.INDEXNOW_KEY_FILE
+
+  if (!key || !keyFilename) {
+    return c.notFound()
+  }
+
+  // Return the key as plain UTF-8 text
+  c.header('Content-Type', 'text/plain; charset=utf-8')
+  c.header('Cache-Control', 'public, max-age=604800')
+  return c.text(key, 200)
 }
 
 /**
  * Mount SEO routes (public, no auth required)
+ * Supports both IndexNow options:
+ * - Option 1: /{key}.txt (if INDEXNOW_KEY_FILE env var is set)
+ * - Option 2: /.well-known/indexnow or /indexnow.txt
  */
 export function mountSeoRoutes(app: any) {
+  // Sitemaps
   app.get('/sitemap.xml', getDynamicSitemap)
   app.get('/sitemap-index.xml', getSitemapIndex)
   app.get('/sitemap-templates.xml', getDynamicSitemap)
+
+  // IndexNow key endpoints (try in order: Option 2 standard locations)
   app.get('/.well-known/indexnow', getIndexNowKey)
+  app.get('/indexnow.txt', getIndexNowKey)
+
+  // Option 1: Dynamic key file (if INDEXNOW_KEY_FILE configured)
+  // Example: if INDEXNOW_KEY_FILE="e8964e65669d47a69dd02b32bfe2a64e"
+  // serves at https://qesto.cc/e8964e65669d47a69dd02b32bfe2a64e.txt
+  app.get('/:keyFile.txt', getIndexNowKeyFile)
 }
