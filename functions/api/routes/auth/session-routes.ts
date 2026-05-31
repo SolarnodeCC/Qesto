@@ -3,6 +3,7 @@ import { signJwt } from '../../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
 import { authMiddleware, SESSION_COOKIE } from '../../middleware/auth'
 import { townhallEnabled } from '../../realtime'
+import { recordAuthAuditEvent } from '../../lib/audit'
 import { JWT_TTL_SECONDS } from './constants'
 import { setAuthSessionCookie } from './cookie'
 import type { AuthApp } from './types'
@@ -19,10 +20,29 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
 
   app.post('/logout', async (c) => {
     const token = c.req.header('authorization')?.replace(/^Bearer\s+/i, '') ?? null
+    let logoutUserId: string | null = null
     if (token && c.env.ACTIONS_KV) {
       const tokenHash = await hashSessionToken(token)
       await c.env.ACTIONS_KV.put(revokedSessionTokenKey(tokenHash), '1', { expirationTtl: JWT_TTL_SECONDS })
     }
+    try {
+      // Best-effort: decode sub from JWT for audit trail without full verification
+      if (token) {
+        const parts = token.split('.')
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+          logoutUserId = typeof payload.sub === 'string' ? payload.sub : null
+        }
+      }
+    } catch { /* ignore decode errors */ }
+    void recordAuthAuditEvent(c.env.DB, {
+      action: 'auth.logout',
+      actor_id: logoutUserId,
+      actor_ip: c.req.header('cf-connecting-ip') ?? null,
+      trace_id: c.get('trace_id'),
+      subject_id: logoutUserId ?? 'anonymous',
+      outcome: 'success',
+    })
     deleteCookie(c, SESSION_COOKIE, { path: '/' })
     return c.json({ ok: true, data: { cleared: true }, trace_id: c.get('trace_id') })
   })

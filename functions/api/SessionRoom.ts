@@ -75,6 +75,8 @@ const K_META = 'meta'
 const K_QUESTION = 'question'
 const K_QUESTIONS = 'questions'
 const K_QUESTION_INDEX = 'question_index'
+/** ENTERPRISE-POLISH §1c: pending open responses awaiting presenter approval. */
+const K_PENDING_RESPONSES = 'pending_responses'
 const K_COUNTS = 'counts'
 const K_VOTERS = 'voters'
 const K_STATUS = 'status'
@@ -110,6 +112,13 @@ type Meta = {
   paused?: boolean
   /** TOWNHALL (ADR-0044): moderation model for townhall-mode sessions. */
   townhallModeration?: TownhallModeration
+  /**
+   * Leaderboard display mode (ENTERPRISE-POLISH s4b).
+   * - 'names'   : show voterId / display name (default)
+   * - 'aliases' : replace identities with deterministic per-session pseudonyms
+   * - 'hidden'  : suppress leaderboard from participant view entirely
+   */
+  leaderboardDisplay?: 'names' | 'aliases' | 'hidden'
 }
 
 type Counts = Record<string, number>
@@ -229,6 +238,15 @@ export class SessionRoom implements DurableObject {
       townhall_moderate: async (ws, att, msg) => {
         if (msg.type !== 'townhall_moderate') return
         await this.handleTownhallModerate(ws, att, msg.data)
+      },
+      // ENTERPRISE-POLISH §1c — response moderation for open questions.
+      approve_response: async (ws, att, msg) => {
+        if (msg.type !== 'approve_response') return
+        await this.handleApproveResponse(ws, att, msg.data)
+      },
+      reject_response: async (ws, att, msg) => {
+        if (msg.type !== 'reject_response') return
+        await this.handleRejectResponse(ws, att, msg.data)
       },
     }
   }
@@ -917,7 +935,12 @@ export class SessionRoom implements DurableObject {
       ws.send(errorMessage('bad_energizer', 'Invalid energizer payload'))
       return
     }
-    const active = withScoreArtifacts(initialiseLiveEnergizer(energizer))
+    const energizerMeta = await this.ctx.storage.get<Meta>(K_META)
+    const active = withScoreArtifacts(
+      initialiseLiveEnergizer(energizer),
+      energizerMeta?.leaderboardDisplay ?? 'names',
+      energizerMeta?.sessionId ?? '',
+    )
     const nowMs = now()
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
     await this.ctx.storage.put(K_ENERGIZER_ACTIVATED_AT, nowMs)
@@ -1021,6 +1044,7 @@ export class SessionRoom implements DurableObject {
 
     const startedAt = active.startedAt ?? now()
     const correctValue = typeof active.correctIndex === 'number' ? options[active.correctIndex] : undefined
+    const qfMeta = await this.ctx.storage.get<Meta>(K_META)
     const answered: LiveEnergizerState = withScoreArtifacts({
       ...active,
       startedAt,
@@ -1034,7 +1058,7 @@ export class SessionRoom implements DurableObject {
           rank: 0,
         },
       ]),
-    })
+    }, qfMeta?.leaderboardDisplay ?? 'names', qfMeta?.sessionId ?? '')
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
     await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
     await this.recordEnergizerAudit('ws.energizer_answered', att, answered, { answer_count: answered.answers?.length ?? 0 })
@@ -1064,6 +1088,7 @@ export class SessionRoom implements DurableObject {
       return
     }
 
+    const tqMeta = await this.ctx.storage.get<Meta>(K_META)
     const answered: LiveEnergizerState = withScoreArtifacts({
       ...active,
       submissions: [
@@ -1075,7 +1100,7 @@ export class SessionRoom implements DurableObject {
           correct: value === question.options[question.correctIndex],
         },
       ],
-    })
+    }, tqMeta?.leaderboardDisplay ?? 'names', tqMeta?.sessionId ?? '')
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
     await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.submissions?.length ?? 0)
     await this.recordEnergizerAudit('ws.energizer_answered', att, answered, { answer_count: answered.submissions?.length ?? 0 })
@@ -1119,10 +1144,13 @@ export class SessionRoom implements DurableObject {
     }
     const currentIndex = active.currentIndex ?? 0
     const total = active.questions?.length ?? 0
+    const advMeta = await this.ctx.storage.get<Meta>(K_META)
+    const advDisplay = advMeta?.leaderboardDisplay ?? 'names'
+    const advSessionId = advMeta?.sessionId ?? ''
     const next: LiveEnergizerState =
       currentIndex + 1 >= total
-        ? withScoreArtifacts({ ...active, status: 'completed', currentIndex })
-        : withScoreArtifacts({ ...active, currentIndex: currentIndex + 1 })
+        ? withScoreArtifacts({ ...active, status: 'completed', currentIndex }, advDisplay, advSessionId)
+        : withScoreArtifacts({ ...active, currentIndex: currentIndex + 1 }, advDisplay, advSessionId)
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, next)
     if (next.status === 'completed') {
       await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
@@ -1167,6 +1195,14 @@ export class SessionRoom implements DurableObject {
 
     if (meta?.paused) {
       ws.send(errorMessage('paused', 'Voting is paused'))
+      return
+    }
+
+    // Server-side question timer enforcement (ENTERPRISE-POLISH s1d).
+    // Reject votes after questionExpiresAt so participants cannot bypass
+    // the fun-mode timer via a raw WebSocket message.
+    if (meta?.questionExpiresAt && nowMs > meta.questionExpiresAt) {
+      ws.send(errorMessage('question_closed', 'Time is up -- this question is no longer accepting votes'))
       return
     }
 
@@ -1216,17 +1252,38 @@ export class SessionRoom implements DurableObject {
     if (countKey) counts[countKey] = (counts[countKey] ?? 0) + 1
     if (countDecKey) counts[countDecKey] = Math.max(0, (counts[countDecKey] ?? 1) - 1)
 
+    // ENTERPRISE-POLISH §1c: buffer open responses when moderation is enabled.
+    if (question.kind === 'open' && question.moderated) {
+      // Revert the mutation applied above — the response goes to pending, not live.
+      delete voters[att.voterId]
+      if (countKey) counts[countKey] = Math.max(0, (counts[countKey] ?? 1) - 1)
+      type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
+      const pending = (await this.ctx.storage.get<PendingResponse[]>(K_PENDING_RESPONSES)) ?? []
+      pending.push({ id: crypto.randomUUID(), voterId: att.voterId, text: optionId, submittedAt: Date.now() })
+      await this.ctx.storage.put(K_PENDING_RESPONSES, pending)
+      // Notify presenter only — voter gets a 'pending_moderation' ack.
+      ws.send(JSON.stringify({ type: 'response_pending_moderation', data: { questionId: question.id } }))
+      const pendingMsg = JSON.stringify({ type: 'pending_responses_updated', data: { count: pending.length } })
+      for (const presWs of this.ctx.getWebSockets('role:presenter')) {
+        try { presWs.send(pendingMsg) } catch { /* ignore */ }
+      }
+      return
+    }
+
     await this.ctx.storage.put(K_VOTERS, voters)
     await this.ctx.storage.put(K_COUNTS, counts)
 
     await this.scheduleResultsBroadcast()
 
+    // OBS-VOTE-01: count = connected WebSocket participants at vote time,
+    // enabling latency-vs-session-scale correlation in Analytics Engine.
     writeEvent(this.env.METRICS_AE, {
       name: 'ws.vote_submitted',
       sessionId: meta?.sessionId,
       teamId: meta?.teamId,
       plan: meta?.plan ?? 'free',
       durationMs: Date.now() - t0,
+      count: this.ctx.getWebSockets().length,
       detail: att.colo ? `colo:${att.colo}` : undefined,
     })
 
@@ -1597,6 +1654,64 @@ export class SessionRoom implements DurableObject {
     const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
     const groups = await this.loadTownhallGroups()
     await this.broadcastTownhallItemChange({ item, wasAudienceVisible: false, isNew: true, rev, spotlightId, groups })
+  }
+
+  // ── Response moderation handlers (ENTERPRISE-POLISH §1c) ──────────────────
+
+  private async handleApproveResponse(
+    ws: WebSocket,
+    att: Attachment,
+    data: { questionId: string; responseId: string },
+  ): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can approve responses'))
+      return
+    }
+    type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
+    const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
+    if (!question || question.id !== data.questionId) {
+      ws.send(errorMessage('out_of_date', 'Question has changed'))
+      return
+    }
+    const pending = (await this.ctx.storage.get<PendingResponse[]>(K_PENDING_RESPONSES)) ?? []
+    const response = pending.find((r) => r.id === data.responseId)
+    if (!response) {
+      ws.send(errorMessage('not_found', 'Response not found in moderation queue'))
+      return
+    }
+    // Apply to live voters
+    const voters = await this.ensureVoters()
+    voters[response.voterId] = [response.text]
+    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    counts[response.text] = (counts[response.text] ?? 0) + 1
+    // Remove from pending
+    const nextPending = pending.filter((r) => r.id !== data.responseId)
+    await this.ctx.storage.put(K_VOTERS, voters)
+    await this.ctx.storage.put(K_COUNTS, counts)
+    await this.ctx.storage.put(K_PENDING_RESPONSES, nextPending)
+    await this.scheduleResultsBroadcast()
+    // Notify presenter of updated queue size
+    ws.send(JSON.stringify({ type: 'pending_responses_updated', data: { count: nextPending.length } }))
+  }
+
+  private async handleRejectResponse(
+    ws: WebSocket,
+    att: Attachment,
+    data: { questionId: string; responseId: string },
+  ): Promise<void> {
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only presenter can reject responses'))
+      return
+    }
+    type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
+    const pending = (await this.ctx.storage.get<PendingResponse[]>(K_PENDING_RESPONSES)) ?? []
+    const nextPending = pending.filter((r) => r.id !== data.responseId)
+    if (nextPending.length === pending.length) {
+      ws.send(errorMessage('not_found', 'Response not found in moderation queue'))
+      return
+    }
+    await this.ctx.storage.put(K_PENDING_RESPONSES, nextPending)
+    ws.send(JSON.stringify({ type: 'pending_responses_updated', data: { count: nextPending.length } }))
   }
 
   private async handleTownhallUpvote(ws: WebSocket, att: Attachment, data: { itemId: string }): Promise<void> {
@@ -1971,17 +2086,25 @@ function rankTeamQuizScores(submissions: NonNullable<LiveEnergizerState['submiss
     .map((score, index) => ({ ...score, rank: index + 1 }))
 }
 
-function withScoreArtifacts(energizer: LiveEnergizerState): LiveEnergizerState {
+function withScoreArtifacts(
+  energizer: LiveEnergizerState,
+  display: 'names' | 'aliases' | 'hidden' = 'names',
+  sessionId = '',
+): LiveEnergizerState {
   if (energizer.kind === 'quick_finger') {
-    return withQuickFingerScoreArtifacts(energizer)
+    return withQuickFingerScoreArtifacts(energizer, display, sessionId)
   }
   if (energizer.kind === 'team_quiz') {
-    return withTeamQuizScoreArtifacts(energizer)
+    return withTeamQuizScoreArtifacts(energizer, display, sessionId)
   }
   return energizer
 }
 
-function withQuickFingerScoreArtifacts(energizer: LiveEnergizerState): LiveEnergizerState {
+function withQuickFingerScoreArtifacts(
+  energizer: LiveEnergizerState,
+  display: 'names' | 'aliases' | 'hidden' = 'names',
+  sessionId = '',
+): LiveEnergizerState {
   const answers = energizer.answers ?? []
   const startedAt = energizer.startedAt ?? 0
   const totals = new Map<string, number>()
@@ -1998,11 +2121,15 @@ function withQuickFingerScoreArtifacts(energizer: LiveEnergizerState): LiveEnerg
   return {
     ...energizer,
     badges: Object.fromEntries(badges),
-    leaderboard: buildLeaderboard(totals, badges),
+    leaderboard: buildLeaderboard(totals, badges, display, sessionId),
   }
 }
 
-function withTeamQuizScoreArtifacts(energizer: LiveEnergizerState): LiveEnergizerState {
+function withTeamQuizScoreArtifacts(
+  energizer: LiveEnergizerState,
+  display: 'names' | 'aliases' | 'hidden' = 'names',
+  sessionId = '',
+): LiveEnergizerState {
   const submissions = energizer.submissions ?? []
   const startedAt = energizer.startedAt ?? 0
   const scores = rankTeamQuizScores(submissions)
@@ -2030,7 +2157,7 @@ function withTeamQuizScoreArtifacts(energizer: LiveEnergizerState): LiveEnergize
     ...energizer,
     scores,
     badges: Object.fromEntries(badges),
-    leaderboard: buildLeaderboard(totals, badges),
+    leaderboard: buildLeaderboard(totals, badges, display, sessionId),
   }
 }
 
@@ -2048,17 +2175,36 @@ function addBadge(
   badges.set(voterId, [...existing, { id, kind, label, awardedAt }])
 }
 
+// Deterministic alias word lists for leaderboard pseudonymisation.
+// Same voter always gets the same alias within a session, different across sessions.
+const ALIAS_ADJECTIVES = ['Swift', 'Bold', 'Calm', 'Keen', 'Wise', 'Bright', 'Brave', 'Quick', 'Sharp', 'Cool']
+const ALIAS_NOUNS = ['Falcon', 'Tiger', 'River', 'Cloud', 'Stone', 'Spark', 'Comet', 'Eagle', 'Frost', 'Blaze']
+
+function deterministicAlias(voterId: string, sessionId: string): string {
+  let h = 5381
+  const s = `${sessionId}:${voterId}`
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i)
+  const adj = ALIAS_ADJECTIVES[Math.abs(h) % ALIAS_ADJECTIVES.length]
+  const noun = ALIAS_NOUNS[Math.abs(h >> 4) % ALIAS_NOUNS.length]
+  return `${adj} ${noun}`
+}
+
 function buildLeaderboard(
   totals: Map<string, number>,
   badges: Map<string, NonNullable<LiveEnergizerState['badges']>[string]>,
+  display: 'names' | 'aliases' | 'hidden' = 'names',
+  sessionId = '',
 ): NonNullable<LiveEnergizerState['leaderboard']> {
+  if (display === 'hidden') return []
   return [...totals.entries()]
     .map(([voterId, score]) => ({ voterId, score }))
     .sort((a, b) => b.score - a.score || a.voterId.localeCompare(b.voterId))
     .slice(0, 10)
     .map((entry, index) => ({
-      voterId: entry.voterId,
-      label: `Player ${index + 1}`,
+      voterId: display === 'aliases' ? deterministicAlias(entry.voterId, sessionId) : entry.voterId,
+      label: display === 'aliases'
+        ? deterministicAlias(entry.voterId, sessionId)
+        : `Player ${index + 1}`,
       score: entry.score,
       rank: index + 1,
       badges: badges.get(entry.voterId) ?? [],

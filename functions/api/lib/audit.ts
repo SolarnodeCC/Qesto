@@ -25,8 +25,19 @@ export type AuditAction =
   | 'team.role.assign'
   | 'team.role.unassign'
   | 'team.permission_denied'
+  // Auth events (SOC 2 CC6.1 / CC6.3)
   | 'auth.login'
+  | 'auth.login_failed'
   | 'auth.logout'
+  | 'auth.signup'
+  | 'auth.magic_link_requested'
+  | 'auth.magic_link_consumed'
+  | 'auth.password_reset_requested'
+  | 'auth.password_reset_completed'
+  | 'auth.sso_initiated'
+  | 'auth.sso_completed'
+  | 'auth.sso_failed'
+  | 'auth.gdpr_deletion'
   | 'billing.plan_change'
   | 'insights.generate'
   | 'energizer.create'
@@ -59,6 +70,55 @@ export interface AuditContext {
   actor_ip?: string
   trace_id?: string
   idempotency_key?: string
+}
+
+/**
+ * Write an auth audit event directly to D1 without requiring middleware user
+ * context. Use this in auth route handlers where the user is not yet
+ * authenticated (login, magic-link, SSO, password reset, signup).
+ *
+ * SOC 2 CC6.1 / CC6.3: every authentication attempt -- success or failure --
+ * must be recorded with actor_ip and outcome.
+ */
+export async function recordAuthAuditEvent(
+  db: D1Database,
+  params: {
+    action: AuditAction
+    actor_id?: string | null
+    actor_ip?: string | null
+    trace_id?: string | null
+    subject_id: string
+    outcome: 'success' | 'failure'
+    detail?: string
+  },
+): Promise<void> {
+  try {
+    const after = JSON.stringify({
+      outcome: params.outcome,
+      ...(params.detail ? { detail: params.detail } : {}),
+    })
+    await db
+      .prepare(
+        `INSERT INTO audit_events
+         (id, ts, actor_id, actor_ip, action, subject_type, subject_id,
+          before_snapshot, after_snapshot, trace_id, idempotency_key)
+         VALUES (?1, ?2, ?3, ?4, ?5, 'auth', ?6, '{}', ?7, ?8, NULL)
+         ON CONFLICT DO NOTHING`,
+      )
+      .bind(
+        crypto.randomUUID(),
+        Date.now(),
+        params.actor_id ?? null,
+        params.actor_ip ?? 'unknown',
+        params.action,
+        params.subject_id,
+        after,
+        params.trace_id ?? 'unknown',
+      )
+      .run()
+  } catch (err) {
+    console.error('[audit] recordAuthAuditEvent failed:', (err as Error).message)
+  }
 }
 
 /**

@@ -13,6 +13,7 @@ import { setAuthSessionCookie } from './cookie'
 import { authRedirectSamlFailed } from './errors'
 import type { AuthApp } from './types'
 import { safeLogContext } from '../../lib/log'
+import { recordAuthAuditEvent } from '../../lib/audit'
 
 export function registerSamlRoutes(app: AuthApp): void {
   app.get('/saml/metadata', (c) => {
@@ -82,6 +83,14 @@ export function registerSamlRoutes(app: AuthApp): void {
         assertion = parseAssertion(samlResponse, expectedAudience)
       } catch (err) {
         console.error(`[auth:saml] assertion parse failed: ${(err as Error).message}`)
+        void recordAuthAuditEvent(c.env.DB, {
+          action: 'auth.sso_failed',
+          actor_ip: c.req.header('cf-connecting-ip') ?? null,
+          trace_id: c.get('trace_id'),
+          subject_id: 'saml_assertion',
+          outcome: 'failure',
+          detail: 'assertion_parse_failed',
+        })
         return c.redirect(`${c.env.PAGES_URL}/login?error=saml_invalid`, 302)
       }
 
@@ -107,6 +116,15 @@ export function registerSamlRoutes(app: AuthApp): void {
 
       const jwt = await signJwt({ sub: userId, email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
+      void recordAuthAuditEvent(c.env.DB, {
+        action: 'auth.sso_completed',
+        actor_id: userId,
+        actor_ip: c.req.header('cf-connecting-ip') ?? null,
+        trace_id: c.get('trace_id'),
+        subject_id: userId,
+        outcome: 'success',
+        detail: 'saml',
+      })
       return c.redirect(`${c.env.PAGES_URL}/`, 302)
     } catch (err) {
       return authRedirectSamlFailed(c, err, '[auth] saml/callback')

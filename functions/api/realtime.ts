@@ -201,6 +201,9 @@ export type ClientMessage =
       data: { itemId: string; action: TownhallModerateAction; groupParentId?: string }
       timestamp: number
     }
+  // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
+  | { v?: LiveProtocolVersion; type: 'approve_response'; data: { questionId: string; responseId: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'reject_response'; data: { questionId: string; responseId: string }; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
@@ -208,6 +211,12 @@ export type LiveQuestion = {
   kind: QuestionKind
   prompt: string
   options: PollOption[]
+  /**
+   * ENTERPRISE-POLISH §1c — response moderation for open questions.
+   * When true, open-question responses are buffered in the DO and only
+   * broadcast after the presenter approves them.
+   */
+  moderated?: boolean
 }
 
 export type LiveSessionSummary = {

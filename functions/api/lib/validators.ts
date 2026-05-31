@@ -175,6 +175,19 @@ export const ClientMessageSchema = z.union([
     }),
     timestamp: z.number(),
   }),
+  // ENTERPRISE-POLISH s1c: presenter approves/rejects buffered open responses.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('approve_response'),
+    data: z.object({ questionId: z.string().min(1), responseId: z.string().min(1) }),
+    timestamp: z.number(),
+  }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('reject_response'),
+    data: z.object({ questionId: z.string().min(1), responseId: z.string().min(1) }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>
