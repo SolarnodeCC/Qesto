@@ -233,7 +233,20 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
 
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
-        controller.enqueue(sse('ready', { trace_id: traceId, groundingHash }))
+        // ENTERPRISE-POLISH s3a: include AI transparency metadata in the ready
+        // event so the consent UI can show model name + privacy policy link.
+        controller.enqueue(sse('ready', {
+          trace_id: traceId,
+          groundingHash,
+          ai: {
+            model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+            provider: 'Cloudflare Workers AI',
+            dataRetention: 'none',
+            inferenceRegion: 'EU-edge',
+            thirdPartyEgress: false,
+            policyUrl: 'https://qesto.cc/trust/gdpr#ai',
+          },
+        }))
         try {
           const inferenceStart = Date.now()
           const result = await generateQuestions(c.env.AI, { ...parsed.data, language })

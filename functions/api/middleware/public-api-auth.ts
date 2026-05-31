@@ -13,6 +13,7 @@ import {
   type ApiKeyRecord,
 } from '../lib/api-keys'
 import { writeEvent } from '../lib/observability'
+import { incrementAndCheckThreshold, shouldSendQuotaNotification } from '../lib/tenant-quota'
 import type { Env } from '../types'
 
 export type ApiKeyVars = { apiKey: ApiKeyRecord }
@@ -66,6 +67,25 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
     teamId: parsed.data.teamId,
     detail: `${c.req.method} ${c.req.path}`,
   })
+
+  // ENTERPRISE-POLISH s8a: quota overage threshold detection.
+  // Fire at 80% (warn) and 100% (exceeded) -- once per day per level.
+  try {
+    const quotaKv = c.env.ACTIONS_KV ?? c.env.INTEGRATIONS_KV
+    if (quotaKv) {
+      const { threshold } = await incrementAndCheckThreshold(quotaKv, parsed.data.teamId)
+      if (threshold !== 'ok') {
+        const shouldNotify = await shouldSendQuotaNotification(quotaKv, parsed.data.teamId, threshold)
+        if (shouldNotify) {
+          writeEvent(c.env.METRICS_AE, {
+            name: 'api.request',
+            teamId: parsed.data.teamId,
+            detail: `quota_${threshold}`,
+          })
+        }
+      }
+    }
+  } catch { /* fail-open: quota tracking must not block requests */ }
 
   c.set('apiKey', updated)
   await next()

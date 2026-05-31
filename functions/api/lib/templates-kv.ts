@@ -21,6 +21,15 @@ export function byLangKey(lang: Lang): string {
   return `templates:by-lang:${lang}`
 }
 
+// ENTERPRISE-POLISH s6a: org-scope index key
+export function byTeamKey(teamId: string): string {
+  return `templates:by-team:${teamId}`
+}
+
+export function byOrgKey(orgId: string): string {
+  return `templates:by-org:${orgId}`
+}
+
 export async function getTemplate(
   kv: KVNamespace,
   templateId: string
@@ -33,7 +42,7 @@ export async function getTemplate(
 
 export async function listTemplates(
   kv: KVNamespace,
-  filters?: { industry?: Industry; theme?: Theme; lang?: Lang }
+  filters?: { industry?: Industry; theme?: Theme; lang?: Lang; scope?: string; teamId?: string }
 ): Promise<TemplateRecord[]> {
   // Fetch the main index to get all template IDs
   const indexRaw = await kv.get('templates:index', 'json')
@@ -51,6 +60,9 @@ export async function listTemplates(
     if (filters?.theme && template.theme !== filters.theme) continue
     // For lang filter, check if template has content in that language
     if (filters?.lang && !template.title[filters.lang]) continue
+    // Org-scope filter: only return templates accessible to this team/org
+    if (filters?.scope && template.scope !== filters.scope) continue
+    if (filters?.teamId && template.ownedByTeamId && template.ownedByTeamId !== filters.teamId) continue
 
     templates.push(template)
   }

@@ -201,6 +201,9 @@ export type ClientMessage =
       data: { itemId: string; action: TownhallModerateAction; groupParentId?: string }
       timestamp: number
     }
+  // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
+  | { v?: LiveProtocolVersion; type: 'approve_response'; data: { questionId: string; responseId: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'reject_response'; data: { questionId: string; responseId: string }; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
@@ -208,6 +211,12 @@ export type LiveQuestion = {
   kind: QuestionKind
   prompt: string
   options: PollOption[]
+  /**
+   * ENTERPRISE-POLISH §1c — response moderation for open questions.
+   * When true, open-question responses are buffered in the DO and only
+   * broadcast after the presenter approves them.
+   */
+  moderated?: boolean
 }
 
 export type LiveSessionSummary = {
@@ -240,6 +249,12 @@ export type ServerMessage =
         expiresAt: number | null
         /** Aggregate mood for open questions (presenter only, AI-SENTIMENT-01). */
         sentiment: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
+        /**
+         * ENTERPRISE-POLISH s2a: set to true when a presenter reconnects to a
+         * session they own. The frontend uses this to auto-route back to the run
+         * screen without requiring manual navigation.
+         */
+        presenterReconnect?: boolean
       }
       timestamp: number
     }
@@ -339,7 +354,13 @@ export type ServerMessage =
   | {
       v?: LiveProtocolVersion
       type: 'townhall_spotlight_changed'
-      data: { spotlightId: string | null; rev: number }
+      data: {
+        spotlightId: string | null
+        rev: number
+        /** Full item included so the frontend can render the now-answering card
+         *  without a state lookup. Null when spotlight is cleared. */
+        item: TownhallBoardItem | null
+      }
       timestamp: number
     }
   | {
