@@ -7,7 +7,7 @@ import PageSeo from '../../components/PageSeo'
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 text-sm border border-pulse-300 bg-white hover:border-pulse-500 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
