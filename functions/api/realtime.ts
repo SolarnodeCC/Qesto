@@ -249,6 +249,12 @@ export type ServerMessage =
         expiresAt: number | null
         /** Aggregate mood for open questions (presenter only, AI-SENTIMENT-01). */
         sentiment: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
+        /**
+         * ENTERPRISE-POLISH s2a: set to true when a presenter reconnects to a
+         * session they own. The frontend uses this to auto-route back to the run
+         * screen without requiring manual navigation.
+         */
+        presenterReconnect?: boolean
       }
       timestamp: number
     }
@@ -348,7 +354,13 @@ export type ServerMessage =
   | {
       v?: LiveProtocolVersion
       type: 'townhall_spotlight_changed'
-      data: { spotlightId: string | null; rev: number }
+      data: {
+        spotlightId: string | null
+        rev: number
+        /** Full item included so the frontend can render the now-answering card
+         *  without a state lookup. Null when spotlight is cleared. */
+        item: TownhallBoardItem | null
+      }
       timestamp: number
     }
   | {

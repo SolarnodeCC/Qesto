@@ -1,5 +1,5 @@
 /**
- * ADR-0032 / TENANT-QUOTA-01 — per-team API and LIVE session limits.
+ * ADR-0032 / TENANT-QUOTA-01 -- per-team API and LIVE session limits.
  */
 import { readKvJson, writeKvJson } from './kv'
 

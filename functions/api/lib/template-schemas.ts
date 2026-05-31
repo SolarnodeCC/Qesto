@@ -61,6 +61,17 @@ export const TemplateRecord = z.object({
   usageCount: z.number(),
   createdAt: z.string(),
   updatedAt: z.string(),
+
+  // ENTERPRISE-POLISH s6a: org-level sharing scope.
+  // personal = only creator; team = all team members; organization = all teams in org.
+  scope: z.enum(['personal', 'team', 'organization']).optional(),
+  // The team/org that owns this template (required for team/org scope).
+  ownedByTeamId: z.string().optional(),
+
+  // ENTERPRISE-POLISH s6b: versioning.
+  // Starts at 1; incremented on each update; parentId links to the prior version.
+  version: z.number().optional(),
+  parentId: z.string().optional(),
 })
 export type TemplateRecord = z.infer<typeof TemplateRecord>
 

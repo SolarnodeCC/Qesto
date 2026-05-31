@@ -1416,6 +1416,25 @@ export class SessionRoom implements DurableObject {
     const pv = (att.protocolVersion ?? LIVE_PROTOCOL_VERSION) as unknown as LiveProtocolVersion
     const isTownhall = !!meta.townhallModeration
     const features = isTownhall ? [...liveProtocolFeatures(pv), TOWNHALL_FEATURE] : liveProtocolFeatures(pv)
+    // ENTERPRISE-POLISH s2a: detect presenter reconnect.
+    // If this is a presenter and at least one other presenter WS is already open
+    // (or the session was started by this user), flag the init so the frontend
+    // can auto-route back to the run screen.
+    const isPresenterReconnect =
+      att.role === 'presenter' &&
+      meta.ownerId === att.voterId &&
+      this.ctx.getWebSockets('role:presenter').some((s) => s !== ws)
+      // Also true on first reconnect after hibernation (no open sockets yet):
+      // we rely on ownerId match as the signal in that case too.
+      || (att.role === 'presenter' && meta.ownerId === att.voterId &&
+          this.ctx.getWebSockets('role:presenter').length === 0 &&
+          (await this.ctx.storage.get<number>('presenter_first_connected')) !== undefined)
+
+    // Record that a presenter has connected at least once
+    if (att.role === 'presenter' && meta.ownerId === att.voterId) {
+      await this.ctx.storage.put('presenter_first_connected', Date.now(), { allowConcurrency: true })
+    }
+
     ws.send(
       serverMessage({
         type: 'init',
@@ -1433,6 +1452,7 @@ export class SessionRoom implements DurableObject {
           energizer,
           expiresAt: meta.questionExpiresAt ?? null,
           sentiment,
+          ...(isPresenterReconnect ? { presenterReconnect: true } : {}),
         },
         timestamp: now(),
       }),
@@ -1791,9 +1811,19 @@ export class SessionRoom implements DurableObject {
           await this.ctx.storage.put(TOWNHALL_KEYS.spotlitHistory, [...history, outcome.spotlightId])
         }
       }
+      // ENTERPRISE-POLISH s11c: include full item in spotlight broadcast so the
+      // frontend can render the 'now answering' card without a state lookup.
+      let spotlitItem: import('./realtime').TownhallBoardItem | null = null
+      if (outcome.spotlightId) {
+        const rawItem = await this.loadTownhallItem(outcome.spotlightId)
+        if (rawItem) {
+          const groups = await this.loadTownhallGroups()
+          spotlitItem = await this.projectTownhallItem(rawItem, outcome.spotlightId, groups)
+        }
+      }
       const frame = serverMessage({
         type: 'townhall_spotlight_changed',
-        data: { spotlightId: outcome.spotlightId, rev },
+        data: { spotlightId: outcome.spotlightId, rev, item: spotlitItem },
         timestamp: now(),
       })
       for (const s of this.ctx.getWebSockets()) {

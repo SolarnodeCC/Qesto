@@ -39,7 +39,13 @@ import {
   redactWebhookSecret,
   removeFromTeamIndex,
   saveWebhookConfig,
+  hmacSha256Hex,
 } from '../lib/webhooks'
+import {
+  listWebhookDlq,
+  retryWebhookDlqEntry,
+  buildDlqDeliveryFn,
+} from '../lib/webhook-dlq'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -247,6 +253,45 @@ export function mountWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     const deliveries = await listDeliveries(kv, webhookId)
     return ok(c, { deliveries })
+  })
+
+  // GET /api/teams/:id/webhooks/:webhookId/dlq -- list dead-letter entries
+  // ENTERPRISE-POLISH s7b: team owners can inspect failed deliveries
+  app.get('/:id/webhooks/:webhookId/dlq', async (c) => {
+    const kv = integrationsKvOrFail(c)
+    if (!kv) return fail(c, 'integrations_disabled', 'Integrations KV not configured', 503)
+    const user = c.get('user')
+    const teamId = c.req.param('id')
+    const team = await loadTeam(c.env.TEAMS_KV, teamId)
+    if (!team) return fail(c, 'not_found', 'Team not found', 404)
+    if (!isOwnerOrAdmin(team, user.sub)) return fail(c, 'forbidden', 'Team owner or admin required', 403)
+    const entries = await listWebhookDlq(kv, teamId)
+    return ok(c, { entries })
+  })
+
+  // POST /api/teams/:id/webhooks/:webhookId/dlq/:entryId/retry
+  // ENTERPRISE-POLISH s7b: team owners can manually retry a failed delivery
+  app.post('/:id/webhooks/:webhookId/dlq/:entryId/retry', async (c) => {
+    const kv = integrationsKvOrFail(c)
+    if (!kv) return fail(c, 'integrations_disabled', 'Integrations KV not configured', 503)
+    const user = c.get('user')
+    const teamId = c.req.param('id')
+    const webhookId = c.req.param('webhookId')
+    const entryId = c.req.param('entryId')
+    const team = await loadTeam(c.env.TEAMS_KV, teamId)
+    if (!team) return fail(c, 'not_found', 'Team not found', 404)
+    if (!isOwnerOrAdmin(team, user.sub)) return fail(c, 'forbidden', 'Team owner or admin required', 403)
+    const config = await getWebhookConfig(kv, teamId, webhookId)
+    if (!config) return fail(c, 'not_found', 'Webhook not found', 404)
+    const deliver = await buildDlqDeliveryFn(
+      { url: config.url, secret: config.secret },
+      hmacSha256Hex,
+    )
+    const result = await retryWebhookDlqEntry(kv, teamId, entryId, deliver)
+    if (!result.ok) {
+      return fail(c, result.reason, result.error ?? result.reason, result.reason === 'entry_not_found' ? 404 : 502)
+    }
+    return ok(c, { retried: true, delivered: result.delivered })
   })
 
   parent.route('/api/teams', app)
