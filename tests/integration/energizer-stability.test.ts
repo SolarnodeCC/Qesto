@@ -1,8 +1,8 @@
 // Integration tests for LIVE_ENERGIZERS_ENABLED stability (timeout, permissions, broadcast).
 // Covers: activation, timeout auto-completion, permission checks, answer handling, failure modes.
 
-import { describe, expect, it, beforeEach, vi } from 'vitest'
-import type { LiveEnergizerState } from '../../functions/api/realtime'
+import { describe, expect, it } from 'vitest'
+import type { LiveEnergizerState, LiveTeamQuizSubmission } from '../../functions/api/realtime'
 import type { Env } from '../../functions/api/types'
 
 const SECRET = 'test-secret-at-least-32-bytes!'
@@ -25,8 +25,9 @@ function makeEnergizerState(): LiveEnergizerState {
   return {
     id: 'energizer-123',
     kind: 'quick_finger',
+    title: 'Quick Finger',
     prompt: 'What is your name?',
-    status: 'draft',
+    status: 'active',
     startedAt: Date.now(),
     answers: [],
     leaderboard: [],
@@ -37,15 +38,17 @@ function makeTeamQuizEnergizer(): LiveEnergizerState {
   return {
     id: 'quiz-123',
     kind: 'team_quiz',
+    title: 'Team Quiz',
     prompt: 'Team Quiz',
-    status: 'draft',
+    status: 'active',
     startedAt: Date.now(),
     currentIndex: 0,
     questions: [
-      { id: 'q1', prompt: 'Question 1?', options: ['A', 'B', 'C'] },
-      { id: 'q2', prompt: 'Question 2?', options: ['X', 'Y', 'Z'] },
+      { prompt: 'Question 1?', options: ['A', 'B', 'C'], correctIndex: 0 },
+      { prompt: 'Question 2?', options: ['X', 'Y', 'Z'], correctIndex: 1 },
     ],
     answers: [],
+    submissions: [],
     leaderboard: [],
   }
 }
@@ -54,19 +57,16 @@ function makeTeamQuizEnergizer(): LiveEnergizerState {
 
 describe('Energizer Stability', () => {
   describe('Activation and state', () => {
-    it('energizer transitions to active state on activation', async () => {
+    it('energizer transitions between active and completed states', async () => {
       const energizer = makeEnergizerState()
-      expect(energizer.status).toBe('draft')
-
-      // Simulate activation
-      energizer.status = 'active'
       expect(energizer.status).toBe('active')
+
+      // Simulate completion
+      energizer.status = 'completed'
+      expect(energizer.status).toBe('completed')
     })
 
     it('energizer can be activated by presenter only', async () => {
-      const env = makeEnv({ LIVE_ENERGIZERS_ENABLED: 'true' })
-      const energizer = makeEnergizerState()
-
       // Presenter role can activate
       const presenterRole = 'presenter'
       expect(presenterRole).toBe('presenter')
@@ -135,13 +135,12 @@ describe('Energizer Stability', () => {
       const speedMs = 1234
 
       // Record answer
-      energizer.answers = [
-        { voterId, value: answer, correct: true, speedMs, rank: 1 },
-      ]
+      const answers = [{ voterId, value: answer, correct: true, speedMs, rank: 1 }]
+      energizer.answers = answers
 
-      expect(energizer.answers).toHaveLength(1)
-      expect(energizer.answers[0].voterId).toBe(voterId)
-      expect(energizer.answers[0].speedMs).toBeGreaterThan(0)
+      expect(answers).toHaveLength(1)
+      expect(answers[0].voterId).toBe(voterId)
+      expect(answers[0].speedMs).toBeGreaterThan(0)
     })
 
     it('prevents duplicate answers from same voter', async () => {
@@ -149,12 +148,11 @@ describe('Energizer Stability', () => {
       energizer.status = 'active'
 
       const voterId = 'voter-456'
-      energizer.answers = [
-        { voterId, value: 'Alice', correct: true, speedMs: 1234, rank: 1 },
-      ]
+      const answers = [{ voterId, value: 'Alice', correct: true, speedMs: 1234, rank: 1 }]
+      energizer.answers = answers
 
       // Attempt duplicate answer
-      const isDuplicate = energizer.answers.some((a) => a.voterId === voterId)
+      const isDuplicate = answers.some((a) => a.voterId === voterId)
       expect(isDuplicate).toBe(true)
     })
 
@@ -166,15 +164,16 @@ describe('Energizer Stability', () => {
       const voterId = 'voter-789'
       const answer = 'A'
 
-      // Record answer for question 1
-      energizer.answers = [
-        { voterId, questionIndex: 0, value: answer, correct: true, speedMs: 5000 },
+      // Record submission for question 1
+      const submissions: LiveTeamQuizSubmission[] = [
+        { voterId, questionIndex: 0, value: answer, correct: true },
       ]
+      energizer.submissions = submissions
 
-      expect(energizer.answers).toHaveLength(1)
+      expect(submissions).toHaveLength(1)
 
       // Same voter attempts second answer for same question
-      const isDuplicateForQuestion = energizer.answers.some(
+      const isDuplicateForQuestion = submissions.some(
         (a) => a.voterId === voterId && a.questionIndex === 0,
       )
       expect(isDuplicateForQuestion).toBe(true)
@@ -187,32 +186,28 @@ describe('Energizer Stability', () => {
 
       const voterId = 'voter-789'
 
-      // Answer to question 1
-      energizer.answers = [
-        { voterId, questionIndex: 0, value: 'A', correct: true, speedMs: 5000 },
+      // Submission to question 1
+      const submissions: LiveTeamQuizSubmission[] = [
+        { voterId, questionIndex: 0, value: 'A', correct: true },
       ]
 
       // Advance to question 2
       energizer.currentIndex = 1
 
-      // Answer to question 2 (different question, same voter is allowed)
-      energizer.answers.push({ voterId, questionIndex: 1, value: 'X', correct: true, speedMs: 3000 })
+      // Submission to question 2 (different question, same voter is allowed)
+      submissions.push({ voterId, questionIndex: 1, value: 'X', correct: true })
+      energizer.submissions = submissions
 
-      expect(energizer.answers).toHaveLength(2)
-      expect(energizer.answers[0].questionIndex).toBe(0)
-      expect(energizer.answers[1].questionIndex).toBe(1)
+      expect(submissions).toHaveLength(2)
+      expect(submissions[0].questionIndex).toBe(0)
+      expect(submissions[1].questionIndex).toBe(1)
     })
 
     it('no answers accepted when no energizer is active', async () => {
       const energizer: LiveEnergizerState | null = null
 
-      const voterId = 'voter-456'
-      const answer = 'Alice'
-
-      if (!energizer || energizer.status !== 'active') {
-        // Return error: no_energizer
-        expect(energizer).toBeNull()
-      }
+      // No active energizer → submissions must be rejected with no_energizer.
+      expect(energizer).toBeNull()
     })
   })
 
@@ -235,7 +230,7 @@ describe('Energizer Stability', () => {
       energizer.currentIndex = 1 // Last question (0-indexed)
 
       const total = energizer.questions?.length ?? 0
-      const nextIdx = energizer.currentIndex + 1
+      const nextIdx = (energizer.currentIndex ?? 0) + 1
 
       if (nextIdx >= total) {
         energizer.status = 'completed'
@@ -245,9 +240,6 @@ describe('Energizer Stability', () => {
     })
 
     it('only presenter can advance energizer', async () => {
-      const energizer = makeTeamQuizEnergizer()
-      energizer.status = 'active'
-
       const presenterRole = 'presenter'
       const voterRole = 'voter'
 
@@ -281,7 +273,6 @@ describe('Energizer Stability', () => {
 
   describe('Permission enforcement', () => {
     it('voter cannot activate energizer', async () => {
-      const env = makeEnv({ LIVE_ENERGIZERS_ENABLED: 'true' })
       const voterRole = 'voter'
 
       // Check role
@@ -302,10 +293,11 @@ describe('Energizer Stability', () => {
   describe('Broadcast behavior', () => {
     it('energizer_state message includes current leaderboard', async () => {
       const energizer = makeEnergizerState()
-      energizer.leaderboard = [
-        { voterId: 'voter-1', rank: 1, score: 100, speedMs: 1000 },
-        { voterId: 'voter-2', rank: 2, score: 80, speedMs: 1500 },
+      const leaderboard = [
+        { voterId: 'voter-1', label: 'voter-1', rank: 1, score: 100, badges: [] },
+        { voterId: 'voter-2', label: 'voter-2', rank: 2, score: 80, badges: [] },
       ]
+      energizer.leaderboard = leaderboard
 
       const msg = {
         type: 'energizer_state',
@@ -314,7 +306,7 @@ describe('Energizer Stability', () => {
       }
 
       expect(msg.data.energizer.leaderboard).toHaveLength(2)
-      expect(msg.data.energizer.leaderboard[0].rank).toBe(1)
+      expect(leaderboard[0].rank).toBe(1)
     })
 
     it('presenter receives updated sentiment alongside energizer', async () => {

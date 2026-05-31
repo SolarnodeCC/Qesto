@@ -1,7 +1,7 @@
 // E2E tests for SENTIMENT_ENABLED and LIVE_ENERGIZERS_ENABLED.
 // Tests full flow: create session, add energizer, start session, interact with energizer, verify sentiment.
 
-import { test, expect } from '@playwright/test'
+import { test, expect, type BrowserContext, type Page } from '@playwright/test'
 import {
   createUniqueEmail,
   expectAuthenticatedDashboard,
@@ -236,7 +236,7 @@ test.describe('Sentiment & Energizers E2E', () => {
 
     // Verify participant sees next state
     await participantPage.waitForTimeout(1000)
-    await expect(participantPage).toHaveTitleContaining('Qesto')
+    await expect(participantPage).toHaveTitle(/Qesto/)
 
     // CLEANUP
     await closeSession(page, session.id)
@@ -268,8 +268,8 @@ test.describe('Sentiment & Energizers E2E', () => {
     await startSession(page, session.id)
 
     // Launch 10 concurrent participants
-    const contexts = []
-    const promises = []
+    const contexts: Array<{ context: BrowserContext; page: Page }> = []
+    const promises: Array<Promise<void>> = []
 
     for (let i = 0; i < 10; i++) {
       const promise = (async () => {
@@ -316,7 +316,7 @@ test.describe('Sentiment & Energizers E2E', () => {
     // Verify no session errors
     const consoleLogs: string[] = []
     page.on('console', (msg) => {
-      if (msg.type() === 'error') consoleLogs.logs.push(msg.text())
+      if (msg.type() === 'error') consoleLogs.push(msg.text())
     })
 
     // CLEANUP

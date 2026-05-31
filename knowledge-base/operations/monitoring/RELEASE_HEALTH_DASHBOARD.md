@@ -94,7 +94,7 @@ Run the full percentile query from `LATENCY_BENCHMARKS.md`:
 
 ### 6. Slack Integration (Sprint 32)
 
-Once `INTEGRATION_ENABLED=1`:
+Once `INTEGRATION_ENABLED=true`:
 
 | Signal | Source | Alert |
 |--------|--------|-------|
@@ -127,7 +127,7 @@ Once `INTEGRATION_ENABLED=1`:
 - [ ] Cohort 2 complete with 0 blocking incidents (48h monitoring window)
 - [ ] p95 vote latency confirmed ≤ 50ms in Analytics Engine
 - [ ] Reconnect rate < 5% in Analytics Engine
-- [ ] Slack integration smoke (if `INTEGRATION_ENABLED=1`)
+- [ ] Slack integration smoke (if `INTEGRATION_ENABLED=true`)
 - [ ] Support queue: 0 tickets tagged energizer/realtime from Cohort 2
 
 ### Before Full Rollout (Cohort 4 — gradual team-plan)

@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, P
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession, type LivePollOption } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
+import { CopilotPanel } from '../components/CopilotPanel'
 import { api, getAuthToken } from '../api/client'
 
 // ── Wordcloud utilities ────────────────────────────────────────────────────
@@ -81,7 +82,7 @@ export default function Present() {
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
   const presenterToken = getAuthToken()
-  const { state, sendAdvance, sendBack, sendPause, sendResume, sendEnergizerActivate } = useLiveSession(
+  const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendEnergizerActivate } = useLiveSession(
     id,
     presenterToken ? { enabled: !!id, presenterToken } : { enabled: !!id },
   )
@@ -219,6 +220,8 @@ export default function Present() {
 
   return (
     <div className="fixed inset-0 flex flex-col bg-pulse-950 animate-page-enter">
+      {/* COPILOT-05 — presenter-only live facilitator copilot (ADR-0046) */}
+      <CopilotPanel sessionId={id} enabled={state.role === 'presenter' && isLive} onAddQuestion={sendAddQuestion} />
       {/* ── 1920×1080 letterboxed stage ────────────────────────────────────── */}
       <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
         <div style={{ width: scale * 1920, height: scale * 1080, flexShrink: 0 }}>
