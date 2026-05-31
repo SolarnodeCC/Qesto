@@ -1,5 +1,6 @@
 import { signJwt } from '../../lib/jwt'
 import { safeLogContext } from '../../lib/log'
+import { recordAuthAuditEvent } from '../../lib/audit'
 import {
   buildGoogleAuthUrl,
   exchangeGoogleCode,
@@ -76,6 +77,15 @@ export function registerOAuthRoutes(app: AuthApp): void {
       const userId = await upsertOAuthUser(c.env.DB, c.env.USERS_KV, 'google', providerUser.sub, providerUser.email)
       const jwt = await signJwt({ sub: userId, email: providerUser.email }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)
+      void recordAuthAuditEvent(c.env.DB, {
+        action: 'auth.sso_completed',
+        actor_id: userId,
+        actor_ip: c.req.header('cf-connecting-ip') ?? null,
+        trace_id: c.get('trace_id'),
+        subject_id: userId,
+        outcome: 'success',
+        detail: 'google',
+      })
       return c.redirect(`${c.env.PAGES_URL}/`, 302)
     } catch (err) {
       return authRedirectSsoFailed(c, err, '[auth] google/callback')

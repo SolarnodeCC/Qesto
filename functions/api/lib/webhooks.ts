@@ -307,22 +307,20 @@ export async function deliverWebhook(
     }
   }
 
-  // Dead-letter: persist final failure for operator replay (7-day TTL).
+  // Dead-letter: enqueue in structured DLQ for operator replay (ENTERPRISE-POLISH §7b).
   try {
-    await integrationsKv.put(
-      `webhook:dead-letter:${config.id}:${ulid()}`,
-      JSON.stringify({
-        webhookId: config.id,
-        teamId: config.teamId,
-        event: payload.event,
-        url: config.url,
-        failedAt: Date.now(),
-        slaMs: WEBHOOK_DELIVERY_SLA_MS,
-      }),
-      { expirationTtl: 7 * 24 * 60 * 60 },
-    )
+    const { enqueueWebhookDlq } = await import('./webhook-dlq')
+    await enqueueWebhookDlq(integrationsKv, {
+      webhookId: config.id,
+      teamId: config.teamId,
+      event: payload.event,
+      url: config.url,
+      payload: payload.data,
+      error: `All ${MAX_DELIVERY_ATTEMPTS} delivery attempts failed`,
+      attempts: MAX_DELIVERY_ATTEMPTS,
+    })
   } catch {
-    /* ignore */
+    /* ignore — DLQ write failure must not mask original delivery failure */
   }
 
   writeEvent(metricsEnv?.METRICS_AE, {

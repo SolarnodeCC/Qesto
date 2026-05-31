@@ -48,12 +48,15 @@ export async function setTenantQuota(kv: KVNamespace, quota: TenantQuota): Promi
   await writeKvJson(kv, tenantQuotaKey(quota.teamId), { ...quota, updatedAt: Date.now() })
 }
 
-// ---- Overage threshold detection (ENTERPRISE-POLISH s8a) --------------------
+// ── Overage threshold detection (ENTERPRISE-POLISH §8a) ──────────────────────
 //
-// Returns the threshold level reached after the current usage count:
-//   'ok'       -- below 80% of the daily API limit
-//   'warn'     -- at or above 80% (trigger a proactive in-app warning)
-//   'exceeded' -- at or above 100% (hard limit hit)
+// Returns the threshold level reached *after* the current usage count:
+//   'ok'       — below 80 % of the daily API limit
+//   'warn'     — at or above 80 % (trigger a proactive in-app warning)
+//   'exceeded' — at or above 100 % (hard limit hit; quota check already blocks)
+//
+// Call this after `incrementTenantApiUsage` so the caller can emit a
+// notification event without making a second KV read.
 
 export type QuotaThreshold = 'ok' | 'warn' | 'exceeded'
 
@@ -87,8 +90,8 @@ export async function incrementAndCheckThreshold(
   }
 }
 
-// KV key for tracking whether we already sent the warn/exceeded notification
-// so we do not spam it on every request after the threshold is crossed.
+// ── KV key for tracking whether we already sent the warn/exceeded notification
+// so we don't spam it on every request after the threshold is crossed.
 export function tenantQuotaNotifiedKey(teamId: string, level: 'warn' | 'exceeded', dayStart: number): string {
   return `tenant:quota-notified:${teamId}:${level}:${dayStart}`
 }
@@ -102,6 +105,7 @@ export async function shouldSendQuotaNotification(
   const key = tenantQuotaNotifiedKey(teamId, level, dayStart)
   const already = await kv.get(key)
   if (already) return false
+  // Mark as sent for the rest of the day (TTL = 25 h to avoid midnight edge).
   await kv.put(key, '1', { expirationTtl: 90000 })
   return true
 }

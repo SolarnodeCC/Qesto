@@ -61,6 +61,13 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
       const raw = await c.env.ACTIONS_KV.get(key)
       count = raw ? Number.parseInt(raw, 10) || 0 : 0
 
+      // Always emit standard rate-limit headers so clients can implement
+      // adaptive backoff without waiting for a 429 (RFC 6585 s4).
+      const remaining = Math.max(0, limit - count)
+      c.header('X-RateLimit-Limit', String(limit))
+      c.header('X-RateLimit-Remaining', String(remaining))
+      c.header('X-RateLimit-Reset', String(windowEnd))
+
       if (count >= limit) {
         c.header('Retry-After', String(retryAfter))
         return c.json(
