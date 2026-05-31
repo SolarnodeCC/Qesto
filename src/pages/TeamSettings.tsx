@@ -886,7 +886,7 @@ export default function TeamSettings() {
                     id="assign-role"
                     value={assigningRoleId}
                     onChange={(e) => setAssigningRoleId(e.target.value)}
-                    className="border border-pulse-300 rounded-lg bg-white px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                    className="border border-pulse-300 dark:border-[#2A3858] rounded-lg bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
                   >
                     <option value="">Choose role</option>
                     {customRoles.map((role) => (
@@ -900,7 +900,7 @@ export default function TeamSettings() {
                     id="assign-member"
                     value={assigningUserId}
                     onChange={(e) => setAssigningUserId(e.target.value)}
-                    className="border border-pulse-300 rounded-lg bg-white px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                    className="border border-pulse-300 dark:border-[#2A3858] rounded-lg bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
                   >
                     <option value="">{t('customRolesChooseMember')}</option>
                     {team.members.map((member) => (
@@ -911,7 +911,7 @@ export default function TeamSettings() {
                 <button
                   type="submit"
                   disabled={roleSaving || !assigningRoleId || !assigningUserId}
-                  className="rounded-lg border border-pulse-300 bg-white px-4 py-2 font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  className="rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-transparent text-pulse-700 dark:text-[#A8B3CC] px-4 py-2 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                 >
                   Assign role
                 </button>
@@ -963,7 +963,7 @@ export default function TeamSettings() {
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member' | 'viewer')}
                   disabled={inviting}
-                  className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:bg-pulse-50 bg-white"
+                  className="border border-pulse-300 dark:border-[#2A3858] rounded-lg px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:bg-pulse-50 dark:disabled:bg-[#1E2A45]"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
@@ -1163,7 +1163,7 @@ export default function TeamSettings() {
                           type="button"
                           onClick={() => void handleSlackTest()}
                           disabled={slackTesting || slackDisconnecting}
-                          className="min-h-[44px] inline-flex items-center rounded-lg border border-pulse-300 bg-white px-4 py-2 text-sm font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                          className="min-h-[44px] inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-transparent text-pulse-700 dark:text-[#A8B3CC] px-4 py-2 text-sm font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                         >
                           {slackTesting ? 'Sending…' : t('slack_test')}
                         </button>

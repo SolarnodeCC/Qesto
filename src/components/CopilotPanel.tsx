@@ -80,9 +80,9 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
         <section
           role="complementary"
           aria-label={t('copilot.title')}
-          className="rounded-xl border border-pulse-200 bg-white text-pulse-900 shadow-xl overflow-hidden"
+          className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] text-pulse-900 dark:text-[#F0F2F8] shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
         >
-          <header className="flex items-center justify-between gap-2 border-b border-pulse-100 bg-violet-50 px-4 py-2.5">
+          <header className="flex items-center justify-between gap-2 border-b border-pulse-100 dark:border-[#1E2A45] bg-violet-50 dark:bg-violet-900/20 px-4 py-2.5">
             <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-violet-800">
               <Sparkles size={16} className="text-violet-600" aria-hidden="true" />
               {t('copilot.title')}
@@ -158,7 +158,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                           return (
                             <li
                               key={`${s.kind}-${i}`}
-                              className={`rounded-lg border p-2.5 text-sm ${alert ? 'border-amber-200 bg-amber-50' : 'border-pulse-200 bg-white'}`}
+                              className={`rounded-lg border p-2.5 text-sm ${alert ? 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20' : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540]'}`}
                             >
                               <div className="flex items-center gap-1.5">
                                 <Icon size={14} className={alert ? 'text-amber-600' : 'text-violet-600'} aria-hidden="true" />

@@ -178,7 +178,7 @@ export default function TeamSwitcher() {
               setOpen((v) => !v)
             }
           }}
-          className="inline-flex items-center gap-2 rounded-lg border border-pulse-200 bg-white px-3 py-1.5 text-sm font-medium text-pulse-800 hover:border-teal-400 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
+          className="inline-flex items-center gap-2 rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#151C2E] px-3 py-1.5 text-sm font-medium text-pulse-800 dark:text-[#F0F2F8] hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
         >
           <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-400 shrink-0" aria-hidden="true">
             <path
@@ -203,7 +203,7 @@ export default function TeamSwitcher() {
             ref={dropdownRef}
             role="listbox"
             aria-label="Teams"
-            className="absolute right-0 top-full mt-1 z-40 w-56 rounded-xl border border-pulse-200 bg-white shadow-lg py-1 animate-page-enter"
+            className="absolute right-0 top-full mt-1 z-40 w-56 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-lg py-1 animate-page-enter"
           >
             {teams.map((team) => (
               <button
@@ -216,8 +216,8 @@ export default function TeamSwitcher() {
                   'w-full text-left px-4 py-2 text-sm flex items-center gap-2 min-h-[44px]',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500',
                   team.id === activeTeamId
-                    ? 'bg-teal-50 text-teal-700 font-medium'
-                    : 'text-pulse-700 hover:bg-pulse-50',
+                    ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium'
+                    : 'text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5',
                 ].join(' ')}
               >
                 {team.id === activeTeamId && (
@@ -234,7 +234,7 @@ export default function TeamSwitcher() {
               </button>
             ))}
 
-            <div className="border-t border-pulse-100 my-1" />
+            <div className="border-t border-pulse-100 dark:border-[#1E2A45] my-1" />
 
             <button
               type="button"
@@ -242,7 +242,7 @@ export default function TeamSwitcher() {
                 setOpen(false)
                 setShowCreateModal(true)
               }}
-              className="w-full text-left px-4 py-2 text-sm text-teal-600 hover:bg-teal-50 flex items-center gap-2 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500"
+              className="w-full text-left px-4 py-2 text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 flex items-center gap-2 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500"
             >
               <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
                 <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
@@ -270,13 +270,13 @@ export default function TeamSwitcher() {
         >
           <div
             ref={modalRef}
-            className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 animate-page-enter space-y-4"
+            className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl max-w-sm w-full p-6 animate-page-enter space-y-4"
           >
-            <h2 id="create-team-modal-title" className="text-xl font-semibold">
+            <h2 id="create-team-modal-title" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">
               {teams.length === 0 ? 'Create your first team' : 'Create team'}
             </h2>
             <form onSubmit={(e) => void handleCreate(e)} className="flex flex-col gap-3">
-              <label htmlFor="new-team-name" className="text-sm font-medium">
+              <label htmlFor="new-team-name" className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
                 Team name
               </label>
               <input
@@ -288,7 +288,7 @@ export default function TeamSwitcher() {
                 placeholder="e.g. Engineering"
                 maxLength={100}
                 disabled={creating}
-                className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:bg-pulse-50"
+                className="border border-pulse-300 dark:border-[#2A3858] rounded-lg px-3 py-2 bg-white dark:bg-[#0F1525] text-pulse-900 dark:text-[#F0F2F8] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:bg-pulse-50 dark:disabled:bg-[#1E2A45]"
               />
               {createError ? (
                 <p role="alert" className="text-sm text-red-600">
@@ -304,7 +304,7 @@ export default function TeamSwitcher() {
                     setNewTeamName('')
                     setCreateError(null)
                   }}
-                  className="px-4 py-2 rounded-lg border border-pulse-300 text-pulse-700 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
+                  className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
                 >
                   Cancel
                 </button>

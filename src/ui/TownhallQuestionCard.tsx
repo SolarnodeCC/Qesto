@@ -25,7 +25,7 @@ export function TownhallQuestionCard({ item, variant, upvoted, onUpvote, onModer
   return (
     <div
       className={`rounded-xl border p-4 ${
-        item.isSpotlit ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-200' : 'border-pulse-200 bg-white'
+        item.isSpotlit ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 ring-2 ring-teal-200 dark:ring-teal-800' : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E]'
       }`}
     >
       {item.isSpotlit && (
@@ -44,7 +44,7 @@ export function TownhallQuestionCard({ item, variant, upvoted, onUpvote, onModer
             className={`flex shrink-0 flex-col items-center rounded-lg border px-2.5 py-1.5 text-sm font-semibold transition ${
               upvoted
                 ? 'border-teal-500 bg-teal-500 text-white'
-                : 'border-pulse-200 text-pulse-700 hover:border-teal-400 hover:text-teal-700'
+                : 'border-pulse-200 dark:border-[#1E2A45] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400'
             }`}
           >
             <ArrowBigUp className="h-4 w-4" aria-hidden="true" />
@@ -52,8 +52,8 @@ export function TownhallQuestionCard({ item, variant, upvoted, onUpvote, onModer
           </button>
         )}
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-pulse-900">{item.body}</p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-pulse-500">
+          <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{item.body}</p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-pulse-500 dark:text-[#6B7A99]">
             <span>{item.displayName ?? t('submit.button')}</span>
             {variant === 'console' && (
               <span className={`rounded px-1.5 py-0.5 font-medium ${STATUS_BADGE[item.status] ?? ''}`}>
@@ -113,7 +113,7 @@ function ConsoleBtn({
       type="button"
       onClick={onClick}
       className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium ${
-        primary ? 'bg-teal-600 text-white hover:bg-teal-700' : 'border border-pulse-200 text-pulse-700 hover:bg-pulse-50'
+        primary ? 'bg-teal-600 text-white hover:bg-teal-700' : 'border border-pulse-200 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5'
       }`}
     >
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />

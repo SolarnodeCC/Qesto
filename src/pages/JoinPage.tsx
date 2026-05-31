@@ -38,8 +38,8 @@ function WaitingScreen({
   return (
     <main id="main" className="min-h-screen flex flex-col">
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 px-5 py-3">
-        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900">Qesto</span>
+      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3">
+        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8]">Qesto</span>
       </div>
       <div className="flex-1 max-w-lg w-full mx-auto px-5 py-12 flex flex-col items-center justify-center gap-8 text-center">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-violet-500 flex items-center justify-center shadow-lg" aria-hidden="true">
@@ -49,15 +49,15 @@ function WaitingScreen({
           </svg>
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-pulse-900">{lookup.title}</h1>
-          <p className="text-sm text-pulse-500 max-w-xs">{t('waiting_intro')}</p>
+          <h1 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{lookup.title}</h1>
+          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] max-w-xs">{t('waiting_intro')}</p>
         </div>
-        <div className="rounded-xl border border-pulse-200 bg-pulse-50 px-6 py-5 w-full max-w-sm space-y-3">
-          <div className="flex items-center justify-center gap-2 text-sm font-medium text-pulse-700" role="status" aria-live="polite">
+        <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1525] px-6 py-5 w-full max-w-sm space-y-3">
+          <div className="flex items-center justify-center gap-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]" role="status" aria-live="polite">
             <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('waiting_status')}
           </div>
-          <p className="text-xs text-pulse-400">{t('waiting_auto_update')}</p>
+          <p className="text-xs text-pulse-400 dark:text-[#6B7A99]">{t('waiting_auto_update')}</p>
         </div>
         <div
           className="cursor-pointer mt-2 transition-transform hover:scale-110 active:scale-95"
@@ -71,8 +71,8 @@ function WaitingScreen({
             {currentEmoji}
           </span>
         </div>
-        <p className="text-xs text-pulse-400">
-          {t('join_code_label')} <span className="font-mono font-semibold text-pulse-600">{code?.toUpperCase()}</span>
+        <p className="text-xs text-pulse-400 dark:text-[#6B7A99]">
+          {t('join_code_label')} <span className="font-mono font-semibold text-pulse-600 dark:text-[#A8B3CC]">{code?.toUpperCase()}</span>
         </p>
       </div>
     </main>
@@ -94,14 +94,14 @@ function JoinLanding() {
   return (
     <main id="main" className="min-h-screen flex flex-col">
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 px-5 py-3">
-        <a href="/" className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">Qesto</a>
+      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3">
+        <a href="/" className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">Qesto</a>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2">
-            <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 focus:outline-none">{t('heading')}</h1>
-            <p className="text-sm text-pulse-500">{t('subtitle')}</p>
+            <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">{t('heading')}</h1>
+            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('subtitle')}</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-3">
             <label className="block">
@@ -116,7 +116,7 @@ function JoinLanding() {
                 spellCheck={false}
                 autoCapitalize="characters"
                 aria-label={t('codeLabel')}
-                className="w-full rounded-xl border border-pulse-300 bg-white text-center font-mono text-2xl font-bold tracking-[0.3em] uppercase px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 placeholder:text-pulse-300 placeholder:tracking-normal placeholder:font-normal placeholder:text-lg"
+                className="w-full rounded-xl border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] text-center font-mono text-2xl font-bold tracking-[0.3em] uppercase px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 placeholder:text-pulse-300 dark:placeholder:text-[#6B7A99] placeholder:tracking-normal placeholder:font-normal placeholder:text-lg"
               />
             </label>
             <button
@@ -323,21 +323,21 @@ function LiveQuickFingerPanel({
   const myBadges = voterId ? energizer.badges?.[voterId] ?? [] : []
 
   return (
-    <section className="rounded-xl border border-teal-200 bg-teal-50 p-4 space-y-4" aria-labelledby="live-quick-finger-heading">
+    <section className="rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20 p-4 space-y-4" aria-labelledby="live-quick-finger-heading">
       <div className="flex items-center gap-2">
         <Sparkles size={18} className="text-teal-600" aria-hidden="true" />
-        <h2 id="live-quick-finger-heading" className="font-semibold text-pulse-900">
+        <h2 id="live-quick-finger-heading" className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
           {energizer.title || t('quickFinger.title')}
         </h2>
       </div>
-      {energizer.prompt && <p className="text-sm text-pulse-700">{energizer.prompt}</p>}
+      {energizer.prompt && <p className="text-sm text-pulse-700 dark:text-[#A8B3CC]">{energizer.prompt}</p>}
 
       {myAnswer ? (
-        <div className="rounded-lg bg-white border border-teal-200 px-3 py-2 text-sm" role="status" aria-live="polite">
-          <p className="font-medium text-teal-800">
+        <div className="rounded-lg bg-white dark:bg-[#151C2E] border border-teal-200 dark:border-teal-800 px-3 py-2 text-sm" role="status" aria-live="polite">
+          <p className="font-medium text-teal-800 dark:text-teal-300">
             {myAnswer.correct ? t('quickFinger.correct') : t('quickFinger.incorrect')}
           </p>
-          <p className="text-pulse-500">
+          <p className="text-pulse-500 dark:text-[#A8B3CC]">
             {t('quickFinger.speed', { ms: myAnswer.speedMs })}
             {myAnswer.rank > 0 ? ` · #${myAnswer.rank}` : ''}
           </p>
@@ -349,12 +349,12 @@ function LiveQuickFingerPanel({
               key={option}
               type="button"
               onClick={() => onAnswer(energizer.id, option)}
-              className="w-full rounded-lg border border-teal-200 bg-white px-4 py-3 text-left text-sm font-medium text-pulse-900 hover:border-teal-500 hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="w-full rounded-lg border border-teal-200 dark:border-teal-800 bg-white dark:bg-[#1C2540] px-4 py-3 text-left text-sm font-medium text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-500 hover:bg-teal-100 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             >
               {option}
             </button>
           ))}
-          {options.length === 0 && <p className="text-sm text-pulse-500">{t('quickFinger.waiting')}</p>}
+          {options.length === 0 && <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('quickFinger.waiting')}</p>}
         </div>
       )}
 
@@ -394,11 +394,11 @@ function LiveTeamQuizPanel({
   const myBadges = voterId ? energizer.badges?.[voterId] ?? [] : []
 
   return (
-    <section className="rounded-xl border border-orange-200 bg-orange-50 p-4 space-y-4" aria-labelledby="live-team-quiz-heading">
+    <section className="rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20 p-4 space-y-4" aria-labelledby="live-team-quiz-heading">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-orange-600" aria-hidden="true" />
-          <h2 id="live-team-quiz-heading" className="font-semibold text-pulse-900">
+          <h2 id="live-team-quiz-heading" className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
             {energizer.title || t('teamQuiz.title')}
           </h2>
         </div>
@@ -408,13 +408,13 @@ function LiveTeamQuizPanel({
       </div>
 
       {energizer.status === 'completed' ? (
-        <div className="rounded-lg bg-white border border-orange-200 px-3 py-3 text-sm text-center">
-          <p className="font-semibold text-pulse-900">{t('teamQuiz.completed')}</p>
-          <p className="text-pulse-500">{t('teamQuiz.score', { score: myScore?.score ?? 0 })}</p>
+        <div className="rounded-lg bg-white dark:bg-[#151C2E] border border-orange-200 dark:border-orange-800 px-3 py-3 text-sm text-center">
+          <p className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('teamQuiz.completed')}</p>
+          <p className="text-pulse-500 dark:text-[#A8B3CC]">{t('teamQuiz.score', { score: myScore?.score ?? 0 })}</p>
         </div>
       ) : question ? (
         <>
-          <p className="text-sm font-medium text-pulse-900">{question.prompt}</p>
+          <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{question.prompt}</p>
           <div className="grid gap-2">
             {question.options.map((option) => {
               const isMine = mySubmission?.value === option
@@ -429,11 +429,11 @@ function LiveTeamQuizPanel({
                     'w-full rounded-lg border px-4 py-3 text-left text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 disabled:cursor-default',
                     isMine
                       ? mySubmission.correct
-                        ? 'border-teal-500 bg-teal-50 text-teal-800'
-                        : 'border-red-400 bg-red-50 text-red-700'
+                        ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
+                        : 'border-red-400 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                       : mySubmission
-                      ? 'border-orange-100 bg-white/60 text-pulse-400'
-                      : 'border-orange-200 bg-white text-pulse-900 hover:border-orange-500 hover:bg-orange-100',
+                      ? 'border-orange-100 dark:border-orange-900 bg-white/60 text-pulse-400 dark:text-[#6B7A99]'
+                      : 'border-orange-200 dark:border-orange-800 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/30',
                   ].join(' ')}
                 >
                   {option}
@@ -442,13 +442,13 @@ function LiveTeamQuizPanel({
             })}
           </div>
           {mySubmission && (
-            <p className="text-sm text-pulse-500" role="status">
+            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]" role="status">
               {mySubmission.correct ? t('teamQuiz.correct') : t('teamQuiz.locked')}
             </p>
           )}
         </>
       ) : (
-        <p className="text-sm text-pulse-500">{t('teamQuiz.waiting')}</p>
+        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('teamQuiz.waiting')}</p>
       )}
 
       <LiveLeaderboard energizer={energizer} voterId={voterId} />
@@ -482,7 +482,7 @@ function BadgeRow({ badges }: { badges: NonNullable<LiveEnergizerState['leaderbo
   return (
     <div className="flex flex-wrap gap-1" aria-label={t('badges.earned')}>
       {badges.map((badge) => (
-        <span key={badge.id} className="rounded-full bg-white border border-pulse-200 px-2 py-1 text-[11px] font-medium text-pulse-700">
+        <span key={badge.id} className="rounded-full bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] px-2 py-1 text-[11px] font-medium text-pulse-700 dark:text-[#A8B3CC]">
           {badge.label}
         </span>
       ))}
@@ -581,13 +581,13 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       : null
 
   return (
-    <main id="main" className="min-h-screen bg-white flex flex-col">
+    <main id="main" className="min-h-screen bg-white dark:bg-[#0A0F1E] flex flex-col">
       {/* Top brand bar */}
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 px-5 py-3 flex items-center justify-between">
-        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900">Qesto</span>
+      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3 flex items-center justify-between">
+        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8]">Qesto</span>
         {state.connection === 'open' ? (
-          <span className="flex items-center gap-1.5 text-xs text-pulse-500">
+          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[#A8B3CC]">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('participants_label', { count: state.participants })}
           </span>
@@ -598,7 +598,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
       <div className="flex-1 max-w-lg w-full mx-auto px-5 py-8 flex flex-col gap-6">
         {/* Session title */}
-        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 focus:outline-none">
+        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
           {title}
         </h1>
 
@@ -619,9 +619,9 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Connecting skeleton */}
         {state.connection === 'connecting' && (
           <div className="space-y-3 animate-pulse">
-            <div className="h-5 bg-pulse-100 rounded w-3/4" />
+            <div className="h-5 bg-pulse-100 dark:bg-white/10 rounded w-3/4" />
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-14 bg-pulse-100 rounded-xl" />
+              <div key={i} className="h-14 bg-pulse-100 dark:bg-white/10 rounded-xl" />
             ))}
           </div>
         )}
@@ -629,9 +629,9 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Inter-question countdown */}
         {countdown !== null && (
           <div className="flex flex-col items-center justify-center gap-3 py-8" aria-live="polite" aria-atomic="true">
-            <p className="text-sm text-pulse-500">{t('get_ready')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('get_ready')}</p>
             <div className="text-6xl font-bold text-teal-600 tabular-nums">{countdown}</div>
-            <p className="text-xs text-pulse-400">{t('next_question_countdown', { seconds: countdown })}</p>
+            <p className="text-xs text-pulse-400 dark:text-[#6B7A99]">{t('next_question_countdown', { seconds: countdown })}</p>
           </div>
         )}
 
@@ -639,50 +639,50 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {state.allDone && !isEnded && countdown === null && (
           <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
             <div className="text-6xl" aria-hidden="true">🎉</div>
-            <h2 className="text-2xl font-bold text-pulse-900">{t('allDone.heading')}</h2>
-            <p className="text-sm text-pulse-500">{title}</p>
+            <h2 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('allDone.heading')}</h2>
+            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{title}</p>
           </div>
         )}
 
         {/* Session ended */}
         {isEnded && countdown === null && (
-          <div className="rounded-xl border border-pulse-200 p-6 text-center space-y-2">
+          <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] p-6 text-center space-y-2">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-violet-500 flex items-center justify-center mx-auto shadow-teal" aria-hidden="true">
               <CheckCircle2 size={28} className="text-white" />
             </div>
-            <p className="font-semibold text-pulse-900">{t('session_ended_title')}</p>
-            <p className="text-sm text-pulse-500">{t('session_ended_body')}</p>
+            <p className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('session_ended_title')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('session_ended_body')}</p>
             {state.results.total > 0 && (
               <div className="mt-4 space-y-3 text-left">
-                <p className="text-xs font-semibold uppercase tracking-wider text-pulse-500">{t('final_results')}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-pulse-500 dark:text-[#A8B3CC]">{t('final_results')}</p>
                 {ordered.map((o) => {
                   const pct = maxCount === 0 ? 0 : Math.round((o.count / state.results.total) * 100)
                   const isWinner = o.count === maxCount && maxCount > 0
                   return (
                     <div key={o.id} className="space-y-1">
                       <div className="flex justify-between text-sm">
-                        <span className={isWinner ? 'font-semibold text-teal-700' : 'text-pulse-700'}>
+                        <span className={isWinner ? 'font-semibold text-teal-700' : 'text-pulse-700 dark:text-[#A8B3CC]'}>
                           {o.label}
                         </span>
-                        <span className="text-pulse-500">{o.count} · {pct}%</span>
+                        <span className="text-pulse-500 dark:text-[#6B7A99]">{o.count} · {pct}%</span>
                       </div>
-                      <div className="h-2 bg-pulse-100 rounded-full overflow-hidden">
+                      <div className="h-2 bg-pulse-100 dark:bg-white/10 rounded-full overflow-hidden">
                         <div
-                          className={`h-full rounded-full transition-[width] duration-500 ${isWinner ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300'}`}
+                          className={`h-full rounded-full transition-[width] duration-500 ${isWinner ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300 dark:bg-white/20'}`}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
                     </div>
                   )
                 })}
-                <p className="text-xs text-pulse-400 text-right">{t('total_votes', { count: state.results.total })}</p>
+                <p className="text-xs text-pulse-400 dark:text-[#6B7A99] text-right">{t('total_votes', { count: state.results.total })}</p>
               </div>
             )}
-            <div className="mt-4 rounded-[14px] bg-violet-50 border border-violet-200 p-4 flex gap-3 items-start text-left">
+            <div className="mt-4 rounded-[14px] bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 p-4 flex gap-3 items-start text-left">
               <Sparkles size={20} className="text-violet-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
               <div>
-                <p className="text-[12px] font-bold tracking-[0.06em] uppercase text-violet-700 mb-1">{t('ai_recap_pending')}</p>
-                <p className="text-[13px] text-pulse-600 leading-[1.45]">{t('ai_recap_body')}</p>
+                <p className="text-[12px] font-bold tracking-[0.06em] uppercase text-violet-700 dark:text-violet-400 mb-1">{t('ai_recap_pending')}</p>
+                <p className="text-[13px] text-pulse-600 dark:text-[#A8B3CC] leading-[1.45]">{t('ai_recap_body')}</p>
               </div>
             </div>
           </div>
@@ -721,7 +721,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (
           <section className="space-y-4" aria-labelledby="question-heading">
-            <h2 id="question-heading" className="text-lg font-medium text-pulse-900">
+            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-[#F0F2F8]">
               {state.question.prompt}
             </h2>
 
@@ -767,7 +767,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       disabled={!canVote}
                       maxLength={120}
                       placeholder={qk === 'word_cloud' ? t('word_phrase_placeholder') : t('response_placeholder')}
-                      className="w-full rounded-lg border border-pulse-200 px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:opacity-50"
+                      className="w-full rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:opacity-50 placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99]"
                       autoComplete="off"
                     />
                     <button
@@ -797,10 +797,10 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                           className={[
                             'flex flex-col items-center gap-1 rounded-lg border py-3 px-1 text-xs font-medium text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                             voted
-                              ? 'border-teal-500 bg-teal-50 text-teal-800'
+                              ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                               : hasVoted
-                              ? 'border-pulse-200 text-pulse-300 cursor-default'
-                              : 'border-pulse-200 bg-white text-pulse-700 hover:border-teal-400 hover:bg-teal-50',
+                              ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-300 dark:text-[#6B7A99] cursor-default'
+                              : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
                           ].join(' ')}
                         >
                           {o.label}
@@ -840,8 +840,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                             className={[
                               'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
                               selected
-                                ? 'border-teal-500 bg-teal-50 text-teal-800'
-                                : 'border-pulse-200 bg-white text-pulse-900 hover:border-teal-400 hover:bg-teal-50 active:scale-[0.99]',
+                                ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
+                                : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
                             ].join(' ')}
                           >
                             <span className="flex items-center gap-3">
@@ -872,7 +872,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       const upvoted = myVotes.includes(o.id)
                       const count = state.results.counts[o.id] ?? 0
                       return (
-                        <li key={o.id} className="flex items-center gap-3 rounded-lg border border-pulse-200 bg-white px-4 py-3">
+                        <li key={o.id} className="flex items-center gap-3 rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] px-4 py-3">
                           <button
                             type="button"
                             onClick={() => !upvoted && canVote && handleVote(o.id)}
@@ -881,8 +881,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                             className={[
                               'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                               upvoted
-                                ? 'border-teal-500 bg-teal-50 text-teal-700'
-                                : 'border-pulse-200 text-pulse-600 hover:border-teal-400 hover:bg-teal-50',
+                                ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
+                                : 'border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
                             ].join(' ')}
                           >
                             <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill={upvoted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
@@ -891,7 +891,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                             </svg>
                             {count}
                           </button>
-                          <span className="text-sm text-pulse-800">{o.label}</span>
+                          <span className="text-sm text-pulse-800 dark:text-[#F0F2F8]">{o.label}</span>
                         </li>
                       )
                     })}
@@ -916,10 +916,10 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                             'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150',
                             'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
                             voted
-                              ? 'border-teal-500 bg-teal-50 text-teal-800'
+                              ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                               : otherVoted
-                              ? 'border-pulse-200 text-pulse-400 cursor-default'
-                              : 'border-pulse-200 bg-white text-pulse-900 hover:border-teal-400 hover:bg-teal-50 active:scale-[0.99]',
+                              ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-400 dark:text-[#6B7A99] cursor-default'
+                              : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
                           ].join(' ')}
                         >
                           <span className="flex items-center gap-3">
@@ -945,7 +945,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             {/* Post-vote: confirmation + live results bar chart */}
             {/* Shown for single-vote types that have predefined options */}
             {hasVoted && !['word_cloud', 'open', 'slider'].includes(questionKind) && (
-              <div className="space-y-4 pt-2 border-t border-pulse-100">
+              <div className="space-y-4 pt-2 border-t border-pulse-100 dark:border-[#1E2A45]">
                 <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700">
                   <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
@@ -959,7 +959,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
                 {state.results.total > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-pulse-500 flex items-center gap-1.5">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-pulse-500 dark:text-[#A8B3CC] flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
                       {t('live_results')}
                     </p>
@@ -969,22 +969,22 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       return (
                         <div key={o.id} className="space-y-1">
                           <div className="flex justify-between text-sm">
-                            <span className={isMyVote ? 'font-semibold text-teal-700' : 'text-pulse-700'}>
+                            <span className={isMyVote ? 'font-semibold text-teal-700' : 'text-pulse-700 dark:text-[#A8B3CC]'}>
                               {o.label}
                               {isMyVote && <span className="ml-1.5 text-xs text-teal-500">· {t('your_vote')}</span>}
                             </span>
-                            <span className="text-pulse-500 tabular-nums">{pct}%</span>
+                            <span className="text-pulse-500 dark:text-[#6B7A99] tabular-nums">{pct}%</span>
                           </div>
-                          <div className="h-2 bg-pulse-100 rounded-full overflow-hidden">
+                          <div className="h-2 bg-pulse-100 dark:bg-white/10 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-[width] duration-300 ${isMyVote ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300'}`}
+                              className={`h-full rounded-full transition-[width] duration-300 ${isMyVote ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300 dark:bg-white/20'}`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>
                         </div>
                       )
                     })}
-                    <p className="text-xs text-pulse-400 text-right" aria-live="polite" aria-atomic="true">
+                    <p className="text-xs text-pulse-400 dark:text-[#6B7A99] text-right" aria-live="polite" aria-atomic="true">
                       {t('total_votes', { count: state.results.total })}
                     </p>
                   </div>
