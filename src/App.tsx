@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ColorSchemeProvider } from './hooks/ColorSchemeProvider'
 import { HelpChatWidget } from './components/HelpChatWidget'
 import { HelpChatProvider } from './hooks/useHelpChat'
+import { CookieConsentBanner } from './components/CookieConsentBanner'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -96,6 +97,7 @@ export default function App() {
         {/* Skip link is rendered by MainLayout on each page that uses it. */}
         <RouteAnnouncer />
         <AuthenticatedHelpWidget />
+        <CookieConsentBanner />
         <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />

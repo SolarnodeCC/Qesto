@@ -2,6 +2,31 @@ import { Context } from 'hono'
 import type { Env } from '../types'
 import { listTemplates } from '../lib/templates-kv'
 
+/** Escape XML-reserved characters so generated URLs/dates can't break well-formedness. */
+function escapeXml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+}
+
+/**
+ * Return XML with an explicit content-type. We bypass c.text()/c.html() because
+ * those force their own content-type; a sitemap served as text/plain or text/html
+ * is rejected by crawlers ("invalid sitemap / unable to fetch urls").
+ */
+function xmlResponse(xml: string, maxAgeSeconds = 86400): Response {
+  return new Response(xml, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': `public, max-age=${maxAgeSeconds}`,
+    },
+  })
+}
+
 /**
  * SEO-SITEMAP-01: Dynamic sitemap generator for template pages
  * Fetches all templates from MARKETING_KV and generates XML sitemap
@@ -10,7 +35,7 @@ import { listTemplates } from '../lib/templates-kv'
 export async function getDynamicSitemap(c: Context<{ Bindings: Env }>) {
   try {
     if (!c.env.MARKETING_KV) {
-      return c.text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>', 200)
+      return xmlResponse('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>')
     }
 
     const baseUrl = 'https://qesto.cc'
@@ -23,8 +48,8 @@ export async function getDynamicSitemap(c: Context<{ Bindings: Env }>) {
         const changefreq = t.usageCount > 10 ? 'weekly' : 'monthly'
         const priority = t.usageCount > 20 ? '0.8' : '0.7'
         return `  <url>
-    <loc>${baseUrl}/templates/${t.id}</loc>
-    <lastmod>${t.updatedAt}</lastmod>
+    <loc>${escapeXml(`${baseUrl}/templates/${t.id}`)}</loc>
+    <lastmod>${escapeXml(String(t.updatedAt))}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
   </url>`
@@ -37,10 +62,7 @@ ${urls}
 </urlset>`
 
     // Cache for 24 hours (86400 seconds)
-    c.header('Content-Type', 'application/xml; charset=utf-8')
-    c.header('Cache-Control', 'public, max-age=86400')
-
-    return c.text(sitemapXml)
+    return xmlResponse(sitemapXml)
   } catch (error) {
     console.error('[seo-sitemap] Error generating sitemap:', error)
     return c.json({ error: 'Failed to generate sitemap' }, 500)
@@ -49,16 +71,17 @@ ${urls}
 
 /**
  * SEO-SITEMAP-02: Sitemap index for multi-part sitemaps
- * References both static and dynamic sitemaps
+ * References the static marketing sitemap (public/sitemap.xml, served as
+ * /sitemap.xml) and the dynamic template sitemap (/sitemap-templates.xml).
  */
-export async function getSitemapIndex(c: Context<{ Bindings: Env }>) {
+export async function getSitemapIndex(_c: Context<{ Bindings: Env }>) {
   const baseUrl = 'https://qesto.cc'
   const now = new Date().toISOString().split('T')[0]
 
   const sitemapIndexXml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
-    <loc>${baseUrl}/sitemap-static.xml</loc>
+    <loc>${baseUrl}/sitemap.xml</loc>
     <lastmod>${now}</lastmod>
   </sitemap>
   <sitemap>
@@ -67,10 +90,7 @@ export async function getSitemapIndex(c: Context<{ Bindings: Env }>) {
   </sitemap>
 </sitemapindex>`
 
-  c.header('Content-Type', 'application/xml; charset=utf-8')
-  c.header('Cache-Control', 'public, max-age=86400')
-
-  return c.text(sitemapIndexXml)
+  return xmlResponse(sitemapIndexXml)
 }
 
 /**
@@ -120,8 +140,10 @@ export function getIndexNowKeyFile(c: Context<{ Bindings: Env }>) {
  * - Option 2: /.well-known/indexnow or /indexnow.txt
  */
 export function mountSeoRoutes(app: any) {
-  // Sitemaps
-  app.get('/sitemap.xml', getDynamicSitemap)
+  // Sitemaps.
+  // NOTE: /sitemap.xml is served as a static marketing sitemap (public/sitemap.xml)
+  // and is NOT routed here — see SEO_HONO_PATHS in functions/[[path]].ts. Only the
+  // dynamic template sitemap and the sitemap index are handled by Hono.
   app.get('/sitemap-index.xml', getSitemapIndex)
   app.get('/sitemap-templates.xml', getDynamicSitemap)
 

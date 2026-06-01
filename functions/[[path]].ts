@@ -46,23 +46,46 @@ function isValidSpaRoute(pathname: string): boolean {
   })
 }
 
+// Dynamic SEO endpoints served by the Hono app (functions/api/routes/seo-sitemap.ts).
+// They live at the site root rather than under /api/, so this catch-all must forward
+// them to Hono explicitly — otherwise they contain a "." and fall through to the SPA,
+// returning HTML instead of XML / plain text. /sitemap.xml is intentionally excluded:
+// it is served as a static marketing sitemap from public/sitemap.xml.
+const SEO_HONO_PATHS = new Set([
+  '/sitemap-index.xml',
+  '/sitemap-templates.xml',
+  '/.well-known/indexnow',
+  '/indexnow.txt',
+])
+
+function forwardToHono(context: { request: Request; env: Env }) {
+  const waitUntil = (context as unknown as { waitUntil?: (promise: Promise<unknown>) => void }).waitUntil
+  const passThroughOnException = (context as unknown as { passThroughOnException?: () => void }).passThroughOnException
+  const exec: ExecutionContext = {
+    waitUntil: typeof waitUntil === 'function' ? waitUntil.bind(context) : () => {},
+    passThroughOnException: typeof passThroughOnException === 'function' ? passThroughOnException.bind(context) : () => {},
+    props: {},
+  }
+  return app.fetch(context.request, context.env, exec)
+}
+
 export const onRequest: PagesFunction<Env> = (context) => {
   const url = new URL(context.request.url)
+  const pathname = url.pathname
 
   // Route API requests to Hono
-  if (url.pathname.startsWith('/api/')) {
-    const waitUntil = (context as unknown as { waitUntil?: (promise: Promise<unknown>) => void }).waitUntil
-    const passThroughOnException = (context as unknown as { passThroughOnException?: () => void }).passThroughOnException
-    const exec: ExecutionContext = {
-      waitUntil: typeof waitUntil === 'function' ? waitUntil.bind(context) : () => {},
-      passThroughOnException: typeof passThroughOnException === 'function' ? passThroughOnException.bind(context) : () => {},
-      props: {},
-    }
-    return app.fetch(context.request, context.env, exec)
+  if (pathname.startsWith('/api/')) {
+    return forwardToHono(context)
+  }
+
+  // Route dynamic SEO endpoints (sitemap index/templates, IndexNow) to Hono.
+  // Includes the optional IndexNow Option-1 key file at /{INDEXNOW_KEY_FILE}.txt.
+  const indexNowKeyFile = context.env.INDEXNOW_KEY_FILE
+  if (SEO_HONO_PATHS.has(pathname) || (indexNowKeyFile && pathname === `/${indexNowKeyFile}.txt`)) {
+    return forwardToHono(context)
   }
 
   // Check if it's a static asset or valid SPA route
-  const pathname = url.pathname
   if (pathname.includes('.') || isValidSpaRoute(pathname)) {
     return context.next()
   }

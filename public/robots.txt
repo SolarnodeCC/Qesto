@@ -71,3 +71,4 @@ Disallow: /sessions/*/results
 Allow: /
 
 Sitemap: https://qesto.cc/sitemap.xml
+Sitemap: https://qesto.cc/sitemap-templates.xml

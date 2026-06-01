@@ -5,9 +5,9 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss: https://qesto.cc https://qesto-api.oostelaar.workers.dev; img-src 'self' data: https://api.qrserver.com; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss: https://qesto.cc https://qesto-api.oostelaar.workers.dev https://*.clarity.ms https://c.bing.com; img-src 'self' data: https://api.qrserver.com https://*.clarity.ms https://c.bing.com; frame-ancestors 'none'; upgrade-insecure-requests
 
 # Public display pages — allow iframe embedding (e.g. PowerPoint Web Viewer)
 /display/*
   X-Frame-Options: SAMEORIGIN
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss: https://qesto.cc https://qesto-api.oostelaar.workers.dev; img-src 'self' data:; frame-ancestors *; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com https://www.clarity.ms https://*.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss: https://qesto.cc https://qesto-api.oostelaar.workers.dev https://*.clarity.ms https://c.bing.com; img-src 'self' data: https://*.clarity.ms https://c.bing.com; frame-ancestors *; upgrade-insecure-requests
