@@ -1,11 +1,18 @@
 import { z } from 'zod'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../lib/tokens'
 import { sendEmail } from '../../lib/email'
+import { rateLimit } from '../../lib/rate-limit'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
 import { hashPassword, verifyPassword } from '../../lib/password'
 import { ensurePersonalTeam } from '../teams'
-import { JWT_TTL_SECONDS, PASSWORD_RESET_TTL_SECONDS } from './constants'
+import {
+  JWT_TTL_SECONDS,
+  LOGIN_MAX_PER_EMAIL,
+  LOGIN_MAX_PER_IP,
+  LOGIN_WINDOW_SECONDS,
+  PASSWORD_RESET_TTL_SECONDS,
+} from './constants'
 import { setAuthSessionCookie } from './cookie'
 import { pwdKey, resetKey } from './helpers'
 import { authEmailRequestSchema, passwordSchema, signupSchema } from './schemas'
@@ -86,6 +93,34 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
     try {
       const { email, password } = parsed.data
       const normalEmail = email.toLowerCase().trim()
+
+      // SEC H-1: throttle brute-force / credential-stuffing before any
+      // password verification work. Trust only cf-connecting-ip (the edge sets
+      // it and it cannot be spoofed); never the forwarded-for fallback.
+      const rateLimitedResponse = () =>
+        c.json(
+          {
+            ok: false,
+            error: { code: 'rate_limited', message: 'Too many login attempts. Try again later.' },
+            trace_id: c.get('trace_id'),
+          },
+          429,
+        )
+      const ip = c.req.header('cf-connecting-ip') ?? null
+      if (ip) {
+        const ipGate = await rateLimit(c.env.ACTIONS_KV, `ip:${ip}`, {
+          max: LOGIN_MAX_PER_IP,
+          windowSeconds: LOGIN_WINDOW_SECONDS,
+          prefix: 'auth-login',
+        })
+        if (!ipGate.allowed) return rateLimitedResponse()
+      }
+      const emailGate = await rateLimit(c.env.ACTIONS_KV, `email:${normalEmail}`, {
+        max: LOGIN_MAX_PER_EMAIL,
+        windowSeconds: LOGIN_WINDOW_SECONDS,
+        prefix: 'auth-login',
+      })
+      if (!emailGate.allowed) return rateLimitedResponse()
 
       const user = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
         .bind(normalEmail)
