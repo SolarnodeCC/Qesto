@@ -52,7 +52,7 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-qr-code": "^2.0.21",
-    "react-router-dom": "^7.15.1",
+    "react-router-dom": "^7.16.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
