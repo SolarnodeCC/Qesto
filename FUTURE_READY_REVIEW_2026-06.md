@@ -135,17 +135,22 @@ These are the "stay future-ready" investments, ordered by leverage:
 >    vitest v4 — the build was green at ~31% against an "85%" config. Now a
 >    live, enforced regression floor.
 
-### Phase 3 — Decomposition (opportunistic / dedicated)
-| Item | Action | Effort |
+### Phase 3 — Decomposition ✅ DONE (June 2026)
+| Item | Action | Status |
 |------|--------|--------|
-| R-05 | Split the 4 largest frontend modules | Medium each, on-touch |
-| R-06 | Extract `VoteProcessor`/rate-limiter from `SessionRoom` | 1 sprint |
+| Dedup | `PollOptionSchema` (defined twice) disambiguated by intent → `PollOptionInputSchema` (strict request validation) / `StoredPollOptionSchema` (loose KV/wire parsing). | ✅ |
+| R-05 | Decomposed the 4 largest frontend modules by extracting self-contained sub-components/helpers verbatim (no logic moved): **SessionWizard** 1362→1020 (`QuestionEditor`, `AIChip`, helpers); **TeamSettings** 1331→895 (`TeamIntegrations` — self-contained Slack/Teams section); **Dashboard** 1103→859 (`SessionCard` trio); **JoinPage** 1005→764 (live energizer panels). | ✅ |
+| R-06 | Extracted the pure vote-admission guard (`evaluateVoteAdmission`) from `SessionRoom.handleVote` into `session-room-vote.ts` (+10 unit tests). The DO retains all side effects; a full "VoteProcessor owns everything" extraction was deliberately *not* done (wide callback seam on the production realtime path, low marginal benefit). | ✅ |
+
+> **Findings surfaced during Phase 3:**
+> 1. Several UI **source-contract tests** assert on file *content* (`.toContain('Assign role')`), so they break on harmless component relocation — updated to scan the extracted modules (mirroring the existing TD-01 pattern). Consider migrating these toward behaviour assertions.
+> 2. `TeamSettings`/`Dashboard`/`JoinPage` were dominated by single large stateful components with already-standalone sub-components defined inline; relocating those is behaviour-neutral. Deeper *stateful* splits (e.g. the TeamSettings roles/members sections) remain genuine on-touch work needing interactive UI verification.
 
 ---
 
 ## 5. Bottom line
 
-Qesto is **future-ready today** on the things that are expensive to fix later: dependencies are current, TypeScript is strict, migrations are contiguous and gated, and the realtime God-object has already been broken up. The remaining work is *consolidation and governance*, not rescue. With Phases 1 and 2 landed, the codebase now actively self-defends against regression (KV-access, `: any`, migration-gap, and coverage-floor gates all enforced in CI). Only the opportunistic Phase 3 decomposition (R-05 large frontend modules, R-06 `SessionRoom` finish) and the `PollOptionSchema` dedup remain.
+Qesto is **future-ready today** on the things that are expensive to fix later: dependencies are current, TypeScript is strict, migrations are contiguous and gated, and the realtime God-object has already been broken up. All three phases of this review have now landed: consolidation (Phase 1), consistency + governance (Phase 2), and decomposition (Phase 3). The codebase actively self-defends against regression — KV-access, `: any`, migration-gap, and coverage-floor gates are all enforced in CI — and the four 1,000+-line frontend modules plus the `SessionRoom` vote guard have been broken into focused, testable units. Remaining work is genuinely opportunistic: deeper *stateful* page splits (on-touch, needing UI verification) and raising the coverage floor as tests are added.
 
 ---
 
