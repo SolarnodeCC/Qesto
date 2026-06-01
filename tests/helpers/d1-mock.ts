@@ -177,6 +177,24 @@ export class D1Mock {
   readonly customRoles = new Map<string, CustomRoleRow>()
   readonly teamRoleAssignments = new Map<string, TeamRoleAssignmentRow>()
   readonly townhallQuestions = new Map<string, TownhallQuestionRow>()
+  readonly deviceTokens = new Map<
+    string,
+    {
+      id: string
+      user_id: string
+      platform: string
+      token: string
+      app_version: string | null
+      locale: string | null
+      created_at: number
+      last_seen_at: number
+      revoked_at: number | null
+    }
+  >()
+  readonly teamInsightRollups = new Map<
+    string,
+    { team_id: string; kind: string; window: string; payload_json: string; computed_at: number }
+  >()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -596,6 +614,66 @@ export class D1PreparedStatementMock {
       this.db.insightsDaily.set(id, { id, session_id, day, themes_json, confidence, n_votes, computed_at })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO device_tokens')) {
+      const [id, user_id, platform, token, app_version, locale, created_at] = this.args as [
+        string, string, string, string, string | null, string | null, number,
+      ]
+      this.db.deviceTokens.set(id, {
+        id,
+        user_id,
+        platform,
+        token,
+        app_version,
+        locale,
+        created_at,
+        last_seen_at: created_at,
+        revoked_at: null,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE device_tokens SET revoked_at')) {
+      const [revoked_at, ...rest] = this.args as [number, ...string[]]
+      if (this.sql.includes('WHERE id = ?2 AND user_id = ?3')) {
+        const [id, user_id] = rest as [string, string]
+        const row = this.db.deviceTokens.get(id)
+        if (!row || row.user_id !== user_id || row.revoked_at) return { meta: { changes: 0 } }
+        row.revoked_at = revoked_at
+        return { meta: { changes: 1 } }
+      }
+      const [user_id, platform, token] = rest as [string, string, string]
+      let changes = 0
+      for (const row of this.db.deviceTokens.values()) {
+        if (
+          row.user_id === user_id &&
+          row.platform === platform &&
+          row.token === token &&
+          row.revoked_at == null
+        ) {
+          row.revoked_at = revoked_at
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.includes('INSERT INTO team_insight_rollup')) {
+      const [team_id, kind, window, payload_json, computed_at] = this.args as [
+        string, string, string, string, number,
+      ]
+      const key = `${team_id}:${kind}:${window}`
+      this.db.teamInsightRollups.set(key, { team_id, kind, window, payload_json, computed_at })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM team_insight_rollup')) {
+      const [team_id] = this.args as [string]
+      let changes = 0
+      for (const [key, row] of this.db.teamInsightRollups) {
+        if (row.team_id === team_id) {
+          this.db.teamInsightRollups.delete(key)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
     if (this.sql.startsWith('INSERT INTO sprint19_events')) {
       const [id, event_name, user_id, session_id, team_id, plan, count, value, duration_ms, created_at, trace_id] = this.args as [
         string, string, string, string | null, string | null, string | null, number, number, number, number, string,
@@ -771,6 +849,11 @@ export class D1PreparedStatementMock {
       if (owner_id === undefined) return (row as unknown as T) ?? null
       return (row && row.owner_id === owner_id ? (row as unknown as T) : null)
     }
+    if (this.sql.startsWith('SELECT team_id, kind, window, payload_json, computed_at')) {
+      const [team_id, kind, window] = this.args as [string, string, string]
+      const key = `${team_id}:${kind}:${window}`
+      return (this.db.teamInsightRollups.get(key) as T) ?? null
+    }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
 
@@ -942,6 +1025,13 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.teamRoleAssignments.values()]
         .filter((row) => row.team_id === team_id)
         .sort((a, b) => a.assigned_at - b.assigned_at)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT id, platform, app_version, locale, created_at, last_seen_at')) {
+      const [user_id] = this.args as [string]
+      const rows = [...this.db.deviceTokens.values()]
+        .filter((r) => r.user_id === user_id && r.revoked_at == null)
+        .sort((a, b) => b.last_seen_at - a.last_seen_at)
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)
