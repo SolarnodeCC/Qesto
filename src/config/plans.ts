@@ -88,6 +88,7 @@ export interface PlanConfig extends PlanDisplayMeta {
     samlSso: boolean
     townhallQA: boolean
     liveCopilot: boolean
+    crossSessionInsights: boolean
   }
 }
 

@@ -14,6 +14,7 @@ export type PlanCatalogApiRow = {
     samlSso: boolean
     townhallQA: boolean
     liveCopilot: boolean
+    crossSessionInsights: boolean
   }
 }
 
