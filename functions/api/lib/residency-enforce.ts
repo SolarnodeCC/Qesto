@@ -2,6 +2,7 @@
  * RESIDENCY-ENFORCE-01 — EU tenant home region pinning (S75).
  */
 import type { Env } from '../types'
+import { getFlag } from './flags'
 
 export type ResidencyPin = {
   teamId: string
@@ -36,7 +37,7 @@ export async function assertResidencyAllowsMutation(
   if (!teamId || !env.TEAMS_KV) return null
   const pin = await getTeamResidencyPin(env.TEAMS_KV, teamId)
   if (!pin || pin.homeRegion !== 'eu') return null
-  if (writeRegion !== 'eu' && env.MULTI_REGION_WRITES_ENABLED === 'true') {
+  if (writeRegion !== 'eu' && getFlag(env, 'MULTI_REGION_WRITES_ENABLED')) {
     return 'EU-pinned tenants must mutate in EU write region (ADR-0036)'
   }
   return null

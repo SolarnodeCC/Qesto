@@ -1,3 +1,4 @@
+import { WEBHOOK_RATE_LIMIT_TTL_SECONDS } from './constants'
 /**
  * INT-WEBHOOK-RATE-LIMIT-01 — 100 deliveries / minute / team.
  */
@@ -14,6 +15,6 @@ export async function checkWebhookRateLimit(kv: KVNamespace, teamId: string): Pr
   const raw = await kv.get(key)
   const count = raw ? Number.parseInt(raw, 10) : 0
   if (count >= MAX_PER_WINDOW) return false
-  await kv.put(key, String(count + 1), { expirationTtl: 120 })
+  await kv.put(key, String(count + 1), { expirationTtl: WEBHOOK_RATE_LIMIT_TTL_SECONDS })
   return true
 }

@@ -11,6 +11,7 @@
 import { z } from 'zod'
 import { AIQuestionsOutputSchema, type AIQuestionsOutput } from './validation'
 import { ulid } from './ulid'
+import { logEvent } from './log'
 
 export type GenerateInput = {
   sessionTitle: string
@@ -244,29 +245,23 @@ async function invokeAI(
             ? res.response
             : ''
       if (!raw || raw.trim() === '') {
-        console.log(
-          JSON.stringify({ event: 'ai.wizard.empty', model, latencyMs, approxInputChars, attempt }),
-        )
+        logEvent({ event: 'ai.wizard.empty', model, latencyMs, approxInputChars, attempt })
         lastErr = new WizardAIError('AI returned empty response')
         continue
       }
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'ai.wizard.ok',
           model,
           latencyMs,
           approxInputChars,
           outputChars: raw.length,
           attempt,
-        }),
-      )
+        })
       return raw
     } catch (err) {
       const latencyMs = Date.now() - t0
       const msg = err instanceof Error ? err.message : String(err)
-      console.log(
-        JSON.stringify({ event: 'ai.wizard.error', model, latencyMs, approxInputChars, error: msg, attempt }),
-      )
+      logEvent({ event: 'ai.wizard.error', model, latencyMs, approxInputChars, error: msg, attempt })
       lastErr = err instanceof Error ? err : new Error(msg)
     }
   }
@@ -285,7 +280,7 @@ async function invokeWithSecondaryModel(
     return await invokeAI(ai, model, messages, approxInputChars)
   } catch (primaryErr) {
     if (model !== QUALITY_FALLBACK_MODEL) {
-      console.log(JSON.stringify({ event: 'ai.wizard.secondary_model', primaryModel: model, secondaryModel: QUALITY_FALLBACK_MODEL }))
+      logEvent({ event: 'ai.wizard.secondary_model', primaryModel: model, secondaryModel: QUALITY_FALLBACK_MODEL })
       return await invokeAI(ai, QUALITY_FALLBACK_MODEL, messages, approxInputChars)
     }
     throw primaryErr
@@ -376,7 +371,7 @@ export async function generateQuestions(
       const { messages, approxInputChars } = buildMessages(input, batchFocus)
       const raw = await invokeWithSecondaryModel(ai, model, messages, approxInputChars)
       return parseAIQuestions(raw)
-    }),
+    })
   )
 
   const fulfilled = settled

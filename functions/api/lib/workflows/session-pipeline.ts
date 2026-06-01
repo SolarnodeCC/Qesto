@@ -3,6 +3,7 @@
 
 import { SessionWebhookPayload, TemplateRecord, ClassificationOutput, Lang } from '../template-schemas'
 import { createTemplateId } from '../templates-kv'
+import { logEvent } from '../log'
 
 export interface WorkflowInput extends SessionWebhookPayload {
   // Original question text (from session metadata, not answers)
@@ -15,14 +16,14 @@ export interface WorkflowInput extends SessionWebhookPayload {
 export async function sessionPipelineWorkflow(input: WorkflowInput, env: any): Promise<void> {
   // Early exit if session is private
   if (!input.isPublic) {
-    console.log({ event: 'workflow.skipped.private_session', sessionId: input.sessionId })
+    logEvent({ event: 'workflow.skipped.private_session', sessionId: input.sessionId })
     return
   }
 
   // Step 1: Fetch original questions from session (if not provided in webhook)
   // For MVP, we assume question metadata is provided; full implementation would fetch from D1
   if (!input.originalQuestions || input.originalQuestions.length === 0) {
-    console.log({ event: 'workflow.skipped.no_questions', sessionId: input.sessionId })
+    logEvent({ event: 'workflow.skipped.no_questions', sessionId: input.sessionId })
     return
   }
 
@@ -37,7 +38,7 @@ export async function sessionPipelineWorkflow(input: WorkflowInput, env: any): P
 
   // Early exit if no questions remain
   if (scannedQuestions.length === 0) {
-    console.log({
+    logEvent({
       event: 'workflow.discarded.no_questions_remaining',
       sessionId: input.sessionId,
     })
@@ -53,7 +54,7 @@ export async function sessionPipelineWorkflow(input: WorkflowInput, env: any): P
   // Step 7: Store in MARKETING_KV
   await storeTemplate(template, env.MARKETING_KV)
 
-  console.log({
+  logEvent({
     event: 'workflow.complete',
     sessionId: input.sessionId,
     templateId: template.id,
@@ -91,7 +92,7 @@ async function rewriteQuestions(
       : originalQuestions.map((q) => ({ original: q.text, rewritten: q.text }))
     return rewritten
   } catch (err) {
-    console.log({
+    logEvent({
       event: 'workflow.rewrite.error',
       error: err instanceof Error ? err.message : String(err),
     })
@@ -132,7 +133,7 @@ async function similarityCheck(
         score,
       })
     } catch (err) {
-      console.log({
+      logEvent({
         event: 'workflow.similarity_check.error',
         error: err instanceof Error ? err.message : String(err),
       })
@@ -172,7 +173,7 @@ async function properNounScan(
 
     return questions.filter((_, idx) => !flaggedIndices.has(idx))
   } catch (err) {
-    console.log({
+    logEvent({
       event: 'workflow.proper_noun_scan.error',
       error: err instanceof Error ? err.message : String(err),
     })
@@ -213,7 +214,7 @@ Return JSON with: industry, theme, topic, confidence (0-100), purpose_nl, purpos
 
     return classification
   } catch (err) {
-    console.log({
+    logEvent({
       event: 'workflow.classify.error',
       error: err instanceof Error ? err.message : String(err),
     })
@@ -319,7 +320,7 @@ function buildTemplateRecord(
 
 async function storeTemplate(template: TemplateRecord, kv: any): Promise<void> {
   if (!kv) {
-    console.log({ event: 'workflow.store.kv_unavailable' })
+    logEvent({ event: 'workflow.store.kv_unavailable' })
     return
   }
 
@@ -334,12 +335,12 @@ async function storeTemplate(template: TemplateRecord, kv: any): Promise<void> {
       await kv.put('templates:index', JSON.stringify(index))
     }
 
-    console.log({
+    logEvent({
       event: 'workflow.store.success',
       templateId: template.id,
     })
   } catch (err) {
-    console.log({
+    logEvent({
       event: 'workflow.store.error',
       error: err instanceof Error ? err.message : String(err),
     })

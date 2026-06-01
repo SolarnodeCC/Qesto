@@ -5,6 +5,7 @@
 import { hmacSha256Hex } from './webhooks'
 import type { SessionWebhookPayload } from './template-schemas'
 import type { Env } from '../types'
+import { logEvent } from './log'
 
 export async function deliverMarketingWebhook(
   env: Env,
@@ -12,7 +13,7 @@ export async function deliverMarketingWebhook(
 ): Promise<void> {
   const secret = env.MARKETING_WEBHOOK_SECRET
   if (!secret) {
-    console.log({ event: 'webhook.marketing.skipped_no_secret', sessionId: payload.sessionId })
+    logEvent({ event: 'webhook.marketing.skipped_no_secret', sessionId: payload.sessionId })
     return
   }
   const body = JSON.stringify(payload)

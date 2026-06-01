@@ -12,6 +12,7 @@ import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateKvJson, EnergizerConfigEnvelopeSchema } from '../../lib/validators'
+import type { EnergizerRow } from '../../lib/db-row-types'
 
 export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers', async (c) => {
@@ -76,7 +77,7 @@ export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
           : initializeBracket(body.participants, body.bracket_size ?? 8)
       }
 
-      await (c.env.DB.prepare as any)(
+      await c.env.DB.prepare(
         `INSERT INTO energizers (id, session_id, kind, prompt, config_json, position, state, created_at, updated_at)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)`,
       )
@@ -104,12 +105,12 @@ export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
     const sessionId = c.req.param('sessionId')
 
     try {
-      const result = await (c.env.DB.prepare as any)(
+      const result = await c.env.DB.prepare(
         `SELECT id, kind, prompt, config_json, state, position, created_at FROM energizers
          WHERE session_id = ?1 ORDER BY position ASC`,
       )
         .bind(sessionId)
-        .all()
+        .all<EnergizerRow>()
 
       const energizers = (result.results ?? []).map((e: any) => ({
         id: e.id,

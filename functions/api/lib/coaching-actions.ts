@@ -2,6 +2,7 @@
  * AI-COACHING-02 — facilitator actions on coaching suggestions (KV).
  */
 import { readKvJson, writeKvJson } from './kv'
+import { COACHING_PROFILE_TTL_SECONDS } from './constants'
 
 export type CoachingActionRecord = {
   sessionId: string
@@ -22,7 +23,7 @@ export async function recordCoachingAction(
   const existing = (await readKvJson<CoachingActionRecord[]>(kv, actionsKey(sessionId))) ?? []
   existing.push(record)
   await writeKvJson(kv, actionsKey(sessionId), existing.slice(-50), {
-    expirationTtl: 90 * 24 * 60 * 60,
+    expirationTtl: COACHING_PROFILE_TTL_SECONDS,
   })
 }
 

@@ -70,6 +70,7 @@ import { resolveExpectedOrigin } from './lib/origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
 import type { Env } from './types'
+import { getFlag } from './lib/flags'
 
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables> & {
   parent_trace_id?: string
@@ -94,7 +95,7 @@ export function createApp() {
     c.header('x-qesto-api-commit', c.env.COMMIT_SHA ?? 'unknown')
     // Wire circuit breakers with KV — idempotent, runs once per isolate.
     const cbKv =
-      c.env.CIRCUIT_BREAKER_ENABLED === 'true' && c.env.CIRCUIT_BREAKER_KV
+      getFlag(c.env, 'CIRCUIT_BREAKER_ENABLED') && c.env.CIRCUIT_BREAKER_KV
         ? c.env.CIRCUIT_BREAKER_KV
         : c.env.ACTIONS_KV
     initCircuitBreakers(cbKv, c.env.ENV ?? 'production')

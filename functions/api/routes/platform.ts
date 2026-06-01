@@ -8,6 +8,7 @@ import { computeSloBudgets } from '../lib/slo'
 import { readKvJson } from '../lib/kv'
 import { sloCountersKvKey } from '../lib/slo'
 import type { Env } from '../types'
+import { getFlag } from '../lib/flags'
 
 const RELEASES = [
   { version: '3.2.0', codename: 'v3.2', status: 'ga', sprint: 66 },
@@ -29,8 +30,8 @@ export function mountPlatformRoutes(parent: any) {
       data: {
         api: '5.0.0',
         realtimeDefault:
-          c.env.REALTIME_V3_ENABLED === 'true' ? 3 : c.env.REALTIME_V2_DEFAULT === 'true' ? 2 : 1,
-        realtimeV2Enabled: c.env.REALTIME_V2_ENABLED === 'true',
+          getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
+        realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),
         realtimeV3Enabled: c.env.REALTIME_V3_ENABLED === 'true',
         publicApi: { v1: 'deprecated', v2: 'maintained', v3: 'ga' },
         commit: c.env.COMMIT_SHA ?? 'unknown',

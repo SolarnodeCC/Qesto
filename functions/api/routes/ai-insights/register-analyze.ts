@@ -16,7 +16,7 @@ import type { KbSource } from '../../types/knowledge-base'
 import { toInsightsInput, type SessionBundle } from '../../lib/session-bundle'
 import { writeEvent } from '../../lib/observability'
 import { sanitizeError } from '../../lib/error-handler'
-import { safeLogContext } from '../../lib/log'
+import { safeLogContext , logEvent} from '../../lib/log'
 import { fetchSessionTitleForOwner } from '../../lib/session-repository'
 import { fail, ok } from '../../lib/http'
 import { writeKvJson } from '../../lib/kv'
@@ -76,9 +76,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         sessionVector = sim.vector
         similarSessionTitles.push(...sim.similarSessionTitles)
       } catch (vecErr) {
-        console.log(
-          JSON.stringify({ event: 'vectorize.query.skip', reason: (vecErr as Error).message }),
-        )
+        logEvent({ event: 'vectorize.query.skip', reason: (vecErr as Error).message })
       }
 
       // RAG grounding — best-effort. ADR-040 Phase 3.
@@ -108,12 +106,10 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
       } catch (ragErr) {
         // Includes embedding_unavailable, embedding_failed, vector_search_failed.
         // Do not surface to the caller — analyzer must still work without KB.
-        console.log(
-          JSON.stringify({
+        logEvent({
             event: 'rag.context.skip',
             reason: (ragErr as Error).message,
-          }),
-        )
+          })
       }
 
       const bundle: SessionBundle = {
@@ -183,9 +179,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
             ...(sessionVector !== undefined ? { existingVector: sessionVector } : {}),
           },
         ).catch((vecErr) =>
-          console.log(
-            JSON.stringify({ event: 'vectorize.upsert.skip', reason: (vecErr as Error).message }),
-          ),
+          logEvent({ event: 'vectorize.upsert.skip', reason: (vecErr as Error).message }),
         )
       )
 

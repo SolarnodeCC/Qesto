@@ -23,7 +23,9 @@ import { requireFound, requireDraft, requireClosedOrArchivedForInsights } from '
 import { ulid } from '../../lib/ulid'
 import { generateJoinCode } from '../../lib/code'
 import { incrementSessionQuota } from '../../lib/quota'
+import { WIZARD_DRAFT_TTL_SECONDS } from '../../lib/constants'
 import { writeEvent } from '../../lib/observability'
+import { logEvent } from '../../lib/log'
 import {
   fetchOwnerSessionTitles,
   fetchSession,
@@ -715,16 +717,14 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
         count: failureCount,
         traceId,
       })
-      console.log(
-        JSON.stringify({
+      logEvent({
           ts: new Date().toISOString(),
           level: 'warn',
           event: 'preflight.failed',
           session_id: id,
           failed_checks: checks.filter((check) => !check.pass).map((check) => check.id),
           trace_id: traceId,
-        }),
-      )
+        })
     }
     return c.json({ ok: true, data: { ready, checks }, trace_id: traceId })
   })
@@ -834,7 +834,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
       await c.env.SESSIONS_KV.put(
         cacheKey,
         JSON.stringify({ questions: result.questions, confidence: result.confidence }),
-        { expirationTtl: 86400 },
+        { expirationTtl: WIZARD_DRAFT_TTL_SECONDS },
       )
 
       return c.json({

@@ -166,7 +166,7 @@ async function getUserRoles(c: any, userId: string): Promise<string[]> {
   if (cached) return cached
 
   try {
-    const rows = await (c.env.DB.prepare as any)(
+    const rows = await c.env.DB.prepare(
       `SELECT role FROM user_roles WHERE user_id = ?1`,
     )
       .bind(userId)

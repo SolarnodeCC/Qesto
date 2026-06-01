@@ -4,6 +4,7 @@ import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateData, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
+import type { EnergizerRow } from '../../lib/db-row-types'
 
 export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/vote', async (c) => {
@@ -26,11 +27,11 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
       }
       const body = parsed.data
 
-      const energizer = await (c.env.DB.prepare as any)(
+      const energizer = await c.env.DB.prepare(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`,
       )
         .bind(energizerId, sessionId)
-        .first()
+        .first<EnergizerRow>()
 
       if (!energizer) {
         return c.json(
@@ -110,7 +111,7 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
         }
         const q = config.questions[qi]
         const correct = body.value === q.options[q.correct_index] ? 1 : 0
-        await (c.env.DB.prepare as any)(
+        await c.env.DB.prepare(
           `INSERT INTO team_quiz_responses (id, energizer_id, voter_id, question_index, value, correct, created_at)
            VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
            ON CONFLICT(energizer_id, voter_id, question_index) DO UPDATE SET value = excluded.value, correct = excluded.correct`,
@@ -120,7 +121,7 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
         return c.json({ ok: true, data: { voted: body.value, correct: correct === 1 }, trace_id })
       }
 
-      await (c.env.DB.prepare as any)(
+      await c.env.DB.prepare(
         `INSERT INTO energizer_votes (id, energizer_id, session_id, voter_id, value, created_at)
          VALUES (?1, ?2, ?3, ?4, ?5, ?6)
          ON CONFLICT(energizer_id, voter_id) DO UPDATE SET value = excluded.value`,
@@ -142,11 +143,11 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
     const energizerId = c.req.param('energizerId')
 
     try {
-      const energizer = await (c.env.DB.prepare as any)(
+      const energizer = await c.env.DB.prepare(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`,
       )
         .bind(energizerId, sessionId)
-        .first()
+        .first<EnergizerRow>()
 
       if (!energizer) {
         return c.json(
@@ -186,7 +187,7 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
       config.current_index = nextIndex
       const now = Date.now()
 
-      await (c.env.DB.prepare as any)(
+      await c.env.DB.prepare(
         `UPDATE energizers SET config_json = ?1, state = ?2, updated_at = ?3 WHERE id = ?4`,
       )
         .bind(JSON.stringify(config), newState, now, energizerId)

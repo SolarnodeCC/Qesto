@@ -42,6 +42,7 @@ import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
 import { featureAllowed } from '../lib/entitlements'
 import { sanitizeError } from '../lib/error-handler'
 import type { Env } from '../types'
+import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS } from '../lib/constants'
 
 type LiveContextResult =
   | { ok: true; context: CopilotLiveContext }
@@ -141,7 +142,7 @@ export function mountCopilotContextRoutes(parent: any) {
     })
 
     if (c.env.SESSIONS_KV) {
-      await writeKvJson(c.env.SESSIONS_KV, copilotContextKvKey(sessionId), context, { expirationTtl: 3600 })
+      await writeKvJson(c.env.SESSIONS_KV, copilotContextKvKey(sessionId), context, { expirationTtl: COPILOT_CONTEXT_TTL_SECONDS })
     }
 
     return c.json({ ok: true, data: { context, source: 'built' }, trace_id: c.get('trace_id') })
@@ -185,7 +186,7 @@ export function mountCopilotContextRoutes(parent: any) {
     }
     const assistantTurn: CopilotTurn = { role: 'assistant', content: assistantText, at: Date.now() }
     thread = appendTurn(thread, assistantTurn)
-    await writeKvJson(c.env.SESSIONS_KV, key, thread, { expirationTtl: 86400 })
+    await writeKvJson(c.env.SESSIONS_KV, key, thread, { expirationTtl: COPILOT_THREAD_TTL_SECONDS })
     return c.json({ ok: true, data: { thread, latest: assistantTurn }, trace_id: c.get('trace_id') })
   })
 

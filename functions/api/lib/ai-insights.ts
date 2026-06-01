@@ -16,6 +16,7 @@
 import { z } from 'zod'
 import { CircuitBreakers } from './resilience/circuit-breaker'
 import { sleep, withTimeout } from './shared/async'
+import { logEvent } from './log'
 
 export type InsightsInput = {
   sessionTitle: string
@@ -167,14 +168,14 @@ async function runInsightsAI(
       if (!raw || raw.trim() === '') {
         throw new InsightsAIError('AI returned empty response')
       }
-      console.log(JSON.stringify({ event: 'ai.insights.ok', model, attempt, latencyMs, approxInputChars, outputChars: raw.length }))
+      logEvent({ event: 'ai.insights.ok', model, attempt, latencyMs, approxInputChars, outputChars: raw.length })
       return raw
     } catch (err) {
       lastError = err
       const latencyMs = Date.now() - t0
       const error = err instanceof Error ? err.message : String(err)
       const event = attempt < maxAttempts ? 'ai.insights.retry' : 'ai.insights.error'
-      console.log(JSON.stringify({ event, model, attempt, latencyMs, approxInputChars, error }))
+      logEvent({ event, model, attempt, latencyMs, approxInputChars, error })
       if (attempt < maxAttempts) {
         await sleep(RETRY_DELAYS_MS[attempt - 1])
       }

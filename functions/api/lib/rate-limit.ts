@@ -17,6 +17,7 @@
 // and the future WebSocket rate limiter in SessionRoom.
 
 import { validateData, RateLimitCounterSchema } from './validators'
+import { logEvent } from './log'
 
 export type RateLimitResult = {
   allowed: boolean
@@ -76,13 +77,11 @@ export async function rateLimit(
     })
     return { allowed: true, remaining: opts.max - 1, resetAt }
   } catch (err) {
-    console.log(
-      JSON.stringify({
+    logEvent({
         event: 'rate_limit.kv_failure',
         prefix: opts.prefix,
         error: err instanceof Error ? err.message : String(err),
-      }),
-    )
+      })
     if (opts.failClosed) {
       return { allowed: false, remaining: 0, resetAt: fallbackResetAt() }
     }

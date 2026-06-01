@@ -18,6 +18,8 @@ import type { Team } from '../teams'
 import { effectiveTeamPermissionsForUser, type Permission } from '../../lib/authz'
 import { readKvJson } from '../../lib/kv'
 import { teamDocumentKey } from '../../lib/kv-keys'
+import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../../lib/constants'
+import { logEvent } from '../../lib/log'
 
 export type SessionVars = AuthVariables & PlanVariables
 export type SessionRow = Session & { team_id: string | null }
@@ -347,10 +349,8 @@ export async function precomputeInsights(
     follow_ups: [] as string[],
   }
 
-  await env.DECISIONS_KV.put(cacheKey, JSON.stringify(payload), { expirationTtl: 3600 })
-  console.log(
-    JSON.stringify({ event: 'insights.precompute.ok', sessionId, theme_count: themes.length }),
-  )
+  await env.DECISIONS_KV.put(cacheKey, JSON.stringify(payload), { expirationTtl: INSIGHTS_SHARED_CACHE_TTL_SECONDS })
+  logEvent({ event: 'insights.precompute.ok', sessionId, theme_count: themes.length })
 }
 
 // SHA-256 hex of the grounding text — used to detect repeated refines and

@@ -19,6 +19,7 @@ import {
 } from '../lib/kv-keys'
 import type { AuthVariables } from './auth'
 import { validateData, CachedDataSchema } from '../lib/validators'
+import type { UserRow } from '../lib/db-row-types'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
 export function kvNamespaceForCacheKey(key: string): 'USERS_KV' | 'TEAMS_KV' | 'SESSIONS_KV' {
@@ -122,11 +123,9 @@ export async function getPlanUsageWithCache(
     // Fall through to D1 + quota KV
   }
 
-  const row = (await (c.env.DB.prepare as any)(
+  const row = (await c.env.DB.prepare(
     `SELECT plan FROM users WHERE id = ?1`,
-  )
-    .bind(userId)
-    .first()) as { plan: PlanTier } | null
+  ).bind(userId).first()) as Pick<UserRow, "plan"> | null
 
   const plan: PlanTier = row?.plan ?? 'free'
   const sessionLimit = PLAN_QUOTAS[plan].maxSessionsPerMonth

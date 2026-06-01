@@ -4,7 +4,7 @@
  */
 
 import type { D1Database } from '@cloudflare/workers-types'
-import { safeLogContext } from './log'
+import { safeLogContext , logEvent} from './log'
 
 export interface PromptVersion {
   id: string
@@ -167,13 +167,11 @@ export async function activatePromptVersion(db: D1Database, promptId: string): P
       .bind(promptId)
       .run()
 
-    console.log(
-      JSON.stringify({
+    logEvent({
         event: 'help.prompt.activated',
         prompt_id: promptId,
         topic: prompt.topic,
-      }),
-    )
+      })
 
     return true
   } catch (err) {
