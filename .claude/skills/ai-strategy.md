@@ -106,7 +106,7 @@ Track maturity progress using competency-specific metrics. Measure quarterly; fl
 | Change | Doc |
 |---|---|
 | New AI feature advisory completed | `docs/AI_DECISIONS/YYYY-MM-DD_<feature>.md` with competency scores + 4-week plan |
-| Competency metric regression detected | `docs/BACKLOG.md §4` Tech Debt — escalate to PO |
+| Competency metric regression detected | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` Tech Debt — escalate to PO |
 | AI strategy session hosted | `docs/AI_ADVISORY_LOG.md` — entry timestamp, feature, scores, verdict, action plan |
 
 ## Quality Gates
@@ -138,3 +138,4 @@ Track maturity progress using competency-specific metrics. Measure quarterly; fl
 
 ## Change Log
 - 2026-04-24: Added Wave 2 KPI mapping by competency + assessment rubric + quality gates + override tracking guidance
+

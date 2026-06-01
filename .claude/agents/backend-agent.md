@@ -127,8 +127,8 @@ Draft questions (`SESSIONS_KV: questions:{id}`) — transient, TTL 30 days, dele
 | New KV namespace or schema | `knowledge-base/architecture/ARCHITECTURE.md` |
 | D1 schema migration | `knowledge-base/architecture/ARCHITECTURE.md` |
 | New secret or env binding | `docs/CONFIGURATION.txt` + `CLAUDE.md` |
-| Tech debt found | `docs/BACKLOG.md §4` with WSJF |
-| Story shipped | `docs/BACKLOG.md §5` + `docs/SPRINT_PLAN.md` |
+| Tech debt found | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` with WSJF |
+| Story shipped | `knowledge-base/product/backlog/BACKLOG_MASTER.md §5` + `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` |
 
 ## Output Format
 
@@ -137,3 +137,4 @@ Draft questions (`SESSIONS_KV: questions:{id}`) — transient, TTL 30 days, dele
 3. Migration SQL (if any)
 4. Confirm `npm test` and `tsc --noEmit` status
 5. **Docs updated** — list which files were changed and what changed
+

@@ -1,1 +1,0 @@
-../knowledge-base/product/releases/V2_2_ROLLOUT_PLAN.md

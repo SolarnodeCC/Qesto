@@ -20,12 +20,15 @@ Infrastructure checklists, deployment procedures, monitoring, and runbooks.
 
 ## Contents
 
-- **deployment/** — Deployment bootstrap, infrastructure checklists
+- **deployment/** — Deployment bootstrap, staging, IndexNow, KB sync, DB migrations
+- **help-assistant/** — Help assistant API and deployment
 - **incidents/** — Runbooks, incident response, observability incidents
-- **monitoring/** — Observability strategy, error patterns
+- **monitoring/** — Observability strategy, error patterns, analytics query archive
 
 ## Key Documents
 
+- [STAGING-QUICK-START.md](./deployment/STAGING-QUICK-START.md) — Staging environment quick start
+- [STAGING-PROVISIONING-GUIDE.md](./deployment/STAGING-PROVISIONING-GUIDE.md) — Full staging provisioning
 - [DEPLOY_BOOTSTRAP.md](./deployment/DEPLOY_BOOTSTRAP.md) — Getting started with infrastructure
 - [INFRA_SPRINT_CHECKLIST.md](./deployment/INFRA_SPRINT_CHECKLIST.md) — Sprint infrastructure tasks
 - [RUNBOOKS.md](./incidents/RUNBOOKS.md) — Standard operational procedures

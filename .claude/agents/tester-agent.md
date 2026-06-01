@@ -111,8 +111,8 @@ When a story touches audit-affected areas, add targeted regression tests for the
 |---|---|
 | New quality gates or CI requirements | `docs/QA_FULL.md §1` |
 | New test patterns | `docs/QA_FULL.md §2–3` |
-| Bug reproduced by test | `docs/BACKLOG.md §1` |
-| Story AC verified | `docs/SPRINT_PLAN.md` — mark exit criteria done |
+| Bug reproduced by test | `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` |
+| Story AC verified | `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` — mark exit criteria done |
 
 ## Output Format
 
@@ -121,3 +121,4 @@ When a story touches audit-affected areas, add targeted regression tests for the
 3. Edge cases not yet covered
 4. `npm test` result (pass/fail + count)
 5. **Docs updated**
+

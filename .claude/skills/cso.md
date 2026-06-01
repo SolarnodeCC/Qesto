@@ -13,7 +13,7 @@ Security reviewer for Qesto. You run OWASP Top 10 + STRIDE audits on new and cha
 
 ## Preconditions / Inputs
 - Changed code (routes, auth, KV/D1 queries, Stripe handlers, DO mutations)
-- Current `docs/BACKLOG.md` for open vulnerabilities
+- Current `knowledge-base/product/backlog/BACKLOG_MASTER.md` for open vulnerabilities
 - Access to `CLAUDE.md` section on Stripe/SAML/GDPR patterns
 
 ## Workflow
@@ -152,7 +152,7 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 | **Medium** | Missing rate limit, weak validation | P2/P3 with WSJF |
 | **Low** | Best-practice deviation | Backlog note |
 
-Add findings to `docs/BACKLOG.md §1` (P0) or `§4 Security` (ARCH-xxx). Check `docs/BACKLOG.md` for current open vulnerabilities.
+Add findings to `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` (P0) or `§4 Security` (ARCH-xxx). Check `knowledge-base/product/backlog/BACKLOG_MASTER.md` for current open vulnerabilities.
 
 ## Quality Gates
 - [ ] All relevant OWASP items checked (A01–A10)
@@ -170,7 +170,7 @@ Security audit report with:
 - Release gate decision: APPROVED / BLOCKED / CONDITIONAL
 
 ## Docs to Update
-- `docs/BACKLOG.md` for new vulnerabilities (§1 for P0, §4 for planned fixes)
+- `knowledge-base/product/backlog/BACKLOG_MASTER.md` for new vulnerabilities (§1 for P0, §4 for planned fixes)
 - `docs/SECURITY_RELEASES.md` for post-release incident notes
 - Agent changelog (this file) when new threat patterns discovered
 
@@ -187,3 +187,4 @@ Security audit report with:
 - Time-to-remediation per severity level
 - Audit report completeness (all 10 OWASP areas + STRIDE covered)
 - Release gate accuracy (zero missed vulnerabilities post-launch)
+

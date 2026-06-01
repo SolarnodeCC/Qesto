@@ -31,7 +31,7 @@ bash scripts/provision-staging.sh
 Follow the detailed guide for step-by-step manual provisioning:
 
 ```bash
-# See docs/STAGING-PROVISIONING-GUIDE.md for complete instructions
+# See STAGING-PROVISIONING-GUIDE.md in this folder for complete instructions
 ```
 
 **What you do manually:**
@@ -188,7 +188,7 @@ wrangler pages secret put STRIPE_SECRET_KEY --env staging  # Retry
 wrangler d1 execute qesto-staging --remote --command "SELECT 1"
 ```
 
-**More details:** See `docs/STAGING-PROVISIONING-GUIDE.md` → Troubleshooting section
+**More details:** See [STAGING-PROVISIONING-GUIDE.md](./STAGING-PROVISIONING-GUIDE.md) → Troubleshooting section
 
 ---
 
@@ -226,7 +226,7 @@ Once staging is ready:
 ## Questions?
 
 - **Script not working?** → Check prerequisites, see Troubleshooting section above
-- **Manual setup?** → Follow `docs/STAGING-PROVISIONING-GUIDE.md` step-by-step
+- **Manual setup?** → Follow [STAGING-PROVISIONING-GUIDE.md](./STAGING-PROVISIONING-GUIDE.md) step-by-step
 - **Confused about resource IDs?** → They're printed/saved during provisioning; see guide Phase 4
 - **wrangler errors?** → Ensure `wrangler --version` is recent (`npm install -g wrangler@latest`)
 

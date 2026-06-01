@@ -138,7 +138,7 @@ For every release touching Stripe, Resend, OAuth/SAML, Workers AI, Vectorize, D1
 | New secret | `knowledge-base/architecture/ARCHITECTURE.md` — name + purpose only, never value |
 | Deployment process change | This skill file |
 | New incident pattern | This skill file incident runbook |
-| Infra backlog item closed | `docs/BACKLOG.md §4` |
+| Infra backlog item closed | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` |
 
 ## Rollback Runbook
 
@@ -259,3 +259,4 @@ curl -s -H "Authorization: Bearer $ADMIN_TOKEN" \
 
 ## Change Log
 - 2026-04-24: Added Wave 2 runbooks — rollback procedure, first-15-min triage, quality gates
+

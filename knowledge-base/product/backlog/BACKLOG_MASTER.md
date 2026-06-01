@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-06-01 (UTC) — Sprint 81–90 master plan (3× capacity, all agents): post-v5.0 expansion arc → v6.0 GA; Sprint 71–80 master plan; Sprint 60–70 master plan; Market Pulse integration (Week of May 19, 2026)_
+_Last updated: 2026-06-01 (UTC) — Sprint 81–85 committed plan (INSIGHTS+ + v5.1); Sprint 81–90 master plan_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -260,7 +260,15 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | 6 | IDEATE — Brainstorm & prioritization | ⬜ Not started (no idea-board) |
 | 7–10, ★ | DELIBERATE / REACTIONS / CAPTIONS / EMBED / CANVAS | ⬜ Not started |
 
-**→ Next epic to work on: `INSIGHTS+` (Cross-Session Intelligence)** — the highest-ranked un-built epic in the 🟢 near-term cluster (Value 4 / Change 3). **Promoted + groomed on 2026-05-30** → see **[EPIC-INSIGHTS+](#epic-insights-cross-session-intelligence)** (11 stories / ~95 pts, all ≤13 pts; gate ADR-0045). Ready for PO commit + sprint allocation. (COPILOT #2 should be triaged first to confirm whether shipped AI-copilot work already satisfies it.)
+**→ Active arc: Sprints 81–85** — [`SPRINT81_85_PLAN.md`](../planning/SPRINT81_85_PLAN.md) (2026-06-01). Parallel tracks: **INSIGHTS+** (cross-session intelligence, S81–S85), **COPILOT finish** (S82–S83), **native mobile + marketplace** (S81–S83 → **v5.1 GA** S84), **STAGE/RETRO foundation** (S85). Gate: ADR-0045 accepted by end of S81.
+
+| Sprint | Window | Release | Goal |
+|--------|--------|---------|------|
+| **S81** | 2026-06-02 → 2026-06-15 | Beta | Native mobile beta + INSIGHTS foundation + Pentest #4 open |
+| **S82** | 2026-06-16 → 2026-06-29 | Mobile GA | Store release + marketplace billing + INSIGHTS Tier-1 pipeline |
+| **S83** | 2026-06-30 → 2026-07-13 | **v5.1 RC** | Paid listings + INSIGHTS clustering + COPILOT residuals complete |
+| **S84** | 2026-07-14 → 2026-07-27 | **v5.1 GA** | TOWNHALL 50k proof + INSIGHTS dashboard + agent marketplace prep |
+| **S85** | 2026-07-28 → 2026-08-10 | v5.1.1 / S86 prep | STAGE + RETRO/IDEATE foundation + INSIGHTS export completion |
 
 ---
 
@@ -277,7 +285,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 | **EPIC-I18N** | In progress | Locales, key validation, translation QA | Bundles shipped; CI and QA hardening ongoing |
 | **EPIC-GAM** | In progress | Energizers, leaderboard, badges, referrals | Base gamification live; depth and analytics queued |
 | **EPIC-TOWNHALL** | ✅ Shipped (verified 2026-05-30) | Moderated anonymous Q&A at scale | Competitive epic #1 (ADR-0044); `session_mode='townhall'` live; TOWNHALL-01–11/13/14 Landed. Residual: TOWNHALL-12 (Workers-AI profanity, `Todo`), TOWNHALL-05 5k load-test + group/ungroup console UI deferred |
-| **EPIC-INSIGHTS+** | Groomed (next) | Cross-session intelligence (themes, trends, recurring topics, facilitator scorecard) | Competitive epic #3; **true next epic** (2026-05-30). 11 stories / ~95 pts; gate ADR-0045; reuses `DECISIONS_VECTORIZE` + `ai-insights` |
+| **EPIC-INSIGHTS+** | **Committed (S81–S85)** | Cross-session intelligence (themes, trends, recurring topics, facilitator scorecard) | Competitive epic #3; sequenced in [`SPRINT81_85_PLAN.md`](../planning/SPRINT81_85_PLAN.md); 11 stories / ~95 pts; gate ADR-0045 |
 
 ---
 
@@ -1084,13 +1092,11 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ---
 
-<<<<<<< HEAD
-=======
 ## EPIC-INSIGHTS+: Cross-Session Intelligence
 
 **Goal**: Lift analytics above the single session into a longitudinal **Voice-of-Customer / L&D intelligence** product — theme clustering across all of a team's sessions, engagement trend lines, recurring-topic detection, and a per-facilitator scorecard. Competitive epic #3 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Highest-ranked **un-built** epic in the 🟢 near-term cluster (Value 4 / Change 3); an ARPU + retention lever that sells to research, CX and L&D buyers.
 
-**Status**: Promoted from ideation (2026-05-30); **groomed, awaiting PO commit + sprint allocation**. Triage COPILOT (#2) first to confirm it isn't already satisfied by shipped `AI-COPILOT-MULTITURN-01`.
+**Status**: **Committed S81–S85** (2026-06-01). See [`SPRINT81_85_PLAN.md`](../planning/SPRINT81_85_PLAN.md). Sprint allocation: INSIGHTS-00/01-spike S81 → INSIGHTS-01/02 S82 → INSIGHTS-03/04 S83 → INSIGHTS-05/06/08 S84 → INSIGHTS-07/09/10 + I18N S85.
 
 **Reuses (effort-honest)**: `DECISIONS_VECTORIZE` (768d cosine — no new index), the `lib/ai-insights.ts` distillation pipeline + `routes/ai-insights/*`, the existing `useInsights` hook + `InsightThemeCard` (today derives team themes client-side — this epic moves aggregation server-side and adds trends/recurrence/scorecard), `AdminAnalyticsTab` export plumbing, and the `worker/` scheduled handler for rollup jobs.
 
@@ -1133,7 +1139,7 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 **Goal**: A presenter-side AI panel **during a LIVE session** that reads the room and acts — suggests the next follow-up question, flags disengagement/confusion, and drafts an on-the-fly poll from a one-line intent, all without leaving the run screen. Competitive epic #2 (see [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md)). Wedge against Mentimeter's "AI facilitator coaching"; native-AI moat (Workers AI only, no transcript egress).
 
-**Status**: Promoted from ideation (2026-05-30); **groomed, awaiting PO commit + sprint allocation**. Gate: ADR-0046.
+**Status**: **~70% shipped**; residuals **committed S82–S83** (COPILOT-04/07/08/10). Gate: ADR-0046 ✅ accepted.
 
 **Audit finding (2026-05-30) — what already exists vs. the gap**: S71/S76/S77 shipped a **post-session, standalone multi-turn chat API**, *not* the live copilot. Concretely:
 - ✅ Shipped: context-bundle endpoint `GET /api/agent/copilot/sessions/:id`, multi-turn chat `POST .../turn` (`routes/copilot-context.ts`), edge-status stub `GET .../edge/status`, plan gating (team/starter), and the ADR-0011 **sentiment** foundation — `SessionRoom.ts:1094` broadcasts `sentiment_signal` to `role:presenter` sockets, rendered as a mood badge in `Present.tsx`.
@@ -1177,7 +1183,6 @@ Summary of epic posture versus the **v2.x shipped baseline** (see [`ROADMAP_FULL
 
 ---
 
->>>>>>> origin/main
 ## Appendix: Migration Path
 
 If migrating from old Sprint A/B/C structure:
@@ -1451,7 +1456,7 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 
 **Master plan (all agents, 120–150 pts/sprint):** [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md) — v3.1 (S60–62) → v3.2 (S63–66) → v4.0 (S67–70).
 
-**Role deep-dives:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md) (DEVOPS pool ~1,434 pts — **~25–35 pts committed per sprint**, not full catalog), [`QA_COMMITMENT_SPRINTS_60_70.md`](./QA_COMMITMENT_SPRINTS_60_70.md), [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md), [`docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md).
+**Role deep-dives:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md) (DEVOPS pool ~1,434 pts — **~25–35 pts committed per sprint**, not full catalog), [`QA_COMMITMENT_SPRINTS_60_70.md`](./QA_COMMITMENT_SPRINTS_60_70.md), [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md), [`2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../operations/monitoring/2026-05-25_sprint60-70-obs-analytics-proposals.md).
 
 #### Sprint 60–70 Story Registry — Infrastructure Scale-Out (DEVOPS backlog pool)
 
@@ -1768,6 +1773,7 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 - `SPRINT71_80_PLAN.md` — master ten-sprint plan S71–S80 (3× capacity, all agents)
 - `SPRINT71_80_INFRA_PLAN.md` — DevOps committed work S71–S80 (MR write GA, 50k/100k load, DR automation, SLO paging, v5 infra)
 - `SPRINT71_80_FRONTEND_PROPOSAL.md` — ten-sprint frontend horizon S71–S80 (dark mode GA, Zoom, dev portal v2, federation UI, scale/trust, copilot UX, audit surfaces)
+- `SPRINT81_85_PLAN.md` — **committed next five sprints S81–S85** (INSIGHTS+ + v5.1 GA; 2026-06-01)
 - `SPRINT81_90_PLAN.md` — master ten-sprint plan S81–S90 (3× capacity, all agents): native mobile GA, marketplace economy, agentic facilitation, new-business epics (town hall, events, retro, ideate, governance, embed, captions), gov cloud → v6.0 GA
 - `SPRINT81_90_INFRA_PLAN.md` · `SPRINT81_90_FRONTEND_PROPOSAL.md` · `SPRINT81_90_BACKEND_PROPOSAL.md` · `SPRINT81_90_ARCH_NOTES.md` · `SPRINT81_90_SECURITY_PLAN.md` · `SPRINT81_90_AI_PLAN.md` · `SPRINT81_90_ANALYTICS_PLAN.md` — role deep-dives S81–S90
 - `QA_COMMITMENT_SPRINTS_81_90.md` · `MARKETING_SPRINTS_81_90.md` · `I18N_SPRINT_81_90_PLAN.md` · `research/MARKET_VALIDATION_S81_90.md` — QA / marketing / i18n / market-validation S81–S90

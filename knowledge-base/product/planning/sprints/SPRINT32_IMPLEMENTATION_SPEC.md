@@ -46,7 +46,7 @@ Full-stack staging still requires Cloudflare auth, local D1 schema setup, and We
 
 ## Audit Closeout Result
 
-The Sprint 30-32 audit findings for admin engagement analytics, realtime custom-role denial, D1 audit evidence, and executable coverage are closed locally. Details live in `docs/V2_2_AUDIT_OUTCOMES.md`. The remaining release caveat is Cloudflare-backed staging smoke for the real Durable Object WebSocket path.
+The Sprint 30-32 audit findings for admin engagement analytics, realtime custom-role denial, D1 audit evidence, and executable coverage are closed locally. Details live in [`V2_2_AUDIT_OUTCOMES.md`](../../releases/V2_2_AUDIT_OUTCOMES.md). The remaining release caveat is Cloudflare-backed staging smoke for the real Durable Object WebSocket path.
 
 ## Health Dashboard Checklist
 

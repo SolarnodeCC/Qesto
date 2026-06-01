@@ -225,7 +225,7 @@ Test code + coverage report:
 ## Docs to Update
 - `docs/QA_FULL.md §1` for new quality gates/CI requirements
 - `docs/QA_FULL.md §2–3` for new test patterns
-- `docs/BACKLOG.md §1` for bugs reproduced by tests
+- `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` for bugs reproduced by tests
 - `docs/FLAKY_TESTS.md` for quarantined tests
 
 ## Do Not
@@ -241,3 +241,4 @@ Test code + coverage report:
 - Critical path coverage (state machine, auth, payment: 100%)
 - Flaky test frequency and resolution time
 - CI pass rate (target: 99%)
+

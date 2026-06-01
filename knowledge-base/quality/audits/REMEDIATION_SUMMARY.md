@@ -91,7 +91,7 @@
    - Prevents malformed permission arrays from bypassing authorization
 
 **Pattern Documented:**
-- `docs/VALIDATION_PATTERNS.md` — 5 real-world examples + testing checklist
+- [`VALIDATION_PATTERNS.md`](../../architecture/VALIDATION_PATTERNS.md) — 5 real-world examples + testing checklist
 - Shows proof-aware decoder pattern: `validateData(untrusted, Schema) → T | null`
 
 **Remaining Files (Queued for follow-up):**
@@ -175,7 +175,7 @@ let _token: string | null = null  // Memory only
    - 6-phase remediation roadmap
    - Prioritized by security impact
 
-2. **docs/VALIDATION_PATTERNS.md** (340 lines)
+2. **[VALIDATION_PATTERNS.md](../../architecture/VALIDATION_PATTERNS.md)** (340 lines)
    - Reference guide for HLT-031 pattern
    - 5 real-world examples (API routes, WebSocket, file I/O, DB, KV)
    - Testing checklist + error handling strategies
@@ -233,7 +233,7 @@ let _token: string | null = null  // Memory only
 - Test auth token flow in staging
 
 ### For Team Reference
-- **Adding new API routes?** → Use `docs/VALIDATION_PATTERNS.md` Pattern 1
+- **Adding new API routes?** → Use [VALIDATION_PATTERNS.md](../../architecture/VALIDATION_PATTERNS.md) Pattern 1
 - **Integrating webhooks?** → Use `WebhookConfigSchema` from validators.ts
 - **Handling migration risks?** → Copy metadata format from `migrations/.metadata/`
 

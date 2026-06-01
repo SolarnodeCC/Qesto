@@ -240,7 +240,7 @@ ORDER BY plan
 **Acceptance Criteria:**
 - Query runs against production AE with ≥30d data and returns non-zero counts for all four events
 - If any event count is zero, flag as `⚠️ INSTRUMENTATION_GAP` and escalate to backend-dev
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_activation_funnel_v2.md` following output format
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_activation_funnel_v2.md` following output format
 - Documented known gap: aggregate funnel only (not per-user stitched) — `userId` linkage prerequisite logged as `OBS-FUNNEL-STITCH-01` for future sprint
 
 **Data prerequisite:** `signup`, `team_created`, `first_session_started`, `first_paid` all live in AE (✅ OBS-01, S18).
@@ -261,7 +261,7 @@ ORDER BY plan
 **Acceptance Criteria:**
 - AQL completeness check: `SELECT COUNT(DISTINCT blob7), COUNT(*) FROM qesto_events WHERE blob1 = 'ws.vote_submitted' AND blob7 != '' AND timestamp > NOW() - INTERVAL '30' DAY` returns `COUNT(DISTINCT blob7) >= 8` (min 8 colos for global coverage)
 - Zero-colo events rate < 5% (local/dev events expected; prod events must carry colo)
-- Data quality report saved to `docs/ANALYTICS/YYYY-MM-DD_colo_instrumentation_check.md`
+- Data quality report saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_colo_instrumentation_check.md`
 - Red flag: if `COUNT(DISTINCT blob7) < 4`, escalate to backend-dev — CF-Ray header not forwarding into SessionRoom
 
 **Data prerequisite:** OBS-COLO-01 live ≥30d.
@@ -300,7 +300,7 @@ ORDER BY p95_ms DESC
 - At least 8 colos return ≥100 votes
 - All qualifying colos show p95 < 100ms for `pro` and `enterprise` plans
 - `free` plan p95 may exceed 100ms (capacity limits expected); documented separately
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_SUB100MS_PROOF.md` with GTM claim copy
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_SUB100MS_PROOF.md` with GTM claim copy
 - If any colo shows p95 ≥ 100ms for paid plans: flag as `⚠️ SLO_AT_RISK`, open backlog item for backend-dev investigation
 
 **Data prerequisite:** OBS-COLO-01 + OBS-LATENCY-REGION-01 ≥30d data.
@@ -337,7 +337,7 @@ GROUP BY colo, model, plan ORDER BY p95_ai_ms DESC
 - Both queries return non-zero results in production
 - `GET /api/admin/metrics/latency?region=all&window=24h` exposes JSON combining both views
 - Anomaly: if any colo shows p95 vote latency ≥ 200ms, flag `region_slo_breach: true`
-- Results archived to `docs/ANALYTICS/YYYY-MM-DD_multiregion_latency.md` weekly
+- Results archived to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_multiregion_latency.md` weekly
 
 **Data prerequisite:** OBS-COLO-01 ≥30d.
 
@@ -348,7 +348,7 @@ GROUP BY colo, model, plan ORDER BY p95_ai_ms DESC
 **Story:** As a product and engineering team, we have a formal SLO definition document with specific thresholds and error budget policies covering all critical platform operations.
 
 **Acceptance Criteria:**
-- Document `docs/ANALYTICS/SLO_DEFINITIONS.md` created with:
+- Document `knowledge-base/operations/monitoring/analytics/SLO_DEFINITIONS.md` created with:
   - **SLO-VOTE-LATENCY**: p95 of `ws.vote_submitted.double1` < 100ms (pro/enterprise), < 300ms (free) over 30d rolling
   - **SLO-AI-LATENCY**: p95 of `ai.inference.double1` < 3000ms over 30d rolling
   - **SLO-WS-ERROR**: rate of `do.storage_fault` / `ws.vote_submitted` < 0.1% over 7d rolling
@@ -363,7 +363,7 @@ GROUP BY colo, model, plan ORDER BY p95_ai_ms DESC
 
 ### ANALYTICS-MULTIREGION-REPORT-01 · 5 pts · P1
 
-**Story:** As an ops team, I receive a weekly automated latency report per region, filed to `docs/ANALYTICS/` with anomaly flags.
+**Story:** As an ops team, I receive a weekly automated latency report per region, filed to `knowledge-base/operations/monitoring/analytics/` with anomaly flags.
 
 **Acceptance Criteria:**
 - A Cloudflare Worker scheduled cron (`*/7 * * * MON`) runs ANALYTICS-LATENCY-AQL-01 queries and writes the markdown report
@@ -408,7 +408,7 @@ GROUP BY colo, model, plan ORDER BY p95_ai_ms DESC
 **Acceptance Criteria:**
 - Data quality check: `SELECT COUNT(*) FROM qesto_events WHERE blob1 IN ('partner.referral', 'partner.signup_converted', 'partner.first_session_started') AND timestamp > NOW() - INTERVAL '7' DAY`
 - If any count = 0 after 7d: escalate to backend-dev with AE completeness report
-- Zero-count report filed to `docs/ANALYTICS/YYYY-MM-DD_partner_event_check.md`
+- Zero-count report filed to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_partner_event_check.md`
 
 **Data prerequisite:** OBS-PARTNER-01 live.
 
@@ -449,7 +449,7 @@ ORDER BY signups DESC
 - Query returns non-zero rows for at least one active partner
 - Results segmented by plan where `partner.first_session_started` carries plan field
 - Requires ≥30d data post OBS-PARTNER-01 (min 1 month accumulation)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_partner_funnel.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_partner_funnel.md`
 - Anomaly: any partner with click_to_signup_pct < 5% flagged as `⚠️ LOW_CONVERSION`
 
 **Data prerequisite:** OBS-PARTNER-01 + OBS-PARTNER-CONV-01, ≥30d data.
@@ -548,7 +548,7 @@ LIMIT 10
 
 **Acceptance Criteria:**
 - All 5 queries return non-zero results from production AE
-- Evidence doc saved to `docs/ANALYTICS/YYYY-MM-DD_scale_proof_aql.md`
+- Evidence doc saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_scale_proof_aql.md`
 - GTM claim matrix: capacity_hit_pct < 1% for enterprise plan; storage_fault_rate_pct < 0.01%; vote throughput peak documented
 - Anomaly: if capacity_hit_pct > 5% for free plan, flag as `⚠️ UPSELL_SIGNAL` (capacity upgrade trigger per MKTG-003)
 
@@ -688,7 +688,7 @@ GROUP BY userId
 **Acceptance Criteria:**
 - `GET /api/admin/metrics/cohorts?window=90d` returns cohort table: `[{signup_week, plan, cohort_size, w1_retained, w4_retained, w8_retained, w1_rate_pct, w4_rate_pct, w8_rate_pct}]`
 - Cohort computation joins D1 userId with AE `session.started` blob2; documented as approximate (blob2 userId ≠ sessionId mapping gap)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_cohort_retention.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_cohort_retention.md`
 - Anomaly: if w4_retained < 20% for any plan, flag `⚠️ RETENTION_DROP`
 
 **Data prerequisite:** `session.started` with userId in blob2 (requires `first_session_started` userId fix from ANALYTICS-FUNNEL-01 note).
@@ -751,7 +751,7 @@ ORDER BY cohort_month DESC, plan
 **Acceptance Criteria:**
 - Query returns non-zero `total_eur_billed` for paid plan cohorts
 - Results include `billing.payment_failed` deduction note (failures logged but not deducted from LTV sum — AE doesn't support joins; document limitation)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_ltv_cohort.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_ltv_cohort.md`
 - If `avg_ltv_eur` < €X (threshold from PO) for any cohort: flag `⚠️ LTV_BELOW_TARGET`
 
 **Data prerequisite:** `billing.plan_upgraded` and `billing.webhook_received` events with `value` (EUR) in `double3` — requires OBS-01 billing events (S18).
@@ -840,7 +840,7 @@ ORDER BY calls DESC
 ```
 
 **Acceptance Criteria:**
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_ai_benchmark.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_ai_benchmark.md`
 - Anomaly: `avg_retry_count > 1.5` flags `⚠️ MODEL_DEGRADED` for affected model
 - Anomaly: `p95_ms > 3000` for any paid plan flags `⚠️ AI_SLO_AT_RISK`
 - Anomaly: `timeout_rate_pct > 2%` flags `⚠️ TIMEOUT_SPIKE` — escalate to backend-dev (RES-TIMEOUT-01 AbortController threshold review)
@@ -874,7 +874,7 @@ ORDER BY week DESC, plan
 
 **Acceptance Criteria:**
 - Zero individual participant scores surfaced (aggregate only, k≥5 enforced per AI-SENTIMENT-01)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_sentiment_trend.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_sentiment_trend.md`
 - Anomaly: if `avg_sentiment_score < 0.35` for ≥3 consecutive weeks for a plan, flag `⚠️ SENTIMENT_DROP` — recommend product review of that plan tier's session quality
 
 **Data prerequisite:** AI-SENTIMENT-01 (S34) active ≥90d.
@@ -886,10 +886,10 @@ ORDER BY week DESC, plan
 **Story:** As a product owner, I can compare activation funnel snapshots quarterly to surface CRO deltas and validate improvement initiatives.
 
 **Acceptance Criteria:**
-- Funnel snapshot taken at S49 baseline, S60, and S65 (from `docs/ANALYTICS/YYYY-MM-DD_activation_funnel_v2.md` files)
+- Funnel snapshot taken at S49 baseline, S60, and S65 (from `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_activation_funnel_v2.md` files)
 - Comparison table: step → S49_rate → S60_rate → S65_rate → delta_pct
 - Statistical note: conversion rate changes < 5 percentage points flagged as `WITHIN_NOISE` (small sample sizes on free plan)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_funnel_evolution.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_funnel_evolution.md`
 
 **Data prerequisite:** ANALYTICS-FUNNEL-01 (S60) baseline + ≥2 quarterly snapshots.
 
@@ -929,7 +929,7 @@ ORDER BY connections DESC
 - Non-zero rows for at least 2 integration types (slack, teams, webhook) — requires OBS-INTEGRATION-01 (S33) ≥90d
 - Anomaly: `export_completion_pct < 80%` flags `⚠️ EXPORT_FAILURE_RATE` — escalate to backend-dev
 - Anomaly: zero `integration.connected` for a shipped integration type flags `⚠️ INTEGRATION_INSTRUMENTATION_GAP`
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_integration_funnel.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_integration_funnel.md`
 
 **Data prerequisite:** OBS-INTEGRATION-01 (S33) ≥90d data.
 
@@ -983,7 +983,7 @@ GROUP BY plan
 **Acceptance Criteria:**
 - `GET /api/admin/metrics/exports` returns per-format, per-plan export volume (monthly)
 - Retention correlation: teams that exported ≥1 session in month N have session_frequency in month N+1 compared to non-exporting teams (requires ANALYTICS-COHORT-01 + D1 join)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_export_adoption.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_export_adoption.md`
 
 **Data prerequisite:** OBS-EXPORT-01 + ANALYTICS-COHORT-01.
 
@@ -998,7 +998,7 @@ GROUP BY plan
 **Acceptance Criteria:**
 - Report compares `sessions_per_month` for integrated vs non-integrated teams, by plan
 - Statistical caveat documented: causation vs correlation (enterprise teams are more active regardless of integration)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_integration_retention_correlation.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_integration_retention_correlation.md`
 - If integrated teams show ≥20% higher session frequency: surface as GTM claim with caveat
 
 **Data prerequisite:** ANALYTICS-INTEGRATION-FUNNEL-01 + ANALYTICS-COHORT-01.
@@ -1014,7 +1014,7 @@ GROUP BY plan
 
 **Story:** As a GTM engineer, I have a comprehensive scale proof evidence document combining 6 months of production AE data across all scale dimensions.
 
-**Evidence document structure (`docs/ANALYTICS/YYYY-MM-DD_scale_proof_v2.md`):**
+**Evidence document structure (`knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_scale_proof_v2.md`):**
 1. Peak concurrent voters (from ANALYTICS-SCALE-AQL-01 query 1, 6-month window)
 2. Vote throughput peaks (query 3, all-time top 10 minutes)
 3. Multi-region p95 latency evidence (from PERF-PROOF-02, colo-segmented)
@@ -1088,7 +1088,7 @@ ORDER BY sessions_30d DESC
 **Acceptance Criteria:**
 - AQL query joining `ldap.connected`, `ldap.sync_completed`, `enterprise.sso_login` (where `detail=ldap`) events
 - Requires `ldap.connected` and `ldap.sync_completed` events to be added to `QestoEvent` (escalate to backend-dev alongside LDAP-01 ship, S38)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_ldap_adoption.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_ldap_adoption.md`
 
 **Data prerequisite:** LDAP-01 (S38) active ≥30d + LDAP AE events.
 
@@ -1133,7 +1133,7 @@ ORDER BY votes DESC
 **Acceptance Criteria:**
 - Non-zero votes for at least `mobile_web` and `desktop` device types
 - Anomaly: if mobile_web p95 latency > 2× desktop p95 → flag `⚠️ MOBILE_LATENCY_GAP`
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_mobile_funnel.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_mobile_funnel.md`
 
 **Data prerequisite:** OBS-MOBILE-01 ≥30d.
 
@@ -1147,7 +1147,7 @@ ORDER BY votes DESC
 - Compare `sessions_per_team_per_month` for teams where majority of votes come from `device_type=pwa` vs `device_type=mobile_web`
 - Requires ≥30d of OBS-MOBILE-01 data + ≥20 pwa-classified sessions for statistical minimum
 - Documented statistical caveat: PWA-installing teams are likely more engaged regardless (selection bias)
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_pwa_retention.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_pwa_retention.md`
 
 **Data prerequisite:** OBS-MOBILE-01 ≥30d + MOBILE-01 (S37).
 
@@ -1214,7 +1214,7 @@ ORDER BY avg_participant_count DESC
 **Acceptance Criteria:**
 - Non-zero sessions for all three types (requires GAM-05 + LIVE energizers active ≥30d)
 - Anomaly: if tournament completion rate (winner_declared/started) < 70%, flag `⚠️ TOURNAMENT_ABANDON_RATE`
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_tournament_funnel.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_tournament_funnel.md`
 
 **Data prerequisite:** OBS-TOURNAMENT-01 ≥30d.
 
@@ -1245,7 +1245,7 @@ GROUP BY plan
 ```
 
 **Acceptance Criteria:**
-- Results saved to `docs/ANALYTICS/YYYY-MM-DD_gamification_depth.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_gamification_depth.md`
 - Anomaly: `tournament_completion_pct < 60%` flags `⚠️ HIGH_ABANDON` — surface to GAM roadmap
 - Feeds `GAM-06` (S35) dashboard with production data
 
@@ -1337,7 +1337,7 @@ ORDER BY quarter DESC, plan
 12. Scale proof: peak concurrent voters + vote throughput (from ANALYTICS-SCALE-PROOF-02)
 
 **Acceptance Criteria:**
-- Stored to `docs/ANALYTICS/YYYY-Q4_annual_business_review.md` following output format
+- Stored to `knowledge-base/operations/monitoring/analytics/YYYY-Q4_annual_business_review.md` following output format
 - All queries include `-- Query N: <title>` comments and actual AQL text
 - Each section includes anomaly flags and interpretation
 - Zero PII — all team/user references use opaque IDs or aggregate counts only
@@ -1380,7 +1380,7 @@ ORDER BY quarter DESC, plan
 **Acceptance Criteria:**
 - All 4 SLOs reported: VOTE-LATENCY, AI-LATENCY, WS-ERROR, API-ERROR
 - `budget_burn_multiplier > 1.0` highlights quarter as `⚠️ BUDGET_EXCEEDED`
-- Results saved to `docs/ANALYTICS/YYYY-Q4_slo_annual_burn.md`
+- Results saved to `knowledge-base/operations/monitoring/analytics/YYYY-Q4_slo_annual_burn.md`
 
 **Data prerequisite:** OBS-COLO-01 + ANALYTICS-SLO-DEFINE-01 ≥12 months.
 
@@ -1404,7 +1404,7 @@ GROUP BY blob1 ORDER BY count_7d ASC
 
 **Acceptance Criteria:**
 - Any event with count = 0 in a 7-day window is flagged `❌ INSTRUMENTATION_GAP` and escalated to backend-dev
-- Report saved to `docs/ANALYTICS/YYYY-MM-DD_completeness_audit.md`
+- Report saved to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_completeness_audit.md`
 - Completeness score = (non-zero events / expected events) × 100%; target: 100%
 - Run weekly every Monday per analytics.md §Data Quality Checks; cron-backed where possible
 
@@ -1432,7 +1432,7 @@ GROUP BY plan
 **Acceptance Criteria:**
 - `GET /api/admin/metrics/growth-accounting?month=YYYY-MM` returns AARRR breakdown per plan
 - AARRR identity verified: `new + retained + resurrected = active` for each month
-- Results stored monthly to `docs/ANALYTICS/YYYY-MM_growth_accounting.md`
+- Results stored monthly to `knowledge-base/operations/monitoring/analytics/YYYY-MM_growth_accounting.md`
 - Feeds investor / GTM narrative: "MoM net team growth rate"
 
 **Data prerequisite:** `team_created` + `session.started` events ≥3 months for resurrection calculation.
@@ -1467,7 +1467,7 @@ Per `analytics.md §Data Quality Checks` and this document:
 - [ ] Check SLO status: run ANALYTICS-SLO-ALERT-01 queries — flag any `BREACHED` status
 - [ ] Run churn signal check: `team.churn_signal` event volume — flag if at-risk teams > prior week by >20%
 - [ ] Check data freshness: `MAX(timestamp)` within 30 minutes of current time
-- [ ] Archive any new anomalies to `docs/ANALYTICS/YYYY-MM-DD_weekly_audit.md`
+- [ ] Archive any new anomalies to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_weekly_audit.md`
 
 ---
 

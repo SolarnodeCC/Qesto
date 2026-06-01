@@ -401,8 +401,8 @@ Plus: staging WebSocket smoke when touching `SessionRoom`; chaos drill evidence 
 | DevOps / SRE | [`SPRINT60_70_INFRA_PLAN.md`](./SPRINT60_70_INFRA_PLAN.md) |
 | Frontend | [`SPRINT60_70_FRONTEND_PROPOSAL.md`](./SPRINT60_70_FRONTEND_PROPOSAL.md) _(create on branch if missing)_ |
 | QA | [`QA_COMMITMENT_SPRINTS_60_70.md`](../backlog/QA_COMMITMENT_SPRINTS_60_70.md) |
-| Analytics | [`docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../docs/ANALYTICS/2026-05-25_sprint60-70-obs-analytics-proposals.md) |
-| i18n | [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md) (repo root) |
+| Analytics | [`2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../operations/monitoring/2026-05-25_sprint60-70-obs-analytics-proposals.md) |
+| i18n | [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md) |
 | AI | `docs/AI_DECISIONS/` — S60–S70 maturity advisory (PO + ai-strategy) |
 | Marketing | MKTG-* catalog in PO agent output — integrate at sprint grooming |
 

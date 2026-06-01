@@ -90,7 +90,7 @@ For every analysis:
 3. **Interpretation** — what numbers mean in product terms
 4. **Anomalies** — zero counts, unexpected spikes, missing segments
 5. **Recommendation** — action tagged with MKTG-xxx or OBS-xxx
-6. **File saved** — `docs/ANALYTICS/YYYY-MM-DD_<topic>.md`
+6. **File saved** — `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_<topic>.md`
 
 ## Rules
 - Read-only queries — never write to D1 or KV
@@ -166,7 +166,7 @@ FROM qesto_events;
 - [ ] No PII surfaces in results (emails, names, IPs use anonymised IDs)
 - [ ] Anomalies documented (zero counts, unexpected spikes)
 - [ ] Data freshness verified (<30 min lag)
-- [ ] Query result archived to `docs/ANALYTICS/YYYY-MM-DD_<topic>.md`
+- [ ] Query result archived to `knowledge-base/operations/monitoring/analytics/YYYY-MM-DD_<topic>.md`
 
 ## Do Not
 

@@ -366,8 +366,8 @@ wrangler pages deploy dist
 ## 📚 Reference
 
 - **Workflow Implementation:** `worker/TemplateGenerationWorkflow.ts` (503 lines)
-- **Architecture Spec:** `GROWTH_ENGINE_COMPLETE.md`
-- **E2E Testing:** `PROVISIONING_GROWTH_ENGINE.md`
+- **Architecture Spec:** [`GROWTH_ENGINE_COMPLETE.md`](../../product/growth-engine/GROWTH_ENGINE_COMPLETE.md)
+- **E2E Testing:** [`PROVISIONING_GROWTH_ENGINE.md`](../../product/growth-engine/PROVISIONING_GROWTH_ENGINE.md)
 - **Cloudflare Docs:** https://developers.cloudflare.com/workflows/
 
 ---

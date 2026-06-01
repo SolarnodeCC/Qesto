@@ -27,7 +27,7 @@ describe('Sprint 29 leaderboard and badge contract', () => {
   })
 
   it('documents the Sprint 29 shipped scope', () => {
-    const sprint29 = readFileSync('docs/SPRINT29_IMPLEMENTATION_SPEC.md', 'utf8')
+    const sprint29 = readFileSync('knowledge-base/product/planning/sprints/SPRINT29_IMPLEMENTATION_SPEC.md', 'utf8')
 
     expect(sprint29).toContain('Leaderboard and badge foundation')
     expect(sprint29).toContain('deterministic and idempotent')

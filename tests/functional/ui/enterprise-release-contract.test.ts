@@ -31,10 +31,10 @@ describe('Sprint 30-32 enterprise release contract', () => {
   })
 
   it('documents the release-candidate scope and rollout gates', () => {
-    const sprint30 = readFileSync('docs/SPRINT30_IMPLEMENTATION_SPEC.md', 'utf8')
-    const sprint31 = readFileSync('docs/SPRINT31_IMPLEMENTATION_SPEC.md', 'utf8')
-    const sprint32 = readFileSync('docs/SPRINT32_IMPLEMENTATION_SPEC.md', 'utf8')
-    const rollout = readFileSync('docs/V2_2_ROLLOUT_PLAN.md', 'utf8')
+    const sprint30 = readFileSync('knowledge-base/product/planning/sprints/SPRINT30_IMPLEMENTATION_SPEC.md', 'utf8')
+    const sprint31 = readFileSync('knowledge-base/product/planning/sprints/SPRINT31_IMPLEMENTATION_SPEC.md', 'utf8')
+    const sprint32 = readFileSync('knowledge-base/product/planning/sprints/SPRINT32_IMPLEMENTATION_SPEC.md', 'utf8')
+    const rollout = readFileSync('knowledge-base/product/releases/V2_2_ROLLOUT_PLAN.md', 'utf8')
 
     expect(sprint30).toContain('no raw prompts')
     expect(sprint31).toContain('energizer:activate')

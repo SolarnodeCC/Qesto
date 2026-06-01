@@ -23,7 +23,7 @@ describe('Sprint 28 Team Quiz contract', () => {
   })
 
   it('documents the Sprint 28 shipped scope', () => {
-    const sprint28 = readFileSync('docs/SPRINT28_IMPLEMENTATION_SPEC.md', 'utf8')
+    const sprint28 = readFileSync('knowledge-base/product/planning/sprints/SPRINT28_IMPLEMENTATION_SPEC.md', 'utf8')
 
     expect(sprint28).toContain('Team Quiz LIVE loop')
     expect(sprint28).toContain('multi-question LIVE energizer loop')

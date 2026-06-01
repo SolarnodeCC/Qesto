@@ -90,8 +90,8 @@ function reconnect() {
 | New aria-live regions, focus management, keyboard interactions | `docs/A11Y_FULL.md` |
 | New accessible component patterns | `docs/A11Y_FULL.md §4` |
 | A11y gaps found | `docs/A11Y_FULL.md §6` |
-| UI bug discovered | `docs/BACKLOG.md §1` with TC=13 |
-| Story shipped | `docs/BACKLOG.md §5` + `docs/SPRINT_PLAN.md` |
+| UI bug discovered | `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` with TC=13 |
+| Story shipped | `knowledge-base/product/backlog/BACKLOG_MASTER.md §5` + `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` |
 
 ## Output Format
 
@@ -99,3 +99,4 @@ function reconnect() {
 2. Run `npm run type-check` — flag any type issues
 3. Note if `npm test` needs updating
 4. **Docs updated** — list which `docs/` files changed and what
+

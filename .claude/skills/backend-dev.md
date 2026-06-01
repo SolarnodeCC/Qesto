@@ -203,4 +203,5 @@ const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\
 | New KV namespace or schema | `docs/ARCHITECTURE.md` |
 | D1 schema migration | `docs/ARCHITECTURE.md` |
 | New secret or env binding | `docs/CONFIGURATION.txt` + `CLAUDE.md` |
-| Tech debt discovered | `docs/BACKLOG.md §4` |
+| Tech debt discovered | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` |
+

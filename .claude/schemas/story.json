@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Qesto User Story Schema",
-  "description": "Canonical format for user stories in docs/BACKLOG.md and docs/SPRINT_PLAN.md",
+  "description": "Canonical format for user stories in knowledge-base/product/backlog/BACKLOG_MASTER.md and knowledge-base/product/planning/SPRINT_PLAN_MASTER.md",
   "type": "object",
   "required": ["id", "title", "points", "as_a", "i_want", "so_that", "acceptance_criteria"],
   "properties": {
@@ -141,3 +141,4 @@
     "updated_date": "2026-04-10T14:30:00Z"
   }
 }
+

@@ -15,8 +15,8 @@ describe('Sprint 26/27 LIVE energizer contract', () => {
   })
 
   it('documents the Sprint 26/27 shipped scope', () => {
-    const sprint26 = readFileSync('docs/spec/sprints/SPRINT26_IMPLEMENTATION_SPEC.md', 'utf8')
-    const sprint27 = readFileSync('docs/spec/sprints/SPRINT27_IMPLEMENTATION_SPEC.md', 'utf8')
+    const sprint26 = readFileSync('knowledge-base/product/planning/sprints/SPRINT26_IMPLEMENTATION_SPEC.md', 'utf8')
+    const sprint27 = readFileSync('knowledge-base/product/planning/sprints/SPRINT27_IMPLEMENTATION_SPEC.md', 'utf8')
 
     expect(sprint26).toContain('LIVE energizer activation readiness')
     expect(sprint27).toContain('Quick Finger playable loop')
