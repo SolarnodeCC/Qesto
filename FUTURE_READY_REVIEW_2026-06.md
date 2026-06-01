@@ -121,12 +121,19 @@ These are the "stay future-ready" investments, ordered by leverage:
 > both `domain-schemas.ts` and `protocol-schemas.ts` — dedupe into one source
 > before introducing a merging barrel.
 
-### Phase 2 — Consistency (1 sprint, parallelizable)
-| Item | Action | Days |
-|------|--------|------|
-| R-02 | Route all KV access through `lib/kv.ts` | 4 |
-| R-04 | Replace `: any` in rbac/kv-cache/workflows | 3 |
-| Guardrails | Vitest coverage threshold + dependency automation | 2 |
+### Phase 2 — Consistency ✅ DONE (June 2026)
+| Item | Action | Status |
+|------|--------|--------|
+| R-02 | Routed **all 50** direct `env.*_KV.*` calls (18 files) through `lib/kv.ts`. Extended the abstraction with exact-passthrough helpers (`readKvText`/`writeKvText`/`deleteKv`) so auth/billing/gdpr error semantics are unchanged. `check:kv-access` baseline locked at **0**. | ✅ |
+| R-04 | Replaced `: any` with real types in the hot paths (`rbac.ts` RBAC context, `kv-cache.ts` helpers, `workflows/session-pipeline.ts` env/AI/kv). `: any` in `functions/` down **47 → 34**; ratchet lowered. | ✅ |
+| Guardrails | Dependency automation already present (`dependabot.yml`). **Coverage threshold was dead config** — the 85% thresholds sat in the vitest-v3 location and were silently ignored (real coverage ~31%). Installed `@vitest/coverage-v8`, moved thresholds to the v4 `thresholds` block as a **regression floor** (29/19/24/30), and wired coverage into the CI quality gate (also feeds the previously-dead coverage artifact upload). | ✅ |
+
+> **Findings surfaced during Phase 2:**
+> 1. The `lib/kv.ts` abstraction only covered JSON get/put; it had no
+>    `delete`/raw-text helper, which is why 18 files bypassed it. Now fixed.
+> 2. Coverage thresholds in `vite.config.ts` were silently ignored under
+>    vitest v4 — the build was green at ~31% against an "85%" config. Now a
+>    live, enforced regression floor.
 
 ### Phase 3 — Decomposition (opportunistic / dedicated)
 | Item | Action | Effort |
@@ -138,7 +145,7 @@ These are the "stay future-ready" investments, ordered by leverage:
 
 ## 5. Bottom line
 
-Qesto is **future-ready today** on the things that are expensive to fix later: dependencies are current, TypeScript is strict, migrations are contiguous and gated, and the realtime God-object has already been broken up. The remaining work is *consolidation and governance*, not rescue. Land Phase 1 (≈3 days) and the codebase moves from "good" to "actively self-defending against regression."
+Qesto is **future-ready today** on the things that are expensive to fix later: dependencies are current, TypeScript is strict, migrations are contiguous and gated, and the realtime God-object has already been broken up. The remaining work is *consolidation and governance*, not rescue. With Phases 1 and 2 landed, the codebase now actively self-defends against regression (KV-access, `: any`, migration-gap, and coverage-floor gates all enforced in CI). Only the opportunistic Phase 3 decomposition (R-05 large frontend modules, R-06 `SessionRoom` finish) and the `PollOptionSchema` dedup remain.
 
 ---
 
