@@ -44,9 +44,7 @@ COMMIT_SHA = "dev"
 SAML_SP_ENTITY_ID = "https://qesto.cc"
 SAML_ACS_URL = "https://qesto.cc/api/auth/saml/callback"
 # Superuser email — bypasses plan quotas and gets team-tier access.
-SUPERUSER_EMAIL = "oostelaar@hotmail.com"
-# Seed admin email — grants owner/admin roles in dev/test (remove in production).
-SEED_ADMIN_EMAIL = "qesto@example.com"
+# SUPERUSER_EMAIL: set via `wrangler secret put SUPERUSER_EMAIL` — never commit to source control.
 # Checkout URL for paid plan upgrades.
 CHECKOUT_URL = "https://checkout.qesto.cc"
 # Resend sender identity; must be a verified sender/domain in your Resend account.
@@ -179,8 +177,7 @@ CF_ACCESS_CERTS_URL = "https://ssolarnode.cloudflareaccess.com/cdn-cgi/access/ce
 COMMIT_SHA = "staging"
 SAML_SP_ENTITY_ID = "https://staging.qesto.cc"
 SAML_ACS_URL = "https://staging.qesto.cc/api/auth/saml/callback"
-SUPERUSER_EMAIL = "oostelaar@hotmail.com"
-SEED_ADMIN_EMAIL = "qesto@example.com"
+# SUPERUSER_EMAIL: set via `wrangler secret put SUPERUSER_EMAIL` — never commit to source control.
 CHECKOUT_URL = "https://checkout-staging.qesto.cc"
 RESEND_FROM = "Qesto Staging <login@staging.qesto.cc>"
 LIVE_ENERGIZERS_ENABLED = "true"

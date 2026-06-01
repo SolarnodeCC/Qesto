@@ -5,6 +5,7 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import type { Env } from '../types'
+import { getFlag } from '../lib/flags'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -15,7 +16,7 @@ export function mountAgentCoachRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
   app.get('/live/:sessionId', async (c) => {
     const sessionId = c.req.param('sessionId')
-    const enabled = c.env.SENTIMENT_ENABLED === 'true' && (c.get('plan') === 'team' || c.get('plan') === 'starter')
+    const enabled = getFlag(c.env, 'SENTIMENT_ENABLED') && (c.get('plan') === 'team' || c.get('plan') === 'starter')
     return c.json({
       ok: true,
       data: {

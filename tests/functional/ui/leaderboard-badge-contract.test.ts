@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vitest'
 describe('Sprint 29 leaderboard and badge contract', () => {
   it('keeps leaderboard and badges in the LIVE energizer snapshot', () => {
     const realtime = readFileSync('functions/api/realtime.ts', 'utf8')
-    const room = readFileSync('functions/api/SessionRoom.ts', 'utf8')
+    // TD-01 extracted the energizer/score logic out of SessionRoom.ts into
+    // dedicated handler modules; the contract is the combined DO surface.
+    const room =
+      readFileSync('functions/api/SessionRoom.ts', 'utf8') +
+      readFileSync('functions/api/lib/session-room-energizer-handler.ts', 'utf8') +
+      readFileSync('functions/api/lib/session-room-energizer.ts', 'utf8')
     const join = readFileSync('src/pages/JoinPage.tsx', 'utf8')
     const present = readFileSync('src/pages/Present.tsx', 'utf8')
 

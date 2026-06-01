@@ -9,6 +9,8 @@
 
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
+import { logEvent } from '../lib/log'
+import { getFlag } from '../lib/flags'
 
 export type RateLimitNamespace = 'auth' | 'session-create' | 'join' | 'kb-search'
 
@@ -83,17 +85,15 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
       await c.env.ACTIONS_KV.put(key, String(count + 1), { expirationTtl: windowSec * 2 })
     } catch (err) {
       kvAvailable = false
-      console.log(
-        JSON.stringify({
+      logEvent({
+          event: 'rate_limit_kv_error',
           ts: new Date().toISOString(),
           level: 'error',
-          msg: 'rate_limit_kv_error',
           namespace,
           trace_id: c.get('trace_id') ?? 'unknown',
           error: (err as Error).message,
-        }),
-      )
-      if (c.env.RATE_LIMIT_FAIL_CLOSED === 'true') {
+        })
+      if (getFlag(c.env, 'RATE_LIMIT_FAIL_CLOSED')) {
         return c.json(
           {
             ok: false,

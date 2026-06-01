@@ -13,7 +13,7 @@ import { z } from 'zod'
 import type { Env } from '../../types'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
-import { safeLogContext } from '../../lib/log'
+import { safeLogContext , logEvent} from '../../lib/log'
 
 type Vars = AuthVariables & AdminVariables
 
@@ -161,16 +161,14 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
         .bind(promptId, nextVersion, content, trigger_event, user.sub, topic || null, now)
         .run()
 
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'help.prompt.created',
           prompt_id: promptId,
           version: nextVersion,
           topic,
           trigger_event,
           admin_user: user.sub,
-        }),
-      )
+        })
 
       return c.json(
         {
@@ -372,14 +370,12 @@ export function registerHelpAdminRoutes(app: Hono<{ Bindings: Env; Variables: Va
         .bind(now, user.sub, action, documentId)
         .run()
 
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'help.feedback.review_resolved',
           document_id: documentId,
           action,
           admin_user: user.sub,
-        }),
-      )
+        })
 
       return c.json(
         {

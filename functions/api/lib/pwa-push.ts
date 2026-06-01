@@ -2,6 +2,7 @@
  * PWA-PUSH-HARDENING-01 — Web Push subscription storage and payload validation (S71).
  */
 import { z } from 'zod'
+import { PWA_PUSH_TTL_SECONDS } from './constants'
 
 export const PushSubscriptionSchema = z.object({
   endpoint: z.string().url().max(2048),
@@ -34,7 +35,7 @@ export async function savePushSubscription(
   sub: PushSubscription,
 ): Promise<void> {
   await kv.put(pushSubscriptionKvKey(userId), JSON.stringify({ ...sub, updatedAt: Date.now() }), {
-    expirationTtl: 60 * 60 * 24 * 90,
+    expirationTtl: PWA_PUSH_TTL_SECONDS,
   })
 }
 

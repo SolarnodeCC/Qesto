@@ -2,6 +2,7 @@
 // to console so developers can sign in without a mailbox.
 
 import { CircuitBreakers } from './resilience/circuit-breaker'
+import { logEvent } from './log'
 
 export type SendEmailArgs = {
   to: string
@@ -13,7 +14,7 @@ export type SendEmailArgs = {
 
 export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs): Promise<{ delivered: boolean; id?: string }> {
   if (!apiKey) {
-    console.log(`[email:dev] to=${args.to} subject=${args.subject}\n${args.text}`)
+    logEvent({ event: 'log', message: `[email:dev] to=${args.to} subject=${args.subject}\n${args.text}` })
     return { delivered: false }
   }
   const from = args.from?.trim() || 'Qesto <noreply@qesto.cc>'

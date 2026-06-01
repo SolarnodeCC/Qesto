@@ -28,7 +28,7 @@
     "check:compliance-claims": "node scripts/check-compliance-claims.mjs",
     "check:dark-mode": "node scripts/check-marketing-dark-mode.mjs",
     "check:sprint-51-60": "node scripts/check-sprint-51-60-dod.mjs",
-    "check:rc": "npm run typecheck && npm run check:i18n && npm run check:tokens-drift && npm run check:baseline && npm test && npm run test:a11y && npm run build",
+    "check:rc": "npm run check:migrations && npm run typecheck && npm run check:i18n && npm run check:tokens-drift && npm run check:baseline && npm test && npm run test:a11y && npm run build",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
     "test:e2e": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
@@ -40,7 +40,8 @@
     "kb:embed": "npx tsx scripts/embed-kb.ts",
     "kb:sync": "npx tsx scripts/kb-sync-cli.ts",
     "help:sync": "npx tsx scripts/sync-help-docs.ts",
-    "contracts:generate": "openapi-typescript contracts/openapi/qesto-api.yaml -o contracts/generated/api.d.ts"
+    "contracts:generate": "openapi-typescript contracts/openapi/qesto-api.yaml -o contracts/generated/api.d.ts",
+    "check:migrations": "node scripts/check-migration-gaps.mjs"
   },
   "dependencies": {
     "hono": "^4.12.23",

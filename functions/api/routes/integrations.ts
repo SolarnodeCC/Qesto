@@ -33,6 +33,8 @@ import { readKvJson, writeKvJson } from '../lib/kv'
 import { writeEvent } from '../lib/observability'
 import { base64UrlEncode, base64UrlDecode, timingSafeEqual, hmacSign } from '../lib/shared/crypto'
 import type { Env, PlanTier } from '../types'
+import { INTEGRATION_TOKEN_TTL_SECONDS } from '../lib/constants'
+import { logEvent } from '../lib/log'
 
 // Match the Vars shape used in app.ts so this sub-router composes cleanly.
 type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -282,27 +284,23 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
           connectedBy: verified.userId,
         }
         await writeKvJson(c.env.INTEGRATIONS_KV!, slackConfigKey(verified.teamId), config, {
-          expirationTtl: 90 * 24 * 60 * 60,
+          expirationTtl: INTEGRATION_TOKEN_TTL_SECONDS,
         })
       }
       await emitIntegrationConnected(c.env, verified.userId, verified.teamId, 'slack')
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'slack.connected',
           teamId: verified.teamId,
           userId: verified.userId,
           channelId: channelId ?? null,
-        }),
-      )
+        })
       return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=slack`, 302)
     } catch (err) {
-      console.error(
-        JSON.stringify({
+      logEvent({
           event: 'slack.callback.error',
           teamId: verified.teamId,
           error: String(err),
-        }),
-      )
+        })
       return c.redirect(`${c.env.PAGES_URL}/integrations?error=oauth_failed`, 302)
     }
   })
@@ -367,7 +365,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
       ...(body.notifyOnEnergizer !== undefined ? { notifyOnEnergizer: body.notifyOnEnergizer } : {}),
     }
     await writeKvJson(c.env.INTEGRATIONS_KV!, slackConfigKey(teamId), next, {
-      expirationTtl: 90 * 24 * 60 * 60,
+      expirationTtl: INTEGRATION_TOKEN_TTL_SECONDS,
     })
     return c.json({
       ok: true,
@@ -530,22 +528,18 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
       const store = createEncryptedTokenStore(c.env.INTEGRATIONS_KV!, c.env)
       await store.storeToken(verified.teamId, 'teams', token)
       await emitIntegrationConnected(c.env, verified.userId, verified.teamId, 'teams')
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'teams.connected',
           teamId: verified.teamId,
           userId: verified.userId,
-        }),
-      )
+        })
       return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=teams&configure=1`, 302)
     } catch (err) {
-      console.error(
-        JSON.stringify({
+      logEvent({
           event: 'teams.callback.error',
           teamId: verified.teamId,
           error: String(err),
-        }),
-      )
+        })
       return c.redirect(`${c.env.PAGES_URL}/integrations?error=oauth_failed`, 302)
     }
   })
@@ -641,7 +635,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
       connectedBy: user.sub,
     }
     await writeKvJson(c.env.INTEGRATIONS_KV!, teamsConfigKey(teamId), config, {
-      expirationTtl: 90 * 24 * 60 * 60,
+      expirationTtl: INTEGRATION_TOKEN_TTL_SECONDS,
     })
     return c.json({ ok: true, data: { configured: true }, trace_id: c.get('trace_id') })
   })
@@ -719,7 +713,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
         notifyOnClose: true,
       }
       await writeKvJson(c.env.INTEGRATIONS_KV!, zoomConfigKey(verified.teamId), config, {
-        expirationTtl: 90 * 24 * 60 * 60,
+        expirationTtl: INTEGRATION_TOKEN_TTL_SECONDS,
       })
       writeEvent(c.env.METRICS_AE, {
         name: 'integration.connected',
@@ -787,7 +781,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
         notifyOnClose: true,
       }
       await writeKvJson(c.env.INTEGRATIONS_KV!, salesforceConfigKey(verified.teamId), config, {
-        expirationTtl: 90 * 24 * 60 * 60,
+        expirationTtl: INTEGRATION_TOKEN_TTL_SECONDS,
       })
       return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=salesforce`, 302)
     } catch (err) {
@@ -861,7 +855,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
         c.env.INTEGRATIONS_KV!,
         `integration:config:${verified.teamId}:notion`,
         { connectedAt: Date.now(), connectedBy: verified.userId },
-        { expirationTtl: 90 * 24 * 60 * 60 },
+        { expirationTtl: INTEGRATION_TOKEN_TTL_SECONDS },
       )
       return c.redirect(`${c.env.PAGES_URL}/teams/${verified.teamId}/settings?connected=notion`, 302)
     } catch (err) {

@@ -15,7 +15,12 @@ describe('Sprint 30-32 enterprise release contract', () => {
   it('keeps energizer activation permissioned separately from session lifecycle', () => {
     const authz = readFileSync('functions/api/lib/authz.ts', 'utf8')
     const teamSettings = readFileSync('src/pages/TeamSettings.tsx', 'utf8')
-    const room = readFileSync('functions/api/SessionRoom.ts', 'utf8')
+    // TD-01 extracted the energizer activation gate out of SessionRoom.ts into
+    // the energizer handler module; the contract is the combined DO surface.
+    const room =
+      readFileSync('functions/api/SessionRoom.ts', 'utf8') +
+      readFileSync('functions/api/lib/session-room-energizer-handler.ts', 'utf8') +
+      readFileSync('functions/api/lib/session-room-energizer.ts', 'utf8')
     const audit = readFileSync('src/components/AuditLogViewer.tsx', 'utf8')
 
     expect(authz).toContain("'energizer:activate'")

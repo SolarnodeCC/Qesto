@@ -11,6 +11,7 @@ import { listCoachingActions, recordCoachingAction } from '../../lib/coaching-ac
 import { sendEmail } from '../../lib/email'
 import { writeEvent } from '../../lib/observability'
 import type { AiInsightsVars } from './types'
+import { COACHING_INSIGHTS_TTL_SECONDS } from '../../lib/constants'
 
 const CoachingBodySchema = z.object({
   followUp: z.string().max(500).optional(),
@@ -121,7 +122,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     ].slice(-20)
     if (c.env.SESSIONS_KV) {
       await writeKvJson(c.env.SESSIONS_KV, coachingHistoryKey(sessionId), nextHistory, {
-        expirationTtl: 30 * 24 * 60 * 60,
+        expirationTtl: COACHING_INSIGHTS_TTL_SECONDS,
       })
     }
 

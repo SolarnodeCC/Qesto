@@ -15,6 +15,7 @@ import { validateBody } from '../lib/validate'
 import { CreateTemplateSchema } from '../lib/validation'
 import { validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
 import type { Env, Question } from '../types'
+import { TEMPLATE_TTL_SECONDS } from '../lib/constants'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -393,9 +394,9 @@ async function ensureSeedTemplates(kv: KVNamespace) {
   const seeded = await kv.get('qesto_templates_seeded')
   if (!seeded) {
     for (const tmpl of SEED_TEMPLATES) {
-      await kv.put(`qesto_template:${tmpl.id}`, JSON.stringify(tmpl), { expirationTtl: 86400 * 365 })
+      await kv.put(`qesto_template:${tmpl.id}`, JSON.stringify(tmpl), { expirationTtl: TEMPLATE_TTL_SECONDS })
     }
-    await kv.put('qesto_templates_seeded', 'true', { expirationTtl: 86400 * 365 })
+    await kv.put('qesto_templates_seeded', 'true', { expirationTtl: TEMPLATE_TTL_SECONDS })
   }
 }
 
@@ -526,14 +527,14 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
 
     // Store template
     const key = `customer_template:${userId}:${templateId}`
-    await c.env.TEMPLATES_KV.put(key, JSON.stringify(template), { expirationTtl: 86400 * 365 })
+    await c.env.TEMPLATES_KV.put(key, JSON.stringify(template), { expirationTtl: TEMPLATE_TTL_SECONDS })
 
     // Update list
     const listKey = `customer_templates_list:${userId}`
     const listRaw = await c.env.TEMPLATES_KV.get(listKey)
     const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
     list.push(templateId)
-    await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: 86400 * 365 })
+    await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: TEMPLATE_TTL_SECONDS })
 
     return c.json(
       {
@@ -575,7 +576,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       parentId: existing.id,
       updatedAt: Date.now(),
     }
-    await c.env.TEMPLATES_KV.put(key, JSON.stringify(updated), { expirationTtl: 86400 * 365 })
+    await c.env.TEMPLATES_KV.put(key, JSON.stringify(updated), { expirationTtl: TEMPLATE_TTL_SECONDS })
     return c.json({ ok: true, data: { template: updated }, trace_id: c.get('trace_id') })
   })
 
@@ -605,7 +606,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const idx = list.indexOf(templateId)
     if (idx >= 0) {
       list.splice(idx, 1)
-      await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: 86400 * 365 })
+      await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: TEMPLATE_TTL_SECONDS })
     }
 
     return c.json({

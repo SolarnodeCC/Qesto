@@ -23,6 +23,7 @@ interface StoredToken {
   stored_at: number
   expires_at?: number | undefined
 }
+import { INTEGRATION_TOKEN_TTL_SECONDS } from '../constants'
 
 export class EncryptedTokenStore {
   private aesKey: CryptoKey | null = null
@@ -84,7 +85,7 @@ export class EncryptedTokenStore {
     }
 
     await this.kv.put(kvKey, await this.serializeForKv(stored), {
-      expirationTtl: 90 * 24 * 60 * 60,
+      expirationTtl: INTEGRATION_TOKEN_TTL_SECONDS,
     })
   }
 

@@ -2,6 +2,7 @@
  * RES-DO-02 — cross-region energizer snapshot mirror (best-effort KV default).
  */
 import type { LiveEnergizerState } from '../realtime'
+import { CROSS_REGION_MIRROR_TTL_SECONDS } from './constants'
 
 export const CROSS_REGION_ENERGIZER_KV_KEY = 'do:energizer:mirror:'
 
@@ -20,7 +21,7 @@ export async function mirrorEnergizerToKv(
     await kv.delete(key)
     return
   }
-  await kv.put(key, JSON.stringify({ state, mirroredAt: Date.now() }), { expirationTtl: 3600 })
+  await kv.put(key, JSON.stringify({ state, mirroredAt: Date.now() }), { expirationTtl: CROSS_REGION_MIRROR_TTL_SECONDS })
 }
 
 export async function loadEnergizerMirrorFromKv(

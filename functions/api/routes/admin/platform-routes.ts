@@ -8,7 +8,7 @@ import { metricsKv } from './schema-patch'
 import type { HourlyCorrelation, OpsSummary, PlatformKpis, ServiceStatus } from './types'
 import { mountAnalyticsAdminRoutes } from './platform/analytics'
 import { mountPerfAdminRoutes } from './platform/perf'
-import { mountSprint19AdminRoutes } from './platform/sprint19'
+import { mountEngagementAnalyticsRoutes } from './platform/engagement-analytics'
 
 type AdminApp = Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>
 
@@ -175,5 +175,5 @@ export function mountPlatformAdminRoutes(app: AdminApp): void {
 
   mountAnalyticsAdminRoutes(app)
   mountPerfAdminRoutes(app)
-  mountSprint19AdminRoutes(app)
+  mountEngagementAnalyticsRoutes(app)
 }
