@@ -7,3 +7,12 @@ export const PASSWORD_RESET_TTL_SECONDS = 60 * 60 // 1 hour
 export const MAGIC_LINK_WINDOW_SECONDS = 15 * 60
 export const MAGIC_LINK_MAX_PER_IP = 10
 export const MAGIC_LINK_MAX_PER_EMAIL = 5
+
+/**
+ * Password-login rate limits (SEC H-1: brute-force / credential-stuffing).
+ * Per-IP gate blocks stuffing from a single source; per-email gate slows
+ * targeted password guessing. Generous enough for legitimate retries.
+ */
+export const LOGIN_WINDOW_SECONDS = 15 * 60
+export const LOGIN_MAX_PER_IP = 20
+export const LOGIN_MAX_PER_EMAIL = 10

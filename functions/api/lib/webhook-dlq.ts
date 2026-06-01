@@ -10,6 +10,7 @@
 import { readKvJson, writeKvJson } from './kv'
 import { ulid } from './ulid'
 import { WEBHOOK_DLQ_TTL_SECONDS } from './constants'
+import { validateWebhookTargetUrl } from './webhook-url'
 
 export const DLQ_MAX_RETRY_ATTEMPTS = 10
 
@@ -113,6 +114,13 @@ export async function buildDlqDeliveryFn(
   hmacFn: (secret: string, body: string) => Promise<string>,
 ): Promise<(entry: WebhookDlqEntry) => Promise<{ success: boolean; error?: string }>> {
   return async (entry: WebhookDlqEntry) => {
+    // SSRF (H-2): re-validate the stored target before replaying — a DLQ entry
+    // may be retried long after creation, by which point DNS could rebind to a
+    // private/loopback address.
+    const urlCheck = validateWebhookTargetUrl(entry.url)
+    if (!urlCheck.ok) {
+      return { success: false, error: `blocked: ${urlCheck.message}` }
+    }
     const body = JSON.stringify({ event: entry.event, timestamp: Date.now(), data: entry.payload })
     let signature: string
     try {
@@ -125,6 +133,8 @@ export async function buildDlqDeliveryFn(
       const timer = setTimeout(() => controller.abort(), 10_000)
       const res = await fetch(entry.url, {
         method: 'POST',
+        // Do not follow redirects to internal targets (SSRF).
+        redirect: 'manual',
         headers: {
           'Content-Type': 'application/json',
           'X-Qesto-Event': entry.event,
