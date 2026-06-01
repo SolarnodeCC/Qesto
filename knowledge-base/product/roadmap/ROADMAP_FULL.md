@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (security, architect, backend, frontend, analytics, tester, DevOps, product-owner, market research, AI strategy)._
+_Last updated: 2026-06-01 (UTC) — added **Sprint 81–90 Post-v5.0 Expansion Arc** (10 new epics E81–E90 → v6.0 GA) with all-agent synthesis (PO, architect, backend, frontend, security, DevOps, tester, analytics, AI strategy, marketing, market research, i18n). Previous refresh 2026-05-20._
 
 ## Release status
 - **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
@@ -192,6 +192,36 @@ _Last updated: 2026-05-20 (UTC) — refreshed with specialist agent review (secu
 | Sprint 80 | v5.0 GA | Platform certification + DR drill + AAA conformance |
 
 **Plan:** [`SPRINT71_80_PLAN.md`](../planning/SPRINT71_80_PLAN.md) (2026-05-27, all-agent synthesis). Role plans: [`SPRINT71_80_INFRA_PLAN.md`](../planning/SPRINT71_80_INFRA_PLAN.md), [`SPRINT71_80_FRONTEND_PROPOSAL.md`](../planning/SPRINT71_80_FRONTEND_PROPOSAL.md), [`QA_COMMITMENT_SPRINTS_71_80.md`](../backlog/QA_COMMITMENT_SPRINTS_71_80.md), [`MARKETING_SPRINTS_71_80.md`](../marketing/MARKETING_SPRINTS_71_80.md), [`I18N_SPRINT_71_80_PLAN.md`](../../I18N_SPRINT_71_80_PLAN.md).
+
+### Sprint 81–90 — Post-v5.0 Platform Expansion Arc (3× capacity) — NEW
+
+**Focus:** Spend the certified v5.0 platform's credibility on **reach, economy, and new buyers**. Native mobile store apps GA, a paid marketplace (Stripe Connect payout + agent runtime + revenue share), and the promotion of the [`COMPETITIVE_EPICS.md`](../strategy/COMPETITIVE_EPICS.md) ideation set (town hall, hybrid events, retrospectives, ideation, verifiable governance, embeddable SDK, adaptive themes, live captions) into committed scope — opening internal-comms, events, agile-team, governance, and developer buyers. Closes on **v6.0 GA** with full FedRAMP Moderate ATO path + WCAG AAA. **120–150 pts per 2-week sprint.**
+
+**Ten new epics (E81–E90):**
+
+| Epic | Sprints | North star |
+|---|---|---|
+| E81 — Native Mobile GA | S81–S82 | iOS + Android store apps GA (Capacitor); offline-first voter shell; native push |
+| E82 — Marketplace Economy | S82–S83 | Paid listings + Stripe Connect payout + revenue share + partner billing |
+| E83 — Agentic Facilitation | S83–S84 | AI agent runtime GA (AgentRunDO) + agent marketplace (Workers AI only) |
+| E84 — Town Hall & Hybrid Events | S84–S85 | TOWNHALL moderated anonymous Q&A at scale + STAGE hybrid-event suite |
+| E85 — Continuous Collaboration | S85–S86 | RETRO retrospectives + IDEATE brainstorm/prioritization recurring workspaces |
+| E86 — Verifiable Governance | S86–S87 | DELIBERATE cryptographically-verifiable voting + receipts + audit-grade tally |
+| E87 — Embeddable Platform | S87–S88 | EMBED engagement SDK + public widget API (highest TAM ceiling) |
+| E88 — Adaptive Experience & AAA | S88–S89 | CANVAS themes + adaptive dataviz + CAPTIONS live translation + WCAG AAA GA |
+| E89 — Gov Cloud & Full ATO | S89 | FedRAMP Moderate full ATO path + sovereign tenant tier |
+| E90 — Platform v6.0 Certification | S90 | v6.0 GA; certification bundle; annual DR drill; v5.x sunset |
+
+| Sprint range | Release | Target |
+|---|---|---|
+| Sprint 81–83 | v5.1 | Native mobile GA + marketplace economy + agent runtime foundation |
+| Sprint 84–86 | v5.2 | New-business suite (town hall, events, retro, ideate) + agentic GA |
+| Sprint 87–89 | v6.0-rc | Embeddable SDK + verifiable governance + adaptive/AAA + gov cloud |
+| Sprint 90 | v6.0 GA | Certification bundle + DR evidence + v5.x sunset |
+
+**New ADRs:** ADR-0044 (Capacitor store GA) · ADR-0045 (marketplace billing/Stripe Connect) · ADR-0046 (agent runtime GA) · ADR-0047 (town-hall moderation DO) · ADR-0048 (recurring-workspace model) · ADR-0049 (verifiable-voting crypto) · ADR-0050 (embed SDK sandbox) · ADR-0051 (captions/translation, Workers AI) · ADR-0052 (FedRAMP full ATO + sovereign tier) · ADR-0053 (v6.0 certification). **Forbidden:** ADR-0046 (agent runtime GA) and ADR-0049 (verifiable-vote crypto) must not co-land.
+
+**Plan:** [`SPRINT81_90_PLAN.md`](../planning/SPRINT81_90_PLAN.md) (2026-06-01, all-agent synthesis). Role plans: [`SPRINT81_90_INFRA_PLAN.md`](../planning/SPRINT81_90_INFRA_PLAN.md), [`SPRINT81_90_FRONTEND_PROPOSAL.md`](../planning/SPRINT81_90_FRONTEND_PROPOSAL.md), [`SPRINT81_90_BACKEND_PROPOSAL.md`](../planning/SPRINT81_90_BACKEND_PROPOSAL.md), [`SPRINT81_90_ARCH_NOTES.md`](../planning/SPRINT81_90_ARCH_NOTES.md), [`SPRINT81_90_SECURITY_PLAN.md`](../planning/SPRINT81_90_SECURITY_PLAN.md), [`SPRINT81_90_AI_PLAN.md`](../planning/SPRINT81_90_AI_PLAN.md), [`SPRINT81_90_ANALYTICS_PLAN.md`](../planning/SPRINT81_90_ANALYTICS_PLAN.md), [`QA_COMMITMENT_SPRINTS_81_90.md`](../backlog/QA_COMMITMENT_SPRINTS_81_90.md), [`MARKETING_SPRINTS_81_90.md`](../marketing/MARKETING_SPRINTS_81_90.md), [`I18N_SPRINT_81_90_PLAN.md`](../../I18N_SPRINT_81_90_PLAN.md), [`MARKET_VALIDATION_S81_90.md`](../research/MARKET_VALIDATION_S81_90.md).
 
 ### Post-v2.2 Commercial Promise Completion
 
