@@ -91,7 +91,7 @@ jobs:
         run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Deploy to Cloudflare Pages
-        run: wrangler pages deploy dist --project-name=qesto
+        run: npx wrangler pages deploy dist --project-name=qesto
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
