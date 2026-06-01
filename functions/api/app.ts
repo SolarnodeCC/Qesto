@@ -27,6 +27,7 @@ import { mountScimRoutes } from './routes/scim'
 import { mountAgentCoachRoutes } from './routes/agent-coach'
 import { mountCustomActionRoutes } from './routes/custom-actions'
 import { mountPwaPushRoutes } from './routes/pwa-push'
+import { mountNativePushRoutes } from './routes/native-push'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
@@ -291,6 +292,7 @@ export function createApp() {
   mountAgentCoachRoutes(app)
   mountCustomActionRoutes(app)
   mountPwaPushRoutes(app)
+  mountNativePushRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 

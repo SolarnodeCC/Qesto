@@ -44,9 +44,16 @@
     "contracts:generate": "openapi-typescript contracts/openapi/qesto-api.yaml -o contracts/generated/api.d.ts",
     "check:migrations": "node scripts/check-migration-gaps.mjs",
     "check:kv-access": "node scripts/check-kv-access.mjs",
-    "check:no-any": "node scripts/check-no-any.mjs"
+    "check:no-any": "node scripts/check-no-any.mjs",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:ios": "npx cap open ios",
+    "cap:android": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/core": "^7.0.1",
+    "@capacitor/preferences": "^7.0.1",
+    "@capacitor/push-notifications": "^7.0.1",
     "hono": "^4.12.23",
     "lucide-react": "^1.16.0",
     "react": "^19.2.6",
@@ -56,6 +63,9 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@capacitor/android": "^7.0.1",
+    "@capacitor/cli": "^7.0.1",
+    "@capacitor/ios": "^7.0.1",
     "@cloudflare/workers-types": "^4.20260525.1",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "^4.3.0",
