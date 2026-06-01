@@ -17,7 +17,7 @@ const SCAN_DIR = resolve(ROOT, 'functions')
 const PATTERN = /:\s*any\b/g
 
 // Current known annotations. Ratchet DOWN only — never raise this.
-const BASELINE = 47
+const BASELINE = 34
 
 function walk(dir) {
   const out = []

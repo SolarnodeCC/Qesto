@@ -7,14 +7,18 @@
 // Roles: owner, admin, member, viewer, guest
 // Permissions cascade: owner > admin > member > viewer > guest
 
-import type { MiddlewareHandler } from 'hono'
+import type { Context, MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import type { AuthVariables } from './auth'
 
 export type RbacVariables = {
   userRoles: readonly string[]
   canAccess: boolean
+  /** Per-request cache of resolved roles (internal to the RBAC middleware). */
+  _rbac_cache?: { roles: string[] }
 }
+
+type RbacContext = Context<{ Bindings: Env; Variables: AuthVariables & RbacVariables }>
 
 // ─── Permission Matrix ────────────────────────────────────────────────────────
 
@@ -161,7 +165,7 @@ function getRouteKey(method: string, path: string): string | null {
 /**
  * Fetch user's roles from user_roles table.  Cache on context.
  */
-async function getUserRoles(c: any, userId: string): Promise<string[]> {
+async function getUserRoles(c: RbacContext, userId: string): Promise<string[]> {
   const cached = c.get('_rbac_cache')?.roles
   if (cached) return cached
 
@@ -202,8 +206,8 @@ function hasRequiredRole(userRoles: string[], requiredRoles: Set<string>): boole
 export const rbacMiddleware: MiddlewareHandler<{
   Bindings: Env
   Variables: AuthVariables & RbacVariables
-}> = async (c: any, next) => {
-  const user = c.get('user') as any
+}> = async (c, next) => {
+  const user = c.get('user')
   const trace_id = c.get('trace_id')
 
   // If not authenticated, continue but set viewer role (handles public routes)
