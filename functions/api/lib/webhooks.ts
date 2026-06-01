@@ -23,6 +23,7 @@ import { checkWebhookRateLimit } from './webhook-rate-limit'
 import { ulid } from './ulid'
 import { z } from 'zod'
 import { validateData, WebhookConfigSchema } from './protocol-schemas'
+import { validateWebhookTargetUrl } from './webhook-url'
 
 const WebhookTeamIndexSchema = z.array(z.string())
 
@@ -173,11 +174,20 @@ async function singleAttempt(
   timestampMs: number,
 ): Promise<{ statusCode: number | null; success: boolean; durationMs: number; error?: string }> {
   const started = Date.now()
+  // SSRF (H-2): re-validate immediately before sending so a registered target
+  // that now resolves to a private/loopback address (DNS rebinding) is rejected.
+  const urlCheck = validateWebhookTargetUrl(url)
+  if (!urlCheck.ok) {
+    return { statusCode: null, success: false, durationMs: 0, error: `blocked: ${urlCheck.message}` }
+  }
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), DELIVERY_TIMEOUT_MS)
   try {
     const res = await fetch(url, {
       method: 'POST',
+      // Do NOT follow redirects — a 3xx to an internal target would bypass the
+      // SSRF check above. Manual mode surfaces the 3xx as a (failed) delivery.
+      redirect: 'manual',
       headers: {
         'Content-Type': 'application/json',
         'X-Qesto-Event': event,

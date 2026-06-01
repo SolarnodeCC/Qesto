@@ -3,6 +3,7 @@
  */
 import { Hono } from 'hono'
 import { z } from 'zod'
+import { timingSafeEqual } from '../lib/shared/crypto'
 import type { Env } from '../types'
 
 const ScimUserSchema = z.object({
@@ -15,7 +16,9 @@ function scimAuth(c: { req: { header: (n: string) => string | undefined }; env: 
   const expected = c.env.SCIM_BEARER_TOKEN
   if (!expected) return false
   const auth = c.req.header('authorization')
-  return auth === `Bearer ${expected}`
+  if (!auth?.startsWith('Bearer ')) return false
+  // Constant-time compare to avoid leaking the token via response-timing.
+  return timingSafeEqual(auth.slice(7), expected)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

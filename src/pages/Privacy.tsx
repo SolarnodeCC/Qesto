@@ -14,8 +14,9 @@ const toc = [
   { id: 's7', label: 'Your rights' },
   { id: 's8', label: 'AI & inference' },
   { id: 's9', label: 'Security' },
-  { id: 's10', label: 'Changes' },
-  { id: 's11', label: 'Contact' },
+  { id: 's10', label: 'Website analytics & cookies' },
+  { id: 's11', label: 'Changes' },
+  { id: 's12', label: 'Contact' },
 ]
 
 export default function Privacy() {
@@ -35,9 +36,9 @@ export default function Privacy() {
             Privacy Policy
           </h1>
           <div className="flex gap-5 text-[13px] text-pulse-500" style={monoFont}>
-            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 2.1.0</span>
-            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-01-15</span>
-            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Previous:</strong> 2025-09-02</span>
+            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 2.2.0</span>
+            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-06-01</span>
+            <span><strong className="text-pulse-600 font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Previous:</strong> 2026-01-15</span>
           </div>
         </div>
       </div>
@@ -136,6 +137,11 @@ export default function Privacy() {
               <li><strong>Cloudflare, Inc.</strong> — Workers compute, Durable Objects, D1, KV storage, and Workers AI inference.</li>
               <li><strong>Stripe, Inc.</strong> — payment processing for paid plans. No session data ever touches Stripe.</li>
               <li><strong>Resend.</strong> — transactional email for login links and account messages.</li>
+              <li>
+                <strong>Microsoft Corporation</strong> — Microsoft Clarity website &amp; product-UI analytics,
+                loaded <em>only</em> after you accept analytics cookies (section 10). Masked interaction data
+                only; never your session votes or responses.
+              </li>
             </ul>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               That's the whole list. We publish changes 30 days in advance; existing customers can object in writing.
@@ -196,15 +202,55 @@ export default function Privacy() {
             </ul>
 
             <h2 id="s10" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
-              10. Changes
+              10. Website analytics &amp; cookies
+            </h2>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              We use <strong>Microsoft Clarity</strong> to understand how people navigate our website and product
+              interface — heatmaps and replays of clicks, scrolls, and page transitions — so we can fix confusing
+              flows. This is the only third-party analytics we run.
+            </p>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
+              <li>
+                It loads <strong>only after you accept analytics cookies</strong> in the banner. Decline, and Clarity
+                is never loaded and no analytics cookies are set.
+              </li>
+              <li>
+                Clarity masks text and form input by default. It captures <em>interaction patterns</em>, not the
+                content of your votes or responses — that session data stays within the sections above and is never
+                sent to Clarity.
+              </li>
+              <li>
+                When enabled, Microsoft Corporation acts as our processor and may process this usage data on our
+                behalf under its{' '}
+                <a
+                  href="https://privacy.microsoft.com/privacystatement"
+                  className="text-teal-600 hover:underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  privacy statement
+                </a>.
+              </li>
+              <li>
+                You can withdraw consent at any time by clearing this site's cookies and storage in your browser; the
+                banner will ask again.
+              </li>
+            </ul>
+            <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
+              This is separate from the in-session consent posture in section 3, which governs how participants appear
+              within a session.
+            </p>
+
+            <h2 id="s11" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              11. Changes
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               We'll notify you 30 days before material changes. Minor edits (clarifications, sub-processor
               replacements within the same tier) get a version bump and a changelog entry — no email blast.
             </p>
 
-            <h2 id="s11" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
-              11. Contact
+            <h2 id="s12" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
+              12. Contact
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
               Data Protection Officer:{' '}
