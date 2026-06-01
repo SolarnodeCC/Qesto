@@ -31,12 +31,11 @@ async function sha256Hex(input: string): Promise<string> {
 }
 
 function clientIp(req: Request): string {
-  return (
-    req.headers.get('cf-connecting-ip') ??
-    req.headers.get('x-forwarded-for') ??
-    req.headers.get('x-real-ip') ??
-    'unknown'
-  )
+  // Trust ONLY cf-connecting-ip (SEC M-6). It is set by the Cloudflare edge and
+  // cannot be spoofed by the client. The x-forwarded-for / x-real-ip fallbacks
+  // were attacker-controllable and allowed per-request rate-limit bucket
+  // rotation, defeating the limiter.
+  return req.headers.get('cf-connecting-ip') ?? 'unknown'
 }
 
 async function hashIp(req: Request): Promise<string> {

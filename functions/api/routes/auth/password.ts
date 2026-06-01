@@ -4,7 +4,7 @@ import { sendEmail } from '../../lib/email'
 import { rateLimit } from '../../lib/rate-limit'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
-import { hashPassword, verifyPassword } from '../../lib/password'
+import { hashPassword, verifyPassword, passwordNeedsRehash } from '../../lib/password'
 import { ensurePersonalTeam } from '../teams'
 import {
   JWT_TTL_SECONDS,
@@ -152,6 +152,16 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       await c.env.DB.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`)
         .bind(Date.now(), user!.id)
         .run()
+
+      // SEC L-1: transparently upgrade legacy / weak-cost password hashes to the
+      // current PBKDF2 work factor now that we hold the plaintext. Non-fatal.
+      if (cred && passwordNeedsRehash(cred.hash)) {
+        try {
+          await c.env.USERS_KV.put(pwdKey(user!.id), JSON.stringify({ hash: await hashPassword(password) }))
+        } catch {
+          /* best-effort: a failed rehash must not block login */
+        }
+      }
 
       const jwt = await signJwt({ sub: user!.id, email: normalEmail }, c.env.JWT_SECRET, JWT_TTL_SECONDS)
       setAuthSessionCookie(c, jwt)

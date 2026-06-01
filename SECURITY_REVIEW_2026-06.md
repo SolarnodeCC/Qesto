@@ -17,6 +17,25 @@ were code-verified (file:line cited); none are speculative unless marked *(suspe
 
 ---
 
+## Remediation status (this branch)
+
+| ID | Finding | Status |
+|----|---------|--------|
+| H-1 | Login rate limiting | ✅ Fixed — per-IP/per-email gates on `password/login` |
+| H-2 | Webhook SSRF (redirects + IP-encoding + rebinding) | ✅ Fixed — `redirect: 'manual'`, delivery-time re-validation, numeric-IP parsing |
+| M-4 | Constant-time SCIM token compare | ✅ Fixed — `timingSafeEqual` |
+| M-6 | Rate-limit IP spoofing | ✅ Fixed — trust only `cf-connecting-ip` |
+| L-1 | PBKDF2 work factor | ✅ Fixed — 600k iterations + rehash-on-login (legacy hashes still verify) |
+| M-1 | SAML hardcoded `team` plan | ⏳ Open — changes provisioning; needs product decision |
+| M-2 | Signature-verified Stripe webhook | ⏳ Open — net-new endpoint; needs billing design |
+| M-3 | CSRF custom-header requirement | ⏳ Open — requires coordinated frontend change |
+| M-5 | Remove `'unsafe-inline'` from CSP | ⏳ Open — needs nonce/hash rollout to avoid breaking the SPA |
+| L-2 | Fail closed on missing `ACTIONS_KV` revocation | ⏳ Open |
+| L-3 | JWT `aud`/`iss` | ⏳ Open (low priority) |
+| L-4 | RBAC allow-by-default / mount-order | ⏳ Open (tracked as ARCH-HONO-01/02) |
+
+---
+
 ## 🟠 High
 
 ### H-1 — No rate limiting on password login (credential brute-force / stuffing)

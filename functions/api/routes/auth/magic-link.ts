@@ -31,7 +31,8 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
         )
       }
       const email = parsed.data.email.toLowerCase().trim()
-      const ip = c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? null
+      // SEC M-6: trust only the unspoofable edge header for rate-limit keys.
+      const ip = c.req.header('cf-connecting-ip') ?? null
 
       if (ip) {
         const ipGate = await rateLimit(c.env.ACTIONS_KV, `ip:${ip}`, {
