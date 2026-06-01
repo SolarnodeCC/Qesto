@@ -69,7 +69,7 @@
     "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
-    "vite": "^7.0.0",
+    "vite": "^7.3.5",
     "vitest": "^4.1.7",
     "wrangler": "^4.94.0"
   }
