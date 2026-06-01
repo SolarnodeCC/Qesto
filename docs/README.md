@@ -1,32 +1,36 @@
-# Documentation Hub (Legacy)
+# Agent documentation hub (`docs/`)
 
-**This folder now contains only legacy materials. The main knowledge base has been reorganized.**
+**Product and operations documentation lives in [`/knowledge-base/`](../knowledge-base/README.md).** This folder keeps only what agents and build tooling need at short, stable paths.
 
-## ➡️ New Location
+## Agent routers (read these first)
 
-All documentation has been migrated to **[`/knowledge-base/`](../knowledge-base/)** for better organization and discoverability.
+| File | Purpose |
+|------|---------|
+| [architecture.md](./architecture.md) | Runtime stack, session state machine, storage bindings |
+| [boundaries.md](./boundaries.md) | Layer ownership (`agent/owner-map.json`) |
+| [testing.md](./testing.md) | Vitest, Playwright, proof lanes |
+| [ci-local.md](./ci-local.md) | Run CI checks locally |
+| [agent-native-standard.md](./agent-native-standard.md) | Jankurai / agent-native policy (vendored) |
+| [release.md](./release.md) | Release checklist → [RELEASE_GUIDE](../knowledge-base/product/releases/RELEASE_GUIDE.md) |
 
-### Quick Links
-- **[Main Knowledge Base](../knowledge-base/README.md)** — Start here
-- **[Architecture & ADRs](../knowledge-base/adr/)** — Decision records
-- **[Specifications](../knowledge-base/specifications/)** — Domain specs
-- **[Product & Roadmap](../knowledge-base/product/)** — Strategy and planning
-- **[Quality & Audits](../knowledge-base/quality/)** — Testing and compliance
-- **[Security](../knowledge-base/security/)** — Policies and procedures
-- **[Operations](../knowledge-base/operations/)** — Deployment and runbooks
+## Build artefact (not prose docs)
 
----
+| Path | Purpose |
+|------|---------|
+| [spec/design-tokens.json](./spec/design-tokens.json) | Source of truth for `npm run tokens:build` → `src/ui/tokens.ts` |
 
-## This Folder
+See [DESIGN_TOKENS_README](../knowledge-base/specifications/domain/DESIGN_TOKENS_README.md) for token governance.
 
-Contains legacy presentation materials:
-- Qesto_Engineering_5Slides.pptx
-- Qesto_Engineering_Interactive_Story.pptx (versions 1-3)
+## Migrated locations (2026-06)
 
-All markdown documentation has been reorganized into `/knowledge-base/`.
+Former `docs/*.md` operational guides, sprint specs, and validation docs are in the knowledge base:
 
-**For contributions**: See [/knowledge-base/CONTRIBUTING.md](../knowledge-base/CONTRIBUTING.md)
+- **Specifications & sprints** → [`knowledge-base/specifications/`](../knowledge-base/specifications/), [`knowledge-base/product/planning/sprints/`](../knowledge-base/product/planning/sprints/)
+- **Deployment & staging** → [`knowledge-base/operations/deployment/`](../knowledge-base/operations/deployment/)
+- **Help assistant** → [`knowledge-base/operations/help-assistant/`](../knowledge-base/operations/help-assistant/)
+- **Validation** → [`knowledge-base/architecture/VALIDATION_PATTERNS.md`](../knowledge-base/architecture/VALIDATION_PATTERNS.md), [`VALIDATION_STRATEGY.md`](../knowledge-base/architecture/VALIDATION_STRATEGY.md)
+- **Analytics outputs** → [`knowledge-base/operations/monitoring/analytics/`](../knowledge-base/operations/monitoring/analytics/)
 
----
+Legacy PowerPoint decks may remain in this folder until archived.
 
-*Migration completed: 2026-05-11*
+**Contributing:** [knowledge-base/CONTRIBUTING.md](../knowledge-base/CONTRIBUTING.md)

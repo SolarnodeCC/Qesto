@@ -22,4 +22,4 @@ migrations/ → applied via wrangler d1 execute
 ## Validation
 
 - Boundary edits: run `just check` and the lane in `agent/test-map.json` for the touched path.
-- Input crossing HTTP/KV/AI boundaries: use Zod in `functions/api/lib/validators.ts` (see [VALIDATION_PATTERNS.md](./VALIDATION_PATTERNS.md)).
+- Input crossing HTTP/KV/AI boundaries: use Zod in `functions/api/lib/validators.ts` (see [VALIDATION_PATTERNS.md](../knowledge-base/architecture/VALIDATION_PATTERNS.md)).

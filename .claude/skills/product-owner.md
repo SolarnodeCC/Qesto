@@ -1,6 +1,6 @@
 ---
 name: owning-product
-description: Writes user stories, acceptance criteria, and manages backlog prioritization for Qesto. Use when grooming stories, writing acceptance criteria, prioritizing the sprint, or making scope decisions. Check docs/SPRINT_PLAN.md and docs/BACKLOG.md for current state.
+description: Writes user stories, acceptance criteria, and manages backlog prioritization for Qesto. Use when grooming stories, writing acceptance criteria, prioritizing the sprint, or making scope decisions. Check knowledge-base/product/planning/SPRINT_PLAN_MASTER.md and knowledge-base/product/backlog/BACKLOG_MASTER.md for current state.
 ---
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
@@ -44,7 +44,7 @@ AND [additional constraint]
 ## Story Ready Checklist
 
 - [ ] Acceptance criteria written and dev-reviewed
-- [ ] Dependencies identified and ordered (check `docs/SPRINT_PLAN.md`)
+- [ ] Dependencies identified and ordered (check `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md`)
 - [ ] Edge cases documented (empty, error, auth failure)
 - [ ] Definition of Done checklist attached
 - [ ] Story points agreed (Fibonacci: 1, 2, 3, 5, 8, 13 — never > 13 without splitting)
@@ -82,10 +82,10 @@ AND [additional constraint]
 | New/changed session states or lifecycle rules | `knowledge-base/specifications/product/SPEC_PRODUCT.md §1` |
 | New/changed roles or permissions | `knowledge-base/specifications/product/SPEC_PRODUCT.md §2` |
 | New question types | `knowledge-base/specifications/product/SPEC_PRODUCT.md §3` + `knowledge-base/governance/GLOSSARY_FULL.md` |
-| New feature request | `docs/BACKLOG.md §3` with WSJF scored |
-| New defect | `docs/BACKLOG.md §1` with TC=13 |
-| Stories completed | `docs/BACKLOG.md §5` + `docs/SPRINT_PLAN.md` |
-| Sprint scope change | `docs/SPRINT_PLAN.md` |
+| New feature request | `knowledge-base/product/backlog/BACKLOG_MASTER.md §3` with WSJF scored |
+| New defect | `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` with TC=13 |
+| Stories completed | `knowledge-base/product/backlog/BACKLOG_MASTER.md §5` + `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` |
+| Sprint scope change | `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` |
 
 ## In-Sprint Scope Change Protocol (Wave 2)
 
@@ -153,3 +153,4 @@ Urgent request arrives during sprint?
 
 ## Change Log
 - 2026-04-24: Added Wave 2 in-sprint scope change decision tree + protocol for P0/P1 mid-sprint requests
+

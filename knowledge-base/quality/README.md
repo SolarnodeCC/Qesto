@@ -32,6 +32,10 @@ Testing strategy, accessibility guidelines, and quality audit findings.
 - [A11Y_FULL.md](./accessibility/A11Y_FULL.md) — Accessibility standards and compliance
 - [audit-coverage-matrix.md](./audits/audit-coverage-matrix.md) — Quality baseline
 - [remediation-plan.md](./audits/remediation-plan.md) — Audit findings and fixes
+- [REMEDIATION_SUMMARY.md](./audits/REMEDIATION_SUMMARY.md) — Validation remediation summary
+- [TECH_DEBT_AUDIT_2026-05.md](./audits/TECH_DEBT_AUDIT_2026-05.md) — Tech debt audit (May 2026)
+- [FUTURE_READY_REVIEW_2026-06.md](./audits/FUTURE_READY_REVIEW_2026-06.md) — Future-ready review (June 2026)
+- [STABILITY_REVIEW.md](./audits/STABILITY_REVIEW.md) — Test stability review
 
 ---
 

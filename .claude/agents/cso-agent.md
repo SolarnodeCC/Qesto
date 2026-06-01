@@ -48,7 +48,7 @@ Block or require changes for these recurring audit failure modes:
 2. **Scope**: Identify exact file + line — fix only that
 3. **Fix**: Apply minimal-scope change (don't refactor surrounding code)
 4. **Verify**: Write a security-focused test proving the fix
-5. **Document**: Add to `docs/BACKLOG.md §1` (P0) or `§4` (ARCH-xxx) with severity
+5. **Document**: Add to `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` (P0) or `§4` (ARCH-xxx) with severity
 
 ## Severity Classification
 
@@ -61,14 +61,14 @@ Block or require changes for these recurring audit failure modes:
 
 ## Active Open Vulnerabilities
 
-Check `docs/BACKLOG.md §1` (P0 Defects) for current open security vulnerabilities.
+Check `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` (P0 Defects) for current open security vulnerabilities.
 
 ## Docs to Update
 
 | Finding | Doc |
 |---|---|
-| Critical/High vulnerability found | `docs/BACKLOG.md §1` — P0 with TC=13 |
-| Medium/Low finding | `docs/BACKLOG.md §4` — ARCH-xxx with WSJF |
+| Critical/High vulnerability found | `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` — P0 with TC=13 |
+| Medium/Low finding | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` — ARCH-xxx with WSJF |
 | Vulnerability fixed and verified | Update backlog status → ✅ closed |
 | New threat model insight | `docs/SECURITY_FULL.md` |
 | New GDPR/compliance decision | `docs/SECURITY_FULL.md §GDPR` |
@@ -78,4 +78,5 @@ Check `docs/BACKLOG.md §1` (P0 Defects) for current open security vulnerabiliti
 1. **Files audited**: list with line ranges reviewed
 2. **Findings**: ID, severity, file:line, description, recommended fix
 3. **Verified fixes**: confirm fix closes the vulnerability (test case)
-4. **Backlog updated**: items added or closed in `docs/BACKLOG.md`
+4. **Backlog updated**: items added or closed in `knowledge-base/product/backlog/BACKLOG_MASTER.md`
+

@@ -55,7 +55,7 @@ Each file is **self-contained JSON** — no implicit ordering or dependencies.
 - **During task**: Agent can write to `.claude/.agent-state/` freely
 - **At task end**: Agent must document what's preserved and why
 - **After 24h**: Files auto-deleted (use `git add` to keep)
-- **For sprint**: Important findings moved to `docs/BACKLOG.md` or `docs/SPRINT_PLAN.md`
+- **For sprint**: Important findings moved to `knowledge-base/product/backlog/BACKLOG_MASTER.md` or `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md`
 
 ---
 
@@ -118,7 +118,7 @@ If returning to incomplete work:
    - Preserved perf measurements are the baseline for comparison
 
 3. **Merge back into docs**:
-   - Before final commit, move critical findings to `docs/BACKLOG.md` or sprint docs
+   - Before final commit, move critical findings to `knowledge-base/product/backlog/BACKLOG_MASTER.md` or sprint docs
    - Delete `.agent-state/` file once merged
    - Include merge note in commit message
 
@@ -231,7 +231,7 @@ Files in `.claude/.agent-state/` older than 24h are candidates for cleanup:
 find .claude/.agent-state/ -mtime +1 -delete
 
 # Or preserve important findings by moving to docs/
-cp .claude/.agent-state/tech-debt-log.json docs/BACKLOG.md  # append to §4
+cp .claude/.agent-state/tech-debt-log.json knowledge-base/product/backlog/BACKLOG_MASTER.md  # append to §4
 rm .claude/.agent-state/tech-debt-log.json
 ```
 
@@ -247,9 +247,9 @@ Before sprint planning:
    ```
 
 2. **Review and triage**:
-   - Tech debt → add to `docs/BACKLOG.md §4` with WSJF score
-   - Perf findings → update `docs/BACKLOG.md §5` (Performance)
-   - Security findings → add to `docs/BACKLOG.md §1` (P0 Defects) if critical
+   - Tech debt → add to `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` with WSJF score
+   - Perf findings → update `knowledge-base/product/backlog/BACKLOG_MASTER.md §5` (Performance)
+   - Security findings → add to `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` (P0 Defects) if critical
 
 3. **Clean up**:
    ```bash
@@ -301,9 +301,9 @@ jq '.after = 3.2' .claude/.agent-state/perf-baseline.json
 Before committing:
 ```bash
 # Move to docs
-echo "- PERF: KV hot read 3.8ms → 3.2ms (via caching)" >> docs/BACKLOG.md
+echo "- PERF: KV hot read 3.8ms → 3.2ms (via caching)" >> knowledge-base/product/backlog/BACKLOG_MASTER.md
 rm .claude/.agent-state/perf-baseline.json
-git add docs/BACKLOG.md
+git add knowledge-base/product/backlog/BACKLOG_MASTER.md
 git commit -m "Reduce KV hot read latency via local caching"
 ```
 
@@ -311,3 +311,4 @@ git commit -m "Reduce KV hot read latency via local caching"
 
 ## Change Log
 - 2026-04-11: Created context preservation pattern v1.0.0
+

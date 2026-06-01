@@ -100,12 +100,12 @@ fi
 # ── Backlog & Sprint Plan freshness ───────────────────────────────────────────
 # Remind to keep BACKLOG.md and SPRINT_PLAN.md in sync when stories are touched.
 
-if [[ "$FILE" == docs/BACKLOG.md ]]; then
-  echo "REMINDER: BACKLOG.md updated — verify docs/SPRINT_PLAN.md Next/Upcoming Sprint sections reflect the new WSJF order." >&2
+if [[ "$FILE" == knowledge-base/product/backlog/BACKLOG_MASTER.md ]]; then
+  echo "REMINDER: BACKLOG.md updated — verify knowledge-base/product/planning/SPRINT_PLAN_MASTER.md Next/Upcoming Sprint sections reflect the new WSJF order." >&2
 fi
 
-if [[ "$FILE" == docs/SPRINT_PLAN.md ]]; then
-  echo "REMINDER: SPRINT_PLAN.md updated — verify docs/BACKLOG.md item statuses match (open/closed)." >&2
+if [[ "$FILE" == knowledge-base/product/planning/SPRINT_PLAN_MASTER.md ]]; then
+  echo "REMINDER: SPRINT_PLAN.md updated — verify knowledge-base/product/backlog/BACKLOG_MASTER.md item statuses match (open/closed)." >&2
 fi
 
 # ── New route file detection ──────────────────────────────────────────────────
@@ -117,3 +117,4 @@ if [[ "$FILE" =~ ^functions/api/routes/.*\.routes\.ts$ ]]; then
 fi
 
 exit 0
+

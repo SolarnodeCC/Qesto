@@ -1,1 +1,0 @@
-../../../knowledge-base/product/planning/sprints/SPRINT26_IMPLEMENTATION_SPEC.md

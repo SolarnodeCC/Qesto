@@ -108,7 +108,7 @@ If a local agent/skill instruction conflicts with this file, treat this file as 
 Every skill file must reference which docs to update:
 - Policy changes → `docs/AGENT_SKILL_GOVERNANCE.md`
 - Architecture changes → `knowledge-base/architecture/ARCHITECTURE.md`
-- Security findings → `docs/BACKLOG.md §1` (P0) or `§4 Security`
+- Security findings → `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` (P0) or `§4 Security`
 - QA/test patterns → `docs/QA_FULL.md §2–3`
 - Flaky tests → `docs/FLAKY_TESTS.md`
 
@@ -121,3 +121,4 @@ Every skill file must reference which docs to update:
 ## Change Log
 - 2026-04-24: Added test/type-check minimums, doc obligations, and governance alignment rules.
 - 2026-04-10: Canonicalized file headers and shared rules reference.
+

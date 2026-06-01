@@ -103,8 +103,8 @@ Load the matching skill before each task:
 | Pricing tier structure changed | `docs/PRICING_SPEC.md` + raise MKTG item to PO |
 | New ICP insight or persona | `docs/ICP_PERSONAS.md` |
 | New competitor positioning decision | This skill file (Competitors section) |
-| New MKTG backlog item | `docs/BACKLOG.md §3` with WSJF |
-| MKTG item completed | `docs/BACKLOG.md` status → ✅ closed |
+| New MKTG backlog item | `knowledge-base/product/backlog/BACKLOG_MASTER.md §3` with WSJF |
+| MKTG item completed | `knowledge-base/product/backlog/BACKLOG_MASTER.md` status → ✅ closed |
 
 ## Experiment Card Template (Wave 2)
 
@@ -169,3 +169,4 @@ IF runs 28 days no convergence → STOP, insufficient power, gather more data
 
 ## Change Log
 - 2026-04-24: Added Wave 2 experiment card template + stopping rules to prevent vanity metrics and indefinite tests
+

@@ -10,6 +10,8 @@ Legacy, deprecated, and superseded documentation. **Do not use as current source
 - **amplitude-setup-report.md** — Analytics setup documentation
 - **_README.md** — Old secondary README
 
+Root-level completion reports and one-off guides were consolidated into the vault in **2026-06** (growth engine, i18n S60–70, security reviews, SEO). See [operations/deployment](../operations/deployment/), [product/growth-engine](../product/growth-engine/), and [security/reviews](../security/reviews/).
+
 ---
 
 **See**: [Main Knowledge Base](../README.md)

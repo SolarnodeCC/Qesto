@@ -89,7 +89,7 @@ Secret rotation?
 | New secret | `docs/ARCHITECTURE.md` — name + purpose only |
 | Deployment process change | `.claude/skills/devops.md` runbook |
 | New incident pattern | `.claude/skills/devops.md` incident runbook |
-| Infra backlog item closed | `docs/BACKLOG.md §4` → ✅ closed |
+| Infra backlog item closed | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` → ✅ closed |
 
 ## Output Format
 
@@ -97,3 +97,4 @@ Secret rotation?
 2. **Verification**: health check result or smoke test output
 3. **Side effects**: what else changed (e.g. JWT rotation invalidates sessions)
 4. **Docs updated**: which files were changed
+

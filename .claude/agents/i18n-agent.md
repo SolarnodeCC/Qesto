@@ -71,4 +71,5 @@ Fallback: always `en` — never crash on missing key, log to Workers Logs.
 2. **Languages updated**: which locales were updated
 3. **AI draft markers**: which keys need native review
 4. **Validation result**: `npm run i18n:validate` output
-5. **Backlog updated**: I18N item status in `docs/BACKLOG.md`
+5. **Backlog updated**: I18N item status in `knowledge-base/product/backlog/BACKLOG_MASTER.md`
+

@@ -68,7 +68,7 @@ SENTIMENT_ENABLED = "true"
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
 # Only apply during Sprint 26 release with feature flag approval.
-# See docs/PRODUCTION-DB-MIGRATION-FIX.md for details.
+# See knowledge-base/operations/deployment/PRODUCTION-DB-MIGRATION-FIX.md for details.
 
 [[d1_databases]]
 binding = "DB"

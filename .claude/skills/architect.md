@@ -107,7 +107,7 @@ Use this when designing or approving work in audit-affected areas.
 | HTTP endpoint contracts | `knowledge-base/api/API_FULL.md` |
 | WebSocket message types | `knowledge-base/api/API_FULL.md` |
 | Security controls / threat model | `docs/SECURITY_FULL.md` |
-| Tech debt discovered | `docs/BACKLOG.md §4` |
+| Tech debt discovered | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` |
 
 ## ADR-Lite Template (Wave 2)
 
@@ -174,7 +174,7 @@ When architectural decisions conflict with backend/devops/security constraints:
    - Feature flag: old code accepts both old + new keys, writes new key only
    - Canary: deploy to 5% of users, monitor error rate before full rollout
 3. Backend-dev estimates effort — if >13 points, defer to next sprint
-4. Decision logged + added to `docs/BACKLOG.md §4` (Tech Debt)
+4. Decision logged + added to `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` (Tech Debt)
 
 ### Conflict Escalation
 - **Deadlock after 2 iterations**: PO makes final call (product priority wins)
@@ -210,3 +210,4 @@ When architectural decisions conflict with backend/devops/security constraints:
 
 ## Change Log
 - 2026-04-24: Added Wave 2 ADR-lite template + conflict resolution guidance for cross-team dependencies
+

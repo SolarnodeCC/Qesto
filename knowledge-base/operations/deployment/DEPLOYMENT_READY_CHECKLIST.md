@@ -42,9 +42,9 @@ All code, tests, and documentation are complete. Only one infrastructure step re
 - ✅ Auth/plan middleware configured
 
 ### Documentation
-- ✅ `docs/HELP_ASSISTANT_API.md` - Complete API specification (400+ lines)
-- ✅ `docs/HELP_ASSISTANT_DEPLOYMENT.md` - Deployment & operations guide (350+ lines)
-- ✅ `docs/VECTORIZE_INDEX_SETUP.md` - Vectorize index creation guide
+- ✅ [`HELP_ASSISTANT_API.md`](../help-assistant/HELP_ASSISTANT_API.md) — Complete API specification (400+ lines)
+- ✅ [`HELP_ASSISTANT_DEPLOYMENT.md`](../help-assistant/HELP_ASSISTANT_DEPLOYMENT.md) — Deployment & operations guide (350+ lines)
+- ✅ [`VECTORIZE_INDEX_SETUP.md`](./VECTORIZE_INDEX_SETUP.md) — Vectorize index creation guide
 - ✅ All endpoints documented with examples
 - ✅ Error handling documented
 - ✅ Performance targets documented
@@ -212,4 +212,4 @@ curl -X POST https://qesto.cc/api/help/ask \
 - All RAG, feedback, and auto-tuning features active
 - Monitoring and analytics available
 
-**Questions?** See `docs/VECTORIZE_INDEX_SETUP.md` for detailed index creation instructions.
+**Questions?** See [VECTORIZE_INDEX_SETUP.md](./VECTORIZE_INDEX_SETUP.md) for detailed index creation instructions.

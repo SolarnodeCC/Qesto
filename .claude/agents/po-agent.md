@@ -48,8 +48,8 @@ You are the Product Owner for Qesto. You make product decisions and write precis
 
 ## Current Sprint State
 
-Check `docs/SPRINT_PLAN.md` for current sprint scope and exit criteria.
-Check `docs/BACKLOG.md` for full WSJF-scored backlog.
+Check `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` for current sprint scope and exit criteria.
+Check `knowledge-base/product/backlog/BACKLOG_MASTER.md` for full WSJF-scored backlog.
 
 ## Docs to Update
 
@@ -58,7 +58,8 @@ Check `docs/BACKLOG.md` for full WSJF-scored backlog.
 | New/changed session states or lifecycle | `knowledge-base/specifications/product/SPEC_PRODUCT.md §1` |
 | New/changed roles or permissions | `knowledge-base/specifications/product/SPEC_PRODUCT.md §2` |
 | New question types | `knowledge-base/specifications/product/SPEC_PRODUCT.md §3` + `docs/GLOSSARY_FULL.md` |
-| New feature request | `docs/BACKLOG.md §3` with WSJF |
-| New defect | `docs/BACKLOG.md §1` with TC=13 |
-| Stories completed | `docs/BACKLOG.md §5` + `docs/SPRINT_PLAN.md` |
-| Sprint scope change | `docs/SPRINT_PLAN.md` |
+| New feature request | `knowledge-base/product/backlog/BACKLOG_MASTER.md §3` with WSJF |
+| New defect | `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` with TC=13 |
+| Stories completed | `knowledge-base/product/backlog/BACKLOG_MASTER.md §5` + `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` |
+| Sprint scope change | `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md` |
+

@@ -76,11 +76,12 @@ CHANGED_SPRINT=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'docs/SPRINT_PLAN\.md
 
 if [[ "$CHANGED_ROUTES" -gt 0 || "$CHANGED_SCHEMA" -gt 0 || "$CHANGED_DO" -gt 0 || "$CHANGED_SPEC" -gt 0 ]]; then
   if [[ "$CHANGED_BACKLOG" -eq 0 ]]; then
-    echo "BACKLOG: Significant changes made — did you add new tech-debt or close items in docs/BACKLOG.md?" >&2
+    echo "BACKLOG: Significant changes made — did you add new tech-debt or close items in knowledge-base/product/backlog/BACKLOG_MASTER.md?" >&2
   fi
   if [[ "$CHANGED_SPRINT" -eq 0 ]]; then
-    echo "SPRINT: Did you need to update the sprint status or exit criteria in docs/SPRINT_PLAN.md?" >&2
+    echo "SPRINT: Did you need to update the sprint status or exit criteria in knowledge-base/product/planning/SPRINT_PLAN_MASTER.md?" >&2
   fi
 fi
 
 exit 0
+

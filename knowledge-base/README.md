@@ -48,6 +48,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 - **[Market Research](./product/research/)** — Competitive intelligence, customer insights, market trends (updated quarterly)
 - **[Release Notes](./product/releases/)** — Version history, release plans, audit outcomes
 - **[Planning](./product/planning/)** — Sprint plans (S71–S80: [`SPRINT71_80_PLAN.md`](./product/planning/SPRINT71_80_PLAN.md); S60–S70: [`SPRINT60_70_PLAN.md`](./product/planning/SPRINT60_70_PLAN.md); S51–S60: [`SPRINT51_60_PLAN.md`](./product/planning/SPRINT51_60_PLAN.md); S30–S39: [`SPRINT30_39_PLAN.md`](./product/planning/SPRINT30_39_PLAN.md))
+- **i18n parallel tracks** — [`I18N_SPRINT_60_70_PLAN.md`](./I18N_SPRINT_60_70_PLAN.md), [`I18N_SPRINT_71_80_PLAN.md`](./I18N_SPRINT_71_80_PLAN.md), [`I18N_SPRINT_81_90_PLAN.md`](./I18N_SPRINT_81_90_PLAN.md)
 
 ### Quality & Operations
 

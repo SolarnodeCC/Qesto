@@ -1,6 +1,6 @@
 -- Qesto — D1 schema (v1 vertical slice)
 -- Applied via: `wrangler d1 execute <db> --file=schema.sql`
--- See docs/spec/SPEC_DATAMODEL.md and docs/DATABASE_GOVERNANCE.md.
+-- See knowledge-base/specifications/domain/SPEC_DATAMODEL.md and knowledge-base/governance/DATABASE_GOVERNANCE.md.
 --
 -- v1 scope (Phase 0–5): users, sessions, questions, votes, audit_log, magic_links.
 -- Deferred tables (teams, billing, templates, decisions, energizers) ship post-v1.

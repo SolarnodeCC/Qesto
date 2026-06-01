@@ -196,4 +196,5 @@ const debouncedSearch = useDebouncedCallback((q) => fetch(`/api/search?q=${q}`),
 | New aria-live regions, focus management, keyboard interactions | `docs/A11Y_FULL.md` |
 | New accessible component patterns | `docs/A11Y_FULL.md §4` |
 | A11y gaps found | `docs/A11Y_FULL.md §6` |
-| UI bug discovered | `docs/BACKLOG.md §1` |
+| UI bug discovered | `knowledge-base/product/backlog/BACKLOG_MASTER.md §1` |
+
