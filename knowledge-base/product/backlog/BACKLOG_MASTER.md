@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-05-27 (UTC) — Sprint 71–80 master plan (3× capacity); Sprint 60–70 master plan; Market Pulse integration (Week of May 19, 2026)_
+_Last updated: 2026-06-01 (UTC) — Sprint 81–90 master plan (3× capacity, all agents): post-v5.0 expansion arc → v6.0 GA; Sprint 71–80 master plan; Sprint 60–70 master plan; Market Pulse integration (Week of May 19, 2026)_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -1679,6 +1679,80 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 
 ---
 
+### Sprint 81–90 — Post-v5.0 Platform Expansion Arc (added 2026-06-01)
+
+**Master plan (all agents, 120–150 pts/sprint):** [`SPRINT81_90_PLAN.md`](../planning/SPRINT81_90_PLAN.md) — v5.1 (S81–S83) → v5.2 (S84–S86) → v6.0-rc (S87–S89) → v6.0 GA (S90).
+
+**Role deep-dives:** [`SPRINT81_90_INFRA_PLAN.md`](../planning/SPRINT81_90_INFRA_PLAN.md), [`QA_COMMITMENT_SPRINTS_81_90.md`](./QA_COMMITMENT_SPRINTS_81_90.md), [`I18N_SPRINT_81_90_PLAN.md`](../../I18N_SPRINT_81_90_PLAN.md), [`MARKETING_SPRINTS_81_90.md`](../marketing/MARKETING_SPRINTS_81_90.md), [`SPRINT81_90_FRONTEND_PROPOSAL.md`](../planning/SPRINT81_90_FRONTEND_PROPOSAL.md), [`SPRINT81_90_BACKEND_PROPOSAL.md`](../planning/SPRINT81_90_BACKEND_PROPOSAL.md), [`SPRINT81_90_ARCH_NOTES.md`](../planning/SPRINT81_90_ARCH_NOTES.md), [`SPRINT81_90_SECURITY_PLAN.md`](../planning/SPRINT81_90_SECURITY_PLAN.md), [`SPRINT81_90_AI_PLAN.md`](../planning/SPRINT81_90_AI_PLAN.md), [`SPRINT81_90_ANALYTICS_PLAN.md`](../planning/SPRINT81_90_ANALYTICS_PLAN.md), [`MARKET_VALIDATION_S81_90.md`](../research/MARKET_VALIDATION_S81_90.md).
+
+**Ten epics:** E81 Native Mobile GA · E82 Marketplace Economy · E83 Agentic Facilitation · E84 Town Hall & Hybrid Events · E85 Continuous Collaboration · E86 Verifiable Governance · E87 Embeddable Platform · E88 Adaptive Experience & AAA · E89 Gov Cloud & Full ATO · E90 Platform v6.0 Certification.
+
+#### Sprint 81–90 — Agent consensus story registry (product)
+
+| ID | Item | Pts | Pri | Sprint | Notes |
+|----|------|-----|-----|--------|-------|
+| `NATIVE-SHELL-01` | Capacitor iOS/Android shell + native push | 13 | P0 | S81 | ADR-0044; deferred from S81+ |
+| `NATIVE-GA-01` | iOS/Android app store release | 13 | P0 | S82 | TestFlight + Play internal GA |
+| `MARKETPLACE-CONNECT-01` | Stripe Connect payout + revenue share | 13 | P0 | S82 | ADR-0045 partner billing |
+| `MARKETPLACE-PAID-LISTING-01` | Paid plugin/template listings + KYC | 13 | P0 | S83 | Marketplace economy GA |
+| `AGENT-RUNTIME-01` | AgentRunDO + agent runtime GA | 21 | P0 | S83 | ADR-0046; autonomous facilitation |
+| `AGENT-MARKETPLACE-01` | Agent marketplace + safety eval | 21 | P0 | S84 | Deferred from S81+ |
+| `TOWNHALL-QUEUE-01` | Moderated anonymous Q&A at scale | 21 | P0 | S84 | COMPETITIVE_EPICS E84; ADR-0047 |
+| `STAGE-SUITE-01` | Hybrid-event engagement suite | 13 | P1 | S85 | COMPETITIVE_EPICS E84 foundation |
+| `RETRO-WORKSPACE-01` | RETRO recurring workspace GA | 21 | P0 | S85 | COMPETITIVE_EPICS E85; ADR-0048 |
+| `IDEATE-BOARD-01` | IDEATE brainstorm + prioritization | 13 | P1 | S85–S86 | COMPETITIVE_EPICS E85 |
+| `DELIBERATE-RECEIPT-01` | Cryptographic governance receipt + tally | 21 | P0 | S86 | COMPETITIVE_EPICS E86; ADR-0049 |
+| `EMBED-SDK-01` | Engagement SDK + widget API | 21 | P0 | S87 | COMPETITIVE_EPICS E87; ADR-0050 |
+| `CANVAS-THEME-01` | Theme system + adaptive dataviz | 13 | P1 | S88 | COMPETITIVE_EPICS E88 |
+| `CAPTIONS-PIPELINE-01` | Live captions/translation (Workers AI) | 21 | P1 | S88 | COMPETITIVE_EPICS E88; ADR-0051 |
+| `FE-AAA-GA-01` | WCAG AAA core flows | 13 | P0 | S88–S89 | Accessibility GA gate |
+| `FEDRAMP-ATO-FULL-01` | FedRAMP Moderate full ATO path | 21 | P1 | S89 | ADR-0052; gov segment |
+| `SOVEREIGN-TIER-01` | Sovereign data-plane tenant tier | 13 | P1 | S89 | Deferred from S81+ |
+| `PLATFORM-CERTIFICATION-V6-01` | v6.0 GA certification bundle | 16 | P0 | S90 | DR evidence + compliance sign-off |
+| `SEC-PEN4-01` | Pentest #4 (mobile + marketplace) | 13 | P0 | S81–S83 | Security track |
+| `SEC-PEN5-01` | Pentest #5 (governance + embed + agent) | 13 | P0 | S87–S89 | Security track |
+| `SEC-AGENT-EVAL-01` | Agent safety evaluation suite | 13 | P0 | S84 | Blocks agent marketplace public |
+
+**AI stories AI-441–AI-480:** Groomed per-sprint in [`SPRINT81_90_AI_PLAN.md`](../planning/SPRINT81_90_AI_PLAN.md) (agent runtime schema S81 → agent maturity L4 closeout S90).
+
+**Hard gate:** ADR-0046 (agent runtime GA) and ADR-0049 (verifiable-vote crypto) must **not** land in the same sprint — both high-risk trust surfaces; split Pentest #4/#5 scope.
+
+#### Acceptance criteria — 5 critical new stories (S81–S90)
+
+**NATIVE-GA-01: iOS/Android app store release (S82, 13 pts)**
+- **Given** the Capacitor iOS build passes App Store Connect validation, **when** the host submits for TestFlight external testing, **then** testers download within 24h, the app reports version ≥ 5.1.0, the offline voter shell works without internet (quiz cached), and native push arrives ≤ 2s of question broadcast.
+- **Given** the Android build passes Play Console validation, **when** published to the internal track, **then** the signature matches the production cert and offline responses sync on reconnect.
+- **Given** localized store copy (EN/NL/ES/DE/FR), **when** listings go live per region, **then** screenshots/description render in the correct language with the WCAG AAA accessibility statement visible.
+- **DoD:** ADR-0044 accepted; native push verified on physical devices; offline session recorded; ASO targets met (MKTG-82-01); no critical/high Pentest #4 findings.
+
+**MARKETPLACE-CONNECT-01: Stripe Connect payout + revenue share (S82, 13 pts)**
+- **Given** a CREATOR/MARKETPLACE_PARTNER, **when** they submit KYC, **then** Stripe Connect onboarding verifies identity and account → VERIFIED within 24h with a weekly payout schedule.
+- **Given** a USD 50 listing at 70/30 split, **when** purchased, **then** the creator sees USD 35 pending, Qesto receives USD 15 within 24h, and the creator is paid on the next Friday.
+- **Given** a creator with ≥1 paid template, **when** they open Marketplace Earnings, **then** the dashboard shows YTD earnings, transaction history, and the next-payout countdown.
+- **DoD:** ADR-0045 accepted; legal/finance KYC + 1099 review; Stripe test-mode transfers verified; idempotent append-only ledger; earnings load ≤ 800ms.
+
+**AGENT-RUNTIME-01: AgentRunDO + agent runtime GA (S83, 21 pts)**
+- **Given** a DRAFT session, **when** the host enables the agent facilitator, **then** an AgentRunDO is reserved on publish with a read-only system-prompt preview.
+- **Given** a LIVE session with the agent enabled, **when** a participant submits an open question, **then** the agent responds via `@cf/meta/llama-3.3-70b-instruct-fp8-fast` within 3s, tagged `[AI-Generated]`.
+- **Given** a prompt-injection attempt, **when** the agent processes it, **then** it refuses, logs `AUDIT-AGENT-RESPONSE-UNSAFE`, and takes no out-of-sandbox action.
+- **DoD:** ADR-0046 accepted; `SEC-AGENT-EVAL-01` green; ≥100 concurrent-agent stress test; response P99 ≤ 5s; all agent actions queryable via AUDIT-API; Pentest #4 clearance (no code-exec via prompt).
+
+**TOWNHALL-QUEUE-01: Moderated anonymous Q&A at scale (S84, 21 pts)**
+- **Given** a TOWNHALL session with anonymous questions + AI moderation, **when** initialized, **then** a ModQueueDO drives an upvote-ranked queue and participants see an identity-redacted input.
+- **Given** 5k participants and 500 questions, **when** participants upvote, **then** the queue ranks deterministically (upvotes desc, submission time asc) at P99 ≤ 200ms with duplicate suppression.
+- **Given** a sensitive question, **when** AI pre-screen flags it, **then** it routes to a human moderator and does not appear publicly until approved.
+- **Given** an authored question, **when** broadcast, **then** no email/name appears publicly (only e.g. "Anonymous from Sales"); the author ID exists only in the audit log for GDPR escalation.
+- **DoD:** ADR-0047 accepted; 5k-voter load proof; zero anonymity leakage in broadcast; Pentest #4 de-anonymization clearance; TOWNHALL-SCALE-PROOF-50K-01 evidence (S85).
+
+**DELIBERATE-RECEIPT-01: Cryptographic governance receipt + tally (S86, 21 pts)**
+- **Given** a vote cast in a DELIBERATE session, **when** submitted, **then** the voter receives a receipt (ballot-nonce, SHA-256 commitment, session fingerprint, own choice, verify QR) downloadable as PDF + JSON.
+- **Given** a receipt, **when** the voter calls the verify endpoint, **then** the ledger commitment re-derives to the receipt hash and the vote appears in the final tally — even after the voter deletes their account.
+- **Given** a closed session of 500 votes, **when** an observer downloads tally + commitment ledger, **then** they can locally recompute the Merkle root and confirm vote count = commitment count.
+- **Given** a tampered commitment, **when** verification runs, **then** it fails with "commitment mismatch" and raises a forensics alert.
+- **DoD:** ADR-0049 accepted; independent cryptography review; receipt renders on mobile (PDF+JSON); verify endpoint ≥1000 concurrent; receipt reveals no other-vote info (coercion-resistant); Pentest #5 forgery/replay clearance; DELIBERATE-RETALLY-01 evidence (S87).
+
+---
+
 **See also**:
 - `README.md` — documentation map (truth hierarchy, reading order)
 - `SPRINT_PLAN.md` — reference five-sprint arc (v0.1→v0.5); not greenfield schedule
@@ -1694,4 +1768,7 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 - `SPRINT71_80_PLAN.md` — master ten-sprint plan S71–S80 (3× capacity, all agents)
 - `SPRINT71_80_INFRA_PLAN.md` — DevOps committed work S71–S80 (MR write GA, 50k/100k load, DR automation, SLO paging, v5 infra)
 - `SPRINT71_80_FRONTEND_PROPOSAL.md` — ten-sprint frontend horizon S71–S80 (dark mode GA, Zoom, dev portal v2, federation UI, scale/trust, copilot UX, audit surfaces)
+- `SPRINT81_90_PLAN.md` — master ten-sprint plan S81–S90 (3× capacity, all agents): native mobile GA, marketplace economy, agentic facilitation, new-business epics (town hall, events, retro, ideate, governance, embed, captions), gov cloud → v6.0 GA
+- `SPRINT81_90_INFRA_PLAN.md` · `SPRINT81_90_FRONTEND_PROPOSAL.md` · `SPRINT81_90_BACKEND_PROPOSAL.md` · `SPRINT81_90_ARCH_NOTES.md` · `SPRINT81_90_SECURITY_PLAN.md` · `SPRINT81_90_AI_PLAN.md` · `SPRINT81_90_ANALYTICS_PLAN.md` — role deep-dives S81–S90
+- `QA_COMMITMENT_SPRINTS_81_90.md` · `MARKETING_SPRINTS_81_90.md` · `I18N_SPRINT_81_90_PLAN.md` · `research/MARKET_VALIDATION_S81_90.md` — QA / marketing / i18n / market-validation S81–S90
 - `spec/design-tokens.json` — design-token source of truth
