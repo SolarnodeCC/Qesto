@@ -16,7 +16,7 @@ import {
 } from '../lib/ldap-group-map'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { recordAuditEvent } from '../lib/audit'
-import { validateBody } from '../lib/validate'
+import { validateBody } from '../lib/request-validation'
 import { safeLogContext } from '../lib/log'
 import type { Env } from '../types'
 

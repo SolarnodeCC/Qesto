@@ -4,6 +4,12 @@
 import { SessionWebhookPayload, TemplateRecord, ClassificationOutput, Lang } from '../template-schemas'
 import { createTemplateId } from '../templates-kv'
 import { logEvent } from '../log'
+import type { Env } from '../../types'
+
+/** Minimal structural contract for the Workers AI binding as used by this pipeline. */
+interface WorkflowAi {
+  run(model: string, options: Record<string, unknown>): Promise<{ response: string }>
+}
 
 export interface WorkflowInput extends SessionWebhookPayload {
   // Original question text (from session metadata, not answers)
@@ -13,7 +19,7 @@ export interface WorkflowInput extends SessionWebhookPayload {
 /**
  * Main workflow handler. Called by Cloudflare Workflows trigger.
  */
-export async function sessionPipelineWorkflow(input: WorkflowInput, env: any): Promise<void> {
+export async function sessionPipelineWorkflow(input: WorkflowInput, env: Env): Promise<void> {
   // Early exit if session is private
   if (!input.isPublic) {
     logEvent({ event: 'workflow.skipped.private_session', sessionId: input.sessionId })
@@ -68,7 +74,7 @@ export async function sessionPipelineWorkflow(input: WorkflowInput, env: any): P
 
 async function rewriteQuestions(
   originalQuestions: Array<{ text: string; kind: string }>,
-  ai: any
+  ai: WorkflowAi
 ): Promise<Array<{ original: string; rewritten: string }>> {
   const prompt = buildRewritePrompt(originalQuestions)
 
@@ -103,7 +109,7 @@ async function rewriteQuestions(
 async function similarityCheck(
   _originalQuestions: Array<{ text: string; kind: string }>,
   rewriteResults: Array<{ original: string; rewritten: string }>,
-  ai: any
+  ai: WorkflowAi
 ): Promise<Array<{ text: string; kind: string; passed: boolean; score?: number }>> {
   const checked = []
 
@@ -151,7 +157,7 @@ async function similarityCheck(
 
 async function properNounScan(
   questions: Array<{ text: string; kind: string }>,
-  ai: any
+  ai: WorkflowAi
 ): Promise<Array<{ text: string; kind: string }>> {
   const prompt = `List any proper nouns (names, places, companies, brands) in these questions:\n${questions.map((q) => `- "${q.text}"`).join('\n')}`
 
@@ -185,7 +191,7 @@ async function properNounScan(
 async function classify(
   questions: Array<{ text: string; kind: string }>,
   _language: Lang | string,
-  ai: any
+  ai: WorkflowAi
 ): Promise<ClassificationOutput> {
   const prompt = `Classify these session questions:
 ${questions.map((q) => `- ${q.text}`).join('\n')}
@@ -306,8 +312,8 @@ function buildTemplateRecord(
       topic: classification.topic,
       type: q.kind === 'open' ? 'open' : q.kind === 'likert' ? 'scale' : 'multiple_choice',
     })),
-    industry: classification.industry as any,
-    theme: classification.theme as any,
+    industry: classification.industry as TemplateRecord["industry"],
+    theme: classification.theme as TemplateRecord["theme"],
     topic: classification.topic,
     confidence: classification.confidence,
     isPublic: true,
@@ -318,7 +324,7 @@ function buildTemplateRecord(
   }
 }
 
-async function storeTemplate(template: TemplateRecord, kv: any): Promise<void> {
+async function storeTemplate(template: TemplateRecord, kv: KVNamespace | undefined): Promise<void> {
   if (!kv) {
     logEvent({ event: 'workflow.store.kv_unavailable' })
     return

@@ -3,7 +3,8 @@ import type { Env, Session } from '../../types'
 import type { SessionVars } from './shared'
 
 import { rateLimit } from '../../lib/rate-limit'
-import { validateBody } from '../../lib/validate'
+import { readKvText, writeKvJson } from '../../lib/kv'
+import { validateBody } from '../../lib/request-validation'
 import {
   GenerateQuestionsSchema,
   DuplicateSessionSchema,
@@ -11,12 +12,12 @@ import {
   ReorderQuestionsSchema,
   AddQuestionSchema,
   autoPopulateOptions,
-} from '../../lib/validation'
+} from '../../lib/domain-schemas'
 import { ensurePersonalTeam } from '../teams'
 import { WizardAIError, WizardValidationError, generateQuestions } from '../../lib/ai-wizard'
 import { sanitizeError } from '../../lib/error-handler'
 import { requireFeature } from '../../middleware/feature-gate'
-import { validateKvJson, CachedQuestionsSchema } from '../../lib/validators'
+import { validateKvJson, CachedQuestionsSchema } from '../../lib/protocol-schemas'
 import { hardDeleteSession } from '../../lib/session-delete'
 import { suggestDuplicateTitle } from '../../lib/session-title'
 import { requireFound, requireDraft, requireClosedOrArchivedForInsights } from '../../lib/session-lifecycle'
@@ -793,7 +794,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
 
     // Cache hit: same grounding hash already stored. Return cached questions.
     if (session.ai_grounding_hash && session.ai_grounding_hash === groundingHash) {
-      const cachedRaw = await c.env.SESSIONS_KV.get(cacheKey)
+      const cachedRaw = await readKvText(c.env.SESSIONS_KV, cacheKey)
       if (cachedRaw) {
         const cached = validateKvJson(cachedRaw, CachedQuestionsSchema)
         if (cached) {
@@ -831,9 +832,10 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
         .bind(groundingHash, id)
         .run()
       // Store refined questions in KV (24h TTL) for cache replays.
-      await c.env.SESSIONS_KV.put(
+      await writeKvJson(
+        c.env.SESSIONS_KV,
         cacheKey,
-        JSON.stringify({ questions: result.questions, confidence: result.confidence }),
+        { questions: result.questions, confidence: result.confidence },
         { expirationTtl: WIZARD_DRAFT_TTL_SECONDS },
       )
 

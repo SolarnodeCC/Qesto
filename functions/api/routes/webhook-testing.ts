@@ -7,7 +7,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { deliverWebhook, getWebhookConfig, type WebhookEvent } from '../lib/webhooks'
 import { getWebhookTemplate } from '../lib/webhook-templates'
-import { validateBody } from '../lib/validate'
+import { validateBody } from '../lib/request-validation'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables

@@ -1,7 +1,7 @@
 import { sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import type { EnergizerApp } from './types'
-import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
+import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/protocol-schemas'
 import type { EnergizerRow, EnergizerVoteRow, TeamQuizScoreRow, CountRow } from '../../lib/db-row-types'
 
 export function registerEnergizerActiveRoute(app: EnergizerApp): void {

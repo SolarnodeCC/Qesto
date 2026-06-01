@@ -31,9 +31,10 @@ if [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ]; then
   npm run lint 2>/dev/null || true
 fi
 
-# Unit tests (fail fast on first failure)
-report_success "Running unit tests"
-npm test
+# Unit tests with coverage (enforces the regression floor in vite.config.ts
+# and produces coverage/ for the CI artifact-upload step)
+report_success "Running unit tests with coverage"
+npm run test:coverage
 
 report_success "Quality gates passed"
 exit 0

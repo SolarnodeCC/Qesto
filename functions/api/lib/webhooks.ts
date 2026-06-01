@@ -22,7 +22,7 @@ import { writeEvent } from './observability'
 import { checkWebhookRateLimit } from './webhook-rate-limit'
 import { ulid } from './ulid'
 import { z } from 'zod'
-import { validateData, WebhookConfigSchema } from './validators'
+import { validateData, WebhookConfigSchema } from './protocol-schemas'
 import { validateWebhookTargetUrl } from './webhook-url'
 
 const WebhookTeamIndexSchema = z.array(z.string())

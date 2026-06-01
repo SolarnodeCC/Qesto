@@ -5,7 +5,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
-import { validateBody } from '../lib/validate'
+import { validateBody } from '../lib/request-validation'
 import {
   FederationScopeSchema,
   consentFederationLink,

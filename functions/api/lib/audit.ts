@@ -4,7 +4,7 @@
 // Deduplicates on trace_id + action + subject_id to prevent duplicate logging under retries.
 
 import type { Env } from '../types'
-import { validateData, AuditContextSchema, UserContextSchema } from './validators'
+import { validateData, AuditContextSchema, UserContextSchema } from './protocol-schemas'
 
 export type AuditAction =
   | 'session.create'

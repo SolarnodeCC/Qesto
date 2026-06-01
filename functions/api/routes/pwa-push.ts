@@ -3,7 +3,7 @@
  */
 import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
-import { validateBody } from '../lib/validate'
+import { validateBody } from '../lib/request-validation'
 import { computePushSla } from '../lib/push-sla'
 import { readKvJson } from '../lib/kv'
 import {

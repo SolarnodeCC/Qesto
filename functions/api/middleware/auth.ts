@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { jwtVerificationSecrets, verifyJwtWithSecrets, type AuthClaims } from '../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../lib/session-token'
+import { readKvText } from '../lib/kv'
 import { isPublicApiPath } from '../lib/public-api-paths'
 import type { Env } from '../types'
 
@@ -51,7 +52,7 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   }
   if (c.env.ACTIONS_KV) {
     const tokenHash = await hashSessionToken(token)
-    const revoked = await c.env.ACTIONS_KV.get(revokedSessionTokenKey(tokenHash))
+    const revoked = await readKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash))
     if (revoked) {
       return c.json(
         { ok: false, error: { code: 'unauthenticated', message: 'Session has been revoked' }, trace_id: c.get('trace_id') },

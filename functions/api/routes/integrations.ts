@@ -21,8 +21,9 @@ import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
 import { createEncryptedTokenStore } from '../lib/integrations/token-store'
-import { validateData, OAuthStatePayloadSchema } from '../lib/validators'
+import { validateData, OAuthStatePayloadSchema } from '../lib/protocol-schemas'
 import { SlackProvider } from '../lib/integrations/providers/slack'
+import { readKvText } from '../lib/kv'
 import { TeamsProvider } from '../lib/integrations/providers/teams'
 import { getZoomProvider } from '../lib/integrations/providers/zoom'
 import { getSalesforceProvider } from '../lib/integrations/providers/salesforce'
@@ -201,7 +202,7 @@ async function emitIntegrationConnected(
 async function resolvePrimaryTeamId(env: Env, userId: string): Promise<string | null> {
   // Prefer query-param-supplied teamId if the route handler validated membership.
   // For SLACK-01 we look up the user's first team from `user-teams:{userId}`.
-  const raw = await env.TEAMS_KV.get(`user-teams:${userId}`)
+  const raw = await readKvText(env.TEAMS_KV, `user-teams:${userId}`)
   if (!raw) return null
   try {
     const parsed = JSON.parse(raw)

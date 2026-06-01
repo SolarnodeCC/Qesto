@@ -11,7 +11,10 @@ const trimmed = (min: number, max: number) =>
     z.string().min(min).max(max),
   )
 
-export const PollOptionSchema = z.object({
+// Strict poll option for *inbound request* validation (length-bounded).
+// Distinct from protocol-schemas' StoredPollOptionSchema, which loosely parses
+// already-persisted KV/wire data.
+export const PollOptionInputSchema = z.object({
   id: z.string().min(1).max(32),
   label: trimmed(1, 160),
 })
@@ -19,7 +22,7 @@ export const PollOptionSchema = z.object({
 export const PollQuestionSchema = z.object({
   kind: z.literal('poll'),
   prompt: trimmed(1, 240),
-  options: z.array(PollOptionSchema).min(2).max(10),
+  options: z.array(PollOptionInputSchema).min(2).max(10),
 })
 
 export const CreateSessionSchema = z.object({
@@ -190,7 +193,7 @@ export function autoPopulateOptions(
   return provided
 }
 
-export type PollOptionInput = z.infer<typeof PollOptionSchema>
+export type PollOptionInput = z.infer<typeof PollOptionInputSchema>
 export type PollQuestionInput = z.infer<typeof PollQuestionSchema>
 export type CreateSessionInput = z.infer<typeof CreateSessionSchema>
 export type DuplicateSessionInput = z.infer<typeof DuplicateSessionSchema>

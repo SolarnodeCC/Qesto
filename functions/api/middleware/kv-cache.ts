@@ -18,7 +18,8 @@ import {
   cacheUserRolesKey,
 } from '../lib/kv-keys'
 import type { AuthVariables } from './auth'
-import { validateData, CachedDataSchema } from '../lib/validators'
+import { validateData, CachedDataSchema } from '../lib/protocol-schemas'
+import { readKvJson } from '../lib/kv'
 import type { UserRow } from '../lib/db-row-types'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
@@ -86,7 +87,7 @@ export const kvCacheMiddleware: MiddlewareHandler<{
  * TTL: 5 minutes (plan limits change infrequently)
  */
 export async function cachePlanUsage(
-  c: any,
+  c: { env: Env },
   userId: string,
   usage: Record<string, any>,
   ttl: number = 5 * 60
@@ -107,14 +108,14 @@ export async function cachePlanUsage(
  * Get cached plan usage or fetch from D1
  */
 export async function getPlanUsageWithCache(
-  c: any,
+  c: { env: Env },
   userId: string
 ): Promise<Record<string, any>> {
   const key = cachePlanUsageKey(userId)
 
   // Try cache first
   try {
-    const raw = await c.env.USERS_KV.get(key, 'json')
+    const raw = await readKvJson(c.env.USERS_KV, key)
     const cached = validateData(raw, CachedDataSchema)
     if (cached && cached.expires_at && cached.expires_at > Date.now()) {
       return cached.data as Record<string, any>
@@ -149,7 +150,7 @@ export async function getPlanUsageWithCache(
  * TTL: 10 minutes
  */
 export async function cacheTeamMetadata(
-  c: any,
+  c: { env: Env },
   teamId: string,
   metadata: Record<string, any>,
   ttl: number = 10 * 60
@@ -171,7 +172,7 @@ export async function cacheTeamMetadata(
  * TTL: 5 minutes
  */
 export async function cacheUserRoles(
-  c: any,
+  c: { env: Env },
   userId: string,
   roles: string[],
   ttl: number = 5 * 60
@@ -193,7 +194,7 @@ export async function cacheUserRoles(
  * TTL: 1 minute (refresh frequently for live updates)
  */
 export async function cacheLeaderboard(
-  c: any,
+  c: { env: Env },
   sessionId: string,
   entries: Record<string, any>[],
   ttl: number = 1 * 60

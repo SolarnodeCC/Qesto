@@ -1,5 +1,11 @@
 # Technical Debt Audit — May 2026
 
+> ⚠️ **SUPERSEDED (June 2026).** ~70% of the items below have been remediated.
+> See [`FUTURE_READY_REVIEW_2026-06.md`](./FUTURE_READY_REVIEW_2026-06.md) for the
+> re-verified current state. This file is retained only because several source
+> comments still cite its `TD-NN` identifiers; treat it as a historical record,
+> not a live backlog.
+
 > **Scope:** Full codebase scan — `functions/`, `src/`, `tests/`, `migrations/`, `wrangler.toml`
 > **Methodology:** Priority = (Impact + Risk) × (6 − Effort) — higher = fix sooner
 

@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { Env } from '../../types'
+import { readKvText } from '../../lib/kv'
 import type { OpsSummary, ServiceStatus } from './types'
 
 export function mountOpsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {
@@ -13,7 +14,7 @@ export function mountOpsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariabl
 
     const [d1Health, kvHealth, aiHealth] = await Promise.all([
       c.env.DB.prepare('SELECT 1').first().then(() => 'healthy' as ServiceStatus).catch(() => 'down' as ServiceStatus),
-      c.env.SESSIONS_KV.get('__health_probe__').then(() => 'healthy' as ServiceStatus).catch(() => 'degraded' as ServiceStatus),
+      readKvText(c.env.SESSIONS_KV, '__health_probe__').then(() => 'healthy' as ServiceStatus).catch(() => 'degraded' as ServiceStatus),
       Promise.resolve<ServiceStatus>('healthy'),
     ])
 

@@ -9,11 +9,12 @@
 
 import { Hono } from 'hono'
 import { ulid } from '../lib/ulid'
+import { readKvText, writeKvJson, deleteKv } from '../lib/kv'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
-import { validateBody } from '../lib/validate'
-import { CreateTemplateSchema } from '../lib/validation'
-import { validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
+import { validateBody } from '../lib/request-validation'
+import { CreateTemplateSchema } from '../lib/domain-schemas'
+import { validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/protocol-schemas'
 import type { Env, Question } from '../types'
 import { TEMPLATE_TTL_SECONDS } from '../lib/constants'
 
@@ -433,12 +434,12 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     // (KV list API is not available in Workers, so we check a known key pattern)
     // For Phase 1, we'll store templates with sequential IDs.
     const listKey = `customer_templates_list:${userId}`
-    const listRaw = await c.env.TEMPLATES_KV.get(listKey)
+    const listRaw = await readKvText(c.env.TEMPLATES_KV, listKey)
     const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
 
     for (const templateId of list) {
       const key = `customer_template:${userId}:${templateId}`
-      const raw = await c.env.TEMPLATES_KV.get(key)
+      const raw = await readKvText(c.env.TEMPLATES_KV, key)
       if (raw) {
         const template = validateKvJson(raw, CustomerTemplateSchema)
         if (template) {
@@ -527,14 +528,14 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
 
     // Store template
     const key = `customer_template:${userId}:${templateId}`
-    await c.env.TEMPLATES_KV.put(key, JSON.stringify(template), { expirationTtl: TEMPLATE_TTL_SECONDS })
+    await writeKvJson(c.env.TEMPLATES_KV, key, template, { expirationTtl: TEMPLATE_TTL_SECONDS })
 
     // Update list
     const listKey = `customer_templates_list:${userId}`
-    const listRaw = await c.env.TEMPLATES_KV.get(listKey)
+    const listRaw = await readKvText(c.env.TEMPLATES_KV, listKey)
     const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
     list.push(templateId)
-    await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: TEMPLATE_TTL_SECONDS })
+    await writeKvJson(c.env.TEMPLATES_KV, listKey, list, { expirationTtl: TEMPLATE_TTL_SECONDS })
 
     return c.json(
       {
@@ -557,7 +558,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       return c.json({ ok: false, error: { code: 'bad_request', message: 'Request body required' }, trace_id: c.get('trace_id') }, 400)
     }
     const key = `customer_template:${userId}:${templateId}`
-    const raw = await c.env.TEMPLATES_KV.get(key)
+    const raw = await readKvText(c.env.TEMPLATES_KV, key)
     if (!raw) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Template not found' }, trace_id: c.get('trace_id') }, 404)
     }
@@ -576,7 +577,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       parentId: existing.id,
       updatedAt: Date.now(),
     }
-    await c.env.TEMPLATES_KV.put(key, JSON.stringify(updated), { expirationTtl: TEMPLATE_TTL_SECONDS })
+    await writeKvJson(c.env.TEMPLATES_KV, key, updated, { expirationTtl: TEMPLATE_TTL_SECONDS })
     return c.json({ ok: true, data: { template: updated }, trace_id: c.get('trace_id') })
   })
 
@@ -587,7 +588,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const templateId = c.req.param('id')
 
     const key = `customer_template:${userId}:${templateId}`
-    const raw = await c.env.TEMPLATES_KV.get(key)
+    const raw = await readKvText(c.env.TEMPLATES_KV, key)
 
     if (!raw) {
       return c.json(
@@ -597,16 +598,16 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     }
 
     // Delete template
-    await c.env.TEMPLATES_KV.delete(key)
+    await deleteKv(c.env.TEMPLATES_KV, key)
 
     // Update list
     const listKey = `customer_templates_list:${userId}`
-    const listRaw = await c.env.TEMPLATES_KV.get(listKey)
+    const listRaw = await readKvText(c.env.TEMPLATES_KV, listKey)
     const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
     const idx = list.indexOf(templateId)
     if (idx >= 0) {
       list.splice(idx, 1)
-      await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: TEMPLATE_TTL_SECONDS })
+      await writeKvJson(c.env.TEMPLATES_KV, listKey, list, { expirationTtl: TEMPLATE_TTL_SECONDS })
     }
 
     return c.json({

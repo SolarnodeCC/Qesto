@@ -87,22 +87,22 @@ export default defineConfig(() => {
       coverage: {
         provider: 'v8',
         reporter: ['json', 'text', 'html'],
+        reportsDirectory: './coverage',
         include: ['functions/**/*.ts', 'src/**/*.tsx'],
         exclude: ['dist/**', 'node_modules/**', 'scripts/**', 'tests/**', '**/*.test.ts', '**/*.test.tsx'],
-        lines: 85,
-        functions: 85,
-        branches: 75,
-        statements: 85,
-        // Category-specific thresholds
-        all: {
-          lines: 85,
-          functions: 85,
-          branches: 75,
-          statements: 85,
-        },
-        // Thresholds by path pattern
-        perFile: true,
         skipFull: true,
+        // Regression FLOOR — set just below current project coverage so the
+        // numbers can only ratchet UP. The long-term target is 85/85/75/85;
+        // raise these as coverage grows.
+        // NOTE: under vitest v4 thresholds MUST live here, inside `thresholds`.
+        // The previous top-level `lines: 85` keys were in the v3 location and
+        // were silently ignored (coverage was ~31% with a green build).
+        thresholds: {
+          statements: 29,
+          branches: 19,
+          functions: 24,
+          lines: 30,
+        },
       },
     },
     // Extend Tailwind config with auto-generated theme from design tokens

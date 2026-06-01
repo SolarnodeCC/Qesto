@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseClientMessage } from '../../functions/api/lib/validators'
+import { parseClientMessage } from '../../functions/api/lib/protocol-schemas'
 import { PLAN_QUOTAS } from '../../functions/api/types'
 import { featureAllowed, denyFeature } from '../../functions/api/lib/entitlements'
 import { TOWNHALL_FEATURE, townhallEnabled } from '../../functions/api/realtime'

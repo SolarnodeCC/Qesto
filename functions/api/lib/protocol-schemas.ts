@@ -240,14 +240,17 @@ export type ValidPasswordReset = z.infer<typeof PasswordResetSchema>
 
 // ── Database Result Validators ───────────────────────────────────────────────
 
-export const PollOptionSchema = z.object({
+// Loose poll option for parsing *already-persisted* KV/wire data. Distinct
+// from domain-schemas' PollOptionInputSchema, which strictly validates inbound
+// request payloads.
+export const StoredPollOptionSchema = z.object({
   id: z.string(),
   label: z.string(),
 })
 
-export type ValidPollOption = z.infer<typeof PollOptionSchema>
+export type ValidPollOption = z.infer<typeof StoredPollOptionSchema>
 
-export const PollOptionArraySchema = z.array(PollOptionSchema)
+export const PollOptionArraySchema = z.array(StoredPollOptionSchema)
 
 export type ValidPollOptionArray = z.infer<typeof PollOptionArraySchema>
 

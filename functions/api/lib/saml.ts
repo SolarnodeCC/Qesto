@@ -23,7 +23,7 @@
 //   the callback URL is over HTTPS. XML-DSig verification is tracked in
 //   BACKLOG §4 (SEC-SAML-01) and MUST ship before the "SAML SSO GA" badge.
 
-import { validateKvJson, SamlStateTokenSchema } from './validators'
+import { validateKvJson, SamlStateTokenSchema } from './protocol-schemas'
 
 const SAML_STATE_TTL_SECONDS = 5 * 60 // 5 min
 

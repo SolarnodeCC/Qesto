@@ -11,7 +11,7 @@ import { Hono } from 'hono'
 import type { Env } from '../types'
 import { ulid } from '../lib/ulid'
 import { safeLogContext } from '../lib/log'
-import { validateData, AiEmbeddingResponseSchema, VectorMetadataSchema } from '../lib/validators'
+import { validateData, AiEmbeddingResponseSchema, VectorMetadataSchema } from '../lib/protocol-schemas'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

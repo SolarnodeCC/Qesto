@@ -16,7 +16,7 @@
 // For stronger semantics (Durable-Object-backed atomic counter) see ADR-0001
 // and the future WebSocket rate limiter in SessionRoom.
 
-import { validateData, RateLimitCounterSchema } from './validators'
+import { validateData, RateLimitCounterSchema } from './protocol-schemas'
 import { logEvent } from './log'
 
 export type RateLimitResult = {

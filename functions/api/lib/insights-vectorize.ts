@@ -4,7 +4,7 @@
  */
 
 import type { Env } from '../types'
-import { validateData, AiBatchEmbeddingResponseSchema } from './validators'
+import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
 import { withTimeout } from './shared/async'
 
 export type InsightsVectorizeBindings = Pick<Env, 'AI' | 'DECISIONS_VECTORIZE'>

@@ -33,9 +33,9 @@ import {
   type Permission,
 } from '../lib/authz'
 import { recordAuditEvent } from '../lib/audit'
-import { readKvJson, writeKvJson } from '../lib/kv'
-import { validateBody } from '../lib/validate'
-import { validateKvJson, PermissionArraySchema, TeamInviteTokenSchema } from '../lib/validators'
+import { readKvJson, writeKvJson, readKvText, writeKvText, deleteKv } from '../lib/kv'
+import { validateBody } from '../lib/request-validation'
+import { validateKvJson, PermissionArraySchema, TeamInviteTokenSchema } from '../lib/protocol-schemas'
 import { TEAM_INVITE_TTL_SECONDS } from '../lib/constants'
 import { teamDocumentKey, teamInviteKey, userTeamsIndexKey } from '../lib/kv-keys'
 import type { Env } from '../types'
@@ -265,7 +265,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     if (!host) {
       return c.json({ ok: false, error: { code: 'bad_request', message: 'host query required' }, trace_id: c.get('trace_id') }, 400)
     }
-    const teamId = await c.env.TEAMS_KV.get(teamDomainKey(host))
+    const teamId = await readKvText(c.env.TEAMS_KV, teamDomainKey(host))
     if (!teamId) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Domain not mapped' }, trace_id: c.get('trace_id') }, 404)
     }
@@ -682,10 +682,10 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       team.branding = parsed.data.branding
       const nextHost = parsed.data.branding?.customDomain ?? null
       if (prevHost && prevHost !== nextHost) {
-        await c.env.TEAMS_KV.delete(teamDomainKey(prevHost))
+        await deleteKv(c.env.TEAMS_KV, teamDomainKey(prevHost))
       }
       if (nextHost) {
-        await c.env.TEAMS_KV.put(teamDomainKey(nextHost), team.id)
+        await writeKvText(c.env.TEAMS_KV, teamDomainKey(nextHost), team.id)
       }
     }
 
@@ -754,9 +754,10 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
 
     const raw = generateMagicLinkToken()
     const tokenHash = await hashMagicLinkToken(raw)
-    await c.env.TEAMS_KV.put(
+    await writeKvJson(
+      c.env.TEAMS_KV,
       teamInviteKey(tokenHash),
-      JSON.stringify({ teamId: team.id, email, role: parsed.data.role, createdAt: Date.now() }),
+      { teamId: team.id, email, role: parsed.data.role, createdAt: Date.now() },
       { expirationTtl: TEAM_INVITE_TTL_SECONDS },
     )
 
@@ -848,7 +849,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         403,
       )
     }
-    await c.env.TEAMS_KV.delete(teamDocumentKey(team.id))
+    await deleteKv(c.env.TEAMS_KV, teamDocumentKey(team.id))
     for (const m of team.members) {
       await removeUserTeam(c.env.TEAMS_KV, m.userId, team.id)
     }

@@ -21,7 +21,7 @@ import {
   QuickFingerConfigSchema,
   TeamQuizConfigSchema,
   EnergizerConfigEnvelopeSchema,
-} from '../../functions/api/lib/validators'
+} from '../../functions/api/lib/protocol-schemas'
 
 // ── validateData / validateKvJson helpers ────────────────────────────────────
 
