@@ -41,7 +41,12 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,
-  archived_at INTEGER
+  archived_at INTEGER,
+  -- team_id exists in schema.sql's sessions table but was never added by a
+  -- migration (TD-03 drift), so a from-scratch replay failed at the 0045
+  -- team_id index. Included here so replay matches prod. Safe: 0000 is already
+  -- applied on prod, and CREATE TABLE IF NOT EXISTS is a no-op on existing DBs.
+  team_id TEXT DEFAULT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
