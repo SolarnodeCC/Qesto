@@ -56,6 +56,9 @@ export async function verifySlackRequest(
 
   // Verify timestamp is within 5 minutes (prevent replay attacks)
   const requestTime = parseInt(timestamp, 10) * 1000
+  if (!Number.isFinite(requestTime)) {
+    return false
+  }
   const now = Date.now()
   if (Math.abs(now - requestTime) > 5 * 60 * 1000) {
     return false
@@ -64,8 +67,9 @@ export async function verifySlackRequest(
   // Clone body because it can only be read once
   const body = await req.clone().text()
   const baseString = `v0:${timestamp}:${body}`
+  const normalizedSignature = signature.startsWith('v0=') ? signature.slice(3) : signature
 
-  return await verifyHMAC(baseString, signature, secret, 'sha256')
+  return await verifyHMAC(baseString, normalizedSignature, secret, 'sha256')
 }
 
 /**
