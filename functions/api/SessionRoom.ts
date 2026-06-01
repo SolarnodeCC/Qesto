@@ -20,7 +20,7 @@ import {
 import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity, TownhallModeration, QuestionKind } from './types'
 import { PLAN_QUOTAS } from './types'
 import { writeEvent } from './lib/observability'
-import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
+import { applyVoteMutation, evaluateVoteAdmission } from './lib/session-room-vote'
 import { TOWNHALL_KEYS } from './lib/session-room-townhall'
 import { parseClientMessage, type ValidClientMessage } from './lib/protocol-schemas'
 import { analyzeOpenResponseSentiment, SENTIMENT_COOLDOWN_MS } from './lib/ai/sentiment'
@@ -859,59 +859,41 @@ export class SessionRoom implements DurableObject {
   ): Promise<void> {
     const t0 = Date.now()
     const meta = await this.ctx.storage.get<Meta>(K_META)
-    // Token-bucket rate limit (S5).
-    const { bucket: updatedBucket, allowed: tokenAllowed } = RateLimiter.consumeVoteToken(
-      att.bucket,
-      VOTE_BUCKET_CAPACITY,
-      VOTE_BUCKET_REFILL_PER_SEC,
-    )
-    att.bucket = updatedBucket
-    if (!tokenAllowed) {
+    const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
+
+    // Pure admission guard (token-bucket → paused → timer → question → option).
+    // The DO owns the side effects; the decision logic lives in session-room-vote.
+    const admission = evaluateVoteAdmission({
+      bucket: att.bucket,
+      bucketCapacity: VOTE_BUCKET_CAPACITY,
+      bucketRefillPerSec: VOTE_BUCKET_REFILL_PER_SEC,
+      paused: meta?.paused,
+      questionExpiresAt: meta?.questionExpiresAt,
+      nowMs: now(),
+      question: question ?? undefined,
+      data,
+    })
+    att.bucket = admission.bucket
+    if (!admission.ok && admission.close) {
+      // Token-bucket flood — emit contention metric and drop the connection.
       writeEvent(this.env.METRICS_AE, {
         name: 'ws.token_bucket_contention',
         sessionId: meta?.sessionId,
         count: this.ctx.getWebSockets().length,
       })
-      ws.send(errorMessage('rate_limited', 'Slow down'))
+      ws.send(errorMessage(admission.code, admission.message))
       ws.close(CLOSE_POLICY_VIOLATION, 'vote flood')
       return
     }
+    // Persist the consumed token bucket (matches historical serialize point).
     ws.serializeAttachment(att)
-
-    if (meta?.paused) {
-      ws.send(errorMessage('paused', 'Voting is paused'))
+    if (!admission.ok) {
+      ws.send(errorMessage(admission.code, admission.message))
       return
     }
-
-    // Server-side question timer enforcement (ENTERPRISE-POLISH s1d).
-    // Reject votes after questionExpiresAt so participants cannot bypass
-    // the fun-mode timer via a raw WebSocket message.
-    if (meta?.questionExpiresAt && now() > meta.questionExpiresAt) {
-      ws.send(errorMessage('question_closed', 'Time is up -- this question is no longer accepting votes'))
-      return
-    }
-
-    const question = await this.ctx.storage.get<LiveQuestion>(K_QUESTION)
-    if (!question) {
-      ws.send(errorMessage('no_question', 'No question is active'))
-      return
-    }
-    if (!data || data.questionId !== question.id) {
-      ws.send(errorMessage('out_of_date', 'Vote for a different question'))
-      return
-    }
-    const optionId = data.optionId
-    if (!optionId) {
-      ws.send(errorMessage('bad_option', 'Missing optionId'))
-      return
-    }
-    // For free-text kinds (word_cloud) the `optionId` is the submitted phrase,
-    // so we accept any non-empty string. Other kinds must reference a
-    // preconfigured option.
-    if (!isFreeTextQuestionKind(question.kind) && !question.options.some((o) => o.id === optionId)) {
-      ws.send(errorMessage('bad_option', 'Unknown option'))
-      return
-    }
+    const optionId = admission.optionId
+    // Redundant but gives TS the narrowing: admission.ok guarantees an active question.
+    if (!question) return
 
     const votePolicy = meta?.votePolicy ?? 'once'
 

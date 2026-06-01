@@ -5,8 +5,72 @@
 
 import type { LiveQuestion } from '../realtime'
 import type { QuestionKind, VotePolicy } from '../types'
+import { RateLimiter } from './session-room-rate-limiter'
 
 export type SessionVotes = Record<string, string[]>
+
+export type TokenBucket = { tokens: number; lastAt: number }
+
+/**
+ * Decision returned by {@link evaluateVoteAdmission}. The DO applies the side
+ * effects (ws.send / ws.close / persist bucket); this stays pure so the guard
+ * sequence can be unit-tested in isolation.
+ */
+export type VoteAdmission =
+  | { ok: true; bucket: TokenBucket; optionId: string }
+  | { ok: false; bucket: TokenBucket; code: string; message: string; close?: boolean }
+
+/**
+ * Pure admission guard for an incoming LIVE vote. Mirrors the historical
+ * SessionRoom.handleVote pre-checks in exact order: token-bucket → paused →
+ * question timer → active question → questionId match → optionId presence →
+ * option validity. Consumes one rate-limit token and returns the updated
+ * bucket regardless of outcome.
+ */
+export function evaluateVoteAdmission(params: {
+  bucket: TokenBucket
+  bucketCapacity: number
+  bucketRefillPerSec: number
+  paused: boolean | undefined
+  questionExpiresAt: number | undefined
+  nowMs: number
+  question: Pick<LiveQuestion, 'id' | 'kind' | 'options'> | undefined
+  data: { questionId?: string; optionId?: string } | undefined
+}): VoteAdmission {
+  const { bucket, allowed } = RateLimiter.consumeVoteToken(
+    params.bucket,
+    params.bucketCapacity,
+    params.bucketRefillPerSec,
+  )
+  if (!allowed) {
+    return { ok: false, bucket, code: 'rate_limited', message: 'Slow down', close: true }
+  }
+  if (params.paused) {
+    return { ok: false, bucket, code: 'paused', message: 'Voting is paused' }
+  }
+  if (params.questionExpiresAt && params.nowMs > params.questionExpiresAt) {
+    return {
+      ok: false,
+      bucket,
+      code: 'question_closed',
+      message: 'Time is up -- this question is no longer accepting votes',
+    }
+  }
+  if (!params.question) {
+    return { ok: false, bucket, code: 'no_question', message: 'No question is active' }
+  }
+  if (!params.data || params.data.questionId !== params.question.id) {
+    return { ok: false, bucket, code: 'out_of_date', message: 'Vote for a different question' }
+  }
+  const optionId = params.data.optionId
+  if (!optionId) {
+    return { ok: false, bucket, code: 'bad_option', message: 'Missing optionId' }
+  }
+  if (!isFreeTextQuestionKind(params.question.kind) && !params.question.options.some((o) => o.id === optionId)) {
+    return { ok: false, bucket, code: 'bad_option', message: 'Unknown option' }
+  }
+  return { ok: true, bucket, optionId }
+}
 
 const MULTI_VOTE_KINDS = new Set<QuestionKind>(['multi_select', 'upvote', 'word_cloud'])
 
