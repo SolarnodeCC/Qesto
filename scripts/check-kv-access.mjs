@@ -18,7 +18,8 @@ const ALLOWED = new Set([resolve(ROOT, 'functions/api/lib/kv.ts')])
 const PATTERN = /\benv\.[A-Z_]+_KV\./g
 
 // Current known violations. Ratchet DOWN only — never raise this.
-const BASELINE = 50
+// 0 = all KV access now routes through lib/kv.ts. Keep it here.
+const BASELINE = 0
 
 function walk(dir) {
   const out = []

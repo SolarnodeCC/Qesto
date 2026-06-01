@@ -3,6 +3,7 @@
  */
 import { hardDeleteSession } from './session-delete'
 import { teamDocumentKey, userPrefsKey } from './kv-keys'
+import { readKvText, writeKvJson, deleteKv } from './kv'
 
 export type GdprDeleteResult = {
   sessionsDeleted: number
@@ -34,30 +35,30 @@ export async function deleteUserGdprData(
   await env.DB.prepare(`DELETE FROM audit_events WHERE actor_id = ?1`).bind(userId).run().catch(() => {})
   const userDelete = await env.DB.prepare(`DELETE FROM users WHERE id = ?1`).bind(userId).run()
 
-  await env.USERS_KV.delete(userPrefsKey(userId))
-  await env.USERS_KV.delete(`user-teams:${userId}`).catch(() => {})
+  await deleteKv(env.USERS_KV, userPrefsKey(userId))
+  await deleteKv(env.USERS_KV, `user-teams:${userId}`).catch(() => {})
 
-  const teamsRaw = await env.TEAMS_KV.get(`user-teams:${userId}`)
+  const teamsRaw = await readKvText(env.TEAMS_KV, `user-teams:${userId}`)
   if (teamsRaw) {
     try {
       const parsed = JSON.parse(teamsRaw)
       const teamIds = Array.isArray(parsed) ? parsed.filter((t): t is string => typeof t === 'string') : []
       if (teamIds.length) {
         for (const teamId of teamIds) {
-          const doc = await env.TEAMS_KV.get(teamDocumentKey(teamId))
+          const doc = await readKvText(env.TEAMS_KV, teamDocumentKey(teamId))
           if (!doc) continue
           const teamParsed = JSON.parse(doc)
           if (!teamParsed || typeof teamParsed !== 'object') continue
           const members = (teamParsed as { members?: unknown }).members
           if (!Array.isArray(members)) continue
           const filtered = members.filter((m) => !(m && typeof m === 'object' && (m as { userId?: unknown }).userId === userId))
-          await env.TEAMS_KV.put(teamDocumentKey(teamId), JSON.stringify({ ...(teamParsed as Record<string, unknown>), members: filtered }))
+          await writeKvJson(env.TEAMS_KV, teamDocumentKey(teamId), { ...(teamParsed as Record<string, unknown>), members: filtered })
         }
       }
     } catch {
       // Ignore JSON parse errors
     }
-    await env.TEAMS_KV.delete(`user-teams:${userId}`)
+    await deleteKv(env.TEAMS_KV, `user-teams:${userId}`)
   }
 
   return {

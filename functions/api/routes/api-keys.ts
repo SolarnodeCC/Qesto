@@ -5,7 +5,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
-import { readKvJson, writeKvJson } from '../lib/kv'
+import { readKvJson, writeKvJson, writeKvText } from '../lib/kv'
 import { ulid } from '../lib/ulid'
 import { validateBody } from '../lib/request-validation'
 import {
@@ -54,7 +54,7 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
     }
     const hash = await hashApiKey(raw)
     await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(id), record)
-    await c.env.INTEGRATIONS_KV.put(apiKeyHashIndexKey(hash), id)
+    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), id)
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(parsed.data.teamId))) ?? []
     if (!index.includes(id)) {
       index.push(id)
@@ -119,7 +119,7 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
     }
     const hash = await hashApiKey(raw)
     await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(newId), replacement)
-    await c.env.INTEGRATIONS_KV.put(apiKeyHashIndexKey(hash), newId)
+    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), newId)
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId))) ?? []
     const nextIndex = index.filter((id) => id !== keyId)
     nextIndex.push(newId)

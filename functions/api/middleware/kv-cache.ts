@@ -19,6 +19,7 @@ import {
 } from '../lib/kv-keys'
 import type { AuthVariables } from './auth'
 import { validateData, CachedDataSchema } from '../lib/protocol-schemas'
+import { readKvJson } from '../lib/kv'
 import type { UserRow } from '../lib/db-row-types'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
@@ -114,7 +115,7 @@ export async function getPlanUsageWithCache(
 
   // Try cache first
   try {
-    const raw = await c.env.USERS_KV.get(key, 'json')
+    const raw = await readKvJson(c.env.USERS_KV, key)
     const cached = validateData(raw, CachedDataSchema)
     if (cached && cached.expires_at && cached.expires_at > Date.now()) {
       return cached.data as Record<string, any>

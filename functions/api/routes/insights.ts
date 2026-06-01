@@ -20,6 +20,7 @@ import {
   type InsightTheme,
 } from '../lib/ai-insights'
 import { sanitizeError } from '../lib/error-handler'
+import { readKvJson, writeKvJson } from '../lib/kv'
 import { rateLimit } from '../lib/rate-limit'
 import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/protocol-schemas'
 import type { Env } from '../types'
@@ -192,7 +193,7 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     }
 
     // Cache check before rate limit — hits don't consume AI quota.
-    const cached = await c.env.SESSIONS_KV.get(cacheKey(id), 'json')
+    const cached = await readKvJson(c.env.SESSIONS_KV, cacheKey(id))
     if (cached) {
       const ci = validateData(cached, CachedInsightsSchema)
       if (ci) {
@@ -272,7 +273,7 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const payload: CachedInsights = { themes, trend, cached_at: Date.now() }
     // Best-effort cache; don't fail the request if KV write fails.
     try {
-      await c.env.SESSIONS_KV.put(cacheKey(id), JSON.stringify(payload), {
+      await writeKvJson(c.env.SESSIONS_KV, cacheKey(id), payload, {
         expirationTtl: CACHE_TTL_SECONDS,
       })
     } catch {

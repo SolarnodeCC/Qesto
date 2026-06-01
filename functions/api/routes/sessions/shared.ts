@@ -1,6 +1,7 @@
 // CODE-SPLIT-01 — shared session route helpers.
 import { ulid } from '../../lib/ulid'
 import { writeEvent } from '../../lib/observability'
+import { readKvText, writeKvJson } from '../../lib/kv'
 import type { AuthVariables } from '../../middleware/auth'
 import type { PlanVariables } from '../../middleware/plan'
 import { denyFeature, featureAllowed, questionKindFeature } from '../../lib/entitlements'
@@ -277,7 +278,7 @@ export async function precomputeInsights(
   if (userRow?.plan !== 'team') return
 
   // Skip if already cached (e.g. user manually triggered analyze before closing)
-  const existing = await env.DECISIONS_KV.get(cacheKey)
+  const existing = await readKvText(env.DECISIONS_KV, cacheKey)
   if (existing) return
 
   // Collect open-ended responses
@@ -349,7 +350,7 @@ export async function precomputeInsights(
     follow_ups: [] as string[],
   }
 
-  await env.DECISIONS_KV.put(cacheKey, JSON.stringify(payload), { expirationTtl: INSIGHTS_SHARED_CACHE_TTL_SECONDS })
+  await writeKvJson(env.DECISIONS_KV, cacheKey, payload, { expirationTtl: INSIGHTS_SHARED_CACHE_TTL_SECONDS })
   logEvent({ event: 'insights.precompute.ok', sessionId, theme_count: themes.length })
 }
 

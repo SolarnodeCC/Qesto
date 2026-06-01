@@ -11,6 +11,7 @@ import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import { logEvent } from '../lib/log'
 import { getFlag } from '../lib/flags'
+import { readKvText, writeKvText } from '../lib/kv'
 
 export type RateLimitNamespace = 'auth' | 'session-create' | 'join' | 'kb-search'
 
@@ -60,7 +61,7 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
     try {
       const ipHash = await hashIp(c.req.raw)
       const key = `ratelimit:${namespace}:${ipHash}:${windowStart}`
-      const raw = await c.env.ACTIONS_KV.get(key)
+      const raw = await readKvText(c.env.ACTIONS_KV, key)
       count = raw ? Number.parseInt(raw, 10) || 0 : 0
 
       // Always emit standard rate-limit headers so clients can implement
@@ -82,7 +83,7 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
         )
       }
 
-      await c.env.ACTIONS_KV.put(key, String(count + 1), { expirationTtl: windowSec * 2 })
+      await writeKvText(c.env.ACTIONS_KV, key, String(count + 1), { expirationTtl: windowSec * 2 })
     } catch (err) {
       kvAvailable = false
       logEvent({

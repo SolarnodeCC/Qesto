@@ -1,6 +1,7 @@
 import { deleteCookie } from 'hono/cookie'
 import { signJwt } from '../../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
+import { writeKvText } from '../../lib/kv'
 import { authMiddleware, SESSION_COOKIE } from '../../middleware/auth'
 import { townhallEnabled } from '../../realtime'
 import { recordAuthAuditEvent } from '../../lib/audit'
@@ -23,7 +24,7 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
     let logoutUserId: string | null = null
     if (token && c.env.ACTIONS_KV) {
       const tokenHash = await hashSessionToken(token)
-      await c.env.ACTIONS_KV.put(revokedSessionTokenKey(tokenHash), '1', { expirationTtl: JWT_TTL_SECONDS })
+      await writeKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash), '1', { expirationTtl: JWT_TTL_SECONDS })
     }
     try {
       // Best-effort: decode sub from JWT for audit trail without full verification
@@ -59,7 +60,7 @@ export function registerAuthSessionRoutes(app: AuthApp): void {
 
     if (c.env.ACTIONS_KV && token) {
       const tokenHash = await hashSessionToken(token)
-      await c.env.ACTIONS_KV.put(revokedSessionTokenKey(tokenHash), '1', { expirationTtl: JWT_TTL_SECONDS })
+      await writeKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash), '1', { expirationTtl: JWT_TTL_SECONDS })
     }
 
     return c.json({ ok: true, data: { refreshed: true }, trace_id: c.get('trace_id') })

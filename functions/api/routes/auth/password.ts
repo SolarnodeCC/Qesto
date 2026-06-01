@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../lib/tokens'
+import { readKvText, writeKvJson, deleteKv } from '../../lib/kv'
 import { sendEmail } from '../../lib/email'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
@@ -50,7 +51,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         .run()
 
       const passwordHash = await hashPassword(password)
-      await c.env.USERS_KV.put(pwdKey(userId), JSON.stringify({ hash: passwordHash }))
+      await writeKvJson(c.env.USERS_KV, pwdKey(userId), { hash: passwordHash })
 
       try {
         await ensurePersonalTeam(c.env.TEAMS_KV, c.env.DB, userId, normalEmail)
@@ -91,7 +92,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         .bind(normalEmail)
         .first<{ id: string }>()
 
-      const credRaw = user ? await c.env.USERS_KV.get(pwdKey(user.id)) : null
+      const credRaw = user ? await readKvText(c.env.USERS_KV, pwdKey(user.id)) : null
       const cred = credRaw ? validateKvJson(credRaw, PasswordCredentialSchema) : null
       if (credRaw && !cred) {
         console.warn(JSON.stringify({ event: 'auth.kv_invalid', kind: 'password_cred', user_id: user?.id }))
@@ -154,9 +155,10 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
         const raw = generateMagicLinkToken()
         const tokenHash = await hashMagicLinkToken(raw)
 
-        await c.env.ACTIONS_KV.put(
+        await writeKvJson(
+          c.env.ACTIONS_KV,
           resetKey(tokenHash),
-          JSON.stringify({ userId: user.id, email }),
+          { userId: user.id, email },
           { expirationTtl: PASSWORD_RESET_TTL_SECONDS },
         )
 
@@ -196,7 +198,7 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       const tokenHash = await hashMagicLinkToken(token)
       const kvKey = resetKey(tokenHash)
 
-      const rawKv = await c.env.ACTIONS_KV.get(kvKey)
+      const rawKv = await readKvText(c.env.ACTIONS_KV, kvKey)
       if (!rawKv) {
         return c.json(
           { ok: false, error: { code: 'invalid_token', message: 'Reset link invalid or expired' }, trace_id: c.get('trace_id') },
@@ -210,10 +212,10 @@ export function registerPasswordAuthRoutes(app: AuthApp): void {
       }
       const { userId, email } = payload
 
-      await c.env.ACTIONS_KV.delete(kvKey)
+      await deleteKv(c.env.ACTIONS_KV, kvKey)
 
       const passwordHash = await hashPassword(password)
-      await c.env.USERS_KV.put(pwdKey(userId), JSON.stringify({ hash: passwordHash }))
+      await writeKvJson(c.env.USERS_KV, pwdKey(userId), { hash: passwordHash })
 
       await c.env.DB.prepare(`UPDATE users SET last_login_at = ?1 WHERE id = ?2`)
         .bind(Date.now(), userId)

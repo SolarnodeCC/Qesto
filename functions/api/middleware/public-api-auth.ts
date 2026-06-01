@@ -2,7 +2,7 @@
  * Shared Bearer API key auth + per-key rate limit (SEC-APIKEY-QUOTA-01).
  */
 import type { Context, Next } from 'hono'
-import { readKvJson, writeKvJson } from '../lib/kv'
+import { readKvJson, writeKvJson, readKvText } from '../lib/kv'
 import {
   ApiKeyRecordSchema,
   apiKeyHashIndexKey,
@@ -31,7 +31,7 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
     return c.json({ ok: false, error: { code: 'unavailable', message: 'API keys not configured' } }, 503)
   }
   const hash = await hashApiKey(raw)
-  const keyId = await c.env.INTEGRATIONS_KV.get(apiKeyHashIndexKey(hash))
+  const keyId = await readKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash))
   if (!keyId) {
     return c.json({ ok: false, error: { code: 'unauthenticated', message: 'Invalid API key' } }, 401)
   }

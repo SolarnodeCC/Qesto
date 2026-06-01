@@ -9,6 +9,7 @@
 
 import { Hono } from 'hono'
 import { getQuotaUsage } from '../lib/quota'
+import { readKvText } from '../lib/kv'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
@@ -244,7 +245,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
 
     // Look up Stripe customer ID stored in USERS_KV
-    const raw = await c.env.USERS_KV.get(stripeCustomerKey(user.sub))
+    const raw = await readKvText(c.env.USERS_KV, stripeCustomerKey(user.sub))
     const record = validateKvJson(raw, StripeCustomerRecordSchema)
 
     if (!record?.customerId) {
@@ -272,7 +273,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
         503,
       )
     }
-    const raw = await c.env.USERS_KV.get(stripeCustomerKey(user.sub))
+    const raw = await readKvText(c.env.USERS_KV, stripeCustomerKey(user.sub))
     const record = validateKvJson(raw, StripeCustomerRecordSchema)
     if (!record?.customerId) {
       return c.json(
@@ -299,7 +300,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     if ('error' in validated) return validated.error
     const { data: body } = validated
 
-    const subRaw = await c.env.USERS_KV.get(stripeSubscriptionKey(user.sub))
+    const subRaw = await readKvText(c.env.USERS_KV, stripeSubscriptionKey(user.sub))
     const subRecord = validateKvJson(subRaw, StripeSubscriptionRecordSchema)
     if (!subRecord?.subscriptionId) {
       return c.json(
