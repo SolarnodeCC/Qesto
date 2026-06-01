@@ -10,7 +10,12 @@ describe('Sprint 29 leaderboard and badge contract', () => {
       readFileSync('functions/api/SessionRoom.ts', 'utf8') +
       readFileSync('functions/api/lib/session-room-energizer-handler.ts', 'utf8') +
       readFileSync('functions/api/lib/session-room-energizer.ts', 'utf8')
-    const join = readFileSync('src/pages/JoinPage.tsx', 'utf8')
+    // R-05 extracted the live energizer panels (incl. LiveLeaderboard/BadgeRow)
+    // out of JoinPage.tsx into a dedicated module; the contract is the combined
+    // join voter surface.
+    const join =
+      readFileSync('src/pages/JoinPage.tsx', 'utf8') +
+      readFileSync('src/pages/join/LiveEnergizerPanels.tsx', 'utf8')
     const present = readFileSync('src/pages/Present.tsx', 'utf8')
 
     expect(realtime).toContain('LiveLeaderboardEntry')
