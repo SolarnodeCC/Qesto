@@ -74,6 +74,10 @@ function makeStripeClient(secretKey: string) {
     )
   }
   return {
+    checkoutSessions: {
+      create: (params: Record<string, string>) =>
+        post<{ url: string; id: string }>('/checkout/sessions', params),
+    },
     billingPortal: {
       sessions: {
         create: (params: { customer: string; return_url: string }) =>
@@ -311,6 +315,57 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     }
     const updated = await stripe.subscriptions.updatePrice(subRecord.subscriptionId, body.subscriptionItemId!, body.priceId!)
     return c.json({ ok: true, data: { subscription: updated }, trace_id: c.get('trace_id') })
+  })
+
+  // POST /api/billing/checkout -- create a Stripe Checkout session.
+  // ENTERPRISE-POLISH s8b: supports interval=monthly|annual for annual billing toggle.
+  // Body: { plan: PlanTier, interval: 'monthly' | 'annual', seat_count?: number }
+  app.post('/billing/checkout', authMiddleware, async (c) => {
+    const user = c.get('user')
+    const traceId = c.get('trace_id')
+    if (!c.env.STRIPE_SECRET_KEY) {
+      return c.json({ ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: traceId }, 503)
+    }
+    const body = await c.req.json().catch(() => null) as Record<string, unknown> | null
+    const plan = (body?.plan as string) ?? 'starter'
+    const interval = (body?.interval as string) === 'annual' ? 'annual' : 'monthly'
+    const seatCount = typeof body?.seat_count === 'number' && body.seat_count > 0 ? body.seat_count : 1
+
+    const pricing = catalogPricing(c.env)
+    const planRow = pricing[plan as keyof typeof pricing]
+    if (!planRow) {
+      return c.json({ ok: false, error: { code: 'bad_request', message: 'Unknown plan' }, trace_id: traceId }, 400)
+    }
+    const priceId = interval === 'annual' ? planRow.annual_price_id : planRow.monthly_price_id
+    if (!priceId) {
+      return c.json({ ok: false, error: { code: 'bad_request', message: `No ${interval} price configured for plan ${plan}` }, trace_id: traceId }, 400)
+    }
+
+    const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
+    const successUrl = `${c.env.PAGES_URL}/settings?checkout=success&plan=${plan}`
+    const cancelUrl = `${c.env.PAGES_URL}/settings?checkout=cancelled`
+
+    const params: Record<string, string> = {
+      mode: 'subscription',
+      'line_items[0][price]': priceId,
+      'line_items[0][quantity]': String(seatCount),
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      client_reference_id: user.sub,
+      'metadata[userId]': user.sub,
+      'metadata[plan]': plan,
+      'metadata[interval]': interval,
+      'metadata[seatCount]': String(seatCount),
+      allow_promotion_codes: 'true',
+      ...(user.email ? { customer_email: user.email } : {}),
+    }
+    // Collect billing address for VAT/invoice purposes
+    params['billing_address_collection'] = 'required'
+    // Show tax ID field for EU enterprise customers
+    params['tax_id_collection[enabled]'] = 'true'
+
+    const session = await stripe.checkoutSessions.create(params)
+    return c.json({ ok: true, data: { url: session.url }, trace_id: traceId })
   })
 
   parent.route('/api', app)

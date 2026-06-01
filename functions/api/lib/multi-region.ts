@@ -1,6 +1,7 @@
 /**
  * MULTI-REGION-FOUNDATION-01 — read-replica routing design (staging-only activation in S48).
  */
+import { getFlag } from './flags'
 export type RegionCode = 'us' | 'eu' | 'apac'
 
 export type MultiRegionConfig = {
@@ -18,7 +19,7 @@ export function getMultiRegionConfig(env: {
   MULTI_REGION_PRIMARY?: string
   MULTI_REGION_REPLICAS?: string
 }): MultiRegionConfig {
-  const enabled = env.MULTI_REGION_ENABLED === 'true'
+  const enabled = getFlag(env, 'MULTI_REGION_ENABLED')
   const primary = (env.MULTI_REGION_PRIMARY ?? 'us') as RegionCode
   const replicas = (env.MULTI_REGION_REPLICAS ?? 'eu')
     .split(',')

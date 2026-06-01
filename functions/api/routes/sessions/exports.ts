@@ -309,11 +309,13 @@ export function mountExportRoutes(
     csvRows.push(csvRow(['# Session Export', session.title]))
     csvRows.push(csvRow(['# Session ID', id]))
     csvRows.push(csvRow(['# Status', session.status]))
-    csvRows.push(['# Started', startedAt !== null ? new Date(startedAt).toISOString() : ''].join(','))
-    csvRows.push(['# Closed', closedAt !== null ? new Date(closedAt).toISOString() : ''].join(','))
+    const exportLocale = acceptLocale(c.req.header('accept-language'))
+    csvRows.push(['# Started', startedAt !== null ? formatExportDate(startedAt, exportLocale) : ''].join(','))
+    csvRows.push(['# Closed', closedAt !== null ? formatExportDate(closedAt, exportLocale) : ''].join(','))
     csvRows.push(['# Duration (ms)', durationMs].join(','))
     csvRows.push(csvRow(['# Anonymity', session.anonymity]))
-    csvRows.push(['# Exported', new Date().toISOString()].join(','))
+    csvRows.push(['# Locale', exportLocale].join(','))
+    csvRows.push(['# Exported', formatExportDate(Date.now(), exportLocale)].join(','))
     csvRows.push('')
 
     csvRows.push(
@@ -414,3 +416,25 @@ export function mountExportRoutes(
     return renderSignedHtmlExport(c, session, 'pdf')
   })
 }
+// ENTERPRISE-POLISH s16b: locale-aware date formatting for CSV/XLSX exports.
+// Falls back to ISO 8601 if the locale is invalid or Intl is unavailable.
+function formatExportDate(ts: number, locale: string): string {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+      timeZone: 'UTC',
+    }).format(new Date(ts))
+  } catch {
+    return new Date(ts).toISOString()
+  }
+}
+
+function acceptLocale(acceptLanguage: string | undefined): string {
+  if (!acceptLanguage) return 'en-GB'
+  // Take the first tag, strip quality weights
+  const first = acceptLanguage.split(',')[0]?.split(';')[0]?.trim()
+  return first && first.length >= 2 ? first : 'en-GB'
+}
+

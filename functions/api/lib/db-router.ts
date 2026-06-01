@@ -33,7 +33,7 @@ export function resolveWriteBinding(
   teamConfig: TeamRegionConfig,
 ): { binding: 'primary'; region: HomeRegion; residencyLocked: boolean } {
   const primary = (env.MULTI_REGION_PRIMARY as HomeRegion) || 'us'
-  const enabled = env.MULTI_REGION_WRITES_ENABLED === 'true'
+  const enabled = (env as { MULTI_REGION_WRITES_ENABLED?: string }).MULTI_REGION_WRITES_ENABLED === 'true'
   const region = enabled ? teamConfig.homeRegion : primary
   return {
     binding: 'primary',

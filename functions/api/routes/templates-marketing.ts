@@ -13,6 +13,8 @@ import { Industry, Theme, Lang, TemplateRecord } from '../lib/template-schemas'
 import type { Env } from '../types'
 import type { AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
+import { MARKETING_MAGIC_LINK_TTL_SECONDS } from '../lib/constants'
+import { logEvent } from '../lib/log'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -60,7 +62,7 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
       const paginated = templates.slice(offset, offset + limit)
       return c.json({ ok: true, data: paginated, pagination: { limit, offset, total: templates.length } })
     } catch (err) {
-      console.log({ event: 'api.templates.list.error', error: err instanceof Error ? err.message : String(err) })
+      logEvent({ event: 'api.templates.list.error', error: err instanceof Error ? err.message : String(err) })
       return c.json({ error: 'Failed to list templates' }, 500)
     }
   })
@@ -76,7 +78,7 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
       if (!template || template.isDiscarded) return c.json({ error: 'Template not found' }, 404)
       return c.json({ ok: true, data: template })
     } catch (err) {
-      console.log({ event: 'api.templates.get.error', templateId, error: err instanceof Error ? err.message : String(err) })
+      logEvent({ event: 'api.templates.get.error', templateId, error: err instanceof Error ? err.message : String(err) })
       return c.json({ error: 'Failed to fetch template' }, 500)
     }
   })
@@ -126,16 +128,16 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
         })),
       }
 
-      await sessionsKv.put(`session:${sessionId}`, JSON.stringify(session), { expirationTtl: 3600 })
+      await sessionsKv.put(`session:${sessionId}`, JSON.stringify(session), { expirationTtl: MARKETING_MAGIC_LINK_TTL_SECONDS })
       const magicToken = nanoid()
-      await usersKv.put(`magic_link:${magicToken}`, sessionId, { expirationTtl: 3600 })
+      await usersKv.put(`magic_link:${magicToken}`, sessionId, { expirationTtl: MARKETING_MAGIC_LINK_TTL_SECONDS })
       await incrementUsageCount(marketingKv, templateId)
 
       const magicLink = `${c.env.PAGES_URL}/s/${sessionId}?token=${magicToken}`
-      console.log({ event: 'api.templates.use.success', templateId, sessionId })
+      logEvent({ event: 'api.templates.use.success', templateId, sessionId })
       return c.json({ ok: true, data: { sessionId, magicLink, expiresIn: 3600 } })
     } catch (err) {
-      console.log({ event: 'api.templates.use.error', templateId, error: err instanceof Error ? err.message : String(err) })
+      logEvent({ event: 'api.templates.use.error', templateId, error: err instanceof Error ? err.message : String(err) })
       return c.json({ error: 'Failed to create session from template' }, 500)
     }
   })
@@ -155,10 +157,10 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
 
     try {
       await storeTemplate(kv, parsed.data)
-      console.log({ event: 'api.templates.store.success', templateId: parsed.data.id, questions: parsed.data.questions.length })
+      logEvent({ event: 'api.templates.store.success', templateId: parsed.data.id, questions: parsed.data.questions.length })
       return c.json({ ok: true, data: { id: parsed.data.id } })
     } catch (err) {
-      console.log({ event: 'api.templates.store.error', error: err instanceof Error ? err.message : String(err) })
+      logEvent({ event: 'api.templates.store.error', error: err instanceof Error ? err.message : String(err) })
       return c.json({ error: 'Failed to store template' }, 500)
     }
   })

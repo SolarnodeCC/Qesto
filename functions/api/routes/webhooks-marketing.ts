@@ -7,6 +7,7 @@ import { SessionWebhookPayload } from '../lib/template-schemas'
 import type { Env } from '../types'
 import { type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
+import { logEvent } from '../lib/log'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -28,7 +29,7 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     // Read and validate HMAC
     const signature = c.req.header('x-qesto-signature')
     if (!signature) {
-      console.log({ event: 'webhook.marketing.missing_signature' })
+      logEvent({ event: 'webhook.marketing.missing_signature' })
       return c.json({ error: 'Missing signature' }, 401)
     }
 
@@ -37,7 +38,7 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
 
     const expectedSig = `sha256=${await hmacSha256Hex(secret, body)}`
     if (signature !== expectedSig) {
-      console.log({
+      logEvent({
         event: 'webhook.marketing.invalid_signature',
         provided: signature.slice(0, 20),
         expected: expectedSig.slice(0, 20),
@@ -51,18 +52,18 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
       const raw = JSON.parse(body)
       const result = SessionWebhookPayload.safeParse(raw)
       if (!result.success) {
-        console.log({ event: 'webhook.marketing.parse_error', issues: result.error.issues })
+        logEvent({ event: 'webhook.marketing.parse_error', issues: result.error.issues })
         return c.json({ error: 'Invalid JSON' }, 400)
       }
       payload = result.data
     } catch {
-      console.log({ event: 'webhook.marketing.parse_error' })
+      logEvent({ event: 'webhook.marketing.parse_error' })
       return c.json({ error: 'Invalid JSON' }, 400)
     }
 
     // Check if session is public
     if (!payload.isPublic) {
-      console.log({ event: 'webhook.marketing.skipped_private_session', sessionId: payload.sessionId })
+      logEvent({ event: 'webhook.marketing.skipped_private_session', sessionId: payload.sessionId })
       return c.json({ ok: true, skipped: true })
     }
 
@@ -78,19 +79,19 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
           participantCount: payload.participantCount,
           durationMinutes: payload.durationMinutes,
         })
-        console.log({
+        logEvent({
           event: 'workflow.queued',
           sessionId: payload.sessionId,
         })
       } else {
-        console.log({
+        logEvent({
           event: 'workflow.not_available',
           sessionId: payload.sessionId,
           note: 'WORKFLOWS binding not configured; template generation skipped',
         })
       }
     } catch (err) {
-      console.log({
+      logEvent({
         event: 'workflow.queue_error',
         sessionId: payload.sessionId,
         error: err instanceof Error ? err.message : String(err),

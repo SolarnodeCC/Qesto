@@ -1,25 +1,6 @@
 // SessionRoom — Durable Object hosting LIVE session state (ADR-0001).
-//
-// WS4: LIVE vote semantics live in `lib/session-room-vote.ts` (`applyVoteMutation`);
-// REST session state gates live in `lib/session-lifecycle.ts`.
-//
-// Lifecycle:
-//   1. `POST /init`  — Hono route calls this once when a session transitions
-//                      DRAFT → LIVE. Seeds meta + question + empty counts.
-//   2. `GET  /ws`    — WebSocket Upgrade. Subprotocol `qesto.bearer.<JWT>`
-//                      identifies the presenter; voters connect without a
-//                      subprotocol and get an anon voterId via headers.
-//   3. `POST /close` — Finalises, broadcasts `session_closed`, closes all
-//                      sockets, returns final counts for D1 persistence.
-//   4. `GET  /state` — Debug/test snapshot.
-//
-// Message dispatch is driven by hibernation callbacks (`webSocketMessage`,
-// `webSocketClose`) so the DO can sleep between bursts without losing state.
-// Broadcasts are debounced 100 ms via `ctx.storage.setAlarm` (GAM-001).
-//
-// Rate limits (S5): per-IP connect cap (5 concurrent) and per-voter vote
-// token bucket (10 tokens, 1/s refill). Flood beyond thresholds → policy
-// violation close (1008).
+// Refactored per TD-01: collaborators extracted to separate modules.
+// See TECH_DEBT_AUDIT_2026-05.md TD-01.
 
 import {
   CLOSE_NORMAL,
@@ -35,40 +16,20 @@ import {
   type LiveQuestion,
   type LiveSessionSummary,
   type ServerMessage,
-  type TownhallItem,
-  type TownhallBoardItem,
 } from './realtime'
 import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity, TownhallModeration, QuestionKind } from './types'
 import { PLAN_QUOTAS } from './types'
-import {
-  TOWNHALL_KEYS,
-  newSubmitBucket,
-  consumeSubmitToken,
-  nextRev,
-  createTownhallItem,
-  isDuplicateBody,
-  applyTownhallUpvote,
-  applyTownhallModeration,
-  isAudienceVisible,
-  mergedUpvoteCount,
-  toBoardItem,
-  type TokenBucket,
-} from './lib/session-room-townhall'
 import { writeEvent } from './lib/observability'
-import { mirrorEnergizerToKv } from './lib/session-room-cross-region'
-import {
-  maybeAdvanceBattleRoyale,
-  recordBracketPick,
-  bracketReadyToAdvance,
-} from './lib/tournament-live'
+import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
+import { TOWNHALL_KEYS } from './lib/session-room-townhall'
+import { parseClientMessage, type ValidClientMessage } from './lib/validators'
 import { analyzeOpenResponseSentiment, SENTIMENT_COOLDOWN_MS } from './lib/ai/sentiment'
 import { sentimentContextFromMeta } from './lib/ai/session-context'
-import { applyVoteMutation, isFreeTextQuestionKind } from './lib/session-room-vote'
-import { parseClientMessage, type ValidClientMessage } from './lib/validators'
-
-// Tell tsc the env binding exists on the DO class — Phase 4+ will reach for
-// `this.env.DB` inside `close()` to persist totals. Kept as a typed field now
-// so new code doesn't need to rewire the constructor signature.
+import { RateLimiter } from './lib/session-room-rate-limiter'
+import { EnergizerHandler } from './lib/session-room-energizer-handler'
+import { TownhallHandler } from './lib/session-room-townhall-handler'
+import { logEvent } from './lib/log'
+import { flagOff } from './lib/flags'
 
 // ── Persisted state keys (ctx.storage) ──────────────────────────────────────
 const K_META = 'meta'
@@ -80,16 +41,13 @@ const K_PENDING_RESPONSES = 'pending_responses'
 const K_COUNTS = 'counts'
 const K_VOTERS = 'voters'
 const K_STATUS = 'status'
-const K_IP_RATE_LIMIT = 'ip_rate_limit' // Maps ipHash → timestamps[] for per-minute rate limiting
 const K_ACTIVE_ENERGIZER = 'active_energizer'
 const K_SENTIMENT_MOOD = 'sentiment:mood'
 const K_SENTIMENT_LAST = 'sentiment:last'
 const K_SENTIMENT_RETRY_QUEUE = 'sentiment:retry_queue'
 const K_SENTIMENT_RETRY_COUNT = 'sentiment:retry_count'
-const K_ENERGIZER_ACTIVATED_AT = 'energizer:activated_at'
 const SENTIMENT_RETRY_DELAY_MS = 5_000
 const SENTIMENT_MAX_RETRIES = 1
-const ENERGIZER_TIMEOUT_MS = 5 * 60_000 // 5 minutes
 
 // Fun-mode: 60 s per question before auto-advance signal.
 const FUN_MODE_QUESTION_MS = 60_000
@@ -185,10 +143,18 @@ export class SessionRoom implements DurableObject {
   private _votersInitPromise: Promise<void> | null = null
   private readonly clientWsHandlers: Record<ValidClientMessage['type'], ClientWsHandler>
 
+  // ── Collaborators (TD-01 refactor) ────────────────────────────────────────
+  private readonly rateLimiter: RateLimiter
+  private readonly energizerHandler: EnergizerHandler
+  private readonly townhallHandler: TownhallHandler
+
   constructor(ctx: DurableObjectState, env: Env) {
     this.ctx = ctx
     this.env = env
-    void this.env // retained for Phase 4 D1 persistence; see file header.
+
+    this.rateLimiter = new RateLimiter(ctx.storage)
+    this.energizerHandler = new EnergizerHandler(ctx as any, env, this.scheduleAlarm.bind(this))
+    this.townhallHandler = new TownhallHandler(ctx as any, env)
 
     this.clientWsHandlers = {
       vote: async (ws, att, msg) => {
@@ -216,28 +182,28 @@ export class SessionRoom implements DurableObject {
       },
       energizer_activate: async (ws, att, msg) => {
         if (msg.type !== 'energizer_activate') return
-        await this.handleEnergizerActivate(ws, att, msg.data.energizer as LiveEnergizerState)
+        await this.energizerHandler.handleActivate(ws, att, msg.data.energizer as LiveEnergizerState)
       },
       energizer_answer: async (ws, att, msg) => {
         if (msg.type !== 'energizer_answer') return
-        await this.handleEnergizerAnswer(ws, att, msg.data)
+        await this.energizerHandler.handleAnswer(ws, att, msg.data)
       },
       energizer_advance: async (ws, att, msg) => {
         if (msg.type !== 'energizer_advance') return
-        await this.handleEnergizerAdvance(ws, att, msg.data)
+        await this.energizerHandler.handleAdvance(ws, att, msg.data)
       },
-      // TOWNHALL (ADR-0044). Board state machine lives in lib/session-room-townhall.ts.
+      // TOWNHALL (ADR-0044). Board state machine: see lib/session-room-townhall-handler.ts.
       townhall_submit: async (ws, att, msg) => {
         if (msg.type !== 'townhall_submit') return
-        await this.handleTownhallSubmit(ws, att, msg.data)
+        await this.townhallHandler.handleSubmit(ws, att, { body: msg.data.body, displayName: msg.data.displayName })
       },
       townhall_upvote: async (ws, att, msg) => {
         if (msg.type !== 'townhall_upvote') return
-        await this.handleTownhallUpvote(ws, att, msg.data)
+        await this.townhallHandler.handleUpvote(ws, att, msg.data)
       },
       townhall_moderate: async (ws, att, msg) => {
         if (msg.type !== 'townhall_moderate') return
-        await this.handleTownhallModerate(ws, att, msg.data)
+        await this.townhallHandler.handleModerate(ws, att, { itemId: msg.data.itemId, action: msg.data.action, groupParentId: msg.data.groupParentId })
       },
       // ENTERPRISE-POLISH §1c — response moderation for open questions.
       approve_response: async (ws, att, msg) => {
@@ -384,9 +350,9 @@ export class SessionRoom implements DurableObject {
     const meta = await this.ctx.storage.get<Meta>(K_META)
     if (meta?.townhallModeration) {
       try {
-        await this.persistTownhallBoard(meta.sessionId, now())
+        await this.townhallHandler.persistBoard(meta.sessionId, now())
       } catch (err) {
-        console.log(JSON.stringify({ event: 'townhall.persist_failed', sessionId: meta.sessionId, err: String(err) }))
+        logEvent({ event: 'townhall.persist_failed', sessionId: meta.sessionId, err: String(err) })
       }
     }
     const questionId = (await this.ctx.storage.get<LiveQuestion>(K_QUESTION))?.id ?? null
@@ -515,7 +481,8 @@ export class SessionRoom implements DurableObject {
       }
 
       // Per-IP per-minute rate limiting (SEC-01).
-      const rateLimitExceeded = await this.checkIpRateLimit(ipHash)
+      const maxPerMin = parseInt(this.env.WS_CONNECT_PER_IP_PER_MIN ?? '15', 10) || 15
+      const rateLimitExceeded = await this.rateLimiter.checkIpRateLimit(ipHash, maxPerMin)
       if (rateLimitExceeded) {
         return new Response('Rate limit exceeded for this IP', { status: 429 })
       }
@@ -595,13 +562,11 @@ export class SessionRoom implements DurableObject {
       }
       await handler(ws, att, parsed)
     } catch (err) {
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'do.ws_message_fault',
           errorClass: err instanceof Error ? err.name : 'UnknownError',
           errorMessage: err instanceof Error ? err.message : String(err),
-        }),
-      )
+        })
       const meta = await this.ctx.storage.get<Meta>(K_META).catch(() => null)
       writeEvent(this.env.METRICS_AE, {
         name: 'do.storage_fault',
@@ -730,29 +695,8 @@ export class SessionRoom implements DurableObject {
       }
     }
 
-    // Energizer timeout: auto-complete if energizer has been active > timeout threshold
-    const energizer = await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)
-    const energizerActivatedAt = await this.ctx.storage.get<number>(K_ENERGIZER_ACTIVATED_AT)
-    if (energizer && energizerActivatedAt && energizerActivatedAt + ENERGIZER_TIMEOUT_MS <= nowMs) {
-      const meta = await this.ctx.storage.get<Meta>(K_META)
-      energizer.status = 'completed'
-      await this.ctx.storage.put(K_ACTIVE_ENERGIZER, energizer)
-      await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
-      const timeoutMsg = serverMessage({
-        type: 'energizer_state',
-        data: { energizer },
-        timestamp: nowMs,
-      })
-      for (const ws of this.ctx.getWebSockets()) {
-        try { ws.send(timeoutMsg) } catch { /* ignore */ }
-      }
-      writeEvent(this.env.METRICS_AE, {
-        name: 'ws.energizer_timeout',
-        sessionId: meta?.sessionId,
-        teamId: meta?.teamId,
-        detail: `auto_completed_after_${Math.round((nowMs - energizerActivatedAt) / 1000)}s`,
-      })
-    }
+    // Energizer timeout: auto-complete — delegated to EnergizerHandler
+    await this.energizerHandler.handleAlarmTimeout(nowMs)
 
     // Fun-mode: broadcast question_timeout when the countdown expires.
     const meta = await this.ctx.storage.get<Meta>(K_META)
@@ -908,267 +852,6 @@ export class SessionRoom implements DurableObject {
     await this.setPaused(paused)
   }
 
-  private async handleEnergizerActivate(
-    ws: WebSocket,
-    att: Attachment,
-    energizer: LiveEnergizerState,
-  ): Promise<void> {
-    if (att.role !== 'presenter') {
-      ws.send(errorMessage('forbidden', 'Only presenter can activate energizers'))
-      await this.emitEnergizerMetric('ws.energizer_activation_denied', energizer?.id, 0)
-      await this.recordEnergizerAudit('ws.energizer_activation_denied', att, energizer, { reason: 'role' })
-      return
-    }
-    if (!this.canActivateEnergizer(att)) {
-      ws.send(errorMessage('forbidden', 'Presenter role cannot activate energizers'))
-      await this.emitEnergizerMetric('ws.energizer_activation_denied', energizer?.id, 0)
-      await this.recordEnergizerAudit('ws.energizer_activation_denied', att, energizer, { reason: 'permission' })
-      return
-    }
-    if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
-      ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
-      await this.emitEnergizerMetric('ws.energizer_activation_denied', energizer?.id, 0)
-      await this.recordEnergizerAudit('ws.energizer_activation_denied', att, energizer, { reason: 'feature_disabled' })
-      return
-    }
-    if (!isValidLiveEnergizer(energizer)) {
-      ws.send(errorMessage('bad_energizer', 'Invalid energizer payload'))
-      return
-    }
-    const energizerMeta = await this.ctx.storage.get<Meta>(K_META)
-    const active = withScoreArtifacts(
-      initialiseLiveEnergizer(energizer),
-      energizerMeta?.leaderboardDisplay ?? 'names',
-      energizerMeta?.sessionId ?? '',
-    )
-    const nowMs = now()
-    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, active)
-    await this.ctx.storage.put(K_ENERGIZER_ACTIVATED_AT, nowMs)
-    await this.scheduleAlarm(nowMs + ENERGIZER_TIMEOUT_MS)
-    await this.emitEnergizerMetric('ws.energizer_activated', active.id, active.leaderboard?.length ?? 0)
-    await this.recordEnergizerAudit('ws.energizer_activated', att, active)
-    await this.broadcastEnergizer(active)
-  }
-
-  private async handleEnergizerAnswer(
-    ws: WebSocket,
-    att: Attachment,
-    data: { energizerId?: string; value?: string },
-  ): Promise<void> {
-    if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
-      ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
-      return
-    }
-    if (att.role !== 'voter') {
-      ws.send(errorMessage('forbidden', 'Only participants can answer energizers'))
-      return
-    }
-    const active = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
-    if (!active || active.status !== 'active') {
-      ws.send(errorMessage('no_energizer', 'No energizer is active'))
-      return
-    }
-    if (!data?.energizerId || data.energizerId !== active.id) {
-      ws.send(errorMessage('stale_energizer', 'Answer for a different energizer'))
-      return
-    }
-    if (active.kind === 'team_quiz') {
-      await this.handleTeamQuizAnswer(ws, att, active, data.value)
-      return
-    }
-    if (active.kind === 'bracket' || active.kind === 'battle_royale') {
-      const value = typeof data.value === 'string' ? data.value.trim() : ''
-      if (!value) {
-        ws.send(errorMessage('bad_energizer_answer', 'Missing bracket pick'))
-        return
-      }
-      const existing = active.answers ?? []
-      if (existing.some((answer) => answer.voterId === att.voterId)) {
-        ws.send(errorMessage('duplicate_energizer_answer', 'You already answered this energizer'))
-        return
-      }
-      let answered =
-        active.kind === 'bracket' ? recordBracketPick(active, att.voterId, value) : {
-          ...active,
-          answers: [
-            ...existing,
-            { voterId: att.voterId, value, correct: true, speedMs: 0, rank: existing.length + 1 },
-          ],
-        }
-
-      const tournamentMeta = await this.ctx.storage.get<Meta>(K_META)
-      const tournamentSessionId = tournamentMeta?.sessionId
-      if (active.kind === 'battle_royale') {
-        const advance = maybeAdvanceBattleRoyale(answered)
-        if (advance) {
-          answered = advance.state
-          if (advance.type === 'completed') {
-            writeEvent(this.env.METRICS_AE, {
-              name: 'tournament.completed',
-              sessionId: tournamentSessionId,
-              detail: advance.winnerId,
-            })
-          }
-        }
-      } else if (bracketReadyToAdvance(answered)) {
-        writeEvent(this.env.METRICS_AE, {
-          name: 'tournament.completed',
-          sessionId: tournamentSessionId,
-          detail: 'bracket_match',
-        })
-      }
-
-      await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
-      if (tournamentSessionId) {
-        await mirrorEnergizerToKv(this.env.MULTI_REGION_STATE_KV, tournamentSessionId, answered)
-      }
-      await this.broadcastEnergizer(answered)
-      await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
-      return
-    }
-    if (active.kind !== 'quick_finger') {
-      ws.send(errorMessage('unsupported_energizer', 'This energizer does not accept live answers yet'))
-      return
-    }
-    const value = typeof data.value === 'string' ? data.value.trim() : ''
-    const options = active.options ?? []
-    if (!value || (options.length > 0 && !options.includes(value))) {
-      ws.send(errorMessage('bad_energizer_answer', 'Unknown answer option'))
-      return
-    }
-    const existing = active.answers ?? []
-    if (existing.some((answer) => answer.voterId === att.voterId)) {
-      ws.send(errorMessage('duplicate_energizer_answer', 'You already answered this energizer'))
-      return
-    }
-
-    const startedAt = active.startedAt ?? now()
-    const correctValue = typeof active.correctIndex === 'number' ? options[active.correctIndex] : undefined
-    const qfMeta = await this.ctx.storage.get<Meta>(K_META)
-    const answered: LiveEnergizerState = withScoreArtifacts({
-      ...active,
-      startedAt,
-      answers: rankQuickFingerAnswers([
-        ...existing,
-        {
-          voterId: att.voterId,
-          value,
-          correct: correctValue === undefined ? true : value === correctValue,
-          speedMs: Math.max(0, now() - startedAt),
-          rank: 0,
-        },
-      ]),
-    }, qfMeta?.leaderboardDisplay ?? 'names', qfMeta?.sessionId ?? '')
-    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
-    await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
-    await this.recordEnergizerAudit('ws.energizer_answered', att, answered, { answer_count: answered.answers?.length ?? 0 })
-    await this.broadcastEnergizer(answered)
-  }
-
-  private async handleTeamQuizAnswer(
-    ws: WebSocket,
-    att: Attachment,
-    active: LiveEnergizerState,
-    rawValue: unknown,
-  ): Promise<void> {
-    const currentIndex = active.currentIndex ?? 0
-    const question = active.questions?.[currentIndex]
-    if (!question) {
-      ws.send(errorMessage('no_quiz_question', 'No quiz question is active'))
-      return
-    }
-    const value = typeof rawValue === 'string' ? rawValue.trim() : ''
-    if (!value || !question.options.includes(value)) {
-      ws.send(errorMessage('bad_energizer_answer', 'Unknown answer option'))
-      return
-    }
-    const submissions = active.submissions ?? []
-    if (submissions.some((submission) => submission.voterId === att.voterId && submission.questionIndex === currentIndex)) {
-      ws.send(errorMessage('duplicate_energizer_answer', 'You already answered this quiz question'))
-      return
-    }
-
-    const tqMeta = await this.ctx.storage.get<Meta>(K_META)
-    const answered: LiveEnergizerState = withScoreArtifacts({
-      ...active,
-      submissions: [
-        ...submissions,
-        {
-          voterId: att.voterId,
-          questionIndex: currentIndex,
-          value,
-          correct: value === question.options[question.correctIndex],
-        },
-      ],
-    }, tqMeta?.leaderboardDisplay ?? 'names', tqMeta?.sessionId ?? '')
-    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
-    await this.emitEnergizerMetric('ws.energizer_answered', answered.id, answered.submissions?.length ?? 0)
-    await this.recordEnergizerAudit('ws.energizer_answered', att, answered, { answer_count: answered.submissions?.length ?? 0 })
-    await this.broadcastEnergizer(answered)
-  }
-
-  private async handleEnergizerAdvance(
-    ws: WebSocket,
-    att: Attachment,
-    data: { energizerId?: string },
-  ): Promise<void> {
-    if (att.role !== 'presenter') {
-      ws.send(errorMessage('forbidden', 'Only presenter can advance energizers'))
-      await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
-      return
-    }
-    if (!this.canActivateEnergizer(att)) {
-      ws.send(errorMessage('forbidden', 'Presenter role cannot advance energizers'))
-      await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
-      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, data?.energizerId ? { id: data.energizerId } : {}, { reason: 'permission' })
-      return
-    }
-    if (this.env.LIVE_ENERGIZERS_ENABLED !== 'true') {
-      ws.send(errorMessage('feature_disabled', 'LIVE energizers are not enabled'))
-      await this.emitEnergizerMetric('ws.energizer_advance_denied', data?.energizerId, 0)
-      await this.recordEnergizerAudit('ws.energizer_advance_denied', att, data?.energizerId ? { id: data.energizerId } : {}, { reason: 'feature_disabled' })
-      return
-    }
-    const active = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
-    if (!active || active.status !== 'active') {
-      ws.send(errorMessage('no_energizer', 'No energizer is active'))
-      return
-    }
-    if (active.kind !== 'team_quiz') {
-      ws.send(errorMessage('unsupported_energizer', 'Only Team Quiz supports energizer advance'))
-      return
-    }
-    if (!data?.energizerId || data.energizerId !== active.id) {
-      ws.send(errorMessage('stale_energizer', 'Advance for a different energizer'))
-      return
-    }
-    const currentIndex = active.currentIndex ?? 0
-    const total = active.questions?.length ?? 0
-    const advMeta = await this.ctx.storage.get<Meta>(K_META)
-    const advDisplay = advMeta?.leaderboardDisplay ?? 'names'
-    const advSessionId = advMeta?.sessionId ?? ''
-    const next: LiveEnergizerState =
-      currentIndex + 1 >= total
-        ? withScoreArtifacts({ ...active, status: 'completed', currentIndex }, advDisplay, advSessionId)
-        : withScoreArtifacts({ ...active, currentIndex: currentIndex + 1 }, advDisplay, advSessionId)
-    await this.ctx.storage.put(K_ACTIVE_ENERGIZER, next)
-    if (next.status === 'completed') {
-      await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
-    }
-    await this.emitEnergizerMetric(
-      next.status === 'completed' ? 'ws.energizer_completed' : 'ws.energizer_advanced',
-      next.id,
-      next.leaderboard?.length ?? 0,
-    )
-    await this.recordEnergizerAudit(
-      next.status === 'completed' ? 'ws.energizer_completed' : 'ws.energizer_advanced',
-      att,
-      next,
-      { current_index: next.currentIndex ?? 0 },
-    )
-    await this.broadcastEnergizer(next)
-  }
-
   private async handleVote(
     ws: WebSocket,
     att: Attachment,
@@ -1177,10 +860,13 @@ export class SessionRoom implements DurableObject {
     const t0 = Date.now()
     const meta = await this.ctx.storage.get<Meta>(K_META)
     // Token-bucket rate limit (S5).
-    const nowMs = now()
-    const elapsed = (nowMs - att.bucket.lastAt) / 1000
-    const refilled = Math.min(VOTE_BUCKET_CAPACITY, att.bucket.tokens + elapsed * VOTE_BUCKET_REFILL_PER_SEC)
-    if (refilled < 1) {
+    const { bucket: updatedBucket, allowed: tokenAllowed } = RateLimiter.consumeVoteToken(
+      att.bucket,
+      VOTE_BUCKET_CAPACITY,
+      VOTE_BUCKET_REFILL_PER_SEC,
+    )
+    att.bucket = updatedBucket
+    if (!tokenAllowed) {
       writeEvent(this.env.METRICS_AE, {
         name: 'ws.token_bucket_contention',
         sessionId: meta?.sessionId,
@@ -1190,7 +876,6 @@ export class SessionRoom implements DurableObject {
       ws.close(CLOSE_POLICY_VIOLATION, 'vote flood')
       return
     }
-    att.bucket = { tokens: refilled - 1, lastAt: nowMs }
     ws.serializeAttachment(att)
 
     if (meta?.paused) {
@@ -1201,7 +886,7 @@ export class SessionRoom implements DurableObject {
     // Server-side question timer enforcement (ENTERPRISE-POLISH s1d).
     // Reject votes after questionExpiresAt so participants cannot bypass
     // the fun-mode timer via a raw WebSocket message.
-    if (meta?.questionExpiresAt && nowMs > meta.questionExpiresAt) {
+    if (meta?.questionExpiresAt && now() > meta.questionExpiresAt) {
       ws.send(errorMessage('question_closed', 'Time is up -- this question is no longer accepting votes'))
       return
     }
@@ -1293,7 +978,7 @@ export class SessionRoom implements DurableObject {
   }
 
   private async maybeAnalyzeSentiment(meta: Meta, _questionId: string, voters: Votes): Promise<void> {
-    if (this.env.SENTIMENT_ENABLED !== 'true') return
+    if (flagOff(this.env, 'SENTIMENT_ENABLED')) return
     if (meta.anonymity === 'zero_knowledge') return
 
     const last = (await this.ctx.storage.get<number>(K_SENTIMENT_LAST)) ?? 0
@@ -1416,6 +1101,25 @@ export class SessionRoom implements DurableObject {
     const pv = (att.protocolVersion ?? LIVE_PROTOCOL_VERSION) as unknown as LiveProtocolVersion
     const isTownhall = !!meta.townhallModeration
     const features = isTownhall ? [...liveProtocolFeatures(pv), TOWNHALL_FEATURE] : liveProtocolFeatures(pv)
+    // ENTERPRISE-POLISH s2a: detect presenter reconnect.
+    // If this is a presenter and at least one other presenter WS is already open
+    // (or the session was started by this user), flag the init so the frontend
+    // can auto-route back to the run screen.
+    const isPresenterReconnect =
+      att.role === 'presenter' &&
+      meta.ownerId === att.voterId &&
+      this.ctx.getWebSockets('role:presenter').some((s) => s !== ws)
+      // Also true on first reconnect after hibernation (no open sockets yet):
+      // we rely on ownerId match as the signal in that case too.
+      || (att.role === 'presenter' && meta.ownerId === att.voterId &&
+          this.ctx.getWebSockets('role:presenter').length === 0 &&
+          (await this.ctx.storage.get<number>('presenter_first_connected')) !== undefined)
+
+    // Record that a presenter has connected at least once
+    if (att.role === 'presenter' && meta.ownerId === att.voterId) {
+      await this.ctx.storage.put('presenter_first_connected', Date.now(), { allowConcurrency: true })
+    }
+
     ws.send(
       serverMessage({
         type: 'init',
@@ -1433,38 +1137,14 @@ export class SessionRoom implements DurableObject {
           energizer,
           expiresAt: meta.questionExpiresAt ?? null,
           sentiment,
+          ...(isPresenterReconnect ? { presenterReconnect: true } : {}),
         },
         timestamp: now(),
       }),
     )
     // TOWNHALL (ADR-0044): the board is a separate persistent surface — follow `init`
     // with a full `townhall_state` snapshot scoped to this connection's role.
-    if (isTownhall) await this.sendTownhallSnapshot(ws, att, meta.townhallModeration!)
-  }
-
-  private async checkIpRateLimit(ipHash: string): Promise<boolean> {
-    // Per-IP per-minute rate limiting (SEC-01): max 15 connections per minute (supports exponential backoff retries).
-    const limits = (await this.ctx.storage.get<Record<string, number[]>>(K_IP_RATE_LIMIT)) ?? {}
-    const nowMs = now()
-    const windowMs = 60 * 1000 // 1 minute window
-    const cutoffMs = nowMs - windowMs
-
-    // Get timestamps for this IP
-    const timestamps = limits[ipHash] ?? []
-    // Remove old timestamps outside the window
-    const recentTimestamps = timestamps.filter((ts) => ts > cutoffMs)
-
-    const maxPerMin = Number.parseInt(this.env.WS_CONNECT_PER_IP_PER_MIN ?? '15', 10) || 15
-    const limitExceeded = recentTimestamps.length >= maxPerMin
-
-    if (!limitExceeded) {
-      // Record this connection attempt
-      recentTimestamps.push(nowMs)
-      limits[ipHash] = recentTimestamps
-      await this.ctx.storage.put(K_IP_RATE_LIMIT, limits)
-    }
-
-    return limitExceeded
+    if (isTownhall) await this.townhallHandler.sendSnapshot(ws, att, meta.townhallModeration!)
   }
 
   private async setPaused(paused: boolean): Promise<void> {
@@ -1478,183 +1158,6 @@ export class SessionRoom implements DurableObject {
     }
   }
 
-  private async broadcastEnergizer(energizer: LiveEnergizerState | null): Promise<void> {
-    const msg = serverMessage({
-      type: 'energizer_state',
-      data: { energizer },
-      timestamp: now(),
-    })
-    for (const ws of this.ctx.getWebSockets()) {
-      try { ws.send(msg) } catch { /* closed socket */ }
-    }
-  }
-
-  // ── TOWNHALL board handlers (ADR-0044) ──────────────────────────────────────
-  private canModerate(att: Attachment): boolean {
-    if (att.role !== 'presenter') return false
-    return att.permissions === undefined || att.permissions.includes('session:moderate')
-  }
-
-  private async townhallModerationMode(): Promise<TownhallModeration | null> {
-    const meta = await this.ctx.storage.get<Meta>(K_META)
-    return meta?.townhallModeration ?? null
-  }
-
-  private async loadTownhallItem(id: string): Promise<TownhallItem | null> {
-    return (await this.ctx.storage.get<TownhallItem>(TOWNHALL_KEYS.item(id))) ?? null
-  }
-
-  private async loadTownhallUpvoters(id: string): Promise<string[]> {
-    return (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.upvoters(id))) ?? []
-  }
-
-  private async loadTownhallGroups(): Promise<Record<string, string[]>> {
-    return (await this.ctx.storage.get<Record<string, string[]>>(TOWNHALL_KEYS.groups)) ?? {}
-  }
-
-  private async bumpTownhallRev(): Promise<number> {
-    const rev = nextRev((await this.ctx.storage.get<number>(TOWNHALL_KEYS.rev)) ?? 0)
-    await this.ctx.storage.put(TOWNHALL_KEYS.rev, rev)
-    return rev
-  }
-
-  /** Project an internal item to the wire shape, merging grouped children's upvoter sets. */
-  private async projectTownhallItem(
-    item: TownhallItem,
-    spotlightId: string | null,
-    groups: Record<string, string[]>,
-  ): Promise<TownhallBoardItem> {
-    const childIds = groups[item.id] ?? []
-    let mergedUpvotes = item.upvotes
-    if (childIds.length > 0) {
-      const sets: string[][] = [await this.loadTownhallUpvoters(item.id)]
-      for (const cid of childIds) sets.push(await this.loadTownhallUpvoters(cid))
-      mergedUpvotes = mergedUpvoteCount(sets)
-    }
-    return toBoardItem(item, { isSpotlit: spotlightId === item.id, groupedCount: childIds.length, mergedUpvotes })
-  }
-
-  private async sendTownhallSnapshot(ws: WebSocket, att: Attachment, moderation: TownhallModeration): Promise<void> {
-    const index = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.index)) ?? []
-    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
-    const groups = await this.loadTownhallGroups()
-    const rev = (await this.ctx.storage.get<number>(TOWNHALL_KEYS.rev)) ?? 0
-    const isPresenter = att.role === 'presenter'
-    const items: TownhallBoardItem[] = []
-    for (const id of index) {
-      const item = await this.loadTownhallItem(id)
-      if (!item) continue
-      if (item.status === 'grouped') continue // children are represented via the parent's groupedCount
-      if (!isPresenter && !isAudienceVisible(item.status)) continue
-      items.push(await this.projectTownhallItem(item, spotlightId, groups))
-    }
-    ws.send(serverMessage({ type: 'townhall_state', data: { moderation, items, spotlightId, rev }, timestamp: now() }))
-  }
-
-  /**
-   * Emit add/update/remove deltas for one item with pre/post visibility tag-targeting.
-   * Presenters see all non-grouped items; the audience (`role:voter`) sees only
-   * approved/answered items, so pre-moderated content never reaches the audience wire.
-   * (TOWNHALL-05 will coalesce bursty upvote deltas through the alarm; this emits eagerly.)
-   */
-  private async broadcastTownhallItemChange(params: {
-    item: TownhallItem
-    wasAudienceVisible: boolean
-    isNew: boolean
-    rev: number
-    spotlightId: string | null
-    groups: Record<string, string[]>
-  }): Promise<void> {
-    const { item, wasAudienceVisible, isNew, rev, spotlightId, groups } = params
-    const ts = now()
-
-    if (item.status === 'grouped') {
-      // The child collapses under its parent — drop it from the presenter console list too.
-      const rm = serverMessage({ type: 'townhall_question_removed', data: { itemId: item.id, rev }, timestamp: ts })
-      for (const s of this.ctx.getWebSockets('role:presenter')) {
-        try { s.send(rm) } catch { /* ignore */ }
-      }
-    } else {
-      const projected = await this.projectTownhallItem(item, spotlightId, groups)
-      const presenterFrame = serverMessage({
-        type: isNew ? 'townhall_question_added' : 'townhall_question_updated',
-        data: { item: projected, rev },
-        timestamp: ts,
-      })
-      for (const s of this.ctx.getWebSockets('role:presenter')) {
-        try { s.send(presenterFrame) } catch { /* ignore */ }
-      }
-    }
-
-    const nowVisible = isAudienceVisible(item.status)
-    let voterFrame: string | null = null
-    if (nowVisible) {
-      const projected = await this.projectTownhallItem(item, spotlightId, groups)
-      voterFrame = serverMessage({
-        type: wasAudienceVisible ? 'townhall_question_updated' : 'townhall_question_added',
-        data: { item: projected, rev },
-        timestamp: ts,
-      })
-    } else if (wasAudienceVisible) {
-      voterFrame = serverMessage({ type: 'townhall_question_removed', data: { itemId: item.id, rev }, timestamp: ts })
-    }
-    if (voterFrame) {
-      for (const s of this.ctx.getWebSockets('role:voter')) {
-        try { s.send(voterFrame) } catch { /* ignore */ }
-      }
-    }
-  }
-
-  private async handleTownhallSubmit(
-    ws: WebSocket,
-    att: Attachment,
-    data: { body: string; displayName?: string | undefined },
-  ): Promise<void> {
-    const moderation = await this.townhallModerationMode()
-    if (!moderation) {
-      ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
-      return
-    }
-    // Separate, tighter submit bucket (3 burst, ~3/min) — distinct from the vote bucket.
-    const bucketKey = TOWNHALL_KEYS.submitRate(att.voterId)
-    const bucket = (await this.ctx.storage.get<TokenBucket>(bucketKey)) ?? newSubmitBucket(now())
-    const consumed = consumeSubmitToken(bucket, now())
-    await this.ctx.storage.put(bucketKey, consumed.bucket)
-    if (!consumed.ok) {
-      ws.send(errorMessage('rate_limited', 'You are submitting questions too quickly'))
-      return
-    }
-    const index = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.index)) ?? []
-    // Soft duplicate suppression against recent items.
-    const recentBodies: string[] = []
-    for (const id of index.slice(-50)) {
-      const it = await this.loadTownhallItem(id)
-      if (it) recentBodies.push(it.body)
-    }
-    if (isDuplicateBody(recentBodies, data.body)) {
-      ws.send(errorMessage('duplicate', 'That question has already been asked'))
-      return
-    }
-    const meta = await this.ctx.storage.get<Meta>(K_META)
-    const allowName = meta?.anonymity !== 'zero_knowledge' // zero-knowledge forbids display names
-    const rev = await this.bumpTownhallRev()
-    const id = crypto.randomUUID()
-    const item = createTownhallItem({
-      id,
-      body: data.body,
-      displayName: allowName ? (data.displayName ?? null) : null,
-      authorHash: att.voterId,
-      moderation,
-      now: now(),
-      rev,
-    })
-    await this.ctx.storage.put(TOWNHALL_KEYS.item(id), item)
-    await this.ctx.storage.put(TOWNHALL_KEYS.upvoters(id), [])
-    await this.ctx.storage.put(TOWNHALL_KEYS.index, [...index, id])
-    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
-    const groups = await this.loadTownhallGroups()
-    await this.broadcastTownhallItemChange({ item, wasAudienceVisible: false, isNew: true, rev, spotlightId, groups })
-  }
 
   // ── Response moderation handlers (ENTERPRISE-POLISH §1c) ──────────────────
 
@@ -1714,254 +1217,10 @@ export class SessionRoom implements DurableObject {
     ws.send(JSON.stringify({ type: 'pending_responses_updated', data: { count: nextPending.length } }))
   }
 
-  private async handleTownhallUpvote(ws: WebSocket, att: Attachment, data: { itemId: string }): Promise<void> {
-    const moderation = await this.townhallModerationMode()
-    if (!moderation) {
-      ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
-      return
-    }
-    const item = await this.loadTownhallItem(data.itemId)
-    if (!item) {
-      ws.send(errorMessage('not_found', 'Question not found'))
-      return
-    }
-    const upvoters = await this.loadTownhallUpvoters(item.id)
-    const result = applyTownhallUpvote(item, upvoters, att.voterId, item.rev)
-    if (!result.ok) {
-      ws.send(errorMessage('duplicate', 'You already upvoted this question'))
-      return
-    }
-    const rev = await this.bumpTownhallRev()
-    const updated = { ...result.item, rev }
-    await this.ctx.storage.put(TOWNHALL_KEYS.item(item.id), updated)
-    await this.ctx.storage.put(TOWNHALL_KEYS.upvoters(item.id), result.upvoters)
-    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
-    const groups = await this.loadTownhallGroups()
-    // A grouped child's upvote raises the parent's merged total — emit the visible item.
-    const displayItem = updated.groupParent ? await this.loadTownhallItem(updated.groupParent) : updated
-    if (displayItem) {
-      await this.broadcastTownhallItemChange({
-        item: displayItem,
-        wasAudienceVisible: isAudienceVisible(displayItem.status),
-        isNew: false,
-        rev,
-        spotlightId,
-        groups,
-      })
-    }
-  }
-
-  private async handleTownhallModerate(
-    ws: WebSocket,
-    att: Attachment,
-    data: {
-      itemId: string
-      action: import('./realtime').TownhallModerateAction
-      groupParentId?: string | undefined
-    },
-  ): Promise<void> {
-    const moderation = await this.townhallModerationMode()
-    if (!moderation) {
-      ws.send(errorMessage('unsupported_feature', 'Townhall Q&A is not enabled'))
-      return
-    }
-    if (!this.canModerate(att)) {
-      ws.send(errorMessage('forbidden', 'You do not have permission to moderate this session'))
-      return
-    }
-    const item = await this.loadTownhallItem(data.itemId)
-    if (!item) {
-      ws.send(errorMessage('not_found', 'Question not found'))
-      return
-    }
-    const wasVisible = isAudienceVisible(item.status)
-    const outcome = applyTownhallModeration(item, data.action, { rev: item.rev, groupParentId: data.groupParentId })
-    if (!outcome.ok) {
-      ws.send(errorMessage(outcome.code, outcome.message))
-      return
-    }
-    const rev = await this.bumpTownhallRev()
-
-    if (outcome.kind === 'spotlight') {
-      await this.ctx.storage.put(TOWNHALL_KEYS.spotlight, outcome.spotlightId)
-      if (outcome.spotlightId) {
-        // Track every item that was ever spotlighted, for the persist-on-close archive.
-        const history = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.spotlitHistory)) ?? []
-        if (!history.includes(outcome.spotlightId)) {
-          await this.ctx.storage.put(TOWNHALL_KEYS.spotlitHistory, [...history, outcome.spotlightId])
-        }
-      }
-      const frame = serverMessage({
-        type: 'townhall_spotlight_changed',
-        data: { spotlightId: outcome.spotlightId, rev },
-        timestamp: now(),
-      })
-      for (const s of this.ctx.getWebSockets()) {
-        try { s.send(frame) } catch { /* ignore */ }
-      }
-      return
-    }
-
-    const updated = { ...outcome.item, rev }
-    await this.ctx.storage.put(TOWNHALL_KEYS.item(updated.id), updated)
-    const groups = await this.loadTownhallGroups()
-    let parentToRefresh: string | null = null
-    if (data.action === 'group' && updated.groupParent) {
-      const kids = groups[updated.groupParent] ?? []
-      if (!kids.includes(updated.id)) groups[updated.groupParent] = [...kids, updated.id]
-      await this.ctx.storage.put(TOWNHALL_KEYS.groups, groups)
-      parentToRefresh = updated.groupParent
-    } else if (data.action === 'ungroup') {
-      for (const [pid, kids] of Object.entries(groups)) {
-        if (kids.includes(item.id)) groups[pid] = kids.filter((k) => k !== item.id)
-      }
-      await this.ctx.storage.put(TOWNHALL_KEYS.groups, groups)
-      parentToRefresh = item.groupParent // the old parent, before ungroup cleared it
-    }
-    const spotlightId = (await this.ctx.storage.get<string | null>(TOWNHALL_KEYS.spotlight)) ?? null
-    await this.broadcastTownhallItemChange({
-      item: updated,
-      wasAudienceVisible: wasVisible,
-      isNew: false,
-      rev,
-      spotlightId,
-      groups,
-    })
-    // Grouping changes the parent's merged count / groupedCount badge — refresh it too.
-    if (parentToRefresh) {
-      const parent = await this.loadTownhallItem(parentToRefresh)
-      if (parent) {
-        await this.broadcastTownhallItemChange({
-          item: parent,
-          wasAudienceVisible: isAudienceVisible(parent.status),
-          isNew: false,
-          rev,
-          spotlightId,
-          groups,
-        })
-      }
-    }
-  }
-
-  /**
-   * Persist the live board to D1 `townhall_questions` on close. Parents store their merged
-   * upvote total (union of own + grouped children's upvoter sets); children store their raw
-   * count + group_parent. This is the export + GDPR-erasure tier — the live board never
-   * round-trips to D1 (ADR-0044).
-   */
-  private async persistTownhallBoard(sessionId: string, closedAt: number): Promise<void> {
-    const index = (await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.index)) ?? []
-    if (index.length === 0) return
-    const groups = await this.loadTownhallGroups()
-    const spotlitHistory = new Set((await this.ctx.storage.get<string[]>(TOWNHALL_KEYS.spotlitHistory)) ?? [])
-    const statements: D1PreparedStatement[] = []
-    for (const id of index) {
-      const item = await this.loadTownhallItem(id)
-      if (!item) continue
-      let upvotes = item.upvotes
-      const childIds = groups[item.id] ?? []
-      if (childIds.length > 0) {
-        const sets: string[][] = [await this.loadTownhallUpvoters(item.id)]
-        for (const cid of childIds) sets.push(await this.loadTownhallUpvoters(cid))
-        upvotes = mergedUpvoteCount(sets)
-      }
-      const resolvedAt = item.status === 'answered' || item.status === 'dismissed' ? closedAt : null
-      statements.push(
-        this.env.DB.prepare(
-          `INSERT OR REPLACE INTO townhall_questions
-             (id, session_id, body, display_name, author_hash, status, upvotes, group_parent, was_spotlit, created_at, resolved_at)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`,
-        ).bind(
-          item.id,
-          sessionId,
-          item.body,
-          item.displayName,
-          item.authorHash,
-          item.status,
-          upvotes,
-          item.groupParent,
-          spotlitHistory.has(item.id) ? 1 : 0,
-          item.createdAt,
-          resolvedAt,
-        ),
-      )
-    }
-    if (statements.length > 0) await this.env.DB.batch(statements)
-  }
-
-  private canActivateEnergizer(att: Attachment): boolean {
-    if (att.role !== 'presenter') return false
-    return att.permissions === undefined || att.permissions.includes('energizer:activate')
-  }
 
   private canControlSession(att: Attachment): boolean {
     if (att.role !== 'presenter') return false
     return att.permissions === undefined || att.permissions.includes('session:launch') || att.permissions.includes('session:close')
-  }
-
-  private async emitEnergizerMetric(
-    name:
-      | 'ws.energizer_activated'
-      | 'ws.energizer_activation_denied'
-      | 'ws.energizer_advance_denied'
-      | 'ws.energizer_answered'
-      | 'ws.energizer_advanced'
-      | 'ws.energizer_completed',
-    energizerId: string | undefined,
-    count: number,
-  ): Promise<void> {
-    const meta = await this.ctx.storage.get<Meta>(K_META)
-    writeEvent(this.env.METRICS_AE, {
-      name,
-      sessionId: meta?.sessionId,
-      teamId: meta?.teamId,
-      plan: meta?.plan ?? 'free',
-      count,
-      traceId: energizerId,
-    })
-  }
-
-  private async recordEnergizerAudit(
-    action:
-      | 'ws.energizer_activated'
-      | 'ws.energizer_activation_denied'
-      | 'ws.energizer_advance_denied'
-      | 'ws.energizer_answered'
-      | 'ws.energizer_advanced'
-      | 'ws.energizer_completed',
-    att: Attachment,
-    energizer: Pick<LiveEnergizerState, 'id' | 'kind' | 'status'> | { id?: string; kind?: string; status?: string } | null | undefined,
-    extra: Record<string, number | string | boolean | null> = {},
-  ): Promise<void> {
-    if (!this.env.DB || !energizer?.id) return
-    try {
-      await this.env.DB.prepare(
-        `INSERT INTO audit_events
-         (id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
-         ON CONFLICT DO NOTHING`,
-      )
-        .bind(
-          crypto.randomUUID(),
-          now(),
-          att.voterId,
-          att.ipHash,
-          action,
-          'energizer',
-          energizer.id,
-          '{}',
-          JSON.stringify({
-            kind: energizer.kind ?? null,
-            status: energizer.status ?? null,
-            ...extra,
-          }),
-          `${action}:${energizer.id}:${now()}`,
-          null,
-        )
-        .run()
-    } catch {
-      // Audit evidence is best-effort from the realtime path; never break LIVE traffic.
-    }
   }
 
   private async broadcastParticipants(): Promise<void> {
@@ -1994,219 +1253,4 @@ export class SessionRoom implements DurableObject {
       headers: { 'content-type': 'application/json' },
     })
   }
-}
-
-function isValidLiveEnergizer(value: unknown): value is LiveEnergizerState {
-  if (!value || typeof value !== 'object') return false
-  const candidate = value as Partial<LiveEnergizerState>
-  const baseValid =
-    typeof candidate.id === 'string' &&
-    candidate.id.length > 0 &&
-    typeof candidate.title === 'string' &&
-    candidate.title.length > 0 &&
-    ['quick_finger', 'team_quiz', 'emoji_poll', 'word_cloud', 'bracket', 'battle_royale'].includes(
-      candidate.kind ?? '',
-    ) &&
-    (candidate.status === undefined || candidate.status === 'active' || candidate.status === 'completed')
-  if (!baseValid) return false
-  if (candidate.kind === 'team_quiz') {
-    if (!Array.isArray(candidate.questions) || candidate.questions.length === 0) return false
-    return candidate.questions.every((question) => {
-      if (!question || typeof question !== 'object') return false
-      const q = question as Partial<NonNullable<LiveEnergizerState['questions']>[number]>
-      return (
-        typeof q.prompt === 'string' &&
-        q.prompt.trim().length > 0 &&
-        Array.isArray(q.options) &&
-        q.options.length >= 2 &&
-        q.options.every((option) => typeof option === 'string' && option.trim().length > 0) &&
-        typeof q.correctIndex === 'number' &&
-        Number.isInteger(q.correctIndex) &&
-        q.correctIndex >= 0 &&
-        q.correctIndex < q.options.length
-      )
-    })
-  }
-  if (candidate.kind !== 'quick_finger') return true
-  if (candidate.options !== undefined) {
-    if (!Array.isArray(candidate.options) || candidate.options.some((option) => typeof option !== 'string' || option.trim().length === 0)) {
-      return false
-    }
-  }
-  if (candidate.correctIndex !== undefined) {
-    if (typeof candidate.correctIndex !== 'number' || !Number.isInteger(candidate.correctIndex)) return false
-    if (!candidate.options || candidate.correctIndex < 0 || candidate.correctIndex >= candidate.options.length) return false
-  }
-  return true
-}
-
-function initialiseLiveEnergizer(energizer: LiveEnergizerState): LiveEnergizerState {
-  if (energizer.kind === 'team_quiz') {
-    return {
-      ...energizer,
-      status: 'active',
-      startedAt: energizer.startedAt ?? now(),
-      currentIndex: 0,
-      submissions: [],
-      scores: [],
-      leaderboard: [],
-      badges: {},
-    }
-  }
-  return {
-    ...energizer,
-    status: 'active',
-    startedAt: energizer.startedAt ?? now(),
-    answers: [],
-    leaderboard: [],
-    badges: {},
-  }
-}
-
-function rankQuickFingerAnswers(answers: NonNullable<LiveEnergizerState['answers']>): NonNullable<LiveEnergizerState['answers']> {
-  const correct = answers
-    .filter((answer) => answer.correct)
-    .sort((a, b) => a.speedMs - b.speedMs)
-    .map((answer, index) => ({ ...answer, rank: index + 1 }))
-  const incorrect = answers
-    .filter((answer) => !answer.correct)
-    .sort((a, b) => a.speedMs - b.speedMs)
-    .map((answer) => ({ ...answer, rank: 0 }))
-  return [...correct, ...incorrect]
-}
-
-function rankTeamQuizScores(submissions: NonNullable<LiveEnergizerState['submissions']>): NonNullable<LiveEnergizerState['scores']> {
-  const totals = new Map<string, number>()
-  for (const submission of submissions) {
-    totals.set(submission.voterId, (totals.get(submission.voterId) ?? 0) + (submission.correct ? 1 : 0))
-  }
-  return [...totals.entries()]
-    .map(([voterId, score]) => ({ voterId, score, rank: 0 }))
-    .sort((a, b) => b.score - a.score || a.voterId.localeCompare(b.voterId))
-    .map((score, index) => ({ ...score, rank: index + 1 }))
-}
-
-function withScoreArtifacts(
-  energizer: LiveEnergizerState,
-  display: 'names' | 'aliases' | 'hidden' = 'names',
-  sessionId = '',
-): LiveEnergizerState {
-  if (energizer.kind === 'quick_finger') {
-    return withQuickFingerScoreArtifacts(energizer, display, sessionId)
-  }
-  if (energizer.kind === 'team_quiz') {
-    return withTeamQuizScoreArtifacts(energizer, display, sessionId)
-  }
-  return energizer
-}
-
-function withQuickFingerScoreArtifacts(
-  energizer: LiveEnergizerState,
-  display: 'names' | 'aliases' | 'hidden' = 'names',
-  sessionId = '',
-): LiveEnergizerState {
-  const answers = energizer.answers ?? []
-  const startedAt = energizer.startedAt ?? 0
-  const totals = new Map<string, number>()
-  for (const answer of answers) {
-    const speedBonus = answer.rank > 0 ? Math.max(1, 4 - answer.rank) : 0
-    totals.set(answer.voterId, (totals.get(answer.voterId) ?? 0) + (answer.correct ? 10 + speedBonus : 0))
-  }
-  const badges = new Map<string, NonNullable<LiveEnergizerState['badges']>[string]>()
-  const firstAnswer = [...answers].sort((a, b) => a.speedMs - b.speedMs)[0]
-  if (firstAnswer) addBadge(badges, firstAnswer.voterId, energizer.id, 'first_answer', 'First answer', startedAt)
-  for (const answer of answers.filter((entry) => entry.rank > 0 && entry.rank <= 3)) {
-    addBadge(badges, answer.voterId, energizer.id, 'speedster', 'Speedster', startedAt)
-  }
-  return {
-    ...energizer,
-    badges: Object.fromEntries(badges),
-    leaderboard: buildLeaderboard(totals, badges, display, sessionId),
-  }
-}
-
-function withTeamQuizScoreArtifacts(
-  energizer: LiveEnergizerState,
-  display: 'names' | 'aliases' | 'hidden' = 'names',
-  sessionId = '',
-): LiveEnergizerState {
-  const submissions = energizer.submissions ?? []
-  const startedAt = energizer.startedAt ?? 0
-  const scores = rankTeamQuizScores(submissions)
-  const badges = new Map<string, NonNullable<LiveEnergizerState['badges']>[string]>()
-  const firstSubmission = submissions[0]
-  if (firstSubmission) addBadge(badges, firstSubmission.voterId, energizer.id, 'first_answer', 'First answer', startedAt)
-  const byVoter = new Map<string, typeof submissions>()
-  for (const submission of submissions) {
-    byVoter.set(submission.voterId, [...(byVoter.get(submission.voterId) ?? []), submission])
-  }
-  const totalQuestions = energizer.questions?.length ?? 0
-  for (const [voterId, voterSubmissions] of byVoter) {
-    if (voterSubmissions.length >= 2) addBadge(badges, voterId, energizer.id, 'engaged', 'Engaged', startedAt)
-    if (
-      energizer.status === 'completed' &&
-      totalQuestions > 0 &&
-      voterSubmissions.length >= totalQuestions &&
-      voterSubmissions.every((submission) => submission.correct)
-    ) {
-      addBadge(badges, voterId, energizer.id, 'perfect_trivia', 'Perfect trivia', startedAt)
-    }
-  }
-  const totals = new Map(scores.map((score) => [score.voterId, score.score]))
-  return {
-    ...energizer,
-    scores,
-    badges: Object.fromEntries(badges),
-    leaderboard: buildLeaderboard(totals, badges, display, sessionId),
-  }
-}
-
-function addBadge(
-  badges: Map<string, NonNullable<LiveEnergizerState['badges']>[string]>,
-  voterId: string,
-  energizerId: string,
-  kind: NonNullable<LiveEnergizerState['badges']>[string][number]['kind'],
-  label: string,
-  awardedAt: number,
-): void {
-  const existing = badges.get(voterId) ?? []
-  const id = `${energizerId}:${kind}:${voterId}`
-  if (existing.some((badge) => badge.id === id)) return
-  badges.set(voterId, [...existing, { id, kind, label, awardedAt }])
-}
-
-// Deterministic alias word lists for leaderboard pseudonymisation.
-// Same voter always gets the same alias within a session, different across sessions.
-const ALIAS_ADJECTIVES = ['Swift', 'Bold', 'Calm', 'Keen', 'Wise', 'Bright', 'Brave', 'Quick', 'Sharp', 'Cool']
-const ALIAS_NOUNS = ['Falcon', 'Tiger', 'River', 'Cloud', 'Stone', 'Spark', 'Comet', 'Eagle', 'Frost', 'Blaze']
-
-function deterministicAlias(voterId: string, sessionId: string): string {
-  let h = 5381
-  const s = `${sessionId}:${voterId}`
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i)
-  const adj = ALIAS_ADJECTIVES[Math.abs(h) % ALIAS_ADJECTIVES.length]
-  const noun = ALIAS_NOUNS[Math.abs(h >> 4) % ALIAS_NOUNS.length]
-  return `${adj} ${noun}`
-}
-
-function buildLeaderboard(
-  totals: Map<string, number>,
-  badges: Map<string, NonNullable<LiveEnergizerState['badges']>[string]>,
-  display: 'names' | 'aliases' | 'hidden' = 'names',
-  sessionId = '',
-): NonNullable<LiveEnergizerState['leaderboard']> {
-  if (display === 'hidden') return []
-  return [...totals.entries()]
-    .map(([voterId, score]) => ({ voterId, score }))
-    .sort((a, b) => b.score - a.score || a.voterId.localeCompare(b.voterId))
-    .slice(0, 10)
-    .map((entry, index) => ({
-      voterId: display === 'aliases' ? deterministicAlias(entry.voterId, sessionId) : entry.voterId,
-      label: display === 'aliases'
-        ? deterministicAlias(entry.voterId, sessionId)
-        : `Player ${index + 1}`,
-      score: entry.score,
-      rank: index + 1,
-      badges: badges.get(entry.voterId) ?? [],
-    }))
 }

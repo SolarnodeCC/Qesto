@@ -7,7 +7,7 @@ import type { Sprint19Baseline } from '../types'
 
 type AdminApp = Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>
 
-export function mountSprint19AdminRoutes(app: AdminApp): void {
+export function mountEngagementAnalyticsRoutes(app: AdminApp): void {
   // ── GET /api/admin/sprint19-baseline ──────────────────────────────────────
   app.get('/sprint19-baseline', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')

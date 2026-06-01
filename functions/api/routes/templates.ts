@@ -15,6 +15,7 @@ import { validateBody } from '../lib/validate'
 import { CreateTemplateSchema } from '../lib/validation'
 import { validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/validators'
 import type { Env, Question } from '../types'
+import { TEMPLATE_TTL_SECONDS } from '../lib/constants'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -40,6 +41,12 @@ interface CustomerTemplate extends TemplateDefinition {
   type: 'customer'
   userId: string
   createdAt: number
+  // ENTERPRISE-POLISH s6a/s6b: scope + versioning
+  scope?: 'personal' | 'team' | 'organization'
+  ownedByTeamId?: string
+  version?: number
+  parentId?: string
+  updatedAt?: number
 }
 
 // Lazy-initialized seed templates
@@ -387,9 +394,9 @@ async function ensureSeedTemplates(kv: KVNamespace) {
   const seeded = await kv.get('qesto_templates_seeded')
   if (!seeded) {
     for (const tmpl of SEED_TEMPLATES) {
-      await kv.put(`qesto_template:${tmpl.id}`, JSON.stringify(tmpl), { expirationTtl: 86400 * 365 })
+      await kv.put(`qesto_template:${tmpl.id}`, JSON.stringify(tmpl), { expirationTtl: TEMPLATE_TTL_SECONDS })
     }
-    await kv.put('qesto_templates_seeded', 'true', { expirationTtl: 86400 * 365 })
+    await kv.put('qesto_templates_seeded', 'true', { expirationTtl: TEMPLATE_TTL_SECONDS })
   }
 }
 
@@ -520,14 +527,14 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
 
     // Store template
     const key = `customer_template:${userId}:${templateId}`
-    await c.env.TEMPLATES_KV.put(key, JSON.stringify(template), { expirationTtl: 86400 * 365 })
+    await c.env.TEMPLATES_KV.put(key, JSON.stringify(template), { expirationTtl: TEMPLATE_TTL_SECONDS })
 
     // Update list
     const listKey = `customer_templates_list:${userId}`
     const listRaw = await c.env.TEMPLATES_KV.get(listKey)
     const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
     list.push(templateId)
-    await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: 86400 * 365 })
+    await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: TEMPLATE_TTL_SECONDS })
 
     return c.json(
       {
@@ -539,7 +546,41 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     )
   })
 
-  // DELETE /api/templates/mine/:id — delete own template (auth required)
+  // PATCH /api/templates/mine/:id -- update name/description/scope (auth required).
+  // ENTERPRISE-POLISH s6a/s6b: bumps version, stores parentId, allows scope change.
+  app.patch('/mine/:id', authMiddleware, async (c) => {
+    const user = c.get('user')
+    const userId = user.sub
+    const templateId = c.req.param('id')
+    const body = await c.req.json().catch(() => null) as Record<string, unknown> | null
+    if (!body) {
+      return c.json({ ok: false, error: { code: 'bad_request', message: 'Request body required' }, trace_id: c.get('trace_id') }, 400)
+    }
+    const key = `customer_template:${userId}:${templateId}`
+    const raw = await c.env.TEMPLATES_KV.get(key)
+    if (!raw) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Template not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const existing = validateKvJson(raw, CustomerTemplateSchema) as CustomerTemplate | null
+    if (!existing) {
+      return c.json({ ok: false, error: { code: 'invalid_state', message: 'Corrupted template record' }, trace_id: c.get('trace_id') }, 500)
+    }
+    const updated: CustomerTemplate = {
+      ...existing,
+      ...(typeof body.name === 'string' ? { name: body.name.trim() } : {}),
+      ...(typeof body.description === 'string' ? { description: body.description.trim() } : {}),
+      ...(body.scope === 'team' || body.scope === 'organization' || body.scope === 'personal'
+          ? { scope: body.scope as 'personal' | 'team' | 'organization' } : {}),
+      ...(typeof body.ownedByTeamId === 'string' ? { ownedByTeamId: body.ownedByTeamId } : {}),
+      version: (existing.version ?? 1) + 1,
+      parentId: existing.id,
+      updatedAt: Date.now(),
+    }
+    await c.env.TEMPLATES_KV.put(key, JSON.stringify(updated), { expirationTtl: TEMPLATE_TTL_SECONDS })
+    return c.json({ ok: true, data: { template: updated }, trace_id: c.get('trace_id') })
+  })
+
+  // DELETE /api/templates/mine/:id -- delete own template (auth required)
   app.delete('/mine/:id', authMiddleware, async (c) => {
     const user = c.get('user')
     const userId = user.sub
@@ -565,7 +606,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const idx = list.indexOf(templateId)
     if (idx >= 0) {
       list.splice(idx, 1)
-      await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: 86400 * 365 })
+      await c.env.TEMPLATES_KV.put(listKey, JSON.stringify(list), { expirationTtl: TEMPLATE_TTL_SECONDS })
     }
 
     return c.json({

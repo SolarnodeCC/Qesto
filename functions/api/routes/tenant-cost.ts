@@ -7,6 +7,7 @@ import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { buildCostSnapshot, tenantCostKvKey } from '../lib/tenant-cost'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import type { Env } from '../types'
+import { TENANT_COST_TTL_SECONDS } from '../lib/constants'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mountTenantCostRoutes(parent: any) {
@@ -31,7 +32,7 @@ export function mountTenantCostRoutes(parent: any) {
     const units = cached ?? { ai: 0, api: 0, storageMb: 0 }
     const snapshot = buildCostSnapshot(teamId, units)
     if (!cached) {
-      await writeKvJson(kv, tenantCostKvKey(teamId, month), units, { expirationTtl: 60 * 60 * 24 * 45 })
+      await writeKvJson(kv, tenantCostKvKey(teamId, month), units, { expirationTtl: TENANT_COST_TTL_SECONDS })
     }
     return c.json({ ok: true, data: { snapshot, metered: true }, trace_id: c.get('trace_id') })
   })

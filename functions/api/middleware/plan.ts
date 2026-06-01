@@ -5,6 +5,7 @@ import type { MiddlewareHandler } from 'hono'
 import type { Env, PlanTier } from '../types'
 import { PLAN_QUOTAS as QUOTAS_MAP } from '../types'
 import type { AuthVariables } from './auth'
+import { logEvent } from '../lib/log'
 
 
 export type PlanVariables = {
@@ -60,14 +61,12 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   try {
     plan = await lookupUserPlan(c.env.DB, user.sub)
   } catch (err) {
-    console.log(
-      JSON.stringify({
+    logEvent({
         event: 'plan_middleware.db_failure',
         userId: user.sub,
         traceId: c.get('trace_id'),
         error: err instanceof Error ? err.message : String(err),
-      }),
-    )
+      })
     // Degrade to the safest quota tier instead of turning every authenticated
     // route into a 500 during a transient D1 fault.
     plan = 'free'

@@ -12,6 +12,7 @@ import { recordAuditEvent } from '../lib/audit'
 import { sanitizeError } from '../lib/error-handler'
 import { safeLogContext } from '../lib/log'
 import type { Env } from '../types'
+import type { BadgeRow, SessionRow } from '../lib/db-row-types'
 
 type Vars = AuthVariables
 
@@ -34,12 +35,12 @@ export function mountGamificationRoutes(parent: any) {
     }
 
     try {
-      const result = await (c.env.DB.prepare as any)(
+      const result = await c.env.DB.prepare(
         `SELECT badge_type, session_id, awarded_at FROM badges
          WHERE user_id = ?1 ORDER BY awarded_at DESC LIMIT 100`,
       )
         .bind(userId)
-        .all()
+        .all<BadgeRow>()
 
       const badges = result.results ?? []
 
@@ -77,11 +78,11 @@ export function mountGamificationRoutes(parent: any) {
 
     try {
       // Verify session ownership
-      const sessionCheck = await (c.env.DB.prepare as any)(
+      const sessionCheck = await c.env.DB.prepare(
         `SELECT id FROM sessions WHERE id = ?1 AND owner_id = ?2`
       )
         .bind(sessionId, user.sub)
-        .first()
+        .first<Pick<SessionRow,"id">>()
 
       if (!sessionCheck) {
         return c.json(
@@ -90,12 +91,12 @@ export function mountGamificationRoutes(parent: any) {
         )
       }
 
-      const result = await (c.env.DB.prepare as any)(
+      const result = await c.env.DB.prepare(
         `SELECT user_id, badge_type, awarded_at FROM badges
          WHERE session_id = ?1 ORDER BY awarded_at DESC`,
       )
         .bind(sessionId)
-        .all()
+        .all<BadgeRow>()
 
       const badges = result.results ?? []
 
@@ -139,11 +140,11 @@ export function mountGamificationRoutes(parent: any) {
 
     try {
       // Get session and verify ownership
-      const sessionResult = await (c.env.DB.prepare as any)(
+      const sessionResult = await c.env.DB.prepare(
         `SELECT id, owner_id FROM sessions WHERE id = ?1 AND owner_id = ?2`,
       )
         .bind(sessionId, user.sub)
-        .first()
+        .first<Pick<SessionRow,"id"|"owner_id">>()
 
       if (!sessionResult) {
         return c.json(
@@ -153,11 +154,11 @@ export function mountGamificationRoutes(parent: any) {
       }
 
       // Get all participants (voters)
-      const participantsResult = await (c.env.DB.prepare as any)(
+      const participantsResult = await c.env.DB.prepare(
         `SELECT DISTINCT voter_id FROM votes WHERE session_id = ?1`,
       )
         .bind(sessionId)
-        .all()
+        .all<{voter_id:string}>()
 
       const participants = participantsResult.results ?? []
       const awardedBadges: Record<string, string[]> = {}
@@ -165,29 +166,29 @@ export function mountGamificationRoutes(parent: any) {
       // Calculate badges for each participant
       for (const { voter_id } of participants) {
         // Count votes
-        const voteCountResult = await (c.env.DB.prepare as any)(
+        const voteCountResult = await c.env.DB.prepare(
           `SELECT COUNT(*) as count FROM votes WHERE session_id = ?1 AND voter_id = ?2`,
         )
           .bind(sessionId, voter_id)
-          .first()
+          .first<{count:number}>()
 
         const voteCount = voteCountResult?.count ?? 0
 
         // Get first vote timestamp
-        const firstVoteResult = await (c.env.DB.prepare as any)(
+        const firstVoteResult = await c.env.DB.prepare(
           `SELECT MIN(submitted_at) as first_at FROM votes WHERE session_id = ?1 AND voter_id = ?2`,
         )
           .bind(sessionId, voter_id)
-          .first()
+          .first<{first_at:number|null}>()
 
         const firstVoteTime = firstVoteResult?.first_at
 
         // Get session start time
-        const sessionStartResult = await (c.env.DB.prepare as any)(
+        const sessionStartResult = await c.env.DB.prepare(
           `SELECT started_at FROM sessions WHERE id = ?1`,
         )
           .bind(sessionId)
-          .first()
+          .first<Pick<SessionRow,"started_at">>()
 
         const sessionStartTime = sessionStartResult?.started_at
 
@@ -202,7 +203,7 @@ export function mountGamificationRoutes(parent: any) {
 
         // Persist badges
         for (const badge of badges) {
-          await (c.env.DB.prepare as any)(
+          await c.env.DB.prepare(
             `INSERT OR IGNORE INTO badges (user_id, badge_type, session_id, awarded_at)
              VALUES (?1, ?2, ?3, ?4)`,
           )

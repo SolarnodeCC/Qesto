@@ -9,6 +9,7 @@ import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/validators'
+import type { EnergizerRow, EnergizerVoteRow, LeaderboardEntryRow } from '../../lib/db-row-types'
 
 export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/advance', async (c) => {
@@ -31,11 +32,11 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
       }
       const body = parsed.data
 
-      const energizer = await (c.env.DB.prepare as any)(
+      const energizer = await c.env.DB.prepare(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`
       )
         .bind(energizerId, sessionId)
-        .first()
+        .first<Pick<EnergizerRow, "kind"|"config_json"|"state">>()
 
       if (!energizer) {
         return c.json(
@@ -99,7 +100,7 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         }
       }
 
-      await (c.env.DB.prepare as any)(
+      await c.env.DB.prepare(
         `UPDATE energizers SET state = ?1, config_json = ?2, updated_at = ?3 WHERE id = ?4`
       )
         .bind(nextState, JSON.stringify(config), Date.now(), energizerId)
@@ -113,7 +114,7 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
 
         if (badges.length > 0) {
           for (const badge of badges) {
-            await (c.env.DB.prepare as any)(
+            await c.env.DB.prepare(
               `INSERT OR IGNORE INTO badges (user_id, badge_type, session_id, awarded_at)
                VALUES (?1, ?2, ?3, ?4)`
             )
@@ -155,12 +156,12 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
     const energizerId = c.req.param('energizerId')
 
     try {
-      const result = await (c.env.DB.prepare as any)(
+      const result = await c.env.DB.prepare(
         `SELECT id, kind, prompt, config_json, state, position, created_at FROM energizers
          WHERE id = ?1 AND session_id = ?2`,
       )
         .bind(energizerId, sessionId)
-        .first()
+        .first<EnergizerRow>()
 
       if (!result) {
         return c.json(
@@ -188,14 +189,14 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
         if (!emojiConfig) {
           return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid emoji poll config' }, trace_id }, 500)
         }
-        const votes = await (c.env.DB.prepare as any)(
+        const votes = await c.env.DB.prepare(
           `SELECT value, COUNT(*) as count FROM energizer_votes WHERE energizer_id = ?1 GROUP BY value`,
         )
           .bind(energizerId)
-          .all()
+          .all<{value:string;count:number}>()
         const r: Record<string, number> = {}
         for (const emoji of emojiConfig.emojis) r[emoji] = 0
-        for (const row of (votes.results ?? []) as { value: string; count: number }[]) r[row.value] = row.count
+        for (const row of (votes.results ?? [])) r[row.value] = row.count
         extra.results = r
       } else if (result.kind === 'quick_finger') {
         const qfConfig = validateData(config, QuickFingerConfigSchema)
@@ -203,34 +204,34 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
           return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid quick finger config' }, trace_id }, 500)
         }
         const correctAnswer = qfConfig.options[qfConfig.correct_index]
-        const votes = await (c.env.DB.prepare as any)(
+        const votes = await c.env.DB.prepare(
           `SELECT voter_id, value, created_at FROM energizer_votes WHERE energizer_id = ?1 ORDER BY created_at ASC`,
         )
           .bind(energizerId)
-          .all()
+          .all<EnergizerVoteRow>()
         let rank = 1
         extra.rankings = (votes.results ?? []).map((v: { voter_id: string; value: string; created_at: number }) => {
           const correct = v.value === correctAnswer
           return { voter_id: v.voter_id, value: v.value, correct, speed_ms: v.created_at, rank: correct ? rank++ : -1 }
         })
       } else if (result.kind === 'team_quiz') {
-        const rows = await (c.env.DB.prepare as any)(
+        const rows = await c.env.DB.prepare(
           `SELECT voter_id, SUM(correct) as score FROM team_quiz_responses
            WHERE energizer_id = ?1 GROUP BY voter_id ORDER BY score DESC`,
         )
           .bind(energizerId)
-          .all()
+          .all<{voter_id:string;score:number}>()
         extra.scores = (rows.results ?? []).map((r: { voter_id: string; score: number }, i: number) => ({
           voter_id: r.voter_id, score: r.score, rank: i + 1,
         }))
       } else if (result.kind === 'word_cloud') {
-        const votes = await (c.env.DB.prepare as any)(
+        const votes = await c.env.DB.prepare(
           `SELECT value, COUNT(*) as count FROM energizer_votes WHERE energizer_id = ?1 GROUP BY value ORDER BY count DESC`,
         )
           .bind(energizerId)
-          .all()
+          .all<{value:string;count:number}>()
         const words: Record<string, number> = {}
-        for (const row of (votes.results ?? []) as { value: string; count: number }[]) words[row.value] = row.count
+        for (const row of (votes.results ?? [])) words[row.value] = row.count
         extra.words = words
       }
 
@@ -266,12 +267,12 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
     const sessionId = c.req.param('sessionId')
 
     try {
-      const result = await (c.env.DB.prepare as any)(
+      const result = await c.env.DB.prepare(
         `SELECT user_id, rank, score FROM leaderboard_entries
          WHERE session_id = ?1 ORDER BY rank ASC LIMIT 100`,
       )
         .bind(sessionId)
-        .all()
+        .all<Pick<LeaderboardEntryRow, "user_id"|"rank"|"score">>()
 
       return c.json(
         { ok: true, data: { entries: result.results ?? [], updated_at: Date.now() }, trace_id },

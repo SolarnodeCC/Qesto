@@ -8,7 +8,7 @@ import { z } from 'zod'
 import type { Env } from '../../types'
 import { verifyJwt } from '../../lib/jwt'
 import type { AuthVariables } from '../../middleware/auth'
-import { safeLogContext } from '../../lib/log'
+import { safeLogContext , logEvent} from '../../lib/log'
 
 const FeedbackSchema = z.object({
   documentId: z.string().min(1),
@@ -95,25 +95,21 @@ export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: 
           .bind(reviewId, documentId, downvoteCount, now)
           .run()
 
-        console.log(
-          JSON.stringify({
+        logEvent({
             event: 'help.feedback.auto_tune_flagged',
             document_id: documentId,
             downvote_count: downvoteCount,
-          }),
-        )
+          })
       }
 
       // Log event
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'help.feedback.ok',
           user_id: userId ?? 'anonymous',
           document_id: documentId,
           helpful,
           downvote_count: downvoteCount,
-        }),
-      )
+        })
 
       return c.json(
         {

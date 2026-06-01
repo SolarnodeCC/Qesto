@@ -27,7 +27,7 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
       const body = parsed.data
 
       if (body.state === 'active') {
-        await (c.env.DB.prepare as any)(
+        await c.env.DB.prepare(
           `UPDATE energizers SET state = 'completed', updated_at = ?1
            WHERE session_id = ?2 AND state = 'active' AND id != ?3`,
         )
@@ -53,7 +53,7 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
       }
 
       binds.push(energizerId, sessionId)
-      const result = await (c.env.DB.prepare as any)(
+      const result = await c.env.DB.prepare(
         `UPDATE energizers SET ${sets.join(', ')}
          WHERE id = ?${paramIdx++} AND session_id = ?${paramIdx++}`,
       )

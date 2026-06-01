@@ -9,6 +9,7 @@
  */
 import { readKvJson, writeKvJson } from './kv'
 import { ulid } from './ulid'
+import { WEBHOOK_DLQ_TTL_SECONDS } from './constants'
 
 export const DLQ_MAX_RETRY_ATTEMPTS = 10
 
@@ -36,7 +37,7 @@ export async function enqueueWebhookDlq(
   const key = webhookDlqKey(entry.teamId)
   const list = (await readKvJson<WebhookDlqEntry[]>(kv, key)) ?? []
   list.unshift(full)
-  await writeKvJson(kv, key, list.slice(0, 100), { expirationTtl: 7 * 86400 })
+  await writeKvJson(kv, key, list.slice(0, 100), { expirationTtl: WEBHOOK_DLQ_TTL_SECONDS })
   return full
 }
 
@@ -49,7 +50,7 @@ export async function removeWebhookDlqEntry(kv: KVNamespace, teamId: string, ent
   const list = (await readKvJson<WebhookDlqEntry[]>(kv, key)) ?? []
   const next = list.filter((e) => e.id !== entryId)
   if (next.length === list.length) return false
-  await writeKvJson(kv, key, next, { expirationTtl: 7 * 86400 })
+  await writeKvJson(kv, key, next, { expirationTtl: WEBHOOK_DLQ_TTL_SECONDS })
   return true
 }
 
@@ -99,7 +100,7 @@ export async function retryWebhookDlqEntry(
     error: result.error ?? entry.error,
   }
   const next = list.map((e) => (e.id === entryId ? updated : e))
-  await writeKvJson(kv, key, next, { expirationTtl: 7 * 86400 })
+  await writeKvJson(kv, key, next, { expirationTtl: WEBHOOK_DLQ_TTL_SECONDS })
   return { ok: false, reason: 'delivery_failed', ...(result.error !== undefined ? { error: result.error } : {}) }
 }
 

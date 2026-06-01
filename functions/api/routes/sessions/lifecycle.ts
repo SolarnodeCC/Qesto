@@ -18,6 +18,7 @@ import { notifySlackSessionClosed, notifyTeamsSessionClosed } from '../integrati
 import { deliverTeamWebhooks } from '../../lib/webhooks'
 import { deliverMarketingWebhook } from '../../lib/webhooks-marketing'
 import { trackSessionWrite } from '../../lib/multi-region-mutation'
+import { logEvent } from '../../lib/log'
 
 export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   app.post('/:id/start', async (c) => {
@@ -80,7 +81,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     const liveQ = questionToLive(questions[0])
     const logCtx = { trace_id: traceId, session_id: id, user_id: user.sub }
 
-    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx }))
+    logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx })
 
     // Check if session has energizers with draft state
     const energizers = await c.env.DB
@@ -104,7 +105,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       // A concurrent request already transitioned the session. Re-read it and
       // return success without a redundant DO /init call.
       const current = await fetchSession(c.env.DB, id, user.sub)
-      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.concurrent_win', ...logCtx }))
+      logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.concurrent_win', ...logCtx })
       if (current?.status === 'energizing' || current?.status === 'live') {
         return c.json({ ok: true, data: { session: current, question: liveQ }, trace_id: traceId })
       }
@@ -135,7 +136,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     } catch (doNetworkErr) {
       
       // Roll back the DB transition so the session remains startable.
-      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'error', event: 'session.start.do_network_error', ...logCtx, err: String(doNetworkErr) }))
+      logEvent({ ts: new Date().toISOString(), level: 'error', event: 'session.start.do_network_error', ...logCtx, err: String(doNetworkErr) })
       try {
         await c.env.DB
           .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
@@ -163,13 +164,13 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         try {
           const doBody = (await doRes.json()) as { ok?: boolean; error?: { code?: string } }
           if (doBody?.error?.code === 'already_initialised') {
-            console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.do_idempotent', ...logCtx }))
+            logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.do_idempotent', ...logCtx })
             return c.json({ ok: true, data: { session, question: liveQ }, trace_id: traceId })
           }
         } catch { /* fall through to rollback */ }
       }
       // All other DO errors: roll back DB so the session stays startable.
-      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', event: 'session.start.do_failure', ...logCtx, do_status: doRes.status }))
+      logEvent({ ts: new Date().toISOString(), level: 'warn', event: 'session.start.do_failure', ...logCtx, do_status: doRes.status })
       try {
         await c.env.DB
           .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
@@ -178,7 +179,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       } catch (rbErr) {
         // Rollback failed — DB may be stuck live while DO is not initialised.
         // Operator must use RUNBOOK_SESSION_RECONCILE.md to recover.
-        console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'error', event: 'session.start.rollback_failed', ...logCtx, err: String(rbErr) }))
+        logEvent({ ts: new Date().toISOString(), level: 'error', event: 'session.start.rollback_failed', ...logCtx, err: String(rbErr) })
       }
       await recordSprint19JourneyEvent(c.env, {
         name: 'launchpad.launch_failed',
@@ -198,7 +199,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         500,
       )
     }
-    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'session.start.success', ...logCtx }))
+    logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.success', ...logCtx })
     await recordSprint19JourneyEvent(c.env, {
       name: 'launchpad.launch_success',
       userId: user.sub,
@@ -322,13 +323,11 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     try {
       c.executionCtx.waitUntil(
         precomputeInsights(c.env, id, session.title, user.sub).catch((err) => {
-          console.log(
-            JSON.stringify({
+          logEvent({
               event: 'insights.precompute.error',
               sessionId: id,
               error: String(err),
-            }),
-          )
+            })
         }),
       )
     } catch {

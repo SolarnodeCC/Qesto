@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { Env } from '../../types'
-import type { Sprint19Baseline } from './types'
+import type { Sprint19Baseline as JourneyEventBaseline } from './types' // TODO: rename JourneyEventBaseline → JourneyEventBaseline
 
 let schemaPatched = false
 async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void> {
@@ -29,7 +29,7 @@ async function patchSprint19SchemaIfNeeded(db: D1Database): Promise<void> {
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
 }
 
-export function mountSprint19Routes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {
+export function mountJourneyEventRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {
   app.get('/sprint19-baseline', authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     await patchSprint19SchemaIfNeeded(c.env.DB)
@@ -111,7 +111,7 @@ export function mountSprint19Routes(app: Hono<{ Bindings: Env; Variables: AuthVa
       const dismissed = aiSuggestionRes?.dismissed ?? 0
       const totalSuggestions = accepted + dismissed
 
-      const baseline: Sprint19Baseline = {
+      const baseline: JourneyEventBaseline = {
         generated_at: Date.now(),
         window: { start: startMs, end: endMs },
         ai_usage_rate: total > 0 ? (aiGeneratedRes?.n ?? 0) / total : null,

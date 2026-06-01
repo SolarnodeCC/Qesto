@@ -2,6 +2,7 @@ import { sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import type { EnergizerApp } from './types'
 import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/validators'
+import type { EnergizerRow, EnergizerVoteRow, TeamQuizScoreRow, CountRow } from '../../lib/db-row-types'
 
 export function registerEnergizerActiveRoute(app: EnergizerApp): void {
   app.get('/sessions/:sessionId/energizers/active', async (c) => {
@@ -9,12 +10,12 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
     const sessionId = c.req.param('sessionId')
 
     try {
-      const energizer = await (c.env.DB.prepare as any)(
+      const energizer = await c.env.DB.prepare(
         `SELECT id, kind, prompt, config_json, state, position, created_at FROM energizers
          WHERE session_id = ?1 AND state = 'active' LIMIT 1`,
       )
         .bind(sessionId)
-        .first()
+        .first<EnergizerRow>()
 
       if (!energizer) {
         return c.json({ ok: true, data: { energizer: null }, trace_id })
@@ -41,17 +42,17 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         if (!emojiConfig) {
           return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid emoji poll config' }, trace_id }, 500)
         }
-        const votes = await (c.env.DB.prepare as any)(
+        const votes = await c.env.DB.prepare(
           `SELECT value, COUNT(*) as count FROM energizer_votes
            WHERE energizer_id = ?1 GROUP BY value`,
         )
           .bind(energizer.id)
-          .all()
+          .all<{value: string; count: number}>()
 
         for (const emoji of emojiConfig.emojis) {
           results[emoji] = 0
         }
-        for (const row of (votes.results ?? []) as { value: string; count: number }[]) {
+        for (const row of (votes.results ?? []) as {value: string; count: number}[]) {
           results[row.value] = row.count
         }
       } else if (energizer.kind === 'quick_finger') {
@@ -61,12 +62,12 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         }
         const correctAnswer = qfConfig.options[qfConfig.correct_index]
 
-        const votes = await (c.env.DB.prepare as any)(
+        const votes = await c.env.DB.prepare(
           `SELECT voter_id, value, created_at FROM energizer_votes
            WHERE energizer_id = ?1 ORDER BY created_at ASC`,
         )
           .bind(energizer.id)
-          .all()
+          .all<EnergizerVoteRow>()
 
         let rank = 1
         rankings = (votes.results ?? []).map((v: { voter_id: string; value: string; created_at: number }) => {
@@ -88,19 +89,19 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
         const qi = tq.current_index
         let responseCount = 0
         if (qi >= 0 && qi < tq.questions.length) {
-          const cnt = await (c.env.DB.prepare as any)(
+          const cnt = await c.env.DB.prepare(
             `SELECT COUNT(*) as n FROM team_quiz_responses WHERE energizer_id = ?1 AND question_index = ?2`,
           )
             .bind(energizer.id, qi)
-            .first()
-          responseCount = (cnt?.n as number) ?? 0
+            .first<CountRow>()
+          responseCount = cnt?.n ?? 0
         }
-        const rows = await (c.env.DB.prepare as any)(
+        const rows = await c.env.DB.prepare(
           `SELECT voter_id, SUM(correct) as score FROM team_quiz_responses
            WHERE energizer_id = ?1 GROUP BY voter_id ORDER BY score DESC`,
         )
           .bind(energizer.id)
-          .all()
+          .all<TeamQuizScoreRow>()
         const scores = (rows.results ?? []).map((r: { voter_id: string; score: number }, i: number) => ({
           voter_id: r.voter_id,
           score: r.score,
@@ -116,14 +117,14 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
           trace_id,
         })
       } else if (energizer.kind === 'word_cloud') {
-        const votes = await (c.env.DB.prepare as any)(
+        const votes = await c.env.DB.prepare(
           `SELECT value, COUNT(*) as count FROM energizer_votes
            WHERE energizer_id = ?1 GROUP BY value ORDER BY count DESC`,
         )
           .bind(energizer.id)
-          .all()
+          .all<{value: string; count: number}>()
         const words: Record<string, number> = {}
-        for (const row of (votes.results ?? []) as { value: string; count: number }[]) {
+        for (const row of (votes.results ?? []) as {value: string; count: number}[]) {
           words[row.value] = row.count
         }
         return c.json({

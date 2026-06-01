@@ -7,7 +7,7 @@ import type { D1Database, Ai } from '@cloudflare/workers-types'
 import type { Env } from '../types'
 import { embedAndFindSimilarDocuments } from './help-vectorize'
 import { getActivePrompt } from './help-prompts'
-import { safeLogContext } from './log'
+import { safeLogContext , logEvent} from './log'
 import { sleep, withTimeout } from './shared/async'
 
 export class HelpAIError extends Error {
@@ -156,22 +156,20 @@ async function runHelpAI(
         throw new HelpAIError('AI returned empty response')
       }
 
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'help.ai.ok',
           model: HELP_MODEL,
           attempt,
           latencyMs,
           outputChars: raw.length,
-        }),
-      )
+        })
       return raw
     } catch (err) {
       lastError = err
       const latencyMs = Date.now() - t0
       const error = err instanceof Error ? err.message : String(err)
       const event = attempt < maxAttempts ? 'help.ai.retry' : 'help.ai.error'
-      console.log(JSON.stringify({ event, model: HELP_MODEL, attempt, latencyMs, error }))
+      logEvent({ event, model: HELP_MODEL, attempt, latencyMs, error })
       if (attempt < maxAttempts) {
         await sleep(RETRY_DELAYS_MS[attempt - 1])
       }

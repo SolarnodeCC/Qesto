@@ -1,4 +1,5 @@
 // Wire format for the SessionRoom WebSocket protocol. The SPEC_REALTIME.md
+import { getFlag } from './lib/flags'
 // taxonomy is the north star; v1 ships the subset below (enough for S1–S5
 // acceptance). Extra types get added alongside new client features, never
 // ahead of them.
@@ -30,7 +31,7 @@ export function defaultLiveProtocolVersion(env: {
   REALTIME_V2_ENABLED?: string
   REALTIME_V3_ENABLED?: string
 }): LiveProtocolVersion {
-  if (env.REALTIME_V2_DEFAULT === 'true' && env.REALTIME_V2_ENABLED !== 'false') return 2
+  if (getFlag(env, 'REALTIME_V2_DEFAULT') && env.REALTIME_V2_ENABLED !== 'false') return 2
   return 1
 }
 
@@ -40,8 +41,8 @@ export function isLiveProtocolSupported(
 ): boolean {
   const v = version ?? defaultLiveProtocolVersion(env)
   if (v === 1) return true
-  if (v === 2) return env.REALTIME_V2_ENABLED === 'true' || env.REALTIME_V2_DEFAULT === 'true'
-  if (v === 3) return env.REALTIME_V3_ENABLED === 'true'
+  if (v === 2) return getFlag(env, 'REALTIME_V2_ENABLED') || getFlag(env, 'REALTIME_V2_DEFAULT')
+  if (v === 3) return getFlag(env, 'REALTIME_V3_ENABLED')
   return false
 }
 
@@ -58,7 +59,7 @@ export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
 export const TOWNHALL_FEATURE = 'townhall_board'
 
 export function townhallEnabled(env: { REALTIME_TOWNHALL_ENABLED?: string }): boolean {
-  return env.REALTIME_TOWNHALL_ENABLED === 'true'
+  return getFlag(env, 'REALTIME_TOWNHALL_ENABLED')
 }
 
 export type VersionedClientEnvelope = {
@@ -249,6 +250,12 @@ export type ServerMessage =
         expiresAt: number | null
         /** Aggregate mood for open questions (presenter only, AI-SENTIMENT-01). */
         sentiment: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
+        /**
+         * ENTERPRISE-POLISH s2a: set to true when a presenter reconnects to a
+         * session they own. The frontend uses this to auto-route back to the run
+         * screen without requiring manual navigation.
+         */
+        presenterReconnect?: boolean
       }
       timestamp: number
     }
@@ -348,7 +355,13 @@ export type ServerMessage =
   | {
       v?: LiveProtocolVersion
       type: 'townhall_spotlight_changed'
-      data: { spotlightId: string | null; rev: number }
+      data: {
+        spotlightId: string | null
+        rev: number
+        /** Full item included so the frontend can render the now-answering card
+         *  without a state lookup. Null when spotlight is cleared. */
+        item: TownhallBoardItem | null
+      }
       timestamp: number
     }
   | {

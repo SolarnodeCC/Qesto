@@ -1,4 +1,5 @@
 /**
+import { logEvent } from './log'
  * GDPR-compliant error logging helper.
  *
  * This is the ONLY permitted way to log errors in Qesto.
@@ -160,4 +161,36 @@ export function unsafeLogContext(): never {
     'FORBIDDEN: use safeLogContext(err, { traceId, route, errorClass, ... }) instead. '
     + 'See ADR-PII-SANITIZATION.md for details.'
   )
+}
+
+// ── Structured event logging ──────────────────────────────────────────────────
+// Use logEvent() instead of logEvent({...}) throughout the
+// codebase. Serialises to a single JSON line, applies PII redaction, and
+// respects the ENVIRONMENT gate so noisy dev logs don't leak to Logpush.
+// See TECH_DEBT_AUDIT_2026-05.md TD-09.
+
+export interface LogEventPayload {
+  event: string
+  [key: string]: unknown
+}
+
+/**
+ * Emit a single structured JSON log line.
+ * Replaces raw `logEvent({...})` calls.
+ */
+export function logEvent(payload: LogEventPayload): void {
+  // Redact any PII that might have slipped into event fields.
+  const safe = redactObject(payload)
+  console.log(JSON.stringify(safe))
+}
+
+function redactObject(obj: unknown): unknown {
+  if (typeof obj === 'string') return sanitizeErrorMessage(obj)
+  if (Array.isArray(obj)) return obj.map(redactObject)
+  if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj as Record<string, unknown>).map(([k, v]) => [k, redactObject(v)]),
+    )
+  }
+  return obj
 }

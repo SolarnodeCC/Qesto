@@ -14,13 +14,14 @@ import { loadTeamBranding } from '../../lib/team-branding'
 import { issueJoinCaptchaToken, verifyJoinCaptchaToken } from '../../lib/join-captcha'
 import type { Env } from '../../types'
 import type { Permission } from '../../lib/authz'
+import { logEvent } from '../../lib/log'
 
 export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   pub.get('/by-code/:code', async (c) => {
     const code = c.req.param('code').toUpperCase()
     const traceId = c.get('trace_id')
     if (!/^[0-9A-Z]{6}$/.test(code)) {
-      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', event: 'join.bad_code', trace_id: traceId }))
+      logEvent({ ts: new Date().toISOString(), level: 'warn', event: 'join.bad_code', trace_id: traceId })
       return c.json(
         { ok: false, error: { code: 'bad_code', message: 'Invalid join code' }, trace_id: traceId },
         400,
@@ -29,7 +30,7 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
     const session = await fetchSessionByCode(c.env.DB, code)
     if (!session || session.status === 'archived' || session.status === 'closed') {
       // Log enumeration attempts for security monitoring
-      console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'warn', event: 'join.not_found', trace_id: traceId }))
+      logEvent({ ts: new Date().toISOString(), level: 'warn', event: 'join.not_found', trace_id: traceId })
       return c.json(
         { ok: false, error: { code: 'not_found', message: 'No active session for that code' }, trace_id: traceId },
         404,
@@ -50,7 +51,7 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
         )
       }
     }
-    console.log(JSON.stringify({ ts: new Date().toISOString(), level: 'info', event: 'join.success', session_id: session.id, status: session.status, trace_id: traceId }))
+    logEvent({ ts: new Date().toISOString(), level: 'info', event: 'join.success', session_id: session.id, status: session.status, trace_id: traceId })
     const branding = await loadTeamBranding(c.env.TEAMS_KV, session.team_id)
     return c.json({
       ok: true,

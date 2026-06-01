@@ -10,7 +10,7 @@ import { rateLimit } from '../../lib/rate-limit'
 import { askHelpAI, HelpAIError, HelpValidationError } from '../../lib/help-rag'
 import { sanitizeError } from '../../lib/error-handler'
 import { verifyJwt } from '../../lib/jwt'
-import { safeLogContext } from '../../lib/log'
+import { safeLogContext , logEvent} from '../../lib/log'
 import type { AuthVariables } from '../../middleware/auth'
 
 const AskSchema = z.object({
@@ -100,15 +100,13 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthV
       const latencyMs = Date.now() - t0
 
       // Log event
-      console.log(
-        JSON.stringify({
+      logEvent({
           event: 'help.ask.ok',
           user_id: userId ?? 'anonymous',
           plan: userPlan,
           latencyMs,
           source_count: result.sources.length,
-        }),
-      )
+        })
 
       // Stream could go here; for now returning full response
       return c.json(
