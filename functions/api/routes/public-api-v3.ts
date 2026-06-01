@@ -9,7 +9,7 @@ import { OPENAPI_V3_SPEC } from '../lib/openapi-v3-spec'
 import { withIdempotency } from '../lib/idempotency'
 import { generateJoinCode } from '../lib/code'
 import { ulid } from '../lib/ulid'
-import { validateBody } from '../lib/validate'
+import { validateBody } from '../lib/request-validation'
 import { recordApiUsage, getApiUsageForTeam } from '../lib/api-usage'
 import { getTeamRegionConfig, resolveWriteBinding } from '../lib/db-router'
 import {

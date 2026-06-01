@@ -5,7 +5,7 @@
 //   { sub: userId, email, iat, exp }
 // Extend in Phase 2+ only when routes actually need new claims.
 
-import { validateData, AuthClaimsSchema } from './validators'
+import { validateData, AuthClaimsSchema } from './protocol-schemas'
 import { hmacSign, base64UrlEncode, base64UrlDecode, timingSafeEqual } from './shared/crypto'
 
 const ALG = 'HS256'

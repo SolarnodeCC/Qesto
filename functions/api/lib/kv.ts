@@ -1,5 +1,5 @@
 import type { ZodSchema } from 'zod'
-import { validateKvJson } from './validators'
+import { validateKvJson } from './protocol-schemas'
 
 export async function readKvJson<T>(kv: KVNamespace, key: string, schema?: ZodSchema<T>): Promise<T | null> {
   try {

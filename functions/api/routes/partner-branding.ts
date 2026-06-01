@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { readKvJson, writeKvJson } from '../lib/kv'
-import { validateBody } from '../lib/validate'
+import { validateBody } from '../lib/request-validation'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables

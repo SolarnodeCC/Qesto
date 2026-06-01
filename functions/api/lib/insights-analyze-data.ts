@@ -4,7 +4,7 @@
  */
 
 import type { QuestionBreakdown } from './session-bundle'
-import { validateKvJson, PollOptionArraySchema } from './validators'
+import { validateKvJson, PollOptionArraySchema } from './protocol-schemas'
 
 export async function fetchInsightsVoteContext(
   db: D1Database,

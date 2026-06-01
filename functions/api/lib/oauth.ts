@@ -3,7 +3,7 @@
 // State tokens are stored in ACTIONS_KV with a 10-minute TTL.
 
 import { z } from 'zod'
-import { validateData, GoogleTokenResponseSchema, MicrosoftTokenResponseSchema, GoogleIdTokenPayloadSchema, MicrosoftIdTokenPayloadSchema, JwtHeaderSchema, JwksResponseSchema } from './validators'
+import { validateData, GoogleTokenResponseSchema, MicrosoftTokenResponseSchema, GoogleIdTokenPayloadSchema, MicrosoftIdTokenPayloadSchema, JwtHeaderSchema, JwksResponseSchema } from './protocol-schemas'
 import { CircuitBreakers } from './resilience/circuit-breaker'
 
 const STATE_TTL_SECONDS = 10 * 60

@@ -3,7 +3,7 @@ import type { Env, Session } from '../../types'
 import type { SessionVars } from './shared'
 
 import { rateLimit } from '../../lib/rate-limit'
-import { validateBody } from '../../lib/validate'
+import { validateBody } from '../../lib/request-validation'
 import {
   GenerateQuestionsSchema,
   DuplicateSessionSchema,
@@ -11,12 +11,12 @@ import {
   ReorderQuestionsSchema,
   AddQuestionSchema,
   autoPopulateOptions,
-} from '../../lib/validation'
+} from '../../lib/domain-schemas'
 import { ensurePersonalTeam } from '../teams'
 import { WizardAIError, WizardValidationError, generateQuestions } from '../../lib/ai-wizard'
 import { sanitizeError } from '../../lib/error-handler'
 import { requireFeature } from '../../middleware/feature-gate'
-import { validateKvJson, CachedQuestionsSchema } from '../../lib/validators'
+import { validateKvJson, CachedQuestionsSchema } from '../../lib/protocol-schemas'
 import { hardDeleteSession } from '../../lib/session-delete'
 import { suggestDuplicateTitle } from '../../lib/session-title'
 import { requireFound, requireDraft, requireClosedOrArchivedForInsights } from '../../lib/session-lifecycle'

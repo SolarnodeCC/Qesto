@@ -2,8 +2,8 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { readKvJson } from '../../lib/kv'
-import { validateBody } from '../../lib/validate'
-import { AdminMetricsExportSchema } from '../../lib/validation'
+import { validateBody } from '../../lib/request-validation'
+import { AdminMetricsExportSchema } from '../../lib/domain-schemas'
 import type { Env } from '../../types'
 
 export type LiveMetrics = {

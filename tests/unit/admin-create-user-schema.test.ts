@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { AdminCreateUserSchema } from '../../functions/api/lib/validation'
+import { AdminCreateUserSchema } from '../../functions/api/lib/domain-schemas'
 
 describe('AdminCreateUserSchema', () => {
   it('accepts optional admin_role on create', () => {

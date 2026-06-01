@@ -9,7 +9,7 @@
 // questions validate".
 
 import { z } from 'zod'
-import { AIQuestionsOutputSchema, type AIQuestionsOutput } from './validation'
+import { AIQuestionsOutputSchema, type AIQuestionsOutput } from './domain-schemas'
 import { ulid } from './ulid'
 import { logEvent } from './log'
 

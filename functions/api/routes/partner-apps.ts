@@ -7,7 +7,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { ulid } from '../lib/ulid'
 import { readKvJson, writeKvJson } from '../lib/kv'
-import { validateBody } from '../lib/validate'
+import { validateBody } from '../lib/request-validation'
 import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 

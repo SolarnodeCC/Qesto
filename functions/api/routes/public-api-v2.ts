@@ -10,12 +10,15 @@ import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-ap
 import { fetchSessionForTeam } from '../repositories/sessionRepository'
 import { ulid } from '../lib/ulid'
 import { generateJoinCode } from '../lib/code'
+import { deprecationHeaders } from '../lib/deprecation'
 import type { Env } from '../types'
 
 type PublicApiV2Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
 
 export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env; Variables: PublicApiV2Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: ApiKeyVars }>()
+  // v2 is deprecated in favour of v3, with a longer runway than v1.
+  app.use('*', deprecationHeaders({ sunset: 'Wed, 30 Jun 2027 23:59:59 GMT', successor: '/api/v3' }))
   app.use('*', publicApiKeyMiddleware)
 
   app.post('/sessions', async (c) => {

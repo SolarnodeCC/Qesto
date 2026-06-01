@@ -21,7 +21,7 @@ import {
 } from '../lib/ai-insights'
 import { sanitizeError } from '../lib/error-handler'
 import { rateLimit } from '../lib/rate-limit'
-import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/validators'
+import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/protocol-schemas'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables

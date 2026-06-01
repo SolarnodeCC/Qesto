@@ -1,5 +1,5 @@
 import { ulid } from '../../lib/ulid'
-import { validateKvJson, OAuthStateSchema } from '../../lib/validators'
+import { validateKvJson, OAuthStateSchema } from '../../lib/protocol-schemas'
 
 /** USERS_KV: pwd:{userId} → { hash: string } */
 export const pwdKey = (userId: string) => `pwd:${userId}`

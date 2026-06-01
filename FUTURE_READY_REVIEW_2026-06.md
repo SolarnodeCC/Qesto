@@ -109,13 +109,17 @@ These are the "stay future-ready" investments, ordered by leverage:
 
 ## 4. Prioritized plan
 
-### Phase 1 — Quick wins (< 1 sprint, alongside feature work)
-| Item | Action | Days |
-|------|--------|------|
-| §1 | Archive stale `TECH_DEBT_AUDIT_2026-05.md` | 0.1 |
-| R-01 | Rename + barrel the validation modules | 1 |
-| R-03 | Add `Deprecation`/`Sunset` headers to API v1/v2 | 1 |
-| Guardrails | Add `no-explicit-any: warn` + KV-access CI gate | 1 |
+### Phase 1 — Quick wins ✅ DONE (June 2026)
+| Item | Action | Status |
+|------|--------|--------|
+| §1 | Supersede-banner stale `TECH_DEBT_AUDIT_2026-05.md` (kept filename — 10 source comments cite its `TD-NN` ids) | ✅ |
+| R-01 | Renamed validation modules for intent: `validate.ts`→`request-validation.ts`, `validation.ts`→`domain-schemas.ts`, `validators.ts`→`protocol-schemas.ts` (50 import sites). *Merging barrel intentionally skipped — `PollOptionSchema` is exported by two of the files; flat re-export would clash. Tracked as a follow-up dedup.* | ✅ |
+| R-03 | `Deprecation`/`Sunset`/`Link` (RFC 8594) headers on API v1 (sunset 2026-12-31) and v2 (sunset 2027-06-30) via reusable `lib/deprecation.ts` middleware + unit test | ✅ |
+| Guardrails | No ESLint in repo → added repo-style ratchet scripts `check:kv-access` (baseline 50) and `check:no-any` (baseline 47), wired into `check:rc`. Counts can only shrink. | ✅ |
+
+> **New follow-up surfaced during Phase 1:** `PollOptionSchema` is defined in
+> both `domain-schemas.ts` and `protocol-schemas.ts` — dedupe into one source
+> before introducing a merging barrel.
 
 ### Phase 2 — Consistency (1 sprint, parallelizable)
 | Item | Action | Days |

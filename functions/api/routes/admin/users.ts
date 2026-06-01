@@ -2,9 +2,9 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { ulid } from '../../lib/ulid'
-import { validateBody } from '../../lib/validate'
+import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
-import { AdminCreateUserSchema, AdminPatchUserSchema } from '../../lib/validation'
+import { AdminCreateUserSchema, AdminPatchUserSchema } from '../../lib/domain-schemas'
 import type { Env } from '../../types'
 
 export type AdminUser = {

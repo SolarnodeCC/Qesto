@@ -6,13 +6,13 @@ import { ulid } from '../../lib/ulid'
 import { generateJoinCode } from '../../lib/code'
 import { IdempotencyInFlightError, withIdempotency } from '../../lib/idempotency'
 import { incrementSessionQuota } from '../../lib/quota'
-import { validateBody } from '../../lib/validate'
+import { validateBody } from '../../lib/request-validation'
 import {
   CreateSessionSchema,
   JourneyEventSchema,
   PatchSessionSchema,
   isPatchBodyTitleOnly,
-} from '../../lib/validation'
+} from '../../lib/domain-schemas'
 import { loadTeam, ensurePersonalTeam } from '../teams'
 import { requireFound, requireDraft, requireEditableTitle } from '../../lib/session-lifecycle'
 import {

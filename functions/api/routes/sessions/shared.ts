@@ -4,8 +4,8 @@ import { writeEvent } from '../../lib/observability'
 import type { AuthVariables } from '../../middleware/auth'
 import type { PlanVariables } from '../../middleware/plan'
 import { denyFeature, featureAllowed, questionKindFeature } from '../../lib/entitlements'
-import { validateKvJson, PollOptionArraySchema } from '../../lib/validators'
-import type { PollQuestionInput } from '../../lib/validation'
+import { validateKvJson, PollOptionArraySchema } from '../../lib/protocol-schemas'
+import type { PollQuestionInput } from '../../lib/domain-schemas'
 import { extractThemes } from '../../lib/ai-insights'
 import {
   toInsightsInput,

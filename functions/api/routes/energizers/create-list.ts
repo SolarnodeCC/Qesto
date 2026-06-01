@@ -11,7 +11,7 @@ import { sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
-import { validateKvJson, EnergizerConfigEnvelopeSchema } from '../../lib/validators'
+import { validateKvJson, EnergizerConfigEnvelopeSchema } from '../../lib/protocol-schemas'
 import type { EnergizerRow } from '../../lib/db-row-types'
 
 export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {

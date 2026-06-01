@@ -1,5 +1,5 @@
 import type { Team } from '../routes/teams'
-import { validateData, PermissionSchema, PermissionArraySchema } from './validators'
+import { validateData, PermissionSchema, PermissionArraySchema } from './protocol-schemas'
 
 // Derived from PermissionSchema — single source of truth, no manual drift possible
 import { z } from 'zod'

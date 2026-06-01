@@ -18,7 +18,7 @@ import {
   cacheUserRolesKey,
 } from '../lib/kv-keys'
 import type { AuthVariables } from './auth'
-import { validateData, CachedDataSchema } from '../lib/validators'
+import { validateData, CachedDataSchema } from '../lib/protocol-schemas'
 import type { UserRow } from '../lib/db-row-types'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */

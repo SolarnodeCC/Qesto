@@ -8,7 +8,7 @@ import { sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
-import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/validators'
+import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/protocol-schemas'
 import type { EnergizerRow, EnergizerVoteRow, LeaderboardEntryRow } from '../../lib/db-row-types'
 
 export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerApp): void {

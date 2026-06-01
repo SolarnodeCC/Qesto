@@ -8,12 +8,15 @@ import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
 import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-api-auth'
 import { listSessionsForTeam, fetchSessionForTeam } from '../repositories/sessionRepository'
+import { deprecationHeaders } from '../lib/deprecation'
 import type { Env } from '../types'
 
 type PublicApiVars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
 
 export function mountPublicApiV1Routes(parent: Hono<{ Bindings: Env; Variables: PublicApiVars }>) {
   const app = new Hono<{ Bindings: Env; Variables: ApiKeyVars }>()
+  // v1 is deprecated in favour of v3. Signal retirement to integrators.
+  app.use('*', deprecationHeaders({ sunset: 'Thu, 31 Dec 2026 23:59:59 GMT', successor: '/api/v3' }))
   app.use('*', publicApiKeyMiddleware)
 
   app.get('/sessions', async (c) => {

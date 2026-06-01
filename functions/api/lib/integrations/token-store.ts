@@ -6,7 +6,7 @@
  */
 
 import { TokenResponse } from './types'
-import { validateKvJson, StoredTokenSchema } from '../validators'
+import { validateKvJson, StoredTokenSchema } from '../protocol-schemas'
 import {
   decryptTokenPayload,
   deriveAesKeyFromMek,

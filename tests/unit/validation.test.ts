@@ -3,7 +3,7 @@ import {
   CreateSessionSchema,
   PatchSessionSchema,
   PollQuestionSchema,
-} from '../../functions/api/lib/validation'
+} from '../../functions/api/lib/domain-schemas'
 
 describe('CreateSessionSchema', () => {
   it('accepts a trimmed non-empty title', () => {
