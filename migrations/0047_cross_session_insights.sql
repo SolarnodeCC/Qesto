@@ -1,6 +1,19 @@
 -- Migration 0047: Cross-session intelligence (EPIC-INSIGHTS+, ADR-0045, Sprint 81).
 -- Apply: wrangler d1 migrations apply qesto_3_db --local
--- Safety: additive columns + new table. No destructive backfill required.
+-- Safety: creates base table if missing, then adds columns. No destructive backfill required.
+
+CREATE TABLE IF NOT EXISTS insights_daily (
+  id TEXT PRIMARY KEY,
+  session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  day TEXT NOT NULL,
+  themes_json TEXT NOT NULL DEFAULT '[]',
+  confidence REAL NOT NULL DEFAULT 0.0,
+  n_votes INTEGER NOT NULL DEFAULT 0,
+  computed_at INTEGER NOT NULL,
+  UNIQUE(session_id, day)
+);
+
+CREATE INDEX IF NOT EXISTS idx_insights_daily_session ON insights_daily(session_id, day DESC);
 
 ALTER TABLE insights_daily ADD COLUMN team_id TEXT;
 ALTER TABLE insights_daily ADD COLUMN embedding_ref INTEGER NOT NULL DEFAULT 0;
