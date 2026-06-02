@@ -1,0 +1,64 @@
+# Standalone cron Worker — Qesto LinkedIn auto-posting.
+# Deployed independently of the main `qesto-api` Worker:
+#   cd workers/linkedin-scheduler && wrangler deploy
+#
+# Secrets (never inline — CLAUDE.md hard rule 2):
+#   wrangler secret put OAUTH_TOKEN_MEK        # MUST match the Pages project value
+#   wrangler secret put LINKEDIN_CLIENT_ID
+#   wrangler secret put LINKEDIN_CLIENT_SECRET
+name = "qesto-linkedin-scheduler"
+account_id = "5546763229b35df670e33d9316d7f2e0"
+main = "index.ts"
+compatibility_date = "2026-04-19"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "qesto_3_db"
+database_id = "d391bdd5-a03d-41bc-bc45-6b5f3bac1b1b"
+migrations_dir = "../../migrations"
+
+# Create once: `wrangler kv namespace create LINKEDIN_KV` → paste the id below.
+# The same namespace must be bound to the Pages project (for /linkedin-auth).
+# Production namespace: "Linkedin_KV_Prod".
+[[kv_namespaces]]
+binding = "LINKEDIN_KV"
+id = "2385a9ede5974147bb15716dcc3b27a9"
+
+[vars]
+ENV = "production"
+
+[triggers]
+crons = ["0 9 * * 2", "0 9 * * 4"] # Tue & Thu at 09:00 UTC
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Staging — deploy with: wrangler deploy --env staging
+# Namespace: "Linkedin_KV_Staging".
+# ─────────────────────────────────────────────────────────────────────────────
+[env.staging]
+name = "qesto-linkedin-scheduler-staging"
+
+[env.staging.ai]
+binding = "AI"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "qesto_3_db"
+database_id = "345adbff-4a31-47c0-98d4-0dd9368157a6"
+migrations_dir = "../../migrations"
+
+[[env.staging.kv_namespaces]]
+binding = "LINKEDIN_KV"
+id = "8c394153bb6f41e89990424209282dae"
+
+[env.staging.vars]
+ENV = "staging"
+
+[env.staging.triggers]
+crons = ["0 9 * * 2", "0 9 * * 4"]

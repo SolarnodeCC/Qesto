@@ -17,9 +17,10 @@ mkdir -p target/jankurai agent
 if command -v jankurai >/dev/null 2>&1; then
   JANKURAI=jankurai
 else
-  JANKURAI="npx --yes jankurai@1.5.1"
+  # Install jankurai from GitHub (https://github.com/neverhuman/jankurai v1.5.1)
+  JANKURAI="npx --yes github:neverhuman/jankurai#v1.5.1"
 fi
-$JANKURAI . --json agent/repo-score.json --md agent/repo-score.md --mode advisory || true
+$JANKURAI . --json agent/repo-score.json --md agent/repo-score.md --mode advisory
 cp -f agent/repo-score.json target/jankurai/repo-score.json 2>/dev/null || true
 cp -f agent/repo-score.md target/jankurai/repo-score.md 2>/dev/null || true
 

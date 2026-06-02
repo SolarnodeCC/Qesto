@@ -106,6 +106,12 @@ export type Env = {
   OAUTH_TOKEN_MEK?: string
   /** PWA push — VAPID private key (wrangler secret). */
   VAPID_PRIVATE_KEY?: string
+  /** LinkedIn auto-posting (MKTG): OAuth app credentials + redirect. */
+  LINKEDIN_CLIENT_ID?: string
+  LINKEDIN_CLIENT_SECRET?: string
+  LINKEDIN_REDIRECT_URI?: string
+  /** Optional fallback org URN when the OAuth scope can't read the ACL list. */
+  LINKEDIN_ORG_URN?: string
 
   // Bindings
   DB: D1Database
@@ -130,6 +136,8 @@ export type Env = {
   INTEGRATIONS_KV?: KVNamespace
   /** ADR-0022 / S51: multi-region state and DO cross-region mirror. */
   MULTI_REGION_STATE_KV?: KVNamespace
+  /** LinkedIn auto-posting: encrypted token + org/person URN + topics + rotation. */
+  LINKEDIN_KV?: KVNamespace
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
