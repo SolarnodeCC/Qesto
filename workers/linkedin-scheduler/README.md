@@ -24,10 +24,22 @@ without redeploying by setting `linkedin:language` (`en`, `nl`, `es`, `de`, `fr`
 
 ### 1. Create the LinkedIn app
 1. Go to <https://www.linkedin.com/developers/apps> → **Create app**.
-2. Associate it with the **Qesto company page** (required to post as the org).
-3. Under **Products**, request **"Share on LinkedIn"** and **"Sign In with
-   LinkedIn"** — these grant `w_organization_social` and `r_basicprofile`.
+2. Associate it with the **Qesto company page**, then **verify** the app
+   (Settings tab → a Page admin approves) — required before org products unlock.
+3. Under **Products**, request:
+   - **Sign In with LinkedIn using OpenID Connect** — grants `openid profile email`
+     (authentication + person id). Self-serve.
+   - **Community Management API** — grants `w_organization_social`,
+     `r_organization_social`, `rw_organization_admin` (post to / read the company
+     page). **Not self-serve**: requires app verification and an access request /
+     approval. This is the product that enables company-page posting — without it
+     you can sign in but cannot post as the organization.
+   - Do **not** use "Share on LinkedIn" — it only grants `w_member_social`
+     (personal-feed posts), not company-page posts.
 4. Copy the **Client ID** and **Client Secret** from the **Auth** tab.
+
+Effective scopes requested by the connect page:
+`w_organization_social r_organization_social rw_organization_admin openid profile`.
 
 ### 2. Redirect URI
 On the app's **Auth** tab, add an **Authorized redirect URL**:

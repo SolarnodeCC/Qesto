@@ -18,7 +18,16 @@ import type { TokenResponse } from './integrations/types'
 export const LINKEDIN_AUTH_URL = 'https://www.linkedin.com/oauth/v2/authorization'
 export const LINKEDIN_TOKEN_URL = 'https://www.linkedin.com/oauth/v2/accessToken'
 export const LINKEDIN_API_BASE = 'https://api.linkedin.com'
-export const LINKEDIN_SCOPES = ['w_organization_social', 'r_basicprofile'] as const
+// Scopes granted by the "Community Management API" + "Sign In with LinkedIn
+// using OpenID Connect" products. Org scopes post as / read the company page;
+// OIDC (openid/profile) authenticates the member and exposes the person id.
+export const LINKEDIN_SCOPES = [
+  'w_organization_social',
+  'r_organization_social',
+  'rw_organization_admin',
+  'openid',
+  'profile',
+] as const
 
 // Single global org token → fixed pseudo-team id for EncryptedTokenStore.
 export const LINKEDIN_TEAM_SCOPE = 'qesto-org'
@@ -138,14 +147,18 @@ export function refreshAccessToken(
 }
 
 // ── Profile / org resolution ────────────────────────────────────────────────
-/** Fetch the authenticated member's person URN via /v2/me (needs r_basicprofile/r_liteprofile). */
+/**
+ * Fetch the authenticated member's person URN via the OpenID Connect
+ * `/v2/userinfo` endpoint (needs the `openid`/`profile` scopes). The `sub`
+ * claim is the member id. Optional — posting only needs the org URN.
+ */
 export async function fetchPersonUrn(accessToken: string): Promise<string | null> {
-  const res = await fetch(`${LINKEDIN_API_BASE}/v2/me?projection=(id)`, {
+  const res = await fetch(`${LINKEDIN_API_BASE}/v2/userinfo`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
   if (!res.ok) return null
-  const json = (await res.json().catch(() => null)) as { id?: string } | null
-  return json?.id ? `urn:li:person:${json.id}` : null
+  const json = (await res.json().catch(() => null)) as { sub?: string } | null
+  return json?.sub ? `urn:li:person:${json.sub}` : null
 }
 
 /**
