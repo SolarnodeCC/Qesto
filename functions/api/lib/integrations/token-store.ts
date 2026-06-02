@@ -14,7 +14,7 @@ import {
   isLegacyPlaintextTokenBlob,
 } from './token-crypto'
 
-interface StoredToken {
+export interface StoredToken {
   access_token: string
   refresh_token?: string | undefined
   expires_in?: number | undefined
@@ -107,6 +107,18 @@ export class EncryptedTokenStore {
     if (stored.token_type) out.token_type = stored.token_type
     if (stored.scope) out.scope = stored.scope
     return out
+  }
+
+  /**
+   * Return the full stored record (including `expires_at` and `refresh_token`)
+   * WITHOUT the expiry filter that `getToken` applies. Callers that need to
+   * proactively refresh an expired/near-expiry token (e.g. the LinkedIn cron
+   * scheduler) use this to reach the `refresh_token` even after `expires_at`.
+   */
+  async getStoredToken(teamId: string, service: string): Promise<StoredToken | null> {
+    const raw = await this.kv.get(this.getKVKey(teamId, service))
+    if (!raw) return null
+    return this.deserializeFromKv(raw)
   }
 
   async rotateToken(teamId: string, service: string, newToken: TokenResponse): Promise<void> {
