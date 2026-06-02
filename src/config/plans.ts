@@ -88,6 +88,7 @@ export interface PlanConfig extends PlanDisplayMeta {
     samlSso: boolean
     townhallQA: boolean
     liveCopilot: boolean
+    crossSessionInsights: boolean
   }
 }
 
@@ -119,19 +120,16 @@ export function buildPlansFromCatalog(catalog: PlanCatalogApiPayload, pricing = 
 
 function quotasToCatalog(): PlanCatalogApiPayload {
   const tiers: PlanTier[] = ['free', 'starter', 'team']
-  return Object.fromEntries(
-    tiers.map((t) => {
-      const q = PLAN_QUOTAS[t]
-      return [
-        t,
-        {
-          max_sessions_per_month: q.maxSessionsPerMonth,
-          max_participants_per_session: q.maxParticipantsPerSession,
-          features_unlocked: q.featuresUnlocked,
-        },
-      ]
-    }),
-  ) as PlanCatalogApiPayload
+  const catalog = {} as PlanCatalogApiPayload
+  for (const t of tiers) {
+    const q = PLAN_QUOTAS[t]
+    catalog[t] = {
+      max_sessions_per_month: q.maxSessionsPerMonth,
+      max_participants_per_session: q.maxParticipantsPerSession,
+      features_unlocked: q.featuresUnlocked,
+    }
+  }
+  return catalog
 }
 
 /** Default catalog — always matches deployed worker types (no network). */

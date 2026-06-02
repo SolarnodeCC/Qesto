@@ -231,6 +231,8 @@ export interface PlanQuotas {
     townhallQA: boolean
     /** COPILOT (ADR-0046): live facilitator copilot — paid tiers (starter + team). */
     liveCopilot: boolean
+    /** INSIGHTS+ (ADR-0045): cross-session intelligence — Team tier only (Sprint 81+). */
+    crossSessionInsights: boolean
   }
 }
 
@@ -248,6 +250,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       samlSso: false,
       townhallQA: false,
       liveCopilot: false,
+      crossSessionInsights: false,
     },
   },
   starter: {
@@ -263,6 +266,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       samlSso: false,
       townhallQA: false,
       liveCopilot: true,
+      crossSessionInsights: false,
     },
   },
   team: {
@@ -278,6 +282,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       samlSso: true,
       townhallQA: true,
       liveCopilot: true,
+      crossSessionInsights: true,
     },
   },
 }

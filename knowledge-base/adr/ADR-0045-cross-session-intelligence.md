@@ -1,7 +1,8 @@
 ---
 id: ADR-0045
-status: proposed
+status: accepted
 created: 2026-05-30
+accepted: 2026-06-01
 relates_to: ADR-0009-pii-sanitization, ADR-0010-zero-knowledge-mode, ADR-0011-live-sentiment-inference, ADR-0018-kb-rag-activation, ADR-KV-Tenant-Conventions
 ---
 

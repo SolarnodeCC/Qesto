@@ -1,7 +1,14 @@
 /**
- * MOBILE-OFFLINE-SYNC-01 — queue vote frames when WebSocket is down; flush on reconnect.
+ * MOBILE-OFFLINE-SYNC-01 / FE-NATIVE-OFFLINE-01 — queue vote frames when WebSocket is down.
+ * Uses localStorage in browser; Capacitor shell uses the same key (Preferences bridge in S82).
  */
+import { isNativeShell } from './native-shell'
+
 const QUEUE_KEY = 'qesto:offline-votes'
+
+export function offlineQueueStorageKind(): 'localStorage' | 'native-shell' {
+  return isNativeShell() ? 'native-shell' : 'localStorage'
+}
 
 type QueuedVote = {
   sessionId: string
