@@ -131,7 +131,7 @@ describe('webhook DLQ retry helpers', () => {
 
     expect(result).toEqual({ success: true })
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit]
     expect(url).toBe('https://hooks.example.com/qesto')
     expect(init.method).toBe('POST')
     expect(init.redirect).toBe('manual')
