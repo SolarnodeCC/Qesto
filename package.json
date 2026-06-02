@@ -80,7 +80,7 @@
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
     "vite": "^7.0.0",
-    "vitest": "^4.1.7",
+    "vitest": "^4.1.8",
     "wrangler": "^4.94.0"
   }
 }
