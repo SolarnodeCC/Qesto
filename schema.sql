@@ -289,6 +289,23 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_device_tokens_user_platform_token
   WHERE revoked_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_device_tokens_user_active ON device_tokens(user_id, revoked_at);
 
+-- partner_payment_accounts — marketplace partner billing (E82, MARKETPLACE-BILLING-SPIKE-02, Sprint 82)
+-- One Stripe Connect account per partner team; charges/payouts gating mirrors Stripe state.
+CREATE TABLE IF NOT EXISTS partner_payment_accounts (
+  team_id TEXT PRIMARY KEY,
+  stripe_account_id TEXT,
+  account_type TEXT NOT NULL DEFAULT 'express'
+    CHECK (account_type IN ('express', 'standard', 'custom')),
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'onboarding', 'verified', 'restricted', 'disabled')),
+  charges_enabled INTEGER NOT NULL DEFAULT 0,
+  payouts_enabled INTEGER NOT NULL DEFAULT 0,
+  default_payout_currency TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_partner_payment_accounts_account ON partner_payment_accounts(stripe_account_id);
+
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_events — comprehensive audit trail with before/after snapshots (Phase 8)
 -- Captures all state mutations with full change tracking for compliance

@@ -6,7 +6,8 @@ describe('native-shell', () => {
   const original = window.Capacitor
 
   afterEach(() => {
-    window.Capacitor = original
+    if (original) window.Capacitor = original
+    else delete window.Capacitor
   })
 
   beforeEach(() => {

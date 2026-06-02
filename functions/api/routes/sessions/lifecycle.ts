@@ -19,6 +19,56 @@ import { deliverTeamWebhooks } from '../../lib/webhooks'
 import { deliverMarketingWebhook } from '../../lib/webhooks-marketing'
 import { trackSessionWrite } from '../../lib/multi-region-mutation'
 import { logEvent } from '../../lib/log'
+import type { Question, Session } from '../../types'
+import type { LiveQuestion } from '../../realtime'
+
+async function doInitAlreadyInitialised(doRes: Response): Promise<boolean> {
+  if (doRes.status !== 409) return false
+  try {
+    const doBody = (await doRes.json()) as { ok?: boolean; error?: { code?: string } }
+    return doBody?.error?.code === 'already_initialised'
+  } catch {
+    return false
+  }
+}
+
+async function rollbackSessionStart(
+  db: D1Database,
+  id: string,
+  ownerId: string,
+  status: Session['status'],
+  startedAt: number,
+): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE sessions SET status = 'draft', started_at = NULL
+       WHERE id = ?1 AND owner_id = ?2 AND status = ?3 AND started_at = ?4`,
+    )
+    .bind(id, ownerId, status, startedAt)
+    .run()
+}
+
+function buildSessionInitBody(
+  session: Session,
+  liveQ: LiveQuestion,
+  questions: Question[],
+  plan: string,
+) {
+  return {
+    sessionId: session.id,
+    ownerId: session.owner_id,
+    teamId: session.team_id ?? undefined,
+    code: session.code,
+    title: session.title,
+    question: liveQ,
+    questions: questions.map(questionToLive),
+    votePolicy: session.vote_policy,
+    sessionMode: session.session_mode,
+    anonymity: session.anonymity ?? undefined,
+    townhallModeration: session.townhall_moderation ?? undefined,
+    plan,
+  }
+}
 
 export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   app.post('/:id/start', async (c) => {
@@ -102,12 +152,50 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       .run()
 
     if (result.meta.changes === 0) {
-      // A concurrent request already transitioned the session. Re-read it and
-      // return success without a redundant DO /init call.
+      // A concurrent request already transitioned the session. Confirm the DO is
+      // initialised before returning success — DB status alone is not enough
+      // (the winner may still be rolling back after a failed /init).
       const current = await fetchSession(c.env.DB, id, user.sub)
       logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.concurrent_win', ...logCtx })
       if (current?.status === 'energizing' || current?.status === 'live') {
-        return c.json({ ok: true, data: { session: current, question: liveQ }, trace_id: traceId })
+        let doRes: Response
+        try {
+          doRes = await postDO(c.env, id, '/init', buildSessionInitBody(session, liveQ, questions, c.get('plan')))
+        } catch {
+          const latest = await fetchSession(c.env.DB, id, user.sub)
+          if (latest?.status === 'draft') {
+            return c.json(
+              { ok: false, error: { code: 'conflict', message: 'Session could not be started' }, trace_id: traceId },
+              409,
+            )
+          }
+          return c.json(
+            {
+              ok: false,
+              error: { code: 'do_init_failed', message: 'Session room unavailable, please try again' },
+              trace_id: traceId,
+            },
+            500,
+          )
+        }
+        if (doRes.status === 200 || (await doInitAlreadyInitialised(doRes))) {
+          return c.json({ ok: true, data: { session: current, question: liveQ }, trace_id: traceId })
+        }
+        const latest = await fetchSession(c.env.DB, id, user.sub)
+        if (latest?.status === 'draft') {
+          return c.json(
+            { ok: false, error: { code: 'conflict', message: 'Session could not be started' }, trace_id: traceId },
+            409,
+          )
+        }
+        return c.json(
+          {
+            ok: false,
+            error: { code: 'do_init_failed', message: 'Session room unavailable, please try again' },
+            trace_id: traceId,
+          },
+          500,
+        )
       }
       return c.json(
         { ok: false, error: { code: 'conflict', message: 'Session could not be started' }, trace_id: traceId },
@@ -119,29 +207,13 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
 
     let doRes: Response
     try {
-      doRes = await postDO(c.env, id, '/init', {
-        sessionId: session.id,
-        ownerId: session.owner_id,
-        teamId: session.team_id ?? undefined,
-        code: session.code,
-        title: session.title,
-        question: liveQ,
-        questions: questions.map(questionToLive),
-        votePolicy: session.vote_policy,
-        sessionMode: session.session_mode,
-        anonymity: session.anonymity ?? undefined,
-        townhallModeration: session.townhall_moderation ?? undefined,
-        plan: c.get('plan'),
-      })
+      doRes = await postDO(c.env, id, '/init', buildSessionInitBody(session, liveQ, questions, c.get('plan')))
     } catch (doNetworkErr) {
       
       // Roll back the DB transition so the session remains startable.
       logEvent({ ts: new Date().toISOString(), level: 'error', event: 'session.start.do_network_error', ...logCtx, err: String(doNetworkErr) })
       try {
-        await c.env.DB
-          .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
-          .bind(id)
-          .run()
+        await rollbackSessionStart(c.env.DB, id, user.sub, initialStatus, now)
       } catch { /* best-effort rollback */ }
       await recordSprint19JourneyEvent(c.env, {
         name: 'launchpad.launch_failed',
@@ -160,22 +232,14 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     if (doRes.status !== 200) {
       // Defence-in-depth: if DO returns already_initialised (409), another
       // concurrent start won the DO race. DB is already live — no rollback.
-      if (doRes.status === 409) {
-        try {
-          const doBody = (await doRes.json()) as { ok?: boolean; error?: { code?: string } }
-          if (doBody?.error?.code === 'already_initialised') {
-            logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.do_idempotent', ...logCtx })
-            return c.json({ ok: true, data: { session, question: liveQ }, trace_id: traceId })
-          }
-        } catch { /* fall through to rollback */ }
+      if (await doInitAlreadyInitialised(doRes)) {
+        logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.do_idempotent', ...logCtx })
+        return c.json({ ok: true, data: { session, question: liveQ }, trace_id: traceId })
       }
       // All other DO errors: roll back DB so the session stays startable.
       logEvent({ ts: new Date().toISOString(), level: 'warn', event: 'session.start.do_failure', ...logCtx, do_status: doRes.status })
       try {
-        await c.env.DB
-          .prepare(`UPDATE sessions SET status = 'draft', started_at = NULL WHERE id = ?1`)
-          .bind(id)
-          .run()
+        await rollbackSessionStart(c.env.DB, id, user.sub, initialStatus, now)
       } catch (rbErr) {
         // Rollback failed — DB may be stuck live while DO is not initialised.
         // Operator must use RUNBOOK_SESSION_RECONCILE.md to recover.
@@ -266,6 +330,16 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     const session = liveClose.session
     const room = await getSessionRoomStub(c.env, id)
     const doRes = await room.fetch('https://do.internal/close', { method: 'POST' })
+    if (!doRes.ok) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'do_close_failed', message: 'Session room unavailable, please try again' },
+          trace_id: c.get('trace_id'),
+        },
+        500,
+      )
+    }
     const parsed = (await doRes.json().catch(() => null)) as
       | {
           ok: true
@@ -281,6 +355,16 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     const total = parsed?.ok ? parsed.data.total : 0
     const voteList = parsed?.ok ? parsed.data.votes : []
     const questionId = parsed?.ok ? parsed.data.questionId : null
+    if (parsed?.ok !== true) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'do_close_failed', message: 'Session room returned an invalid close response' },
+          trace_id: c.get('trace_id'),
+        },
+        500,
+      )
+    }
 
     // Persist per-voter rows to D1. UNIQUE(question_id, voter_id) guards
     // against replay.
@@ -322,7 +406,12 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     // (e.g. in tests), so we guard with try/catch rather than optional chaining.
     try {
       c.executionCtx.waitUntil(
-        precomputeInsights(c.env, id, session.title, user.sub).catch((err) => {
+        precomputeInsights(c.env, id, session.title, user.sub, {
+          anonymity: session.anonymity ?? null,
+          teamId: session.team_id ?? null,
+          plan: c.get('plan'),
+          traceId: c.get('trace_id'),
+        }).catch((err) => {
           logEvent({
               event: 'insights.precompute.error',
               sessionId: id,

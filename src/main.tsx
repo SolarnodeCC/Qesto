@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { initI18n } from './i18n'
+import { initNativePush } from './lib/native-push-client'
 import './styles.css'
 
 const root = document.getElementById('root')
@@ -13,6 +14,8 @@ async function mount() {
   // The try/catch inside initI18n ensures a fetch failure degrades to showing keys,
   // never a blank page.
   await initI18n()
+  // NATIVE-GA-01: register for native push on shell init (no-op in the browser).
+  initNativePush()
   createRoot(root!).render(
     <StrictMode>
       <BrowserRouter>

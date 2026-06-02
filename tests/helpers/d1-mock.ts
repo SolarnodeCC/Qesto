@@ -124,10 +124,12 @@ function filterAuditEventsForMock(rows: AuditEvent[], sql: string, filterArgs: u
 type InsightsDailyRow = {
   id: string
   session_id: string
+  team_id?: string | null
   day: string
   themes_json: string
   confidence: number
   n_votes: number
+  embedding_ref?: number
   computed_at: number
 }
 
@@ -194,6 +196,20 @@ export class D1Mock {
   readonly teamInsightRollups = new Map<
     string,
     { team_id: string; kind: string; window: string; payload_json: string; computed_at: number }
+  >()
+  readonly partnerPaymentAccounts = new Map<
+    string,
+    {
+      team_id: string
+      stripe_account_id: string | null
+      account_type: string
+      status: string
+      charges_enabled: number
+      payouts_enabled: number
+      default_payout_currency: string | null
+      created_at: number
+      updated_at: number
+    }
   >()
 
   prepare(sql: string): D1PreparedStatementMock {
@@ -360,6 +376,16 @@ export class D1PreparedStatementMock {
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith("UPDATE sessions SET status = 'draft'")) {
+      if (this.sql.includes('AND owner_id = ?2 AND status = ?3 AND started_at = ?4')) {
+        const [id, owner_id, status, started_at] = this.args as [string, string, SessionRow['status'], number]
+        const row = this.db.sessions.get(id)
+        if (!row || row.owner_id !== owner_id || row.status !== status || row.started_at !== started_at) {
+          return { meta: { changes: 0 } }
+        }
+        row.status = 'draft'
+        row.started_at = null
+        return { meta: { changes: 1 } }
+      }
       const [id] = this.args as [string]
       const row = this.db.sessions.get(id)
       if (!row) return { meta: { changes: 0 } }
@@ -608,10 +634,33 @@ export class D1PreparedStatementMock {
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO insights_daily')) {
-      const [id, session_id, day, themes_json, confidence, n_votes, computed_at] = this.args as [
-        string, string, string, string, number, number, number,
-      ]
-      this.db.insightsDaily.set(id, { id, session_id, day, themes_json, confidence, n_votes, computed_at })
+      // INSIGHTS-02: (id, session_id, team_id, day, themes_json, confidence, n_votes, embedding_ref, computed_at)
+      // ON CONFLICT(session_id, day) DO UPDATE — idempotent per close-day.
+      const [id, session_id, team_id, day, themes_json, confidence, n_votes, embedding_ref, computed_at] =
+        this.args as [string, string, string | null, string, string, number, number, number, number]
+      const existing = [...this.db.insightsDaily.values()].find(
+        (r) => r.session_id === session_id && r.day === day,
+      )
+      if (existing) {
+        existing.team_id = team_id
+        existing.themes_json = themes_json
+        existing.confidence = confidence
+        existing.n_votes = n_votes
+        if (embedding_ref === 1) existing.embedding_ref = 1
+        existing.computed_at = computed_at
+        return { meta: { changes: 1 } }
+      }
+      this.db.insightsDaily.set(id, {
+        id,
+        session_id,
+        team_id,
+        day,
+        themes_json,
+        confidence,
+        n_votes,
+        embedding_ref,
+        computed_at,
+      })
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO device_tokens')) {
@@ -661,6 +710,44 @@ export class D1PreparedStatementMock {
       ]
       const key = `${team_id}:${kind}:${window}`
       this.db.teamInsightRollups.set(key, { team_id, kind, window, payload_json, computed_at })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO partner_payment_accounts')) {
+      // (team_id, stripe_account_id, account_type, 'onboarding', 0, 0, NULL, created_at, created_at)
+      // ON CONFLICT(team_id) DO UPDATE — keep existing account id when excluded is null.
+      const [team_id, stripe_account_id, account_type, created_at] = this.args as [
+        string, string | null, string, number,
+      ]
+      const existing = this.db.partnerPaymentAccounts.get(team_id)
+      if (existing) {
+        existing.stripe_account_id = stripe_account_id ?? existing.stripe_account_id
+        existing.account_type = account_type
+        existing.updated_at = created_at
+        return { meta: { changes: 1 } }
+      }
+      this.db.partnerPaymentAccounts.set(team_id, {
+        team_id,
+        stripe_account_id,
+        account_type,
+        status: 'onboarding',
+        charges_enabled: 0,
+        payouts_enabled: 0,
+        default_payout_currency: null,
+        created_at,
+        updated_at: created_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE partner_payment_accounts')) {
+      const [team_id, status, charges_enabled, payouts_enabled, default_payout_currency, updated_at] =
+        this.args as [string, string, number, number, string | null, number]
+      const row = this.db.partnerPaymentAccounts.get(team_id)
+      if (!row) return { meta: { changes: 0 } }
+      row.status = status
+      row.charges_enabled = charges_enabled
+      row.payouts_enabled = payouts_enabled
+      row.default_payout_currency = default_payout_currency
+      row.updated_at = updated_at
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('DELETE FROM team_insight_rollup')) {
@@ -853,6 +940,10 @@ export class D1PreparedStatementMock {
       const [team_id, kind, window] = this.args as [string, string, string]
       const key = `${team_id}:${kind}:${window}`
       return (this.db.teamInsightRollups.get(key) as T) ?? null
+    }
+    if (this.sql.startsWith('SELECT team_id, stripe_account_id, account_type, status')) {
+      const [team_id] = this.args as [string]
+      return (this.db.partnerPaymentAccounts.get(team_id) as T) ?? null
     }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }

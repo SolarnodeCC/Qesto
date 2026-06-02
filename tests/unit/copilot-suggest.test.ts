@@ -3,6 +3,7 @@ import {
   buildSuggestMessages,
   parseSuggestions,
   fallbackSuggestions,
+  detectDisengagement,
   CopilotActionSchema,
   COPILOT_ACTION_KINDS,
   MAX_SUGGESTIONS,
@@ -107,6 +108,47 @@ describe('copilot-suggest', () => {
     it('returns nothing actionable when no question is active and mood is fine', () => {
       const actions = fallbackSuggestions(liveCtx({ currentQuestion: null, mood: 'positive', participationRate: 0.8 }))
       expect(actions).toHaveLength(0)
+    })
+  })
+
+  describe('detectDisengagement (COPILOT-04)', () => {
+    it('flags concerning sentiment only at k≥5 responses', () => {
+      expect(detectDisengagement(liveCtx({ mood: 'concerning', moodSampleSize: 4 }))).toBeNull()
+      const alert = detectDisengagement(liveCtx({ mood: 'concerning', moodSampleSize: 5 }))
+      expect(alert?.kind).toBe('disengagement_alert')
+      expect(alert?.title).toContain('mood')
+    })
+
+    it('flags a participation drop-off when enough participants are connected', () => {
+      const alert = detectDisengagement(
+        liveCtx({ mood: 'positive', participantCount: 20, participationRate: 0.1 }),
+      )
+      expect(alert?.kind).toBe('disengagement_alert')
+      expect(alert?.title).toContain('Participation')
+    })
+
+    it('falls back to participation signal for zero-knowledge sessions (no mood)', () => {
+      const alert = detectDisengagement(
+        liveCtx({ mood: null, moodSampleSize: 0, participantCount: 10, participationRate: 0.2 }),
+      )
+      expect(alert?.kind).toBe('disengagement_alert')
+    })
+
+    it('returns null for a healthy room', () => {
+      expect(
+        detectDisengagement(liveCtx({ mood: 'positive', participantCount: 20, participationRate: 0.7 })),
+      ).toBeNull()
+    })
+
+    it('does not flag a low rate when too few participants are connected', () => {
+      expect(
+        detectDisengagement(liveCtx({ mood: 'neutral', participantCount: 3, participationRate: 0.1 })),
+      ).toBeNull()
+    })
+
+    it('produces a schema-valid action', () => {
+      const alert = detectDisengagement(liveCtx({ mood: 'concerning', moodSampleSize: 6 }))
+      expect(alert && CopilotActionSchema.safeParse(alert).success).toBe(true)
     })
   })
 
