@@ -37,14 +37,19 @@ https://qesto.cc/linkedin-auth
 Use this exact value for `LINKEDIN_REDIRECT_URI`.
 
 ### 3. Provision Cloudflare resources
-```bash
-# KV namespace (one namespace, shared by the Pages page + the cron Worker)
-wrangler kv namespace create LINKEDIN_KV
-# → paste the printed id into workers/linkedin-scheduler/wrangler.toml
-#   AND bind LINKEDIN_KV on the "qesto" Pages project (dashboard → Settings →
-#   Functions → KV namespace bindings).
+The KV namespaces already exist (wired into `wrangler.toml`):
 
-# D1 migration
+| Namespace | ID | Used by |
+|---|---|---|
+| `Linkedin_KV_Prod` | `2385a9ede5974147bb15716dcc3b27a9` | production (default) |
+| `Linkedin_KV_Staging` | `8c394153bb6f41e89990424209282dae` | `--env staging` |
+
+Bind the **same** namespace to the `qesto` **Pages** project under the binding
+name `LINKEDIN_KV` (dashboard → Settings → Functions → KV namespace bindings —
+use `Linkedin_KV_Prod` for production).
+
+```bash
+# D1 migration (creates linkedin_posts)
 wrangler d1 migrations apply qesto_3_db        # remote (add --local for dev)
 ```
 
