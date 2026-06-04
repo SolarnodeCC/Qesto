@@ -35,5 +35,28 @@
     "search": "Search",
     "searching": "Searching…",
     "loadError": "Could not load similar sessions"
+  },
+  "crossSession": {
+    "selectTeam": "Word lid van een team om cross-sessie-inzichten te zien.",
+    "planRequired": "Cross-sessie-inzichten vereisen een Team-abonnement",
+    "planHint": "Upgrade voor terugkerende thema's, engagementtrends en facilitator-scorecards.",
+    "viewPlans": "Bekijk abonnementen →",
+    "windowLabel": "Trendperiode",
+    "window30d": "30 dagen",
+    "window90d": "90 dagen",
+    "window180d": "180 dagen",
+    "recurringTitle": "Terugkerende thema's",
+    "recurringEmpty": "Nog geen terugkerende thema's — sluit minstens drie niet-ZK-sessies.",
+    "sessionCount": "{{count}} sessies",
+    "trendTitle": "Engagementtrend",
+    "trendEmpty": "Niet genoeg gesloten sessies in deze periode.",
+    "trendLine": "{{sessions}} sessies · {{votes}} gem. stemmen",
+    "scorecardTitle": "Facilitator-scorecard",
+    "scorecardEmpty": "Scorecard verschijnt na meer gesloten sessies.",
+    "sessionsRun": "Sessies gedraaid",
+    "avgParticipation": "Gem. participatie",
+    "responseRate": "Responspercentage",
+    "facilitator": "Facilitator {{id}}…",
+    "facilitatorStats": "{{sessions}} sessies · {{participation}} gem. stemmen · {{rate}}% respons"
   }
 }

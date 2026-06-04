@@ -35,5 +35,28 @@
     "search": "Search",
     "searching": "Searching…",
     "loadError": "Could not load similar sessions"
+  },
+  "crossSession": {
+    "selectTeam": "Rejoignez une équipe pour voir les insights inter-sessions.",
+    "planRequired": "Les insights inter-sessions nécessitent l'offre Team",
+    "planHint": "Passez à l'offre supérieure pour les thèmes récurrents, tendances et scorecards facilitateur.",
+    "viewPlans": "Voir les offres →",
+    "windowLabel": "Fenêtre de tendance",
+    "window30d": "30 jours",
+    "window90d": "90 jours",
+    "window180d": "180 jours",
+    "recurringTitle": "Thèmes récurrents",
+    "recurringEmpty": "Pas encore de thèmes récurrents — fermez au moins trois sessions non ZK.",
+    "sessionCount": "{{count}} sessions",
+    "trendTitle": "Tendance d'engagement",
+    "trendEmpty": "Pas assez de sessions fermées sur cette période.",
+    "trendLine": "{{sessions}} sessions · {{votes}} votes moy.",
+    "scorecardTitle": "Scorecard facilitateur",
+    "scorecardEmpty": "La scorecard apparaît après plus de sessions fermées.",
+    "sessionsRun": "Sessions animées",
+    "avgParticipation": "Participation moy.",
+    "responseRate": "Taux de réponse",
+    "facilitator": "Facilitateur {{id}}…",
+    "facilitatorStats": "{{sessions}} sessions · {{participation}} votes moy. · {{rate}}% réponse"
   }
 }

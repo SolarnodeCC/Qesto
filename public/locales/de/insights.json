@@ -35,5 +35,28 @@
     "search": "Search",
     "searching": "Searching…",
     "loadError": "Could not load similar sessions"
+  },
+  "crossSession": {
+    "selectTeam": "Treten Sie einem Team bei, um sitzungsübergreifende Einblicke zu sehen.",
+    "planRequired": "Situationsübergreifende Einblicke erfordern den Team-Plan",
+    "planHint": "Upgrade für wiederkehrende Themen, Engagement-Trends und Facilitator-Scorecards.",
+    "viewPlans": "Pläne ansehen →",
+    "windowLabel": "Trendzeitraum",
+    "window30d": "30 Tage",
+    "window90d": "90 Tage",
+    "window180d": "180 Tage",
+    "recurringTitle": "Wiederkehrende Themen",
+    "recurringEmpty": "Noch keine wiederkehrenden Themen — schließen Sie mindestens drei Nicht-ZK-Sitzungen.",
+    "sessionCount": "{{count}} Sitzungen",
+    "trendTitle": "Engagement-Trend",
+    "trendEmpty": "Nicht genug geschlossene Sitzungen in diesem Zeitraum.",
+    "trendLine": "{{sessions}} Sitzungen · {{votes}} Ø Stimmen",
+    "scorecardTitle": "Facilitator-Scorecard",
+    "scorecardEmpty": "Scorecard erscheint nach weiteren geschlossenen Sitzungen.",
+    "sessionsRun": "Durchgeführte Sitzungen",
+    "avgParticipation": "Ø Teilnahme",
+    "responseRate": "Antwortrate",
+    "facilitator": "Facilitator {{id}}…",
+    "facilitatorStats": "{{sessions}} Sitzungen · {{participation}} Ø Stimmen · {{rate}}% Antwort"
   }
 }

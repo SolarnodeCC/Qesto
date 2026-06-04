@@ -15,6 +15,11 @@ import {
   recomputeTeamInsightRollups,
   type InsightTrendWindow,
 } from '../lib/team-insights-recurring'
+import {
+  getTeamInsightRollup,
+  type TeamInsightKind,
+} from '../lib/team-insights'
+import { recomputeFacilitatorScorecard } from '../lib/team-insights-scorecard'
 import { teamDocumentKey } from '../lib/kv-keys'
 import type { Team } from './teams'
 import type { Env } from '../types'
@@ -125,6 +130,55 @@ export function mountTeamInsightsRoutes(parent: any) {
     return c.json({ ok: true, data: { ...payload, cached: false }, trace_id: c.get('trace_id') })
   })
 
+  app.get('/:id/insights/scorecard', requireFeature('crossSessionInsights'), async (c) => {
+    const teamId = c.req.param('id')
+    const parsed = WindowQuerySchema.safeParse({ window: c.req.query('window') ?? '30d' })
+    if (!parsed.success) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_window', message: 'window must be 30d, 90d, or 180d' },
+          trace_id: c.get('trace_id'),
+        },
+        400,
+      )
+    }
+    const window = parsed.data.window as InsightTrendWindow
+
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (!isTeamMember(team, c.get('user').sub)) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Not a member of this team' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+
+    const kind: TeamInsightKind = 'facilitator_scorecard'
+    let rollup = await getTeamInsightRollup(c.env.DB, teamId, kind, window)
+    const stale = !rollup || Date.now() - rollup.computed_at > 86_400_000
+    const scorecard = stale
+      ? await recomputeFacilitatorScorecard(c.env.DB, teamId, window)
+      : (JSON.parse(rollup!.payload_json) as Awaited<ReturnType<typeof recomputeFacilitatorScorecard>>)
+
+    writeEvent(c.env.METRICS_AE, {
+      name: 'insight.scorecard_viewed',
+      userId: c.get('user').sub,
+      teamId,
+      plan: c.get('plan'),
+      count: scorecard.facilitators.length,
+      detail: window,
+      traceId: c.get('trace_id'),
+    })
+
+    return c.json({ ok: true, data: { scorecard, cached: !stale }, trace_id: c.get('trace_id') })
+  })
+
   /** On-demand refresh — recomputes rollups for all standard windows. */
   app.post('/:id/insights/refresh', requireFeature('crossSessionInsights'), async (c) => {
     const teamId = c.req.param('id')
@@ -145,6 +199,7 @@ export function mountTeamInsightsRoutes(parent: any) {
     const env = { AI: c.env.AI, DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE }
     for (const window of INSIGHT_TREND_WINDOWS) {
       await recomputeTeamInsightRollups(env, c.env.DB, teamId, window)
+      await recomputeFacilitatorScorecard(c.env.DB, teamId, window)
       if (c.env.TEAMS_KV) await c.env.TEAMS_KV.delete(trendsCacheKey(teamId, window))
     }
 
