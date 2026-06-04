@@ -131,12 +131,16 @@ name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
 # Phase 2.1: Queues for async post-session work (AI insights, integrations, recaps)
-# Producer binding: allows enqueuing tasks from HTTP handlers
-# Consumer handler: defined in worker/index.ts (export queue function)
-# See: functions/api/lib/queues/ for producer/consumer logic
-[[queues.producers]]
-binding = "INSIGHTS_QUEUE"
-queue = "qesto-insights"
+# TODO (Phase 2 build): Wire Cloudflare Queues producer binding
+# - Create queue "qesto-insights" in Cloudflare account
+# - Uncomment [[queues.producers]] binding below
+# - Implement consumer handler: export queue() in worker/index.ts
+# - Update lifecycle.ts to call enqueuePostSessionWork()
+# For now, work is still done via waitUntil() (Phase 1 pattern)
+#
+# [[queues.producers]]
+# binding = "INSIGHTS_QUEUE"
+# queue = "qesto-insights"
 
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
