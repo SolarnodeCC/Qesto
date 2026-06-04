@@ -27,15 +27,21 @@ _Hub: [Documentation map](./README.md)._
   - PATCH: clarifications and typo-level improvements.
 
 ## Owners (DRI)
-- Architect: architect, backend, system contracts
-- PO: product-owner, roadmap and scope
-- QA: tester, review quality gates
+- Architect: architect, backend, system contracts, COMMON_RULES, HANDOFFS (edge map)
+- PO: product-owner, roadmap and scope, market-research (+ templates)
+- QA: tester, review quality gates, investigate
 - CSO: security/cso
 - DevOps: infra/deployment/devops
 - Frontend Lead: frontend, ui-mobile, i18n
 - Analytics Lead: analytics
 - AI Strategy Lead: ai-strategy
-- Growth Lead: marketing
+- Growth Lead: marketing, release-notes (with PO)
+- Sales Lead: sales, deal cycle, sales enablement
+
+## Edge governance
+Cross-role handoffs are defined in `.claude/skills/HANDOFFS.md`. Each edge names an owner
+who is accountable for unblocking it. New cross-role dependencies require a new edge row in
+the same change (see COMMON_RULES §11).
 
 ## Change policy
 1. Open PR with:

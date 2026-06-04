@@ -115,10 +115,23 @@ Every skill file must reference which docs to update:
 ## 10) Skill Governance Alignment (Non-Negotiable)
 - Semantic versioning: MAJOR (breaking) / MINOR (backward-compatible) / PATCH (clarifications)
 - Owner designation required (DRI per OWNER field in skill header)
-- Changelog entry required on update (YYYY-MM-DD: change note)
+- Changelog entry required on update (YYYY-MM-DD: change note) — including audit-derived gates
 - Monthly quality scorecard review (keep/improve/retire decision)
 
+## 11) Edges & Single Source of Truth (Non-Negotiable)
+- Cross-role handoffs are defined and **owned** in `.claude/skills/HANDOFFS.md`. Introducing
+  a cross-role dependency without adding its edge row there is forbidden — that is how
+  "nobody owns it."
+- State handoffs explicitly in your output (`Handoff → <role>: <artifact>`).
+- **One source of truth**: ICP and competitor tables live in `market-research.md` /
+  `knowledge-base/product/research/`; pricing lives in the Stripe vars. Every other asset
+  **references** them — never copies. Duplicated tables are a defect.
+- Agents are thin dispatchers; depth lives in the matching skill. Do not grow an agent file
+  with code blocks, data contracts, or templates that belong in its skill.
+
 ## Change Log
+- 2026-06-04: Added rule 11 (edges + single source of truth); pointed all assets at
+  HANDOFFS.md; required changelog entries for audit-derived gates.
 - 2026-04-24: Added test/type-check minimums, doc obligations, and governance alignment rules.
 - 2026-04-10: Canonicalized file headers and shared rules reference.
 

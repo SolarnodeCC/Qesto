@@ -41,6 +41,9 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 | ai-strategy | Product | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | product-owner | Product | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | marketing | Growth | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
+| sales | Sales | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | new (2026-06) |
+| market-research | Product | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | split 2026-06 |
+| release-notes | Product/Growth | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | i18n | Frontend | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 
 ## Agent Metrics Template
@@ -53,10 +56,12 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 | qesto-tester | haiku | QA | YYYY-MM-DD | N | N.N | N% | active | — |
 | qesto-security | opus | CSO | YYYY-MM-DD | N | N.N | N% | active | — |
 | qesto-devops | sonnet | DevOps | YYYY-MM-DD | N | N.N | N% | active | — |
-| qesto-po | haiku | Product | YYYY-MM-DD | N | N.N | N% | active | — |
 | qesto-analytics | sonnet | Analytics | YYYY-MM-DD | N | N.N | N% | active | — |
 | qesto-ai-strategy | opus | Product | YYYY-MM-DD | N | N.N | N% | active | — |
-| qesto-marketing | haiku | Growth | YYYY-MM-DD | N | N.N | N% | active | — |
+| qesto-marketing | haiku | Growth | YYYY-MM-DD | N | N.N | N% | active | top-of-funnel only (2026-06) |
+| qesto-sales | sonnet | Sales | YYYY-MM-DD | N | N.N | N% | active | new node (2026-06) |
+| qesto-market-research | opus | Product | YYYY-MM-DD | N | N.N | N% | active | added to tracker (2026-06) |
+| qesto-product-owner | haiku | Product | YYYY-MM-DD | N | N.N | N% | active | renamed from qesto-po |
 | qesto-i18n | haiku | Frontend | YYYY-MM-DD | N | N.N | N% | active | — |
 
 ---
@@ -193,4 +198,11 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 ---
 
 ## Change Log
+- 2026-06-04: v1.1.0 — agent/skill framework overhaul. Added **Sales** node (qesto-sales +
+  sales.md) and registered the previously-untracked qesto-market-research agent (now 13
+  agents). Renamed qesto-po → qesto-product-owner. Right-sized oversized agents (backend,
+  tester → v2.0.0 thin dispatchers). Fixed marketing's 19 dead sub-skill references and
+  deduped ICP/competitor tables to a single source of truth. Split market-research.md
+  (524→~150) into skill + templates. Fixed release-notes frontmatter. Introduced
+  HANDOFFS.md edge-ownership map and COMMON_RULES §11.
 - 2026-04-24: v1.0.0 created — baseline scorecard structure with templates and monthly review SOP.
