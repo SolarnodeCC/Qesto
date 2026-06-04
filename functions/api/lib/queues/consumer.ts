@@ -11,7 +11,6 @@
 
 import type { Env } from '../../types'
 import type { PostSessionWorkMessage } from './producer'
-import { writeEvent } from '../observability'
 
 /**
  * Handle a single queued work message.
@@ -72,7 +71,6 @@ export async function processPostSessionWork(
       }),
     )
   } catch (err) {
-    const durationMs = Date.now() - startMs
     const errorMsg = err instanceof Error ? err.message : String(err)
 
     console.error(
@@ -97,7 +95,7 @@ export async function processPostSessionWork(
  * This is the async version of precomputeInsights() from lifecycle.ts.
  */
 async function handlePrecomputeInsights(
-  env: Env,
+  _env: Env,
   sessionId: string,
   _userId: string,
   _payload: Record<string, unknown>,
