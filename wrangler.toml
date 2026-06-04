@@ -130,6 +130,18 @@ binding = "WORKFLOWS"
 name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
+# Phase 2.1: Queues for async post-session work (AI insights, integrations, recaps)
+[[queues.producers]]
+binding = "INSIGHTS_QUEUE"
+queue = "qesto-insights"
+
+[[queues.consumers]]
+queue = "qesto-insights"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "qesto-insights-dlq"
+
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
 # binding = "HELP_CONVERSATIONS_KV"
