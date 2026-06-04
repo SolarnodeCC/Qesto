@@ -34,11 +34,13 @@ type AIGatewayCacheMode = 'semantic' | 'exact'
  * Global AI Gateway configuration. Set CLOUDFLARE_AI_GATEWAY_ID via
  * `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID <uuid>` in production.
  * For staging/dev, uses direct env.AI fallback if not set.
+ * Phase 1.1 MVP: Gateway ID to be configured in Phase 1.2; currently falls back to direct env.AI.
  */
 export const AI_GATEWAY_CONFIG = {
   // Example: '8a6f7e9b-1234-5678-abcd-ef0123456789'
   // If not set, falls back to direct env.AI.run()
-  gatewayId: process.env.CLOUDFLARE_AI_GATEWAY_ID || null,
+  // TODO: Wire via wrangler secret after Phase 1 review
+  gatewayId: null as string | null,
   cacheMode: 'semantic' as AIGatewayCacheMode,
   cacheTtlSeconds: 3600, // 1h for semantic matches
   requestTimeoutMs: 30_000, // 30s including network latency
@@ -123,14 +125,14 @@ export async function runThroughAIGateway(
 /**
  * Build the Cloudflare AI Gateway URL for the given model.
  * Pattern: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{model}?gateway_id={gatewayId}
+ * TODO: Phase 1.2 — Wire account_id from wrangler.toml and gatewayId from secret after Gateway provisioning.
  */
 function buildGatewayUrl(model: string): string {
   if (!AI_GATEWAY_CONFIG.gatewayId) {
     throw new Error('AI Gateway ID not configured')
   }
-  // Account ID is available as a global or env var in the Worker context.
-  // For now, we assume it's injected via wrangler.toml [vars] or env.
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || 'unknown'
+  // Phase 1.2: Account ID from wrangler.toml account_id field (5546763229b35df670e33d9316d7f2e0)
+  const accountId = '5546763229b35df670e33d9316d7f2e0'
   const encoded = encodeURIComponent(model)
   const url = new URL(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${encoded}`)
   url.searchParams.set('gateway_id', AI_GATEWAY_CONFIG.gatewayId)
