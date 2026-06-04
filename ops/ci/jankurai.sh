@@ -28,13 +28,22 @@ fi
 # Run jankurai (exit code doesn't matter, it's advisory)
 jankurai . --json agent/repo-score.json --md agent/repo-score.md || true
 
-# Copy results if available
+# Ensure fallback files exist if jankurai failed
+if [ ! -f agent/repo-score.json ]; then
+  echo '{"status":"unavailable","reason":"jankurai execution failed or unavailable"}' > agent/repo-score.json
+fi
+if [ ! -f agent/repo-score.md ]; then
+  echo '# Jankurai Audit Report' > agent/repo-score.md
+  echo '' >> agent/repo-score.md
+  echo 'Status: Unavailable' >> agent/repo-score.md
+  echo '' >> agent/repo-score.md
+  echo 'The jankurai audit tool was unavailable or failed to execute in this CI run.' >> agent/repo-score.md
+fi
+
+# Copy results to target directory for archival
+mkdir -p target/jankurai
 cp -f agent/repo-score.json target/jankurai/repo-score.json 2>/dev/null || true
 cp -f agent/repo-score.md target/jankurai/repo-score.md 2>/dev/null || true
-
-# Create empty reports if jankurai failed
-[ -f target/jankurai/repo-score.json ] || echo '{"status":"unavailable"}' > target/jankurai/repo-score.json
-[ -f target/jankurai/repo-score.md ] || echo '# Jankurai Report\nUnavailable in this CI run' > target/jankurai/repo-score.md
 
 report_success "Jankurai audit completed"
 exit 0
