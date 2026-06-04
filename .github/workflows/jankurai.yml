@@ -31,7 +31,7 @@ jobs:
         run: bash ops/ci/jankurai.sh
 
       - name: Upload Jankurai audit report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: jankurai-audit
@@ -59,7 +59,7 @@ jobs:
         run: bash ops/ci/supply-chain.sh
 
       - name: Upload security scan results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: security-scan-results
