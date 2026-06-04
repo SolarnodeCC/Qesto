@@ -135,6 +135,14 @@ function errorMessage(code: string, message: string): string {
 // ── DurableObject ───────────────────────────────────────────────────────────
 type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ValidClientMessage) => Promise<void>
 
+type BufferedVote = {
+  sessionId: string
+  questionId: string
+  voterId: string
+  optionId: string
+  submittedAt: number
+}
+
 export class SessionRoom implements DurableObject {
   private readonly ctx: DurableObjectState
   private readonly env: Env
@@ -142,6 +150,18 @@ export class SessionRoom implements DurableObject {
   private _voters: Votes | null = null
   private _votersInitPromise: Promise<void> | null = null
   private readonly clientWsHandlers: Record<ValidClientMessage['type'], ClientWsHandler>
+
+  // ── Phase 2.2: Vote buffering (ADR-042) ──────────────────────────────────
+  private voteBuffer: BufferedVote[] = []
+  private lastFlushAt: number = Date.now()
+  private flushScheduled = false
+  private readonly FLUSH_INTERVAL_MS = 5000 // 5 seconds
+  private readonly FLUSH_THRESHOLD = 1000 // 1000 votes
+  private _counts: Counts | null = null // In-memory vote count cache during buffering
+
+  // ── Phase 2.3: R2 snapshots (ADR-042) ────────────────────────────────────
+  private lastSnapshotAt: number = Date.now()
+  private readonly SNAPSHOT_INTERVAL_MS = 30_000 // 30 seconds
 
   // ── Collaborators (TD-01 refactor) ────────────────────────────────────────
   private readonly rateLimiter: RateLimiter
@@ -259,10 +279,7 @@ export class SessionRoom implements DurableObject {
 
   // ── /init ─────────────────────────────────────────────────────────────────
   private async handleInit(req: Request): Promise<Response> {
-    const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? null
-    if (status === 'live' || status === 'closed') {
-      return this.jsonError(409, 'already_initialised', 'Session already initialised')
-    }
+    // Parse body once and reuse it.
     const body = (await req.json().catch(() => null)) as
       | {
           sessionId?: string
@@ -279,6 +296,20 @@ export class SessionRoom implements DurableObject {
           townhallModeration?: TownhallModeration
         }
       | null
+
+    const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? null
+
+    // Phase 2.3: If DO was evicted mid-session, attempt to hydrate from R2 snapshot.
+    if (status === null && body?.sessionId) {
+      // Temporarily set meta for hydration to work.
+      const tempMeta: Meta = { sessionId: body.sessionId, ownerId: '', code: '', title: '', startedAt: 0, votePolicy: 'once', sessionMode: 'reflection' }
+      await this.ctx.storage.put(K_META, tempMeta)
+      await this.maybeHydrate()
+    }
+
+    if (status === 'live' || status === 'closed') {
+      return this.jsonError(409, 'already_initialised', 'Session already initialised')
+    }
     if (!body || !body.sessionId || !body.ownerId || !body.code || !body.title) {
       return this.jsonError(400, 'bad_request', 'Missing init fields')
     }
@@ -325,11 +356,15 @@ export class SessionRoom implements DurableObject {
 
   // ── /close ────────────────────────────────────────────────────────────────
   private async handleClose(): Promise<Response> {
+    // Phase 2.2: Flush any remaining buffered votes before closing.
+    await this.flushVotesToD1AndKV()
+
     const status = (await this.ctx.storage.get<string>(K_STATUS)) ?? null
     if (status !== 'live' && status !== 'energizing') {
       return this.jsonError(409, 'not_live', 'Session is not active')
     }
-    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    // Use cached counts if available, otherwise load from storage.
+    const counts = this._counts ?? (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
     const votes = await this.ensureVoters()
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const msg = serverMessage({
@@ -346,6 +381,9 @@ export class SessionRoom implements DurableObject {
       }
     }
     await this.ctx.storage.put(K_STATUS, 'closed')
+
+    // Phase 2.3: Take final snapshot before session closes.
+    await this.maybeSnapshot()
     // TOWNHALL (ADR-0044): persist the board to D1 on close — the export + GDPR-erasure tier.
     const meta = await this.ctx.storage.get<Meta>(K_META)
     if (meta?.townhallModeration) {
@@ -614,9 +652,20 @@ export class SessionRoom implements DurableObject {
   async alarm(): Promise<void> {
     const nowMs = now()
 
+    // Phase 2.2: Flush votes if interval elapsed or on explicit flush request.
+    if (this.flushScheduled && nowMs >= this.lastFlushAt + this.FLUSH_INTERVAL_MS) {
+      await this.flushVotesToD1AndKV()
+    }
+
+    // Phase 2.3: Snapshot DO state periodically to R2 for recovery.
+    if (nowMs >= this.lastSnapshotAt + this.SNAPSHOT_INTERVAL_MS) {
+      await this.maybeSnapshot()
+      this.lastSnapshotAt = nowMs
+    }
+
     if (this.resultsDirty) {
       this.resultsDirty = false
-      const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+      const counts = this._counts ?? (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
       const total = Object.values(counts).reduce((a, b) => a + b, 0)
       const msg = serverMessage({
         type: 'results',
@@ -913,17 +962,19 @@ export class SessionRoom implements DurableObject {
     }
     const { countKey, countDecKey } = applied
 
-    // Load and update counts after the voter decision is finalised (safe to
-    // await here — the duplicate check above has already mutated voters).
-    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-    if (countKey) counts[countKey] = (counts[countKey] ?? 0) + 1
-    if (countDecKey) counts[countDecKey] = Math.max(0, (counts[countDecKey] ?? 1) - 1)
+    // Phase 2.2: Load and update counts in memory, buffer for later D1 flush.
+    // Counts cache is maintained in-memory and synced to storage during flush.
+    if (!this._counts) {
+      this._counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    }
+    if (countKey) this._counts[countKey] = (this._counts[countKey] ?? 0) + 1
+    if (countDecKey) this._counts[countDecKey] = Math.max(0, (this._counts[countDecKey] ?? 1) - 1)
 
     // ENTERPRISE-POLISH §1c: buffer open responses when moderation is enabled.
     if (question.kind === 'open' && question.moderated) {
       // Revert the mutation applied above — the response goes to pending, not live.
       delete voters[att.voterId]
-      if (countKey) counts[countKey] = Math.max(0, (counts[countKey] ?? 1) - 1)
+      if (countKey) this._counts[countKey] = Math.max(0, (this._counts[countKey] ?? 1) - 1)
       type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
       const pending = (await this.ctx.storage.get<PendingResponse[]>(K_PENDING_RESPONSES)) ?? []
       pending.push({ id: crypto.randomUUID(), voterId: att.voterId, text: optionId, submittedAt: Date.now() })
@@ -937,8 +988,22 @@ export class SessionRoom implements DurableObject {
       return
     }
 
-    await this.ctx.storage.put(K_VOTERS, voters)
-    await this.ctx.storage.put(K_COUNTS, counts)
+    // Phase 2.2: Buffer the vote for periodic D1 flush instead of immediate write.
+    // Voters map is kept in-memory for real-time broadcasts; KV write is deferred.
+    this.voteBuffer.push({
+      sessionId: meta?.sessionId ?? '',
+      questionId: question.id,
+      voterId: att.voterId,
+      optionId,
+      submittedAt: Date.now(),
+    })
+
+    // Schedule flush if threshold reached or interval elapsed.
+    if (this.voteBuffer.length >= this.FLUSH_THRESHOLD) {
+      await this.flushVotesToD1AndKV()
+    } else if (!this.flushScheduled) {
+      this.scheduleFlush()
+    }
 
     await this.scheduleResultsBroadcast()
 
@@ -1050,6 +1115,174 @@ export class SessionRoom implements DurableObject {
     const existing = await this.ctx.storage.getAlarm()
     if (existing === null || targetMs < existing) {
       await this.ctx.storage.setAlarm(targetMs)
+    }
+  }
+
+  // Phase 2.2: Schedule a flush to fire after FLUSH_INTERVAL_MS if not already scheduled.
+  private scheduleFlush(): void {
+    if (this.flushScheduled) return
+    this.flushScheduled = true
+    const flushAt = this.lastFlushAt + this.FLUSH_INTERVAL_MS
+    void this.scheduleAlarm(flushAt).catch(() => {
+      // Alarm scheduling failed; reset flag so next vote attempts to reschedule.
+      this.flushScheduled = false
+    })
+  }
+
+  // Phase 2.2: Flush buffered votes to D1 (batch insert) and update KV cache.
+  // Called when buffer threshold reached or flush interval fires.
+  private async flushVotesToD1AndKV(): Promise<void> {
+    if (this.voteBuffer.length === 0) {
+      this.flushScheduled = false
+      return
+    }
+
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (!meta) return // Session not initialized
+
+    try {
+      // Batch insert votes into D1 (via API handler or direct DB call if available).
+      const stmt = this.env.DB.prepare(
+        'INSERT INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at) VALUES (?, ?, ?, ?, ?, ?)',
+      )
+
+      const batch = this.voteBuffer.map((v) => [
+        crypto.randomUUID(), // id
+        v.sessionId,
+        v.questionId,
+        v.voterId,
+        v.optionId,
+        v.submittedAt,
+      ])
+
+      // Execute batch insert. If unique constraint violation (re-voted), ignore.
+      for (const row of batch) {
+        try {
+          await (stmt as any).bind(...row).run()
+        } catch (err) {
+          // Silently ignore unique constraint violations; vote already recorded.
+          if (!(err instanceof Error && err.message.includes('UNIQUE constraint failed'))) {
+            throw err
+          }
+        }
+      }
+
+      // Update KV cache with latest vote state.
+      const voters = await this.ctx.storage.get<Votes>(K_VOTERS)
+      if (voters) {
+        await this.env.SESSIONS_KV?.put?.(
+          `votes:${meta.sessionId}`,
+          JSON.stringify({ voters, counts: this._counts, flushedAt: Date.now() }),
+          { expirationTtl: 3600 }, // 1 hour TTL
+        )
+      }
+
+      // Sync counts to DO storage as well (for recovery).
+      if (this._counts) {
+        await this.ctx.storage.put(K_COUNTS, this._counts)
+      }
+
+      this.voteBuffer = []
+      this.lastFlushAt = Date.now()
+      this.flushScheduled = false
+    } catch (err) {
+      logEvent({
+        event: 'do.flush_votes_failed',
+        sessionId: meta.sessionId,
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+        errorMessage: err instanceof Error ? err.message : String(err),
+      })
+      // On flush failure, votes stay in buffer for next attempt.
+      this.flushScheduled = false
+    }
+  }
+
+  // Phase 2.3: Periodically snapshot DO state to R2 for recovery after eviction.
+  // Snapshots meta, questions, counts, and current question state.
+  private async maybeSnapshot(): Promise<void> {
+    if (!this.env.R2_SESSIONS) return // R2 not bound
+
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (!meta) return
+
+    try {
+      const snapshot = {
+        sessionId: meta.sessionId,
+        meta,
+        questions: (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? [],
+        questionIndex: (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0,
+        currentQuestion: await this.ctx.storage.get<LiveQuestion>(K_QUESTION),
+        counts: this._counts ?? (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {},
+        voters: this._voters ?? {},
+        status: await this.ctx.storage.get<string>(K_STATUS),
+        snapshotAt: Date.now(),
+      }
+
+      const key = `sessions/${meta.sessionId}/snapshot.json`
+      await this.env.R2_SESSIONS.put(key, JSON.stringify(snapshot), {
+        customMetadata: {
+          sessionId: meta.sessionId,
+          snapshotAt: String(Date.now()),
+        },
+      })
+    } catch (err) {
+      logEvent({
+        event: 'do.snapshot_failed',
+        sessionId: meta?.sessionId,
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+        errorMessage: err instanceof Error ? err.message : String(err),
+      })
+      // Snapshot failures are non-blocking; recovery is best-effort.
+    }
+  }
+
+  // Phase 2.3: Attempt to hydrate DO state from R2 snapshot after eviction.
+  private async maybeHydrate(): Promise<void> {
+    if (!this.env.R2_SESSIONS) return // R2 not bound
+
+    const meta = await this.ctx.storage.get<Meta>(K_META)
+    if (!meta) return // No session to hydrate
+
+    try {
+      const key = `sessions/${meta.sessionId}/snapshot.json`
+      const obj = await this.env.R2_SESSIONS.get(key)
+      if (!obj) return // No snapshot found
+
+      const snapshot = JSON.parse(await obj.text()) as {
+        questions?: LiveQuestion[]
+        questionIndex?: number
+        currentQuestion?: LiveQuestion
+        counts?: Counts
+        voters?: Votes
+        status?: string
+      }
+
+      // Restore state from snapshot.
+      if (snapshot.questions) await this.ctx.storage.put(K_QUESTIONS, snapshot.questions)
+      if (snapshot.questionIndex !== undefined) await this.ctx.storage.put(K_QUESTION_INDEX, snapshot.questionIndex)
+      if (snapshot.currentQuestion) await this.ctx.storage.put(K_QUESTION, snapshot.currentQuestion)
+      if (snapshot.counts) {
+        await this.ctx.storage.put(K_COUNTS, snapshot.counts)
+        this._counts = snapshot.counts
+      }
+      if (snapshot.voters) {
+        await this.ctx.storage.put(K_VOTERS, snapshot.voters)
+        this._voters = snapshot.voters
+      }
+      if (snapshot.status) await this.ctx.storage.put(K_STATUS, snapshot.status)
+
+      logEvent({
+        event: 'do.snapshot_hydrated',
+        sessionId: meta.sessionId,
+      })
+    } catch (err) {
+      logEvent({
+        event: 'do.hydrate_failed',
+        sessionId: meta?.sessionId,
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+        errorMessage: err instanceof Error ? err.message : String(err),
+      })
+      // Hydration failures are non-blocking; session continues with fresh state.
     }
   }
 
