@@ -102,12 +102,15 @@ export async function runThroughAIGateway(
       cache_age?: number
     }
 
-    return {
+    const response_obj: AIGatewayResponse = {
       result: data.result,
       cached: data.cached ?? false,
-      cacheAge: data.cache_age ?? undefined,
       gatewayLatencyMs: Date.now() - startMs,
     }
+    if (data.cache_age !== undefined) {
+      response_obj.cacheAge = data.cache_age
+    }
+    return response_obj
   } catch (err) {
     // Network error, timeout, or Gateway down: fall back to direct env.AI
     if (err instanceof Error && err.name === 'AbortError') {
@@ -173,7 +176,7 @@ async function fallbackToDirect(
  * For exact-match caching, this is a hash of the full input.
  * Currently used for observability; actual caching is handled by Gateway.
  */
-export function extractCacheKey(model: string, input: AIGatewayRequest): string {
+export function extractCacheKey(_model: string, input: AIGatewayRequest): string {
   if (input.text) {
     // Sentiment model: hash the text
     return `sentiment:${hashString(input.text)}`

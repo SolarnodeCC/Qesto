@@ -167,8 +167,6 @@ export async function runAI<T extends Record<string, unknown>>(
       plan: ctx.plan,
       durationMs,
       detail: model,
-      cached: data.cached,
-      gatewayMs: data.gatewayLatencyMs,
     })
     return { ok: true, data: data.result as T, model, durationMs }
   } catch (err) {
@@ -178,13 +176,12 @@ export async function runAI<T extends Record<string, unknown>>(
       return { ok: false, code: 'ai_unavailable', message: 'Workers AI unavailable (circuit open)' }
     }
     writeEvent(env.METRICS_AE, {
-      name: 'error.ai',
+      name: 'error.api',
       sessionId: ctx.sessionId,
       teamId: ctx.teamId ?? undefined,
       plan: ctx.plan,
       durationMs,
       detail: model,
-      error: msg,
     })
     return { ok: false, code: 'ai_unavailable', message: 'AI inference failed' }
   }
