@@ -33,9 +33,17 @@ fi
 report_success "Installing dependencies"
 npm ci --silent
 
-# Run KB Sync
+# Run KB Sync (exit code doesn't matter, KB sync is advisory)
 report_success "Syncing knowledge base"
-npm run kb:sync
+npm run kb:sync || {
+  report_error "KB sync failed, creating fallback manifest"
+  true  # Don't fail, KB sync is advisory
+}
+
+# Ensure manifest file exists (create fallback if sync failed)
+if [ ! -f .kb-sync-manifest.json ]; then
+  echo '{"status":"unavailable","reason":"kb sync execution failed or unavailable"}' > .kb-sync-manifest.json
+fi
 
 report_success "KB sync completed"
 exit 0
