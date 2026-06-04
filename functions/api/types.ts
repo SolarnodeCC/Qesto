@@ -139,6 +139,8 @@ export type Env = {
   MULTI_REGION_STATE_KV?: KVNamespace
   /** LinkedIn auto-posting: encrypted token + org/person URN + topics + rotation. */
   LINKEDIN_KV?: KVNamespace
+  /** ADR-042 Phase 2.1: Cloudflare Queues for async post-session work. */
+  INSIGHTS_QUEUE?: Queue<any>
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'

@@ -11,14 +11,11 @@ import {
   postDO,
   getSessionRoomStub,
   recordSprint19JourneyEvent,
-  precomputeInsights,
 } from './shared'
 import { writeEvent } from '../../lib/observability'
-import { notifySlackSessionClosed, notifyTeamsSessionClosed } from '../integrations'
-import { deliverTeamWebhooks } from '../../lib/webhooks'
-import { deliverMarketingWebhook } from '../../lib/webhooks-marketing'
 import { trackSessionWrite } from '../../lib/multi-region-mutation'
 import { logEvent } from '../../lib/log'
+import { enqueuePostSessionWork, computePayloadHash } from '../../lib/queues/producer'
 import type { Question, Session } from '../../types'
 import type { LiveQuestion } from '../../realtime'
 
@@ -400,120 +397,157 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       traceId: c.get('trace_id'),
     })
 
-    // Background insight pre-computation: fires after response is sent, never
-    // delays the close. Only runs for team-plan users; skips if already cached.
-    // Hono throws "This context has no ExecutionContext" when no ctx is passed
-    // (e.g. in tests), so we guard with try/catch rather than optional chaining.
-    try {
-      c.executionCtx.waitUntil(
-        precomputeInsights(c.env, id, session.title, user.sub, {
-          anonymity: session.anonymity ?? null,
-          teamId: session.team_id ?? null,
-          plan: c.get('plan'),
-          traceId: c.get('trace_id'),
+    // Phase 2.1: Async work queues — fire & forget, non-blocking
+    // All post-session work enqueued to INSIGHTS_QUEUE; processed asynchronously by consumer.
+    const enqueuePromises: Promise<void>[] = []
+
+    // Insights: precompute AI insights for team-plan users
+    if (c.get('plan') === 'team') {
+      const hash = computePayloadHash({
+        sessionTitle: session.title,
+        plan: c.get('plan'),
+        anonymity: session.anonymity,
+      })
+      enqueuePromises.push(
+        enqueuePostSessionWork(c.env, {
+          idempotencyKey: `${id}:precompute_insights:${hash}`,
+          sessionId: id,
+          userId: user.sub,
+          ...(session.team_id ? { teamId: session.team_id } : {}),
+          taskType: 'precompute_insights',
+          payload: {
+            sessionTitle: session.title,
+            anonymity: session.anonymity ?? null,
+            plan: c.get('plan'),
+            traceId: c.get('trace_id'),
+          },
+          meta: { enqueuedAt: Date.now() },
         }).catch((err) => {
           logEvent({
-              event: 'insights.precompute.error',
-              sessionId: id,
-              error: String(err),
-            })
+            event: 'queue.insights.enqueue_error',
+            sessionId: id,
+            error: String(err),
+          })
         }),
       )
-    } catch {
-      // No ExecutionContext available (test environment) — skip background work.
     }
 
-    // SLACK-01: best-effort Slack notification on session close. Runs in the
-    // background via waitUntil so it never delays the close response; ignored
-    // when integrations are disabled or no Slack token is bound to this team.
+    // Slack notification: if integration enabled and team has Slack token
     if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
-      try {
-        c.executionCtx.waitUntil(
-          notifySlackSessionClosed(c.env, id, session.title, session.team_id ?? null, counts, total).catch((err) => {
-            console.error(
-              JSON.stringify({ event: 'slack.notify.error', sessionId: id, error: String(err) }),
-            )
-          }),
-        )
-      } catch {
-        // No ExecutionContext available (test environment) — skip background work.
-      }
+      const hash = computePayloadHash({ sessionTitle: session.title, total })
+      enqueuePromises.push(
+        enqueuePostSessionWork(c.env, {
+          idempotencyKey: `${id}:notify_slack:${hash}`,
+          sessionId: id,
+          userId: user.sub,
+          ...(session.team_id ? { teamId: session.team_id } : {}),
+          taskType: 'notify_slack',
+          payload: { counts, total },
+          meta: { enqueuedAt: Date.now() },
+        }).catch((err) => {
+          logEvent({
+            event: 'queue.slack.enqueue_error',
+            sessionId: id,
+            error: String(err),
+          })
+        }),
+      )
     }
 
-    // TEAMS-01: best-effort Microsoft Teams Adaptive Card notification on close.
-    // Mirrors the Slack hook above; skipped silently when no Teams config exists.
+    // Teams notification: similar to Slack
     if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
-      try {
-        c.executionCtx.waitUntil(
-          notifyTeamsSessionClosed(c.env, id, session.title, session.team_id ?? null, counts, total).catch((err) => {
-            console.error(
-              JSON.stringify({ event: 'teams.notify.error', sessionId: id, error: String(err) }),
-            )
-          }),
-        )
-      } catch {
-        // No ExecutionContext available (test environment) — skip background work.
-      }
+      const hash = computePayloadHash({ sessionTitle: session.title, total })
+      enqueuePromises.push(
+        enqueuePostSessionWork(c.env, {
+          idempotencyKey: `${id}:notify_teams:${hash}`,
+          sessionId: id,
+          userId: user.sub,
+          ...(session.team_id ? { teamId: session.team_id } : {}),
+          taskType: 'notify_teams',
+          payload: { counts, total },
+          meta: { enqueuedAt: Date.now() },
+        }).catch((err) => {
+          logEvent({
+            event: 'queue.teams.enqueue_error',
+            sessionId: id,
+            error: String(err),
+          })
+        }),
+      )
     }
 
-    // WEBHOOK-01: fire generic outbound webhooks on session close. Best-effort,
-    // runs via waitUntil so it never delays the close response. Per-webhook
-    // failures land in the delivery log (admin-readable) and do not propagate.
+    // Webhooks: deliver team webhooks on session close
     if (c.env.INTEGRATIONS_KV) {
-      try {
-        c.executionCtx.waitUntil(
-          deliverTeamWebhooks(c.env, session.team_id ?? null, 'session.closed', {
+      const hash = computePayloadHash({ sessionTitle: session.title, total })
+      enqueuePromises.push(
+        enqueuePostSessionWork(c.env, {
+          idempotencyKey: `${id}:deliver_webhook:${hash}`,
+          sessionId: id,
+          userId: user.sub,
+          ...(session.team_id ? { teamId: session.team_id } : {}),
+          taskType: 'deliver_webhook',
+          payload: {
+            event: 'session.closed',
+            data: {
+              sessionId: id,
+              sessionTitle: session.title,
+              totalVotes: total,
+              durationMs: session.started_at ? closedAt - session.started_at : 0,
+            },
+          },
+          meta: { enqueuedAt: Date.now() },
+        }).catch((err) => {
+          logEvent({
+            event: 'queue.webhook.enqueue_error',
             sessionId: id,
-            sessionTitle: session.title,
-            teamId: session.team_id ?? null,
-            totalVotes: total,
-            durationMs: session.started_at ? closedAt - session.started_at : 0,
-          }).catch((err) =>
-            console.error(
-              JSON.stringify({ event: 'webhook.deliver.error', sessionId: id, error: String(err) }),
-            ),
-          ),
-        )
-      } catch {
-        // No ExecutionContext available (test environment) — skip background work.
-      }
+            error: String(err),
+          })
+        }),
+      )
     }
 
-    // GROWTH-ENGINE: Internal marketing webhook trigger on session close.
-    // Fires only if is_public=1 (default) and MARKETING_WEBHOOK_SECRET is set.
-    // Best-effort via waitUntil — never delays the close response.
+    // Marketing webhook: internal trigger for analytics/growth (public sessions only)
     if ((session.is_public ?? 1) && c.env.MARKETING_WEBHOOK_SECRET) {
-      try {
-        const questionsResult = await c.env.DB
-          .prepare('SELECT COUNT(*) as cnt FROM questions WHERE session_id = ?')
-          .bind(id)
-          .first<{ cnt: number }>()
-        const questionCount = questionsResult?.cnt ?? 0
-        const durationMinutes = session.started_at
-          ? Math.round((closedAt - session.started_at) / 60000)
-          : 0
-        c.executionCtx.waitUntil(
-          deliverMarketingWebhook(c.env, {
-            sessionId: id,
+      const questionsResult = await c.env.DB
+        .prepare('SELECT COUNT(*) as cnt FROM questions WHERE session_id = ?')
+        .bind(id)
+        .first<{ cnt: number }>()
+      const questionCount = questionsResult?.cnt ?? 0
+      const hash = computePayloadHash({ sessionTitle: session.title, questionCount })
+      enqueuePromises.push(
+        enqueuePostSessionWork(c.env, {
+          idempotencyKey: `${id}:deliver_marketing:${hash}`,
+          sessionId: id,
+          userId: user.sub,
+          ...(session.team_id ? { teamId: session.team_id } : {}),
+          taskType: 'deliver_marketing',
+          payload: {
             isPublic: Boolean(session.is_public ?? 1),
-            language: 'en' as const,
+            language: 'en',
             sessionMode: session.session_mode ?? 'reflection',
             questionCount,
             participantCount: total,
             responseRate: total > 0 ? 1.0 : 0.0,
-            durationMinutes,
-            templateUsed: null,
-            energizerUsed: false,
-          }).catch((err) =>
-            console.error(
-              JSON.stringify({ event: 'webhook.marketing.error', sessionId: id, error: String(err) }),
-            ),
-          ),
-        )
-      } catch {
-        // No ExecutionContext available (test environment) — skip background work.
-      }
+          },
+          meta: { enqueuedAt: Date.now() },
+        }).catch((err) => {
+          logEvent({
+            event: 'queue.marketing.enqueue_error',
+            sessionId: id,
+            error: String(err),
+          })
+        }),
+      )
     }
+
+    // Fire & forget: if any fail to enqueue, they're logged but don't block the response
+    Promise.all(enqueuePromises).catch((err) => {
+      logEvent({
+        event: 'queue.bulk_enqueue_error',
+        sessionId: id,
+        error: String(err),
+      })
+    })
 
     trackSessionWrite(c, 'sessions.close')
     return c.json({
