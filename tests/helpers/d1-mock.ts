@@ -211,6 +211,36 @@ export class D1Mock {
       updated_at: number
     }
   >()
+  readonly marketplaceListings = new Map<
+    string,
+    {
+      id: string
+      partner_team_id: string
+      kind: string
+      title: string
+      description: string | null
+      price_cents: number
+      currency: string
+      revenue_share_bps: number
+      status: string
+      visibility: string
+      created_at: number
+      updated_at: number
+      published_at: number | null
+    }
+  >()
+  readonly marketplacePurchases = new Map<
+    string,
+    {
+      id: string
+      buyer_team_id: string
+      listing_id: string
+      amount_cents: number
+      currency: string
+      purchased_at: number
+      refunded_at: number | null
+    }
+  >()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -761,6 +791,57 @@ export class D1PreparedStatementMock {
       }
       return { meta: { changes } }
     }
+    if (this.sql.startsWith('INSERT INTO marketplace_listings')) {
+      const [
+        id, partner_team_id, kind, title, description, price_cents, currency,
+        revenue_share_bps, status, visibility, created_at, , published_at,
+      ] = this.args as [string, string, string, string, string | null, number, string, number, string, string, number, number, number | null]
+      this.db.marketplaceListings.set(id, {
+        id,
+        partner_team_id,
+        kind,
+        title,
+        description,
+        price_cents,
+        currency,
+        revenue_share_bps,
+        status,
+        visibility,
+        created_at,
+        updated_at: created_at,
+        published_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE marketplace_listings')) {
+      const [id, partner_team_id, title, description, price_cents, status, visibility, published_at, updated_at] =
+        this.args as [string, string, string, string | null, number, string, string, number | null, number]
+      const row = this.db.marketplaceListings.get(id)
+      if (!row || row.partner_team_id !== partner_team_id) return { meta: { changes: 0 } }
+      row.title = title
+      row.description = description
+      row.price_cents = price_cents
+      row.status = status
+      row.visibility = visibility
+      row.published_at = published_at
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO marketplace_purchases')) {
+      const [id, buyer_team_id, listing_id, amount_cents, currency, purchased_at] = this.args as [
+        string, string, string, number, string, number,
+      ]
+      this.db.marketplacePurchases.set(id, {
+        id,
+        buyer_team_id,
+        listing_id,
+        amount_cents,
+        currency,
+        purchased_at,
+        refunded_at: null,
+      })
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith('INSERT INTO sprint19_events')) {
       const [id, event_name, user_id, session_id, team_id, plan, count, value, duration_ms, created_at, trace_id] = this.args as [
         string, string, string, string | null, string | null, string | null, number, number, number, number, string,
@@ -945,6 +1026,36 @@ export class D1PreparedStatementMock {
       const [team_id] = this.args as [string]
       return (this.db.partnerPaymentAccounts.get(team_id) as T) ?? null
     }
+    if (this.sql.startsWith('SELECT team_id FROM sessions WHERE id')) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      return (row ? { team_id: row.team_id ?? null } : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT id, owner_id, team_id FROM sessions WHERE id')) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      return (row
+        ? { id: row.id, owner_id: row.owner_id, team_id: row.team_id ?? null }
+        : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT id FROM marketplace_purchases')) {
+      const [buyer_team_id, listing_id] = this.args as [string, string]
+      for (const row of this.db.marketplacePurchases.values()) {
+        if (row.buyer_team_id === buyer_team_id && row.listing_id === listing_id && row.refunded_at == null) {
+          return { id: row.id } as T
+        }
+      }
+      return null
+    }
+    if (this.sql.includes('FROM marketplace_listings') && this.sql.includes('WHERE id = ?1 AND partner_team_id')) {
+      const [id, partner_team_id] = this.args as [string, string]
+      const row = this.db.marketplaceListings.get(id)
+      return (row && row.partner_team_id === partner_team_id ? row : null) as T | null
+    }
+    if (this.sql.includes('FROM marketplace_listings WHERE id = ?1') && !this.sql.includes('partner_team_id = ?2')) {
+      const [id] = this.args as [string]
+      return (this.db.marketplaceListings.get(id) as T) ?? null
+    }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
 
@@ -1078,6 +1189,26 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.insightsDaily.values()]
         .filter((r) => r.session_id === session_id)
         .sort((a, b) => b.day.localeCompare(a.day))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT session_id, day, themes_json, confidence, n_votes, embedding_ref')) {
+      const [team_id, since_day] = this.args as [string, string]
+      const rows = [...this.db.insightsDaily.values()]
+        .filter((r) => r.team_id === team_id && r.day >= since_day)
+        .sort((a, b) => a.day.localeCompare(b.day))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM marketplace_listings') && this.sql.includes('partner_team_id = ?1')) {
+      const [partner_team_id] = this.args as [string]
+      const rows = [...this.db.marketplaceListings.values()]
+        .filter((r) => r.partner_team_id === partner_team_id)
+        .sort((a, b) => b.updated_at - a.updated_at)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes("status = 'live' AND visibility = 'public'")) {
+      const rows = [...this.db.marketplaceListings.values()].filter(
+        (r) => r.status === 'live' && r.visibility === 'public',
+      )
       return { results: rows as unknown as T[] }
     }
     if (this.sql.startsWith('SELECT event_name, COUNT(*) as n FROM sprint19_events')) {

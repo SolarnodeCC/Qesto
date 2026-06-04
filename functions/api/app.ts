@@ -29,6 +29,8 @@ import { mountCustomActionRoutes } from './routes/custom-actions'
 import { mountPwaPushRoutes } from './routes/pwa-push'
 import { mountNativePushRoutes } from './routes/native-push'
 import { mountMarketplaceConnectRoutes } from './routes/marketplace-connect'
+import { mountMarketplaceListingRoutes } from './routes/marketplace-listings'
+import { mountTeamInsightsRoutes } from './routes/team-insights'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
@@ -295,6 +297,8 @@ export function createApp() {
   mountPwaPushRoutes(app)
   mountNativePushRoutes(app)
   mountMarketplaceConnectRoutes(app)
+  mountMarketplaceListingRoutes(app)
+  mountTeamInsightsRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 
