@@ -57,6 +57,10 @@
     "avgParticipation": "Participation moy.",
     "responseRate": "Taux de réponse",
     "facilitator": "Facilitateur {{id}}…",
-    "facilitatorStats": "{{sessions}} sessions · {{participation}} votes moy. · {{rate}}% réponse"
+    "facilitatorStats": "{{sessions}} sessions · {{participation}} votes moy. · {{rate}}% réponse",
+    "exportTitle": "Exporter le rapport",
+    "exportJson": "Télécharger JSON",
+    "exportCsv": "Télécharger CSV",
+    "exportHint": "Rapport inter-sessions pour la fenêtre choisie (sessions non ZK uniquement)."
   }
 }

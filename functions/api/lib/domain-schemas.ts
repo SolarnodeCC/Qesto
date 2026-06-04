@@ -49,7 +49,7 @@ export const PatchSessionSchema = z
     question: PollQuestionSchema.optional(),
     anonymity: z.enum(['full', 'partial', 'none', 'zero_knowledge']).optional(),
     vote_policy: z.enum(['once', 'multi', 'react']).optional(),
-    session_mode: z.enum(['reflection', 'fun', 'townhall']).optional(),
+    session_mode: z.enum(['reflection', 'fun', 'townhall', 'stage']).optional(),
     ai_generated: z.boolean().optional(),
     ai_consent_at: z.number().int().positive().optional(),
     ai_grounding_hash: z.string().min(1).max(128).optional(),

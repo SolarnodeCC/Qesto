@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   vote_policy TEXT NOT NULL DEFAULT 'once'
     CHECK (vote_policy IN ('once','multi','react')),
   session_mode TEXT NOT NULL DEFAULT 'reflection'
-    CHECK (session_mode IN ('reflection','fun','townhall')),
+    CHECK (session_mode IN ('reflection','fun','townhall','stage')),
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,
@@ -355,6 +355,19 @@ CREATE TABLE IF NOT EXISTS agent_definitions (
   updated_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_agent_definitions_owner ON agent_definitions(owner_id, status);
+
+-- workspaces — RETRO / IDEATE recurring workspaces (Sprint 85)
+CREATE TABLE IF NOT EXISTS workspaces (
+  id TEXT PRIMARY KEY,
+  team_id TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('retro', 'ideate')),
+  title TEXT NOT NULL,
+  template_json TEXT NOT NULL DEFAULT '{}',
+  created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_workspaces_team_kind ON workspaces(team_id, kind, updated_at DESC);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_events — comprehensive audit trail with before/after snapshots (Phase 8)

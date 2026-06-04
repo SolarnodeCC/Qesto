@@ -20,6 +20,7 @@ import {
   type TeamInsightKind,
 } from '../lib/team-insights'
 import { recomputeFacilitatorScorecard } from '../lib/team-insights-scorecard'
+import { buildInsightsExport, insightsExportToCsv } from '../lib/team-insights-export'
 import { teamDocumentKey } from '../lib/kv-keys'
 import type { Team } from './teams'
 import type { Env } from '../types'
@@ -177,6 +178,56 @@ export function mountTeamInsightsRoutes(parent: any) {
     })
 
     return c.json({ ok: true, data: { scorecard, cached: !stale }, trace_id: c.get('trace_id') })
+  })
+
+  app.get('/:id/insights/export', requireFeature('crossSessionInsights'), async (c) => {
+    const teamId = c.req.param('id')
+    const format = (c.req.query('format') ?? 'json').toLowerCase()
+    const parsed = WindowQuerySchema.safeParse({ window: c.req.query('window') ?? '30d' })
+    if (!parsed.success) {
+      return c.json(
+        { ok: false, error: { code: 'invalid_window', message: 'window must be 30d, 90d, or 180d' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+    const window = parsed.data.window as InsightTrendWindow
+
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    if (!isTeamMember(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of this team' }, trace_id: c.get('trace_id') }, 403)
+    }
+
+    const bundle = await buildInsightsExport(
+      { AI: c.env.AI, DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE },
+      c.env.DB,
+      teamId,
+      window,
+    )
+
+    writeEvent(c.env.METRICS_AE, {
+      name: 'insight.export_viewed',
+      userId: c.get('user').sub,
+      teamId,
+      plan: c.get('plan'),
+      detail: format,
+      traceId: c.get('trace_id'),
+    })
+
+    if (format === 'csv') {
+      const csv = insightsExportToCsv(bundle)
+      return new Response(csv, {
+        status: 200,
+        headers: {
+          'content-type': 'text/csv; charset=utf-8',
+          'content-disposition': `attachment; filename="insights-${teamId}-${window}.csv"`,
+        },
+      })
+    }
+
+    return c.json({ ok: true, data: bundle, trace_id: c.get('trace_id') })
   })
 
   /** On-demand refresh — recomputes rollups for all standard windows. */

@@ -32,6 +32,8 @@ import { mountMarketplaceConnectRoutes } from './routes/marketplace-connect'
 import { mountMarketplaceListingRoutes } from './routes/marketplace-listings'
 import { mountTeamInsightsRoutes } from './routes/team-insights'
 import { mountAgentDefinitionRoutes } from './routes/agent-definitions'
+import { mountTeamWorkspaceRoutes } from './routes/team-workspaces'
+import { mountStageSessionRoutes } from './routes/stage-sessions'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
@@ -301,6 +303,8 @@ export function createApp() {
   mountMarketplaceListingRoutes(app)
   mountTeamInsightsRoutes(app)
 mountAgentDefinitionRoutes(app)
+mountTeamWorkspaceRoutes(app)
+mountStageSessionRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 

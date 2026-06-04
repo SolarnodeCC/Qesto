@@ -57,6 +57,10 @@
     "avgParticipation": "Avg participation",
     "responseRate": "Response rate",
     "facilitator": "Facilitator {{id}}…",
-    "facilitatorStats": "{{sessions}} sessions · {{participation}} avg votes · {{rate}}% response"
+    "facilitatorStats": "{{sessions}} sessions · {{participation}} avg votes · {{rate}}% response",
+    "exportTitle": "Export report",
+    "exportJson": "Download JSON",
+    "exportCsv": "Download CSV",
+    "exportHint": "Cross-session report for the selected window (non–zero-knowledge sessions only)."
   }
 }
