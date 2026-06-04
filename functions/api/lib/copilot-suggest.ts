@@ -32,6 +32,48 @@ export type CopilotAction = z.infer<typeof CopilotActionSchema>
 /** Max suggestions surfaced at once. */
 export const MAX_SUGGESTIONS = 4
 
+/**
+ * COPILOT-04 disengagement thresholds (ADR-0046).
+ * - Sentiment `concerning` only counts once at least `MOOD_MIN_SAMPLE` responses
+ *   back it (k-anonymity-aligned; avoids alerting on a single grumpy answer).
+ * - A participation rate below `PARTICIPATION_FLOOR` with at least
+ *   `MIN_PARTICIPANTS` connected is treated as a response-rate drop-off — this is
+ *   the ZK fallback signal, since zero-knowledge sessions surface no mood.
+ */
+export const DISENGAGEMENT_MOOD_MIN_SAMPLE = 5
+export const DISENGAGEMENT_PARTICIPATION_FLOOR = 0.25
+export const DISENGAGEMENT_MIN_PARTICIPANTS = 5
+
+/**
+ * Derive a single disengagement alert from the aggregate snapshot, or null when
+ * the room looks healthy. Aggregate-only — no per-participant tracking (ADR-0046).
+ * Sentiment-concerning (gated at k≥5) takes priority; otherwise a participation
+ * drop-off is reported, which also covers zero-knowledge sessions where `mood`
+ * is always null.
+ */
+export function detectDisengagement(context: CopilotLiveContext): CopilotAction | null {
+  if (context.mood === 'concerning' && context.moodSampleSize >= DISENGAGEMENT_MOOD_MIN_SAMPLE) {
+    return {
+      kind: 'disengagement_alert',
+      title: 'Room mood looks concerning',
+      body: `Recent open responses skew negative across ${context.moodSampleSize} replies. Consider acknowledging the feedback and asking an open follow-up to surface what is driving it.`,
+    }
+  }
+
+  if (
+    context.participantCount >= DISENGAGEMENT_MIN_PARTICIPANTS &&
+    context.participationRate < DISENGAGEMENT_PARTICIPATION_FLOOR
+  ) {
+    return {
+      kind: 'disengagement_alert',
+      title: 'Participation is dropping off',
+      body: `Only ${Math.round(context.participationRate * 100)}% of the room has responded. Re-read the question, give it a beat, or switch to a quick poll to re-engage.`,
+    }
+  }
+
+  return null
+}
+
 const MOOD_LABEL: Record<NonNullable<CopilotLiveContext['mood']>, string> = {
   positive: 'positive',
   neutral: 'neutral',
@@ -54,7 +96,7 @@ Respond with STRICT JSON only — no prose, no markdown. The JSON is an object w
 
 Rules:
 - Ground every suggestion in the provided room state; never invent vote numbers.
-- Include a "disengagement_alert" ONLY when mood is concerning or participation is low.
+- Include a "disengagement_alert" ONLY when mood is concerning with at least 5 responses behind it, or when participation has clearly dropped off.
 - Prefer one "followup_question" that builds on the current question.
 - Use "pacing" to advise speeding up / slowing down based on participation.
 - Be concise, neutral, and never name or attribute individuals.`
@@ -130,13 +172,9 @@ export function parseSuggestions(raw: string): CopilotAction[] | null {
 export function fallbackSuggestions(context: CopilotLiveContext): CopilotAction[] {
   const actions: CopilotAction[] = []
 
-  if (context.mood === 'concerning') {
-    actions.push({
-      kind: 'disengagement_alert',
-      title: 'Room mood looks concerning',
-      body: 'Recent open responses skew negative. Consider acknowledging the feedback and asking an open follow-up to surface what is driving it.',
-    })
-  }
+  // COPILOT-04: k≥5-gated sentiment + participation drop-off (ZK-safe).
+  const disengagement = detectDisengagement(context)
+  if (disengagement) actions.push(disengagement)
 
   if (context.participantCount > 0 && context.participationRate < 0.3) {
     actions.push({

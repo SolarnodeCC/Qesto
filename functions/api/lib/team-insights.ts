@@ -55,6 +55,52 @@ export async function deleteTeamInsightRollups(db: D1Database, teamId: string): 
   await db.prepare(`DELETE FROM team_insight_rollup WHERE team_id = ?1`).bind(teamId).run()
 }
 
+export type InsightsDailyRow = {
+  id: string
+  session_id: string
+  team_id: string | null
+  day: string
+  themes_json: string
+  confidence: number
+  n_votes: number
+  embedding_ref: boolean
+  computed_at: number
+}
+
+/**
+ * Idempotent per-session insight write (ADR-0045 Tier-1). The UNIQUE(session_id, day)
+ * constraint makes a re-run on the same close-day update in place rather than duplicate.
+ * `embedding_ref` is sticky — once a Vectorize upsert succeeded it stays set even if a
+ * later recompute skipped the embedding.
+ */
+export async function upsertInsightsDaily(db: D1Database, row: InsightsDailyRow): Promise<void> {
+  await db
+    .prepare(
+      `INSERT INTO insights_daily
+         (id, session_id, team_id, day, themes_json, confidence, n_votes, embedding_ref, computed_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+       ON CONFLICT(session_id, day) DO UPDATE SET
+         team_id = excluded.team_id,
+         themes_json = excluded.themes_json,
+         confidence = excluded.confidence,
+         n_votes = excluded.n_votes,
+         embedding_ref = CASE WHEN excluded.embedding_ref = 1 THEN 1 ELSE insights_daily.embedding_ref END,
+         computed_at = excluded.computed_at`,
+    )
+    .bind(
+      row.id,
+      row.session_id,
+      row.team_id,
+      row.day,
+      row.themes_json,
+      row.confidence,
+      row.n_votes,
+      row.embedding_ref ? 1 : 0,
+      row.computed_at,
+    )
+    .run()
+}
+
 export async function patchInsightsDailyTeamId(
   db: D1Database,
   sessionId: string,

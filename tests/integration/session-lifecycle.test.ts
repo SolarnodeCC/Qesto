@@ -234,6 +234,87 @@ describe('POST /api/sessions/:id/start', () => {
     expect(db.sessions.get(sessionId)?.status).toBe('live')
   })
 
+  it('scoped rollback only reverts the matching start transition', async () => {
+    const db = new D1Mock()
+    const sessionId = 'sess_scoped_rb'
+    db.sessions.set(sessionId, {
+      id: sessionId,
+      owner_id: 'user_rb',
+      code: 'RBSCOPE',
+      title: 'Scoped rollback',
+      status: 'live',
+      anonymity: 'full',
+      created_at: Date.now(),
+      started_at: 1000,
+      closed_at: null,
+      archived_at: null,
+    })
+
+    const miss = await db
+      .prepare(
+        `UPDATE sessions SET status = 'draft', started_at = NULL
+         WHERE id = ?1 AND owner_id = ?2 AND status = ?3 AND started_at = ?4`,
+      )
+      .bind(sessionId, 'user_rb', 'live', 9999)
+      .run()
+    expect(miss.meta.changes).toBe(0)
+    expect(db.sessions.get(sessionId)?.status).toBe('live')
+
+    const hit = await db
+      .prepare(
+        `UPDATE sessions SET status = 'draft', started_at = NULL
+         WHERE id = ?1 AND owner_id = ?2 AND status = ?3 AND started_at = ?4`,
+      )
+      .bind(sessionId, 'user_rb', 'live', 1000)
+      .run()
+    expect(hit.meta.changes).toBe(1)
+    expect(db.sessions.get(sessionId)?.status).toBe('draft')
+  })
+
+  it('parallel starts from draft: at least one succeeds and session leaves draft', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const cookie = await cookieFor('user_parallel', 'parallel@example.com')
+    const env = makeEnv(db, DO_OK)
+    const sessionId = await createSession(db, app, env, cookie)
+    seedPollQuestion(db, sessionId)
+
+    const req = () =>
+      app.fetch(
+        new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+        env,
+      )
+
+    const [r1, r2] = await Promise.all([req(), req()])
+    const statuses = [r1.status, r2.status]
+    expect(statuses.some((s) => s === 200)).toBe(true)
+    const finalStatus = db.sessions.get(sessionId)?.status
+    expect(finalStatus === 'live' || finalStatus === 'energizing').toBe(true)
+  })
+
+  it('DO close failure leaves DB live so votes are not finalized as empty', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const cookie = await cookieFor('user_close_fail', 'closefail@example.com')
+    const sessionId = await createSession(db, app, makeEnv(db, DO_OK), cookie)
+    seedPollQuestion(db, sessionId)
+
+    const start = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      makeEnv(db, DO_OK),
+    )
+    expect(start.status).toBe(200)
+    expect(db.sessions.get(sessionId)?.status).toBe('live')
+
+    const close = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/close`, { method: 'POST', headers: { cookie } }),
+      makeEnv(db, DO_FAIL),
+    )
+
+    expect(close.status).toBe(500)
+    expect(db.sessions.get(sessionId)?.status).toBe('live')
+  })
+
   it('no questions → 409 no_question', async () => {
     const db = new D1Mock()
     const app = createApp()

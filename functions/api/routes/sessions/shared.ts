@@ -7,7 +7,9 @@ import type { PlanVariables } from '../../middleware/plan'
 import { denyFeature, featureAllowed, questionKindFeature } from '../../lib/entitlements'
 import { validateKvJson, PollOptionArraySchema } from '../../lib/protocol-schemas'
 import type { PollQuestionInput } from '../../lib/domain-schemas'
-import { extractThemes } from '../../lib/ai-insights'
+import { extractThemes, type InsightTheme } from '../../lib/ai-insights'
+import { upsertInsightsSessionVector } from '../../lib/insights-vectorize'
+import { upsertInsightsDaily } from '../../lib/team-insights'
 import {
   toInsightsInput,
   type SessionBundle,
@@ -262,24 +264,41 @@ export async function postDO(env: Env, sessionId: string, path: string, body: un
 
 // Best-effort background insight generation triggered on session close.
 // Runs via waitUntil so it never delays the close response.
-// Only fires for team-plan users; skips if insights are already cached.
+// Only fires for team-plan users (cross-session intelligence is Team-tier, ADR-0045).
+//
+// INSIGHTS-02 (ADR-0045 Tier-1):
+//   - ZK guard: zero-knowledge sessions never contribute to any cross-session store.
+//   - Writes the per-session aggregate to `insights_daily` (team_id + embedding_ref),
+//     idempotently (UNIQUE(session_id, day)).
+//   - Upserts the session embedding with `team_id` metadata for later clustering.
+//   - Emits `insight.aggregated` so the rollup cron / KPIs can observe coverage.
 export async function precomputeInsights(
   env: Env,
   sessionId: string,
   sessionTitle: string,
   ownerId: string,
+  opts: {
+    anonymity?: string | null
+    teamId?: string | null
+    plan?: PlanTier | undefined
+    traceId?: string | undefined
+  } = {},
 ): Promise<void> {
   const MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
   const cacheKey = `insights:${sessionId}`
+
+  // ZK exclusion at the write boundary (ADR-0045 §4) — defence in depth, not a
+  // query-time filter that can be forgotten. ZK sessions are structurally absent
+  // from insights_daily, the vector metadata, and therefore every rollup.
+  if (opts.anonymity === 'zero_knowledge') {
+    logEvent({ event: 'insights.precompute.zk_skip', sessionId })
+    return
+  }
 
   const userRow = await env.DB.prepare(`SELECT plan FROM users WHERE id = ?1`)
     .bind(ownerId)
     .first<{ plan: string }>()
   if (userRow?.plan !== 'team') return
-
-  // Skip if already cached (e.g. user manually triggered analyze before closing)
-  const existing = await readKvText(env.DECISIONS_KV, cacheKey)
-  if (existing) return
 
   // Collect open-ended responses
   const openRows = await env.DB.prepare(
@@ -339,19 +358,87 @@ export async function precomputeInsights(
   const input = toInsightsInput(bundle)
   if (input.openResponses.length === 0 && !input.pollBreakdown?.length) return
 
-  const result = await extractThemes(env.AI, input, MODEL)
-  const themes = result.themes.map((t) => t.theme)
-
-  const payload = {
-    session_id: sessionId,
-    generated_at: Date.now(),
-    model: MODEL,
-    themes,
-    follow_ups: [] as string[],
+  // Reuse a previously-cached analysis (e.g. the host ran analyze before close) to
+  // avoid a duplicate AI call; otherwise distil themes now and cache them.
+  let themes: InsightTheme[]
+  const cached = await readKvText(env.DECISIONS_KV, cacheKey)
+  const cachedLabels = cached ? parseCachedThemeLabels(cached) : null
+  if (cachedLabels && cachedLabels.length > 0) {
+    themes = cachedLabels.map((theme) => ({ theme, count: 0, examples: [] }))
+  } else {
+    const result = await extractThemes(env.AI, input, MODEL)
+    themes = result.themes
+    const payload = {
+      session_id: sessionId,
+      generated_at: Date.now(),
+      model: MODEL,
+      themes: themes.map((t) => t.theme),
+      follow_ups: [] as string[],
+    }
+    await writeKvJson(env.DECISIONS_KV, cacheKey, payload, { expirationTtl: INSIGHTS_SHARED_CACHE_TTL_SECONDS })
   }
 
-  await writeKvJson(env.DECISIONS_KV, cacheKey, payload, { expirationTtl: INSIGHTS_SHARED_CACHE_TTL_SECONDS })
-  logEvent({ event: 'insights.precompute.ok', sessionId, theme_count: themes.length })
+  const nVotes =
+    openResponses.length +
+    pollBreakdown.reduce((sum, q) => sum + q.options.reduce((s, o) => s + o.votes, 0), 0)
+  // Cheap, monotonic confidence proxy: more contributing responses → higher
+  // confidence, clamped to [0, 1]. Zero when nothing distilled.
+  const confidence = themes.length > 0 ? Math.min(1, Math.round((nVotes / 25) * 100) / 100) : 0
+
+  // Upsert the session embedding tagged with team metadata (ADR-0045 §2) so the
+  // Tier-2 cron can cluster recurring topics. Best-effort: a Vectorize failure
+  // must not drop the insights_daily write.
+  let embeddingRef = false
+  try {
+    embeddingRef = await upsertInsightsSessionVector(
+      { AI: env.AI, DECISIONS_VECTORIZE: env.DECISIONS_VECTORIZE },
+      {
+        sessionId,
+        sessionTitle,
+        themeCount: themes.length,
+        teamId: opts.teamId ?? null,
+        closedAt: bundle.closedAt,
+      },
+    )
+  } catch (vecErr) {
+    logEvent({ event: 'insights.precompute.vectorize_skip', sessionId, error: String(vecErr) })
+  }
+
+  // Persist the per-session aggregate. Idempotent on (session_id, day).
+  await upsertInsightsDaily(env.DB, {
+    id: ulid(),
+    session_id: sessionId,
+    team_id: opts.teamId ?? null,
+    day: new Date(bundle.closedAt).toISOString().slice(0, 10),
+    themes_json: JSON.stringify(themes),
+    confidence,
+    n_votes: nVotes,
+    embedding_ref: embeddingRef,
+    computed_at: Date.now(),
+  })
+
+  writeEvent(env.METRICS_AE, {
+    name: 'insight.aggregated',
+    sessionId,
+    teamId: opts.teamId ?? undefined,
+    plan: opts.plan,
+    count: themes.length,
+    value: confidence,
+    traceId: opts.traceId,
+  })
+
+  logEvent({ event: 'insights.precompute.ok', sessionId, theme_count: themes.length, embedding_ref: embeddingRef })
+}
+
+/** Extract theme labels from a cached precompute/analyze payload (`{ themes: string[] }`). */
+function parseCachedThemeLabels(raw: string): string[] | null {
+  try {
+    const parsed = JSON.parse(raw) as { themes?: unknown }
+    if (!Array.isArray(parsed.themes)) return null
+    return parsed.themes.filter((t): t is string => typeof t === 'string')
+  } catch {
+    return null
+  }
 }
 
 // SHA-256 hex of the grounding text — used to detect repeated refines and

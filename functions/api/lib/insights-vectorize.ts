@@ -63,7 +63,15 @@ export async function embedAndFindSimilarSessionTitles(
   return { vector, similarSessionTitles }
 }
 
-/** Upsert this session into Vectorize for future similarity search. Reuses embedding when provided. */
+/**
+ * Upsert this session into Vectorize for future similarity search. Reuses embedding
+ * when provided. Returns true when a vector was written.
+ *
+ * ADR-0045: when `teamId` is supplied the vector is tagged with `team_id` (and
+ * `closed_at`) metadata so cross-session clustering can run as a metadata-filtered
+ * `query(vector, { filter: { team_id } })` over a team's recent embeddings — no
+ * separate clustering index. Zero-knowledge sessions must never reach this path.
+ */
 export async function upsertInsightsSessionVector(
   env: InsightsVectorizeBindings,
   params: {
@@ -71,8 +79,10 @@ export async function upsertInsightsSessionVector(
     sessionTitle: string
     themeCount: number
     existingVector?: number[]
+    teamId?: string | null
+    closedAt?: number
   },
-): Promise<void> {
+): Promise<boolean> {
   let vector = params.existingVector
   if (!vector) {
     const upsertEmbedResult = await withTimeout(
@@ -82,24 +92,29 @@ export async function upsertInsightsSessionVector(
     )
     vector = firstVector(upsertEmbedResult)
   }
-  if (!vector) return
+  if (!vector) return false
+
+  const metadata: Record<string, string> = {
+    session_id: params.sessionId,
+    title: params.sessionTitle,
+    ts: String(Date.now()),
+    theme_count: String(params.themeCount),
+  }
+  if (params.teamId) metadata.team_id = params.teamId
+  if (params.closedAt !== undefined) metadata.closed_at = String(params.closedAt)
 
   await withTimeout(
     env.DECISIONS_VECTORIZE.upsert([
       {
         id: params.sessionId,
         values: vector,
-        metadata: {
-          session_id: params.sessionId,
-          title: params.sessionTitle,
-          ts: String(Date.now()),
-          theme_count: String(params.themeCount),
-        },
+        metadata,
       },
     ]),
     DECISIONS_VECTORIZE_TIMEOUT_MS,
     'Decision vector upsert',
   )
+  return true
 }
 
 export const __internal = { firstVector, withTimeout }
