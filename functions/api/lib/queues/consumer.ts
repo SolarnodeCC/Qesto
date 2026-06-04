@@ -62,27 +62,18 @@ export async function processPostSessionWork(
     }
 
     const durationMs = Date.now() - startMs
-    writeEvent(env.METRICS_AE, {
-      name: 'queue.task.success',
-      sessionId,
-      teamId,
-      detail: taskType,
-      durationMs,
-    })
+    console.log(
+      JSON.stringify({
+        event: 'queue.task.success',
+        idempotencyKey,
+        taskType,
+        sessionId,
+        durationMs,
+      }),
+    )
   } catch (err) {
     const durationMs = Date.now() - startMs
     const errorMsg = err instanceof Error ? err.message : String(err)
-
-    // Log failure + attempt number
-    writeEvent(env.METRICS_AE, {
-      name: 'queue.task.error',
-      sessionId,
-      teamId,
-      detail: taskType,
-      durationMs,
-      error: errorMsg,
-      attempt: meta.attempt ?? 1,
-    })
 
     console.error(
       JSON.stringify({
@@ -108,86 +99,66 @@ export async function processPostSessionWork(
 async function handlePrecomputeInsights(
   env: Env,
   sessionId: string,
-  userId: string,
-  payload: Record<string, unknown>,
+  _userId: string,
+  _payload: Record<string, unknown>,
 ): Promise<void> {
-  const { sessionTitle, anonymity, plan, traceId } = payload as any
-
   // TODO: Import and call precomputeInsights() here
   // For now, placeholder that would call:
   // await precomputeInsights(env, sessionId, sessionTitle, userId, { anonymity, teamId, plan, traceId })
-  console.log(`[insights queue] precompute for session ${sessionId}`)
+  console.log(`[insights queue] precompute for session ${sessionId} (TODO: implement)`)
 }
 
 /**
  * Task handler: send Slack notification for session close.
  */
 async function handleNotifySlack(
-  env: Env,
+  _env: Env,
   sessionId: string,
-  teamId: string | undefined,
-  payload: Record<string, unknown>,
+  _teamId: string | undefined,
+  _payload: Record<string, unknown>,
 ): Promise<void> {
-  const { counts, total } = payload as any
-
   // TODO: Import and call notifySlackSessionClosed() here
   // For now, placeholder that would call:
   // await notifySlackSessionClosed(env, sessionId, sessionTitle, teamId, counts, total)
-  console.log(`[slack queue] notify for session ${sessionId}`)
+  console.log(`[slack queue] notify for session ${sessionId} (TODO: implement)`)
 }
 
 /**
  * Task handler: send Microsoft Teams notification for session close.
  */
 async function handleNotifyTeams(
-  env: Env,
+  _env: Env,
   sessionId: string,
-  teamId: string | undefined,
-  payload: Record<string, unknown>,
+  _teamId: string | undefined,
+  _payload: Record<string, unknown>,
 ): Promise<void> {
-  const { counts, total } = payload as any
-
   // TODO: Import and call notifyTeamsSessionClosed() here
   // For now, placeholder that would call:
   // await notifyTeamsSessionClosed(env, sessionId, sessionTitle, teamId, counts, total)
-  console.log(`[teams queue] notify for session ${sessionId}`)
+  console.log(`[teams queue] notify for session ${sessionId} (TODO: implement)`)
 }
 
 /**
  * Task handler: deliver generic team webhook.
  */
 async function handleDeliverWebhook(
-  env: Env,
+  _env: Env,
   sessionId: string,
-  teamId: string | undefined,
-  payload: Record<string, unknown>,
+  _teamId: string | undefined,
+  _payload: Record<string, unknown>,
 ): Promise<void> {
-  const { webhookUrl, event, data } = payload as any
-
   // TODO: Import and call deliverWebhook() here
-  console.log(`[webhook queue] deliver ${event} for session ${sessionId}`)
+  console.log(`[webhook queue] deliver for session ${sessionId} (TODO: implement)`)
 }
 
 /**
  * Task handler: deliver marketing webhook.
  */
 async function handleDeliverMarketing(
-  env: Env,
+  _env: Env,
   sessionId: string,
-  payload: Record<string, unknown>,
+  _payload: Record<string, unknown>,
 ): Promise<void> {
-  const {
-    isPublic,
-    language,
-    sessionMode,
-    questionCount,
-    participantCount,
-    responseRate,
-    durationMinutes,
-    templateUsed,
-    energizerUsed,
-  } = payload as any
-
   // TODO: Import and call deliverMarketingWebhook() here
-  console.log(`[marketing queue] deliver for session ${sessionId}`)
+  console.log(`[marketing queue] deliver for session ${sessionId} (TODO: implement)`)
 }

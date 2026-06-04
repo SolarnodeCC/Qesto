@@ -168,6 +168,8 @@ export async function runAI<T extends Record<string, unknown>>(
       durationMs,
       detail: model,
     })
+    // TODO (Phase 2.1): Log cache hit + gateway latency to custom AE dataset
+    // when QestoEvent type is extended with these fields
     return { ok: true, data: data.result as T, model, durationMs }
   } catch (err) {
     const durationMs = Date.now() - started
