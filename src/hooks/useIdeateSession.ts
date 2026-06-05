@@ -22,12 +22,21 @@ export type IdeateCluster = {
 
 export type IdeateConnection = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'closed' | 'failed'
 
+export type IdeateRankingEntry = {
+  rank: number
+  ideaId: string
+  body: string
+  upvotes: number
+}
+
 export type IdeateState = {
   connection: IdeateConnection
   ideas: IdeateIdea[]
   clusters: IdeateCluster[]
   rev: number
   dotVoteLimit: number
+  rankingRevealed: boolean
+  ranking: IdeateRankingEntry[]
   myUpvotes: string[]
   dotsUsed: number
   error: string | null
@@ -39,7 +48,16 @@ type IdeateAction =
   | { kind: 'reconnecting' }
   | { kind: 'closed' }
   | { kind: 'failed'; error: string }
-  | { kind: 'snapshot'; ideas: IdeateIdea[]; clusters: IdeateCluster[]; rev: number; dotVoteLimit: number }
+  | {
+      kind: 'snapshot'
+      ideas: IdeateIdea[]
+      clusters: IdeateCluster[]
+      rev: number
+      dotVoteLimit: number
+      rankingRevealed: boolean
+      ranking: IdeateRankingEntry[]
+    }
+  | { kind: 'ranking_revealed'; ranking: IdeateRankingEntry[]; rev: number }
   | { kind: 'idea_added'; idea: IdeateIdea; rev: number }
   | { kind: 'idea_updated'; idea: IdeateIdea; rev: number }
   | { kind: 'clusters_updated'; ideas: IdeateIdea[]; clusters: IdeateCluster[]; rev: number }
@@ -52,6 +70,8 @@ const INITIAL: IdeateState = {
   clusters: [],
   rev: 0,
   dotVoteLimit: 5,
+  rankingRevealed: false,
+  ranking: [],
   myUpvotes: [],
   dotsUsed: 0,
   error: null,
@@ -84,7 +104,11 @@ function ideateReducer(state: IdeateState, action: IdeateAction): IdeateState {
         clusters: action.clusters,
         rev: action.rev,
         dotVoteLimit: action.dotVoteLimit,
+        rankingRevealed: action.rankingRevealed,
+        ranking: action.ranking,
       }
+    case 'ranking_revealed':
+      return { ...state, rankingRevealed: true, ranking: action.ranking, rev: action.rev }
     case 'idea_added':
       return { ...state, ideas: upsertIdea(state.ideas, action.idea), rev: action.rev }
     case 'idea_updated':
@@ -159,12 +183,22 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
             const clusters = Array.isArray(d.clusters)
               ? (d.clusters as Record<string, unknown>[]).map(toCluster).filter(Boolean)
               : []
+            const ranking = Array.isArray(d.ranking)
+              ? (d.ranking as Record<string, unknown>[]).map((r) => ({
+                  rank: typeof r.rank === 'number' ? r.rank : 0,
+                  ideaId: typeof r.ideaId === 'string' ? r.ideaId : '',
+                  body: typeof r.body === 'string' ? r.body : '',
+                  upvotes: typeof r.upvotes === 'number' ? r.upvotes : 0,
+                }))
+              : []
             dispatch({
               kind: 'snapshot',
               ideas: ideas as IdeateIdea[],
               clusters: clusters as IdeateCluster[],
               rev: typeof d.rev === 'number' ? d.rev : 0,
               dotVoteLimit: typeof d.dotVoteLimit === 'number' ? d.dotVoteLimit : 5,
+              rankingRevealed: d.rankingRevealed === true,
+              ranking,
             })
             break
           }
@@ -176,6 +210,18 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
           case 'ideate_idea_updated': {
             const idea = toIdea(d.idea as Record<string, unknown>)
             if (idea) dispatch({ kind: 'idea_updated', idea, rev: d.rev as number })
+            break
+          }
+          case 'ideate_ranking_revealed': {
+            const ranking = Array.isArray(d.ranking)
+              ? (d.ranking as Record<string, unknown>[]).map((r) => ({
+                  rank: typeof r.rank === 'number' ? r.rank : 0,
+                  ideaId: typeof r.ideaId === 'string' ? r.ideaId : '',
+                  body: typeof r.body === 'string' ? r.body : '',
+                  upvotes: typeof r.upvotes === 'number' ? r.upvotes : 0,
+                }))
+              : []
+            dispatch({ kind: 'ranking_revealed', ranking, rev: d.rev as number })
             break
           }
           case 'ideate_clusters_updated': {
@@ -248,7 +294,16 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
     [state.myUpvotes, state.dotsUsed, state.dotVoteLimit],
   )
 
-  return { state, submit, upvote }
+  const revealRanking = useCallback(() => {
+    return sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'ideate_reveal',
+      data: {},
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  return { state, submit, upvote, revealRanking }
 }
 
 export function ideasForCluster(ideas: IdeateIdea[], clusterId: string): IdeateIdea[] {

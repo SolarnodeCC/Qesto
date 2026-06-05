@@ -6,7 +6,7 @@ import {
   keywordClusterLabel,
   tokenOverlapScore,
 } from '../../functions/api/lib/ideate-cluster'
-import type { IdeateIdea } from '../../functions/api/lib/session-room-ideate'
+import { computeIdeateRanking, type IdeateIdea } from '../../functions/api/lib/session-room-ideate'
 
 function idea(id: string, body: string): IdeateIdea {
   return { id, body, upvotes: 0, clusterId: null, status: 'active', createdAt: 0 }
@@ -37,6 +37,17 @@ describe('ideate-cluster', () => {
     expect(clusters.length).toBeGreaterThanOrEqual(2)
     const deploymentCluster = clusters.find((c) => c.ideaIds.includes('a') && c.ideaIds.includes('b'))
     expect(deploymentCluster).toBeDefined()
+  })
+
+  it('ranks ideas by upvotes with stable tie-break', () => {
+    const ideas = [
+      { ...idea('a', 'one'), upvotes: 2, createdAt: 10 },
+      { ...idea('b', 'two'), upvotes: 5, createdAt: 20 },
+      { ...idea('c', 'three'), upvotes: 2, createdAt: 5 },
+    ]
+    const ranking = computeIdeateRanking(ideas)
+    expect(ranking.map((r) => r.ideaId)).toEqual(['b', 'c', 'a'])
+    expect(ranking[0]?.rank).toBe(1)
   })
 
   it('assigns cluster ids back onto ideas', () => {

@@ -14,7 +14,11 @@
   "clusters.uncategorized": "Wacht op clustering",
   "vote.aria": "Stem op: {{body}}",
   "vote.count": "{{count}} stemmen",
+  "vote.dot": "Stem",
+  "vote.voted": "Gestemd",
   "vote.dotsRemaining": "Nog {{remaining}} van {{limit}} stemmen over",
+  "prioritize.reveal": "Ranking tonen",
+  "prioritize.title": "Topideeën",
   "connection.reconnecting": "Opnieuw verbinden…",
   "connection.failed": "Verbinding verbroken. Vernieuw de pagina."
 }

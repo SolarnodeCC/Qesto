@@ -14,7 +14,11 @@
   "clusters.uncategorized": "Esperando agrupación",
   "vote.aria": "Votar por: {{body}}",
   "vote.count": "{{count}} votos",
+  "vote.dot": "Votar",
+  "vote.voted": "Votado",
   "vote.dotsRemaining": "Quedan {{remaining}} de {{limit}} votos",
+  "prioritize.reveal": "Mostrar ranking",
+  "prioritize.title": "Ideas principales",
   "connection.reconnecting": "Reconectando…",
   "connection.failed": "Conexión perdida. Actualiza la página."
 }

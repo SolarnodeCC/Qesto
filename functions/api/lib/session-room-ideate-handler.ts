@@ -10,10 +10,12 @@ import { withTimeout } from './shared/async'
 import { clusterIdeas, assignClusterIds } from './ideate-cluster'
 import {
   IDEATE_KEYS,
+  computeIdeateRanking,
   createIdeateIdea,
   nextIdeateRev,
   type IdeateCluster,
   type IdeateIdea,
+  type IdeateRankingEntry,
 } from './session-room-ideate'
 
 type Attachment = { role: 'presenter' | 'voter'; voterId: string }
@@ -69,9 +71,15 @@ export class IdeateHandler {
     await this.ctx.storage.put(IDEATE_KEYS.enabled, true)
     await this.ctx.storage.put(IDEATE_KEYS.index, [] as string[])
     await this.ctx.storage.put(IDEATE_KEYS.clusters, [] as IdeateCluster[])
+    await this.ctx.storage.put(IDEATE_KEYS.rankingRevealed, false)
     await this.ctx.storage.put(IDEATE_KEYS.rev, 0)
     await this.ctx.storage.put(IDEATE_KEYS.dotVoteLimit, dotVoteLimit)
     await this.ctx.storage.put(IDEATE_KEYS.clusterDebounceMs, clusterDebounceMs)
+  }
+
+  private async loadRanking(ideas: IdeateIdea[]): Promise<IdeateRankingEntry[]> {
+    const revealed = (await this.ctx.storage.get<boolean>(IDEATE_KEYS.rankingRevealed)) === true
+    return revealed ? computeIdeateRanking(ideas) : []
   }
 
   async loadAllIdeas(): Promise<IdeateIdea[]> {
@@ -89,16 +97,21 @@ export class IdeateHandler {
     const clusters = (await this.ctx.storage.get<IdeateCluster[]>(IDEATE_KEYS.clusters)) ?? []
     const rev = (await this.ctx.storage.get<number>(IDEATE_KEYS.rev)) ?? 0
     const dotVoteLimit = (await this.ctx.storage.get<number>(IDEATE_KEYS.dotVoteLimit)) ?? 5
+    const rankingRevealed = (await this.ctx.storage.get<boolean>(IDEATE_KEYS.rankingRevealed)) === true
+    const ranking = await this.loadRanking(ideas)
     ws.send(
       serverMsg({
         type: 'ideate_state',
-        data: { ideas, clusters, rev, dotVoteLimit },
+        data: { ideas, clusters, rev, dotVoteLimit, rankingRevealed, ranking },
         timestamp: Date.now(),
       }),
     )
   }
 
-  private async broadcast(type: 'ideate_idea_added' | 'ideate_idea_updated' | 'ideate_clusters_updated', data: object): Promise<void> {
+  private async broadcast(
+    type: 'ideate_idea_added' | 'ideate_idea_updated' | 'ideate_clusters_updated' | 'ideate_ranking_revealed',
+    data: object,
+  ): Promise<void> {
     const rev = (await this.ctx.storage.get<number>(IDEATE_KEYS.rev)) ?? 0
     const frame = serverMsg({ type, data: { ...data, rev }, timestamp: Date.now() })
     for (const s of this.ctx.getWebSockets()) {
@@ -136,6 +149,22 @@ export class IdeateHandler {
     const pendingAt = Date.now() + debounceMs
     await this.ctx.storage.put(IDEATE_KEYS.clusterPendingAt, pendingAt)
     await this.scheduleAlarm(pendingAt)
+  }
+
+  async handleReveal(ws: WebSocket, att: Attachment): Promise<void> {
+    if (!(await this.isEnabled())) {
+      ws.send(errorMessage('unsupported_feature', 'Ideation board is not enabled'))
+      return
+    }
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only the facilitator can reveal rankings'))
+      return
+    }
+    await this.ctx.storage.put(IDEATE_KEYS.rankingRevealed, true)
+    const ideas = await this.loadAllIdeas()
+    const ranking = computeIdeateRanking(ideas)
+    const rev = await this.bumpRev()
+    await this.broadcast('ideate_ranking_revealed', { ranking, rev })
   }
 
   async handleUpvote(ws: WebSocket, att: Attachment, data: { itemId: string }): Promise<void> {

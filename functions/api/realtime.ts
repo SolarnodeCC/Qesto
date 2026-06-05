@@ -214,6 +214,7 @@ export type ClientMessage =
   // IDEATE (ADR-0048). Idea submit + dot-vote.
   | { v?: LiveProtocolVersion; type: 'ideate_submit'; data: { body: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'ideate_upvote'; data: { itemId: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'ideate_reveal'; data: Record<string, never>; timestamp: number }
   // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
   | { v?: LiveProtocolVersion; type: 'approve_response'; data: { questionId: string; responseId: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'reject_response'; data: { questionId: string; responseId: string }; timestamp: number }
@@ -441,6 +442,8 @@ export type ServerMessage =
         clusters: Array<{ id: string; label: string; ideaIds: string[]; updatedAt: number }>
         rev: number
         dotVoteLimit: number
+        rankingRevealed: boolean
+        ranking: Array<{ rank: number; ideaId: string; body: string; upvotes: number }>
       }
       timestamp: number
     }
@@ -489,6 +492,15 @@ export type ServerMessage =
           status: 'active' | 'dismissed'
           createdAt: number
         }>
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_ranking_revealed'
+      data: {
+        ranking: Array<{ rank: number; ideaId: string; body: string; upvotes: number }>
         rev: number
       }
       timestamp: number

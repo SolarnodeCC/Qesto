@@ -7,11 +7,12 @@ type Props = {
   variant: 'present' | 'join'
   upvoted?: boolean
   canVote?: boolean
+  showCounts?: boolean
   onUpvote?: (id: string) => void
   t: TFn
 }
 
-export function IdeateIdeaCard({ idea, variant, upvoted, canVote, onUpvote, t }: Props) {
+export function IdeateIdeaCard({ idea, variant, upvoted, canVote, showCounts = false, onUpvote, t }: Props) {
   const showVote = variant === 'join'
 
   return (
@@ -30,10 +31,10 @@ export function IdeateIdeaCard({ idea, variant, upvoted, canVote, onUpvote, t }:
           } disabled:opacity-50`}
         >
           <span aria-hidden="true">●</span>
-          {idea.upvotes}
+          {showCounts ? idea.upvotes : upvoted ? t('vote.voted') : t('vote.dot')}
         </button>
       )}
-      {variant === 'present' && idea.upvotes > 0 && (
+      {(variant === 'present' || showCounts) && idea.upvotes > 0 && (
         <p className="mt-1 text-xs text-violet-600 dark:text-violet-400">
           {t('vote.count', { count: idea.upvotes })}
         </p>

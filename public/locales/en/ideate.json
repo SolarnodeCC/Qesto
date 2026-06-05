@@ -14,7 +14,11 @@
   "clusters.uncategorized": "Awaiting clustering",
   "vote.aria": "Vote for: {{body}}",
   "vote.count": "{{count}} votes",
+  "vote.dot": "Vote",
+  "vote.voted": "Voted",
   "vote.dotsRemaining": "{{remaining}} of {{limit}} dot votes left",
+  "prioritize.reveal": "Reveal ranking",
+  "prioritize.title": "Top ideas",
   "connection.reconnecting": "Reconnecting…",
   "connection.failed": "Connection lost. Please refresh."
 }

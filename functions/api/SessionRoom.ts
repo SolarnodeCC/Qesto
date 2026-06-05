@@ -250,6 +250,10 @@ export class SessionRoom implements DurableObject {
         if (msg.type !== 'ideate_upvote') return
         await this.ideateHandler.handleUpvote(ws, att, { itemId: msg.data.itemId })
       },
+      ideate_reveal: async (ws, att, msg) => {
+        if (msg.type !== 'ideate_reveal') return
+        await this.ideateHandler.handleReveal(ws, att)
+      },
       // ENTERPRISE-POLISH §1c — response moderation for open questions.
       approve_response: async (ws, att, msg) => {
         if (msg.type !== 'approve_response') return

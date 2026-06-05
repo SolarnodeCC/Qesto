@@ -20,11 +20,19 @@ export type IdeateCluster = {
   updatedAt: number
 }
 
+export type IdeateRankingEntry = {
+  rank: number
+  ideaId: string
+  body: string
+  upvotes: number
+}
+
 export const IDEATE_KEYS = {
   enabled: 'ideate:enabled',
   index: 'ideate:index',
   rev: 'ideate:rev',
   clusters: 'ideate:clusters',
+  rankingRevealed: 'ideate:ranking_revealed',
   dotVoteLimit: 'ideate:dot_vote_limit',
   clusterDebounceMs: 'ideate:cluster_debounce_ms',
   clusterPendingAt: 'ideate:cluster_pending_at',
@@ -46,4 +54,16 @@ export function createIdeateIdea(body: string): IdeateIdea {
     status: 'active',
     createdAt: Date.now(),
   }
+}
+
+export function computeIdeateRanking(ideas: IdeateIdea[]): IdeateRankingEntry[] {
+  const active = ideas
+    .filter((i) => i.status === 'active')
+    .sort((a, b) => b.upvotes - a.upvotes || a.createdAt - b.createdAt)
+  return active.map((idea, idx) => ({
+    rank: idx + 1,
+    ideaId: idea.id,
+    body: idea.body,
+    upvotes: idea.upvotes,
+  }))
 }

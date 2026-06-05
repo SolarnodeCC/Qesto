@@ -127,6 +127,39 @@ describe('ideate dot votes', () => {
   })
 })
 
+describe('ideate ranking reveal', () => {
+  it('broadcasts sorted ranking when presenter reveals', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter = connectVoter(state, 'v1')
+    const presenter = connectPresenter(state)
+    const watcher = connectVoter(state, 'v2', 'ipv2')
+
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'Idea A' }, timestamp: 0 })
+    const idA = (last(voter, 'ideate_idea_added')?.data.idea as { id: string }).id
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'Idea B' }, timestamp: 0 })
+    const idB = (last(voter, 'ideate_idea_added')?.data.idea as { id: string }).id
+
+    await send(room, voter, { type: 'ideate_upvote', data: { itemId: idB }, timestamp: 0 })
+    await send(room, presenter, { type: 'ideate_reveal', data: {}, timestamp: 0 })
+
+    const revealed = last(watcher, 'ideate_ranking_revealed')
+    expect(revealed).toBeDefined()
+    const ranking = revealed?.data.ranking as Array<{ ideaId: string; rank: number }>
+    expect(ranking[0]?.ideaId).toBe(idB)
+    expect(ranking[0]?.rank).toBe(1)
+    expect(ranking.some((r) => r.ideaId === idA)).toBe(true)
+  })
+
+  it('rejects reveal from participants', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'ideate_reveal', data: {}, timestamp: 0 })
+    expect(last(voter, 'error')?.data).toMatchObject({ code: 'forbidden' })
+  })
+})
+
 describe('ideate clustering alarm', () => {
   it('broadcasts clusters after debounce via alarm', async () => {
     vi.useFakeTimers()
