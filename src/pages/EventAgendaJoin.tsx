@@ -13,6 +13,9 @@ type AgendaSlot = {
   session: { code: string; status: string; joinPath: string; title: string } | null
 }
 
+type FeedItem = { id: string; message: string; createdAt: number }
+type TrackSummary = { trackId: string; label: string; status: string }
+
 type AgendaData = {
   eventTitle: string
   eventCode: string
@@ -21,11 +24,19 @@ type AgendaData = {
   slots: AgendaSlot[]
 }
 
+type FeedData = {
+  eventTitle: string
+  status: string
+  tracks: TrackSummary[]
+  feed: FeedItem[]
+}
+
 export default function EventAgendaJoin() {
   const { code } = useParams<{ code: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const t = useT('stage')
   const [data, setData] = useState<AgendaData | null>(null)
+  const [feedData, setFeedData] = useState<FeedData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -35,15 +46,21 @@ export default function EventAgendaJoin() {
     if (!code) return
     setLoading(true)
     const q = trackId ? `?track=${encodeURIComponent(trackId)}` : ''
-    const res = await api<AgendaData>(`/api/events/${encodeURIComponent(code.toUpperCase())}/agenda${q}`)
+    const upper = encodeURIComponent(code.toUpperCase())
+    const [agendaRes, feedRes] = await Promise.all([
+      api<AgendaData>(`/api/events/${upper}/agenda${q}`),
+      api<FeedData>(`/api/events/${upper}/feed${q}`),
+    ])
     setLoading(false)
-    if (!res.ok) {
-      setError(res.error.message)
+    if (!agendaRes.ok) {
+      setError(agendaRes.error.message)
       setData(null)
+      setFeedData(null)
       return
     }
     setError(null)
-    setData(res.data)
+    setData(agendaRes.data)
+    setFeedData(feedRes.ok ? feedRes.data : null)
   }, [code, trackId])
 
   useEffect(() => {
@@ -65,7 +82,23 @@ export default function EventAgendaJoin() {
       <header>
         <h1 className="text-2xl font-bold text-pulse-900 dark:text-pulse-100">{data.eventTitle}</h1>
         <p className="text-sm text-pulse-500">{t('agenda.subtitle')}</p>
+        {feedData?.status === 'live' && (
+          <span className="mt-2 inline-flex rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-bold uppercase text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+            {t('agenda.eventLive')}
+          </span>
+        )}
       </header>
+
+      {feedData && feedData.feed.length > 0 && (
+        <section className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20" aria-live="polite">
+          <h2 className="text-xs font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">{t('feed.title')}</h2>
+          <ul className="mt-2 space-y-1 text-sm text-pulse-800 dark:text-pulse-100">
+            {feedData.feed.slice(0, 5).map((item) => (
+              <li key={item.id}>{item.message}</li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {data.tracks.length > 1 && (
         <nav aria-label={t('agenda.tracks')} className="flex flex-wrap gap-2">

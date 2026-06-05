@@ -14,5 +14,18 @@
   "organizer.saved": "Agenda enregistré",
   "organizer.trackLabel": "Nom du track",
   "organizer.trackDay": "Jour",
-  "organizer.noSession": "Aucune session liée"
+  "organizer.noSession": "Aucune session liée",
+  "suite.title": "Contrôle de l'événement",
+  "suite.status": "Statut : {{status}}",
+  "suite.start": "Démarrer l'événement",
+  "suite.close": "Terminer l'événement",
+  "suite.started": "Événement en direct",
+  "suite.closed": "Événement terminé",
+  "suite.feedPlaceholder": "Publier une annonce…",
+  "suite.postFeed": "Publier",
+  "suite.trackStatus.idle": "Inactif",
+  "suite.trackStatus.live": "En direct",
+  "suite.trackStatus.done": "Terminé",
+  "feed.title": "Mises à jour en direct",
+  "agenda.eventLive": "Événement en direct"
 }

@@ -30,9 +30,28 @@ export const AgendaPutSchema = z.object({
 export type AgendaSlot = z.infer<typeof AgendaSlotSchema> & { id: string }
 export type AgendaTrack = z.infer<typeof AgendaTrackSchema> & { id: string; slots: AgendaSlot[] }
 
+export type EventFeedItem = {
+  id: string
+  message: string
+  trackId: string | null
+  createdAt: number
+}
+
+export type EventSuiteMeta = {
+  status: 'draft' | 'live' | 'closed'
+  startedAt: number | null
+  closedAt: number | null
+  feed: EventFeedItem[]
+}
+
 export type EventAgendaTemplate = {
   eventCode: string
   tracks: AgendaTrack[]
+  suite: EventSuiteMeta
+}
+
+export function defaultEventSuite(): EventSuiteMeta {
+  return { status: 'draft', startedAt: null, closedAt: null, feed: [] }
 }
 
 export type LinkedSessionInfo = {
@@ -61,7 +80,33 @@ export type PublicAgendaTrack = {
 }
 
 export function defaultEventTemplate(): EventAgendaTemplate {
-  return { eventCode: generateJoinCode(), tracks: [] }
+  return { eventCode: generateJoinCode(), tracks: [], suite: defaultEventSuite() }
+}
+
+function parseSuite(raw: unknown): EventSuiteMeta {
+  if (!raw || typeof raw !== 'object') return defaultEventSuite()
+  const s = raw as Partial<EventSuiteMeta>
+  const status = s.status === 'live' || s.status === 'closed' ? s.status : 'draft'
+  const feed = Array.isArray(s.feed)
+    ? s.feed
+        .filter((f) => f && typeof f === 'object' && typeof (f as EventFeedItem).message === 'string')
+        .map((f) => {
+          const item = f as EventFeedItem
+          return {
+            id: typeof item.id === 'string' ? item.id : ulid(),
+            message: item.message.slice(0, 500),
+            trackId: typeof item.trackId === 'string' ? item.trackId : null,
+            createdAt: typeof item.createdAt === 'number' ? item.createdAt : Date.now(),
+          }
+        })
+        .slice(-50)
+    : []
+  return {
+    status,
+    startedAt: typeof s.startedAt === 'number' ? s.startedAt : null,
+    closedAt: typeof s.closedAt === 'number' ? s.closedAt : null,
+    feed,
+  }
 }
 
 export function parseEventTemplate(raw: string | null | undefined): EventAgendaTemplate {
@@ -71,6 +116,7 @@ export function parseEventTemplate(raw: string | null | undefined): EventAgendaT
     return {
       eventCode: typeof parsed.eventCode === 'string' && parsed.eventCode.length === 6 ? parsed.eventCode : generateJoinCode(),
       tracks: normalizeTracks(parsed.tracks),
+      suite: parseSuite((parsed as { suite?: unknown }).suite),
     }
   } catch {
     return defaultEventTemplate()

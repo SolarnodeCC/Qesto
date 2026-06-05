@@ -160,7 +160,9 @@ export function mountTeamEventAgendaRoutes(parent: any) {
         }
       }
     }
+    const existingSuite = template.suite
     template.tracks = normalizeAgendaPut(body.data)
+    template.suite = existingSuite
     const now = Date.now()
     await c.env.DB.prepare(`UPDATE workspaces SET template_json = ?1, updated_at = ?2 WHERE id = ?3 AND team_id = ?4`)
       .bind(persistTemplate(template), now, wsId, teamId)

@@ -14,5 +14,18 @@
   "organizer.saved": "Agenda opgeslagen",
   "organizer.trackLabel": "Tracknaam",
   "organizer.trackDay": "Daglabel",
-  "organizer.noSession": "Geen gekoppelde sessie"
+  "organizer.noSession": "Geen gekoppelde sessie",
+  "suite.title": "Eventbesturing",
+  "suite.status": "Status: {{status}}",
+  "suite.start": "Start event",
+  "suite.close": "Beëindig event",
+  "suite.started": "Event is live",
+  "suite.closed": "Event beëindigd",
+  "suite.feedPlaceholder": "Plaats een aankondiging…",
+  "suite.postFeed": "Plaatsen",
+  "suite.trackStatus.idle": "Inactief",
+  "suite.trackStatus.live": "Nu live",
+  "suite.trackStatus.done": "Afgerond",
+  "feed.title": "Live updates",
+  "agenda.eventLive": "Event live"
 }

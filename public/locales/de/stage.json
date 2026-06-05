@@ -14,5 +14,18 @@
   "organizer.saved": "Agenda gespeichert",
   "organizer.trackLabel": "Track-Name",
   "organizer.trackDay": "Tageslabel",
-  "organizer.noSession": "Keine verknüpfte Session"
+  "organizer.noSession": "Keine verknüpfte Session",
+  "suite.title": "Event-Steuerung",
+  "suite.status": "Status: {{status}}",
+  "suite.start": "Event starten",
+  "suite.close": "Event beenden",
+  "suite.started": "Event ist live",
+  "suite.closed": "Event beendet",
+  "suite.feedPlaceholder": "Ankündigung senden…",
+  "suite.postFeed": "Senden",
+  "suite.trackStatus.idle": "Inaktiv",
+  "suite.trackStatus.live": "Jetzt live",
+  "suite.trackStatus.done": "Abgeschlossen",
+  "feed.title": "Live-Updates",
+  "agenda.eventLive": "Event live"
 }

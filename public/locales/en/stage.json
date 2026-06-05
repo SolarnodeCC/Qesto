@@ -14,5 +14,18 @@
   "organizer.saved": "Agenda saved",
   "organizer.trackLabel": "Track name",
   "organizer.trackDay": "Day label",
-  "organizer.noSession": "No linked session"
+  "organizer.noSession": "No linked session",
+  "suite.title": "Event control",
+  "suite.status": "Status: {{status}}",
+  "suite.start": "Start event",
+  "suite.close": "End event",
+  "suite.started": "Event is live",
+  "suite.closed": "Event ended",
+  "suite.feedPlaceholder": "Broadcast an announcement…",
+  "suite.postFeed": "Post",
+  "suite.trackStatus.idle": "Idle",
+  "suite.trackStatus.live": "Live now",
+  "suite.trackStatus.done": "Complete",
+  "feed.title": "Live updates",
+  "agenda.eventLive": "Event live"
 }
