@@ -34,7 +34,8 @@ _Hub: [Documentation map](./README.md)._
 - DevOps: infra/deployment/devops
 - Frontend Lead: frontend, ui-mobile, i18n
 - Analytics Lead: analytics
-- AI Strategy Lead: ai-strategy
+- AI Strategy Lead: ai-strategy (advisory: whether/what)
+- AI Engineering Lead: ai-engineering (craft: prompts, RAG/retrieval quality, evals, AI guardrails)
 - Growth Lead: marketing, release-notes (with PO)
 - Sales Lead: sales, deal cycle, sales enablement
 - Knowledge Lead: knowledge, KB integrity + requirement traceability + KB→Vectorize lifecycle
