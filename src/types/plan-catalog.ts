@@ -15,6 +15,7 @@ export type PlanCatalogApiRow = {
     townhallQA: boolean
     liveCopilot: boolean
     crossSessionInsights: boolean
+    recurringWorkspaces: boolean
   }
 }
 

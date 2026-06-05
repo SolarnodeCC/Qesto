@@ -1,35 +1,107 @@
 /**
- * RETRO-WORKSPACE-01 + IDEATE-BOARD-01 — recurring workspaces CRUD.
+ * ADR-0048 — recurring workspaces (RETRO / IDEATE / EVENT).
  */
 import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
+import { requireFeature } from '../middleware/feature-gate'
 import { readKvJson } from '../lib/kv'
 import { teamDocumentKey } from '../lib/kv-keys'
 import { ulid } from '../lib/ulid'
+import {
+  canAdminWorkspace,
+  canReadWorkspace,
+  canWriteWorkspace,
+} from '../lib/workspace-rbac'
+import {
+  carryOpenActionsToNewInstance,
+  openActionItems,
+  purgeWorkspaceActions,
+  readWorkspaceActions,
+  writeWorkspaceActions,
+} from '../lib/workspace-actions'
+import {
+  createWorkspaceInstance,
+  defaultTemplateForKind,
+  listWorkspaceInstances,
+} from '../lib/workspace-instances'
+import {
+  getWorkspaceTrend,
+  recomputeWorkspaceParticipationTrend,
+  readCachedWorkspaceTrend,
+  purgeWorkspaceTrends,
+  writeCachedWorkspaceTrend,
+} from '../lib/workspace-trends'
+import type { WorkspaceKind, WorkspaceRow, WorkspaceTrendWindow } from '../lib/workspace-types'
 import type { Team } from './teams'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
 
+const WorkspaceKindSchema = z.enum(['retro', 'ideate', 'event'])
+const WorkspaceCadenceSchema = z.enum(['weekly', 'biweekly', 'sprint', 'manual'])
+
 const WorkspaceCreateSchema = z.object({
-  kind: z.enum(['retro', 'ideate']),
+  kind: WorkspaceKindSchema,
   title: z.string().trim().min(1).max(120),
   templateJson: z.record(z.string(), z.unknown()).optional(),
+  cadence: WorkspaceCadenceSchema.optional(),
+  retentionDays: z.number().int().min(7).max(3650).optional(),
 })
 
 const WorkspacePatchSchema = z.object({
   title: z.string().trim().min(1).max(120).optional(),
   templateJson: z.record(z.string(), z.unknown()).optional(),
+  cadence: WorkspaceCadenceSchema.nullable().optional(),
+  retentionDays: z.number().int().min(7).max(3650).nullable().optional(),
+  archived: z.boolean().optional(),
 })
 
 const WorkspaceKindQuerySchema = z.object({
-  kind: z.enum(['retro', 'ideate']).optional(),
+  kind: WorkspaceKindSchema.optional(),
 })
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
+const ActionsPatchSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string().optional(),
+      text: z.string().trim().min(1).max(500),
+      status: z.enum(['open', 'resolved']),
+    }),
+  ),
+})
+
+const TrendsQuerySchema = z.object({
+  window: z.enum(['30d', '90d', '180d']).default('90d'),
+})
+
+function mapWorkspace(row: WorkspaceRow) {
+  return {
+    id: row.id,
+    teamId: row.team_id,
+    kind: row.kind,
+    title: row.title,
+    template: JSON.parse(row.template_json || '{}'),
+    cadence: row.cadence,
+    retentionDays: row.retention_days,
+    lastInstanceAt: row.last_instance_at,
+    archivedAt: row.archived_at,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+async function loadWorkspaceRow(db: D1Database, wsId: string, teamId: string): Promise<WorkspaceRow | null> {
+  return db
+    .prepare(
+      `SELECT id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at,
+              created_by, created_at, updated_at
+         FROM workspaces WHERE id = ?1 AND team_id = ?2`,
+    )
+    .bind(wsId, teamId)
+    .first<WorkspaceRow>()
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,60 +123,28 @@ export function mountTeamWorkspaceRoutes(parent: any) {
     if (!team) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
     }
-    if (!isTeamMember(team, c.get('user').sub)) {
+    if (!canReadWorkspace(team, c.get('user').sub)) {
       return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member' }, trace_id: c.get('trace_id') }, 403)
     }
     const kind = parsedQuery.data.kind
+    const sql = kind
+      ? `SELECT id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at,
+                created_by, created_at, updated_at
+           FROM workspaces WHERE team_id = ?1 AND kind = ?2 AND archived_at IS NULL ORDER BY updated_at DESC`
+      : `SELECT id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at,
+                created_by, created_at, updated_at
+           FROM workspaces WHERE team_id = ?1 AND archived_at IS NULL ORDER BY updated_at DESC`
     const rows = kind
-      ? await c.env.DB.prepare(
-          `SELECT id, team_id, kind, title, template_json, created_by, created_at, updated_at
-             FROM workspaces WHERE team_id = ?1 AND kind = ?2 ORDER BY updated_at DESC`,
-        )
-          .bind(teamId, kind)
-          .all<{
-        id: string
-        team_id: string
-        kind: string
-        title: string
-        template_json: string
-        created_by: string
-        created_at: number
-        updated_at: number
-      }>()
-      : await c.env.DB.prepare(
-          `SELECT id, team_id, kind, title, template_json, created_by, created_at, updated_at
-             FROM workspaces WHERE team_id = ?1 ORDER BY updated_at DESC`,
-        )
-          .bind(teamId)
-          .all<{
-        id: string
-        team_id: string
-        kind: string
-        title: string
-        template_json: string
-        created_by: string
-        created_at: number
-        updated_at: number
-      }>()
+      ? await c.env.DB.prepare(sql).bind(teamId, kind).all<WorkspaceRow>()
+      : await c.env.DB.prepare(sql).bind(teamId).all<WorkspaceRow>()
     return c.json({
       ok: true,
-      data: {
-        workspaces: (rows.results ?? []).map((r) => ({
-          id: r.id,
-          teamId: r.team_id,
-          kind: r.kind,
-          title: r.title,
-          template: JSON.parse(r.template_json || '{}'),
-          createdBy: r.created_by,
-          createdAt: r.created_at,
-          updatedAt: r.updated_at,
-        })),
-      },
+      data: { workspaces: (rows.results ?? []).map(mapWorkspace) },
       trace_id: c.get('trace_id'),
     })
   })
 
-  app.post('/:id/workspaces', async (c) => {
+  app.post('/:id/workspaces', requireFeature('recurringWorkspaces'), async (c) => {
     const teamId = c.req.param('id')
     const body = WorkspaceCreateSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
@@ -114,21 +154,26 @@ export function mountTeamWorkspaceRoutes(parent: any) {
     if (!team) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
     }
-    if (!isTeamMember(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member' }, trace_id: c.get('trace_id') }, 403)
+    if (!canWriteWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
     }
     const now = Date.now()
     const id = ulid()
+    const kind = body.data.kind as WorkspaceKind
+    const cadence = kind === 'event' ? null : (body.data.cadence ?? 'sprint')
+    const template = body.data.templateJson ?? defaultTemplateForKind(kind)
     await c.env.DB.prepare(
-      `INSERT INTO workspaces (id, team_id, kind, title, template_json, created_by, created_at, updated_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
+      `INSERT INTO workspaces (id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at, created_by, created_at, updated_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, NULL, NULL, ?8, ?9, ?10)`,
     )
       .bind(
         id,
         teamId,
-        body.data.kind,
+        kind,
         body.data.title,
-        JSON.stringify(body.data.templateJson ?? {}),
+        JSON.stringify(template),
+        cadence,
+        body.data.retentionDays ?? null,
         c.get('user').sub,
         now,
         now,
@@ -137,7 +182,7 @@ export function mountTeamWorkspaceRoutes(parent: any) {
     return c.json(
       {
         ok: true,
-        data: { workspace: { id, teamId, kind: body.data.kind, title: body.data.title, createdAt: now } },
+        data: { workspace: { id, teamId, kind, title: body.data.title, createdAt: now } },
         trace_id: c.get('trace_id'),
       },
       201,
@@ -147,43 +192,14 @@ export function mountTeamWorkspaceRoutes(parent: any) {
   app.get('/:id/workspaces/:wsId', async (c) => {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
-    if (!team || !isTeamMember(team, c.get('user').sub)) {
+    if (!team || !canReadWorkspace(team, c.get('user').sub)) {
       return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
     }
-    const row = await c.env.DB.prepare(
-      `SELECT id, team_id, kind, title, template_json, created_by, created_at, updated_at
-         FROM workspaces WHERE id = ?1 AND team_id = ?2`,
-    )
-      .bind(wsId, teamId)
-      .first<{
-        id: string
-        team_id: string
-        kind: string
-        title: string
-        template_json: string
-        created_by: string
-        created_at: number
-        updated_at: number
-      }>()
+    const row = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!row) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
     }
-    return c.json({
-      ok: true,
-      data: {
-        workspace: {
-          id: row.id,
-          teamId: row.team_id,
-          kind: row.kind,
-          title: row.title,
-          template: JSON.parse(row.template_json || '{}'),
-          createdBy: row.created_by,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        },
-      },
-      trace_id: c.get('trace_id'),
-    })
+    return c.json({ ok: true, data: { workspace: mapWorkspace(row) }, trace_id: c.get('trace_id') })
   })
 
   app.patch('/:id/workspaces/:wsId', async (c) => {
@@ -193,12 +209,10 @@ export function mountTeamWorkspaceRoutes(parent: any) {
       return c.json({ ok: false, error: { code: 'validation', message: 'Invalid patch' }, trace_id: c.get('trace_id') }, 400)
     }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
-    if (!team || !isTeamMember(team, c.get('user').sub)) {
+    if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
       return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
     }
-    const existing = await c.env.DB.prepare(`SELECT id FROM workspaces WHERE id = ?1 AND team_id = ?2`)
-      .bind(wsId, teamId)
-      .first()
+    const existing = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!existing) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
     }
@@ -212,6 +226,21 @@ export function mountTeamWorkspaceRoutes(parent: any) {
     if (body.data.templateJson) {
       sets.push(`template_json = ?${n++}`)
       binds.push(JSON.stringify(body.data.templateJson))
+    }
+    if (body.data.cadence !== undefined) {
+      sets.push(`cadence = ?${n++}`)
+      binds.push(body.data.cadence)
+    }
+    if (body.data.retentionDays !== undefined) {
+      sets.push(`retention_days = ?${n++}`)
+      binds.push(body.data.retentionDays)
+    }
+    if (body.data.archived === true) {
+      sets.push(`archived_at = ?${n++}`)
+      binds.push(Date.now())
+    } else if (body.data.archived === false) {
+      sets.push(`archived_at = ?${n++}`)
+      binds.push(null)
     }
     const idParam = n++
     const teamParam = n
@@ -227,11 +256,152 @@ export function mountTeamWorkspaceRoutes(parent: any) {
   app.delete('/:id/workspaces/:wsId', async (c) => {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
-    if (!team || !isTeamMember(team, c.get('user').sub)) {
+    if (!team || !canAdminWorkspace(team, c.get('user').sub)) {
       return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    await c.env.DB.prepare(`UPDATE sessions SET workspace_id = NULL, workspace_seq = NULL WHERE workspace_id = ?1`)
+      .bind(wsId)
+      .run()
+    await purgeWorkspaceTrends(c.env.DB, wsId)
+    if (c.env.ACTIONS_KV) {
+      await purgeWorkspaceActions(c.env.ACTIONS_KV, teamId, wsId)
     }
     await c.env.DB.prepare(`DELETE FROM workspaces WHERE id = ?1 AND team_id = ?2`).bind(wsId, teamId).run()
     return c.json({ ok: true, data: { deleted: true }, trace_id: c.get('trace_id') })
+  })
+
+  app.get('/:id/workspaces/:wsId/instances', async (c) => {
+    const { id: teamId, wsId } = c.req.param()
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team || !canReadWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
+    if (!ws) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const instances = await listWorkspaceInstances(c.env.DB, wsId)
+    return c.json({ ok: true, data: { instances }, trace_id: c.get('trace_id') })
+  })
+
+  app.post('/:id/workspaces/:wsId/instances', requireFeature('recurringWorkspaces'), async (c) => {
+    const { id: teamId, wsId } = c.req.param()
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
+    if (!ws || ws.archived_at) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const created = await createWorkspaceInstance({
+      db: c.env.DB,
+      workspace: ws,
+      ownerId: c.get('user').sub,
+      teamId,
+    })
+    let carriedActions: Awaited<ReturnType<typeof carryOpenActionsToNewInstance>> = []
+    if (ws.kind === 'retro' && c.env.ACTIONS_KV) {
+      carriedActions = await carryOpenActionsToNewInstance(c.env.ACTIONS_KV, teamId, wsId, created.sessionId)
+    }
+    return c.json(
+      {
+        ok: true,
+        data: {
+          session: {
+            id: created.sessionId,
+            code: created.code,
+            title: created.title,
+            workspaceSeq: created.workspaceSeq,
+            sessionMode: created.sessionMode,
+          },
+          carriedActions,
+        },
+        trace_id: c.get('trace_id'),
+      },
+      201,
+    )
+  })
+
+  app.get('/:id/workspaces/:wsId/actions', async (c) => {
+    const { id: teamId, wsId } = c.req.param()
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team || !canReadWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
+    if (!ws) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const blob = c.env.ACTIONS_KV
+      ? await readWorkspaceActions(c.env.ACTIONS_KV, teamId, wsId)
+      : { items: [] }
+    return c.json({
+      ok: true,
+      data: { items: blob.items, openCount: openActionItems(blob).length },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  app.patch('/:id/workspaces/:wsId/actions', async (c) => {
+    const { id: teamId, wsId } = c.req.param()
+    const body = ActionsPatchSchema.safeParse(await c.req.json().catch(() => null))
+    if (!body.success) {
+      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid actions' }, trace_id: c.get('trace_id') }, 400)
+    }
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
+    if (!ws) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    if (!c.env.ACTIONS_KV) {
+      return c.json({ ok: false, error: { code: 'unavailable', message: 'Actions store unavailable' }, trace_id: c.get('trace_id') }, 503)
+    }
+    const now = Date.now()
+    const items = body.data.items.map((item) => ({
+      id: item.id ?? ulid(),
+      text: item.text,
+      status: item.status,
+      sourceSessionId: null,
+      createdAt: now,
+      resolvedAt: item.status === 'resolved' ? now : null,
+    }))
+    await writeWorkspaceActions(c.env.ACTIONS_KV, teamId, wsId, { items })
+    return c.json({ ok: true, data: { items }, trace_id: c.get('trace_id') })
+  })
+
+  app.get('/:id/workspaces/:wsId/trends', requireFeature('crossSessionInsights'), async (c) => {
+    const { id: teamId, wsId } = c.req.param()
+    const parsed = TrendsQuerySchema.safeParse({ window: c.req.query('window') ?? '90d' })
+    if (!parsed.success) {
+      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid window' }, trace_id: c.get('trace_id') }, 400)
+    }
+    const window = parsed.data.window as WorkspaceTrendWindow
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team || !canReadWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
+    if (!ws) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const kv = c.env.ACTIONS_KV ?? c.env.TEAMS_KV
+    let payload = await readCachedWorkspaceTrend(kv, teamId, wsId, 'participation', window)
+    if (!payload) {
+      payload = await getWorkspaceTrend(c.env.DB, wsId, 'participation', window)
+      if (!payload) {
+        payload = await recomputeWorkspaceParticipationTrend(c.env.DB, wsId, window)
+      }
+      await writeCachedWorkspaceTrend(kv, teamId, wsId, 'participation', window, payload)
+    }
+    return c.json({
+      ok: true,
+      data: { kind: 'participation', window, trend: payload },
+      trace_id: c.get('trace_id'),
+    })
   })
 
   parent.route('/api/teams', app)

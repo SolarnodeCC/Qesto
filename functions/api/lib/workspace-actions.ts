@@ -1,0 +1,60 @@
+import { readKvJson, writeKvJson } from './kv'
+import { namespacedKey } from './tenant-namespace'
+import type { WorkspaceActionItem, WorkspaceActionsBlob } from './workspace-types'
+import { ulid } from './ulid'
+
+function actionsKey(teamId: string, workspaceId: string): string {
+  return namespacedKey(teamId, `ws:${workspaceId}:actions`)
+}
+
+export async function readWorkspaceActions(
+  kv: KVNamespace,
+  teamId: string,
+  workspaceId: string,
+): Promise<WorkspaceActionsBlob> {
+  const blob = await readKvJson<WorkspaceActionsBlob>(kv, actionsKey(teamId, workspaceId))
+  return blob ?? { items: [] }
+}
+
+export async function writeWorkspaceActions(
+  kv: KVNamespace,
+  teamId: string,
+  workspaceId: string,
+  blob: WorkspaceActionsBlob,
+): Promise<void> {
+  await writeKvJson(kv, actionsKey(teamId, workspaceId), blob)
+}
+
+export function openActionItems(blob: WorkspaceActionsBlob): WorkspaceActionItem[] {
+  return blob.items.filter((i) => i.status === 'open')
+}
+
+export async function carryOpenActionsToNewInstance(
+  kv: KVNamespace,
+  teamId: string,
+  workspaceId: string,
+  sessionId: string,
+): Promise<WorkspaceActionItem[]> {
+  const blob = await readWorkspaceActions(kv, teamId, workspaceId)
+  const open = openActionItems(blob)
+  if (open.length === 0) return []
+
+  const carried = open.map((item) => ({
+    ...item,
+    id: ulid(),
+    sourceSessionId: sessionId,
+    createdAt: Date.now(),
+  }))
+  await writeWorkspaceActions(kv, teamId, workspaceId, {
+    items: [...blob.items, ...carried],
+  })
+  return carried
+}
+
+export async function purgeWorkspaceActions(
+  kv: KVNamespace,
+  teamId: string,
+  workspaceId: string,
+): Promise<void> {
+  await kv.delete(actionsKey(teamId, workspaceId))
+}

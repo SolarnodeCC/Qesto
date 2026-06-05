@@ -239,6 +239,8 @@ export interface PlanQuotas {
     liveCopilot: boolean
     /** INSIGHTS+ (ADR-0045): cross-session intelligence — Team tier only (Sprint 81+). */
     crossSessionInsights: boolean
+    /** ADR-0048: recurring workspaces (RETRO / IDEATE / EVENT) — Team tier only. */
+    recurringWorkspaces: boolean
   }
 }
 
@@ -257,6 +259,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       townhallQA: false,
       liveCopilot: false,
       crossSessionInsights: false,
+      recurringWorkspaces: false,
     },
   },
   starter: {
@@ -273,6 +276,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       townhallQA: false,
       liveCopilot: true,
       crossSessionInsights: false,
+      recurringWorkspaces: false,
     },
   },
   team: {
@@ -289,6 +293,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       townhallQA: true,
       liveCopilot: true,
       crossSessionInsights: true,
+      recurringWorkspaces: true,
     },
   },
 }

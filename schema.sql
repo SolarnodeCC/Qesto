@@ -56,7 +56,9 @@ CREATE TABLE IF NOT EXISTS sessions (
   started_at INTEGER,
   closed_at INTEGER,
   archived_at INTEGER,
-  team_id TEXT DEFAULT NULL
+  team_id TEXT DEFAULT NULL,
+  workspace_id TEXT,
+  workspace_seq INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
@@ -65,6 +67,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_code ON sessions(code);
 CREATE INDEX IF NOT EXISTS idx_sessions_owner_status ON sessions(owner_id, status, created_at DESC);
 -- OBS-001: index on team_id for analytics segmentation (sessions per team).
 CREATE INDEX IF NOT EXISTS idx_sessions_team ON sessions(team_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_workspace ON sessions(workspace_id, workspace_seq DESC);
 
 -- Sprint 18 prereq: AI provenance + GDPR consent audit trail for wizard generation
 ALTER TABLE sessions ADD COLUMN ai_generated INTEGER NOT NULL DEFAULT 0;
@@ -356,18 +359,33 @@ CREATE TABLE IF NOT EXISTS agent_definitions (
 );
 CREATE INDEX IF NOT EXISTS idx_agent_definitions_owner ON agent_definitions(owner_id, status);
 
--- workspaces — RETRO / IDEATE recurring workspaces (Sprint 85)
+-- workspaces — RETRO / IDEATE / EVENT recurring containers (ADR-0048)
 CREATE TABLE IF NOT EXISTS workspaces (
   id TEXT PRIMARY KEY,
   team_id TEXT NOT NULL,
-  kind TEXT NOT NULL CHECK (kind IN ('retro', 'ideate')),
+  kind TEXT NOT NULL CHECK (kind IN ('retro', 'ideate', 'event')),
   title TEXT NOT NULL,
   template_json TEXT NOT NULL DEFAULT '{}',
+  cadence TEXT CHECK (cadence IS NULL OR cadence IN ('weekly','biweekly','sprint','manual')),
+  retention_days INTEGER,
+  last_instance_at INTEGER,
+  archived_at INTEGER,
   created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_workspaces_team_kind ON workspaces(team_id, kind, updated_at DESC);
+
+-- workspace_trend — materialised longitudinal aggregates per workspace (ADR-0048)
+CREATE TABLE IF NOT EXISTS workspace_trend (
+  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL CHECK (kind IN ('team_health','participation','recurring_themes')),
+  window TEXT NOT NULL CHECK (window IN ('30d','90d','180d')),
+  payload_json TEXT NOT NULL,
+  computed_at INTEGER NOT NULL,
+  PRIMARY KEY (workspace_id, kind, window)
+);
+CREATE INDEX IF NOT EXISTS idx_workspace_trend_computed ON workspace_trend(workspace_id, computed_at DESC);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_events — comprehensive audit trail with before/after snapshots (Phase 8)

@@ -13,6 +13,7 @@ import AppShellLayout, { type DashboardSection } from '../layouts/AppShellLayout
 import { SessionListSkeleton } from '../components/SkeletonLoader'
 import InsightThemeCard from '../components/InsightThemeCard'
 import TeamInsightsPanel from '../components/insights/TeamInsightsPanel'
+import { WorkspacePanel } from '../components/workspaces/WorkspacePanel'
 import AINarrative from '../components/AINarrative'
 import { CoachingCard } from '../components/CoachingCard'
 import { SimilarSessionsPanel } from '../components/SimilarSessionsPanel'
@@ -625,6 +626,9 @@ export default function Dashboard() {
                 teamId={teams[0]?.id}
                 enabled={activeSection === 'insights'}
               />
+            )}
+            {teams[0] && (
+              <WorkspacePanel teamId={teams[0]?.id} enabled={activeSection === 'insights'} />
             )}
             <div className="space-y-3">
               <h3 className="text-heading-s font-semibold dark:text-pulse-100">{t('topThemes')}</h3>
