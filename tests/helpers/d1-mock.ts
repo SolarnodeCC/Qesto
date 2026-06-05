@@ -27,7 +27,7 @@ type SessionRow = {
   code: string
   title: string
   status: 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
-  anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none'
+  anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none' | 'zero_knowledge'
   vote_policy?: 'once' | 'multi' | 'react'
   session_mode?: 'reflection' | 'fun' | 'townhall'
   townhall_moderation?: 'pre' | 'post' | null
@@ -227,6 +227,21 @@ export class D1Mock {
       created_at: number
       updated_at: number
       published_at: number | null
+    }
+  >()
+  readonly agentDefinitions = new Map<
+    string,
+    {
+      id: string
+      owner_id: string
+      marketplace_listing_id: string | null
+      title: string
+      model: string
+      tools_json: string
+      sandbox_policy_json: string
+      status: string
+      created_at: number
+      updated_at: number
     }
   >()
   readonly marketplacePurchases = new Map<
@@ -1196,6 +1211,32 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.insightsDaily.values()]
         .filter((r) => r.team_id === team_id && r.day >= since_day)
         .sort((a, b) => a.day.localeCompare(b.day))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM insights_daily i') && this.sql.includes('JOIN sessions s')) {
+      const [team_id, since_day] = this.args as [string, string]
+      const rows = [...this.db.insightsDaily.values()]
+        .filter((r) => r.team_id === team_id && r.day >= since_day)
+        .map((r) => {
+          const session = this.db.sessions.get(r.session_id)
+          if (!session || session.anonymity === 'zero_knowledge') return null
+          return {
+            session_id: r.session_id,
+            day: r.day,
+            confidence: r.confidence,
+            n_votes: r.n_votes,
+            themes_json: r.themes_json,
+            owner_id: session.owner_id,
+          }
+        })
+        .filter((row): row is NonNullable<typeof row> => row != null)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM agent_definitions') && this.sql.includes('owner_id = ?1')) {
+      const [owner_id] = this.args as [string]
+      const rows = [...(this.db.agentDefinitions?.values() ?? [])]
+        .filter((r) => r.owner_id === owner_id)
+        .sort((a, b) => b.updated_at - a.updated_at)
       return { results: rows as unknown as T[] }
     }
     if (this.sql.includes('FROM marketplace_listings') && this.sql.includes('partner_team_id = ?1')) {

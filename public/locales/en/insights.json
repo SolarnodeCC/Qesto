@@ -35,5 +35,28 @@
     "search": "Search",
     "searching": "Searching…",
     "loadError": "Could not load similar sessions"
+  },
+  "crossSession": {
+    "selectTeam": "Join or create a team to see cross-session insights.",
+    "planRequired": "Cross-session insights require a Team plan",
+    "planHint": "Upgrade to see recurring themes, engagement trends, and facilitator scorecards across closed sessions.",
+    "viewPlans": "View plans →",
+    "windowLabel": "Trend window",
+    "window30d": "30 days",
+    "window90d": "90 days",
+    "window180d": "180 days",
+    "recurringTitle": "Recurring themes",
+    "recurringEmpty": "No recurring themes yet — close at least three non–zero-knowledge sessions.",
+    "sessionCount": "{{count}} sessions",
+    "trendTitle": "Engagement trend",
+    "trendEmpty": "Not enough closed sessions in this window.",
+    "trendLine": "{{sessions}} sessions · {{votes}} avg votes",
+    "scorecardTitle": "Facilitator scorecard",
+    "scorecardEmpty": "Scorecard data appears after more closed sessions.",
+    "sessionsRun": "Sessions run",
+    "avgParticipation": "Avg participation",
+    "responseRate": "Response rate",
+    "facilitator": "Facilitator {{id}}…",
+    "facilitatorStats": "{{sessions}} sessions · {{participation}} avg votes · {{rate}}% response"
   }
 }

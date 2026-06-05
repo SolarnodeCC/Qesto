@@ -18,6 +18,7 @@ const RELEASES = [
   { version: '4.2.0-rc.1', codename: 'v4.2-rc', status: 'rc', sprint: 76 },
   { version: '5.0.0-rc.1', codename: 'v5.0-rc', status: 'rc', sprint: 79 },
   { version: '5.0.0', codename: 'v5.0', status: 'ga', sprint: 80 },
+  { version: '5.1.0', codename: 'v5.1', status: 'ga', sprint: 84 },
 ] as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,7 +29,7 @@ export function mountPlatformRoutes(parent: any) {
     c.json({
       ok: true,
       data: {
-        api: '5.0.0',
+        api: '5.1.0',
         realtimeDefault:
           getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
         realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),
@@ -65,14 +66,28 @@ export function mountPlatformRoutes(parent: any) {
     c.json({
       ok: true,
       data: {
-        targetVoters: 100_000,
-        evidenceStatus: 'synthetic_baseline_100k',
-        nextGate: { sprint: 75, voters: 100_000, story: 'SCALE-PROOF-100K-01', status: 'recorded' },
+        targetVoters: 50_000,
+        evidenceStatus: 'staging_gate_50k_townhall',
+        nextGate: {
+          sprint: 84,
+          voters: 50_000,
+          story: 'TOWNHALL-SCALE-PROOF-50K-01',
+          status: 'staging_required',
+          harness: 'tests/load/townhall-moderation-smoke.js',
+          moderationQueueP95Ms: 2000,
+        },
         milestones: [
           { sprint: 60, voters: 10_000, status: 'recorded' },
           { sprint: 64, voters: 25_000, status: 'recorded' },
           { sprint: 68, voters: 50_000, status: 'recorded' },
           { sprint: 71, voters: 50_000, status: 'recorded', harness: 'tests/load/k6-smoke.js' },
+          {
+            sprint: 84,
+            voters: 50_000,
+            status: 'smoke_recorded',
+            harness: 'tests/load/townhall-moderation-smoke.js',
+            note: 'Full 50k concurrent proof runs on staging infra (moderation p95 <2s)',
+          },
           { sprint: 75, voters: 100_000, status: 'recorded', harness: 'tests/load/k6-smoke.js', note: 'synthetic until k6 100k run' },
         ],
         sessionRoom: { voteEngineExtracted: true, coordinatorPattern: 'adr-0025' },

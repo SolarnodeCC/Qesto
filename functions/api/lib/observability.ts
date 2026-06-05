@@ -169,6 +169,8 @@ export type QestoEvent = {
     | 'kb_rag.similar_sessions'
     | 'insight.aggregated'
     | 'insight.trends_viewed'
+    | 'insight.scorecard_viewed'
+    | 'insight.export_viewed'
     | 'copilot.suggestion_emitted'
     | 'copilot.suggestion_accepted'
     | 'copilot.poll_drafted'
