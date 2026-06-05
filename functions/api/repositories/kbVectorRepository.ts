@@ -107,6 +107,10 @@ export class KbVectorRepository {
 
     const result = await this.vectorize.query(vector, {
       topK: opts.topK ?? 15,
+      // `qesto-kb-production` is a Vectorize **v2** index — `returnMetadata`
+      // must be the string form ('all'|'indexed'|'none'); the legacy boolean
+      // throws on v2. Metadata filtering (status/domain/type below) also
+      // requires v2 metadata indexes on those properties.
       returnMetadata: 'all',
       ...(Object.keys(filter).length > 0 ? { filter: filter as VectorizeVectorMetadataFilter } : {}),
     })
