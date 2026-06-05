@@ -28,6 +28,7 @@ import { sentimentContextFromMeta } from './lib/ai/session-context'
 import { RateLimiter } from './lib/session-room-rate-limiter'
 import { EnergizerHandler } from './lib/session-room-energizer-handler'
 import { TownhallHandler } from './lib/session-room-townhall-handler'
+import { RetroHandler } from './lib/session-room-retro-handler'
 import { logEvent } from './lib/log'
 import { flagOff } from './lib/flags'
 
@@ -70,6 +71,8 @@ type Meta = {
   paused?: boolean
   /** TOWNHALL (ADR-0044): moderation model for townhall-mode sessions. */
   townhallModeration?: TownhallModeration
+  /** RETRO (ADR-0048): dot-vote limit for action items. */
+  retroDotVoteLimit?: number
   /**
    * Leaderboard display mode (ENTERPRISE-POLISH s4b).
    * - 'names'   : show voterId / display name (default)
@@ -167,6 +170,7 @@ export class SessionRoom implements DurableObject {
   private readonly rateLimiter: RateLimiter
   private readonly energizerHandler: EnergizerHandler
   private readonly townhallHandler: TownhallHandler
+  private readonly retroHandler: RetroHandler
 
   constructor(ctx: DurableObjectState, env: Env) {
     this.ctx = ctx
@@ -175,6 +179,7 @@ export class SessionRoom implements DurableObject {
     this.rateLimiter = new RateLimiter(ctx.storage)
     this.energizerHandler = new EnergizerHandler(ctx as any, env, this.scheduleAlarm.bind(this))
     this.townhallHandler = new TownhallHandler(ctx as any, env)
+    this.retroHandler = new RetroHandler(ctx as any)
 
     this.clientWsHandlers = {
       vote: async (ws, att, msg) => {
@@ -224,6 +229,14 @@ export class SessionRoom implements DurableObject {
       townhall_moderate: async (ws, att, msg) => {
         if (msg.type !== 'townhall_moderate') return
         await this.townhallHandler.handleModerate(ws, att, { itemId: msg.data.itemId, action: msg.data.action, groupParentId: msg.data.groupParentId })
+      },
+      retro_submit: async (ws, att, msg) => {
+        if (msg.type !== 'retro_submit') return
+        await this.retroHandler.handleSubmit(ws, att, { column: msg.data.column, body: msg.data.body })
+      },
+      retro_upvote: async (ws, att, msg) => {
+        if (msg.type !== 'retro_upvote') return
+        await this.retroHandler.handleUpvote(ws, att, { itemId: msg.data.itemId })
       },
       // ENTERPRISE-POLISH §1c — response moderation for open questions.
       approve_response: async (ws, att, msg) => {
@@ -294,6 +307,8 @@ export class SessionRoom implements DurableObject {
           anonymity?: Anonymity
           plan?: PlanTier
           townhallModeration?: TownhallModeration
+          retroDotVoteLimit?: number
+          retroCarriedActions?: string[]
         }
       | null
 
@@ -316,6 +331,7 @@ export class SessionRoom implements DurableObject {
     const nowMs = now()
     const sessionMode: SessionMode = body.sessionMode ?? 'reflection'
     const isTownhall = sessionMode === 'townhall' && townhallEnabled(this.env)
+    const isRetro = sessionMode === 'retro'
     const meta: Meta = {
       sessionId: body.sessionId,
       ownerId: body.ownerId,
@@ -328,9 +344,13 @@ export class SessionRoom implements DurableObject {
       ...(body.anonymity ? { anonymity: body.anonymity } : {}),
       ...(body.plan ? { plan: body.plan } : {}),
       ...(isTownhall ? { townhallModeration: body.townhallModeration ?? 'pre' } : {}),
+      ...(isRetro ? { retroDotVoteLimit: body.retroDotVoteLimit ?? 3 } : {}),
       ...(sessionMode === 'fun' ? { questionExpiresAt: nowMs + FUN_MODE_QUESTION_MS } : {}),
     }
     await this.ctx.storage.put(K_META, meta)
+    if (isRetro) {
+      await this.retroHandler.seedBoard(body.retroDotVoteLimit ?? 3, body.retroCarriedActions ?? [])
+    }
     if (isTownhall) {
       // Seed an empty persistent board. Items/upvoters are point-addressable keys
       // written on demand; the index + spotlight + rev are the board's spine.
@@ -404,7 +424,15 @@ export class SessionRoom implements DurableObject {
     const voteList = Object.entries(votes).flatMap(([voterId, optionIds]) =>
       optionIds.map((optionId) => ({ voterId, optionId })),
     )
-    return this.jsonOk({ counts, total, votes: voteList, questionId })
+    let retroActionItems: string[] = []
+    if (meta?.sessionMode === 'retro') {
+      try {
+        retroActionItems = await this.retroHandler.collectActionItemsForWorkspace()
+      } catch (err) {
+        logEvent({ event: 'retro.collect_actions_failed', sessionId: meta.sessionId, err: String(err) })
+      }
+    }
+    return this.jsonOk({ counts, total, votes: voteList, questionId, retroActionItems })
   }
 
   // ── /transition-to-live ────────────────────────────────────────────────────
@@ -1379,6 +1407,7 @@ export class SessionRoom implements DurableObject {
     // TOWNHALL (ADR-0044): the board is a separate persistent surface — follow `init`
     // with a full `townhall_state` snapshot scoped to this connection's role.
     if (isTownhall) await this.townhallHandler.sendSnapshot(ws, att, meta.townhallModeration!)
+    if (meta.sessionMode === 'retro') await this.retroHandler.sendSnapshot(ws)
   }
 
   private async setPaused(paused: boolean): Promise<void> {

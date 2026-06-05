@@ -38,13 +38,17 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
     }
   }
 
-  async function handleStart(workspaceId: string) {
+  async function handleStart(workspaceId: string, kind: WorkspaceKind) {
     setBusyId(workspaceId)
     setMessage(null)
     const result = await startInstance(workspaceId)
     setBusyId(null)
     if (result.ok) {
-      window.location.href = `/present/${result.sessionId}`
+      const path =
+        kind === 'retro'
+          ? `/sessions/${result.sessionId}/retro`
+          : `/present/${result.sessionId}`
+      window.location.href = path
     } else {
       setMessage(result.message)
     }
@@ -132,7 +136,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
               </div>
               <button
                 type="button"
-                onClick={() => void handleStart(ws.id)}
+                onClick={() => void handleStart(ws.id, ws.kind)}
                 disabled={busyId === ws.id}
                 className="min-h-11 shrink-0 rounded-md border border-pulse-300 dark:border-pulse-600 px-4 text-sm font-medium hover:bg-pulse-50 dark:hover:bg-pulse-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500"
               >

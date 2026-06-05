@@ -29,7 +29,7 @@ type SessionRow = {
   status: 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
   anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none' | 'zero_knowledge'
   vote_policy?: 'once' | 'multi' | 'react'
-  session_mode?: 'reflection' | 'fun' | 'townhall' | 'stage'
+  session_mode?: 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro'
   townhall_moderation?: 'pre' | 'post' | null
   created_at: number
   started_at: number | null
@@ -443,6 +443,22 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
       row.vote_policy = vote_policy
+      return { meta: { changes: 1 } }
+    }
+    // RETRO-BOARD-01: UPDATE sessions SET anonymity = ?1, session_mode = 'retro' WHERE id = ?2
+    if (this.sql.includes("session_mode = 'retro'") && this.sql.includes('anonymity')) {
+      const [anonymity, id] = this.args as [SessionRow['anonymity'], string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.anonymity = anonymity
+      row.session_mode = 'retro'
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.includes("session_mode = 'retro'")) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.session_mode = 'retro'
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE sessions SET session_mode')) {
@@ -1190,6 +1206,32 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       return (row
         ? { id: row.id, owner_id: row.owner_id, team_id: row.team_id ?? null }
+        : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT id, status, owner_id, workspace_id FROM sessions WHERE id')) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      return (row
+        ? {
+            id: row.id,
+            status: row.status,
+            owner_id: row.owner_id,
+            workspace_id: row.workspace_id ?? null,
+          }
+        : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT id, session_mode, status, title, code, workspace_id FROM sessions WHERE id')) {
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      return (row && row.owner_id === owner_id
+        ? {
+            id: row.id,
+            session_mode: row.session_mode ?? 'reflection',
+            status: row.status,
+            title: row.title,
+            code: row.code,
+            workspace_id: row.workspace_id ?? null,
+          }
         : null) as T | null
     }
     if (this.sql.startsWith('SELECT id FROM marketplace_purchases')) {

@@ -202,6 +202,14 @@ export type ClientMessage =
       data: { itemId: string; action: TownhallModerateAction; groupParentId?: string }
       timestamp: number
     }
+  // RETRO (ADR-0048). 3-column board submit + dot-vote on actions.
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_submit'
+      data: { column: 'went_well' | 'didnt_go_well' | 'actions'; body: string }
+      timestamp: number
+    }
+  | { v?: LiveProtocolVersion; type: 'retro_upvote'; data: { itemId: string }; timestamp: number }
   // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
   | { v?: LiveProtocolVersion; type: 'approve_response'; data: { questionId: string; responseId: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'reject_response'; data: { questionId: string; responseId: string }; timestamp: number }
@@ -361,6 +369,56 @@ export type ServerMessage =
         /** Full item included so the frontend can render the now-answering card
          *  without a state lookup. Null when spotlight is cleared. */
         item: TownhallBoardItem | null
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_state'
+      data: {
+        items: Array<{
+          id: string
+          column: 'went_well' | 'didnt_go_well' | 'actions'
+          body: string
+          upvotes: number
+          createdAt: number
+          carried?: boolean
+        }>
+        rev: number
+        dotVoteLimit: number
+        columns: Array<'went_well' | 'didnt_go_well' | 'actions'>
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_item_added'
+      data: {
+        item: {
+          id: string
+          column: 'went_well' | 'didnt_go_well' | 'actions'
+          body: string
+          upvotes: number
+          createdAt: number
+          carried?: boolean
+        }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_item_updated'
+      data: {
+        item: {
+          id: string
+          column: 'went_well' | 'didnt_go_well' | 'actions'
+          body: string
+          upvotes: number
+          createdAt: number
+          carried?: boolean
+        }
+        rev: number
       }
       timestamp: number
     }

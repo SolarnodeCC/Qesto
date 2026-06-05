@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireFeature } from '../middleware/feature-gate'
-import { readKvJson } from '../lib/kv'
+import { readKvJson, writeKvJson } from '../lib/kv'
 import { teamDocumentKey } from '../lib/kv-keys'
 import { ulid } from '../lib/ulid'
 import {
@@ -34,6 +34,8 @@ import {
   writeCachedWorkspaceTrend,
 } from '../lib/workspace-trends'
 import type { WorkspaceKind, WorkspaceRow, WorkspaceTrendWindow } from '../lib/workspace-types'
+import { DEFAULT_RETRO_TEMPLATE } from '../lib/workspace-types'
+import { retroSeedKey, type RetroSessionSeed } from './retro-sessions'
 import type { Team } from './teams'
 import type { Env } from '../types'
 
@@ -303,6 +305,14 @@ export function mountTeamWorkspaceRoutes(parent: any) {
     let carriedActions: Awaited<ReturnType<typeof carryOpenActionsToNewInstance>> = []
     if (ws.kind === 'retro' && c.env.ACTIONS_KV) {
       carriedActions = await carryOpenActionsToNewInstance(c.env.ACTIONS_KV, teamId, wsId, created.sessionId)
+    }
+    if (ws.kind === 'retro' && c.env.SESSIONS_KV) {
+      const template = JSON.parse(ws.template_json || '{}') as { dotVoteLimit?: number }
+      const seed: RetroSessionSeed = {
+        dotVoteLimit: template.dotVoteLimit ?? DEFAULT_RETRO_TEMPLATE.dotVoteLimit,
+        carriedActions: carriedActions.map((a) => a.text),
+      }
+      await writeKvJson(c.env.SESSIONS_KV, retroSeedKey(created.sessionId), seed, { expirationTtl: 86400 * 7 })
     }
     return c.json(
       {

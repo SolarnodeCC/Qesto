@@ -152,6 +152,22 @@ export const ClientMessageSchema = z.union([
       }),
     timestamp: z.number(),
   }),
+  // RETRO (ADR-0048). 3-column board.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('retro_submit'),
+    data: z.object({
+      column: z.enum(['went_well', 'didnt_go_well', 'actions']),
+      body: z.string().trim().min(2).max(500),
+    }),
+    timestamp: z.number(),
+  }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('retro_upvote'),
+    data: z.object({ itemId: z.string().min(1) }),
+    timestamp: z.number(),
+  }),
   // COPILOT-06 (ADR-0046): presenter injects a copilot-drafted question into the live set.
   z.object({
     v: z.number().optional(),

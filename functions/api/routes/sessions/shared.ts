@@ -171,6 +171,7 @@ export async function fetchSession(db: D1Database, id: string, ownerId: string):
       `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
               townhall_moderation,
               created_at, started_at, closed_at, archived_at, team_id,
+              workspace_id, workspace_seq,
               ai_generated, ai_consent_at, ai_grounding_hash,
               ai_accepted_count, ai_dismissed_count,
               ai_recap_model, ai_recap_edited_at

@@ -79,7 +79,7 @@ export const SessionWebhookPayload = z.object({
   sessionId: z.string(),
   isPublic: z.boolean(),
   language: Lang,
-  sessionMode: z.enum(['fun', 'reflection', 'townhall', 'stage']),
+  sessionMode: z.enum(['fun', 'reflection', 'townhall', 'stage', 'retro']),
   questionCount: z.number(),
   participantCount: z.number(),
   responseRate: z.number().min(0).max(1),

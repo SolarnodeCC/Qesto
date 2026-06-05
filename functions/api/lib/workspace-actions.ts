@@ -58,3 +58,35 @@ export async function purgeWorkspaceActions(
 ): Promise<void> {
   await kv.delete(actionsKey(teamId, workspaceId))
 }
+
+/** RETRO-ACTIONS-01: persist new action items from a closed retro session. */
+export async function mergeRetroActionsOnClose(
+  kv: KVNamespace,
+  teamId: string,
+  workspaceId: string,
+  sessionId: string,
+  actionTexts: string[],
+): Promise<number> {
+  const blob = await readWorkspaceActions(kv, teamId, workspaceId)
+  const existing = new Set(blob.items.map((i) => i.text.trim().toLowerCase()))
+  const newItems: WorkspaceActionItem[] = []
+  for (const text of actionTexts) {
+    const trimmed = text.trim()
+    if (!trimmed) continue
+    const key = trimmed.toLowerCase()
+    if (existing.has(key)) continue
+    existing.add(key)
+    newItems.push({
+      id: ulid(),
+      text: trimmed,
+      status: 'open',
+      sourceSessionId: sessionId,
+      createdAt: Date.now(),
+    })
+  }
+  if (newItems.length === 0) return 0
+  await writeWorkspaceActions(kv, teamId, workspaceId, {
+    items: [...blob.items, ...newItems],
+  })
+  return newItems.length
+}

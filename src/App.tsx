@@ -24,6 +24,9 @@ const Display = lazy(() => import('./pages/Display'))
 const TownhallJoin = lazy(() => import('./pages/TownhallJoin'))
 const TownhallPresent = lazy(() => import('./pages/TownhallPresent'))
 const TownhallDisplay = lazy(() => import('./pages/TownhallDisplay'))
+const RetroJoin = lazy(() => import('./pages/RetroJoin'))
+const RetroPresent = lazy(() => import('./pages/RetroPresent'))
+const RetroDisplay = lazy(() => import('./pages/RetroDisplay'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -162,6 +165,10 @@ export default function App() {
         <Route path="/sessions/:id/townhall" element={<Suspense fallback={<LazyRouteFallback />}><TownhallPresent /></Suspense>} />
         <Route path="/th/:code" element={<Suspense fallback={<LazyRouteFallback />}><TownhallJoin /></Suspense>} />
         <Route path="/th/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><TownhallDisplay /></Suspense>} />
+        {/* RETRO (ADR-0048) — 3-column agile retrospective */}
+        <Route path="/sessions/:id/retro" element={<Suspense fallback={<LazyRouteFallback />}><RetroPresent /></Suspense>} />
+        <Route path="/r/:code" element={<Suspense fallback={<LazyRouteFallback />}><RetroJoin /></Suspense>} />
+        <Route path="/r/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><RetroDisplay /></Suspense>} />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />
         <Route path="/teams/accept" element={<TeamInvite />} />

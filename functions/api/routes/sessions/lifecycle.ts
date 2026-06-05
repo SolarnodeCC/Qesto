@@ -16,8 +16,19 @@ import { writeEvent } from '../../lib/observability'
 import { trackSessionWrite } from '../../lib/multi-region-mutation'
 import { logEvent } from '../../lib/log'
 import { enqueuePostSessionWork, computePayloadHash } from '../../lib/queues/producer'
+import { readKvJson } from '../../lib/kv'
+import { mergeRetroActionsOnClose } from '../../lib/workspace-actions'
+import { retroSeedKey, type RetroSessionSeed } from '../retro-sessions'
 import type { Question, Session } from '../../types'
 import type { LiveQuestion } from '../../realtime'
+
+const BOARD_MODES_NO_QUESTIONS = new Set(['retro', 'townhall'])
+
+async function loadRetroInitExtras(env: Env, sessionId: string): Promise<{ retroDotVoteLimit?: number; retroCarriedActions?: string[] }> {
+  const seed = await readKvJson<RetroSessionSeed>(env.SESSIONS_KV, retroSeedKey(sessionId))
+  if (!seed) return {}
+  return { retroDotVoteLimit: seed.dotVoteLimit, retroCarriedActions: seed.carriedActions }
+}
 
 async function doInitAlreadyInitialised(doRes: Response): Promise<boolean> {
   if (doRes.status !== 409) return false
@@ -47,9 +58,10 @@ async function rollbackSessionStart(
 
 function buildSessionInitBody(
   session: Session,
-  liveQ: LiveQuestion,
+  liveQ: LiveQuestion | null,
   questions: Question[],
   plan: string,
+  extras?: { retroDotVoteLimit?: number; retroCarriedActions?: string[] },
 ) {
   return {
     sessionId: session.id,
@@ -63,6 +75,8 @@ function buildSessionInitBody(
     sessionMode: session.session_mode,
     anonymity: session.anonymity ?? undefined,
     townhallModeration: session.townhall_moderation ?? undefined,
+    retroDotVoteLimit: extras?.retroDotVoteLimit,
+    retroCarriedActions: extras?.retroCarriedActions,
     plan,
   }
 }
@@ -105,7 +119,8 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     }
     const session = draftStart.session
     const questions = await fetchQuestions(c.env.DB, id)
-    if (questions.length === 0) {
+    const boardMode = BOARD_MODES_NO_QUESTIONS.has(session.session_mode)
+    if (questions.length === 0 && !boardMode) {
       await recordSprint19JourneyEvent(c.env, {
         name: 'launchpad.launch_failed',
         userId: user.sub,
@@ -125,7 +140,9 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       )
     }
     const now = Date.now()
-    const liveQ = questionToLive(questions[0])
+    const liveQ = questions.length > 0 ? questionToLive(questions[0]) : null
+    const retroExtras = session.session_mode === 'retro' ? await loadRetroInitExtras(c.env, id) : {}
+    const initBody = () => buildSessionInitBody(session, liveQ, questions, c.get('plan'), retroExtras)
     const logCtx = { trace_id: traceId, session_id: id, user_id: user.sub }
 
     logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx })
@@ -157,7 +174,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       if (current?.status === 'energizing' || current?.status === 'live') {
         let doRes: Response
         try {
-          doRes = await postDO(c.env, id, '/init', buildSessionInitBody(session, liveQ, questions, c.get('plan')))
+          doRes = await postDO(c.env, id, '/init', initBody())
         } catch {
           const latest = await fetchSession(c.env.DB, id, user.sub)
           if (latest?.status === 'draft') {
@@ -204,7 +221,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
 
     let doRes: Response
     try {
-      doRes = await postDO(c.env, id, '/init', buildSessionInitBody(session, liveQ, questions, c.get('plan')))
+      doRes = await postDO(c.env, id, '/init', initBody())
     } catch (doNetworkErr) {
       
       // Roll back the DB transition so the session remains startable.
@@ -345,6 +362,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
             total: number
             votes: Array<{ voterId: string; optionId: string }>
             questionId: string | null
+            retroActionItems?: string[]
           }
         }
       | null
@@ -384,6 +402,31 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       .run()
     session.status = 'closed'
     session.closed_at = closedAt
+
+    if (
+      session.session_mode === 'retro' &&
+      session.workspace_id &&
+      session.team_id &&
+      c.env.ACTIONS_KV &&
+      parsed.data.retroActionItems?.length
+    ) {
+      try {
+        await mergeRetroActionsOnClose(
+          c.env.ACTIONS_KV,
+          session.team_id,
+          session.workspace_id,
+          id,
+          parsed.data.retroActionItems,
+        )
+      } catch (err) {
+        logEvent({
+          event: 'retro.merge_actions_failed',
+          sessionId: id,
+          workspaceId: session.workspace_id,
+          err: String(err),
+        })
+      }
+    }
 
     const durationMs = session.started_at ? closedAt - session.started_at : 0
     writeEvent(c.env.METRICS_AE, {
