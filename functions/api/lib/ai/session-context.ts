@@ -161,12 +161,14 @@ export async function runAI<T extends Record<string, unknown>>(
     )
     const durationMs = Date.now() - started
     writeEvent(env.METRICS_AE, {
-      name: 'ai.inference',
+      name: data.cached ? 'ai.cache_hit' : 'ai.cache_miss',
       sessionId: ctx.sessionId,
       teamId: ctx.teamId ?? undefined,
       plan: ctx.plan,
       durationMs,
       detail: model,
+      cacheAge: data.cacheAge,
+      gatewayMs: data.gatewayLatencyMs,
     })
     // TODO (Phase 2.1): Log cache hit + gateway latency to custom AE dataset
     // when QestoEvent type is extended with these fields
