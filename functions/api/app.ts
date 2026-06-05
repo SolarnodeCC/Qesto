@@ -33,6 +33,7 @@ import { mountTeamInsightsRoutes } from './routes/team-insights'
 import { mountAgentDefinitionRoutes } from './routes/agent-definitions'
 import { mountTeamWorkspaceRoutes } from './routes/team-workspaces'
 import { mountStageSessionRoutes } from './routes/stage-sessions'
+import { mountIdeateSessionRoutes } from './routes/ideate-sessions'
 import { mountRetroSessionRoutes } from './routes/retro-sessions'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
@@ -308,6 +309,7 @@ export function createApp() {
   mountTeamWorkspaceRoutes(app)
   mountStageSessionRoutes(app)
   mountRetroSessionRoutes(app)
+  mountIdeateSessionRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 

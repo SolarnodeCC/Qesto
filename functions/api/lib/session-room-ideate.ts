@@ -1,0 +1,49 @@
+/** ADR-0048 / IDEATE — ideation board storage keys and helpers. */
+
+import { ulid } from './ulid'
+
+export type IdeateIdeaStatus = 'active' | 'dismissed'
+
+export type IdeateIdea = {
+  id: string
+  body: string
+  upvotes: number
+  clusterId: string | null
+  status: IdeateIdeaStatus
+  createdAt: number
+}
+
+export type IdeateCluster = {
+  id: string
+  label: string
+  ideaIds: string[]
+  updatedAt: number
+}
+
+export const IDEATE_KEYS = {
+  enabled: 'ideate:enabled',
+  index: 'ideate:index',
+  rev: 'ideate:rev',
+  clusters: 'ideate:clusters',
+  dotVoteLimit: 'ideate:dot_vote_limit',
+  clusterDebounceMs: 'ideate:cluster_debounce_ms',
+  clusterPendingAt: 'ideate:cluster_pending_at',
+  item: (id: string) => `ideate:item:${id}`,
+  upvoters: (id: string) => `ideate:upvoters:${id}`,
+  voterDots: (voterId: string) => `ideate:voter_dots:${voterId}`,
+} as const
+
+export function nextIdeateRev(current: number): number {
+  return current + 1
+}
+
+export function createIdeateIdea(body: string): IdeateIdea {
+  return {
+    id: ulid(),
+    body: body.trim(),
+    upvotes: 0,
+    clusterId: null,
+    status: 'active',
+    createdAt: Date.now(),
+  }
+}

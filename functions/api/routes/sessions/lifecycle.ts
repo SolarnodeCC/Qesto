@@ -19,16 +19,32 @@ import { enqueuePostSessionWork, computePayloadHash } from '../../lib/queues/pro
 import { readKvJson } from '../../lib/kv'
 import { mergeRetroActionsOnClose } from '../../lib/workspace-actions'
 import { persistRetroHealthSnapshot } from '../../lib/workspace-trends'
+import { ideateSeedKey, type IdeateSessionSeed } from '../ideate-sessions'
 import { retroSeedKey, type RetroSessionSeed } from '../retro-sessions'
+import { DEFAULT_IDEATE_TEMPLATE } from '../../lib/workspace-types'
 import type { Question, Session } from '../../types'
 import type { LiveQuestion } from '../../realtime'
 
-const BOARD_MODES_NO_QUESTIONS = new Set(['retro', 'townhall'])
+const BOARD_MODES_NO_QUESTIONS = new Set(['retro', 'townhall', 'ideate'])
 
 async function loadRetroInitExtras(env: Env, sessionId: string): Promise<{ retroDotVoteLimit?: number; retroCarriedActions?: string[] }> {
   const seed = await readKvJson<RetroSessionSeed>(env.SESSIONS_KV, retroSeedKey(sessionId))
   if (!seed) return {}
   return { retroDotVoteLimit: seed.dotVoteLimit, retroCarriedActions: seed.carriedActions }
+}
+
+async function loadIdeateInitExtras(
+  env: Env,
+  sessionId: string,
+): Promise<{ ideateDotVoteLimit?: number; ideateClusterDebounceMs?: number }> {
+  const seed = await readKvJson<IdeateSessionSeed>(env.SESSIONS_KV, ideateSeedKey(sessionId))
+  if (!seed) {
+    return {
+      ideateDotVoteLimit: DEFAULT_IDEATE_TEMPLATE.dotVoteLimit,
+      ideateClusterDebounceMs: DEFAULT_IDEATE_TEMPLATE.clusterDebounceMs,
+    }
+  }
+  return { ideateDotVoteLimit: seed.dotVoteLimit, ideateClusterDebounceMs: seed.clusterDebounceMs }
 }
 
 async function doInitAlreadyInitialised(doRes: Response): Promise<boolean> {
@@ -62,7 +78,12 @@ function buildSessionInitBody(
   liveQ: LiveQuestion | null,
   questions: Question[],
   plan: string,
-  extras?: { retroDotVoteLimit?: number; retroCarriedActions?: string[] },
+  extras?: {
+    retroDotVoteLimit?: number
+    retroCarriedActions?: string[]
+    ideateDotVoteLimit?: number
+    ideateClusterDebounceMs?: number
+  },
 ) {
   return {
     sessionId: session.id,
@@ -78,6 +99,8 @@ function buildSessionInitBody(
     townhallModeration: session.townhall_moderation ?? undefined,
     retroDotVoteLimit: extras?.retroDotVoteLimit,
     retroCarriedActions: extras?.retroCarriedActions,
+    ideateDotVoteLimit: extras?.ideateDotVoteLimit,
+    ideateClusterDebounceMs: extras?.ideateClusterDebounceMs,
     plan,
   }
 }
@@ -142,8 +165,13 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     }
     const now = Date.now()
     const liveQ = questions.length > 0 ? questionToLive(questions[0]) : null
-    const retroExtras = session.session_mode === 'retro' ? await loadRetroInitExtras(c.env, id) : {}
-    const initBody = () => buildSessionInitBody(session, liveQ, questions, c.get('plan'), retroExtras)
+    const boardExtras =
+      session.session_mode === 'retro'
+        ? await loadRetroInitExtras(c.env, id)
+        : session.session_mode === 'ideate'
+          ? await loadIdeateInitExtras(c.env, id)
+          : {}
+    const initBody = () => buildSessionInitBody(session, liveQ, questions, c.get('plan'), boardExtras)
     const logCtx = { trace_id: traceId, session_id: id, user_id: user.sub }
 
     logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx })

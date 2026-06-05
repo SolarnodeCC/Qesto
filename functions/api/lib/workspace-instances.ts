@@ -9,9 +9,10 @@ export function defaultTemplateForKind(kind: WorkspaceKind): Record<string, unkn
   return { tracks: [] }
 }
 
-export function sessionModeForWorkspaceKind(kind: WorkspaceKind): 'reflection' | 'stage' | 'retro' {
+export function sessionModeForWorkspaceKind(kind: WorkspaceKind): 'reflection' | 'stage' | 'retro' | 'ideate' {
   if (kind === 'event') return 'stage'
   if (kind === 'retro') return 'retro'
+  if (kind === 'ideate') return 'ideate'
   return 'reflection'
 }
 
@@ -40,7 +41,7 @@ export type CreateInstanceResult = {
   code: string
   title: string
   workspaceSeq: number
-  sessionMode: 'reflection' | 'stage' | 'retro'
+  sessionMode: 'reflection' | 'stage' | 'retro' | 'ideate'
 }
 
 export async function createWorkspaceInstance(params: CreateInstanceParams): Promise<CreateInstanceResult> {

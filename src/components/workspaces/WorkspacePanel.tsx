@@ -49,7 +49,9 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
       const path =
         kind === 'retro'
           ? `/sessions/${result.sessionId}/retro`
-          : `/present/${result.sessionId}`
+          : kind === 'ideate'
+            ? `/sessions/${result.sessionId}/ideate`
+            : `/present/${result.sessionId}`
       window.location.href = path
     } else {
       setMessage(result.message)

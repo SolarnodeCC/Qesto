@@ -35,7 +35,8 @@ import {
   writeCachedWorkspaceTrend,
 } from '../lib/workspace-trends'
 import type { WorkspaceKind, WorkspaceRow, WorkspaceTrendWindow } from '../lib/workspace-types'
-import { DEFAULT_RETRO_TEMPLATE } from '../lib/workspace-types'
+import { DEFAULT_IDEATE_TEMPLATE, DEFAULT_RETRO_TEMPLATE } from '../lib/workspace-types'
+import { ideateSeedKey, type IdeateSessionSeed } from './ideate-sessions'
 import { retroSeedKey, type RetroSessionSeed } from './retro-sessions'
 import type { Team } from './teams'
 import type { Env } from '../types'
@@ -315,6 +316,14 @@ export function mountTeamWorkspaceRoutes(parent: any) {
         carriedActions: carriedActions.map((a) => a.text),
       }
       await writeKvJson(c.env.SESSIONS_KV, retroSeedKey(created.sessionId), seed, { expirationTtl: 86400 * 7 })
+    }
+    if (ws.kind === 'ideate' && c.env.SESSIONS_KV) {
+      const template = JSON.parse(ws.template_json || '{}') as { dotVoteLimit?: number; clusterDebounceMs?: number }
+      const seed: IdeateSessionSeed = {
+        dotVoteLimit: template.dotVoteLimit ?? DEFAULT_IDEATE_TEMPLATE.dotVoteLimit,
+        clusterDebounceMs: template.clusterDebounceMs ?? DEFAULT_IDEATE_TEMPLATE.clusterDebounceMs,
+      }
+      await writeKvJson(c.env.SESSIONS_KV, ideateSeedKey(created.sessionId), seed, { expirationTtl: 86400 * 7 })
     }
     return c.json(
       {

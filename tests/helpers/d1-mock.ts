@@ -29,7 +29,7 @@ type SessionRow = {
   status: 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
   anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none' | 'zero_knowledge'
   vote_policy?: 'once' | 'multi' | 'react'
-  session_mode?: 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro'
+  session_mode?: 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate'
   townhall_moderation?: 'pre' | 'post' | null
   created_at: number
   started_at: number | null
@@ -459,6 +459,13 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       if (!row) return { meta: { changes: 0 } }
       row.session_mode = 'retro'
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.includes("session_mode = 'ideate'")) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.session_mode = 'ideate'
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE sessions SET session_mode')) {

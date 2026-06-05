@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   vote_policy TEXT NOT NULL DEFAULT 'once'
     CHECK (vote_policy IN ('once','multi','react')),
   session_mode TEXT NOT NULL DEFAULT 'reflection'
-    CHECK (session_mode IN ('reflection','fun','townhall','stage','retro')),
+    CHECK (session_mode IN ('reflection','fun','townhall','stage','retro','ideate')),
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,

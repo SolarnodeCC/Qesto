@@ -1,0 +1,20 @@
+{
+  "present.subtitle": "Tablero de ideación en vivo",
+  "present.draftHint": "Inicia la sesión para que los participantes envíen ideas.",
+  "present.start": "Iniciar ideación",
+  "present.starting": "Iniciando…",
+  "present.joinAt": "Los participantes se unen en",
+  "submit.title": "Comparte una idea",
+  "submit.placeholder": "¿Cuál es tu idea?",
+  "submit.button": "Enviar idea",
+  "submit.success": "Idea enviada",
+  "clusters.title": "Clusters temáticos",
+  "clusters.waiting": "Los clusters aparecen cuando llegan ideas…",
+  "clusters.count": "{{count}} ideas",
+  "clusters.uncategorized": "Esperando agrupación",
+  "vote.aria": "Votar por: {{body}}",
+  "vote.count": "{{count}} votos",
+  "vote.dotsRemaining": "Quedan {{remaining}} de {{limit}} votos",
+  "connection.reconnecting": "Reconectando…",
+  "connection.failed": "Conexión perdida. Actualiza la página."
+}

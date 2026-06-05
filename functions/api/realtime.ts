@@ -57,6 +57,7 @@ export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
 // `init.features` array when the flag is on and the session is in townhall mode, so
 // clients capability-detect the same way they do for `delta_results`.
 export const TOWNHALL_FEATURE = 'townhall_board'
+export const IDEATE_FEATURE = 'ideate_board'
 
 export function townhallEnabled(env: { REALTIME_TOWNHALL_ENABLED?: string }): boolean {
   return getFlag(env, 'REALTIME_TOWNHALL_ENABLED')
@@ -210,6 +211,9 @@ export type ClientMessage =
       timestamp: number
     }
   | { v?: LiveProtocolVersion; type: 'retro_upvote'; data: { itemId: string }; timestamp: number }
+  // IDEATE (ADR-0048). Idea submit + dot-vote.
+  | { v?: LiveProtocolVersion; type: 'ideate_submit'; data: { body: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'ideate_upvote'; data: { itemId: string }; timestamp: number }
   // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
   | { v?: LiveProtocolVersion; type: 'approve_response'; data: { questionId: string; responseId: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'reject_response'; data: { questionId: string; responseId: string }; timestamp: number }
@@ -418,6 +422,73 @@ export type ServerMessage =
           createdAt: number
           carried?: boolean
         }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_state'
+      data: {
+        ideas: Array<{
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }>
+        clusters: Array<{ id: string; label: string; ideaIds: string[]; updatedAt: number }>
+        rev: number
+        dotVoteLimit: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_idea_added'
+      data: {
+        idea: {
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_idea_updated'
+      data: {
+        idea: {
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_clusters_updated'
+      data: {
+        clusters: Array<{ id: string; label: string; ideaIds: string[]; updatedAt: number }>
+        ideas: Array<{
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }>
         rev: number
       }
       timestamp: number

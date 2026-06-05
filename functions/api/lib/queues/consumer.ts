@@ -203,10 +203,10 @@ async function handleDeliverMarketing(
   }
 
   const langs = ['en', 'nl', 'de', 'fr'] as const
-  const modes = ['reflection', 'fun', 'townhall', 'stage', 'retro'] as const
+  const modes = ['reflection', 'fun', 'townhall', 'stage', 'retro', 'ideate'] as const
   const langValue = (langs as readonly string[]).includes(language as string) ? (language as 'en' | 'nl' | 'de' | 'fr') : 'en'
   const modeValue = (modes as readonly string[]).includes(sessionMode as string)
-    ? (sessionMode as 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro')
+    ? (sessionMode as 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate')
     : 'reflection'
 
   await deliverMarketingWebhook(env, {

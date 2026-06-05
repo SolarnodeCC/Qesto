@@ -1,0 +1,260 @@
+import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { parseServerEnvelope } from '../lib/live-session-protocol'
+import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
+
+const LIVE_PROTOCOL_VERSION = 1
+
+export type IdeateIdea = {
+  id: string
+  body: string
+  upvotes: number
+  clusterId: string | null
+  status: 'active' | 'dismissed'
+  createdAt: number
+}
+
+export type IdeateCluster = {
+  id: string
+  label: string
+  ideaIds: string[]
+  updatedAt: number
+}
+
+export type IdeateConnection = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'closed' | 'failed'
+
+export type IdeateState = {
+  connection: IdeateConnection
+  ideas: IdeateIdea[]
+  clusters: IdeateCluster[]
+  rev: number
+  dotVoteLimit: number
+  myUpvotes: string[]
+  dotsUsed: number
+  error: string | null
+}
+
+type IdeateAction =
+  | { kind: 'connecting' }
+  | { kind: 'open' }
+  | { kind: 'reconnecting' }
+  | { kind: 'closed' }
+  | { kind: 'failed'; error: string }
+  | { kind: 'snapshot'; ideas: IdeateIdea[]; clusters: IdeateCluster[]; rev: number; dotVoteLimit: number }
+  | { kind: 'idea_added'; idea: IdeateIdea; rev: number }
+  | { kind: 'idea_updated'; idea: IdeateIdea; rev: number }
+  | { kind: 'clusters_updated'; ideas: IdeateIdea[]; clusters: IdeateCluster[]; rev: number }
+  | { kind: 'upvote_optimistic'; itemId: string }
+  | { kind: 'error'; message: string }
+
+const INITIAL: IdeateState = {
+  connection: 'idle',
+  ideas: [],
+  clusters: [],
+  rev: 0,
+  dotVoteLimit: 5,
+  myUpvotes: [],
+  dotsUsed: 0,
+  error: null,
+}
+
+function upsertIdea(ideas: IdeateIdea[], idea: IdeateIdea): IdeateIdea[] {
+  const idx = ideas.findIndex((i) => i.id === idea.id)
+  if (idx === -1) return [...ideas, idea]
+  const next = ideas.slice()
+  next[idx] = idea
+  return next
+}
+
+function ideateReducer(state: IdeateState, action: IdeateAction): IdeateState {
+  switch (action.kind) {
+    case 'connecting':
+      return { ...state, connection: 'connecting', error: null }
+    case 'open':
+      return { ...state, connection: 'open' }
+    case 'reconnecting':
+      return { ...state, connection: 'reconnecting' }
+    case 'closed':
+      return { ...state, connection: 'closed' }
+    case 'failed':
+      return { ...state, connection: 'failed', error: action.error }
+    case 'snapshot':
+      return {
+        ...state,
+        ideas: action.ideas,
+        clusters: action.clusters,
+        rev: action.rev,
+        dotVoteLimit: action.dotVoteLimit,
+      }
+    case 'idea_added':
+      return { ...state, ideas: upsertIdea(state.ideas, action.idea), rev: action.rev }
+    case 'idea_updated':
+      return { ...state, ideas: upsertIdea(state.ideas, action.idea), rev: action.rev }
+    case 'clusters_updated':
+      return { ...state, ideas: action.ideas, clusters: action.clusters, rev: action.rev }
+    case 'upvote_optimistic':
+      return {
+        ...state,
+        myUpvotes: [...state.myUpvotes, action.itemId],
+        dotsUsed: state.dotsUsed + 1,
+        ideas: state.ideas.map((i) =>
+          i.id === action.itemId ? { ...i, upvotes: i.upvotes + 1 } : i,
+        ),
+      }
+    case 'error':
+      return { ...state, error: action.message }
+    default:
+      return state
+  }
+}
+
+function toIdea(raw: Record<string, unknown>): IdeateIdea | null {
+  if (!raw || typeof raw.id !== 'string') return null
+  return {
+    id: raw.id,
+    body: typeof raw.body === 'string' ? raw.body : '',
+    upvotes: typeof raw.upvotes === 'number' ? raw.upvotes : 0,
+    clusterId: typeof raw.clusterId === 'string' ? raw.clusterId : null,
+    status: raw.status === 'dismissed' ? 'dismissed' : 'active',
+    createdAt: typeof raw.createdAt === 'number' ? raw.createdAt : 0,
+  }
+}
+
+function toCluster(raw: Record<string, unknown>): IdeateCluster | null {
+  if (!raw || typeof raw.id !== 'string' || typeof raw.label !== 'string') return null
+  return {
+    id: raw.id,
+    label: raw.label,
+    ideaIds: Array.isArray(raw.ideaIds) ? (raw.ideaIds as string[]) : [],
+    updatedAt: typeof raw.updatedAt === 'number' ? raw.updatedAt : 0,
+  }
+}
+
+type Options = { fingerprint?: string; presenterToken?: string; enabled?: boolean }
+
+export function useIdeateSession(sessionId: string | undefined, opts: Options = {}) {
+  const [state, dispatch] = useReducer(ideateReducer, INITIAL)
+  const wsRef = useRef<WebSocket | null>(null)
+  const attemptRef = useRef(0)
+  const { fingerprint, presenterToken, enabled = true } = opts
+
+  const connect = useCallback(() => {
+    if (!sessionId || !enabled) return
+    dispatch({ kind: 'connecting' })
+    const url = buildLiveSessionWsUrl(sessionId, fingerprint)
+    const subprotocols = presenterToken ? [`qesto.bearer.${presenterToken}`, 'qesto-v1'] : ['qesto-v1']
+    const ws = new WebSocket(url, subprotocols)
+    wsRef.current = ws
+
+    ws.addEventListener('open', () => dispatch({ kind: 'open' }))
+    ws.addEventListener('message', (ev) => {
+      try {
+        const msg = parseServerEnvelope(JSON.parse(typeof ev.data === 'string' ? ev.data : String(ev.data)))
+        if (!msg) return
+        const d = msg.data as Record<string, unknown>
+        switch (msg.type) {
+          case 'ideate_state': {
+            const ideas = Array.isArray(d.ideas)
+              ? (d.ideas as Record<string, unknown>[]).map(toIdea).filter(Boolean)
+              : []
+            const clusters = Array.isArray(d.clusters)
+              ? (d.clusters as Record<string, unknown>[]).map(toCluster).filter(Boolean)
+              : []
+            dispatch({
+              kind: 'snapshot',
+              ideas: ideas as IdeateIdea[],
+              clusters: clusters as IdeateCluster[],
+              rev: typeof d.rev === 'number' ? d.rev : 0,
+              dotVoteLimit: typeof d.dotVoteLimit === 'number' ? d.dotVoteLimit : 5,
+            })
+            break
+          }
+          case 'ideate_idea_added': {
+            const idea = toIdea(d.idea as Record<string, unknown>)
+            if (idea) dispatch({ kind: 'idea_added', idea, rev: d.rev as number })
+            break
+          }
+          case 'ideate_idea_updated': {
+            const idea = toIdea(d.idea as Record<string, unknown>)
+            if (idea) dispatch({ kind: 'idea_updated', idea, rev: d.rev as number })
+            break
+          }
+          case 'ideate_clusters_updated': {
+            const ideas = Array.isArray(d.ideas)
+              ? (d.ideas as Record<string, unknown>[]).map(toIdea).filter(Boolean)
+              : []
+            const clusters = Array.isArray(d.clusters)
+              ? (d.clusters as Record<string, unknown>[]).map(toCluster).filter(Boolean)
+              : []
+            dispatch({
+              kind: 'clusters_updated',
+              ideas: ideas as IdeateIdea[],
+              clusters: clusters as IdeateCluster[],
+              rev: d.rev as number,
+            })
+            break
+          }
+          case 'error':
+            dispatch({ kind: 'error', message: (d.message as string) ?? 'Error' })
+            break
+        }
+      } catch {
+        /* ignore */
+      }
+    })
+    ws.addEventListener('close', (ev) => {
+      if (ev.code === 1000) {
+        dispatch({ kind: 'closed' })
+        return
+      }
+      const attempt = attemptRef.current + 1
+      attemptRef.current = attempt
+      if (attempt > 5) {
+        dispatch({ kind: 'failed', error: 'Connection lost' })
+        return
+      }
+      dispatch({ kind: 'reconnecting' })
+      setTimeout(connect, Math.min(16000, 1000 * Math.pow(2, attempt - 1)))
+    })
+  }, [sessionId, enabled, fingerprint, presenterToken])
+
+  useEffect(() => {
+    connect()
+    return () => {
+      wsRef.current?.close(1000, 'unmount')
+      wsRef.current = null
+    }
+  }, [connect])
+
+  const submit = useCallback((body: string) => {
+    return sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'ideate_submit',
+      data: { body },
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  const upvote = useCallback(
+    (itemId: string) => {
+      if (state.myUpvotes.includes(itemId) || state.dotsUsed >= state.dotVoteLimit) return
+      dispatch({ kind: 'upvote_optimistic', itemId })
+      sendWsJson(wsRef.current, {
+        v: LIVE_PROTOCOL_VERSION,
+        type: 'ideate_upvote',
+        data: { itemId },
+        timestamp: Date.now(),
+      })
+    },
+    [state.myUpvotes, state.dotsUsed, state.dotVoteLimit],
+  )
+
+  return { state, submit, upvote }
+}
+
+export function ideasForCluster(ideas: IdeateIdea[], clusterId: string): IdeateIdea[] {
+  return ideas.filter((i) => i.status === 'active' && i.clusterId === clusterId)
+}
+
+export function unclusteredIdeas(ideas: IdeateIdea[]): IdeateIdea[] {
+  return ideas.filter((i) => i.status === 'active' && !i.clusterId)
+}

@@ -27,6 +27,8 @@ const TownhallDisplay = lazy(() => import('./pages/TownhallDisplay'))
 const RetroJoin = lazy(() => import('./pages/RetroJoin'))
 const RetroPresent = lazy(() => import('./pages/RetroPresent'))
 const RetroDisplay = lazy(() => import('./pages/RetroDisplay'))
+const IdeateJoin = lazy(() => import('./pages/IdeateJoin'))
+const IdeatePresent = lazy(() => import('./pages/IdeatePresent'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -169,6 +171,9 @@ export default function App() {
         <Route path="/sessions/:id/retro" element={<Suspense fallback={<LazyRouteFallback />}><RetroPresent /></Suspense>} />
         <Route path="/r/:code" element={<Suspense fallback={<LazyRouteFallback />}><RetroJoin /></Suspense>} />
         <Route path="/r/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><RetroDisplay /></Suspense>} />
+        {/* IDEATE (ADR-0048) — AI-clustered ideation board */}
+        <Route path="/sessions/:id/ideate" element={<Suspense fallback={<LazyRouteFallback />}><IdeatePresent /></Suspense>} />
+        <Route path="/i/:code" element={<Suspense fallback={<LazyRouteFallback />}><IdeateJoin /></Suspense>} />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />
         <Route path="/teams/accept" element={<TeamInvite />} />

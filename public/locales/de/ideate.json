@@ -1,0 +1,20 @@
+{
+  "present.subtitle": "Live-Ideation-Board",
+  "present.draftHint": "Starten Sie die Sitzung, damit Teilnehmer Ideen einreichen können.",
+  "present.start": "Ideation starten",
+  "present.starting": "Wird gestartet…",
+  "present.joinAt": "Teilnehmer beitreten unter",
+  "submit.title": "Idee teilen",
+  "submit.placeholder": "Was ist Ihre Idee?",
+  "submit.button": "Idee einreichen",
+  "submit.success": "Idee eingereicht",
+  "clusters.title": "Themen-Cluster",
+  "clusters.waiting": "Cluster erscheinen, wenn Ideen eintreffen…",
+  "clusters.count": "{{count}} Ideen",
+  "clusters.uncategorized": "Warten auf Clustering",
+  "vote.aria": "Abstimmen für: {{body}}",
+  "vote.count": "{{count}} Stimmen",
+  "vote.dotsRemaining": "Noch {{remaining}} von {{limit}} Stimmen übrig",
+  "connection.reconnecting": "Verbindung wird wiederhergestellt…",
+  "connection.failed": "Verbindung verloren. Bitte Seite neu laden."
+}

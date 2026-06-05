@@ -168,6 +168,18 @@ export const ClientMessageSchema = z.union([
     data: z.object({ itemId: z.string().min(1) }),
     timestamp: z.number(),
   }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('ideate_submit'),
+    data: z.object({ body: z.string().trim().min(2).max(500) }),
+    timestamp: z.number(),
+  }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('ideate_upvote'),
+    data: z.object({ itemId: z.string().min(1) }),
+    timestamp: z.number(),
+  }),
   // COPILOT-06 (ADR-0046): presenter injects a copilot-drafted question into the live set.
   z.object({
     v: z.number().optional(),

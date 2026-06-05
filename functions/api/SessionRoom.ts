@@ -10,6 +10,7 @@ import {
   isLiveProtocolSupported,
   liveProtocolFeatures,
   TOWNHALL_FEATURE,
+  IDEATE_FEATURE,
   townhallEnabled,
   type LiveProtocolVersion,
   type LiveEnergizerState,
@@ -29,6 +30,7 @@ import { RateLimiter } from './lib/session-room-rate-limiter'
 import { EnergizerHandler } from './lib/session-room-energizer-handler'
 import { TownhallHandler } from './lib/session-room-townhall-handler'
 import { RetroHandler } from './lib/session-room-retro-handler'
+import { IdeateHandler } from './lib/session-room-ideate-handler'
 import { logEvent } from './lib/log'
 import { flagOff } from './lib/flags'
 
@@ -171,6 +173,7 @@ export class SessionRoom implements DurableObject {
   private readonly energizerHandler: EnergizerHandler
   private readonly townhallHandler: TownhallHandler
   private readonly retroHandler: RetroHandler
+  private readonly ideateHandler: IdeateHandler
 
   constructor(ctx: DurableObjectState, env: Env) {
     this.ctx = ctx
@@ -180,6 +183,7 @@ export class SessionRoom implements DurableObject {
     this.energizerHandler = new EnergizerHandler(ctx as any, env, this.scheduleAlarm.bind(this))
     this.townhallHandler = new TownhallHandler(ctx as any, env)
     this.retroHandler = new RetroHandler(ctx as any)
+    this.ideateHandler = new IdeateHandler(ctx as any, env, this.scheduleAlarm.bind(this))
 
     this.clientWsHandlers = {
       vote: async (ws, att, msg) => {
@@ -237,6 +241,14 @@ export class SessionRoom implements DurableObject {
       retro_upvote: async (ws, att, msg) => {
         if (msg.type !== 'retro_upvote') return
         await this.retroHandler.handleUpvote(ws, att, { itemId: msg.data.itemId })
+      },
+      ideate_submit: async (ws, att, msg) => {
+        if (msg.type !== 'ideate_submit') return
+        await this.ideateHandler.handleSubmit(ws, att, { body: msg.data.body })
+      },
+      ideate_upvote: async (ws, att, msg) => {
+        if (msg.type !== 'ideate_upvote') return
+        await this.ideateHandler.handleUpvote(ws, att, { itemId: msg.data.itemId })
       },
       // ENTERPRISE-POLISH §1c — response moderation for open questions.
       approve_response: async (ws, att, msg) => {
@@ -309,6 +321,8 @@ export class SessionRoom implements DurableObject {
           townhallModeration?: TownhallModeration
           retroDotVoteLimit?: number
           retroCarriedActions?: string[]
+          ideateDotVoteLimit?: number
+          ideateClusterDebounceMs?: number
         }
       | null
 
@@ -332,6 +346,7 @@ export class SessionRoom implements DurableObject {
     const sessionMode: SessionMode = body.sessionMode ?? 'reflection'
     const isTownhall = sessionMode === 'townhall' && townhallEnabled(this.env)
     const isRetro = sessionMode === 'retro'
+    const isIdeate = sessionMode === 'ideate'
     const meta: Meta = {
       sessionId: body.sessionId,
       ownerId: body.ownerId,
@@ -350,6 +365,9 @@ export class SessionRoom implements DurableObject {
     await this.ctx.storage.put(K_META, meta)
     if (isRetro) {
       await this.retroHandler.seedBoard(body.retroDotVoteLimit ?? 3, body.retroCarriedActions ?? [])
+    }
+    if (isIdeate) {
+      await this.ideateHandler.seedBoard(body.ideateDotVoteLimit ?? 5, body.ideateClusterDebounceMs ?? 3000)
     }
     if (isTownhall) {
       // Seed an empty persistent board. Items/upvoters are point-addressable keys
@@ -692,6 +710,8 @@ export class SessionRoom implements DurableObject {
       await this.maybeSnapshot()
       this.lastSnapshotAt = nowMs
     }
+
+    await this.ideateHandler.runPendingCluster(nowMs)
 
     if (this.resultsDirty) {
       this.resultsDirty = false
@@ -1364,7 +1384,10 @@ export class SessionRoom implements DurableObject {
     }
     const pv = (att.protocolVersion ?? LIVE_PROTOCOL_VERSION) as unknown as LiveProtocolVersion
     const isTownhall = !!meta.townhallModeration
-    const features = isTownhall ? [...liveProtocolFeatures(pv), TOWNHALL_FEATURE] : liveProtocolFeatures(pv)
+    const isIdeate = meta.sessionMode === 'ideate'
+    let features = liveProtocolFeatures(pv)
+    if (isTownhall) features = [...features, TOWNHALL_FEATURE]
+    if (isIdeate) features = [...features, IDEATE_FEATURE]
     // ENTERPRISE-POLISH s2a: detect presenter reconnect.
     // If this is a presenter and at least one other presenter WS is already open
     // (or the session was started by this user), flag the init so the frontend
@@ -1410,6 +1433,7 @@ export class SessionRoom implements DurableObject {
     // with a full `townhall_state` snapshot scoped to this connection's role.
     if (isTownhall) await this.townhallHandler.sendSnapshot(ws, att, meta.townhallModeration!)
     if (meta.sessionMode === 'retro') await this.retroHandler.sendSnapshot(ws)
+    if (meta.sessionMode === 'ideate') await this.ideateHandler.sendSnapshot(ws)
   }
 
   private async setPaused(paused: boolean): Promise<void> {
