@@ -27,5 +27,18 @@
   "suite.trackStatus.live": "Live now",
   "suite.trackStatus.done": "Complete",
   "feed.title": "Live updates",
-  "agenda.eventLive": "Event live"
+  "agenda.eventLive": "Event live",
+  "organizer.openPresenter": "Open presenter shell",
+  "present.back": "Event organizer",
+  "present.talks": "Talks",
+  "present.slides": "Slide deck",
+  "present.slideUrlPlaceholder": "https://docs.google.com/presentation/…/embed",
+  "present.slideSave": "Save",
+  "present.slidesEmpty": "Paste a slide deck URL to embed (Google Slides supported).",
+  "present.nowPlaying": "Now presenting",
+  "present.openSession": "Open session",
+  "present.openQaConsole": "Full Q&A console",
+  "present.qaPanel": "Q&A",
+  "present.liveSessions": "{{count}} live sessions",
+  "present.feedEmpty": "No announcements yet."
 }

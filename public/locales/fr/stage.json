@@ -27,5 +27,18 @@
   "suite.trackStatus.live": "En direct",
   "suite.trackStatus.done": "Terminé",
   "feed.title": "Mises à jour en direct",
-  "agenda.eventLive": "Événement en direct"
+  "agenda.eventLive": "Événement en direct",
+  "organizer.openPresenter": "Ouvrir la vue présentateur",
+  "present.back": "Organisation de l'événement",
+  "present.talks": "Interventions",
+  "present.slides": "Diapositives",
+  "present.slideUrlPlaceholder": "https://docs.google.com/presentation/…/embed",
+  "present.slideSave": "Enregistrer",
+  "present.slidesEmpty": "Collez une URL de diapositives (Google Slides pris en charge).",
+  "present.nowPlaying": "En cours",
+  "present.openSession": "Ouvrir la session",
+  "present.openQaConsole": "Console Q&R complète",
+  "present.qaPanel": "Q&R",
+  "present.liveSessions": "{{count}} sessions en direct",
+  "present.feedEmpty": "Pas encore d'annonces."
 }

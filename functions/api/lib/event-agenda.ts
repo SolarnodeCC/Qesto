@@ -44,10 +44,16 @@ export type EventSuiteMeta = {
   feed: EventFeedItem[]
 }
 
+export type EventPresenterMeta = {
+  slideDeckUrl: string | null
+  activeSlotId: string | null
+}
+
 export type EventAgendaTemplate = {
   eventCode: string
   tracks: AgendaTrack[]
   suite: EventSuiteMeta
+  presenter: EventPresenterMeta
 }
 
 export function defaultEventSuite(): EventSuiteMeta {
@@ -79,8 +85,21 @@ export type PublicAgendaTrack = {
   order: number
 }
 
+export function defaultEventPresenter(): EventPresenterMeta {
+  return { slideDeckUrl: null, activeSlotId: null }
+}
+
 export function defaultEventTemplate(): EventAgendaTemplate {
-  return { eventCode: generateJoinCode(), tracks: [], suite: defaultEventSuite() }
+  return { eventCode: generateJoinCode(), tracks: [], suite: defaultEventSuite(), presenter: defaultEventPresenter() }
+}
+
+function parsePresenter(raw: unknown): EventPresenterMeta {
+  if (!raw || typeof raw !== 'object') return defaultEventPresenter()
+  const p = raw as Partial<EventPresenterMeta>
+  return {
+    slideDeckUrl: typeof p.slideDeckUrl === 'string' && p.slideDeckUrl.startsWith('https://') ? p.slideDeckUrl : null,
+    activeSlotId: typeof p.activeSlotId === 'string' ? p.activeSlotId : null,
+  }
 }
 
 function parseSuite(raw: unknown): EventSuiteMeta {
@@ -117,6 +136,7 @@ export function parseEventTemplate(raw: string | null | undefined): EventAgendaT
       eventCode: typeof parsed.eventCode === 'string' && parsed.eventCode.length === 6 ? parsed.eventCode : generateJoinCode(),
       tracks: normalizeTracks(parsed.tracks),
       suite: parseSuite((parsed as { suite?: unknown }).suite),
+      presenter: parsePresenter((parsed as { presenter?: unknown }).presenter),
     }
   } catch {
     return defaultEventTemplate()

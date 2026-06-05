@@ -68,7 +68,7 @@ export function mountStageSessionRoutes(parent: any) {
       data: {
         sessionMode: 'stage',
         config: body.data,
-        note: 'Presenter broadcast feed ships in FE-STAGE-PRES-01',
+        note: 'Event-level presenter shell at /teams/:teamId/workspaces/:wsId/present',
       },
       trace_id: c.get('trace_id'),
     })

@@ -31,6 +31,7 @@ const IdeateJoin = lazy(() => import('./pages/IdeateJoin'))
 const IdeatePresent = lazy(() => import('./pages/IdeatePresent'))
 const EventAgendaJoin = lazy(() => import('./pages/EventAgendaJoin'))
 const EventAgendaOrganizer = lazy(() => import('./pages/EventAgendaOrganizer'))
+const EventStagePresent = lazy(() => import('./pages/EventStagePresent'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -181,6 +182,10 @@ export default function App() {
         <Route
           path="/teams/:teamId/workspaces/:wsId/event"
           element={<Suspense fallback={<LazyRouteFallback />}><EventAgendaOrganizer /></Suspense>}
+        />
+        <Route
+          path="/teams/:teamId/workspaces/:wsId/present"
+          element={<Suspense fallback={<LazyRouteFallback />}><EventStagePresent /></Suspense>}
         />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />

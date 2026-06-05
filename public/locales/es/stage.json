@@ -27,5 +27,18 @@
   "suite.trackStatus.live": "En vivo",
   "suite.trackStatus.done": "Completado",
   "feed.title": "Actualizaciones en vivo",
-  "agenda.eventLive": "Evento en vivo"
+  "agenda.eventLive": "Evento en vivo",
+  "organizer.openPresenter": "Abrir vista de presentación",
+  "present.back": "Organizador del evento",
+  "present.talks": "Charlas",
+  "present.slides": "Diapositivas",
+  "present.slideUrlPlaceholder": "https://docs.google.com/presentation/…/embed",
+  "present.slideSave": "Guardar",
+  "present.slidesEmpty": "Pega una URL de diapositivas (compatible con Google Slides).",
+  "present.nowPlaying": "En curso",
+  "present.openSession": "Abrir sesión",
+  "present.openQaConsole": "Consola Q&A completa",
+  "present.qaPanel": "Q&A",
+  "present.liveSessions": "{{count}} sesiones en vivo",
+  "present.feedEmpty": "Aún no hay anuncios."
 }

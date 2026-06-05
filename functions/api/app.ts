@@ -35,6 +35,7 @@ import { mountTeamWorkspaceRoutes } from './routes/team-workspaces'
 import { mountStageSessionRoutes } from './routes/stage-sessions'
 import { mountPublicEventAgendaRoutes, mountTeamEventAgendaRoutes } from './routes/event-agenda'
 import { mountPublicEventSuiteRoutes, mountTeamEventSuiteRoutes } from './routes/event-suite'
+import { mountTeamEventPresenterRoutes } from './routes/event-presenter'
 import { mountIdeateSessionRoutes } from './routes/ideate-sessions'
 import { mountRetroSessionRoutes } from './routes/retro-sessions'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
@@ -315,6 +316,7 @@ export function createApp() {
   mountTeamWorkspaceRoutes(app)
   mountTeamEventAgendaRoutes(app)
   mountTeamEventSuiteRoutes(app)
+  mountTeamEventPresenterRoutes(app)
   mountStageSessionRoutes(app)
   mountRetroSessionRoutes(app)
   mountIdeateSessionRoutes(app)

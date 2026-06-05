@@ -143,12 +143,20 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
                 </div>
                 <div className="flex shrink-0 gap-2">
                   {ws.kind === 'event' && teamId && (
-                    <a
-                      href={`/teams/${teamId}/workspaces/${ws.id}/event`}
-                      className="min-h-11 inline-flex items-center rounded-md border border-teal-300 dark:border-teal-600 px-4 text-sm font-medium text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-                    >
-                      Agenda
-                    </a>
+                    <>
+                      <a
+                        href={`/teams/${teamId}/workspaces/${ws.id}/event`}
+                        className="min-h-11 inline-flex items-center rounded-md border border-teal-300 dark:border-teal-600 px-4 text-sm font-medium text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                      >
+                        Agenda
+                      </a>
+                      <a
+                        href={`/teams/${teamId}/workspaces/${ws.id}/present`}
+                        className="min-h-11 inline-flex items-center rounded-md border border-violet-300 dark:border-violet-600 px-4 text-sm font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                      >
+                        Present
+                      </a>
+                    </>
                   )}
                   {ws.kind === 'retro' && (
                     <button

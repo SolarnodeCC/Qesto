@@ -27,5 +27,18 @@
   "suite.trackStatus.live": "Nu live",
   "suite.trackStatus.done": "Afgerond",
   "feed.title": "Live updates",
-  "agenda.eventLive": "Event live"
+  "agenda.eventLive": "Event live",
+  "organizer.openPresenter": "Presentatie openen",
+  "present.back": "Eventorganisator",
+  "present.talks": "Talks",
+  "present.slides": "Presentatie",
+  "present.slideUrlPlaceholder": "https://docs.google.com/presentation/…/embed",
+  "present.slideSave": "Opslaan",
+  "present.slidesEmpty": "Plak een presentatie-URL (Google Slides ondersteund).",
+  "present.nowPlaying": "Nu aan het woord",
+  "present.openSession": "Sessie openen",
+  "present.openQaConsole": "Volledige Q&A-console",
+  "present.qaPanel": "Q&A",
+  "present.liveSessions": "{{count}} live sessies",
+  "present.feedEmpty": "Nog geen aankondigingen."
 }
