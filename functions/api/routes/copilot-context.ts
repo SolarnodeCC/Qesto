@@ -41,6 +41,7 @@ import { WizardAIError, WizardValidationError } from '../lib/ai-wizard'
 import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
 import { featureAllowed } from '../lib/entitlements'
 import { sanitizeError } from '../lib/error-handler'
+import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS } from '../lib/constants'
 
@@ -84,6 +85,10 @@ const DraftPollBodySchema = z.object({
   intent: z.string().min(1).max(DRAFT_POLL_INTENT_MAX),
   focusArea: z.string().max(DRAFT_POLL_FOCUS_MAX).optional(),
   language: z.string().min(2).max(10).optional(),
+})
+
+const AcceptSuggestionSchema = z.object({
+  kind: z.enum(['followup_question', 'poll_draft', 'disengagement_alert', 'pacing']).optional(),
 })
 
 type Vars = AuthVariables & PlanVariables
@@ -253,6 +258,19 @@ export function mountCopilotContextRoutes(parent: any) {
           trace_id: c.get('trace_id'),
         })
       }
+      if (result.draft) {
+        const sessionRow = await c.env.DB.prepare(`SELECT team_id FROM sessions WHERE id = ?1`)
+          .bind(sessionId)
+          .first<{ team_id: string | null }>()
+        writeEvent(c.env.METRICS_AE, {
+          name: 'copilot.poll_drafted',
+          userId,
+          sessionId,
+          teamId: sessionRow?.team_id ?? undefined,
+          plan: c.get('plan'),
+          traceId: c.get('trace_id'),
+        })
+      }
       return c.json({ ok: true, data: result, trace_id: c.get('trace_id') })
     } catch (err) {
       if (err instanceof WizardValidationError) {
@@ -322,7 +340,61 @@ export function mountCopilotContextRoutes(parent: any) {
     }
 
     const suggestions = actions ?? fallbackSuggestions(context)
+    const sessionRow = await c.env.DB.prepare(`SELECT team_id FROM sessions WHERE id = ?1`)
+      .bind(c.req.param('sessionId'))
+      .first<{ team_id: string | null }>()
+    writeEvent(c.env.METRICS_AE, {
+      name: 'copilot.suggestion_emitted',
+      userId: c.get('user').sub,
+      sessionId: c.req.param('sessionId'),
+      teamId: sessionRow?.team_id ?? undefined,
+      plan: c.get('plan'),
+      count: suggestions.length,
+      detail: actions ? 'ai' : 'fallback',
+      traceId: c.get('trace_id'),
+    })
     return c.json({ ok: true, data: { suggestions, source: actions ? 'ai' : 'fallback' }, trace_id: c.get('trace_id') })
+  })
+
+  // COPILOT-07 — record presenter acceptance (emitted before add_question inject).
+  app.post('/sessions/:sessionId/suggest/accept', async (c) => {
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
+      return c.json(
+        { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    const sessionId = c.req.param('sessionId')
+    const userId = c.get('user').sub
+    const parsed = await validateBody(c, AcceptSuggestionSchema)
+    if ('error' in parsed) return parsed.error
+
+    const session = await c.env.DB.prepare(`SELECT id, owner_id, team_id FROM sessions WHERE id = ?1`)
+      .bind(sessionId)
+      .first<{ id: string; owner_id: string; team_id: string | null }>()
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.owner_id !== userId) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Not session owner' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+
+    writeEvent(c.env.METRICS_AE, {
+      name: 'copilot.suggestion_accepted',
+      userId,
+      sessionId,
+      teamId: session.team_id ?? undefined,
+      plan: c.get('plan'),
+      detail: parsed.data.kind,
+      traceId: c.get('trace_id'),
+    })
+    return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') })
   })
 
   app.get('/edge/status', (c) =>
