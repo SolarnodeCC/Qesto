@@ -1,0 +1,18 @@
+{
+  "agenda.subtitle": "Agenda del evento en vivo",
+  "agenda.tracks": "Tracks",
+  "agenda.empty": "Aún no hay sesiones en este track.",
+  "agenda.slot": "Sesión {{number}}",
+  "agenda.live": "En vivo",
+  "agenda.join": "Unirse",
+  "organizer.back": "Panel",
+  "organizer.attendeeLink": "Agenda para asistentes:",
+  "organizer.addTrack": "Añadir track",
+  "organizer.addSlot": "Añadir slot",
+  "organizer.save": "Guardar agenda",
+  "organizer.saving": "Guardando…",
+  "organizer.saved": "Agenda guardada",
+  "organizer.trackLabel": "Nombre del track",
+  "organizer.trackDay": "Etiqueta del día",
+  "organizer.noSession": "Sin sesión vinculada"
+}

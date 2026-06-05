@@ -1,0 +1,18 @@
+{
+  "agenda.subtitle": "Agenda de l'événement en direct",
+  "agenda.tracks": "Tracks",
+  "agenda.empty": "Aucune session prévue sur ce track.",
+  "agenda.slot": "Session {{number}}",
+  "agenda.live": "En direct",
+  "agenda.join": "Rejoindre",
+  "organizer.back": "Tableau de bord",
+  "organizer.attendeeLink": "Agenda participants :",
+  "organizer.addTrack": "Ajouter un track",
+  "organizer.addSlot": "Ajouter un créneau",
+  "organizer.save": "Enregistrer l'agenda",
+  "organizer.saving": "Enregistrement…",
+  "organizer.saved": "Agenda enregistré",
+  "organizer.trackLabel": "Nom du track",
+  "organizer.trackDay": "Jour",
+  "organizer.noSession": "Aucune session liée"
+}

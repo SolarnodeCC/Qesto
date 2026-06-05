@@ -1,0 +1,18 @@
+{
+  "agenda.subtitle": "Live eventagenda",
+  "agenda.tracks": "Tracks",
+  "agenda.empty": "Nog geen sessies op dit track.",
+  "agenda.slot": "Sessie {{number}}",
+  "agenda.live": "Live",
+  "agenda.join": "Deelnemen",
+  "organizer.back": "Dashboard",
+  "organizer.attendeeLink": "Deelnemersagenda:",
+  "organizer.addTrack": "Track toevoegen",
+  "organizer.addSlot": "Slot toevoegen",
+  "organizer.save": "Agenda opslaan",
+  "organizer.saving": "Opslaan…",
+  "organizer.saved": "Agenda opgeslagen",
+  "organizer.trackLabel": "Tracknaam",
+  "organizer.trackDay": "Daglabel",
+  "organizer.noSession": "Geen gekoppelde sessie"
+}

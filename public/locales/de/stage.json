@@ -1,0 +1,18 @@
+{
+  "agenda.subtitle": "Live-Event-Agenda",
+  "agenda.tracks": "Tracks",
+  "agenda.empty": "Auf diesem Track sind noch keine Sessions geplant.",
+  "agenda.slot": "Session {{number}}",
+  "agenda.live": "Live",
+  "agenda.join": "Teilnehmen",
+  "organizer.back": "Dashboard",
+  "organizer.attendeeLink": "Teilnehmer-Agenda:",
+  "organizer.addTrack": "Track hinzufügen",
+  "organizer.addSlot": "Slot hinzufügen",
+  "organizer.save": "Agenda speichern",
+  "organizer.saving": "Speichern…",
+  "organizer.saved": "Agenda gespeichert",
+  "organizer.trackLabel": "Track-Name",
+  "organizer.trackDay": "Tageslabel",
+  "organizer.noSession": "Keine verknüpfte Session"
+}

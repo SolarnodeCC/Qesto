@@ -935,6 +935,14 @@ export class D1PreparedStatementMock {
       row.updated_at = last_instance_at
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('UPDATE workspaces SET template_json')) {
+      const [template_json, updated_at, id, team_id] = this.args as [string, number, string, string]
+      const row = this.db.workspaces.get(id)
+      if (!row || row.team_id !== team_id) return { meta: { changes: 0 } }
+      row.template_json = template_json
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith('UPDATE workspaces SET')) {
       const row = this.db.workspaces.get(this.args[this.args.length - 2] as string)
       if (row) row.updated_at = this.args[0] as number
@@ -1271,6 +1279,19 @@ export class D1PreparedStatementMock {
       const row = this.db.workspaces.get(id)
       return (row && row.team_id === team_id ? row : null) as T | null
     }
+    if (this.sql.includes("json_extract(template_json, '$.eventCode')")) {
+      const [eventCode] = this.args as [string]
+      const row = [...this.db.workspaces.values()].find((ws) => {
+        if (ws.kind !== 'event' || ws.archived_at != null) return false
+        try {
+          const template = JSON.parse(ws.template_json || '{}') as { eventCode?: string }
+          return template.eventCode === eventCode
+        } catch {
+          return false
+        }
+      })
+      return (row ?? null) as T | null
+    }
     if (this.sql.includes('FROM workspace_trend') && this.sql.includes('payload_json')) {
       const [workspace_id, kind, window] = this.args as [string, string, string]
       const key = `${workspace_id}:${kind}:${window}`
@@ -1482,6 +1503,24 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.sessions.values()]
         .filter((s) => s.workspace_id === workspace_id)
         .sort((a, b) => (b.workspace_seq ?? 0) - (a.workspace_seq ?? 0))
+      return { results: rows as unknown as T[] }
+    }
+    if (
+      this.sql.includes('SELECT id, code, title, status, session_mode FROM sessions') &&
+      this.sql.includes('workspace_id = ?1') &&
+      this.sql.includes('workspace_seq ASC')
+    ) {
+      const [workspace_id] = this.args as [string]
+      const rows = [...this.db.sessions.values()]
+        .filter((s) => s.workspace_id === workspace_id)
+        .sort((a, b) => (a.workspace_seq ?? 0) - (b.workspace_seq ?? 0))
+        .map((s) => ({
+          id: s.id,
+          code: s.code,
+          title: s.title,
+          status: s.status,
+          session_mode: s.session_mode ?? 'reflection',
+        }))
       return { results: rows as unknown as T[] }
     }
     if (this.sql.includes('FROM workspace_trend')) {

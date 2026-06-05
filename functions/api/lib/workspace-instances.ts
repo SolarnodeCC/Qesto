@@ -2,10 +2,12 @@ import { generateJoinCode } from './code'
 import { ulid } from './ulid'
 import type { WorkspaceKind, WorkspaceRow } from './workspace-types'
 import { DEFAULT_IDEATE_TEMPLATE, DEFAULT_RETRO_TEMPLATE } from './workspace-types'
+import { defaultEventTemplate } from './event-agenda'
 
 export function defaultTemplateForKind(kind: WorkspaceKind): Record<string, unknown> {
   if (kind === 'retro') return { ...DEFAULT_RETRO_TEMPLATE }
   if (kind === 'ideate') return { ...DEFAULT_IDEATE_TEMPLATE }
+  if (kind === 'event') return defaultEventTemplate()
   return { tracks: [] }
 }
 

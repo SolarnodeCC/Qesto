@@ -13,6 +13,7 @@ export const PUBLIC_API_PATH_PREFIXES = [
   '/api/integrations/salesforce/callback',
   '/api/integrations/notion/callback',
   '/api/sessions/by-code/',
+  '/api/events/',
   '/api/v1/',
   '/api/v2/',
   '/api/marketplace/',

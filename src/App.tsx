@@ -29,6 +29,8 @@ const RetroPresent = lazy(() => import('./pages/RetroPresent'))
 const RetroDisplay = lazy(() => import('./pages/RetroDisplay'))
 const IdeateJoin = lazy(() => import('./pages/IdeateJoin'))
 const IdeatePresent = lazy(() => import('./pages/IdeatePresent'))
+const EventAgendaJoin = lazy(() => import('./pages/EventAgendaJoin'))
+const EventAgendaOrganizer = lazy(() => import('./pages/EventAgendaOrganizer'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -174,6 +176,12 @@ export default function App() {
         {/* IDEATE (ADR-0048) — AI-clustered ideation board */}
         <Route path="/sessions/:id/ideate" element={<Suspense fallback={<LazyRouteFallback />}><IdeatePresent /></Suspense>} />
         <Route path="/i/:code" element={<Suspense fallback={<LazyRouteFallback />}><IdeateJoin /></Suspense>} />
+        {/* STAGE (ADR-0048) — multi-track event agenda */}
+        <Route path="/e/:code" element={<Suspense fallback={<LazyRouteFallback />}><EventAgendaJoin /></Suspense>} />
+        <Route
+          path="/teams/:teamId/workspaces/:wsId/event"
+          element={<Suspense fallback={<LazyRouteFallback />}><EventAgendaOrganizer /></Suspense>}
+        />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />
         <Route path="/teams/accept" element={<TeamInvite />} />
