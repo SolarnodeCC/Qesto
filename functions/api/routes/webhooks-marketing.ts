@@ -34,7 +34,11 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     }
 
     const body = await c.req.text()
-    const secret = c.env.MARKETING_WEBHOOK_SECRET || c.env.JWT_SECRET
+    const secret = c.env.MARKETING_WEBHOOK_SECRET
+    if (!secret) {
+      logEvent({ event: 'webhook.marketing.secret_not_configured' })
+      return c.json({ error: 'Webhook not configured' }, 500)
+    }
 
     const expectedSig = `sha256=${await hmacSha256Hex(secret, body)}`
     if (signature !== expectedSig) {
