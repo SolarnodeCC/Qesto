@@ -35,6 +35,20 @@ For conceptual questions ("requirements/decisions/constraints for X"), use the
 `kb_search` MCP tool, then Read the returned `file_path`. Grep/Glob for exact
 symbols. You own keeping `kb_search` configured and the index healthy.
 
+## Audience-aware authoring (see `knowledge.md` → Audience model)
+
+Every doc is written for an audience that dictates its location, index, frontmatter,
+and voice:
+- **End users** → `knowledge-base/help/` → `qesto-help` chatbot. Frontmatter
+  `id/title/topic/scope/excerpt`; plain task-first voice; `npm run help:sync`.
+- **Developers / AI agents** → `knowledge-base/**` → `qesto-kb-production`. Frontmatter
+  `id/type/domain/status/version/owner/title/tags`; technical voice; `npm run kb:sync`.
+- **Prospects** → `docs/` (marketing/sales own the voice).
+
+**Invariant you protect**: `qesto-help` contains **only** `knowledge-base/help` docs
+(one-directional — the KB index may include help docs; the help index must not include
+non-help docs). Never add another writer to `qesto-help` or repoint `sync-help-docs.ts`.
+
 ## Edges (Handoffs)
 
 - **In** ← every role (E24): their "Docs to Update" landings — verify placement, frontmatter, embeddability, no contradictions

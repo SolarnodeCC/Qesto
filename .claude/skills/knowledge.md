@@ -3,7 +3,7 @@ name: stewarding-knowledge
 description: Knowledge steward for Qesto. Owns knowledge-base integrity, business-requirement capture and traceability, the cross-role "Docs to Update" edges, and the KB→Vectorize lifecycle (embedding, kb:sync correctness, kb:health, the kb_search tool). Use when documenting requirements, auditing KB coherence, or keeping the vector index trustworthy.
 ---
 # Skill: Knowledge Steward
-# VERSION: v1.0.0
+# VERSION: v1.1.0
 # OWNER: Knowledge Lead
 
 Follow `.claude/skills/COMMON_RULES.md` for global constraints.
@@ -23,8 +23,9 @@ traceable*.
   no contradictions/duplicates/orphans), the documentation map
   (`knowledge-base/README.md`), business-requirement capture + traceability, the
   KB→Vectorize lifecycle (`scripts/embed-kb.ts`, `kb:sync`, `kb:health`, the cron
-  watchdog + CI health gate), and the `kb_search` MCP tool (`.mcp.json`,
-  `scripts/mcp/kb-search-server.ts`).
+  watchdog + CI health gate), the `kb_search` MCP tool (`.mcp.json`,
+  `scripts/mcp/kb-search-server.ts`), and the end-user **help-docs lifecycle**
+  (`knowledge-base/help/` → `qesto-help` via `scripts/sync-help-docs.ts` / `help:sync`).
 - **Steward, not sole author**: every role still updates its own domain docs via
   its "Docs to Update" table. You verify those landings are complete, correctly
   placed, metadata-correct, embeddable, and that requirements are captured.
@@ -58,6 +59,30 @@ requirement (spec/ADR, has an ID) → backlog story (WSJF) → implementation �
   a requirement with no test/story. Flag to PO/architect.
 - Keep specs and ADRs non-contradictory; when two docs disagree, escalate to the owner.
 
+## Audience model (create docs for who will read them)
+
+A document's **audience** drives where it lives, which index serves it, its
+frontmatter schema, and its voice. Pick the audience first, then author to that
+contract. You own routing every doc to the right row.
+
+| Audience | Purpose | Location | Index / consumer | Required frontmatter | Voice | Sync |
+|---|---|---|---|---|---|---|
+| **End users / participants** | In-app help (the chatbot) | `knowledge-base/help/` | `qesto-help` chatbot **(+ also the KB index)** | `id, title, topic, scope (free\|starter\|team), excerpt` | Plain, task-first, second person, no jargon | `npm run help:sync` |
+| **Developers / AI agents** | Specs, ADRs, runbooks, architecture | `knowledge-base/**` (not `help/`) | `qesto-kb-production` (`kb_search`) | `id, type, domain, status, version, owner, title, tags, relates_to` | Precise, technical, decision-oriented | `npm run kb:sync` (CI on merge) |
+| **Prospects / customers** | Positioning, comparisons, sales kit | `docs/` | web / none | per marketing/sales | Brand voice | n/a (owned by marketing/sales) |
+| **Decision insights (runtime)** | Past-decision similarity | runtime D1 | `qesto-decisions` | generated | n/a | runtime (insights pipeline) |
+
+**Invariant — `qesto-help` is help-docs-only (one-directional).** The chatbot index
+must contain *only* `knowledge-base/help` docs (enforced by `HELP_DIR` in
+`sync-help-docs.ts`). The KB index *may* include help docs; the help index must
+*never* include non-help docs. Never add a second writer to `qesto-help`, and never
+point `sync-help-docs.ts` outside `knowledge-base/help`.
+
+**When creating/reviewing a doc**: confirm the audience → put it in that location with
+that exact frontmatter and voice → run that audience's sync → verify with `kb:health`.
+An end-user help doc written in internal-spec voice (or missing `scope`/`excerpt`) is a
+defect even if the prose is correct.
+
 ## KB integrity & embeddable frontmatter
 Docs only embed well if their frontmatter is complete (mirrors `kb_documents`):
 `id`, `type` (adr|spec|guide|runbook|experiment), `domain`, `status`
@@ -88,6 +113,8 @@ Docs only embed well if their frontmatter is complete (mirrors `kb_documents`):
   pipeline/model issues; → PO: requirement debt found.
 
 ## Quality Gates
+- [ ] Doc routed to the correct **audience** location, with that audience's frontmatter + voice
+- [ ] `qesto-help` invariant upheld — only `knowledge-base/help` docs reach the chatbot index
 - [ ] Every doc you touch has complete, valid frontmatter (embeddable)
 - [ ] New requirement has an ID and a linked backlog story (traceable)
 - [ ] No contradictory/duplicate doc left behind (superseded or consolidated)
@@ -104,6 +131,7 @@ Docs only embed well if their frontmatter is complete (mirrors `kb_documents`):
 ## Docs to Update
 | Change | Doc |
 |---|---|
+| End-user help content (chatbot) | `knowledge-base/help/` (frontmatter `id/title/topic/scope/excerpt`) → `npm run help:sync` |
 | New/changed business requirement | `knowledge-base/specifications/...` (with requirement ID) |
 | KB structure / documentation map | `knowledge-base/README.md` |
 | KB doc deprecated/superseded | set `status: deprecated`, add `relates_to` successor |
@@ -111,6 +139,10 @@ Docs only embed well if their frontmatter is complete (mirrors `kb_documents`):
 | Requirement debt found | `knowledge-base/product/backlog/BACKLOG_MASTER.md` (raise to PO) |
 
 ## Do Not
+- **Do not let any non-help doc reach `qesto-help`** — the chatbot index is help-docs-only
+  (one-directional: the KB index may include help docs; the help index must not include
+  KB docs). Never repoint `sync-help-docs.ts` outside `knowledge-base/help` or add a second
+  writer to `qesto-help`.
 - Do not let a KB doc ship with missing frontmatter (it won't be searchable)
 - Do not duplicate ICP/competitor/pricing tables — reference the source of truth
 - Do not invent requirements — capture what PO/architect decide, and flag gaps
@@ -124,6 +156,10 @@ Docs only embed well if their frontmatter is complete (mirrors `kb_documents`):
 - KB retrieval health (kb:health green after each KB merge)
 
 ## Change Log
+- 2026-06-04: v1.1.0 — added the **Audience model** (end-user/help vs developer/KB vs
+  prospect docs → location, index, frontmatter, voice, sync) and the one-directional
+  `qesto-help` invariant (chatbot index is help-docs-only). Took ownership of the
+  help-docs lifecycle.
 - 2026-06-04: v1.0.0 — created the knowledge-steward node. Owns KB integrity,
   requirement traceability, the cross-role doc-update edges (E24–E26), and the
   KB→Vectorize lifecycle incl. the kb_search MCP research tool.
