@@ -31,7 +31,7 @@ worker/  ──scheduled──► cleanup, cron triggers
 | Email | Resend via `RESEND_API_KEY` | `auth.ts:sendEmail()` |
 | Payments | Stripe, price IDs in `wrangler.toml [vars]` | `billing.ts`, `stripe.ts` |
 | Auth | Magic link (JWT) + SAML SSO | `auth.ts` |
-| Vector | DECISIONS_VECTORIZE (768d, cosine) | `vectorize.ts` |
+| Vector | DECISIONS_VECTORIZE, HELP_VECTORIZE, KB_VECTORIZE (1024d, cosine, bge-m3) | `vectorize.ts` |
 
 ### Session State Machine
 ```
@@ -145,15 +145,22 @@ This project uses a layered AI agent framework:
 /tester         → loads tester.md skill pack        (Vitest, coverage, CI)
 /product-owner  → loads product-owner.md skill pack (stories, backlog, AC)
 /ai-strategy    → loads ai-strategy.md skill pack   (AI feature advisory, maturity scoring, 4-week action plans)
-/marketing      → loads marketing.md skill pack     (CRO, copy, email, SEO, sales, content)
+/marketing      → loads marketing.md skill pack     (top-of-funnel: CRO, copy, lifecycle email, SEO, content)
+/sales          → loads sales.md skill pack         (deal cycle: discovery, MEDDICC, demos, objections, proposals)
+/market-research → loads market-research.md skill pack (competitors, ICP/competitor source of truth, pulse)
 /devops         → loads devops.md skill pack        (deployment, wrangler, CF infra, secrets, monitoring)
 /security       → loads cso.md skill pack           (OWASP Top 10, STRIDE, GDPR, Stripe, SAML audits)
 /analytics      → loads analytics.md skill pack     (AE queries, conversion funnel, platform metrics)
 /i18n           → loads i18n.md skill pack          (translations, key extraction, EN/NL/ES/DE/FR)
 /review         → loads review.md skill pack        (code review gates, correctness, security, mobile/a11y)
 /investigate    → loads investigate.md skill pack   (DO/WebSocket root-cause analysis, 5-step debug protocol)
+/knowledge      → loads knowledge.md skill pack     (KB integrity, requirement traceability, KB→Vectorize lifecycle, kb_search)
 ```
 Knowledge packs auto-revoke at end of task — do not carry state between roles.
+
+**Edges (handoffs between roles)** are defined and owned in [`.claude/skills/HANDOFFS.md`](.claude/skills/HANDOFFS.md) — consult it before handing work to another role.
+
+**Researching the knowledge base:** for conceptual questions (requirements, decisions, constraints), use the `kb_search` MCP tool (semantic search over `knowledge-base/`, configured in [`.mcp.json`](.mcp.json)) and Read the returned `file_path`; use Grep/Glob for exact symbols. The **knowledge** node owns this tool and KB integrity.
 
 ### Model tiering (per-agent, per-work-type)
 
@@ -161,8 +168,8 @@ Agent `model:` frontmatter is the source of truth. Main-agent dispatch should ma
 
 | Tier | Model | Agents | Work types |
 |---|---|---|---|
-| High | **opus** | `qesto-architect`, `qesto-backend`, `qesto-security`, `qesto-ai-strategy` | System design, ADRs, schema migrations, Durable Object / WebSocket protocol, auth flows, OWASP/STRIDE audits, abuse-surface review |
-| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries |
+| High | **opus** | `qesto-architect`, `qesto-backend`, `qesto-security`, `qesto-ai-strategy`, `qesto-market-research` | System design, ADRs, schema migrations, Durable Object / WebSocket protocol, auth flows, OWASP/STRIDE audits, abuse-surface review, deep competitive synthesis |
+| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales`, `qesto-knowledge` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy, KB integrity + requirement traceability |
 | Low | **haiku** | `qesto-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
 
 When the main agent needs a model not matching any sub-agent, invoke the sub-agent whose tier matches. Prefer Opus for anything touching edge runtime correctness (DO lifecycle, JWT, rate limits, multi-tenant isolation); prefer Haiku for template-heavy mechanical work.

@@ -12,7 +12,7 @@ Two JWT tokens (ANTHROPIC_AUTH_TOKEN, CLAUDE_CODE_OAUTH_TOKEN) were exposed in `
 ## Impact
 
 - **Exposure Window**: Unknown (repository scanned on 2026-05-26)
-- **Affected Systems**: Amplitude analytics integration, Claude Code OAuth
+- **Affected Systems**: Anthropic API access, Claude Code OAuth
 - **Risk**: Token compromise could allow unauthorized API calls
 
 ## Remediation
@@ -24,8 +24,8 @@ Two JWT tokens (ANTHROPIC_AUTH_TOKEN, CLAUDE_CODE_OAUTH_TOKEN) were exposed in `
 
 ⏳ **Action Required**:
 1. Rotate ANTHROPIC_AUTH_TOKEN immediately
-   - Log into Amplitude auth.eu.amplitude.com
-   - Revoke client ID: 110d04a1-8e60-4157-9c43-fcbe4e014a85
+   - Log into the Anthropic Console (console.anthropic.com)
+   - Revoke the exposed OAuth client (ID: 110d04a1-8e60-4157-9c43-fcbe4e014a85)
    - Generate new token
    - Add to GitHub Actions secrets: `ANTHROPIC_AUTH_TOKEN` (ops only)
 

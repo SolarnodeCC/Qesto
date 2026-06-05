@@ -242,3 +242,9 @@ Test code + coverage report:
 - Flaky test frequency and resolution time
 - CI pass rate (target: 99%)
 
+## Change Log
+- 2026-06-04: Documented audit regression priorities + flaky-test policy in a changelog.
+  This skill is now the authoritative depth source for the thin `qesto-tester` agent
+  (agent v2.0.0; Standard Mock Env + test patterns live here, not in the agent). Edges:
+  `.claude/skills/HANDOFFS.md` (E8–E9, E23).
+

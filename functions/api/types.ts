@@ -76,6 +76,7 @@ export type Env = {
   JWT_SECRET_PREV?: string
   MULTI_REGION_WRITES_ENABLED?: string
   KB_ADMIN_KEY?: string
+  KB_SEARCH_SERVICE_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string
   STRIPE_WEBHOOK_SECRET?: string

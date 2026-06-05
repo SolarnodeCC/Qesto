@@ -14,7 +14,6 @@ import { mountTeamRoutes } from './routes/teams'
 import { mountHelpRoutes } from './routes/help'
 import { mountUserRoutes } from './routes/users'
 import { mountKnowledgeBaseRoutes } from './routes/knowledge-base'
-import { registerKBRoutes } from './routes/kb-search'
 import { mountIntegrationRoutes } from './routes/integrations'
 import { mountGdprRoutes } from './routes/gdpr'
 import { mountTournamentRoutes } from './routes/tournaments'
@@ -271,7 +270,6 @@ export function createApp() {
   mountUserRoutes(app)
   mountGdprRoutes(app)
   mountKnowledgeBaseRoutes(app)
-  registerKBRoutes(app)
   mountIntegrationRoutes(app)
   mountWebhookRoutes(app)
   mountWebhookTemplateRoutes(app)

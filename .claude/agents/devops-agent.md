@@ -50,7 +50,7 @@ GET /api/admin/health  # expected: { d1, kv, do, ai, latencyMs }
 | Durable Objects | `SESSION_ROOM` | Stateful realtime |
 | R2 | `qesto-logs`, `qesto-backups` | Logpush + D1 daily backups |
 | Analytics Engine | `AE` | Observability events |
-| Vectorize | `DECISIONS_VECTORIZE` | 768d cosine search |
+| Vectorize | `DECISIONS_VECTORIZE`, `HELP_VECTORIZE`, `KB_VECTORIZE` | 1024d cosine (bge-m3) |
 | Workers AI | `AI` | LLM inference (never Anthropic API) |
 
 ## Incident Triage

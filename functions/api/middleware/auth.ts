@@ -4,6 +4,7 @@ import { jwtVerificationSecrets, verifyJwtWithSecrets, type AuthClaims } from '.
 import { hashSessionToken, revokedSessionTokenKey } from '../lib/session-token'
 import { readKvText } from '../lib/kv'
 import { isPublicApiPath } from '../lib/public-api-paths'
+import { timingSafeEqual } from '../lib/shared/crypto'
 import type { Env } from '../types'
 
 /** ARCH-HONO-02 — session cookie not required on documented public prefixes (v1/v2 use API keys). */
@@ -32,6 +33,19 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   if (isSessionAuthExempt(pathname)) {
     await next()
     return
+  }
+  // Read-only KB semantic search additionally accepts a dedicated service key for
+  // machine clients (the kb_search MCP tool used by dev agents). Path-scoped to
+  // exactly /api/knowledge-base/search and gated on the KB_SEARCH_SERVICE_KEY
+  // secret (constant-time compare); it authenticates that one read-only route and
+  // nothing else. When the secret is unset, a JWT remains mandatory.
+  if (pathname === '/api/knowledge-base/search') {
+    const provided = c.req.header('x-kb-service-key')
+    const expected = c.env.KB_SEARCH_SERVICE_KEY
+    if (expected && provided && timingSafeEqual(provided, expected)) {
+      await next()
+      return
+    }
   }
   const cookieToken = getCookie(c, SESSION_COOKIE)
   const authHeader = c.req.header('authorization')

@@ -46,6 +46,14 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
 ) => {
   const user = c.get('user')
   if (!user) {
+    // The read-only KB search route can be reached via the KB service key
+    // (authMiddleware validated it for this exact path) without a user, and it
+    // never consults the plan. Let it through; every other route still requires
+    // an authenticated user.
+    if (new URL(c.req.url).pathname === '/api/knowledge-base/search') {
+      await next()
+      return
+    }
     // Auth middleware should have run first; if no user, auth failed elsewhere
     return c.json({ ok: false, error: { code: 'unauthorized', message: 'Not authenticated' } }, 401)
   }
