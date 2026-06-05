@@ -10,7 +10,7 @@ import { withTimeout } from './shared/async'
 export type InsightsVectorizeBindings = Pick<Env, 'AI' | 'DECISIONS_VECTORIZE'>
 
 export const DECISIONS_EMBED_MODEL = '@cf/baai/bge-m3' as const
-export const DECISIONS_EMBED_DIM = 768
+export const DECISIONS_EMBED_DIM = 1024 // bge-m3 outputs 1024 dims — must match the qesto-decisions index
 export const DECISIONS_SIMILARITY_TOP_K = 3
 export const DECISIONS_SIMILARITY_MIN_SCORE = 0.75
 export const DECISIONS_EMBED_TIMEOUT_MS = 10_000

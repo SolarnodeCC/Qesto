@@ -128,6 +128,9 @@ export type QestoEvent = {
     | 'ws.energizer_completed'
     | 'ws.energizer_timeout'
     | 'ai.inference'
+    | 'ai.cache_hit'
+    | 'ai.cache_miss'
+    | 'ai.gateway_latency'
     | 'wizard.opened'
     | 'wizard.completed'
     | 'ai.suggestions_resolved'
@@ -184,14 +187,18 @@ export type QestoEvent = {
   count?: number | undefined
   value?: number | undefined
   traceId?: string | undefined
-  /** blob6 — integration type, export format, model id, webhook id, etc. */
+  /** blob6 — integration type, export format, model id, webhook id, cache hit/miss, etc. */
   detail?: string | undefined
+  /** AI Gateway cache age (seconds) — populated for ai.cache_hit events */
+  cacheAge?: number | undefined
+  /** Gateway request latency (ms) — populated for ai.gateway_latency events */
+  gatewayMs?: number | undefined
 }
 
 /**
  * Write an application event to Analytics Engine.
- * Schema: blob1=eventName, blob2=userId|sessionId, blob3=teamId, blob4=plan, blob5=traceId
- *         double1=durationMs, double2=count, double3=value(EUR)
+ * Schema: blob1=eventName, blob2=userId|sessionId, blob3=teamId, blob4=plan, blob5=traceId, blob6=detail
+ *         double1=durationMs, double2=count, double3=value(EUR), double4=cacheAge(s), double5=gatewayMs
  * Fire-and-forget: failures are swallowed (events are ancillary).
  */
 export function writeEvent(ae: AnalyticsEngineDataset | undefined, event: QestoEvent): void {
@@ -208,6 +215,8 @@ export function writeEvent(ae: AnalyticsEngineDataset | undefined, event: QestoE
     event.durationMs ?? 0,
     event.count ?? 0,
     event.value ?? 0,
+    event.cacheAge ?? 0,
+    event.gatewayMs ?? 0,
   ]
   try {
     ae.writeDataPoint({ blobs, doubles })

@@ -8,6 +8,7 @@ on:
       - 'knowledge-base/**'
       - 'scripts/kb-sync-cli.ts'
       - 'scripts/embed-kb.ts'
+      - 'scripts/kb-health.ts'
       - '.github/workflows/kb-sync-on-merge.yml'
 
 permissions:
@@ -47,6 +48,20 @@ jobs:
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
           KB_ADMIN_KEY: ${{ secrets.KB_ADMIN_KEY }}
 
+      # The sync above is advisory (it never fails the job). This gate is the
+      # real pass/fail signal: it fails the workflow if the live KB index is
+      # empty while KB files exist, or its dimensions don't match the embed
+      # model — i.e. retrieval is broken. (deps already installed by kb-sync.sh)
+      - name: KB health gate
+        run: |
+          # Vectorize upserts are eventually consistent — let them settle
+          # before asserting the index is populated and dimensionally correct.
+          sleep 30
+          npm run kb:health
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Upload sync manifest
         if: always()
         uses: actions/upload-artifact@v7
@@ -64,7 +79,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ KB sync failed. Check [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
+              body: '❌ KB sync/health gate failed — the live KB vector index may be empty, stale, or dimensionally mismatched. Check [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.'
             })
 
       - name: Notify Slack (on failure)
@@ -73,13 +88,13 @@ jobs:
         with:
           payload: |
             {
-              "text": "❌ KB Sync Failed",
+              "text": "❌ KB Sync / Health Gate Failed",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*KB Sync Failed*\nRepository: ${{ github.repository }}\nBranch: ${{ github.ref }}\nCommit: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\nWorkflow: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
+                    "text": "*KB Sync / Health Gate Failed*\nThe live KB vector index may be empty, stale, or dimensionally mismatched.\nRepository: ${{ github.repository }}\nBranch: ${{ github.ref }}\nCommit: <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\nWorkflow: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
                   }
                 }
               ]

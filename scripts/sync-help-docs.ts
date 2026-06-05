@@ -165,8 +165,8 @@ async function embedDocumentWithCF(text: string): Promise<number[]> {
     throw new Error('Invalid embedding response from Cloudflare');
   }
 
-  if (embeddings.length !== 768) {
-    throw new Error(`Expected 768-dim vector, got ${embeddings.length}`);
+  if (embeddings.length !== 1024) {
+    throw new Error(`Expected 1024-dim vector (bge-m3), got ${embeddings.length}`);
   }
 
   return embeddings;

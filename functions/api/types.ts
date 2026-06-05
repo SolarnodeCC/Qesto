@@ -76,6 +76,7 @@ export type Env = {
   JWT_SECRET_PREV?: string
   MULTI_REGION_WRITES_ENABLED?: string
   KB_ADMIN_KEY?: string
+  KB_SEARCH_SERVICE_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string
   STRIPE_WEBHOOK_SECRET?: string
@@ -139,6 +140,10 @@ export type Env = {
   MULTI_REGION_STATE_KV?: KVNamespace
   /** LinkedIn auto-posting: encrypted token + org/person URN + topics + rotation. */
   LINKEDIN_KV?: KVNamespace
+  /** ADR-042 Phase 2.1: Cloudflare Queues for async post-session work. */
+  INSIGHTS_QUEUE?: Queue<any>
+  /** ADR-042 Phase 2.3: R2 durable session snapshots for DO recovery. */
+  R2_SESSIONS?: R2Bucket
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'

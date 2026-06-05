@@ -130,6 +130,18 @@ binding = "WORKFLOWS"
 name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
+# Phase 2.1: Queues for async post-session work (AI insights, integrations, recaps)
+# TODO (Phase 2 build): Wire Cloudflare Queues producer binding
+# - Create queue "qesto-insights" in Cloudflare account
+# - Uncomment [[queues.producers]] binding below
+# - Implement consumer handler: export queue() in worker/index.ts
+# - Update lifecycle.ts to call enqueuePostSessionWork()
+# For now, work is still done via waitUntil() (Phase 1 pattern)
+#
+# [[queues.producers]]
+# binding = "INSIGHTS_QUEUE"
+# queue = "qesto-insights"
+
 # HELP_CONVERSATIONS_KV will be provisioned in Week 2 when endpoints are implemented
 # [[kv_namespaces]]
 # binding = "HELP_CONVERSATIONS_KV"
@@ -147,13 +159,20 @@ index_name = "qesto-help"
 binding = "KB_VECTORIZE"
 index_name = "qesto-kb-production"
 
+# ADR-042 Phase 2.3: R2 durable session snapshots for DO recovery
+[[r2_buckets]]
+binding = "R2_SESSIONS"
+bucket_name = "qesto-sessions"
+
 [[analytics_engine_datasets]]
 binding = "METRICS_AE"
 dataset = "qesto_metrics"
 
 [triggers]
-# Phase 5: Scheduled KB sync via Cloudflare Workers Cron
-# Triggers daily at 02:00 UTC to check for KB changes and auto-sync to Vectorize
+# Daily KB vector retrieval health watchdog at 02:00 UTC (worker/index.ts -> handleScheduled).
+# This does NOT embed/sync — the embed+sync runs in CI on knowledge-base/ changes
+# (.github/workflows/kb-sync-on-merge.yml -> npm run kb:sync). The cron verifies retrieval is
+# healthy: D1 has chunks, query model/dim matches the index, and the index returns matches.
 crons = ["0 2 * * *"]
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -251,6 +270,11 @@ class_name = "TemplateGenerationWorkflow"
 [[env.staging.vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
+
+# Staging R2 (ADR-042 Phase 2.3)
+[[env.staging.r2_buckets]]
+binding = "R2_SESSIONS"
+bucket_name = "qesto-sessions-staging"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview env is intentionally not defined. Will be re-added in Phase 5 once

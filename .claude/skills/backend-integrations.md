@@ -113,7 +113,7 @@ All OAuth/SAML metadata fetches need URL allowlisting or provider allowlisting, 
 // Insert embedding
 await c.env.DECISIONS_VECTORIZE.insert([{
   id:       decisionId,
-  values:   embedding,   // float32[], 768d
+  values:   embedding,   // float32[], 1024d (bge-m3)
   metadata: { teamId, sessionId },
 }])
 

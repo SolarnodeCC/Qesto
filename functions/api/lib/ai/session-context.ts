@@ -1,11 +1,16 @@
 /**
  * AI-CONTEXT-01 — typed Workers AI context for all inference paths.
+ * All Workers AI.run() calls are routed through the AI Gateway wrapper (ai-gateway.ts)
+ * for semantic caching, rate limiting, and cost analytics.
  * @see knowledge-base/architecture/AI_CONTEXT_SPEC.md
+ * @see ai-gateway.ts — AI Gateway + fallback logic
+ * @see knowledge-base/adr/ADR-042-cloudflare-capability-expansion.md (Phase 1.1)
  */
 import type { Context } from 'hono'
 import type { Env, Anonymity, PlanTier } from '../../types'
 import { CircuitBreakers } from '../resilience/circuit-breaker'
 import { writeEvent } from '../observability'
+import { runThroughAIGateway, type AIGatewayRequest } from './ai-gateway'
 
 export type SessionAIContext = {
   sessionId: string
@@ -121,5 +126,67 @@ export async function aiPipeline<T>(
       return { ok: false, code: 'ai_timeout', message: 'Workers AI request timed out' }
     }
     return { ok: false, code: 'ai_unavailable', message: 'Workers AI request failed' }
+  }
+}
+
+/**
+ * Unified entry point for AI inference via Cloudflare AI Gateway.
+ * Routes through the Gateway for semantic caching + rate limiting, with fallback to direct env.AI.
+ * Wraps with circuit breaker + observability logging.
+ *
+ * Usage (replaces inline env.AI.run() calls):
+ * ```
+ * const result = await runAI(ctx, env, '@cf/meta/distilbert-sst-2-int8', { text: 'hello' });
+ * ```
+ *
+ * @param ctx Session AI context (plan, sessionId, model preference, etc.)
+ * @param env Cloudflare Env
+ * @param model Model ID (e.g., @cf/meta/llama-3.3-70b-instruct-fp8-fast)
+ * @param input Request body (messages[], text, etc.)
+ * @returns AIPipelineResult with result, model, durationMs
+ */
+export async function runAI<T extends Record<string, unknown>>(
+  ctx: SessionAIContext,
+  env: Env,
+  model: string,
+  input: AIGatewayRequest,
+): Promise<AIPipelineResult<T>> {
+  const started = Date.now()
+  try {
+    const data = await CircuitBreakers.ai.execute(
+      () => runThroughAIGateway(env, ctx, model, input),
+      () => {
+        throw new Error('circuit_open')
+      },
+    )
+    const durationMs = Date.now() - started
+    writeEvent(env.METRICS_AE, {
+      name: data.cached ? 'ai.cache_hit' : 'ai.cache_miss',
+      sessionId: ctx.sessionId,
+      teamId: ctx.teamId ?? undefined,
+      plan: ctx.plan,
+      durationMs,
+      detail: model,
+      cacheAge: data.cacheAge,
+      gatewayMs: data.gatewayLatencyMs,
+    })
+    // TODO (Phase 2.1): Log cache hit + gateway latency to custom AE dataset
+    // when QestoEvent type is extended with these fields
+    return { ok: true, data: data.result as T, model, durationMs }
+  } catch (err) {
+    const durationMs = Date.now() - started
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg === 'circuit_open') {
+      return { ok: false, code: 'ai_unavailable', message: 'Workers AI unavailable (circuit open)' }
+    }
+    writeEvent(env.METRICS_AE, {
+      name: 'error.api',
+      sessionId: ctx.sessionId,
+      teamId: ctx.teamId ?? undefined,
+      plan: ctx.plan,
+      durationMs,
+      detail: model,
+    })
+    return { ok: false, code: 'ai_unavailable', message: 'AI inference failed' }
   }
 }
