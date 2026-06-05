@@ -17,7 +17,7 @@ D1 (SQLite)          → qesto-db (sessions, users, teams, decisions, audit)
 KV Namespaces        → USERS / SESSIONS / TEAMS / TEMPLATES / DECISIONS / AUDIT / ACTIONS_KV
 R2 Buckets           → qesto-logs (Logpush) · qesto-backups (D1 daily backup)
 Analytics Engine     → AE (observability events)
-Vectorize            → DECISIONS_VECTORIZE (768d cosine)
+Vectorize            → DECISIONS_VECTORIZE / HELP_VECTORIZE / KB_VECTORIZE (1024d cosine, bge-m3)
 Workers AI           → AI (@cf/meta/llama-3.3-70b-instruct-fp8-fast)
 Tail Worker          → worker/tail/tail.ts (exception → AE + R2)
 Scheduled Worker     → worker/index.ts (cron: draft expiry + D1 backup)

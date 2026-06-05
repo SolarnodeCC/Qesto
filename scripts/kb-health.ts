@@ -40,13 +40,16 @@ interface SyncManifest {
 interface IndexSpec {
   binding: string
   name: string
-  expectedDim?: number // only asserted when set
+  expectedDim?: number // asserted (hard fail) when set
+  fileBacked?: boolean // true only for the index fed by knowledge-base/*.md (empty-check uses file count)
 }
 
+// All three indexes embed with bge-m3 (1024 dims). A different dimension means
+// the index was created for the wrong model and retrieval is broken.
 const INDEXES: IndexSpec[] = [
-  { binding: 'KB_VECTORIZE', name: 'qesto-kb-production', expectedDim: KB_EXPECTED_DIM },
-  { binding: 'HELP_VECTORIZE', name: 'qesto-help' },
-  { binding: 'DECISIONS_VECTORIZE', name: 'qesto-decisions' },
+  { binding: 'KB_VECTORIZE', name: 'qesto-kb-production', expectedDim: KB_EXPECTED_DIM, fileBacked: true },
+  { binding: 'HELP_VECTORIZE', name: 'qesto-help', expectedDim: 1024 },
+  { binding: 'DECISIONS_VECTORIZE', name: 'qesto-decisions', expectedDim: 1024 },
 ]
 
 function loadManifest(): SyncManifest {
@@ -166,12 +169,14 @@ async function main() {
       console.log(`    ✗ dimension ${info.dimensions} != expected ${spec.expectedDim} — retrieval will fail`)
       hardFailure = true
     }
-    if (spec.expectedDim && typeof info.vectorCount === 'number' && info.vectorCount === 0 && files.length > 0) {
+    if (spec.fileBacked && typeof info.vectorCount === 'number' && info.vectorCount === 0 && files.length > 0) {
       console.log(`    ✗ index is EMPTY but ${files.length} KB files exist — never synced. Run \`npm run kb:sync\`.`)
       hardFailure = true
+    } else if (!spec.fileBacked && info.vectorCount === 0) {
+      console.log(`    ⚠ index is empty — ${spec.binding} feature has no vectors to retrieve (re-seed/re-index).`)
     }
     if (
-      spec.expectedDim &&
+      spec.fileBacked &&
       typeof info.vectorCount === 'number' &&
       info.vectorCount > 0 &&
       expectedVectors > 0 &&

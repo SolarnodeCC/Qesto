@@ -31,7 +31,7 @@ worker/  ──scheduled──► cleanup, cron triggers
 | Email | Resend via `RESEND_API_KEY` | `auth.ts:sendEmail()` |
 | Payments | Stripe, price IDs in `wrangler.toml [vars]` | `billing.ts`, `stripe.ts` |
 | Auth | Magic link (JWT) + SAML SSO | `auth.ts` |
-| Vector | DECISIONS_VECTORIZE (768d, cosine) | `vectorize.ts` |
+| Vector | DECISIONS_VECTORIZE, HELP_VECTORIZE, KB_VECTORIZE (1024d, cosine, bge-m3) | `vectorize.ts` |
 
 ### Session State Machine
 ```
