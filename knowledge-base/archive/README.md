@@ -7,7 +7,6 @@ Legacy, deprecated, and superseded documentation. **Do not use as current source
 - **design_files_redundant/** — Duplicate design system files (consolidate with governance/design-system)
 - **CONTENT_DRAFT_PLAN.md** — Legacy content plan (superseded)
 - **GOOGLE_OAUTH_VERIFICATION.md** — Implementation-specific setup guide
-- **amplitude-setup-report.md** — Analytics setup documentation
 - **_README.md** — Old secondary README
 
 Root-level completion reports and one-off guides were consolidated into the vault in **2026-06** (growth engine, i18n S60–70, security reviews, SEO). See [operations/deployment](../operations/deployment/), [product/growth-engine](../product/growth-engine/), and [security/reviews](../security/reviews/).

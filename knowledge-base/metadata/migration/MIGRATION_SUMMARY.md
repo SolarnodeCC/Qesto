@@ -189,7 +189,6 @@ Preserved in `/knowledge-base/archive/` for historical reference:
 | `design_files_redundant/` | Duplicate with design-system; consolidate later |
 | `CONTENT_DRAFT_PLAN.md` | Superseded by current roadmap |
 | `GOOGLE_OAUTH_VERIFICATION.md` | Implementation-specific setup guide |
-| `amplitude-setup-report.md` | Analytics setup (implementation-specific) |
 | `_README.md` | Superseded by main README.md |
 
 All archived files remain in git history, but not in active discovery paths.
