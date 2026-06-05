@@ -42,9 +42,12 @@ keeping `kb_search` working.
 **`kb_search` auth**: the tool calls `POST /api/knowledge-base/search`, which accepts
 either a JWT (`QESTO_KB_API_TOKEN`) or a read-only service key
 (`QESTO_KB_SERVICE_KEY`, preferred for agents). The service key is the
-`KB_SEARCH_SERVICE_KEY` secret — provision it with
-`wrangler pages secret put KB_SEARCH_SERVICE_KEY` and put the same value in
-`.mcp.json` env. It gates KB read-only search only (constant-time compared);
+`KB_SEARCH_SERVICE_KEY` secret on the `qesto-api` Worker — provision it with
+`wrangler secret put KB_SEARCH_SERVICE_KEY` (the API is a standalone Worker, not
+Pages; add `--env staging` for staging) and set the same value as the
+`QESTO_KB_SERVICE_KEY` environment variable that `.mcp.json` reads via
+`${QESTO_KB_SERVICE_KEY}` (in your shell / the Claude Code web environment
+variables — never commit it). It gates KB read-only search only (constant-time compared);
 no key configured ⇒ JWT stays mandatory. Auth changes here need a security review.
 
 ## Business-requirement capture & traceability
