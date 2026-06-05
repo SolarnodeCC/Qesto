@@ -19,6 +19,11 @@
   "vote.dotsRemaining": "{{remaining}} of {{limit}} dot votes left",
   "prioritize.reveal": "Reveal ranking",
   "prioritize.title": "Top ideas",
+  "moderate.dismiss": "Dismiss",
+  "moderate.merge": "Merge",
+  "moderate.mergeHere": "Merge here",
+  "moderate.mergeHint": "Select a target idea to merge into, or cancel.",
+  "moderate.mergeCancel": "Cancel",
   "connection.reconnecting": "Reconnecting…",
   "connection.failed": "Connection lost. Please refresh."
 }

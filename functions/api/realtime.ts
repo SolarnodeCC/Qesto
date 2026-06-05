@@ -215,6 +215,13 @@ export type ClientMessage =
   | { v?: LiveProtocolVersion; type: 'ideate_submit'; data: { body: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'ideate_upvote'; data: { itemId: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'ideate_reveal'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'ideate_dismiss'; data: { itemId: string }; timestamp: number }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_merge'
+      data: { targetId: string; sourceId: string }
+      timestamp: number
+    }
   // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
   | { v?: LiveProtocolVersion; type: 'approve_response'; data: { questionId: string; responseId: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'reject_response'; data: { questionId: string; responseId: string }; timestamp: number }

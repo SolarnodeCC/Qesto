@@ -29,10 +29,17 @@ export default function IdeatePresent() {
   const [starting, setStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
   const live = config?.status === 'live' || config?.status === 'energizing'
-  const { state, submit, revealRanking } = useIdeateSession(id, {
+  const [mergeSourceId, setMergeSourceId] = useState<string | null>(null)
+  const { state, submit, revealRanking, dismiss, merge } = useIdeateSession(id, {
     enabled: !!id && live,
     ...(presenterToken ? { presenterToken } : {}),
   })
+
+  function handleMergeInto(targetId: string) {
+    if (!mergeSourceId) return
+    merge(targetId, mergeSourceId)
+    setMergeSourceId(null)
+  }
 
   const refreshConfig = useCallback(async () => {
     if (!id) return
@@ -96,6 +103,19 @@ export default function IdeatePresent() {
 
       {live && (
         <div className="space-y-4" aria-live="polite">
+          {mergeSourceId && (
+            <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-200">
+              {t('moderate.mergeHint')}{' '}
+              <button
+                type="button"
+                onClick={() => setMergeSourceId(null)}
+                className="font-medium underline hover:no-underline"
+              >
+                {t('moderate.mergeCancel')}
+              </button>
+            </p>
+          )}
+
           {!state.rankingRevealed && (
             <button
               type="button"
@@ -148,6 +168,10 @@ export default function IdeatePresent() {
                         idea={idea}
                         variant="present"
                         showCounts={state.rankingRevealed}
+                        onDismiss={dismiss}
+                        onMergeSelect={setMergeSourceId}
+                        onMergeInto={handleMergeInto}
+                        mergeSourceId={mergeSourceId}
                         t={t}
                       />
                     ))}
@@ -166,6 +190,10 @@ export default function IdeatePresent() {
                   idea={idea}
                   variant="present"
                   showCounts={state.rankingRevealed}
+                  onDismiss={dismiss}
+                  onMergeSelect={setMergeSourceId}
+                  onMergeInto={handleMergeInto}
+                  mergeSourceId={mergeSourceId}
                   t={t}
                 />
               ))}

@@ -19,6 +19,11 @@
   "vote.dotsRemaining": "Nog {{remaining}} van {{limit}} stemmen over",
   "prioritize.reveal": "Ranking tonen",
   "prioritize.title": "Topideeën",
+  "moderate.dismiss": "Verwijderen",
+  "moderate.merge": "Samenvoegen",
+  "moderate.mergeHere": "Hier samenvoegen",
+  "moderate.mergeHint": "Kies een doelidee om in samen te voegen, of annuleer.",
+  "moderate.mergeCancel": "Annuleren",
   "connection.reconnecting": "Opnieuw verbinden…",
   "connection.failed": "Verbinding verbroken. Vernieuw de pagina."
 }

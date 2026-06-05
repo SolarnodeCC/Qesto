@@ -160,6 +160,75 @@ describe('ideate ranking reveal', () => {
   })
 })
 
+describe('ideate merge and dismiss', () => {
+  it('merges duplicate ideas and retains combined vote count', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter1 = connectVoter(state, 'v1')
+    const voter2 = connectVoter(state, 'v2', 'ipv2')
+    const presenter = connectPresenter(state)
+    const watcher = connectVoter(state, 'v3', 'ipv3')
+
+    await send(room, voter1, { type: 'ideate_submit', data: { body: 'Idea A' }, timestamp: 0 })
+    const idA = (last(voter1, 'ideate_idea_added')?.data.idea as { id: string }).id
+    await send(room, voter2, { type: 'ideate_submit', data: { body: 'Idea B' }, timestamp: 0 })
+    const idB = (last(voter2, 'ideate_idea_added')?.data.idea as { id: string }).id
+
+    await send(room, voter1, { type: 'ideate_upvote', data: { itemId: idA }, timestamp: 0 })
+    await send(room, voter2, { type: 'ideate_upvote', data: { itemId: idB }, timestamp: 0 })
+
+    await send(room, presenter, { type: 'ideate_merge', data: { targetId: idA, sourceId: idB }, timestamp: 0 })
+
+    const targetUpdate = frames(watcher).filter(
+      (m) => m.type === 'ideate_idea_updated' && (m.data.idea as { id: string }).id === idA,
+    ).at(-1)
+    expect(targetUpdate?.data.idea).toMatchObject({ id: idA, upvotes: 2, status: 'active' })
+
+    const sourceUpdate = frames(watcher).filter(
+      (m) => m.type === 'ideate_idea_updated' && (m.data.idea as { id: string }).id === idB,
+    ).at(-1)
+    expect(sourceUpdate?.data.idea).toMatchObject({ id: idB, status: 'dismissed' })
+  })
+
+  it('rejects merge from participants', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'Idea A' }, timestamp: 0 })
+    const idA = (last(voter, 'ideate_idea_added')?.data.idea as { id: string }).id
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'Idea B' }, timestamp: 0 })
+    const idB = (last(voter, 'ideate_idea_added')?.data.idea as { id: string }).id
+
+    await send(room, voter, { type: 'ideate_merge', data: { targetId: idA, sourceId: idB }, timestamp: 0 })
+    expect(last(voter, 'error')?.data).toMatchObject({ code: 'forbidden' })
+  })
+
+  it('dismisses an idea for the facilitator', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter = connectVoter(state, 'v1')
+    const presenter = connectPresenter(state)
+    const watcher = connectVoter(state, 'v2', 'ipv2')
+
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'Off-topic idea' }, timestamp: 0 })
+    const id = (last(voter, 'ideate_idea_added')?.data.idea as { id: string }).id
+
+    await send(room, presenter, { type: 'ideate_dismiss', data: { itemId: id }, timestamp: 0 })
+    expect(last(watcher, 'ideate_idea_updated')?.data.idea).toMatchObject({ id, status: 'dismissed' })
+  })
+
+  it('rejects dismiss from participants', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'Idea A' }, timestamp: 0 })
+    const id = (last(voter, 'ideate_idea_added')?.data.idea as { id: string }).id
+
+    await send(room, voter, { type: 'ideate_dismiss', data: { itemId: id }, timestamp: 0 })
+    expect(last(voter, 'error')?.data).toMatchObject({ code: 'forbidden' })
+  })
+})
+
 describe('ideate clustering alarm', () => {
   it('broadcasts clusters after debounce via alarm', async () => {
     vi.useFakeTimers()

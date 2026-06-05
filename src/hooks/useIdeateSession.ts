@@ -303,7 +303,25 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
     })
   }, [])
 
-  return { state, submit, upvote, revealRanking }
+  const dismiss = useCallback((itemId: string) => {
+    return sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'ideate_dismiss',
+      data: { itemId },
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  const merge = useCallback((targetId: string, sourceId: string) => {
+    return sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'ideate_merge',
+      data: { targetId, sourceId },
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  return { state, submit, upvote, revealRanking, dismiss, merge }
 }
 
 export function ideasForCluster(ideas: IdeateIdea[], clusterId: string): IdeateIdea[] {

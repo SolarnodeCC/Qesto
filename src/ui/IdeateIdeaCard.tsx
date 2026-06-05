@@ -9,14 +9,39 @@ type Props = {
   canVote?: boolean
   showCounts?: boolean
   onUpvote?: (id: string) => void
+  onDismiss?: (id: string) => void
+  onMergeSelect?: (id: string) => void
+  onMergeInto?: (targetId: string) => void
+  mergeSourceId?: string | null
   t: TFn
 }
 
-export function IdeateIdeaCard({ idea, variant, upvoted, canVote, showCounts = false, onUpvote, t }: Props) {
+export function IdeateIdeaCard({
+  idea,
+  variant,
+  upvoted,
+  canVote,
+  showCounts = false,
+  onUpvote,
+  onDismiss,
+  onMergeSelect,
+  onMergeInto,
+  mergeSourceId,
+  t,
+}: Props) {
   const showVote = variant === 'join'
+  const showModeration = variant === 'present' && (onDismiss || onMergeSelect || onMergeInto)
+  const isMergeSource = mergeSourceId === idea.id
+  const canMergeHere = mergeSourceId && mergeSourceId !== idea.id
 
   return (
-    <article className="rounded-lg border border-pulse-200 bg-white px-3 py-2.5 dark:border-pulse-700 dark:bg-pulse-900/30">
+    <article
+      className={`rounded-lg border px-3 py-2.5 ${
+        isMergeSource
+          ? 'border-amber-400 bg-amber-50 dark:border-amber-600 dark:bg-amber-900/20'
+          : 'border-pulse-200 bg-white dark:border-pulse-700 dark:bg-pulse-900/30'
+      }`}
+    >
       <p className="text-sm text-pulse-800 dark:text-pulse-100">{idea.body}</p>
       {showVote && (
         <button
@@ -38,6 +63,37 @@ export function IdeateIdeaCard({ idea, variant, upvoted, canVote, showCounts = f
         <p className="mt-1 text-xs text-violet-600 dark:text-violet-400">
           {t('vote.count', { count: idea.upvotes })}
         </p>
+      )}
+      {showModeration && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {onDismiss && (
+            <button
+              type="button"
+              onClick={() => onDismiss(idea.id)}
+              className="rounded px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+            >
+              {t('moderate.dismiss')}
+            </button>
+          )}
+          {onMergeSelect && !mergeSourceId && (
+            <button
+              type="button"
+              onClick={() => onMergeSelect(idea.id)}
+              className="rounded px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
+            >
+              {t('moderate.merge')}
+            </button>
+          )}
+          {canMergeHere && onMergeInto && (
+            <button
+              type="button"
+              onClick={() => onMergeInto(idea.id)}
+              className="rounded bg-amber-600 px-2 py-1 text-xs font-medium text-white hover:bg-amber-700"
+            >
+              {t('moderate.mergeHere')}
+            </button>
+          )}
+        </div>
       )}
     </article>
   )

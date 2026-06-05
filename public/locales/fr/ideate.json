@@ -19,6 +19,11 @@
   "vote.dotsRemaining": "Il reste {{remaining}} votes sur {{limit}}",
   "prioritize.reveal": "Afficher le classement",
   "prioritize.title": "Meilleures idées",
+  "moderate.dismiss": "Rejeter",
+  "moderate.merge": "Fusionner",
+  "moderate.mergeHere": "Fusionner ici",
+  "moderate.mergeHint": "Sélectionnez une idée cible pour fusionner, ou annulez.",
+  "moderate.mergeCancel": "Annuler",
   "connection.reconnecting": "Reconnexion…",
   "connection.failed": "Connexion perdue. Veuillez actualiser."
 }

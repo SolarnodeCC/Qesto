@@ -12,6 +12,7 @@ import {
   IDEATE_KEYS,
   computeIdeateRanking,
   createIdeateIdea,
+  mergeIdeateUpvoters,
   nextIdeateRev,
   type IdeateCluster,
   type IdeateIdea,
@@ -165,6 +166,69 @@ export class IdeateHandler {
     const ranking = computeIdeateRanking(ideas)
     const rev = await this.bumpRev()
     await this.broadcast('ideate_ranking_revealed', { ranking, rev })
+  }
+
+  private async removeIdeaFromClusters(ideaId: string): Promise<IdeateCluster[]> {
+    const clusters = (await this.ctx.storage.get<IdeateCluster[]>(IDEATE_KEYS.clusters)) ?? []
+    const updated = clusters
+      .map((c) => ({ ...c, ideaIds: c.ideaIds.filter((id) => id !== ideaId) }))
+      .filter((c) => c.ideaIds.length > 0)
+    await this.ctx.storage.put(IDEATE_KEYS.clusters, updated)
+    return updated
+  }
+
+  async handleDismiss(ws: WebSocket, att: Attachment, data: { itemId: string }): Promise<void> {
+    if (!(await this.isEnabled())) {
+      ws.send(errorMessage('unsupported_feature', 'Ideation board is not enabled'))
+      return
+    }
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only the facilitator can dismiss ideas'))
+      return
+    }
+    const item = await this.loadItem(data.itemId)
+    if (!item || item.status !== 'active') {
+      ws.send(errorMessage('not_found', 'Idea not found'))
+      return
+    }
+    item.status = 'dismissed'
+    await this.ctx.storage.put(IDEATE_KEYS.item(item.id), item)
+    await this.removeIdeaFromClusters(item.id)
+    const rev = await this.bumpRev()
+    await this.broadcast('ideate_idea_updated', { idea: item, rev })
+  }
+
+  async handleMerge(ws: WebSocket, att: Attachment, data: { targetId: string; sourceId: string }): Promise<void> {
+    if (!(await this.isEnabled())) {
+      ws.send(errorMessage('unsupported_feature', 'Ideation board is not enabled'))
+      return
+    }
+    if (att.role !== 'presenter') {
+      ws.send(errorMessage('forbidden', 'Only the facilitator can merge ideas'))
+      return
+    }
+    if (data.targetId === data.sourceId) {
+      ws.send(errorMessage('validation', 'Cannot merge an idea into itself'))
+      return
+    }
+    const target = await this.loadItem(data.targetId)
+    const source = await this.loadItem(data.sourceId)
+    if (!target || !source || target.status !== 'active' || source.status !== 'active') {
+      ws.send(errorMessage('not_found', 'Idea not found'))
+      return
+    }
+    const targetUpvoters = (await this.ctx.storage.get<string[]>(IDEATE_KEYS.upvoters(data.targetId))) ?? []
+    const sourceUpvoters = (await this.ctx.storage.get<string[]>(IDEATE_KEYS.upvoters(data.sourceId))) ?? []
+    const mergedUpvoters = mergeIdeateUpvoters([targetUpvoters, sourceUpvoters])
+    target.upvotes = mergedUpvoters.length
+    source.status = 'dismissed'
+    await this.ctx.storage.put(IDEATE_KEYS.upvoters(data.targetId), mergedUpvoters)
+    await this.ctx.storage.put(IDEATE_KEYS.item(data.targetId), target)
+    await this.ctx.storage.put(IDEATE_KEYS.item(data.sourceId), source)
+    await this.removeIdeaFromClusters(data.sourceId)
+    const rev = await this.bumpRev()
+    await this.broadcast('ideate_idea_updated', { idea: target, rev })
+    await this.broadcast('ideate_idea_updated', { idea: source, rev })
   }
 
   async handleUpvote(ws: WebSocket, att: Attachment, data: { itemId: string }): Promise<void> {

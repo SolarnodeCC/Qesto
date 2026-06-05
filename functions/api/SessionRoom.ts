@@ -254,6 +254,17 @@ export class SessionRoom implements DurableObject {
         if (msg.type !== 'ideate_reveal') return
         await this.ideateHandler.handleReveal(ws, att)
       },
+      ideate_dismiss: async (ws, att, msg) => {
+        if (msg.type !== 'ideate_dismiss') return
+        await this.ideateHandler.handleDismiss(ws, att, { itemId: msg.data.itemId })
+      },
+      ideate_merge: async (ws, att, msg) => {
+        if (msg.type !== 'ideate_merge') return
+        await this.ideateHandler.handleMerge(ws, att, {
+          targetId: msg.data.targetId,
+          sourceId: msg.data.sourceId,
+        })
+      },
       // ENTERPRISE-POLISH §1c — response moderation for open questions.
       approve_response: async (ws, att, msg) => {
         if (msg.type !== 'approve_response') return

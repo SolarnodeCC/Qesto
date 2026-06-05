@@ -19,6 +19,11 @@
   "vote.dotsRemaining": "Noch {{remaining}} von {{limit}} Stimmen übrig",
   "prioritize.reveal": "Ranking anzeigen",
   "prioritize.title": "Top-Ideen",
+  "moderate.dismiss": "Verwerfen",
+  "moderate.merge": "Zusammenführen",
+  "moderate.mergeHere": "Hier zusammenführen",
+  "moderate.mergeHint": "Wählen Sie eine Zielidee zum Zusammenführen oder brechen Sie ab.",
+  "moderate.mergeCancel": "Abbrechen",
   "connection.reconnecting": "Verbindung wird wiederhergestellt…",
   "connection.failed": "Verbindung verloren. Bitte Seite neu laden."
 }

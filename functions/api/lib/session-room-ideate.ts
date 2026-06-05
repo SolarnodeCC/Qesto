@@ -67,3 +67,10 @@ export function computeIdeateRanking(ideas: IdeateIdea[]): IdeateRankingEntry[] 
     upvotes: idea.upvotes,
   }))
 }
+
+/** Union of upvoter sets — used when merging duplicate ideas without double-counting. */
+export function mergeIdeateUpvoters(upvoterSets: string[][]): string[] {
+  const union = new Set<string>()
+  for (const set of upvoterSets) for (const voter of set) union.add(voter)
+  return [...union]
+}
