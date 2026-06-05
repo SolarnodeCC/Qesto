@@ -229,6 +229,19 @@ export class D1Mock {
       published_at: number | null
     }
   >()
+  readonly workspaces = new Map<
+    string,
+    {
+      id: string
+      team_id: string
+      kind: string
+      title: string
+      template_json: string
+      created_by: string
+      created_at: number
+      updated_at: number
+    }
+  >()
   readonly agentDefinitions = new Map<
     string,
     {
@@ -806,6 +819,27 @@ export class D1PreparedStatementMock {
       }
       return { meta: { changes } }
     }
+    if (this.sql.startsWith('INSERT INTO workspaces')) {
+      const [id, team_id, kind, title, template_json, created_by, created_at, updated_at] = this.args as [
+        string, string, string, string, string, string, number, number,
+      ]
+      this.db.workspaces.set(id, { id, team_id, kind, title, template_json, created_by, created_at, updated_at })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE workspaces SET')) {
+      const row = this.db.workspaces.get(this.args[this.args.length - 2] as string)
+      if (row) row.updated_at = this.args[0] as number
+      return { meta: { changes: row ? 1 : 0 } }
+    }
+    if (this.sql.startsWith('DELETE FROM workspaces')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.workspaces.get(id)
+      if (row && row.team_id === team_id) {
+        this.db.workspaces.delete(id)
+        return { meta: { changes: 1 } }
+      }
+      return { meta: { changes: 0 } }
+    }
     if (this.sql.startsWith('INSERT INTO marketplace_listings')) {
       const [
         id, partner_team_id, kind, title, description, price_cents, currency,
@@ -1230,6 +1264,20 @@ export class D1PreparedStatementMock {
           }
         })
         .filter((row): row is NonNullable<typeof row> => row != null)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM workspaces')) {
+      const team_id = this.args[0] as string
+      let rows = [...this.db.workspaces.values()].filter((r) => r.team_id === team_id)
+      if (this.sql.includes('kind = ?2') && this.args[1]) {
+        rows = rows.filter((r) => r.kind === this.args[1])
+      }
+      if (this.sql.includes('id = ?1 AND team_id = ?2')) {
+        const [id, tid] = this.args as [string, string]
+        const row = this.db.workspaces.get(id)
+        return row && row.team_id === tid ? { results: [row] as unknown as T[] } : { results: [] }
+      }
+      rows.sort((a, b) => b.updated_at - a.updated_at)
       return { results: rows as unknown as T[] }
     }
     if (this.sql.includes('FROM agent_definitions') && this.sql.includes('owner_id = ?1')) {

@@ -159,7 +159,7 @@ export type QuestionKind =
   | 'slider'
 export type Anonymity = 'full' | 'partial' | 'none' | 'zero_knowledge'
 export type VotePolicy = 'once' | 'multi' | 'react'
-export type SessionMode = 'reflection' | 'fun' | 'townhall'
+export type SessionMode = 'reflection' | 'fun' | 'townhall' | 'stage'
 
 /** TOWNHALL (ADR-0044): per-session moderation model, chosen at draft. */
 export type TownhallModeration = 'pre' | 'post'

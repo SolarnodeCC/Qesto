@@ -91,7 +91,7 @@ export interface SessionRow {
   status: 'draft' | 'live' | 'energizing' | 'closed' | 'archived'
   anonymity: 'full' | 'partial' | 'none' | 'zero_knowledge'
   vote_policy: 'once' | 'multi' | 'react'
-  session_mode: 'reflection' | 'fun' | 'townhall'
+  session_mode: 'reflection' | 'fun' | 'townhall' | 'stage'
   created_at: number
   started_at: number | null
   closed_at: number | null
