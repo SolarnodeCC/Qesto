@@ -123,8 +123,15 @@ export function safeLogContext(err: Error | unknown, ctx: SafeLogContext): void 
   }
 
   // Production: strip errorMessage, keep only class + traceId
-  // Staging/dev: include message for debugging
-  if (process.env.ENV === 'production') {
+  // Staging/dev: include message for debugging.
+  // Guard `process`: it is undefined in the Workers/Pages runtime without
+  // nodejs_compat, and referencing it directly throws ReferenceError — which
+  // previously crashed this very error logger (see CLAUDE.md: use c.env, not
+  // process.env). The message is already sanitized above, so keeping it when
+  // the runtime can't confirm production is safe.
+  const isProduction =
+    typeof process !== 'undefined' && process.env?.ENV === 'production'
+  if (isProduction) {
     delete (logEntry as any).errorMessage
   }
 
