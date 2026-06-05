@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useWorkspaces, type WorkspaceKind } from '../../hooks/useWorkspaces'
+import { WorkspaceHealthPanel } from './WorkspaceHealthPanel'
 
 type Props = {
   teamId: string | undefined
@@ -19,6 +20,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
   const [title, setTitle] = useState('')
   const [kind, setKind] = useState<WorkspaceKind>('retro')
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [expandedHealthId, setExpandedHealthId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
   if (!enabled || !teamId) return null
@@ -126,22 +128,44 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
       ) : (
         <ul className="divide-y divide-pulse-100 dark:divide-pulse-800">
           {workspaces.map((ws) => (
-            <li key={ws.id} className="py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="font-medium text-pulse-900 dark:text-pulse-100 truncate">{ws.title}</p>
-                <p className="text-body-s text-pulse-500">
-                  {KIND_LABELS[ws.kind]}
-                  {ws.cadence ? ` · ${ws.cadence}` : ''}
-                </p>
+            <li key={ws.id} className="py-3 space-y-3">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="font-medium text-pulse-900 dark:text-pulse-100 truncate">{ws.title}</p>
+                  <p className="text-body-s text-pulse-500">
+                    {KIND_LABELS[ws.kind]}
+                    {ws.cadence ? ` · ${ws.cadence}` : ''}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  {ws.kind === 'retro' && (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedHealthId((id) => (id === ws.id ? null : ws.id))}
+                      className="min-h-11 rounded-md border border-pulse-300 dark:border-pulse-600 px-4 text-sm font-medium hover:bg-pulse-50 dark:hover:bg-pulse-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500"
+                      aria-expanded={expandedHealthId === ws.id}
+                    >
+                      {expandedHealthId === ws.id ? 'Hide health' : 'Team health'}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void handleStart(ws.id, ws.kind)}
+                    disabled={busyId === ws.id}
+                    className="min-h-11 rounded-md border border-pulse-300 dark:border-pulse-600 px-4 text-sm font-medium hover:bg-pulse-50 dark:hover:bg-pulse-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500"
+                  >
+                    {busyId === ws.id ? 'Starting…' : 'Start next session'}
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => void handleStart(ws.id, ws.kind)}
-                disabled={busyId === ws.id}
-                className="min-h-11 shrink-0 rounded-md border border-pulse-300 dark:border-pulse-600 px-4 text-sm font-medium hover:bg-pulse-50 dark:hover:bg-pulse-800 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pulse-500"
-              >
-                {busyId === ws.id ? 'Starting…' : 'Start next session'}
-              </button>
+              {ws.kind === 'retro' && expandedHealthId === ws.id && teamId && (
+                <WorkspaceHealthPanel
+                  teamId={teamId}
+                  workspaceId={ws.id}
+                  workspaceTitle={ws.title}
+                  enabled={enabled}
+                />
+              )}
             </li>
           ))}
         </ul>

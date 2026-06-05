@@ -18,6 +18,7 @@ import { logEvent } from '../../lib/log'
 import { enqueuePostSessionWork, computePayloadHash } from '../../lib/queues/producer'
 import { readKvJson } from '../../lib/kv'
 import { mergeRetroActionsOnClose } from '../../lib/workspace-actions'
+import { persistRetroHealthSnapshot } from '../../lib/workspace-trends'
 import { retroSeedKey, type RetroSessionSeed } from '../retro-sessions'
 import type { Question, Session } from '../../types'
 import type { LiveQuestion } from '../../realtime'
@@ -363,6 +364,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
             votes: Array<{ voterId: string; optionId: string }>
             questionId: string | null
             retroActionItems?: string[]
+            retroStats?: { wentWell: number; didntGoWell: number; actions: number; totalCards: number }
           }
         }
       | null
@@ -403,28 +405,36 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     session.status = 'closed'
     session.closed_at = closedAt
 
-    if (
-      session.session_mode === 'retro' &&
-      session.workspace_id &&
-      session.team_id &&
-      c.env.ACTIONS_KV &&
-      parsed.data.retroActionItems?.length
-    ) {
-      try {
-        await mergeRetroActionsOnClose(
-          c.env.ACTIONS_KV,
-          session.team_id,
-          session.workspace_id,
-          id,
-          parsed.data.retroActionItems,
-        )
-      } catch (err) {
-        logEvent({
-          event: 'retro.merge_actions_failed',
-          sessionId: id,
-          workspaceId: session.workspace_id,
-          err: String(err),
-        })
+    if (session.session_mode === 'retro' && session.anonymity !== 'zero_knowledge') {
+      if (parsed.data.retroStats) {
+        try {
+          await persistRetroHealthSnapshot(c.env.DB, {
+            sessionId: id,
+            teamId: session.team_id ?? null,
+            closedAt,
+            stats: parsed.data.retroStats,
+          })
+        } catch (err) {
+          logEvent({ event: 'retro.health_snapshot_failed', sessionId: id, err: String(err) })
+        }
+      }
+      if (session.workspace_id && session.team_id && c.env.ACTIONS_KV && parsed.data.retroActionItems?.length) {
+        try {
+          await mergeRetroActionsOnClose(
+            c.env.ACTIONS_KV,
+            session.team_id,
+            session.workspace_id,
+            id,
+            parsed.data.retroActionItems,
+          )
+        } catch (err) {
+          logEvent({
+            event: 'retro.merge_actions_failed',
+            sessionId: id,
+            workspaceId: session.workspace_id,
+            err: String(err),
+          })
+        }
       }
     }
 

@@ -20,5 +20,21 @@
   "display.badge": "Rétro",
   "display.join": "Rejoindre sur",
   "connection.reconnecting": "Reconnexion…",
-  "connection.failed": "Connexion perdue. Veuillez actualiser."
+  "connection.failed": "Connexion perdue. Veuillez actualiser.",
+  "health.title": "Santé d'équipe dans le temps",
+  "health.windowLabel": "Fenêtre de tendance",
+  "health.window.30d": "30j",
+  "health.window.90d": "90j",
+  "health.window.180d": "180j",
+  "health.insufficient": "Il faut au moins 3 rétros clôturées avec assez de participation ({{count}} pour l'instant).",
+  "health.empty": "Pas encore de données — clôturez quelques rétros pour voir les tendances.",
+  "health.moodTrend": "Moral (part de ce qui a bien marché)",
+  "health.participationTrend": "Cartes soumises",
+  "health.instance": "Rétro #{{seq}}",
+  "health.instanceStats": "{{cards}} cartes · {{positive}} positives · {{negative}} à améliorer",
+  "health.mood.positive": "Positif",
+  "health.mood.neutral": "Neutre",
+  "health.mood.concerning": "À surveiller",
+  "health.planRequired": "Les tendances de santé nécessitent le plan Team avec insights inter-sessions.",
+  "health.viewPlans": "Voir les offres"
 }

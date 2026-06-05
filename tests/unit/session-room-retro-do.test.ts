@@ -137,9 +137,16 @@ describe('retro close', () => {
     // Transition to live status in storage (init sets live)
     const closeRes = await room.fetch(new Request('https://do.internal/close', { method: 'POST' }))
     expect(closeRes.status).toBe(200)
-    const body = (await closeRes.json()) as { ok: boolean; data: { retroActionItems: string[] } }
+    const body = (await closeRes.json()) as {
+      ok: boolean
+      data: {
+        retroActionItems: string[]
+        retroStats: { wentWell: number; didntGoWell: number; actions: number; totalCards: number }
+      }
+    }
     expect(body.ok).toBe(true)
     expect(body.data.retroActionItems).toContain('Carried action')
     expect(body.data.retroActionItems).toContain('New action')
+    expect(body.data.retroStats.totalCards).toBeGreaterThanOrEqual(2)
   })
 })

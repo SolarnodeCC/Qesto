@@ -29,6 +29,7 @@ import {
 import {
   getWorkspaceTrend,
   recomputeWorkspaceParticipationTrend,
+  recomputeWorkspaceTeamHealthTrend,
   readCachedWorkspaceTrend,
   purgeWorkspaceTrends,
   writeCachedWorkspaceTrend,
@@ -76,6 +77,7 @@ const ActionsPatchSchema = z.object({
 
 const TrendsQuerySchema = z.object({
   window: z.enum(['30d', '90d', '180d']).default('90d'),
+  kind: z.enum(['participation', 'team_health']).default('participation'),
 })
 
 function mapWorkspace(row: WorkspaceRow) {
@@ -385,11 +387,15 @@ export function mountTeamWorkspaceRoutes(parent: any) {
 
   app.get('/:id/workspaces/:wsId/trends', requireFeature('crossSessionInsights'), async (c) => {
     const { id: teamId, wsId } = c.req.param()
-    const parsed = TrendsQuerySchema.safeParse({ window: c.req.query('window') ?? '90d' })
+    const parsed = TrendsQuerySchema.safeParse({
+      window: c.req.query('window') ?? '90d',
+      kind: c.req.query('kind') ?? 'participation',
+    })
     if (!parsed.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid window' }, trace_id: c.get('trace_id') }, 400)
+      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid query' }, trace_id: c.get('trace_id') }, 400)
     }
     const window = parsed.data.window as WorkspaceTrendWindow
+    const kind = parsed.data.kind as 'participation' | 'team_health'
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
       return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
@@ -398,18 +404,24 @@ export function mountTeamWorkspaceRoutes(parent: any) {
     if (!ws) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
     }
+    if (kind === 'team_health' && ws.kind !== 'retro') {
+      return c.json({ ok: false, error: { code: 'validation', message: 'Team health trends require a retro workspace' }, trace_id: c.get('trace_id') }, 400)
+    }
     const kv = c.env.ACTIONS_KV ?? c.env.TEAMS_KV
-    let payload = await readCachedWorkspaceTrend(kv, teamId, wsId, 'participation', window)
+    let payload = await readCachedWorkspaceTrend(kv, teamId, wsId, kind, window)
     if (!payload) {
-      payload = await getWorkspaceTrend(c.env.DB, wsId, 'participation', window)
+      payload = await getWorkspaceTrend(c.env.DB, wsId, kind, window)
       if (!payload) {
-        payload = await recomputeWorkspaceParticipationTrend(c.env.DB, wsId, window)
+        payload =
+          kind === 'team_health'
+            ? await recomputeWorkspaceTeamHealthTrend(c.env.DB, wsId, window)
+            : await recomputeWorkspaceParticipationTrend(c.env.DB, wsId, window)
       }
-      await writeCachedWorkspaceTrend(kv, teamId, wsId, 'participation', window, payload)
+      await writeCachedWorkspaceTrend(kv, teamId, wsId, kind, window, payload)
     }
     return c.json({
       ok: true,
-      data: { kind: 'participation', window, trend: payload },
+      data: { kind, window, trend: payload },
       trace_id: c.get('trace_id'),
     })
   })

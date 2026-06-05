@@ -20,5 +20,21 @@
   "display.badge": "Retro",
   "display.join": "Meedoen via",
   "connection.reconnecting": "Opnieuw verbinden…",
-  "connection.failed": "Verbinding verbroken. Vernieuw de pagina."
+  "connection.failed": "Verbinding verbroken. Vernieuw de pagina.",
+  "health.title": "Teamgezondheid over tijd",
+  "health.windowLabel": "Trendperiode",
+  "health.window.30d": "30d",
+  "health.window.90d": "90d",
+  "health.window.180d": "180d",
+  "health.insufficient": "Minimaal 3 afgesloten retros met voldoende deelname nodig (nu {{count}}).",
+  "health.empty": "Nog geen gezondheidsdata — sluit een paar retros af om trends te zien.",
+  "health.moodTrend": "Stemming (ging goed-aandeel)",
+  "health.participationTrend": "Ingediende kaarten",
+  "health.instance": "Retro #{{seq}}",
+  "health.instanceStats": "{{cards}} kaarten · {{positive}} positief · {{negative}} verbeteren",
+  "health.mood.positive": "Positief",
+  "health.mood.neutral": "Neutraal",
+  "health.mood.concerning": "Aandacht nodig",
+  "health.planRequired": "Teamgezondheidstrends vereisen Team-plan met cross-session insights.",
+  "health.viewPlans": "Bekijk plannen"
 }

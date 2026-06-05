@@ -425,14 +425,16 @@ export class SessionRoom implements DurableObject {
       optionIds.map((optionId) => ({ voterId, optionId })),
     )
     let retroActionItems: string[] = []
+    let retroStats: { wentWell: number; didntGoWell: number; actions: number; totalCards: number } | undefined
     if (meta?.sessionMode === 'retro') {
       try {
         retroActionItems = await this.retroHandler.collectActionItemsForWorkspace()
+        retroStats = await this.retroHandler.collectStatsForTrend()
       } catch (err) {
         logEvent({ event: 'retro.collect_actions_failed', sessionId: meta.sessionId, err: String(err) })
       }
     }
-    return this.jsonOk({ counts, total, votes: voteList, questionId, retroActionItems })
+    return this.jsonOk({ counts, total, votes: voteList, questionId, retroActionItems, retroStats })
   }
 
   // ── /transition-to-live ────────────────────────────────────────────────────

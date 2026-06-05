@@ -20,5 +20,21 @@
   "display.badge": "Retro",
   "display.join": "Únete en",
   "connection.reconnecting": "Reconectando…",
-  "connection.failed": "Conexión perdida. Actualiza la página."
+  "connection.failed": "Conexión perdida. Actualiza la página.",
+  "health.title": "Salud del equipo en el tiempo",
+  "health.windowLabel": "Ventana de tendencia",
+  "health.window.30d": "30d",
+  "health.window.90d": "90d",
+  "health.window.180d": "180d",
+  "health.insufficient": "Se necesitan al menos 3 retros cerrados con participación suficiente ({{count}} hasta ahora).",
+  "health.empty": "Aún no hay datos de salud — cierra algunas retros para ver tendencias.",
+  "health.moodTrend": "Ánimo (proporción positiva)",
+  "health.participationTrend": "Tarjetas enviadas",
+  "health.instance": "Retro #{{seq}}",
+  "health.instanceStats": "{{cards}} tarjetas · {{positive}} positivas · {{negative}} mejorar",
+  "health.mood.positive": "Positivo",
+  "health.mood.neutral": "Neutral",
+  "health.mood.concerning": "Requiere atención",
+  "health.planRequired": "Las tendencias de salud requieren plan Team con insights entre sesiones.",
+  "health.viewPlans": "Ver planes"
 }

@@ -1417,6 +1417,33 @@ export class D1PreparedStatementMock {
         .sort((a, b) => a.day.localeCompare(b.day))
       return { results: rows as unknown as T[] }
     }
+    if (this.sql.includes('INNER JOIN insights_daily i ON i.session_id = s.id') && this.sql.includes('workspace_id = ?1')) {
+      const [workspace_id, cutoff] = this.args as [string, number]
+      const rows = [...this.db.sessions.values()]
+        .filter(
+          (s) =>
+            s.workspace_id === workspace_id &&
+            s.session_mode === 'retro' &&
+            (s.status === 'closed' || s.status === 'archived') &&
+            s.closed_at != null &&
+            s.closed_at >= cutoff &&
+            s.anonymity !== 'zero_knowledge',
+        )
+        .sort((a, b) => (a.workspace_seq ?? 0) - (b.workspace_seq ?? 0))
+        .map((s) => {
+          const insight = [...this.db.insightsDaily.values()].find((r) => r.session_id === s.id)
+          if (!insight) return null
+          return {
+            id: s.id,
+            workspace_seq: s.workspace_seq ?? null,
+            closed_at: s.closed_at!,
+            themes_json: insight.themes_json,
+            n_votes: insight.n_votes,
+          }
+        })
+        .filter((row): row is NonNullable<typeof row> => row != null)
+      return { results: rows as unknown as T[] }
+    }
     if (this.sql.includes('FROM insights_daily i') && this.sql.includes('JOIN sessions s')) {
       const [team_id, since_day] = this.args as [string, string]
       const rows = [...this.db.insightsDaily.values()]

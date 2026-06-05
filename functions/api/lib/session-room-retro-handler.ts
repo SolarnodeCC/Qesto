@@ -164,4 +164,17 @@ export class RetroHandler {
     const items = await this.loadAllItems()
     return items.filter((i) => i.column === 'actions').map((i) => i.body)
   }
+
+  async collectStatsForTrend(): Promise<{
+    wentWell: number
+    didntGoWell: number
+    actions: number
+    totalCards: number
+  }> {
+    const items = await this.loadAllItems()
+    const wentWell = items.filter((i) => i.column === 'went_well').length
+    const didntGoWell = items.filter((i) => i.column === 'didnt_go_well').length
+    const actions = items.filter((i) => i.column === 'actions').length
+    return { wentWell, didntGoWell, actions, totalCards: items.length }
+  }
 }

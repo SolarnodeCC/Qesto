@@ -20,5 +20,21 @@
   "display.badge": "Retro",
   "display.join": "Beitreten unter",
   "connection.reconnecting": "Verbindung wird wiederhergestellt…",
-  "connection.failed": "Verbindung verloren. Bitte Seite neu laden."
+  "connection.failed": "Verbindung verloren. Bitte Seite neu laden.",
+  "health.title": "Teamgesundheit im Zeitverlauf",
+  "health.windowLabel": "Trendzeitraum",
+  "health.window.30d": "30T",
+  "health.window.90d": "90T",
+  "health.window.180d": "180T",
+  "health.insufficient": "Mindestens 3 abgeschlossene Retros mit ausreichender Beteiligung nötig (bisher {{count}}).",
+  "health.empty": "Noch keine Gesundheitsdaten — schließen Sie einige Retros ab.",
+  "health.moodTrend": "Stimmung (Gut-gelaufen-Anteil)",
+  "health.participationTrend": "Eingereichte Karten",
+  "health.instance": "Retro #{{seq}}",
+  "health.instanceStats": "{{cards}} Karten · {{positive}} positiv · {{negative}} verbessern",
+  "health.mood.positive": "Positiv",
+  "health.mood.neutral": "Neutral",
+  "health.mood.concerning": "Aufmerksamkeit nötig",
+  "health.planRequired": "Teamgesundheitstrends erfordern Team-Plan mit Cross-Session-Insights.",
+  "health.viewPlans": "Pläne ansehen"
 }
