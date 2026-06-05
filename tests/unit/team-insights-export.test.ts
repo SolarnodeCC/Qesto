@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { sanitizeCsvCell, insightsExportToCsv } from '../../functions/api/lib/team-insights-export'
+import { insightsExportToCsv } from '../../functions/api/lib/team-insights-export'
+import { escapeCsvCell } from '../../functions/api/lib/csv'
 import { computeFacilitatorScorecard } from '../../functions/api/lib/team-insights-scorecard'
 
 describe('team-insights-export (INSIGHTS-07)', () => {
   it('sanitizes formula-injection prefixes in CSV cells', () => {
-    expect(sanitizeCsvCell('=SUM(A1)')).toBe("'=SUM(A1)")
-    expect(sanitizeCsvCell('+cmd')).toBe("'+cmd")
-    expect(sanitizeCsvCell('normal')).toBe('normal')
+    expect(escapeCsvCell('=SUM(A1)')).toBe(`"'=SUM(A1)"`)
+    expect(escapeCsvCell('+cmd')).toBe(`"'+cmd"`)
+    expect(escapeCsvCell('normal')).toBe('"normal"')
   })
 
   it('builds CSV with section rows', () => {
@@ -20,6 +21,6 @@ describe('team-insights-export (INSIGHTS-07)', () => {
     }
     const csv = insightsExportToCsv(bundle)
     expect(csv).toContain('recurring_theme')
-    expect(csv).not.toMatch(/^=/)
+    expect(csv).not.toMatch(/\n=/)
   })
 })

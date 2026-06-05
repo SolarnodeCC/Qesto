@@ -24,6 +24,10 @@ const WorkspacePatchSchema = z.object({
   templateJson: z.record(z.string(), z.unknown()).optional(),
 })
 
+const WorkspaceKindQuerySchema = z.object({
+  kind: z.enum(['retro', 'ideate']).optional(),
+})
+
 function isTeamMember(team: Team, userId: string): boolean {
   return team.ownerId === userId || team.members.some((m) => m.userId === userId)
 }
@@ -36,6 +40,13 @@ export function mountTeamWorkspaceRoutes(parent: any) {
 
   app.get('/:id/workspaces', async (c) => {
     const teamId = c.req.param('id')
+    const parsedQuery = WorkspaceKindQuerySchema.safeParse({ kind: c.req.query('kind') })
+    if (!parsedQuery.success) {
+      return c.json(
+        { ok: false, error: { code: 'validation', message: 'Invalid kind' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
@@ -43,7 +54,7 @@ export function mountTeamWorkspaceRoutes(parent: any) {
     if (!isTeamMember(team, c.get('user').sub)) {
       return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member' }, trace_id: c.get('trace_id') }, 403)
     }
-    const kind = c.req.query('kind')
+    const kind = parsedQuery.data.kind
     const rows = kind
       ? await c.env.DB.prepare(
           `SELECT id, team_id, kind, title, template_json, created_by, created_at, updated_at

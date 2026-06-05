@@ -11,6 +11,7 @@ import {
 } from './team-insights-recurring'
 import { computeFacilitatorScorecard, listScorecardSourceRows } from './team-insights-scorecard'
 import type { InsightsVectorizeBindings } from './insights-vectorize'
+import { csvRow } from './csv'
 
 export type InsightsExportBundle = {
   teamId: string
@@ -41,36 +42,25 @@ export async function buildInsightsExport(
   }
 }
 
-/** Prefix cells that start with formula triggers to prevent CSV injection. */
-export function sanitizeCsvCell(value: string | number): string {
-  const s = String(value)
-  if (/^[=+\-@\t\r]/.test(s)) return `'${s}`
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return `"${s.replace(/"/g, '""')}"`
-  }
-  return s
-}
-
 export function insightsExportToCsv(bundle: InsightsExportBundle): string {
-  const lines: string[] = [
-    'section,key,value',
-    `meta,team_id,${sanitizeCsvCell(bundle.teamId)}`,
-    `meta,window,${sanitizeCsvCell(bundle.window)}`,
-    `meta,exported_at,${sanitizeCsvCell(bundle.exportedAt)}`,
-  ]
+  const lines: string[] = []
+  lines.push(csvRow(['section', 'key', 'value']))
+  lines.push(csvRow(['meta', 'team_id', bundle.teamId]))
+  lines.push(csvRow(['meta', 'window', bundle.window]))
+  lines.push(csvRow(['meta', 'exported_at', bundle.exportedAt]))
   for (const t of bundle.recurringThemes) {
     lines.push(
-      `recurring_theme,${sanitizeCsvCell(t.label)},${sanitizeCsvCell(String(t.sessionCount))}`,
+      csvRow(['recurring_theme', t.label, t.sessionCount]),
     )
   }
   for (const p of bundle.engagement.points) {
     lines.push(
-      `engagement,${sanitizeCsvCell(p.day)},${sanitizeCsvCell(`${p.sessions}/${p.avgVotes}`)}`,
+      csvRow(['engagement', p.day, `${p.sessions}/${p.avgVotes}`]),
     )
   }
   for (const f of bundle.scorecard.facilitators) {
     lines.push(
-      `facilitator,${sanitizeCsvCell(f.facilitatorId)},${sanitizeCsvCell(String(f.sessionsRun))}`,
+      csvRow(['facilitator', f.facilitatorId, f.sessionsRun]),
     )
   }
   return lines.join('\n')
