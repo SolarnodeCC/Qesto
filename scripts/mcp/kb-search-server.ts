@@ -69,15 +69,20 @@ async function kbSearch(args: {
   type?: string | undefined
 }) {
   const baseUrl = process.env.QESTO_API_BASE_URL
+  const serviceKey = process.env.QESTO_KB_SERVICE_KEY
   const token = process.env.QESTO_KB_API_TOKEN
-  if (!baseUrl || !token) {
+  if (!baseUrl || (!serviceKey && !token)) {
     return textResult(
-      'KB search is not configured. Set QESTO_API_BASE_URL and QESTO_KB_API_TOKEN ' +
-        '(a valid Qesto JWT) in .mcp.json env. Until then, research the knowledge-base/ ' +
-        'files with Grep/Read.',
+      'KB search is not configured. Set QESTO_API_BASE_URL and either ' +
+        'QESTO_KB_SERVICE_KEY (recommended) or QESTO_KB_API_TOKEN (a Qesto JWT) in ' +
+        '.mcp.json env. Until then, research the knowledge-base/ files with Grep/Read.',
       true,
     )
   }
+  // Prefer the read-only service key; fall back to a JWT bearer.
+  const authHeaders: Record<string, string> = serviceKey
+    ? { 'x-kb-service-key': serviceKey }
+    : { Authorization: `Bearer ${token as string}` }
 
   // Build body without undefined keys (the route validates strictly).
   const body: Record<string, unknown> = { query: args.query }
@@ -89,7 +94,7 @@ async function kbSearch(args: {
   try {
     res = await fetch(`${baseUrl.replace(/\/$/, '')}${SEARCH_PATH}`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      headers: { ...authHeaders, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
   } catch (err) {
@@ -99,7 +104,11 @@ async function kbSearch(args: {
   if (!res.ok) {
     const detail = await res.text().catch(() => '')
     const hint =
-      res.status === 401 ? ' (QESTO_KB_API_TOKEN invalid/expired)' : res.status === 503 ? ' (embedding service unavailable)' : ''
+      res.status === 401
+        ? ' (QESTO_KB_SERVICE_KEY or QESTO_KB_API_TOKEN invalid/expired)'
+        : res.status === 503
+          ? ' (embedding service unavailable)'
+          : ''
     return textResult(`KB search returned HTTP ${res.status}${hint}. ${detail.slice(0, 300)}`, true)
   }
 

@@ -35,8 +35,16 @@ traceable*.
 For "what are the requirements / decisions / constraints for X" questions, prefer
 the `kb_search` MCP tool (semantic) over raw grep, then open the returned
 `file_path` with Read. Grep/Glob remain best for exact symbols and code. If
-`kb_search` is unconfigured (no `QESTO_API_BASE_URL` / `QESTO_KB_API_TOKEN`),
-fall back to the documentation map + Grep. You own keeping `kb_search` working.
+`kb_search` is unconfigured, fall back to the documentation map + Grep. You own
+keeping `kb_search` working.
+
+**`kb_search` auth**: the tool calls `POST /api/knowledge-base/search`, which accepts
+either a JWT (`QESTO_KB_API_TOKEN`) or a read-only service key
+(`QESTO_KB_SERVICE_KEY`, preferred for agents). The service key is the
+`KB_SEARCH_SERVICE_KEY` secret — provision it with
+`wrangler pages secret put KB_SEARCH_SERVICE_KEY` and put the same value in
+`.mcp.json` env. It gates KB read-only search only (constant-time compared);
+no key configured ⇒ JWT stays mandatory. Auth changes here need a security review.
 
 ## Business-requirement capture & traceability
 Every requirement must be **documented, identified, and traceable**:
