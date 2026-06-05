@@ -270,6 +270,8 @@ See [`SPRINT_PLAN.md` §Sprint 20](../planning/SPRINT_PLAN_MASTER.md) for detail
 | **S84** | 2026-07-14 → 2026-07-27 | **v5.1 GA** | TOWNHALL 50k proof + INSIGHTS dashboard + agent marketplace prep |
 | **S85** | 2026-07-28 → 2026-08-10 | v5.1.1 / S86 prep | STAGE + RETRO/IDEATE foundation + INSIGHTS export completion |
 
+**→ Next arc: Sprints 85–88 (five epics)** — [`NEXT_5_EPICS_PLAN.md`](../planning/NEXT_5_EPICS_PLAN.md) (2026-06-05). Sequences **STAGE → RETRO → IDEATE → DELIBERATE → EMBED** (competitive epics #4–7 + #10); v5.2 GA at S86, v6.0-rc at S88. Gates: ADR-0048 (S85), ADR-0049 (S86), ADR-0050 (S87).
+
 ---
 
 ## Epic Catalog
