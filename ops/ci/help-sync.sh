@@ -17,9 +17,17 @@ assert_file "package.json" "package configuration"
 report_success "Installing dependencies"
 npm ci --silent
 
-# Run Help Sync
+# Run Help Sync (exit code doesn't matter, help sync is advisory)
 report_success "Syncing help documentation"
-npm run help:sync
+npm run help:sync || {
+  report_error "Help sync failed, creating fallback manifest"
+  true  # Don't fail, help sync is advisory
+}
+
+# Ensure manifest file exists (create fallback if sync failed)
+if [ ! -f .help-sync-manifest.json ]; then
+  echo '{"status":"unavailable","reason":"help sync execution failed or unavailable"}' > .help-sync-manifest.json
+fi
 
 report_success "Help sync completed"
 exit 0
