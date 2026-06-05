@@ -141,6 +141,8 @@ export type Env = {
   LINKEDIN_KV?: KVNamespace
   /** ADR-042 Phase 2.1: Cloudflare Queues for async post-session work. */
   INSIGHTS_QUEUE?: Queue<any>
+  /** ADR-042 Phase 2.3: R2 durable session snapshots for DO recovery. */
+  R2_SESSIONS?: R2Bucket
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
