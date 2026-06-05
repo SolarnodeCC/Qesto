@@ -1167,19 +1167,27 @@ export class SessionRoom implements DurableObject {
         }
       }
 
-      // Update KV cache with latest vote state.
-      const voters = await this.ctx.storage.get<Votes>(K_VOTERS)
-      if (voters) {
-        await this.env.SESSIONS_KV?.put?.(
-          `votes:${meta.sessionId}`,
-          JSON.stringify({ voters, counts: this._counts, flushedAt: Date.now() }),
-          { expirationTtl: 3600 }, // 1 hour TTL
-        )
+      // Sync in-memory voters and counts to DO storage (for recovery).
+      if (this._voters) {
+        await this.ctx.storage.put(K_VOTERS, this._voters)
       }
-
-      // Sync counts to DO storage as well (for recovery).
       if (this._counts) {
         await this.ctx.storage.put(K_COUNTS, this._counts)
+      }
+
+      // Update KV cache with latest vote state.
+      if (!this.env.SESSIONS_KV) {
+        logEvent({
+          event: 'do.kv_unavailable',
+          sessionId: meta?.sessionId,
+          detail: 'SESSIONS_KV',
+        })
+      } else if (this._voters) {
+        await this.env.SESSIONS_KV.put(
+          `votes:${meta.sessionId}`,
+          JSON.stringify({ voters: this._voters, counts: this._counts, flushedAt: Date.now() }),
+          { expirationTtl: 3600 }, // 1 hour TTL
+        )
       }
 
       this.voteBuffer = []
@@ -1213,7 +1221,9 @@ export class SessionRoom implements DurableObject {
         questionIndex: (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0,
         currentQuestion: await this.ctx.storage.get<LiveQuestion>(K_QUESTION),
         counts: this._counts ?? (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {},
-        voters: this._voters ?? {},
+        voters: (await this.ctx.storage.get<Votes>(K_VOTERS)) ?? {},
+        pendingResponses: (await this.ctx.storage.get<any[]>(K_PENDING_RESPONSES)) ?? [],
+        activeEnergizer: (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null,
         status: await this.ctx.storage.get<string>(K_STATUS),
         snapshotAt: Date.now(),
       }
@@ -1254,6 +1264,8 @@ export class SessionRoom implements DurableObject {
         currentQuestion?: LiveQuestion
         counts?: Counts
         voters?: Votes
+        pendingResponses?: any[]
+        activeEnergizer?: LiveEnergizerState | null
         status?: string
       }
 
@@ -1268,6 +1280,12 @@ export class SessionRoom implements DurableObject {
       if (snapshot.voters) {
         await this.ctx.storage.put(K_VOTERS, snapshot.voters)
         this._voters = snapshot.voters
+      }
+      if (snapshot.pendingResponses?.length) {
+        await this.ctx.storage.put(K_PENDING_RESPONSES, snapshot.pendingResponses)
+      }
+      if (snapshot.activeEnergizer) {
+        await this.ctx.storage.put(K_ACTIVE_ENERGIZER, snapshot.activeEnergizer)
       }
       if (snapshot.status) await this.ctx.storage.put(K_STATUS, snapshot.status)
 
@@ -1295,7 +1313,8 @@ export class SessionRoom implements DurableObject {
     const question = (await this.ctx.storage.get<LiveQuestion>(K_QUESTION)) ?? null
     const allQs = (await this.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
     const questionIndex = (await this.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
-    const counts = (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+    // Phase 2.2: Prefer in-memory cache for eventual consistency during buffering
+    const counts = this._counts ?? (await this.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
     const energizer = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
     const sentiment =
       att.role === 'presenter'
