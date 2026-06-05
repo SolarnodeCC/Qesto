@@ -24,12 +24,12 @@ jobs:
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: 'npm'
@@ -43,7 +43,7 @@ jobs:
 
       - name: Upload sync manifest
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: help-sync-manifest
           path: .help-sync-manifest.json
@@ -51,7 +51,7 @@ jobs:
 
       - name: Notify Slack (on failure)
         if: failure()
-        uses: slackapi/slack-github-action@d4dd44128e9be7d7df6514ab9075da67d26d36e8
+        uses: slackapi/slack-github-action@v3
         with:
           payload: |
             {
