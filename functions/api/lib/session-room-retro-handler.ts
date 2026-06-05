@@ -75,14 +75,32 @@ export class RetroHandler {
     return items
   }
 
-  async sendSnapshot(ws: WebSocket): Promise<void> {
+  private async loadVoterVoteState(voterId: string, items: RetroItem[]): Promise<{ myUpvotes: string[]; dotsUsed: number }> {
+    const myUpvotes: string[] = []
+    for (const item of items) {
+      if (item.column !== 'actions') continue
+      const upvoters = (await this.ctx.storage.get<string[]>(RETRO_KEYS.upvoters(item.id))) ?? []
+      if (upvoters.includes(voterId)) myUpvotes.push(item.id)
+    }
+    const dotsUsed = (await this.ctx.storage.get<number>(RETRO_KEYS.voterDots(voterId))) ?? 0
+    return { myUpvotes, dotsUsed }
+  }
+
+  async sendSnapshot(ws: WebSocket, att?: Attachment): Promise<void> {
     const items = await this.loadAllItems()
     const rev = (await this.ctx.storage.get<number>(RETRO_KEYS.rev)) ?? 0
     const dotVoteLimit = await this.loadDotVoteLimit()
+    const voterState = att?.role === 'voter' ? await this.loadVoterVoteState(att.voterId, items) : null
     ws.send(
       serverMsg({
         type: 'retro_state',
-        data: { items, rev, dotVoteLimit, columns: RETRO_COLUMNS },
+        data: {
+          items,
+          rev,
+          dotVoteLimit,
+          columns: RETRO_COLUMNS,
+          ...(voterState ?? {}),
+        },
         timestamp: Date.now(),
       }),
     )

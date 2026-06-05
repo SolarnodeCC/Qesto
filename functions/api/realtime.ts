@@ -392,6 +392,9 @@ export type ServerMessage =
         rev: number
         dotVoteLimit: number
         columns: Array<'went_well' | 'didnt_go_well' | 'actions'>
+        /** Present for voter connections — reconnect sync for dot budget. */
+        myUpvotes?: string[]
+        dotsUsed?: number
       }
       timestamp: number
     }

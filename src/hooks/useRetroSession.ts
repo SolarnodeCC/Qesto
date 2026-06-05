@@ -33,13 +33,21 @@ type RetroAction =
   | { kind: 'reconnecting' }
   | { kind: 'closed' }
   | { kind: 'failed'; error: string }
-  | { kind: 'snapshot'; items: RetroItem[]; rev: number; dotVoteLimit: number }
+  | {
+      kind: 'snapshot'
+      items: RetroItem[]
+      rev: number
+      dotVoteLimit: number
+      myUpvotes?: string[]
+      dotsUsed?: number
+    }
   | { kind: 'added'; item: RetroItem; rev: number }
   | { kind: 'updated'; item: RetroItem; rev: number }
   | { kind: 'upvote_optimistic'; itemId: string }
+  | { kind: 'upvote_rollback'; itemId: string }
   | { kind: 'error'; message: string }
 
-const INITIAL: RetroState = {
+export const RETRO_INITIAL: RetroState = {
   connection: 'idle',
   items: [],
   rev: 0,
@@ -57,7 +65,14 @@ function upsert(items: RetroItem[], item: RetroItem): RetroItem[] {
   return next
 }
 
-function retroReducer(state: RetroState, action: RetroAction): RetroState {
+export function sortActionsByUpvotes(items: RetroItem[]): RetroItem[] {
+  return [...items].sort((a, b) => {
+    if (a.upvotes !== b.upvotes) return b.upvotes - a.upvotes
+    return a.createdAt - b.createdAt
+  })
+}
+
+export function retroReducer(state: RetroState, action: RetroAction): RetroState {
   switch (action.kind) {
     case 'connecting':
       return { ...state, connection: 'connecting', error: null }
@@ -75,19 +90,15 @@ function retroReducer(state: RetroState, action: RetroAction): RetroState {
         items: action.items,
         rev: action.rev,
         dotVoteLimit: action.dotVoteLimit,
+        myUpvotes: action.myUpvotes ?? state.myUpvotes,
+        dotsUsed: action.dotsUsed ?? state.dotsUsed,
       }
     case 'added':
       return { ...state, items: upsert(state.items, action.item), rev: action.rev }
     case 'updated':
-      return {
-        ...state,
-        items: upsert(state.items, action.item),
-        rev: action.rev,
-        myUpvotes: state.myUpvotes.includes(action.item.id)
-          ? state.myUpvotes
-          : state.myUpvotes,
-      }
+      return { ...state, items: upsert(state.items, action.item), rev: action.rev }
     case 'upvote_optimistic':
+      if (state.myUpvotes.includes(action.itemId)) return state
       return {
         ...state,
         myUpvotes: [...state.myUpvotes, action.itemId],
@@ -96,6 +107,17 @@ function retroReducer(state: RetroState, action: RetroAction): RetroState {
           i.id === action.itemId ? { ...i, upvotes: i.upvotes + 1 } : i,
         ),
       }
+    case 'upvote_rollback': {
+      if (!state.myUpvotes.includes(action.itemId)) return state
+      return {
+        ...state,
+        myUpvotes: state.myUpvotes.filter((id) => id !== action.itemId),
+        dotsUsed: Math.max(0, state.dotsUsed - 1),
+        items: state.items.map((i) =>
+          i.id === action.itemId ? { ...i, upvotes: Math.max(0, i.upvotes - 1) } : i,
+        ),
+      }
+    }
     case 'error':
       return { ...state, error: action.message }
     default:
@@ -118,9 +140,10 @@ function toItem(raw: Record<string, unknown>): RetroItem | null {
 type Options = { fingerprint?: string; presenterToken?: string; enabled?: boolean }
 
 export function useRetroSession(sessionId: string | undefined, opts: Options = {}) {
-  const [state, dispatch] = useReducer(retroReducer, INITIAL)
+  const [state, dispatch] = useReducer(retroReducer, RETRO_INITIAL)
   const wsRef = useRef<WebSocket | null>(null)
   const attemptRef = useRef(0)
+  const pendingUpvoteRef = useRef<string | null>(null)
   const { fingerprint, presenterToken, enabled = true } = opts
 
   const connect = useCallback(() => {
@@ -140,12 +163,15 @@ export function useRetroSession(sessionId: string | undefined, opts: Options = {
         switch (msg.type) {
           case 'retro_state': {
             const items = Array.isArray(d.items) ? (d.items as Record<string, unknown>[]).map(toItem).filter(Boolean) : []
-            dispatch({
+            const snapshot: Extract<RetroAction, { kind: 'snapshot' }> = {
               kind: 'snapshot',
               items: items as RetroItem[],
               rev: typeof d.rev === 'number' ? d.rev : 0,
               dotVoteLimit: typeof d.dotVoteLimit === 'number' ? d.dotVoteLimit : 3,
-            })
+            }
+            if (Array.isArray(d.myUpvotes)) snapshot.myUpvotes = d.myUpvotes as string[]
+            if (typeof d.dotsUsed === 'number') snapshot.dotsUsed = d.dotsUsed
+            dispatch(snapshot)
             break
           }
           case 'retro_item_added': {
@@ -155,12 +181,21 @@ export function useRetroSession(sessionId: string | undefined, opts: Options = {
           }
           case 'retro_item_updated': {
             const item = toItem(d.item as Record<string, unknown>)
-            if (item) dispatch({ kind: 'updated', item, rev: d.rev as number })
+            if (item) {
+              if (pendingUpvoteRef.current === item.id) pendingUpvoteRef.current = null
+              dispatch({ kind: 'updated', item, rev: d.rev as number })
+            }
             break
           }
-          case 'error':
+          case 'error': {
+            const pending = pendingUpvoteRef.current
+            if (pending) {
+              pendingUpvoteRef.current = null
+              dispatch({ kind: 'upvote_rollback', itemId: pending })
+            }
             dispatch({ kind: 'error', message: (d.message as string) ?? 'Error' })
             break
+          }
         }
       } catch {
         /* ignore */
@@ -202,6 +237,7 @@ export function useRetroSession(sessionId: string | undefined, opts: Options = {
   const upvote = useCallback(
     (itemId: string) => {
       if (state.myUpvotes.includes(itemId) || state.dotsUsed >= state.dotVoteLimit) return
+      pendingUpvoteRef.current = itemId
       dispatch({ kind: 'upvote_optimistic', itemId })
       sendWsJson(wsRef.current, {
         v: LIVE_PROTOCOL_VERSION,
@@ -217,5 +253,6 @@ export function useRetroSession(sessionId: string | undefined, opts: Options = {
 }
 
 export function itemsByColumn(items: RetroItem[], column: RetroColumn): RetroItem[] {
-  return items.filter((i) => i.column === column)
+  const filtered = items.filter((i) => i.column === column)
+  return column === 'actions' ? sortActionsByUpvotes(filtered) : filtered
 }

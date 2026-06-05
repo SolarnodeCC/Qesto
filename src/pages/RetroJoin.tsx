@@ -102,7 +102,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
         {submitted && <p className="text-sm font-medium text-teal-700 dark:text-teal-400">{t('submit.success')}</p>}
       </form>
 
-      {dotsRemaining < state.dotVoteLimit && (
+      {state.dotVoteLimit > 0 && (
         <p className="text-xs text-pulse-500">
           {t('vote.dotsRemaining', { remaining: dotsRemaining, limit: state.dotVoteLimit })}
         </p>

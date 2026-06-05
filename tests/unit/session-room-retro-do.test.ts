@@ -125,6 +125,78 @@ describe('retro dot votes', () => {
     await send(room, voter, { type: 'retro_upvote', data: { itemId: ids[2] }, timestamp: 0 })
     expect(last(voter, 'error')?.data).toMatchObject({ code: 'limit' })
   })
+
+  it('rejects presenter dot votes', async () => {
+    const { room, state } = await buildRoom()
+    await initRetro(room, ['Carried action'])
+    const presenter = connectPresenter(state)
+    await send(room, presenter, { type: 'request_state', data: {}, timestamp: 0 })
+    const carriedId = (last(presenter, 'retro_state')?.data.items as Array<{ id: string }>)[0].id
+
+    await send(room, presenter, { type: 'retro_upvote', data: { itemId: carriedId }, timestamp: 0 })
+    expect(last(presenter, 'error')?.data).toMatchObject({ code: 'forbidden' })
+  })
+
+  it('rejects duplicate votes on the same item', async () => {
+    const { room, state } = await buildRoom()
+    await initRetro(room)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'retro_submit', data: { column: 'actions', body: 'Fix deploy' }, timestamp: 0 })
+    const actionId = (last(voter, 'retro_item_added')?.data.item as { id: string }).id
+
+    await send(room, voter, { type: 'retro_upvote', data: { itemId: actionId }, timestamp: 0 })
+    expect(last(voter, 'retro_item_updated')?.data.item).toMatchObject({ id: actionId, upvotes: 1 })
+
+    await send(room, voter, { type: 'retro_upvote', data: { itemId: actionId }, timestamp: 0 })
+    expect(last(voter, 'error')?.data).toMatchObject({ code: 'duplicate' })
+  })
+
+  it('allows dot votes on carried action items', async () => {
+    const { room, state } = await buildRoom()
+    await initRetro(room, ['Improve CI'])
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'request_state', data: {}, timestamp: 0 })
+    const carriedId = (last(voter, 'retro_state')?.data.items as Array<{ id: string; carried: boolean }>)[0].id
+
+    await send(room, voter, { type: 'retro_upvote', data: { itemId: carriedId }, timestamp: 0 })
+    expect(last(voter, 'retro_item_updated')?.data.item).toMatchObject({ id: carriedId, upvotes: 1, carried: true })
+  })
+
+  it('rejects votes on unknown item ids', async () => {
+    const { room, state } = await buildRoom()
+    await initRetro(room)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'retro_upvote', data: { itemId: 'missing_item' }, timestamp: 0 })
+    expect(last(voter, 'error')?.data).toMatchObject({ code: 'not_found' })
+  })
+
+  it('broadcasts vote updates to other clients', async () => {
+    const { room, state } = await buildRoom()
+    await initRetro(room)
+    const voter = connectVoter(state, 'v1')
+    const watcher = connectVoter(state, 'v2', 'ipv2')
+    await send(room, voter, { type: 'retro_submit', data: { column: 'actions', body: 'Add tests' }, timestamp: 0 })
+    const actionId = (last(voter, 'retro_item_added')?.data.item as { id: string }).id
+
+    await send(room, voter, { type: 'retro_upvote', data: { itemId: actionId }, timestamp: 0 })
+    expect(last(watcher, 'retro_item_updated')?.data.item).toMatchObject({ id: actionId, upvotes: 1 })
+  })
+
+  it('includes voter dot state in retro_state snapshot', async () => {
+    const { room, state } = await buildRoom()
+    await initRetro(room, ['Carried action'])
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'request_state', data: {}, timestamp: 0 })
+    const snap = last(voter, 'retro_state')
+    expect(snap?.data).toMatchObject({ dotsUsed: 0, myUpvotes: [] })
+
+    const carriedId = (snap?.data.items as Array<{ id: string }>)[0].id
+    await send(room, voter, { type: 'retro_upvote', data: { itemId: carriedId }, timestamp: 0 })
+    await send(room, voter, { type: 'request_state', data: {}, timestamp: 0 })
+
+    const resync = last(voter, 'retro_state')
+    expect(resync?.data).toMatchObject({ dotsUsed: 1, myUpvotes: [carriedId] })
+  })
 })
 
 describe('retro close', () => {

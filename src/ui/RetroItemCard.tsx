@@ -45,8 +45,12 @@ export function RetroItemCard({ item, variant, upvoted, canVote, onUpvote, t }: 
           {item.upvotes}
         </button>
       )}
-      {item.column === 'actions' && variant === 'present' && item.upvotes > 0 && (
-        <p className="mt-1 text-xs text-violet-600 dark:text-violet-400">
+      {item.column === 'actions' && (variant === 'present' || variant === 'display') && item.upvotes > 0 && (
+        <p
+          className={`mt-1 text-xs ${
+            isDisplay ? 'text-violet-300' : 'text-violet-600 dark:text-violet-400'
+          }`}
+        >
           {t('vote.count', { count: item.upvotes })}
         </p>
       )}

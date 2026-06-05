@@ -1436,7 +1436,7 @@ export class SessionRoom implements DurableObject {
     // TOWNHALL (ADR-0044): the board is a separate persistent surface — follow `init`
     // with a full `townhall_state` snapshot scoped to this connection's role.
     if (isTownhall) await this.townhallHandler.sendSnapshot(ws, att, meta.townhallModeration!)
-    if (meta.sessionMode === 'retro') await this.retroHandler.sendSnapshot(ws)
+    if (meta.sessionMode === 'retro') await this.retroHandler.sendSnapshot(ws, att)
     if (meta.sessionMode === 'ideate') await this.ideateHandler.sendSnapshot(ws)
   }
 
