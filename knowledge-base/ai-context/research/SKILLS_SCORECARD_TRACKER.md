@@ -39,6 +39,7 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 | analytics | Analytics | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | devops | DevOps | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | ai-strategy | Product | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
+| ai-engineering | AI Engineering | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | new (2026-06) |
 | product-owner | Product | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | marketing | Growth | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | sales | Sales | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | new (2026-06) |
@@ -59,6 +60,7 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 | qesto-devops | sonnet | DevOps | YYYY-MM-DD | N | N.N | N% | active | — |
 | qesto-analytics | sonnet | Analytics | YYYY-MM-DD | N | N.N | N% | active | — |
 | qesto-ai-strategy | opus | Product | YYYY-MM-DD | N | N.N | N% | active | — |
+| qesto-ai-engineer | opus | AI Engineering | YYYY-MM-DD | N | N.N | N% | active | new node (2026-06) |
 | qesto-marketing | haiku | Growth | YYYY-MM-DD | N | N.N | N% | active | top-of-funnel only (2026-06) |
 | qesto-sales | sonnet | Sales | YYYY-MM-DD | N | N.N | N% | active | new node (2026-06) |
 | qesto-market-research | opus | Product | YYYY-MM-DD | N | N.N | N% | active | added to tracker (2026-06) |

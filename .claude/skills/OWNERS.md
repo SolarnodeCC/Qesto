@@ -4,6 +4,7 @@ _Last reviewed_: 2026-06-04. Edge ownership (handoffs between these roles) lives
 [`HANDOFFS.md`](./HANDOFFS.md).
 
 ## Agents
+- ai-engineer-agent.md — AI Engineering Lead
 - ai-strategy-agent.md — AI Strategy Lead
 - analytics-agent.md — Analytics Lead
 - architect-agent.md — Architect
@@ -22,6 +23,7 @@ _Last reviewed_: 2026-06-04. Edge ownership (handoffs between these roles) lives
 ## Skills
 - COMMON_RULES.md — Architect
 - HANDOFFS.md — Architect
+- ai-engineering.md — AI Engineering Lead
 - ai-strategy.md — AI Strategy Lead
 - analytics.md — Analytics Lead
 - architect.md — Architect

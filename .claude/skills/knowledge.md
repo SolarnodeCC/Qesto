@@ -26,6 +26,8 @@ traceable*.
   watchdog + CI health gate), the `kb_search` MCP tool (`.mcp.json`,
   `scripts/mcp/kb-search-server.ts`), and the end-user **help-docs lifecycle**
   (`knowledge-base/help/` → `qesto-help` via `scripts/sync-help-docs.ts` / `help:sync`).
+- **Shared with `ai-engineer` (E29)**: you own KB *content* + the doc→index *sync
+  pipeline*; ai-engineer owns the *embedding model/dimension* and *retrieval quality*.
 - **Steward, not sole author**: every role still updates its own domain docs via
   its "Docs to Update" table. You verify those landings are complete, correctly
   placed, metadata-correct, embeddable, and that requirements are captured.

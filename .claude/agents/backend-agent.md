@@ -48,6 +48,7 @@ From the 2026-05 audit outcomes. Apply before writing or modifying backend code.
 - Route would exceed one domain concern / large-file threshold → architect (E4)
 - New KV namespace, D1 migration planning, DO/WS protocol change, new external integration → architect (E4)
 - New AE event type needed → analytics + architect (E13)
+- AI prompt / RAG / eval / guardrail quality → ai-engineer (E28); you own the route, binding, and DB plumbing *around* the AI, not the AI craft itself
 - External dependency needs circuit breaker / degradation semantics → devops + architect
 - Contract for frontend (path, method, request/response shape) → publish via `functions/api/types.ts` (E5/E6)
 

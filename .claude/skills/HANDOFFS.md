@@ -1,5 +1,5 @@
 # HANDOFFS — Qesto Agent & Skill Edge Ownership Map
-# VERSION: v1.0.0
+# VERSION: v1.2.0
 # OWNER: Architect
 
 _Last reviewed_: 2026-06-04
@@ -60,6 +60,10 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E24 | any role | "Docs to Update" landing (the doc-update edges) | knowledge (steward) | Doc written/changed | Knowledge Lead |
 | E25 | product-owner | New/changed business requirement | knowledge | Requirement decided | Knowledge Lead |
 | E26 | knowledge | `kb_search` tool + documentation map (research entry point) | all roles | Research needed | Knowledge Lead |
+| E27 | ai-strategy | AI-first/AI-shaped verdict + priority competency | ai-engineer | Feature approved to build | AI Strategy Lead |
+| E28 | ai-engineer | AI feature needs route/binding/DB plumbing (surrounding app) | backend | AI endpoint/storage needed | Architect |
+| E29 | ai-engineer ↔ knowledge | RAG split — embedding/retrieval quality (ai-engineer) vs KB content + sync pipeline (knowledge) | each other | RAG/index change | AI Engineering Lead |
+| E30 | ai-engineer | Participant-facing AI output / PII / prompt-injection surface | security (cso) | AI output reaches users | CSO |
 
 ## 3) Edge contract rules (so edges don't break)
 
@@ -104,7 +108,22 @@ requirements were actually captured. The **knowledge** node owns that:
 
 Both **reference** market-research for ICP/competitors (E15). Neither copies those tables.
 
+## 6) AI lane — strategy → engineering → backend (E27–E30)
+
+Three roles, three jobs, no overlap:
+- **ai-strategy** decides *whether/what* (AI-first vs AI-shaped, priority) — advisory, no code.
+- **ai-engineer** builds it *well* — prompts, embeddings, retrieval/RAG quality, output
+  validation, evals, guardrails, latency/token/cost budgets (Workers AI only).
+- **backend** builds the *surrounding app* — routes, auth, DB, bindings (E28).
+
+Shared seam with **knowledge** (E29): knowledge owns KB *content* and the doc→index
+*sync pipeline*; ai-engineer owns the *embedding model/dimension* and *retrieval quality*.
+The 768→1024 incident lived on this seam — now owned. Participant-facing AI output and
+PII/injection surfaces gate through **security** (E30).
+
 ## Change Log
+- 2026-06-04: v1.2.0 — added the AI-engineer node and edges E27–E30 (strategy→engineering,
+  engineering→backend plumbing, the ai-engineer↔knowledge RAG seam, and AI output safety).
 - 2026-06-04: v1.1.0 — added the Knowledge steward node and edges E24–E26 (doc-update
   stewardship, requirement capture, and the `kb_search` research entry point).
 - 2026-06-04: v1.0.0 — created the edge ownership map; added Sales node edges (E16–E19),
