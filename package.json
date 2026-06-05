@@ -40,6 +40,7 @@
     "test:e2e:chrome": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
     "kb:embed": "npx tsx scripts/embed-kb.ts",
     "kb:sync": "npx tsx scripts/kb-sync-cli.ts",
+    "kb:health": "npx tsx scripts/kb-health.ts",
     "help:sync": "npx tsx scripts/sync-help-docs.ts",
     "contracts:generate": "openapi-typescript contracts/openapi/qesto-api.yaml -o contracts/generated/api.d.ts",
     "check:migrations": "node scripts/check-migration-gaps.mjs",

@@ -164,8 +164,10 @@ binding = "METRICS_AE"
 dataset = "qesto_metrics"
 
 [triggers]
-# Phase 5: Scheduled KB sync via Cloudflare Workers Cron
-# Triggers daily at 02:00 UTC to check for KB changes and auto-sync to Vectorize
+# Daily KB vector retrieval health watchdog at 02:00 UTC (worker/index.ts -> handleScheduled).
+# This does NOT embed/sync — the embed+sync runs in CI on knowledge-base/ changes
+# (.github/workflows/kb-sync-on-merge.yml -> npm run kb:sync). The cron verifies retrieval is
+# healthy: D1 has chunks, query model/dim matches the index, and the index returns matches.
 crons = ["0 2 * * *"]
 
 # ─────────────────────────────────────────────────────────────────────────────

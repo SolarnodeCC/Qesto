@@ -230,6 +230,14 @@ Workers Cron could also:
 
 Phase 4 uploaded vectors but no public endpoint to search them. Vectors are locked in `/api/admin/kb-sync`.
 
+> **⚠️ Deprecated 2026-06-04.** The `GET /api/kb-search` and `GET /api/kb/doc/:id`
+> routes described below were **retired**. They used the wrong embedding model
+> (`bge-small-en-v1.5`, 384-dim) against the 1024-dim `bge-m3` index, so retrieval
+> was broken, and the endpoint was unauthenticated. Use the canonical, auth'd,
+> re-ranked path instead: `POST /api/knowledge-base/search` and
+> `GET /api/knowledge-base/documents/:doc_id` (see `functions/api/routes/knowledge-base.ts`).
+> The sections below are kept for historical context only.
+
 ### Solution
 
 **New Endpoint:** `GET /api/kb-search?q=<query>` — Semantic search against KB.

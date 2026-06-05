@@ -10,38 +10,83 @@ import type { Env } from '../functions/api/types'
 import { safeLogContext } from '../functions/api/lib/log'
 import { processPostSessionWork } from '../functions/api/lib/queues/consumer'
 import type { PostSessionWorkMessage } from '../functions/api/lib/queues/producer'
+import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
+
+const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
 export { SessionRoom } from '../functions/api/SessionRoom'
 export { TemplateGenerationWorkflow } from './TemplateGenerationWorkflow'
 
 const app = createApp()
 
-async function handleScheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-  // Phase 5: Scheduled KB sync via Cloudflare Workers Cron
-  // Triggered by cron schedule defined in wrangler.toml
-  // Runs the kb:sync CLI via node-based fetch to internal endpoint
-
-  const adminKey = env.KB_ADMIN_KEY
-  const clientId = env.CF_ACCESS_CLIENT_ID
-  const clientSecret = env.CF_ACCESS_CLIENT_SECRET
-
-  if (!adminKey || !clientId || !clientSecret) {
-    safeLogContext(new Error('Missing credentials'), { traceId: 'cron', route: 'worker/kb-sync-cron', errorClass: 'MissingCredentials' })
-    return
-  }
-
+async function handleScheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+  // KB vector retrieval health watchdog (daily, cron in wrangler.toml).
+  //
+  // NOTE: this cron does NOT embed/sync. The real sync runs in CI on
+  // knowledge-base/ changes (.github/workflows/kb-sync-on-merge.yml → npm run
+  // kb:sync), because a Worker cannot run the tsx CLI or read git. Instead this
+  // watchdog verifies retrieval is actually HEALTHY end-to-end: D1 has chunks,
+  // the query embedding model matches the index dimensions, and the index
+  // returns matches. (This is exactly the failure mode that silently broke
+  // retrieval before — a 384-dim query model against a 1024-dim index.)
+  const traceId = `kb-health-${Date.now()}`
   try {
-    console.log('[kb-sync-cron] Starting scheduled KB sync')
+    // 1. How many chunks SHOULD be searchable? D1 is the source of truth that
+    //    the embed pipeline writes; the Vectorize index mirrors it.
+    const row = await env.DB
+      .prepare('SELECT COUNT(*) AS n, MAX(embedded_at) AS last FROM kb_chunks')
+      .first<{ n: number; last: number | null }>()
+    const chunkCount = row?.n ?? 0
+    const lastEmbeddedAt = row?.last ?? 0
 
-    // This cron job would typically:
-    // 1. Fetch list of pending KB changes from git
-    // 2. Call the kb:sync CLI via subprocess or fetch
-    // 3. Post results to Slack/email
+    if (chunkCount === 0) {
+      safeLogContext(new Error('KB has 0 embedded chunks in D1 — run npm run kb:sync'), {
+        traceId,
+        route: 'worker/kb-health',
+        errorClass: 'KbEmpty',
+      })
+      return
+    }
 
-    // For now, log the intent
-    console.log('[kb-sync-cron] Scheduled sync ready. Awaiting git webhook trigger.')
+    // 2. Embed a sentinel with the SAME model the index was built with and
+    //    confirm dimensions match. A mismatch means queries cannot retrieve.
+    const aiRes = (await env.AI.run(KB_EMBED_MODEL, { text: KB_HEALTH_SENTINEL })) as { data?: number[][] }
+    const vector = aiRes?.data?.[0]
+    if (!Array.isArray(vector) || vector.length !== KB_EMBED_DIM) {
+      safeLogContext(
+        new Error(`KB query embedding dim ${vector?.length ?? 'none'} != index dim ${KB_EMBED_DIM}`),
+        { traceId, route: 'worker/kb-health', errorClass: 'KbEmbedDimMismatch' },
+      )
+      return
+    }
+
+    // 3. Functional probe: a populated index returns at least one match for any
+    //    query. Zero matches while D1 has chunks = drift (index empty, stale,
+    //    or never synced to production).
+    const probe = await env.KB_VECTORIZE.query(vector, { topK: 1 })
+    const matchCount = probe.matches?.length ?? 0
+    if (matchCount === 0) {
+      safeLogContext(
+        new Error(`KB drift: D1 has ${chunkCount} chunks but KB_VECTORIZE returned 0 matches`),
+        { traceId, route: 'worker/kb-health', errorClass: 'KbVectorDrift' },
+      )
+      return
+    }
+
+    // Healthy. Emit one observability line with a staleness hint.
+    const ageDays = lastEmbeddedAt > 0 ? Math.floor((Date.now() - lastEmbeddedAt) / 86_400_000) : -1
+    const topScore = probe.matches[0]?.score
+    console.log(
+      `[kb-health] OK — ${chunkCount} chunks, index responding ` +
+        `(top score ${typeof topScore === 'number' ? topScore.toFixed(3) : 'n/a'}), ` +
+        `last embed ${ageDays >= 0 ? `${ageDays}d ago` : 'unknown'}`,
+    )
   } catch (err) {
-    safeLogContext(err, { traceId: 'cron', route: 'worker/kb-sync-cron', errorClass: err instanceof Error ? err.name : 'UnknownError' })
+    safeLogContext(err, {
+      traceId,
+      route: 'worker/kb-health',
+      errorClass: err instanceof Error ? err.name : 'UnknownError',
+    })
   }
 }
 
