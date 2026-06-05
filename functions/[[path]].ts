@@ -85,8 +85,19 @@ export const onRequest: PagesFunction<Env> = (context) => {
     return forwardToHono(context)
   }
 
-  // Check if it's a static asset or valid SPA route
-  if (pathname.includes('.') || isValidSpaRoute(pathname)) {
+  // ⚠️ CRITICAL: Static asset handling for Cloudflare Pages.
+  // When a catch-all function is present, Cloudflare Pages routes ALL requests through it.
+  // We explicitly pass asset requests (paths with dots) to the next handler, which:
+  // 1. Checks if the file exists in dist/ and serves it
+  // 2. Falls back to index.html if not found (SPA fallback)
+  // This is the correct behavior for asset routing.
+  const isLikelyAsset = pathname.includes('.')
+  if (isLikelyAsset) {
+    return context.next()
+  }
+
+  // Handle valid SPA routes by letting Cloudflare Pages serve index.html
+  if (isValidSpaRoute(pathname)) {
     return context.next()
   }
 

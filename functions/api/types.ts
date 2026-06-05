@@ -78,6 +78,7 @@ export type Env = {
   KB_ADMIN_KEY?: string
   RESEND_API_KEY?: string
   STRIPE_SECRET_KEY?: string
+  STRIPE_WEBHOOK_SECRET?: string
   GOOGLE_CLIENT_ID?: string
   GOOGLE_CLIENT_SECRET?: string
   MICROSOFT_CLIENT_ID?: string

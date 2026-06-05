@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { mountAuthRoutes } from './routes/auth'
 import { mountSessionRoutes } from './routes/sessions'
-import { mountBillingRoutes } from './routes/billing'
+import { mountBillingRoutes, mountStripeWebhookRoutes } from './routes/billing'
 import { mountInsightsRoutes } from './routes/insights'
 import { mountAdminRoutes } from './routes/admin'
 import { mountEnergizerRoutes } from './routes/energizers'
@@ -148,6 +148,9 @@ export function createApp() {
     await next()
   })
   app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 20, windowSec: 60 }))
+
+  // Stripe webhook — public endpoint with signature verification (no user auth)
+  mountStripeWebhookRoutes(app)
 
   mountPublicApiV1Routes(app)
   mountPublicApiV2Routes(app)
@@ -302,9 +305,9 @@ export function createApp() {
   mountMarketplaceConnectRoutes(app)
   mountMarketplaceListingRoutes(app)
   mountTeamInsightsRoutes(app)
-mountAgentDefinitionRoutes(app)
-mountTeamWorkspaceRoutes(app)
-mountStageSessionRoutes(app)
+  mountAgentDefinitionRoutes(app)
+  mountTeamWorkspaceRoutes(app)
+  mountStageSessionRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 
