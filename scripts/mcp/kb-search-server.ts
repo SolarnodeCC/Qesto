@@ -68,14 +68,17 @@ async function kbSearch(args: {
   domain?: string | undefined
   type?: string | undefined
 }) {
-  const baseUrl = process.env.QESTO_API_BASE_URL
+  // Public production API. Override via QESTO_API_BASE_URL (e.g. staging) when needed.
+  // Use || so an empty string (unset ${VAR} interpolation in .mcp.json) falls back too.
+  const baseUrl = (process.env.QESTO_API_BASE_URL || '').trim() || 'https://qesto.cc'
   const serviceKey = process.env.QESTO_KB_SERVICE_KEY
   const token = process.env.QESTO_KB_API_TOKEN
-  if (!baseUrl || (!serviceKey && !token)) {
+  if (!serviceKey && !token) {
     return textResult(
-      'KB search is not configured. Set QESTO_API_BASE_URL and either ' +
-        'QESTO_KB_SERVICE_KEY (recommended) or QESTO_KB_API_TOKEN (a Qesto JWT) in ' +
-        '.mcp.json env. Until then, research the knowledge-base/ files with Grep/Read.',
+      'KB search needs an auth credential. Set QESTO_KB_SERVICE_KEY (recommended, the ' +
+        'read-only service key matching the KB_SEARCH_SERVICE_KEY worker secret) or ' +
+        'QESTO_KB_API_TOKEN (a Qesto JWT) in the environment. Until then, research the ' +
+        'knowledge-base/ files with Grep/Read.',
       true,
     )
   }
