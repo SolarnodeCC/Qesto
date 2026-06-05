@@ -3,6 +3,176 @@ import { safeLogContext } from '../../lib/log'
 import type { Env } from '../../types'
 import type { AuthVariables } from '../../middleware/auth'
 import type { AdminVariables } from '../../middleware/admin'
+import type { KbSyncChunkFields, KbSyncDocumentFields } from '../../types/knowledge-base'
+
+/** A validated sync record (vector fields always present; D1 fields optional). */
+type ValidRecord = {
+  id: string
+  values: number[]
+  metadata: Record<string, unknown>
+  document?: KbSyncDocumentFields
+  chunk?: KbSyncChunkFields
+}
+
+function isValidRecord(v: unknown): v is ValidRecord {
+  return (
+    !!v &&
+    typeof (v as ValidRecord).id === 'string' &&
+    Array.isArray((v as ValidRecord).values) &&
+    typeof (v as ValidRecord).metadata === 'object' &&
+    (v as ValidRecord).metadata !== null
+  )
+}
+
+/**
+ * Write the D1 side of the sync (kb_documents + kb_chunks) for records that
+ * carry the document/chunk fields. Idempotent: documents and chunks upsert by
+ * primary key, and stale chunks (from a doc that shrank) are pruned using the
+ * authoritative `chunk_count`. Returns the number of doc/chunk rows written.
+ *
+ * Why both stores: `kb_search` hydrates chunk text / file_path / title from D1
+ * (kbVectorRepository.hydrateChunks). A vector with no D1 row is skipped during
+ * hydration and never surfaces — so D1 must be populated with the vectors.
+ */
+async function writeD1Rows(
+  db: D1Database,
+  records: ValidRecord[],
+): Promise<{ documentsUpserted: number; chunksUpserted: number }> {
+  // De-dupe documents by doc_id (the fields repeat across a doc's chunks).
+  const docsById = new Map<string, { docId: string; doc: KbSyncDocumentFields }>()
+  const chunkStatements: D1PreparedStatement[] = []
+
+  const DOC_SQL = `INSERT INTO kb_documents
+      (doc_id, file_path, type, domain, category, status, version, owner, title,
+       tags_json, relates_to_json, size_bytes, doc_hash, chunk_count, created_at, updated_at)
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)
+    ON CONFLICT(doc_id) DO UPDATE SET
+      file_path = excluded.file_path, type = excluded.type, domain = excluded.domain,
+      category = excluded.category, status = excluded.status, version = excluded.version,
+      owner = excluded.owner, title = excluded.title, tags_json = excluded.tags_json,
+      relates_to_json = excluded.relates_to_json, size_bytes = excluded.size_bytes,
+      doc_hash = excluded.doc_hash, chunk_count = excluded.chunk_count,
+      updated_at = excluded.updated_at`
+
+  const CHUNK_SQL = `INSERT INTO kb_chunks
+      (chunk_id, doc_id, chunk_index, heading_path, start_line, end_line, text,
+       token_estimate, chunk_hash, vector_id, embedded_at)
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+    ON CONFLICT(chunk_id) DO UPDATE SET
+      doc_id = excluded.doc_id, chunk_index = excluded.chunk_index,
+      heading_path = excluded.heading_path, start_line = excluded.start_line,
+      end_line = excluded.end_line, text = excluded.text,
+      token_estimate = excluded.token_estimate, chunk_hash = excluded.chunk_hash,
+      vector_id = excluded.vector_id, embedded_at = excluded.embedded_at`
+
+  const PRUNE_SQL = `DELETE FROM kb_chunks WHERE doc_id = ?1 AND chunk_index >= ?2`
+
+  for (const r of records) {
+    const docId = typeof r.metadata.doc_id === 'string' ? r.metadata.doc_id : undefined
+    if (!docId || !r.document || !r.chunk) continue
+
+    docsById.set(docId, { docId, doc: r.document })
+    const c = r.chunk
+    chunkStatements.push(
+      db
+        .prepare(CHUNK_SQL)
+        .bind(
+          r.id, // chunk_id == vector id
+          docId,
+          c.chunk_index,
+          c.heading_path,
+          c.start_line,
+          c.end_line,
+          c.text,
+          c.token_estimate,
+          c.chunk_hash,
+          r.id, // vector_id == chunk_id
+          c.embedded_at,
+        ),
+    )
+  }
+
+  if (docsById.size === 0) return { documentsUpserted: 0, chunksUpserted: 0 }
+
+  const docStatements: D1PreparedStatement[] = []
+  const pruneStatements: D1PreparedStatement[] = []
+  for (const { docId, doc } of docsById.values()) {
+    docStatements.push(
+      db
+        .prepare(DOC_SQL)
+        .bind(
+          docId,
+          doc.file_path,
+          doc.type,
+          doc.domain,
+          doc.category ?? null,
+          doc.status,
+          doc.version ?? null,
+          doc.owner ?? null,
+          doc.title,
+          JSON.stringify(doc.tags ?? []),
+          JSON.stringify(doc.relates_to ?? []),
+          doc.size_bytes,
+          doc.doc_hash,
+          doc.chunk_count,
+          doc.created_at,
+          doc.updated_at,
+        ),
+    )
+    // Prune chunks left over from a previous, longer version of this doc.
+    pruneStatements.push(db.prepare(PRUNE_SQL).bind(docId, doc.chunk_count))
+  }
+
+  // Documents first (chunks FK-reference kb_documents), then chunks, then prune.
+  await db.batch(docStatements)
+  await db.batch(chunkStatements)
+  await db.batch(pruneStatements)
+
+  return { documentsUpserted: docStatements.length, chunksUpserted: chunkStatements.length }
+}
+
+/**
+ * Delete chunk rows by chunk_id, then drop any parent document left with zero
+ * chunks. Mirrors the Vectorize delete so the two stores don't drift. Returns
+ * the number of chunk rows targeted for deletion.
+ */
+async function deleteD1Rows(db: D1Database, chunkIds: string[]): Promise<number> {
+  if (chunkIds.length === 0) return 0
+
+  // chunk_id == `${doc_id}#${index}` — derive the affected doc_ids.
+  const docIds = new Set<string>()
+  for (const id of chunkIds) {
+    const hash = id.lastIndexOf('#')
+    if (hash > 0) docIds.add(id.slice(0, hash))
+  }
+
+  const batchSize = 100
+  for (let i = 0; i < chunkIds.length; i += batchSize) {
+    const batch = chunkIds.slice(i, i + batchSize)
+    const placeholders = batch.map((_, j) => `?${j + 1}`).join(',')
+    await db
+      .prepare(`DELETE FROM kb_chunks WHERE chunk_id IN (${placeholders})`)
+      .bind(...batch)
+      .run()
+  }
+
+  // Remove now-orphaned documents (no remaining chunks).
+  const orphanCleanup: D1PreparedStatement[] = []
+  for (const docId of docIds) {
+    orphanCleanup.push(
+      db
+        .prepare(
+          `DELETE FROM kb_documents
+            WHERE doc_id = ?1
+              AND NOT EXISTS (SELECT 1 FROM kb_chunks WHERE kb_chunks.doc_id = ?1)`,
+        )
+        .bind(docId),
+    )
+  }
+  if (orphanCleanup.length > 0) await db.batch(orphanCleanup)
+
+  return chunkIds.length
+}
 
 export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>) {
   app.post('/kb-sync', async (c) => {
@@ -46,10 +216,7 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
       )
     }
 
-    const validVectors = vectors.filter(
-      (v): v is { id: string; values: number[]; metadata: Record<string, unknown> } =>
-        v && typeof v.id === 'string' && Array.isArray(v.values) && typeof v.metadata === 'object',
-    )
+    const validVectors = vectors.filter(isValidRecord)
 
     if (validVectors.length === 0) {
       return c.json(
@@ -66,18 +233,38 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
       const batchSize = 100
       let totalUpserted = 0
 
+      // Vectorize only accepts {id, values, metadata}; strip the D1-only fields
+      // (document/chunk) that travel in the same record.
       for (let i = 0; i < validVectors.length; i += batchSize) {
         const batch = validVectors.slice(i, i + batchSize)
-        await c.env.KB_VECTORIZE.upsert(batch as VectorizeVector[])
+        const vectorBatch = batch.map((r) => ({
+          id: r.id,
+          values: r.values,
+          metadata: r.metadata,
+        }))
+        await c.env.KB_VECTORIZE.upsert(vectorBatch as VectorizeVector[])
         totalUpserted += batch.length
+      }
+
+      // Persist the D1 side (kb_documents + kb_chunks) so search can hydrate.
+      // Records without document/chunk fields (legacy vector-only payloads) are
+      // skipped by writeD1Rows, preserving backward compatibility.
+      let documentsUpserted = 0
+      let chunksUpserted = 0
+      if (c.env.DB) {
+        const d1 = await writeD1Rows(c.env.DB, validVectors)
+        documentsUpserted = d1.documentsUpserted
+        chunksUpserted = d1.chunksUpserted
       }
 
       return c.json(
         {
           ok: true,
           data: {
-            message: 'Vectorize upsert complete',
+            message: 'KB sync complete',
             vectors_upserted: totalUpserted,
+            documents_upserted: documentsUpserted,
+            chunks_upserted: chunksUpserted,
             batches: Math.ceil(totalUpserted / batchSize),
           },
           trace_id: traceId,
@@ -85,13 +272,13 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
         200,
       )
     } catch (err) {
-      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/vectorize-upsert', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
+      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/upsert', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
           error: {
-            code: 'vectorize_error',
-            message: `Vectorize upsert failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            code: 'sync_error',
+            message: `KB sync failed: ${err instanceof Error ? err.message : 'unknown error'}`,
           },
           trace_id: traceId,
         },
@@ -178,12 +365,20 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
         totalDeleted += batch.length
       }
 
+      // Keep D1 consistent with Vectorize: remove the chunk rows, then any
+      // document left with zero chunks. vector_id == chunk_id == `${doc_id}#N`.
+      let chunksDeleted = 0
+      if (c.env.DB) {
+        chunksDeleted = await deleteD1Rows(c.env.DB, vectorIds)
+      }
+
       return c.json(
         {
           ok: true,
           data: {
-            message: 'Vectorize delete complete',
+            message: 'KB delete complete',
             vectors_deleted: totalDeleted,
+            chunks_deleted: chunksDeleted,
             batches: Math.ceil(totalDeleted / batchSize),
           },
           trace_id: traceId,
@@ -191,13 +386,13 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
         200,
       )
     } catch (err) {
-      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/vectorize-delete', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
+      safeLogContext(err, { traceId: traceId, route: '[admin] kb-sync/delete', errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       return c.json(
         {
           ok: false,
           error: {
-            code: 'vectorize_error',
-            message: `Vectorize delete failed: ${err instanceof Error ? err.message : 'unknown error'}`,
+            code: 'sync_error',
+            message: `KB delete failed: ${err instanceof Error ? err.message : 'unknown error'}`,
           },
           trace_id: traceId,
         },

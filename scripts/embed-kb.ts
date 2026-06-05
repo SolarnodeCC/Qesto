@@ -13,6 +13,7 @@
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import type { KbSyncRecord } from '../functions/api/types/knowledge-base'
 
 // Local imports (must build/transpile mdChunker first or inline here)
 // For now, we'll inline the essentials to avoid require() complexity in ts-node
@@ -41,19 +42,10 @@ interface FrontmatterMeta {
   category?: string
 }
 
-interface VectorUpsertPayload {
-  id: string
-  values: number[]
-  metadata: {
-    doc_id: string
-    chunk_id: string
-    type: string
-    domain: string
-    status: string
-    tags: string[]
-    heading_path: string
-  }
-}
+// The sync record shape (vector + D1 document/chunk fields) is the shared
+// contract in functions/api/types/knowledge-base.ts (KbSyncRecord). Emitting the
+// D1 fields here is what keeps kb_documents/kb_chunks populated alongside
+// Vectorize so kb_search can hydrate and actually return hits.
 
 // CLI args
 const args = process.argv.slice(2)
@@ -343,7 +335,7 @@ async function main() {
   let embeddingCount = 0
   let errorCount = 0
 
-  const vectorUpserts: VectorUpsertPayload[] = []
+  const vectorUpserts: KbSyncRecord[] = []
   const startTime = Date.now()
 
   for (const file of files) {
@@ -361,24 +353,59 @@ async function main() {
           console.log(`  Sample: "${chunks[0].headingPath}" (${chunks[0].tokenEstimate} tokens)`)
         }
       } else {
-        // Embed and save chunks to D1 (Vectorize sync happens later via API route)
+        // Document-level fields are constant across a doc's chunks. The sync
+        // endpoint dedupes by doc_id, so it's safe to attach them to each
+        // record. `chunk_count` is authoritative and prunes stale chunks.
+        const now = Date.now()
+        const filePath = path.relative(process.cwd(), file)
+        const docFields = {
+          file_path: filePath,
+          type: meta.type,
+          domain: meta.domain,
+          category: meta.category ?? null,
+          status: meta.status,
+          version: meta.version ?? null,
+          owner: meta.owner ?? null,
+          title: meta.title || meta.id,
+          tags: meta.tags,
+          relates_to: meta.relates_to,
+          size_bytes: Buffer.byteLength(content, 'utf8'),
+          doc_hash: sha256(content),
+          chunk_count: chunks.length,
+          created_at: now,
+          updated_at: now,
+        }
+
+        // Embed each chunk and emit a self-contained sync record (vector + the
+        // kb_documents / kb_chunks rows needed for search to hydrate).
         for (const chunk of chunks) {
           try {
             console.log(`  Embedding: ${chunk.hash.slice(0, 8)}...`)
             const vector = await embedViaAPI(formatEmbeddingInput(chunk, meta))
+            const chunkId = `${meta.id}#${chunk.chunkIndex}`
 
-            // Store for later batch insert to D1
             vectorUpserts.push({
-              id: `${meta.id}#${chunk.chunkIndex}`,
+              id: chunkId,
               values: vector,
               metadata: {
                 doc_id: meta.id,
-                chunk_id: `${meta.id}#${chunk.chunkIndex}`,
-                type: meta.type,
+                chunk_id: chunkId,
+                type: meta.type as KbSyncRecord['metadata']['type'],
                 domain: meta.domain,
-                status: meta.status,
+                status: meta.status as KbSyncRecord['metadata']['status'],
                 tags: meta.tags,
                 heading_path: chunk.headingPath.slice(0, 120),
+              },
+              document: docFields,
+              chunk: {
+                chunk_index: chunk.chunkIndex,
+                heading_path: chunk.headingPath.slice(0, 120),
+                start_line: chunk.startLine,
+                end_line: chunk.endLine,
+                text: chunk.text,
+                token_estimate: chunk.tokenEstimate,
+                chunk_hash: chunk.hash,
+                embedded_at: now,
               },
             })
 
@@ -414,13 +441,10 @@ async function main() {
 
     const vectorsPath = path.join(process.cwd(), '.kb-vectors-pending.json')
     fs.writeFileSync(vectorsPath, JSON.stringify(vectorUpserts, null, 2))
-    console.log(`✓ Vectors saved to ${vectorsPath}`)
+    console.log(`✓ Records saved to ${vectorsPath} (vectors + kb_documents/kb_chunks rows)`)
     console.log()
-    console.log(`Next: POST /api/knowledge-base/upsert-vectors with payload to sync to Vectorize`)
-    console.log(`curl -X POST https://api.qesto.cc/api/knowledge-base/upsert-vectors \\`)
-    console.log(`  -H "Authorization: Bearer <token>" \\`)
-    console.log(`  -H "Content-Type: application/json" \\`)
-    console.log(`  -d @.kb-vectors-pending.json`)
+    console.log(`Next: run \`npm run kb:sync\` to upsert these records to Vectorize + D1`)
+    console.log(`(posts batches to /api/admin/kb-sync with the x-admin-key header).`)
   }
 
   console.log()

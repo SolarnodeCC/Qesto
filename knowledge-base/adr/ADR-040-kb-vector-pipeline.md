@@ -116,6 +116,14 @@ This packs categorical signal into the embedding without bloating the index.
   4. Batch upsert (Vectorize accepts up to 1000/req) → `KB_VECTORIZE`.
   5. Upsert `kb_documents` + `kb_chunks` in D1 within a single batched transaction.
   6. Garbage-collect: delete vectors whose `doc_id` no longer exists in git.
+
+  > **Implementation note (2026-06):** steps 4–5 are a single server-side operation.
+  > `embed-kb.ts` emits self-contained `KbSyncRecord`s (vector **+** the
+  > `kb_documents`/`kb_chunks` fields) and `POST /api/admin/kb-sync` upserts both
+  > stores together; `/api/admin/kb-sync-delete` mirrors the GC for both (step 6).
+  > Earlier the endpoint wrote Vectorize only, which left D1 empty and made search
+  > return `items: []` (hydration finds no chunk rows) — the dual write is required,
+  > not optional. See `functions/api/routes/admin/kb-sync.ts`.
 - **Delta detection**: GitHub Action on push to `main` paths `knowledge-base/**` runs the bulk job — idempotent, hash-gated, typical cost ~0–5 embeddings per commit.
 - **No git hook / polling** — CI is the authoritative trigger. Local pre-commit can run `npm run kb:embed:dry` for preview.
 

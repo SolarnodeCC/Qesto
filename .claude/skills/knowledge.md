@@ -100,6 +100,15 @@ Docs only embed well if their frontmatter is complete (mirrors `kb_documents`):
 - [ ] `relates_to` links the upstream/downstream docs
 
 ## Vector KB lifecycle (you own that it actually works)
+- **Dual-write invariant (ADR-040 §2.2): every chunk must land in BOTH stores.**
+  Search embeds the query → queries Vectorize → **hydrates chunk text / file_path /
+  title from D1** (`kb_documents` JOIN `kb_chunks`). A vector with no D1 row is
+  skipped during hydration and never surfaces, so a Vectorize-only sync returns
+  `items: []` even when the index is full. The pipeline therefore carries the D1
+  rows in each record: `scripts/embed-kb.ts` emits `KbSyncRecord`s (vector +
+  `document` + `chunk` fields) and `POST /api/admin/kb-sync` upserts Vectorize **and**
+  `kb_documents`/`kb_chunks` together (deletes mirror via `/api/admin/kb-sync-delete`).
+  If you ever see populated vectors but empty search results, check D1 row counts first.
 - The embed+sync runs in CI on `knowledge-base/` changes
   (`.github/workflows/kb-sync-on-merge.yml` → `npm run kb:sync`). Verify the run's
   health gate (`npm run kb:health`) is green after a KB change merges.

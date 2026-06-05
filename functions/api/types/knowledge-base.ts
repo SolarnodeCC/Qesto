@@ -118,3 +118,60 @@ export interface KbSearchResponse {
   query_id: string
   latency_ms: number
 }
+
+// ─── Sync pipeline contract (ADR-040 Phase 1) ──────────────────────────────
+//
+// The embed pipeline (`scripts/embed-kb.ts`) emits these records and the admin
+// sync endpoint (`POST /api/admin/kb-sync`) consumes them. A record is
+// self-contained: it carries the Vectorize vector AND the D1 rows
+// (`kb_documents` + `kb_chunks`) required to make the chunk searchable
+// end-to-end. Search hydrates chunk text / file_path / title from D1, so a
+// vector without its D1 rows is invisible to `kb_search` — both must be written
+// together. `doc_id` and `chunk_id` are carried once, in `metadata`.
+
+/** `kb_documents` row fields carried in a sync record (`doc_id` lives in `metadata`). */
+export interface KbSyncDocumentFields {
+  file_path: string
+  type: string
+  domain: string
+  category?: string | null
+  status: string
+  version?: string | null
+  owner?: string | null
+  title: string
+  tags: string[]
+  relates_to: string[]
+  size_bytes: number
+  doc_hash: string
+  /** Total chunks for this doc — authoritative count used to prune stale chunks. */
+  chunk_count: number
+  created_at: number
+  updated_at: number
+}
+
+/** `kb_chunks` row fields carried in a sync record (`chunk_id`/`doc_id` live in `metadata`). */
+export interface KbSyncChunkFields {
+  chunk_index: number
+  heading_path: string
+  start_line: number
+  end_line: number
+  text: string
+  token_estimate: number
+  chunk_hash: string
+  embedded_at: number
+}
+
+/**
+ * One record in the kb-sync payload. `document`/`chunk` are optional only for
+ * backward compatibility with legacy vector-only payloads; the current pipeline
+ * always sends both so D1 stays populated alongside Vectorize.
+ */
+export interface KbSyncRecord {
+  /** Vectorize record id; equals `chunk_id`. */
+  id: string
+  /** bge-m3 embedding (1024-dim). */
+  values: number[]
+  metadata: KbVectorMetadata
+  document?: KbSyncDocumentFields
+  chunk?: KbSyncChunkFields
+}
