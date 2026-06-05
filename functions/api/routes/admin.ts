@@ -25,6 +25,7 @@ import { mountKbSyncRoutes } from './admin/kb-sync'
 import { mountKpisRoutes } from './admin/kpis'
 import { mountOpsRoutes } from './admin/ops'
 import { mountJourneyEventRoutes } from './admin/journey-events'
+import { mountGrowthRoutes } from './admin/growth'
 import type { AnalyticsData, DailyBucket } from './admin/types'
 
 // ─── Route mount ──────────────────────────────────────────────────────────────
@@ -40,6 +41,7 @@ export function mountAdminRoutes(parent: any) {
   mountKpisRoutes(app)
   mountOpsRoutes(app)
   mountJourneyEventRoutes(app)
+  mountGrowthRoutes(app)
 
   // ── GET /api/admin/analytics ─────────────────────────────────────────────────
   app.get('/analytics', authMiddleware, adminMiddleware, async (c) => {

@@ -1,4 +1,5 @@
 import { useAdminAnalytics, type DailyBucket } from '../../hooks/useAdminAnalytics'
+import { useAdminGrowth } from '../../hooks/useAdminGrowth'
 import { Heading, Body, Card, Button, SkeletonCard } from '../../ui/components'
 
 function downloadCsv(filename: string, rows: string[][]): void {
@@ -123,6 +124,109 @@ function StatusRow({ label, count }: { label: string; count: number }) {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
+
+const INDUSTRY_LABELS: Record<string, string> = {
+  'hr-people': 'HR & People',
+  'agile-software': 'Agile / Software',
+  'education-training': 'Education & Training',
+  'leadership-management': 'Leadership & Management',
+  'sales-customer-success': 'Sales & Customer Success',
+  'healthcare': 'Healthcare',
+  'general': 'General',
+}
+
+function webhookStatusColour(lastReceivedAt: string | null): { dot: string; label: string } {
+  if (!lastReceivedAt) return { dot: 'bg-red-500', label: 'Never triggered' }
+  const ageMs = Date.now() - new Date(lastReceivedAt).getTime()
+  const days = ageMs / 86_400_000
+  if (days < 7) return { dot: 'bg-green-500', label: 'Healthy' }
+  if (days < 30) return { dot: 'bg-amber-400', label: 'Stale' }
+  return { dot: 'bg-red-500', label: 'Not working' }
+}
+
+function GrowthEngineSection() {
+  const { growth, loading } = useAdminGrowth()
+
+  if (loading && !growth) {
+    return (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
+      </div>
+    )
+  }
+
+  if (!growth) return null
+
+  const { templates, webhook } = growth
+  const { dot, label: statusLabel } = webhookStatusColour(webhook.last_received_at)
+
+  const lastReceivedDisplay = webhook.last_received_at
+    ? new Date(webhook.last_received_at).toLocaleString()
+    : '—'
+
+  const lastTemplateDisplay = templates.last_created_at
+    ? new Date(templates.last_created_at).toLocaleString()
+    : '—'
+
+  const industryEntries = Object.entries(templates.by_industry).sort((a, b) => b[1] - a[1])
+
+  return (
+    <div className="space-y-4">
+      <Heading level="m" className="border-l-4 border-teal-500 pl-3">Growth Engine</Heading>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard value={templates.active} label="Active templates" colour="text-teal-600" />
+        <KpiCard value={templates.total_uses} label="Template uses" colour="text-purple-600" />
+        <KpiCard value={templates.discarded} label="Discarded by AI" colour="text-pulse-400" />
+        <KpiCard value={webhook.total_received} label="Webhooks received" colour="text-green-600" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Webhook health */}
+        <Card>
+          <Heading level="s" className="mb-4">Webhook health</Heading>
+          <div className="flex items-center gap-2 mb-4">
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${dot}`} aria-hidden="true" />
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{statusLabel}</Body>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45]">
+            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Last received</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{lastReceivedDisplay}</Body>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45]">
+            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Workflows queued</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{webhook.total_queued}</Body>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45]">
+            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Private sessions skipped</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{webhook.total_skipped}</Body>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Last template created</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{lastTemplateDisplay}</Body>
+          </div>
+        </Card>
+
+        {/* Industry breakdown */}
+        <Card>
+          <Heading level="s" className="mb-4">Templates by industry</Heading>
+          {industryEntries.length === 0 ? (
+            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">No templates yet</Body>
+          ) : (
+            industryEntries.map(([industry, count]) => (
+              <StatusRow
+                key={industry}
+                label={INDUSTRY_LABELS[industry] ?? industry}
+                count={count}
+              />
+            ))
+          )}
+        </Card>
+      </div>
+    </div>
+  )
+}
 
 export default function AdminAnalyticsTab() {
   const { analytics, loading, error } = useAdminAnalytics()
@@ -268,6 +372,9 @@ export default function AdminAnalyticsTab() {
           </div>
         </div>
       </Card>
+
+      {/* Growth Engine */}
+      <GrowthEngineSection />
     </div>
   )
 }
