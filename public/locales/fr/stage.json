@@ -40,5 +40,9 @@
   "present.openQaConsole": "Console Q&R complète",
   "present.qaPanel": "Q&R",
   "present.liveSessions": "{{count}} sessions en direct",
-  "present.feedEmpty": "Pas encore d'annonces."
+  "present.feedEmpty": "Pas encore d'annonces.",
+  "present.participants": "Participants en direct",
+  "present.activeParticipants": "{{count}} connectés à l'intervention active",
+  "present.noLiveSessions": "Aucune session en direct pour le moment.",
+  "present.connected": "connectés"
 }

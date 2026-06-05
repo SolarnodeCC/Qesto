@@ -40,5 +40,9 @@
   "present.openQaConsole": "Vollständige Q&A-Konsole",
   "present.qaPanel": "Q&A",
   "present.liveSessions": "{{count}} Live-Sitzungen",
-  "present.feedEmpty": "Noch keine Ankündigungen."
+  "present.feedEmpty": "Noch keine Ankündigungen.",
+  "present.participants": "Live-Teilnehmer",
+  "present.activeParticipants": "{{count}} mit aktuellem Vortrag verbunden",
+  "present.noLiveSessions": "Derzeit keine Live-Sitzungen.",
+  "present.connected": "verbunden"
 }

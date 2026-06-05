@@ -40,6 +40,7 @@ export function appendFeedItem(
 
 export function startEventSuite(suite: EventSuiteMeta, now = Date.now()): void {
   if (suite.status === 'closed') return
+  if (suite.status === 'live') return
   suite.status = 'live'
   suite.startedAt = suite.startedAt ?? now
   suite.closedAt = null

@@ -18,6 +18,7 @@
   "vote.voted": "Voté",
   "vote.dotsRemaining": "Il reste {{remaining}} votes sur {{limit}}",
   "prioritize.reveal": "Afficher le classement",
+  "prioritize.refresh": "Actualiser le classement",
   "prioritize.title": "Meilleures idées",
   "moderate.dismiss": "Rejeter",
   "moderate.merge": "Fusionner",

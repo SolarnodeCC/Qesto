@@ -18,6 +18,7 @@
   "vote.voted": "Gestemd",
   "vote.dotsRemaining": "Nog {{remaining}} van {{limit}} stemmen over",
   "prioritize.reveal": "Ranking tonen",
+  "prioritize.refresh": "Ranking vernieuwen",
   "prioritize.title": "Topideeën",
   "moderate.dismiss": "Verwijderen",
   "moderate.merge": "Samenvoegen",

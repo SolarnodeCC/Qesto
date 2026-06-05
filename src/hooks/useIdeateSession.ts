@@ -56,15 +56,18 @@ type IdeateAction =
       dotVoteLimit: number
       rankingRevealed: boolean
       ranking: IdeateRankingEntry[]
+      myUpvotes?: string[]
+      dotsUsed?: number
     }
   | { kind: 'ranking_revealed'; ranking: IdeateRankingEntry[]; rev: number }
   | { kind: 'idea_added'; idea: IdeateIdea; rev: number }
   | { kind: 'idea_updated'; idea: IdeateIdea; rev: number }
   | { kind: 'clusters_updated'; ideas: IdeateIdea[]; clusters: IdeateCluster[]; rev: number }
   | { kind: 'upvote_optimistic'; itemId: string }
+  | { kind: 'upvote_rollback'; itemId: string }
   | { kind: 'error'; message: string }
 
-const INITIAL: IdeateState = {
+export const IDEATE_INITIAL: IdeateState = {
   connection: 'idle',
   ideas: [],
   clusters: [],
@@ -85,7 +88,7 @@ function upsertIdea(ideas: IdeateIdea[], idea: IdeateIdea): IdeateIdea[] {
   return next
 }
 
-function ideateReducer(state: IdeateState, action: IdeateAction): IdeateState {
+export function ideateReducer(state: IdeateState, action: IdeateAction): IdeateState {
   switch (action.kind) {
     case 'connecting':
       return { ...state, connection: 'connecting', error: null }
@@ -106,6 +109,8 @@ function ideateReducer(state: IdeateState, action: IdeateAction): IdeateState {
         dotVoteLimit: action.dotVoteLimit,
         rankingRevealed: action.rankingRevealed,
         ranking: action.ranking,
+        myUpvotes: action.myUpvotes ?? state.myUpvotes,
+        dotsUsed: action.dotsUsed ?? state.dotsUsed,
       }
     case 'ranking_revealed':
       return { ...state, rankingRevealed: true, ranking: action.ranking, rev: action.rev }
@@ -116,6 +121,7 @@ function ideateReducer(state: IdeateState, action: IdeateAction): IdeateState {
     case 'clusters_updated':
       return { ...state, ideas: action.ideas, clusters: action.clusters, rev: action.rev }
     case 'upvote_optimistic':
+      if (state.myUpvotes.includes(action.itemId)) return state
       return {
         ...state,
         myUpvotes: [...state.myUpvotes, action.itemId],
@@ -124,6 +130,17 @@ function ideateReducer(state: IdeateState, action: IdeateAction): IdeateState {
           i.id === action.itemId ? { ...i, upvotes: i.upvotes + 1 } : i,
         ),
       }
+    case 'upvote_rollback': {
+      if (!state.myUpvotes.includes(action.itemId)) return state
+      return {
+        ...state,
+        myUpvotes: state.myUpvotes.filter((id) => id !== action.itemId),
+        dotsUsed: Math.max(0, state.dotsUsed - 1),
+        ideas: state.ideas.map((i) =>
+          i.id === action.itemId ? { ...i, upvotes: Math.max(0, i.upvotes - 1) } : i,
+        ),
+      }
+    }
     case 'error':
       return { ...state, error: action.message }
     default:
@@ -156,9 +173,10 @@ function toCluster(raw: Record<string, unknown>): IdeateCluster | null {
 type Options = { fingerprint?: string; presenterToken?: string; enabled?: boolean }
 
 export function useIdeateSession(sessionId: string | undefined, opts: Options = {}) {
-  const [state, dispatch] = useReducer(ideateReducer, INITIAL)
+  const [state, dispatch] = useReducer(ideateReducer, IDEATE_INITIAL)
   const wsRef = useRef<WebSocket | null>(null)
   const attemptRef = useRef(0)
+  const pendingUpvoteRef = useRef<string | null>(null)
   const { fingerprint, presenterToken, enabled = true } = opts
 
   const connect = useCallback(() => {
@@ -191,7 +209,7 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
                   upvotes: typeof r.upvotes === 'number' ? r.upvotes : 0,
                 }))
               : []
-            dispatch({
+            const snapshot: Extract<IdeateAction, { kind: 'snapshot' }> = {
               kind: 'snapshot',
               ideas: ideas as IdeateIdea[],
               clusters: clusters as IdeateCluster[],
@@ -199,7 +217,10 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
               dotVoteLimit: typeof d.dotVoteLimit === 'number' ? d.dotVoteLimit : 5,
               rankingRevealed: d.rankingRevealed === true,
               ranking,
-            })
+            }
+            if (Array.isArray(d.myUpvotes)) snapshot.myUpvotes = d.myUpvotes as string[]
+            if (typeof d.dotsUsed === 'number') snapshot.dotsUsed = d.dotsUsed
+            dispatch(snapshot)
             break
           }
           case 'ideate_idea_added': {
@@ -209,7 +230,10 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
           }
           case 'ideate_idea_updated': {
             const idea = toIdea(d.idea as Record<string, unknown>)
-            if (idea) dispatch({ kind: 'idea_updated', idea, rev: d.rev as number })
+            if (idea) {
+              if (pendingUpvoteRef.current === idea.id) pendingUpvoteRef.current = null
+              dispatch({ kind: 'idea_updated', idea, rev: d.rev as number })
+            }
             break
           }
           case 'ideate_ranking_revealed': {
@@ -239,9 +263,15 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
             })
             break
           }
-          case 'error':
+          case 'error': {
+            const pending = pendingUpvoteRef.current
+            if (pending) {
+              pendingUpvoteRef.current = null
+              dispatch({ kind: 'upvote_rollback', itemId: pending })
+            }
             dispatch({ kind: 'error', message: (d.message as string) ?? 'Error' })
             break
+          }
         }
       } catch {
         /* ignore */
@@ -283,6 +313,7 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
   const upvote = useCallback(
     (itemId: string) => {
       if (state.myUpvotes.includes(itemId) || state.dotsUsed >= state.dotVoteLimit) return
+      pendingUpvoteRef.current = itemId
       dispatch({ kind: 'upvote_optimistic', itemId })
       sendWsJson(wsRef.current, {
         v: LIVE_PROTOCOL_VERSION,

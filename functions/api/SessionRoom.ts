@@ -1448,7 +1448,7 @@ export class SessionRoom implements DurableObject {
     // with a full `townhall_state` snapshot scoped to this connection's role.
     if (isTownhall) await this.townhallHandler.sendSnapshot(ws, att, meta.townhallModeration!)
     if (meta.sessionMode === 'retro') await this.retroHandler.sendSnapshot(ws, att)
-    if (meta.sessionMode === 'ideate') await this.ideateHandler.sendSnapshot(ws)
+    if (meta.sessionMode === 'ideate') await this.ideateHandler.sendSnapshot(ws, att)
   }
 
   private async setPaused(paused: boolean): Promise<void> {

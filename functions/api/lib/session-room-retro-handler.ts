@@ -3,7 +3,9 @@
  */
 import type { ServerMessage } from '../realtime'
 import { LIVE_PROTOCOL_VERSION } from '../realtime'
+import { consumeSubmitToken, newSubmitBucket } from './board-submit-rate'
 import {
+  MAX_RETRO_ITEMS,
   RETRO_KEYS,
   RETRO_COLUMNS,
   canUpvoteColumn,
@@ -117,6 +119,15 @@ export class RetroHandler {
     }
   }
 
+  private async consumeSubmitRate(voterId: string): Promise<boolean> {
+    const now = Date.now()
+    const bucketKey = RETRO_KEYS.submitRate(voterId)
+    const bucket = (await this.ctx.storage.get<{ tokens: number; lastAt: number }>(bucketKey)) ?? newSubmitBucket(now)
+    const consumed = consumeSubmitToken(bucket, now)
+    await this.ctx.storage.put(bucketKey, consumed.bucket)
+    return consumed.ok
+  }
+
   async handleSubmit(
     ws: WebSocket,
     att: Attachment,
@@ -124,6 +135,10 @@ export class RetroHandler {
   ): Promise<void> {
     if (att.role !== 'voter' && att.role !== 'presenter') {
       ws.send(errorMessage('forbidden', 'Cannot submit'))
+      return
+    }
+    if (!(await this.consumeSubmitRate(att.voterId))) {
+      ws.send(errorMessage('rate_limit', 'Too many submissions — please wait'))
       return
     }
     const body = data.body.trim()
@@ -135,8 +150,12 @@ export class RetroHandler {
       ws.send(errorMessage('validation', 'Invalid column'))
       return
     }
-    const item = createRetroItem(data.column, body)
     const index = (await this.ctx.storage.get<string[]>(RETRO_KEYS.index)) ?? []
+    if (index.length >= MAX_RETRO_ITEMS) {
+      ws.send(errorMessage('limit', `Board limit (${MAX_RETRO_ITEMS}) reached`))
+      return
+    }
+    const item = createRetroItem(data.column, body)
     index.push(item.id)
     await this.ctx.storage.put(RETRO_KEYS.index, index)
     await this.ctx.storage.put(RETRO_KEYS.item(item.id), item)

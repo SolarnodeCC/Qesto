@@ -199,6 +199,23 @@ describe('retro dot votes', () => {
   })
 })
 
+describe('retro submit limits', () => {
+  it('enforces submit rate limit', async () => {
+    const { room, state } = await buildRoom()
+    await initRetro(room)
+    const voter = connectVoter(state, 'v1')
+    for (let i = 0; i < 5; i++) {
+      await send(room, voter, {
+        type: 'retro_submit',
+        data: { column: 'went_well', body: `Point number ${i}` },
+        timestamp: 0,
+      })
+    }
+    await send(room, voter, { type: 'retro_submit', data: { column: 'went_well', body: 'One more' }, timestamp: 0 })
+    expect(last(voter, 'error')?.data).toMatchObject({ code: 'rate_limit' })
+  })
+})
+
 describe('retro close', () => {
   it('returns action items on close', async () => {
     const { room, state } = await buildRoom()

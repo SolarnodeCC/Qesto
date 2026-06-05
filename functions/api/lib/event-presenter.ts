@@ -17,10 +17,21 @@ export type PresenterActiveSlot = {
   session: LinkedSessionInfo | null
 }
 
+const ALLOWED_SLIDE_HOSTS = ['docs.google.com', 'www.canva.com', 'canva.com'] as const
+
+export function isAllowedSlideHost(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase()
+    return ALLOWED_SLIDE_HOSTS.some((allowed) => host === allowed || host.endsWith(`.${allowed}`))
+  } catch {
+    return false
+  }
+}
+
 export function normalizeSlideDeckUrl(url: string | null | undefined): string | null {
   if (!url) return null
   const trimmed = url.trim()
-  if (!trimmed.startsWith('https://')) return null
+  if (!trimmed.startsWith('https://') || !isAllowedSlideHost(trimmed)) return null
   if (trimmed.includes('docs.google.com/presentation')) {
     if (trimmed.includes('/embed')) return trimmed.slice(0, 2000)
     const base = trimmed.split('/edit')[0]?.split('/pub')[0]

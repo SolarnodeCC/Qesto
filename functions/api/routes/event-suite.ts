@@ -6,8 +6,13 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { readKvJson } from '../lib/kv'
 import { teamDocumentKey } from '../lib/kv-keys'
-import { canWriteWorkspace } from '../lib/workspace-rbac'
-import { joinPathForMode, parseEventTemplate, type EventAgendaTemplate, type LinkedSessionInfo } from '../lib/event-agenda'
+import { canReadWorkspace, canWriteWorkspace } from '../lib/workspace-rbac'
+import { parseEventTemplate, type EventAgendaTemplate } from '../lib/event-agenda'
+import {
+  findEventWorkspaceByCode,
+  loadEventWorkspace,
+  loadSessionsForWorkspace,
+} from '../lib/event-workspace'
 import {
   appendFeedItem,
   closeEventSuite,
@@ -22,60 +27,6 @@ import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
 
-async function loadSessionsForWorkspace(
-  db: D1Database,
-  workspaceId: string,
-): Promise<Map<string, LinkedSessionInfo>> {
-  const rows = await db
-    .prepare(
-      `SELECT id, code, title, status, session_mode FROM sessions WHERE workspace_id = ?1 ORDER BY workspace_seq ASC`,
-    )
-    .bind(workspaceId)
-    .all<{ id: string; code: string; title: string; status: string; session_mode: string }>()
-  const map = new Map<string, LinkedSessionInfo>()
-  for (const row of rows.results ?? []) {
-    map.set(row.id, {
-      id: row.id,
-      code: row.code,
-      title: row.title,
-      status: row.status,
-      sessionMode: row.session_mode,
-      joinPath: joinPathForMode(row.session_mode, row.code),
-    })
-  }
-  return map
-}
-
-async function findEventWorkspaceByCode(db: D1Database, code: string): Promise<WorkspaceRow | null> {
-  const row = await db
-    .prepare(
-      `SELECT id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at,
-              created_by, created_at, updated_at
-         FROM workspaces
-        WHERE kind = 'event' AND archived_at IS NULL AND json_extract(template_json, '$.eventCode') = ?1`,
-    )
-    .bind(code)
-    .first<WorkspaceRow>()
-  return row ?? null
-}
-
-async function loadEventWorkspace(
-  db: D1Database,
-  teamId: string,
-  wsId: string,
-): Promise<{ row: WorkspaceRow; template: EventAgendaTemplate } | null> {
-  const row = await db
-    .prepare(
-      `SELECT id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at,
-              created_by, created_at, updated_at
-         FROM workspaces WHERE id = ?1 AND team_id = ?2`,
-    )
-    .bind(wsId, teamId)
-    .first<WorkspaceRow>()
-  if (!row || row.kind !== 'event') return null
-  return { row, template: parseEventTemplate(row.template_json) }
-}
-
 async function persistTemplate(db: D1Database, wsId: string, teamId: string, template: EventAgendaTemplate) {
   const now = Date.now()
   await db
@@ -87,7 +38,7 @@ async function persistTemplate(db: D1Database, wsId: string, teamId: string, tem
 function buildSuitePayload(
   row: WorkspaceRow,
   template: EventAgendaTemplate,
-  sessions: Map<string, LinkedSessionInfo>,
+  sessions: Awaited<ReturnType<typeof loadSessionsForWorkspace>>,
 ) {
   const tracks = computeTrackSummaries(template.tracks, sessions)
   const liveSessions = [...sessions.values()].filter((s) => s.status === 'live' || s.status === 'energizing').length
@@ -149,7 +100,7 @@ export function mountTeamEventSuiteRoutes(parent: any) {
     const teamId = c.req.param('teamId')
     const wsId = c.req.param('wsId')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
-    if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
+    if (!team || !canReadWorkspace(team, c.get('user').sub)) {
       return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
     }
     const loaded = await loadEventWorkspace(c.env.DB, teamId, wsId)

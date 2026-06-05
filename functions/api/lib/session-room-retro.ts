@@ -13,6 +13,8 @@ export type RetroItem = {
   carried?: boolean
 }
 
+export const MAX_RETRO_ITEMS = 200
+
 export const RETRO_KEYS = {
   index: 'retro:index',
   rev: 'retro:rev',
@@ -20,6 +22,7 @@ export const RETRO_KEYS = {
   item: (id: string) => `retro:item:${id}`,
   upvoters: (id: string) => `retro:upvoters:${id}`,
   voterDots: (voterId: string) => `retro:voter_dots:${voterId}`,
+  submitRate: (voterId: string) => `retro:submit_rate:${voterId}`,
 } as const
 
 export const RETRO_COLUMNS: RetroColumn[] = ['went_well', 'didnt_go_well', 'actions']

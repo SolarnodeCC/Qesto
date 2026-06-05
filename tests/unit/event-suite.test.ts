@@ -11,6 +11,9 @@ describe('event-suite', () => {
   it('starts and closes event suite with feed entries', () => {
     const suite = defaultEventSuite()
     startEventSuite(suite, 1000)
+    const feedLen = suite.feed.length
+    startEventSuite(suite, 2000)
+    expect(suite.feed).toHaveLength(feedLen)
     expect(suite.status).toBe('live')
     expect(suite.feed.some((f) => f.message.includes('live'))).toBe(true)
     closeEventSuite(suite, 2000)

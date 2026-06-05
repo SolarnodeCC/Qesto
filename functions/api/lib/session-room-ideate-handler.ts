@@ -7,9 +7,11 @@ import { LIVE_PROTOCOL_VERSION } from '../realtime'
 import { DECISIONS_EMBED_MODEL, DECISIONS_EMBED_DIM } from './insights-vectorize'
 import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
 import { withTimeout } from './shared/async'
+import { consumeSubmitToken, newSubmitBucket } from './board-submit-rate'
 import { clusterIdeas, assignClusterIds } from './ideate-cluster'
 import {
   IDEATE_KEYS,
+  MAX_IDEATE_IDEAS,
   computeIdeateRanking,
   createIdeateIdea,
   mergeIdeateUpvoters,
@@ -18,6 +20,8 @@ import {
   type IdeateIdea,
   type IdeateRankingEntry,
 } from './session-room-ideate'
+
+type CachedEmbedding = { body: string; vector: number[] }
 
 type Attachment = { role: 'presenter' | 'voter'; voterId: string }
 
@@ -93,20 +97,58 @@ export class IdeateHandler {
     return ideas
   }
 
-  async sendSnapshot(ws: WebSocket): Promise<void> {
+  private async loadVoterVoteState(voterId: string, ideas: IdeateIdea[]): Promise<{ myUpvotes: string[]; dotsUsed: number }> {
+    const myUpvotes: string[] = []
+    for (const idea of ideas) {
+      if (idea.status !== 'active') continue
+      const upvoters = (await this.ctx.storage.get<string[]>(IDEATE_KEYS.upvoters(idea.id))) ?? []
+      if (upvoters.includes(voterId)) myUpvotes.push(idea.id)
+    }
+    const dotsUsed = (await this.ctx.storage.get<number>(IDEATE_KEYS.voterDots(voterId))) ?? 0
+    return { myUpvotes, dotsUsed }
+  }
+
+  async sendSnapshot(ws: WebSocket, att?: Attachment): Promise<void> {
     const ideas = await this.loadAllIdeas()
     const clusters = (await this.ctx.storage.get<IdeateCluster[]>(IDEATE_KEYS.clusters)) ?? []
     const rev = (await this.ctx.storage.get<number>(IDEATE_KEYS.rev)) ?? 0
     const dotVoteLimit = (await this.ctx.storage.get<number>(IDEATE_KEYS.dotVoteLimit)) ?? 5
     const rankingRevealed = (await this.ctx.storage.get<boolean>(IDEATE_KEYS.rankingRevealed)) === true
     const ranking = await this.loadRanking(ideas)
+    const voterState = att?.role === 'voter' ? await this.loadVoterVoteState(att.voterId, ideas) : null
     ws.send(
       serverMsg({
         type: 'ideate_state',
-        data: { ideas, clusters, rev, dotVoteLimit, rankingRevealed, ranking },
+        data: {
+          ideas,
+          clusters,
+          rev,
+          dotVoteLimit,
+          rankingRevealed,
+          ranking,
+          ...(voterState ?? {}),
+        },
         timestamp: Date.now(),
       }),
     )
+  }
+
+  private async maybeBroadcastRanking(ideas?: IdeateIdea[]): Promise<void> {
+    const revealed = (await this.ctx.storage.get<boolean>(IDEATE_KEYS.rankingRevealed)) === true
+    if (!revealed) return
+    const all = ideas ?? (await this.loadAllIdeas())
+    const ranking = computeIdeateRanking(all)
+    const rev = await this.bumpRev()
+    await this.broadcast('ideate_ranking_revealed', { ranking, rev })
+  }
+
+  private async consumeSubmitRate(voterId: string): Promise<boolean> {
+    const now = Date.now()
+    const bucketKey = IDEATE_KEYS.submitRate(voterId)
+    const bucket = (await this.ctx.storage.get<{ tokens: number; lastAt: number }>(bucketKey)) ?? newSubmitBucket(now)
+    const consumed = consumeSubmitToken(bucket, now)
+    await this.ctx.storage.put(bucketKey, consumed.bucket)
+    return consumed.ok
   }
 
   private async broadcast(
@@ -133,13 +175,21 @@ export class IdeateHandler {
       ws.send(errorMessage('forbidden', 'Cannot submit'))
       return
     }
+    if (!(await this.consumeSubmitRate(att.voterId))) {
+      ws.send(errorMessage('rate_limit', 'Too many submissions — please wait'))
+      return
+    }
     const body = data.body.trim()
     if (body.length < 2 || body.length > 500) {
       ws.send(errorMessage('validation', 'Idea must be 2–500 characters'))
       return
     }
-    const item = createIdeateIdea(body)
     const index = (await this.ctx.storage.get<string[]>(IDEATE_KEYS.index)) ?? []
+    if (index.length >= MAX_IDEATE_IDEAS) {
+      ws.send(errorMessage('limit', `Board limit (${MAX_IDEATE_IDEAS}) reached`))
+      return
+    }
+    const item = createIdeateIdea(body)
     index.push(item.id)
     await this.ctx.storage.put(IDEATE_KEYS.index, index)
     await this.ctx.storage.put(IDEATE_KEYS.item(item.id), item)
@@ -222,6 +272,12 @@ export class IdeateHandler {
     const mergedUpvoters = mergeIdeateUpvoters([targetUpvoters, sourceUpvoters])
     target.upvotes = mergedUpvoters.length
     source.status = 'dismissed'
+    for (const voterId of sourceUpvoters) {
+      if (targetUpvoters.includes(voterId)) {
+        const dots = (await this.ctx.storage.get<number>(IDEATE_KEYS.voterDots(voterId))) ?? 0
+        if (dots > 0) await this.ctx.storage.put(IDEATE_KEYS.voterDots(voterId), dots - 1)
+      }
+    }
     await this.ctx.storage.put(IDEATE_KEYS.upvoters(data.targetId), mergedUpvoters)
     await this.ctx.storage.put(IDEATE_KEYS.item(data.targetId), target)
     await this.ctx.storage.put(IDEATE_KEYS.item(data.sourceId), source)
@@ -229,6 +285,7 @@ export class IdeateHandler {
     const rev = await this.bumpRev()
     await this.broadcast('ideate_idea_updated', { idea: target, rev })
     await this.broadcast('ideate_idea_updated', { idea: source, rev })
+    await this.maybeBroadcastRanking()
   }
 
   async handleUpvote(ws: WebSocket, att: Attachment, data: { itemId: string }): Promise<void> {
@@ -263,6 +320,7 @@ export class IdeateHandler {
     await this.ctx.storage.put(IDEATE_KEYS.voterDots(att.voterId), dotsUsed + 1)
     const rev = await this.bumpRev()
     await this.broadcast('ideate_idea_updated', { idea: item, rev })
+    await this.maybeBroadcastRanking()
   }
 
   async runPendingCluster(nowMs: number): Promise<boolean> {
@@ -277,9 +335,14 @@ export class IdeateHandler {
 
   private async embedIdeaBodies(ideas: IdeateIdea[]): Promise<Map<string, number[]>> {
     const vectors = new Map<string, number[]>()
-    if (!this.env.AI) return vectors
     for (const idea of ideas) {
       if (idea.status !== 'active') continue
+      const cached = await this.ctx.storage.get<CachedEmbedding>(IDEATE_KEYS.embedding(idea.id))
+      if (cached?.body === idea.body && cached.vector.length === DECISIONS_EMBED_DIM) {
+        vectors.set(idea.id, cached.vector)
+        continue
+      }
+      if (!this.env.AI) continue
       try {
         const result = await withTimeout(
           this.env.AI.run(DECISIONS_EMBED_MODEL, { text: idea.body }),
@@ -287,7 +350,10 @@ export class IdeateHandler {
           'Ideate embedding',
         )
         const vector = firstVector(result)
-        if (vector) vectors.set(idea.id, vector)
+        if (vector) {
+          vectors.set(idea.id, vector)
+          await this.ctx.storage.put(IDEATE_KEYS.embedding(idea.id), { body: idea.body, vector })
+        }
       } catch {
         /* fallback to token overlap in clusterIdeas */
       }

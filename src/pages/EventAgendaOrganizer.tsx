@@ -87,7 +87,7 @@ export default function EventAgendaOrganizer() {
     setTracks((prev) => [
       ...prev,
       {
-        id: `track_${prev.length + 1}`,
+        id: crypto.randomUUID(),
         label: `Track ${prev.length + 1}`,
         day: 'Day 1',
         order: prev.length,
@@ -104,7 +104,7 @@ export default function EventAgendaOrganizer() {
               ...track,
               slots: [
                 ...track.slots,
-                { id: `slot_${track.slots.length + 1}`, title: 'New session', sessionId: null, order: track.slots.length },
+                { id: crypto.randomUUID(), title: 'New session', sessionId: null, order: track.slots.length },
               ],
             }
           : track,

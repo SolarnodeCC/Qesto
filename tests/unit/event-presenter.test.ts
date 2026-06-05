@@ -44,6 +44,10 @@ describe('normalizeSlideDeckUrl', () => {
   it('rejects non-https URLs', () => {
     expect(normalizeSlideDeckUrl('http://example.com/slides')).toBeNull()
   })
+
+  it('rejects non-allowlisted hosts', () => {
+    expect(normalizeSlideDeckUrl('https://evil.example.com/deck')).toBeNull()
+  })
 })
 
 describe('resolveActiveSlot', () => {

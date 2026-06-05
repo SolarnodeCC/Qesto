@@ -27,6 +27,8 @@ export type IdeateRankingEntry = {
   upvotes: number
 }
 
+export const MAX_IDEATE_IDEAS = 200
+
 export const IDEATE_KEYS = {
   enabled: 'ideate:enabled',
   index: 'ideate:index',
@@ -39,6 +41,8 @@ export const IDEATE_KEYS = {
   item: (id: string) => `ideate:item:${id}`,
   upvoters: (id: string) => `ideate:upvoters:${id}`,
   voterDots: (voterId: string) => `ideate:voter_dots:${voterId}`,
+  submitRate: (voterId: string) => `ideate:submit_rate:${voterId}`,
+  embedding: (id: string) => `ideate:embedding:${id}`,
 } as const
 
 export function nextIdeateRev(current: number): number {

@@ -160,6 +160,33 @@ describe('ideate ranking reveal', () => {
   })
 })
 
+describe('ideate voter snapshot', () => {
+  it('includes myUpvotes and dotsUsed in ideate_state for voters', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter = connectVoter(state, 'v1')
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'Idea A' }, timestamp: 0 })
+    const id = (last(voter, 'ideate_idea_added')?.data.idea as { id: string }).id
+    await send(room, voter, { type: 'ideate_upvote', data: { itemId: id }, timestamp: 0 })
+    await send(room, voter, { type: 'request_state', data: {}, timestamp: 0 })
+    const snap = last(voter, 'ideate_state')
+    expect(snap?.data).toMatchObject({ dotsUsed: 1, myUpvotes: [id] })
+  })
+})
+
+describe('ideate submit limits', () => {
+  it('enforces board size and submit rate limit', async () => {
+    const { room, state } = await buildRoom()
+    await initIdeate(room)
+    const voter = connectVoter(state, 'v1')
+    for (let i = 0; i < 5; i++) {
+      await send(room, voter, { type: 'ideate_submit', data: { body: `Idea number ${i}` }, timestamp: 0 })
+    }
+    await send(room, voter, { type: 'ideate_submit', data: { body: 'One more idea' }, timestamp: 0 })
+    expect(last(voter, 'error')?.data).toMatchObject({ code: 'rate_limit' })
+  })
+})
+
 describe('ideate merge and dismiss', () => {
   it('merges duplicate ideas and retains combined vote count', async () => {
     const { room, state } = await buildRoom()

@@ -40,5 +40,9 @@
   "present.openQaConsole": "Volledige Q&A-console",
   "present.qaPanel": "Q&A",
   "present.liveSessions": "{{count}} live sessies",
-  "present.feedEmpty": "Nog geen aankondigingen."
+  "present.feedEmpty": "Nog geen aankondigingen.",
+  "present.participants": "Live deelnemers",
+  "present.activeParticipants": "{{count}} verbonden met actieve talk",
+  "present.noLiveSessions": "Geen live sessies op dit moment.",
+  "present.connected": "verbonden"
 }

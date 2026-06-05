@@ -454,6 +454,9 @@ export type ServerMessage =
         dotVoteLimit: number
         rankingRevealed: boolean
         ranking: Array<{ rank: number; ideaId: string; body: string; upvotes: number }>
+        /** Present for voter connections — reconnect sync for dot budget. */
+        myUpvotes?: string[]
+        dotsUsed?: number
       }
       timestamp: number
     }

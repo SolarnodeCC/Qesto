@@ -43,6 +43,8 @@ type PresenterData = {
   attendeeUrl: string
   suiteStatus: string
   liveSessionCount: number
+  activeSlotParticipantCount: number | null
+  liveSessionParticipants: Array<{ sessionId: string; title: string; connections: number | null }>
   tracks: AgendaTrack[]
   presenter: { slideDeckUrl: string | null; activeSlotId: string | null }
   feed: Array<{ id: string; message: string; createdAt: number }>
@@ -184,6 +186,7 @@ export default function EventStagePresent() {
               <iframe
                 title={t('present.slides')}
                 src={data.presenter.slideDeckUrl}
+                sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"
                 className="aspect-video w-full rounded-lg border border-pulse-200 dark:border-pulse-700"
                 allowFullScreen
               />
@@ -225,6 +228,26 @@ export default function EventStagePresent() {
         </main>
 
         <aside className="flex flex-col gap-4">
+          <section className="rounded-xl border border-pulse-200 bg-white p-4 dark:border-pulse-700 dark:bg-pulse-900/40">
+            <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-pulse-500">{t('present.participants')}</h2>
+            {data.activeSlotParticipantCount != null && (
+              <p className="mb-2 text-sm font-medium text-teal-700 dark:text-teal-300">
+                {t('present.activeParticipants', { count: data.activeSlotParticipantCount })}
+              </p>
+            )}
+            <ul className="mb-3 space-y-1 text-xs text-pulse-600 dark:text-pulse-300">
+              {data.liveSessionParticipants.length === 0 ? (
+                <li className="text-pulse-400">{t('present.noLiveSessions')}</li>
+              ) : (
+                data.liveSessionParticipants.map((s) => (
+                  <li key={s.sessionId}>
+                    {s.title}: {s.connections ?? '—'} {t('present.connected')}
+                  </li>
+                ))
+              )}
+            </ul>
+          </section>
+
           <section className="rounded-xl border border-pulse-200 bg-white p-4 dark:border-pulse-700 dark:bg-pulse-900/40">
             <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-pulse-500">{t('feed.title')}</h2>
             <form onSubmit={(e) => void postFeed(e)} className="mb-3 flex gap-2">

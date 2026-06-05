@@ -116,15 +116,13 @@ export default function IdeatePresent() {
             </p>
           )}
 
-          {!state.rankingRevealed && (
-            <button
-              type="button"
-              onClick={() => revealRanking()}
-              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
-            >
-              {t('prioritize.reveal')}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => revealRanking()}
+            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700"
+          >
+            {state.rankingRevealed ? t('prioritize.refresh') : t('prioritize.reveal')}
+          </button>
 
           {state.rankingRevealed && state.ranking.length > 0 && (
             <section className="rounded-xl border-2 border-violet-300 bg-violet-50 p-4 dark:border-violet-700 dark:bg-violet-900/20">
