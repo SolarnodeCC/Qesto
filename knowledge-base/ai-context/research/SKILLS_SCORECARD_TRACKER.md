@@ -43,6 +43,7 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 | marketing | Growth | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | sales | Sales | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | new (2026-06) |
 | market-research | Product | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | split 2026-06 |
+| knowledge | Knowledge | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | new (2026-06) |
 | release-notes | Product/Growth | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 | i18n | Frontend | YYYY-MM-DD | N | N% | N | N/month | keep/improve/retire | TBD |
 
@@ -61,6 +62,7 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 | qesto-marketing | haiku | Growth | YYYY-MM-DD | N | N.N | N% | active | top-of-funnel only (2026-06) |
 | qesto-sales | sonnet | Sales | YYYY-MM-DD | N | N.N | N% | active | new node (2026-06) |
 | qesto-market-research | opus | Product | YYYY-MM-DD | N | N.N | N% | active | added to tracker (2026-06) |
+| qesto-knowledge | sonnet | Knowledge | YYYY-MM-DD | N | N.N | N% | active | new node (2026-06) |
 | qesto-product-owner | haiku | Product | YYYY-MM-DD | N | N.N | N% | active | renamed from qesto-po |
 | qesto-i18n | haiku | Frontend | YYYY-MM-DD | N | N.N | N% | active | — |
 
@@ -198,6 +200,10 @@ _Monthly operational metrics for skill quality, agent effectiveness, and keep/im
 ---
 
 ## Change Log
+- 2026-06-04: v1.2.0 — added the **Knowledge** steward node (qesto-knowledge + knowledge.md,
+  now 14 agents) owning KB integrity, requirement traceability, the doc-update edges (E24–E26),
+  and the KB→Vectorize lifecycle. Added the `kb_search` MCP tool so agents can research the KB
+  semantically (`.mcp.json`, `scripts/mcp/kb-search-server.ts`).
 - 2026-06-04: v1.1.0 — agent/skill framework overhaul. Added **Sales** node (qesto-sales +
   sales.md) and registered the previously-untracked qesto-market-research agent (now 13
   agents). Renamed qesto-po → qesto-product-owner. Right-sized oversized agents (backend,

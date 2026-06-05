@@ -57,6 +57,9 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E21 | release-notes | Customer-facing changelog | marketing (announce) | Release published | Growth Lead |
 | E22 | devops | Deploy result + health probe status | all | Post-deploy | DevOps |
 | E23 | any agent | Reproducible DO/WebSocket bug | investigate (skill) → architect | Realtime defect | QA Lead |
+| E24 | any role | "Docs to Update" landing (the doc-update edges) | knowledge (steward) | Doc written/changed | Knowledge Lead |
+| E25 | product-owner | New/changed business requirement | knowledge | Requirement decided | Knowledge Lead |
+| E26 | knowledge | `kb_search` tool + documentation map (research entry point) | all roles | Research needed | Knowledge Lead |
 
 ## 3) Edge contract rules (so edges don't break)
 
@@ -72,7 +75,25 @@ role, find the edge here first — if it is missing, add it in the same PR.
 5. **New edge = new row.** Introducing a cross-role dependency without adding it here is
    how "nobody owns it." Add the row in the same change.
 
-## 4) Marketing → Sales boundary (the edge the audit flagged)
+## 4) Knowledge steward — the node that owns doc-updates and research (E24–E26)
+
+Doc-updating used to be diffuse: 23 roles each had a "Docs to Update" table, but
+nobody owned whether the knowledge base stayed coherent or whether business
+requirements were actually captured. The **knowledge** node owns that:
+
+- **Research entry point (E26)**: for conceptual questions ("requirements/
+  decisions/constraints for X"), use the `kb_search` MCP tool (semantic search
+  over the KB) and then Read the returned `file_path`. Grep/Glob stay best for
+  exact symbols. `kb_search` needs `QESTO_API_BASE_URL` + `QESTO_KB_API_TOKEN`
+  configured in `.mcp.json`; without them, fall back to the documentation map +
+  Grep. Knowledge owns keeping it working (and the index healthy via `kb:health`).
+- **Doc-update steward (E24)**: every role still writes its own domain docs;
+  knowledge verifies placement, frontmatter (so docs embed), and that nothing
+  contradicts existing docs.
+- **Requirement capture (E25)**: PO decides requirements; knowledge documents them
+  with a stable ID and confirms backlog/test traceability, flagging requirement debt.
+
+## 5) Marketing → Sales boundary (the edge the audit flagged)
 
 | Owns | Marketing (top of funnel) | Sales (deal cycle) |
 |---|---|---|
@@ -84,5 +105,7 @@ role, find the edge here first — if it is missing, add it in the same PR.
 Both **reference** market-research for ICP/competitors (E15). Neither copies those tables.
 
 ## Change Log
+- 2026-06-04: v1.1.0 — added the Knowledge steward node and edges E24–E26 (doc-update
+  stewardship, requirement capture, and the `kb_search` research entry point).
 - 2026-06-04: v1.0.0 — created the edge ownership map; added Sales node edges (E16–E19),
   single-source-of-truth rule, and marketing↔sales boundary per the agent/skill audit.

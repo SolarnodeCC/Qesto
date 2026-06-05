@@ -129,7 +129,19 @@ Every skill file must reference which docs to update:
 - Agents are thin dispatchers; depth lives in the matching skill. Do not grow an agent file
   with code blocks, data contracts, or templates that belong in its skill.
 
+## 12) Knowledge: Research & Doc Updates
+- **Research first**: for conceptual questions (business requirements, decisions, constraints,
+  "where is X documented"), use the `kb_search` MCP tool (semantic search over the knowledge
+  base) and then Read the returned `file_path`. Use Grep/Glob for exact symbols and code. If
+  `kb_search` is unconfigured, fall back to `knowledge-base/README.md` (the documentation map)
+  + Grep.
+- **Doc updates are stewarded**: keep updating your own "Docs to Update" targets, but the
+  **knowledge** node (`knowledge.md`) owns KB integrity, embeddable frontmatter, and business-
+  requirement traceability (edges E24–E26). Hand a new/changed requirement to knowledge so it
+  gets a requirement ID and stays traceable.
+
 ## Change Log
+- 2026-06-04: Added rule 12 (KB research via `kb_search` + knowledge-stewarded doc updates).
 - 2026-06-04: Added rule 11 (edges + single source of truth); pointed all assets at
   HANDOFFS.md; required changelog entries for audit-derived gates.
 - 2026-04-24: Added test/type-check minimums, doc obligations, and governance alignment rules.

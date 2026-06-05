@@ -154,10 +154,13 @@ This project uses a layered AI agent framework:
 /i18n           → loads i18n.md skill pack          (translations, key extraction, EN/NL/ES/DE/FR)
 /review         → loads review.md skill pack        (code review gates, correctness, security, mobile/a11y)
 /investigate    → loads investigate.md skill pack   (DO/WebSocket root-cause analysis, 5-step debug protocol)
+/knowledge      → loads knowledge.md skill pack     (KB integrity, requirement traceability, KB→Vectorize lifecycle, kb_search)
 ```
 Knowledge packs auto-revoke at end of task — do not carry state between roles.
 
 **Edges (handoffs between roles)** are defined and owned in [`.claude/skills/HANDOFFS.md`](.claude/skills/HANDOFFS.md) — consult it before handing work to another role.
+
+**Researching the knowledge base:** for conceptual questions (requirements, decisions, constraints), use the `kb_search` MCP tool (semantic search over `knowledge-base/`, configured in [`.mcp.json`](.mcp.json)) and Read the returned `file_path`; use Grep/Glob for exact symbols. The **knowledge** node owns this tool and KB integrity.
 
 ### Model tiering (per-agent, per-work-type)
 
@@ -166,7 +169,7 @@ Agent `model:` frontmatter is the source of truth. Main-agent dispatch should ma
 | Tier | Model | Agents | Work types |
 |---|---|---|---|
 | High | **opus** | `qesto-architect`, `qesto-backend`, `qesto-security`, `qesto-ai-strategy`, `qesto-market-research` | System design, ADRs, schema migrations, Durable Object / WebSocket protocol, auth flows, OWASP/STRIDE audits, abuse-surface review, deep competitive synthesis |
-| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy |
+| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales`, `qesto-knowledge` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy, KB integrity + requirement traceability |
 | Low | **haiku** | `qesto-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
 
 When the main agent needs a model not matching any sub-agent, invoke the sub-agent whose tier matches. Prefer Opus for anything touching edge runtime correctness (DO lifecycle, JWT, rate limits, multi-tenant isolation); prefer Haiku for template-heavy mechanical work.

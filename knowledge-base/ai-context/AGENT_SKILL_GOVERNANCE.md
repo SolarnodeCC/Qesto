@@ -37,6 +37,7 @@ _Hub: [Documentation map](./README.md)._
 - AI Strategy Lead: ai-strategy
 - Growth Lead: marketing, release-notes (with PO)
 - Sales Lead: sales, deal cycle, sales enablement
+- Knowledge Lead: knowledge, KB integrity + requirement traceability + KB→Vectorize lifecycle
 
 ## Edge governance
 Cross-role handoffs are defined in `.claude/skills/HANDOFFS.md`. Each edge names an owner

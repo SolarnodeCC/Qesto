@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "qesto-kb": {
+      "command": "npx",
+      "args": ["-y", "tsx", "scripts/mcp/kb-search-server.ts"],
+      "env": {
+        "QESTO_API_BASE_URL": "${QESTO_API_BASE_URL}",
+        "QESTO_KB_API_TOKEN": "${QESTO_KB_API_TOKEN}"
+      }
+    }
+  }
+}

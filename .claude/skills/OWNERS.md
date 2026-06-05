@@ -12,6 +12,7 @@ _Last reviewed_: 2026-06-04. Edge ownership (handoffs between these roles) lives
 - devops-agent.md — DevOps
 - frontend-agent.md — Frontend Lead
 - i18n-agent.md — Frontend Lead
+- knowledge-agent.md — Knowledge Lead
 - market-research-agent.md — Product Owner
 - marketing-agent.md — Growth Lead
 - po-agent.md — Product Owner
@@ -32,6 +33,7 @@ _Last reviewed_: 2026-06-04. Edge ownership (handoffs between these roles) lives
 - frontend-dev.md — Frontend Lead
 - i18n.md — Frontend Lead
 - investigate.md — QA Lead
+- knowledge.md — Knowledge Lead
 - market-research.md — Product Owner
 - market-research-templates.md — Product Owner
 - marketing.md — Growth Lead
