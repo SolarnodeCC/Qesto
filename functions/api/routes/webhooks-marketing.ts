@@ -8,6 +8,7 @@ import type { Env } from '../types'
 import { type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import { logEvent } from '../lib/log'
+import { incrementWebhookStats } from './admin/growth'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -34,7 +35,11 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     }
 
     const body = await c.req.text()
-    const secret = c.env.MARKETING_WEBHOOK_SECRET || c.env.JWT_SECRET
+    const secret = c.env.MARKETING_WEBHOOK_SECRET
+    if (!secret) {
+      logEvent({ event: 'webhook.marketing.secret_not_configured' })
+      return c.json({ error: 'Webhook not configured' }, 500)
+    }
 
     const expectedSig = `sha256=${await hmacSha256Hex(secret, body)}`
     if (signature !== expectedSig) {
@@ -64,14 +69,16 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
     // Check if session is public
     if (!payload.isPublic) {
       logEvent({ event: 'webhook.marketing.skipped_private_session', sessionId: payload.sessionId })
+      if (c.env.MARKETING_KV) {
+        await incrementWebhookStats(c.env.MARKETING_KV, { total_received: 1, total_skipped: 1 })
+      }
       return c.json({ ok: true, skipped: true })
     }
 
     // Queue Cloudflare Workflow (async, non-blocking)
+    let queued = false
     try {
       if (c.env.WORKFLOWS) {
-        // Trigger TemplateGenerationWorkflow with session pipeline payload
-        // The payload becomes event.payload in the workflow's run() method
         await c.env.WORKFLOWS.create({
           sessionId: payload.sessionId,
           language: payload.language,
@@ -79,10 +86,8 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
           participantCount: payload.participantCount,
           durationMinutes: payload.durationMinutes,
         })
-        logEvent({
-          event: 'workflow.queued',
-          sessionId: payload.sessionId,
-        })
+        queued = true
+        logEvent({ event: 'workflow.queued', sessionId: payload.sessionId })
       } else {
         logEvent({
           event: 'workflow.not_available',
@@ -96,7 +101,10 @@ export function mountMarketingWebhookRoutes(parent: Hono<{ Bindings: Env; Variab
         sessionId: payload.sessionId,
         error: err instanceof Error ? err.message : String(err),
       })
-      // Don't fail the webhook response; workflow queueing is best-effort
+    }
+
+    if (c.env.MARKETING_KV) {
+      await incrementWebhookStats(c.env.MARKETING_KV, queued ? { total_received: 1, total_queued: 1 } : { total_received: 1 })
     }
 
     return c.json({ ok: true })
