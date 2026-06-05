@@ -10,7 +10,7 @@ import { withTimeout } from './shared/async'
 export type HelpVectorizeBindings = Pick<Env, 'AI' | 'HELP_VECTORIZE'>
 
 export const HELP_EMBED_MODEL = '@cf/baai/bge-m3' as const
-export const HELP_EMBED_DIM = 768
+export const HELP_EMBED_DIM = 1024 // bge-m3 outputs 1024 dims — must match the qesto-help index
 export const HELP_SIMILARITY_TOP_K = 3
 export const HELP_SIMILARITY_MIN_SCORE = 0.70
 export const HELP_EMBED_TIMEOUT_MS = 10_000

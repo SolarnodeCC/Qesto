@@ -57,6 +57,10 @@
     "avgParticipation": "Participación media",
     "responseRate": "Tasa de respuesta",
     "facilitator": "Facilitador {{id}}…",
-    "facilitatorStats": "{{sessions}} sesiones · {{participation}} votos med. · {{rate}}% respuesta"
+    "facilitatorStats": "{{sessions}} sesiones · {{participation}} votos med. · {{rate}}% respuesta",
+    "exportTitle": "Exportar informe",
+    "exportJson": "Descargar JSON",
+    "exportCsv": "Descargar CSV",
+    "exportHint": "Informe entre sesiones para la ventana seleccionada (sin sesiones zero-knowledge)."
   }
 }

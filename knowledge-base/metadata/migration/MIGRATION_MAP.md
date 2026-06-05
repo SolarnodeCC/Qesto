@@ -146,7 +146,6 @@
 | `/docs/GOOGLE_OAUTH_VERIFICATION.md` | `/knowledge-base/archive/oauth-setup/` | Implementation-specific, not documentation |
 | `/docs/CONTENT_DRAFT_PLAN.md` | `/knowledge-base/archive/legacy-planning/` | Superseded by current roadmap |
 | `/_README.md` | Archive | Superseded by main README.md |
-| `/amplitude-setup-report.md` | `/knowledge-base/archive/analytics-setup/` | Implementation-specific setup guide |
 
 ## Root Files (Update References)
 

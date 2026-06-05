@@ -57,6 +57,10 @@
     "avgParticipation": "Ø Teilnahme",
     "responseRate": "Antwortrate",
     "facilitator": "Facilitator {{id}}…",
-    "facilitatorStats": "{{sessions}} Sitzungen · {{participation}} Ø Stimmen · {{rate}}% Antwort"
+    "facilitatorStats": "{{sessions}} Sitzungen · {{participation}} Ø Stimmen · {{rate}}% Antwort",
+    "exportTitle": "Bericht exportieren",
+    "exportJson": "JSON herunterladen",
+    "exportCsv": "CSV herunterladen",
+    "exportHint": "Situationsübergreifender Bericht für das gewählte Fenster (ohne Zero-Knowledge-Sitzungen)."
   }
 }

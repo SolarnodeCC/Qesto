@@ -57,6 +57,10 @@
     "avgParticipation": "Gem. participatie",
     "responseRate": "Responspercentage",
     "facilitator": "Facilitator {{id}}…",
-    "facilitatorStats": "{{sessions}} sessies · {{participation}} gem. stemmen · {{rate}}% respons"
+    "facilitatorStats": "{{sessions}} sessies · {{participation}} gem. stemmen · {{rate}}% respons",
+    "exportTitle": "Rapport exporteren",
+    "exportJson": "JSON downloaden",
+    "exportCsv": "CSV downloaden",
+    "exportHint": "Cross-sessierapport voor de gekozen periode (geen zero-knowledge-sessies)."
   }
 }

@@ -205,3 +205,9 @@ const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\
 | New secret or env binding | `docs/CONFIGURATION.txt` + `CLAUDE.md` |
 | Tech debt discovered | `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` |
 
+## Change Log
+- 2026-06-04: Documented the audit-derived backend gates (route thinness, service/repository
+  boundaries, safe parsing, resilience posture) in a changelog. This skill is now the
+  authoritative depth source for the thin `qesto-backend` agent (agent v2.0.0). Edges: see
+  `.claude/skills/HANDOFFS.md` (E4–E6, E13).
+

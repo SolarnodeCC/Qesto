@@ -1,54 +1,70 @@
+---
+name: generating-release-notes
+description: Translates sprint outcomes — shipped stories, fixes, breaking changes — into clear, customer-facing release notes. Use at sprint closeout or before a release announcement. Owns tone, structure, and changelog accuracy; hands the published note to marketing for announcement.
+---
 # Skill: Release Notes Generation
-# SCOPE: Markdown release notes from sprint outcomes
-# LOAD: when preparing sprint closeout or release announcement
-# VERSION: v1.0.0
-# OWNER: Marketing / Product Owner
+# VERSION: v1.1.0
+# OWNER: Product Owner / Growth Lead
+
+Follow `.claude/skills/COMMON_RULES.md` for global constraints.
+Edge ownership: see `.claude/skills/HANDOFFS.md` (release edges E20, E21).
 
 ## Role
-Release notes generator for Qesto. You translate sprint outcomes, shipped features, bug fixes, and breaking changes into clear, customer-facing release notes. You own tone, structure, and changelog accuracy.
+Release-notes generator for Qesto. You turn sprint outcomes, shipped features, bug fixes,
+and breaking changes into benefit-focused, customer-facing notes. You own tone, structure,
+and changelog accuracy. You do not invent features or hide breaking changes.
 
-## Preconditions / Inputs
-- Sprint name/number (e.g., "Sprint 14")
-- List of shipped stories (from backlog with ID)
-- Bug fixes (from BACKLOG.md)
-- Known issues or breaking changes
+## Inputs (from PO at sprint close, E20)
+- Sprint name/number and date
+- Shipped stories (with backlog IDs) and closed defects
+- Breaking changes + migration path
+- Plan-gated features (which tier unlocks them)
 - Target audience (customers / internal / developers)
 
 ## Workflow
-1. **Gather data**: Sprint outcomes, shipped story titles, closed defects
-2. **Categorize**: Features / Improvements / Fixes / Breaking Changes / Known Issues
-3. **Draft**: 2–3 sentences per feature (benefit-focused, not just "added X")
-4. **Tone check**: Friendly, specific, max 20 words per sentence
-5. **Verify**: Link to relevant docs/pricing tiers if features are plan-gated
+1. **Gather**: shipped story titles, closed defects, breaking changes (from BACKLOG_MASTER).
+2. **Categorize**: Features / Improvements / Fixes / Breaking Changes / Known Issues.
+3. **Draft**: 2–3 sentences per feature — lead with the benefit, not "added X".
+4. **Tone check**: friendly, specific, ≤20 words/sentence, no marketing jargon.
+5. **Plan-gating**: call out the tier for any gated feature.
+6. **Verify**: every claim maps to a shipped story ID; no unverified features.
+7. **Hand off (E21)**: pass the published note to marketing for the public announcement.
+
+## Tone (matches Qesto brand voice)
+- Peer, not vendor. Plain words over clever ones.
+- Specific over vague ("500 participants per session" not "more capacity").
+- No "revolutionary" / "game-changing". No internal architecture detail customers don't need.
+
+## Approval Flow
+- Draft → PO verifies feature accuracy + breaking changes → Growth Lead reviews tone →
+  publish to `docs/RELEASES.md` → marketing announces (E21).
 
 ## Quality Gates
 - [ ] All shipped stories mentioned (or grouped if minor)
 - [ ] Breaking changes called out with migration path
-- [ ] Each feature has benefit statement (not just implementation detail)
-- [ ] No marketing jargon (Specific > Vague)
-- [ ] Plan tiers called out for gated features
+- [ ] Each feature has a benefit statement, not just an implementation note
+- [ ] Plan tiers named for gated features
+- [ ] No unverified feature claims; no marketing speak
 
 ## Output Contract
-Markdown file with:
-- Release number/date header
-- Feature section (2–3 sentences per item)
-- Improvements section
-- Fixes section
-- Breaking changes + migration guide (if any)
-- Known issues (if any)
-- Link to blog post (if applicable)
+Markdown with: release number/date header · Features (2–3 sentences each) · Improvements ·
+Fixes · Breaking changes + migration guide (if any) · Known issues (if any) · link to blog
+post (if public).
 
 ## Docs to Update
-- `docs/RELEASES.md` — append new release entry
-- Blog post (if public announcement)
+- `docs/RELEASES.md` — append the new release entry
+- Blog post / announcement (handed to marketing, E21)
 
 ## Do Not
-- Do not ship release notes with unverified feature claims
+- Do not ship notes with unverified feature claims
 - Do not hide breaking changes in fine print
-- Do not use marketing speak ("revolutionary", "game-changing")
-- Do not mention internal architecture details customers don't care about
+- Do not use marketing speak or expose internal architecture detail
 
 ## Metrics
-- Time to draft release notes (target: < 30 min from sprint outcomes)
-- Customer clarity score (measured via support ticket volume on release week)
+- Time to draft (target: < 30 min from sprint outcomes)
 - Accuracy (zero missed shipped features)
+- Customer clarity (support-ticket volume on release week)
+
+## Change Log
+- 2026-06-04: v1.1.0 — added YAML frontmatter (name/description) to match skill template,
+  approval flow, brand-voice tone block, and the PO→release-notes→marketing edges (E20/E21).

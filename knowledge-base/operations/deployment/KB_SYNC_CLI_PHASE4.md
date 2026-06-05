@@ -330,9 +330,10 @@ npm run kb:sync -- status
 # 3. Sync changes
 npm run kb:sync
 
-# 4. Verify in production
-curl 'https://qesto-api.oostelaar.workers.dev/api/kb-search?q=...' \
-  -H "Authorization: Bearer ..."
+# 4. Verify in production (kb-search retired 2026-06-04 — use the canonical route)
+curl -X POST 'https://qesto-api.oostelaar.workers.dev/api/knowledge-base/search' \
+  -H "Authorization: Bearer ..." -H "Content-Type: application/json" \
+  -d '{"query":"..."}'
 ```
 
 ### CI/CD Automation

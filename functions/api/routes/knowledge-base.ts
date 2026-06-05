@@ -73,7 +73,8 @@ function mapKbErrorToStatus(err: KbSearchError): {
 export function mountKnowledgeBaseRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>): void {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
-  // POST /search — auth + rate-limited semantic search.
+  // POST /search — auth (JWT, or the read-only KB service key — see authMiddleware)
+  // + rate-limited semantic search.
   app.post(
     '/search',
     authMiddleware,
