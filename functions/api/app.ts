@@ -45,6 +45,7 @@ import { mountWorkflowRoutes } from './routes/workflows'
 import { mountComplianceRoutes } from './routes/compliance'
 import { mountPartnerPortalRoutes } from './routes/partner-portal'
 import { mountMultiRegionAdminRoutes } from './routes/multi-region-admin'
+import { mountPhase2HealthRoutes } from './routes/admin/phase2-health'
 import { mountWebhookTemplateRoutes } from './routes/webhook-templates'
 import { mountPartnerAppRoutes } from './routes/partner-apps'
 import { mountWebhookAdminRoutes } from './routes/webhook-admin'
@@ -263,6 +264,7 @@ export function createApp() {
   mountInsightsRoutes(app)
   mountAdminRoutes(app)
   mountMultiRegionAdminRoutes(app)
+  mountPhase2HealthRoutes(app)
   mountEnergizerRoutes(app)
   mountTownhallRoutes(app)
   mountGamificationRoutes(app)

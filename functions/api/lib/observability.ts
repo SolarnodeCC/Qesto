@@ -171,6 +171,26 @@ export type QestoEvent = {
     | 'realtime.v2_negotiated'
     | 'federation.link_created'
     | 'federation.consent_granted'
+    // Phase 2.1: Queues observability (ADR-042)
+    | 'queue.message_enqueued'
+    | 'queue.message_acked'
+    | 'queue.message_failed'
+    | 'queue.dlq_size'
+    // Phase 2.2: DO vote buffering observability (ADR-042)
+    | 'do.vote_buffer_depth'
+    | 'do.vote_buffer_flush'
+    | 'do.recovery_from_snapshot'
+    | 'do.recovery_failed'
+    | 'do.flush_votes_failed'
+    // Phase 2.3: R2 snapshots observability (ADR-042)
+    | 'r2.snapshot_uploaded'
+    | 'r2.snapshot_read_on_recovery'
+    | 'r2.snapshot_stale'
+    | 'r2.snapshot_corrupted'
+    // Phase 1.2: WAF observability (ADR-042)
+    | 'waf.rule_triggered'
+    | 'waf.challenge_served'
+    | 'waf.false_positive_suspected'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined
