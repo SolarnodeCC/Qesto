@@ -16,7 +16,6 @@ import {
   type LiveEnergizerState,
   type LiveQuestion,
   type LiveSessionSummary,
-  type ServerMessage,
 } from './realtime'
 import type { Env, VotePolicy, SessionMode, PlanTier, Anonymity, TownhallModeration, QuestionKind } from './types'
 import { PLAN_QUOTAS } from './types'
@@ -33,120 +32,40 @@ import { RetroHandler } from './lib/session-room-retro-handler'
 import { IdeateHandler } from './lib/session-room-ideate-handler'
 import { logEvent } from './lib/log'
 import { flagOff } from './lib/flags'
-
-// ── Persisted state keys (ctx.storage) ──────────────────────────────────────
-const K_META = 'meta'
-const K_QUESTION = 'question'
-const K_QUESTIONS = 'questions'
-const K_QUESTION_INDEX = 'question_index'
-/** ENTERPRISE-POLISH §1c: pending open responses awaiting presenter approval. */
-const K_PENDING_RESPONSES = 'pending_responses'
-const K_COUNTS = 'counts'
-const K_VOTERS = 'voters'
-const K_STATUS = 'status'
-const K_ACTIVE_ENERGIZER = 'active_energizer'
-const K_SENTIMENT_MOOD = 'sentiment:mood'
-const K_SENTIMENT_LAST = 'sentiment:last'
-const K_SENTIMENT_RETRY_QUEUE = 'sentiment:retry_queue'
-const K_SENTIMENT_RETRY_COUNT = 'sentiment:retry_count'
-const SENTIMENT_RETRY_DELAY_MS = 5_000
-const SENTIMENT_MAX_RETRIES = 1
-
-// Fun-mode: 60 s per question before auto-advance signal.
-const FUN_MODE_QUESTION_MS = 60_000
-
-type Meta = {
-  sessionId: string
-  ownerId: string
-  teamId?: string
-  code: string
-  title: string
-  startedAt: number
-  votePolicy: VotePolicy
-  sessionMode: SessionMode
-  anonymity?: Anonymity
-  /** Owner's plan tier — used to enforce per-session voter capacity. */
-  plan?: PlanTier
-  /** Unix ms when the current question expires in fun mode. */
-  questionExpiresAt?: number
-  /** When true, vote messages are rejected until the presenter resumes. */
-  paused?: boolean
-  /** TOWNHALL (ADR-0044): moderation model for townhall-mode sessions. */
-  townhallModeration?: TownhallModeration
-  /** RETRO (ADR-0048): dot-vote limit for action items. */
-  retroDotVoteLimit?: number
-  /**
-   * Leaderboard display mode (ENTERPRISE-POLISH s4b).
-   * - 'names'   : show voterId / display name (default)
-   * - 'aliases' : replace identities with deterministic per-session pseudonyms
-   * - 'hidden'  : suppress leaderboard from participant view entirely
-   */
-  leaderboardDisplay?: 'names' | 'aliases' | 'hidden'
-}
-
-type Counts = Record<string, number>
-// Per-voter vote history: voterId → optionId[]. The array holds every selection
-// that voter has made for the active question. For kinds that enforce a single
-// choice (poll, likert, slider, ranking, consent, open) the array length stays
-// at 1; for multi_select / upvote / word_cloud it may grow with each send.
-// Counts are derived, but kept as a denormalised cache so broadcasts don't
-// recompute every tick.
-//
-// read path that touches this shape must call `normaliseVotes()` to coerce
-// a stored string into a single-element array.
-type Votes = Record<string, string[]>
-
-function normaliseVotes(raw: Record<string, string | string[]> | undefined): Votes {
-  const out: Votes = {}
-  if (!raw) return out
-  for (const [voterId, value] of Object.entries(raw)) {
-    out[voterId] = Array.isArray(value) ? value : [value]
-  }
-  return out
-}
-
-// ── Per-connection attachment stored on each WebSocket ──────────────────────
-type Attachment = {
-  role: 'presenter' | 'voter'
-  voterId: string
-  ipHash: string
-  bucket: { tokens: number; lastAt: number }
-  permissions?: string[]
-  /** OBS-COLO-01 — edge colo at WebSocket connect time. */
-  colo?: string
-  /** Protocol version negotiated at WebSocket connect time. */
-  protocolVersion?: number
-}
-
-const PER_IP_CONCURRENT_CAP = 10  // Increased from 5 to support shared IPs better
-const VOTE_BUCKET_CAPACITY = 10
-const VOTE_BUCKET_REFILL_PER_SEC = 1
-
-const BROADCAST_DEBOUNCE_MS = 100
-
-// ── Message helpers ─────────────────────────────────────────────────────────
-function serverMessage(msg: ServerMessage): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION, ...msg })
-}
-
-function now(): number {
-  return Date.now()
-}
-
-function errorMessage(code: string, message: string): string {
-  return serverMessage({ type: 'error', data: { code, message }, timestamp: now() })
-}
+import {
+  K_META,
+  K_QUESTION,
+  K_QUESTIONS,
+  K_QUESTION_INDEX,
+  K_PENDING_RESPONSES,
+  K_COUNTS,
+  K_VOTERS,
+  K_STATUS,
+  K_ACTIVE_ENERGIZER,
+  K_SENTIMENT_MOOD,
+  K_SENTIMENT_LAST,
+  K_SENTIMENT_RETRY_QUEUE,
+  K_SENTIMENT_RETRY_COUNT,
+} from './lib/session-room-storage-keys'
+import {
+  type Meta,
+  type Counts,
+  type Votes,
+  type Attachment,
+  type BufferedVote,
+  normaliseVotes,
+  SENTIMENT_RETRY_DELAY_MS,
+  SENTIMENT_MAX_RETRIES,
+  FUN_MODE_QUESTION_MS,
+  PER_IP_CONCURRENT_CAP,
+  VOTE_BUCKET_CAPACITY,
+  VOTE_BUCKET_REFILL_PER_SEC,
+  BROADCAST_DEBOUNCE_MS,
+} from './lib/session-room-types'
+import { serverMessage, errorMessage, now } from './lib/session-room-messages'
+import { buildClientWsHandlers, type ClientWsHandler } from './lib/session-room-router'
 
 // ── DurableObject ───────────────────────────────────────────────────────────
-type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ValidClientMessage) => Promise<void>
-
-type BufferedVote = {
-  sessionId: string
-  questionId: string
-  voterId: string
-  optionId: string
-  submittedAt: number
-}
 
 export class SessionRoom implements DurableObject {
   private readonly ctx: DurableObjectState
@@ -185,96 +104,20 @@ export class SessionRoom implements DurableObject {
     this.retroHandler = new RetroHandler(ctx as any)
     this.ideateHandler = new IdeateHandler(ctx as any, env, this.scheduleAlarm.bind(this))
 
-    this.clientWsHandlers = {
-      vote: async (ws, att, msg) => {
-        if (msg.type !== 'vote') return
-        await this.handleVote(ws, att, msg.data)
-      },
-      advance: async (ws, att, _msg) => {
-        await this.handlePresenterAdvance(ws, att)
-      },
-      back: async (ws, att, _msg) => {
-        await this.handlePresenterBack(ws, att)
-      },
-      add_question: async (ws, att, msg) => {
-        if (msg.type !== 'add_question') return
-        await this.handleAddQuestion(ws, att, msg.data)
-      },
-      request_state: async (ws, att, _msg) => {
-        await this.sendInit(ws, att)
-      },
-      pause: async (ws, att, _msg) => {
-        await this.handlePresenterPauseResume(ws, att, true)
-      },
-      resume: async (ws, att, _msg) => {
-        await this.handlePresenterPauseResume(ws, att, false)
-      },
-      energizer_activate: async (ws, att, msg) => {
-        if (msg.type !== 'energizer_activate') return
-        await this.energizerHandler.handleActivate(ws, att, msg.data.energizer as LiveEnergizerState)
-      },
-      energizer_answer: async (ws, att, msg) => {
-        if (msg.type !== 'energizer_answer') return
-        await this.energizerHandler.handleAnswer(ws, att, msg.data)
-      },
-      energizer_advance: async (ws, att, msg) => {
-        if (msg.type !== 'energizer_advance') return
-        await this.energizerHandler.handleAdvance(ws, att, msg.data)
-      },
-      // TOWNHALL (ADR-0044). Board state machine: see lib/session-room-townhall-handler.ts.
-      townhall_submit: async (ws, att, msg) => {
-        if (msg.type !== 'townhall_submit') return
-        await this.townhallHandler.handleSubmit(ws, att, { body: msg.data.body, displayName: msg.data.displayName })
-      },
-      townhall_upvote: async (ws, att, msg) => {
-        if (msg.type !== 'townhall_upvote') return
-        await this.townhallHandler.handleUpvote(ws, att, msg.data)
-      },
-      townhall_moderate: async (ws, att, msg) => {
-        if (msg.type !== 'townhall_moderate') return
-        await this.townhallHandler.handleModerate(ws, att, { itemId: msg.data.itemId, action: msg.data.action, groupParentId: msg.data.groupParentId })
-      },
-      retro_submit: async (ws, att, msg) => {
-        if (msg.type !== 'retro_submit') return
-        await this.retroHandler.handleSubmit(ws, att, { column: msg.data.column, body: msg.data.body })
-      },
-      retro_upvote: async (ws, att, msg) => {
-        if (msg.type !== 'retro_upvote') return
-        await this.retroHandler.handleUpvote(ws, att, { itemId: msg.data.itemId })
-      },
-      ideate_submit: async (ws, att, msg) => {
-        if (msg.type !== 'ideate_submit') return
-        await this.ideateHandler.handleSubmit(ws, att, { body: msg.data.body })
-      },
-      ideate_upvote: async (ws, att, msg) => {
-        if (msg.type !== 'ideate_upvote') return
-        await this.ideateHandler.handleUpvote(ws, att, { itemId: msg.data.itemId })
-      },
-      ideate_reveal: async (ws, att, msg) => {
-        if (msg.type !== 'ideate_reveal') return
-        await this.ideateHandler.handleReveal(ws, att)
-      },
-      ideate_dismiss: async (ws, att, msg) => {
-        if (msg.type !== 'ideate_dismiss') return
-        await this.ideateHandler.handleDismiss(ws, att, { itemId: msg.data.itemId })
-      },
-      ideate_merge: async (ws, att, msg) => {
-        if (msg.type !== 'ideate_merge') return
-        await this.ideateHandler.handleMerge(ws, att, {
-          targetId: msg.data.targetId,
-          sourceId: msg.data.sourceId,
-        })
-      },
-      // ENTERPRISE-POLISH §1c — response moderation for open questions.
-      approve_response: async (ws, att, msg) => {
-        if (msg.type !== 'approve_response') return
-        await this.handleApproveResponse(ws, att, msg.data)
-      },
-      reject_response: async (ws, att, msg) => {
-        if (msg.type !== 'reject_response') return
-        await this.handleRejectResponse(ws, att, msg.data)
-      },
-    }
+    this.clientWsHandlers = buildClientWsHandlers({
+      handleVote: this.handleVote.bind(this),
+      handlePresenterAdvance: this.handlePresenterAdvance.bind(this),
+      handlePresenterBack: this.handlePresenterBack.bind(this),
+      handleAddQuestion: this.handleAddQuestion.bind(this),
+      sendInit: this.sendInit.bind(this),
+      handlePresenterPauseResume: this.handlePresenterPauseResume.bind(this),
+      handleApproveResponse: this.handleApproveResponse.bind(this),
+      handleRejectResponse: this.handleRejectResponse.bind(this),
+      energizerHandler: this.energizerHandler,
+      townhallHandler: this.townhallHandler,
+      retroHandler: this.retroHandler,
+      ideateHandler: this.ideateHandler,
+    })
   }
 
   async fetch(req: Request): Promise<Response> {
