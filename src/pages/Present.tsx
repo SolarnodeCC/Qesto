@@ -1,81 +1,15 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
-import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Lock, Pause, Play, Shuffle, Sparkles, Timer, Users } from 'lucide-react'
+import { Lock, Pause, Sparkles, Users } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useLiveSession, type LivePollOption } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
 import { CopilotPanel } from '../components/CopilotPanel'
 import { api, getAuthToken } from '../api/client'
-
-// ── Wordcloud utilities ────────────────────────────────────────────────────
-const WORDCLOUD_COLORS = [
-  'text-teal-600 dark:text-teal-400',
-  'text-violet-600 dark:text-violet-400',
-  'text-orange-500 dark:text-orange-400',
-  'text-pink-500 dark:text-pink-400',
-  'text-blue-600 dark:text-blue-400',
-  'text-emerald-600 dark:text-emerald-400',
-  'text-amber-600 dark:text-amber-400',
-  'text-rose-500 dark:text-rose-400',
-]
-
-function hashWordColor(word: string): string {
-  let h = 0
-  for (let i = 0; i < word.length; i++) h = (h * 31 + word.charCodeAt(i)) & 0xffff
-  return WORDCLOUD_COLORS[h % WORDCLOUD_COLORS.length]
-}
-
-function getWordFontSize(count: number, maxCount: number): number {
-  const ratio = maxCount > 1 ? (count - 1) / (maxCount - 1) : 0
-  return Math.round(28 + ratio * 56)
-}
-
-function getTopWords(counts: Record<string, number>, limit: number = 25): Array<[string, number]> {
-  return Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
-}
-
-// ── Soft-timer hook ────────────────────────────────────────────────────────
-function useSoftTimer() {
-  const [totalSecs, setTotalSecs] = useState(0)
-  const [remaining, setRemaining] = useState(0)
-  const [running, setRunning] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const start = useCallback((secs: number) => {
-    setTotalSecs(secs)
-    setRemaining(secs)
-    setRunning(true)
-  }, [])
-
-  const stop = useCallback(() => {
-    setRunning(false)
-    setRemaining(0)
-    setTotalSecs(0)
-  }, [])
-
-  useEffect(() => {
-    if (!running) {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-      return
-    }
-    intervalRef.current = setInterval(() => {
-      setRemaining((r) => {
-        if (r <= 1) {
-          setRunning(false)
-          return 0
-        }
-        return r - 1
-      })
-    }, 1000)
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [running])
-
-  const pct = totalSecs > 0 ? remaining / totalSecs : 0
-  return { remaining, running, pct, start, stop }
-}
+import { hashWordColor, getWordFontSize, getTopWords } from './present/wordcloud'
+import { useSoftTimer } from './present/useSoftTimer'
+import { PresenterControls } from './present/PresenterControls'
 
 export default function Present() {
   const auth = useAuth()
@@ -480,198 +414,37 @@ export default function Present() {
       </div>
 
       {/* ── Presenter control panel ───────────────────────────────────────── */}
-      <div className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0">
-
-        {/* Back / Next question / Close session */}
-        <button
-          type="button"
-          onClick={() => sendBack()}
-          disabled={!isLive || state.allDone || state.questionIndex === 0}
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-pulse-600"
-        >
-          <ChevronLeft size={14} aria-hidden="true" />
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={() => sendAdvance()}
-          disabled={!isLive || state.allDone}
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-teal-600 text-white hover:bg-teal-700"
-        >
-          <ChevronRight size={14} aria-hidden="true" />
-          Next question
-        </button>
-        <button
-          type="button"
-          onClick={handleClose}
-          disabled={closing || isClosed}
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-red-700"
-        >
-          {isClosed ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
-        </button>
-        {closeError && <span className="text-xs text-red-400">{closeError}</span>}
-        {id && isClosed && (
-          <Link to={`/sessions/${id}/results`} className="text-xs text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded">
-            View results →
-          </Link>
-        )}
-
-        <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-        {/* Pause / Resume */}
-        <button
-          type="button"
-          onClick={handleTogglePause}
-          disabled={!isLive || state.allDone}
-          aria-pressed={localPaused}
-          className={[
-            'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40',
-            localPaused ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-pulse-700 text-white hover:bg-pulse-600',
-          ].join(' ')}
-        >
-          {localPaused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
-          {localPaused ? 'Resume' : 'Pause'}
-        </button>
-
-        <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-        {/* Hide tally live */}
-        <button
-          type="button"
-          onClick={() => setHideTally((v) => !v)}
-          aria-pressed={hideTally}
-          className={[
-            'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-            hideTally ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-pulse-700 text-white hover:bg-pulse-600',
-          ].join(' ')}
-        >
-          {hideTally ? <EyeOff size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
-          {hideTally ? 'Tally hidden' : 'Hide tally'}
-        </button>
-
-        {/* Show sentiment (default off) */}
-        {state.question?.kind === 'open' && (
-          <button
-            type="button"
-            onClick={() => setHideSentiment((v) => !v)}
-            aria-pressed={!hideSentiment}
-            className={[
-              'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-              !hideSentiment ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-pulse-700 text-white hover:bg-pulse-600',
-            ].join(' ')}
-            title="Show or hide AI sentiment analysis"
-          >
-            <Sparkles size={14} aria-hidden="true" />
-            {!hideSentiment ? 'Sentiment shown' : 'Show sentiment'}
-          </button>
-        )}
-
-        {/* Option shuffle */}
-        <button
-          type="button"
-          onClick={handleShuffle}
-          disabled={baseOptions.length < 2 || state.allDone}
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
-        >
-          <Shuffle size={14} aria-hidden="true" />
-          Shuffle options
-        </button>
-
-        <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-        {/* Minimum tally gate */}
-        <label className="flex items-center gap-2 text-pulse-300">
-          Min. votes to show tally
-          <input
-            type="number"
-            min={0}
-            max={999}
-            value={minGate}
-            onChange={(e) => setMinGate(Math.max(0, parseInt(e.target.value, 10) || 0))}
-            className="w-14 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-            aria-label="Minimum votes required before tally is shown"
-          />
-        </label>
-
-        <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-        {/* Soft timer */}
-        <div className="flex items-center gap-2">
-          <Timer size={14} className="text-pulse-400" aria-hidden="true" />
-          <label className="text-pulse-300 flex items-center gap-1.5">
-            Timer
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={timerInput}
-              onChange={(e) => setTimerInput(e.target.value)}
-              disabled={timer.running}
-              className="w-12 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-40"
-              aria-label="Timer duration in minutes"
-            />
-            min
-          </label>
-          {timer.running ? (
-            <button
-              type="button"
-              onClick={timer.stop}
-              className="rounded px-2.5 py-1.5 text-xs font-medium min-h-[36px] bg-red-600 text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
-            >
-              Stop
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleStartTimer}
-              disabled={isClosed}
-              className="rounded px-2.5 py-1.5 text-xs font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
-            >
-              Start
-            </button>
-          )}
-          {timer.running && (
-            <span className="tabular-nums text-teal-400 font-mono text-sm">
-              {Math.floor(timer.remaining / 60)}:{String(timer.remaining % 60).padStart(2, '0')}
-            </span>
-          )}
-        </div>
-
-        <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-        {/* One-click export */}
-        {state.session && (
-          <button
-            type="button"
-            onClick={handleCopyDisplayLink}
-            disabled={!state.session.code}
-            title="Copy display URL to embed in PowerPoint"
-            className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
-          >
-            <Link2 size={14} aria-hidden="true" />
-            {copied ? 'Copied!' : 'Display link'}
-          </button>
-        )}
-        {id && (
-          <a
-            href={`/api/sessions/${encodeURIComponent(id)}/export.csv`}
-            download
-            className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
-          >
-            <Download size={14} aria-hidden="true" />
-            Export CSV
-          </a>
-        )}
-
-        <span className="w-px h-5 bg-pulse-700 ml-auto" aria-hidden="true" />
-
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
-        >
-          ← Dashboard
-        </Link>
-      </div>
+      <PresenterControls
+        id={id}
+        isLive={isLive}
+        isClosed={isClosed}
+        closing={closing}
+        closeError={closeError}
+        allDone={state.allDone}
+        questionIndex={state.questionIndex}
+        questionKind={state.question?.kind}
+        sessionCode={state.session?.code}
+        hasSession={!!state.session}
+        localPaused={localPaused}
+        hideTally={hideTally}
+        hideSentiment={hideSentiment}
+        baseOptionsLength={baseOptions.length}
+        minGate={minGate}
+        timerInput={timerInput}
+        timer={timer}
+        copied={copied}
+        onBack={() => sendBack()}
+        onAdvance={() => sendAdvance()}
+        onClose={handleClose}
+        onTogglePause={handleTogglePause}
+        onToggleHideTally={() => setHideTally((v) => !v)}
+        onToggleHideSentiment={() => setHideSentiment((v) => !v)}
+        onShuffle={handleShuffle}
+        onMinGateChange={(value) => setMinGate(value)}
+        onTimerInputChange={(value) => setTimerInput(value)}
+        onStartTimer={handleStartTimer}
+        onCopyDisplayLink={handleCopyDisplayLink}
+      />
     </div>
   )
 }
