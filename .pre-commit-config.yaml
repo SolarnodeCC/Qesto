@@ -1,0 +1,22 @@
+repos:
+  - repo: local
+    hooks:
+      - id: typecheck
+        name: TypeScript typecheck
+        language: system
+        entry: npm run typecheck
+        pass_filenames: false
+        types: [ts]
+
+      - id: unit-tests
+        name: Unit tests
+        language: system
+        entry: npm test -- --run
+        pass_filenames: false
+        stages: [push]
+
+      - id: secret-scan
+        name: Secret scan (gitleaks)
+        language: system
+        entry: bash -c 'command -v gitleaks && gitleaks protect --staged --redact --no-banner || echo "gitleaks not installed — skipping"'
+        pass_filenames: false

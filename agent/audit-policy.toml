@@ -1,0 +1,26 @@
+[policy]
+standard = "jankurai"
+version = "1.5.1"
+
+# Score floor — phased: 70 (current), 80 (next cycle), 85 (target)
+# Raise once the repair wave clears the top hard-rule caps.
+score_floor = 70
+block_on_witness = true
+
+[scan]
+# Paths excluded from scoring (generated artifacts, vendored code)
+exclude = [
+  "target/",
+  "dist/",
+  "node_modules/",
+  ".wrangler/",
+  "coverage/",
+  "agent/baselines/",
+  "contracts/generated/",
+]
+
+[limits]
+# Maximum file size before code-shape cap fires (lines)
+typescript_file_max_lines = 800
+# Maximum function complexity score
+max_cyclomatic_complexity = 15
