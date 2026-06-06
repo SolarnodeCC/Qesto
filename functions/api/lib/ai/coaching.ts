@@ -37,9 +37,9 @@ export async function generateFacilitatorCoaching(
   ctx: SessionAIContext,
   input: CoachingInput,
   options?: { followUp?: string; history?: CoachingTurn[] },
-): Promise<CoachingSuggestion | null> {
-  if (input.anonymity === 'zero_knowledge') return null
-  if (input.questionSummaries.length === 0) return null
+): Promise<CoachingSuggestion | void> {
+  if (input.anonymity === 'zero_knowledge') return
+  if (input.questionSummaries.length === 0) return
 
   const ctxAi = aiOverride(ctx, { model: COACHING_MODEL })
   const historyBlock =
@@ -59,7 +59,7 @@ export async function generateFacilitatorCoaching(
   const safeQuestions = input.questionSummaries
     .map((q) => sanitizePromptText(q, 500))
     .filter((q) => q.length > 0)
-  if (safeQuestions.length === 0) return null
+  if (safeQuestions.length === 0) return
 
   const prompt = `You are a facilitation coach. Session: "${safeTitle}".
 Total votes: ${input.totalVotes}. Questions:
@@ -67,12 +67,12 @@ ${safeQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
 ${styleHint}${verticalHint}${historyHint}${ragHint}${historyBlock}${followUpBlock}
 Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1.0,"followUps":["optional question"]} (2-4 bullets, actionable, no PII).`
   const sanitizedPrompt = sanitizePromptText(prompt)
-  if (!sanitizedPrompt) return null
+  if (!sanitizedPrompt) return
 
   const result = await aiPipeline(ctxAi, env, async (model, _signal) => {
     return env.AI.run(model, { messages: [{ role: 'user', content: sanitizedPrompt }] })
   })
-  if (!result.ok) return null
+  if (!result.ok) return
 
   const raw = result.data
   let text = ''
@@ -87,11 +87,11 @@ Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1
 
   try {
     const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, '').trim())
-    if (!parsed || typeof parsed !== 'object') return null
+    if (!parsed || typeof parsed !== 'object') return
     const obj = parsed as Record<string, unknown>
     const headline = typeof obj.headline === 'string' ? obj.headline : null
     const bulletsRaw = Array.isArray(obj.bullets) ? obj.bullets : null
-    if (!headline || !bulletsRaw) return null
+    if (!headline || !bulletsRaw) return
     return {
       headline: headline.slice(0, 200),
       bullets: bulletsRaw.slice(0, 5).map((b) => String(b).slice(0, 300)),

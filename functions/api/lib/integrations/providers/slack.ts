@@ -13,6 +13,8 @@
 // Session close trigger calls send() with the team's channel configured via
 // `integration:config:{teamId}:slack` and access token from EncryptedTokenStore.
 
+import { unsupportedFeature } from '../../agent-error'
+
 import type {
   IntegrationProvider,
   ProviderConfig,
@@ -183,7 +185,10 @@ export class SlackProvider implements IntegrationProvider {
    * The provider only handles outbound notifications today.
    */
   async verifyWebhook(_req: Request, _secret: string): Promise<WebhookEvent> {
-    throw new Error('Slack inbound webhooks not implemented in v2.2')
+    throw unsupportedFeature(
+      'Slack inbound webhooks are not enabled in this release',
+      'Use outbound Slack notification actions from the integrations panel',
+    )
   }
 
   canSyncFormat(format: 'json' | 'pdf' | 'docx'): boolean {

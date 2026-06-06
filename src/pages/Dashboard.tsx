@@ -21,6 +21,7 @@ import SessionWizard from '../components/SessionWizard'
 import DuplicateSessionModal from '../components/DuplicateSessionModal'
 import { SessionCard, SessionCardSkeleton } from './dashboard/SessionCard'
 import { inputHint } from '../ui/input-hint'
+import { SEARCH_FIELD_CLASS } from '../ui/input-field-class'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 
@@ -581,7 +582,7 @@ export default function Dashboard() {
                 {...inputHint(t('searchPlaceholder'))}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] py-2 pl-9 pr-3 text-sm text-pulse-800 dark:text-[#F0F2F8] placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99] focus:outline-none focus:border-teal-400 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
+                className={SEARCH_FIELD_CLASS}
               />
             </div>
             <FilterChips value={statusFilter} onChange={setStatusFilter} />

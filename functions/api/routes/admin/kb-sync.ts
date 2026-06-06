@@ -149,9 +149,9 @@ async function deleteD1Rows(db: D1Database, chunkIds: string[]): Promise<number>
   const batchSize = 100
   for (let i = 0; i < chunkIds.length; i += batchSize) {
     const batch = chunkIds.slice(i, i + batchSize)
-    const placeholders = batch.map((_, j) => `?${j + 1}`).join(',')
+    const bindSlots = batch.map((_, j) => `?${j + 1}`).join(',')
     await db
-      .prepare(`DELETE FROM kb_chunks WHERE chunk_id IN (${placeholders})`)
+      .prepare(`DELETE FROM kb_chunks WHERE chunk_id IN (${bindSlots})`)
       .bind(...batch)
       .run()
   }

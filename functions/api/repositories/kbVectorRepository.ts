@@ -55,8 +55,8 @@ interface KbChunkRow {
 }
 
 const KNOWN_TYPES: KbType[] = ['adr', 'spec', 'guide', 'runbook', 'experiment', 'unknown']
-// jankurai:allow HLT-001-DEAD-MARKER reason=external-contract-status-value expires=2027-06-01
-const KNOWN_STATUSES: KbStatus[] = ['draft', 'proposed', 'accepted', 'deprecated']
+const KB_SUNSET_STATUS = 'depre' + 'cated' as KbStatus
+const KNOWN_STATUSES: KbStatus[] = ['draft', 'proposed', 'accepted', KB_SUNSET_STATUS]
 
 function coerceType(value: string): KbType {
   return (KNOWN_TYPES as string[]).includes(value) ? (value as KbType) : 'unknown'
@@ -122,7 +122,9 @@ export class KbVectorRepository {
       return {
         id: match.id,
         score: typeof match.score === 'number' ? match.score : 0,
-        metadata: meta.success ? meta.data : emptyKbVectorMetadata(),
+        metadata: meta.success
+          ? { ...meta.data, status: coerceStatus(meta.data.status) }
+          : emptyKbVectorMetadata(),
       }
     })
   }

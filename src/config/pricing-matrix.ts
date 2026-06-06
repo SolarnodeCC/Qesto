@@ -47,7 +47,7 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
       ['Residency guarantee', false, false, 'Roadmap', 'roadmap'],
       ['Security review packet', 'Request', 'Request', 'Enterprise review', 'static'],
       ['Customer-managed keys', false, false, 'Roadmap', 'roadmap'],
-      ['Uptime commitment', 'Best effort', 'Best effort', 'Order form', 'static'],
+      ['Uptime commitment', 'Community SLA', 'Community SLA', 'Order form', 'static'],
     ],
   },
   {

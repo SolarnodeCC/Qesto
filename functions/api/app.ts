@@ -78,7 +78,7 @@ import { writeEvent } from './lib/observability'
 import { parseTraceHeaders } from './lib/distributed-trace'
 import { securityHeadersMiddleware } from './middleware/security-headers'
 import { sanitizeError } from './lib/error-handler'
-import { resolveExpectedOrigin } from './lib/origin'
+import { resolveCorsOrigin } from './lib/cors-origin'
 import { initCircuitBreakers } from './lib/resilience/circuit-breaker'
 import { getMultiRegionRoutingSnapshot } from './lib/multi-region'
 import type { Env } from './types'
@@ -118,12 +118,8 @@ export function createApp() {
     '*',
     cors({
       origin: (origin, c) => {
-        const allowed = resolveExpectedOrigin(c.env, c.req.url)
-        if (!origin) return null
-        if (origin === allowed) return origin
-        const preview = /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(origin)
-        const localDev = c.env.ENV === 'dev' && origin.startsWith('http://localhost:')
-        return preview || localDev ? origin : null
+        const decision = resolveCorsOrigin(origin, c.env, c.req.url)
+        return decision.kind === 'allow' ? decision.origin : null
       },
       allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
       allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'x-parent-trace-id', 'idempotency-key'],

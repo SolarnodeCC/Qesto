@@ -1,4 +1,4 @@
-name: Jankurai Audit
+name: CI security · jankurai audit
 
 on:
   push:
@@ -40,31 +40,24 @@ jobs:
 
       - name: audit-ci
         run: jankurai audit . --mode ratchet --baseline target/jankurai/accepted-baseline.json --json target/jankurai/repo-score.json --md target/jankurai/repo-score.md
-        continue-on-error: true
 
       - name: proof-routing
         run: jankurai audit . --mode ratchet --baseline target/jankurai/accepted-baseline.json --json agent/repo-score.json --md agent/repo-score.md --repair-queue-jsonl target/jankurai/repair-queue.jsonl
-        continue-on-error: true
 
       - name: proofbind
         run: jankurai proofbind verify . --changed-from origin/main
-        continue-on-error: true
 
       - name: copy-code
         run: jankurai copy-code . --json target/jankurai/copy-code.json --md target/jankurai/copy-code.md
-        continue-on-error: true
 
       - name: security
-        run: jankurai security run . --out target/jankurai/security/evidence.json
-        continue-on-error: true
+        run: jankurai security run . --strict --profile ci --out target/jankurai/security/evidence.json
 
       - name: db-migration-analyze
         run: jankurai migrate . --analyze --json target/jankurai/migration-report.json
-        continue-on-error: true
 
       - name: ux-qa
         run: jankurai ux audit --config agent/ux-qa.toml --out target/jankurai/ux-qa.json
-        continue-on-error: true
 
       - name: Upload Jankurai audit report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -103,7 +96,7 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-      - name: Run Supply Chain Security Scan
+      - name: Run supply chain security scan
         run: bash ops/ci/supply-chain.sh
 
       - name: Upload security scan results

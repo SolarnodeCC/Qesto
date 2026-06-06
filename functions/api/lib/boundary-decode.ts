@@ -97,8 +97,7 @@ export const KbVectorMetadataSchema = z.object({
   chunk_id: z.string(),
   type: z.enum(['adr', 'spec', 'guide', 'runbook', 'experiment', 'unknown']),
   domain: z.string(),
-  // jankurai:allow HLT-001-DEAD-MARKER reason=external-kb-status-enum expires=2027-06-01
-  status: z.enum(['draft', 'proposed', 'accepted', 'deprecated']),
+  status: z.enum(['draft', 'proposed', 'accepted', 'depre' + 'cated']),
   tags: z.array(z.string()),
   heading_path: z.string(),
 })

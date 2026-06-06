@@ -16,6 +16,7 @@ import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../componen
 import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
 import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
 import { inputHint } from '../ui/input-hint'
+import { JOIN_CODE_FIELD_CLASS, JOIN_RESPONSE_FIELD_CLASS } from '../ui/input-field-class'
 
 type Lookup =
   | { status: 'loading' }
@@ -118,7 +119,7 @@ function JoinLanding() {
                 spellCheck={false}
                 autoCapitalize="characters"
                 aria-label={t('codeLabel')}
-                className="w-full rounded-xl border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] text-center font-mono text-2xl font-bold tracking-[0.3em] uppercase px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 placeholder:text-pulse-300 dark:placeholder:text-[#6B7A99] placeholder:tracking-normal placeholder:font-normal placeholder:text-lg"
+                className={JOIN_CODE_FIELD_CLASS}
               />
             </label>
             <button
@@ -528,7 +529,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       disabled={!canVote}
                       maxLength={120}
                       {...inputHint(qk === 'word_cloud' ? t('word_phrase_hint') : t('response_hint'))}
-                      className="w-full rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:opacity-50 placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99]"
+                      className={JOIN_RESPONSE_FIELD_CLASS}
                       autoComplete="off"
                     />
                     <button

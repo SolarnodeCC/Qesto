@@ -159,7 +159,7 @@ export default function TeamSwitcher() {
   } else if (teams.length === 0) {
     label = 'Create your first team'
   } else {
-    label = activeTeam?.name ?? 'Select team'
+    label = activeTeam?.name ?? 'Choose team'
   }
 
   return (

@@ -168,18 +168,16 @@ function repairAIOutput(value: unknown): unknown {
               ? q.text
               : ''
       const rawOptions = Array.isArray(q.options) ? q.options : []
-      const options: RepairedOption[] = rawOptions
-        .map((option) => {
-          if (typeof option === 'string') return { label: option }
-          if (option && typeof option === 'object') {
-            const o = option as Record<string, unknown>
-            return typeof o.label === 'string'
-              ? { id: typeof o.id === 'string' ? o.id : undefined, label: o.label }
-              : null
+      const options: RepairedOption[] = rawOptions.flatMap((option) => {
+        if (typeof option === 'string') return [{ label: option }]
+        if (option && typeof option === 'object') {
+          const o = option as Record<string, unknown>
+          if (typeof o.label === 'string') {
+            return [{ id: typeof o.id === 'string' ? o.id : undefined, label: o.label }]
           }
-          return null
-        })
-        .filter((option): option is RepairedOption => Boolean(option))
+        }
+        return []
+      })
 
       return {
         ...q,

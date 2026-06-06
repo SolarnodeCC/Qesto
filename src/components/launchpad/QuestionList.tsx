@@ -2,6 +2,7 @@ import { useState, useCallback, type FormEvent } from 'react'
 import { api } from '../../api/client'
 import { useT } from '../../i18n'
 import { inputHint } from '../../ui/input-hint'
+import { LAUNCHPAD_AI_TOPIC_CLASS } from '../../ui/input-field-class'
 import type { Question, PollOption } from '../../hooks/useSessions'
 
 const QUESTION_KINDS: Question['kind'][] = [
@@ -182,7 +183,7 @@ export default function QuestionList({
                 {...inputHint(t('ai_topic_hint', { title: sessionTitle }))}
                 maxLength={160}
                 disabled={aiGenerating}
-                className="w-full rounded-md border border-violet-300 dark:border-violet-700/60 dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-60 placeholder:text-pulse-400"
+                className={LAUNCHPAD_AI_TOPIC_CLASS}
               />
               {aiError && (
                 <p role="alert" className="text-xs text-red-600 dark:text-red-400">{aiError}</p>

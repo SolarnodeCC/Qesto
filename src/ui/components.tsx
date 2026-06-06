@@ -5,6 +5,7 @@
 
 import { ReactNode } from 'react'
 import { inputHint } from './input-hint'
+import { DEFAULT_TEXT_INPUT_CLASS } from './input-field-class'
 
 // ─── Typography ──────────────────────────────────────────────────────────
 
@@ -167,14 +168,7 @@ export function TextInput({
       {...(hintText ? inputHint(hintText) : {})}
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
-      className={`
-        border border-pulse-300 dark:border-[#2A3858] rounded-md px-space-3 py-space-2 text-body-s
-        bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]
-        placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99]
-        focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-400/20 focus:outline-none
-        transition-all duration-150
-        ${className}
-      `}
+      className={`${DEFAULT_TEXT_INPUT_CLASS} ${className}`}
     />
   )
 }

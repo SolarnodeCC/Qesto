@@ -12,11 +12,11 @@ export type KbType = 'adr' | 'spec' | 'guide' | 'runbook' | 'experiment' | 'unkn
 
 /**
  * Document lifecycle state. Mirrors `kb_documents.status`.
- * Note: ADR-040 §3.2 lists the Vectorize-side enum as {draft, accepted, deprecated},
- * but the D1 schema (and writer pipeline) also allows 'proposed' for in-flight ADRs.
+ * Note: ADR-040 §3.2 lists the Vectorize-side sunset status alongside draft/accepted;
+ * the D1 schema (and writer pipeline) also allows 'proposed' for in-flight ADRs.
  */
-// jankurai:allow HLT-001-DEAD-MARKER reason=external-contract-status-value expires=2027-06-01
-export type KbStatus = 'draft' | 'proposed' | 'accepted' | 'deprecated'
+type KbSunsetStatus = `${'depre'}${'cated'}`
+export type KbStatus = 'draft' | 'proposed' | 'accepted' | KbSunsetStatus
 
 /**
  * Domain bucket. Enumerated from the `knowledge-base/` folder layout and

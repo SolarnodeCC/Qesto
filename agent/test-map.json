@@ -55,6 +55,151 @@
       "command": "just score",
       "purpose": "agent skill and hook governance audit",
       "lane": "audit"
+    },
+    ".dev.vars.example": {
+      "command": "just setup",
+      "purpose": "local dev secrets template validation",
+      "lane": "fast"
+    },
+    ".env.example": {
+      "command": "just setup",
+      "purpose": "environment template validation",
+      "lane": "fast"
+    },
+    ".github/AGENTS.md": {
+      "command": "just security",
+      "purpose": "workflow entrypoint documentation",
+      "lane": "security"
+    },
+    ".github/SECURITY_INCIDENT.md": {
+      "command": "just security",
+      "purpose": "incident response runbook",
+      "lane": "security"
+    },
+    ".github/action-pins.env": {
+      "command": "just security",
+      "purpose": "pinned action SHA registry",
+      "lane": "security"
+    },
+    ".github/dependabot.yml": {
+      "command": "just security",
+      "purpose": "dependency update policy",
+      "lane": "security"
+    },
+    ".gitignore": {
+      "command": "just fast",
+      "purpose": "ignore rules do not block proof lanes",
+      "lane": "fast"
+    },
+    ".mcp.json": {
+      "command": "just score",
+      "purpose": "MCP server configuration audit",
+      "lane": "audit"
+    },
+    ".npmrc": {
+      "command": "just fast",
+      "purpose": "npm resolution policy",
+      "lane": "fast"
+    },
+    ".pre-commit-config.yaml": {
+      "command": "just security",
+      "purpose": "pre-commit hook policy",
+      "lane": "security"
+    },
+    "package.json": {
+      "command": "just fast",
+      "purpose": "npm scripts and dependency manifest",
+      "lane": "fast"
+    },
+    "package-lock.json": {
+      "command": "just security",
+      "purpose": "locked dependency graph audit",
+      "lane": "security"
+    },
+    "index.html": {
+      "command": "just ux-qa",
+      "purpose": "SPA shell entrypoint",
+      "lane": "web"
+    },
+    "public/": {
+      "command": "just ux-qa",
+      "purpose": "static assets and locale bundles",
+      "lane": "web"
+    },
+    "agent/": {
+      "command": "just score",
+      "purpose": "Jankurai audit policy and governance manifests",
+      "lane": "audit"
+    },
+    "AGENTS.md": {
+      "command": "just score",
+      "purpose": "agent navigation surface",
+      "lane": "audit"
+    },
+    "CLAUDE.md": {
+      "command": "just score",
+      "purpose": "L1 agent context pack",
+      "lane": "audit"
+    },
+    "README.md": {
+      "command": "just setup",
+      "purpose": "workspace onboarding entrypoint",
+      "lane": "fast"
+    },
+    "wrangler.toml": {
+      "command": "just check",
+      "purpose": "Cloudflare bindings configuration",
+      "lane": "contract"
+    },
+    "tsconfig.json": {
+      "command": "just fast",
+      "purpose": "TypeScript strict mode gate",
+      "lane": "fast"
+    },
+    "vite.config.ts": {
+      "command": "just ux-qa",
+      "purpose": "frontend build and dev server",
+      "lane": "web"
+    },
+    "tailwind.config.ts": {
+      "command": "just ux-qa",
+      "purpose": "design token and Tailwind v4 config",
+      "lane": "web"
+    },
+    "workers/": {
+      "command": "just fast",
+      "purpose": "auxiliary worker deployments",
+      "lane": "fast"
+    },
+    "BingSiteAuth.xml": {
+      "command": "just ux-qa",
+      "purpose": "search engine verification asset",
+      "lane": "web"
+    },
+    "capacitor.config.ts": {
+      "command": "just fast",
+      "purpose": "native shell configuration",
+      "lane": "fast"
+    },
+    "crates/workers/": {
+      "command": "just fast",
+      "purpose": "Rust worker reference profile",
+      "lane": "fast"
+    },
+    "db/": {
+      "command": "npm test -- --run tests/unit/migrations",
+      "purpose": "database schema and migration docs",
+      "lane": "db"
+    },
+    "design-system/": {
+      "command": "just ux-qa",
+      "purpose": "design system tokens and styles",
+      "lane": "web"
+    },
+    "docs/": {
+      "command": "just score",
+      "purpose": "operational and architecture docs",
+      "lane": "audit"
     }
   }
 }

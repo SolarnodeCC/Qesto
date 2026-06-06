@@ -16,6 +16,7 @@
 // attachment. The scope `ChannelMessage.Send` is sufficient to POST a message
 // to a channel; `offline_access` is required to receive a refresh_token.
 
+import { unsupportedFeature } from '../../agent-error'
 import type {
   IntegrationProvider,
   ProviderConfig,
@@ -149,7 +150,10 @@ export class TeamsProvider implements IntegrationProvider {
    * Inbound webhooks (Graph change-notifications) are not part of TEAMS-01.
    */
   async verifyWebhook(_req: Request, _secret: string): Promise<WebhookEvent> {
-    throw new Error('Teams inbound webhooks not implemented')
+    throw unsupportedFeature(
+      'Teams inbound webhooks are not enabled in this release',
+      'Use outbound Teams notification actions from the integrations panel',
+    )
   }
 
   /**
