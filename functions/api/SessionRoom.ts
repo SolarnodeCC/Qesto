@@ -1140,6 +1140,7 @@ export class SessionRoom implements DurableObject {
     const meta = await this.ctx.storage.get<Meta>(K_META)
     if (!meta) return // Session not initialized
 
+    const startMs = Date.now()
     try {
       // Batch insert votes into D1 (via API handler or direct DB call if available).
       const stmt = this.env.DB.prepare(
@@ -1189,6 +1190,17 @@ export class SessionRoom implements DurableObject {
           { expirationTtl: 3600 }, // 1 hour TTL
         )
       }
+
+      // Phase 2.2: Emit observability event for buffer flush
+      const durationMs = Date.now() - startMs
+      writeEvent(this.env.METRICS_AE, {
+        name: 'do.vote_buffer_flush',
+        sessionId: meta.sessionId,
+        teamId: meta.teamId ?? undefined,
+        durationMs,
+        count: batch.length,
+        detail: 'batch_insert_to_d1',
+      })
 
       this.voteBuffer = []
       this.lastFlushAt = Date.now()
@@ -1292,6 +1304,14 @@ export class SessionRoom implements DurableObject {
       logEvent({
         event: 'do.snapshot_hydrated',
         sessionId: meta.sessionId,
+      })
+
+      // Phase 2.3: Emit observability event for successful recovery
+      writeEvent(this.env.METRICS_AE, {
+        name: 'do.recovery_from_snapshot',
+        sessionId: meta.sessionId,
+        count: Object.keys(snapshot.voters ?? {}).length, // votes recovered
+        detail: 'recovery_success',
       })
     } catch (err) {
       logEvent({

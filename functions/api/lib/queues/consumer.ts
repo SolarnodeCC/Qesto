@@ -15,6 +15,7 @@ import { precomputeInsights } from '../../routes/sessions/shared'
 import { notifySlackSessionClosed, notifyTeamsSessionClosed } from '../../routes/integrations'
 import { deliverTeamWebhooks } from '../webhooks'
 import { deliverMarketingWebhook } from '../webhooks-marketing'
+import { writeEvent } from '../observability'
 
 /**
  * Handle a single queued work message.
@@ -74,8 +75,18 @@ export async function processPostSessionWork(
         durationMs,
       }),
     )
+
+    // Phase 2.1: Emit queue success event for observability
+    writeEvent(env.METRICS_AE, {
+      name: 'queue.message_acked',
+      sessionId,
+      teamId: teamId ?? undefined,
+      durationMs,
+      detail: taskType,
+    })
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err)
+    const durationMs = Date.now() - startMs
 
     console.error(
       JSON.stringify({
@@ -88,6 +99,16 @@ export async function processPostSessionWork(
         attempt: meta.attempt ?? 1,
       }),
     )
+
+    // Phase 2.1: Emit queue failure event for observability (will be retried unless at max attempts)
+    writeEvent(env.METRICS_AE, {
+      name: 'queue.message_failed',
+      sessionId,
+      teamId: teamId ?? undefined,
+      durationMs,
+      detail: taskType,
+      value: (meta.attempt ?? 1) as any, // Store attempt count in value field
+    })
 
     // Re-throw to trigger retry (or DLQ after max attempts)
     throw err
