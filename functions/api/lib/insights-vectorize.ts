@@ -4,6 +4,7 @@
  */
 
 import type { Env } from '../types'
+import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
 import { withTimeout } from './shared/async'
 
@@ -33,7 +34,11 @@ export async function embedAndFindSimilarSessionTitles(
   env: InsightsVectorizeBindings,
   params: { sessionId: string; sessionTitle: string; openResponses: string[] },
 ): Promise<{ vector?: number[]; similarSessionTitles: string[] }> {
-  const embedText = `${params.sessionTitle}: ${params.openResponses.slice(0, 10).join('. ')}`
+  const embedText = sanitizeEmbedText(
+    `${params.sessionTitle}: ${params.openResponses.slice(0, 10).join('. ')}`,
+  )
+  if (!embedText) return { similarSessionTitles: [] }
+
   const embedResult = await withTimeout(
     env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
     DECISIONS_EMBED_TIMEOUT_MS,
@@ -85,8 +90,10 @@ export async function upsertInsightsSessionVector(
 ): Promise<boolean> {
   let vector = params.existingVector
   if (!vector) {
+    const title = sanitizeEmbedText(params.sessionTitle, 500)
+    if (!title) return false
     const upsertEmbedResult = await withTimeout(
-      env.AI.run(DECISIONS_EMBED_MODEL, { text: params.sessionTitle }),
+      env.AI.run(DECISIONS_EMBED_MODEL, { text: title }),
       DECISIONS_EMBED_TIMEOUT_MS,
       'Decision upsert embedding',
     )

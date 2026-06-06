@@ -4,6 +4,7 @@
  */
 
 import type { Env } from '../types'
+import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
 import { withTimeout } from './shared/async'
 
@@ -51,8 +52,11 @@ export async function embedAndFindSimilarDocuments(
     userScope: 'free' | 'starter' | 'team'
   },
 ): Promise<{ vector?: number[]; similarDocuments: HelpQueryMatch[] }> {
+  const question = sanitizeEmbedText(params.question)
+  if (!question) return { similarDocuments: [] }
+
   const embedResult = await withTimeout(
-    env.AI.run(HELP_EMBED_MODEL, { text: params.question }),
+    env.AI.run(HELP_EMBED_MODEL, { text: question }),
     HELP_EMBED_TIMEOUT_MS,
     'Help question embedding',
   )
@@ -110,7 +114,8 @@ export async function upsertHelpVector(
 ): Promise<void> {
   let vector = params.existingVector
   if (!vector) {
-    const textToEmbed = `${params.title} ${params.content?.substring(0, 500) || ''}`
+    const textToEmbed = sanitizeEmbedText(`${params.title} ${params.content?.substring(0, 500) || ''}`)
+    if (!textToEmbed) return
     const upsertEmbedResult = await withTimeout(
       env.AI.run(HELP_EMBED_MODEL, { text: textToEmbed }),
       HELP_EMBED_TIMEOUT_MS,

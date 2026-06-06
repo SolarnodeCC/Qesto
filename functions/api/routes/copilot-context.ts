@@ -43,6 +43,7 @@ import { featureAllowed } from '../lib/entitlements'
 import { sanitizeError } from '../lib/error-handler'
 import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
+import { sanitizeAIGatewayRequest, assertSanitizedAIGatewayRequest } from '../lib/ai/prompt-sanitize'
 import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS } from '../lib/constants'
 
 type LiveContextResult =
@@ -178,11 +179,16 @@ export function mountCopilotContextRoutes(parent: any) {
       'Consider summarizing participant themes before closing, and ask one follow-up open question.'
     if (c.env.AI) {
       try {
-        const result = (await c.env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+        const aiInput = sanitizeAIGatewayRequest({
+          model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
           messages: [
             { role: 'system', content: 'You are a facilitation copilot. Be concise and emotion-safe.' },
             ...thread.turns.map((t) => ({ role: t.role, content: t.content })),
           ],
+        })
+        assertSanitizedAIGatewayRequest(aiInput)
+        const result = (await c.env.AI.run(aiInput.model, {
+          messages: aiInput.messages,
         })) as { response?: string }
         if (result?.response?.trim()) assistantText = result.response.trim().slice(0, 2000)
       } catch {
