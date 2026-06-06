@@ -1,0 +1,33 @@
+[qa]
+standard = "jankurai"
+version = "1.5.1"
+runner = "playwright"
+config = "tests/playwright.config.ts"
+
+# Routes that must render without JS errors for the UX QA lane to pass.
+# Add new routes here when new top-level pages are shipped.
+[[routes]]
+path = "/"
+description = "Marketing home"
+
+[[routes]]
+path = "/login"
+description = "Auth entry point"
+
+[[routes]]
+path = "/dashboard"
+description = "Authenticated dashboard (requires session cookie)"
+requires_auth = true
+
+[[routes]]
+path = "/sessions/new"
+description = "Session creation flow"
+requires_auth = true
+
+[[routes]]
+path = "/templates"
+description = "Template gallery"
+
+[[routes]]
+path = "/templates/featured"
+description = "Featured templates"

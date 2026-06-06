@@ -16,7 +16,7 @@ Until OpenAPI generation is fully wired, authoritative API documentation lives i
 # npm run contracts:generate
 ```
 
-Declared generated zone: `agent/generated-zones.toml` → `contracts/generated/**`
+Declared generated zone: `agent/generated-zones.toml` → `contracts/generated/api.d.ts`
 
 ## Drift checks
 

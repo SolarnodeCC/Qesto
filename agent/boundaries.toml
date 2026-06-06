@@ -1,6 +1,18 @@
 # Machine-readable boundary manifest for jankurai contract lane.
 # Source of truth for API shapes: knowledge-base/api/API_FULL.md
-# Regeneration: manual until OpenAPI generator is wired (see contracts/README.md).
+# Regeneration: npm run contracts:generate (see contracts/README.md).
+
+[stack]
+id = "cloudflare-workers-typescript-react"
+version = "0.1.0"
+
+[queues]
+adapter_paths = []
+event_contract_paths = ["contracts/openapi/qesto-api.yaml"]
+generated_type_paths = ["contracts/generated"]
+client_markers = []
+
+# Qesto layer ownership (owner-map.json is authoritative for agent routing)
 
 [web]
 owns = ["src", "apps/web"]
