@@ -257,6 +257,16 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
         chunksUpserted = d1.chunksUpserted
       }
 
+      // Record sync timestamp for monitoring
+      if (c.env.ACTIONS_KV) {
+        await c.env.ACTIONS_KV.put('kb_sync_metadata', JSON.stringify({
+          last_sync_at: Date.now(),
+          vectors_upserted: totalUpserted,
+          documents_upserted: documentsUpserted,
+          chunks_upserted: chunksUpserted,
+        }))
+      }
+
       return c.json(
         {
           ok: true,
@@ -372,6 +382,17 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
         chunksDeleted = await deleteD1Rows(c.env.DB, vectorIds)
       }
 
+      // Record sync timestamp for monitoring
+      if (c.env.ACTIONS_KV && totalDeleted > 0) {
+        const current = await c.env.ACTIONS_KV.get('kb_sync_metadata')
+        const metadata = current ? JSON.parse(current) : {}
+        await c.env.ACTIONS_KV.put('kb_sync_metadata', JSON.stringify({
+          ...metadata,
+          last_sync_at: Date.now(),
+          last_operation: 'delete',
+        }))
+      }
+
       return c.json(
         {
           ok: true,
@@ -399,5 +420,36 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
         500,
       )
     }
+  })
+
+  app.get('/kb-sync/status', async (c) => {
+    if (!c.env.ACTIONS_KV) {
+      return c.json(
+        {
+          ok: true,
+          data: { message: 'KB sync status unavailable', last_sync_at: null },
+        },
+        200,
+      )
+    }
+
+    const metadata = await c.env.ACTIONS_KV.get('kb_sync_metadata')
+    if (!metadata) {
+      return c.json(
+        {
+          ok: true,
+          data: { message: 'KB has not been synced', last_sync_at: null },
+        },
+        200,
+      )
+    }
+
+    return c.json(
+      {
+        ok: true,
+        data: JSON.parse(metadata),
+      },
+      200,
+    )
   })
 }

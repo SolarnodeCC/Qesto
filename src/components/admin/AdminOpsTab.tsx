@@ -1,4 +1,5 @@
 import { useAdminOps, useAdminOpsCorrelation, type ServiceStatus } from '../../hooks/useAdminOps'
+import { useKbSyncStatus } from '../../hooks/useKbSyncStatus'
 import { Heading, Body, Card, SkeletonCard } from '../../ui/components'
 import { SloDashboardPanel } from '../SloDashboardPanel'
 
@@ -117,6 +118,7 @@ function HealthCorrelationSection() {
 
 export default function AdminOpsTab() {
   const { ops, loading, error } = useAdminOps()
+  const { status: kbSync, loading: kbLoading } = useKbSyncStatus()
 
   if (loading && !ops) {
     return (
@@ -149,8 +151,8 @@ export default function AdminOpsTab() {
         </Card>
       </div>
 
-      {/* Service health + Realtime reliability */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Service health + Realtime reliability + KB sync */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <Heading level="s" className="mb-4 border-l-4 border-teal-500 pl-3">Service health</Heading>
           <ServiceRow name="D1 Database" status={ops.services.d1} />
@@ -179,6 +181,42 @@ export default function AdminOpsTab() {
               </Body>
             </div>
           </div>
+        </Card>
+
+        <Card>
+          <Heading level="s" className="mb-4 border-l-4 border-indigo-500 pl-3">Knowledge base sync</Heading>
+          {kbLoading ? (
+            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Loading…</Body>
+          ) : kbSync?.last_sync_at ? (
+            <div className="space-y-3">
+              <div className="flex justify-between items-start py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
+                <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Last updated</Body>
+                <Body size="s" className="font-semibold text-right">
+                  {new Date(kbSync.last_sync_at).toLocaleString()}
+                </Body>
+              </div>
+              {kbSync.vectors_upserted !== undefined && (
+                <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
+                  <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Vectors</Body>
+                  <Body size="s" className="font-semibold">{kbSync.vectors_upserted}</Body>
+                </div>
+              )}
+              {kbSync.documents_upserted !== undefined && (
+                <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
+                  <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Documents</Body>
+                  <Body size="s" className="font-semibold">{kbSync.documents_upserted}</Body>
+                </div>
+              )}
+              {kbSync.chunks_upserted !== undefined && (
+                <div className="flex justify-between items-center py-1">
+                  <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Chunks</Body>
+                  <Body size="s" className="font-semibold">{kbSync.chunks_upserted}</Body>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">No sync data available</Body>
+          )}
         </Card>
       </div>
 
