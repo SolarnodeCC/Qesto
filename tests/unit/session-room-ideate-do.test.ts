@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { SessionRoom } from '../../functions/api/SessionRoom'
 import type { Env } from '../../functions/api/types'
 import { MockDurableObjectState, MockWebSocket } from '../helpers/do-mock'
@@ -9,7 +10,7 @@ function makeEnv(db: D1Mock = new D1Mock()): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'irrelevant',
+    JWT_SECRET: testJwtSecret(),
     LIVE_ENERGIZERS_ENABLED: 'false',
     DB: db as unknown as D1Database,
   } as unknown as Env

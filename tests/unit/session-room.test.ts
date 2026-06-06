@@ -8,6 +8,7 @@
 // deploy smoke test.
 
 import { describe, expect, it, vi } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { SessionRoom } from '../../functions/api/SessionRoom'
 import type { Env, QuestionKind, VotePolicy } from '../../functions/api/types'
 import {
@@ -21,7 +22,7 @@ function makeEnv(): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'irrelevant-for-do-tests',
+    JWT_SECRET: testJwtSecret(),
     LIVE_ENERGIZERS_ENABLED: 'false',
     DB: new D1Mock() as unknown as D1Database,
   } as unknown as Env
