@@ -1,54 +1,23 @@
 {
-  "version": "1.0.0",
-  "standard": "jankurai-0.9.0",
-  "owners": [
-    {
-      "owner": "tools",
-      "paths": ["src/**", "apps/web/**"],
-      "forbidden": ["functions/api/**", "worker/**", "migrations/**", "schema.sql"],
-      "depends_on": ["contracts/generated/**"]
-    },
-    {
-      "owner": "tools",
-      "paths": ["functions/api/**", "functions/[[path]].ts"],
-      "forbidden": ["src/**"],
-      "depends_on": ["contracts/**"]
-    },
-    {
-      "owner": "tools",
-      "paths": ["worker/**"],
-      "forbidden": ["src/**"],
-      "depends_on": ["functions/api/**"]
-    },
-    {
-      "owner": "db",
-      "paths": ["migrations/**", "schema.sql", "db/**"],
-      "forbidden": ["src/**"],
-      "depends_on": []
-    },
-    {
-      "owner": "ops",
-      "paths": ["ops/**", ".github/workflows/**"],
-      "forbidden": [],
-      "depends_on": []
-    },
-    {
-      "owner": "agent",
-      "paths": ["agent/**", ".claude/**", "AGENTS.md", "CLAUDE.md"],
-      "forbidden": ["functions/api/**", "src/**"],
-      "depends_on": []
-    },
-    {
-      "owner": "standard",
-      "paths": ["docs/**", "knowledge-base/**"],
-      "forbidden": [],
-      "depends_on": []
-    },
-    {
-      "owner": "tools",
-      "paths": ["tests/**", "contracts/**"],
-      "forbidden": [],
-      "depends_on": ["src/**", "functions/api/**"]
-    }
-  ]
+  "workspace": "qesto",
+  "owners": {
+    "AGENTS.md": "agent",
+    "CLAUDE.md": "agent",
+    "src/": "tools",
+    "apps/web/": "tools",
+    "functions/api/": "tools",
+    "functions/[[path]].ts": "tools",
+    "worker/": "tools",
+    "migrations/": "db",
+    "schema.sql": "db",
+    "db/": "db",
+    "ops/": "ops",
+    ".github/workflows/": "ops",
+    "agent/": "agent",
+    ".claude/": "agent",
+    "docs/": "standard",
+    "knowledge-base/": "standard",
+    "tests/": "tools",
+    "contracts/": "tools"
+  }
 }
