@@ -2,9 +2,18 @@
  * MOBILE-OFFLINE-SYNC-01 / FE-NATIVE-OFFLINE-01 — queue vote frames when WebSocket is down.
  * Uses localStorage in browser; Capacitor shell uses the same key (Preferences bridge in S82).
  */
+import { z } from 'zod'
 import { isNativeShell } from './native-shell'
 
 const QUEUE_KEY = 'qesto:offline-votes'
+
+const QueuedVoteArraySchema = z.array(
+  z.object({
+    sessionId: z.string(),
+    payload: z.record(z.string(), z.unknown()),
+    queuedAt: z.number(),
+  }),
+)
 
 export function offlineQueueStorageKind(): 'localStorage' | 'native-shell' {
   return isNativeShell() ? 'native-shell' : 'localStorage'
@@ -20,8 +29,9 @@ function readAll(): QueuedVote[] {
   try {
     const raw = localStorage.getItem(QUEUE_KEY)
     if (!raw) return []
-    const parsed = JSON.parse(raw) as unknown as QueuedVote[]
-    return Array.isArray(parsed) ? parsed : []
+    const parsed: unknown = JSON.parse(raw)
+    const result = QueuedVoteArraySchema.safeParse(parsed)
+    return result.success ? result.data : []
   } catch {
     return []
   }

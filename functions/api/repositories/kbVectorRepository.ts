@@ -9,7 +9,8 @@
 //   - Repository never returns nullable D1 rows untyped; callers get
 //     `KbHydratedChunk | undefined` keyed by chunk_id.
 //   - All filters that originate from request bodies are passed through to
-//     Vectorize as parametric `filter` — never concatenated into a query.
+//     Vectorize via the parametric `filter` option — never concatenated into
+//     a query.
 
 import { KbVectorMetadataSchema } from '../lib/boundary-decode'
 import type {

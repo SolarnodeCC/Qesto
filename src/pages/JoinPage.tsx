@@ -515,8 +515,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                   <form
                     onSubmit={(e) => {
                       e.preventDefault()
-                      const inp = e.currentTarget.elements.namedItem('resp') as HTMLInputElement
-                      const val = inp.value.trim()
+                      const inp = e.currentTarget.elements.namedItem('resp')
+                      const val = inp instanceof HTMLInputElement ? inp.value.trim() : ''
                       if (!val || !canVote) return
                       handleVote(val)
                     }}

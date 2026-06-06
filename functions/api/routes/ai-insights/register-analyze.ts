@@ -76,7 +76,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         sessionVector = sim.vector
         similarSessionTitles.push(...sim.similarSessionTitles)
       } catch (vecErr) {
-        logEvent({ event: 'vectorize.query.skip', reason: (vecErr as Error).message })
+        logEvent({ event: 'vectorize.query.skip', reason: vecErr instanceof Error ? vecErr.message : String(vecErr) })
       }
 
       // RAG grounding — best-effort. ADR-040 Phase 3.

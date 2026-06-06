@@ -276,7 +276,7 @@ export async function queryAuditEvents(
       total: countResult?.count ?? 0,
     }
   } catch (err) {
-    console.error('[audit] queryAuditEvents failed:', (err as Error).message)
+    console.error('[audit] queryAuditEvents failed:', err instanceof Error ? err.message : String(err))
     return { events: [], total: 0 }
   }
 }

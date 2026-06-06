@@ -105,20 +105,38 @@ interface IndexInfo {
   error?: string
 }
 
+// Vectorize v2 REST responses vary by API version; treat them as a trust
+// boundary and narrow with Zod instead of casting `r.json()` to `any`.
+const VectorizeApiResponseSchema = z.object({
+  success: z.boolean().optional(),
+  errors: z.array(z.object({ message: z.string().optional() })).optional(),
+  result: z
+    .object({
+      config: z.object({ dimensions: z.number().optional() }).optional(),
+      dimensions: z.number().optional(),
+      vectorCount: z.number().optional(),
+      vectorsCount: z.number().optional(),
+      count: z.number().optional(),
+    })
+    .optional(),
+})
+
 async function fetchIndexInfo(accountId: string, token: string, name: string): Promise<IndexInfo> {
   const base = `https://api.cloudflare.com/client/v4/accounts/${accountId}/vectorize/v2/indexes/${name}`
   const headers = { Authorization: `Bearer ${token}` }
   try {
-    const [cfg, info] = await Promise.all([
-      fetch(base, { headers }).then((r) => r.json() as Promise<any>),
-      fetch(`${base}/info`, { headers }).then((r) => r.json() as Promise<any>),
+    const [cfgRaw, infoRaw] = await Promise.all([
+      fetch(base, { headers }).then((r) => r.json()),
+      fetch(`${base}/info`, { headers }).then((r) => r.json()),
     ])
+    const cfg = VectorizeApiResponseSchema.safeParse(cfgRaw).data
+    const info = VectorizeApiResponseSchema.safeParse(infoRaw).data
     if (cfg?.success === false) {
       return { name, error: cfg.errors?.[0]?.message ?? 'index not found' }
     }
-    const dimensions: unknown = cfg?.result?.config?.dimensions ?? info?.result?.dimensions
+    const dimensions = cfg?.result?.config?.dimensions ?? info?.result?.dimensions
     // Count key has drifted across Vectorize API versions — accept any spelling.
-    const vectorCount: unknown =
+    const vectorCount =
       info?.result?.vectorCount ?? info?.result?.vectorsCount ?? info?.result?.count
     const out: IndexInfo = { name }
     if (typeof dimensions === 'number') out.dimensions = dimensions

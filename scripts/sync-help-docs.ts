@@ -2,6 +2,18 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
+import { z } from 'zod';
+
+// bge-m3 responses come back in two shapes across API versions; one permissive
+// object schema (unknown keys are dropped) covers both without `as any`.
+const HelpEmbeddingResponseSchema = z.object({
+  result: z
+    .object({
+      data: z.array(z.object({ embeddings: z.array(z.number()).optional() })).optional(),
+      embeddings: z.array(z.number()).optional(),
+    })
+    .optional(),
+});
 
 interface HelpSyncManifest {
   version: 1;
@@ -155,10 +167,8 @@ async function embedDocumentWithCF(text: string): Promise<number[]> {
     throw new Error(`Cloudflare API error: ${response.status} ${body}`);
   }
 
-  const data = (await response.json()) as {
-    result?: { data?: Array<{ embeddings?: number[] }> } | { embeddings?: number[] };
-  };
-  const result = data.result as any
+  const parsed = HelpEmbeddingResponseSchema.safeParse(await response.json());
+  const result = parsed.success ? parsed.data.result : undefined
   const embeddings = result?.data?.[0]?.embeddings || result?.embeddings
 
   if (!embeddings || !Array.isArray(embeddings)) {

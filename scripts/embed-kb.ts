@@ -13,7 +13,12 @@
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import { z } from 'zod'
 import type { KbSyncRecord } from '../functions/api/types/knowledge-base'
+
+const EmbeddingApiResponseSchema = z.object({
+  result: z.object({ data: z.array(z.array(z.number())).optional() }).optional(),
+})
 
 // Local imports (must build/transpile mdChunker first or inline here)
 // For now, we'll inline the essentials to avoid require() complexity in ts-node
@@ -291,8 +296,8 @@ async function embedViaAPI(text: string): Promise<number[]> {
     )
   }
 
-  const result = (await response.json()) as { result?: { data?: number[][] } }
-  const vector = result.result?.data?.[0]
+  const parsed = EmbeddingApiResponseSchema.safeParse(await response.json())
+  const vector = parsed.success ? parsed.data.result?.data?.[0] : undefined
   if (!vector || vector.length !== 1024) {
     throw new Error('Invalid embedding response')
   }

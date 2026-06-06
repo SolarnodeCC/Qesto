@@ -64,11 +64,11 @@ export default function SessionTitleField({
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') {
       e.preventDefault()
-      ;(e.target as HTMLInputElement).blur()
+      e.currentTarget.blur()
     }
     if (e.key === 'Escape') {
       setValue(lastSaved.current)
-      ;(e.target as HTMLInputElement).blur()
+      e.currentTarget.blur()
     }
   }
 

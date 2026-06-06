@@ -53,10 +53,10 @@ export async function sessionPipelineWorkflow(input: WorkflowInput, env: Env): P
   }
 
   // Step 5: Classification
-  const classification = await classify(scannedQuestions, input.language as Lang, env.AI)
+  const classification = await classify(scannedQuestions, input.language, env.AI)
 
   // Step 6: Generate template
-  const template = buildTemplateRecord(input, scannedQuestions, classification, input.language as Lang)
+  const template = buildTemplateRecord(input, scannedQuestions, classification, input.language)
 
   // Step 7: Store in MARKETING_KV
   await storeTemplate(template, env.MARKETING_KV)
