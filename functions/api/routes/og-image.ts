@@ -1,6 +1,8 @@
 import { Context } from 'hono'
 import type { Env } from '../types'
+import { OgImageColorSchema } from '../lib/boundary-decode'
 import { generateOgImageSvg } from '../lib/og-image-generator'
+import type { ParentApp } from './parent-app'
 
 /**
  * SEO-OG-01: Dynamic OG image generation endpoint
@@ -13,7 +15,7 @@ export async function getOgImage(c: Context<{ Bindings: Env }>) {
     const subtitle = c.req.query('subtitle')
     const industry = c.req.query('industry')
     const theme = c.req.query('theme')
-    const color = (c.req.query('color') as 'teal' | 'purple' | 'orange') || 'teal'
+    const color = OgImageColorSchema.safeParse(c.req.query('color')).data ?? 'teal'
 
     const params: Parameters<typeof generateOgImageSvg>[0] = {
       title: decodeURIComponent(title),
@@ -37,6 +39,6 @@ export async function getOgImage(c: Context<{ Bindings: Env }>) {
   }
 }
 
-export function mountOgImageRoutes(app: any) {
+export function mountOgImageRoutes(app: ParentApp) {
   app.get('/api/og', getOgImage)
 }

@@ -131,12 +131,14 @@ function parseSuite(raw: unknown): EventSuiteMeta {
 export function parseEventTemplate(raw: string | null | undefined): EventAgendaTemplate {
   if (!raw) return defaultEventTemplate()
   try {
-    const parsed = JSON.parse(raw) as Partial<EventAgendaTemplate>
+    const parsed: unknown = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return defaultEventTemplate()
+    const obj = parsed as Record<string, unknown>
     return {
-      eventCode: typeof parsed.eventCode === 'string' && parsed.eventCode.length === 6 ? parsed.eventCode : generateJoinCode(),
-      tracks: normalizeTracks(parsed.tracks),
-      suite: parseSuite((parsed as { suite?: unknown }).suite),
-      presenter: parsePresenter((parsed as { presenter?: unknown }).presenter),
+      eventCode: typeof obj.eventCode === 'string' && obj.eventCode.length === 6 ? obj.eventCode : generateJoinCode(),
+      tracks: normalizeTracks(obj.tracks),
+      suite: parseSuite(obj.suite),
+      presenter: parsePresenter(obj.presenter),
     }
   } catch {
     return defaultEventTemplate()

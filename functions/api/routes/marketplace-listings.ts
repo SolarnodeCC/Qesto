@@ -28,6 +28,7 @@ import {
 import { splitMarketplacePayout } from '../lib/marketplace-payout'
 import type { Team } from './teams'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -67,8 +68,7 @@ async function authorizeBillingManager(
   return { ok: true, team }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountMarketplaceListingRoutes(parent: any) {
+export function mountMarketplaceListingRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

@@ -1,6 +1,7 @@
 import { Context } from 'hono'
 import type { Env } from '../types'
 import { listTemplates } from '../lib/templates-kv'
+import type { ParentApp } from './parent-app'
 
 /** Escape XML-reserved characters so generated URLs/dates can't break well-formedness. */
 function escapeXml(value: string): string {
@@ -139,7 +140,7 @@ export function getIndexNowKeyFile(c: Context<{ Bindings: Env }>) {
  * - Option 1: /{key}.txt (if INDEXNOW_KEY_FILE env var is set)
  * - Option 2: /.well-known/indexnow or /indexnow.txt
  */
-export function mountSeoRoutes(app: any) {
+export function mountSeoRoutes(app: ParentApp) {
   // Sitemaps.
   // NOTE: /sitemap.xml is served as a static marketing sitemap (public/sitemap.xml)
   // and is NOT routed here — see SEO_HONO_PATHS in functions/[[path]].ts. Only the

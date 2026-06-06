@@ -1,6 +1,7 @@
 // Cloudflare Workflow: Process session.closed events into public templates.
 // Orchestrates: rewrite → similarity check → proper noun scan → classification → storage
 
+import { z } from 'zod'
 import { SessionWebhookPayload, TemplateRecord, ClassificationOutput, Lang } from '../template-schemas'
 import { createTemplateId } from '../templates-kv'
 import { logEvent } from '../log'
@@ -129,8 +130,8 @@ async function similarityCheck(
         stream: false,
       })
 
-      const parsed = parseJsonResponse(response.response)
-      const score = parsed.score || 0
+      const parsed = SimilarityScoreSchema.safeParse(parseJsonResponse(response.response))
+      const score = parsed.success ? (parsed.data.score ?? 0) : 0
 
       checked.push({
         text: result.rewritten,
@@ -174,8 +175,8 @@ async function properNounScan(
       stream: false,
     })
 
-    const parsed = parseJsonResponse(result.response)
-    const flaggedIndices = new Set(parsed.questionIndices || [])
+    const parsed = ProperNounScanSchema.safeParse(parseJsonResponse(result.response))
+    const flaggedIndices = new Set(parsed.success ? (parsed.data.questionIndices ?? []) : [])
 
     return questions.filter((_, idx) => !flaggedIndices.has(idx))
   } catch (err) {
@@ -211,7 +212,7 @@ Return JSON with: industry, theme, topic, confidence (0-100), purpose_nl, purpos
       stream: false,
     })
 
-    const classification = parseJsonResponse(result.response) as ClassificationOutput
+    const classification = parseClassificationOutput(parseJsonResponse(result.response))
 
     // Normalize confidence
     if (classification.confidence < 70) {
@@ -252,15 +253,39 @@ ${questions.map((q) => `- "${q.text}"`).join('\n')}
 Return ONLY a JSON array of rewritten questions: ["rewritten 1", "rewritten 2", ...]`
 }
 
-function parseJsonResponse(text: string): Record<string, any> {
-  // Extract JSON from markdown or plain text
-  const jsonMatch = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/)
-  if (!jsonMatch) return {}
+const SimilarityScoreSchema = z.object({
+  score: z.number().optional(),
+})
 
+const ProperNounScanSchema = z.object({
+  questionIndices: z.array(z.number()).optional(),
+})
+
+function parseJsonResponse(text: string): unknown {
+  const jsonMatch = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/)
+  if (!jsonMatch) return null
   try {
     return JSON.parse(jsonMatch[0])
   } catch {
-    return {}
+    return null
+  }
+}
+
+function parseClassificationOutput(value: unknown): ClassificationOutput {
+  const result = ClassificationOutput.safeParse(value)
+  if (result.success) return result.data
+  return {
+    industry: 'general',
+    theme: 'engagement-motivation',
+    topic: 'session',
+    confidence: 50,
+    purpose_nl: '',
+    purpose_en: '',
+    purpose_de: '',
+    purpose_fr: '',
+    bestUsedFor: [],
+    estimatedMinutes: 15,
+    whatYoullLearn: [],
   }
 }
 

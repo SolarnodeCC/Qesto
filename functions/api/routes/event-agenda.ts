@@ -18,6 +18,7 @@ import { findEventWorkspaceByCode, loadSessionsForWorkspace } from '../lib/event
 import type { WorkspaceRow } from '../lib/workspace-types'
 import type { Team } from './teams'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -25,8 +26,7 @@ function persistTemplate(template: EventAgendaTemplate): string {
   return JSON.stringify(template)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountPublicEventAgendaRoutes(parent: any) {
+export function mountPublicEventAgendaRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
   app.get('/events/:code/agenda', async (c) => {
@@ -48,8 +48,7 @@ export function mountPublicEventAgendaRoutes(parent: any) {
   parent.route('/api', app)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountTeamEventAgendaRoutes(parent: any) {
+export function mountTeamEventAgendaRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

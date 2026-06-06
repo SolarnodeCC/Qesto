@@ -27,10 +27,11 @@ import { mountOpsRoutes } from './admin/ops'
 import { mountJourneyEventRoutes } from './admin/journey-events'
 import { mountGrowthRoutes } from './admin/growth'
 import type { AnalyticsData, DailyBucket } from './admin/types'
+import type { ParentApp } from './parent-app'
 
 // ─── Route mount ──────────────────────────────────────────────────────────────
 
-export function mountAdminRoutes(parent: any) {
+export function mountAdminRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
 
   registerHelpAdminRoutes(app)

@@ -5,6 +5,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { timingSafeEqual } from '../lib/shared/crypto'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
 const ScimUserSchema = z.object({
   userName: z.string().email(),
@@ -21,8 +22,7 @@ function scimAuth(c: { req: { header: (n: string) => string | undefined }; env: 
   return timingSafeEqual(auth.slice(7), expected)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountScimRoutes(parent: any) {
+export function mountScimRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env }>()
 
   app.use('*', async (c, next) => {

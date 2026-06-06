@@ -24,6 +24,7 @@ import type { WorkspaceRow } from '../lib/workspace-types'
 import type { Team } from './teams'
 import type { Env } from '../types'
 import type { EventAgendaTemplate } from '../lib/event-agenda'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -62,8 +63,7 @@ async function buildPresenterPayload(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountTeamEventPresenterRoutes(parent: any) {
+export function mountTeamEventPresenterRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

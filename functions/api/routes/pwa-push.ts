@@ -15,11 +15,11 @@ import {
   savePushSubscription,
 } from '../lib/pwa-push'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountPwaPushRoutes(parent: any) {
+export function mountPwaPushRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
 
