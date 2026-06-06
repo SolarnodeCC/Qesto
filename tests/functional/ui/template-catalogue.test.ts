@@ -2,6 +2,8 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 const dashboardSource = readFileSync('src/pages/Dashboard.tsx', 'utf8')
+const templateGroupSource = readFileSync('src/pages/dashboard/TemplateGroup.tsx', 'utf8')
+const templateModalSource = readFileSync('src/pages/dashboard/TemplatePreviewModal.tsx', 'utf8')
 const enDashboard = JSON.parse(readFileSync('public/locales/en/dashboard.json', 'utf8')) as Record<string, string>
 
 describe('template catalogue UI contract', () => {
@@ -20,9 +22,9 @@ describe('template catalogue UI contract', () => {
   })
 
   it('renders accessible preview art with stable dimensions', () => {
-    expect(dashboardSource).toContain('role="img"')
-    expect(dashboardSource).toContain('aria-label={tmpl.previewAlt}')
-    expect(dashboardSource).toContain('className="h-24')
-    expect(dashboardSource).toContain('className="h-32')
+    expect(templateGroupSource).toContain('role="img"')
+    expect(templateGroupSource).toContain('aria-label={tmpl.previewAlt}')
+    expect(templateGroupSource).toContain('className="h-24')
+    expect(templateModalSource).toContain('className="h-32')
   })
 })

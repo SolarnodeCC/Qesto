@@ -1,5 +1,4 @@
-import type { PollOption, SessionSummary } from '../../hooks/useSessions'
-import type { ApiError } from '../../api/client'
+import type { PollOption } from '../../hooks/useSessions'
 
 export type StatusFilter = 'all' | 'live' | 'draft' | 'closed'
 
@@ -18,11 +17,6 @@ export interface TemplateModalState {
   open: boolean
   template: Template | null
 }
-
-export type SessionsListState =
-  | { status: 'loading' }
-  | { status: 'ready'; sessions: SessionSummary[] }
-  | { status: 'error'; error: ApiError }
 
 export interface DashboardTeam {
   id: string

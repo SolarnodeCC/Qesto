@@ -1,6 +1,6 @@
 import { useT } from '../../i18n'
 import type { SessionSummary } from '../../hooks/useSessions'
-import type { SessionsListState } from './types'
+import type { SessionsListState } from '../../hooks/useSessions'
 import { SessionCard, SessionCardSkeleton } from './SessionCard'
 import type { SessionCardProps } from './SessionCard'
 

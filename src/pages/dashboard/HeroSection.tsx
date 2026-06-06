@@ -1,4 +1,3 @@
-import { useRef } from 'react'
 import { ChevronDown, Megaphone, Sparkles } from 'lucide-react'
 import { useT } from '../../i18n'
 import type { DashboardSection } from '../../layouts/AppShellLayout'
@@ -9,7 +8,7 @@ interface HeroSectionProps {
   isTeamPlan: boolean
   creatingTownhall: boolean
   newMenuOpen: boolean
-  newMenuRef: React.RefObject<HTMLDivElement>
+  newMenuRef: React.RefObject<HTMLDivElement | null>
   onToggleMenu: () => void
   onOpenWizard: () => void
   onCreateTownhall: () => void
