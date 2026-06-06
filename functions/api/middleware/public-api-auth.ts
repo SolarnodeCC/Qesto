@@ -2,6 +2,7 @@
  * Shared Bearer API key auth + per-key rate limit (SEC-APIKEY-QUOTA-01).
  */
 import type { Context, Next } from 'hono'
+import { API_KEY_RECORD_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson, readKvText } from '../lib/kv'
 import {
   ApiKeyRecordSchema,
@@ -60,7 +61,9 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
   await rlKv.put(rlKey, String(count + 1), { expirationTtl: KEY_WINDOW_SEC * 2 })
 
   const updated: ApiKeyRecord = { ...parsed.data, lastUsedAt: Date.now() }
-  await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(parsed.data.id), updated)
+  await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(parsed.data.id), updated, {
+    expirationTtl: API_KEY_RECORD_TTL_SECONDS,
+  })
 
   writeEvent(c.env.METRICS_AE, {
     name: 'api.request',

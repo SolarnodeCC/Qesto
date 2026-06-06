@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireDraft } from '../lib/session-lifecycle'
+import { SESSION_SEED_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { DEFAULT_IDEATE_TEMPLATE } from '../lib/workspace-types'
 import type { Env, Session } from '../types'
@@ -81,10 +82,15 @@ export function mountIdeateSessionRoutes(parent: any) {
       dotVoteLimit: DEFAULT_IDEATE_TEMPLATE.dotVoteLimit,
       clusterDebounceMs: DEFAULT_IDEATE_TEMPLATE.clusterDebounceMs,
     }
-    await writeKvJson(c.env.SESSIONS_KV, ideateSeedKey(id), {
-      dotVoteLimit: body.data.dotVoteLimit ?? existing.dotVoteLimit,
-      clusterDebounceMs: body.data.clusterDebounceMs ?? existing.clusterDebounceMs,
-    })
+    await writeKvJson(
+      c.env.SESSIONS_KV,
+      ideateSeedKey(id),
+      {
+        dotVoteLimit: body.data.dotVoteLimit ?? existing.dotVoteLimit,
+        clusterDebounceMs: body.data.clusterDebounceMs ?? existing.clusterDebounceMs,
+      },
+      { expirationTtl: SESSION_SEED_TTL_SECONDS },
+    )
     return c.json({
       ok: true,
       data: { sessionMode: 'ideate', dotVoteLimit: body.data.dotVoteLimit ?? existing.dotVoteLimit },
