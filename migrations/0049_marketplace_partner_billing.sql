@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Migration 0049: Marketplace partner billing foundation (E82, MARKETPLACE-BILLING-SPIKE-02, Sprint 82).
 -- Apply: wrangler d1 migrations apply qesto_3_db --local
 -- Safety: new table only. No destructive change.

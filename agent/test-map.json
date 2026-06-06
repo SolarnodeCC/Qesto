@@ -26,6 +26,11 @@
       "purpose": "migration safety unit tests",
       "lane": "db"
     },
+    "db/queries/": {
+      "command": "npm test -- --run tests/unit/migrations",
+      "purpose": "parameterized D1 query templates",
+      "lane": "db"
+    },
     "schema.sql": {
       "command": "npm test -- --run",
       "purpose": "schema integrity via unit tests",
@@ -205,6 +210,16 @@
       "command": "just score",
       "purpose": "canonical proof lane entry points",
       "lane": "audit"
+    },
+    "Justfile": {
+      "command": "just fast",
+      "purpose": "canonical proof lane entry points and fast iteration targets",
+      "lane": "fast"
+    },
+    "agent/cost-budget.toml": {
+      "command": "just check",
+      "purpose": "cost quota, stop-condition policy, and kill-switch manifest",
+      "lane": "release"
     },
     "OBSERVABILITY_AUDIT_2026_06_05.md": {
       "command": "just fast",

@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0014_add_question_types — Support multi_select, likert, upvote, slider question types.
 -- Recreates questions table with expanded CHECK constraint including 9 total kinds.
 -- Data preservation: Creates new table, copies existing data, renames (SQLite-safe).

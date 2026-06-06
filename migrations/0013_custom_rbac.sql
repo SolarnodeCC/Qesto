@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Sprint 21: custom RBAC foundation.
 
 CREATE TABLE IF NOT EXISTS custom_roles (

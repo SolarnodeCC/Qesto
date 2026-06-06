@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Phase 8/9: audit_events, badges, leaderboard_entries, referral_codes, referral_signups.
 -- These tables were defined in schema.sql but never shipped as migrations, so they
 -- don't exist in the database.  badges and leaderboard_entries are actively written

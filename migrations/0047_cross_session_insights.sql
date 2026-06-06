@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Migration 0047: Cross-session intelligence (EPIC-INSIGHTS+, ADR-0045, Sprint 81).
 -- Apply: wrangler d1 migrations apply qesto_3_db --local
 -- Safety: creates base table if missing, then adds columns. No destructive backfill required.

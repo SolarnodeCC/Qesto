@@ -7,12 +7,12 @@
 - Target stack ID: `cloudflare-workers-typescript-react`
 - Target stack: `Rust core + TypeScript/React/Vite + PostgreSQL + generated contracts + exception-only Python AI/data service`
 - Repo: `.`
-- Run ID: `1780766091`
-- Started at: `1780766091`
-- Elapsed: `3611` ms
+- Run ID: `1780767690`
+- Started at: `1780767690`
+- Elapsed: `3491` ms
 - Scope: `full`
-- Raw score: `92`
-- Final score: `92`
+- Raw score: `93`
+- Final score: `93`
 - Decision: `pass`
 - Minimum score: `85`
 - Caps applied: `none`
@@ -70,7 +70,7 @@
 
 ## Copy-Code Redundancy
 
-- Status: `review` hard=`0` warning=`18` files=`375`
+- Status: `review` hard=`0` warning=`18` files=`389`
 - Policy: min-lines=`10` min-tokens=`100` max-findings=`50` include-tests=`false` strict=`false`
 - Duplicate volume: lines=`39` tokens=`140` bytes=`1163`
 
@@ -89,7 +89,7 @@
 | `ExactUnitDifferentName` | `Warning` | `typescript` | 2 | 2 | `functions/api/lib/cmk.ts:22-24, functions/api/lib/copilot-live-context.ts:54-56, functions/api/lib/entitlements.ts:18-20, functions/api/lib/event-presenter.ts:8-10` | `same body appears under different names across files` |
 | `ExactUnitSameName` | `Warning` | `typescript` | 2 | 6 | `functions/api/lib/session-room-ideate-handler.ts:42-44, functions/api/lib/session-room-retro-handler.ts:32-34, functions/api/lib/session-room-townhall-handler.ts:56-58` | `same-name semantic unit copied across multiple files` |
 | `ExactUnitDifferentName` | `Warning` | `typescript` | 4 | 11 | `functions/api/lib/session-room-presenter-init.ts:150-154, functions/api/lib/session-room-presenter-init.ts:186-190` | `same body appears under different names across files` |
-| `ExactUnitDifferentName` | `Warning` | `typescript` | 1 | 6 | `functions/api/routes/marketplace-connect.ts:46-47, functions/api/routes/marketplace-listings.ts:60-61, functions/api/routes/sessions/exports.ts:25-26, functions/api/routes/sessions/exports.ts:79-80` | `same body appears under different names across files` |
+| `ExactUnitDifferentName` | `Warning` | `typescript` | 1 | 6 | `functions/api/lib/session-export.ts:11-12, functions/api/lib/session-export.ts:88-89, functions/api/routes/marketplace-connect.ts:46-47, functions/api/routes/marketplace-listings.ts:60-61` | `same body appears under different names across files` |
 | `ExactUnitSameName` | `Warning` | `typescript` | 3 | 15 | `scripts/kb-sync-cli.ts:49-52, scripts/sync-help-docs.ts:58-61` | `same-name semantic unit copied across multiple files` |
 | `ExactUnitDifferentName` | `Warning` | `typescript` | 3 | 10 | `functions/api/lib/ai-wizard.ts:220-223, functions/api/lib/ai-wizard.ts:271-274` | `same body appears under different names across files` |
 | `ExactUnitSameName` | `Warning` | `typescript` | 2 | 5 | `functions/api/lib/event-presenter.ts:48-50, functions/api/lib/event-suite.ts:57-59` | `same-name semantic unit copied across multiple files` |
@@ -108,13 +108,13 @@
 | Contract and boundary integrity | 13 | 100 | 13.00 | contract surface found; generated contract artifacts found |
 | Proof lanes and test routing | 12 | 100 | 12.00 | one-command setup/validation lane found; deterministic fast lane found |
 | Security and supply-chain posture | 12 | 94 | 11.28 | lockfile present; secret or dependency scan tooling found |
-| Code shape and semantic surface | 12 | 80 | 9.60 | largest authored code file: worker/TemplateGenerationWorkflow.ts (499 LOC); most code files stay under 300 LOC |
+| Code shape and semantic surface | 12 | 80 | 9.60 | largest authored code file: functions/api/routes/copilot-context.ts (437 LOC); most code files stay under 300 LOC |
 | Data truth and workflow safety | 8 | 85 | 6.80 | database surface present; migration directory present |
 | Observability and repair evidence | 8 | 88 | 7.04 | observability libraries or patterns found; ops/observability directory present |
 | Context economy and agent instructions | 7 | 100 | 7.00 | root `AGENTS.md` present; root `AGENTS.md` stays short |
 | Jankurai tool adoption and CI replacement | 7 | 78 | 5.46 | control-plane files present; applicable=16 |
 | Python containment and polyglot hygiene | 4 | 100 | 4.00 | no Python files in scope |
-| Build speed signals | 4 | 70 | 2.80 | build acceleration markers found; targeted test/build commands found |
+| Build speed signals | 4 | 95 | 3.80 | build acceleration markers found; targeted test/build commands found |
 
 ## Reference Profile Structure
 
@@ -193,40 +193,8 @@ No audited runtime boundary reclassifications declared.
    Reason: `Code shape and semantic surface` scored 80 below the standard floor of 85
    Fix: split large or ambiguous authored code into smaller semantic modules with focused tests
    Rerun: `just fast`
-   Fingerprint: `sha256:75de56842ca5f28ba3e026d4acc6d84b700ee23226b612736e36965cb2dd4b4a`
-   Evidence: largest authored code file: worker/TemplateGenerationWorkflow.ts (499 LOC), most code files stay under 300 LOC, copy-code advisory classes found: 18 (advisory only, no score impact), sql bad-behavior advisory signals: 95
-2. `medium` `proof` `.claude/skills/marketing.md:65`
-   Rule: `HLT-027-HUMAN-REVIEW-EVIDENCE-GAP`
-   Check: `HLT-027-HUMAN-REVIEW-EVIDENCE-GAP:proof` `soft` confidence `0.88`
-   Route: TLR `Repair`, lane `audit`, owner `agent`
-   Docs: `docs/testing.md`
-   Matched term: `review evidence`
-   Reason: proof and review claims need receipts
-   Fix: attach raw CI logs, review receipts, and replayable commands instead of accepting claims or summaries
-   Rerun: `just score`
-   Fingerprint: `sha256:7a10d463950682928cac9b16baa5efc080ecc90063bf61ee6517b9aa8f075153`
-   Evidence: | Competitor comparison SEO pages | Pull edges from market-research battle cards; no fabricated claims | `/vs/[competitor]` route copy |
-3. `medium` `proof` `Justfile`
-   Rule: `HLT-018-PERF-CONCURRENCY-DRIFT`
-   Check: `HLT-018-PERF-CONCURRENCY-DRIFT:proof` `soft` confidence `0.76`
-   Route: TLR `Verification`, lane `fast`, owner `workspace`
-   Docs: `docs/testing.md`
-   Reason: `Build speed signals` scored 70 below the standard floor of 85
-   Fix: add fast deterministic build/test targets, caches, and narrow proof lanes for agent iteration
-   Rerun: `just fast`
-   Fingerprint: `sha256:a256a7390d4b91a5b0a95d6f092e524c8f4080f27fe2b62e28cf0801343d0fef`
-   Evidence: build acceleration markers found, targeted test/build commands found, locked dependency graph present, CI cache hint found
-4. `medium` `release` `docs/testing.md`
-   Rule: `HLT-026-COST-BUDGET-GAP`
-   Check: `HLT-026-COST-BUDGET-GAP:release` `soft` confidence `0.88`
-   Route: TLR `Verification`, lane `release`, owner `standard`
-   Docs: `docs/testing.md`
-   Matched term: `budget`
-   Reason: unbounded paid work needs budgets and stop conditions
-   Fix: add explicit budgets, quotas, stop conditions, and kill-switch evidence for paid or unbounded operations
-   Rerun: `just check`
-   Fingerprint: `sha256:edd248b7afc24b644107205fa5b84a88103ac4b622009ff9f19b779de8798f59`
-   Evidence: cost surface found without budget/stop-condition policy
+   Fingerprint: `sha256:ad4812b5a85c8a3b8fc8c8d54a8414a69210be4409f95df83e3447856a46d9fa`
+   Evidence: largest authored code file: functions/api/routes/copilot-context.ts (437 LOC), most code files stay under 300 LOC, copy-code advisory classes found: 18 (advisory only, no score impact), sql bad-behavior advisory signals: 95
 
 ## Policy
 
@@ -236,11 +204,5 @@ No audited runtime boundary reclassifications declared.
 
 ## Agent Fix Queue
 
-1. `medium` `HLT-018-PERF-CONCURRENCY-DRIFT` `Justfile` - add fast deterministic build/test targets, caches, and narrow proof lanes for agent iteration
-   Route: `Verification`/`fast`
-2. `medium` `HLT-026-COST-BUDGET-GAP` `docs/testing.md` - add explicit budgets, quotas, stop conditions, and kill-switch evidence for paid or unbounded operations
-   Route: `Verification`/`release`
-3. `medium` `HLT-027-HUMAN-REVIEW-EVIDENCE-GAP` `.claude/skills/marketing.md` - attach raw CI logs, review receipts, and replayable commands instead of accepting claims or summaries
-   Route: `Repair`/`audit`
-4. `medium` `HLT-001-DEAD-MARKER` `.` - split large or ambiguous authored code into smaller semantic modules with focused tests
+1. `medium` `HLT-001-DEAD-MARKER` `.` - split large or ambiguous authored code into smaller semantic modules with focused tests
    Route: `Entropy`/`fast`

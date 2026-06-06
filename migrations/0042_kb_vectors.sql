@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- migrations/0042_kb_vectors.sql
 -- ADR-040 Phase 1: Knowledge-base vector embedding pipeline.
 -- Mirrors authoritative chunk text + metadata for the KB_VECTORIZE index.

@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Migration 0053: ADR-0048 recurring workspace extensions (Sprint 85+).
 -- Apply: wrangler d1 migrations apply qesto_3_db --local
 

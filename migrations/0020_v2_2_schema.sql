@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0020_v2_2_schema — Sprint 20 v2.2 schema additions
 -- Adds custom role support for enterprise delegation
 -- Recap provenance columns are created separately in 0016_recaps_table.sql

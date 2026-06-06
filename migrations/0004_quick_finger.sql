@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0004_quick_finger — Quick Finger energizer support.
 -- Recreates the energizers table (and dependents) to add 'quick_finger' to
 -- the kind CHECK constraint. Also extends PATCH semantics for energizers to

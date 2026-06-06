@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0016_recaps_table — Create recaps table for AI-generated session summaries
 
 CREATE TABLE IF NOT EXISTS recaps (

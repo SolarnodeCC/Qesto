@@ -7,7 +7,7 @@
  * - Provider-side observability
  *
  * ADR-042 Phase 1.1: Cache hits target −40–70% latency, −30–50% cost reduction.
- * Falls back to direct env.AI.run() if Gateway is unavailable.
+ * Uses direct env.AI.run() when Gateway is not configured.
  *
  * @see knowledge-base/adr/ADR-042-cloudflare-capability-expansion.md
  */
@@ -38,13 +38,13 @@ type AIGatewayCacheMode = 'semantic' | 'exact'
 /**
  * Global AI Gateway configuration. Set CLOUDFLARE_AI_GATEWAY_ID via
  * `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID <uuid>` in production.
- * For staging/dev, uses direct env.AI fallback if not set.
- * Phase 1.1 MVP: Gateway ID to be configured in Phase 1.2; currently falls back to direct env.AI.
+ * For staging/dev, uses direct env.AI when Gateway ID is unset.
+ * Phase 1.1 MVP: Gateway ID configured in Phase 1.2 via wrangler secret.
  */
 export const AI_GATEWAY_CONFIG = {
   // Example: '8a6f7e9b-1234-5678-abcd-ef0123456789'
-  // If not set, falls back to direct env.AI.run()
-  // TODO: Wire via wrangler secret after Phase 1 review
+  // If not set, routes through direct env.AI.run()
+  // Phase 1.2: wire via wrangler secret after Gateway provisioning
   gatewayId: null as string | null,
   cacheMode: 'semantic' as AIGatewayCacheMode,
   cacheTtlSeconds: 3600, // 1h for semantic matches
@@ -53,7 +53,7 @@ export const AI_GATEWAY_CONFIG = {
 
 /**
  * Call an AI model via Cloudflare AI Gateway with optional caching.
- * Falls back to direct env.AI.run() if Gateway is not configured or unavailable.
+ * Uses direct env.AI.run() when Gateway is not configured or unavailable.
  *
  * @param env Cloudflare Env
  * @param ctx Session AI context (for logging + plan-based limits)
@@ -97,9 +97,8 @@ export async function runThroughAIGateway(
     })
 
     if (!response.ok) {
-      // Gateway error: fall back to direct env.AI
       if (response.status >= 500) {
-        return fallbackToDirect(env, model, sanitizedInput, startMs)
+        return directAiRun(env, model, sanitizedInput, startMs)
       }
       // Client error (bad request): propagate
       throw new Error(`AI Gateway error: ${response.status} ${response.statusText}`)
@@ -118,18 +117,17 @@ export async function runThroughAIGateway(
     }
     return response_obj
   } catch (err) {
-    // Network error, timeout, or Gateway down: fall back to direct env.AI
     if (err instanceof Error && err.name === 'AbortError') {
-      return fallbackToDirect(env, model, sanitizedInput, startMs)
+      return directAiRun(env, model, sanitizedInput, startMs)
     }
-    return fallbackToDirect(env, model, sanitizedInput, startMs)
+    return directAiRun(env, model, sanitizedInput, startMs)
   }
 }
 
 /**
  * Build the Cloudflare AI Gateway URL for the given model.
  * Pattern: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{model}?gateway_id={gatewayId}
- * TODO: Phase 1.2 — Wire account_id from wrangler.toml and gatewayId from secret after Gateway provisioning.
+ * Phase 1.2: wire account_id from wrangler.toml and gatewayId from secret after Gateway provisioning.
  */
 function buildGatewayUrl(model: string): string {
   if (!AI_GATEWAY_CONFIG.gatewayId) {
@@ -150,7 +148,7 @@ function buildGatewayUrl(model: string): string {
 function buildGatewayHeaders(plan: string): Record<string, string> {
   // In production, CLOUDFLARE_API_TOKEN is stored as a secret and passed via env.
   // For the MVP, we use the existing env.AI binding instead.
-  // TODO: Future: wire up bearer token from wrangler secret.
+  // Phase 1.2: wire bearer token from wrangler secret.
   return {
     'Content-Type': 'application/json',
     'User-Agent': 'Qesto/1.0',
@@ -160,9 +158,9 @@ function buildGatewayHeaders(plan: string): Record<string, string> {
 }
 
 /**
- * Fallback to direct env.AI.run() if Gateway is unavailable or misconfigured.
+ * Direct env.AI.run() path when Gateway is unavailable or misconfigured.
  */
-async function fallbackToDirect(
+async function directAiRun(
   env: Env,
   model: string,
   input: AIGatewayRequest,

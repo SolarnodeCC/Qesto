@@ -13,6 +13,7 @@
 | `migrations/*.verify.sql` | Post-apply integrity checks referenced by sidecars |
 | `migrations/.metadata/` | Human-readable JSON archive of safety evidence |
 | `schema.sql` | Full schema snapshot for local `--local` dev |
+| `queries/*.ts` | Parameterized D1 read templates consumed by `functions/api/` |
 
 ## Commands
 

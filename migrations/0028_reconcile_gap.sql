@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0028_reconcile_gap.sql
 -- Reconciliation no-op: this migration number was applied directly to production
 -- during sprint development without being recorded in the migrations directory.

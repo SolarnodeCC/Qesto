@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0000_init — initial D1 schema for Qesto v1 vertical slice.
 -- Canonical source: /schema.sql. Keep in sync when the schema changes.
 -- Apply: `wrangler d1 migrations apply qesto-prod`

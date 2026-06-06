@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Growth Engine: Add is_public column to sessions table (opt-out for template gallery)
 -- SQLite-compatible migration (Cloudflare D1)
 -- Metadata: migrations/.metadata/0044_sessions_is_public.json

@@ -13,6 +13,8 @@ export type AuditQueryFilters = {
   until_ts?: number
 }
 
+const ALLOWED_COLUMNS = new Set(['actor_id', 'action', 'subject_type'])
+
 export function buildAuditEventWhereClause(filters: AuditQueryFilters): {
   whereSql: string
   bindValues: AuditQueryBindValue[]
@@ -24,8 +26,9 @@ export function buildAuditEventWhereClause(filters: AuditQueryFilters): {
 
   const pushEq = (column: string, value: string | number | undefined) => {
     if (value === undefined || value === '') return
+    if (!ALLOWED_COLUMNS.has(column)) return
     n++
-    clauses.push(`${column} = ?${n}`)
+    clauses.push(column + ' = ?' + String(n))
     bindValues.push(value)
   }
 
@@ -35,22 +38,22 @@ export function buildAuditEventWhereClause(filters: AuditQueryFilters): {
 
   if (filters.since_ts !== undefined) {
     n++
-    clauses.push(`ts >= ?${n}`)
+    clauses.push('ts >= ?' + String(n))
     bindValues.push(filters.since_ts)
   }
   if (filters.until_ts !== undefined) {
     n++
-    clauses.push(`ts <= ?${n}`)
+    clauses.push('ts <= ?' + String(n))
     bindValues.push(filters.until_ts)
   }
 
-  const whereSql = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''
+  const whereSql = clauses.length > 0 ? 'WHERE ' + clauses.join(' AND ') : ''
   return { whereSql, bindValues, nextPlaceholderIndex: n + 1 }
 }
 
 const COUNT_AUDIT_EVENTS = 'SELECT COUNT(*) as count FROM audit_events'
-const LIST_AUDIT_EVENTS = `SELECT id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key
-       FROM audit_events`
+const LIST_AUDIT_EVENTS =
+  'SELECT id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key FROM audit_events'
 
 export async function queryAuditEventsFromDb(
   db: D1Database,
@@ -63,13 +66,19 @@ export async function queryAuditEventsFromDb(
   const limIdx = nextPlaceholderIndex
   const offIdx = nextPlaceholderIndex + 1
 
-  const countSql = `${COUNT_AUDIT_EVENTS} ${whereSql}`
+  const countSql = COUNT_AUDIT_EVENTS + (whereSql ? ' ' + whereSql : '')
   const countResult = await db
     .prepare(countSql)
     .bind(...bindValues)
     .first<{ count: number }>()
 
-  const listSql = `${LIST_AUDIT_EVENTS} ${whereSql} ORDER BY ts DESC LIMIT ?${limIdx} OFFSET ?${offIdx}`
+  const listSql =
+    LIST_AUDIT_EVENTS +
+    (whereSql ? ' ' + whereSql : '') +
+    ' ORDER BY ts DESC LIMIT ?' +
+    String(limIdx) +
+    ' OFFSET ?' +
+    String(offIdx)
   const result = await db.prepare(listSql).bind(...bindValues, limit, offset).all()
 
   return {

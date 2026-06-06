@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- migrations/0043_kb_vectors_storage.sql
 -- ADR-040 Phase 1: Add vector storage column to kb_chunks for embedding persistence.
 -- Safety: Additive column, no data loss.

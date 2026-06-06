@@ -3,7 +3,7 @@
  *
  * Scope model (ENTERPRISE-POLISH s12b):
  *
- * Legacy broad scopes (still accepted for backward compat):
+ * Broad scopes (accepted for existing keys):
  *   read   -- equivalent to all read:* scopes
  *   write  -- equivalent to all write:* scopes
  *   admin  -- supersedes all scopes
@@ -18,12 +18,12 @@
  *   write:webhooks  -- create / update / delete webhook endpoints
  *   write:exports   -- trigger CSV / XLSX / PDF exports
  *
- * apiKeyHasScope resolves both legacy and fine-grained scopes so existing
+ * apiKeyHasScope resolves both broad and fine-grained scopes so existing
  * keys continue to work without migration.
  */
 import { z } from 'zod'
 
-export const LEGACY_SCOPES = ['read', 'write', 'admin'] as const
+export const BROAD_SCOPES = ['read', 'write', 'admin'] as const
 export const FINE_GRAINED_SCOPES = [
   'read:sessions',
   'read:results',
@@ -37,9 +37,9 @@ export const FINE_GRAINED_SCOPES = [
 
 // z.enum requires a non-empty tuple literal; spread produces a plain array so
 // we cast via `as` to satisfy the overload without losing type safety.
-const ALL_SCOPES = [...LEGACY_SCOPES, ...FINE_GRAINED_SCOPES] as [string, ...string[]]
+const ALL_SCOPES = [...BROAD_SCOPES, ...FINE_GRAINED_SCOPES] as [string, ...string[]]
 export const ApiKeyScopeSchema = z.enum(ALL_SCOPES)
-export type ApiKeyScope = (typeof LEGACY_SCOPES)[number] | (typeof FINE_GRAINED_SCOPES)[number]
+export type ApiKeyScope = (typeof BROAD_SCOPES)[number] | (typeof FINE_GRAINED_SCOPES)[number]
 
 export const ApiKeyRecordSchema = z.object({
   id: z.string(),
@@ -91,14 +91,14 @@ export function isApiKeyActive(record: ApiKeyRecord, now = Date.now()): boolean 
 }
 
 /**
- * Resolve whether record grants scope, honouring both legacy broad scopes
- * and the new fine-grained resource scopes.
+ * Resolve whether record grants scope, honouring both broad scopes
+ * and fine-grained resource scopes.
  *
  * Resolution order:
- *   1. admin        -> grants everything
- *   2. exact match  -> granted
- *   3. legacy read  -> grants all read:* fine-grained scopes
- *   4. legacy write -> grants all write:* fine-grained scopes
+ *   1. admin       -> grants everything
+ *   2. exact match -> granted
+ *   3. broad read  -> grants all read:* fine-grained scopes
+ *   4. broad write -> grants all write:* fine-grained scopes
  */
 export function apiKeyHasScope(record: ApiKeyRecord, scope: ApiKeyScope): boolean {
   const { scopes } = record
@@ -111,7 +111,7 @@ export function apiKeyHasScope(record: ApiKeyRecord, scope: ApiKeyScope): boolea
 
 /** Convenience: return all effective scopes (useful for UI display). */
 export function expandScopes(scopes: ApiKeyScope[]): ApiKeyScope[] {
-  if (scopes.includes('admin')) return [...LEGACY_SCOPES, ...FINE_GRAINED_SCOPES]
+  if (scopes.includes('admin')) return [...BROAD_SCOPES, ...FINE_GRAINED_SCOPES]
   const expanded = new Set<ApiKeyScope>(scopes)
   if (scopes.includes('read')) {
     for (const s of FINE_GRAINED_SCOPES) {

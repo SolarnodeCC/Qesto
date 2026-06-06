@@ -4,6 +4,26 @@ command = "just fast"
 purpose = "deterministic local health proof"
 
 [[lane]]
+name = "typecheck"
+command = "just typecheck"
+purpose = "fastest TypeScript-only proof lane"
+
+[[lane]]
+name = "test-fast"
+command = "just test-fast"
+purpose = "vitest changed-since narrow proof lane"
+
+[[lane]]
+name = "audit-fast"
+command = "just audit-fast"
+purpose = "jankurai changed-fast audit artifacts"
+
+[[lane]]
+name = "bench"
+command = "just bench"
+purpose = "jankurai build-speed benchmark smoke"
+
+[[lane]]
 name = "check"
 command = "just check"
 purpose = "typecheck and unit test gate"

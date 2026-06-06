@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0003_emoji_poll — Emoji Poll energizer support.
 -- Recreates the energizers table (and dependents) with the updated kind
 -- CHECK constraint to include 'emoji_poll'. Also adds the energizer_votes

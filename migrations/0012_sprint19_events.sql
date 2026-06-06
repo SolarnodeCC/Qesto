@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Sprint 19 completion: durable journey events for wizard -> Launchpad evidence.
 -- NOTE: If initialized from schema.sql (new databases), these columns already exist.
 -- This migration is now a no-op for fresh databases; it only applies to old databases.

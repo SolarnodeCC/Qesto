@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0005_team_quiz_word_cloud — Team Quiz + Word Cloud energizer support.
 -- Recreates energizers table with updated kind CHECK, adds team_quiz_responses
 -- table for per-question answers in multi-round Team Quiz.

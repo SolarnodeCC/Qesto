@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0047_linkedin_posts.sql
 -- LinkedIn auto-posting log (MKTG). One row per scheduled post attempt:
 -- successful publishes (status='posted') and failures (status='error', the

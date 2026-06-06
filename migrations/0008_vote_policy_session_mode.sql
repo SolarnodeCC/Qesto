@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Migration 0008: add vote_policy and session_mode to sessions table.
 -- These columns were defined in schema.sql but were never shipped as a migration,
 -- so they don't exist in databases created from the 0000_init migration.

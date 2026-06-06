@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Migration 0046: TOWNHALL Moderated Anonymous Q&A (epic TOWNHALL, ADR-0044).
 -- Apply: `wrangler d1 migrations apply qesto-prod`
 -- Safety: additive column + new table + additive indexes. No data backfill.

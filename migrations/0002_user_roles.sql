@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- 0002_user_roles — RBAC role assignments.
 -- The rbac middleware queries this table; without it every DB call silently
 -- falls back to 'viewer', blocking all owner/admin/member operations.

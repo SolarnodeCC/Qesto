@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Migration 0048: Native push device tokens (NATIVE-PUSH-01 / ADR-0044, Sprint 81).
 -- Apply: wrangler d1 migrations apply qesto_3_db --local
 

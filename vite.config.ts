@@ -79,6 +79,8 @@ export default defineConfig(() => {
     test: {
       globals: true,
       environment: 'node',
+      pool: 'threads',
+      cache: { dir: 'node_modules/.vitest' },
       include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
       environmentMatchGlobs: [
         // a11y tests run in jsdom so axe-core can access a real DOM API

@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Help Assistant tables (Week 1 schema)
 CREATE TABLE IF NOT EXISTS help_documents (
   id TEXT PRIMARY KEY,

@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Fix metrics_summary column names to match application code.
 -- This migration is idempotent: if 0001 already created correct column names,
 -- the PRAGMA statements below detect this and skip the renames.

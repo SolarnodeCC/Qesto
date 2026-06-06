@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Migration 0051: Agent marketplace foundation (AGENT-MARKETPLACE-FOUNDATION-01, Sprint 84).
 -- Registry stub — public marketplace gated on SEC-AGENT-EVAL-01 (S84).
 

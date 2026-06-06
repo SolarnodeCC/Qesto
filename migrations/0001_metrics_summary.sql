@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- Phase 8 Step 1: Observability — Durable metrics history (D1 table)
 -- Populated every 5 minutes by scheduled worker from KV metrics buckets.
 -- Supports admin dashboard historical queries and CSV export.

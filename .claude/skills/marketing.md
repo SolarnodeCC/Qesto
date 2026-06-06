@@ -62,7 +62,7 @@ repo — those dead references are removed. Deal-cycle tasks now live in `sales.
 | Pricing tier / value-metric validation | Reference Stripe vars; changes raise to PO | `docs/PRICING_SPEC.md` |
 | In-app upgrade prompts (CRO) | Anchor on capacity-exceeded trigger; A/B via experiment card | `docs/EXPERIMENTS/` |
 | Signup → first-session funnel | Cut steps; instrument each; measure activation | `docs/EXPERIMENTS/` |
-| Competitor comparison SEO pages | Pull edges from market-research battle cards; no fabricated claims | `/vs/[competitor]` route copy |
+| Competitor comparison SEO pages | Pull edges from `knowledge-base/product/research/COMPETITOR_PROFILES.md`; gate with `npm run check:compliance-claims` | `/vs/[competitor]` route copy |
 | ICP / persona insight | Reference market-research; do not re-derive personas | `docs/ICP_PERSONAS.md` |
 | Cancel flow + dunning | Map churn signals from analytics; benefit-led save offers | `docs/EMAIL_SEQUENCES/` |
 | Launch plan | Multi-channel, dated, single owner per channel | `docs/CONTENT_ROADMAP.md` |
@@ -72,7 +72,20 @@ repo — those dead references are removed. Deal-cycle tasks now live in `sales.
 | Paid ads | ICP-targeted; track CAC by channel | `docs/EXPERIMENTS/` |
 | Programmatic / long-tail SEO | Template + real data; never thin content | `docs/CONTENT_ROADMAP.md` |
 | Free tool / lead-gen widget | Value-first; capture → MQL → Sales (E16) | raise route need to PO |
-| Persuasion / copy review | Apply brand voice; cut jargon | inline |
+| Persuasion / copy polish | Apply brand voice; cut jargon; rerun compliance gate | inline |
+
+## Proof receipts (competitor + compliance copy)
+
+Replayable commands — attach raw CI logs, not summary-only claims:
+
+| Claim type | Receipt command | Evidence artifact |
+|---|---|---|
+| Competitor comparison copy | `npm run check:compliance-claims` | exit 0 + battle-card path in PR |
+| Public compliance/latency copy | `npm run check:compliance-claims` | matching file under `knowledge-base/security/` |
+| Marketing page edits | `npm test -- --run tests/unit/compliance` | Vitest log in CI job URL |
+| Funnel / CRO experiments | `just score` | `agent/repo-score.json` uploaded to CI |
+
+Source of truth for competitor edges: `knowledge-base/product/research/COMPETITOR_PROFILES.md` (owned by market-research).
 
 > **Outbound prospecting, cold sequences, sales decks, and objection handlers are NOT
 > here** — they belong to the Sales node (`sales.md`). Marketing produces the MQL→SQL
@@ -89,7 +102,7 @@ repo — those dead references are removed. Deal-cycle tasks now live in `sales.
 
 ## Deliverable Formats
 
-- **Competitor page**: `/vs/[competitor]` public route — TL;DR box, feature comparison table, "who it suits best", migration guide. No fabricated claims.
+- **Competitor page**: `/vs/[competitor]` public route — TL;DR box, feature comparison table, "who it suits best", migration guide. Gate with `npm run check:compliance-claims`.
 - **Lifecycle email**: `docs/EMAIL_SEQUENCES/` — sequence name, trigger, email N (subject, preview, body, CTA, timing)
 - **Pricing spec**: `docs/PRICING_SPEC.md` — tier table, value metric rationale, WTP summary
 - **Content roadmap**: `docs/CONTENT_ROADMAP.md` — pillar topics, cluster map, 30 prioritized articles

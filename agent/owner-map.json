@@ -4,6 +4,8 @@
     "AGENTS.md": "agent",
     "CLAUDE.md": "agent",
     "justfile": "agent",
+    "Justfile": "agent",
+    "agent/cost-budget.toml": "ops",
     "src/": "tools",
     "apps/web/": "tools",
     "functions/api/": "tools",

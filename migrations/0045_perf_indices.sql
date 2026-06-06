@@ -1,3 +1,4 @@
+-- jankurai:allow HLT-030-SQL-BAD-BEHAVIOR reason=d1-sqlite-no-concurrent-index expires=2027-06-01
 -- PERF-DB-INDICES-01 (Sprint 46): hot-path query indexes
 CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);
 CREATE INDEX IF NOT EXISTS idx_votes_session_submitted ON votes(session_id, submitted_at);

@@ -1,17 +1,17 @@
 {
-  "report_fingerprint": "sha256:56179a562dd4be55f80cad4d91012f6454ec32ec022127d2b8c104fa4da8b9bc",
-  "input_fingerprint": "sha256:b0ae49b6df6a72d1478632a8adef3d0c7ba6b5494b02015e89f94a89a65f01f1",
+  "report_fingerprint": "sha256:0bd8b7e4e7c606e6ff0b9203640a4d026386dbc991d806ceec306b143a6ca476",
+  "input_fingerprint": "sha256:377fcc9d8b681e72068fa3a97f1d5850204912f96051a89583f826e3a5145307",
   "policy_fingerprint": "sha256:49cf5c8bd6c3a84e2bf6e3fec10ae0c7d1b7e8e2ae12b0d6740de9636960b2ee",
   "manifest_fingerprints": {
-    "owner_map": "sha256:cae2e6c590468bbda129e902e02e308e39d7f70f164b8185bed600eadf09ea7d",
-    "test_map": "sha256:a12eab35156f85b6b13159adec559390093ada0d6a6c09c0de047f8d2538a33a",
+    "owner_map": "sha256:2da60d27e493137bafba3e5e4ec6afe1b9c97a9934840976f5ff5a2d604ad160",
+    "test_map": "sha256:666bdb8aca02dc890a667a3be337d56c77251e8eeea362a6199bbf0ef77237f5",
     "generated_zones": "sha256:fc65b3b1a1992adec9da7b442e425c1f547e450fe4b89a38fe8181ef9a9cc97f",
     "boundaries": "sha256:50aef7fd09053cc62bf87844c3d558f2fd3529af36fe490104d141868ca686c3",
-    "proof_lanes": "sha256:94bf67fce1d3d11c5f5b0bd3e916eb03f6a9e94d32e8a701d55d9e9040a12528",
+    "proof_lanes": "sha256:ce71f12a23babc1d43945e5a975d28f88d6a55c868d653d3d0453fae91196cd5",
     "standard_version": "sha256:900406ca2731434714c0d0fc05ecf6474bacd7338d6d7edeabae54d844ea46d3"
   },
   "dirty_worktree": true,
-  "generated_at": "1780766091",
+  "generated_at": "1780767690",
   "schema_url": "schemas/repo-score.schema.json",
   "standard": "jankurai",
   "standard_version": "0.9.0",
@@ -25,23 +25,23 @@
   "conformance_decision": "pass",
   "conformance_blockers": [],
   "repo": ".",
-  "run_id": "1780766091",
-  "started_at": "1780766091",
-  "elapsed_ms": 3611,
+  "run_id": "1780767690",
+  "started_at": "1780767690",
+  "elapsed_ms": 3491,
   "scope": {
     "mode": "full",
     "paths": []
   },
-  "score": 92,
-  "raw_score": 92,
+  "score": 93,
+  "raw_score": 93,
   "decision": {
     "status": "pass",
     "minimum_score": 85,
     "passed": true,
     "hard_findings": 0,
-    "soft_findings": 4,
+    "soft_findings": 1,
     "ratchet": {
-      "baseline_score": 92,
+      "baseline_score": 93,
       "allowed_drop": 0,
       "passed": true,
       "score_delta": 0,
@@ -54,7 +54,7 @@
     }
   },
   "git": {
-    "head": "e3af18f",
+    "head": "afc3baf",
     "base": null,
     "changed_files": 0,
     "mode": "full",
@@ -358,7 +358,7 @@
       "score": 80,
       "weighted_points": 9.6,
       "evidence": [
-        "largest authored code file: worker/TemplateGenerationWorkflow.ts (499 LOC)",
+        "largest authored code file: functions/api/routes/copilot-context.ts (437 LOC)",
         "most code files stay under 300 LOC",
         "copy-code advisory classes found: 18 (advisory only, no score impact)",
         "sql bad-behavior advisory signals: 95",
@@ -366,7 +366,6 @@
         "git bad-behavior advisory signals: 2",
         "gittools bad-behavior advisory signals: 3",
         "release bad-behavior advisory signals: 1",
-        "comments bad-behavior advisory signals: 3",
         "no hard bad-behavior findings across detector-backed language families"
       ],
       "notes": []
@@ -449,13 +448,15 @@
     {
       "name": "Build speed signals",
       "weight": 4,
-      "score": 70,
-      "weighted_points": 2.8,
+      "score": 95,
+      "weighted_points": 3.8,
       "evidence": [
         "build acceleration markers found",
         "targeted test/build commands found",
         "locked dependency graph present",
-        "CI cache hint found"
+        "CI cache hint found",
+        "fast lane uses targeted commands and target-only audit artifacts",
+        "explicit cache marker plus narrow per-package target found"
       ],
       "notes": []
     }
@@ -1078,7 +1079,7 @@
   "copy_code": {
     "schema_version": "1.1.0",
     "generated_by": "jankurai copy-code",
-    "generated_at": "2026-06-06T17:14:48.254480784+00:00",
+    "generated_at": "2026-06-06T17:41:27.299251485+00:00",
     "repo": ".",
     "auditor_version": "1.5.1",
     "status": "review",
@@ -1116,9 +1117,9 @@
       ]
     },
     "summary": {
-      "files_scanned": 983,
-      "files_considered": 375,
-      "active_files": 375,
+      "files_scanned": 998,
+      "files_considered": 389,
+      "active_files": 389,
       "exact_file_classes": 0,
       "hard_classes": 0,
       "warning_classes": 18,
@@ -1557,10 +1558,24 @@
         "total_redundant_bytes": 147,
         "effective_severity": "warning",
         "hard_fail": false,
-        "fingerprint": "388fdf722032e97b",
+        "fingerprint": "19fb22d1b15b5646",
         "reason": "same body appears under different names across files",
         "recommended_action": "choose one owner for the shared body or intentionally differentiate the behavior",
         "instances": [
+          {
+            "path": "functions/api/lib/session-export.ts",
+            "language": "typescript",
+            "start_line": 11,
+            "end_line": 12,
+            "unit_name": "trackSessionExport"
+          },
+          {
+            "path": "functions/api/lib/session-export.ts",
+            "language": "typescript",
+            "start_line": 88,
+            "end_line": 89,
+            "unit_name": "renderSignedHtmlExport"
+          },
           {
             "path": "functions/api/routes/marketplace-connect.ts",
             "language": "typescript",
@@ -1574,20 +1589,6 @@
             "start_line": 60,
             "end_line": 61,
             "unit_name": "authorizeBillingManager"
-          },
-          {
-            "path": "functions/api/routes/sessions/exports.ts",
-            "language": "typescript",
-            "start_line": 25,
-            "end_line": 26,
-            "unit_name": "trackExport"
-          },
-          {
-            "path": "functions/api/routes/sessions/exports.ts",
-            "language": "typescript",
-            "start_line": 79,
-            "end_line": 80,
-            "unit_name": "renderSignedHtmlExport"
           }
         ]
       },
@@ -2184,7 +2185,7 @@
       "problem": "`Code shape and semantic surface` scored 80 below the standard floor of 85",
       "agent_fix": "split large or ambiguous authored code into smaller semantic modules with focused tests",
       "evidence": [
-        "largest authored code file: worker/TemplateGenerationWorkflow.ts (499 LOC)",
+        "largest authored code file: functions/api/routes/copilot-context.ts (437 LOC)",
         "most code files stay under 300 LOC",
         "copy-code advisory classes found: 18 (advisory only, no score impact)",
         "sql bad-behavior advisory signals: 95"
@@ -2194,116 +2195,15 @@
       "confidence": 0.76,
       "evidence_kind": "repository-scan",
       "rerun_command": "just fast",
-      "fingerprint": "sha256:75de56842ca5f28ba3e026d4acc6d84b700ee23226b612736e36965cb2dd4b4a",
+      "fingerprint": "sha256:ad4812b5a85c8a3b8fc8c8d54a8414a69210be4409f95df83e3447856a46d9fa",
       "rule_id": "HLT-001-DEAD-MARKER",
       "tlr": "Entropy",
       "lane": "fast",
       "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
       "owner": "tools"
-    },
-    {
-      "severity": "medium",
-      "category": "proof",
-      "path": ".claude/skills/marketing.md",
-      "problem": "human review or proof claim lacks reproducible evidence",
-      "agent_fix": "attach raw CI logs, review receipts, and replayable commands instead of accepting claims or summaries",
-      "evidence": [
-        "| Competitor comparison SEO pages | Pull edges from market-research battle cards; no fabricated claims | `/vs/[competitor]` route copy |"
-      ],
-      "check_id": "HLT-027-HUMAN-REVIEW-EVIDENCE-GAP:proof",
-      "hardness": "soft",
-      "confidence": 0.88,
-      "evidence_kind": "receipt",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:7a10d463950682928cac9b16baa5efc080ecc90063bf61ee6517b9aa8f075153",
-      "rule_id": "HLT-027-HUMAN-REVIEW-EVIDENCE-GAP",
-      "tlr": "Repair",
-      "lane": "audit",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 65,
-      "matched_term": "review evidence",
-      "reason": "proof and review claims need receipts"
-    },
-    {
-      "severity": "medium",
-      "category": "proof",
-      "path": "Justfile",
-      "problem": "`Build speed signals` scored 70 below the standard floor of 85",
-      "agent_fix": "add fast deterministic build/test targets, caches, and narrow proof lanes for agent iteration",
-      "evidence": [
-        "build acceleration markers found",
-        "targeted test/build commands found",
-        "locked dependency graph present",
-        "CI cache hint found"
-      ],
-      "check_id": "HLT-018-PERF-CONCURRENCY-DRIFT:proof",
-      "hardness": "soft",
-      "confidence": 0.76,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:a256a7390d4b91a5b0a95d6f092e524c8f4080f27fe2b62e28cf0801343d0fef",
-      "rule_id": "HLT-018-PERF-CONCURRENCY-DRIFT",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "workspace"
-    },
-    {
-      "severity": "medium",
-      "category": "release",
-      "path": "docs/testing.md",
-      "problem": "cost or spend-risk surface lacks budget proof",
-      "agent_fix": "add explicit budgets, quotas, stop conditions, and kill-switch evidence for paid or unbounded operations",
-      "evidence": [
-        "cost surface found without budget/stop-condition policy"
-      ],
-      "check_id": "HLT-026-COST-BUDGET-GAP:release",
-      "hardness": "soft",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just check",
-      "fingerprint": "sha256:edd248b7afc24b644107205fa5b84a88103ac4b622009ff9f19b779de8798f59",
-      "rule_id": "HLT-026-COST-BUDGET-GAP",
-      "tlr": "Verification",
-      "lane": "release",
-      "docs_url": "docs/testing.md",
-      "owner": "standard",
-      "matched_term": "budget",
-      "reason": "unbounded paid work needs budgets and stop conditions"
     }
   ],
   "agent_fix_queue": [
-    {
-      "path": "Justfile",
-      "priority": "medium",
-      "rule_id": "HLT-018-PERF-CONCURRENCY-DRIFT",
-      "tlr": "Verification",
-      "lane": "fast",
-      "owner": "workspace",
-      "task": "add fast deterministic build/test targets, caches, and narrow proof lanes for agent iteration",
-      "why": "`Build speed signals` scored 70 below the standard floor of 85"
-    },
-    {
-      "path": "docs/testing.md",
-      "priority": "medium",
-      "rule_id": "HLT-026-COST-BUDGET-GAP",
-      "tlr": "Verification",
-      "lane": "release",
-      "owner": "standard",
-      "task": "add explicit budgets, quotas, stop conditions, and kill-switch evidence for paid or unbounded operations",
-      "why": "cost or spend-risk surface lacks budget proof"
-    },
-    {
-      "path": ".claude/skills/marketing.md",
-      "priority": "medium",
-      "rule_id": "HLT-027-HUMAN-REVIEW-EVIDENCE-GAP",
-      "tlr": "Repair",
-      "lane": "audit",
-      "owner": "agent",
-      "task": "attach raw CI logs, review receipts, and replayable commands instead of accepting claims or summaries",
-      "why": "human review or proof claim lacks reproducible evidence"
-    },
     {
       "path": ".",
       "priority": "medium",

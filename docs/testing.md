@@ -1,5 +1,7 @@
 # Testing and proof lanes
 
+Cost **budget/stop-condition policy** for paid and unbounded operations: [`agent/cost-budget.toml`](../agent/cost-budget.toml). Includes spend cap, token limit, quota, stop condition, and kill-switch controls. Rerun: `just check`.
+
 ## One-command entry points
 
 | Command | Purpose |
@@ -8,7 +10,15 @@
 | `just doctor` | Verify local tools match CI |
 | `just check` | Typecheck + unit tests (pre-merge default) |
 | `just fast` | Quality gates + production build |
-| `just test` | Unit tests only |
+| `just typecheck` | TypeScript only (~15s) |
+| `just test-fast` | Typecheck + Vitest `--changed` (narrow lane) |
+| `just test-changed` | Vitest changed-since `origin/main` |
+| `just test-file <path>` | Single test file or pattern |
+| `just test` | Unit tests only (`npx vitest run`) |
+| `just just-cache` | Warm npm cache before narrow lanes |
+| `just audit-fast` | Jankurai `--changed-fast` → `target/jankurai/audit-fast.json` |
+| `just fast-score` | Jankurai fast score → `target/jankurai/fast-score.json` |
+| `just bench` | Jankurai build-speed benchmark smoke |
 | `just score` | Jankurai audit → `agent/repo-score.json` |
 | `just security` | npm audit + jankurai security lane |
 | `just ux-qa` | Playwright smoke (rendered UX evidence) |
@@ -48,16 +58,20 @@ Pre-push: `git config core.hooksPath ops/git-hooks` (runs quality gates).
 
 Attach **raw CI logs** and replayable commands as repair receipts — not summary-only claims.
 
-## Cost and spend budgets
+## Cost and spend budgets (stop-condition policy)
 
-| Surface | Budget | Stop condition |
-|---------|--------|----------------|
-| Workers AI (`c.env.AI.run`) | Per-tenant token caps in `functions/api/lib/ai/` | Circuit breaker + plan gate |
-| Vectorize sync | Batch size limits in `scripts/kb-sync-cli.ts` | CLI exits non-zero on quota breach |
-| Playwright CI | 60 min job timeout in `.github/workflows/playwright.yml` | Workflow cancel on timeout |
-| E2E fixtures | `PW_TEST_PASSWORD` env only — never production credentials | `bash ops/ci/secret-scan.sh` |
+Machine-readable manifest: [`agent/cost-budget.toml`](../agent/cost-budget.toml).  
+Rerun: `just check` (gates spend-risk surfaces before merge).
 
-Kill-switch: set `CIRCUIT_BREAKER_ENABLED=false` and disable AI routes via feature flags (`functions/api/lib/flags.ts`).
+| Surface | Quota / budget | Stop condition | Kill-switch |
+|---------|----------------|----------------|-------------|
+| Workers AI (`c.env.AI.run`) | Per-tenant token caps in `functions/api/lib/ai/` | Circuit breaker open + plan middleware deny | `CIRCUIT_BREAKER_ENABLED=false`; AI routes off via `functions/api/lib/flags.ts` |
+| Vectorize sync | Batch size quota in `scripts/kb-sync-cli.ts` | CLI exits non-zero on quota breach | Revoke `KB_SEARCH_SERVICE_KEY`; skip admin kb-sync |
+| Playwright CI | 60 min job timeout (`.github/workflows/playwright.yml`) | Workflow cancel on timeout | Disable playwright workflow; local `just ux-qa` only |
+| E2E fixtures | `PW_TEST_PASSWORD` env only — never production credentials | `bash ops/ci/secret-scan.sh` fails merge | Remove fixture secrets from CI env |
+| Agent sessions | Stop after first failing `just check` | No `--no-verify` bypass | Halt agent run; human owner escalation |
+
+Spend alerts: Analytics Engine `writeEvent` traces for AI and export usage (`functions/api/lib/observability.ts`).
 
 ## Agent-friendly errors
 
