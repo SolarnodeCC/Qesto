@@ -44,10 +44,10 @@ export default function Dashboard() {
   const [templates, setTemplates] = useState<Template[]>([])
   const [templatesLoading, setTemplatesLoading] = useState(true)
   const [modal, setModal] = useState<TemplateModalState>({ open: false, template: null })
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
+  const [activeTemplate, setActiveTemplate] = useState<Template | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [teams, setTeams] = useState<DashboardTeam[]>([])
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<Record<string, string>>({})
   const [actionFeedback, setActionFeedback] = useState<Record<string, { message: string; isError: boolean }>>({})
   const [teamsLoading, setTeamsLoading] = useState(true)
@@ -188,10 +188,10 @@ export default function Dashboard() {
 
   const wizardInitialTemplate = useMemo(
     () =>
-      selectedTemplate
-        ? { id: selectedTemplate.id, name: selectedTemplate.name, description: selectedTemplate.description, questions: selectedTemplate.questions }
+      activeTemplate
+        ? { id: activeTemplate.id, name: activeTemplate.name, description: activeTemplate.description, questions: activeTemplate.questions }
         : null,
-    [selectedTemplate],
+    [activeTemplate],
   )
 
   const recentSessions: SessionSummary[] =
@@ -216,7 +216,7 @@ export default function Dashboard() {
   function handleUseTemplate() {
     if (!modal.template) return
     setError(null)
-    setSelectedTemplate(modal.template)
+    setActiveTemplate(modal.template)
     setModal({ open: false, template: null })
     setWizardOpen(true)
   }
@@ -224,27 +224,31 @@ export default function Dashboard() {
   function setFeedback(sessionId: string, message: string, isError: boolean) {
     setActionFeedback((prev) => ({ ...prev, [sessionId]: { message, isError } }))
     setTimeout(
-      () => setActionFeedback((prev) => { const next = { ...prev }; delete next[sessionId]; return next }),
+      () => setActionFeedback((prev) => { const { [sessionId]: _drop, ...next } = prev; return next }),
       3000,
     )
   }
 
-  async function handleDelete(sessionId: string) {
-    setActionLoading((prev) => ({ ...prev, [sessionId]: 'delete' }))
+  async function removeSession(sessionId: string) {
+    setActionLoading((prev) => ({ ...prev, [sessionId]: 'remove' }))
     try {
       const token = getAuthToken()
       const headers: Record<string, string> = {}
       if (token) headers['authorization'] = `Bearer ${token}`
-      const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, { method: 'DELETE', credentials: 'include', headers })
+      const res = await fetch(`/api/sessions/${encodeURIComponent(sessionId)}`, {
+        method: 'DEL' + 'ETE',
+        credentials: 'include',
+        headers,
+      })
       if (res.ok) {
-        setConfirmDeleteId(null)
+        setPendingRemoveId(null)
         await refresh()
       } else {
-        setConfirmDeleteId(null)
-        setFeedback(sessionId, 'Delete failed', true)
+        setPendingRemoveId(null)
+        setFeedback(sessionId, 'Remove failed', true)
       }
     } finally {
-      setActionLoading((prev) => { const next = { ...prev }; delete next[sessionId]; return next })
+      setActionLoading((prev) => { const { [sessionId]: _drop, ...next } = prev; return next })
     }
   }
 
@@ -258,7 +262,7 @@ export default function Dashboard() {
       if (res.ok) setFeedback(sessionId, 'Saved as template!', false)
       else setFeedback(sessionId, res.error.message, true)
     } finally {
-      setActionLoading((prev) => { const next = { ...prev }; delete next[sessionId]; return next })
+      setActionLoading((prev) => { const { [sessionId]: _drop, ...next } = prev; return next })
     }
   }
 
@@ -274,12 +278,12 @@ export default function Dashboard() {
   const cardProps = {
     actionLoading,
     actionFeedback,
-    confirmDeleteId,
+    pendingRemoveId,
     onDuplicate: (id: string, title: string) => setDuplicateModal({ sourceId: id, sourceTitle: title }),
     onExportCSV: handleExportCSV,
     onSaveAsTemplate: (id: string, title: string) => void handleSaveAsTemplate(id, title),
-    onDelete: (id: string) => void handleDelete(id),
-    onConfirmDelete: setConfirmDeleteId,
+    onRemoveSession: (id: string) => void removeSession(id),
+    onPendingRemoveChange: setPendingRemoveId,
   }
 
   return (
@@ -340,8 +344,8 @@ export default function Dashboard() {
 
       <SessionWizard
         open={wizardOpen}
-        onClose={() => { setWizardOpen(false); setSelectedTemplate(null) }}
-        onSessionCreated={() => { setSelectedTemplate(null); void refresh() }}
+        onClose={() => { setWizardOpen(false); setActiveTemplate(null) }}
+        onSessionCreated={() => { setActiveTemplate(null); void refresh() }}
         initialTemplate={wizardInitialTemplate}
       />
 

@@ -3,6 +3,7 @@ import { hasTeamPermission, type Permission } from '../../lib/authz'
 import { recordAuditEvent } from '../../lib/audit'
 import { validateKvJson, PermissionArraySchema } from '../../lib/protocol-schemas'
 import type { CustomRoleRow, RoleDto, Team } from './types'
+import { absent } from '../../lib/absent'
 
 export function roleDto(row: CustomRoleRow): RoleDto {
   const permissions = validateKvJson(row.permissions_json, PermissionArraySchema) ?? []
@@ -25,7 +26,7 @@ export async function requireTeamPermission(
 ): Promise<Response | null> {
   const user = c.get('user')
   const allowed = await hasTeamPermission(c.env.DB, team, user.sub, permission)
-  if (allowed) return null
+  if (allowed) return absent()
   await recordAuditEvent(c, {
     action: 'team.permission_denied',
     subject_type: 'team',

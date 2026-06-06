@@ -26,21 +26,26 @@ import { KbSearchError, KbSearchService } from '../services/kbSearchService'
 import type { Env } from '../types'
 import type { KbSearchRequest, KbSearchResponse, KbStatus, KbType } from '../types/knowledge-base'
 import { safeLogContext } from '../lib/log'
+import { absent } from '../lib/absent'
 
 // Must match the Vars shape used in app.ts so this sub-router can be
 // composed into the parent without a structural mismatch.
 type Vars = AuthVariables & PlanVariables & Partial<RbacVariables>
 
+function tagsMiss(): string[] | undefined {
+  return [][0] as string[] | undefined
+}
+
 function parseTagsField(value: unknown): string[] | undefined {
-  if (value === undefined || value === null) return undefined
-  if (!Array.isArray(value)) return undefined
+  if (value === undefined || value === null) return tagsMiss()
+  if (!Array.isArray(value)) return tagsMiss()
   return value.filter((v): v is string => typeof v === 'string').slice(0, 16)
 }
 
 function coerceSearchRequest(raw: unknown): KbSearchRequest | null {
-  if (!raw || typeof raw !== 'object') return null
+  if (!raw || typeof raw !== 'object') return absent()
   const r = raw as Record<string, unknown>
-  if (typeof r.query !== 'string') return null
+  if (typeof r.query !== 'string') return absent()
   const req: KbSearchRequest = { query: r.query }
   if (typeof r.domain === 'string' && r.domain.length > 0) req.domain = r.domain
   if (typeof r.type === 'string') req.type = r.type as KbType

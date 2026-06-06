@@ -241,7 +241,7 @@ export default function AIInsightsPage() {
               },
               {
                 icon: <Trash2 size={22} />,
-                title: 'Deleted when you delete',
+                title: 'Removed when you remove',
                 desc: 'All analysis data lives with the session. When you remove a session, everything that was generated goes with it.',
               },
             ].map(({ icon, title, desc }) => (

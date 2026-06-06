@@ -77,15 +77,15 @@ function Apply-FromSource([string]$branch, [string[]]$paths) {
   }
 }
 
-function Commit-IfDirty([string]$msg) {
-  git add -A
+function Commit-IfDirty([string]$msg, [string[]]$paths) {
+  foreach ($p in $paths) { git add -- $p }
   if (git status --porcelain) { git commit -m $msg }
 }
 
 git checkout main
 git checkout -B feat/sprint-50-v30-rc main
 git checkout $source -- knowledge-base/product/planning/sprints/SPRINT50_IMPLEMENTATION_SPEC.md 2>$null
-Commit-IfDirty 'docs(sprint-50): align spec on v3.0 RC branch'
+Commit-IfDirty 'docs(sprint-50): align spec on v3.0 RC branch' @('knowledge-base/product/planning/sprints/SPRINT50_IMPLEMENTATION_SPEC.md')
 
 git checkout -B feat/sprint-51-v31-multi-region-ldap main
 Apply-FromSource '' $s51
@@ -98,25 +98,25 @@ $app = $app -replace "app\.get\('/api/admin/health', \(c\) => \{", "app.get('/ap
 $app = $app -replace 'const mr = getMultiRegionConfig\(c\.env\)', 'const routing = await getMultiRegionRoutingSnapshot(c.env, colo)'
 $app = $app -replace 'readRegion: resolveReadRegion\(colo, mr\),\s+multiRegion: mr,', 'readRegion: routing.readRegion,`n        writeRegion: routing.writeRegion,`n        failoverActive: routing.failoverActive,`n        multiRegion: routing.config,'
 Set-Content functions/api/app.ts $app -NoNewline -Encoding utf8
-Commit-IfDirty 'feat(sprint-51): Obsidian KB, multi-region write, LDAP sync'
+Commit-IfDirty 'feat(sprint-51): Obsidian KB, multi-region write, LDAP sync' ($s51 + 'functions/api/app.ts')
 
 git checkout -B feat/sprint-52-v31-ldap-drill feat/sprint-51-v31-multi-region-ldap
 Apply-FromSource '' $s52
-Commit-IfDirty 'feat(sprint-52): LDAP group map, DO cross-region mirror, drill checklist'
+Commit-IfDirty 'feat(sprint-52): LDAP group map, DO cross-region mirror, drill checklist' $s52
 
 git checkout -B feat/sprint-53-v32-webhooks feat/sprint-52-v31-ldap-drill
 Apply-FromSource '' $s53
 git checkout $source -- functions/api/app.ts
-Commit-IfDirty 'feat(sprint-53): webhooks rate limit, delivery events, public API paths'
+Commit-IfDirty 'feat(sprint-53): webhooks rate limit, delivery events, public API paths' ($s53 + 'functions/api/app.ts')
 
 git checkout -B feat/sprint-54-v32-partner-oauth feat/sprint-53-v32-webhooks
 Apply-FromSource '' $s54
 git checkout $source -- functions/api/app.ts
-Commit-IfDirty 'feat(sprint-54): partner apps, webhook test runner, API v2 expand'
+Commit-IfDirty 'feat(sprint-54): partner apps, webhook test runner, API v2 expand' ($s54 + 'functions/api/app.ts')
 
 git checkout -B feat/sprint-55-v33-tournaments-coaching feat/sprint-54-v32-partner-oauth
 Apply-FromSource '' $s55
 git checkout $source -- functions/api/app.ts
-Commit-IfDirty 'feat(sprint-55): LIVE tournaments, coaching card, i18n'
+Commit-IfDirty 'feat(sprint-55): LIVE tournaments, coaching card, i18n' ($s55 + 'functions/api/app.ts')
 
 Write-Host 'Rebuilt feat/sprint-50-v30-rc through feat/sprint-55-v33-tournaments-coaching'

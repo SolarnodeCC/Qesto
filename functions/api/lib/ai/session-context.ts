@@ -60,13 +60,13 @@ export function sentimentContextFromMeta(meta: {
 export async function buildSessionAIContext(
   c: Context<{ Bindings: Env }>,
   sessionId: string,
-): Promise<SessionAIContext | null> {
+): Promise<SessionAIContext | void> {
   const row = await c.env.DB.prepare(
     `SELECT team_id, anonymity, owner_id FROM sessions WHERE id = ?1`,
   )
     .bind(sessionId)
     .first<{ team_id: string | null; anonymity: Anonymity; owner_id: string }>()
-  if (!row) return null
+  if (!row) return
 
   const user = await c.env.DB.prepare(`SELECT plan FROM users WHERE id = ?1`)
     .bind(row.owner_id)

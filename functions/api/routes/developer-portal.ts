@@ -2,7 +2,7 @@
  * FE-DEV2-OAS-01 — published OpenAPI for developer portal v2 (S73).
  */
 import { Hono } from 'hono'
-import openApiSpec from '../../../contracts/openapi-v3.json'
+import { OPENAPI_V3_SPEC } from '../lib/openapi-v3-spec'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -10,7 +10,7 @@ export function mountDeveloperPortalRoutes(parent: ParentApp) {
   const pub = new Hono<{ Bindings: Env }>()
 
   pub.get('/openapi.json', (c) =>
-    c.json(openApiSpec, 200, {
+    c.json(OPENAPI_V3_SPEC, 200, {
       'cache-control': 'public, max-age=300',
       'content-type': 'application/json',
     }),

@@ -494,7 +494,6 @@ Output ONLY as JSON (no markdown, no preamble):
       }
     })
 
-    console.log(`[workflow] Template generation completed for session ${sessionId} → ${templateId}`)
     return { status: 'success', templateId }
   }
 }

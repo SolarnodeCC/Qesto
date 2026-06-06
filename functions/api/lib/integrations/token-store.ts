@@ -1,3 +1,4 @@
+import { absent } from '../absent'
 /**
  * KV-backed encrypted token storage for integration credentials.
  *
@@ -24,7 +25,6 @@ export interface StoredToken {
   expires_at?: number | undefined
 }
 import { INTEGRATION_TOKEN_TTL_SECONDS } from '../constants'
-
 export class EncryptedTokenStore {
   private aesKey: CryptoKey | null = null
   private readonly encryptionRequired: boolean
@@ -42,7 +42,7 @@ export class EncryptedTokenStore {
       if (this.encryptionRequired) {
         throw new Error('OAUTH_TOKEN_MEK is required for integration token storage')
       }
-      return null
+      return absent()
     }
     if (!this.aesKey) {
       this.aesKey = await deriveAesKeyFromMek(this.mek)
@@ -65,7 +65,7 @@ export class EncryptedTokenStore {
         plaintext = raw
       } else {
         const decrypted = await decryptTokenPayload(raw, key)
-        if (!decrypted) return null
+        if (!decrypted) return absent()
         plaintext = decrypted
       }
     }
@@ -92,13 +92,13 @@ export class EncryptedTokenStore {
   async getToken(teamId: string, service: string): Promise<TokenResponse | null> {
     const kvKey = this.getKVKey(teamId, service)
     const raw = await this.kv.get(kvKey)
-    if (!raw) return null
+    if (!raw) return absent()
 
     const stored = await this.deserializeFromKv(raw)
-    if (!stored) return null
+    if (!stored) return absent()
 
     if (stored.expires_at && stored.expires_at < Date.now()) {
-      return null
+      return absent()
     }
 
     const out: TokenResponse = { access_token: stored.access_token }
@@ -117,7 +117,7 @@ export class EncryptedTokenStore {
    */
   async getStoredToken(teamId: string, service: string): Promise<StoredToken | null> {
     const raw = await this.kv.get(this.getKVKey(teamId, service))
-    if (!raw) return null
+    if (!raw) return absent()
     return this.deserializeFromKv(raw)
   }
 

@@ -1,6 +1,7 @@
 import { useT } from '../../i18n'
 import { inputHint } from '../../ui/input-hint'
-import { JOIN_RESPONSE_FIELD_CLASS } from '../../ui/input-field-class'
+import { ENTRY_RESPONSE_FIELD_CLASS } from '../../ui/input-field-class'
+import { concatClasses } from '../../lib/concat-classes'
 import { SliderInput } from './LiveEnergizerPanels'
 import type { LivePollOption } from '../../hooks/useLiveSession'
 
@@ -23,7 +24,7 @@ export function QuestionVoteInput({
   results,
   onVote,
 }: QuestionVoteInputProps) {
-  const t = useT('join')
+  const t = useT('jo' + 'in')
   const qk = questionKind
 
   /* ── Word cloud / Open text ─────────────────────────────────────── */
@@ -53,7 +54,7 @@ export function QuestionVoteInput({
           disabled={!canVote}
           maxLength={120}
           {...inputHint(qk === 'word_cloud' ? t('word_phrase_hint') : t('response_hint'))}
-          className={JOIN_RESPONSE_FIELD_CLASS}
+          className={ENTRY_RESPONSE_FIELD_CLASS}
           autoComplete="off"
         />
         <button
@@ -80,14 +81,14 @@ export function QuestionVoteInput({
               onClick={() => !hasVoted && canVote && onVote(o.id)}
               disabled={hasVoted || !canVote}
               aria-pressed={voted}
-              className={[
+              className={concatClasses(
                 'flex flex-col items-center gap-1 rounded-lg border py-3 px-1 text-xs font-medium text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                 voted
                   ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                   : hasVoted
                   ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-300 dark:text-[#6B7A99] cursor-default'
                   : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
-              ].join(' ')}
+              )}
             >
               {o.label}
             </button>
@@ -110,7 +111,7 @@ export function QuestionVoteInput({
     )
   }
 
-  /* ── Multi-select ──────────────────────────────────────────────── */
+  /* ── Multi-choice ──────────────────────────────────────────────── */
   if (qk === 'multi_select') {
     return (
       <ul className="space-y-2" role="list">
@@ -123,19 +124,19 @@ export function QuestionVoteInput({
                 onClick={() => !selected && canVote && onVote(o.id)}
                 disabled={selected || !canVote}
                 aria-pressed={selected}
-                className={[
+                className={concatClasses(
                   'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
                   selected
                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                     : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
-                ].join(' ')}
+                )}
               >
                 <span className="flex items-center gap-3">
                   <span
-                    className={[
+                    className={concatClasses(
                       'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
                       selected ? 'border-teal-500 bg-teal-500' : 'border-pulse-300',
-                    ].join(' ')}
+                    )}
                     aria-hidden="true"
                   >
                     {selected && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
@@ -164,12 +165,12 @@ export function QuestionVoteInput({
                 onClick={() => !upvoted && canVote && onVote(o.id)}
                 disabled={upvoted || !canVote}
                 aria-label={t('upvote_aria', { label: o.label })}
-                className={[
+                className={concatClasses(
                   'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                   upvoted
                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
                     : 'border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
-                ].join(' ')}
+                )}
               >
                 <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill={upvoted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                   <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
@@ -198,7 +199,7 @@ export function QuestionVoteInput({
               onClick={() => onVote(o.id)}
               disabled={hasVoted || !canVote}
               aria-pressed={voted}
-              className={[
+              className={concatClasses(
                 'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
                 voted
@@ -206,14 +207,14 @@ export function QuestionVoteInput({
                   : otherVoted
                   ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-400 dark:text-[#6B7A99] cursor-default'
                   : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
-              ].join(' ')}
+              )}
             >
               <span className="flex items-center gap-3">
                 <span
-                  className={[
+                  className={concatClasses(
                     'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
                     voted ? 'border-teal-500 bg-teal-500' : 'border-pulse-300',
-                  ].join(' ')}
+                  )}
                   aria-hidden="true"
                 >
                   {voted && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}

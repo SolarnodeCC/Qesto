@@ -1,3 +1,4 @@
+import { absent } from './absent'
 // HS256 JWT sign/verify via WebCrypto. No third-party dependency —
 // runs on Cloudflare Workers and in Vitest (Node 20+).
 //
@@ -7,7 +8,6 @@
 
 import { validateData, AuthClaimsSchema } from './protocol-schemas'
 import { hmacSign, base64UrlEncode, base64UrlDecode, timingSafeEqual } from './shared/crypto'
-
 const ALG = 'HS256'
 const HEADER = { alg: ALG, typ: 'JWT' }
 const HEADER_B64 = base64UrlEncode(new TextEncoder().encode(JSON.stringify(HEADER)))
@@ -37,9 +37,9 @@ export async function verifyJwt(token: string, secret: string): Promise<AuthClai
 /** SEC-JWT-ROTATE-01 — accept tokens signed with current or previous secret. */
 export async function verifyJwtWithSecrets(token: string, secrets: string[]): Promise<AuthClaims | null> {
   const parts = token.split('.')
-  if (parts.length !== 3) return null
+  if (parts.length !== 3) return absent()
   const [headerB64, payloadB64, sig] = parts
-  if (headerB64 !== HEADER_B64) return null
+  if (headerB64 !== HEADER_B64) return absent()
   const data = `${headerB64}.${payloadB64}`
   let signatureOk = false
   for (const secret of secrets) {
@@ -50,17 +50,17 @@ export async function verifyJwtWithSecrets(token: string, secrets: string[]): Pr
       break
     }
   }
-  if (!signatureOk) return null
+  if (!signatureOk) return absent()
   let parsed: unknown
   try {
     parsed = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64)))
   } catch {
-    return null
+    return absent()
   }
   const claims = validateData(parsed, AuthClaimsSchema)
-  if (!claims) return null
+  if (!claims) return absent()
   const now = Math.floor(Date.now() / 1000)
-  if (claims.exp < now) return null
+  if (claims.exp < now) return absent()
   return claims
 }
 

@@ -4,6 +4,7 @@
 // Deduplicates on trace_id + action + subject_id to prevent duplicate logging under retries.
 
 import type { Env } from '../types'
+import { queryAuditEventsFromDb } from '../../../db/queries/audit-events'
 import { validateData, AuditContextSchema, UserContextSchema } from './protocol-schemas'
 
 export type AuditAction =
@@ -185,55 +186,8 @@ export async function recordAuditEvent(
   }
 }
 
-/** Bound filter values for audit event queries — explicit tuple avoids loose `any[]`. */
-export type AuditQueryBindValue = string | number
-
-export type AuditQueryFilters = {
-  actor_id?: string
-  action?: string
-  subject_type?: string
-  since_ts?: number
-  until_ts?: number
-}
-
-/**
- * Build WHERE clause fragments with numbered D1 placeholders (?1…?n).
- * COUNT and SELECT reuse the same fragment + bind order; LIMIT/OFFSET are appended separately (never via string replace).
- */
-export function buildAuditEventWhereClause(filters: AuditQueryFilters): {
-  whereSql: string
-  bindValues: AuditQueryBindValue[]
-  nextPlaceholderIndex: number
-} {
-  const bindValues: AuditQueryBindValue[] = []
-  const clauses: string[] = []
-  let n = 0
-
-  const pushEq = (column: string, value: string | number | undefined) => {
-    if (value === undefined || value === '') return
-    n++
-    clauses.push(`${column} = ?${n}`)
-    bindValues.push(value)
-  }
-
-  pushEq('actor_id', filters.actor_id)
-  pushEq('action', filters.action)
-  pushEq('subject_type', filters.subject_type)
-
-  if (filters.since_ts !== undefined) {
-    n++
-    clauses.push(`ts >= ?${n}`)
-    bindValues.push(filters.since_ts)
-  }
-  if (filters.until_ts !== undefined) {
-    n++
-    clauses.push(`ts <= ?${n}`)
-    bindValues.push(filters.until_ts)
-  }
-
-  const whereSql = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : ''
-  return { whereSql, bindValues, nextPlaceholderIndex: n + 1 }
-}
+export type { AuditQueryBindValue, AuditQueryFilters } from '../../../db/queries/audit-events'
+export { buildAuditEventWhereClause } from '../../../db/queries/audit-events'
 
 /**
  * Query audit events with filtering.
@@ -251,30 +205,9 @@ export async function queryAuditEvents(
     offset?: number
   },
 ): Promise<{ events: any[]; total: number }> {
-  const limit = options.limit ?? 100
-  const offset = options.offset ?? 0
-
   try {
-    const { whereSql, bindValues, nextPlaceholderIndex } = buildAuditEventWhereClause(options)
-    const limIdx = nextPlaceholderIndex
-    const offIdx = nextPlaceholderIndex + 1
-
-    const countSql = `SELECT COUNT(*) as count FROM audit_events ${whereSql}`
-    const countResult = await c.env.DB.prepare(countSql)
-      .bind(...bindValues)
-      .first<{ count: number }>()
-
-    const listSql =
-      `SELECT id, ts, actor_id, actor_ip, action, subject_type, subject_id, before_snapshot, after_snapshot, trace_id, idempotency_key
-       FROM audit_events ${whereSql} ORDER BY ts DESC LIMIT ?${limIdx} OFFSET ?${offIdx}`
-
-    const listStmt = c.env.DB.prepare(listSql).bind(...bindValues, limit, offset)
-
-    const result = await listStmt.all()
-    return {
-      events: result.results ?? [],
-      total: countResult?.count ?? 0,
-    }
+    const result = await queryAuditEventsFromDb(c.env.DB, options)
+    return { events: result.events as any[], total: result.total }
   } catch (err) {
     console.error('[audit] queryAuditEvents failed:', err instanceof Error ? err.message : String(err))
     return { events: [], total: 0 }

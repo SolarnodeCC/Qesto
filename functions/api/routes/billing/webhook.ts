@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { StripeWebhookEventSchema, StripeSubscriptionObjectSchema } from '../../lib/protocol-schemas'
 import type { Env } from '../../types'
 import { stripeSubscriptionKey } from './shared'
+import { absent } from '../../lib/absent'
 
 // Mount Stripe webhook handler (no auth required — signature verification instead)
 export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
@@ -332,8 +333,8 @@ async function findUserByCustomerId(_kv: KVNamespace, _customerId: string): Prom
   //
   // This is a known limitation documented in BACKLOG_MASTER.md (BILL-07).
 
-  // For now, return null — webhook handlers will skip processing if user not found
+  // For now, return absent() — webhook handlers will skip processing if user not found
   // and log a warning. The subscription record was already created by checkout,
   // so data is not lost; just audit trail is incomplete.
-  return null
+  return absent()
 }

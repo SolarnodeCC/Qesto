@@ -3,17 +3,8 @@ import { api } from '../../api/client'
 import { useT } from '../../i18n'
 import { inputHint } from '../../ui/input-hint'
 import { LAUNCHPAD_AI_TOPIC_CLASS } from '../../ui/input-field-class'
+import { KindPicker, QUESTION_KINDS } from '../../ui/kind-picker'
 import type { Question, PollOption } from '../../hooks/useSessions'
-
-const QUESTION_KINDS: Question['kind'][] = [
-  'poll', 'ranking', 'open', 'consent', 'multi_select', 'likert', 'upvote', 'word_cloud', 'slider',
-]
-
-const KIND_LABELS: Record<string, string> = {
-  poll: 'Poll', ranking: 'Ranking', open: 'Open', consent: 'Consent',
-  multi_select: 'Multi-select', likert: 'Likert', upvote: 'Upvote',
-  word_cloud: 'Word cloud', slider: 'Slider',
-}
 
 type Props = {
   sessionId: string
@@ -27,27 +18,6 @@ type Props = {
   onDrop: (index: number) => void
   onDragEnd: () => void
   onChanged: () => Promise<void>
-}
-
-function KindSelect({ id, value, onChange, disabled }: {
-  id: string
-  value: Question['kind']
-  onChange: (v: Question['kind']) => void
-  disabled?: boolean
-}) {
-  return (
-    <select
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value as Question['kind'])}
-      disabled={disabled}
-      className="rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
-    >
-      {QUESTION_KINDS.map((k) => (
-        <option key={k} value={k}>{KIND_LABELS[k]}</option>
-      ))}
-    </select>
-  )
 }
 
 export default function QuestionList({
@@ -245,7 +215,7 @@ export default function QuestionList({
                   </div>
                   <div className="space-y-1">
                     <label htmlFor={`edit-kind-${q.id}`} className="text-caption text-pulse-500">{t('edit_kind_label')}</label>
-                    <KindSelect id={`edit-kind-${q.id}`} value={editKind} onChange={setEditKind} />
+                    <KindPicker id={`edit-kind-${q.id}`} value={editKind} onChange={setEditKind} />
                   </div>
                   {editError && (
                     <p role="alert" className="text-sm text-red-600">{editError}</p>
@@ -323,7 +293,7 @@ export default function QuestionList({
           </div>
           <div className="space-y-1">
             <label htmlFor="add-kind" className="text-caption text-pulse-500">{t('edit_kind_label')}</label>
-            <KindSelect id="add-kind" value={addKind} onChange={setAddKind} />
+            <KindPicker id="add-kind" value={addKind} onChange={setAddKind} />
           </div>
           {addError && <p role="alert" className="text-sm text-red-600">{addError}</p>}
           <div className="flex gap-2">

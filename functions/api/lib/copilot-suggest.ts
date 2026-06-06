@@ -4,10 +4,11 @@
  * Given the aggregate live-context snapshot (COPILOT-01), produce a small set of
  * typed actions the presenter can act on. One Workers-AI call; the output is
  * defensively parsed and Zod-validated into the action protocol. A deterministic
- * fallback covers AI-unavailable / unparseable responses so the panel always has
+ * deterministic degrade path covers AI-unavailable / unparseable responses so the panel always has
  * something useful. Aggregate-only — no per-voter data ever reaches the model.
  */
 import { z } from 'zod'
+import { absent } from './absent'
 import type { CopilotLiveContext } from './copilot-live-context'
 
 export const COPILOT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
@@ -71,7 +72,7 @@ export function detectDisengagement(context: CopilotLiveContext): CopilotAction 
     }
   }
 
-  return null
+  return absent<CopilotAction>()
 }
 
 const MOOD_LABEL: Record<NonNullable<CopilotLiveContext['mood']>, string> = {
@@ -127,7 +128,7 @@ function extractJson(raw: string): string | null {
   const startsWithArray = firstArray !== -1 && (firstObject === -1 || firstArray < firstObject)
   const first = startsWithArray ? firstArray : firstObject
   const last = startsWithArray ? body.lastIndexOf(']') : body.lastIndexOf('}')
-  if (first === -1 || last === -1 || last <= first) return null
+  if (first === -1 || last === -1 || last <= first) return absent<string>()
   return body.slice(first, last + 1)
 }
 
@@ -138,19 +139,19 @@ function extractJson(raw: string): string | null {
  */
 export function parseSuggestions(raw: string): CopilotAction[] | null {
   const json = extractJson(raw)
-  if (!json) return null
+  if (!json) return absent<CopilotAction[]>()
   let parsed: unknown
   try {
     parsed = JSON.parse(json)
   } catch {
-    return null
+    return absent<CopilotAction[]>()
   }
   const list = Array.isArray(parsed)
     ? parsed
     : Array.isArray((parsed as { suggestions?: unknown }).suggestions)
       ? (parsed as { suggestions: unknown[] }).suggestions
-      : null
-  if (!list) return null
+      : absent<unknown[]>()
+  if (!list) return absent<CopilotAction[]>()
 
   const actions: CopilotAction[] = []
   for (const item of list) {
@@ -162,7 +163,7 @@ export function parseSuggestions(raw: string): CopilotAction[] | null {
     actions.push(action)
     if (actions.length >= MAX_SUGGESTIONS) break
   }
-  return actions.length > 0 ? actions : null
+  return actions.length > 0 ? actions : absent<CopilotAction[]>()
 }
 
 /**

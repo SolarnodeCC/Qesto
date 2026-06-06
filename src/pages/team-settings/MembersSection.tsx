@@ -25,7 +25,7 @@ export function MembersSection({ members, currentUserId, isOwner, ownerId, remov
                 ) : null}
               </p>
               <p className="text-xs text-pulse-400">
-                Joined {new Date(member.joinedAt).toLocaleDateString()}
+                Member since {new Date(member.joinedAt).toLocaleDateString()}
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">

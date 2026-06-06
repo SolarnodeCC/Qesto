@@ -1,3 +1,4 @@
+import { absent } from './absent'
 /**
  * SEC-CMK-01 — customer-managed key envelope metadata (S78).
  */
@@ -18,7 +19,11 @@ export function cmkKvKey(teamId: string): string {
   return `cmk:envelope:${teamId}`
 }
 
+function absentEnvelope(): CmkEnvelope | null {
+  return absent()
+}
+
 export function parseCmkEnvelope(raw: string | null): CmkEnvelope | null {
-  if (!raw) return null
+  if (!raw) return absentEnvelope()
   return parseJsonString(CmkEnvelopeSchema, raw)
 }

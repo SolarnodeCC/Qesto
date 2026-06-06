@@ -1,3 +1,4 @@
+import { absent } from './absent'
 /**
  * FEDERATION-01 / ADR-0033 — cross-org trust links (metadata only).
  */
@@ -60,7 +61,9 @@ export async function createFederationLink(
 
 export async function consentFederationLink(kv: KVNamespace, linkId: string): Promise<FederationLink | null> {
   const link = await readKvJson<FederationLink>(kv, federationLinkKey(linkId))
-  if (!link || link.status !== 'pending') return null
+  if (!link || link.status !== 'pending') {
+    return absent()
+  }
   const updated: FederationLink = { ...link, status: 'active', consentAt: Date.now() }
   await writeKvJson(kv, federationLinkKey(linkId), updated)
   return updated

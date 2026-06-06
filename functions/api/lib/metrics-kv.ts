@@ -1,3 +1,5 @@
+import { absent } from './absent'
+
 // Time-series metrics bucketed in KV for per-minute aggregation.
 //
 // Layout: three keys per (minute, route) bucket form a composite sample:
@@ -139,7 +141,7 @@ export async function readBucket(
   route: string,
   at: Date = new Date(),
 ): Promise<RouteStats | null> {
-  if (!kv) return null
+  if (!kv) return absent()
   const normalisedRoute = routeKey(route)
   const bucket = bucketKeyFor(at)
   const [latRaw, errRaw, reqRaw] = await Promise.all([
@@ -148,7 +150,7 @@ export async function readBucket(
     kv.get(requestKey(bucket, normalisedRoute)),
   ])
   const samples = Array.isArray(latRaw) ? (latRaw as MetricSample[]) : []
-  if (samples.length === 0) return null
+  if (samples.length === 0) return absent()
   const latencies = samples.map((s) => s.latency_ms)
   const request_count = reqRaw ? Number.parseInt(reqRaw, 10) : samples.length
   const error_count = errRaw ? Number.parseInt(errRaw, 10) : 0

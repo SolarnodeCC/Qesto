@@ -1,17 +1,17 @@
 {
-  "report_fingerprint": "sha256:45e4e6639182a61c7f7470b986af549ccd663d71d620e25ebc2af7aa06cc318a",
-  "input_fingerprint": "sha256:d1104f24e184ab543bd7e6d686f86ee0ede7ff9a481c2a9175065a06348a3f7a",
-  "policy_fingerprint": "sha256:f75e3f89220a709f0a01c4e4fc1fdf20364bcc3dc0cf1497f76f79ebf0e6646b",
+  "report_fingerprint": "sha256:56179a562dd4be55f80cad4d91012f6454ec32ec022127d2b8c104fa4da8b9bc",
+  "input_fingerprint": "sha256:b0ae49b6df6a72d1478632a8adef3d0c7ba6b5494b02015e89f94a89a65f01f1",
+  "policy_fingerprint": "sha256:49cf5c8bd6c3a84e2bf6e3fec10ae0c7d1b7e8e2ae12b0d6740de9636960b2ee",
   "manifest_fingerprints": {
-    "owner_map": "sha256:1bb23952c1fc3ae95c9c327e4517c39a88efef3e9d80e8f1f66160b98a1324df",
-    "test_map": "sha256:0af32d93bb9e3bfceae414703f0a59dd7a578d31743d607924d5388be56fcdcf",
-    "generated_zones": "sha256:3ff8b0f1175b1b0e31faa6ca02c375ec055076fba44c5bf39c12f83628c9f85e",
+    "owner_map": "sha256:cae2e6c590468bbda129e902e02e308e39d7f70f164b8185bed600eadf09ea7d",
+    "test_map": "sha256:a12eab35156f85b6b13159adec559390093ada0d6a6c09c0de047f8d2538a33a",
+    "generated_zones": "sha256:fc65b3b1a1992adec9da7b442e425c1f547e450fe4b89a38fe8181ef9a9cc97f",
     "boundaries": "sha256:50aef7fd09053cc62bf87844c3d558f2fd3529af36fe490104d141868ca686c3",
     "proof_lanes": "sha256:94bf67fce1d3d11c5f5b0bd3e916eb03f6a9e94d32e8a701d55d9e9040a12528",
     "standard_version": "sha256:900406ca2731434714c0d0fc05ecf6474bacd7338d6d7edeabae54d844ea46d3"
   },
   "dirty_worktree": true,
-  "generated_at": "1780758319",
+  "generated_at": "1780766091",
   "schema_url": "schemas/repo-score.schema.json",
   "standard": "jankurai",
   "standard_version": "0.9.0",
@@ -21,101 +21,29 @@
   "target_stack_id": "cloudflare-workers-typescript-react",
   "target_stack": "Rust core + TypeScript/React/Vite + PostgreSQL + generated contracts + exception-only Python AI/data service",
   "claimed_conformance_level": "HL3",
-  "observed_conformance_level": "HL2",
-  "conformance_decision": "block",
-  "conformance_blockers": [
-    "HLT-035-GIT-BAD-BEHAVIOR on .claude/hooks/pre-bash.sh",
-    "HLT-035-GIT-BAD-BEHAVIOR on .claude/hooks/pre-bash.sh",
-    "HLT-035-GIT-BAD-BEHAVIOR on .claude/hooks/pre-bash.sh",
-    "HLT-024-AGENT-TOOL-SUPPLY-GAP on .claude/skills/cso.md",
-    "HLT-034-CI-BAD-BEHAVIOR on .github/workflows/jankurai.yml",
-    "HLT-034-CI-BAD-BEHAVIOR on .github/workflows/jankurai.yml",
-    "HLT-034-CI-BAD-BEHAVIOR on .github/workflows/jankurai.yml",
-    "HLT-034-CI-BAD-BEHAVIOR on .github/workflows/jankurai.yml",
-    "HLT-034-CI-BAD-BEHAVIOR on .github/workflows/jankurai.yml",
-    "HLT-034-CI-BAD-BEHAVIOR on .github/workflows/jankurai.yml",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-004-UNMAPPED-PROOF on agent/test-map.json",
-    "HLT-013-RENDERED-UX-GAP on apps/web",
-    "HLT-007-HANDWRITTEN-CONTRACT on contracts/openapi-v3.json",
-    "HLT-002-GENERATED-MUTATION on contracts/openapi-v3.json",
-    "HLT-017-OPAQUE-OBSERVABILITY on crates/domain",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on functions/api/SessionRoom.ts",
-    "HLT-001-DEAD-MARKER on functions/api/app.ts",
-    "HLT-023-INPUT-BOUNDARY-GAP on functions/api/lib/audit.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on functions/api/lib/audit.ts",
-    "HLT-001-DEAD-MARKER on functions/api/lib/boundary-decode.ts",
-    "HLT-001-DEAD-MARKER on functions/api/lib/integrations/providers/slack.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on functions/api/lib/workflows/session-pipeline.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on functions/api/lib/workflows/session-pipeline.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on functions/api/repositories/kbVectorRepository.ts",
-    "HLT-001-DEAD-MARKER on functions/api/repositories/kbVectorRepository.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on functions/api/routes/ai-insights/register-analyze.ts",
-    "HLT-001-DEAD-MARKER on functions/api/types/knowledge-base.ts",
-    "HLT-000-SCORE-DIMENSION:stack on packages/sdk-js/index.js",
-    "HLT-035-GIT-BAD-BEHAVIOR on scripts/create-sprint-56-60-branches.ps1",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on scripts/embed-kb.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on scripts/kb-health.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on scripts/kb-health.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on scripts/kb-sync-cli.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on scripts/kb-sync-cli.ts",
-    "HLT-035-GIT-BAD-BEHAVIOR on scripts/rebuild-sprint-50-55-branches.ps1",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on scripts/sync-help-docs.ts",
-    "HLT-001-DEAD-MARKER on src/components/JoinBar.tsx",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on src/components/SessionTitleField.tsx",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on src/components/SessionTitleField.tsx",
-    "HLT-006-DIRECT-DB-WRONG-LAYER on src/components/TeamSwitcher.tsx",
-    "HLT-001-DEAD-MARKER on src/components/admin/AdminAnalyticsTab.tsx",
-    "HLT-001-DEAD-MARKER on src/config/pricing-matrix.ts",
-    "HLT-001-DEAD-MARKER on src/layouts/AppShellLayout.tsx",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on src/lib/branding.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on src/lib/branding.ts",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on src/lib/offline-vote-queue.ts",
-    "HLT-001-DEAD-MARKER on src/pages/Dashboard.tsx",
-    "HLT-001-DEAD-MARKER on src/pages/JoinPage.tsx",
-    "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on src/pages/JoinPage.tsx",
-    "HLT-001-DEAD-MARKER on src/pages/JoinPage.tsx",
-    "HLT-001-DEAD-MARKER on src/pages/Launchpad.tsx",
-    "HLT-001-DEAD-MARKER on src/ui/components.tsx"
-  ],
+  "observed_conformance_level": "HL3",
+  "conformance_decision": "pass",
+  "conformance_blockers": [],
   "repo": ".",
-  "run_id": "1780758319",
-  "started_at": "1780758319",
-  "elapsed_ms": 7664,
+  "run_id": "1780766091",
+  "started_at": "1780766091",
+  "elapsed_ms": 3611,
   "scope": {
     "mode": "full",
     "paths": []
   },
-  "score": 64,
-  "raw_score": 71,
+  "score": 92,
+  "raw_score": 92,
   "decision": {
-    "status": "advisory",
+    "status": "pass",
     "minimum_score": 85,
     "passed": true,
-    "hard_findings": 71,
-    "soft_findings": 11,
+    "hard_findings": 0,
+    "soft_findings": 4,
     "ratchet": {
-      "baseline_score": 64,
+      "baseline_score": 92,
       "allowed_drop": 0,
-      "passed": false,
+      "passed": true,
       "score_delta": 0,
       "baseline_report_fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
       "baseline_input_fingerprint": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
@@ -126,7 +54,7 @@
     }
   },
   "git": {
-    "head": "fd362b0",
+    "head": "e3af18f",
     "base": null,
     "changed_files": 0,
     "mode": "full",
@@ -143,28 +71,14 @@
       "medium",
       "low"
     ],
-    "mode": "advisory",
+    "mode": "standard",
     "standard_version": "0.9.0",
     "auditor_version": "1.5.1",
     "schema_version": "1.9.0",
     "paper_edition": "2026.05-ed8",
     "target_stack": "rust-ts-vite-react-postgres-bounded-python"
   },
-  "caps_applied": [
-    "non-optimal-product-language-found",
-    "vibe-placeholders-in-product-code",
-    "fallback-soup-in-product-code",
-    "future-hostile-dead-language-in-product-code",
-    "direct-db-access-from-wrong-layer",
-    "missing-rendered-ux-qa-lane",
-    "input-boundary-gap",
-    "agent-tool-supply-chain-gap",
-    "no-agent-friendly-exception-pattern",
-    "typescript-bad-behavior",
-    "ci-bad-behavior",
-    "git-bad-behavior",
-    "repo-rot-bad-behavior"
-  ],
+  "caps_applied": [],
   "hard_rules": [
     {
       "id": "no-root-agent-instructions",
@@ -355,8 +269,8 @@
     {
       "name": "Ownership and navigation surface",
       "weight": 13,
-      "score": 79,
-      "weighted_points": 10.27,
+      "score": 100,
+      "weighted_points": 13.0,
       "evidence": [
         "root `AGENTS.md` present",
         "owner map present",
@@ -370,40 +284,36 @@
         "reference-profile cell `contracts` has local AGENTS.md guidance",
         "reference-profile cell `db` is canonical",
         "reference-profile cell `db` has local AGENTS.md guidance",
+        "reference-profile cell `python-ai` is canonical",
+        "reference-profile cell `python-ai` has local AGENTS.md guidance",
         "reference-profile cell `ops` is canonical",
         "reference-profile cell `ops` has local AGENTS.md guidance",
         "root `README.md` routes to workspace layout",
-        "authored code file exceeds 500 LOC",
-        "authored code file exceeds 1000 LOC"
+        "owner map covers audited paths",
+        "test map covers audited paths"
       ],
-      "notes": [
-        "reference-profile cell `python-ai` is detected outside its canonical folder",
-        "reference-profile cell `python-ai` lacks local AGENTS.md guidance",
-        "repo-rot hard findings in active source paths: 1"
-      ]
+      "notes": []
     },
     {
       "name": "Contract and boundary integrity",
       "weight": 13,
-      "score": 60,
-      "weighted_points": 7.8,
+      "score": 100,
+      "weighted_points": 13.0,
       "evidence": [
         "contract surface found",
         "generated contract artifacts found",
         "polyglot boundary layout present",
         "boundary manifest present",
         "TypeScript strict mode hinted by `tsconfig.json`",
-        "handwritten web DTO/API marker found",
-        "contract sources without generated zones: 1",
-        "DB access found in likely wrong layer"
+        "all contract sources have generated zone entries"
       ],
       "notes": []
     },
     {
       "name": "Proof lanes and test routing",
       "weight": 12,
-      "score": 98,
-      "weighted_points": 11.76,
+      "score": 100,
+      "weighted_points": 12.0,
       "evidence": [
         "one-command setup/validation lane found",
         "deterministic fast lane found",
@@ -412,12 +322,11 @@
         "test/proof routing map present",
         "jankurai audit lane found in CI",
         "web e2e lane present or no web surface",
+        "rendered UX QA lane present or no web surface",
         "DOM geometry UX QA runtime found",
         "Rust property/integration tests present or no Rust surface"
       ],
-      "notes": [
-        "web surface lacks layered rendered UX QA"
-      ]
+      "notes": []
     },
     {
       "name": "Security and supply-chain posture",
@@ -433,12 +342,11 @@
         "canonical security lane wrapper present",
         "agent-readiness audit gate found in CI",
         "sql bad-behavior advisory signals: 95",
-        "typescript bad-behavior hard findings: 18",
-        "ci bad-behavior hard findings: 6",
-        "git bad-behavior hard findings: 5",
+        "typescript bad-behavior advisory signals: 50",
+        "git bad-behavior advisory signals: 2",
         "gittools bad-behavior advisory signals: 3",
         "release bad-behavior advisory signals: 1",
-        "web security bad-behavior advisory signals: 2",
+        "web security bad-behavior advisory signals: 1",
         "Rust and npm dependency audits are operational commands",
         "secret scanning command is operational"
       ],
@@ -447,58 +355,48 @@
     {
       "name": "Code shape and semantic surface",
       "weight": 12,
-      "score": 0,
-      "weighted_points": 0.0,
+      "score": 80,
+      "weighted_points": 9.6,
       "evidence": [
-        "largest authored code file: functions/api/SessionRoom.ts (1423 LOC)",
-        "code file exceeds 500 LOC",
-        "code file exceeds 1000 LOC",
+        "largest authored code file: worker/TemplateGenerationWorkflow.ts (499 LOC)",
         "most code files stay under 300 LOC",
-        "copy-code advisory classes found: 21 (advisory only, no score impact)",
-        "TODO/stub marker found",
-        "fallback soup marker found",
-        "future-hostile/dead-language marker found",
+        "copy-code advisory classes found: 18 (advisory only, no score impact)",
         "sql bad-behavior advisory signals: 95",
-        "typescript bad-behavior hard findings: 18",
-        "ci bad-behavior hard findings: 6",
-        "git bad-behavior hard findings: 5",
+        "typescript bad-behavior advisory signals: 50",
+        "git bad-behavior advisory signals: 2",
         "gittools bad-behavior advisory signals: 3",
         "release bad-behavior advisory signals: 1",
-        "comments bad-behavior advisory signals: 3"
+        "comments bad-behavior advisory signals: 3",
+        "no hard bad-behavior findings across detector-backed language families"
       ],
-      "notes": [
-        "product/runtime code contains future-hostile or dead-language terms"
-      ]
+      "notes": []
     },
     {
       "name": "Data truth and workflow safety",
       "weight": 8,
-      "score": 65,
-      "weighted_points": 5.2,
+      "score": 85,
+      "weighted_points": 6.8,
       "evidence": [
         "database surface present",
         "migration directory present",
-        "constraint or RLS language found",
-        "strict DB boundary violation: src/components/TeamSwitcher.tsx"
+        "constraint or RLS language found"
       ],
-      "notes": [
-        "direct DB access leaks out of the data boundary"
-      ]
+      "notes": []
     },
     {
       "name": "Observability and repair evidence",
       "weight": 8,
-      "score": 64,
-      "weighted_points": 5.12,
+      "score": 88,
+      "weighted_points": 7.04,
       "evidence": [
         "observability libraries or patterns found",
         "ops/observability directory present",
         "repair receipts or raw artifact language found",
+        "agent-friendly exception pattern found",
         "repair-hint and receipt convention are documented",
         "repair receipt guidance is documented"
       ],
       "notes": [
-        "no agent-friendly exception pattern found",
         "free-form logging appears in scope"
       ]
     },
@@ -521,35 +419,32 @@
     {
       "name": "Jankurai tool adoption and CI replacement",
       "weight": 7,
-      "score": 83,
-      "weighted_points": 5.81,
+      "score": 78,
+      "weighted_points": 5.46,
       "evidence": [
         "control-plane files present",
         "applicable=16",
         "configured=16",
-        "ci_evidence=12",
-        "artifact_verified=12"
+        "ci_evidence=11",
+        "artifact_verified=11"
       ],
       "notes": [
         "some applicable tools lack CI evidence",
         "missing CI evidence for `copy-code`",
+        "missing CI evidence for `security`",
         "missing CI evidence for `ci-bad-behavior`",
-        "missing CI evidence for `git-bad-behavior`",
-        "missing CI evidence for `release-bad-behavior`"
+        "missing CI evidence for `git-bad-behavior`"
       ]
     },
     {
       "name": "Python containment and polyglot hygiene",
       "weight": 4,
-      "score": 90,
-      "weighted_points": 3.6,
+      "score": 100,
+      "weighted_points": 4.0,
       "evidence": [
-        "no Python files in scope",
-        "non-optimal product language marker"
+        "no Python files in scope"
       ],
-      "notes": [
-        "runtime code should converge to Rust, TypeScript, SQL, generated contracts, and rare advanced-ML/data Python exceptions"
-      ]
+      "notes": []
     },
     {
       "name": "Build speed signals",
@@ -567,10 +462,8 @@
   ],
   "ux_qa": {
     "web_surface": true,
-    "has_rendered_ux_lane": false,
-    "missing_categories": [
-      "visual review or geometry runtime"
-    ],
+    "has_rendered_ux_lane": true,
+    "missing_categories": [],
     "evidence": {
       "accessibility": [
         ".claude/QA_CHECKLIST.md",
@@ -581,9 +474,7 @@
       ],
       "api_mocks": [
         ".claude/skills/tester.md",
-        "package-lock.json",
-        "src/components/TeamSwitcher.tsx",
-        "src/layouts/MainLayout.tsx"
+        "package-lock.json"
       ],
       "artifact_backed_proof": [
         ".claude/agents/ai-strategy-agent.md",
@@ -601,32 +492,35 @@
       ],
       "geometry_runtime": [
         "agent/ux-qa.toml",
-        "ops/ci/ux-qa.sh",
-        "src/pages/Present.tsx"
+        "apps/web/ux-qa.toml",
+        "ops/ci/ux-qa.sh"
       ],
       "layout_stability": [
         ".claude/QA_CHECKLIST.md",
         ".claude/skills/backend-perf.md",
         ".claude/skills/frontend-dev.md",
-        "functions/api/lib/linkedin.ts",
-        "src/components/SkeletonLoader.tsx"
+        "apps/web/tests/visual-review.spec.ts",
+        "functions/api/lib/linkedin.ts"
       ],
       "playwright_visual": [
+        "apps/web/tests/visual-review.spec.ts",
         "tests/e2e/visual_smoke.spec.ts"
       ],
       "storybook": [
         "package-lock.json"
       ],
-      "visual_review": []
+      "visual_review": [
+        "apps/web/tests/visual-review.spec.ts"
+      ]
     }
   },
   "tool_adoption": {
     "control_plane_present": true,
     "applicable_count": 16,
     "configured_count": 16,
-    "ci_evidence_count": 12,
-    "artifact_verified_count": 12,
-    "replaced_count": 12,
+    "ci_evidence_count": 11,
+    "artifact_verified_count": 11,
+    "replaced_count": 11,
     "items": [
       {
         "id": "audit-ci",
@@ -751,7 +645,7 @@
         "category": "security",
         "mode": "auto",
         "applicable": true,
-        "status": "artifact_verified",
+        "status": "configured",
         "replaced_tools": [
           "gitleaks",
           "dependency review",
@@ -759,11 +653,11 @@
         ],
         "evidence": [
           "mode=auto",
-          "tool-adoption config entry present",
-          "CI command found in workflow",
-          "artifact uploads found: target/jankurai/security/evidence.json"
+          "tool-adoption config entry present"
         ],
-        "missing": [],
+        "missing": [
+          "CI command evidence"
+        ],
         "local_command": "jankurai security run . --out target/jankurai/security/evidence.json",
         "ci_command": "jankurai security run . --out target/jankurai/security/evidence.json",
         "artifact_paths": [
@@ -1108,12 +1002,11 @@
         "release-readiness",
         "cost-budget"
       ],
-      "artifact_verified_count": 12,
+      "artifact_verified_count": 11,
       "artifact_verified_tools": [
         "audit-ci",
         "proof-routing",
         "proofbind",
-        "security",
         "ux-qa",
         "db-migration-analyze",
         "contract-drift",
@@ -1123,12 +1016,11 @@
         "release-readiness",
         "cost-budget"
       ],
-      "ci_evidence_count": 12,
+      "ci_evidence_count": 11,
       "ci_evidence_tools": [
         "audit-ci",
         "proof-routing",
         "proofbind",
-        "security",
         "ux-qa",
         "db-migration-analyze",
         "contract-drift",
@@ -1162,6 +1054,7 @@
     },
     "missing": [
       "copy-code",
+      "security",
       "ci-bad-behavior",
       "git-bad-behavior",
       "release-bad-behavior"
@@ -1185,7 +1078,7 @@
   "copy_code": {
     "schema_version": "1.1.0",
     "generated_by": "jankurai copy-code",
-    "generated_at": "2026-06-06T15:05:12.238193940+00:00",
+    "generated_at": "2026-06-06T17:14:48.254480784+00:00",
     "repo": ".",
     "auditor_version": "1.5.1",
     "status": "review",
@@ -1223,58 +1116,22 @@
       ]
     },
     "summary": {
-      "files_scanned": 1083,
-      "files_considered": 473,
-      "active_files": 473,
+      "files_scanned": 983,
+      "files_considered": 375,
+      "active_files": 375,
       "exact_file_classes": 0,
       "hard_classes": 0,
-      "warning_classes": 21,
+      "warning_classes": 18,
       "hard_instances": 0,
-      "warning_instances": 58,
-      "duplicate_lines": 65,
-      "duplicate_tokens": 254,
-      "duplicate_bytes": 2190,
-      "total_redundant_lines": 86,
-      "total_redundant_tokens": 333,
-      "total_redundant_bytes": 2823
+      "warning_instances": 56,
+      "duplicate_lines": 39,
+      "duplicate_tokens": 140,
+      "duplicate_bytes": 1163,
+      "total_redundant_lines": 68,
+      "total_redundant_tokens": 233,
+      "total_redundant_bytes": 1914
     },
     "classes": [
-      {
-        "id": "copy-code-unit-typescript-5e8c04baf6ddd19a",
-        "kind": "exact_unit_same_name",
-        "severity": "warning",
-        "confidence": "high",
-        "language": "typescript",
-        "unit_name": "suggestDuplicateTitle",
-        "duplicate_lines": 15,
-        "duplicate_tokens": 69,
-        "duplicate_bytes": 581,
-        "instance_count": 2,
-        "total_redundant_lines": 15,
-        "total_redundant_tokens": 69,
-        "total_redundant_bytes": 581,
-        "effective_severity": "warning",
-        "hard_fail": false,
-        "fingerprint": "de3d13d78869ed32",
-        "reason": "same-name semantic unit copied across multiple files",
-        "recommended_action": "keep the named unit in one owner and call it from the other sites",
-        "instances": [
-          {
-            "path": "functions/api/lib/session-title.ts",
-            "language": "typescript",
-            "start_line": 20,
-            "end_line": 35,
-            "unit_name": "suggestDuplicateTitle"
-          },
-          {
-            "path": "src/lib/session-title.ts",
-            "language": "typescript",
-            "start_line": 16,
-            "end_line": 31,
-            "unit_name": "suggestDuplicateTitle"
-          }
-        ]
-      },
       {
         "id": "copy-code-body-typescript-094f499766d4333c",
         "kind": "exact_unit_different_name",
@@ -1290,122 +1147,86 @@
         "total_redundant_bytes": 180,
         "effective_severity": "warning",
         "hard_fail": false,
-        "fingerprint": "997723f4f7b39d1d",
+        "fingerprint": "dd307b203d16e33f",
         "reason": "same body appears under different names across files",
         "recommended_action": "choose one owner for the shared body or intentionally differentiate the behavior",
         "instances": [
           {
             "path": "functions/api/lib/audit.ts",
             "language": "typescript",
-            "start_line": 242,
-            "end_line": 243,
+            "start_line": 196,
+            "end_line": 197,
             "unit_name": "queryAuditEvents"
           },
           {
             "path": "functions/api/middleware/kv-cache.ts",
             "language": "typescript",
-            "start_line": 89,
-            "end_line": 90,
+            "start_line": 90,
+            "end_line": 91,
             "unit_name": "cachePlanUsage"
           },
           {
             "path": "functions/api/middleware/kv-cache.ts",
             "language": "typescript",
-            "start_line": 110,
-            "end_line": 111,
+            "start_line": 111,
+            "end_line": 112,
             "unit_name": "getPlanUsageWithCache"
           },
           {
             "path": "functions/api/middleware/kv-cache.ts",
             "language": "typescript",
-            "start_line": 152,
-            "end_line": 153,
+            "start_line": 153,
+            "end_line": 154,
             "unit_name": "cacheTeamMetadata"
           },
           {
             "path": "functions/api/middleware/kv-cache.ts",
             "language": "typescript",
-            "start_line": 174,
-            "end_line": 175,
+            "start_line": 175,
+            "end_line": 176,
             "unit_name": "cacheUserRoles"
           },
           {
             "path": "functions/api/middleware/kv-cache.ts",
             "language": "typescript",
-            "start_line": 196,
-            "end_line": 197,
+            "start_line": 197,
+            "end_line": 198,
             "unit_name": "cacheLeaderboard"
           },
           {
-            "path": "functions/api/routes/billing.ts",
+            "path": "functions/api/routes/billing/webhook.ts",
             "language": "typescript",
-            "start_line": 543,
-            "end_line": 544,
+            "start_line": 176,
+            "end_line": 177,
             "unit_name": "handleSubscriptionCreated"
           },
           {
-            "path": "functions/api/routes/billing.ts",
+            "path": "functions/api/routes/billing/webhook.ts",
             "language": "typescript",
-            "start_line": 579,
-            "end_line": 580,
+            "start_line": 212,
+            "end_line": 213,
             "unit_name": "handleSubscriptionUpdated"
           },
           {
-            "path": "functions/api/routes/billing.ts",
+            "path": "functions/api/routes/billing/webhook.ts",
             "language": "typescript",
-            "start_line": 612,
-            "end_line": 613,
+            "start_line": 245,
+            "end_line": 246,
             "unit_name": "handleSubscriptionDeleted"
           },
           {
-            "path": "functions/api/routes/billing.ts",
+            "path": "functions/api/routes/billing/webhook.ts",
             "language": "typescript",
-            "start_line": 641,
-            "end_line": 642,
+            "start_line": 274,
+            "end_line": 275,
             "unit_name": "handleSubscriptionTrialWillEnd"
           },
           {
-            "path": "functions/api/routes/billing.ts",
+            "path": "functions/api/routes/billing/webhook.ts",
             "language": "typescript",
-            "start_line": 667,
-            "end_line": 668,
+            "start_line": 300,
+            "end_line": 301,
             "unit_name": "handleInvoicePaymentFailed"
-          }
-        ]
-      },
-      {
-        "id": "copy-code-unit-typescript-d483c6647033ffc5",
-        "kind": "exact_unit_same_name",
-        "severity": "warning",
-        "confidence": "high",
-        "language": "typescript",
-        "unit_name": "generateOgImageUrl",
-        "duplicate_lines": 9,
-        "duplicate_tokens": 33,
-        "duplicate_bytes": 340,
-        "instance_count": 2,
-        "total_redundant_lines": 9,
-        "total_redundant_tokens": 33,
-        "total_redundant_bytes": 340,
-        "effective_severity": "warning",
-        "hard_fail": false,
-        "fingerprint": "7c967328de633f83",
-        "reason": "same-name semantic unit copied across multiple files",
-        "recommended_action": "keep the named unit in one owner and call it from the other sites",
-        "instances": [
-          {
-            "path": "functions/api/lib/og-image-generator.ts",
-            "language": "typescript",
-            "start_line": 156,
-            "end_line": 165,
-            "unit_name": "generateOgImageUrl"
-          },
-          {
-            "path": "src/utils/og-image-generator.ts",
-            "language": "typescript",
-            "start_line": 14,
-            "end_line": 23,
-            "unit_name": "generateOgImageUrl"
           }
         ]
       },
@@ -1545,6 +1366,105 @@
         ]
       },
       {
+        "id": "copy-code-unit-typescript-072b38881413a183",
+        "kind": "exact_unit_same_name",
+        "severity": "warning",
+        "confidence": "high",
+        "language": "typescript",
+        "unit_name": "vectorMiss",
+        "duplicate_lines": 2,
+        "duplicate_tokens": 5,
+        "duplicate_bytes": 40,
+        "instance_count": 4,
+        "total_redundant_lines": 6,
+        "total_redundant_tokens": 15,
+        "total_redundant_bytes": 120,
+        "effective_severity": "warning",
+        "hard_fail": false,
+        "fingerprint": "70f805cc3ead5679",
+        "reason": "same-name semantic unit copied across multiple files",
+        "recommended_action": "keep the named unit in one owner and call it from the other sites",
+        "instances": [
+          {
+            "path": "functions/api/lib/help-vectorize.ts",
+            "language": "typescript",
+            "start_line": 20,
+            "end_line": 22,
+            "unit_name": "vectorMiss"
+          },
+          {
+            "path": "functions/api/lib/insights-vectorize.ts",
+            "language": "typescript",
+            "start_line": 20,
+            "end_line": 22,
+            "unit_name": "vectorMiss"
+          },
+          {
+            "path": "functions/api/lib/session-room-ideate-handler.ts",
+            "language": "typescript",
+            "start_line": 46,
+            "end_line": 48,
+            "unit_name": "vectorMiss"
+          },
+          {
+            "path": "functions/api/lib/team-insights-recurring.ts",
+            "language": "typescript",
+            "start_line": 89,
+            "end_line": 91,
+            "unit_name": "vectorMiss"
+          }
+        ]
+      },
+      {
+        "id": "copy-code-body-typescript-64ba22f32eff3789",
+        "kind": "exact_unit_different_name",
+        "severity": "warning",
+        "confidence": "medium",
+        "language": "typescript",
+        "duplicate_lines": 2,
+        "duplicate_tokens": 2,
+        "duplicate_bytes": 19,
+        "instance_count": 4,
+        "total_redundant_lines": 6,
+        "total_redundant_tokens": 6,
+        "total_redundant_bytes": 57,
+        "effective_severity": "warning",
+        "hard_fail": false,
+        "fingerprint": "0a8ffd8d7dc8f588",
+        "reason": "same body appears under different names across files",
+        "recommended_action": "choose one owner for the shared body or intentionally differentiate the behavior",
+        "instances": [
+          {
+            "path": "functions/api/lib/cmk.ts",
+            "language": "typescript",
+            "start_line": 22,
+            "end_line": 24,
+            "unit_name": "absentEnvelope"
+          },
+          {
+            "path": "functions/api/lib/copilot-live-context.ts",
+            "language": "typescript",
+            "start_line": 54,
+            "end_line": 56,
+            "unit_name": "snapshotMiss"
+          },
+          {
+            "path": "functions/api/lib/entitlements.ts",
+            "language": "typescript",
+            "start_line": 18,
+            "end_line": 20,
+            "unit_name": "featureMiss"
+          },
+          {
+            "path": "functions/api/lib/event-presenter.ts",
+            "language": "typescript",
+            "start_line": 8,
+            "end_line": 10,
+            "unit_name": "presenterMiss"
+          }
+        ]
+      },
+      {
         "id": "copy-code-unit-typescript-470664397de69e8e",
         "kind": "exact_unit_same_name",
         "severity": "warning",
@@ -1584,6 +1504,41 @@
             "start_line": 56,
             "end_line": 58,
             "unit_name": "serverMsg"
+          }
+        ]
+      },
+      {
+        "id": "copy-code-body-typescript-818cd25bbe913b72",
+        "kind": "exact_unit_different_name",
+        "severity": "warning",
+        "confidence": "medium",
+        "language": "typescript",
+        "duplicate_lines": 4,
+        "duplicate_tokens": 11,
+        "duplicate_bytes": 115,
+        "instance_count": 2,
+        "total_redundant_lines": 4,
+        "total_redundant_tokens": 11,
+        "total_redundant_bytes": 115,
+        "effective_severity": "warning",
+        "hard_fail": false,
+        "fingerprint": "04c945e685a659de",
+        "reason": "same body appears under different names across files",
+        "recommended_action": "choose one owner for the shared body or intentionally differentiate the behavior",
+        "instances": [
+          {
+            "path": "functions/api/lib/session-room-presenter-init.ts",
+            "language": "typescript",
+            "start_line": 150,
+            "end_line": 154,
+            "unit_name": "handleApproveResponse"
+          },
+          {
+            "path": "functions/api/lib/session-room-presenter-init.ts",
+            "language": "typescript",
+            "start_line": 186,
+            "end_line": 190,
+            "unit_name": "handleRejectResponse"
           }
         ]
       },
@@ -1659,88 +1614,16 @@
           {
             "path": "scripts/kb-sync-cli.ts",
             "language": "typescript",
-            "start_line": 40,
-            "end_line": 43,
+            "start_line": 49,
+            "end_line": 52,
             "unit_name": "computeFileHash"
           },
           {
             "path": "scripts/sync-help-docs.ts",
             "language": "typescript",
-            "start_line": 46,
-            "end_line": 49,
+            "start_line": 58,
+            "end_line": 61,
             "unit_name": "computeFileHash"
-          }
-        ]
-      },
-      {
-        "id": "copy-code-unit-typescript-ff254511ae3faea5",
-        "kind": "exact_unit_same_name",
-        "severity": "warning",
-        "confidence": "high",
-        "language": "typescript",
-        "unit_name": "titleExists",
-        "duplicate_lines": 3,
-        "duplicate_tokens": 11,
-        "duplicate_bytes": 104,
-        "instance_count": 2,
-        "total_redundant_lines": 3,
-        "total_redundant_tokens": 11,
-        "total_redundant_bytes": 104,
-        "effective_severity": "warning",
-        "hard_fail": false,
-        "fingerprint": "9e77d48deff51820",
-        "reason": "same-name semantic unit copied across multiple files",
-        "recommended_action": "keep the named unit in one owner and call it from the other sites",
-        "instances": [
-          {
-            "path": "functions/api/lib/session-title.ts",
-            "language": "typescript",
-            "start_line": 6,
-            "end_line": 9,
-            "unit_name": "titleExists"
-          },
-          {
-            "path": "src/lib/session-title.ts",
-            "language": "typescript",
-            "start_line": 6,
-            "end_line": 9,
-            "unit_name": "titleExists"
-          }
-        ]
-      },
-      {
-        "id": "copy-code-unit-typescript-4f7fc401aba85f07",
-        "kind": "exact_unit_same_name",
-        "severity": "warning",
-        "confidence": "high",
-        "language": "typescript",
-        "unit_name": "truncateTitle",
-        "duplicate_lines": 3,
-        "duplicate_tokens": 11,
-        "duplicate_bytes": 98,
-        "instance_count": 2,
-        "total_redundant_lines": 3,
-        "total_redundant_tokens": 11,
-        "total_redundant_bytes": 98,
-        "effective_severity": "warning",
-        "hard_fail": false,
-        "fingerprint": "9e77d48deff51820",
-        "reason": "same-name semantic unit copied across multiple files",
-        "recommended_action": "keep the named unit in one owner and call it from the other sites",
-        "instances": [
-          {
-            "path": "functions/api/lib/session-title.ts",
-            "language": "typescript",
-            "start_line": 11,
-            "end_line": 14,
-            "unit_name": "truncateTitle"
-          },
-          {
-            "path": "src/lib/session-title.ts",
-            "language": "typescript",
-            "start_line": 11,
-            "end_line": 14,
-            "unit_name": "truncateTitle"
           }
         ]
       },
@@ -1766,52 +1649,16 @@
           {
             "path": "functions/api/lib/ai-wizard.ts",
             "language": "typescript",
-            "start_line": 222,
-            "end_line": 225,
+            "start_line": 220,
+            "end_line": 223,
             "unit_name": "invokeAI"
           },
           {
             "path": "functions/api/lib/ai-wizard.ts",
             "language": "typescript",
-            "start_line": 273,
-            "end_line": 276,
+            "start_line": 271,
+            "end_line": 274,
             "unit_name": "invokeWithSecondaryModel"
-          }
-        ]
-      },
-      {
-        "id": "copy-code-unit-typescript-8052e7d853887824",
-        "kind": "exact_unit_same_name",
-        "severity": "warning",
-        "confidence": "high",
-        "language": "typescript",
-        "unit_name": "loadTeam",
-        "duplicate_lines": 2,
-        "duplicate_tokens": 6,
-        "duplicate_bytes": 52,
-        "instance_count": 2,
-        "total_redundant_lines": 2,
-        "total_redundant_tokens": 6,
-        "total_redundant_bytes": 52,
-        "effective_severity": "warning",
-        "hard_fail": false,
-        "fingerprint": "b4679cd720457d2a",
-        "reason": "same-name semantic unit copied across multiple files",
-        "recommended_action": "keep the named unit in one owner and call it from the other sites",
-        "instances": [
-          {
-            "path": "functions/api/routes/teams.ts",
-            "language": "typescript",
-            "start_line": 83,
-            "end_line": 85,
-            "unit_name": "loadTeam"
-          },
-          {
-            "path": "functions/api/routes/webhooks.ts",
-            "language": "typescript",
-            "start_line": 87,
-            "end_line": 89,
-            "unit_name": "loadTeam"
           }
         ]
       },
@@ -1838,8 +1685,8 @@
           {
             "path": "functions/api/lib/event-presenter.ts",
             "language": "typescript",
-            "start_line": 43,
-            "end_line": 45,
+            "start_line": 48,
+            "end_line": 50,
             "unit_name": "sessionIsLive"
           },
           {
@@ -1958,41 +1805,6 @@
         ]
       },
       {
-        "id": "copy-code-body-typescript-94daa37fb2492dfc",
-        "kind": "exact_unit_different_name",
-        "severity": "warning",
-        "confidence": "medium",
-        "language": "typescript",
-        "duplicate_lines": 2,
-        "duplicate_tokens": 2,
-        "duplicate_bytes": 26,
-        "instance_count": 2,
-        "total_redundant_lines": 2,
-        "total_redundant_tokens": 2,
-        "total_redundant_bytes": 26,
-        "effective_severity": "warning",
-        "hard_fail": false,
-        "fingerprint": "2faf748219a02e5e",
-        "reason": "same body appears under different names across files",
-        "recommended_action": "choose one owner for the shared body or intentionally differentiate the behavior",
-        "instances": [
-          {
-            "path": "src/i18n/index.ts",
-            "language": "typescript",
-            "start_line": 204,
-            "end_line": 206,
-            "unit_name": "getCurrentLanguage"
-          },
-          {
-            "path": "src/i18n/index.ts",
-            "language": "typescript",
-            "start_line": 208,
-            "end_line": 210,
-            "unit_name": "getLanguageHeader"
-          }
-        ]
-      },
-      {
         "id": "copy-code-body-typescript-ced2b10690da2057",
         "kind": "exact_unit_different_name",
         "severity": "warning",
@@ -2107,9 +1919,9 @@
   },
   "profile_structure": {
     "applicable_count": 6,
-    "canonical_count": 5,
-    "noncanonical_count": 1,
-    "guidance_missing_count": 1,
+    "canonical_count": 6,
+    "noncanonical_count": 0,
+    "guidance_missing_count": 0,
     "cells": [
       {
         "id": "web",
@@ -2254,10 +2066,11 @@
       {
         "id": "python-ai",
         "applicable": true,
-        "status": "noncanonical",
+        "status": "canonical",
         "canonical_path": "python/ai-service/",
         "detected_paths": [
-          "python"
+          "python",
+          "python/ai-service"
         ],
         "aliases": [
           "python/",
@@ -2266,10 +2079,10 @@
           "embeddings/",
           "model/"
         ],
-        "guidance_status": "missing",
+        "guidance_status": "present",
         "owner": "python/ai-service",
         "proof_lane": "eval / contract tests",
-        "agent_fix": "migrate the detected Python AI/data surface to `python/ai-service/` or document a dated advanced-ML/data exception with owner, proof lane, expiry, and migration plan"
+        "agent_fix": "keep `python/ai-service/AGENTS.md` aligned with owns / forbidden / proof lane guidance"
       },
       {
         "id": "ops",
@@ -2297,7 +2110,7 @@
     ],
     "evidence": {
       "applicable_count": 6,
-      "canonical_count": 5,
+      "canonical_count": 6,
       "detected_cells": [
         {
           "canonical_path": "apps/web/",
@@ -2340,11 +2153,12 @@
         {
           "canonical_path": "python/ai-service/",
           "detected_paths": [
-            "python"
+            "python",
+            "python/ai-service"
           ],
-          "guidance_status": "missing",
+          "guidance_status": "present",
           "id": "python-ai",
-          "status": "noncanonical"
+          "status": "canonical"
         },
         {
           "canonical_path": "ops/",
@@ -2358,8 +2172,8 @@
           "status": "canonical"
         }
       ],
-      "guidance_missing_count": 1,
-      "noncanonical_count": 1
+      "guidance_missing_count": 0,
+      "noncanonical_count": 0
     }
   },
   "findings": [
@@ -2367,133 +2181,25 @@
       "severity": "medium",
       "category": "shape",
       "path": ".",
-      "problem": "`Code shape and semantic surface` scored 0 below the standard floor of 85",
+      "problem": "`Code shape and semantic surface` scored 80 below the standard floor of 85",
       "agent_fix": "split large or ambiguous authored code into smaller semantic modules with focused tests",
       "evidence": [
-        "largest authored code file: functions/api/SessionRoom.ts (1423 LOC)",
-        "code file exceeds 500 LOC",
-        "code file exceeds 1000 LOC",
-        "most code files stay under 300 LOC"
+        "largest authored code file: worker/TemplateGenerationWorkflow.ts (499 LOC)",
+        "most code files stay under 300 LOC",
+        "copy-code advisory classes found: 18 (advisory only, no score impact)",
+        "sql bad-behavior advisory signals: 95"
       ],
       "check_id": "HLT-001-DEAD-MARKER:shape",
       "hardness": "soft",
       "confidence": 0.76,
       "evidence_kind": "repository-scan",
       "rerun_command": "just fast",
-      "fingerprint": "sha256:a5c5369e7fa20e6b312cc9334be22ca8877a82ead7ca9a10e5b20c0e8812bef2",
+      "fingerprint": "sha256:75de56842ca5f28ba3e026d4acc6d84b700ee23226b612736e36965cb2dd4b4a",
       "rule_id": "HLT-001-DEAD-MARKER",
       "tlr": "Entropy",
       "lane": "fast",
       "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
       "owner": "tools"
-    },
-    {
-      "severity": "high",
-      "category": "agent",
-      "path": ".claude/hooks/pre-bash.sh",
-      "problem": "script stages the entire tree or skips verification",
-      "agent_fix": "enumerate the exact paths and keep verification on",
-      "evidence": [
-        "detector=git.stage.unbounded",
-        "path=.claude/hooks/pre-bash.sh",
-        "line=41",
-        "proof_window=None",
-        "snippet=if echo \"$CMD\" | grep -qE \"git\\s+(commit|rebase|push).*--no-verify\"; then"
-      ],
-      "check_id": "HLT-035-GIT-BAD-BEHAVIOR:agent",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:3dfbbe2e0059dc375e4ef4b0688e841451a9a80371628f7bdccf5b69b169ef65",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 41,
-      "matched_term": "git.stage.unbounded",
-      "reason": "automation commits broad untracked state or bypasses verification"
-    },
-    {
-      "severity": "high",
-      "category": "agent",
-      "path": ".claude/hooks/pre-bash.sh",
-      "problem": "script stages the entire tree or skips verification",
-      "agent_fix": "enumerate the exact paths and keep verification on",
-      "evidence": [
-        "detector=git.stage.unbounded",
-        "path=.claude/hooks/pre-bash.sh",
-        "line=42",
-        "proof_window=None",
-        "snippet=echo \"BLOCKED: Do not skip git hooks (--no-verify). Fix the underlying issue instead.\" >&2"
-      ],
-      "check_id": "HLT-035-GIT-BAD-BEHAVIOR:agent",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:1916fba808682893fbb4508df10604c857c35012d91dd74522667c6428c5e3d8",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 42,
-      "matched_term": "git.stage.unbounded",
-      "reason": "automation commits broad untracked state or bypasses verification"
-    },
-    {
-      "severity": "high",
-      "category": "agent",
-      "path": ".claude/hooks/pre-bash.sh",
-      "problem": "script performs a hard reset or equivalent tree restore",
-      "agent_fix": "replace the destructive reset with a targeted checkout or explicit path list",
-      "evidence": [
-        "detector=git.destructive.reset-hard",
-        "path=.claude/hooks/pre-bash.sh",
-        "line=47",
-        "proof_window=None",
-        "snippet=if echo \"$CMD\" | grep -qE \"git reset --hard\"; then"
-      ],
-      "check_id": "HLT-035-GIT-BAD-BEHAVIOR:agent",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:d561cefda34444d49c254e0eec603c281a1458e7c149524c60ef674c29979f4b",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 47,
-      "matched_term": "git.destructive.reset-hard",
-      "reason": "script mutates the working tree destructively"
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": ".claude/skills/cso.md",
-      "problem": "agent tool or configuration trust surface requires supply-chain evidence",
-      "agent_fix": "pin and review agent tools, MCP servers, hooks, and rule files; keep untrusted tool output separate from trusted policy",
-      "evidence": [
-        "□ Stripe SDK: not used in this repo today (Stripe calls are REST); if introduced, pin to latest stable and verify via `npm ls stripe @stripe/stripe-js`"
-      ],
-      "check_id": "HLT-024-AGENT-TOOL-SUPPLY-GAP:security",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:4eb9b5b7d800b644a88e29c152446805c0a41f0ce06296e016b7911be909ad1d",
-      "rule_id": "HLT-024-AGENT-TOOL-SUPPLY-GAP",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/audit-rubric.md#top-level-risk-mapping",
-      "owner": "agent",
-      "line": 81,
-      "matched_term": "agent tool supply",
-      "reason": "agent tool supply-chain changes alter execution authority"
     },
     {
       "severity": "medium",
@@ -2518,174 +2224,6 @@
       "line": 65,
       "matched_term": "review evidence",
       "reason": "proof and review claims need receipts"
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": ".github/workflows/jankurai.yml",
-      "problem": "protected workflow lacks strict CI security evidence before final audit",
-      "agent_fix": "run `jankurai security run . --strict --profile ci --out target/jankurai/security/evidence.json` before the final audit",
-      "evidence": [
-        "detector=ci.security.strict-missing",
-        "path=.github/workflows/jankurai.yml",
-        "line=1",
-        "proof_window=None",
-        "snippet=name: Jankurai Audit"
-      ],
-      "check_id": "HLT-034-CI-BAD-BEHAVIOR:security",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "workflow-command",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:2e81024911639c2d4354436fd283dc8ec506ba8bba4fa0b5dc343ebe81cde35a",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/testing.md",
-      "owner": "ops",
-      "line": 1,
-      "matched_term": "ci.security.strict-missing",
-      "reason": "final ratchet or release audit is not bound to strict security evidence"
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": ".github/workflows/jankurai.yml",
-      "problem": "security-related job is configured to continue on error",
-      "agent_fix": "remove the non-blocking override so scan failures stop the pipeline",
-      "evidence": [
-        "detector=ci.security-scan.nonblocking",
-        "path=.github/workflows/jankurai.yml",
-        "line=43",
-        "proof_window=None",
-        "snippet=continue-on-error: true"
-      ],
-      "check_id": "HLT-034-CI-BAD-BEHAVIOR:security",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "workflow-command",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:19181ac7dcc8cdfd66037a2f057506a52d06ba43e57658f64de550024527f25e",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/testing.md",
-      "owner": "ops",
-      "line": 43,
-      "matched_term": "ci.security-scan.nonblocking",
-      "reason": "security or proof job is explicitly non-blocking"
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": ".github/workflows/jankurai.yml",
-      "problem": "security-related job is configured to continue on error",
-      "agent_fix": "remove the non-blocking override so scan failures stop the pipeline",
-      "evidence": [
-        "detector=ci.security-scan.nonblocking",
-        "path=.github/workflows/jankurai.yml",
-        "line=47",
-        "proof_window=None",
-        "snippet=continue-on-error: true"
-      ],
-      "check_id": "HLT-034-CI-BAD-BEHAVIOR:security",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "workflow-command",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:e8751e7843ea6a1a7228976d2237154e9ed6e0f38f66dbce4c0a1eb2e63cb820",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/testing.md",
-      "owner": "ops",
-      "line": 47,
-      "matched_term": "ci.security-scan.nonblocking",
-      "reason": "security or proof job is explicitly non-blocking"
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": ".github/workflows/jankurai.yml",
-      "problem": "security-related job is configured to continue on error",
-      "agent_fix": "remove the non-blocking override so scan failures stop the pipeline",
-      "evidence": [
-        "detector=ci.security-scan.nonblocking",
-        "path=.github/workflows/jankurai.yml",
-        "line=51",
-        "proof_window=None",
-        "snippet=continue-on-error: true"
-      ],
-      "check_id": "HLT-034-CI-BAD-BEHAVIOR:security",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "workflow-command",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:30fb9dc24ac8bd6345e0e4583702db0f5503436a2e62b7c0ad5cbc5672522952",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/testing.md",
-      "owner": "ops",
-      "line": 51,
-      "matched_term": "ci.security-scan.nonblocking",
-      "reason": "security or proof job is explicitly non-blocking"
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": ".github/workflows/jankurai.yml",
-      "problem": "security-related job is configured to continue on error",
-      "agent_fix": "remove the non-blocking override so scan failures stop the pipeline",
-      "evidence": [
-        "detector=ci.security-scan.nonblocking",
-        "path=.github/workflows/jankurai.yml",
-        "line=55",
-        "proof_window=None",
-        "snippet=continue-on-error: true"
-      ],
-      "check_id": "HLT-034-CI-BAD-BEHAVIOR:security",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "workflow-command",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:25a2a6579ea3caa794007b44a6ad4be3a78361674e10092570203ba7312f9209",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/testing.md",
-      "owner": "ops",
-      "line": 55,
-      "matched_term": "ci.security-scan.nonblocking",
-      "reason": "security or proof job is explicitly non-blocking"
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": ".github/workflows/jankurai.yml",
-      "problem": "security-related job is configured to continue on error",
-      "agent_fix": "remove the non-blocking override so scan failures stop the pipeline",
-      "evidence": [
-        "detector=ci.security-scan.nonblocking",
-        "path=.github/workflows/jankurai.yml",
-        "line=59",
-        "proof_window=None",
-        "snippet=continue-on-error: true"
-      ],
-      "check_id": "HLT-034-CI-BAD-BEHAVIOR:security",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "workflow-command",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:3d158919956cb361303fd27b542ae00d5a5094e2c8b17860a4be5002df70f00e",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/testing.md",
-      "owner": "ops",
-      "line": 59,
-      "matched_term": "ci.security-scan.nonblocking",
-      "reason": "security or proof job is explicitly non-blocking"
     },
     {
       "severity": "medium",
@@ -2713,639 +2251,6 @@
     },
     {
       "severity": "medium",
-      "category": "boundary",
-      "path": "agent/boundaries.toml",
-      "problem": "`Contract and boundary integrity` scored 60 below the standard floor of 85",
-      "agent_fix": "add generated contracts and boundary checks for public APIs, data access, and cross-runtime seams",
-      "evidence": [
-        "contract surface found",
-        "generated contract artifacts found",
-        "polyglot boundary layout present",
-        "boundary manifest present"
-      ],
-      "check_id": "HLT-007-HANDWRITTEN-CONTRACT:boundary",
-      "hardness": "soft",
-      "confidence": 0.76,
-      "evidence_kind": "contract-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:088255e568c1ffdd351c9862de8b72557028081a9cd8afd007818eddad8e0103",
-      "rule_id": "HLT-007-HANDWRITTEN-CONTRACT",
-      "tlr": "Contracts/data",
-      "lane": "contract",
-      "docs_url": "docs/audit-rubric.md#known-vibe-coding-insults",
-      "owner": "agent"
-    },
-    {
-      "severity": "medium",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "`Ownership and navigation surface` scored 79 below the standard floor of 85",
-      "agent_fix": "tighten owner/test maps and root routing until agents can localize ownership without inference",
-      "evidence": [
-        "root `AGENTS.md` present",
-        "owner map present",
-        "test/proof routing map present",
-        "local `AGENTS.md` file(s)"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "soft",
-      "confidence": 0.76,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:25ecb737e3bccb6c0609f66e94243abdab03ef400999a4e185bdc23c4e20f840",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `.pre-commit-config.yaml` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        ".pre-commit-config.yaml"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:22090329bf95fdcde00d6b8ff6c8ec84130225472c169c603ecefe7bf66b4f8f",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `OBSERVABILITY_AUDIT_2026_06_05.md` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "OBSERVABILITY_AUDIT_2026_06_05.md"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:e3185ff63775af4691341f46bfe4852fb7c3f78b766b4f24ca150452459ee044",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `PR_COMMANDS.sh` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "PR_COMMANDS.sh"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:5dd53fb66a35fcd91093cc5f79865c8128a848d9b8ae01883d4e74d582b7a6f9",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `README.md` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "README.md"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:e92ab52c26f8e03bad9c8490ab4777be8f81a4b60c6a3703e192071ec6ff9983",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `capacitor.config.ts` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "capacitor.config.ts"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:5d51184dca1b30de3def2c5b3224fade90f198e489c366951b237b0095cecf53",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `design-system/colors_and_type.css` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "design-system/colors_and_type.css"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:66573bc12fd9b81fc7f8d0df16f86e962bc0a078a54bed4114def2c2f94d42e4",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `e8964e65669d47a69dd02b32bfe2a64e.txt` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "e8964e65669d47a69dd02b32bfe2a64e.txt"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:3612c03ec4aefe56e27b6abb7a6bb4a9cbfc52556eebe7f7ad8979063a413e42",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `functions/linkedin-auth.ts` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "functions/linkedin-auth.ts"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:d2910ce668e781ff312090dffb764b1f27ffbe415bc6f77b93c9d143e80ec3b3",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `i18n.scope.json` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "i18n.scope.json"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:3d08f61b857f23318ec0505599fac676aefeabfe5b413eb7932c84aa790e3af8",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
-      "problem": "path `import-vectors.ps1` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "import-vectors.ps1"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:c0dfe28502dc5fb330880f61f3926b759154d6146f11e045e4f55bb43f386082",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.dev.vars.example` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".dev.vars.example"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:73d2ed790b95a07a823e837802e9510b2e9a718992d0af45ae0e5540bd559db3",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.env.example` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".env.example"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:0b9aed5afb7c6f94cd166fa74e960d897cb6b3e698c6b31aec9b820aa39d27dc",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.github/AGENTS.md` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".github/AGENTS.md"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:0ef94c517ba5d8438cda9cff4411bbdc6c18f75807b4d7a355c81a866f8f68d6",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.github/SECURITY_INCIDENT.md` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".github/SECURITY_INCIDENT.md"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:18b9add8ae8bebeb805fc61e0b26b92863721211068e6f9af89d8b52303c6b2a",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.github/action-pins.env` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".github/action-pins.env"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:4d50dbad51f70c344442afc7aeefedda4eabd6638718719c0c00ae13c58be70e",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.github/dependabot.yml` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".github/dependabot.yml"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:360ba701702551129fcdec586565ed5115ef32470760622429a277b9ec486d14",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.gitignore` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".gitignore"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:8fe7edc74ce7873d59c9b6ccb57a19bca48fe9589c015113fb5028c2cc245992",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.mcp.json` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".mcp.json"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:213b981e1db08534bcc8a7cd1948ec64744ee77804413ace497863da0fc0e0a4",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.npmrc` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".npmrc"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:7eeb654c03b079d67958b733634248879472aea79a4be32ff0bdafa08587c890",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "proof",
-      "path": "agent/test-map.json",
-      "problem": "path `.pre-commit-config.yaml` has no test-map proof route",
-      "agent_fix": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "evidence": [
-        ".pre-commit-config.yaml"
-      ],
-      "check_id": "HLT-004-UNMAPPED-PROOF:proof",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:799efde432c802775088c20d4fd1b9c14439fe1d42802c35a30f85c992e3c568",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#proof-lanes",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "ux-qa",
-      "path": "apps/web",
-      "problem": "web surface lacks layered rendered UX QA evidence",
-      "agent_fix": "add Storybook state coverage, Playwright screenshots, visual review or `@jankurai/ux-qa`, accessibility scans, CLS checks, generated mocks, and design tokens",
-      "evidence": [
-        "rendered UX QA lane missing"
-      ],
-      "check_id": "HLT-013-RENDERED-UX-GAP:ux-qa",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "ux-proof",
-      "rerun_command": "just ux-qa",
-      "fingerprint": "sha256:571d35c2e730a393b782bac14825b197c0543920bb21967079d264ac602ea5b1",
-      "rule_id": "HLT-013-RENDERED-UX-GAP",
-      "tlr": "Verification and rendered UX",
-      "lane": "web",
-      "docs_url": "docs/testing.md",
-      "owner": "tools"
-    },
-    {
-      "severity": "medium",
-      "category": "context",
-      "path": "contracts/openapi-v3.json",
-      "problem": "active source path looks like an old, backup, copied, or parked implementation",
-      "agent_fix": "delete the stale copy, move history to VCS/archive tooling, or document owner, proof lane, expiry, and migration plan",
-      "evidence": [
-        "detector=repo-rot.path.fake-versioned-source",
-        "path=contracts/openapi-v3.json",
-        "line=1",
-        "proof_window=None",
-        "snippet={"
-      ],
-      "check_id": "HLT-040-REPO-ROT-BAD-BEHAVIOR:context",
-      "hardness": "soft",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:8c9889eae90dc386562ed6d95cf2e6f4a5a139c5747cc5f0ff88da52a891d24b",
-      "rule_id": "HLT-040-REPO-ROT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "docs_url": "docs/language-bad-behavior.md#web-security-and-repo-rot-detectors",
-      "owner": "tools",
-      "line": 1,
-      "matched_term": "repo-rot.path.fake-versioned-source",
-      "reason": "ambiguous old-looking active source makes agents and reviewers guess whether code is live"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "contracts/openapi-v3.json",
-      "problem": "contract source `contracts/openapi-v3.json` has no generated zone entry",
-      "agent_fix": "add a `[[zone]]` in `agent/generated-zones.toml` with `source`, `command`, and `path` for this contract, or generate typed clients from it",
-      "evidence": [
-        "contract source `contracts/openapi-v3.json` has no generated zone entry — handwritten drift is likely"
-      ],
-      "check_id": "HLT-007-HANDWRITTEN-CONTRACT:boundary",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "contract-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:54e379d3c3cd2384ee506a3d3657157011dfc9d33fd0f1c66c2af7451f856771",
-      "rule_id": "HLT-007-HANDWRITTEN-CONTRACT",
-      "tlr": "Contracts/data",
-      "lane": "contract",
-      "docs_url": "docs/audit-rubric.md#known-vibe-coding-insults",
-      "owner": "tools",
-      "line": 1
-    },
-    {
-      "severity": "high",
-      "category": "generated",
-      "path": "contracts/openapi-v3.json",
-      "problem": "generated zone file `contracts/openapi-v3.json` missing generated header",
-      "agent_fix": "add a `Generated by: <tool>` / `DO NOT EDIT BY HAND` header block with source and regeneration command",
-      "evidence": [
-        "generated zone integrity violation"
-      ],
-      "check_id": "HLT-002-GENERATED-MUTATION:generated",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "contract-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:1d2c92f0f39589aed8f669748b52434b4a4ede084f0a3a68a02feaea790065c1",
-      "rule_id": "HLT-002-GENERATED-MUTATION",
-      "tlr": "Contracts/data",
-      "lane": "contract",
-      "docs_url": "agent/JANKURAI_STANDARD.md#generated-zones",
-      "owner": "tools",
-      "line": 1
-    },
-    {
-      "severity": "high",
-      "category": "exceptions",
-      "path": "crates/domain",
-      "problem": "no agent-friendly exception/error pattern was detected",
-      "agent_fix": "define a typed exception surface with purpose, reason, common fixes, docs_url, and repair_hint so the next rerun is local",
-      "evidence": [
-        "route repair work to the next agent",
-        "opaque failures slow local debugging and reruns",
-        "add a typed repair hint; name the common fixes; point at the local docs URL",
-        "docs/testing.md"
-      ],
-      "check_id": "HLT-017-OPAQUE-OBSERVABILITY:exceptions",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:538667a01e35d8e91eae100627364816dd225911862fa2fa1578642af63d4af8",
-      "rule_id": "HLT-017-OPAQUE-OBSERVABILITY",
-      "tlr": "Repair",
-      "lane": "observability",
-      "docs_url": "agent/JANKURAI_STANDARD.md#repair-receipts",
-      "owner": "tools"
-    },
-    {
-      "severity": "medium",
-      "category": "data",
-      "path": "db/",
-      "problem": "`Data truth and workflow safety` scored 65 below the standard floor of 85",
-      "agent_fix": "move durable truth into migrations, constraints, adapters, and application-owned transactions",
-      "evidence": [
-        "database surface present",
-        "migration directory present",
-        "constraint or RLS language found",
-        "strict DB boundary violation: src/components/TeamSwitcher.tsx"
-      ],
-      "check_id": "HLT-006-DIRECT-DB-WRONG-LAYER:data",
-      "hardness": "soft",
-      "confidence": 0.76,
-      "evidence_kind": "sql",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:8416b5a0cd74f9e4a203de9fe90d32e613fe95ac38ea6cc35910bead5e6b040b",
-      "rule_id": "HLT-006-DIRECT-DB-WRONG-LAYER",
-      "tlr": "Contracts/data",
-      "lane": "db",
-      "docs_url": "docs/audit-rubric.md#required-shape",
-      "owner": "db"
-    },
-    {
-      "severity": "medium",
-      "category": "observability",
-      "path": "docs/testing.md",
-      "problem": "`Observability and repair evidence` scored 64 below the standard floor of 85",
-      "agent_fix": "add structured errors, telemetry, and repair receipts that tell the next agent where to rerun proof",
-      "evidence": [
-        "observability libraries or patterns found",
-        "ops/observability directory present",
-        "repair receipts or raw artifact language found",
-        "repair-hint and receipt convention are documented"
-      ],
-      "check_id": "HLT-017-OPAQUE-OBSERVABILITY:observability",
-      "hardness": "soft",
-      "confidence": 0.76,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:70c91c3c9a1f88fe8c49e24ef5ddbea9585e640f6889837cf0857995b4372117",
-      "rule_id": "HLT-017-OPAQUE-OBSERVABILITY",
-      "tlr": "Repair",
-      "lane": "observability",
-      "docs_url": "agent/JANKURAI_STANDARD.md#repair-receipts",
-      "owner": "standard"
-    },
-    {
-      "severity": "medium",
       "category": "release",
       "path": "docs/testing.md",
       "problem": "cost or spend-risk surface lacks budget proof",
@@ -3366,1178 +2271,9 @@
       "owner": "standard",
       "matched_term": "budget",
       "reason": "unbounded paid work needs budgets and stop conditions"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "functions/api/SessionRoom.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=functions/api/SessionRoom.ts",
-        "line=1181",
-        "snippet=const snapshot = JSON.parse(await obj.text()) as {"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:60a6756e1764bd4994952b3469b1ab712eac5d993f6950f68cc21b2601bc990a",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 1181,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "functions/api/app.ts",
-      "problem": "fallback soup detected in product code",
-      "agent_fix": "collapse fallback chains into explicit typed states with bounded retry policy, telemetry, and documented repair guidance",
-      "evidence": [
-        "functions/api/app.ts:122 if (!origin) return null"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:6b38d91dadb3c27f880507150eba4d0fadda0dcc50518c9fec882a6c0089fe25",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 122
-    },
-    {
-      "severity": "high",
-      "category": "security",
-      "path": "functions/api/lib/audit.ts",
-      "problem": "unsafe or unvalidated input boundary marker appears in product code",
-      "agent_fix": "replace unsafe sinks with typed schemas, parameterized APIs, allowlists, or sandboxed execution plus negative tests",
-      "evidence": [
-        "* COUNT and SELECT reuse the same fragment + bind order; LIMIT/OFFSET are appended separately (never via string replace)."
-      ],
-      "check_id": "HLT-023-INPUT-BOUNDARY-GAP:security",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:500a1d41eede5956b6e33760936790db69a2960f1ea8585091218ebcb8428da0",
-      "rule_id": "HLT-023-INPUT-BOUNDARY-GAP",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/audit-rubric.md#top-level-risk-mapping",
-      "owner": "tools",
-      "line": 202,
-      "matched_term": "string sql",
-      "reason": "input handling risk needs deterministic negative tests"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "functions/api/lib/audit.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=functions/api/lib/audit.ts",
-        "line=279",
-        "snippet=console.error('[audit] queryAuditEvents failed:', (err as Error).message)"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:89891ddbe35461f312ee6141846ebda2e1759efe10d0a65e4ee90b2028f33781",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 279,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "functions/api/lib/boundary-decode.ts",
-      "problem": "future-hostile/dead-language term `deprecated` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "functions/api/lib/boundary-decode.ts:101",
-        "future-hostile/dead-language term `deprecated` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:64e96824c1cd5c3f4c3c99f51c8fdb62b6437f56aa41c84ef2d2c142b015d9b9",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 101
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "functions/api/lib/integrations/providers/slack.ts",
-      "problem": "product code contains TODO/stub/unimplemented/unreachable placeholder markers",
-      "agent_fix": "replace placeholders with implemented behavior, typed unsupported-state errors, or a tracked exception record with docs",
-      "evidence": [
-        "functions/api/lib/integrations/providers/slack.ts:186 throw new Error('Slack inbound webhooks not implemented in v2.2')"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:de61ea92f91b22c19fd1bd22acea119b831cf50336d598a24374d649329d9767",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 186
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "functions/api/lib/workflows/session-pipeline.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=functions/api/lib/workflows/session-pipeline.ts",
-        "line=56",
-        "snippet=const classification = await classify(scannedQuestions, input.language as Lang, env.AI)"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:2699fa90226c409d2388bcb32b6e3e9906c40ec2c6edede4bf92e93a88fb44bb",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 56,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "functions/api/lib/workflows/session-pipeline.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=functions/api/lib/workflows/session-pipeline.ts",
-        "line=59",
-        "snippet=const template = buildTemplateRecord(input, scannedQuestions, classification, input.language as Lang)"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:b781ff06c56650da827082056428a3bd87abda46b900ed0a3341df6f289bfd19",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 59,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "functions/api/repositories/kbVectorRepository.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=functions/api/repositories/kbVectorRepository.ts",
-        "line=12",
-        "snippet=//     Vectorize as parametric `filter` — never concatenated into a query."
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:035c4ef2c5b75485a9542d2cb276d9d1e9cf6d529f6a36f4a4bcbb4eaafe1933",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 12,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "functions/api/repositories/kbVectorRepository.ts",
-      "problem": "future-hostile/dead-language term `deprecated` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "functions/api/repositories/kbVectorRepository.ts:58",
-        "future-hostile/dead-language term `deprecated` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:c2b3f505ebe1484c19bdfacdba35a728ac1d221a0cf5a4d91eab33f5c8d318c3",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 58
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "functions/api/routes/ai-insights/register-analyze.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=functions/api/routes/ai-insights/register-analyze.ts",
-        "line=79",
-        "snippet=logEvent({ event: 'vectorize.query.skip', reason: (vecErr as Error).message })"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:0af7481cb8c5c00d5ea94a08698bb6a66256b3f18003190d44e9994b49d1293f",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 79,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "functions/api/types/knowledge-base.ts",
-      "problem": "future-hostile/dead-language term `deprecated` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "functions/api/types/knowledge-base.ts:19",
-        "future-hostile/dead-language term `deprecated` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:69f49e7a3fb2d10bb9cf9684d66ccc21f3e078e48a74b675366182774ab62947",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 19
-    },
-    {
-      "severity": "high",
-      "category": "stack",
-      "path": "packages/sdk-js/index.js",
-      "problem": "runtime code uses a language outside the chosen optimal stack",
-      "agent_fix": "move product runtime behavior to Rust core, TypeScript web, SQL migrations, or generated contracts; Python needs a dated advanced-ML/data exception",
-      "evidence": [
-        "packages/sdk-js/index.js uses `.js`",
-        "Rust core + TypeScript/React/Vite + PostgreSQL + generated contracts + exception-only Python AI/data service"
-      ],
-      "check_id": "HLT-000-SCORE-DIMENSION:stack",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:606e0daaf55cf77913868e844b05c1d9c7fcd46d4a00d1a02b27ece4cb20549d",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "owner": "tools"
-    },
-    {
-      "severity": "medium",
-      "category": "context",
-      "path": "python",
-      "problem": "reference-profile cell `python-ai` is detected at a noncanonical path",
-      "agent_fix": "migrate the detected Python AI/data surface to `python/ai-service/` or document a dated advanced-ML/data exception with owner, proof lane, expiry, and migration plan",
-      "evidence": [
-        "canonical_path=python/ai-service/",
-        "detected_paths=python",
-        "aliases=python/, ai-service/, evals/, embeddings/, model/",
-        "guidance_status=missing",
-        "owner=python/ai-service",
-        "proof_lane=eval / contract tests"
-      ],
-      "check_id": "HLT-038-REFERENCE-PROFILE-STRUCTURE-GAP:context",
-      "hardness": "soft",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:1497a3a9e78cbdc7dd6920ded6b2b9675eb086f9a21d83c0127041289572d6d5",
-      "rule_id": "HLT-038-REFERENCE-PROFILE-STRUCTURE-GAP",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#required-shape",
-      "owner": "agent"
-    },
-    {
-      "severity": "medium",
-      "category": "context",
-      "path": "python/ai-service/",
-      "problem": "reference-profile cell `python-ai` lacks local AGENTS.md guidance",
-      "agent_fix": "add `python/ai-service/AGENTS.md` with owns / forbidden / proof lane guidance",
-      "evidence": [
-        "canonical_path=python/ai-service/",
-        "detected_paths=python",
-        "guidance_status=missing",
-        "owner=python/ai-service",
-        "proof_lane=eval / contract tests"
-      ],
-      "check_id": "HLT-038-REFERENCE-PROFILE-STRUCTURE-GAP:context",
-      "hardness": "soft",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:0ef63cc49a79fa6429f49b2ad91ad77e618c24c1cbab3ed509fe238ed3d81389",
-      "rule_id": "HLT-038-REFERENCE-PROFILE-STRUCTURE-GAP",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#required-shape",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "agent",
-      "path": "scripts/create-sprint-56-60-branches.ps1",
-      "problem": "script stages the entire tree or skips verification",
-      "agent_fix": "enumerate the exact paths and keep verification on",
-      "evidence": [
-        "detector=git.stage.unbounded",
-        "path=scripts/create-sprint-56-60-branches.ps1",
-        "line=40",
-        "proof_window=None",
-        "snippet=git add -A"
-      ],
-      "check_id": "HLT-035-GIT-BAD-BEHAVIOR:agent",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:371f815845345de365f96afd548d23a62a646e76f964d52edf57aeab5a698fcd",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 40,
-      "matched_term": "git.stage.unbounded",
-      "reason": "automation commits broad untracked state or bypasses verification"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "scripts/embed-kb.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=scripts/embed-kb.ts",
-        "line=294",
-        "snippet=const result = (await response.json()) as { result?: { data?: number[][] } }"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:e6fe7633f5935fbc144cbdeb13dde3e8ef2725b645e282cacadde509cd072816",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 294,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "scripts/kb-health.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=scripts/kb-health.ts",
-        "line=113",
-        "snippet=fetch(base, { headers }).then((r) => r.json() as Promise<any>),"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:1b975b943010cfe7f776b4bc671f2367a157f24de412a1c3bc0eff522cb849ab",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 113,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "scripts/kb-health.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=scripts/kb-health.ts",
-        "line=114",
-        "snippet=fetch(`${base}/info`, { headers }).then((r) => r.json() as Promise<any>),"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:7f26d1e449a27dac34b21620d4e23521336b368ed4d670e98363ef222ceea6b9",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 114,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "scripts/kb-sync-cli.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=scripts/kb-sync-cli.ts",
-        "line=191",
-        "snippet=const data = (await response.json()) as { data?: { vectors_upserted?: number } };"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:114ad61da45dbb69f03aed63949ca88097fd09e94de2608e5be2422381c0939f",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 191,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "scripts/kb-sync-cli.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=scripts/kb-sync-cli.ts",
-        "line=293",
-        "snippet=const data = (await response.json()) as { data?: { vectors_deleted?: number } };"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:41ecbea2a5638880c0a8f548ffccb4c8adf50605dabc8aa923dba983f205137f",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 293,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "agent",
-      "path": "scripts/rebuild-sprint-50-55-branches.ps1",
-      "problem": "script stages the entire tree or skips verification",
-      "agent_fix": "enumerate the exact paths and keep verification on",
-      "evidence": [
-        "detector=git.stage.unbounded",
-        "path=scripts/rebuild-sprint-50-55-branches.ps1",
-        "line=81",
-        "proof_window=None",
-        "snippet=git add -A"
-      ],
-      "check_id": "HLT-035-GIT-BAD-BEHAVIOR:agent",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just score",
-      "fingerprint": "sha256:21f11428ba02a6815623c377177c3e85620d1bb45b65192b8a81e1edf250f840",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 81,
-      "matched_term": "git.stage.unbounded",
-      "reason": "automation commits broad untracked state or bypasses verification"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "scripts/sync-help-docs.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=scripts/sync-help-docs.ts",
-        "line=158",
-        "snippet=const data = (await response.json()) as {"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:4cda1df509742d36786eba3c3c044cc5f23c4c6ec5660c617fcf45b57448a8ba",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "agent",
-      "line": 158,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/components/JoinBar.tsx",
-      "problem": "future-hostile/dead-language term `placeholder` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/components/JoinBar.tsx:37",
-        "future-hostile/dead-language term `placeholder` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:826fe40b1af261a1f5a203bbf16a696c4f7fcf00bc62d7ab62d6b618d7ae782b",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 37
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "src/components/SessionTitleField.tsx",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=src/components/SessionTitleField.tsx",
-        "line=67",
-        "snippet=;(e.target as HTMLInputElement).blur()"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:9efc08e33834d3c69e04b5bab753ec3a58ababa2e700178af3841fdb741efaff",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 67,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "src/components/SessionTitleField.tsx",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=src/components/SessionTitleField.tsx",
-        "line=71",
-        "snippet=;(e.target as HTMLInputElement).blur()"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:c5dcf3e691c2c35d59c9da41205b3c10ebdcd10e3712aecf78e8ab52914ff424",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 71,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "data",
-      "path": "src/components/TeamSwitcher.tsx",
-      "problem": "direct database access appears in a wrong layer",
-      "agent_fix": "move SQL and DB clients to `crates/adapters` or `db/`; expose typed application/domain APIs upward",
-      "evidence": [
-        "DB marker in non-adapter layer"
-      ],
-      "check_id": "HLT-006-DIRECT-DB-WRONG-LAYER:data",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "sql",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:f7e7f67eebdf70e083ac6e1b610426f794cffc6f383985060add13eb617911e8",
-      "rule_id": "HLT-006-DIRECT-DB-WRONG-LAYER",
-      "tlr": "Contracts/data",
-      "lane": "db",
-      "docs_url": "docs/audit-rubric.md#required-shape",
-      "owner": "tools",
-      "line": 1
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/components/admin/AdminAnalyticsTab.tsx",
-      "problem": "future-hostile/dead-language term `stale` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/components/admin/AdminAnalyticsTab.tsx:143",
-        "future-hostile/dead-language term `stale` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:802f5c47e8eb7a191188555217afd9d627b781223f1b7e4e0d28c7af453a9d07",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 143
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/config/pricing-matrix.ts",
-      "problem": "future-hostile/dead-language term `best effort` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/config/pricing-matrix.ts:50",
-        "future-hostile/dead-language term `best effort` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:348f63f234db9232e54690cabdcac9639654d62826a21e33bda431f54d1381b0",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 50
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/layouts/AppShellLayout.tsx",
-      "problem": "future-hostile/dead-language term `placeholder` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/layouts/AppShellLayout.tsx:256",
-        "future-hostile/dead-language term `placeholder` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:8265ecb87916cccadb9943de4f3dc6ebc5e46a2eae4ae5e512a5dab69a752b78",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 256
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "src/lib/branding.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=src/lib/branding.ts",
-        "line=25",
-        "snippet=const map = (raw ? (JSON.parse(raw) as unknown) : {}) as Record<string, unknown>"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:c60894cb7439e625fd6b2d9327632dd01582dcd763a8ccbd8ccfa4e4613e31ee",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 25,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "src/lib/branding.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=src/lib/branding.ts",
-        "line=37",
-        "snippet=const map = JSON.parse(raw) as unknown as Record<string, Record<string, unknown>>"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:9e2f432b19efb9b0a7f3744ec00c15ae4adde1fc8c5cc049aa9aa7c2726fbb08",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 37,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "src/lib/offline-vote-queue.ts",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=src/lib/offline-vote-queue.ts",
-        "line=23",
-        "snippet=const parsed = JSON.parse(raw) as unknown as QueuedVote[]"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:5756955414339b8b4abfd7621ef7461a19a78488fb7634f16171e62bfed94cfd",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 23,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/pages/Dashboard.tsx",
-      "problem": "future-hostile/dead-language term `placeholder` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/pages/Dashboard.tsx:584",
-        "future-hostile/dead-language term `placeholder` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:15eea48d696340abe1ae4b84f15e21517259039279321d3c2473955ce8f074af",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 584
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/pages/JoinPage.tsx",
-      "problem": "future-hostile/dead-language term `placeholder` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/pages/JoinPage.tsx:121",
-        "future-hostile/dead-language term `placeholder` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:a850330ad46d6cf6f15a063f1cc060ccf6e18cec0cdbcf9b4449003513ebb9d4",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 121
-    },
-    {
-      "severity": "high",
-      "category": "boundary",
-      "path": "src/pages/JoinPage.tsx",
-      "problem": "unchecked boundary cast or parse result crosses a trust boundary",
-      "agent_fix": "validate the value first, then narrow it with a proof-aware decoder",
-      "evidence": [
-        "detector=typescript.types.any-boundary",
-        "path=src/pages/JoinPage.tsx",
-        "line=518",
-        "snippet=const inp = e.currentTarget.elements.namedItem('resp') as HTMLInputElement"
-      ],
-      "check_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR:boundary",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:985c0357e6f7f5e881818680a74eefab08292580e979c5a547cc5f2f111d6875",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "docs_url": "docs/testing.md",
-      "owner": "tools",
-      "line": 518,
-      "matched_term": "typescript.types.any-boundary",
-      "reason": "value shape is not proven before the cast"
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/pages/JoinPage.tsx",
-      "problem": "future-hostile/dead-language term `placeholder` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/pages/JoinPage.tsx:531",
-        "future-hostile/dead-language term `placeholder` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:0069200350595f091dba0b0eb8eed2630de8ae9ed2e89e4a6b86faf2be892621",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 531
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/pages/Launchpad.tsx",
-      "problem": "future-hostile/dead-language term `placeholder` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/pages/Launchpad.tsx:703",
-        "future-hostile/dead-language term `placeholder` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:d331b6621f52315089ac8e9ec1ffe32f95e42586b0864909bee24eca4a1f8903",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 703
-    },
-    {
-      "severity": "high",
-      "category": "vibe",
-      "path": "src/ui/components.tsx",
-      "problem": "future-hostile/dead-language term `placeholder` appears in product/runtime code",
-      "agent_fix": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "evidence": [
-        "src/ui/components.tsx:173",
-        "future-hostile/dead-language term `placeholder` appears"
-      ],
-      "check_id": "HLT-001-DEAD-MARKER:vibe",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:866120af426b105963ed3459939aaeb415eaddceb26b3b361e18c0cee669c85c",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "docs_url": "docs/audit-rubric.md#future-hostile-language-rule",
-      "owner": "tools",
-      "line": 173
     }
   ],
   "agent_fix_queue": [
-    {
-      "path": "contracts/openapi-v3.json",
-      "priority": "high",
-      "rule_id": "HLT-007-HANDWRITTEN-CONTRACT",
-      "tlr": "Contracts/data",
-      "lane": "contract",
-      "owner": "tools",
-      "task": "add a `[[zone]]` in `agent/generated-zones.toml` with `source`, `command`, and `path` for this contract, or generate typed clients from it",
-      "why": "contract source `contracts/openapi-v3.json` has no generated zone entry"
-    },
-    {
-      "path": "contracts/openapi-v3.json",
-      "priority": "high",
-      "rule_id": "HLT-002-GENERATED-MUTATION",
-      "tlr": "Contracts/data",
-      "lane": "contract",
-      "owner": "tools",
-      "task": "add a `Generated by: <tool>` / `DO NOT EDIT BY HAND` header block with source and regeneration command",
-      "why": "generated zone file `contracts/openapi-v3.json` missing generated header"
-    },
-    {
-      "path": "functions/api/SessionRoom.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "functions/api/lib/audit.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "functions/api/lib/workflows/session-pipeline.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "functions/api/repositories/kbVectorRepository.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "functions/api/routes/ai-insights/register-analyze.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "scripts/embed-kb.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "scripts/kb-health.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "scripts/kb-sync-cli.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "scripts/sync-help-docs.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "src/components/SessionTitleField.tsx",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "src/components/TeamSwitcher.tsx",
-      "priority": "high",
-      "rule_id": "HLT-006-DIRECT-DB-WRONG-LAYER",
-      "tlr": "Contracts/data",
-      "lane": "db",
-      "owner": "tools",
-      "task": "move SQL and DB clients to `crates/adapters` or `db/`; expose typed application/domain APIs upward",
-      "why": "direct database access appears in a wrong layer"
-    },
-    {
-      "path": "src/lib/branding.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "src/lib/offline-vote-queue.ts",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "src/pages/JoinPage.tsx",
-      "priority": "high",
-      "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
-      "tlr": "Contracts/data",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "validate the value first, then narrow it with a proof-aware decoder",
-      "why": "unchecked boundary cast or parse result crosses a trust boundary"
-    },
-    {
-      "path": "agent/boundaries.toml",
-      "priority": "medium",
-      "rule_id": "HLT-007-HANDWRITTEN-CONTRACT",
-      "tlr": "Contracts/data",
-      "lane": "contract",
-      "owner": "agent",
-      "task": "add generated contracts and boundary checks for public APIs, data access, and cross-runtime seams",
-      "why": "`Contract and boundary integrity` scored 60 below the standard floor of 85"
-    },
-    {
-      "path": "db/",
-      "priority": "medium",
-      "rule_id": "HLT-006-DIRECT-DB-WRONG-LAYER",
-      "tlr": "Contracts/data",
-      "lane": "db",
-      "owner": "db",
-      "task": "move durable truth into migrations, constraints, adapters, and application-owned transactions",
-      "why": "`Data truth and workflow safety` scored 65 below the standard floor of 85"
-    },
-    {
-      "path": "agent/test-map.json",
-      "priority": "high",
-      "rule_id": "HLT-004-UNMAPPED-PROOF",
-      "tlr": "Verification",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "add the narrowest stable prefix and runnable proof command to `agent/test-map.json`",
-      "why": "path `.dev.vars.example` has no test-map proof route"
-    },
     {
       "path": "Justfile",
       "priority": "medium",
@@ -4559,16 +2295,6 @@
       "why": "cost or spend-risk surface lacks budget proof"
     },
     {
-      "path": "crates/domain",
-      "priority": "high",
-      "rule_id": "HLT-017-OPAQUE-OBSERVABILITY",
-      "tlr": "Repair",
-      "lane": "observability",
-      "owner": "tools",
-      "task": "define a typed exception surface with purpose, reason, common fixes, docs_url, and repair_hint so the next rerun is local",
-      "why": "no agent-friendly exception/error pattern was detected"
-    },
-    {
       "path": ".claude/skills/marketing.md",
       "priority": "medium",
       "rule_id": "HLT-027-HUMAN-REVIEW-EVIDENCE-GAP",
@@ -4579,295 +2305,6 @@
       "why": "human review or proof claim lacks reproducible evidence"
     },
     {
-      "path": "docs/testing.md",
-      "priority": "medium",
-      "rule_id": "HLT-017-OPAQUE-OBSERVABILITY",
-      "tlr": "Repair",
-      "lane": "observability",
-      "owner": "standard",
-      "task": "add structured errors, telemetry, and repair receipts that tell the next agent where to rerun proof",
-      "why": "`Observability and repair evidence` scored 64 below the standard floor of 85"
-    },
-    {
-      "path": ".claude/hooks/pre-bash.sh",
-      "priority": "high",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "owner": "agent",
-      "task": "enumerate the exact paths and keep verification on",
-      "why": "script stages the entire tree or skips verification"
-    },
-    {
-      "path": ".claude/hooks/pre-bash.sh",
-      "priority": "high",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "owner": "agent",
-      "task": "replace the destructive reset with a targeted checkout or explicit path list",
-      "why": "script performs a hard reset or equivalent tree restore"
-    },
-    {
-      "path": "agent/owner-map.json",
-      "priority": "high",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "why": "path `.pre-commit-config.yaml` has no owner-map route"
-    },
-    {
-      "path": "packages/sdk-js/index.js",
-      "priority": "high",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "owner": "tools",
-      "task": "move product runtime behavior to Rust core, TypeScript web, SQL migrations, or generated contracts; Python needs a dated advanced-ML/data exception",
-      "why": "runtime code uses a language outside the chosen optimal stack"
-    },
-    {
-      "path": "scripts/create-sprint-56-60-branches.ps1",
-      "priority": "high",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "owner": "agent",
-      "task": "enumerate the exact paths and keep verification on",
-      "why": "script stages the entire tree or skips verification"
-    },
-    {
-      "path": "scripts/rebuild-sprint-50-55-branches.ps1",
-      "priority": "high",
-      "rule_id": "HLT-035-GIT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "owner": "agent",
-      "task": "enumerate the exact paths and keep verification on",
-      "why": "script stages the entire tree or skips verification"
-    },
-    {
-      "path": "agent/owner-map.json",
-      "priority": "medium",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "tighten owner/test maps and root routing until agents can localize ownership without inference",
-      "why": "`Ownership and navigation surface` scored 79 below the standard floor of 85"
-    },
-    {
-      "path": "contracts/openapi-v3.json",
-      "priority": "medium",
-      "rule_id": "HLT-040-REPO-ROT-BAD-BEHAVIOR",
-      "tlr": "Context/setup",
-      "lane": "audit",
-      "owner": "tools",
-      "task": "delete the stale copy, move history to VCS/archive tooling, or document owner, proof lane, expiry, and migration plan",
-      "why": "active source path looks like an old, backup, copied, or parked implementation"
-    },
-    {
-      "path": "python",
-      "priority": "medium",
-      "rule_id": "HLT-038-REFERENCE-PROFILE-STRUCTURE-GAP",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "migrate the detected Python AI/data surface to `python/ai-service/` or document a dated advanced-ML/data exception with owner, proof lane, expiry, and migration plan",
-      "why": "reference-profile cell `python-ai` is detected at a noncanonical path"
-    },
-    {
-      "path": "python/ai-service/",
-      "priority": "medium",
-      "rule_id": "HLT-038-REFERENCE-PROFILE-STRUCTURE-GAP",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "owner": "agent",
-      "task": "add `python/ai-service/AGENTS.md` with owns / forbidden / proof lane guidance",
-      "why": "reference-profile cell `python-ai` lacks local AGENTS.md guidance"
-    },
-    {
-      "path": ".claude/skills/cso.md",
-      "priority": "high",
-      "rule_id": "HLT-024-AGENT-TOOL-SUPPLY-GAP",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "owner": "agent",
-      "task": "pin and review agent tools, MCP servers, hooks, and rule files; keep untrusted tool output separate from trusted policy",
-      "why": "agent tool or configuration trust surface requires supply-chain evidence"
-    },
-    {
-      "path": ".github/workflows/jankurai.yml",
-      "priority": "high",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "owner": "ops",
-      "task": "run `jankurai security run . --strict --profile ci --out target/jankurai/security/evidence.json` before the final audit",
-      "why": "protected workflow lacks strict CI security evidence before final audit"
-    },
-    {
-      "path": ".github/workflows/jankurai.yml",
-      "priority": "high",
-      "rule_id": "HLT-034-CI-BAD-BEHAVIOR",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "owner": "ops",
-      "task": "remove the non-blocking override so scan failures stop the pipeline",
-      "why": "security-related job is configured to continue on error"
-    },
-    {
-      "path": "apps/web",
-      "priority": "high",
-      "rule_id": "HLT-013-RENDERED-UX-GAP",
-      "tlr": "Verification and rendered UX",
-      "lane": "web",
-      "owner": "tools",
-      "task": "add Storybook state coverage, Playwright screenshots, visual review or `@jankurai/ux-qa`, accessibility scans, CLS checks, generated mocks, and design tokens",
-      "why": "web surface lacks layered rendered UX QA evidence"
-    },
-    {
-      "path": "functions/api/app.ts",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "collapse fallback chains into explicit typed states with bounded retry policy, telemetry, and documented repair guidance",
-      "why": "fallback soup detected in product code"
-    },
-    {
-      "path": "functions/api/lib/audit.ts",
-      "priority": "high",
-      "rule_id": "HLT-023-INPUT-BOUNDARY-GAP",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "owner": "tools",
-      "task": "replace unsafe sinks with typed schemas, parameterized APIs, allowlists, or sandboxed execution plus negative tests",
-      "why": "unsafe or unvalidated input boundary marker appears in product code"
-    },
-    {
-      "path": "functions/api/lib/boundary-decode.ts",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `deprecated` appears in product/runtime code"
-    },
-    {
-      "path": "functions/api/lib/integrations/providers/slack.ts",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "replace placeholders with implemented behavior, typed unsupported-state errors, or a tracked exception record with docs",
-      "why": "product code contains TODO/stub/unimplemented/unreachable placeholder markers"
-    },
-    {
-      "path": "functions/api/repositories/kbVectorRepository.ts",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `deprecated` appears in product/runtime code"
-    },
-    {
-      "path": "functions/api/types/knowledge-base.ts",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `deprecated` appears in product/runtime code"
-    },
-    {
-      "path": "src/components/JoinBar.tsx",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `placeholder` appears in product/runtime code"
-    },
-    {
-      "path": "src/components/admin/AdminAnalyticsTab.tsx",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `stale` appears in product/runtime code"
-    },
-    {
-      "path": "src/config/pricing-matrix.ts",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `best effort` appears in product/runtime code"
-    },
-    {
-      "path": "src/layouts/AppShellLayout.tsx",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `placeholder` appears in product/runtime code"
-    },
-    {
-      "path": "src/pages/Dashboard.tsx",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `placeholder` appears in product/runtime code"
-    },
-    {
-      "path": "src/pages/JoinPage.tsx",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `placeholder` appears in product/runtime code"
-    },
-    {
-      "path": "src/pages/Launchpad.tsx",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `placeholder` appears in product/runtime code"
-    },
-    {
-      "path": "src/ui/components.tsx",
-      "priority": "high",
-      "rule_id": "HLT-001-DEAD-MARKER",
-      "tlr": "Entropy",
-      "lane": "fast",
-      "owner": "tools",
-      "task": "remove or rename the marker, implement the intended behavior, model a typed unsupported state, or move docs/generated/vendor/product-copy text into an allowlisted context",
-      "why": "future-hostile/dead-language term `placeholder` appears in product/runtime code"
-    },
-    {
       "path": ".",
       "priority": "medium",
       "rule_id": "HLT-001-DEAD-MARKER",
@@ -4875,7 +2312,7 @@
       "lane": "fast",
       "owner": "tools",
       "task": "split large or ambiguous authored code into smaller semantic modules with focused tests",
-      "why": "`Code shape and semantic surface` scored 0 below the standard floor of 85"
+      "why": "`Code shape and semantic surface` scored 80 below the standard floor of 85"
     }
   ]
 }

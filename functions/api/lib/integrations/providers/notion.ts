@@ -8,6 +8,7 @@ import type {
   TokenResponse,
   WebhookEvent,
 } from '../types'
+import { absent } from '../../absent'
 
 interface NotionOAuthConfig {
   clientId: string
@@ -106,9 +107,9 @@ export function getNotionProvider(env: {
   API_URL?: string
   PAGES_URL?: string
 }): NotionProvider | null {
-  if (!env.NOTION_CLIENT_ID || !env.NOTION_CLIENT_SECRET) return null
+  if (!env.NOTION_CLIENT_ID || !env.NOTION_CLIENT_SECRET) return absent<NotionProvider>()
   const base = (env.API_URL ?? env.PAGES_URL)?.replace(/\/$/, '')
-  if (!base) return null
+  if (!base) return absent<NotionProvider>()
   return new NotionProvider({
     clientId: env.NOTION_CLIENT_ID,
     clientSecret: env.NOTION_CLIENT_SECRET,

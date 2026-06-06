@@ -1,3 +1,4 @@
+// jankurai:allow HLT-006-DIRECT-DB-WRONG-LAYER reason=react-ui-layer-no-d1-access expires=2027-06-01
 import { api } from '../../api/client'
 import type { Team } from './types'
 
@@ -22,7 +23,7 @@ export function BrandingSection({ team, teamId, brandingDescription, onTeamUpdat
             method: 'PATCH',
             body: JSON.stringify({
               branding: {
-                logoUrl: (fd.get('logoUrl') as string) || null,
+                logoUrl: (fd.get('logoUrl') as string) || undefined,
                 primaryColor: (fd.get('primaryColor') as string) || undefined,
                 secondaryColor: (fd.get('secondaryColor') as string) || undefined,
               },

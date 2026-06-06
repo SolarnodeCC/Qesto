@@ -4,6 +4,7 @@ import { adminMiddleware, type AdminVariables } from '../../../middleware/admin'
 import type { Env } from '../../../types'
 import { patchSprint19SchemaIfNeeded } from '../schema-patch'
 import type { Sprint19Baseline } from '../types'
+import { fetchSprint19BaselineRows } from '../../../../../db/queries/sprint19-baseline'
 
 type AdminApp = Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>
 
@@ -24,12 +25,8 @@ export function mountEngagementAnalyticsRoutes(app: AdminApp): void {
       )
     }
 
-    const where = startMs === null ? '' : 'WHERE created_at >= ?1 AND created_at <= ?2'
-    const journeyWhere = startMs === null ? '' : 'WHERE created_at >= ?1 AND created_at <= ?2'
-    const bindRange = (stmt: D1PreparedStatement) => startMs === null ? stmt : stmt.bind(startMs, endMs)
-
     try {
-      const [
+      const {
         totalRes,
         aiGeneratedRes,
         aiConsentRes,
@@ -38,16 +35,7 @@ export function mountEngagementAnalyticsRoutes(app: AdminApp): void {
         draftRes,
         aiSuggestionRes,
         journeyRes,
-      ] = await Promise.all([
-        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}`)).first<{ n: number }>(),
-        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_generated = 1`)).first<{ n: number }>(),
-        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_consent_at IS NOT NULL`)).first<{ n: number }>(),
-        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_grounding_hash IS NOT NULL`)).first<{ n: number }>(),
-        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} status IN ('live','closed','archived')`)).first<{ n: number }>(),
-        bindRange(c.env.DB.prepare(`SELECT COUNT(*) as n FROM sessions ${where}${where ? ' AND' : ' WHERE'} status = 'draft'`)).first<{ n: number }>(),
-        bindRange(c.env.DB.prepare(`SELECT COALESCE(SUM(ai_accepted_count), 0) as accepted, COALESCE(SUM(ai_dismissed_count), 0) as dismissed FROM sessions ${where}${where ? ' AND' : ' WHERE'} ai_generated = 1`)).first<{ accepted: number; dismissed: number }>(),
-        bindRange(c.env.DB.prepare(`SELECT event_name, COUNT(*) as n FROM sprint19_events ${journeyWhere} GROUP BY event_name`)).all<{ event_name: string; n: number }>(),
-      ])
+      } = await fetchSprint19BaselineRows(c.env.DB, { startMs, endMs })
 
       const total = totalRes?.n ?? 0
       const started = startedRes?.n ?? 0

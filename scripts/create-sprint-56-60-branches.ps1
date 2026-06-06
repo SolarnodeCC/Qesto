@@ -36,34 +36,34 @@ $s60 = @(
 function Apply([string[]]$paths) {
   foreach ($p in $paths) { git checkout $source -- $p 2>$null }
 }
-function Commit([string]$msg) {
-  git add -A
+function Commit([string]$msg, [string[]]$paths) {
+  foreach ($p in $paths) { git add -- $p }
   if (git status --porcelain) { git commit -m $msg }
 }
 
 git checkout -B feat/sprint-56-v33-rag-coaching $base
 Apply $s56
 git checkout $source -- functions/api/app.ts functions/api/lib/observability.ts
-Commit 'feat(sprint-56): RAG coaching profile + tournament export'
+Commit 'feat(sprint-56): RAG coaching profile + tournament export' ($s56 + 'functions/api/app.ts', 'functions/api/lib/observability.ts')
 
 git checkout -B feat/sprint-57-v33-coaching-ux feat/sprint-56-v33-rag-coaching
 Apply $s57
 git checkout $source -- functions/api/app.ts src/components/CoachingCard.tsx public/locales/en/insights.json
-Commit 'feat(sprint-57): coaching actions, email export, SOC2 prep'
+Commit 'feat(sprint-57): coaching actions, email export, SOC2 prep' ($s57 + 'functions/api/app.ts', 'src/components/CoachingCard.tsx', 'public/locales/en/insights.json')
 
 git checkout -B feat/sprint-58-v34-marketplace-soc2 feat/sprint-57-v33-coaching-ux
 Apply $s58
 git checkout $source -- functions/api/app.ts functions/api/lib/public-api-paths.ts
-Commit 'feat(sprint-58): marketplace, SLA page, partner branding'
+Commit 'feat(sprint-58): marketplace, SLA page, partner branding' ($s58 + 'functions/api/app.ts', 'functions/api/lib/public-api-paths.ts')
 
 git checkout -B feat/sprint-59-v34-soc2-gtm feat/sprint-58-v34-marketplace-soc2
 Apply $s59
 git checkout $source -- functions/api/routes/partner-apps.ts functions/api/app.ts
-Commit 'feat(sprint-59): SOC2 trust page, partner secret rotation'
+Commit 'feat(sprint-59): SOC2 trust page, partner secret rotation' ($s59 + 'functions/api/routes/partner-apps.ts', 'functions/api/app.ts')
 
 git checkout -B feat/sprint-60-v35-moat feat/sprint-59-v34-soc2-gtm
 Apply $s60
 git checkout $source -- functions/api/app.ts
-Commit 'feat(sprint-60): similar sessions RAG search, v3.5 moat doc'
+Commit 'feat(sprint-60): similar sessions RAG search, v3.5 moat doc' ($s60 + 'functions/api/app.ts')
 
 Write-Host 'Branches feat/sprint-56 through feat/sprint-60 created.'

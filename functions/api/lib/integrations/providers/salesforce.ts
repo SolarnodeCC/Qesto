@@ -8,6 +8,7 @@ import type {
   TokenResponse,
   WebhookEvent,
 } from '../types'
+import { absent } from '../../absent'
 
 interface SalesforceOAuthConfig {
   clientId: string
@@ -142,9 +143,9 @@ export function getSalesforceProvider(env: {
   API_URL?: string
   PAGES_URL?: string
 }): SalesforceProvider | null {
-  if (!env.SALESFORCE_CLIENT_ID || !env.SALESFORCE_CLIENT_SECRET) return null
+  if (!env.SALESFORCE_CLIENT_ID || !env.SALESFORCE_CLIENT_SECRET) return absent<SalesforceProvider>()
   const base = (env.API_URL ?? env.PAGES_URL)?.replace(/\/$/, '')
-  if (!base) return null
+  if (!base) return absent<SalesforceProvider>()
   const redirectUri = `${base}/api/integrations/salesforce/callback`
   return new SalesforceProvider({
     clientId: env.SALESFORCE_CLIENT_ID,

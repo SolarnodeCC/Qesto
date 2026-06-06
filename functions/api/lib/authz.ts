@@ -116,8 +116,8 @@ export async function hasTeamPermission(
   return permissions.includes(permission)
 }
 
-export function validatePermissions(input: unknown): Permission[] | null {
+export function validatePermissions(input: unknown): Permission[] | undefined {
   const validated = validateData(input, PermissionArraySchema)
-  if (!validated) return null
+  if (!validated) return
   return [...new Set(validated)] as Permission[]
 }

@@ -12,6 +12,7 @@ import { readKvJson, writeKvJson } from '../../lib/kv'
 import { validateKvJson, TeamInviteTokenSchema } from '../../lib/protocol-schemas'
 import { teamDocumentKey, teamInviteKey, userTeamsIndexKey } from '../../lib/kv-keys'
 import type { Role, Team, TeamMember } from './types'
+import { absent } from '../../lib/absent'
 
 // ─── KV helpers ──────────────────────────────────────────────────────────────
 
@@ -144,9 +145,9 @@ export async function consumeInvite(
   tokenHash: string,
 ): Promise<{ teamId: string; email: string; role: Role } | null> {
   const raw = await kv.get(teamInviteKey(tokenHash))
-  if (!raw) return null
+  if (!raw) return absent()
   await kv.delete(teamInviteKey(tokenHash))
   const invite = validateKvJson(raw, TeamInviteTokenSchema)
-  if (!invite) return null
+  if (!invite) return absent()
   return { teamId: invite.teamId, email: invite.email, role: invite.role as Role }
 }

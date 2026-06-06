@@ -27,17 +27,18 @@
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import { resolveExpectedOrigin } from '../lib/origin'
+import { absent } from '../lib/absent'
 
 const UNSAFE_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
 
 function normaliseOrigin(url: string | null | undefined): string | null {
-  if (!url) return null
+  if (!url) return absent()
   try {
     const u = new URL(url)
     // origin covers scheme + host + port; strips path/query/fragment.
     return u.origin
   } catch {
-    return null
+    return absent()
   }
 }
 

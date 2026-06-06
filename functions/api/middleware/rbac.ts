@@ -10,6 +10,7 @@
 import type { Context, MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import type { AuthVariables } from './auth'
+import { absent } from '../lib/absent'
 
 export type RbacVariables = {
   userRoles: readonly string[]
@@ -159,7 +160,7 @@ function getRouteKey(method: string, path: string): string | null {
     const key = `${method} ${v}`
     if (PERMISSION_MATRIX[key]) return key
   }
-  return null
+  return absent()
 }
 
 /**

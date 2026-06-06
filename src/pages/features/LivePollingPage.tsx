@@ -15,8 +15,8 @@ const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
 const shadowCard = { boxShadow: 'var(--shadow-card)' }
 
 const questionTypes = [
-  { icon: <List size={22} />, title: 'Multiple choice', desc: 'Single-select with live bar tally. Shuffle options to defeat position bias. 2–12 options.', tag: 'type: mc' },
-  { icon: <CheckSquare size={22} />, title: 'Multi-select', desc: '"Pick up to N." Live stacked bars with exact counts. Great for prioritization.', tag: 'type: multi' },
+  { icon: <List size={22} />, title: 'Multiple choice', desc: 'Single-choice with live bar tally. Shuffle options to defeat position bias. 2–12 options.', tag: 'type: mc' },
+  { icon: <CheckSquare size={22} />, title: 'Multi-choice', desc: '"Pick up to N." Live stacked bars with exact counts. Great for prioritization.', tag: 'type: multi' },
   { icon: <BarChart3 size={22} />, title: 'Likert / scale', desc: '1–5 or 1–7 with custom endpoint labels. Mean and distribution shown together, never alone.', tag: 'type: scale' },
   { icon: <MessageSquare size={22} />, title: 'Open text', desc: 'Free response clustered by AI in 8–15 seconds. Raw rows never shown — themes with counts and representative quotes.', tag: 'type: open' },
   { icon: <ThumbsUp size={22} />, title: 'Upvote queue', desc: 'Audience submits questions; others upvote. Moderator console shows a ranked queue. Perfect for Q&A.', tag: 'type: queue' },
@@ -28,7 +28,7 @@ const questionTypes = [
 const latencyRows = [
   { hop: 'Hop 01', title: 'Client → edge POP.', desc: 'TLS to the nearest Cloudflare edge. Participant never talks to an origin.', lat: '~22ms', sub: 'p50 wire' },
   { hop: 'Hop 02', title: 'Edge → Durable Object.', desc: 'Session state lives in a single DO, pinned to the colo closest to first-mover.', lat: '~8ms', sub: 'intra-colo' },
-  { hop: 'Hop 03', title: 'DO → WebSocket fan-out.', desc: 'Tally update broadcast to every connected participant over persistent WS.', lat: '~12ms', sub: 'fanout' },
+  { hop: 'Hop 03', title: 'DO → WebSocket fan-out.', desc: 'Tally refresh broadcast to every connected participant over persistent WS.', lat: '~12ms', sub: 'fanout' },
   { hop: 'Hop 04', title: 'Render.', desc: 'Bar moves on the projected screen. Same pipe, no client poll.', lat: '~16ms', sub: 'paint' },
   { hop: 'Total', title: 'Tap to bar movement.', desc: 'End-to-end benchmark pending Cloudflare-backed staging validation.', lat: 'Live', sub: 'validation pending', highlight: true },
 ]

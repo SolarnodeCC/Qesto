@@ -1,0 +1,10 @@
+{
+  "name": "@qesto/web",
+  "private": true,
+  "description": "Alias surface for Qesto web app (canonical source: ../../src/)",
+  "scripts": {
+    "dev": "cd ../.. && npm run dev",
+    "build": "cd ../.. && npm run build",
+    "ux-qa": "cd ../.. && just ux-qa"
+  }
+}

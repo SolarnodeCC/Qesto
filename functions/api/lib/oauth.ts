@@ -5,7 +5,6 @@
 import { z } from 'zod'
 import { validateData, GoogleTokenResponseSchema, MicrosoftTokenResponseSchema, GoogleIdTokenPayloadSchema, MicrosoftIdTokenPayloadSchema, JwtHeaderSchema, JwksResponseSchema } from './protocol-schemas'
 import { CircuitBreakers } from './resilience/circuit-breaker'
-
 const STATE_TTL_SECONDS = 10 * 60
 const DEFAULT_JWKS_TTL_MS = 5 * 60 * 1000
 const jwksCache = new Map<string, { keys: JsonWebKey[]; expiresAt: number }>()
@@ -230,7 +229,7 @@ async function getJwks(uri: string): Promise<JsonWebKey[]> {
     },
     () => {
       // JWKS circuit open — graceful degrade: throw so SSO login fails cleanly
-      // (the calling verifyOAuthIdToken will catch this and return null → auth denies)
+      // (the calling verifyOAuthIdToken will catch this and return absent() → auth denies)
       throw new Error('JWKS service unavailable (circuit open)')
     },
   )

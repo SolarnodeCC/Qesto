@@ -1,6 +1,6 @@
+import { absent } from './absent'
 import type { ZodSchema } from 'zod'
 import { validateKvJson } from './protocol-schemas'
-
 /**
  * Read and JSON-parse a KV value. Returns null on miss, parse failure, or any
  * read error (fail-soft). Optionally validates the parsed value with a Zod
@@ -12,7 +12,7 @@ export async function readKvJson<T>(kv: KVNamespace, key: string, schema?: ZodSc
     const raw = await kv.get(key)
     return validateKvJson(raw, schema)
   } catch {
-    return null
+    return absent()
   }
 }
 

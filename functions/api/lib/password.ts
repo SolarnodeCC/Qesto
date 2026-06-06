@@ -1,3 +1,4 @@
+import { absent } from './absent'
 // PBKDF2-SHA256 password hashing via WebCrypto.
 // Runs natively on Cloudflare Workers and Node 20+ (Vitest).
 //
@@ -8,7 +9,6 @@
 //   verifiable; `passwordNeedsRehash` flags these for upgrade-on-login.
 
 import { timingSafeEqual } from './shared/crypto'
-
 // OWASP (2023) minimum for PBKDF2-HMAC-SHA256.
 const ITERATIONS = 600_000
 const LEGACY_ITERATIONS = 100_000
@@ -47,11 +47,11 @@ function parseStored(stored: string): ParsedHash | null {
   if (stored.startsWith('pbkdf2$')) {
     const [, iterStr, saltHex, hashHex] = stored.split('$')
     const iterations = Number.parseInt(iterStr ?? '', 10)
-    if (!Number.isFinite(iterations) || iterations <= 0 || !saltHex || !hashHex) return null
+    if (!Number.isFinite(iterations) || iterations <= 0 || !saltHex || !hashHex) return absent()
     return { iterations, saltHex, hashHex }
   }
   const [saltHex, hashHex] = stored.split(':')
-  if (!saltHex || !hashHex) return null
+  if (!saltHex || !hashHex) return absent()
   return { iterations: LEGACY_ITERATIONS, saltHex, hashHex }
 }
 

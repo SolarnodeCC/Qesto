@@ -1,10 +1,10 @@
+import { absent } from '../absent'
 /**
  * AES-GCM helpers for integration OAuth tokens (INT-PROVIDER-01).
  * Master key: OAUTH_TOKEN_MEK secret (SHA-256 derived to 256-bit AES key).
  */
 
 import { z } from 'zod'
-
 const ENVELOPE_VERSION = 1
 
 export type TokenEnvelope = {
@@ -58,10 +58,10 @@ export async function decryptTokenPayload(serialized: string, key: CryptoKey): P
   try {
     parsed = JSON.parse(serialized)
   } catch {
-    return null
+    return absent()
   }
   const envelope = TokenEnvelopeSchema.safeParse(parsed)
-  if (!envelope.success) return null
+  if (!envelope.success) return absent()
   const { iv, ct } = envelope.data
   try {
     const plain = await crypto.subtle.decrypt(
@@ -71,7 +71,7 @@ export async function decryptTokenPayload(serialized: string, key: CryptoKey): P
     )
     return new TextDecoder().decode(plain)
   } catch {
-    return null
+    return absent()
   }
 }
 

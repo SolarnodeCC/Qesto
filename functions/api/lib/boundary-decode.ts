@@ -3,21 +3,22 @@
  * Parse as unknown first, then narrow with Zod — never cast parse results directly.
  */
 import { z } from 'zod'
+import { absent } from './absent'
 
 export function parseJsonString<T>(schema: z.ZodType<T>, raw: string): T | null {
   let value: unknown
   try {
     value = JSON.parse(raw)
   } catch {
-    return null
+    return absent<T>()
   }
   const result = schema.safeParse(value)
-  return result.success ? result.data : null
+  return result.success ? result.data : absent<T>()
 }
 
 export function parseJsonValue<T>(schema: z.ZodType<T>, value: unknown): T | null {
   const result = schema.safeParse(value)
-  return result.success ? result.data : null
+  return result.success ? result.data : absent<T>()
 }
 
 /** Theme labels stored in insights_daily.themes_json. */

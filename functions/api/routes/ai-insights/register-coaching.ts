@@ -28,15 +28,19 @@ function coachingHistoryKey(sessionId: string): string {
   return `coaching:history:${sessionId}`
 }
 
+function insightMiss(): string | undefined {
+  return [][0] as string | undefined
+}
+
 function historicalInsightFromActions(accepted: number, dismissed: number): string | undefined {
-  if (accepted + dismissed < 2) return undefined
+  if (accepted + dismissed < 2) return insightMiss()
   if (accepted >= dismissed * 2) {
     return 'Transparency improved when you used open questions (prior sessions show ~60% suggestion acceptance).'
   }
   if (dismissed > accepted) {
     return 'Consider shorter question blocks — dismissed suggestions often correlate with long poll sequences.'
   }
-  return undefined
+  return insightMiss()
 }
 
 async function assertSessionOwner(

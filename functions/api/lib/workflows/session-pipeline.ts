@@ -1,3 +1,4 @@
+import { absent } from '../absent'
 // Cloudflare Workflow: Process session.closed events into public templates.
 // Orchestrates: rewrite → similarity check → proper noun scan → classification → storage
 
@@ -6,7 +7,6 @@ import { SessionWebhookPayload, TemplateRecord, ClassificationOutput, Lang } fro
 import { createTemplateId } from '../templates-kv'
 import { logEvent } from '../log'
 import type { Env } from '../../types'
-
 /** Minimal structural contract for the Workers AI binding as used by this pipeline. */
 interface WorkflowAi {
   run(model: string, options: Record<string, unknown>): Promise<{ response: string }>
@@ -263,11 +263,11 @@ const ProperNounScanSchema = z.object({
 
 function parseJsonResponse(text: string): unknown {
   const jsonMatch = text.match(/\{[\s\S]*\}/) || text.match(/\[[\s\S]*\]/)
-  if (!jsonMatch) return null
+  if (!jsonMatch) return absent()
   try {
     return JSON.parse(jsonMatch[0])
   } catch {
-    return null
+    return absent()
   }
 }
 

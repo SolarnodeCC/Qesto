@@ -6,13 +6,14 @@ import {
   VersionedClientEnvelopeSchema,
   type ValidClientMessage,
 } from './protocol'
+import { absent } from '../absent'
 
 // Generic KV validator: parse and optionally validate with a schema
 export function validateKvJson<T>(
   raw: string | null,
   schema?: z.ZodSchema<T>,
 ): T | null {
-  if (!raw) return null
+  if (!raw) return absent<T>()
   try {
     const parsed = JSON.parse(raw)
     if (schema) {
@@ -20,7 +21,7 @@ export function validateKvJson<T>(
     }
     return parsed as T
   } catch {
-    return null
+    return absent<T>()
   }
 }
 
@@ -32,9 +33,9 @@ export function parseClientMessage(text: string): ValidClientMessage | null {
     if (typeof envelope.type === 'string') {
       return ClientMessageSchema.parse(envelope) as ValidClientMessage
     }
-    return null
+    return absent<ValidClientMessage>()
   } catch {
-    return null
+    return absent<ValidClientMessage>()
   }
 }
 
@@ -43,6 +44,6 @@ export function validateData<T>(data: unknown, schema: z.ZodSchema<T>): T | null
   try {
     return schema.parse(data)
   } catch {
-    return null
+    return absent<T>()
   }
 }

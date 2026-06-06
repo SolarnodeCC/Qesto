@@ -1,8 +1,8 @@
+import { absent } from './absent'
 /**
  * GAM-05-LIVE-01 — bracket / battle royale progression in SessionRoom.
  */
 import type { LiveEnergizerState } from '../realtime'
-
 export type TournamentAdvanceResult =
   | { type: 'continue'; state: LiveEnergizerState }
   | { type: 'round_complete'; state: LiveEnergizerState; eliminated: string[] }
@@ -10,10 +10,10 @@ export type TournamentAdvanceResult =
 
 /** Battle royale: eliminate bottom 25% when all participants answered. */
 export function maybeAdvanceBattleRoyale(active: LiveEnergizerState): TournamentAdvanceResult | null {
-  if (active.kind !== 'battle_royale') return null
+  if (active.kind !== 'battle_royale') return absent()
   const answers = active.answers ?? []
   const minParticipants = Math.max(2, active.options?.length ?? 2)
-  if (answers.length < minParticipants) return null
+  if (answers.length < minParticipants) return absent()
 
   const sorted = [...answers].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))
   const eliminateCount = Math.max(1, Math.floor(sorted.length * 0.25))

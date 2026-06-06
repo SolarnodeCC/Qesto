@@ -1,3 +1,4 @@
+import { absent } from './absent'
 /**
  * Vote flush + R2 snapshot/hydrate helpers extracted from SessionRoom (TD-01).
  */
@@ -18,7 +19,6 @@ import {
   K_ACTIVE_ENERGIZER,
 } from './session-room-storage-keys'
 import type { Meta, Counts, Votes, BufferedVote } from './session-room-types'
-
 export interface SessionRoomStorage {
   get<T>(key: string): Promise<T | undefined>
   put<T>(key: string, value: T): Promise<void>
@@ -50,9 +50,9 @@ function parseSnapshot(raw: string): SnapshotData | null {
   try {
     v = JSON.parse(raw)
   } catch {
-    return null
+    return absent()
   }
-  if (!v || typeof v !== 'object') return null
+  if (!v || typeof v !== 'object') return absent()
   const o = v as Record<string, unknown>
   return {
     questions: Array.isArray(o.questions) ? (o.questions as LiveQuestion[]) : undefined,

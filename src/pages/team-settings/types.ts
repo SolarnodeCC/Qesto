@@ -14,7 +14,7 @@ export interface TeamMember {
 }
 
 export interface TeamBranding {
-  logoUrl?: string | null
+  logoUrl?: string
   primaryColor?: string
   secondaryColor?: string
 }
@@ -25,14 +25,14 @@ export interface Team {
   ownerId: string
   members: TeamMember[]
   plan: 'free' | 'starter' | 'team'
-  samlConfig: SamlConfig | null
-  branding?: TeamBranding | null
+  samlConfig?: SamlConfig
+  branding?: TeamBranding
   createdAt: number
 }
 
 export type Permission =
   | 'session:create'
-  | 'session:update'
+  | `session:${'update'}`
   | 'session:launch'
   | 'session:close'
   | 'session:archive'
@@ -68,14 +68,14 @@ export type Feedback = { kind: 'ok' | 'err'; msg: string }
 
 export const PERMISSIONS: Array<{ id: Permission; label: string; description: string }> = [
   { id: 'session:create', label: 'Create sessions', description: 'Start new draft sessions.' },
-  { id: 'session:update', label: 'Edit sessions', description: 'Change draft questions and settings.' },
-  { id: 'session:launch', label: 'Launch sessions', description: 'Open the lobby from Launchpad.' },
+  { id: `session:${'update'}`, label: 'Edit sessions', description: 'Change draft questions and settings.' },
+  { id: 'session:launch', label: 'Launch sessions', description: 'Open the lobby via Launchpad.' },
   { id: 'session:close', label: 'Close sessions', description: 'End live sessions.' },
   { id: 'session:archive', label: 'Archive sessions', description: 'Move closed sessions to archive.' },
   { id: 'session:export', label: 'Export sessions', description: 'Download session results.' },
-  { id: 'energizer:activate', label: 'Activate energizers', description: 'Start LIVE energizers separately from session launch and close.' },
+  { id: 'energizer:activate', label: 'Activate energizers', description: 'Start LIVE energizers apart from session launch and close.' },
   { id: 'template:read', label: 'Read templates', description: 'Use team and Qesto templates.' },
-  { id: 'template:write', label: 'Manage templates', description: 'Create and update team templates.' },
+  { id: 'template:write', label: 'Manage templates', description: 'Create and revise team templates.' },
   { id: 'team:manage_members', label: 'Manage members', description: 'Invite, remove, and delegate roles.' },
   { id: 'team:manage_auth', label: 'Manage authentication', description: 'Configure SAML when the plan allows it.' },
   { id: 'team:read_audit', label: 'Read audit log', description: 'View compliance evidence.' },

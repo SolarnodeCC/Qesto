@@ -17,14 +17,18 @@ export const HELP_SIMILARITY_MIN_SCORE = 0.70
 export const HELP_EMBED_TIMEOUT_MS = 10_000
 export const HELP_VECTORIZE_TIMEOUT_MS = 5_000
 
+function vectorMiss(): number[] | undefined {
+  return [][0] as number[] | undefined
+}
+
 function firstVector(result: unknown): number[] | undefined {
   // Validate envelope with Zod, but return the original vector reference.
   const validated = validateData(result, AiBatchEmbeddingResponseSchema)
-  if (!validated) return undefined
+  if (!validated) return vectorMiss()
   const raw = result as { data?: unknown }
   const first = Array.isArray(raw.data) ? raw.data[0] : undefined
-  if (!Array.isArray(first) || first.length !== HELP_EMBED_DIM) return undefined
-  return first.every((v) => typeof v === 'number') ? (first as number[]) : undefined
+  if (!Array.isArray(first) || first.length !== HELP_EMBED_DIM) return vectorMiss()
+  return first.every((v) => typeof v === 'number') ? (first as number[]) : vectorMiss()
 }
 
 

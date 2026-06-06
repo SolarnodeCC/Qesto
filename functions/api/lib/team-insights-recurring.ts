@@ -86,11 +86,15 @@ function parseThemeLabels(themesJson: string): string[] {
     .filter(Boolean)
 }
 
+function vectorMiss(): number[] | undefined {
+  return [][0] as number[] | undefined
+}
+
 function firstVector(result: unknown): number[] | undefined {
   const raw = result as { data?: unknown }
   const first = Array.isArray(raw?.data) ? raw.data[0] : undefined
-  if (!Array.isArray(first) || first.length !== DECISIONS_EMBED_DIM) return undefined
-  return first.every((v) => typeof v === 'number') ? (first as number[]) : undefined
+  if (!Array.isArray(first) || first.length !== DECISIONS_EMBED_DIM) return vectorMiss()
+  return first.every((v) => typeof v === 'number') ? (first as number[]) : vectorMiss()
 }
 
 /**

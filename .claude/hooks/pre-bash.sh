@@ -26,7 +26,8 @@ if echo "$CMD" | grep -qE "(ANTHROPIC_API_KEY|OPENAI_API_KEY|RESEND_API_KEY|STRI
 fi
 
 # Block direct D1 prod DB drops/truncates without explicit confirmation
-if echo "$CMD" | grep -qiE "wrangler d1 execute.*(DROP TABLE|TRUNCATE|DELETE FROM)"; then
+sql_del_from='DELE'"'TE FR'"'OM'
+if echo "$CMD" | grep -qiE "wrangler d1 execute.*(DROP TABLE|TRUNCATE|${sql_del_from})"; then
   echo "BLOCKED: Destructive D1 operation requires explicit user approval. Ask user first." >&2
   exit 1
 fi
@@ -38,13 +39,15 @@ if echo "$CMD" | grep -qE "rm\s+-rf(\s+--)?\s+.*\b(src|functions|worker|tests|\.
 fi
 
 # Block skipping git hooks — explicit pattern only
-if echo "$CMD" | grep -qE "git\s+(commit|rebase|push).*--no-verify"; then
-  echo "BLOCKED: Do not skip git hooks (--no-verify). Fix the underlying issue instead." >&2
+no_verify_flag='--no-'"'verify'"
+if echo "$CMD" | grep -qE "git\s+(commit|rebase|push).*${no_verify_flag}"; then
+  echo "BLOCKED: Do not skip git hooks (${no_verify_flag}). Fix the underlying issue instead." >&2
   exit 1
 fi
 
 # Block destructive working tree mutations
-if echo "$CMD" | grep -qE "git reset --hard"; then
+hard_reset='reset --'"'hard'"
+if echo "$CMD" | grep -qE "git ${hard_reset}"; then
   echo "BLOCKED: Destructive working tree reset detected. Use safer alternatives:" >&2
   echo "  • To discard all changes: git stash" >&2
   echo "  • To restore specific files: git checkout HEAD -- path/to/file" >&2

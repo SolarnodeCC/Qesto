@@ -78,7 +78,7 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 ```
 □ npm audit — no high/critical vulnerabilities
 □ Stripe API: pinned REST version header (see functions/api/routes/billing.ts:21)
-□ Stripe SDK: not used in this repo today (Stripe calls are REST); if introduced, pin to latest stable and verify via `npm ls stripe @stripe/stripe-js`
+□ Stripe SDK: not used in this repo today (Stripe calls are REST); if introduced, pin exact versions in `package-lock.json` and verify via `npm ls stripe @stripe/stripe-js`
 □ All external service calls use Circuit Breaker pattern (see functions/api/lib/resilience/circuit-breaker.ts)
 ```
 

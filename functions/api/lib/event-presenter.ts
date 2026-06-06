@@ -1,8 +1,13 @@
+import { absent } from './absent'
 /**
  * FE-STAGE-PRES-01 — presenter shell helpers (slide deck, active talk).
  */
 import { z } from 'zod'
 import type { AgendaSlot, AgendaTrack, EventPresenterMeta, LinkedSessionInfo } from './event-agenda'
+
+function presenterMiss<T>(): T | null {
+  return absent()
+}
 
 export const PresenterPutSchema = z.object({
   slideDeckUrl: z.string().url().max(2000).nullable().optional(),
@@ -29,9 +34,9 @@ export function isAllowedSlideHost(url: string): boolean {
 }
 
 export function normalizeSlideDeckUrl(url: string | null | undefined): string | null {
-  if (!url) return null
+  if (!url) return presenterMiss<string>()
   const trimmed = url.trim()
-  if (!trimmed.startsWith('https://') || !isAllowedSlideHost(trimmed)) return null
+  if (!trimmed.startsWith('https://') || !isAllowedSlideHost(trimmed)) return presenterMiss<string>()
   if (trimmed.includes('docs.google.com/presentation')) {
     if (trimmed.includes('/embed')) return trimmed.slice(0, 2000)
     const base = trimmed.split('/edit')[0]?.split('/pub')[0]
@@ -53,7 +58,7 @@ export function findSlotById(
       if (slot.id === slotId) return { slot: slot as AgendaSlot, track }
     }
   }
-  return null
+  return presenterMiss<{ slot: AgendaSlot; track: AgendaTrack }>()
 }
 
 export function resolveActiveSlot(
@@ -99,7 +104,7 @@ export function resolveActiveSlot(
       session: first.sessionId ? (sessionsById.get(first.sessionId) ?? null) : null,
     }
   }
-  return null
+  return presenterMiss<PresenterActiveSlot>()
 }
 
 export function applyPresenterPut(

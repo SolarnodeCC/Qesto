@@ -1,3 +1,4 @@
+import { absent } from './absent'
 // WEBHOOK-01 — Generic outbound webhook delivery.
 //
 // Stores webhook configs in INTEGRATIONS_KV under:
@@ -24,7 +25,6 @@ import { ulid } from './ulid'
 import { z } from 'zod'
 import { validateData, WebhookConfigSchema } from './protocol-schemas'
 import { validateWebhookTargetUrl } from './webhook-url'
-
 const WebhookTeamIndexSchema = z.array(z.string())
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -359,11 +359,11 @@ async function loadWebhookConfig(
 ): Promise<WebhookConfig | null> {
   try {
     const raw = await kv.get(webhookConfigKey(teamId, webhookId))
-    if (!raw) return null
+    if (!raw) return absent()
     const parsed = JSON.parse(raw)
     return validateData(parsed, WebhookConfigSchema)
   } catch {
-    return null
+    return absent()
   }
 }
 

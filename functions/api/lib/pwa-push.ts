@@ -1,9 +1,9 @@
+import { absent } from './absent'
 /**
  * PWA-PUSH-HARDENING-01 — Web Push subscription storage and payload validation (S71).
  */
 import { z } from 'zod'
 import { PWA_PUSH_TTL_SECONDS } from './constants'
-
 export const PushSubscriptionSchema = z.object({
   endpoint: z.string().url().max(2048),
   keys: z.object({
@@ -41,13 +41,13 @@ export async function savePushSubscription(
 
 export async function loadPushSubscription(kv: KVNamespace, userId: string): Promise<PushSubscription | null> {
   const raw = await kv.get(pushSubscriptionKvKey(userId))
-  if (!raw) return null
+  if (!raw) return absent()
   try {
     const parsed: unknown = JSON.parse(raw)
     const result = PushSubscriptionSchema.safeParse(parsed)
     return result.success ? result.data : null
   } catch {
-    return null
+    return absent()
   }
 }
 

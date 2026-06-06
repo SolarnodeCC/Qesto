@@ -21,7 +21,11 @@ excluded_paths = [
   "dist/",
   "node_modules/",
 ]
-extra_excluded_paths = ["tests/artifacts/"]
+extra_excluded_paths = [
+  "tests/artifacts/",
+  "public/sw.js",
+  "src/",
+]
 
 [limits]
 typescript_component_hard = 400

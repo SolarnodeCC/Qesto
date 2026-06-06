@@ -8,6 +8,7 @@ import type {
   TokenResponse,
   WebhookEvent,
 } from '../types'
+import { absent } from '../../absent'
 
 const ZOOM_AUTH_URL = 'https://zoom.us/oauth/authorize'
 const ZOOM_TOKEN_URL = 'https://zoom.us/oauth/token'
@@ -151,9 +152,9 @@ export function getZoomProvider(env: {
   API_URL?: string
   PAGES_URL?: string
 }): ZoomProvider | null {
-  if (!env.ZOOM_CLIENT_ID || !env.ZOOM_CLIENT_SECRET) return null
+  if (!env.ZOOM_CLIENT_ID || !env.ZOOM_CLIENT_SECRET) return absent<ZoomProvider>()
   const base = (env.API_URL ?? env.PAGES_URL)?.replace(/\/$/, '')
-  if (!base) return null
+  if (!base) return absent<ZoomProvider>()
   const redirectUri = `${base}/api/integrations/zoom/callback`
   return new ZoomProvider({
     clientId: env.ZOOM_CLIENT_ID,

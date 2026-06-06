@@ -1,3 +1,5 @@
+import { absent } from './absent'
+
 // WEBHOOK-01 — SSRF controls for outbound webhook targets.
 
 export type WebhookUrlValidation =
@@ -27,35 +29,35 @@ function isPrivateIpv4(host: string): boolean {
  */
 function normalizeIpv4(host: string): string | null {
   const rawParts = host.split('.')
-  if (rawParts.length < 1 || rawParts.length > 4) return null
+  if (rawParts.length < 1 || rawParts.length > 4) return absent()
 
   const parsePart = (p: string): number | null => {
-    if (p === '') return null
+    if (p === '') return absent()
     let value: number
     if (/^0x[0-9a-f]+$/i.test(p)) value = Number.parseInt(p.slice(2), 16)
     else if (/^0[0-7]+$/.test(p)) value = Number.parseInt(p, 8)
     else if (/^[0-9]+$/.test(p)) value = Number.parseInt(p, 10)
-    else return null
+    else return absent()
     return Number.isFinite(value) ? value : null
   }
 
   const nums: number[] = []
   for (const p of rawParts) {
     const n = parsePart(p)
-    if (n === null || n < 0) return null
+    if (n === null || n < 0) return absent()
     nums.push(n)
   }
 
   // inet_aton semantics: the final part absorbs all remaining low-order bytes.
   const n = nums.length
   // Leading parts (all but the last) must each fit in a single byte.
-  for (let i = 0; i < n - 1; i++) if (nums[i] > 255) return null
+  for (let i = 0; i < n - 1; i++) if (nums[i] > 255) return absent()
   const maxLast = 2 ** (8 * (4 - (n - 1))) - 1
-  if (nums[n - 1] > maxLast) return null
+  if (nums[n - 1] > maxLast) return absent()
 
   let value = nums[n - 1]
   for (let i = 0; i < n - 1; i++) value += nums[i] * 2 ** (8 * (3 - i))
-  if (value < 0 || value > 0xff_ff_ff_ff) return null
+  if (value < 0 || value > 0xff_ff_ff_ff) return absent()
 
   return [(value >>> 24) & 0xff, (value >>> 16) & 0xff, (value >>> 8) & 0xff, value & 0xff].join('.')
 }

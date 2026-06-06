@@ -1,3 +1,4 @@
+import { absent } from './absent'
 /**
  * Help system prompt versioning and retrieval.
  * Supports multiple prompt versions with topic-specific overrides.
@@ -5,7 +6,6 @@
 
 import type { D1Database } from '@cloudflare/workers-types'
 import { safeLogContext , logEvent} from './log'
-
 export interface PromptVersion {
   id: string
   version: number
@@ -82,10 +82,10 @@ export async function getActivePrompt(db: D1Database, topic?: string): Promise<P
       }
     }
 
-    return null
+    return absent()
   } catch (err) {
     safeLogContext(err, { traceId: 'system', route: 'lib/help-prompts/get-active', errorClass: err instanceof Error ? err.name : 'UnknownError' })
-    return null
+    return absent()
   }
 }
 

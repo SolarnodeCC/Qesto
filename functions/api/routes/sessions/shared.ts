@@ -24,6 +24,7 @@ import { teamDocumentKey } from '../../lib/kv-keys'
 import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../../lib/constants'
 import { CachedThemeLabelsSchema, parseJsonString } from '../../lib/boundary-decode'
 import { logEvent } from '../../lib/log'
+import { absent } from '../../lib/absent'
 
 export type SessionVars = AuthVariables & PlanVariables
 export type SessionRow = Session & { team_id: string | null }
@@ -112,7 +113,7 @@ export function rowToQuestion(row: QuestionRow): Question {
 
 export function deniedQuestionFeature(plan: PlanTier, quotas: PlanQuotas, kind: Question['kind']) {
   const feature = questionKindFeature(kind)
-  if (!feature || featureAllowed(quotas, feature)) return null
+  if (!feature || featureAllowed(quotas, feature)) return absent()
   return denyFeature(plan, feature)
 }
 

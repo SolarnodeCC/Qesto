@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useT } from '../../i18n'
 import { inputHint } from '../../ui/input-hint'
-import { JOIN_CODE_FIELD_CLASS } from '../../ui/input-field-class'
+import { ENTRY_CODE_FIELD_CLASS } from '../../ui/input-field-class'
 
 export function JoinLanding() {
   const [code, setCode] = useState('')
@@ -41,7 +41,7 @@ export function JoinLanding() {
                 spellCheck={false}
                 autoCapitalize="characters"
                 aria-label={t('codeLabel')}
-                className={JOIN_CODE_FIELD_CLASS}
+                className={ENTRY_CODE_FIELD_CLASS}
               />
             </label>
             <button

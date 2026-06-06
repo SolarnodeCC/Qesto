@@ -142,14 +142,14 @@ describe('QA-ENT-02: validatePermissions input sanitization', () => {
   })
 
   it('rejects non-array input', () => {
-    expect(validatePermissions('session:launch')).toBeNull()
-    expect(validatePermissions(null)).toBeNull()
-    expect(validatePermissions(undefined)).toBeNull()
-    expect(validatePermissions({ session: 'launch' })).toBeNull()
+    expect(validatePermissions('session:launch')).toBeUndefined()
+    expect(validatePermissions(null)).toBeUndefined()
+    expect(validatePermissions(undefined)).toBeUndefined()
+    expect(validatePermissions({ session: 'launch' })).toBeUndefined()
   })
 
   it('rejects array with unknown permission', () => {
-    expect(validatePermissions(['session:launch', 'hack:everything'])).toBeNull()
+    expect(validatePermissions(['session:launch', 'hack:everything'])).toBeUndefined()
   })
 
   it('deduplicates permissions', () => {
@@ -158,7 +158,7 @@ describe('QA-ENT-02: validatePermissions input sanitization', () => {
   })
 
   it('rejects empty string permissions', () => {
-    expect(validatePermissions([''])).toBeNull()
+    expect(validatePermissions([''])).toBeUndefined()
   })
 })
 

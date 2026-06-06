@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "wrangler dev --port 8787",
-    "build": "npm run tokens:build && vite build",
+    "build": "npm run tokens:build && npm run build:sw && vite build",
+    "build:sw": "node scripts/build-sw.mjs",
     "preview": "vite preview",
     "deploy:api": "node scripts/deploy-api.mjs",
     "deploy:api:dry-run": "node scripts/deploy-api.mjs --allow-dirty --dry-run",

@@ -1,7 +1,7 @@
+import { absent } from './absent'
 import { TemplateRecord } from './template-schemas'
 import type { Industry, Theme, Lang } from './template-schemas'
 import { nanoid } from 'nanoid'
-
 // Re-export types for convenience
 export type { Industry, Theme, Lang } from './template-schemas'
 
@@ -35,7 +35,7 @@ export async function getTemplate(
   templateId: string
 ): Promise<TemplateRecord | null> {
   const raw = await kv.get(templateKey(templateId), 'json')
-  if (!raw) return null
+  if (!raw) return absent()
   const parsed = TemplateRecord.safeParse(raw)
   return parsed.success ? parsed.data : null
 }

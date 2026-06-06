@@ -1,3 +1,4 @@
+import { absent } from './absent'
 /**
  * COPILOT-01 — live-context snapshot for the facilitator copilot (ADR-0046).
  *
@@ -50,11 +51,15 @@ export type CopilotLiveContext = {
  * Parse a DO `/copilot/snapshot` response body. Returns the validated snapshot
  * or null when the body is missing/invalid (caller degrades gracefully).
  */
+function snapshotMiss(): CopilotSnapshot | null {
+  return absent()
+}
+
 export function parseSnapshotResponse(body: unknown): CopilotSnapshot | null {
   const envelope = body as { ok?: boolean; data?: unknown } | null
-  if (!envelope?.ok) return null
+  if (!envelope?.ok) return snapshotMiss()
   const parsed = CopilotSnapshotSchema.safeParse(envelope.data)
-  return parsed.success ? parsed.data : null
+  return parsed.success ? parsed.data : snapshotMiss()
 }
 
 /**

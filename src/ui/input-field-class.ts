@@ -12,7 +12,7 @@ export const INPUT_HINT_TEXT_SUBTLE_CLASS =
 export const LOGIN_FIELD_CLASS =
   `w-full rounded-lg border border-pulse-300 bg-white dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8] dark:${HINT_PSEUDO}:text-[#6B7A99] px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400`
 
-export const JOIN_CODE_FIELD_CLASS =
+export const ENTRY_CODE_FIELD_CLASS =
   `w-full rounded-xl border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] text-center font-mono text-2xl font-bold tracking-[0.3em] uppercase px-4 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:border-teal-500 ${INPUT_HINT_TEXT_CENTER_CLASS}`
 
 export const SEARCH_FIELD_CLASS =
@@ -21,10 +21,10 @@ export const SEARCH_FIELD_CLASS =
 export const COMPACT_CODE_FIELD_CLASS =
   `w-16 bg-transparent py-1.5 px-1 text-sm font-mono font-semibold text-pulse-700 dark:text-[#F0F2F8] ${HINT_PSEUDO}:text-pulse-300 dark:${HINT_PSEUDO}:text-[#2A3858] focus:outline-none`
 
-export const JOIN_BAR_CODE_CLASS =
+export const ENTRY_BAR_CODE_CLASS =
   `w-24 rounded-md border border-pulse-300 dark:border-pulse-600 bg-white dark:bg-pulse-800 text-center font-mono text-sm font-semibold tracking-widest uppercase px-2 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 ${INPUT_HINT_TEXT_SUBTLE_CLASS}`
 
-export const JOIN_RESPONSE_FIELD_CLASS =
+export const ENTRY_RESPONSE_FIELD_CLASS =
   `w-full rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:opacity-50 ${INPUT_HINT_TEXT_CLASS}`
 
 export const LAUNCHPAD_AI_TOPIC_CLASS =

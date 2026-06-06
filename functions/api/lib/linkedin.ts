@@ -13,13 +13,13 @@
 
 import { z } from 'zod'
 import type { TokenResponse } from './integrations/types'
-
 // ── Endpoints & scopes ──────────────────────────────────────────────────────
 export const LINKEDIN_AUTH_URL = 'https://www.linkedin.com/oauth/v2/authorization'
 export const LINKEDIN_TOKEN_URL = 'https://www.linkedin.com/oauth/v2/accessToken'
 export const LINKEDIN_API_BASE = 'https://api.linkedin.com'
 // Scopes granted by the "Community Management API" + "Sign In with LinkedIn
 // using OpenID Connect" products. Org scopes post as / read the company page;
+import { absent } from './absent'
 // OIDC (openid/profile) authenticates the member and exposes the person id.
 export const LINKEDIN_SCOPES = [
   'w_organization_social',
@@ -156,7 +156,7 @@ export async function fetchPersonUrn(accessToken: string): Promise<string | null
   const res = await fetch(`${LINKEDIN_API_BASE}/v2/userinfo`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
-  if (!res.ok) return null
+  if (!res.ok) return absent()
   const json = (await res.json().catch(() => null)) as { sub?: string } | null
   return json?.sub ? `urn:li:person:${json.sub}` : null
 }
@@ -173,7 +173,7 @@ export async function fetchOrgUrn(accessToken: string): Promise<string | null> {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}`, 'X-Restli-Protocol-Version': '2.0.0' },
   })
-  if (!res.ok) return null
+  if (!res.ok) return absent()
   const json = (await res.json().catch(() => null)) as
     | { elements?: Array<{ organizationalTarget?: string }> }
     | null

@@ -88,7 +88,7 @@
     },
     ".gitignore": {
       "command": "just fast",
-      "purpose": "ignore rules do not block proof lanes",
+      "purpose": "gitignore patterns for build artifacts and secrets",
       "lane": "fast"
     },
     ".mcp.json": {
@@ -200,6 +200,91 @@
       "command": "just score",
       "purpose": "operational and architecture docs",
       "lane": "audit"
+    },
+    "justfile": {
+      "command": "just score",
+      "purpose": "canonical proof lane entry points",
+      "lane": "audit"
+    },
+    "OBSERVABILITY_AUDIT_2026_06_05.md": {
+      "command": "just fast",
+      "purpose": "observability audit evidence and trace review",
+      "lane": "fast"
+    },
+    "PR_COMMANDS.sh": {
+      "command": "just security",
+      "purpose": "PR workflow helper scripts",
+      "lane": "security"
+    },
+    "e8964e65669d47a69dd02b32bfe2a64e.txt": {
+      "command": "just ux-qa",
+      "purpose": "search engine verification token",
+      "lane": "web"
+    },
+    "functions/[[path]].ts": {
+      "command": "just fast",
+      "purpose": "Cloudflare Pages Functions entry shim",
+      "lane": "fast"
+    },
+    "functions/linkedin-auth.ts": {
+      "command": "just fast",
+      "purpose": "LinkedIn OAuth Pages Function",
+      "lane": "fast"
+    },
+    "i18n.scope.json": {
+      "command": "just check",
+      "purpose": "i18n namespace scope manifest",
+      "lane": "contract"
+    },
+    "import-vectors.ps1": {
+      "command": "just fast",
+      "purpose": "vector import maintenance script",
+      "lane": "fast"
+    },
+    "packages/sdk-js/": {
+      "command": "just fast",
+      "purpose": "public API TypeScript client package",
+      "lane": "fast"
+    },
+    "packages/sdk-js/README.md": {
+      "command": "just fast",
+      "purpose": "SDK package usage documentation",
+      "lane": "fast"
+    },
+    "packages/sdk-js/index.d.ts": {
+      "command": "just fast",
+      "purpose": "SDK type declarations",
+      "lane": "fast"
+    },
+    "python/": {
+      "command": "just fast",
+      "purpose": "exception-only Python AI and data scripts",
+      "lane": "fast"
+    },
+    "python/README.md": {
+      "command": "just fast",
+      "purpose": "Python surface layout and migration notes",
+      "lane": "fast"
+    },
+    "python/ai-service/AGENTS.md": {
+      "command": "just score",
+      "purpose": "Python AI service agent guidance",
+      "lane": "audit"
+    },
+    "scripts/": {
+      "command": "just fast",
+      "purpose": "build, token, i18n, and maintenance scripts",
+      "lane": "fast"
+    },
+    "public/sw.js": {
+      "command": "just ux-qa",
+      "purpose": "PWA service worker shell cache",
+      "lane": "web"
+    },
+    "tools/": {
+      "command": "just security",
+      "purpose": "security lane helpers and tooling scripts",
+      "lane": "security"
     }
   }
 }

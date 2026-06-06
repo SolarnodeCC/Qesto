@@ -1,3 +1,4 @@
+import { absent } from './absent'
 import type { PlanQuotas, PlanTier, QuestionKind } from '../types'
 
 export type FeatureKey = keyof PlanQuotas['featuresUnlocked']
@@ -14,10 +15,14 @@ export type EntitlementDenial = {
   }
 }
 
+function featureMiss(): FeatureKey | null {
+  return absent()
+}
+
 export function questionKindFeature(kind: QuestionKind): FeatureKey | null {
   if (kind === 'ranking') return 'rankingQuestions'
   if (kind === 'consent') return 'consentMode'
-  return null
+  return featureMiss()
 }
 
 export function denyFeature(plan: PlanTier, feature: FeatureKey): EntitlementDenial {

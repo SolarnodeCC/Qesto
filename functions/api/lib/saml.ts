@@ -1,3 +1,4 @@
+import { absent } from './absent'
 // Lightweight SAML 2.0 Service Provider (SP) implementation.
 //
 // Workers cannot use Node-based SAML libraries (no fs, no Buffer, no crypto
@@ -24,7 +25,6 @@
 //   BACKLOG §4 (SEC-SAML-01) and MUST ship before the "SAML SSO GA" badge.
 
 import { validateKvJson, SamlStateTokenSchema } from './protocol-schemas'
-
 const SAML_STATE_TTL_SECONDS = 5 * 60 // 5 min
 
 export type SamlAssertion = {
@@ -157,13 +157,13 @@ export async function consumeSamlState(
   kv: KVNamespace,
   token: string,
 ): Promise<{ teamId: string; idpSsoUrl: string } | null> {
-  if (!/^[0-9a-f]{64}$/.test(token)) return null
+  if (!/^[0-9a-f]{64}$/.test(token)) return absent()
   const raw = await kv.get(STATE_KEY(token))
-  if (!raw) return null
+  if (!raw) return absent()
   // Single-use — delete before returning so replay attempts fail.
   await kv.delete(STATE_KEY(token))
   const parsed = validateKvJson(raw, SamlStateTokenSchema)
-  if (!parsed) return null
+  if (!parsed) return absent()
   return { teamId: parsed.teamId, idpSsoUrl: parsed.idpSsoUrl }
 }
 

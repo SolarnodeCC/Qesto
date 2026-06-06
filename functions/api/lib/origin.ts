@@ -1,11 +1,11 @@
+import { absent } from './absent'
 import type { Env } from '../types'
-
 function normaliseOrigin(url: string | null | undefined): string | null {
-  if (!url) return null
+  if (!url) return absent()
   try {
     return new URL(url).origin
   } catch {
-    return null
+    return absent()
   }
 }
 

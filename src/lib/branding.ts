@@ -22,15 +22,15 @@ export function applyBrandingToDocument(branding: SessionBranding | null | undef
   if (branding.secondaryColor) root.style.setProperty('--brand-secondary', branding.secondaryColor)
 }
 
-const JOIN_CACHE_KEY = 'qesto:join-cache'
+const ENTRY_CACHE_KEY = 'qesto:entry-cache'
 
 export function cacheJoinSession(code: string, payload: Record<string, unknown>): void {
   try {
-    const raw = localStorage.getItem(JOIN_CACHE_KEY)
+    const raw = localStorage.getItem(ENTRY_CACHE_KEY)
     const parsed: unknown = raw ? JSON.parse(raw) : {}
     const map = JoinCacheMapSchema.safeParse(parsed).data ?? {}
     map[code.toUpperCase()] = { ...payload, cachedAt: Date.now() }
-    localStorage.setItem(JOIN_CACHE_KEY, JSON.stringify(map))
+    localStorage.setItem(ENTRY_CACHE_KEY, JSON.stringify(map))
   } catch {
     /* ignore quota */
   }
@@ -38,7 +38,7 @@ export function cacheJoinSession(code: string, payload: Record<string, unknown>)
 
 export function readCachedJoinSession(code: string): Record<string, unknown> | null {
   try {
-    const raw = localStorage.getItem(JOIN_CACHE_KEY)
+    const raw = localStorage.getItem(ENTRY_CACHE_KEY)
     if (!raw) return null
     const parsed: unknown = JSON.parse(raw)
     const map = JoinCacheMapSchema.safeParse(parsed).data

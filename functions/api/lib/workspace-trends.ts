@@ -7,6 +7,7 @@ import {
   RetroHealthThemeSchema,
   WorkspaceTrendUnionSchema,
 } from './boundary-decode'
+import { absent } from './absent'
 
 const K_ANON_INSTANCES = 3
 const K_MIN_RESPONDENTS = 5
@@ -66,14 +67,14 @@ export function parseRetroHealthTheme(themesJson: string): RetroHealthTheme | nu
   try {
     arr = JSON.parse(themesJson)
   } catch {
-    return null
+    return absent()
   }
-  if (!Array.isArray(arr)) return null
+  if (!Array.isArray(arr)) return absent()
   for (const item of arr) {
     const parsed = RetroHealthThemeSchema.safeParse(item)
     if (parsed.success) return parsed.data
   }
-  return null
+  return absent()
 }
 
 /** Persist aggregate retro board stats to insights_daily (ZK-excluded at caller). */
@@ -154,7 +155,7 @@ export async function getWorkspaceTrend(
     )
     .bind(workspaceId, kind, window)
     .first<{ payload_json: string }>()
-  if (!row) return null
+  if (!row) return absent()
   return asWorkspaceTrendPayload(parseJsonString(WorkspaceTrendUnionSchema, row.payload_json))
 }
 
@@ -216,7 +217,7 @@ export async function readCachedWorkspaceTrend(
   window: WorkspaceTrendWindow,
 ): Promise<WorkspaceTrendPayload | WorkspaceTeamHealthPayload | null> {
   const raw = await kv.get(trendCacheKey(teamId, workspaceId, kind, window))
-  if (!raw) return null
+  if (!raw) return absent()
   return asWorkspaceTrendPayload(parseJsonString(WorkspaceTrendUnionSchema, raw))
 }
 
@@ -311,6 +312,6 @@ export async function purgeWorkspaceTrends(db: D1Database, workspaceId: string):
 function asWorkspaceTrendPayload(
   parsed: z.infer<typeof WorkspaceTrendUnionSchema> | null,
 ): WorkspaceTrendPayload | WorkspaceTeamHealthPayload | null {
-  if (!parsed) return null
+  if (!parsed) return absent()
   return parsed as WorkspaceTrendPayload | WorkspaceTeamHealthPayload
 }

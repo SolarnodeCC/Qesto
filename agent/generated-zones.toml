@@ -20,18 +20,17 @@ command = "npm run contracts:generate"
 read_only = true
 
 [[zone]]
-path = "contracts/openapi-v3.json"
-source = "contracts/openapi/qesto-api.yaml"
-command = "npm run contracts:generate"
-read_only = false
-write_policy = "contract_draft"
-
-[[zone]]
 path = "agent/repo-score.json"
 source = "jankurai audit"
 command = "just score"
 read_only = false
 write_policy = "auditor_output"
+
+[[zone]]
+path = "public/sw.js"
+source = "src/sw.ts"
+command = "npm run build:sw"
+read_only = true
 
 [[zone]]
 path = "agent/repo-score.md"

@@ -1,6 +1,6 @@
+import { absent } from './absent'
 import type { D1Database, VectorizeIndex, Ai } from '@cloudflare/workers-types'
 import { safeLogContext } from './log'
-
 // Simple ULID-like ID generator (128-bit timestamp + random)
 function generateId(): string {
   const now = Date.now()
@@ -48,10 +48,10 @@ async function embedText(ai: Ai, text: string): Promise<number[] | null> {
     if (Array.isArray(result?.data?.[0]?.embedding)) {
       return result.data[0].embedding
     }
-    return null
+    return absent()
   } catch (err) {
     safeLogContext(err, { traceId: 'system', route: 'seed/embed-text', errorClass: err instanceof Error ? err.name : 'UnknownError' })
-    return null
+    return absent()
   }
 }
 

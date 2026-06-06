@@ -43,7 +43,7 @@ export default function TeamSwitcher() {
     void api<TeamsData>('/api/teams').then((res) => {
       if (res.ok) {
         setTeams(res.data.teams)
-        // Auto-select first team if nothing is stored
+        // Default to first team when nothing is stored locally
         if (!getActiveTeamId() && res.data.teams.length > 0) {
           const firstId = res.data.teams[0].id
           setActiveTeamId(firstId)

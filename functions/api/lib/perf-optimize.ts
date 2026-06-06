@@ -75,29 +75,8 @@ export function recommendIndexes(): Array<{ table: string; columns: string[]; re
   ]
 }
 
-/**
- * Batch query patterns that reduce N+1 problems.
- */
-export const batchQueryPatterns = {
-  // Instead of: for each session, fetch questions (N+1)
-  // Use: fetch all questions WHERE session_id IN (...) in single query
-  fetchQuestionsBatch: (sessionIds: string[]) =>
-    `SELECT * FROM questions WHERE session_id IN (${sessionIds.map(() => '?').join(',')}) ORDER BY position`,
-
-  // Instead of: for each question, aggregate votes (N+1)
-  // Use: aggregate all votes per question in single query
-  aggregateVotesBatch: (questionIds: string[]) =>
-    `SELECT question_id, option_id, COUNT(*) as count
-     FROM votes WHERE question_id IN (${questionIds.map(() => '?').join(',')})
-     GROUP BY question_id, option_id`,
-
-  // Instead of: for each session, count participants (N+1)
-  // Use: count all participants per session in single query
-  countParticipantsBatch: (sessionIds: string[]) =>
-    `SELECT session_id, COUNT(DISTINCT voter_id) as participant_count
-     FROM votes WHERE session_id IN (${sessionIds.map(() => '?').join(',')})
-     GROUP BY session_id`,
-}
+/** Batch query patterns — SQL templates live in `db/queries/batch-patterns.ts`. */
+export { batchQueryPatterns } from '../../../db/queries/batch-patterns'
 
 /**
  * KV caching strategy for hot data.

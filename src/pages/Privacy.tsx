@@ -87,13 +87,13 @@ export default function Privacy() {
             <h2 id="s2" className="font-bold text-[26px] tracking-tight text-pulse-900 mt-10 mb-4" style={displayFont}>
               2. What we collect
             </h2>
-            <h3 className="font-semibold text-[18px] text-pulse-900 mt-5 mb-2">From hosts</h3>
+            <h3 className="font-semibold text-[18px] text-pulse-900 mt-5 mb-2">Host responsibilities</h3>
             <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
               <li>Account email, name, organization name, and OAuth identifier (if SSO).</li>
               <li>Billing address and payment metadata (card handled by Stripe, never by us).</li>
               <li>Session configuration — question text, option labels, retention settings.</li>
             </ul>
-            <h3 className="font-semibold text-[18px] text-pulse-900 mt-5 mb-2">From participants</h3>
+            <h3 className="font-semibold text-[18px] text-pulse-900 mt-5 mb-2">Participant responsibilities</h3>
             <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 mb-4">
               <li>Their consent choice for that session (identified, cohort-visible, or anonymous) with timestamp.</li>
               <li>Their votes and free-text responses.</li>
@@ -167,7 +167,7 @@ export default function Privacy() {
               7. Your rights
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
-              Under GDPR and equivalent laws, you have the right to access, correct, export, or delete your data.
+              Under GDPR and equivalent laws, you have the right to access, correct, export, or remove your data.
               Email{' '}
               <a href="mailto:dpo@qesto.cc" className="text-teal-600 hover:underline">
                 dpo@qesto.cc
@@ -187,7 +187,7 @@ export default function Privacy() {
               vendor hand-off to OpenAI, Anthropic, or Azure AI.
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
-              Model inputs and outputs live with the session. Delete the session, the prompts go with it. No training
+              Model inputs and outputs live with the session. Remove the session, the prompts go with it. No training
               pipeline, no fine-tuning corpus, no retention past the session's own retention window.
             </p>
 
@@ -237,7 +237,7 @@ export default function Privacy() {
               </li>
             </ul>
             <p className="text-[15px] leading-relaxed text-pulse-700 mb-4">
-              This is separate from the in-session consent posture in section 3, which governs how participants appear
+              This is distinct from the in-session consent posture in section 3, which governs how participants appear
               within a session.
             </p>
 

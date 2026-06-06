@@ -18,6 +18,7 @@ import { TeamsProvider } from '../../lib/integrations/providers/teams'
 import { writeEvent } from '../../lib/observability'
 import { base64UrlEncode, base64UrlDecode, timingSafeEqual, hmacSign } from '../../lib/shared/crypto'
 import type { Env, PlanTier } from '../../types'
+import { absent } from '../../lib/absent'
 
 // Match the Vars shape used in app.ts so these sub-routers compose cleanly.
 export type Vars = AuthVariables & PlanVariables & Partial<AdminVariables> & Partial<RbacVariables>
@@ -105,19 +106,19 @@ export async function signState(payload: StatePayload, secret: string): Promise<
 
 export async function verifyState(state: string, secret: string): Promise<StatePayload | null> {
   const parts = state.split('.')
-  if (parts.length !== 2) return null
+  if (parts.length !== 2) return absent()
   const [body, sig] = parts
   const expected = await hmacSign(secret, body)
-  if (!timingSafeEqual(sig, expected)) return null
+  if (!timingSafeEqual(sig, expected)) return absent()
   let parsed: unknown
   try {
     parsed = JSON.parse(new TextDecoder().decode(base64UrlDecode(body)))
   } catch {
-    return null
+    return absent()
   }
   const p = validateData(parsed, OAuthStatePayloadSchema)
-  if (!p) return null
-  if (p.exp < Math.floor(Date.now() / 1000)) return null
+  if (!p) return absent()
+  if (p.exp < Math.floor(Date.now() / 1000)) return absent()
   return p
 }
 
@@ -130,7 +131,7 @@ function buildRedirectUri(env: Env): string {
 }
 
 export function getSlackProvider(env: Env): SlackProvider | null {
-  if (!env.SLACK_CLIENT_ID || !env.SLACK_CLIENT_SECRET) return null
+  if (!env.SLACK_CLIENT_ID || !env.SLACK_CLIENT_SECRET) return absent()
   return new SlackProvider({
     clientId: env.SLACK_CLIENT_ID,
     clientSecret: env.SLACK_CLIENT_SECRET,
@@ -144,7 +145,7 @@ function buildTeamsRedirectUri(env: Env): string {
 }
 
 export function getTeamsProvider(env: Env): TeamsProvider | null {
-  if (!env.MICROSOFT_CLIENT_ID || !env.MICROSOFT_CLIENT_SECRET) return null
+  if (!env.MICROSOFT_CLIENT_ID || !env.MICROSOFT_CLIENT_SECRET) return absent()
   // `common` lets any work/school tenant consent; admins can lock down by
   // setting MICROSOFT_TENANT_ID to a specific GUID in wrangler.toml.
   const tenantId = env.MICROSOFT_TENANT_ID || 'common'
@@ -184,13 +185,13 @@ export async function resolvePrimaryTeamId(env: Env, userId: string): Promise<st
   // Prefer query-param-supplied teamId if the route handler validated membership.
   // For SLACK-01 we look up the user's first team from `user-teams:{userId}`.
   const raw = await readKvText(env.TEAMS_KV, `user-teams:${userId}`)
-  if (!raw) return null
+  if (!raw) return absent()
   try {
     const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed) || parsed.length === 0) return null
+    if (!Array.isArray(parsed) || parsed.length === 0) return absent()
     const first = parsed[0]
     return typeof first === 'string' ? first : null
   } catch {
-    return null
+    return absent()
   }
 }

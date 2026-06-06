@@ -1,9 +1,9 @@
+import { absent } from './absent'
 /**
  * BRAND-01 — team white-label branding (KV on Team document).
  */
 import { readKvJson } from './kv'
 import { teamDocumentKey } from './kv-keys'
-
 export type TeamBranding = {
   logoUrl?: string | null
   primaryColor?: string
@@ -13,14 +13,14 @@ export type TeamBranding = {
 const HEX = /^#[0-9A-Fa-f]{6}$/
 
 export function normalizeBranding(raw: TeamBranding | null | undefined): TeamBranding | null {
-  if (!raw) return null
+  if (!raw) return absent()
   const out: TeamBranding = {}
   if (raw.logoUrl && typeof raw.logoUrl === 'string' && raw.logoUrl.length <= 2048) {
     out.logoUrl = raw.logoUrl
   }
   if (raw.primaryColor && HEX.test(raw.primaryColor)) out.primaryColor = raw.primaryColor
   if (raw.secondaryColor && HEX.test(raw.secondaryColor)) out.secondaryColor = raw.secondaryColor
-  if (!out.logoUrl && !out.primaryColor && !out.secondaryColor) return null
+  if (!out.logoUrl && !out.primaryColor && !out.secondaryColor) return absent()
   return out
 }
 
@@ -28,7 +28,7 @@ export async function loadTeamBranding(
   kv: KVNamespace,
   teamId: string | null | undefined,
 ): Promise<TeamBranding | null> {
-  if (!teamId) return null
+  if (!teamId) return absent()
   const team = await readKvJson<{ branding?: TeamBranding }>(kv, teamDocumentKey(teamId))
   return normalizeBranding(team?.branding ?? null)
 }

@@ -21,6 +21,7 @@ import type { AuthVariables } from './auth'
 import { validateData, CachedDataSchema } from '../lib/protocol-schemas'
 import { readKvJson } from '../lib/kv'
 import type { UserRow } from '../lib/db-row-types'
+import { absent } from '../lib/absent'
 
 /** Route cache keys to the KV namespace that owns that domain (ST-04 — never DECISIONS_KV). */
 export function kvNamespaceForCacheKey(key: string): 'USERS_KV' | 'TEAMS_KV' | 'SESSIONS_KV' {
@@ -61,7 +62,7 @@ export const kvCacheMiddleware: MiddlewareHandler<{
     } catch (err) {
       cacheMarkings[key] = 'ERROR'
     }
-    return null
+    return absent()
   }
 
   // Pre-load plan usage cache for current user

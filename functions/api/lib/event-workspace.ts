@@ -1,3 +1,4 @@
+import { absent } from './absent'
 /**
  * Shared event workspace loaders (STAGE-AGENDA / SUITE / PRESENTER).
  */
@@ -54,7 +55,9 @@ export async function loadEventWorkspace(
     )
     .bind(wsId, teamId)
     .first<WorkspaceRow>()
-  if (!row || row.kind !== 'event') return null
+  if (!row || row.kind !== 'event') {
+    return absent()
+  }
   return { row, template: parseEventTemplate(row.template_json) }
 }
 
@@ -63,10 +66,15 @@ export async function fetchSessionConnectionCount(env: { SESSION_ROOM: DurableOb
     const roomId = env.SESSION_ROOM.idFromName(sessionId)
     const room = env.SESSION_ROOM.get(roomId)
     const res = await room.fetch(new Request('https://do.internal/state', { method: 'GET' }))
-    if (!res.ok) return null
+    if (!res.ok) {
+      return absent()
+    }
     const body = (await res.json()) as { ok?: boolean; data?: { connections?: number } }
-    return typeof body.data?.connections === 'number' ? body.data.connections : null
+    if (typeof body.data?.connections !== 'number') {
+      return absent()
+    }
+    return body.data.connections
   } catch {
-    return null
+    return absent()
   }
 }

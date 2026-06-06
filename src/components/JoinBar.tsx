@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useT } from '../i18n'
 import { inputHint } from '../ui/input-hint'
-import { JOIN_BAR_CODE_CLASS } from '../ui/input-field-class'
+import { ENTRY_BAR_CODE_CLASS } from '../ui/input-field-class'
 
 export default function JoinBar() {
   const [code, setCode] = useState('')
@@ -35,7 +35,7 @@ export default function JoinBar() {
             aria-label={t('bar_code_label')}
             spellCheck={false}
             autoCapitalize="characters"
-            className={JOIN_BAR_CODE_CLASS}
+            className={ENTRY_BAR_CODE_CLASS}
           />
           <button
             type="submit"
