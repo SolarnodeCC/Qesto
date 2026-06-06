@@ -1,0 +1,46 @@
+# Rendered UX QA policy — Qesto React SPA (Vite dev server / production build)
+outputRoot = "."
+decisionThreshold = "error"
+readyState = "domcontentloaded"
+timeoutMs = 30000
+artifactRoot = "target/jankurai/ux-qa"
+requiredStates = ["success"]
+visualBaselineMode = "pass"
+visualBaselineRoot = "target/jankurai/ux-qa-baselines"
+visualDiffRoot = "target/jankurai/ux-qa-diffs"
+baselineOwner = "tools"
+screenshotRequired = true
+ariaSnapshotRequired = true
+accessibilityScanRequired = true
+viewports = ["390x844", "1440x900"]
+playwrightConfig = "tests/playwright.config.ts"
+playwrightProject = "spa-chrome"
+proofCommand = "just ux-qa"
+
+[[routes]]
+id = "home"
+url = "http://localhost:5173/"
+states = ["success"]
+viewports = ["390x844", "1440x900"]
+
+[[routes]]
+id = "login"
+url = "http://localhost:5173/login"
+states = ["success"]
+viewports = ["390x844"]
+
+[[routes]]
+id = "pricing"
+url = "http://localhost:5173/pricing"
+states = ["success"]
+viewports = ["1440x900"]
+
+[[routes]]
+id = "privacy"
+url = "http://localhost:5173/privacy"
+states = ["success"]
+
+[[routes]]
+id = "terms"
+url = "http://localhost:5173/terms"
+states = ["success"]

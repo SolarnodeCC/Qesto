@@ -1,0 +1,29 @@
+# Jankurai audit policy — Qesto (Cloudflare Workers + React/Vite)
+minimum_score = 85
+fail_on = ["critical", "high"]
+advisory_on = ["medium", "low"]
+standard_version = "0.9.0"
+target_stack = "typescript-react-vite-cloudflare-workers"
+
+[history]
+max_rows = 500
+max_bytes = 1048576
+dedupe = "consecutive-equivalent"
+mirror_env = "JANKURAI_HISTORY_MIRROR"
+mirror_required = false
+
+[scan]
+excluded_paths = [
+  "knowledge-base/",
+  "packages/sdk-python/",
+  "agent/baselines/",
+  "target/",
+  "dist/",
+  "node_modules/",
+]
+extra_excluded_paths = ["tests/artifacts/"]
+
+[limits]
+typescript_component_hard = 400
+function_hard = 80
+agent_instruction_hard = 200

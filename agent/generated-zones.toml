@@ -1,26 +1,34 @@
 # Generated file zones — DO NOT EDIT BY HAND in these paths.
+# Schema: jankurai 1.5.1 (path, source, command, read_only)
 
 [[zone]]
 path = "src/ui/tokens.ts"
-generator = "npm run tokens:build"
 source = "docs/spec/design-tokens.json"
+command = "npm run tokens:build"
+read_only = true
 
 [[zone]]
 path = "src/ui/tailwind-theme.ts"
-generator = "npm run tokens:build"
 source = "docs/spec/design-tokens.json"
+command = "npm run tokens:build"
+read_only = true
 
 [[zone]]
-path = "contracts/generated/**"
-generator = "contracts:generate (planned)"
+path = "contracts/generated/api.d.ts"
 source = "contracts/openapi/qesto-api.yaml"
+command = "npm run contracts:generate"
+read_only = true
 
 [[zone]]
 path = "agent/repo-score.json"
-generator = "jankurai"
-source = "repository audit"
+source = "jankurai audit"
+command = "just score"
+read_only = false
+write_policy = "auditor_output"
 
 [[zone]]
 path = "agent/repo-score.md"
-generator = "jankurai"
-source = "repository audit"
+source = "jankurai audit"
+command = "just score"
+read_only = false
+write_policy = "auditor_output"

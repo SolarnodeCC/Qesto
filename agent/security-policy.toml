@@ -1,0 +1,24 @@
+# Jankurai security lane policy — Qesto
+schema_version = "1.0.0"
+
+enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
+required_tools = ["npm"]
+advisory_tools = ["gitleaks", "zizmor", "syft"]
+
+[severity_thresholds]
+fail_lane_on = "high"
+
+[profiles.local]
+enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
+required_tools = ["npm"]
+advisory_tools = ["gitleaks", "zizmor", "syft"]
+
+[profiles.ci]
+enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
+required_tools = ["gitleaks", "npm", "zizmor"]
+advisory_tools = ["syft"]
+
+[profiles.release]
+enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
+required_tools = ["gitleaks", "npm", "zizmor", "syft"]
+advisory_tools = []
