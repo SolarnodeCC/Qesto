@@ -1,10 +1,14 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 const teamSettingsSource = readFileSync('src/pages/TeamSettings.tsx', 'utf8')
 const customRolesSource = readFileSync('src/pages/team-settings/CustomRolesSection.tsx', 'utf8')
 const adminAnalyticsSource = readFileSync('src/components/admin/AdminAnalyticsTab.tsx', 'utf8')
-const realtimeSource = readFileSync('functions/api/realtime.ts', 'utf8')
+// realtime.ts was split into a realtime/ module directory (Jankurai code-shape);
+// read the combined protocol surface from all submodules.
+const realtimeSource = readdirSync('functions/api/realtime')
+  .map((f) => readFileSync(`functions/api/realtime/${f}`, 'utf8'))
+  .join('\n')
 const sessionRoomSource = readFileSync('functions/api/SessionRoom.ts', 'utf8')
 const sprint24Spec = readFileSync('knowledge-base/product/planning/sprints/SPRINT24_IMPLEMENTATION_SPEC.md', 'utf8')
 const adr0005 = readFileSync('knowledge-base/adr/ADR-0005-do-protocol-versioning.md', 'utf8')

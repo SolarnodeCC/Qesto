@@ -1,9 +1,15 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
+
+// realtime.ts was split into a realtime/ module directory (Jankurai code-shape);
+// read the combined protocol surface from all submodules.
+const realtimeSource = readdirSync('functions/api/realtime')
+  .map((f) => readFileSync(`functions/api/realtime/${f}`, 'utf8'))
+  .join('\n')
 
 describe('Sprint 29 leaderboard and badge contract', () => {
   it('keeps leaderboard and badges in the LIVE energizer snapshot', () => {
-    const realtime = readFileSync('functions/api/realtime.ts', 'utf8')
+    const realtime = realtimeSource
     // TD-01 extracted the energizer/score logic out of SessionRoom.ts into
     // dedicated handler modules; the contract is the combined DO surface.
     const room =
