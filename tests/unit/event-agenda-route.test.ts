@@ -7,13 +7,14 @@ import { KVMock } from '../helpers/kv-mock'
 import { writeKvJson } from '../../functions/api/lib/kv'
 import { teamDocumentKey } from '../../functions/api/lib/kv-keys'
 import type { Team } from '../../functions/api/routes/teams'
+import { testJwtSecret } from '../helpers/test-credentials'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const jwtFixture = testJwtSecret()
 
 function buildEnv(db: D1Mock, teamsKv: KVMock) {
   return {
     ENV: 'dev',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: jwtFixture,
     DB: db as unknown as D1Database,
     TEAMS_KV: teamsKv as unknown as KVNamespace,
     USERS_KV: new KVMock() as unknown as KVNamespace,
@@ -43,7 +44,7 @@ async function seedTeam(db: D1Mock, teamsKv: KVMock) {
 }
 
 async function cookie() {
-  return `qesto_session=${await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: 'owner', email: 'o@example.com' }, jwtFixture, 3600)}`
 }
 
 describe('event agenda routes (STAGE-AGENDA-01)', () => {

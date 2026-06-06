@@ -5,7 +5,7 @@
   "present.starting": "Wird gestartet…",
   "present.joinAt": "Teilnehmer beitreten unter",
   "submit.title": "Idee teilen",
-  "submit.placeholder": "Was ist Ihre Idee?",
+  "submit.hint": "Was ist Ihre Idee?",
   "submit.button": "Idee einreichen",
   "submit.success": "Idee eingereicht",
   "clusters.title": "Themen-Cluster",

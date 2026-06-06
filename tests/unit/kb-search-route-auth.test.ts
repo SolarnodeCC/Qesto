@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { createApp } from '../../functions/api/app'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
@@ -14,7 +15,7 @@ function kv(): KVNamespace {
 function makeEnv(): Env {
   return {
     ENV: 'dev',
-    JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
+    JWT_SECRET: testJwtSecret(),
     KB_SEARCH_SERVICE_KEY: SERVICE_KEY,
     DB: new D1Mock() as unknown as D1Database,
     ACTIONS_KV: kv(),

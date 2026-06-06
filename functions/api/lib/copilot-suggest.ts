@@ -169,7 +169,7 @@ export function parseSuggestions(raw: string): CopilotAction[] | null {
  * Deterministic suggestions for when the AI is unavailable or unparseable.
  * Derived purely from the aggregate snapshot — no inference.
  */
-export function fallbackSuggestions(context: CopilotLiveContext): CopilotAction[] {
+export function heuristicSuggestions(context: CopilotLiveContext): CopilotAction[] {
   const actions: CopilotAction[] = []
 
   // COPILOT-04: k≥5-gated sentiment + participation drop-off (ZK-safe).

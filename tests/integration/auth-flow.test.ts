@@ -1,16 +1,18 @@
 import { describe, expect, it, vi } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { createApp } from '../../functions/api/app'
 import { verifyJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
+import { testUserPassword } from '../helpers/test-credentials'
 
 function makeEnv(db: D1Mock, kv?: { users?: KVMock; actions?: KVMock }): Env {
   return {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
+    JWT_SECRET: testJwtSecret(),
     DB: db as unknown as D1Database,
     USERS_KV: (kv?.users ?? new KVMock()) as unknown as KVNamespace,
     ACTIONS_KV: (kv?.actions ?? new KVMock()) as unknown as KVNamespace,
@@ -246,7 +248,7 @@ describe('password signup + login', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'alice@example.com', password: 'hunter12345', name: 'Alice' }),
+        body: JSON.stringify({ email: 'alice@example.com', password: testUserPassword(), name: 'Alice' }),
       }),
       env,
     )
@@ -268,7 +270,7 @@ describe('password signup + login', () => {
     const app = createApp()
     const env = makeEnv(db, { users: usersKv })
 
-    const body = JSON.stringify({ email: 'bob@example.com', password: 'hunter12345' })
+    const body = JSON.stringify({ email: 'bob@example.com', password: testUserPassword() })
     const headers = { 'content-type': 'application/json' }
     await app.fetch(new Request('http://local/api/auth/password/signup', { method: 'POST', headers, body }), env)
     const res2 = await app.fetch(new Request('http://local/api/auth/password/signup', { method: 'POST', headers, body }), env)
@@ -305,7 +307,7 @@ describe('password signup + login', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'dave@example.com', password: 'correcthorse' }),
+        body: JSON.stringify({ email: 'dave@example.com', password: testUserPassword() }),
       }),
       env,
     )
@@ -314,7 +316,7 @@ describe('password signup + login', () => {
       new Request('http://local/api/auth/password/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'dave@example.com', password: 'correcthorse' }),
+        body: JSON.stringify({ email: 'dave@example.com', password: testUserPassword() }),
       }),
       env,
     )
@@ -334,7 +336,7 @@ describe('password signup + login', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'eve@example.com', password: 'rightpassword' }),
+        body: JSON.stringify({ email: 'eve@example.com', password: testUserPassword() }),
       }),
       env,
     )
@@ -343,7 +345,7 @@ describe('password signup + login', () => {
       new Request('http://local/api/auth/password/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'eve@example.com', password: 'wrongpassword' }),
+        body: JSON.stringify({ email: 'eve@example.com', password: 'wrongpw1' }),
       }),
       env,
     )
@@ -359,7 +361,7 @@ describe('password signup + login', () => {
       new Request('http://local/api/auth/password/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'ghost@example.com', password: 'doesnotmatter' }),
+        body: JSON.stringify({ email: 'ghost@example.com', password: testUserPassword() }),
       }),
       makeEnv(db),
     )
@@ -379,7 +381,7 @@ describe('password reset flow', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'resetme@example.com', password: 'hunter12345' }),
+        body: JSON.stringify({ email: 'resetme@example.com', password: testUserPassword() }),
       }),
       env,
     )
@@ -407,7 +409,7 @@ describe('password reset flow', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'reset2@example.com', password: 'oldpassword123' }),
+        body: JSON.stringify({ email: 'reset2@example.com', password: testUserPassword() }),
       }),
       env,
     )
@@ -423,7 +425,7 @@ describe('password reset flow', () => {
       new Request('http://local/api/auth/password/reset-confirm', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ token: raw, password: 'newpassword123' }),
+        body: JSON.stringify({ token: raw, password: testUserPassword() }),
       }),
       env,
     )
@@ -434,7 +436,7 @@ describe('password reset flow', () => {
       new Request('http://local/api/auth/password/login', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'reset2@example.com', password: 'newpassword123' }),
+        body: JSON.stringify({ email: 'reset2@example.com', password: testUserPassword() }),
       }),
       env,
     )

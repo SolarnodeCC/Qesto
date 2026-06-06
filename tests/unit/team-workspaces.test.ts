@@ -7,13 +7,14 @@ import { KVMock } from '../helpers/kv-mock'
 import { writeKvJson } from '../../functions/api/lib/kv'
 import { teamDocumentKey } from '../../functions/api/lib/kv-keys'
 import type { Team } from '../../functions/api/routes/teams'
+import { testJwtSecret } from '../helpers/test-credentials'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const jwtFixture = testJwtSecret()
 
 function buildEnv(db: D1Mock, teamsKv: KVMock, actionsKv?: KVMock) {
   return {
     ENV: 'dev',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: jwtFixture,
     DB: db as unknown as D1Database,
     TEAMS_KV: teamsKv as unknown as KVNamespace,
     USERS_KV: new KVMock() as unknown as KVNamespace,
@@ -51,7 +52,7 @@ describe('team workspaces (ADR-0048)', () => {
     await seedTeam(db, teamsKv)
     const env = buildEnv(db, teamsKv)
     const app = createApp()
-    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
+    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, jwtFixture, 3600)
     const cookie = `qesto_session=${token}`
 
     const create = await app.fetch(
@@ -82,7 +83,7 @@ describe('team workspaces (ADR-0048)', () => {
     await seedTeam(db, teamsKv)
     const env = buildEnv(db, teamsKv, actionsKv)
     const app = createApp()
-    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
+    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, jwtFixture, 3600)
     const cookie = `qesto_session=${token}`
 
     const createWs = await app.fetch(
@@ -128,7 +129,7 @@ describe('team workspaces (ADR-0048)', () => {
     await seedTeam(db, teamsKv)
     const env = buildEnv(db, teamsKv, actionsKv)
     const app = createApp()
-    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
+    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, jwtFixture, 3600)
     const cookie = `qesto_session=${token}`
 
     const createWs = await app.fetch(
@@ -189,7 +190,7 @@ describe('team workspaces (ADR-0048)', () => {
     await writeKvJson(teamsKv as unknown as KVNamespace, teamDocumentKey('team-free'), team)
     const env = buildEnv(db, teamsKv)
     const app = createApp()
-    const token = await signJwt({ sub: 'free-user', email: 'f@example.com' }, SECRET, 3600)
+    const token = await signJwt({ sub: 'free-user', email: 'f@example.com' }, jwtFixture, 3600)
     const cookie = `qesto_session=${token}`
 
     const create = await app.fetch(

@@ -121,11 +121,9 @@ export function createApp() {
         const allowed = resolveExpectedOrigin(c.env, c.req.url)
         if (!origin) return null
         if (origin === allowed) return origin
-        // Allow Cloudflare Pages preview deployments (<hash>.qesto.pages.dev).
-        if (/^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(origin)) return origin
-        // Allow localhost in dev (Vite dev server).
-        if (c.env.ENV === 'dev' && origin.startsWith('http://localhost:')) return origin
-        return null
+        const preview = /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(origin)
+        const localDev = c.env.ENV === 'dev' && origin.startsWith('http://localhost:')
+        return preview || localDev ? origin : null
       },
       allowMethods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
       allowHeaders: ['content-type', 'authorization', 'x-trace-id', 'x-parent-trace-id', 'idempotency-key'],

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildSuggestMessages,
   parseSuggestions,
-  fallbackSuggestions,
+  heuristicSuggestions,
   detectDisengagement,
   CopilotActionSchema,
   COPILOT_ACTION_KINDS,
@@ -85,20 +85,20 @@ describe('copilot-suggest', () => {
     })
   })
 
-  describe('fallbackSuggestions', () => {
+  describe('heuristicSuggestions', () => {
     it('emits a disengagement alert when mood is concerning', () => {
-      const actions = fallbackSuggestions(liveCtx({ mood: 'concerning' }))
+      const actions = heuristicSuggestions(liveCtx({ mood: 'concerning' }))
       expect(actions.some((a) => a.kind === 'disengagement_alert')).toBe(true)
       expect(actions.every((a) => CopilotActionSchema.safeParse(a).success)).toBe(true)
     })
 
     it('emits a pacing nudge on low participation', () => {
-      const actions = fallbackSuggestions(liveCtx({ participationRate: 0.1, mood: 'positive' }))
+      const actions = heuristicSuggestions(liveCtx({ participationRate: 0.1, mood: 'positive' }))
       expect(actions.some((a) => a.kind === 'pacing')).toBe(true)
     })
 
     it('emits a followup and poll_draft (with intent) when a question is active', () => {
-      const actions = fallbackSuggestions(liveCtx({ mood: 'positive', participationRate: 0.8 }))
+      const actions = heuristicSuggestions(liveCtx({ mood: 'positive', participationRate: 0.8 }))
       expect(actions.some((a) => a.kind === 'followup_question')).toBe(true)
       const draft = actions.find((a) => a.kind === 'poll_draft')
       expect(draft?.intent).toBeTruthy()
@@ -106,7 +106,7 @@ describe('copilot-suggest', () => {
     })
 
     it('returns nothing actionable when no question is active and mood is fine', () => {
-      const actions = fallbackSuggestions(liveCtx({ currentQuestion: null, mood: 'positive', participationRate: 0.8 }))
+      const actions = heuristicSuggestions(liveCtx({ currentQuestion: null, mood: 'positive', participationRate: 0.8 }))
       expect(actions).toHaveLength(0)
     })
   })

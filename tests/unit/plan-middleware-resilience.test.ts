@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { describe, expect, it } from 'vitest'
 import { planMiddleware } from '../../functions/api/middleware/plan'
 import type { AuthVariables } from '../../functions/api/middleware/auth'
@@ -32,7 +33,7 @@ function makeEnv(db: D1Database): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
+    JWT_SECRET: testJwtSecret(),
     DB: db,
   } as unknown as Env
 }

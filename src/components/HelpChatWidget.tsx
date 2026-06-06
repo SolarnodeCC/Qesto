@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useHelpChat } from '../hooks/useHelpChat'
+import { inputHint } from '../ui/input-hint'
 
 export function HelpChatWidget() {
   const { state, askQuestion, submitFeedback, toggleChat, closeChat } = useHelpChat()
@@ -189,7 +190,7 @@ export function HelpChatWidget() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question..."
+                {...inputHint("Ask a question...")}
                 disabled={state.isLoading}
                 className="flex-1 px-3 py-2 rounded-lg border dark:border-slate-600 dark:bg-slate-700 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 aria-label="Help question"

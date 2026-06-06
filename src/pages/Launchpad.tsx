@@ -12,6 +12,7 @@ import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../componen
 import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
 import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
 import SessionTitleField from '../components/SessionTitleField'
+import { inputHint } from '../ui/input-hint'
 
 type PreFlightItem = {
   key: string
@@ -696,7 +697,7 @@ export default function Launchpad() {
                         type="text"
                         value={aiTopic}
                         onChange={(e) => setAiTopic(e.target.value)}
-                        placeholder={t('ai_topic_placeholder', { title: data.session.title })}
+                        {...inputHint(t('ai_topic_hint', { title: data.session.title }))}
                         maxLength={160}
                         disabled={aiGenerating}
                         className="w-full rounded-md border border-violet-300 dark:border-violet-700/60 dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-60 placeholder:text-pulse-400"

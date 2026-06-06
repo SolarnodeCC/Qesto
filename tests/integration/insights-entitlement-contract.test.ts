@@ -11,15 +11,16 @@ import { upsertInsightsDaily } from '../../functions/api/lib/team-insights'
 import { writeKvJson } from '../../functions/api/lib/kv'
 import { teamDocumentKey } from '../../functions/api/lib/kv-keys'
 import type { Team } from '../../functions/api/routes/teams'
+import { testJwtSecret } from '../helpers/test-credentials'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const jwtFixture = testJwtSecret()
 
 function makeEnv(db: D1Mock, teamsKv: KVMock): Env {
   return {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: jwtFixture,
     DB: db as unknown as D1Database,
     SESSIONS_KV: new KVMock() as unknown as KVNamespace,
     USERS_KV: new KVMock() as unknown as KVNamespace,
@@ -32,7 +33,7 @@ function makeEnv(db: D1Mock, teamsKv: KVMock): Env {
 }
 
 async function cookieFor(userId: string, email: string): Promise<string> {
-  const token = await signJwt({ sub: userId, email }, SECRET, 3600)
+  const token = await signJwt({ sub: userId, email }, jwtFixture, 3600)
   return `qesto_session=${token}`
 }
 

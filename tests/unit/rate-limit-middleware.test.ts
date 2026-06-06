@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { rateLimit, type RateLimitNamespace } from '../../functions/api/middleware/rate-limit'
 import type { Env } from '../../functions/api/types'
@@ -11,7 +12,7 @@ function makeEnv(kv: KVNamespace, overrides: Partial<Env> = {}): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'integration-test-secret-at-least-32-bytes',
+    JWT_SECRET: testJwtSecret(),
     ACTIONS_KV: kv,
     ...overrides,
   } as unknown as Env

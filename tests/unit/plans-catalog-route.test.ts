@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { createApp } from '../../functions/api/app'
 import { PLAN_QUOTAS } from '../../functions/api/types'
 import type { Env } from '../../functions/api/types'
@@ -14,7 +15,7 @@ function makeEnv(): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
+    JWT_SECRET: testJwtSecret(),
     DB: new D1Mock() as unknown as D1Database,
     USERS_KV: kv(),
     SESSIONS_KV: kv(),

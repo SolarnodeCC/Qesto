@@ -2,6 +2,7 @@ import { useT } from '../i18n'
 import AIBadge from './AIBadge'
 import type { WizardQuestionKind } from '@/types/session'
 import { NO_OPTIONS_KINDS, newId, isQuestionValid, kindLabel, type WizardQuestion } from './sessionWizard.helpers'
+import { inputHint } from '../ui/input-hint'
 
 // ─── Sub-component: Question editor ──────────────────────────────────────────
 // Extracted from SessionWizard.tsx (R-05). Fully controlled — owns no state.
@@ -99,7 +100,7 @@ export function QuestionEditor({
       <textarea
         value={question.prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        placeholder="Type your question…"
+        {...inputHint("Type your question…")}
         rows={2}
         className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm resize-none focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
         aria-label="Question text"
@@ -115,7 +116,7 @@ export function QuestionEditor({
                 type="text"
                 value={opt.label}
                 onChange={(e) => setOptionLabel(idx, e.target.value)}
-                placeholder={`Option ${idx + 1}`}
+                {...inputHint(`Option ${idx + 1}`)}
                 className="flex-1 rounded-md border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-2 py-1.5 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-300"
                 aria-label={`Option ${idx + 1}`}
               />

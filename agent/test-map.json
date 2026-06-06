@@ -50,6 +50,11 @@
       "command": "npx playwright test --config tests/playwright.config.ts",
       "purpose": "end-to-end browser tests",
       "lane": "e2e"
+    },
+    ".claude/": {
+      "command": "just score",
+      "purpose": "agent skill and hook governance audit",
+      "lane": "audit"
     }
   }
 }

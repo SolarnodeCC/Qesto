@@ -33,7 +33,7 @@ import {
 import {
   buildSuggestMessages,
   parseSuggestions,
-  fallbackSuggestions,
+  heuristicSuggestions,
   COPILOT_MODEL,
 } from '../lib/copilot-suggest'
 import { getSessionRoomStub } from './sessions/shared'
@@ -192,7 +192,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
         })) as { response?: string }
         if (result?.response?.trim()) assistantText = result.response.trim().slice(0, 2000)
       } catch {
-        /* fallback text */
+        /* heuristic text */
       }
     }
     const assistantTurn: CopilotTurn = { role: 'assistant', content: assistantText, at: Date.now() }
@@ -345,7 +345,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       }
     }
 
-    const suggestions = actions ?? fallbackSuggestions(context)
+    const suggestions = actions ?? heuristicSuggestions(context)
     const sessionRow = await c.env.DB.prepare(`SELECT team_id FROM sessions WHERE id = ?1`)
       .bind(c.req.param('sessionId'))
       .first<{ team_id: string | null }>()
@@ -356,10 +356,10 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       teamId: sessionRow?.team_id ?? undefined,
       plan: c.get('plan'),
       count: suggestions.length,
-      detail: actions ? 'ai' : 'fallback',
+      detail: actions ? 'ai' : 'heuristic',
       traceId: c.get('trace_id'),
     })
-    return c.json({ ok: true, data: { suggestions, source: actions ? 'ai' : 'fallback' }, trace_id: c.get('trace_id') })
+    return c.json({ ok: true, data: { suggestions, source: actions ? 'ai' : 'heuristic' }, trace_id: c.get('trace_id') })
   })
 
   // COPILOT-07 — record presenter acceptance (emitted before add_question inject).

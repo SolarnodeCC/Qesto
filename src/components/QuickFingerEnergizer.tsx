@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
+import { inputHint } from '../ui/input-hint'
 
 export type QuickFingerEnergizer = {
   id: string
@@ -215,7 +216,7 @@ export default function QuickFingerEnergizerView({
               onChange={(e) => setEditPrompt(e.target.value)}
               rows={2}
               maxLength={280}
-              placeholder="What is the capital of France?"
+              {...inputHint("What is the capital of France?")}
               className="w-full rounded-lg border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-800 dark:text-pulse-100 px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 resize-none"
             />
           </div>
@@ -250,7 +251,7 @@ export default function QuickFingerEnergizerView({
                     setEditOptions(next)
                   }}
                   maxLength={120}
-                  placeholder={`Option ${idx + 1}`}
+                  {...inputHint(`Option ${idx + 1}`)}
                   className="flex-1 rounded-lg border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-800 dark:text-pulse-100 px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 />
               </div>

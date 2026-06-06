@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
 import { useT } from '../i18n'
+import { inputHint } from '../ui/input-hint'
 
 type MarketplaceApp = {
   id: string
@@ -54,7 +55,7 @@ export default function MarketplacePage() {
               setLoading(true)
               setQuery(e.target.value)
             }}
-            placeholder={t('marketplace.searchPlaceholder')}
+            {...inputHint(t('marketplace.searchPlaceholder'))}
             className="w-full rounded-lg border border-pulse-200 px-4 py-3 text-sm dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8]"
           />
         </label>

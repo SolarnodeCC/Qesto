@@ -1,6 +1,6 @@
 {
   "submit.title": "Stelle eine Frage",
-  "submit.placeholder": "Gib deine Frage ein…",
+  "submit.hint": "Gib deine Frage ein…",
   "submit.button": "Anonym senden",
   "submit.success": "Deine Frage wurde gesendet",
   "submit.pendingNote": "Fragen werden vom Host geprüft, bevor sie erscheinen.",

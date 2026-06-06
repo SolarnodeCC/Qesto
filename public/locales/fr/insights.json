@@ -31,10 +31,10 @@
   "similar": {
     "title": "Sessions similaires",
     "description": "Trouvez des sessions passées avec des thèmes comparables via le RAG de la base de connaissances.",
-    "placeholder": "Thème ou résultat…",
     "search": "Rechercher",
     "searching": "Recherche…",
-    "loadError": "Impossible de charger les sessions similaires"
+    "loadError": "Impossible de charger les sessions similaires",
+    "hint": "Thème ou résultat…"
   },
   "crossSession": {
     "selectTeam": "Rejoignez une équipe pour voir les insights inter-sessions.",

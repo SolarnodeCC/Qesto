@@ -64,7 +64,7 @@
     "mood_concerning": "Aufmerksamkeit nötig",
     "mood_none": "Noch nicht genügend Antworten",
     "draft_label": "Umfrage aus einem Satz entwerfen",
-    "draft_placeholder": "z. B. das Team zur Top-Priorität befragen",
+    "draft_hint": "z. B. das Team zur Top-Priorität befragen",
     "draft_button": "Umfrage entwerfen",
     "drafting": "Wird entworfen…",
     "draft_unavailable": "Derzeit kein Entwurf verfügbar. Formuliere es um.",

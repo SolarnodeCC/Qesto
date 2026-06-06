@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { apiUrl } from '../config/api'
+import { LOGIN_FIELD_CLASS } from '../ui/input-field-class'
+import { inputHint } from '../ui/input-hint'
 
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
@@ -83,8 +85,7 @@ export default function Login() {
         : 'text-pulse-600 dark:text-pulse-400 hover:text-pulse-900 dark:hover:text-pulse-100'
     }`
 
-  const inputClass =
-    'w-full rounded-lg border border-pulse-300 bg-white dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8] dark:placeholder:text-[#6B7A99] px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400'
+  const inputClass = LOGIN_FIELD_CLASS
 
   const primaryBtn =
     'w-full rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2'
@@ -189,7 +190,7 @@ export default function Login() {
                     onChange={(e) => setMagicEmail(e.target.value)}
                     aria-invalid={magicStatus === 'invalid'}
                     className={inputClass}
-                    placeholder={t('emailPlaceholder')}
+                    {...inputHint(t('emailPlaceholder'))}
                   />
                   {magicStatus === 'invalid' && (
                     <p className="text-sm text-red-700 dark:text-red-300">{t('errorInvalidEmail')}</p>
@@ -230,7 +231,7 @@ export default function Login() {
                         value={resetEmail}
                         onChange={(e) => setResetEmail(e.target.value)}
                         className={inputClass}
-                        placeholder={t('emailPlaceholder')}
+                        {...inputHint(t('emailPlaceholder'))}
                       />
                     </div>
                     {resetStatus === 'invalid' && (
@@ -269,7 +270,7 @@ export default function Login() {
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
                     className={inputClass}
-                    placeholder={t('emailPlaceholder')}
+                    {...inputHint(t('emailPlaceholder'))}
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -338,7 +339,7 @@ export default function Login() {
                   value={signupEmail}
                   onChange={(e) => setSignupEmail(e.target.value)}
                   className={inputClass}
-                  placeholder={t('emailPlaceholder')}
+                  {...inputHint(t('emailPlaceholder'))}
                 />
                 {signupStatus === 'email_taken' && (
                   <p className="text-sm text-red-700 dark:text-red-300">{t('signupFailed')}</p>
@@ -355,7 +356,7 @@ export default function Login() {
                   value={signupName}
                   onChange={(e) => setSignupName(e.target.value)}
                   className={inputClass}
-                  placeholder={t('namePlaceholder')}
+                  {...inputHint(t('namePlaceholder'))}
                 />
               </div>
               <div className="space-y-1.5">

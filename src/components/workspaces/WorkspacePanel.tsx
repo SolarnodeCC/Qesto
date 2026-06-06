@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useWorkspaces, type WorkspaceKind } from '../../hooks/useWorkspaces'
 import { WorkspaceHealthPanel } from './WorkspaceHealthPanel'
+import { inputHint } from '../../ui/input-hint'
 
 type Props = {
   teamId: string | undefined
@@ -93,7 +94,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Sprint 42 retro"
+            {...inputHint("Sprint 42 retro")}
             maxLength={120}
             className="min-h-11 rounded-md border border-pulse-300 dark:border-pulse-600 bg-white dark:bg-pulse-800 px-3 text-pulse-900 dark:text-pulse-100"
           />

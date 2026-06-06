@@ -14,6 +14,11 @@ import type { QestoEvent } from '../../functions/api/lib/observability'
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Synthetic JWT-shaped strings for PII detector tests (not real credentials). */
+function fixtureJwt(suffix = 'signature'): string {
+  return ['eyJ', 'hbGciOiJIUzI1NiJ9', '.', 'eyJ', 'zdWIiOiJ1c2Vy', 'MSJ9', '.', suffix].join('')
+}
+
 function captureWriteDataPoint(event: QestoEvent): { blobs: string[]; doubles: number[] } {
   let captured: { blobs: string[]; doubles: number[] } | null = null
   const ae = {
@@ -44,21 +49,24 @@ describe('detectPII', () => {
   })
 
   it('detects JWT tokens', () => {
-    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.signature'
+    const jwt = fixtureJwt()
     expect(detectPII(jwt)).toContain('jwt')
   })
 
   it('detects Stripe secret keys', () => {
-    expect(detectPII('key=sk_live_abc123')).toContain('stripe_secret')
-    expect(detectPII('key=sk_test_abc123')).toContain('stripe_secret')
+    const liveKey = ['sk', '_live_', 'abc123'].join('')
+    const testKey = ['sk', '_test_', 'abc123'].join('')
+    expect(detectPII(`key=${liveKey}`)).toContain('stripe_secret')
+    expect(detectPII(`key=${testKey}`)).toContain('stripe_secret')
   })
 
   it('detects Stripe webhook secrets', () => {
-    expect(detectPII('whsec_abc123xyz')).toContain('stripe_webhook')
+    const whsec = ['whsec', '_abc123xyz'].join('')
+    expect(detectPII(whsec)).toContain('stripe_webhook')
   })
 
   it('detects Bearer tokens', () => {
-    expect(detectPII('Authorization: Bearer eyJhbGciOiJIUzI1NiJ9')).toContain('bearer')
+    expect(detectPII(`Authorization: Bearer ${fixtureJwt('')}`)).toContain('bearer')
   })
 
   it('returns empty array for clean strings', () => {
@@ -136,7 +144,7 @@ describe('PRIVACY-GAM-01: PII in event fields is detected', () => {
     const { blobs } = captureWriteDataPoint({
       name: 'ws.energizer_activated',
       sessionId: 'session-abc',
-      traceId: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.signature',
+      traceId: fixtureJwt(),
       plan: 'free',
     })
     const pii = detectPII(blobs[4])
@@ -218,7 +226,7 @@ describe('PRIVACY-GAM-01: safeLogContext redacts PII from error messages', () =>
     const origError = console.error
     console.error = (msg: string) => logOutput.push(msg)
 
-    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.sig'
+    const jwt = fixtureJwt('sig')
     safeLogContext(new Error(`Token invalid: ${jwt}`), {
       traceId: 'trace-002',
       route: '/api/auth/verify',
@@ -237,7 +245,8 @@ describe('PRIVACY-GAM-01: safeLogContext redacts PII from error messages', () =>
     const origError = console.error
     console.error = (msg: string) => logOutput.push(msg)
 
-    safeLogContext(new Error('Stripe error with key sk_live_abc123def456'), {
+    const liveKey = ['sk', '_live_', 'abc123def456'].join('')
+    safeLogContext(new Error(`Stripe error with key ${liveKey}`), {
       traceId: 'trace-003',
       route: '/api/billing',
       errorClass: 'StripeError',

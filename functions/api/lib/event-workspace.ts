@@ -60,8 +60,8 @@ export async function loadEventWorkspace(
 
 export async function fetchSessionConnectionCount(env: { SESSION_ROOM: DurableObjectNamespace }, sessionId: string): Promise<number | null> {
   try {
-    const stub = env.SESSION_ROOM.idFromName(sessionId)
-    const room = env.SESSION_ROOM.get(stub)
+    const roomId = env.SESSION_ROOM.idFromName(sessionId)
+    const room = env.SESSION_ROOM.get(roomId)
     const res = await room.fetch(new Request('https://do.internal/state', { method: 'GET' }))
     if (!res.ok) return null
     const body = (await res.json()) as { ok?: boolean; data?: { connections?: number } }

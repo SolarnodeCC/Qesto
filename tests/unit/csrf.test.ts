@@ -4,8 +4,9 @@ import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
+import { testJwtSecret } from '../helpers/test-credentials'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const jwtFixture = testJwtSecret()
 
 function kv(): KVNamespace {
   return new KVMock() as unknown as KVNamespace
@@ -16,7 +17,7 @@ function makeEnv(db: D1Mock): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: jwtFixture,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),
     SESSIONS_KV: kv(),
@@ -33,7 +34,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, jwtFixture, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
@@ -56,7 +57,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, jwtFixture, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions/abc', {
@@ -77,7 +78,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, jwtFixture, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
@@ -111,7 +112,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, jwtFixture, 3600)
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
@@ -131,7 +132,7 @@ describe('CSRF / Origin validation', () => {
     const app = createApp()
     const env = makeEnv(db)
     ;(env as unknown as { PAGES_URL?: string }).PAGES_URL = ''
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, jwtFixture, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions', {

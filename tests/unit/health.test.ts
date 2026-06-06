@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { createApp } from '../../functions/api/app'
 import type { Env } from '../../functions/api/types'
 
@@ -7,7 +8,7 @@ function fakeEnv(): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'test-secret',
+    JWT_SECRET: testJwtSecret(),
   } as unknown as Env
 }
 

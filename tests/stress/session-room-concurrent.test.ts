@@ -9,6 +9,7 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { SessionRoom } from '../../functions/api/SessionRoom'
 import type { Env } from '../../functions/api/types'
 import { MockDurableObjectState, MockWebSocket } from '../helpers/do-mock'
@@ -18,7 +19,7 @@ function makeEnv(): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'irrelevant-for-stress-tests',
+    JWT_SECRET: testJwtSecret(),
   } as unknown as Env
 }
 

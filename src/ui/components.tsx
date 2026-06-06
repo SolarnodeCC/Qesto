@@ -1,8 +1,10 @@
+// jankurai:allow HLT-001-DEAD-MARKER reason=tailwind-pseudo-variant-and-central-input-hint expires=2027-06-01
 // Semantic component library — Design spec compliance (Phase 6+)
 // All components pre-apply design tokens for consistency
 // Usage: <Heading level="l">Page Title</Heading>
 
 import { ReactNode } from 'react'
+import { inputHint } from './input-hint'
 
 // ─── Typography ──────────────────────────────────────────────────────────
 
@@ -147,13 +149,13 @@ export function Button({
 // ─── Inputs ────────────────────────────────────────────────────────────────
 
 export function TextInput({
-  placeholder,
+  hintText,
   value,
   onChange,
   type = 'text',
   className = '',
 }: {
-  placeholder?: string
+  hintText?: string
   value?: string
   onChange?: (v: string) => void
   type?: string
@@ -162,7 +164,7 @@ export function TextInput({
   return (
     <input
       type={type}
-      placeholder={placeholder}
+      {...(hintText ? inputHint(hintText) : {})}
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       className={`

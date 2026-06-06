@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useT } from '../i18n'
+import { inputHint } from '../ui/input-hint'
 
 export default function JoinBar() {
   const [code, setCode] = useState('')
@@ -28,7 +29,7 @@ export default function JoinBar() {
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))}
-            placeholder="ABC123"
+            {...inputHint("ABC123")}
             maxLength={6}
             aria-label={t('bar_code_label')}
             spellCheck={false}

@@ -21,6 +21,7 @@ import {
 } from './sessionWizard.helpers'
 import { QuestionEditor } from './QuestionEditor'
 import { AIChip } from './AIChip'
+import { inputHint } from '../ui/input-hint'
 
 export interface SessionWizardProps {
   open: boolean
@@ -470,7 +471,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t('step1.placeholder_title')}
+                  {...inputHint(t('step1.hint_title'))}
                   maxLength={160}
                   className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
                 />
@@ -483,7 +484,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
                   id="wiz-goal"
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
-                  placeholder={t('step1.placeholder_goal')}
+                  {...inputHint(t('step1.hint_goal'))}
                   rows={3}
                   maxLength={400}
                   className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm resize-none focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-900"
@@ -579,7 +580,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
                           value={aiPrompt}
                           onChange={(e) => setAiPrompt(e.target.value)}
                           onKeyDown={(e) => { if (e.key === 'Enter') handleGenerate() }}
-                          placeholder={t('step2.ai_placeholder')}
+                          {...inputHint(t('step2.ai_hint'))}
                           className="flex-1 rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                         />
                         <button

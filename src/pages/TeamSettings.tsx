@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { TeamIntegrations } from './team-settings/TeamIntegrations'
+import { inputHint } from '../ui/input-hint'
 
 // ─── Types matching the backend Team shape ────────────────────────────────────
 
@@ -627,7 +628,7 @@ export default function TeamSettings() {
                     value={roleName}
                     onChange={(e) => setRoleName(e.target.value)}
                     maxLength={80}
-                    placeholder="Workshop coordinator"
+                    {...inputHint("Workshop coordinator")}
                     className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                   />
                 </div>
@@ -745,7 +746,7 @@ export default function TeamSettings() {
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="colleague@example.com"
+                  {...inputHint("colleague@example.com")}
                   maxLength={254}
                   disabled={inviting}
                   className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:bg-pulse-50"
@@ -804,7 +805,7 @@ export default function TeamSettings() {
                   type="text"
                   value={samlEntityId}
                   onChange={(e) => setSamlEntityId(e.target.value)}
-                  placeholder="https://your-idp.example.com/metadata"
+                  {...inputHint("https://your-idp.example.com/metadata")}
                   maxLength={512}
                   disabled={samlSaving}
                   className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:bg-pulse-50 font-mono text-sm"
@@ -819,7 +820,7 @@ export default function TeamSettings() {
                   type="url"
                   value={samlSsoUrl}
                   onChange={(e) => setSamlSsoUrl(e.target.value)}
-                  placeholder="https://your-idp.example.com/sso"
+                  {...inputHint("https://your-idp.example.com/sso")}
                   maxLength={1024}
                   disabled={samlSaving}
                   className="border border-pulse-300 rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:bg-pulse-50 font-mono text-sm"

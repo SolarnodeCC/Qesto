@@ -8,7 +8,7 @@ import {
   parseSnapshotResponse,
 } from '../../functions/api/lib/copilot-live-context'
 import {
-  fallbackSuggestions,
+  heuristicSuggestions,
   parseSuggestions,
 } from '../../functions/api/lib/copilot-suggest'
 import { parseClientMessage } from '../../functions/api/lib/protocol-schemas'
@@ -41,7 +41,7 @@ describe('copilot live flow (COPILOT-10)', () => {
         },
       ],
     })
-    const parsed = parseSuggestions(aiRaw) ?? fallbackSuggestions(context)
+    const parsed = parseSuggestions(aiRaw) ?? heuristicSuggestions(context)
     expect(parsed.length).toBeGreaterThan(0)
 
     const pollDraft = parsed.find((s) => s.kind === 'poll_draft')
@@ -78,7 +78,7 @@ describe('copilot live flow (COPILOT-10)', () => {
       connections: 5,
       mood: null,
     })
-    const suggestions = fallbackSuggestions(context)
+    const suggestions = heuristicSuggestions(context)
     expect(suggestions.length).toBeGreaterThan(0)
   })
 })

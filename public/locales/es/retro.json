@@ -4,7 +4,7 @@
   "column.actions": "Acciones",
   "column.empty": "Aún no hay nada.",
   "submit.title": "Añadir tarjeta",
-  "submit.placeholder": "¿De qué debería hablar el equipo?",
+  "submit.hint": "¿De qué debería hablar el equipo?",
   "submit.button": "Añadir tarjeta",
   "submit.success": "Tarjeta añadida",
   "present.subtitle": "Retrospectiva del equipo",

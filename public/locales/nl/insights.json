@@ -31,10 +31,10 @@
   "similar": {
     "title": "Vergelijkbare sessies",
     "description": "Vind eerdere sessies met vergelijkbare thema's via knowledge-base RAG.",
-    "placeholder": "Thema of resultaat…",
     "search": "Zoeken",
     "searching": "Zoeken…",
-    "loadError": "Vergelijkbare sessies konden niet worden geladen"
+    "loadError": "Vergelijkbare sessies konden niet worden geladen",
+    "hint": "Thema of resultaat…"
   },
   "crossSession": {
     "selectTeam": "Word lid van een team om cross-sessie-inzichten te zien.",

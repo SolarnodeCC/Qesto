@@ -15,6 +15,7 @@ import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/E
 import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
 import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
 import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
+import { inputHint } from '../ui/input-hint'
 
 type Lookup =
   | { status: 'loading' }
@@ -111,7 +112,7 @@ function JoinLanding() {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))}
-                placeholder={t('codePlaceholder')}
+                {...inputHint(t('codePlaceholder'))}
                 maxLength={6}
                 autoFocus
                 spellCheck={false}
@@ -526,7 +527,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                       name="resp"
                       disabled={!canVote}
                       maxLength={120}
-                      placeholder={qk === 'word_cloud' ? t('word_phrase_placeholder') : t('response_placeholder')}
+                      {...inputHint(qk === 'word_cloud' ? t('word_phrase_hint') : t('response_hint'))}
                       className="w-full rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:opacity-50 placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99]"
                       autoComplete="off"
                     />

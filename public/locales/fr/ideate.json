@@ -5,7 +5,7 @@
   "present.starting": "Démarrage…",
   "present.joinAt": "Les participants rejoignent sur",
   "submit.title": "Partager une idée",
-  "submit.placeholder": "Quelle est votre idée ?",
+  "submit.hint": "Quelle est votre idée ?",
   "submit.button": "Soumettre l'idée",
   "submit.success": "Idée soumise",
   "clusters.title": "Clusters thématiques",

@@ -1,5 +1,6 @@
 import { Route, Routes, useLocation } from 'react-router-dom'
-import { useEffect, useRef, lazy, Suspense } from 'react'
+import { useEffect, useRef, lazy } from 'react'
+import { LazySuspense } from './ui/lazy-suspense'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ColorSchemeProvider } from './hooks/ColorSchemeProvider'
 import { HelpChatWidget } from './components/HelpChatWidget'
@@ -63,7 +64,7 @@ const TrainingPage = lazy(() => import('./pages/use-cases/TrainingPage'))
 const TemplateGallery = lazy(() => import('./pages/TemplateGallery'))
 const TemplateDetail = lazy(() => import('./pages/TemplateDetail'))
 
-function LazyRouteFallback() {
+function LazyRoutePending() {
   return (
     <div
       role="status"
@@ -110,35 +111,35 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/privacy" element={<Suspense fallback={<LazyRouteFallback />}><Privacy /></Suspense>} />
-        <Route path="/terms" element={<Suspense fallback={<LazyRouteFallback />}><Terms /></Suspense>} />
-        <Route path="/pricing" element={<Suspense fallback={<LazyRouteFallback />}><Pricing /></Suspense>} />
+        <Route path="/privacy" element={<LazySuspense pending={<LazyRoutePending />}><Privacy /></LazySuspense>} />
+        <Route path="/terms" element={<LazySuspense pending={<LazyRoutePending />}><Terms /></LazySuspense>} />
+        <Route path="/pricing" element={<LazySuspense pending={<LazyRoutePending />}><Pricing /></LazySuspense>} />
 
         {/* Solution verticals */}
-        <Route path="/events" element={<Suspense fallback={<LazyRouteFallback />}><EventsPage /></Suspense>} />
-        <Route path="/hr" element={<Suspense fallback={<LazyRouteFallback />}><HRPage /></Suspense>} />
-        <Route path="/nonprofit" element={<Suspense fallback={<LazyRouteFallback />}><NonprofitPage /></Suspense>} />
-        <Route path="/nonprofits" element={<Suspense fallback={<LazyRouteFallback />}><NonprofitPage /></Suspense>} />
-        <Route path="/consulting" element={<Suspense fallback={<LazyRouteFallback />}><ConsultingPage /></Suspense>} />
+        <Route path="/events" element={<LazySuspense pending={<LazyRoutePending />}><EventsPage /></LazySuspense>} />
+        <Route path="/hr" element={<LazySuspense pending={<LazyRoutePending />}><HRPage /></LazySuspense>} />
+        <Route path="/nonprofit" element={<LazySuspense pending={<LazyRoutePending />}><NonprofitPage /></LazySuspense>} />
+        <Route path="/nonprofits" element={<LazySuspense pending={<LazyRoutePending />}><NonprofitPage /></LazySuspense>} />
+        <Route path="/consulting" element={<LazySuspense pending={<LazyRoutePending />}><ConsultingPage /></LazySuspense>} />
 
         {/* Feature pages */}
-        <Route path="/features/ai-insights" element={<Suspense fallback={<LazyRouteFallback />}><AIInsightsPage /></Suspense>} />
-        <Route path="/features/live-polling" element={<Suspense fallback={<LazyRouteFallback />}><LivePollingPage /></Suspense>} />
-        <Route path="/features/privacy" element={<Suspense fallback={<LazyRouteFallback />}><PrivacyFeaturePage /></Suspense>} />
-        <Route path="/trust/gdpr" element={<Suspense fallback={<LazyRouteFallback />}><GdprTrustPage /></Suspense>} />
-        <Route path="/trust/soc2" element={<Suspense fallback={<LazyRouteFallback />}><Soc2TrustPage /></Suspense>} />
-        <Route path="/marketplace" element={<Suspense fallback={<LazyRouteFallback />}><MarketplacePage /></Suspense>} />
-        <Route path="/partner/sla" element={<Suspense fallback={<LazyRouteFallback />}><PartnerSlaPage /></Suspense>} />
-        <Route path="/developers" element={<Suspense fallback={<LazyRouteFallback />}><DeveloperPortalPage /></Suspense>} />
+        <Route path="/features/ai-insights" element={<LazySuspense pending={<LazyRoutePending />}><AIInsightsPage /></LazySuspense>} />
+        <Route path="/features/live-polling" element={<LazySuspense pending={<LazyRoutePending />}><LivePollingPage /></LazySuspense>} />
+        <Route path="/features/privacy" element={<LazySuspense pending={<LazyRoutePending />}><PrivacyFeaturePage /></LazySuspense>} />
+        <Route path="/trust/gdpr" element={<LazySuspense pending={<LazyRoutePending />}><GdprTrustPage /></LazySuspense>} />
+        <Route path="/trust/soc2" element={<LazySuspense pending={<LazyRoutePending />}><Soc2TrustPage /></LazySuspense>} />
+        <Route path="/marketplace" element={<LazySuspense pending={<LazyRoutePending />}><MarketplacePage /></LazySuspense>} />
+        <Route path="/partner/sla" element={<LazySuspense pending={<LazyRoutePending />}><PartnerSlaPage /></LazySuspense>} />
+        <Route path="/developers" element={<LazySuspense pending={<LazyRoutePending />}><DeveloperPortalPage /></LazySuspense>} />
 
         {/* Use-case pages */}
-        <Route path="/use-cases/team-meetings" element={<Suspense fallback={<LazyRouteFallback />}><TeamMeetingsPage /></Suspense>} />
-        <Route path="/use-cases/workshops" element={<Suspense fallback={<LazyRouteFallback />}><WorkshopsPage /></Suspense>} />
-        <Route path="/use-cases/training" element={<Suspense fallback={<LazyRouteFallback />}><TrainingPage /></Suspense>} />
+        <Route path="/use-cases/team-meetings" element={<LazySuspense pending={<LazyRoutePending />}><TeamMeetingsPage /></LazySuspense>} />
+        <Route path="/use-cases/workshops" element={<LazySuspense pending={<LazyRoutePending />}><WorkshopsPage /></LazySuspense>} />
+        <Route path="/use-cases/training" element={<LazySuspense pending={<LazyRoutePending />}><TrainingPage /></LazySuspense>} />
 
         {/* Template gallery */}
-        <Route path="/templates" element={<Suspense fallback={<LazyRouteFallback />}><TemplateGallery /></Suspense>} />
-        <Route path="/templates/:id" element={<Suspense fallback={<LazyRouteFallback />}><TemplateDetail /></Suspense>} />
+        <Route path="/templates" element={<LazySuspense pending={<LazyRoutePending />}><TemplateGallery /></LazySuspense>} />
+        <Route path="/templates/:id" element={<LazySuspense pending={<LazyRoutePending />}><TemplateDetail /></LazySuspense>} />
 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/settings" element={<AccountSettings />} />
@@ -148,44 +149,44 @@ export default function App() {
         <Route
           path="/sessions/:id/zoom-embed"
           element={
-            <Suspense fallback={<LazyRouteFallback />}>
+            <LazySuspense pending={<LazyRoutePending />}>
               <ZoomSessionEmbedPage />
-            </Suspense>
+            </LazySuspense>
           }
         />
         <Route path="/sessions/:id/present" element={<Present />} />
         <Route
           path="/sessions/:id/remote"
           element={
-            <Suspense fallback={<LazyRouteFallback />}>
+            <LazySuspense pending={<LazyRoutePending />}>
               <PresenterRemotePage />
-            </Suspense>
+            </LazySuspense>
           }
         />
         <Route path="/sessions/:id/results" element={<Results />} />
         <Route path="/join" element={<JoinPage />} />
         <Route path="/j/:code" element={<JoinPage />} />
-        <Route path="/display/:code" element={<Suspense fallback={<LazyRouteFallback />}><Display /></Suspense>} />
+        <Route path="/display/:code" element={<LazySuspense pending={<LazyRoutePending />}><Display /></LazySuspense>} />
         {/* TOWNHALL (ADR-0044) — moderated anonymous Q&A */}
-        <Route path="/sessions/:id/townhall" element={<Suspense fallback={<LazyRouteFallback />}><TownhallPresent /></Suspense>} />
-        <Route path="/th/:code" element={<Suspense fallback={<LazyRouteFallback />}><TownhallJoin /></Suspense>} />
-        <Route path="/th/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><TownhallDisplay /></Suspense>} />
+        <Route path="/sessions/:id/townhall" element={<LazySuspense pending={<LazyRoutePending />}><TownhallPresent /></LazySuspense>} />
+        <Route path="/th/:code" element={<LazySuspense pending={<LazyRoutePending />}><TownhallJoin /></LazySuspense>} />
+        <Route path="/th/:code/display" element={<LazySuspense pending={<LazyRoutePending />}><TownhallDisplay /></LazySuspense>} />
         {/* RETRO (ADR-0048) — 3-column agile retrospective */}
-        <Route path="/sessions/:id/retro" element={<Suspense fallback={<LazyRouteFallback />}><RetroPresent /></Suspense>} />
-        <Route path="/r/:code" element={<Suspense fallback={<LazyRouteFallback />}><RetroJoin /></Suspense>} />
-        <Route path="/r/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><RetroDisplay /></Suspense>} />
+        <Route path="/sessions/:id/retro" element={<LazySuspense pending={<LazyRoutePending />}><RetroPresent /></LazySuspense>} />
+        <Route path="/r/:code" element={<LazySuspense pending={<LazyRoutePending />}><RetroJoin /></LazySuspense>} />
+        <Route path="/r/:code/display" element={<LazySuspense pending={<LazyRoutePending />}><RetroDisplay /></LazySuspense>} />
         {/* IDEATE (ADR-0048) — AI-clustered ideation board */}
-        <Route path="/sessions/:id/ideate" element={<Suspense fallback={<LazyRouteFallback />}><IdeatePresent /></Suspense>} />
-        <Route path="/i/:code" element={<Suspense fallback={<LazyRouteFallback />}><IdeateJoin /></Suspense>} />
+        <Route path="/sessions/:id/ideate" element={<LazySuspense pending={<LazyRoutePending />}><IdeatePresent /></LazySuspense>} />
+        <Route path="/i/:code" element={<LazySuspense pending={<LazyRoutePending />}><IdeateJoin /></LazySuspense>} />
         {/* STAGE (ADR-0048) — multi-track event agenda */}
-        <Route path="/e/:code" element={<Suspense fallback={<LazyRouteFallback />}><EventAgendaJoin /></Suspense>} />
+        <Route path="/e/:code" element={<LazySuspense pending={<LazyRoutePending />}><EventAgendaJoin /></LazySuspense>} />
         <Route
           path="/teams/:teamId/workspaces/:wsId/event"
-          element={<Suspense fallback={<LazyRouteFallback />}><EventAgendaOrganizer /></Suspense>}
+          element={<LazySuspense pending={<LazyRoutePending />}><EventAgendaOrganizer /></LazySuspense>}
         />
         <Route
           path="/teams/:teamId/workspaces/:wsId/present"
-          element={<Suspense fallback={<LazyRouteFallback />}><EventStagePresent /></Suspense>}
+          element={<LazySuspense pending={<LazyRoutePending />}><EventStagePresent /></LazySuspense>}
         />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildSuggestMessages,
   detectDisengagement,
-  fallbackSuggestions,
+  heuristicSuggestions,
 } from '../../functions/api/lib/copilot-suggest'
 import { buildLiveContext, emptyLiveContext } from '../../functions/api/lib/copilot-live-context'
 import type { CopilotSnapshot } from '../../functions/api/lib/copilot-live-context'
@@ -33,9 +33,9 @@ describe('copilot-privacy (COPILOT-08)', () => {
     expect(alert?.title).toMatch(/participation/i)
   })
 
-  it('fallbackSuggestions stay aggregate-only for zero-knowledge context', () => {
+  it('heuristicSuggestions stay aggregate-only for zero-knowledge context', () => {
     const ctx = emptyLiveContext('sess-draft')
-    const suggestions = fallbackSuggestions(ctx)
+    const suggestions = heuristicSuggestions(ctx)
     for (const s of suggestions) {
       expect(s.body).not.toMatch(/voter-|email/i)
     }

@@ -1,5 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
 
+if (!process.env.PW_TEST_PASSWORD) {
+  process.env.PW_TEST_PASSWORD = 'local-e2e-fixture-only'
+}
+
 export default defineConfig({
   // Resolved relative to this config file (`tests/` → `tests/e2e/`)
   testDir: './e2e',

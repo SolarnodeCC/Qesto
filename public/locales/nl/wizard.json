@@ -16,8 +16,8 @@
     "title": "Wat is de sessie?",
     "label_title": "Sessietitel",
     "label_goal": "Doel van de sessie",
-    "placeholder_title": "bv. Teamreflectie Q2",
-    "placeholder_goal": "bv. Inzicht krijgen in hoe het team de sprint heeft ervaren..."
+    "hint_title": "bv. Teamreflectie Q2",
+    "hint_goal": "bv. Inzicht krijgen in hoe het team de sprint heeft ervaren..."
   },
   "question_types": {
     "multiple-choice": "Multiple choice",
@@ -41,10 +41,10 @@
     },
     "back": "← Andere methode kiezen",
     "manual_add": "Vraag toevoegen",
-    "manual_placeholder": "Typ je vraag...",
+    "manual_hint": "Typ je vraag...",
     "manual_max": "Maximum van 20 vragen bereikt",
     "manual_delete": "Verwijder vraag",
-    "multiple_choice_option_placeholder": "Antwoordoptie {{n}}",
+    "multiple_choice_option_hint": "Antwoordoptie {{n}}",
     "multiple_choice_add_option": "Antwoordoptie toevoegen",
     "multiple_choice_remove_option": "Antwoordoptie verwijderen",
     "multiple_choice_validation_hint": "Multiple choice vereist minimaal 2 antwoorden (3–5 aanbevolen).",
@@ -53,7 +53,7 @@
     "ai_greeting_empty": "Vertel me waar de sessie over gaat, of klik 'Genereer meteen'.",
     "ai_generate_cta": "✨ Genereer meteen",
     "ai_generating": "Genereren...",
-    "ai_placeholder": "Verfijn de focus...",
+    "ai_hint": "Verfijn de focus...",
     "ai_send": "Verstuur",
     "ai_questions_label": "Gegenereerde vragen",
     "ai_consent": "Ik ga akkoord dat mijn sessietitel en doel worden verwerkt door de AI",

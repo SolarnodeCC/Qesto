@@ -34,7 +34,7 @@ export function mountPlatformRoutes(parent: ParentApp) {
           getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
         realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),
         realtimeV3Enabled: c.env.REALTIME_V3_ENABLED === 'true',
-        publicApi: { v1: 'deprecated', v2: 'maintained', v3: 'ga' },
+        publicApi: { v1: 'sunset', v2: 'maintained', v3: 'ga' },
         commit: c.env.COMMIT_SHA ?? 'unknown',
       },
       trace_id: c.get('trace_id'),
@@ -117,7 +117,7 @@ export function mountPlatformRoutes(parent: ParentApp) {
       data: {
         v4MaintenanceEnd: '2028-09-16',
         v3End: '2027-12-31',
-        notice: 'Sunset-Date headers on deprecated API versions',
+        notice: 'Sunset-Date headers on retiring API versions',
       },
       trace_id: c.get('trace_id'),
     }),

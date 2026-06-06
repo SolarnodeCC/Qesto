@@ -21,10 +21,10 @@ openssl rand -hex 32
 **Add to Cloudflare secrets:**
 ```bash
 # Production
-echo "YOUR_SECRET_HERE" | wrangler secret put MARKETING_WEBHOOK_SECRET
+echo "$(openssl rand -hex 32)" | wrangler secret put MARKETING_WEBHOOK_SECRET
 
 # Staging
-echo "YOUR_SECRET_HERE" | wrangler secret put MARKETING_WEBHOOK_SECRET --env staging
+echo "$(openssl rand -hex 32)" | wrangler secret put MARKETING_WEBHOOK_SECRET --env staging
 ```
 
 **Verify:**

@@ -4,8 +4,9 @@
 import { describe, expect, it } from 'vitest'
 import type { LiveEnergizerState, LiveTeamQuizSubmission } from '../../functions/api/realtime'
 import type { Env } from '../../functions/api/types'
+import { testJwtSecret } from '../helpers/test-credentials'
 
-const SECRET = 'test-secret-at-least-32-bytes!'
+const jwtFixture = testJwtSecret()
 const ENERGIZER_TIMEOUT_MS = 5 * 60_000 // 5 minutes
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -15,7 +16,7 @@ function makeEnv(overrides?: Partial<Env>): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: jwtFixture,
     LIVE_ENERGIZERS_ENABLED: 'true',
     ...overrides,
   } as unknown as Env

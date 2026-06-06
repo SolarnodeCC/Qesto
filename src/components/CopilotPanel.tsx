@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Sparkles, X, Loader2, RefreshCw, Lightbulb, AlertTriangle, Gauge, ListPlus, Check } from 'lucide-react'
 import { useT } from '../i18n'
 import { useCopilot, type CopilotActionKind } from '../hooks/useCopilot'
+import { inputHint } from '../ui/input-hint'
 
 type Props = {
   sessionId: string | undefined
@@ -132,7 +133,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                     <div className="flex items-center justify-between">
                       <h3 className="text-xs font-semibold uppercase tracking-wide text-pulse-500">
                         {t('copilot.suggestions_title')}
-                        {suggestSource === 'fallback' && (
+                        {suggestSource === 'heuristic' && (
                           <span className="ml-1 font-normal normal-case text-pulse-400">· {t('copilot.suggestions_fallback')}</span>
                         )}
                       </h3>
@@ -203,7 +204,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                     value={intent}
                     maxLength={280}
                     onChange={(e) => setIntent(e.target.value)}
-                    placeholder={t('copilot.draft_placeholder')}
+                    {...inputHint(t('copilot.draft_hint'))}
                     className="w-full rounded-lg border border-pulse-300 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
                   />
                   <button

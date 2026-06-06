@@ -7,7 +7,7 @@ import {
   signupWithPassword,
 } from './helpers/auth'
 
-const password = 'PlaywrightPass123!'
+const password = process.env.PW_TEST_PASSWORD ?? 'local-e2e-fixture-only'
 
 test.describe('Local auth flow in Chrome', () => {
   test('can open login page', async ({ page }) => {

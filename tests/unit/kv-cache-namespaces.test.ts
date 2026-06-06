@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import {
   cacheLeaderboard,
   cachePlanUsage,
@@ -16,7 +17,7 @@ function tinyEnv(partial: Partial<Env>): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
+    JWT_SECRET: testJwtSecret(),
     ...partial,
   } as Env
 }

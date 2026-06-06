@@ -166,8 +166,8 @@ export function mountTeamInsightsRoutes(parent: ParentApp) {
 
     const kind: TeamInsightKind = 'facilitator_scorecard'
     let rollup = await getTeamInsightRollup(c.env.DB, teamId, kind, window)
-    const stale = !rollup || Date.now() - rollup.computed_at > 86_400_000
-    const scorecard = stale
+    const needsRefresh = !rollup || Date.now() - rollup.computed_at > 86_400_000
+    const scorecard = needsRefresh
       ? await recomputeFacilitatorScorecard(c.env.DB, teamId, window)
       : (parseJsonString(FacilitatorScorecardPayloadSchema, rollup!.payload_json) ??
         (await recomputeFacilitatorScorecard(c.env.DB, teamId, window)))
@@ -182,7 +182,7 @@ export function mountTeamInsightsRoutes(parent: ParentApp) {
       traceId: c.get('trace_id'),
     })
 
-    return c.json({ ok: true, data: { scorecard, cached: !stale }, trace_id: c.get('trace_id') })
+    return c.json({ ok: true, data: { scorecard, cached: !needsRefresh }, trace_id: c.get('trace_id') })
   })
 
   app.get('/:id/insights/export', requireFeature('crossSessionInsights'), async (c) => {

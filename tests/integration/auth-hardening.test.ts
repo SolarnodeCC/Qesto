@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { createApp } from '../../functions/api/app'
 import * as oauth from '../../functions/api/lib/oauth'
 import * as saml from '../../functions/api/lib/saml'
@@ -6,13 +7,14 @@ import * as authHelpers from '../../functions/api/routes/auth/helpers'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
+import { testUserPassword } from '../helpers/test-credentials'
 
 function makeAuthEnv(db: D1Mock, overrides: Partial<Env> = {}): Env {
   return {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
+    JWT_SECRET: testJwtSecret(),
     DB: db as unknown as D1Database,
     USERS_KV: new KVMock() as unknown as KVNamespace,
     SESSIONS_KV: new KVMock() as unknown as KVNamespace,
@@ -103,7 +105,7 @@ describe('auth JSON error sanitization', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'corrupt-kv@example.com', password: 'password123' }),
+        body: JSON.stringify({ email: 'corrupt-kv@example.com', password: testUserPassword() }),
       }),
       makeAuthEnv(db, { USERS_KV: usersKv as unknown as KVNamespace, ACTIONS_KV: actionsKv as unknown as KVNamespace }),
     )
@@ -117,7 +119,7 @@ describe('auth JSON error sanitization', () => {
       new Request('http://local/api/auth/password/reset-confirm', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ token: raw, password: 'newpassword123' }),
+        body: JSON.stringify({ token: raw, password: testUserPassword() }),
       }),
       makeAuthEnv(db, {
         ENV: 'production',
@@ -160,7 +162,7 @@ describe('OAuth characterization + hardening', () => {
     expect(res.status).toBe(302)
     const loc = res.headers.get('location') ?? ''
     expect(loc).toContain('error=sso_failed')
-    expect(loc).not.toContain('SECRET')
+    expect(loc).not.toContain('jwtFixture')
   })
 
   it('google start redirects provider_not_configured when client id missing', async () => {

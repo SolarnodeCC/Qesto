@@ -23,8 +23,9 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 import { MockDurableObjectState } from '../helpers/do-mock'
+import { testJwtSecret } from '../helpers/test-credentials'
 
-const TEST_SECRET = 'integration-test-secret-at-least-32-bytes!'
+const jwtFixture = testJwtSecret()
 const SEED_ADMIN_EMAIL = 'qesto@example.com'
 const ADMIN_USER_ID = 'user_admin_1'
 
@@ -37,7 +38,7 @@ function makeEnv(db: D1Mock, env: 'dev' | 'production' = 'dev'): Env {
     ENV: env,
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: TEST_SECRET,
+    JWT_SECRET: jwtFixture,
     SEED_ADMIN_EMAIL,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),
@@ -52,7 +53,7 @@ function makeEnv(db: D1Mock, env: 'dev' | 'production' = 'dev'): Env {
 }
 
 async function adminCookie(): Promise<string> {
-  const token = await signJwt({ sub: ADMIN_USER_ID, email: SEED_ADMIN_EMAIL }, TEST_SECRET, 3600)
+  const token = await signJwt({ sub: ADMIN_USER_ID, email: SEED_ADMIN_EMAIL }, jwtFixture, 3600)
   return `qesto_session=${token}`
 }
 
@@ -147,7 +148,7 @@ describe('SessionRoom ensureVoters retry on storage failure (EH-03)', () => {
       ENV: 'dev',
       PAGES_URL: 'http://local',
       API_URL: 'http://local',
-      JWT_SECRET: TEST_SECRET,
+      JWT_SECRET: jwtFixture,
     } as unknown as Env
 
     // Seed a usable voters payload directly so the second (successful) read

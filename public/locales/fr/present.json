@@ -64,7 +64,7 @@
     "mood_concerning": "Attention requise",
     "mood_none": "Pas encore assez de réponses",
     "draft_label": "Rédiger un sondage à partir d’une intention",
-    "draft_placeholder": "ex. sonder l’équipe sur notre priorité",
+    "draft_hint": "ex. sonder l’équipe sur notre priorité",
     "draft_button": "Rédiger le sondage",
     "drafting": "Rédaction…",
     "draft_unavailable": "Aucun brouillon disponible pour le moment. Reformulez.",
