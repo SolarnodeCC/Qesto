@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireDraft } from '../lib/session-lifecycle'
+import { SESSION_SEED_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { DEFAULT_RETRO_TEMPLATE } from '../lib/workspace-types'
 import type { Env, Session } from '../types'
@@ -87,10 +88,15 @@ export function mountRetroSessionRoutes(parent: any) {
       dotVoteLimit: DEFAULT_RETRO_TEMPLATE.dotVoteLimit,
       carriedActions: [],
     }
-    await writeKvJson(c.env.SESSIONS_KV, retroSeedKey(id), {
-      ...existing,
-      dotVoteLimit: body.data.dotVoteLimit ?? existing.dotVoteLimit,
-    })
+    await writeKvJson(
+      c.env.SESSIONS_KV,
+      retroSeedKey(id),
+      {
+        ...existing,
+        dotVoteLimit: body.data.dotVoteLimit ?? existing.dotVoteLimit,
+      },
+      { expirationTtl: SESSION_SEED_TTL_SECONDS },
+    )
     return c.json({
       ok: true,
       data: { sessionMode: 'retro', dotVoteLimit: body.data.dotVoteLimit ?? existing.dotVoteLimit },

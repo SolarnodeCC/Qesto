@@ -5,6 +5,11 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
+import {
+  API_KEY_HASH_INDEX_TTL_SECONDS,
+  API_KEY_RECORD_TTL_SECONDS,
+  API_KEY_REVOKED_TTL_SECONDS,
+} from '../lib/constants'
 import { readKvJson, writeKvJson, writeKvText } from '../lib/kv'
 import { ulid } from '../lib/ulid'
 import { validateBody } from '../lib/request-validation'
@@ -53,12 +58,16 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
       prefix,
     }
     const hash = await hashApiKey(raw)
-    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(id), record)
-    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), id)
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(id), record, { expirationTtl: API_KEY_RECORD_TTL_SECONDS })
+    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), id, {
+      expirationTtl: API_KEY_HASH_INDEX_TTL_SECONDS,
+    })
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(parsed.data.teamId))) ?? []
     if (!index.includes(id)) {
       index.push(id)
-      await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(parsed.data.teamId), index)
+      await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(parsed.data.teamId), index, {
+        expirationTtl: API_KEY_RECORD_TTL_SECONDS,
+      })
     }
     return c.json({ ok: true, data: { key: raw, record }, trace_id: c.get('trace_id') }, 201)
   })
@@ -87,7 +96,7 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
       return c.json({ ok: false, error: { code: 'not_found', message: 'API key not found' }, trace_id: c.get('trace_id') }, 404)
     }
     const updated: ApiKeyRecord = { ...record, revokedAt: Date.now() }
-    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), updated)
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), updated, { expirationTtl: API_KEY_REVOKED_TTL_SECONDS })
     return c.json({ ok: true, data: { revoked: true, record: updated }, trace_id: c.get('trace_id') })
   })
 
@@ -104,7 +113,7 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
       return c.json({ ok: false, error: { code: 'not_found', message: 'API key not found' }, trace_id: c.get('trace_id') }, 404)
     }
     const revoked: ApiKeyRecord = { ...record, revokedAt: Date.now() }
-    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), revoked)
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), revoked, { expirationTtl: API_KEY_REVOKED_TTL_SECONDS })
     const { raw, prefix } = generateApiKey()
     const newId = ulid()
     const replacement: ApiKeyRecord = {
@@ -118,12 +127,16 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
       lastUsedAt: undefined,
     }
     const hash = await hashApiKey(raw)
-    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(newId), replacement)
-    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), newId)
+    await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(newId), replacement, { expirationTtl: API_KEY_RECORD_TTL_SECONDS })
+    await writeKvText(c.env.INTEGRATIONS_KV, apiKeyHashIndexKey(hash), newId, {
+      expirationTtl: API_KEY_HASH_INDEX_TTL_SECONDS,
+    })
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId))) ?? []
     const nextIndex = index.filter((id) => id !== keyId)
     nextIndex.push(newId)
-    await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId), nextIndex)
+    await writeKvJson(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(record.teamId), nextIndex, {
+      expirationTtl: API_KEY_RECORD_TTL_SECONDS,
+    })
     return c.json({ ok: true, data: { key: raw, record: replacement, previousKeyId: keyId }, trace_id: c.get('trace_id') }, 201)
   })
 
