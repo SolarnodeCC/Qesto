@@ -1,5 +1,8 @@
+standard = "jankurai"
 standard_version = "0.9.0"
 auditor_version = "1.5.1"
 schema_version = "1"
 paper_edition = "2026-05-12"
+target_stack = "cloudflare-workers-typescript-react"
 target_stack_id = "cloudflare-workers-typescript-react"
+published = "2026-06-06"
