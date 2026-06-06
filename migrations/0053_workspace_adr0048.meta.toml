@@ -1,0 +1,26 @@
+id = "0053_workspace_adr0048"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-05-17"
+ticket = "ADR-0048"
+
+[rollback]
+strategy = "drop-objects"
+procedure = "DROP TABLE workspace_trend; revert workspace/session columns via forward fix migration"
+
+[backup]
+required = false
+note = "Additive workspace lifecycle columns and trend table"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+verify = true
+post_check = "0053_workspace_adr0048.verify.sql"

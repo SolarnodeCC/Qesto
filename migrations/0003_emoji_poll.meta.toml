@@ -1,0 +1,30 @@
+# Jankurai migration safety sidecar (HLT-021/HLT-030).
+# Adjacent to 0003_emoji_poll.sql — required for destructive DROP TABLE evidence.
+
+id = "0003_emoji_poll"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "destructive"
+stage = "contract"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-05-17"
+ticket = "Phase-9"
+
+[rollback]
+strategy = "restore-from-backup"
+procedure = "Restore pre-migration backup or re-apply migrations from 0002"
+
+[backup]
+required = true
+note = "Confirmed zero energizer rows in production before apply (Phase 9 feature not yet live)"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+note = "Declared for PostgreSQL port; D1 SQLite does not support SET lock_timeout"
+
+[verification]
+post_check = "0003_emoji_poll.verify.sql"
+verify = true

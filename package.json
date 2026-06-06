@@ -43,7 +43,7 @@
     "kb:health": "npx tsx scripts/kb-health.ts",
     "help:sync": "npx tsx scripts/sync-help-docs.ts",
     "contracts:generate": "openapi-typescript contracts/openapi/qesto-api.yaml -o contracts/generated/api.d.ts",
-    "check:migrations": "node scripts/check-migration-gaps.mjs",
+    "check:migrations": "node scripts/check-migration-gaps.mjs && node scripts/verify-migration-metadata.mjs",
     "check:kv-access": "node scripts/check-kv-access.mjs",
     "check:no-any": "node scripts/check-no-any.mjs",
     "cap:sync": "npm run build && npx cap sync",
