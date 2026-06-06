@@ -11,6 +11,7 @@
 //   - All filters that originate from request bodies are passed through to
 //     Vectorize as parametric `filter` — never concatenated into a query.
 
+import { KbVectorMetadataSchema } from '../lib/boundary-decode'
 import type {
   KbHydratedChunk,
   KbStatus,
@@ -115,11 +116,14 @@ export class KbVectorRepository {
       ...(Object.keys(filter).length > 0 ? { filter: filter as VectorizeVectorMetadataFilter } : {}),
     })
 
-    return (result.matches ?? []).map((match) => ({
-      id: match.id,
-      score: typeof match.score === 'number' ? match.score : 0,
-      metadata: (match.metadata ?? {}) as unknown as KbVectorMetadata,
-    }))
+    return (result.matches ?? []).map((match) => {
+      const meta = KbVectorMetadataSchema.safeParse(match.metadata ?? {})
+      return {
+        id: match.id,
+        score: typeof match.score === 'number' ? match.score : 0,
+        metadata: meta.success ? meta.data : emptyKbVectorMetadata(),
+      }
+    })
   }
 
   /**
@@ -173,5 +177,17 @@ export class KbVectorRepository {
       out.set(row.chunk_id, rowToHydratedChunk(row))
     }
     return out
+  }
+}
+
+function emptyKbVectorMetadata(): KbVectorMetadata {
+  return {
+    doc_id: '',
+    chunk_id: '',
+    type: 'unknown',
+    domain: '',
+    status: 'draft',
+    tags: [],
+    heading_path: '',
   }
 }

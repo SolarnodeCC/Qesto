@@ -4,9 +4,9 @@
 import { Hono } from 'hono'
 import openApiSpec from '../../../contracts/openapi-v3.json'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountDeveloperPortalRoutes(parent: any) {
+export function mountDeveloperPortalRoutes(parent: ParentApp) {
   const pub = new Hono<{ Bindings: Env }>()
 
   pub.get('/openapi.json', (c) =>

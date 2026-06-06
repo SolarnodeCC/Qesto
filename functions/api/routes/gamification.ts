@@ -13,10 +13,11 @@ import { sanitizeError } from '../lib/error-handler'
 import { safeLogContext } from '../lib/log'
 import type { Env } from '../types'
 import type { BadgeRow, SessionRow } from '../lib/db-row-types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables
 
-export function mountGamificationRoutes(parent: any) {
+export function mountGamificationRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
 

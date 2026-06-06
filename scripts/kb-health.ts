@@ -22,20 +22,24 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
+import { z } from 'zod'
 
 const KB_DIR = 'knowledge-base'
 const MANIFEST_FILE = '.kb-sync-manifest.json'
 const KB_EXPECTED_DIM = 1024 // bge-m3 — must match scripts/embed-kb.ts and kbSearchService.ts
 
-interface ManifestFile {
-  hash: string
-  vectorCount: number
-}
-interface SyncManifest {
-  lastSync?: number
-  syncCount?: number
-  files?: Record<string, ManifestFile>
-}
+const ManifestFileSchema = z.object({
+  hash: z.string(),
+  vectorCount: z.number(),
+})
+
+const SyncManifestSchema = z.object({
+  lastSync: z.number().optional(),
+  syncCount: z.number().optional(),
+  files: z.record(z.string(), ManifestFileSchema).optional(),
+})
+
+type SyncManifest = z.infer<typeof SyncManifestSchema>
 
 interface IndexSpec {
   binding: string
@@ -55,7 +59,9 @@ const INDEXES: IndexSpec[] = [
 function loadManifest(): SyncManifest {
   if (!fs.existsSync(MANIFEST_FILE)) return {}
   try {
-    return JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf-8')) as SyncManifest
+    const raw: unknown = JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf-8'))
+    const result = SyncManifestSchema.safeParse(raw)
+    return result.success ? result.data : {}
   } catch {
     return {}
   }

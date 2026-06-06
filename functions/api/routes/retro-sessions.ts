@@ -10,6 +10,7 @@ import { SESSION_SEED_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { DEFAULT_RETRO_TEMPLATE } from '../lib/workspace-types'
 import type { Env, Session } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -27,8 +28,7 @@ export function retroSeedKey(sessionId: string): string {
   return `retro-seed:${sessionId}`
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountRetroSessionRoutes(parent: any) {
+export function mountRetroSessionRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

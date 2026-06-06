@@ -24,6 +24,7 @@ import {
 import type { WorkspaceRow } from '../lib/workspace-types'
 import type { Team } from './teams'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -57,8 +58,7 @@ function buildSuitePayload(
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountPublicEventSuiteRoutes(parent: any) {
+export function mountPublicEventSuiteRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
   app.get('/events/:code/feed', async (c) => {
@@ -90,8 +90,7 @@ export function mountPublicEventSuiteRoutes(parent: any) {
   parent.route('/api', app)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountTeamEventSuiteRoutes(parent: any) {
+export function mountTeamEventSuiteRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

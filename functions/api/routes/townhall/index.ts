@@ -7,6 +7,7 @@ import { featureAllowed, denyFeature } from '../../lib/entitlements'
 import { fetchSession } from '../sessions/shared'
 import { requireFound, requireDraft } from '../../lib/session-lifecycle'
 import { recordAuditEvent } from '../../lib/audit'
+import type { ParentApp } from '../parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -225,7 +226,7 @@ export function registerTownhallDataRoutes(app: Hono<{ Bindings: Env; Variables:
   })
 }
 
-export function mountTownhallRoutes(parent: any): void {
+export function mountTownhallRoutes(parent: ParentApp): void {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

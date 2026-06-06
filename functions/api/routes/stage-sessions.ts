@@ -7,6 +7,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireDraft } from '../lib/session-lifecycle'
 import type { Env, Session } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -15,8 +16,7 @@ const StageConfigSchema = z.object({
   presenterNotes: z.string().max(2000).optional(),
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountStageSessionRoutes(parent: any) {
+export function mountStageSessionRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

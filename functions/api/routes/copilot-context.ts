@@ -45,6 +45,7 @@ import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 import { sanitizeAIGatewayRequest, assertSanitizedAIGatewayRequest } from '../lib/ai/prompt-sanitize'
 import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS } from '../lib/constants'
+import type { ParentApp } from './parent-app'
 
 type LiveContextResult =
   | { ok: true; context: CopilotLiveContext }
@@ -98,8 +99,7 @@ const ValidateBodySchema = z.object({
   context: z.unknown(),
 })
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountCopilotContextRoutes(parent: any) {
+export function mountCopilotContextRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

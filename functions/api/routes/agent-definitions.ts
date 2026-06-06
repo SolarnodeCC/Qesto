@@ -5,11 +5,11 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountAgentDefinitionRoutes(parent: any) {
+export function mountAgentDefinitionRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

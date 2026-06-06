@@ -8,9 +8,9 @@ import { buildCostSnapshot, tenantCostKvKey } from '../lib/tenant-cost'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import type { Env } from '../types'
 import { TENANT_COST_TTL_SECONDS } from '../lib/constants'
+import type { ParentApp } from './parent-app'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountTenantCostRoutes(parent: any) {
+export function mountTenantCostRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & PlanVariables }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

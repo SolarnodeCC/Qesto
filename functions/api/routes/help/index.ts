@@ -11,8 +11,9 @@ import type { Env } from '../../types'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { registerHelpAskRoute } from './register-ask'
 import { registerHelpFeedbackRoute } from './register-feedback'
+import type { ParentApp } from '../parent-app'
 
-export function mountHelpRoutes(parent: any): void {
+export function mountHelpRoutes(parent: ParentApp): void {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
   app.use('*', authMiddleware)
 

@@ -64,8 +64,8 @@ export interface AuditContext {
   action: AuditAction
   subject_type: string
   subject_id: string
-  before_snapshot?: Record<string, any>
-  after_snapshot?: Record<string, any>
+  before_snapshot?: Record<string, unknown>
+  after_snapshot?: Record<string, unknown>
   actor_id?: string
   actor_ip?: string
   trace_id?: string

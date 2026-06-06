@@ -43,9 +43,9 @@ export async function loadPushSubscription(kv: KVNamespace, userId: string): Pro
   const raw = await kv.get(pushSubscriptionKvKey(userId))
   if (!raw) return null
   try {
-    const parsed = JSON.parse(raw) as unknown
-    const { keys, endpoint, userAgent } = parsed as PushSubscription
-    return PushSubscriptionSchema.parse({ endpoint, keys, userAgent })
+    const parsed: unknown = JSON.parse(raw)
+    const result = PushSubscriptionSchema.safeParse(parsed)
+    return result.success ? result.data : null
   } catch {
     return null
   }

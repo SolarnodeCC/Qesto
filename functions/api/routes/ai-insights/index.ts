@@ -12,8 +12,9 @@ import { registerInsightsAnalyzeRoute } from './register-analyze'
 import { registerInsightsGetRoute } from './register-get'
 import { registerCoachingRoute } from './register-coaching'
 import type { AiInsightsVars } from './types'
+import type { ParentApp } from '../parent-app'
 
-export function mountAIInsightsRoutes(parent: any): void {
+export function mountAIInsightsRoutes(parent: ParentApp): void {
   const app = new Hono<{ Bindings: Env; Variables: AiInsightsVars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

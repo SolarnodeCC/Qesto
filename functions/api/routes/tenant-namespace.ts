@@ -5,9 +5,9 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { describeTenantNamespace } from '../lib/tenant-namespace'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountTenantNamespaceRoutes(parent: any) {
+export function mountTenantNamespaceRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
   app.use('*', authMiddleware)
 
