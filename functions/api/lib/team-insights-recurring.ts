@@ -10,6 +10,7 @@ import {
   type InsightsVectorizeBindings,
 } from './insights-vectorize'
 import { upsertTeamInsightRollup, type TeamInsightKind } from './team-insights'
+import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { withTimeout } from './shared/async'
 
 export const INSIGHT_TREND_WINDOWS = ['30d', '90d', '180d'] as const
@@ -132,7 +133,8 @@ export async function clusterRecurringThemes(
       .sort((a, b) => b[1].size - a[1].size)
       .slice(0, 5)
       .map(([k]) => k)
-    const embedText = `Team recurring themes: ${seedLabels.join('; ')}`
+    const embedText = sanitizeEmbedText(`Team recurring themes: ${seedLabels.join('; ')}`)
+    if (!embedText) throw new Error('empty_embed_text')
     const embedResult = await withTimeout(
       env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
       10_000,

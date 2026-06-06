@@ -2,6 +2,7 @@
  * AI-SENTIMENT-01 — aggregate session mood via Workers AI (ADR-0011).
  */
 import type { Env } from '../../types'
+import { SENTIMENT_TEXT_MAX_LEN, sanitizePromptText } from './prompt-sanitize'
 import { aiOverride, aiPipeline, SENTIMENT_MODEL, type SessionAIContext } from './session-context'
 
 export type SessionMood = 'positive' | 'neutral' | 'concerning'
@@ -61,9 +62,10 @@ export async function analyzeOpenResponseSentiment(
   let hasUnavailable = false
 
   for (const text of sample) {
-    const trimmed = text.slice(0, 512)
+    const sanitized = sanitizePromptText(text, SENTIMENT_TEXT_MAX_LEN)
+    if (!sanitized) continue
     const result = await aiPipeline(ctxSentiment, env, async (model, _signal) => {
-      return env.AI.run(model, { text: trimmed })
+      return env.AI.run(model, { text: sanitized })
     })
     if (!result.ok) {
       if (result.code === 'ai_timeout') hasTimeout = true

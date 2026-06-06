@@ -2,6 +2,7 @@
  * AI-COACHING-01 — post-session facilitator coaching (Workers AI, ADR-0011 scope).
  */
 import type { Env } from '../../types'
+import { sanitizePromptText } from './prompt-sanitize'
 import { aiOverride, aiPipeline, type SessionAIContext } from './session-context'
 
 const COACHING_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
@@ -45,7 +46,8 @@ export async function generateFacilitatorCoaching(
     options?.history?.length ?
       `\nPrior turns:\n${options.history.map((t) => `${t.role}: ${t.content}`).join('\n')}\n`
     : ''
-  const followUpBlock = options?.followUp ? `\nFacilitator follow-up: ${options.followUp}\n` : ''
+  const safeFollowUp = options?.followUp ? sanitizePromptText(options.followUp, 500) : ''
+  const followUpBlock = safeFollowUp ? `\nFacilitator follow-up: ${safeFollowUp}\n` : ''
   const styleHint = input.profileStyle ? `\nCoach style preference: ${input.profileStyle}.` : ''
   const verticalHint = input.teamVertical ? `\nTeam vertical: ${input.teamVertical}. Tailor examples to this use case.` : ''
   const historyHint = input.historicalInsight ? `\nHistorical pattern: ${input.historicalInsight}\n` : ''
@@ -53,14 +55,22 @@ export async function generateFacilitatorCoaching(
     input.similarSessions?.length ?
       `\nSimilar past sessions (for context only):\n${input.similarSessions.join('\n')}\n`
     : ''
-  const prompt = `You are a facilitation coach. Session: "${input.sessionTitle}".
+  const safeTitle = sanitizePromptText(input.sessionTitle, 200)
+  const safeQuestions = input.questionSummaries
+    .map((q) => sanitizePromptText(q, 500))
+    .filter((q) => q.length > 0)
+  if (safeQuestions.length === 0) return null
+
+  const prompt = `You are a facilitation coach. Session: "${safeTitle}".
 Total votes: ${input.totalVotes}. Questions:
-${input.questionSummaries.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+${safeQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
 ${styleHint}${verticalHint}${historyHint}${ragHint}${historyBlock}${followUpBlock}
 Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1.0,"followUps":["optional question"]} (2-4 bullets, actionable, no PII).`
+  const sanitizedPrompt = sanitizePromptText(prompt)
+  if (!sanitizedPrompt) return null
 
   const result = await aiPipeline(ctxAi, env, async (model, _signal) => {
-    return env.AI.run(model, { messages: [{ role: 'user', content: prompt }] })
+    return env.AI.run(model, { messages: [{ role: 'user', content: sanitizedPrompt }] })
   })
   if (!result.ok) return null
 
