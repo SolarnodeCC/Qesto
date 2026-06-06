@@ -21,3 +21,5 @@ CREATE INDEX IF NOT EXISTS idx_metrics_route    ON metrics_summary(route, bucket
 CREATE INDEX IF NOT EXISTS idx_metrics_ts_route ON metrics_summary(bucket_ts DESC, route);
 
 PRAGMA foreign_keys = ON;
+PRAGMA foreign_key_check;
+PRAGMA quick_check;

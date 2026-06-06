@@ -9,7 +9,9 @@
 | Path | Role |
 |------|------|
 | `migrations/*.sql` | Forward D1 migrations (apply with wrangler) |
-| `migrations/.metadata/` | Destructive migration safety evidence |
+| `migrations/*.meta.toml` | Jankurai HLT-021/030 safety sidecars (required for destructive/ALTER TABLE) |
+| `migrations/*.verify.sql` | Post-apply integrity checks referenced by sidecars |
+| `migrations/.metadata/` | Human-readable JSON archive of safety evidence |
 | `schema.sql` | Full schema snapshot for local `--local` dev |
 
 ## Commands

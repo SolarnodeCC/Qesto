@@ -1,0 +1,26 @@
+id = "0047_cross_session_insights"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-05-17"
+ticket = "ADR-0045"
+
+[rollback]
+strategy = "drop-objects"
+procedure = "DROP TABLE team_insight_rollup; DROP TABLE insights_daily"
+
+[backup]
+required = false
+note = "Creates tables if missing then adds columns; no destructive backfill"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+verify = true
+post_check = "0047_cross_session_insights.verify.sql"

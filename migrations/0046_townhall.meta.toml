@@ -1,0 +1,30 @@
+id = "0046_townhall"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-05-17"
+ticket = "ADR-0044"
+
+[rollback]
+strategy = "drop-objects"
+procedure = "DROP TABLE townhall_questions; ALTER TABLE sessions DROP COLUMN townhall_moderation"
+
+[backup]
+required = false
+note = "Additive column and new table; no backfill required"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[dependencies]
+tables = ["sessions", "townhall_questions"]
+cascade_scope = "ON DELETE CASCADE on session_id FK only"
+
+[verification]
+verify = true
+post_check = "0046_townhall.verify.sql"

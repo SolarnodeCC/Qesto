@@ -1,0 +1,25 @@
+id = "0006_fix_metrics_summary_columns"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-05-17"
+
+[rollback]
+strategy = "not-needed"
+procedure = "Idempotent index rebuild; no data mutation"
+
+[backup]
+required = false
+note = "metrics_summary is rolling analytics; rows auto-expire"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+post_check = "0006_fix_metrics_summary_columns.verify.sql"
+verify = true

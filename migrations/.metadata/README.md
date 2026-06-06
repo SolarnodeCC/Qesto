@@ -1,8 +1,22 @@
 # Migration Safety Metadata
 
-This directory contains structured safety evidence and approval records for Qesto migrations.
+This directory contains human-readable safety evidence and approval records for Qesto migrations.
 
-## Format
+## Jankurai sidecars (required for HLT-021/HLT-030)
+
+**Jankurai v1.5.1 reads adjacent TOML sidecars**, not files in this directory:
+
+```
+migrations/0003_emoji_poll.sql
+migrations/0003_emoji_poll.meta.toml   ← jankurai scans this
+migrations/0003_emoji_poll.verify.sql  ← optional post-check SQL
+```
+
+Each `.meta.toml` must include: `owner`, `approval`, `rollback`, `backup`, `lock_timeout`, `statement_timeout`, and `verify` (or a `.verify.sql` sidecar).
+
+Run `npm run check:migrations` to validate sidecars in CI.
+
+## JSON archive (this directory)
 
 Each `.json` file corresponds to a migration and documents:
 

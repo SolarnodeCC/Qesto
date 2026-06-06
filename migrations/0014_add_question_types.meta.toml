@@ -1,0 +1,25 @@
+id = "0014_add_question_types"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "destructive"
+stage = "contract"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-05-17"
+
+[rollback]
+strategy = "restore-from-backup"
+procedure = "Restore pre-migration backup; table rebuild is not reversible in-place"
+
+[backup]
+required = true
+note = "Data copied to questions_new before DROP; verified on staging"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+post_check = "0014_add_question_types.verify.sql"
+verify = true
