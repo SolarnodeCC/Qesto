@@ -1,0 +1,15 @@
+/** Persisted Durable Object storage keys for SessionRoom. */
+export const K_META = 'meta'
+export const K_QUESTION = 'question'
+export const K_QUESTIONS = 'questions'
+export const K_QUESTION_INDEX = 'question_index'
+/** ENTERPRISE-POLISH §1c: pending open responses awaiting presenter approval. */
+export const K_PENDING_RESPONSES = 'pending_responses'
+export const K_COUNTS = 'counts'
+export const K_VOTERS = 'voters'
+export const K_STATUS = 'status'
+export const K_ACTIVE_ENERGIZER = 'active_energizer'
+export const K_SENTIMENT_MOOD = 'sentiment:mood'
+export const K_SENTIMENT_LAST = 'sentiment:last'
+export const K_SENTIMENT_RETRY_QUEUE = 'sentiment:retry_queue'
+export const K_SENTIMENT_RETRY_COUNT = 'sentiment:retry_count'
