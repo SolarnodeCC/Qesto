@@ -50,9 +50,9 @@ export function mountStageSessionRoutes(parent: any) {
     if (!body.success) {
       return c.json({ ok: false, error: { code: 'validation', message: 'Invalid stage config' }, trace_id: c.get('trace_id') }, 400)
     }
-    const row = await c.env.DB.prepare(`SELECT id, status, owner_id FROM sessions WHERE id = ?1`)
+    const row = await c.env.DB.prepare(`SELECT id, status, owner_id, workspace_id FROM sessions WHERE id = ?1`)
       .bind(id)
-      .first<{ id: string; status: string; owner_id: string }>()
+      .first<{ id: string; status: string; owner_id: string; workspace_id: string | null }>()
     if (!row || row.owner_id !== c.get('user').sub) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') }, 404)
     }
@@ -68,7 +68,7 @@ export function mountStageSessionRoutes(parent: any) {
       data: {
         sessionMode: 'stage',
         config: body.data,
-        note: 'Presenter broadcast feed ships in FE-STAGE-PRES-01',
+        note: 'Event-level presenter shell at /teams/:teamId/workspaces/:wsId/present',
       },
       trace_id: c.get('trace_id'),
     })

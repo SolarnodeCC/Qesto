@@ -33,6 +33,11 @@ import { mountTeamInsightsRoutes } from './routes/team-insights'
 import { mountAgentDefinitionRoutes } from './routes/agent-definitions'
 import { mountTeamWorkspaceRoutes } from './routes/team-workspaces'
 import { mountStageSessionRoutes } from './routes/stage-sessions'
+import { mountPublicEventAgendaRoutes, mountTeamEventAgendaRoutes } from './routes/event-agenda'
+import { mountPublicEventSuiteRoutes, mountTeamEventSuiteRoutes } from './routes/event-suite'
+import { mountTeamEventPresenterRoutes } from './routes/event-presenter'
+import { mountIdeateSessionRoutes } from './routes/ideate-sessions'
+import { mountRetroSessionRoutes } from './routes/retro-sessions'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
@@ -148,9 +153,13 @@ export function createApp() {
     await next()
   })
   app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 20, windowSec: 60 }))
+  app.use('/api/events/:code/agenda', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
+  app.use('/api/events/:code/feed', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
 
   // Stripe webhook — public endpoint with signature verification (no user auth)
   mountStripeWebhookRoutes(app)
+  mountPublicEventAgendaRoutes(app)
+  mountPublicEventSuiteRoutes(app)
 
   mountPublicApiV1Routes(app)
   mountPublicApiV2Routes(app)
@@ -307,7 +316,12 @@ export function createApp() {
   mountTeamInsightsRoutes(app)
   mountAgentDefinitionRoutes(app)
   mountTeamWorkspaceRoutes(app)
+  mountTeamEventAgendaRoutes(app)
+  mountTeamEventSuiteRoutes(app)
+  mountTeamEventPresenterRoutes(app)
   mountStageSessionRoutes(app)
+  mountRetroSessionRoutes(app)
+  mountIdeateSessionRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 

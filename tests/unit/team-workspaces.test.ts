@@ -10,36 +10,46 @@ import type { Team } from '../../functions/api/routes/teams'
 
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 
-describe('team workspaces (RETRO/IDEATE)', () => {
+function buildEnv(db: D1Mock, teamsKv: KVMock, actionsKv?: KVMock) {
+  return {
+    ENV: 'dev',
+    JWT_SECRET: SECRET,
+    DB: db as unknown as D1Database,
+    TEAMS_KV: teamsKv as unknown as KVNamespace,
+    USERS_KV: new KVMock() as unknown as KVNamespace,
+    SESSIONS_KV: new KVMock() as unknown as KVNamespace,
+    ACTIONS_KV: (actionsKv ?? new KVMock()) as unknown as KVNamespace,
+  } as unknown as Env
+}
+
+async function seedTeam(db: D1Mock, teamsKv: KVMock) {
+  db.users.set('owner', {
+    id: 'owner',
+    email: 'o@example.com',
+    display_name: 'o',
+    created_at: Date.now(),
+    last_login_at: null,
+    plan: 'team',
+  })
+  const team: Team = {
+    id: 'team-w',
+    name: 'Workspace Team',
+    ownerId: 'owner',
+    plan: 'team',
+    samlConfig: null,
+    members: [{ userId: 'owner', email: 'o@example.com', role: 'owner', joinedAt: 1 }],
+    createdAt: 1,
+  }
+  await writeKvJson(teamsKv as unknown as KVNamespace, teamDocumentKey('team-w'), team)
+  return team
+}
+
+describe('team workspaces (ADR-0048)', () => {
   it('creates and lists retro workspace', async () => {
     const db = new D1Mock()
     const teamsKv = new KVMock()
-    db.users.set('owner', {
-      id: 'owner',
-      email: 'o@example.com',
-      display_name: 'o',
-      created_at: Date.now(),
-      last_login_at: null,
-      plan: 'team',
-    })
-    const team: Team = {
-      id: 'team-w',
-      name: 'Workspace Team',
-      ownerId: 'owner',
-      plan: 'team',
-      samlConfig: null,
-      members: [{ userId: 'owner', email: 'o@example.com', role: 'owner', joinedAt: 1 }],
-      createdAt: 1,
-    }
-    await writeKvJson(teamsKv as unknown as KVNamespace, teamDocumentKey('team-w'), team)
-    const env = {
-      ENV: 'dev',
-      JWT_SECRET: SECRET,
-      DB: db as unknown as D1Database,
-      TEAMS_KV: teamsKv as unknown as KVNamespace,
-      USERS_KV: new KVMock() as unknown as KVNamespace,
-      SESSIONS_KV: new KVMock() as unknown as KVNamespace,
-    } as unknown as Env
+    await seedTeam(db, teamsKv)
+    const env = buildEnv(db, teamsKv)
     const app = createApp()
     const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
     const cookie = `qesto_session=${token}`
@@ -48,7 +58,7 @@ describe('team workspaces (RETRO/IDEATE)', () => {
       new Request('http://local/api/teams/team-w/workspaces', {
         method: 'POST',
         headers: { 'content-type': 'application/json', cookie },
-        body: JSON.stringify({ kind: 'retro', title: 'Sprint retro' }),
+        body: JSON.stringify({ kind: 'retro', title: 'Sprint retro', cadence: 'sprint' }),
       }),
       env,
     )
@@ -59,8 +69,137 @@ describe('team workspaces (RETRO/IDEATE)', () => {
       env,
     )
     expect(list.status).toBe(200)
-    const body = (await list.json()) as { data: { workspaces: Array<{ kind: string; title: string }> } }
+    const body = (await list.json()) as { data: { workspaces: Array<{ kind: string; title: string; cadence: string }> } }
     expect(body.data.workspaces[0].kind).toBe('retro')
     expect(body.data.workspaces[0].title).toBe('Sprint retro')
+    expect(body.data.workspaces[0].cadence).toBe('sprint')
+  })
+
+  it('creates workspace instance with seq and lists history', async () => {
+    const db = new D1Mock()
+    const teamsKv = new KVMock()
+    const actionsKv = new KVMock()
+    await seedTeam(db, teamsKv)
+    const env = buildEnv(db, teamsKv, actionsKv)
+    const app = createApp()
+    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
+    const cookie = `qesto_session=${token}`
+
+    const createWs = await app.fetch(
+      new Request('http://local/api/teams/team-w/workspaces', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ kind: 'retro', title: 'Team Alpha' }),
+      }),
+      env,
+    )
+    expect(createWs.status).toBe(201)
+    const wsBody = (await createWs.json()) as { data: { workspace: { id: string } } }
+    const wsId = wsBody.data.workspace.id
+
+    const instance = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, {
+        method: 'POST',
+        headers: { cookie },
+      }),
+      env,
+    )
+    expect(instance.status).toBe(201)
+    const instBody = (await instance.json()) as {
+      data: { session: { workspaceSeq: number; title: string } }
+    }
+    expect(instBody.data.session.workspaceSeq).toBe(1)
+    expect(instBody.data.session.title).toContain('Retro #1')
+
+    const history = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, { headers: { cookie } }),
+      env,
+    )
+    expect(history.status).toBe(200)
+    const histBody = (await history.json()) as { data: { instances: Array<{ workspaceSeq: number }> } }
+    expect(histBody.data.instances).toHaveLength(1)
+    expect(histBody.data.instances[0].workspaceSeq).toBe(1)
+  })
+
+  it('stores and reads action items for retro workspace', async () => {
+    const db = new D1Mock()
+    const teamsKv = new KVMock()
+    const actionsKv = new KVMock()
+    await seedTeam(db, teamsKv)
+    const env = buildEnv(db, teamsKv, actionsKv)
+    const app = createApp()
+    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
+    const cookie = `qesto_session=${token}`
+
+    const createWs = await app.fetch(
+      new Request('http://local/api/teams/team-w/workspaces', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ kind: 'retro', title: 'Actions retro' }),
+      }),
+      env,
+    )
+    const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
+
+    const patch = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({
+          items: [
+            { text: 'Improve CI speed', status: 'open' },
+            { text: 'Done item', status: 'resolved' },
+          ],
+        }),
+      }),
+      env,
+    )
+    expect(patch.status).toBe(200)
+
+    const get = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/actions`, { headers: { cookie } }),
+      env,
+    )
+    expect(get.status).toBe(200)
+    const body = (await get.json()) as { data: { openCount: number; items: Array<{ status: string }> } }
+    expect(body.data.openCount).toBe(1)
+    expect(body.data.items).toHaveLength(2)
+  })
+
+  it('denies workspace create on free plan', async () => {
+    const db = new D1Mock()
+    const teamsKv = new KVMock()
+    db.users.set('free-user', {
+      id: 'free-user',
+      email: 'f@example.com',
+      display_name: 'f',
+      created_at: Date.now(),
+      last_login_at: null,
+      plan: 'free',
+    })
+    const team: Team = {
+      id: 'team-free',
+      name: 'Free Team',
+      ownerId: 'free-user',
+      plan: 'free',
+      samlConfig: null,
+      members: [{ userId: 'free-user', email: 'f@example.com', role: 'owner', joinedAt: 1 }],
+      createdAt: 1,
+    }
+    await writeKvJson(teamsKv as unknown as KVNamespace, teamDocumentKey('team-free'), team)
+    const env = buildEnv(db, teamsKv)
+    const app = createApp()
+    const token = await signJwt({ sub: 'free-user', email: 'f@example.com' }, SECRET, 3600)
+    const cookie = `qesto_session=${token}`
+
+    const create = await app.fetch(
+      new Request('http://local/api/teams/team-free/workspaces', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ kind: 'retro', title: 'Nope' }),
+      }),
+      env,
+    )
+    expect(create.status).toBe(403)
   })
 })

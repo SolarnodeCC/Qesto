@@ -57,6 +57,7 @@ export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
 // `init.features` array when the flag is on and the session is in townhall mode, so
 // clients capability-detect the same way they do for `delta_results`.
 export const TOWNHALL_FEATURE = 'townhall_board'
+export const IDEATE_FEATURE = 'ideate_board'
 
 export function townhallEnabled(env: { REALTIME_TOWNHALL_ENABLED?: string }): boolean {
   return getFlag(env, 'REALTIME_TOWNHALL_ENABLED')
@@ -200,6 +201,25 @@ export type ClientMessage =
       v?: LiveProtocolVersion
       type: 'townhall_moderate'
       data: { itemId: string; action: TownhallModerateAction; groupParentId?: string }
+      timestamp: number
+    }
+  // RETRO (ADR-0048). 3-column board submit + dot-vote on actions.
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_submit'
+      data: { column: 'went_well' | 'didnt_go_well' | 'actions'; body: string }
+      timestamp: number
+    }
+  | { v?: LiveProtocolVersion; type: 'retro_upvote'; data: { itemId: string }; timestamp: number }
+  // IDEATE (ADR-0048). Idea submit + dot-vote.
+  | { v?: LiveProtocolVersion; type: 'ideate_submit'; data: { body: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'ideate_upvote'; data: { itemId: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'ideate_reveal'; data: Record<string, never>; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'ideate_dismiss'; data: { itemId: string }; timestamp: number }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_merge'
+      data: { targetId: string; sourceId: string }
       timestamp: number
     }
   // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
@@ -361,6 +381,140 @@ export type ServerMessage =
         /** Full item included so the frontend can render the now-answering card
          *  without a state lookup. Null when spotlight is cleared. */
         item: TownhallBoardItem | null
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_state'
+      data: {
+        items: Array<{
+          id: string
+          column: 'went_well' | 'didnt_go_well' | 'actions'
+          body: string
+          upvotes: number
+          createdAt: number
+          carried?: boolean
+        }>
+        rev: number
+        dotVoteLimit: number
+        columns: Array<'went_well' | 'didnt_go_well' | 'actions'>
+        /** Present for voter connections — reconnect sync for dot budget. */
+        myUpvotes?: string[]
+        dotsUsed?: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_item_added'
+      data: {
+        item: {
+          id: string
+          column: 'went_well' | 'didnt_go_well' | 'actions'
+          body: string
+          upvotes: number
+          createdAt: number
+          carried?: boolean
+        }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'retro_item_updated'
+      data: {
+        item: {
+          id: string
+          column: 'went_well' | 'didnt_go_well' | 'actions'
+          body: string
+          upvotes: number
+          createdAt: number
+          carried?: boolean
+        }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_state'
+      data: {
+        ideas: Array<{
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }>
+        clusters: Array<{ id: string; label: string; ideaIds: string[]; updatedAt: number }>
+        rev: number
+        dotVoteLimit: number
+        rankingRevealed: boolean
+        ranking: Array<{ rank: number; ideaId: string; body: string; upvotes: number }>
+        /** Present for voter connections — reconnect sync for dot budget. */
+        myUpvotes?: string[]
+        dotsUsed?: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_idea_added'
+      data: {
+        idea: {
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_idea_updated'
+      data: {
+        idea: {
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_clusters_updated'
+      data: {
+        clusters: Array<{ id: string; label: string; ideaIds: string[]; updatedAt: number }>
+        ideas: Array<{
+          id: string
+          body: string
+          upvotes: number
+          clusterId: string | null
+          status: 'active' | 'dismissed'
+          createdAt: number
+        }>
+        rev: number
+      }
+      timestamp: number
+    }
+  | {
+      v?: LiveProtocolVersion
+      type: 'ideate_ranking_revealed'
+      data: {
+        ranking: Array<{ rank: number; ideaId: string; body: string; upvotes: number }>
+        rev: number
       }
       timestamp: number
     }

@@ -29,13 +29,15 @@ type SessionRow = {
   status: 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
   anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none' | 'zero_knowledge'
   vote_policy?: 'once' | 'multi' | 'react'
-  session_mode?: 'reflection' | 'fun' | 'townhall'
+  session_mode?: 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate'
   townhall_moderation?: 'pre' | 'post' | null
   created_at: number
   started_at: number | null
   closed_at: number | null
   archived_at: number | null
   team_id?: string | null
+  workspace_id?: string | null
+  workspace_seq?: number | null
   ai_generated?: number
   ai_consent_at?: number | null
   ai_grounding_hash?: string | null
@@ -237,9 +239,23 @@ export class D1Mock {
       kind: string
       title: string
       template_json: string
+      cadence: string | null
+      retention_days: number | null
+      last_instance_at: number | null
+      archived_at: number | null
       created_by: string
       created_at: number
       updated_at: number
+    }
+  >()
+  readonly workspaceTrends = new Map<
+    string,
+    {
+      workspace_id: string
+      kind: string
+      window: string
+      payload_json: string
+      computed_at: number
     }
   >()
   readonly agentDefinitions = new Map<
@@ -354,16 +370,27 @@ export class D1PreparedStatementMock {
     }
     if (this.sql.startsWith('INSERT INTO sessions')) {
       const [id, owner_id, code, title] = this.args as [string, string, string, string]
+      const isWorkspaceInstance = this.sql.includes('workspace_id, workspace_seq')
       const hasExplicitAnonymity = this.sql.includes("VALUES (?1, ?2, ?3, ?4, 'draft', ?5, ?6)")
       const anonymity = hasExplicitAnonymity
         ? (this.args[4] as SessionRow['anonymity'])
         : 'full'
-      const created_at = hasExplicitAnonymity ? (this.args[5] as number) : (this.args[4] as number)
-      const team_id = this.args.length >= 6 && !hasExplicitAnonymity ? (this.args[5] as string | null) : null
+      const created_at = isWorkspaceInstance
+        ? (this.args[5] as number)
+        : hasExplicitAnonymity
+          ? (this.args[5] as number)
+          : (this.args[4] as number)
+      const team_id = isWorkspaceInstance
+        ? (this.args[6] as string | null)
+        : this.args.length >= 6 && !hasExplicitAnonymity
+          ? (this.args[5] as string | null)
+          : null
+      const workspace_id = isWorkspaceInstance ? (this.args[7] as string) : null
+      const workspace_seq = isWorkspaceInstance ? (this.args[8] as number) : null
       if ([...this.db.sessions.values()].some((s) => s.code === code)) {
         throw new Error('UNIQUE constraint failed: sessions.code')
       }
-      this.db.sessions.set(id, {
+      const row: SessionRow = {
         id,
         owner_id,
         code,
@@ -375,8 +402,27 @@ export class D1PreparedStatementMock {
         closed_at: null,
         archived_at: null,
         team_id,
-      })
+        workspace_id,
+        workspace_seq,
+      }
+      if (isWorkspaceInstance) {
+        const mode = this.args[4] as SessionRow['session_mode']
+        if (mode) row.session_mode = mode
+      }
+      this.db.sessions.set(id, row)
       return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE sessions SET workspace_id = NULL')) {
+      const [workspace_id] = this.args as [string]
+      let changes = 0
+      for (const row of this.db.sessions.values()) {
+        if (row.workspace_id === workspace_id) {
+          row.workspace_id = null
+          row.workspace_seq = null
+          changes++
+        }
+      }
+      return { meta: { changes } }
     }
     if (this.sql.startsWith('UPDATE sessions SET title')) {
       const [title, id, owner_id] = this.args as [string, string, string]
@@ -397,6 +443,29 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
       row.vote_policy = vote_policy
+      return { meta: { changes: 1 } }
+    }
+    // RETRO-BOARD-01: UPDATE sessions SET anonymity = ?1, session_mode = 'retro' WHERE id = ?2
+    if (this.sql.includes("session_mode = 'retro'") && this.sql.includes('anonymity')) {
+      const [anonymity, id] = this.args as [SessionRow['anonymity'], string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.anonymity = anonymity
+      row.session_mode = 'retro'
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.includes("session_mode = 'retro'")) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.session_mode = 'retro'
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.includes("session_mode = 'ideate'")) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.session_mode = 'ideate'
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE sessions SET session_mode')) {
@@ -820,16 +889,83 @@ export class D1PreparedStatementMock {
       return { meta: { changes } }
     }
     if (this.sql.startsWith('INSERT INTO workspaces')) {
-      const [id, team_id, kind, title, template_json, created_by, created_at, updated_at] = this.args as [
-        string, string, string, string, string, string, number, number,
-      ]
-      this.db.workspaces.set(id, { id, team_id, kind, title, template_json, created_by, created_at, updated_at })
+      if (this.args.length >= 10) {
+        const [id, team_id, kind, title, template_json, cadence, retention_days, , , created_by, created_at, updated_at] =
+          this.args as [string, string, string, string, string, string | null, number | null, null, null, string, number, number]
+        this.db.workspaces.set(id, {
+          id,
+          team_id,
+          kind,
+          title,
+          template_json,
+          cadence,
+          retention_days,
+          last_instance_at: null,
+          archived_at: null,
+          created_by,
+          created_at,
+          updated_at,
+        })
+      } else {
+        const [id, team_id, kind, title, template_json, created_by, created_at, updated_at] = this.args as [
+          string, string, string, string, string, string, number, number,
+        ]
+        this.db.workspaces.set(id, {
+          id,
+          team_id,
+          kind,
+          title,
+          template_json,
+          cadence: null,
+          retention_days: null,
+          last_instance_at: null,
+          archived_at: null,
+          created_by,
+          created_at,
+          updated_at,
+        })
+      }
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE workspaces SET last_instance_at')) {
+      const [last_instance_at, id] = this.args as [number, string]
+      const row = this.db.workspaces.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.last_instance_at = last_instance_at
+      row.updated_at = last_instance_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE workspaces SET template_json')) {
+      const [template_json, updated_at, id, team_id] = this.args as [string, number, string, string]
+      const row = this.db.workspaces.get(id)
+      if (!row || row.team_id !== team_id) return { meta: { changes: 0 } }
+      row.template_json = template_json
+      row.updated_at = updated_at
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE workspaces SET')) {
       const row = this.db.workspaces.get(this.args[this.args.length - 2] as string)
       if (row) row.updated_at = this.args[0] as number
       return { meta: { changes: row ? 1 : 0 } }
+    }
+    if (this.sql.startsWith('INSERT INTO workspace_trend')) {
+      const [workspace_id, kind, window, payload_json, computed_at] = this.args as [
+        string, string, string, string, number,
+      ]
+      const key = `${workspace_id}:${kind}:${window}`
+      this.db.workspaceTrends.set(key, { workspace_id, kind, window, payload_json, computed_at })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM workspace_trend')) {
+      const [workspace_id] = this.args as [string]
+      let changes = 0
+      for (const [key, row] of this.db.workspaceTrends) {
+        if (row.workspace_id === workspace_id) {
+          this.db.workspaceTrends.delete(key)
+          changes++
+        }
+      }
+      return { meta: { changes } }
     }
     if (this.sql.startsWith('DELETE FROM workspaces')) {
       const [id, team_id] = this.args as [string, string]
@@ -1087,6 +1223,32 @@ export class D1PreparedStatementMock {
         ? { id: row.id, owner_id: row.owner_id, team_id: row.team_id ?? null }
         : null) as T | null
     }
+    if (this.sql.startsWith('SELECT id, status, owner_id, workspace_id FROM sessions WHERE id')) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      return (row
+        ? {
+            id: row.id,
+            status: row.status,
+            owner_id: row.owner_id,
+            workspace_id: row.workspace_id ?? null,
+          }
+        : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT id, session_mode, status, title, code, workspace_id FROM sessions WHERE id')) {
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      return (row && row.owner_id === owner_id
+        ? {
+            id: row.id,
+            session_mode: row.session_mode ?? 'reflection',
+            status: row.status,
+            title: row.title,
+            code: row.code,
+            workspace_id: row.workspace_id ?? null,
+          }
+        : null) as T | null
+    }
     if (this.sql.startsWith('SELECT id FROM marketplace_purchases')) {
       const [buyer_team_id, listing_id] = this.args as [string, string]
       for (const row of this.db.marketplacePurchases.values()) {
@@ -1104,6 +1266,42 @@ export class D1PreparedStatementMock {
     if (this.sql.includes('FROM marketplace_listings WHERE id = ?1') && !this.sql.includes('partner_team_id = ?2')) {
       const [id] = this.args as [string]
       return (this.db.marketplaceListings.get(id) as T) ?? null
+    }
+    if (this.sql.includes('COALESCE(MAX(workspace_seq)')) {
+      const [workspace_id] = this.args as [string]
+      const max = [...this.db.sessions.values()]
+        .filter((s) => s.workspace_id === workspace_id)
+        .reduce((m, s) => Math.max(m, s.workspace_seq ?? 0), 0)
+      return { max_seq: max } as T
+    }
+    if (this.sql.includes('FROM workspaces') && this.sql.includes('id = ?1 AND team_id = ?2')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.workspaces.get(id)
+      return (row && row.team_id === team_id ? row : null) as T | null
+    }
+    if (this.sql.includes("json_extract(template_json, '$.eventCode')")) {
+      const [eventCode] = this.args as [string]
+      const row = [...this.db.workspaces.values()].find((ws) => {
+        if (ws.kind !== 'event' || ws.archived_at != null) return false
+        try {
+          const template = JSON.parse(ws.template_json || '{}') as { eventCode?: string }
+          return template.eventCode === eventCode
+        } catch {
+          return false
+        }
+      })
+      return (row ?? null) as T | null
+    }
+    if (this.sql.includes('FROM workspace_trend') && this.sql.includes('payload_json')) {
+      const [workspace_id, kind, window] = this.args as [string, string, string]
+      const key = `${workspace_id}:${kind}:${window}`
+      const row = this.db.workspaceTrends.get(key)
+      return (row ? { payload_json: row.payload_json } : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT id FROM workspaces WHERE id = ?1 AND team_id = ?2')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.workspaces.get(id)
+      return (row && row.team_id === team_id ? { id: row.id } : null) as T | null
     }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
@@ -1247,6 +1445,33 @@ export class D1PreparedStatementMock {
         .sort((a, b) => a.day.localeCompare(b.day))
       return { results: rows as unknown as T[] }
     }
+    if (this.sql.includes('INNER JOIN insights_daily i ON i.session_id = s.id') && this.sql.includes('workspace_id = ?1')) {
+      const [workspace_id, cutoff] = this.args as [string, number]
+      const rows = [...this.db.sessions.values()]
+        .filter(
+          (s) =>
+            s.workspace_id === workspace_id &&
+            s.session_mode === 'retro' &&
+            (s.status === 'closed' || s.status === 'archived') &&
+            s.closed_at != null &&
+            s.closed_at >= cutoff &&
+            s.anonymity !== 'zero_knowledge',
+        )
+        .sort((a, b) => (a.workspace_seq ?? 0) - (b.workspace_seq ?? 0))
+        .map((s) => {
+          const insight = [...this.db.insightsDaily.values()].find((r) => r.session_id === s.id)
+          if (!insight) return null
+          return {
+            id: s.id,
+            workspace_seq: s.workspace_seq ?? null,
+            closed_at: s.closed_at!,
+            themes_json: insight.themes_json,
+            n_votes: insight.n_votes,
+          }
+        })
+        .filter((row): row is NonNullable<typeof row> => row != null)
+      return { results: rows as unknown as T[] }
+    }
     if (this.sql.includes('FROM insights_daily i') && this.sql.includes('JOIN sessions s')) {
       const [team_id, since_day] = this.args as [string, string]
       const rows = [...this.db.insightsDaily.values()]
@@ -1266,9 +1491,50 @@ export class D1PreparedStatementMock {
         .filter((row): row is NonNullable<typeof row> => row != null)
       return { results: rows as unknown as T[] }
     }
+    if (this.sql.includes('COALESCE(MAX(workspace_seq)')) {
+      const [workspace_id] = this.args as [string]
+      const max = [...this.db.sessions.values()]
+        .filter((s) => s.workspace_id === workspace_id)
+        .reduce((m, s) => Math.max(m, s.workspace_seq ?? 0), 0)
+      return { results: [{ max_seq: max }] as unknown as T[] }
+    }
+    if (this.sql.includes('FROM sessions') && this.sql.includes('workspace_id = ?1') && this.sql.includes('workspace_seq DESC')) {
+      const [workspace_id] = this.args as [string]
+      const rows = [...this.db.sessions.values()]
+        .filter((s) => s.workspace_id === workspace_id)
+        .sort((a, b) => (b.workspace_seq ?? 0) - (a.workspace_seq ?? 0))
+      return { results: rows as unknown as T[] }
+    }
+    if (
+      this.sql.includes('SELECT id, code, title, status, session_mode FROM sessions') &&
+      this.sql.includes('workspace_id = ?1') &&
+      this.sql.includes('workspace_seq ASC')
+    ) {
+      const [workspace_id] = this.args as [string]
+      const rows = [...this.db.sessions.values()]
+        .filter((s) => s.workspace_id === workspace_id)
+        .sort((a, b) => (a.workspace_seq ?? 0) - (b.workspace_seq ?? 0))
+        .map((s) => ({
+          id: s.id,
+          code: s.code,
+          title: s.title,
+          status: s.status,
+          session_mode: s.session_mode ?? 'reflection',
+        }))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM workspace_trend')) {
+      const [workspace_id, kind, window] = this.args as [string, string, string]
+      const key = `${workspace_id}:${kind}:${window}`
+      const row = this.db.workspaceTrends.get(key)
+      return row ? { results: [row] as unknown as T[] } : { results: [] }
+    }
     if (this.sql.includes('FROM workspaces')) {
       const team_id = this.args[0] as string
       let rows = [...this.db.workspaces.values()].filter((r) => r.team_id === team_id)
+      if (this.sql.includes('archived_at IS NULL')) {
+        rows = rows.filter((r) => r.archived_at == null)
+      }
       if (this.sql.includes('kind = ?2') && this.args[1]) {
         rows = rows.filter((r) => r.kind === this.args[1])
       }

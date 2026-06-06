@@ -24,6 +24,14 @@ const Display = lazy(() => import('./pages/Display'))
 const TownhallJoin = lazy(() => import('./pages/TownhallJoin'))
 const TownhallPresent = lazy(() => import('./pages/TownhallPresent'))
 const TownhallDisplay = lazy(() => import('./pages/TownhallDisplay'))
+const RetroJoin = lazy(() => import('./pages/RetroJoin'))
+const RetroPresent = lazy(() => import('./pages/RetroPresent'))
+const RetroDisplay = lazy(() => import('./pages/RetroDisplay'))
+const IdeateJoin = lazy(() => import('./pages/IdeateJoin'))
+const IdeatePresent = lazy(() => import('./pages/IdeatePresent'))
+const EventAgendaJoin = lazy(() => import('./pages/EventAgendaJoin'))
+const EventAgendaOrganizer = lazy(() => import('./pages/EventAgendaOrganizer'))
+const EventStagePresent = lazy(() => import('./pages/EventStagePresent'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
@@ -162,6 +170,23 @@ export default function App() {
         <Route path="/sessions/:id/townhall" element={<Suspense fallback={<LazyRouteFallback />}><TownhallPresent /></Suspense>} />
         <Route path="/th/:code" element={<Suspense fallback={<LazyRouteFallback />}><TownhallJoin /></Suspense>} />
         <Route path="/th/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><TownhallDisplay /></Suspense>} />
+        {/* RETRO (ADR-0048) — 3-column agile retrospective */}
+        <Route path="/sessions/:id/retro" element={<Suspense fallback={<LazyRouteFallback />}><RetroPresent /></Suspense>} />
+        <Route path="/r/:code" element={<Suspense fallback={<LazyRouteFallback />}><RetroJoin /></Suspense>} />
+        <Route path="/r/:code/display" element={<Suspense fallback={<LazyRouteFallback />}><RetroDisplay /></Suspense>} />
+        {/* IDEATE (ADR-0048) — AI-clustered ideation board */}
+        <Route path="/sessions/:id/ideate" element={<Suspense fallback={<LazyRouteFallback />}><IdeatePresent /></Suspense>} />
+        <Route path="/i/:code" element={<Suspense fallback={<LazyRouteFallback />}><IdeateJoin /></Suspense>} />
+        {/* STAGE (ADR-0048) — multi-track event agenda */}
+        <Route path="/e/:code" element={<Suspense fallback={<LazyRouteFallback />}><EventAgendaJoin /></Suspense>} />
+        <Route
+          path="/teams/:teamId/workspaces/:wsId/event"
+          element={<Suspense fallback={<LazyRouteFallback />}><EventAgendaOrganizer /></Suspense>}
+        />
+        <Route
+          path="/teams/:teamId/workspaces/:wsId/present"
+          element={<Suspense fallback={<LazyRouteFallback />}><EventStagePresent /></Suspense>}
+        />
         <Route path="/teams/:id/settings" element={<TeamSettings />} />
         <Route path="/teams/invite/:token" element={<TeamInvite />} />
         <Route path="/teams/accept" element={<TeamInvite />} />

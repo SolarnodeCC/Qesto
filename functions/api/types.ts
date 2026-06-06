@@ -159,7 +159,7 @@ export type QuestionKind =
   | 'slider'
 export type Anonymity = 'full' | 'partial' | 'none' | 'zero_knowledge'
 export type VotePolicy = 'once' | 'multi' | 'react'
-export type SessionMode = 'reflection' | 'fun' | 'townhall' | 'stage'
+export type SessionMode = 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate'
 
 /** TOWNHALL (ADR-0044): per-session moderation model, chosen at draft. */
 export type TownhallModeration = 'pre' | 'post'
@@ -195,6 +195,9 @@ export type Session = {
   archived_at: number | null
   /** Optional analytics-only field (OBS-001). Not exposed to frontend. */
   team_id?: string | null
+  /** ADR-0048: recurring workspace linkage for retro/ideate/event instances. */
+  workspace_id?: string | null
+  workspace_seq?: number | null
   /** Growth Engine: opt-out flag for public template gallery (defaults 1/true). */
   is_public?: number
   /** Sprint 18 prereq: wizard provenance — 1 if questions came from the AI wizard. */
@@ -239,6 +242,8 @@ export interface PlanQuotas {
     liveCopilot: boolean
     /** INSIGHTS+ (ADR-0045): cross-session intelligence — Team tier only (Sprint 81+). */
     crossSessionInsights: boolean
+    /** ADR-0048: recurring workspaces (RETRO / IDEATE / EVENT) — Team tier only. */
+    recurringWorkspaces: boolean
   }
 }
 
@@ -257,6 +262,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       townhallQA: false,
       liveCopilot: false,
       crossSessionInsights: false,
+      recurringWorkspaces: false,
     },
   },
   starter: {
@@ -273,6 +279,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       townhallQA: false,
       liveCopilot: true,
       crossSessionInsights: false,
+      recurringWorkspaces: false,
     },
   },
   team: {
@@ -289,6 +296,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       townhallQA: true,
       liveCopilot: true,
       crossSessionInsights: true,
+      recurringWorkspaces: true,
     },
   },
 }

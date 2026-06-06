@@ -89,6 +89,7 @@ export interface PlanConfig extends PlanDisplayMeta {
     townhallQA: boolean
     liveCopilot: boolean
     crossSessionInsights: boolean
+    recurringWorkspaces: boolean
   }
 }
 
