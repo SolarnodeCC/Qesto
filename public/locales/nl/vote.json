@@ -3,7 +3,7 @@
   "joinCode.subtitle": "De code staat op het scherm voor je",
   "joinCode.label": "Voer code in",
   "joinCode.helper": "Voer de 4-cijferige code in die op het scherm wordt getoond",
-  "joinCode.placeholder": "1234",
+  "joinCode.hint": "1234",
   "joinCode.button": "Deelnemen →",
   "joinCode.connecting": "Verbinden…",
   "joinCode.noCode": "Heb je geen code?",

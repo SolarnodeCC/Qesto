@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { api } from '../api/client'
 import { useT } from '../i18n'
+import { inputHint } from '../ui/input-hint'
 
 type SimilarSession = {
   id: string
@@ -50,9 +51,9 @@ export function SimilarSessionsPanel({ sessionId, defaultQuery = '', enabled = t
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('similar.placeholder')}
+          {...inputHint(t('similar.hint'))}
           className="min-w-0 flex-1 rounded-md border border-pulse-200 px-3 py-2 text-sm dark:border-[#2A3858] dark:bg-[#141B33] dark:text-[#F0F2F8]"
-          aria-label={t('similar.placeholder')}
+          aria-label={t('similar.hint')}
         />
         <button
           type="button"

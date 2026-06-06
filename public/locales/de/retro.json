@@ -4,7 +4,7 @@
   "column.actions": "Maßnahmen",
   "column.empty": "Noch nichts hier.",
   "submit.title": "Karte hinzufügen",
-  "submit.placeholder": "Worüber soll das Team sprechen?",
+  "submit.hint": "Worüber soll das Team sprechen?",
   "submit.button": "Karte hinzufügen",
   "submit.success": "Karte hinzugefügt",
   "present.subtitle": "Team-Retrospektive",

@@ -20,9 +20,12 @@ describe('template catalogue UI contract', () => {
   })
 
   it('renders accessible preview art with stable dimensions', () => {
-    expect(dashboardSource).toContain('role="img"')
-    expect(dashboardSource).toContain('aria-label={tmpl.previewAlt}')
-    expect(dashboardSource).toContain('className="h-24')
-    expect(dashboardSource).toContain('className="h-32')
+    const modalSource = require('node:fs').readFileSync('src/pages/dashboard/TemplatePreviewModal.tsx', 'utf8')
+    const groupSource = require('node:fs').readFileSync('src/pages/dashboard/TemplateGroup.tsx', 'utf8')
+    const allDashboard = dashboardSource + modalSource + groupSource
+    expect(allDashboard).toContain('role="img"')
+    expect(allDashboard).toContain('aria-label={tmpl.previewAlt}')
+    expect(allDashboard).toContain('className="h-24')
+    expect(allDashboard).toContain('className="h-32')
   })
 })

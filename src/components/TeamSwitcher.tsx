@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { api } from '../api/client'
+import { inputHint } from '../ui/input-hint'
 
 interface Team {
   id: string
@@ -42,7 +43,7 @@ export default function TeamSwitcher() {
     void api<TeamsData>('/api/teams').then((res) => {
       if (res.ok) {
         setTeams(res.data.teams)
-        // Auto-select first team if nothing is stored
+        // Default to first team when nothing is stored locally
         if (!getActiveTeamId() && res.data.teams.length > 0) {
           const firstId = res.data.teams[0].id
           setActiveTeamId(firstId)
@@ -158,7 +159,7 @@ export default function TeamSwitcher() {
   } else if (teams.length === 0) {
     label = 'Create your first team'
   } else {
-    label = activeTeam?.name ?? 'Select team'
+    label = activeTeam?.name ?? 'Choose team'
   }
 
   return (
@@ -285,7 +286,7 @@ export default function TeamSwitcher() {
                 type="text"
                 value={newTeamName}
                 onChange={(e) => setNewTeamName(e.target.value)}
-                placeholder="e.g. Engineering"
+                {...inputHint("e.g. Engineering")}
                 maxLength={100}
                 disabled={creating}
                 className="border border-pulse-300 dark:border-[#2A3858] rounded-lg px-3 py-2 bg-white dark:bg-[#0F1525] text-pulse-900 dark:text-[#F0F2F8] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:bg-pulse-50 dark:disabled:bg-[#1E2A45]"

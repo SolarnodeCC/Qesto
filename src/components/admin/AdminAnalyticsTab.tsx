@@ -140,7 +140,7 @@ function webhookStatusColour(lastReceivedAt: string | null): { dot: string; labe
   const ageMs = Date.now() - new Date(lastReceivedAt).getTime()
   const days = ageMs / 86_400_000
   if (days < 7) return { dot: 'bg-green-500', label: 'Healthy' }
-  if (days < 30) return { dot: 'bg-amber-400', label: 'Stale' }
+  if (days < 30) return { dot: 'bg-amber-400', label: 'Aging' }
   return { dot: 'bg-red-500', label: 'Not working' }
 }
 

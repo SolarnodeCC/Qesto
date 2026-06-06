@@ -31,10 +31,10 @@
   "similar": {
     "title": "Similar sessions",
     "description": "Find past sessions with comparable themes using knowledge-base RAG.",
-    "placeholder": "Theme or outcome…",
     "search": "Search",
     "searching": "Searching…",
-    "loadError": "Could not load similar sessions"
+    "loadError": "Could not load similar sessions",
+    "hint": "Theme or outcome…"
   },
   "crossSession": {
     "selectTeam": "Join or create a team to see cross-session insights.",

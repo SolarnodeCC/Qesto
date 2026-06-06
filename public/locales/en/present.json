@@ -64,7 +64,7 @@
     "mood_concerning": "Needs attention",
     "mood_none": "Not enough responses yet",
     "draft_label": "Draft a poll from a one-line intent",
-    "draft_placeholder": "e.g. gauge the team on our top priority",
+    "draft_hint": "e.g. gauge the team on our top priority",
     "draft_button": "Draft poll",
     "drafting": "Drafting…",
     "draft_unavailable": "No draft available right now. Try rephrasing.",

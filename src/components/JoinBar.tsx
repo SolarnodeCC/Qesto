@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useT } from '../i18n'
+import { inputHint } from '../ui/input-hint'
+import { ENTRY_BAR_CODE_CLASS } from '../ui/input-field-class'
 
 export default function JoinBar() {
   const [code, setCode] = useState('')
@@ -28,12 +30,12 @@ export default function JoinBar() {
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))}
-            placeholder="ABC123"
+            {...inputHint("ABC123")}
             maxLength={6}
             aria-label={t('bar_code_label')}
             spellCheck={false}
             autoCapitalize="characters"
-            className="w-24 rounded-md border border-pulse-300 dark:border-pulse-600 bg-white dark:bg-pulse-800 text-center font-mono text-sm font-semibold tracking-widest uppercase px-2 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 placeholder:text-pulse-400 placeholder:tracking-normal placeholder:font-normal"
+            className={ENTRY_BAR_CODE_CLASS}
           />
           <button
             type="submit"

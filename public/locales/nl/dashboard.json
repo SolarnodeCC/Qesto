@@ -75,10 +75,10 @@
   "duplicateTitleModal": {
     "title": "Sessie dupliceren",
     "label": "Sessietitel",
-    "placeholder": "Naam voor de nieuwe sessie",
     "confirm": "Dupliceren",
     "cancel": "Annuleren",
-    "duplicateNameWarning": "Je hebt al een sessie met deze titel. Je kunt toch doorgaan."
+    "duplicateNameWarning": "Je hebt al een sessie met deze titel. Je kunt toch doorgaan.",
+    "hint": "Naam voor de nieuwe sessie"
   },
   "template": "Opslaan als sjabloon",
   "saving": "Opslaan…",

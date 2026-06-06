@@ -64,7 +64,7 @@
     "mood_concerning": "Aandacht nodig",
     "mood_none": "Nog te weinig reacties",
     "draft_label": "Stel een poll op uit één zin",
-    "draft_placeholder": "bijv. peil het team over onze topprioriteit",
+    "draft_hint": "bijv. peil het team over onze topprioriteit",
     "draft_button": "Poll opstellen",
     "drafting": "Bezig met opstellen…",
     "draft_unavailable": "Nu geen concept beschikbaar. Herformuleer je intentie.",

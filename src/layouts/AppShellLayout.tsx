@@ -7,6 +7,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useHelpChat } from '../hooks/useHelpChat'
 import { useColorScheme } from '../hooks/useColorScheme'
 import { useT } from '../i18n'
+import { inputHint } from '../ui/input-hint'
+import { COMPACT_CODE_FIELD_CLASS } from '../ui/input-field-class'
 
 export type DashboardSection = 'home' | 'insights' | 'teams' | 'templates'
 
@@ -252,8 +254,8 @@ export default function AppShellLayout({
                 aria-label="Sessiecode"
                 spellCheck={false}
                 autoCapitalize="characters"
-                className="w-16 bg-transparent py-1.5 px-1 text-sm font-mono font-semibold text-pulse-700 dark:text-[#F0F2F8] placeholder:text-pulse-300 dark:placeholder:text-[#2A3858] focus:outline-none"
-                placeholder="ABC1"
+                className={COMPACT_CODE_FIELD_CLASS}
+                {...inputHint("ABC1")}
               />
               <button
                 type="submit"

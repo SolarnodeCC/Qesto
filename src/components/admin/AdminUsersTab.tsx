@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useAdminUsers, type AdminUser } from '../../hooks/useAdminUsers'
 import { useT } from '../../i18n'
 import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
+import { inputHint } from '../../ui/input-hint'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ function UserModal({
           <div className="space-y-1">
             <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('emailLbl')}</label>
             <TextInput
-              placeholder={t('namePlaceholderAdmin')}
+              {...inputHint(t('namePlaceholderAdmin'))}
               value={email}
               onChange={setEmail}
               type="email"
@@ -126,7 +127,7 @@ function UserModal({
         <div className="space-y-1">
           <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('displayNameLbl')}</label>
           <TextInput
-            placeholder={t('nameOptionalPlaceholder')}
+            {...inputHint(t('nameOptionalPlaceholder'))}
             value={displayName}
             onChange={setDisplayName}
             className="w-full"
@@ -244,7 +245,7 @@ export default function AdminUsersTab() {
 
       <div className="flex items-center gap-3">
         <TextInput
-          placeholder="Search by name or email…"
+          {...inputHint("Search by name or email…")}
           onChange={handleSearchChange}
           className="w-full max-w-sm"
         />

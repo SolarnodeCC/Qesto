@@ -24,7 +24,7 @@ const FEATURE_CARDS: FeatureCard[] = [
   {
     icon: BarChart3,
     title: 'Live polling & ranking',
-    desc: 'Multi-choice, ranked Q&A, wordclouds, and 1–10 scales. Results update in <200ms on the edge.',
+    desc: 'Multi-choice, ranked Q&A, wordclouds, and 1–10 scales. Results refresh in <200ms on the edge.',
   },
   {
     icon: CheckCircle2,
@@ -40,12 +40,12 @@ const FEATURE_CARDS: FeatureCard[] = [
   {
     icon: Users,
     title: 'Anonymity modes',
-    desc: 'Full, cohort (roles only), or identified. Choose per session — participants see the mode on the join screen.',
+    desc: 'Full, cohort (roles only), or identified. Choose per session — participants see the mode on the entry screen.',
   },
   {
     icon: QrCode,
-    title: 'Join in one tap',
-    desc: 'Short join codes, QR, or magic link. Works on any device — no app, no account required to participate.',
+    title: 'Enter in one tap',
+    desc: 'Short entry codes, QR, or magic link. Works on any device — no app, no account required to participate.',
   },
   {
     icon: Lock,
@@ -108,14 +108,14 @@ export default function Home() {
               className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-5 max-w-[920px] focus:outline-none"
             >
               Feel the pulse of the room,{' '}
-              <span className="bg-gradient-to-br from-teal-500 to-violet-500 bg-clip-text text-transparent">
+              <span className="bg-[linear-gradient(to_bottom_right,#14b8a6,#8b5cf6)] bg-clip-text text-transparent">
                 amplified by AI.
               </span>
             </h1>
 
             {/* Sub-headline */}
             <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-8">
-              Make it easy for everyone to join in, share what they think, and stay with you from
+              Make it easy for everyone to take part, share what they think, and stay with you
               start to finish. For teachers, trainers, facilitators, and team leaders.
             </p>
             <p className="text-base leading-[1.6] text-pulse-600 dark:text-[#A8B3CC] max-w-[760px] mb-8">
@@ -130,7 +130,7 @@ export default function Home() {
                 <>
                   <Link
                     to="/dashboard"
-                    className="inline-flex items-center gap-2 rounded-md bg-gradient-to-br from-teal-500 to-violet-500 text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 rounded-md bg-[linear-gradient(to_bottom_right,#14b8a6,#8b5cf6)] text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Go to dashboard
                   </Link>
@@ -147,7 +147,7 @@ export default function Home() {
                 <>
                   <Link
                     to="/login"
-                    className="inline-flex items-center gap-2 rounded-md bg-gradient-to-br from-teal-500 to-violet-500 text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 rounded-md bg-[linear-gradient(to_bottom_right,#14b8a6,#8b5cf6)] text-white px-7 py-3.5 text-[17px] font-semibold shadow-card hover:shadow-teal hover:scale-[1.02] transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Launch your next session
                   </Link>
@@ -228,12 +228,11 @@ export default function Home() {
                   >
                     {/* Icon container */}
                     <div
-                      className={[
-                        'rounded-xl w-11 h-11 flex items-center justify-center flex-shrink-0',
+                      className={`rounded-xl w-11 h-11 flex items-center justify-center flex-shrink-0 ${
                         card.ai
                           ? 'bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400'
-                          : 'bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400',
-                      ].join(' ')}
+                          : 'bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400'
+                      }`}
                       aria-hidden="true"
                     >
                       <Icon size={20} />

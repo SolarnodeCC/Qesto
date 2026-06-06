@@ -3,7 +3,7 @@
   "joinCode.subtitle": "Der Code wird auf dem Bildschirm vor dir angezeigt",
   "joinCode.label": "Code eingeben",
   "joinCode.helper": "Geben Sie den 4-stelligen Code ein, der auf dem Bildschirm angezeigt wird",
-  "joinCode.placeholder": "1234",
+  "joinCode.hint": "1234",
   "joinCode.button": "Teilnehmen →",
   "joinCode.connecting": "Verbinde…",
   "joinCode.noCode": "Du hast keinen Code?",

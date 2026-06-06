@@ -100,3 +100,17 @@ export const ENERGIZER_FORMATS = [
   { id: 'team-quiz', name: 'Team Quiz', desc: 'Short competitive quiz to warm up' },
   { id: 'woordenwolk', name: 'Word Cloud', desc: 'Participants type one word, visible together' },
 ]
+
+export const ENERGIZER_BACKEND_KIND: Record<string, string> = {
+  'emoji-poll': 'emoji_poll',
+  'snelste-vinger': 'quick_finger',
+  'team-quiz': 'team_quiz',
+  'woordenwolk': 'word_cloud',
+}
+
+export const ENERGIZER_DEFAULT_PROMPT: Record<string, string> = {
+  'emoji-poll': 'How are you feeling right now?',
+  'snelste-vinger': 'Quick Finger — edit this question in the Launchpad',
+  'team-quiz': 'Team Quiz — edit your questions in the Launchpad',
+  'woordenwolk': 'Word Cloud — participants type one word',
+}
