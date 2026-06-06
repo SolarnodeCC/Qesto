@@ -242,6 +242,7 @@ export class IdeateHandler {
       return
     }
     item.status = 'dismissed'
+    item.clusterId = null
     await this.ctx.storage.put(IDEATE_KEYS.item(item.id), item)
     await this.removeIdeaFromClusters(item.id)
     const rev = await this.bumpRev()
@@ -272,6 +273,7 @@ export class IdeateHandler {
     const mergedUpvoters = mergeIdeateUpvoters([targetUpvoters, sourceUpvoters])
     target.upvotes = mergedUpvoters.length
     source.status = 'dismissed'
+    source.clusterId = null
     for (const voterId of sourceUpvoters) {
       if (targetUpvoters.includes(voterId)) {
         const dots = (await this.ctx.storage.get<number>(IDEATE_KEYS.voterDots(voterId))) ?? 0

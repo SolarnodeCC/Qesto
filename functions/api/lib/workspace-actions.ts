@@ -39,11 +39,21 @@ export async function carryOpenActionsToNewInstance(
   const open = openActionItems(blob)
   if (open.length === 0) return []
 
-  const carried = open.map((item) => ({
+  // Deduplicate by normalised text so repeated carries don't accumulate copies.
+  const seen = new Set<string>()
+  const unique = open.filter((item) => {
+    const key = item.text.trim().toLowerCase()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  const now = Date.now()
+  const carried = unique.map((item) => ({
     ...item,
     id: ulid(),
     sourceSessionId: sessionId,
-    createdAt: Date.now(),
+    createdAt: now,
   }))
   await writeWorkspaceActions(kv, teamId, workspaceId, {
     items: [...blob.items, ...carried],

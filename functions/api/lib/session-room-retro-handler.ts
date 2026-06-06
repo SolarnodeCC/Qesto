@@ -54,15 +54,22 @@ export class RetroHandler {
     await this.ctx.storage.put(RETRO_KEYS.index, [] as string[])
     await this.ctx.storage.put(RETRO_KEYS.rev, 0)
     await this.ctx.storage.put(RETRO_KEYS.dotVoteLimit, dotVoteLimit)
+    const seenTexts = new Set<string>()
+    let seeded = 0
     for (const text of carriedActions) {
-      if (!text.trim()) continue
-      const item = createRetroItem('actions', text, true)
+      const trimmed = text.trim()
+      if (!trimmed) continue
+      const key = trimmed.toLowerCase()
+      if (seenTexts.has(key)) continue
+      seenTexts.add(key)
+      const item = createRetroItem('actions', trimmed, true)
       const index = (await this.ctx.storage.get<string[]>(RETRO_KEYS.index)) ?? []
       index.push(item.id)
       await this.ctx.storage.put(RETRO_KEYS.index, index)
       await this.ctx.storage.put(RETRO_KEYS.item(item.id), item)
+      seeded++
     }
-    if (carriedActions.length > 0) {
+    if (seeded > 0) {
       await this.bumpRev()
     }
   }
