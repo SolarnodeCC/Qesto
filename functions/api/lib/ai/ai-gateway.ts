@@ -12,6 +12,10 @@
  * @see knowledge-base/adr/ADR-042-cloudflare-capability-expansion.md
  */
 import type { Env } from '../../types'
+import {
+  assertSanitizedAIGatewayRequest,
+  sanitizeAIGatewayRequest,
+} from './prompt-sanitize'
 import type { SessionAIContext } from './session-context'
 
 export type AIGatewayRequest = {
@@ -67,10 +71,12 @@ export async function runThroughAIGateway(
   input: AIGatewayRequest,
 ): Promise<AIGatewayResponse> {
   const startMs = Date.now()
+  const sanitizedInput = sanitizeAIGatewayRequest(input)
+  assertSanitizedAIGatewayRequest(sanitizedInput)
 
   // If Gateway is not configured, bypass directly to env.AI
   if (!AI_GATEWAY_CONFIG.gatewayId) {
-    const result = await env.AI.run(model, input)
+    const result = await env.AI.run(model, sanitizedInput)
     return {
       result,
       cached: false,
@@ -85,14 +91,14 @@ export async function runThroughAIGateway(
     const response = await fetch(gatewayUrl, {
       method: 'POST',
       headers: gatewayHeaders,
-      body: JSON.stringify(input),
+      body: JSON.stringify(sanitizedInput),
       signal: AbortSignal.timeout(AI_GATEWAY_CONFIG.requestTimeoutMs),
     })
 
     if (!response.ok) {
       // Gateway error: fall back to direct env.AI
       if (response.status >= 500) {
-        return fallbackToDirect(env, model, input, startMs)
+        return fallbackToDirect(env, model, sanitizedInput, startMs)
       }
       // Client error (bad request): propagate
       throw new Error(`AI Gateway error: ${response.status} ${response.statusText}`)
@@ -116,9 +122,9 @@ export async function runThroughAIGateway(
   } catch (err) {
     // Network error, timeout, or Gateway down: fall back to direct env.AI
     if (err instanceof Error && err.name === 'AbortError') {
-      return fallbackToDirect(env, model, input, startMs)
+      return fallbackToDirect(env, model, sanitizedInput, startMs)
     }
-    return fallbackToDirect(env, model, input, startMs)
+    return fallbackToDirect(env, model, sanitizedInput, startMs)
   }
 }
 
