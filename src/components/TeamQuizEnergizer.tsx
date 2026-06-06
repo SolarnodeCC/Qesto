@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
+import { inputHint } from '../ui/input-hint'
 
 export type TeamQuizQuestion = {
   prompt: string
@@ -224,7 +225,7 @@ export default function TeamQuizEnergizerView({
                 type="text"
                 value={q.prompt}
                 onChange={(e) => updateQuestion(qi, { prompt: e.target.value })}
-                placeholder={`Question ${qi + 1}`}
+                {...inputHint(`Question ${qi + 1}`)}
                 maxLength={280}
                 className="w-full rounded-lg border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-800 dark:text-pulse-100 px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
               />
@@ -251,7 +252,7 @@ export default function TeamQuizEnergizerView({
                       value={opt}
                       onChange={(e) => updateOption(qi, oi, e.target.value)}
                       maxLength={100}
-                      placeholder={`Option ${oi + 1}`}
+                      {...inputHint(`Option ${oi + 1}`)}
                       className="flex-1 min-w-0 rounded border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-800 dark:text-pulse-100 px-2 py-1 text-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-orange-500"
                     />
                   </div>

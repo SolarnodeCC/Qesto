@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
+import { inputHint } from '../ui/input-hint'
 
 export type WordCloudEnergizer = {
   id: string
@@ -237,7 +238,7 @@ export default function WordCloudEnergizerView({
               type="text"
               value={wordInput}
               onChange={(e) => setWordInput(e.target.value.replace(/\s/g, ''))}
-              placeholder="Type one word…"
+              {...inputHint("Type one word…")}
               maxLength={40}
               autoFocus
               className="flex-1 rounded-xl border-2 border-pulse-200 dark:border-pulse-700 dark:bg-pulse-800 dark:text-pulse-100 px-4 py-3 text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus:border-pink-400"

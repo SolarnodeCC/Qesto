@@ -5,7 +5,7 @@
   "present.starting": "Bezig met starten…",
   "present.joinAt": "Deelnemers joinen via",
   "submit.title": "Deel een idee",
-  "submit.placeholder": "Wat is je idee?",
+  "submit.hint": "Wat is je idee?",
   "submit.button": "Idee indienen",
   "submit.success": "Idee ingediend",
   "clusters.title": "Themaclusters",

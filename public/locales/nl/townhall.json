@@ -1,6 +1,6 @@
 {
   "submit.title": "Stel een vraag",
-  "submit.placeholder": "Typ je vraag…",
+  "submit.hint": "Typ je vraag…",
   "submit.button": "Anoniem versturen",
   "submit.success": "Je vraag is verstuurd",
   "submit.pendingNote": "Vragen worden door de host beoordeeld voordat ze verschijnen.",

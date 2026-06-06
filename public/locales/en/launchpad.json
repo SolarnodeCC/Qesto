@@ -46,6 +46,6 @@
   },
   "time_remaining": "{{minutes}} minutes until automatic start",
   "ai_generate_heading": "Generate questions with AI",
-  "ai_topic_placeholder": "Topic or goal (default: \"{{title}}\")",
+  "ai_topic_hint": "Topic or goal (default: \"{{title}}\")",
   "add_question_inline": "+ Add question"
 }

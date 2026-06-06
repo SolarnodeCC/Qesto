@@ -93,8 +93,8 @@ function upsert(items: TownhallBoardItem[], item: TownhallBoardItem): TownhallBo
 
 // Apply a delta only if it is the next expected revision. Stale/duplicate (rev <= current)
 // is ignored; a forward gap (rev > current+1) is applied best-effort but flags a resync.
-function gate(state: TownhallState, rev: number): 'stale' | 'apply' | 'gap' {
-  if (rev <= state.rev) return 'stale'
+function gate(state: TownhallState, rev: number): 'behind' | 'apply' | 'gap' {
+  if (rev <= state.rev) return 'behind'
   if (rev === state.rev + 1) return 'apply'
   return 'gap'
 }
@@ -127,7 +127,7 @@ export function townhallReducer(state: TownhallState, action: TownhallAction): T
     case 'added':
     case 'updated': {
       const g = gate(state, action.rev)
-      if (g === 'stale') return state
+      if (g === 'behind') return state
       const merged = upsert(state.items, { ...action.item, isSpotlit: action.item.id === state.spotlightId })
       return {
         ...state,
@@ -138,7 +138,7 @@ export function townhallReducer(state: TownhallState, action: TownhallAction): T
     }
     case 'removed': {
       const g = gate(state, action.rev)
-      if (g === 'stale') return state
+      if (g === 'behind') return state
       return {
         ...state,
         items: state.items.filter((i) => i.id !== action.itemId),
@@ -148,7 +148,7 @@ export function townhallReducer(state: TownhallState, action: TownhallAction): T
     }
     case 'spotlight': {
       const g = gate(state, action.rev)
-      if (g === 'stale') return state
+      if (g === 'behind') return state
       return {
         ...state,
         spotlightId: action.spotlightId,

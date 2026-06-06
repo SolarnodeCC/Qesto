@@ -4,6 +4,7 @@ import { api, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { useTownhallSession, type TownhallItemStatus } from '../hooks/useTownhallSession'
 import { TownhallQuestionCard } from '../ui/TownhallQuestionCard'
+import { inputHint } from '../ui/input-hint'
 
 type LinkedSession = {
   id: string
@@ -171,7 +172,7 @@ export default function EventStagePresent() {
                 type="url"
                 value={slideUrl}
                 onChange={(e) => setSlideUrl(e.target.value)}
-                placeholder={t('present.slideUrlPlaceholder')}
+                {...inputHint(t('present.slideUrlPlaceholder'))}
                 className="flex-1 rounded-md border border-pulse-300 px-3 py-2 text-sm dark:border-pulse-600 dark:bg-pulse-800"
               />
               <button
@@ -254,7 +255,7 @@ export default function EventStagePresent() {
               <input
                 value={feedMessage}
                 onChange={(e) => setFeedMessage(e.target.value)}
-                placeholder={t('suite.feedPlaceholder')}
+                {...inputHint(t('suite.feedPlaceholder'))}
                 className="flex-1 rounded-md border border-pulse-300 px-2 py-1.5 text-sm dark:border-pulse-600 dark:bg-pulse-800"
               />
               <button

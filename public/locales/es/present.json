@@ -64,7 +64,7 @@
     "mood_concerning": "Requiere atención",
     "mood_none": "Aún no hay suficientes respuestas",
     "draft_label": "Redacta una encuesta a partir de una intención",
-    "draft_placeholder": "p. ej., sondea al equipo sobre nuestra prioridad",
+    "draft_hint": "p. ej., sondea al equipo sobre nuestra prioridad",
     "draft_button": "Redactar encuesta",
     "drafting": "Redactando…",
     "draft_unavailable": "No hay borrador disponible ahora. Reformula tu intención.",

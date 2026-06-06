@@ -16,8 +16,8 @@
     "title": "Was ist die Sitzung?",
     "label_title": "Sitzungstitel",
     "label_goal": "Ziel der Sitzung",
-    "placeholder_title": "z.B. Teamreflexion Q2",
-    "placeholder_goal": "z.B. Einblick in das Teamerleben des Sprints gewinnen..."
+    "hint_title": "z.B. Teamreflexion Q2",
+    "hint_goal": "z.B. Einblick in das Teamerleben des Sprints gewinnen..."
   },
   "question_types": {
     "multiple-choice": "Multiple Choice",
@@ -41,10 +41,10 @@
     },
     "back": "← Andere Methode wählen",
     "manual_add": "Frage hinzufügen",
-    "manual_placeholder": "Gib deine Frage ein...",
+    "manual_hint": "Gib deine Frage ein...",
     "manual_max": "Maximum von 20 Fragen erreicht",
     "manual_delete": "Frage löschen",
-    "multiple_choice_option_placeholder": "Antwortoption {{n}}",
+    "multiple_choice_option_hint": "Antwortoption {{n}}",
     "multiple_choice_add_option": "Antwortoption hinzufügen",
     "multiple_choice_remove_option": "Antwortoption entfernen",
     "multiple_choice_validation_hint": "Multiple Choice benötigt mindestens 2 Antworten (3–5 empfohlen).",
@@ -53,7 +53,7 @@
     "ai_greeting_empty": "Erkläre mir, worum es in der Sitzung geht, oder klicke 'Sofort generieren'.",
     "ai_generate_cta": "✨ Sofort generieren",
     "ai_generating": "Generiere...",
-    "ai_placeholder": "Fokus verfeinern...",
+    "ai_hint": "Fokus verfeinern...",
     "ai_send": "Senden",
     "ai_questions_label": "Generierte Fragen",
     "ai_consent": "Ich stimme zu, dass mein Sitzungstitel und Ziel von der KI verarbeitet werden",

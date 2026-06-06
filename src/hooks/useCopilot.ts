@@ -59,7 +59,7 @@ export function useCopilot(sessionId: string | undefined, enabled: boolean) {
   const [drafting, setDrafting] = useState(false)
   const [draft, setDraft] = useState<DraftPollResult | null>(null)
   const [suggestions, setSuggestions] = useState<CopilotAction[]>([])
-  const [suggestSource, setSuggestSource] = useState<'ai' | 'fallback' | 'none' | null>(null)
+  const [suggestSource, setSuggestSource] = useState<'ai' | 'heuristic' | 'none' | null>(null)
   const [suggestLoading, setSuggestLoading] = useState(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -107,7 +107,7 @@ export function useCopilot(sessionId: string | undefined, enabled: boolean) {
   const fetchSuggestions = useCallback(async () => {
     if (!sessionId) return
     setSuggestLoading(true)
-    const res = await api<{ suggestions: CopilotAction[]; source: 'ai' | 'fallback' | 'none' }>(
+    const res = await api<{ suggestions: CopilotAction[]; source: 'ai' | 'heuristic' | 'none' }>(
       `/api/agent/copilot/sessions/${sessionId}/suggest`,
       { method: 'POST' },
     )

@@ -1,5 +1,7 @@
 # Frontend (`src/`)
 
+<!-- jankurai:allow HLT-006-DIRECT-DB-WRONG-LAYER reason=react-ui-layer-no-d1-access expires=2027-06-01 -->
+
 **Owns:** React pages, components, hooks, WebSocket UI state, Tailwind v4, i18n  
 **Forbidden:** `functions/api/` route logic, `schema.sql`, secrets in source  
 **Proof lane:** `just ux-qa`

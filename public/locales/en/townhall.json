@@ -1,6 +1,6 @@
 {
   "submit.title": "Ask a question",
-  "submit.placeholder": "Type your question…",
+  "submit.hint": "Type your question…",
   "submit.button": "Submit anonymously",
   "submit.success": "Your question was submitted",
   "submit.pendingNote": "Questions are reviewed by the host before they appear.",

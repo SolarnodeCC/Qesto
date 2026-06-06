@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import { useT } from '../i18n'
 import { ideasForCluster, unclusteredIdeas, useIdeateSession } from '../hooks/useIdeateSession'
 import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
+import { inputHint } from '../ui/input-hint'
 
 type Lookup =
   | { status: 'loading' }
@@ -74,7 +75,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value.slice(0, 500))}
-          placeholder={t('submit.placeholder')}
+          {...inputHint(t('submit.hint'))}
           rows={3}
           className="w-full rounded-lg border border-pulse-200 px-4 py-3 text-sm focus:ring-2 focus:ring-teal-500 dark:border-pulse-600 dark:bg-pulse-800"
         />

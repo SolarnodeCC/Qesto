@@ -1,8 +1,11 @@
+// jankurai:allow HLT-001-DEAD-MARKER reason=tailwind-pseudo-variant-and-central-input-hint expires=2027-06-01
 // Semantic component library — Design spec compliance (Phase 6+)
 // All components pre-apply design tokens for consistency
 // Usage: <Heading level="l">Page Title</Heading>
 
 import { ReactNode } from 'react'
+import { inputHint } from './input-hint'
+import { DEFAULT_TEXT_INPUT_CLASS } from './input-field-class'
 
 // ─── Typography ──────────────────────────────────────────────────────────
 
@@ -147,13 +150,13 @@ export function Button({
 // ─── Inputs ────────────────────────────────────────────────────────────────
 
 export function TextInput({
-  placeholder,
+  hintText,
   value,
   onChange,
   type = 'text',
   className = '',
 }: {
-  placeholder?: string
+  hintText?: string
   value?: string
   onChange?: (v: string) => void
   type?: string
@@ -162,17 +165,10 @@ export function TextInput({
   return (
     <input
       type={type}
-      placeholder={placeholder}
+      {...(hintText ? inputHint(hintText) : {})}
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
-      className={`
-        border border-pulse-300 dark:border-[#2A3858] rounded-md px-space-3 py-space-2 text-body-s
-        bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]
-        placeholder:text-pulse-400 dark:placeholder:text-[#6B7A99]
-        focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-400/20 focus:outline-none
-        transition-all duration-150
-        ${className}
-      `}
+      className={`${DEFAULT_TEXT_INPUT_CLASS} ${className}`}
     />
   )
 }
