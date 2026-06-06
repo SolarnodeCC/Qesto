@@ -1,0 +1,44 @@
+[[lane]]
+name = "fast"
+command = "just fast"
+purpose = "deterministic local health proof"
+
+[[lane]]
+name = "check"
+command = "just check"
+purpose = "typecheck and unit test gate"
+
+[[lane]]
+name = "audit"
+command = "just score"
+purpose = "write jankurai score artifacts"
+
+[[lane]]
+name = "security"
+command = "just security"
+purpose = "secret, dependency, and workflow proof"
+
+[[lane]]
+name = "web"
+command = "just ux-qa"
+purpose = "rendered UX QA for React SPA"
+
+[[lane]]
+name = "db"
+command = "npm test -- --run tests/unit/migrations"
+purpose = "migration safety proof"
+
+[[lane]]
+name = "contract"
+command = "just check"
+purpose = "contract drift gate"
+
+[[lane]]
+name = "e2e"
+command = "npx playwright test --config tests/playwright.config.ts"
+purpose = "playwright end-to-end proof"
+
+[[lane]]
+name = "release"
+command = "just verify"
+purpose = "full merge gate"

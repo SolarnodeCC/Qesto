@@ -1,61 +1,55 @@
 {
-  "version": "1.0.0",
-  "standard": "jankurai-0.9.0",
-  "lanes": [
-    {
-      "path": "src/**",
-      "lane": "web",
-      "command": "just ux-qa"
+  "workspace": "qesto",
+  "tests": {
+    "src/": {
+      "command": "just ux-qa",
+      "purpose": "rendered UX QA for React/Vite frontend",
+      "lane": "web"
     },
-    {
-      "path": "apps/web/**",
-      "lane": "web",
-      "command": "just ux-qa"
+    "apps/web/": {
+      "command": "just ux-qa",
+      "purpose": "rendered UX QA for web alias surface",
+      "lane": "web"
     },
-    {
-      "path": "functions/api/**",
-      "lane": "fast",
-      "command": "just fast"
+    "functions/api/": {
+      "command": "just fast",
+      "purpose": "typecheck, unit tests, and build for Hono API",
+      "lane": "fast"
     },
-    {
-      "path": "worker/**",
-      "lane": "fast",
-      "command": "just fast"
+    "worker/": {
+      "command": "just fast",
+      "purpose": "typecheck and build for scheduled worker",
+      "lane": "fast"
     },
-    {
-      "path": "migrations/**",
-      "lane": "db",
-      "command": "npm test -- --run tests/unit/migrations"
+    "migrations/": {
+      "command": "npm test -- --run tests/unit/migrations",
+      "purpose": "migration safety unit tests",
+      "lane": "db"
     },
-    {
-      "path": "schema.sql",
-      "lane": "db",
-      "command": "npm test -- --run"
+    "schema.sql": {
+      "command": "npm test -- --run",
+      "purpose": "schema integrity via unit tests",
+      "lane": "db"
     },
-    {
-      "path": "ops/**",
-      "lane": "security",
-      "command": "just security"
+    "ops/": {
+      "command": "just security",
+      "purpose": "CI lanes and secret scanning",
+      "lane": "security"
     },
-    {
-      "path": ".github/workflows/**",
-      "lane": "security",
-      "command": "just security"
+    ".github/workflows/": {
+      "command": "just security",
+      "purpose": "workflow security posture",
+      "lane": "security"
     },
-    {
-      "path": "contracts/**",
-      "lane": "contract",
-      "command": "just check"
+    "contracts/": {
+      "command": "just check",
+      "purpose": "contract drift and typecheck gate",
+      "lane": "contract"
     },
-    {
-      "path": "tests/**",
-      "lane": "e2e",
-      "command": "npx playwright test --config tests/playwright.config.ts"
-    },
-    {
-      "path": "**",
-      "lane": "fast",
-      "command": "just fast"
+    "tests/": {
+      "command": "npx playwright test --config tests/playwright.config.ts",
+      "purpose": "end-to-end browser tests",
+      "lane": "e2e"
     }
-  ]
+  }
 }
