@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { ulid } from '../lib/ulid'
+import { PARTNER_APP_TTL_SECONDS, PARTNER_SECRET_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { validateBody } from '../lib/request-validation'
 import { writeEvent } from '../lib/observability'
@@ -77,11 +78,16 @@ export function mountPartnerAppRoutes(parent: Hono<{ Bindings: Env; Variables: V
       scopes: validated.data.scopes,
       createdAt: Date.now(),
     }
-    await writeKvJson(c.env.INTEGRATIONS_KV, partnerAppKey(appId), record)
-    await writeKvJson(c.env.INTEGRATIONS_KV, partnerSecretKey(appId), { secret, rotatedAt: Date.now() })
+    await writeKvJson(c.env.INTEGRATIONS_KV, partnerAppKey(appId), record, { expirationTtl: PARTNER_APP_TTL_SECONDS })
+    await writeKvJson(
+      c.env.INTEGRATIONS_KV,
+      partnerSecretKey(appId),
+      { secret, rotatedAt: Date.now() },
+      { expirationTtl: PARTNER_SECRET_TTL_SECONDS },
+    )
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, partnerTeamIndexKey(teamId))) ?? []
     index.push(appId)
-    await writeKvJson(c.env.INTEGRATIONS_KV, partnerTeamIndexKey(teamId), index)
+    await writeKvJson(c.env.INTEGRATIONS_KV, partnerTeamIndexKey(teamId), index, { expirationTtl: PARTNER_APP_TTL_SECONDS })
     return c.json({ ok: true, data: { app: record, clientSecret: secret }, trace_id: c.get('trace_id') }, 201)
   })
 
@@ -100,9 +106,14 @@ export function mountPartnerAppRoutes(parent: Hono<{ Bindings: Env; Variables: V
     }
     const secret = generatePartnerSecret()
     const rotatedAt = Date.now()
-    await writeKvJson(c.env.INTEGRATIONS_KV, partnerSecretKey(appId), { secret, rotatedAt })
+    await writeKvJson(
+      c.env.INTEGRATIONS_KV,
+      partnerSecretKey(appId),
+      { secret, rotatedAt },
+      { expirationTtl: PARTNER_SECRET_TTL_SECONDS },
+    )
     const updated: PartnerApp = { ...record, secretHint: secret.slice(-4), rotatedAt }
-    await writeKvJson(c.env.INTEGRATIONS_KV, partnerAppKey(appId), updated)
+    await writeKvJson(c.env.INTEGRATIONS_KV, partnerAppKey(appId), updated, { expirationTtl: PARTNER_APP_TTL_SECONDS })
     writeEvent(c.env.METRICS_AE, {
       name: 'partner.secret_rotated',
       teamId,

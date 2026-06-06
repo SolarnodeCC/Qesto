@@ -47,3 +47,15 @@ export const WEBHOOK_RATE_LIMIT_TTL_SECONDS = 120
 export const INSIGHTS_SHARED_CACHE_TTL_SECONDS = ONE_HOUR_SECONDS
 /** Templates marketing magic link TTL (1 hour). */
 export const MARKETING_MAGIC_LINK_TTL_SECONDS = ONE_HOUR_SECONDS
+/** Session mode seed cache in SESSIONS_KV (retro/ideate draft config). */
+export const SESSION_SEED_TTL_SECONDS = SEVEN_DAYS_SECONDS
+/** Partner OAuth client secret store TTL. */
+export const PARTNER_SECRET_TTL_SECONDS = ONE_YEAR_SECONDS
+/** Partner app registry metadata TTL. */
+export const PARTNER_APP_TTL_SECONDS = ONE_YEAR_SECONDS
+/** Team API key record TTL (active keys; refreshed on use). */
+export const API_KEY_RECORD_TTL_SECONDS = ONE_YEAR_SECONDS
+/** Revoked API key tombstone TTL. */
+export const API_KEY_REVOKED_TTL_SECONDS = THIRTY_DAYS_SECONDS
+/** API key hash→id index TTL (matches active key lifetime). */
+export const API_KEY_HASH_INDEX_TTL_SECONDS = ONE_YEAR_SECONDS
