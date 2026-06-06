@@ -1,0 +1,26 @@
+id = "0005_team_quiz_word_cloud"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "destructive"
+stage = "contract"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-05-17"
+ticket = "Phase-9"
+
+[rollback]
+strategy = "restore-from-backup"
+procedure = "Restore backup or re-apply 0004 migration chain"
+
+[backup]
+required = true
+note = "Confirmed zero energizer rows before apply; team_quiz_responses is additive"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+post_check = "0005_team_quiz_word_cloud.verify.sql"
+verify = true

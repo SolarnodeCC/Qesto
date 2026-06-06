@@ -1,0 +1,27 @@
+id = "0043_kb_vectors_storage"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "backend-team"
+approval_date = "2026-05-17"
+ticket = "ADR-040"
+
+[rollback]
+strategy = "drop-column"
+procedure = "ALTER TABLE kb_chunks DROP COLUMN vector_json"
+
+[backup]
+required = false
+note = "Additive nullable column; no existing data affected"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+note = "Applied when ported to PostgreSQL; D1 SQLite has no SET lock_timeout"
+
+[verification]
+verify = true
+post_check = "0043_kb_vectors_storage.verify.sql"

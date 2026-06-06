@@ -1,0 +1,26 @@
+id = "0044_sessions_is_public"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "backend-team"
+approval_date = "2026-05-21"
+ticket = "Growth-Engine"
+
+[rollback]
+strategy = "drop-column"
+procedure = "DROP INDEX idx_sessions_is_public; ALTER TABLE sessions DROP COLUMN is_public"
+
+[backup]
+required = false
+note = "Additive column with DEFAULT 1; existing rows unaffected"
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[verification]
+verify = true
+post_check = "0044_sessions_is_public.verify.sql"
