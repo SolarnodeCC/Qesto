@@ -318,7 +318,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
 
               {slackStatus?.connected ? (
                 <fieldset className="space-y-2 border-t border-pulse-100 pt-3">
-                  <legend className="text-sm font-medium text-pulse-700 mb-2">{tTeam('slack_notification_events')}</legend>
+                  <legend className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] mb-2">{tTeam('slack_notification_events')}</legend>
                   <label className="flex items-center gap-3 text-sm cursor-pointer">
                     <input
                       type="checkbox"
@@ -356,7 +356,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
         </div>
         <div className="flex-1 min-w-0 space-y-3">
           <div>
-            <h3 className="font-medium text-pulse-900">{tTeam('teams_title')}</h3>
+            <h3 className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{tTeam('teams_title')}</h3>
             <p className="text-sm text-pulse-500 mt-0.5">{tTeam('teams_description')}</p>
           </div>
           {teamsLoading ? (
@@ -365,7 +365,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
             <>
               <p className="text-sm">
                 {teamsStatus?.connected && teamsStatus.channelName ? (
-                  <span className="inline-flex items-center gap-1.5 text-teal-700 font-medium">
+                  <span className="inline-flex items-center gap-1.5 text-teal-700 dark:text-teal-400 font-medium">
                     <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full bg-teal-500" />
                     {tTeam('teams_connected', { channel: teamsStatus.channelName })}
                   </span>
