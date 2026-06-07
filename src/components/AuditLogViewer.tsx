@@ -221,7 +221,7 @@ export default function AuditLogViewer() {
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label htmlFor="action-filter" className="block text-xs font-medium text-pulse-700 mb-1">
+            <label htmlFor="action-filter" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               Action
             </label>
             <select
@@ -243,7 +243,7 @@ export default function AuditLogViewer() {
           </div>
 
           <div>
-            <label htmlFor="subject-filter" className="block text-xs font-medium text-pulse-700 mb-1">
+            <label htmlFor="subject-filter" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               Subject Type
             </label>
             <select
@@ -265,7 +265,7 @@ export default function AuditLogViewer() {
           </div>
 
           <div>
-            <label htmlFor="start-date" className="block text-xs font-medium text-pulse-700 mb-1">
+            <label htmlFor="start-date" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               Start Date
             </label>
             <input
@@ -281,7 +281,7 @@ export default function AuditLogViewer() {
           </div>
 
           <div>
-            <label htmlFor="end-date" className="block text-xs font-medium text-pulse-700 mb-1">
+            <label htmlFor="end-date" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               End Date
             </label>
             <input
@@ -310,7 +310,7 @@ export default function AuditLogViewer() {
           <button
             type="button"
             onClick={resetFilters}
-            className="inline-flex items-center gap-2 text-sm text-pulse-600 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+            className="inline-flex items-center gap-2 text-sm text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
           >
             Reset filters
           </button>

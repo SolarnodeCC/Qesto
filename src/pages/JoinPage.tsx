@@ -121,7 +121,7 @@ export default function JoinPage() {
           </svg>
         </div>
         <div className="space-y-1">
-          <p className="text-lg font-semibold text-pulse-900">{t('not_found_title')}</p>
+          <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
           <p className="text-sm text-pulse-500">{lookup.message}</p>
         </div>
         <a
