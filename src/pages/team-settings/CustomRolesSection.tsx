@@ -93,7 +93,7 @@ export function CustomRolesSection({
                       <button
                         type="button"
                         onClick={() => onEditRole(role)}
-                        className="rounded-md border border-pulse-300 px-3 py-2 text-sm font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                        className="rounded-md border border-pulse-300 dark:border-[#2A3858] px-3 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                       >
                         Edit
                       </button>
@@ -168,9 +168,9 @@ export function CustomRolesSection({
                       className="mt-1 h-4 w-4 rounded border-pulse-300 text-teal-600 focus:ring-teal-500"
                     />
                     <span>
-                      <span className="block font-medium text-pulse-800">{permission.label}</span>
+                      <span className="block font-medium text-pulse-800 dark:text-[#F0F2F8]">{permission.label}</span>
                       <span className="block text-xs text-pulse-500">{permission.description}</span>
-                      <span className="block text-xs text-teal-700">{permission.id}</span>
+                      <span className="block text-xs text-teal-700 dark:text-teal-400">{permission.id}</span>
                     </span>
                   </label>
                 ))}
