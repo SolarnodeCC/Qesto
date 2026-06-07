@@ -84,6 +84,19 @@
   --font-weight-bold: 700;
 }
 
+/* ─── Signature gradient backgrounds ───────────────────────────────────────── */
+/* Registered as real Tailwind v4 utilities so `bg-gradient-brand` (primary CTAs */
+/* such as the cookie-consent Accept button) and `bg-gradient-ai` (AI surfaces)  */
+/* actually paint. Without these, the classes resolve to nothing and `text-white`*/
+/* renders invisibly on light backgrounds. Tokens live in colors_and_type.css.  */
+@utility bg-gradient-brand {
+  background-image: var(--gradient-brand);
+}
+
+@utility bg-gradient-ai {
+  background-image: var(--gradient-ai);
+}
+
 /* ─── Semantic dark mode tokens ────────────────────────────────────────────── */
 /* Activated by data-theme="dark" on <html> (set by useColorScheme hook).      */
 /* The @media fallback covers the no-JS / pre-hydration frame.                 */
