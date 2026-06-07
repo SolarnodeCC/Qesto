@@ -370,7 +370,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     {tTeam('teams_connected', { channel: teamsStatus.channelName })}
                   </span>
                 ) : teamsStatus?.connected ? (
-                  <span className="text-amber-700">{tTeam('teams_needs_channel')}</span>
+                  <span className="text-amber-700 dark:text-amber-400">{tTeam('teams_needs_channel')}</span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 text-pulse-500">
                     <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full bg-pulse-300" />
@@ -411,9 +411,9 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     void handleTeamsConfigSave()
                   }}
                 >
-                  <p className="text-sm font-medium text-pulse-700">{tTeam('teams_channel_config')}</p>
+                  <p className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">{tTeam('teams_channel_config')}</p>
                   <label className="block text-sm">
-                    <span className="text-pulse-600">{tTeam('teams_group_id')}</span>
+                    <span className="text-pulse-600 dark:text-[#A8B3CC]">{tTeam('teams_group_id')}</span>
                     <input
                       value={teamsGroupId}
                       onChange={(e) => setTeamsGroupId(e.target.value)}
@@ -422,7 +422,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="text-pulse-600">{tTeam('teams_channel_id')}</span>
+                    <span className="text-pulse-600 dark:text-[#A8B3CC]">{tTeam('teams_channel_id')}</span>
                     <input
                       value={teamsChannelId}
                       onChange={(e) => setTeamsChannelId(e.target.value)}
@@ -431,7 +431,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="text-pulse-600">{tTeam('teams_channel_name')}</span>
+                    <span className="text-pulse-600 dark:text-[#A8B3CC]">{tTeam('teams_channel_name')}</span>
                     <input
                       value={teamsChannelName}
                       onChange={(e) => setTeamsChannelName(e.target.value)}
