@@ -76,7 +76,7 @@ export function CustomRolesSection({
               <li key={role.id} className="py-4 space-y-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-pulse-900">{role.name}</p>
+                    <p className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">{role.name}</p>
                     <div className="flex flex-wrap gap-2">
                       {role.permissions.map((p) => (
                         <span key={p} className="rounded-full bg-teal-50 px-2 py-1 text-xs font-medium text-teal-700">
@@ -113,7 +113,7 @@ export function CustomRolesSection({
                     {assigned.map((assignment) => {
                       const member = team.members.find((m) => m.userId === assignment.user_id)
                       return (
-                        <span key={assignment.id} className="inline-flex items-center gap-2 rounded-md bg-pulse-50 px-2 py-1 text-xs text-pulse-600">
+                        <span key={assignment.id} className="inline-flex items-center gap-2 rounded-md bg-pulse-50 dark:bg-[#1C2540] px-2 py-1 text-xs text-pulse-600 dark:text-[#A8B3CC]">
                           {member?.email ?? assignment.user_id}
                           {canManageMembers ? (
                             <button
