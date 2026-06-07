@@ -244,7 +244,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
 
         <div className="flex-1 min-w-0 space-y-3">
           <div>
-            <h3 className="font-medium text-pulse-900">{t('slack_title')}</h3>
+            <h3 className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{t('slack_title')}</h3>
             <p className="text-sm text-pulse-500 mt-0.5">{t('slack_description')}</p>
           </div>
 
@@ -256,7 +256,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
               {/* Connection status */}
               <p className="text-sm">
                 {slackStatus?.connected && slackStatus.channel ? (
-                  <span className="inline-flex items-center gap-1.5 text-teal-700 font-medium">
+                  <span className="inline-flex items-center gap-1.5 text-teal-700 dark:text-teal-400 font-medium">
                     <span aria-hidden="true" className="inline-block h-2 w-2 rounded-full bg-teal-500" />
                     {t('slack_connected', { channel: slackStatus.channel })}
                   </span>
