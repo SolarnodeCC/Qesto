@@ -12,8 +12,8 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ─── Google Fonts — Inter · Syne · JetBrains Mono ────────────────────────── */
-/* Single combined request for all three brand fonts. The <link preload> in    */
-/* index.html provides the critical woff2 preload for Inter/LCP.               */
+/* Single combined request for all three brand fonts with display=swap for     */
+/* optimal font loading behavior and LCP performance.                          */
 
 /* Design token CSS variables — auto-generated from design-tokens.json */
 /* These support the @theme block and component CSS below. */
