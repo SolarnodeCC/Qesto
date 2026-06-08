@@ -124,7 +124,12 @@ export function mountTeamWorkspaceRoutes(parent: any) {
         400,
       )
     }
-    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    let team: Team | null = null
+    try {
+      team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    } catch {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+    }
     if (!team) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
     }
@@ -139,9 +144,14 @@ export function mountTeamWorkspaceRoutes(parent: any) {
       : `SELECT id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at,
                 created_by, created_at, updated_at
            FROM workspaces WHERE team_id = ?1 AND archived_at IS NULL ORDER BY updated_at DESC`
-    const rows = kind
-      ? await c.env.DB.prepare(sql).bind(teamId, kind).all<WorkspaceRow>()
-      : await c.env.DB.prepare(sql).bind(teamId).all<WorkspaceRow>()
+    let rows: { results: WorkspaceRow[] }
+    try {
+      rows = kind
+        ? await c.env.DB.prepare(sql).bind(teamId, kind).all<WorkspaceRow>()
+        : await c.env.DB.prepare(sql).bind(teamId).all<WorkspaceRow>()
+    } catch (err) {
+      throw new Error(`Failed to fetch workspaces: ${err instanceof Error ? err.message : String(err)}`)
+    }
     return c.json({
       ok: true,
       data: { workspaces: (rows.results ?? []).map(mapWorkspace) },
