@@ -133,7 +133,11 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
 
   useEffect(() => {
     if (!enabled) return
-    void fetchAll(closedSessions)
+    let cancelled = false
+    void fetchAll(closedSessions).finally(() => {
+      if (cancelled) fetching.current = false
+    })
+    return () => { cancelled = true }
   }, [closedSessions, fetchAll, enabled])
 
   const analyzeSession = useCallback(async (sessionId: string) => {
