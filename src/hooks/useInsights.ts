@@ -90,12 +90,16 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
   const cache = useRef<Map<string, RawInsights>>(new Map())
   // Track sessions that failed to fetch so we don't retry them in a loop.
   const failed = useRef<Set<string>>(new Set())
+  // Prevent concurrent fetches when closedSessions reference changes mid-flight.
+  const fetching = useRef(false)
 
   const fetchAll = useCallback(async (sessions: SessionSummary[]) => {
     if (sessions.length === 0) {
       setThemes([])
       return
     }
+    if (fetching.current) return
+    fetching.current = true
     setLoading(true)
     let hitPlanGate = false
 
@@ -124,6 +128,7 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
     setPlanGated(hitPlanGate)
     setThemes(aggregateThemes(cache.current))
     setLoading(false)
+    fetching.current = false
   }, [])
 
   useEffect(() => {

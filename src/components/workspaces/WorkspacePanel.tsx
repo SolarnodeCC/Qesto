@@ -16,7 +16,7 @@ const KIND_LABELS: Record<WorkspaceKind, string> = {
 }
 
 export function WorkspacePanel({ teamId, enabled = true }: Props) {
-  const { workspaces, loading, planGated, createWorkspace, startInstance } = useWorkspaces(teamId)
+  const { workspaces, loading, planGated, createWorkspace, startInstance } = useWorkspaces(enabled ? teamId : undefined)
   const [creating, setCreating] = useState(false)
   const [title, setTitle] = useState('')
   const [kind, setKind] = useState<WorkspaceKind>('retro')
