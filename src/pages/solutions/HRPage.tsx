@@ -146,7 +146,7 @@ export default function HRPage() {
                         {mode === 'ident' && (
                           <>
                             Vote recorded ·{' '}
-                            <span className="text-teal-700 font-medium">Strongly agree</span>
+                            <span className="text-teal-700 dark:text-teal-400 font-medium">Strongly agree</span>
                           </>
                         )}
                       </div>

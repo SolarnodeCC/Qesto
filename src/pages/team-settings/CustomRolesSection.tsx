@@ -76,7 +76,7 @@ export function CustomRolesSection({
               <li key={role.id} className="py-4 space-y-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-pulse-900">{role.name}</p>
+                    <p className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">{role.name}</p>
                     <div className="flex flex-wrap gap-2">
                       {role.permissions.map((p) => (
                         <span key={p} className="rounded-full bg-teal-50 px-2 py-1 text-xs font-medium text-teal-700">
@@ -93,7 +93,7 @@ export function CustomRolesSection({
                       <button
                         type="button"
                         onClick={() => onEditRole(role)}
-                        className="rounded-md border border-pulse-300 px-3 py-2 text-sm font-medium text-pulse-700 hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                        className="rounded-md border border-pulse-300 dark:border-[#2A3858] px-3 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                       >
                         Edit
                       </button>
@@ -113,7 +113,7 @@ export function CustomRolesSection({
                     {assigned.map((assignment) => {
                       const member = team.members.find((m) => m.userId === assignment.user_id)
                       return (
-                        <span key={assignment.id} className="inline-flex items-center gap-2 rounded-md bg-pulse-50 px-2 py-1 text-xs text-pulse-600">
+                        <span key={assignment.id} className="inline-flex items-center gap-2 rounded-md bg-pulse-50 dark:bg-[#1C2540] px-2 py-1 text-xs text-pulse-600 dark:text-[#A8B3CC]">
                           {member?.email ?? assignment.user_id}
                           {canManageMembers ? (
                             <button
@@ -168,9 +168,9 @@ export function CustomRolesSection({
                       className="mt-1 h-4 w-4 rounded border-pulse-300 text-teal-600 focus:ring-teal-500"
                     />
                     <span>
-                      <span className="block font-medium text-pulse-800">{permission.label}</span>
+                      <span className="block font-medium text-pulse-800 dark:text-[#F0F2F8]">{permission.label}</span>
                       <span className="block text-xs text-pulse-500">{permission.description}</span>
-                      <span className="block text-xs text-teal-700">{permission.id}</span>
+                      <span className="block text-xs text-teal-700 dark:text-teal-400">{permission.id}</span>
                     </span>
                   </label>
                 ))}

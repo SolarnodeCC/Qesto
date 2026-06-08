@@ -57,7 +57,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
   return (
     <div className="mx-auto max-w-xl space-y-6 px-5 py-8">
       <header>
-        <h1 className="text-xl font-bold text-pulse-900">{title}</h1>
+        <h1 className="text-xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{title}</h1>
         {state.connection !== 'open' && (
           <p className="text-xs text-amber-600">
             {state.connection === 'failed' ? t('connection.failed') : t('connection.reconnecting')}
@@ -66,7 +66,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
       </header>
 
       <form onSubmit={onSubmit} className="space-y-3">
-        <label htmlFor="th-body" className="block text-sm font-semibold text-pulse-800">
+        <label htmlFor="th-body" className="block text-sm font-semibold text-pulse-800 dark:text-[#F0F2F8]">
           {t('submit.title')}
         </label>
         <textarea
@@ -81,7 +81,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
         {nameAllowed && (
           <div className="flex items-center gap-2 text-sm">
             <input id="th-usename" type="checkbox" checked={useName} onChange={(e) => setUseName(e.target.checked)} />
-            <label htmlFor="th-usename" className="text-pulse-600">
+            <label htmlFor="th-usename" className="text-pulse-600 dark:text-[#A8B3CC]">
               {t('submit.nameToggle')}
             </label>
             {useName && (
@@ -101,7 +101,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
         >
           {t('submit.button')}
         </button>
-        {submitted && <p className="text-sm font-medium text-teal-700">{t('submit.success')}</p>}
+        {submitted && <p className="text-sm font-medium text-teal-700 dark:text-teal-400">{t('submit.success')}</p>}
         {state.moderation === 'pre' && <p className="text-xs text-pulse-500">{t('submit.pendingNote')}</p>}
       </form>
 

@@ -31,7 +31,7 @@ export function QuestionVoteInput({
   if (qk === 'word_cloud' || qk === 'open') {
     if (hasVoted) {
       return (
-        <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700">
+        <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700 dark:text-teal-400">
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
           {t('vote_recorded')}
         </p>

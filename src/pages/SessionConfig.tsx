@@ -344,7 +344,7 @@ export default function SessionConfig() {
           {data.session.status === 'live' ? (
             <Link
               to={`/sessions/${id}/present`}
-              className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 hover:bg-teal-50 px-4 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 px-4 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             >
               Open presenter view →
             </Link>

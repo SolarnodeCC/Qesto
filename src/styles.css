@@ -3,6 +3,14 @@
 @import './styles/grid.css';
 @import '../design-system/colors_and_type.css';
 
+/* Dark mode follows the `data-theme="dark"` attribute that useColorScheme sets  */
+/* on <html> (honouring the manual toggle, not only the OS preference). Tailwind */
+/* v4 defaults `dark:` to the prefers-color-scheme media query, and the project's */
+/* tailwind.config.ts darkMode selector isn't loaded (no @config directive), so   */
+/* register the selector-based variant here. Without it, `dark:` utilities (e.g.  */
+/* the dashboard sidebar and topbar) ignore the toggle and track the OS instead. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* ─── Google Fonts — Inter · Syne · JetBrains Mono ────────────────────────── */
 /* Single combined request for all three brand fonts. The <link preload> in    */
 /* index.html provides the critical woff2 preload for Inter/LCP.               */
@@ -82,6 +90,19 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+}
+
+/* ─── Signature gradient backgrounds ───────────────────────────────────────── */
+/* Registered as real Tailwind v4 utilities so `bg-gradient-brand` (primary CTAs */
+/* such as the cookie-consent Accept button) and `bg-gradient-ai` (AI surfaces)  */
+/* actually paint. Without these, the classes resolve to nothing and `text-white`*/
+/* renders invisibly on light backgrounds. Tokens live in colors_and_type.css.  */
+@utility bg-gradient-brand {
+  background-image: var(--gradient-brand);
+}
+
+@utility bg-gradient-ai {
+  background-image: var(--gradient-ai);
 }
 
 /* ─── Semantic dark mode tokens ────────────────────────────────────────────── */

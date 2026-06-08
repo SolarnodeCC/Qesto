@@ -281,7 +281,7 @@ export default function EventAgendaOrganizer() {
       </div>
 
       {message && (
-        <p className="text-sm text-pulse-600" role="status">
+        <p className="text-sm text-pulse-600 dark:text-[#A8B3CC]" role="status">
           {message}
         </p>
       )}

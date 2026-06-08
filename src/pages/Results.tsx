@@ -233,7 +233,7 @@ export default function Results() {
               return (
                 <li key={r.id} className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className={isWinner ? 'font-semibold text-teal-700' : ''}>
+                    <span className={isWinner ? 'font-semibold text-teal-700 dark:text-teal-400' : ''}>
                       {r.label}
                       {isWinner ? ' · winner' : ''}
                     </span>
@@ -271,7 +271,7 @@ export default function Results() {
           type="button"
           onClick={handleExport}
           disabled={!question || results.total === 0}
-          className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 hover:border-teal-500 hover:text-teal-700 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+          className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
         >
           Export CSV
         </button>
