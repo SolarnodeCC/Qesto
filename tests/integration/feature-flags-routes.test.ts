@@ -13,6 +13,64 @@ import type { PlanTier, PlanQuotas } from '../../functions/api/types'
  * - Middleware pattern for requireFeature
  */
 
+// Helper function to get quotas for a plan
+function getQuotasForPlan(plan: PlanTier): PlanQuotas {
+  const baseQuotas: Record<PlanTier, PlanQuotas> = {
+    free: {
+      maxSessionsPerMonth: 5,
+      maxParticipantsPerSession: 50,
+      featuresUnlocked: {
+        resultsExport: false,
+        semanticSearch: false,
+        insightsAI: false,
+        customBranding: false,
+        consentMode: false,
+        rankingQuestions: false,
+        samlSso: false,
+        townhallQA: false,
+        liveCopilot: false,
+        crossSessionInsights: false,
+        recurringWorkspaces: false,
+      },
+    },
+    starter: {
+      maxSessionsPerMonth: 100,
+      maxParticipantsPerSession: 500,
+      featuresUnlocked: {
+        resultsExport: true,
+        semanticSearch: true,
+        insightsAI: false,
+        customBranding: true,
+        consentMode: true,
+        rankingQuestions: true,
+        samlSso: false,
+        townhallQA: false,
+        liveCopilot: true,
+        crossSessionInsights: false,
+        recurringWorkspaces: false,
+      },
+    },
+    team: {
+      maxSessionsPerMonth: 1000,
+      maxParticipantsPerSession: 5000,
+      featuresUnlocked: {
+        resultsExport: true,
+        semanticSearch: true,
+        insightsAI: true,
+        customBranding: true,
+        consentMode: true,
+        rankingQuestions: true,
+        samlSso: true,
+        townhallQA: true,
+        liveCopilot: true,
+        crossSessionInsights: true,
+        recurringWorkspaces: true,
+      },
+    },
+  }
+  return baseQuotas[plan]
+}
+
 describe('Feature-gated routes (Phase 3)', () => {
   describe('featureAllowed by plan', () => {
     const quotasFree: PlanQuotas = {
@@ -155,63 +213,6 @@ describe('Feature-gated routes (Phase 3)', () => {
   describe('Tiered access control', () => {
     const plans: PlanTier[] = ['free', 'starter', 'team']
 
-    const getQuotasForPlan = (plan: PlanTier): PlanQuotas => {
-      const baseQuotas: Record<PlanTier, PlanQuotas> = {
-        free: {
-          maxSessionsPerMonth: 5,
-          maxParticipantsPerSession: 50,
-          featuresUnlocked: {
-            resultsExport: false,
-            semanticSearch: false,
-            insightsAI: false,
-            customBranding: false,
-            consentMode: false,
-            rankingQuestions: false,
-            samlSso: false,
-            townhallQA: false,
-            liveCopilot: false,
-            crossSessionInsights: false,
-            recurringWorkspaces: false,
-          },
-        },
-        starter: {
-          maxSessionsPerMonth: 100,
-          maxParticipantsPerSession: 500,
-          featuresUnlocked: {
-            resultsExport: true,
-            semanticSearch: true,
-            insightsAI: false,
-            customBranding: true,
-            consentMode: true,
-            rankingQuestions: true,
-            samlSso: false,
-            townhallQA: false,
-            liveCopilot: true,
-            crossSessionInsights: false,
-            recurringWorkspaces: false,
-          },
-        },
-        team: {
-          maxSessionsPerMonth: 1000,
-          maxParticipantsPerSession: 5000,
-          featuresUnlocked: {
-            resultsExport: true,
-            semanticSearch: true,
-            insightsAI: true,
-            customBranding: true,
-            consentMode: true,
-            rankingQuestions: true,
-            samlSso: true,
-            townhallQA: true,
-            liveCopilot: true,
-            crossSessionInsights: true,
-            recurringWorkspaces: true,
-          },
-        },
-      }
-      return baseQuotas[plan]
-    }
-
     it('verifies monotonic feature unlocking across tiers', () => {
       // Each tier should have all features of lower tiers + some new ones
       const features: (keyof PlanQuotas['featuresUnlocked'])[] = [
@@ -219,9 +220,13 @@ describe('Feature-gated routes (Phase 3)', () => {
         'semanticSearch',
         'insightsAI',
         'customBranding',
+        'consentMode',
+        'rankingQuestions',
+        'samlSso',
         'townhallQA',
         'liveCopilot',
         'crossSessionInsights',
+        'recurringWorkspaces',
       ]
 
       for (let i = 0; i < plans.length - 1; i++) {
@@ -231,8 +236,8 @@ describe('Feature-gated routes (Phase 3)', () => {
         const nextQuotas = getQuotasForPlan(nextPlan)
 
         for (const feature of features) {
-          const current = featureAllowed(currentQuotas, feature as any)
-          const next = featureAllowed(nextQuotas, feature as any)
+          const current = featureAllowed(currentQuotas, feature)
+          const next = featureAllowed(nextQuotas, feature)
           // Next tier should have at least the same features
           if (current) {
             expect(next).toBe(true)
@@ -290,61 +295,3 @@ describe('Feature-gated routes (Phase 3)', () => {
     })
   })
 })
-
-// Helper function to get quotas for a plan (used above)
-function getQuotasForPlan(plan: PlanTier): PlanQuotas {
-  const baseQuotas: Record<PlanTier, PlanQuotas> = {
-    free: {
-      maxSessionsPerMonth: 5,
-      maxParticipantsPerSession: 50,
-      featuresUnlocked: {
-        resultsExport: false,
-        semanticSearch: false,
-        insightsAI: false,
-        customBranding: false,
-        consentMode: false,
-        rankingQuestions: false,
-        samlSso: false,
-        townhallQA: false,
-        liveCopilot: false,
-        crossSessionInsights: false,
-        recurringWorkspaces: false,
-      },
-    },
-    starter: {
-      maxSessionsPerMonth: 100,
-      maxParticipantsPerSession: 500,
-      featuresUnlocked: {
-        resultsExport: true,
-        semanticSearch: true,
-        insightsAI: false,
-        customBranding: true,
-        consentMode: true,
-        rankingQuestions: true,
-        samlSso: false,
-        townhallQA: false,
-        liveCopilot: true,
-        crossSessionInsights: false,
-        recurringWorkspaces: false,
-      },
-    },
-    team: {
-      maxSessionsPerMonth: 1000,
-      maxParticipantsPerSession: 5000,
-      featuresUnlocked: {
-        resultsExport: true,
-        semanticSearch: true,
-        insightsAI: true,
-        customBranding: true,
-        consentMode: true,
-        rankingQuestions: true,
-        samlSso: true,
-        townhallQA: true,
-        liveCopilot: true,
-        crossSessionInsights: true,
-        recurringWorkspaces: true,
-      },
-    },
-  }
-  return baseQuotas[plan]
-}

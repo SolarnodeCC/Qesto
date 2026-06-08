@@ -38,7 +38,7 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
       test('mobile touch target sizes are adequate (44px minimum)', async ({ page }) => {
         await page.goto('/')
 
-        // Find all interactive buttons
+        // Find all interactive buttons on page
         const buttons = page.locator('button')
         const count = await buttons.count()
 
@@ -48,9 +48,9 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
           const boundingBox = await button.boundingBox()
 
           if (boundingBox) {
-            // Height and width should both be >= 44px for optimal touch
-            expect(boundingBox.height).toBeGreaterThanOrEqual(40)
-            expect(boundingBox.width).toBeGreaterThanOrEqual(40)
+            // Height and width should both be >= 44px per WCAG 2.5.5
+            expect(boundingBox.height).toBeGreaterThanOrEqual(44)
+            expect(boundingBox.width).toBeGreaterThanOrEqual(44)
           }
         }
       })
@@ -58,22 +58,26 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
       test('form labels are accessible on mobile', async ({ page }) => {
         await page.goto('/')
 
-        // Look for input fields
+        // Look for input fields on the page
         const inputs = page.locator('input')
         const count = await inputs.count()
 
-        // If inputs exist, check for associated labels
-        for (let i = 0; i < Math.min(count, 3); i++) {
-          const input = inputs.nth(i)
-          const inputId = await input.getAttribute('id')
-
-          if (inputId) {
-            // Should have either a label or aria-label
-            const label = page.locator(`label[for="${inputId}"]`)
-            const hasLabel = await label.count() > 0
+        // If form inputs exist, verify they have accessible labels
+        if (count > 0) {
+          for (let i = 0; i < Math.min(count, 3); i++) {
+            const input = inputs.nth(i)
+            const inputId = await input.getAttribute('id')
             const ariaLabel = await input.getAttribute('aria-label')
 
-            expect(hasLabel || ariaLabel).toBeTruthy()
+            // Each input should have either a label element or aria-label attribute
+            if (inputId) {
+              const label = page.locator(`label[for="${inputId}"]`)
+              const hasLabel = await label.count() > 0
+              expect(hasLabel || ariaLabel).toBeTruthy()
+            } else if (!ariaLabel) {
+              // If no id, must have aria-label
+              expect(ariaLabel).toBeTruthy()
+            }
           }
         }
       })
@@ -147,10 +151,14 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
       test('text input accepts mobile touch typing', async ({ page }) => {
         await page.goto('/')
 
-        const inputField = page.locator('input[type="text"]').first()
-        if (await inputField.count() > 0) {
-          await inputField.fill('mobile test input')
+        // Look for text input fields on the page
+        const textInputs = page.locator('input[type="text"]')
+        const count = await textInputs.count()
 
+        // If text inputs exist, verify they accept input
+        if (count > 0) {
+          const inputField = textInputs.first()
+          await inputField.fill('mobile test input')
           const value = await inputField.inputValue()
           expect(value).toBe('mobile test input')
         }
@@ -193,17 +201,17 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
       test('images are optimized for mobile', async ({ page }) => {
         await page.goto('/')
 
-        // Check for responsive images
+        // Check for responsive images on page
         const images = page.locator('img')
         const count = await images.count()
 
         for (let i = 0; i < Math.min(count, 3); i++) {
           const img = images.nth(i)
-          const alt = await img.getAttribute('alt')
 
-          // Images should have alt text for accessibility
+          // Visible images should have alt attribute (may be empty string for decorative images)
           if (await img.isVisible()) {
-            expect(alt || alt === '').toBeDefined()
+            const alt = await img.getAttribute('alt')
+            expect(alt).toBeDefined()
           }
         }
       })
@@ -250,7 +258,7 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
       test('interactive elements have sufficient spacing on mobile', async ({ page }) => {
         await page.goto('/')
 
-        // Check button spacing
+        // Check button spacing per WCAG 2.5.5
         const buttons = page.locator('button')
         const count = await buttons.count()
 
@@ -259,11 +267,11 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
           const button2 = await buttons.nth(1).boundingBox()
 
           if (button1 && button2) {
-            // Calculate distance between buttons
+            // Calculate vertical distance between button edges
             const distance = Math.abs(button1.y + button1.height - button2.y)
 
-            // Should have at least 8px spacing
-            expect(distance).toBeGreaterThanOrEqual(4)
+            // Should have at least 8px spacing to prevent accidental activation
+            expect(distance).toBeGreaterThanOrEqual(8)
           }
         }
       })
