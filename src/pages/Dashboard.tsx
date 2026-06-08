@@ -30,10 +30,12 @@ export default function Dashboard() {
   const { state, refresh } = useSessions()
   const userId = auth.status === 'authenticated' ? auth.user.id : undefined
   void useQuotaUsage(userId)
-  const closedSessions =
-    state.status === 'ready'
+  const closedSessions = useMemo(
+    () => state.status === 'ready'
       ? state.sessions.filter((s) => s.status === 'closed' || s.status === 'archived')
-      : []
+      : [],
+    [state],
+  )
   const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(
     closedSessions,
     activeSection === 'insights',
