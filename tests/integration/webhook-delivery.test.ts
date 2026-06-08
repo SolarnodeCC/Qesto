@@ -9,7 +9,6 @@ import {
   type WebhookConfig,
   type WebhookPayload,
 } from '../../functions/api/lib/webhooks'
-import { enqueueWebhookDlq } from '../../functions/api/lib/webhook-dlq'
 import { KVMock } from '../helpers/kv-mock'
 
 describe('webhook delivery (Phase 1)', () => {
@@ -19,7 +18,7 @@ describe('webhook delivery (Phase 1)', () => {
   beforeEach(() => {
     kv = new KVMock() as unknown as KVNamespace
     fetchMock = vi.fn()
-    global.fetch = fetchMock
+    global.fetch = fetchMock as any
   })
 
   afterEach(() => {
@@ -156,7 +155,7 @@ describe('webhook delivery (Phase 1)', () => {
     })
 
     it('skips delivery if event is not subscribed', async () => {
-      const configNoEvent = { ...config, events: ['session.started'] }
+      const configNoEvent: WebhookConfig = { ...config, events: ['session.started'] }
 
       await deliverWebhook(configNoEvent, payload, kv)
 
