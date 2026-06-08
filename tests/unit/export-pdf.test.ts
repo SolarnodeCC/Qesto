@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { generateSessionHtmlExport, type ExportSessionData, type ExportQuestion } from '../../functions/api/lib/export-pdf'
+import { generateSessionHtmlExport, type ExportSessionData } from '../../functions/api/lib/export-pdf'
 
 const JWT_SECRET = 'test-secret-at-least-32-bytes!'
 

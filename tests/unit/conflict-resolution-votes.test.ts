@@ -2,7 +2,6 @@ import { describe, expect, it, beforeEach } from 'vitest'
 import {
   evaluateVoteAdmission,
   applyVoteMutation,
-  isMultiVoteQuestionKind,
   type TokenBucket,
   type SessionVotes,
 } from '../../functions/api/lib/session-room-vote'
@@ -54,7 +53,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toMatch(/out_of_date|question/)
+      if (!result.ok) {
+        expect(result.code).toMatch(/out_of_date|question/)
+      }
     })
 
     it('accepts vote with matching question ID', () => {
@@ -79,6 +80,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.optionId).toBe('opt-1')
+      }
     })
   })
 
@@ -212,7 +216,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('bad_option')
+      if (!result.ok) {
+        expect(result.code).toBe('bad_option')
+      }
     })
 
     it('rejects vote for nonexistent option', () => {
@@ -237,7 +243,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('bad_option')
+      if (!result.ok) {
+        expect(result.code).toBe('bad_option')
+      }
     })
 
     it('accepts vote for valid free-text option (word_cloud)', () => {
@@ -259,6 +267,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.optionId).toBe('user-entered-text')
+      }
     })
   })
 
@@ -285,7 +296,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('paused')
+      if (!result.ok) {
+        expect(result.code).toBe('paused')
+      }
     })
 
     it('rejects vote after question expires', () => {
@@ -313,7 +326,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('question_closed')
+      if (!result.ok) {
+        expect(result.code).toBe('question_closed')
+      }
     })
 
     it('rejects vote when no question is active', () => {
@@ -329,7 +344,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('no_question')
+      if (!result.ok) {
+        expect(result.code).toBe('no_question')
+      }
     })
 
     it('preserves bucket state on rejection', () => {
@@ -342,7 +359,6 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
         ],
       }
 
-      const originalTokens = bucket.tokens
       const originalLastAt = bucket.lastAt
 
       // Vote fails due to missing optionId
@@ -375,7 +391,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(true)
-      expect(result.countKey).toBe('opt-1')
+      if (result.ok) {
+        expect(result.countKey).toBe('opt-1')
+      }
       expect(voters['p-1']).toEqual(['opt-1'])
     })
 
@@ -392,7 +410,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('duplicate')
+      if (!result.ok) {
+        expect(result.code).toBe('duplicate')
+      }
       expect(voters['p-1']).toEqual(['opt-1']) // Unchanged
     })
 
@@ -409,8 +429,10 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(true)
-      expect(result.countKey).toBe('opt-2')
-      expect(result.countDecKey).toBe('opt-1') // Decrement previous
+      if (result.ok) {
+        expect(result.countKey).toBe('opt-2')
+        expect(result.countDecKey).toBe('opt-1') // Decrement previous
+      }
       expect(voters['p-1']).toEqual(['opt-2'])
     })
 
@@ -427,7 +449,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('duplicate')
+      if (!result.ok) {
+        expect(result.code).toBe('duplicate')
+      }
     })
 
     it('allows multiple votes for multi_select kind', () => {
@@ -443,6 +467,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.countKey).toBe('opt-2')
+      }
       expect(voters['p-1']).toEqual(['opt-1', 'opt-2'])
     })
 
@@ -459,7 +486,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('duplicate')
+      if (!result.ok) {
+        expect(result.code).toBe('duplicate')
+      }
     })
 
     it('allows multiple votes for different options in upvote kind', () => {
@@ -474,6 +503,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result1.ok).toBe(true)
+      if (result1.ok) {
+        expect(result1.countKey).toBe('opt-1')
+      }
       expect(voters['p-1']).toEqual(['opt-1'])
 
       // Can upvote different option
@@ -485,6 +517,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       expect(result2.ok).toBe(true)
+      if (result2.ok) {
+        expect(result2.countKey).toBe('opt-2')
+      }
       expect(voters['p-1']).toEqual(['opt-1', 'opt-2'])
     })
 
@@ -501,8 +536,11 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
       })
 
       // Should have decrement key for previous vote
-      expect(result.countDecKey).toBe('opt-1')
-      expect(result.countKey).toBe('opt-2')
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.countDecKey).toBe('opt-1')
+        expect(result.countKey).toBe('opt-2')
+      }
     })
   })
 
@@ -533,7 +571,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
 
       // Should be rate-limited, not other errors
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('rate_limited')
+      if (!result.ok) {
+        expect(result.code).toBe('rate_limited')
+      }
     })
 
     it('pause check comes before question existence', () => {
@@ -550,7 +590,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
 
       // Should fail on pause, not on missing question
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('paused')
+      if (!result.ok) {
+        expect(result.code).toBe('paused')
+      }
     })
 
     it('question expiry check comes before ID mismatch', () => {
@@ -577,7 +619,9 @@ describe('Conflict resolution — vote admission guards (Phase 2)', () => {
 
       // Should fail on expiry, not ID mismatch
       expect(result.ok).toBe(false)
-      expect(result.code).toBe('question_closed')
+      if (!result.ok) {
+        expect(result.code).toBe('question_closed')
+      }
     })
   })
 })
