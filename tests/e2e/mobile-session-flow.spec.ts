@@ -159,7 +159,6 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
       test('mobile form submission via touch', async ({ page }) => {
         await page.goto('/')
 
-        const form = page.locator('form').first()
         const submitButton = page.locator('button[type="submit"]').first()
 
         if (await submitButton.count() > 0) {
@@ -276,17 +275,11 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
         if (await button.count() > 0) {
           await button.focus()
 
-          // Check for visible focus styles
-          const hasFocusStyle = await button.evaluate((el) => {
-            const style = window.getComputedStyle(el, ':focus')
-            const outline = style.outline
-            return outline !== 'none' && outline !== ''
-          })
-
           // Should have some focus indicator
-          expect(await button.evaluate(el => {
-            return (el as HTMLElement).className || (el as HTMLElement).getAttribute('style')
-          })).toBeTruthy()
+          const hasIndicator = await button.evaluate(el => {
+            return !!(((el as HTMLElement).className || (el as HTMLElement).getAttribute('style')))
+          })
+          expect(hasIndicator).toBeTruthy()
         }
       })
 
@@ -306,16 +299,6 @@ Object.entries(MOBILE_DEVICES).forEach(([deviceName, deviceConfig]) => {
     })
 
     test.describe('Mobile device-specific features', () => {
-      test.skip(deviceName.includes('Pixel'), 'Android-specific tests', () => {
-        // Android-specific tests would go here
-        // Example: Samsung DeX, Multi-window support, etc.
-      })
-
-      test.skip(deviceName.includes('iPhone'), 'iOS-specific tests', () => {
-        // iOS-specific tests would go here
-        // Example: NotchAware, Safe Area support, etc.
-      })
-
       test('device orientation changes are handled', async ({ page }) => {
         await page.goto('/')
 
