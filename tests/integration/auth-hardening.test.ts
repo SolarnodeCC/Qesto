@@ -26,6 +26,10 @@ function makeAuthEnv(db: D1Mock, overrides: Partial<Env> = {}): Env {
 }
 
 describe('auth JSON error sanitization', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('does not leak DB exception text on magic-link request in production', async () => {
     const db = new D1Mock()
     const origPrepare = db.prepare.bind(db)
@@ -134,6 +138,7 @@ describe('auth JSON error sanitization', () => {
 
 describe('OAuth characterization + hardening', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     vi.spyOn(oauth, 'consumeOAuthState').mockResolvedValue(true)
     vi.spyOn(oauth, 'exchangeGoogleCode').mockResolvedValue({ email: 'oauth-user@example.com', sub: 'google-sub-1' })
   })
@@ -185,6 +190,9 @@ describe('OAuth characterization + hardening', () => {
 })
 
 describe('SAML characterization + hardening', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
   afterEach(() => vi.restoreAllMocks())
 
   it('metadata returns SAML XML', async () => {

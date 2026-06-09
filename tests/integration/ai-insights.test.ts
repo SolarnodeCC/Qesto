@@ -1,4 +1,18 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+describe('GET /api/sessions/:id/insights — response contract', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it.skip('returns themes and followUps shape without raw AI blob', async () => {
+    // NOTE: Skipped - requires D1Mock support for full session lookup via sessionOwnedBy().
+    // This test verifies that response shape would be:
+    // { session_id, themes: [...], follow_ups: [...] } without raw AI blob.
+    // Once D1Mock improves to support SELECT queries, this can be enabled.
+    expect(true).toBe(true)
+  })
+})
 
 describe('AI-Powered Insights (Phase 9 Step 6)', () => {
   describe('Plan Gating', () => {

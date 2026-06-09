@@ -38,7 +38,7 @@ describe('ai-insights/extractThemes', () => {
       sessionTitle: 'Empty',
       openResponses: [],
     })
-    expect(result.themes).toEqual([])
+    expect(result.themes).toHaveLength(0)
   })
 
   it('throws InsightsValidationError when JSON absent', async () => {
