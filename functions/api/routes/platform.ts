@@ -9,6 +9,7 @@ import { readKvJson } from '../lib/kv'
 import { sloCountersKvKey } from '../lib/slo'
 import type { Env } from '../types'
 import { getFlag } from '../lib/flags'
+import type { ParentApp } from './parent-app'
 
 const RELEASES = [
   { version: '3.2.0', codename: 'v3.2', status: 'ga', sprint: 66 },
@@ -21,8 +22,7 @@ const RELEASES = [
   { version: '5.1.0', codename: 'v5.1', status: 'ga', sprint: 84 },
 ] as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountPlatformRoutes(parent: any) {
+export function mountPlatformRoutes(parent: ParentApp) {
   const pub = new Hono<{ Bindings: Env; Variables: { trace_id: string } }>()
 
   pub.get('/version', (c) =>

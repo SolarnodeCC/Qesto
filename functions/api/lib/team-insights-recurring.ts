@@ -12,6 +12,7 @@ import {
 import { upsertTeamInsightRollup, type TeamInsightKind } from './team-insights'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { withTimeout } from './shared/async'
+import { InsightThemesJsonSchema, decodeKvJson } from './boundary-decode'
 
 export const INSIGHT_TREND_WINDOWS = ['30d', '90d', '180d'] as const
 export type InsightTrendWindow = (typeof INSIGHT_TREND_WINDOWS)[number]
@@ -78,15 +79,11 @@ export async function listTeamInsightsDaily(
 }
 
 function parseThemeLabels(themesJson: string): string[] {
-  try {
-    const parsed = JSON.parse(themesJson) as Array<{ theme?: string }>
-    if (!Array.isArray(parsed)) return []
-    return parsed
-      .map((t) => (typeof t.theme === 'string' ? t.theme.trim() : ''))
-      .filter(Boolean)
-  } catch {
-    return []
-  }
+  const parsed = decodeKvJson(themesJson, InsightThemesJsonSchema)
+  if (!parsed) return []
+  return parsed
+    .map((t) => (typeof t.theme === 'string' ? t.theme.trim() : ''))
+    .filter(Boolean)
 }
 
 function firstVector(result: unknown): number[] | undefined {

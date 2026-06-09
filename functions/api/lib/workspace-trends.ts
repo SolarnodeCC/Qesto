@@ -1,6 +1,12 @@
 import { ulid } from './ulid'
 import { namespacedKey } from './tenant-namespace'
 import type { WorkspaceTrendKind, WorkspaceTrendWindow } from './workspace-types'
+import type { z } from 'zod'
+import {
+  decodeKvJson,
+  RetroHealthThemeSchema,
+  WorkspaceTrendUnionSchema,
+} from './boundary-decode'
 
 const K_ANON_INSTANCES = 3
 const K_MIN_RESPONDENTS = 5
@@ -56,13 +62,18 @@ export function moodFromRetroCounts(wentWell: number, didntGoWell: number): { mo
 }
 
 export function parseRetroHealthTheme(themesJson: string): RetroHealthTheme | null {
+  let arr: unknown
   try {
-    const arr = JSON.parse(themesJson) as unknown[]
-    const hit = arr.find((t) => t && typeof t === 'object' && (t as RetroHealthTheme).kind === 'retro_health')
-    return hit ? (hit as RetroHealthTheme) : null
+    arr = JSON.parse(themesJson)
   } catch {
     return null
   }
+  if (!Array.isArray(arr)) return null
+  for (const item of arr) {
+    const parsed = RetroHealthThemeSchema.safeParse(item)
+    if (parsed.success) return parsed.data
+  }
+  return null
 }
 
 /** Persist aggregate retro board stats to insights_daily (ZK-excluded at caller). */
@@ -144,11 +155,7 @@ export async function getWorkspaceTrend(
     .bind(workspaceId, kind, window)
     .first<{ payload_json: string }>()
   if (!row) return null
-  try {
-    return JSON.parse(row.payload_json) as WorkspaceTrendPayload | WorkspaceTeamHealthPayload
-  } catch {
-    return null
-  }
+  return asWorkspaceTrendPayload(decodeKvJson(row.payload_json, WorkspaceTrendUnionSchema))
 }
 
 export async function recomputeWorkspaceParticipationTrend(
@@ -210,11 +217,7 @@ export async function readCachedWorkspaceTrend(
 ): Promise<WorkspaceTrendPayload | WorkspaceTeamHealthPayload | null> {
   const raw = await kv.get(trendCacheKey(teamId, workspaceId, kind, window))
   if (!raw) return null
-  try {
-    return JSON.parse(raw) as WorkspaceTrendPayload | WorkspaceTeamHealthPayload
-  } catch {
-    return null
-  }
+  return asWorkspaceTrendPayload(decodeKvJson(raw, WorkspaceTrendUnionSchema))
 }
 
 export async function writeCachedWorkspaceTrend(
@@ -302,4 +305,12 @@ export async function recomputeWorkspaceTeamHealthTrend(
 
 export async function purgeWorkspaceTrends(db: D1Database, workspaceId: string): Promise<void> {
   await db.prepare(`DELETE FROM workspace_trend WHERE workspace_id = ?1`).bind(workspaceId).run()
+}
+
+/** Narrow Zod output to app payload types (exactOptionalPropertyTypes-safe). */
+function asWorkspaceTrendPayload(
+  parsed: z.infer<typeof WorkspaceTrendUnionSchema> | null,
+): WorkspaceTrendPayload | WorkspaceTeamHealthPayload | null {
+  if (!parsed) return null
+  return parsed as WorkspaceTrendPayload | WorkspaceTeamHealthPayload
 }

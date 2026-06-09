@@ -51,3 +51,83 @@ export async function decodeRequestBody<T>(
   if (result.success) return { ok: true, data: result.data }
   return { ok: false, error: result.error }
 }
+
+// ── Domain boundary schemas ────────────────────────────────────────────────
+// Zod schemas for JSON payloads crossing trust boundaries (KV blobs, D1 JSON
+// columns, vector metadata). Decode with `decodeKvJson` / `decodeObject`.
+
+/** Theme labels stored in insights_daily.themes_json. */
+export const InsightThemeEntrySchema = z.object({
+  theme: z.string().optional(),
+})
+
+export const InsightThemesJsonSchema = z.array(InsightThemeEntrySchema)
+
+export const CachedThemeLabelsSchema = z.object({
+  themes: z.array(z.string()),
+})
+
+export const RetroHealthThemeSchema = z.object({
+  kind: z.literal('retro_health'),
+  wentWell: z.number(),
+  didntGoWell: z.number(),
+  actions: z.number(),
+  totalCards: z.number(),
+})
+
+export const WorkspaceParticipationPointSchema = z.object({
+  instanceSeq: z.number(),
+  sessionId: z.string(),
+  closedAt: z.number(),
+  responseCount: z.number(),
+})
+
+export const WorkspaceTeamHealthPointSchema = z.object({
+  instanceSeq: z.number(),
+  sessionId: z.string(),
+  closedAt: z.number(),
+  moodScore: z.number(),
+  mood: z.enum(['positive', 'neutral', 'concerning']),
+  participation: z.number(),
+  wentWell: z.number(),
+  didntGoWell: z.number(),
+  actions: z.number(),
+})
+
+export const WorkspaceTrendPayloadSchema = z.object({
+  instanceCount: z.number(),
+  points: z.array(WorkspaceParticipationPointSchema).optional(),
+  message: z.string().optional(),
+})
+
+export const WorkspaceTeamHealthPayloadSchema = z.object({
+  instanceCount: z.number(),
+  points: z.array(WorkspaceTeamHealthPointSchema).optional(),
+  message: z.string().optional(),
+})
+
+export const WorkspaceTrendUnionSchema = z.union([
+  WorkspaceTrendPayloadSchema,
+  WorkspaceTeamHealthPayloadSchema,
+])
+
+export const RetroWorkspaceTemplateSchema = z.object({
+  dotVoteLimit: z.number().optional(),
+})
+
+export const IdeateWorkspaceTemplateSchema = z.object({
+  dotVoteLimit: z.number().optional(),
+  clusterDebounceMs: z.number().optional(),
+})
+
+export const OgImageColorSchema = z.enum(['teal', 'purple', 'orange'])
+
+export const KbVectorMetadataSchema = z.object({
+  doc_id: z.string(),
+  chunk_id: z.string(),
+  type: z.enum(['adr', 'spec', 'guide', 'runbook', 'experiment', 'unknown']),
+  domain: z.string(),
+  status: z.enum(['draft', 'proposed', 'accepted', 'deprecated']),
+  tags: z.array(z.string()),
+  heading_path: z.string(),
+})

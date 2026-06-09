@@ -14,8 +14,9 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { Env } from '../../types'
+import type { ParentApp } from '../parent-app'
 
-export function mountPhase2HealthRoutes(parent: any): void {
+export function mountPhase2HealthRoutes(parent: ParentApp): void {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
   /**
    * GET /api/admin/phase2/health

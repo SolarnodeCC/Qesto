@@ -38,8 +38,14 @@ import type { WorkspaceKind, WorkspaceRow, WorkspaceTrendWindow } from '../lib/w
 import { DEFAULT_IDEATE_TEMPLATE, DEFAULT_RETRO_TEMPLATE } from '../lib/workspace-types'
 import { ideateSeedKey, type IdeateSessionSeed } from './ideate-sessions'
 import { retroSeedKey, type RetroSessionSeed } from './retro-sessions'
+import {
+  IdeateWorkspaceTemplateSchema,
+  decodeKvJson,
+  RetroWorkspaceTemplateSchema,
+} from '../lib/boundary-decode'
 import type { Team } from './teams'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -109,8 +115,7 @@ async function loadWorkspaceRow(db: D1Database, wsId: string, teamId: string): P
     .first<WorkspaceRow>()
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountTeamWorkspaceRoutes(parent: any) {
+export function mountTeamWorkspaceRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
@@ -320,7 +325,7 @@ export function mountTeamWorkspaceRoutes(parent: any) {
       carriedActions = await carryOpenActionsToNewInstance(c.env.ACTIONS_KV, teamId, wsId, created.sessionId)
     }
     if (ws.kind === 'retro' && c.env.SESSIONS_KV) {
-      const template = JSON.parse(ws.template_json || '{}') as { dotVoteLimit?: number }
+      const template = decodeKvJson(ws.template_json || '{}', RetroWorkspaceTemplateSchema) ?? {}
       const seed: RetroSessionSeed = {
         dotVoteLimit: template.dotVoteLimit ?? DEFAULT_RETRO_TEMPLATE.dotVoteLimit,
         carriedActions: carriedActions.map((a) => a.text),
@@ -328,7 +333,7 @@ export function mountTeamWorkspaceRoutes(parent: any) {
       await writeKvJson(c.env.SESSIONS_KV, retroSeedKey(created.sessionId), seed, { expirationTtl: 86400 * 7 })
     }
     if (ws.kind === 'ideate' && c.env.SESSIONS_KV) {
-      const template = JSON.parse(ws.template_json || '{}') as { dotVoteLimit?: number; clusterDebounceMs?: number }
+      const template = decodeKvJson(ws.template_json || '{}', IdeateWorkspaceTemplateSchema) ?? {}
       const seed: IdeateSessionSeed = {
         dotVoteLimit: template.dotVoteLimit ?? DEFAULT_IDEATE_TEMPLATE.dotVoteLimit,
         clusterDebounceMs: template.clusterDebounceMs ?? DEFAULT_IDEATE_TEMPLATE.clusterDebounceMs,

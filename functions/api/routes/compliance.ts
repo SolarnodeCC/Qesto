@@ -6,9 +6,9 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { AdminVariables } from '../middleware/admin'
 import { adminMiddleware } from '../middleware/admin'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountComplianceRoutes(parent: any) {
+export function mountComplianceRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
   app.use('*', authMiddleware)
   app.use('*', adminMiddleware)

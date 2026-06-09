@@ -10,6 +10,7 @@ import { SESSION_SEED_TTL_SECONDS } from '../lib/constants'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { DEFAULT_IDEATE_TEMPLATE } from '../lib/workspace-types'
 import type { Env, Session } from '../types'
+import type { ParentApp } from './parent-app'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -27,8 +28,7 @@ export function ideateSeedKey(sessionId: string): string {
   return `ideate-seed:${sessionId}`
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountIdeateSessionRoutes(parent: any) {
+export function mountIdeateSessionRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

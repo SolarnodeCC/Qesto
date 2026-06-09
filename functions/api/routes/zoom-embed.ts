@@ -7,9 +7,9 @@ import { readKvJson } from '../lib/kv'
 import { zoomConfigKey, type ZoomIntegrationConfig } from './integrations'
 import { createEncryptedTokenStore } from '../lib/integrations/token-store'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountZoomEmbedRoutes(parent: any) {
+export function mountZoomEmbedRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables }>()
   app.use('*', authMiddleware)
 

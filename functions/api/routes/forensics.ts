@@ -10,9 +10,9 @@ import { cmkKvKey, parseCmkEnvelope } from '../lib/cmk'
 import { readKvText } from '../lib/kv'
 import { readKvJson } from '../lib/kv'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountForensicsRoutes(parent: any) {
+export function mountForensicsRoutes(parent: ParentApp) {
   const admin = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables }>()
   admin.use('*', authMiddleware)
   admin.use('*', adminMiddleware)

@@ -8,9 +8,9 @@ import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
 import { getTeamResidencyPin, setTeamResidencyPin } from '../lib/residency-enforce'
 import type { Env } from '../types'
+import type { ParentApp } from './parent-app'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountResidencyRoutes(parent: any) {
+export function mountResidencyRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: AuthVariables & PlanVariables }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)

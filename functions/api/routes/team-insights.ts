@@ -19,7 +19,12 @@ import {
   getTeamInsightRollup,
   type TeamInsightKind,
 } from '../lib/team-insights'
-import { recomputeFacilitatorScorecard } from '../lib/team-insights-scorecard'
+import {
+  FacilitatorScorecardPayloadSchema,
+  recomputeFacilitatorScorecard,
+} from '../lib/team-insights-scorecard'
+import { decodeKvJson } from '../lib/boundary-decode'
+import type { ParentApp } from './parent-app'
 import { buildInsightsExport, insightsExportToCsv } from '../lib/team-insights-export'
 import { teamDocumentKey } from '../lib/kv-keys'
 import type { Team } from './teams'
@@ -40,8 +45,7 @@ function isTeamMember(team: Team, userId: string): boolean {
   return team.ownerId === userId || team.members.some((m) => m.userId === userId)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mountTeamInsightsRoutes(parent: any) {
+export function mountTeamInsightsRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
@@ -165,7 +169,8 @@ export function mountTeamInsightsRoutes(parent: any) {
     const stale = !rollup || Date.now() - rollup.computed_at > 86_400_000
     const scorecard = stale
       ? await recomputeFacilitatorScorecard(c.env.DB, teamId, window)
-      : (JSON.parse(rollup!.payload_json) as Awaited<ReturnType<typeof recomputeFacilitatorScorecard>>)
+      : (decodeKvJson(rollup!.payload_json, FacilitatorScorecardPayloadSchema) ??
+        (await recomputeFacilitatorScorecard(c.env.DB, teamId, window)))
 
     writeEvent(c.env.METRICS_AE, {
       name: 'insight.scorecard_viewed',

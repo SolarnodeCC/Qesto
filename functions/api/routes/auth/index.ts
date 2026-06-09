@@ -7,10 +7,11 @@ import { registerPasswordAuthRoutes } from './password'
 import { registerSamlRoutes } from './saml'
 import { registerAuthSessionRoutes } from './session-routes'
 import type { AuthVars } from './types'
+import type { ParentApp } from '../parent-app'
 
 export { pwdKey, oauthKey, resetKey, upsertOAuthUser } from './helpers'
 
-export function mountAuthRoutes(parent: any): void {
+export function mountAuthRoutes(parent: ParentApp): void {
   const app = new Hono<{ Bindings: Env; Variables: AuthVars }>()
 
   registerMagicLinkRoutes(app)

@@ -3,8 +3,10 @@
  * Non-ZK sessions only (ZK rows are structurally absent; query excludes zero_knowledge defensively).
  */
 import type { D1Database } from '@cloudflare/workers-types'
+import { z } from 'zod'
 import { upsertTeamInsightRollup } from './team-insights'
 import { cutoffDayForWindow, type InsightTrendWindow } from './team-insights-recurring'
+import { InsightThemesJsonSchema, decodeKvJson } from './boundary-decode'
 
 export type MoodBucket = 'positive' | 'neutral' | 'concerning'
 
@@ -35,6 +37,33 @@ export type FacilitatorScorecardPayload = {
   computedAt: number
 }
 
+export const FacilitatorScorecardPayloadSchema = z.object({
+  window: z.enum(['30d', '90d', '180d']),
+  facilitators: z.array(
+    z.object({
+      facilitatorId: z.string(),
+      sessionsRun: z.number(),
+      avgParticipation: z.number(),
+      responseRate: z.number(),
+      themeDiversity: z.number(),
+      moodTrend: z.array(
+        z.object({
+          day: z.string(),
+          mood: z.enum(['positive', 'neutral', 'concerning']),
+          sampleSize: z.number(),
+        }),
+      ),
+    }),
+  ),
+  teamSummary: z.object({
+    sessionsRun: z.number(),
+    avgParticipation: z.number(),
+    responseRate: z.number(),
+    themeDiversity: z.number(),
+  }),
+  computedAt: z.number(),
+})
+
 type ScorecardRow = {
   session_id: string
   day: string
@@ -51,15 +80,11 @@ function moodFromConfidence(confidence: number): MoodBucket {
 }
 
 function parseThemeLabels(themesJson: string): string[] {
-  try {
-    const parsed = JSON.parse(themesJson) as Array<{ theme?: string }>
-    if (!Array.isArray(parsed)) return []
-    return parsed
-      .map((t) => (typeof t.theme === 'string' ? t.theme.trim().toLowerCase() : ''))
-      .filter(Boolean)
-  } catch {
-    return []
-  }
+  const parsed = decodeKvJson(themesJson, InsightThemesJsonSchema)
+  if (!parsed) return []
+  return parsed
+    .map((t) => (typeof t.theme === 'string' ? t.theme.trim().toLowerCase() : ''))
+    .filter(Boolean)
 }
 
 export async function listScorecardSourceRows(
