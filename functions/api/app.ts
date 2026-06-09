@@ -177,13 +177,13 @@ export function createApp() {
     const maybeStatus = (err as unknown as { status?: number }).status
     const status = typeof maybeStatus === 'number' ? maybeStatus : 500
     // Fire analytics event for 5xx errors only; 4xx client errors are noise.
-    if (status >= 500) {
+    if (status >= 500 && c.env?.METRICS_AE) {
       writeEvent(c.env.METRICS_AE, {
         name: 'error.api',
         traceId: trace_id,
       })
     }
-    const sanitized = sanitizeError(err, c.env.ENV, status)
+    const sanitized = sanitizeError(err, c.env?.ENV, status)
     const code = status === 401
       ? 'unauthenticated'
       : status === 403

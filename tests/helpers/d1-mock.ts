@@ -123,6 +123,19 @@ function filterAuditEventsForMock(rows: AuditEvent[], sql: string, filterArgs: u
   return out
 }
 
+type EnergizerRow = {
+  id: string
+  session_id: string
+  kind: string
+  prompt: string
+  options_json: string
+  config_json: string
+  position: number
+  state: string
+  created_at: number
+  updated_at: number
+}
+
 type InsightsDailyRow = {
   id: string
   session_id: string
@@ -181,6 +194,7 @@ export class D1Mock {
   readonly customRoles = new Map<string, CustomRoleRow>()
   readonly teamRoleAssignments = new Map<string, TeamRoleAssignmentRow>()
   readonly townhallQuestions = new Map<string, TownhallQuestionRow>()
+  readonly energizers = new Map<string, EnergizerRow>()
   readonly deviceTokens = new Map<
     string,
     {
@@ -1046,6 +1060,86 @@ export class D1PreparedStatementMock {
       })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO energizers')) {
+      // INSERT INTO energizers (id, session_id, kind, prompt, config_json, position, state, created_at, updated_at)
+      // VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)
+      const [id, session_id, kind, prompt, config_json, position, state, created_at, updated_at] = this.args as [
+        string, string, string, string, string, number, string, number, number,
+      ]
+      this.db.energizers.set(id, {
+        id,
+        session_id,
+        kind,
+        prompt,
+        options_json: '[]',
+        config_json,
+        position,
+        state,
+        created_at,
+        updated_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith("UPDATE energizers SET state = 'completed'")) {
+      // UPDATE energizers SET state = 'completed', updated_at = ?1
+      // WHERE session_id = ?2 AND state = 'active' AND id != ?3
+      const [updated_at, session_id, energizer_id] = this.args as [number, string, string]
+      let changes = 0
+      for (const row of this.db.energizers.values()) {
+        if (row.session_id === session_id && row.state === 'active' && row.id !== energizer_id) {
+          row.state = 'completed'
+          row.updated_at = updated_at
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.includes('UPDATE energizers SET') && this.sql.includes('WHERE id = ?') && this.sql.includes('AND session_id = ?')) {
+      // Dynamic UPDATE based on what fields are being set
+      // PATCH endpoint builds dynamic SQL: UPDATE energizers SET updated_at = ?1, [state = ?2], [prompt = ?3], [config_json = ?4]
+      // WHERE id = ?N AND session_id = ?M
+      const sets: string[] = []
+      let paramIdx = 1
+      const updated_at = this.args[0] as number
+      sets.push('updated_at')
+      paramIdx++
+
+      let state: string | undefined
+      let prompt: string | undefined
+      let config_json: string | undefined
+
+      // Parse what's being set from the SQL
+      if (this.sql.includes(`state = ?${paramIdx}`)) {
+        state = this.args[paramIdx] as string
+        sets.push('state')
+        paramIdx++
+      }
+      if (this.sql.includes(`prompt = ?${paramIdx}`)) {
+        prompt = this.args[paramIdx] as string
+        sets.push('prompt')
+        paramIdx++
+      }
+      if (this.sql.includes(`config_json = ?${paramIdx}`)) {
+        config_json = this.args[paramIdx] as string
+        sets.push('config_json')
+        paramIdx++
+      }
+
+      const energizerId = this.args[paramIdx++] as string
+      const sessionId = this.args[paramIdx++] as string
+
+      const row = this.db.energizers.get(energizerId)
+      if (!row || row.session_id !== sessionId) {
+        return { meta: { changes: 0 } }
+      }
+
+      row.updated_at = updated_at
+      if (state !== undefined) row.state = state
+      if (prompt !== undefined) row.prompt = prompt
+      if (config_json !== undefined) row.config_json = config_json
+
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith('INSERT INTO custom_roles')) {
       const [id, team_id, name, permissions_json, created_by, created_at, updated_at] = this.args as [
         string, string, string, string, string, number, number,
@@ -1202,6 +1296,20 @@ export class D1PreparedStatementMock {
       if (owner_id === undefined) return (row as unknown as T) ?? null
       return (row && row.owner_id === owner_id ? (row as unknown as T) : null)
     }
+    if (this.sql.startsWith('SELECT id, owner_id, title, status, closed_at, created_at')) {
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      return (row && row.owner_id === owner_id
+        ? {
+            id: row.id,
+            owner_id: row.owner_id,
+            title: row.title,
+            status: row.status,
+            closed_at: row.closed_at,
+            created_at: row.created_at,
+          }
+        : null) as T | null
+    }
     if (this.sql.startsWith('SELECT team_id, kind, window, payload_json, computed_at')) {
       const [team_id, kind, window] = this.args as [string, string, string]
       const key = `${team_id}:${kind}:${window}`
@@ -1302,6 +1410,11 @@ export class D1PreparedStatementMock {
       const [id, team_id] = this.args as [string, string]
       const row = this.db.workspaces.get(id)
       return (row && row.team_id === team_id ? { id: row.id } : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT id FROM sessions WHERE id = ?1 AND owner_id = ?2')) {
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      return (row && row.owner_id === owner_id ? { id: row.id } : null) as T | null
     }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
@@ -1609,6 +1722,36 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.deviceTokens.values()]
         .filter((r) => r.user_id === user_id && r.revoked_at == null)
         .sort((a, b) => b.last_seen_at - a.last_seen_at)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT id, kind, prompt, config_json, state, position, created_at FROM energizers')) {
+      const [session_id] = this.args as [string]
+      const rows = [...this.db.energizers.values()]
+        .filter((e) => e.session_id === session_id)
+        .sort((a, b) => a.position - b.position)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM votes v') && this.sql.includes('JOIN questions q') && this.sql.includes("q.kind = 'open'")) {
+      // SELECT v.option_id AS text FROM votes v JOIN questions q ON q.id = v.question_id
+      // WHERE v.session_id = ?1 AND q.kind = 'open' ORDER BY v.submitted_at ASC LIMIT 500
+      const [session_id] = this.args as [string]
+      const rows: Array<{ text: string }> = []
+      for (const vote of this.db.votes.values()) {
+        if (vote.session_id !== session_id) continue
+        const question = [...this.db.questions.values()].find((q) => q.id === vote.question_id)
+        if (question && question.kind === 'open') {
+          rows.push({ text: vote.option_id })
+        }
+      }
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT id, prompt, kind, options_json')) {
+      // SELECT id, prompt, kind, options_json FROM questions WHERE session_id = ?1 ORDER BY position ASC LIMIT 20
+      const [session_id] = this.args as [string]
+      const rows = [...this.db.questions.values()]
+        .filter((q) => q.session_id === session_id)
+        .sort((a, b) => a.position - b.position)
+        .slice(0, 20)
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

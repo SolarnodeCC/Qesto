@@ -31,6 +31,9 @@ export async function testHonoApp() {
     AUDIT_KV: kv(),
     ACTIONS_KV: kv(),
     COMMIT_SHA: 'test',
+    METRICS_AE: {
+      writeDataPoint: () => {}, // mock Analytics Engine
+    } as unknown as AnalyticsEngineDataset,
   } as unknown as Env
 
   return {

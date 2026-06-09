@@ -1,16 +1,70 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { testHonoApp, cookieFor } from './setup'
 
 describe('GET /api/sessions/:id/insights — response contract', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it.skip('returns themes and followUps shape without raw AI blob', async () => {
-    // NOTE: Skipped - requires D1Mock support for full session lookup via sessionOwnedBy().
-    // This test verifies that response shape would be:
-    // { session_id, themes: [...], follow_ups: [...] } without raw AI blob.
-    // Once D1Mock improves to support SELECT queries, this can be enabled.
-    expect(true).toBe(true)
+  it('returns themes and followUps shape without raw AI blob', async () => {
+    const { app, env, db } = await testHonoApp()
+
+    const userId = 'user-789'
+    const email = 'insights@example.com'
+    const sessionId = 'session-insights-1'
+    const now = Date.now()
+
+    // Insert user
+    db.users.set(userId, {
+      id: userId,
+      email,
+      display_name: 'Insights Test',
+      created_at: now,
+      last_login_at: now,
+      plan: 'team',
+    })
+
+    // Insert session
+    db.sessions.set(sessionId, {
+      id: sessionId,
+      owner_id: userId,
+      code: 'INS123',
+      title: 'Insights Session',
+      status: 'closed',
+      anonymity: 'full',
+      created_at: now,
+      started_at: now,
+      closed_at: now + 3600000,
+      archived_at: null,
+    })
+
+    const cookie = await cookieFor(userId, email)
+
+    // Call GET without cached insights
+    const response = await app.fetch(
+      new Request(`http://localhost/api/sessions/${sessionId}/insights`, {
+        method: 'GET',
+        headers: {
+          'cookie': cookie,
+        },
+      }),
+      env,
+    )
+
+    expect(response.status).toBe(200)
+    const body = await response.json() as any
+
+    // Verify response shape: includes themes, trend, and no raw AI blob (insights.ts route)
+    expect(body.ok).toBe(true)
+    expect(body.data).toBeDefined()
+    expect(Array.isArray(body.data.themes)).toBe(true)
+    expect(body.data.trend).toBeDefined()
+    expect(body.data.trend['7d']).toBeGreaterThanOrEqual(0)
+    expect(body.data.trend['30d']).toBeGreaterThanOrEqual(0)
+
+    // Ensure no raw AI blob or internal fields leak
+    const bodyStr = JSON.stringify(body)
+    expect(bodyStr).not.toMatch(/stack|_internal|_hash/i)
   })
 })
 
