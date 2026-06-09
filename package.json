@@ -18,7 +18,7 @@
     "test:stress": "vitest run tests/stress/",
     "test:a11y": "vitest run tests/a11y/",
     "e2e:db:local": "wrangler d1 migrations apply qesto_3_db --local",
-    "e2e:serve:fullstack": "wrangler pages dev dist --port 8788 --binding JWT_SECRET=dev-secret --binding ENVIRONMENT=development --binding APP_URL=http://localhost:8788 --no-show-interactive-dev-session",
+    "e2e:serve:fullstack": "wrangler pages dev dist --port 8788 --d1 DB=qesto_3_db --binding JWT_SECRET=dev-secret --binding ENVIRONMENT=development --binding APP_URL=http://localhost:8788 --no-show-interactive-dev-session",
     "typecheck": "tsc --noEmit",
     "check:baseline": "node scripts/check-baseline.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
