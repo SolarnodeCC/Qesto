@@ -143,6 +143,7 @@ This project uses a layered AI agent framework:
 /backend-dev    → loads backend-dev.md skill pack   (functions/api/, KV, D1, DO, integrations)
 /architect      → loads architect.md skill pack     (system design, data model, ADRs)
 /tester         → loads tester.md skill pack        (Vitest, coverage, CI)
+/e2e-tester     → loads e2e-tester.md skill pack   (Playwright E2E, k6 load, DO stress, axe a11y)
 /product-owner  → loads product-owner.md skill pack (stories, backlog, AC)
 /ai-strategy    → loads ai-strategy.md skill pack   (AI feature advisory, maturity scoring, 4-week action plans)
 /ai-engineer    → loads ai-engineering.md skill pack (Workers-AI craft: prompts, RAG/retrieval quality, evals, AI guardrails)
@@ -171,6 +172,6 @@ Agent `model:` frontmatter is the source of truth. Main-agent dispatch should ma
 |---|---|---|---|
 | High | **opus** | `qesto-architect`, `qesto-backend`, `qesto-security`, `qesto-ai-strategy`, `qesto-ai-engineer`, `qesto-market-research` | System design, ADRs, schema migrations, Durable Object / WebSocket protocol, auth flows, OWASP/STRIDE audits, abuse-surface review, prompt/RAG/eval quality, deep competitive synthesis |
 | Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales`, `qesto-knowledge` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy, KB integrity + requirement traceability |
-| Low | **haiku** | `qesto-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
+| Low | **haiku** | `qesto-tester`, `qesto-e2e-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, Playwright E2E/load/stress/a11y specs, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
 
 When the main agent needs a model not matching any sub-agent, invoke the sub-agent whose tier matches. Prefer Opus for anything touching edge runtime correctness (DO lifecycle, JWT, rate limits, multi-tenant isolation); prefer Haiku for template-heavy mechanical work.
