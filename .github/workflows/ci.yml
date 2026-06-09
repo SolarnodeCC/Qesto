@@ -38,11 +38,6 @@ jobs:
       - name: Contracts drift check
         run: bash ops/ci/contracts.sh
 
-      # Audit lane — jankurai scoring (shared ops/ci script)
-      - name: Run jankurai audit
-        run: bash ops/ci/jankurai.sh
-        continue-on-error: true
-
       # Upload audit artifacts for agent repair routing
       - name: Upload audit artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -101,3 +96,5 @@ jobs:
         run: node scripts/verify-deploy.mjs https://qesto.cc
         env:
           GITHUB_SHA: ${{ github.sha }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
