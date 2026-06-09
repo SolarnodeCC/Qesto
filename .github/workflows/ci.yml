@@ -80,6 +80,9 @@ jobs:
         run: npm run build
         env:
           VITE_API_BASE_URL: https://qesto.cc
+          # Keep in sync with SUPERUSER_EMAIL and CHECKOUT_URL runtime vars on Cloudflare Pages.
+          VITE_SUPERUSER_EMAIL: ${{ secrets.SUPERUSER_EMAIL }}
+          VITE_CHECKOUT_URL: ${{ secrets.CHECKOUT_URL }}
 
       - name: Get commit SHA
         id: sha
