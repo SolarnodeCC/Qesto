@@ -32,8 +32,8 @@ jobs:
 
       - name: Install jankurai
         run: |
-          npm install -g "git+https://github.com/neverhuman/jankurai.git#v1.5.1"
-          echo "$(npm root -g)/../bin" >> "$GITHUB_PATH"
+          npm install "git+https://github.com/neverhuman/jankurai.git#v1.5.1"
+          echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
 
       - name: Prepare baseline
         run: |
