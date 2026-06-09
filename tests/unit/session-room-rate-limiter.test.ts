@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { RateLimiter } from '../../functions/api/lib/session-room-rate-limiter'
 
 /**
@@ -143,6 +143,18 @@ describe('RateLimiter', () => {
   })
 
   describe('consumeVoteToken (static)', () => {
+    // Pin the clock so elapsed-time refill is exact. Without this, the few
+    // milliseconds between capturing `lastAt` and the internal `Date.now()`
+    // call refill fractional tokens (refillPerSec=2 → 0.002/ms), making
+    // exact-equality assertions like `toBe(4)` non-deterministic under CI load.
+    const FIXED_NOW = 1_700_000_000_000
+    beforeEach(() => {
+      vi.spyOn(Date, 'now').mockReturnValue(FIXED_NOW)
+    })
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
     it('consumes token when available', () => {
       const bucket = { tokens: 5, lastAt: Date.now() }
       const result = RateLimiter.consumeVoteToken(bucket, 10, 2)
