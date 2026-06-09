@@ -64,6 +64,8 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E28 | ai-engineer | AI feature needs route/binding/DB plumbing (surrounding app) | backend | AI endpoint/storage needed | Architect |
 | E29 | ai-engineer ↔ knowledge | RAG split — embedding/retrieval quality (ai-engineer) vs KB content + sync pipeline (knowledge) | each other | RAG/index change | AI Engineering Lead |
 | E30 | ai-engineer | Participant-facing AI output / PII / prompt-injection surface | security (cso) | AI output reaches users | CSO |
+| E31 | e2e-tester | WCAG violation found in E2E audit (file:line + axe rule) → backlog P1 | frontend / product-owner | A11y audit run on new page/flow | QA Lead |
+| E32 | e2e-tester | k6 threshold breach in staging (p95 > SLA or error rate > 5%) | devops / architect | Load test run post-deploy | QA Lead |
 
 ## 3) Edge contract rules (so edges don't break)
 
