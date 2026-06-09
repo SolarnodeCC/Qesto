@@ -31,7 +31,9 @@ jobs:
         run: npm ci
 
       - name: Install jankurai
-        run: npm install -g "git+https://github.com/neverhuman/jankurai.git#v1.5.1"
+        run: |
+          npm install -g "git+https://github.com/neverhuman/jankurai.git#v1.5.1"
+          echo "$(npm root -g)/../bin" >> "$GITHUB_PATH"
 
       - name: Prepare baseline
         run: |

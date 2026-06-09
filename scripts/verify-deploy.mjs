@@ -38,7 +38,7 @@ function parseDistAssets() {
 
 async function checkAssetMime(url, expectedType, label) {
   try {
-    const res = await fetch(url, { method: 'HEAD', redirect: 'follow' })
+    const res = await fetch(url, { method: 'HEAD', redirect: 'follow', headers: cfAccessHeaders })
     const ct = res.headers.get('content-type') ?? ''
     const ok = ct.includes(expectedType)
     const status = ok ? '✓' : '✗'
@@ -62,12 +62,17 @@ const local = localCommit()
 const origin = baseUrl.replace(/\/$/, '')
 const versionUrl = `${origin}/api/version`
 
+// Allow CI runners to authenticate through Cloudflare Access
+const cfAccessHeaders = {}
+if (process.env.CF_ACCESS_CLIENT_ID) cfAccessHeaders['CF-Access-Client-Id'] = process.env.CF_ACCESS_CLIENT_ID
+if (process.env.CF_ACCESS_CLIENT_SECRET) cfAccessHeaders['CF-Access-Client-Secret'] = process.env.CF_ACCESS_CLIENT_SECRET
+
 let exitCode = 0
 
 // ── Step 1: API version / commit parity check ─────────────────────────────
 try {
   const res = await fetch(versionUrl, {
-    headers: { accept: 'application/json' },
+    headers: { accept: 'application/json', ...cfAccessHeaders },
     redirect: 'follow',
   })
   if (!res.ok) {
