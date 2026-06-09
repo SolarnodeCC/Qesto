@@ -4,7 +4,7 @@
   "column.actions": "Action items",
   "column.empty": "Nothing here yet.",
   "submit.title": "Add a card",
-  "submit.placeholder": "What should the team discuss?",
+  "submit.hint": "What should the team discuss?",
   "submit.button": "Add card",
   "submit.success": "Card added",
   "present.subtitle": "Team retrospective",

@@ -16,8 +16,8 @@
     "title": "What is the session?",
     "label_title": "Session title",
     "label_goal": "Goal of the session",
-    "placeholder_title": "e.g. Team reflection Q2",
-    "placeholder_goal": "e.g. Gain insight into how the team experienced the sprint..."
+    "hint_title": "e.g. Team reflection Q2",
+    "hint_goal": "e.g. Gain insight into how the team experienced the sprint..."
   },
   "question_types": {
     "multiple-choice": "Multiple choice",
@@ -41,10 +41,10 @@
     },
     "back": "← Choose another method",
     "manual_add": "Add question",
-    "manual_placeholder": "Type your question...",
+    "manual_hint": "Type your question...",
     "manual_max": "Maximum of 20 questions reached",
     "manual_delete": "Delete question",
-    "multiple_choice_option_placeholder": "Answer option {{n}}",
+    "multiple_choice_option_hint": "Answer option {{n}}",
     "multiple_choice_add_option": "Add answer option",
     "multiple_choice_remove_option": "Remove answer option",
     "multiple_choice_validation_hint": "Multiple choice needs at least 2 answers (3–5 recommended).",
@@ -53,7 +53,7 @@
     "ai_greeting_empty": "Tell me what the session is about, or click 'Generate now'.",
     "ai_generate_cta": "✨ Generate now",
     "ai_generating": "Generating...",
-    "ai_placeholder": "Refine the focus...",
+    "ai_hint": "Refine the focus...",
     "ai_send": "Send",
     "ai_questions_label": "Generated questions",
     "ai_consent": "I agree that my session title and goal will be processed by AI",

@@ -1,24 +1,60 @@
 /**
- * Proof-aware decoders for trust-boundary crossings (KV, D1 JSON columns, HTTP bodies).
- * Parse as unknown first, then narrow with Zod — never cast parse results directly.
+ * Boundary decoders — safe wrappers for external data ingress.
+ *
+ * Every KV read or external JSON parse that previously used `JSON.parse(x) as T`
+ * should route through one of these helpers so type safety is validated at runtime,
+ * not just asserted at compile time.
  */
 import { z } from 'zod'
 
-export function parseJsonString<T>(schema: z.ZodType<T>, raw: string): T | null {
-  let value: unknown
+/**
+ * Parse a KV string value with a Zod schema. Returns null on any failure
+ * (missing value, malformed JSON, schema mismatch) so callers only need
+ * one null-check rather than try/catch + type-guard.
+ */
+export function decodeKvJson<T>(raw: string | null, schema: z.ZodSchema<T>): T | null {
+  if (!raw) return null
+  let parsed: unknown
   try {
-    value = JSON.parse(raw)
+    parsed = JSON.parse(raw)
   } catch {
     return null
   }
-  const result = schema.safeParse(value)
+  const result = schema.safeParse(parsed)
   return result.success ? result.data : null
 }
 
-export function parseJsonValue<T>(schema: z.ZodType<T>, value: unknown): T | null {
-  const result = schema.safeParse(value)
+/**
+ * Parse a plain JavaScript object (e.g. from `DO.storage.get<unknown>()`)
+ * with a Zod schema. Returns null on schema mismatch.
+ */
+export function decodeObject<T>(raw: unknown, schema: z.ZodSchema<T>): T | null {
+  const result = schema.safeParse(raw)
   return result.success ? result.data : null
 }
+
+/**
+ * Parse the body of an incoming HTTP request with a Zod schema.
+ * Returns `{ ok: true, data }` or `{ ok: false, error }` — never throws.
+ */
+export async function decodeRequestBody<T>(
+  req: Request,
+  schema: z.ZodSchema<T>,
+): Promise<{ ok: true; data: T } | { ok: false; error: z.ZodError }> {
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    body = null
+  }
+  const result = schema.safeParse(body)
+  if (result.success) return { ok: true, data: result.data }
+  return { ok: false, error: result.error }
+}
+
+// ── Domain boundary schemas ────────────────────────────────────────────────
+// Zod schemas for JSON payloads crossing trust boundaries (KV blobs, D1 JSON
+// columns, vector metadata). Decode with `decodeKvJson` / `decodeObject`.
 
 /** Theme labels stored in insights_daily.themes_json. */
 export const InsightThemeEntrySchema = z.object({
@@ -85,12 +121,6 @@ export const IdeateWorkspaceTemplateSchema = z.object({
 })
 
 export const OgImageColorSchema = z.enum(['teal', 'purple', 'orange'])
-
-export const AIGatewayJsonResponseSchema = z.object({
-  result: z.unknown().optional(),
-  cached: z.boolean().optional(),
-  cache_age: z.number().optional(),
-})
 
 export const KbVectorMetadataSchema = z.object({
   doc_id: z.string(),

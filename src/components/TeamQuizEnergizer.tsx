@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
+import { inputHint } from '../ui/input-hint'
 
 export type TeamQuizQuestion = {
   prompt: string
@@ -224,7 +225,7 @@ export default function TeamQuizEnergizerView({
                 type="text"
                 value={q.prompt}
                 onChange={(e) => updateQuestion(qi, { prompt: e.target.value })}
-                placeholder={`Question ${qi + 1}`}
+                {...inputHint(`Question ${qi + 1}`)}
                 maxLength={280}
                 className="w-full rounded-lg border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-800 dark:text-pulse-100 px-3 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
               />
@@ -251,7 +252,7 @@ export default function TeamQuizEnergizerView({
                       value={opt}
                       onChange={(e) => updateOption(qi, oi, e.target.value)}
                       maxLength={100}
-                      placeholder={`Option ${oi + 1}`}
+                      {...inputHint(`Option ${oi + 1}`)}
                       className="flex-1 min-w-0 rounded border border-pulse-300 dark:border-pulse-600 dark:bg-pulse-800 dark:text-pulse-100 px-2 py-1 text-xs focus:outline-none focus-visible:ring-1 focus-visible:ring-orange-500"
                     />
                   </div>
@@ -372,10 +373,10 @@ export default function TeamQuizEnergizerView({
                     answered
                       ? isMyAnswer
                         ? isCorrect
-                          ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700'
-                          : 'border-red-400 bg-red-50 dark:bg-red-900/20 text-red-600'
+                          ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
+                          : 'border-red-400 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300'
                         : isCorrect
-                        ? 'border-teal-300 bg-teal-50/50 dark:bg-teal-900/10 text-teal-600'
+                        ? 'border-teal-300 bg-teal-50/50 dark:bg-teal-900/10 text-teal-600 dark:text-teal-400'
                         : 'border-pulse-200 dark:border-pulse-700 text-pulse-400 opacity-60'
                       : 'border-pulse-200 dark:border-pulse-700 text-pulse-900 dark:text-pulse-100 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10 active:scale-95 cursor-pointer',
                   ].join(' ')}

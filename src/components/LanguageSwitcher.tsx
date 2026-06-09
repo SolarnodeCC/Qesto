@@ -68,7 +68,7 @@ export default function LanguageSwitcher() {
       {open && (
         <ul
           role="listbox"
-          aria-label="Select language"
+          aria-label="Choose language"
           className="absolute right-0 top-full mt-1 z-50 w-40 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-lg py-1 animate-page-enter"
         >
           {SUPPORTED_LANGUAGES.map((lang) => (

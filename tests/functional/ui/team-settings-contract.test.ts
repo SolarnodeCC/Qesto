@@ -16,10 +16,13 @@ describe('Sprint 24 contract', () => {
   })
 
   it('keeps custom role management wired into team settings', () => {
-    expect(teamSettingsSource).toContain('/roles')
-    expect(teamSettingsSource).toContain('team:manage_members')
-    expect(teamSettingsSource).toContain('Assign role')
-    expect(teamSettingsSource).toContain('Unassign')
+    const rolesSection = require('node:fs').readFileSync('src/pages/team-settings/CustomRolesSection.tsx', 'utf8')
+    const roleTypes = require('node:fs').readFileSync('src/pages/team-settings/types.ts', 'utf8')
+    const allRoleSource = teamSettingsSource + rolesSection + roleTypes
+    expect(allRoleSource).toContain('/roles')
+    expect(allRoleSource).toContain('team:manage_members')
+    expect(allRoleSource).toContain('Assign role')
+    expect(allRoleSource).toContain('Unassign')
   })
 
   it('keeps admin analytics exportable from sanitized aggregate data', () => {

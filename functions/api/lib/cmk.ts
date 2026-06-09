@@ -2,9 +2,17 @@
  * SEC-CMK-01 — customer-managed key envelope metadata (S78).
  */
 import { z } from 'zod'
-import { parseJsonString } from './boundary-decode'
+import { decodeKvJson } from './boundary-decode'
 
-export const CmkEnvelopeSchema = z.object({
+export type CmkEnvelope = {
+  teamId: string
+  keyId: string
+  algorithm: 'AES-256-GCM'
+  rotatedAt: number
+  status: 'active' | 'pending_rotation'
+}
+
+const CmkEnvelopeSchema = z.object({
   teamId: z.string(),
   keyId: z.string(),
   algorithm: z.literal('AES-256-GCM'),
@@ -12,13 +20,10 @@ export const CmkEnvelopeSchema = z.object({
   status: z.enum(['active', 'pending_rotation']),
 })
 
-export type CmkEnvelope = z.infer<typeof CmkEnvelopeSchema>
-
 export function cmkKvKey(teamId: string): string {
   return `cmk:envelope:${teamId}`
 }
 
 export function parseCmkEnvelope(raw: string | null): CmkEnvelope | null {
-  if (!raw) return null
-  return parseJsonString(CmkEnvelopeSchema, raw)
+  return decodeKvJson(raw, CmkEnvelopeSchema)
 }

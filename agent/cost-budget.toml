@@ -1,0 +1,40 @@
+# Cost and spend budget policy — Qesto (Workers AI, Vectorize, CI, agent sessions)
+schema_version = "1"
+owner = "ops"
+policy_doc = "docs/testing.md"
+rerun_command = "just check"
+
+[[budgets]]
+id = "workers-ai"
+surface = "Workers AI (c.env.AI.run)"
+quota = "plan-gated token budget per tenant/session"
+spend_cap = "per-session Workers AI token ceiling in plan middleware"
+token_limit = "model context capped in functions/api/lib/ai/"
+max_tool_calls = "circuit breaker + rate limit per route"
+stop_condition = "CircuitBreaker open OR plan middleware denies request"
+kill_switch = "CIRCUIT_BREAKER_ENABLED=false + AI route feature flag off"
+evidence = "functions/api/lib/ai/, functions/api/lib/resilience/circuit-breaker.ts, functions/api/lib/flags.ts"
+
+[[budgets]]
+id = "vectorize-sync"
+surface = "Vectorize upsert / kb-sync"
+quota = "batch size cap in scripts/kb-sync-cli.ts"
+stop_condition = "CLI exits non-zero on quota breach"
+kill_switch = "skip kb-sync admin route; revoke KB_SEARCH_SERVICE_KEY"
+evidence = "scripts/kb-sync-cli.ts, functions/api/routes/admin/kb-sync.ts"
+
+[[budgets]]
+id = "playwright-ci"
+surface = "Playwright / rendered UX CI"
+quota = "60 min workflow timeout"
+stop_condition = "GitHub Actions cancel on timeout"
+kill_switch = "disable playwright workflow; run just ux-qa locally only"
+evidence = ".github/workflows/playwright.yml, ops/ci/ux-qa.sh"
+
+[[budgets]]
+id = "agent-sessions"
+surface = "Cloud agent / local agent iteration"
+quota = "stop after first failing just check"
+stop_condition = "do not bypass git hooks with --no-verify"
+kill_switch = "halt agent run; escalate to human owner"
+evidence = "ops/git-hooks/pre-push, docs/testing.md"

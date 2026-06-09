@@ -141,7 +141,7 @@ export default function FeaturePageTemplate({
               >
                 {hero.headline}
               </h1>
-              <p className="text-body-l text-pulse-600 leading-relaxed">
+              <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC] leading-relaxed">
                 {hero.subheadline}
               </p>
               <div className={hasHeroImage ? 'flex flex-wrap gap-3' : 'flex flex-wrap justify-center gap-3'}>
@@ -154,7 +154,7 @@ export default function FeaturePageTemplate({
                 {hero.secondaryCta && (
                   <Link
                     to={hero.secondaryCta.href}
-                    className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
                   >
                     {hero.secondaryCta.label}
                   </Link>
@@ -242,8 +242,8 @@ export default function FeaturePageTemplate({
 
               {proof.testimonial && (
                 <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 bg-gradient-to-br from-teal-50 to-violet-50 p-6 md:p-8 text-center space-y-3">
-                  <p className="text-body-l text-pulse-700 leading-relaxed">"{proof.testimonial.quote}"</p>
-                  <footer className="text-caption text-pulse-600">
+                  <p className="text-body-l text-pulse-700 dark:text-[#A8B3CC] leading-relaxed">"{proof.testimonial.quote}"</p>
+                  <footer className="text-caption text-pulse-600 dark:text-[#A8B3CC]">
                     <strong>{proof.testimonial.author}</strong>
                     {proof.testimonial.role ? `, ${proof.testimonial.role}` : ''}
                   </footer>
@@ -335,7 +335,7 @@ export default function FeaturePageTemplate({
                 >
                   {deepDive.heading}
                 </h2>
-                <p className="text-body-l text-pulse-600">{deepDive.intro}</p>
+                <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{deepDive.intro}</p>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
                 {deepDive.pillars.map((pillar, i) => (
@@ -344,8 +344,8 @@ export default function FeaturePageTemplate({
                     className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-6 space-y-3 shadow-card"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
-                    <h3 className="text-heading-s font-semibold text-teal-700">{pillar.title}</h3>
-                    <p className="text-caption text-pulse-600 leading-relaxed">{pillar.desc}</p>
+                    <h3 className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{pillar.title}</h3>
+                    <p className="text-caption text-pulse-600 dark:text-[#A8B3CC] leading-relaxed">{pillar.desc}</p>
                   </li>
                 ))}
               </ul>
@@ -372,7 +372,7 @@ export default function FeaturePageTemplate({
                     to={link.href}
                     className="block rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-5 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
-                    <p className="text-heading-s font-semibold text-teal-700">{link.label}</p>
+                    <p className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{link.label}</p>
                     <p className="text-caption text-pulse-500">{link.desc}</p>
                   </Link>
                 </li>
@@ -427,7 +427,7 @@ export default function FeaturePageTemplate({
             >
               {bottomCta.heading}
             </h2>
-            <p className="text-body-l text-pulse-600">{bottomCta.subheading}</p>
+            <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{bottomCta.subheading}</p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
                 to={bottomCta.primaryCta.href}
@@ -438,7 +438,7 @@ export default function FeaturePageTemplate({
               {bottomCta.secondaryCta && (
                 <Link
                   to={bottomCta.secondaryCta.href}
-                  className="inline-flex items-center rounded-lg border border-pulse-300 text-pulse-700 px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+                  className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
                 >
                   {bottomCta.secondaryCta.label}
                 </Link>

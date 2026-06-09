@@ -8,6 +8,12 @@ export const VOTE_BUCKET_CAPACITY = 10
 export const VOTE_BUCKET_REFILL_PER_SEC = 1
 export const BROADCAST_DEBOUNCE_MS = 100
 
+// Phase 2.2 vote buffering (ADR-042).
+export const FLUSH_INTERVAL_MS = 5000
+export const FLUSH_THRESHOLD = 1000
+// Phase 2.3 R2 snapshots (ADR-042).
+export const SNAPSHOT_INTERVAL_MS = 30_000
+
 export type Meta = {
   sessionId: string
   ownerId: string

@@ -18,7 +18,6 @@
     "docs/": "standard",
     "knowledge-base/": "standard",
     "tests/": "tools",
-    "contracts/": "tools",
-    "tools/": "ops"
+    "contracts/": "tools"
   }
 }

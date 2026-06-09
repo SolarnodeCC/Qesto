@@ -36,24 +36,24 @@ export interface SessionCardProps {
   session: SessionSummary
   actionLoading: Record<string, string>
   actionFeedback: Record<string, { message: string; isError: boolean }>
-  confirmDeleteId: string | null
+  pendingRemoveId: string | null
   onDuplicate: (id: string, title: string) => void
   onExportCSV: (id: string, title: string) => void
   onSaveAsTemplate: (id: string, title: string) => void
-  onDelete: (id: string) => void
-  onConfirmDelete: (id: string | null) => void
+  onRemoveSession: (id: string) => void
+  onPendingRemoveChange: (id: string | null) => void
 }
 
 export function SessionCard({
   session: s,
   actionLoading,
   actionFeedback,
-  confirmDeleteId,
+  pendingRemoveId,
   onDuplicate,
   onExportCSV,
   onSaveAsTemplate,
-  onDelete,
-  onConfirmDelete,
+  onRemoveSession,
+  onPendingRemoveChange,
 }: SessionCardProps) {
   const t = useT('dashboard')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -173,21 +173,21 @@ export function SessionCard({
               </button>
             </li>
             <li role="separator" className="my-1 border-t border-pulse-100 dark:border-[#1E2A45]" />
-            {confirmDeleteId === s.id ? (
+            {pendingRemoveId === s.id ? (
               <li role="none" className="px-3 py-2">
                 <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1.5">{t('confirmDelete')}</p>
                 <div className="flex gap-1.5">
                   <button
                     type="button"
-                    disabled={actionLoading[s.id] === 'delete'}
-                    onClick={() => { setMenuOpen(false); onDelete(s.id) }}
+                    disabled={actionLoading[s.id] === 'remove'}
+                    onClick={() => { setMenuOpen(false); onRemoveSession(s.id) }}
                     className="flex-1 rounded bg-red-600 text-white text-xs font-medium px-2 py-1 hover:bg-red-700 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   >
-                    {actionLoading[s.id] === 'delete' ? t('deleting') : t('yes')}
+                    {actionLoading[s.id] === 'remove' ? t('deleting') : t('yes')}
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setMenuOpen(false); onConfirmDelete(null) }}
+                    onClick={() => { setMenuOpen(false); onPendingRemoveChange(null) }}
                     className="flex-1 rounded border border-pulse-200 dark:border-[#2A3858] text-xs font-medium px-2 py-1 text-pulse-600 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                   >
                     {t('cancel')}
@@ -200,7 +200,7 @@ export function SessionCard({
                   type="button"
                   role="menuitem"
                   disabled={!!actionLoading[s.id]}
-                  onClick={() => { onConfirmDelete(s.id) }}
+                  onClick={() => { onPendingRemoveChange(s.id) }}
                   className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-50"
                 >
                   {t('delete')}

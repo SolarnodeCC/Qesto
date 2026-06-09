@@ -22,7 +22,7 @@ import { effectiveTeamPermissionsForUser, type Permission } from '../../lib/auth
 import { readKvJson } from '../../lib/kv'
 import { teamDocumentKey } from '../../lib/kv-keys'
 import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../../lib/constants'
-import { CachedThemeLabelsSchema, parseJsonString } from '../../lib/boundary-decode'
+import { CachedThemeLabelsSchema, decodeKvJson } from '../../lib/boundary-decode'
 import { logEvent } from '../../lib/log'
 
 export type SessionVars = AuthVariables & PlanVariables
@@ -434,7 +434,7 @@ export async function precomputeInsights(
 
 /** Extract theme labels from a cached precompute/analyze payload (`{ themes: string[] }`). */
 function parseCachedThemeLabels(raw: string): string[] | null {
-  const parsed = parseJsonString(CachedThemeLabelsSchema, raw)
+  const parsed = decodeKvJson(raw, CachedThemeLabelsSchema)
   return parsed?.themes ?? null
 }
 

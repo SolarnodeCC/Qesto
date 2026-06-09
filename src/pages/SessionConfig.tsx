@@ -6,6 +6,7 @@ import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
+import { inputHint } from '../ui/input-hint'
 
 function newOptionId(): string {
   return `opt_${crypto.randomUUID().slice(0, 8)}`
@@ -213,7 +214,7 @@ export default function SessionConfig() {
               type="text"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="What should we prioritise next quarter?"
+              {...inputHint("What should we prioritise next quarter?")}
               maxLength={240}
               className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
             />
@@ -293,7 +294,7 @@ export default function SessionConfig() {
                     type="text"
                     value={o.label}
                     onChange={(e) => updateOption(i, e.target.value)}
-                    placeholder={`Option ${i + 1}`}
+                    {...inputHint(`Option ${i + 1}`)}
                     maxLength={160}
                     aria-label={`Option ${i + 1}`}
                     className="flex-1 border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
@@ -343,7 +344,7 @@ export default function SessionConfig() {
           {data.session.status === 'live' ? (
             <Link
               to={`/sessions/${id}/present`}
-              className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 hover:bg-teal-50 px-4 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 px-4 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             >
               Open presenter view →
             </Link>

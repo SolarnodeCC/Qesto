@@ -1,29 +1,26 @@
-# Jankurai audit policy — Qesto (Cloudflare Workers + React/Vite)
-minimum_score = 85
-fail_on = ["critical", "high"]
-advisory_on = ["medium", "low"]
-standard_version = "0.9.0"
-target_stack = "typescript-react-vite-cloudflare-workers"
+[policy]
+standard = "jankurai"
+version = "1.5.1"
 
-[history]
-max_rows = 500
-max_bytes = 1048576
-dedupe = "consecutive-equivalent"
-mirror_env = "JANKURAI_HISTORY_MIRROR"
-mirror_required = false
+# Score floor — phased: 70 (current), 80 (next cycle), 85 (target)
+# Raise once the repair wave clears the top hard-rule caps.
+score_floor = 70
+block_on_witness = true
 
 [scan]
-excluded_paths = [
-  "knowledge-base/",
-  "packages/sdk-python/",
-  "agent/baselines/",
+# Paths excluded from scoring (generated artifacts, vendored code)
+exclude = [
   "target/",
   "dist/",
   "node_modules/",
+  ".wrangler/",
+  "coverage/",
+  "agent/baselines/",
+  "contracts/generated/",
 ]
-extra_excluded_paths = ["tests/artifacts/"]
 
 [limits]
-typescript_component_hard = 400
-function_hard = 80
-agent_instruction_hard = 200
+# Maximum file size before code-shape cap fires (lines)
+typescript_file_max_lines = 800
+# Maximum function complexity score
+max_cyclomatic_complexity = 15

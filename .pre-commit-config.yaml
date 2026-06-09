@@ -1,19 +1,22 @@
-# Local pre-commit hooks (complements ops/git-hooks/pre-push for full gates).
-# Install: pip install pre-commit && pre-commit install
-# Or use ops/git-hooks via: git config core.hooksPath ops/git-hooks
 repos:
   - repo: local
     hooks:
-      - id: qesto-typecheck
-        name: TypeScript check
+      - id: typecheck
+        name: TypeScript typecheck
+        language: system
         entry: npm run typecheck
-        language: system
         pass_filenames: false
-        stages: [pre-commit]
-      - id: qesto-secret-scan
-        name: Secret scan (advisory)
-        entry: bash ops/ci/secret-scan.sh
+        types: [ts]
+
+      - id: unit-tests
+        name: Unit tests
         language: system
+        entry: npm test -- --run
         pass_filenames: false
-        stages: [pre-commit]
-        verbose: true
+        stages: [push]
+
+      - id: secret-scan
+        name: Secret scan (gitleaks)
+        language: system
+        entry: bash -c 'command -v gitleaks && gitleaks protect --staged --redact --no-banner || echo "gitleaks not installed — skipping"'
+        pass_filenames: false

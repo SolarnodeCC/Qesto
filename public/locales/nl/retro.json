@@ -4,7 +4,7 @@
   "column.actions": "Actiepunten",
   "column.empty": "Nog niets hier.",
   "submit.title": "Kaart toevoegen",
-  "submit.placeholder": "Waar moet het team over praten?",
+  "submit.hint": "Waar moet het team over praten?",
   "submit.button": "Kaart toevoegen",
   "submit.success": "Kaart toegevoegd",
   "present.subtitle": "Team retrospective",

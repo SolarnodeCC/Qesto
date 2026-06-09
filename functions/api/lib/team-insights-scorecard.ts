@@ -6,7 +6,7 @@ import type { D1Database } from '@cloudflare/workers-types'
 import { z } from 'zod'
 import { upsertTeamInsightRollup } from './team-insights'
 import { cutoffDayForWindow, type InsightTrendWindow } from './team-insights-recurring'
-import { InsightThemesJsonSchema, parseJsonString } from './boundary-decode'
+import { InsightThemesJsonSchema, decodeKvJson } from './boundary-decode'
 
 export type MoodBucket = 'positive' | 'neutral' | 'concerning'
 
@@ -80,7 +80,7 @@ function moodFromConfidence(confidence: number): MoodBucket {
 }
 
 function parseThemeLabels(themesJson: string): string[] {
-  const parsed = parseJsonString(InsightThemesJsonSchema, themesJson)
+  const parsed = decodeKvJson(themesJson, InsightThemesJsonSchema)
   if (!parsed) return []
   return parsed
     .map((t) => (typeof t.theme === 'string' ? t.theme.trim().toLowerCase() : ''))

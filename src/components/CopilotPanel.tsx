@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Sparkles, X, Loader2, RefreshCw, Lightbulb, AlertTriangle, Gauge, ListPlus, Check } from 'lucide-react'
 import { useT } from '../i18n'
 import { useCopilot, type CopilotActionKind } from '../hooks/useCopilot'
+import { inputHint } from '../ui/input-hint'
 
 type Props = {
   sessionId: string | undefined
@@ -69,10 +70,10 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
 
   const moodTone =
     context?.mood === 'positive'
-      ? 'bg-teal-50 text-teal-800 border-teal-200'
+      ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 border-teal-200 dark:border-teal-800'
       : context?.mood === 'concerning'
-        ? 'bg-amber-50 text-amber-800 border-amber-200'
-        : 'bg-pulse-50 text-pulse-700 border-pulse-200'
+        ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+        : 'bg-pulse-50 dark:bg-[#151C2E] text-pulse-700 dark:text-[#A8B3CC] border-pulse-200 dark:border-[#1E2A45]'
 
   return (
     <div className="fixed bottom-20 right-4 z-30 w-[min(92vw,360px)]">
@@ -83,7 +84,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
           className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] text-pulse-900 dark:text-[#F0F2F8] shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
         >
           <header className="flex items-center justify-between gap-2 border-b border-pulse-100 dark:border-[#1E2A45] bg-violet-50 dark:bg-violet-900/20 px-4 py-2.5">
-            <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-violet-800">
+            <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-violet-800 dark:text-violet-300">
               <Sparkles size={16} className="text-violet-600" aria-hidden="true" />
               {t('copilot.title')}
             </h2>
@@ -99,7 +100,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
 
           <div className="space-y-4 p-4">
             {planGated ? (
-              <p className="text-sm text-pulse-600">{t('copilot.plan_gated')}</p>
+              <p className="text-sm text-pulse-600 dark:text-[#A8B3CC]">{t('copilot.plan_gated')}</p>
             ) : (
               <>
                 {/* Room read */}
@@ -116,10 +117,10 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                       <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${moodTone}`}>
                         {t('copilot.mood')}: {moodLabel}
                       </span>
-                      <span className="rounded-full border border-pulse-200 px-2.5 py-1 text-xs text-pulse-700">
+                      <span className="rounded-full border border-pulse-200 dark:border-[#2A3858] px-2.5 py-1 text-xs text-pulse-700 dark:text-[#A8B3CC]">
                         {t('copilot.responses')}: {context.responseCount}
                       </span>
-                      <span className="rounded-full border border-pulse-200 px-2.5 py-1 text-xs text-pulse-700">
+                      <span className="rounded-full border border-pulse-200 dark:border-[#2A3858] px-2.5 py-1 text-xs text-pulse-700 dark:text-[#A8B3CC]">
                         {t('copilot.participation')}: {Math.round(context.participationRate * 100)}%
                       </span>
                     </div>
@@ -132,7 +133,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                     <div className="flex items-center justify-between">
                       <h3 className="text-xs font-semibold uppercase tracking-wide text-pulse-500">
                         {t('copilot.suggestions_title')}
-                        {suggestSource === 'fallback' && (
+                        {suggestSource === 'heuristic' && (
                           <span className="ml-1 font-normal normal-case text-pulse-400">· {t('copilot.suggestions_fallback')}</span>
                         )}
                       </h3>
@@ -164,8 +165,8 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                                 <Icon size={14} className={alert ? 'text-amber-600' : 'text-violet-600'} aria-hidden="true" />
                                 <span className="text-[11px] font-semibold uppercase tracking-wide text-pulse-500">{kindLabel(s.kind)}</span>
                               </div>
-                              <p className="mt-1 font-medium text-pulse-900">{s.title}</p>
-                              <p className="text-pulse-600">{s.body}</p>
+                              <p className="mt-1 font-medium text-pulse-900 dark:text-[#F0F2F8]">{s.title}</p>
+                              <p className="text-pulse-600 dark:text-[#A8B3CC]">{s.body}</p>
                               {s.kind === 'poll_draft' && s.intent && (
                                 <button
                                   type="button"
@@ -173,7 +174,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                                     setIntent(s.intent ?? '')
                                     void draftPoll(s.intent ?? '')
                                   }}
-                                  className="mt-1.5 inline-flex items-center gap-1 rounded bg-violet-100 px-2 py-1 text-xs font-medium text-violet-700 hover:bg-violet-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+                                  className="mt-1.5 inline-flex items-center gap-1 rounded bg-violet-100 dark:bg-violet-900/30 px-2 py-1 text-xs font-medium text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-800/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
                                 >
                                   {t('copilot.suggestion_use')}
                                 </button>
@@ -203,7 +204,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                     value={intent}
                     maxLength={280}
                     onChange={(e) => setIntent(e.target.value)}
-                    placeholder={t('copilot.draft_placeholder')}
+                    {...inputHint(t('copilot.draft_hint'))}
                     className="w-full rounded-lg border border-pulse-300 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
                   />
                   <button
@@ -224,15 +225,15 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                         <h3 className="text-xs font-semibold uppercase tracking-wide text-pulse-500">
                           {t('copilot.draft_heading')}
                         </h3>
-                        <p className="text-sm font-medium text-pulse-900">{draft.draft.prompt}</p>
-                        <ul className="list-disc space-y-0.5 pl-5 text-sm text-pulse-700">
+                        <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{draft.draft.prompt}</p>
+                        <ul className="list-disc space-y-0.5 pl-5 text-sm text-pulse-700 dark:text-[#A8B3CC]">
                           {draft.draft.options.map((o) => (
                             <li key={o.id}>{o.label}</li>
                           ))}
                         </ul>
                         {onAddQuestion &&
                           (addedPrompt === draft.draft.prompt ? (
-                            <p className="inline-flex items-center gap-1 text-xs font-medium text-teal-700">
+                            <p className="inline-flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-400">
                               <Check size={14} aria-hidden="true" />
                               {t('copilot.added')}
                             </p>

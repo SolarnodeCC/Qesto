@@ -4,6 +4,7 @@ import { api, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { ideasForCluster, unclusteredIdeas, useIdeateSession } from '../hooks/useIdeateSession'
 import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
+import { inputHint } from '../ui/input-hint'
 
 type IdeateConfig = {
   sessionId: string
@@ -181,7 +182,7 @@ export default function IdeatePresent() {
 
           {unclusteredIdeas(activeIdeas).length > 0 && (
             <section className="space-y-2">
-              <h3 className="text-sm font-medium text-pulse-600">{t('clusters.uncategorized')}</h3>
+              <h3 className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC]">{t('clusters.uncategorized')}</h3>
               {unclusteredIdeas(activeIdeas).map((idea) => (
                 <IdeateIdeaCard
                   key={idea.id}
@@ -211,7 +212,7 @@ export default function IdeatePresent() {
             <textarea
               name="idea"
               rows={2}
-              placeholder={t('submit.placeholder')}
+              {...inputHint(t('submit.hint'))}
               className="w-full rounded-md border border-pulse-200 px-3 py-2 text-sm dark:border-pulse-600 dark:bg-pulse-800"
             />
             <button type="submit" className="rounded-md bg-pulse-800 px-4 py-2 text-sm text-white dark:bg-pulse-600">

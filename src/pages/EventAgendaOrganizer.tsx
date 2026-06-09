@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useT } from '../i18n'
+import { inputHint } from '../ui/input-hint'
 
 type AgendaSlot = {
   id: string
@@ -240,7 +241,7 @@ export default function EventAgendaOrganizer() {
             <input
               value={feedMessage}
               onChange={(e) => setFeedMessage(e.target.value)}
-              placeholder={t('suite.feedPlaceholder')}
+              {...inputHint(t('suite.feedPlaceholder'))}
               className="flex-1 rounded-md border border-pulse-300 px-3 py-2 text-sm dark:border-pulse-600 dark:bg-pulse-800"
             />
             <button
@@ -280,7 +281,7 @@ export default function EventAgendaOrganizer() {
       </div>
 
       {message && (
-        <p className="text-sm text-pulse-600" role="status">
+        <p className="text-sm text-pulse-600 dark:text-[#A8B3CC]" role="status">
           {message}
         </p>
       )}

@@ -44,8 +44,7 @@ export async function loadPushSubscription(kv: KVNamespace, userId: string): Pro
   if (!raw) return null
   try {
     const parsed: unknown = JSON.parse(raw)
-    const result = PushSubscriptionSchema.safeParse(parsed)
-    return result.success ? result.data : null
+    return PushSubscriptionSchema.parse(parsed)
   } catch {
     return null
   }

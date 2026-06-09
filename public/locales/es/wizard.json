@@ -16,8 +16,8 @@
     "title": "¿De qué trata la sesión?",
     "label_title": "Título de la sesión",
     "label_goal": "Objetivo de la sesión",
-    "placeholder_title": "ej. Reflexión de equipo Q2",
-    "placeholder_goal": "ej. Obtener información sobre cómo vivió el equipo el sprint..."
+    "hint_title": "ej. Reflexión de equipo Q2",
+    "hint_goal": "ej. Obtener información sobre cómo vivió el equipo el sprint..."
   },
   "question_types": {
     "multiple-choice": "Opción múltiple",
@@ -41,10 +41,10 @@
     },
     "back": "← Elegir otro método",
     "manual_add": "Añadir pregunta",
-    "manual_placeholder": "Escribe tu pregunta...",
+    "manual_hint": "Escribe tu pregunta...",
     "manual_max": "Se alcanzó el máximo de 20 preguntas",
     "manual_delete": "Eliminar pregunta",
-    "multiple_choice_option_placeholder": "Opción de respuesta {{n}}",
+    "multiple_choice_option_hint": "Opción de respuesta {{n}}",
     "multiple_choice_add_option": "Añadir opción de respuesta",
     "multiple_choice_remove_option": "Eliminar opción de respuesta",
     "multiple_choice_validation_hint": "La opción múltiple requiere al menos 2 respuestas (3–5 recomendado).",
@@ -53,7 +53,7 @@
     "ai_greeting_empty": "Cuéntame de qué trata la sesión o haz clic en 'Generar ahora'.",
     "ai_generate_cta": "✨ Generar ahora",
     "ai_generating": "Generando...",
-    "ai_placeholder": "Afinar el enfoque...",
+    "ai_hint": "Afinar el enfoque...",
     "ai_send": "Enviar",
     "ai_questions_label": "Preguntas generadas",
     "ai_consent": "Acepto que el título y objetivo de mi sesión sean procesados por IA",

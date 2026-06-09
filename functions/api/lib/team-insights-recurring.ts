@@ -12,7 +12,7 @@ import {
 import { upsertTeamInsightRollup, type TeamInsightKind } from './team-insights'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { withTimeout } from './shared/async'
-import { InsightThemesJsonSchema, parseJsonString } from './boundary-decode'
+import { InsightThemesJsonSchema, decodeKvJson } from './boundary-decode'
 
 export const INSIGHT_TREND_WINDOWS = ['30d', '90d', '180d'] as const
 export type InsightTrendWindow = (typeof INSIGHT_TREND_WINDOWS)[number]
@@ -79,7 +79,7 @@ export async function listTeamInsightsDaily(
 }
 
 function parseThemeLabels(themesJson: string): string[] {
-  const parsed = parseJsonString(InsightThemesJsonSchema, themesJson)
+  const parsed = decodeKvJson(themesJson, InsightThemesJsonSchema)
   if (!parsed) return []
   return parsed
     .map((t) => (typeof t.theme === 'string' ? t.theme.trim() : ''))

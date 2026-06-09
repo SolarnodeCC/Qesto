@@ -33,9 +33,12 @@
 
 ## Budgets and stop conditions
 
-- Workers AI calls: bounded by session plan middleware and rate limits in API routes.
+Machine-readable policy: [`agent/cost-budget.toml`](../agent/cost-budget.toml). Human summary: [`docs/testing.md#cost-and-spend-budgets-stop-condition-policy`](./testing.md).
+
+- Workers AI calls: per-tenant token quota; circuit breaker + plan middleware stop condition.
+- Vectorize sync: batch quota in `scripts/kb-sync-cli.ts`; non-zero exit on breach.
 - CI: workflow `timeout-minutes` caps; cancel-in-progress concurrency on all workflows.
-- Agent sessions: stop after `just check` fails; do not bypass hooks with `--no-verify`.
+- Agent sessions: stop after `just check` fails; kill-switch = halt run (no `--no-verify`).
 
 ## Detailed guide
 

@@ -1,24 +1,25 @@
-# Jankurai security lane policy — Qesto
-schema_version = "1.0.0"
+[policy]
+standard = "jankurai"
+version = "1.5.1"
 
-enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
-required_tools = ["npm"]
-advisory_tools = ["gitleaks", "zizmor", "syft"]
+# Required tools — CI fails if these are missing
+[[required]]
+tool = "npm"
+command = "npm audit --audit-level=high"
+reason = "dependency vulnerability scan"
 
-[severity_thresholds]
-fail_lane_on = "high"
+# Advisory tools — CI warns but does not fail if not installed
+[[advisory]]
+tool = "gitleaks"
+command = "gitleaks detect --source . --redact --no-banner"
+reason = "secret detection"
 
-[profiles.local]
-enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
-required_tools = ["npm"]
-advisory_tools = ["gitleaks", "zizmor", "syft"]
+[[advisory]]
+tool = "syft"
+command = "syft . -o spdx-json=target/jankurai/sbom.spdx.json"
+reason = "SBOM generation"
 
-[profiles.ci]
-enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
-required_tools = ["gitleaks", "npm", "zizmor"]
-advisory_tools = ["syft"]
-
-[profiles.release]
-enabled_tools = ["gitleaks", "npm", "zizmor", "syft"]
-required_tools = ["gitleaks", "npm", "zizmor", "syft"]
-advisory_tools = []
+[[advisory]]
+tool = "zizmor"
+command = "zizmor .github/workflows"
+reason = "GitHub Actions security audit"

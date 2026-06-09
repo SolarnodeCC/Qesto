@@ -1,6 +1,6 @@
 {
   "submit.title": "Haz una pregunta",
-  "submit.placeholder": "Escribe tu pregunta…",
+  "submit.hint": "Escribe tu pregunta…",
   "submit.button": "Enviar de forma anónima",
   "submit.success": "Tu pregunta se ha enviado",
   "submit.pendingNote": "El anfitrión revisa las preguntas antes de que aparezcan.",

@@ -29,7 +29,7 @@ export function TownhallQuestionCard({ item, variant, upvoted, onUpvote, onModer
       }`}
     >
       {item.isSpotlit && (
-        <p className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-teal-700">
+        <p className="mb-2 inline-flex items-center gap-1 text-xs font-semibold text-teal-700 dark:text-teal-400">
           <Star className="h-3.5 w-3.5" aria-hidden="true" /> {t('queue.spotlight')}
         </p>
       )}

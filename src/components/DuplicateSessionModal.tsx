@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useT } from '../i18n'
 import { api } from '../api/client'
 import { SESSION_TITLE_MAX, suggestDuplicateTitle } from '../lib/session-title'
+import { inputHint } from '../ui/input-hint'
 
 type DuplicateSessionModalProps = {
   open: boolean
@@ -97,7 +98,7 @@ export default function DuplicateSessionModal({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={t('duplicateTitleModal.placeholder')}
+            {...inputHint(t('duplicateTitleModal.hint'))}
             maxLength={SESSION_TITLE_MAX}
             disabled={submitting}
             className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#151C2E] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:opacity-60"

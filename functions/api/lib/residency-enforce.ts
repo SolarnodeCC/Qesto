@@ -3,16 +3,20 @@
  */
 import { z } from 'zod'
 import type { Env } from '../types'
-import { parseJsonString } from './boundary-decode'
 import { getFlag } from './flags'
+import { decodeKvJson } from './boundary-decode'
 
-export const ResidencyPinSchema = z.object({
+export type ResidencyPin = {
+  teamId: string
+  homeRegion: 'eu' | 'us' | 'apac'
+  enforcedAt: number
+}
+
+const ResidencyPinSchema = z.object({
   teamId: z.string(),
   homeRegion: z.enum(['eu', 'us', 'apac']),
   enforcedAt: z.number(),
 })
-
-export type ResidencyPin = z.infer<typeof ResidencyPinSchema>
 
 export function residencyPinKvKey(teamId: string): string {
   return `residency:pin:${teamId}`
@@ -20,8 +24,7 @@ export function residencyPinKvKey(teamId: string): string {
 
 export async function getTeamResidencyPin(kv: KVNamespace, teamId: string): Promise<ResidencyPin | null> {
   const raw = await kv.get(residencyPinKvKey(teamId))
-  if (!raw) return null
-  return parseJsonString(ResidencyPinSchema, raw)
+  return decodeKvJson(raw, ResidencyPinSchema)
 }
 
 export async function setTeamResidencyPin(kv: KVNamespace, pin: ResidencyPin): Promise<void> {

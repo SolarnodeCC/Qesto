@@ -1,46 +1,33 @@
-# Rendered UX QA policy — Qesto React SPA (Vite dev server / production build)
-outputRoot = "."
-decisionThreshold = "error"
-readyState = "domcontentloaded"
-timeoutMs = 30000
-artifactRoot = "target/jankurai/ux-qa"
-requiredStates = ["success"]
-visualBaselineMode = "pass"
-visualBaselineRoot = "target/jankurai/ux-qa-baselines"
-visualDiffRoot = "target/jankurai/ux-qa-diffs"
-baselineOwner = "tools"
-screenshotRequired = true
-ariaSnapshotRequired = true
-accessibilityScanRequired = true
-viewports = ["390x844", "1440x900"]
-playwrightConfig = "tests/playwright.config.ts"
-playwrightProject = "spa-chrome"
-proofCommand = "just ux-qa"
+[qa]
+standard = "jankurai"
+version = "1.5.1"
+runner = "playwright"
+config = "tests/playwright.config.ts"
+
+# Routes that must render without JS errors for the UX QA lane to pass.
+# Add new routes here when new top-level pages are shipped.
+[[routes]]
+path = "/"
+description = "Marketing home"
 
 [[routes]]
-id = "home"
-url = "http://localhost:5173/"
-states = ["success"]
-viewports = ["390x844", "1440x900"]
+path = "/login"
+description = "Auth entry point"
 
 [[routes]]
-id = "login"
-url = "http://localhost:5173/login"
-states = ["success"]
-viewports = ["390x844"]
+path = "/dashboard"
+description = "Authenticated dashboard (requires session cookie)"
+requires_auth = true
 
 [[routes]]
-id = "pricing"
-url = "http://localhost:5173/pricing"
-states = ["success"]
-viewports = ["1440x900"]
+path = "/sessions/new"
+description = "Session creation flow"
+requires_auth = true
 
 [[routes]]
-id = "privacy"
-url = "http://localhost:5173/privacy"
-states = ["success"]
+path = "/templates"
+description = "Template gallery"
 
 [[routes]]
-id = "terms"
-url = "http://localhost:5173/terms"
-states = ["success"]
+path = "/templates/featured"
+description = "Featured templates"

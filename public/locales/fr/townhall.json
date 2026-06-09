@@ -1,6 +1,6 @@
 {
   "submit.title": "Posez une question",
-  "submit.placeholder": "Saisissez votre question…",
+  "submit.hint": "Saisissez votre question…",
   "submit.button": "Envoyer anonymement",
   "submit.success": "Votre question a été envoyée",
   "submit.pendingNote": "Les questions sont examinées par l'hôte avant d'apparaître.",

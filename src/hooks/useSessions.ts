@@ -10,13 +10,13 @@ export type {
 import { api, type ApiError } from '../api/client'
 import { useApiQuery } from './useApiQuery'
 
-type ListState =
+export type SessionsListState =
   | { status: 'loading' }
   | { status: 'ready'; sessions: SessionSummary[] }
   | { status: 'error'; error: ApiError }
 
 export function useSessions() {
-  const [state, setState] = useState<ListState>({ status: 'loading' })
+  const [state, setState] = useState<SessionsListState>({ status: 'loading' })
 
   const refresh = useCallback(async () => {
     setState({ status: 'loading' })

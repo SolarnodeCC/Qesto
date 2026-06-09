@@ -23,7 +23,7 @@ import {
   FacilitatorScorecardPayloadSchema,
   recomputeFacilitatorScorecard,
 } from '../lib/team-insights-scorecard'
-import { parseJsonString } from '../lib/boundary-decode'
+import { decodeKvJson } from '../lib/boundary-decode'
 import type { ParentApp } from './parent-app'
 import { buildInsightsExport, insightsExportToCsv } from '../lib/team-insights-export'
 import { teamDocumentKey } from '../lib/kv-keys'
@@ -169,7 +169,7 @@ export function mountTeamInsightsRoutes(parent: ParentApp) {
     const stale = !rollup || Date.now() - rollup.computed_at > 86_400_000
     const scorecard = stale
       ? await recomputeFacilitatorScorecard(c.env.DB, teamId, window)
-      : (parseJsonString(FacilitatorScorecardPayloadSchema, rollup!.payload_json) ??
+      : (decodeKvJson(rollup!.payload_json, FacilitatorScorecardPayloadSchema) ??
         (await recomputeFacilitatorScorecard(c.env.DB, teamId, window)))
 
     writeEvent(c.env.METRICS_AE, {

@@ -75,10 +75,10 @@
   "duplicateTitleModal": {
     "title": "Dupliquer la session",
     "label": "Titre de la session",
-    "placeholder": "Nom de la nouvelle session",
     "confirm": "Dupliquer",
     "cancel": "Annuler",
-    "duplicateNameWarning": "Vous avez déjà une session avec ce titre. Vous pouvez quand même continuer."
+    "duplicateNameWarning": "Vous avez déjà une session avec ce titre. Vous pouvez quand même continuer.",
+    "hint": "Nom de la nouvelle session"
   },
   "template": "Enregistrer en tant que modèle",
   "saving": "Enregistrement en cours…",

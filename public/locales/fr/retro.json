@@ -4,7 +4,7 @@
   "column.actions": "Actions",
   "column.empty": "Rien pour l'instant.",
   "submit.title": "Ajouter une carte",
-  "submit.placeholder": "De quoi l'équipe devrait-elle discuter ?",
+  "submit.hint": "De quoi l'équipe devrait-elle discuter ?",
   "submit.button": "Ajouter une carte",
   "submit.success": "Carte ajoutée",
   "present.subtitle": "Rétrospective d'équipe",

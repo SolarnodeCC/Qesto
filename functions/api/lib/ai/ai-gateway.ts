@@ -12,7 +12,6 @@
  * @see knowledge-base/adr/ADR-042-cloudflare-capability-expansion.md
  */
 import type { Env } from '../../types'
-import { AIGatewayJsonResponseSchema, parseJsonValue } from '../boundary-decode'
 import {
   assertSanitizedAIGatewayRequest,
   sanitizeAIGatewayRequest,
@@ -105,8 +104,11 @@ export async function runThroughAIGateway(
       throw new Error(`AI Gateway error: ${response.status} ${response.statusText}`)
     }
 
-    const raw = await response.json()
-    const data = parseJsonValue(AIGatewayJsonResponseSchema, raw) ?? {}
+    const data = (await response.json()) as {
+      result?: unknown
+      cached?: boolean
+      cache_age?: number
+    }
 
     const response_obj: AIGatewayResponse = {
       result: data.result,

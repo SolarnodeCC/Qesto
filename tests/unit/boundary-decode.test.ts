@@ -1,52 +1,88 @@
-import { describe, expect, it } from 'vitest'
-import {
-  CachedThemeLabelsSchema,
-  OgImageColorSchema,
-  parseJsonString,
-  parseJsonValue,
-} from '../../functions/api/lib/boundary-decode'
-import { CmkEnvelopeSchema } from '../../functions/api/lib/cmk'
-import { ResidencyPinSchema } from '../../functions/api/lib/residency-enforce'
+import { describe, it, expect } from 'vitest'
+import { z } from 'zod'
+import { decodeKvJson, decodeObject, decodeRequestBody } from '../../functions/api/lib/boundary-decode'
 
-describe('boundary-decode', () => {
-  it('parseJsonString returns null on invalid JSON', () => {
-    expect(parseJsonString(CmkEnvelopeSchema, 'not-json')).toBeNull()
+const PersonSchema = z.object({
+  name: z.string(),
+  age: z.number().int().positive(),
+})
+
+describe('decodeKvJson', () => {
+  it('returns null for null input', () => {
+    expect(decodeKvJson(null, PersonSchema)).toBeNull()
   })
 
-  it('parseJsonString validates CMK envelope', () => {
-    const raw = JSON.stringify({
-      teamId: 't1',
-      keyId: 'k1',
-      algorithm: 'AES-256-GCM',
-      rotatedAt: 1,
-      status: 'active',
+  it('returns null for empty string', () => {
+    expect(decodeKvJson('', PersonSchema)).toBeNull()
+  })
+
+  it('returns null for invalid JSON', () => {
+    expect(decodeKvJson('{not json', PersonSchema)).toBeNull()
+  })
+
+  it('returns null when schema fails', () => {
+    const raw = JSON.stringify({ name: 'Alice', age: -1 })
+    expect(decodeKvJson(raw, PersonSchema)).toBeNull()
+  })
+
+  it('returns null when field missing', () => {
+    const raw = JSON.stringify({ name: 'Bob' })
+    expect(decodeKvJson(raw, PersonSchema)).toBeNull()
+  })
+
+  it('returns decoded value on valid input', () => {
+    const raw = JSON.stringify({ name: 'Alice', age: 30 })
+    expect(decodeKvJson(raw, PersonSchema)).toEqual({ name: 'Alice', age: 30 })
+  })
+
+  it('strips extra fields (passthrough not set)', () => {
+    const raw = JSON.stringify({ name: 'Alice', age: 30, extra: 'x' })
+    const result = decodeKvJson(raw, PersonSchema)
+    expect(result).toEqual({ name: 'Alice', age: 30 })
+    expect((result as Record<string, unknown>)?.extra).toBeUndefined()
+  })
+})
+
+describe('decodeObject', () => {
+  it('returns null for null input', () => {
+    expect(decodeObject(null, PersonSchema)).toBeNull()
+  })
+
+  it('returns null when schema fails', () => {
+    expect(decodeObject({ name: 123, age: 30 }, PersonSchema)).toBeNull()
+  })
+
+  it('returns typed value on valid input', () => {
+    expect(decodeObject({ name: 'Bob', age: 25 }, PersonSchema)).toEqual({ name: 'Bob', age: 25 })
+  })
+})
+
+describe('decodeRequestBody', () => {
+  function makeRequest(body: unknown): Request {
+    return new Request('http://test/', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
     })
-    expect(parseJsonString(CmkEnvelopeSchema, raw)).toMatchObject({ teamId: 't1' })
+  }
+
+  it('returns ok: true with decoded data on valid body', async () => {
+    const req = makeRequest({ name: 'Carol', age: 28 })
+    const result = await decodeRequestBody(req, PersonSchema)
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.data).toEqual({ name: 'Carol', age: 28 })
   })
 
-  it('parseJsonString rejects wrong algorithm', () => {
-    const raw = JSON.stringify({
-      teamId: 't1',
-      keyId: 'k1',
-      algorithm: 'AES-128',
-      rotatedAt: 1,
-      status: 'active',
-    })
-    expect(parseJsonString(CmkEnvelopeSchema, raw)).toBeNull()
+  it('returns ok: false with ZodError on invalid body', async () => {
+    const req = makeRequest({ name: 'Carol' })
+    const result = await decodeRequestBody(req, PersonSchema)
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error).toBeDefined()
   })
 
-  it('parseJsonValue validates residency pin', () => {
-    const value = { teamId: 't1', homeRegion: 'eu', enforcedAt: 100 }
-    expect(parseJsonValue(ResidencyPinSchema, value)).toEqual(value)
-  })
-
-  it('CachedThemeLabelsSchema extracts theme labels', () => {
-    const raw = JSON.stringify({ themes: ['a', 'b'] })
-    expect(parseJsonString(CachedThemeLabelsSchema, raw)?.themes).toEqual(['a', 'b'])
-  })
-
-  it('OgImageColorSchema allowlists query colors', () => {
-    expect(OgImageColorSchema.safeParse('purple').success).toBe(true)
-    expect(OgImageColorSchema.safeParse('red').success).toBe(false)
+  it('returns ok: false when body is not JSON', async () => {
+    const req = new Request('http://test/', { method: 'POST', body: 'not-json' })
+    const result = await decodeRequestBody(req, PersonSchema)
+    expect(result.ok).toBe(false)
   })
 })

@@ -3,7 +3,7 @@ import { namespacedKey } from './tenant-namespace'
 import type { WorkspaceTrendKind, WorkspaceTrendWindow } from './workspace-types'
 import type { z } from 'zod'
 import {
-  parseJsonString,
+  decodeKvJson,
   RetroHealthThemeSchema,
   WorkspaceTrendUnionSchema,
 } from './boundary-decode'
@@ -155,7 +155,7 @@ export async function getWorkspaceTrend(
     .bind(workspaceId, kind, window)
     .first<{ payload_json: string }>()
   if (!row) return null
-  return asWorkspaceTrendPayload(parseJsonString(WorkspaceTrendUnionSchema, row.payload_json))
+  return asWorkspaceTrendPayload(decodeKvJson(row.payload_json, WorkspaceTrendUnionSchema))
 }
 
 export async function recomputeWorkspaceParticipationTrend(
@@ -217,7 +217,7 @@ export async function readCachedWorkspaceTrend(
 ): Promise<WorkspaceTrendPayload | WorkspaceTeamHealthPayload | null> {
   const raw = await kv.get(trendCacheKey(teamId, workspaceId, kind, window))
   if (!raw) return null
-  return asWorkspaceTrendPayload(parseJsonString(WorkspaceTrendUnionSchema, raw))
+  return asWorkspaceTrendPayload(decodeKvJson(raw, WorkspaceTrendUnionSchema))
 }
 
 export async function writeCachedWorkspaceTrend(

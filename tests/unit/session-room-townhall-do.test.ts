@@ -3,6 +3,7 @@
 // registered manually and webSocketMessage is driven directly.
 
 import { describe, expect, it } from 'vitest'
+import { testJwtSecret } from '../helpers/test-credentials'
 import { SessionRoom } from '../../functions/api/SessionRoom'
 import type { Env } from '../../functions/api/types'
 import { MockDurableObjectState, MockWebSocket } from '../helpers/do-mock'
@@ -13,7 +14,7 @@ function makeEnv(townhall = true, db: D1Mock = new D1Mock()): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: 'irrelevant',
+    JWT_SECRET: testJwtSecret(),
     LIVE_ENERGIZERS_ENABLED: 'false',
     ...(townhall ? { REALTIME_TOWNHALL_ENABLED: 'true' } : {}),
     DB: db as unknown as D1Database,

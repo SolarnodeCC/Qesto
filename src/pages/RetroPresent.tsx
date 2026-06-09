@@ -4,6 +4,7 @@ import { api, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { itemsByColumn, useRetroSession, type RetroColumn } from '../hooks/useRetroSession'
 import { RetroItemCard } from '../ui/RetroItemCard'
+import { inputHint } from '../ui/input-hint'
 
 type RetroConfig = {
   sessionId: string
@@ -147,7 +148,7 @@ function RetroColumnPanel({
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value.slice(0, 500))}
-          placeholder={t('submit.placeholder')}
+          {...inputHint(t('submit.hint'))}
           rows={2}
           className="w-full rounded-md border border-pulse-200 px-3 py-2 text-sm dark:border-pulse-600 dark:bg-pulse-800"
         />

@@ -31,7 +31,7 @@ export default function TownhallPresent() {
   return (
     <div className="mx-auto max-w-2xl space-y-5 px-5 py-6">
       <header className="flex items-center justify-between">
-        <h1 className="text-lg font-bold text-pulse-900">{t('console.title')}</h1>
+        <h1 className="text-lg font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('console.title')}</h1>
         {state.connection !== 'open' && (
           <span className="text-xs text-amber-600">
             {state.connection === 'failed' ? t('connection.failed') : t('connection.reconnecting')}
@@ -47,7 +47,7 @@ export default function TownhallPresent() {
             aria-selected={tab === tabDef.key}
             onClick={() => setTab(tabDef.key)}
             className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
-              tab === tabDef.key ? 'border-teal-500 text-teal-700' : 'border-transparent text-pulse-500 hover:text-pulse-800'
+              tab === tabDef.key ? 'border-teal-500 text-teal-700 dark:text-teal-400' : 'border-transparent text-pulse-500 dark:text-[#6B7A99] hover:text-pulse-800 dark:hover:text-[#F0F2F8]'
             }`}
           >
             {t(tabDef.label)} ({counts[tabDef.key] ?? 0})

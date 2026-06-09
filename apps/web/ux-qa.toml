@@ -1,0 +1,14 @@
+# apps/web rendered UX QA — canonical policy in ../../agent/ux-qa.toml
+proofCommand = "just ux-qa"
+artifactRoot = "target/jankurai/ux-qa"
+playwrightConfig = "tests/playwright.config.ts"
+playwrightProject = "spa-chrome"
+screenshotRequired = true
+ariaSnapshotRequired = true
+accessibilityScanRequired = true
+viewports = ["390x844", "1440x900"]
+
+[[routes]]
+id = "home"
+url = "http://localhost:5173/"
+states = ["success"]
