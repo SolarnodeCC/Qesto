@@ -29,9 +29,8 @@ jobs:
     - name: Build app
       run: npm run build
     - name: Apply local D1 schema and migrations
+      # --local writes to a local SQLite file; no Cloudflare token needed.
       run: npm run e2e:db:local
-      env:
-        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     - name: Start full-stack Pages dev server
       run: |
         npm run e2e:serve:fullstack > wrangler-pages-dev.log 2>&1 &
