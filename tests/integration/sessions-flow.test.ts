@@ -33,6 +33,121 @@ async function cookieFor(userId: string, email: string): Promise<string> {
   return `qesto_session=${token}`
 }
 
+describe('sessions response contracts', () => {
+  it('POST /api/sessions — response contract', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('u1', 'u1@example.com')
+
+    const res = await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'contract-1' },
+        body: JSON.stringify({ title: 'Contract Test' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(201)
+    const body = (await res.json()) as any
+    expect(body.ok).toBe(true)
+
+    // Assert required contract fields
+    expect(body.data.session).toMatchObject({
+      id: expect.any(String),
+      title: 'Contract Test',
+      status: 'draft',
+      code: expect.any(String),
+      owner_id: expect.any(String),
+    })
+    expect(Array.isArray(body.data.questions)).toBe(true)
+
+    // Assert no internal fields leak
+    expect(body.data.session).not.toHaveProperty('_raw')
+    expect(JSON.stringify(body)).not.toMatch(/password|jwt|secret/i)
+  })
+
+  it('PATCH /api/sessions/:id — response contract', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('u2', 'u2@example.com')
+
+    // Create session first
+    const createRes = await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'contract-2' },
+        body: JSON.stringify({ title: 'Before' }),
+      }),
+      env,
+    )
+    const { data } = (await createRes.json()) as { data: { session: { id: string } } }
+    const sessionId = data.session.id
+
+    // Patch it
+    const patchRes = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ title: 'After' }),
+      }),
+      env,
+    )
+    expect(patchRes.status).toBe(200)
+    const patchBody = (await patchRes.json()) as any
+    expect(patchBody.ok).toBe(true)
+
+    // Assert only updated fields changed
+    expect(patchBody.data.session.title).toBe('After')
+    expect(patchBody.data.session.id).toBe(sessionId)
+
+    // Assert no _raw leak
+    expect(patchBody.data.session).not.toHaveProperty('_raw')
+    expect(JSON.stringify(patchBody)).not.toMatch(/password|jwt|secret/i)
+  })
+
+  it('GET /api/sessions/:id — response contract', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('u3', 'u3@example.com')
+
+    // Create session first
+    const createRes = await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'contract-3' },
+        body: JSON.stringify({ title: 'Get Test' }),
+      }),
+      env,
+    )
+    const { data } = (await createRes.json()) as { data: { session: { id: string } } }
+    const sessionId = data.session.id
+
+    // Get it
+    const getRes = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}`, { headers: { cookie } }),
+      env,
+    )
+    expect(getRes.status).toBe(200)
+    const getBody = (await getRes.json()) as any
+    expect(getBody.ok).toBe(true)
+
+    // Assert response shape
+    expect(getBody.data.session).toMatchObject({
+      id: sessionId,
+      title: expect.any(String),
+      status: expect.any(String),
+    })
+    expect(Array.isArray(getBody.data.questions)).toBe(true)
+
+    // Assert no internal fields leak
+    expect(getBody.data.session).not.toHaveProperty('_raw')
+    expect(JSON.stringify(getBody)).not.toMatch(/password|jwt|secret|_internal/i)
+  })
+})
+
 describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
   it('creates a DRAFT, patches title + question, returns hydrated state', async () => {
     const db = new D1Mock()
@@ -211,5 +326,88 @@ describe('sessions round-trip (POST → GET → PATCH → GET)', () => {
     expect(res2.status).toBe(409)
     const body = (await res2.json()) as { error: { code: string } }
     expect(body.error.code).toBe('conflict')
+  })
+})
+
+describe('POST /api/sessions/:id/questions — response contract + malformed JSON', () => {
+  it('returns required fields in expected shape without internal fields', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('q_user', 'q@example.com')
+
+    // Create session first
+    const createRes = await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'q-contract' },
+        body: JSON.stringify({ title: 'Question Test' }),
+      }),
+      env,
+    )
+    const { data } = (await createRes.json()) as { data: { session: { id: string } } }
+    const sessionId = data.session.id
+
+    // Add a question
+    const addQRes = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/questions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({
+          kind: 'poll',
+          prompt: 'What is your preference?',
+          options: [
+            { label: 'Option A' },
+            { label: 'Option B' },
+          ],
+        }),
+      }),
+      env,
+    )
+    expect(addQRes.status).toBe(201)
+    const addQBody = (await addQRes.json()) as any
+    expect(addQBody.ok).toBe(true)
+
+    // Assert required contract fields
+    expect(addQBody.data.questions).toHaveLength(1)
+    expect(addQBody.data.questions[0]).toMatchObject({
+      id: expect.any(String),
+      kind: 'poll',
+      prompt: expect.any(String),
+    })
+
+    // Assert no internal fields leak
+    expect(JSON.stringify(addQBody)).not.toMatch(/password|jwt|secret|_internal/i)
+  })
+
+  it('400: malformed JSON body', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('q_bad', 'q_bad@example.com')
+
+    // Create session first
+    const createRes = await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'idempotency-key': 'q-bad' },
+        body: JSON.stringify({ title: 'Bad JSON Test' }),
+      }),
+      env,
+    )
+    const { data } = (await createRes.json()) as { data: { session: { id: string } } }
+    const sessionId = data.session.id
+
+    const res = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/questions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: '{not-json',
+      }),
+      env,
+    )
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as any
+    expect(body.error.code).toBe('validation')
   })
 })

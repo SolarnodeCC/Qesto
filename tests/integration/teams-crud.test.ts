@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
@@ -33,7 +33,67 @@ async function cookieFor(userId: string, email: string): Promise<string> {
   return `qesto_session=${token}`
 }
 
+describe('Teams response contracts', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('POST /api/teams — response contract', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('team_user_1', 'team_user_1@example.com')
+
+    const res = await app.fetch(
+      new Request('http://local/api/teams', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ name: 'Contract Team' }),
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(201)
+    const body = (await res.json()) as any
+    expect(body.ok).toBe(true)
+
+    // Assert required contract fields
+    expect(body.data.team).toMatchObject({
+      id: expect.any(String),
+      name: 'Contract Team',
+      ownerId: 'team_user_1',
+    })
+
+    // Assert no PRICE_ID or Stripe keys leak into response
+    expect(JSON.stringify(body)).not.toMatch(/PRICE_ID|stripe_secret|STRIPE_KEY/i)
+    expect(JSON.stringify(body)).not.toMatch(/password|jwt|secret/i)
+  })
+
+  it('400: malformed JSON body', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('team_bad', 'team_bad@example.com')
+
+    const res = await app.fetch(
+      new Request('http://local/api/teams', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: '{bad-json',
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as any
+    expect(body.error.code).toBe('validation')
+  })
+})
+
 describe('Teams CRUD', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
   it('creates a new team', async () => {
     const db = new D1Mock()
     const app = createApp()

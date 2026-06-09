@@ -1,48 +1,13 @@
-import { describe, expect, it, beforeEach } from 'vitest'
-import { createApp } from '../../functions/api/app'
-import { signJwt } from '../../functions/api/lib/jwt'
-import type { Env } from '../../functions/api/types'
-import { D1Mock } from '../helpers/d1-mock'
-import { KVMock } from '../helpers/kv-mock'
-
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
-
-function makeEnv(db: D1Mock, kv: KVMock): Env {
-  return {
-    ENV: 'dev',
-    PAGES_URL: 'http://local',
-    API_URL: 'http://local',
-    JWT_SECRET: SECRET,
-    DB: db as unknown as D1Database,
-    SESSIONS_KV: kv as unknown as KVNamespace,
-    USERS_KV: new KVMock() as unknown as KVNamespace,
-    TEAMS_KV: new KVMock() as unknown as KVNamespace,
-    TEMPLATES_KV: new KVMock() as unknown as KVNamespace,
-    DECISIONS_KV: new KVMock() as unknown as KVNamespace,
-    AUDIT_KV: new KVMock() as unknown as KVNamespace,
-    ACTIONS_KV: new KVMock() as unknown as KVNamespace,
-  } as unknown as Env
-}
-
-async function cookieFor(userId: string, email: string): Promise<string> {
-  const token = await signJwt({ sub: userId, email }, SECRET, 3600)
-  return `qesto_session=${token}`
-}
+import { describe, expect, it, beforeEach, vi } from 'vitest'
+import { testHonoApp, cookieFor } from './setup'
 
 describe('Plan Enforcement (BILL-04)', () => {
-  let db: D1Mock
-  let kv: KVMock
-  let app: ReturnType<typeof createApp>
-  let env: Env
-
   beforeEach(() => {
-    db = new D1Mock()
-    kv = new KVMock()
-    app = createApp()
-    env = makeEnv(db, kv)
+    vi.clearAllMocks()
   })
 
   it('free user can create 5 sessions per month', async () => {
+    const { app, env, db } = await testHonoApp()
     const userId = 'user_free_1'
     const email = 'free@example.com'
     const cookie = await cookieFor(userId, email)
@@ -88,6 +53,7 @@ describe('Plan Enforcement (BILL-04)', () => {
   })
 
   it('starter user can create 50 sessions per month', async () => {
+    const { app, env, db } = await testHonoApp()
     const userId = 'user_starter_1'
     const email = 'starter@example.com'
     const cookie = await cookieFor(userId, email)
@@ -130,6 +96,7 @@ describe('Plan Enforcement (BILL-04)', () => {
   })
 
   it('team user can create 500 sessions per month (effectively unlimited)', async () => {
+    const { app, env, db } = await testHonoApp()
     const userId = 'user_team_1'
     const email = 'team@example.com'
     const cookie = await cookieFor(userId, email)
@@ -171,6 +138,7 @@ describe('Plan Enforcement (BILL-04)', () => {
   }, 15000)
 
   it('GET /api/plans/:userId/usage returns accurate quota usage', async () => {
+    const { app, env, db } = await testHonoApp()
     const userId = 'user_quota_test'
     const email = 'quota@example.com'
     const cookie = await cookieFor(userId, email)
@@ -217,6 +185,7 @@ describe('Plan Enforcement (BILL-04)', () => {
   })
 
   it('quota usage endpoint rejects cross-user access', async () => {
+    const { app, env, db } = await testHonoApp()
     const userId1 = 'user_a'
     const userId2 = 'user_b'
     const email = 'test@example.com'

@@ -1,6 +1,77 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { testHonoApp, cookieFor } from './setup'
 
 describe('Energizers Routes', () => {
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  describe('POST /sessions/:sessionId/energizers — response contract', () => {
+    it('returns required fields in expected shape without internal fields', async () => {
+      const { app, env, db } = await testHonoApp()
+
+      // Set up a user and session first
+      const userId = 'user-123'
+      const email = 'test@example.com'
+      const sessionId = 'session-456'
+      const now = Date.now()
+
+      // Insert user
+      db.users.set(userId, {
+        id: userId,
+        email,
+        display_name: 'Test User',
+        created_at: now,
+        last_login_at: now,
+        plan: 'free',
+      })
+
+      // Insert session
+      db.sessions.set(sessionId, {
+        id: sessionId,
+        owner_id: userId,
+        code: 'ABC123',
+        title: 'Test Session',
+        status: 'draft',
+        anonymity: 'full',
+        created_at: now,
+        started_at: null,
+        closed_at: null,
+        archived_at: null,
+      })
+
+      const cookie = await cookieFor(userId, email)
+
+      const response = await app.fetch(
+        new Request(`http://localhost/api/sessions/${sessionId}/energizers`, {
+          method: 'POST',
+          headers: {
+            'cookie': cookie,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            kind: 'emoji_poll',
+            prompt: 'How are you feeling?',
+          }),
+        }),
+        env,
+      )
+
+      expect(response.status).toBe(201)
+      const body = await response.json() as any
+
+      // Verify response shape
+      expect(body.ok).toBe(true)
+      expect(body.data).toBeDefined()
+      expect(body.data.id).toBeDefined()
+      expect(body.data.kind).toBe('emoji_poll')
+
+      // Ensure no internal fields leak
+      const bodyStr = JSON.stringify(body)
+      expect(bodyStr).not.toMatch(/stack|_internal|_hash/i)
+    })
+  })
 
   describe('POST /sessions/:sessionId/energizers (create)', () => {
     it('should create battle_royale energizer', async () => {
