@@ -21,6 +21,7 @@ export type ApiKeyVars = { apiKey: ApiKeyRecord }
 
 const KEY_LIMIT_PER_MIN = 120
 const KEY_WINDOW_SEC = 60
+const API_KEY_FORMAT = /^qesto_[0-9a-f]{32}$/
 
 export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variables: ApiKeyVars }>, next: Next) {
   const auth = c.req.header('authorization')
@@ -28,6 +29,11 @@ export async function publicApiKeyMiddleware(c: Context<{ Bindings: Env; Variabl
     return c.json({ ok: false, error: { code: 'unauthenticated', message: 'Bearer API key required' } }, 401)
   }
   const raw = auth.slice(7).trim()
+  // Cheap format gate before hashing + KV lookups: keys are only ever minted
+  // as `qesto_` + 32 hex chars (generateApiKey), so anything else is garbage.
+  if (!API_KEY_FORMAT.test(raw)) {
+    return c.json({ ok: false, error: { code: 'unauthenticated', message: 'Invalid API key' } }, 401)
+  }
   if (!c.env.INTEGRATIONS_KV) {
     return c.json({ ok: false, error: { code: 'unavailable', message: 'API keys not configured' } }, 503)
   }

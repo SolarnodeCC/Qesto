@@ -123,6 +123,12 @@ IDs are `REV-NN` for traceability. Effort: S (≤3 pts), M (5–8 pts), L (≥13
 | REV-49 | Recap export to PDF/PowerPoint | Results currently export JSON/CSV only; facilitators present recaps in decks. Server-side PDF render of the Results view is a frequent-request, low-risk add. | M |
 | REV-50 | First-session onboarding checklist + template analytics | Guided checklist (create → add questions → test join → go live) plus instrumentation on which templates convert to live sessions — feeds the activation north-star metric. | M |
 
+> **Addendum 2026-06-10 — low-priority verification & disposition.** Each LOW item was re-verified against the code before execution. Outcomes:
+> - **Done in this pass:** REV-37 (shared `lib/embedding.ts:firstEmbeddingVector` replaces three per-file copies; the KB variant gained Zod envelope validation it previously lacked), REV-42 (`PwaInboxPanel.tsx` deleted — it was entirely unreferenced, not just a placeholder), REV-45 (`qesto_[0-9a-f]{32}` format gate added to `middleware/public-api-auth.ts` before hash + KV lookups).
+> - **Review corrections — no action needed:** REV-40 (Zoom is NOT a skeleton: ZOOM-COMPLETE-01 shipped OAuth, token refresh, and session-close chat posts in Sprint 40; only `verifyWebhook` is unimplemented and unused), REV-41 (LinkedIn auto-posting IS complete: `lib/linkedin.ts` + `functions/linkedin-auth.ts` + `workers/linkedin-scheduler/` cron worker), REV-43 (`ideate-cluster.ts` IS used — imported and called by `session-room-ideate-handler.ts:372`, with tests), REV-38 (no real duplication: `signState`/`verifyState` exist once in `routes/integrations.ts`; login OAuth uses a different KV-nonce mechanism by design).
+> - **Blocked:** REV-36 (rerank tuning) waits on the REV-10 eval harness.
+> - **Groomed into stories:** REV-39, REV-44, REV-46–REV-50 — see `knowledge-base/product/backlog/REV_LOW_STORIES.md`.
+
 **Suggested sequencing:** REV-01/02/03/04 are sprint-now items (revenue and exploitable-auth class). REV-05–REV-13 fit the next sprint alongside Jankurai Phase 2 closure. The structural items (REV-14/15/16) should be scheduled as the S81–S85 arc's engineering-capacity allocation (~20% per sprint) rather than a dedicated stop-the-world refactor.
 
 ---
