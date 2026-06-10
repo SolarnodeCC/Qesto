@@ -11,6 +11,7 @@
   Cache-Control: public, max-age=31536000, immutable
 
 /*
+  Cache-Control: no-cache, no-store, must-revalidate
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
