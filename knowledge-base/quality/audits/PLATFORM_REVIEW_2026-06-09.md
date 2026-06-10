@@ -135,6 +135,8 @@ IDs are `REV-NN` for traceability. Effort: S (≤3 pts), M (5–8 pts), L (≥13
 
 ## 4. Aligning AI Features with Organizational Objectives
 
+> **Status update (2026-06-10):** REV-04, REV-05, REV-06, REV-09, REV-10, and REV-27 from this section are **implemented**: insights prompts now sanitize and fence participant text, thread anonymity with a post-generation PII scrub, and re-check AI consent at generation time on both routes; the AI Gateway is env-wired (activation = `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID` / `CLOUDFLARE_AI_GATEWAY_TOKEN`, see ADR-042 §1.1); the eval golden set lives in `tests/eval/` and gates CI + `check:rc` (baseline: `knowledge-base/operations/monitoring/AI_EVAL_BASELINE.md`, CLAUDE.md hard rule 6); and team-filtered similar sessions surface on the Results page (ADR-0045 addendum). Open from this section: copilot `/turn` validation (REV-25), latency-budget enforcement (REV-26), theme feedback loop (REV-28).
+
 The locked strategy (ADR-0006, SPRINT81_90_AI_PLAN) — Workers AI only, privacy moat, L4 maturity by v6.0 — is sound and should not change. The gap is execution consistency, not direction.
 
 1. **Close the ship-gate violations before adding AI surface area.** The portfolio scores ~L2.2 against the 5-competency model, and the strategy's own rule ("cannot ship below L3 Context Design") is currently violated by the unsanitized, anonymity-blind insights path (REV-04/05/06). The S83 agentic-facilitation bet (E83) inherits whatever context-design discipline exists today — fix the foundation first; it is cheap (three S/M items).

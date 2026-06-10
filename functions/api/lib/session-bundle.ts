@@ -6,6 +6,7 @@
 // boundary explicit, inspectable, and unit-testable without an AI mock.
 
 import type { InsightsInput } from './ai-insights'
+import type { Anonymity } from '../types'
 
 export type PollOptionBreakdown = {
   label: string
@@ -33,6 +34,8 @@ export type SessionBundle = {
    * when KB search is unavailable or produced no hits.
    */
   kbContext?: string
+  /** Session anonymity mode, threaded through to the AI prompt + PII scrub. */
+  anonymity?: Anonymity
 }
 
 /**
@@ -59,6 +62,9 @@ export function toInsightsInput(bundle: SessionBundle): InsightsInput {
   }
   if (bundle.kbContext !== undefined && bundle.kbContext.trim().length > 0) {
     out.kbContext = bundle.kbContext
+  }
+  if (bundle.anonymity !== undefined) {
+    out.anonymity = bundle.anonymity
   }
   return out
 }

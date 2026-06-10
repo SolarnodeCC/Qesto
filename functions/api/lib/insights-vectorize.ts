@@ -22,15 +22,24 @@ function firstVector(result: unknown): number[] | undefined {
 }
 
 
-/** Embed title + snippet of open answers; query Vectorize for similar past sessions. */
+export type SimilarSession = { title: string; score: number }
+
+/**
+ * Embed title + snippet of open answers; query Vectorize for similar past sessions.
+ *
+ * Tenant safety (REV-27): `similarSessionTitles` only ever feeds the AI prompt.
+ * The user-visible `similarSessions` list is populated ONLY when `teamId` is
+ * provided, in which case the query is metadata-filtered to that team — titles
+ * from other tenants can never surface in a response payload.
+ */
 export async function embedAndFindSimilarSessionTitles(
   env: InsightsVectorizeBindings,
-  params: { sessionId: string; sessionTitle: string; openResponses: string[] },
-): Promise<{ vector?: number[]; similarSessionTitles: string[] }> {
+  params: { sessionId: string; sessionTitle: string; openResponses: string[]; teamId?: string | null },
+): Promise<{ vector?: number[]; similarSessionTitles: string[]; similarSessions: SimilarSession[] }> {
   const embedText = sanitizeEmbedText(
     `${params.sessionTitle}: ${params.openResponses.slice(0, 10).join('. ')}`,
   )
-  if (!embedText) return { similarSessionTitles: [] }
+  if (!embedText) return { similarSessionTitles: [], similarSessions: [] }
 
   const embedResult = await withTimeout(
     env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
@@ -39,26 +48,32 @@ export async function embedAndFindSimilarSessionTitles(
   )
   const vector = firstVector(embedResult)
   if (!vector) {
-    return { similarSessionTitles: [] }
+    return { similarSessionTitles: [], similarSessions: [] }
   }
 
   const queryResult = await withTimeout(
     env.DECISIONS_VECTORIZE.query(vector, {
       topK: DECISIONS_SIMILARITY_TOP_K,
       returnMetadata: 'all',
+      ...(params.teamId ? { filter: { team_id: params.teamId } } : {}),
     }),
     DECISIONS_VECTORIZE_TIMEOUT_MS,
     'Decision similarity query',
   )
   const similarSessionTitles: string[] = []
+  const similarSessions: SimilarSession[] = []
   const matches = queryResult.matches.filter(
     (m) => m.id !== params.sessionId && (m.score ?? 0) > DECISIONS_SIMILARITY_MIN_SCORE,
   )
   for (const match of matches) {
     const meta = match.metadata as Record<string, string> | undefined
-    if (meta?.title) similarSessionTitles.push(meta.title)
+    if (!meta?.title) continue
+    similarSessionTitles.push(meta.title)
+    if (params.teamId) {
+      similarSessions.push({ title: meta.title, score: match.score ?? 0 })
+    }
   }
-  return { vector, similarSessionTitles }
+  return { vector, similarSessionTitles, similarSessions }
 }
 
 /**

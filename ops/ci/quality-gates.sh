@@ -31,6 +31,11 @@ if [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ]; then
   npm run lint 2>/dev/null || true
 fi
 
+# AI eval golden set (REV-10 DoD gate): prompt-injection confinement, output
+# schema acceptance/rejection corpus, PII scrub, governance guard matrix.
+report_success "AI eval golden set"
+npm run test:eval
+
 # Unit tests with coverage (enforces the regression floor in vite.config.ts
 # and produces coverage/ for the CI artifact-upload step)
 report_success "Running unit tests with coverage"

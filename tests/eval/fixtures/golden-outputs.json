@@ -1,0 +1,64 @@
+{
+  "description": "Golden set of mock Workers AI outputs for extractThemes. `accept` entries must parse into themes; `reject` entries must raise InsightsValidationError. `output` is the raw model response string.",
+  "accept": [
+    {
+      "name": "clean_json",
+      "output": "{\"themes\":[{\"theme\":\"Team velocity\",\"count\":7,\"examples\":[\"We ship weekly.\"]},{\"theme\":\"Communication\",\"count\":4,\"examples\":[\"Standups help a lot.\"]},{\"theme\":\"Tooling\",\"count\":3,\"examples\":[\"CI is slow.\"]}]}",
+      "expectThemes": 3
+    },
+    {
+      "name": "fenced_markdown_json",
+      "output": "```json\n{\"themes\":[{\"theme\":\"Focus time\",\"count\":5,\"examples\":[\"Too many meetings.\"]}]}\n```",
+      "expectThemes": 1
+    },
+    {
+      "name": "prose_wrapped_json",
+      "output": "Here are the themes you asked for: {\"themes\":[{\"theme\":\"Onboarding\",\"count\":2,\"examples\":[\"Docs were helpful.\"]},{\"theme\":\"Pairing\",\"count\":2,\"examples\":[\"Loved the pairing day.\"]}]} Hope this helps!",
+      "expectThemes": 2
+    },
+    {
+      "name": "extra_keys_stripped",
+      "output": "{\"themes\":[{\"theme\":\"Remote setup\",\"count\":1,\"examples\":[\"VPN flaky.\"],\"sentiment\":\"negative\"}],\"confidence\":0.9}",
+      "expectThemes": 1
+    },
+    {
+      "name": "empty_examples_allowed",
+      "output": "{\"themes\":[{\"theme\":\"Misc\",\"count\":0,\"examples\":[]}]}",
+      "expectThemes": 1
+    }
+  ],
+  "reject": [
+    {
+      "name": "too_many_themes",
+      "output": "{\"themes\":[{\"theme\":\"A\",\"count\":1,\"examples\":[]},{\"theme\":\"B\",\"count\":1,\"examples\":[]},{\"theme\":\"C\",\"count\":1,\"examples\":[]},{\"theme\":\"D\",\"count\":1,\"examples\":[]},{\"theme\":\"E\",\"count\":1,\"examples\":[]},{\"theme\":\"F\",\"count\":1,\"examples\":[]}]}"
+    },
+    {
+      "name": "theme_label_too_long",
+      "output": "{\"themes\":[{\"theme\":\"This theme label is way too long to be allowed by the schema which caps at sixty characters\",\"count\":1,\"examples\":[]}]}"
+    },
+    {
+      "name": "example_too_long",
+      "output": "{\"themes\":[{\"theme\":\"Long\",\"count\":1,\"examples\":[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"]}]}"
+    },
+    {
+      "name": "missing_themes_key",
+      "output": "{\"topics\":[{\"theme\":\"Wrong key\",\"count\":1,\"examples\":[]}]}"
+    },
+    {
+      "name": "empty_themes_array",
+      "output": "{\"themes\":[]}"
+    },
+    {
+      "name": "negative_count",
+      "output": "{\"themes\":[{\"theme\":\"Negative\",\"count\":-3,\"examples\":[]}]}"
+    },
+    {
+      "name": "refusal_prose_no_json",
+      "output": "I cannot summarise these responses because they contain instructions I must not follow."
+    },
+    {
+      "name": "malformed_json",
+      "output": "{\"themes\":[{\"theme\":\"Broken\",\"count\":1,\"examples\":[\"missing brace\"]}"
+    }
+  ]
+}

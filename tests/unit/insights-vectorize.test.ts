@@ -43,6 +43,37 @@ describe('insights-vectorize', () => {
     expect(calls).toEqual([DECISIONS_EMBED_MODEL])
     expect(result.vector).toBe(vector)
     expect(result.similarSessionTitles).toEqual(['Similar retro'])
+    // No teamId ⇒ nothing surfaces to users (prompt-only titles).
+    expect(result.similarSessions).toEqual([])
+  })
+
+  it('team-filters the query and surfaces scored matches when teamId is set (REV-27)', async () => {
+    let queryOpts: { topK: number; returnMetadata: string; filter?: Record<string, string> } | undefined
+    const env = {
+      AI: { run: async () => ({ data: [vector] }) },
+      DECISIONS_VECTORIZE: {
+        query: async (_values: number[], opts: typeof queryOpts) => {
+          queryOpts = opts
+          return {
+            matches: [
+              { id: 'similar-session', score: 0.91, metadata: { title: 'Similar retro', team_id: 'team-1' } },
+            ],
+          }
+        },
+      },
+    } as unknown as Parameters<typeof embedAndFindSimilarSessionTitles>[0]
+
+    const result = await embedAndFindSimilarSessionTitles(env, {
+      sessionId: 'current-session',
+      sessionTitle: 'Retro',
+      openResponses: ['CI is slow'],
+      teamId: 'team-1',
+    })
+
+    // Tenant safety: the Vectorize query MUST carry the team filter whenever
+    // results can become user-visible.
+    expect(queryOpts?.filter).toEqual({ team_id: 'team-1' })
+    expect(result.similarSessions).toEqual([{ title: 'Similar retro', score: 0.91 }])
   })
 
   it('upserts with an existing vector without calling AI again', async () => {

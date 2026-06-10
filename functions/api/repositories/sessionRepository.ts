@@ -26,6 +26,37 @@ export async function fetchSessionTitleForOwner(
   return row ?? null
 }
 
+export type SessionAIGovernanceRow = {
+  id: string
+  title: string
+  team_id: string | null
+  anonymity: string
+  ai_generated: number | null
+  ai_consent_at: number | null
+  status: string
+  closed_at: number | null
+}
+
+/**
+ * Session fields needed for AI governance checks at insight-generation time:
+ * anonymity (ZK block + PII scrub), ai_generated/ai_consent_at (consent
+ * re-check), team_id (tenant-scoped similarity surfacing).
+ */
+export async function fetchSessionAIGovernanceForOwner(
+  db: D1Database,
+  sessionId: string,
+  ownerId: string,
+): Promise<SessionAIGovernanceRow | null> {
+  const row = await db
+    .prepare(
+      `SELECT id, title, team_id, anonymity, ai_generated, ai_consent_at, status, closed_at
+         FROM sessions WHERE id = ?1 AND owner_id = ?2`,
+    )
+    .bind(sessionId, ownerId)
+    .first<SessionAIGovernanceRow>()
+  return row ?? null
+}
+
 export async function sessionOwnedBy(db: D1Database, sessionId: string, ownerId: string): Promise<boolean> {
   const row = await db
     .prepare(`SELECT id FROM sessions WHERE id = ?1 AND owner_id = ?2`)

@@ -22,5 +22,16 @@
   "title_save_error": "Impossible d'enregistrer le titre",
   "title_saving": "Enregistrement…",
   "responses_one": "{count} reponse",
-  "responses_other": "{count} reponses"
+  "responses_other": "{count} reponses",
+  "similarSessions": {
+    "title": "Échos de sessions passées",
+    "description_one": "Cette session fait écho à {count} session passée de l'équipe.",
+    "description_other": "Cette session fait écho à {count} sessions passées de l'équipe.",
+    "match": "{percent} % de correspondance",
+    "empty": "Aucune session passée similaire trouvée pour le moment. Générez des informations IA pour comparer cette session à l'historique de votre équipe.",
+    "planRequired": "Les informations inter-sessions nécessitent le plan Team.",
+    "planHint": "Passez à un plan supérieur pour voir comment cette session fait écho aux sessions passées de votre équipe.",
+    "viewPlans": "Voir les plans →",
+    "error": "Impossible de générer les informations. Veuillez réessayer plus tard."
+  }
 }

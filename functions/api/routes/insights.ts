@@ -19,11 +19,12 @@ import {
   extractThemes,
   type InsightTheme,
 } from '../lib/ai-insights'
+import { checkInsightsAllowed } from '../lib/insights-guards'
 import { sanitizeError } from '../lib/error-handler'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { rateLimit } from '../lib/rate-limit'
 import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/protocol-schemas'
-import type { Env } from '../types'
+import type { Anonymity, Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -34,6 +35,9 @@ type SessionRow = {
   status: 'draft' | 'live' | 'closed' | 'archived'
   closed_at: number | null
   created_at: number
+  anonymity: Anonymity
+  ai_generated: number | null
+  ai_consent_at: number | null
 }
 
 type VoteBreakdown = {
@@ -65,13 +69,37 @@ async function fetchOwnedSession(
 ): Promise<SessionRow | null> {
   const row = await db
     .prepare(
-      `SELECT id, owner_id, title, status, closed_at, created_at
+      `SELECT id, owner_id, title, status, closed_at, created_at,
+              anonymity, ai_generated, ai_consent_at
          FROM sessions
         WHERE id = ?1 AND owner_id = ?2`,
     )
     .bind(id, ownerId)
     .first<SessionRow>()
   return row ?? null
+}
+
+// REV-27: the analyze route (routes/ai-insights/register-analyze.ts) caches a
+// payload in DECISIONS_KV that may carry team-filtered `similar_sessions`.
+// This GET route is mounted first and shadows the ai-insights GET, so we merge
+// that field here for the Results page panel. Best-effort — empty on any miss.
+async function readSimilarSessions(
+  kv: KVNamespace,
+  sessionId: string,
+): Promise<{ title: string; score: number }[]> {
+  try {
+    const cached = await readKvJson<{ similar_sessions?: unknown }>(kv, `insights:${sessionId}`)
+    const raw = cached?.similar_sessions
+    if (!Array.isArray(raw)) return []
+    return raw.filter(
+      (s): s is { title: string; score: number } =>
+        !!s && typeof s === 'object' &&
+        typeof (s as { title?: unknown }).title === 'string' &&
+        typeof (s as { score?: unknown }).score === 'number',
+    )
+  } catch {
+    return []
+  }
 }
 
 async function fetchOpenResponses(
@@ -192,6 +220,19 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       )
     }
 
+    // REV-06: ZK sessions never reach AI; AI-generated sessions need consent.
+    const guard = checkInsightsAllowed(session)
+    if (!guard.allowed) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: guard.code, message: guard.message },
+          trace_id: c.get('trace_id'),
+        },
+        403,
+      )
+    }
+
     // Cache check before rate limit — hits don't consume AI quota.
     const cached = await readKvJson(c.env.SESSIONS_KV, cacheKey(id))
     if (cached) {
@@ -202,6 +243,7 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
           data: {
             themes: ci.themes,
             trend: ci.trend,
+            similar_sessions: await readSimilarSessions(c.env.DECISIONS_KV, id),
             cached: true,
             cached_at: ci.cached_at,
           },
@@ -237,6 +279,7 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
           sessionTitle: session.title,
           openResponses,
           pollBreakdown: pollBreakdown.map((pb) => ({ prompt: pb.prompt, topLabels: pb.topLabels })),
+          anonymity: session.anonymity,
         },
         INSIGHTS_MODEL,
       )
@@ -282,7 +325,13 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
 
     return c.json({
       ok: true,
-      data: { themes, trend, cached: false, cached_at: payload.cached_at },
+      data: {
+        themes,
+        trend,
+        similar_sessions: await readSimilarSessions(c.env.DECISIONS_KV, id),
+        cached: false,
+        cached_at: payload.cached_at,
+      },
       trace_id: c.get('trace_id'),
     })
   })

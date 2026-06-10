@@ -37,6 +37,14 @@ Adopt a **3-phase, 6-week plan**. Each phase is independently shippable and gate
 - **Effort**: 2–3 days.
 - **Implementation**: New `ai-gateway.ts` wrapper + `runAI()` unified entry point in `session-context.ts`.
 - **Success metrics**: Gateway cache-hit rate ≥ 35% within 2 weeks; p50 sentiment latency < 200ms on hits; AI spend/session down ≥ 30%.
+- **Wiring (2026-06-10, REV-09)**: gateway identity is env-driven — `resolveGatewayConfig()` reads the
+  `CLOUDFLARE_AI_GATEWAY_ID` and `CLOUDFLARE_AI_GATEWAY_TOKEN` secrets (set via `wrangler secret put`,
+  never in wrangler.toml) plus optional `CLOUDFLARE_ACCOUNT_ID` override. Endpoint:
+  `https://gateway.ai.cloudflare.com/v1/{account}/{gateway}/workers-ai/{model}` with Bearer auth.
+  **Fallback semantics**: if either secret is unset, or the gateway returns 5xx / times out, every call
+  bypasses to direct `env.AI.run()` — the gateway is enabled/disabled purely by secret presence.
+  Activation runbook: create the gateway in the CF dashboard, put both secrets, redeploy, then watch
+  `ai.cache_hit`/`ai.cache_miss` AE events for the ≥35% hit-rate target.
 
 ### 1.2 — WAF custom Firewall Rules + rate limiting on auth & WS upgrade
 - **Impact**: Edge abuse blocking (auth flood, WS join attacks); reliability ++.

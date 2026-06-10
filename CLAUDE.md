@@ -101,13 +101,14 @@ chub annotate cloudflare/workers "finding"  # Add new annotation
 3. **`npm test` must pass** before every commit (Vitest in `tests/unit/`)
 4. **`tsc --noEmit` must pass** — no TypeScript errors
 5. **DRAFT-API for draft state**, WebSocket for LIVE — never mix
-6. **Documentation location:** All specifications, ADRs, and operational guides are in [`/knowledge-base/`](./knowledge-base/). Reference:
+6. **AI eval gate (REV-10):** changes to AI prompts, models, output schemas, or AI safety logic require `npm run test:eval` green with updated golden fixtures in `tests/eval/fixtures/` — a change with no eval evidence does not ship (baseline: [`/knowledge-base/operations/monitoring/AI_EVAL_BASELINE.md`](./knowledge-base/operations/monitoring/AI_EVAL_BASELINE.md))
+7. **Documentation location:** All specifications, ADRs, and operational guides are in [`/knowledge-base/`](./knowledge-base/). Reference:
    - **Specs**: [`/knowledge-base/specifications/domain/SPEC_{BACKEND,FRONTEND,DATAMODEL,REALTIME,INTEGRATIONS,DEPLOYMENT,CORE}.md`](./knowledge-base/specifications/)
    - **ADRs**: [`/knowledge-base/adr/ADR-{number}-{title}.md`](./knowledge-base/adr/)
    - **Architecture**: [`/knowledge-base/architecture/ARCHITECTURE.md`](./knowledge-base/architecture/)
    - **Roadmap**: [`/knowledge-base/product/roadmap/`](./knowledge-base/product/roadmap/)
    - **Backlog**: [`/knowledge-base/product/backlog/BACKLOG_MASTER.md`](./knowledge-base/product/backlog/)
-7. **Update this file** when new patterns are discovered
+8. **Update this file** when new patterns are discovered
 
 ## Deployment
 ```bash

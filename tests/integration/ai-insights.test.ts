@@ -61,10 +61,99 @@ describe('GET /api/sessions/:id/insights — response contract', () => {
     expect(body.data.trend).toBeDefined()
     expect(body.data.trend['7d']).toBeGreaterThanOrEqual(0)
     expect(body.data.trend['30d']).toBeGreaterThanOrEqual(0)
+    // REV-27: similar_sessions is always present (empty without analyze cache).
+    expect(Array.isArray(body.data.similar_sessions)).toBe(true)
 
     // Ensure no raw AI blob or internal fields leak
     const bodyStr = JSON.stringify(body)
     expect(bodyStr).not.toMatch(/stack|_internal|_hash/i)
+  })
+})
+
+describe('insights governance guard (REV-06)', () => {
+  async function seededApp(sessionOverrides: Record<string, unknown>) {
+    const { app, env, db } = await testHonoApp()
+    const userId = 'user-gov'
+    const email = 'gov@example.com'
+    const sessionId = 'session-gov-1'
+    const now = Date.now()
+    db.users.set(userId, {
+      id: userId,
+      email,
+      display_name: 'Gov Test',
+      created_at: now,
+      last_login_at: now,
+      plan: 'team',
+    })
+    db.sessions.set(sessionId, {
+      id: sessionId,
+      owner_id: userId,
+      code: 'GOV123',
+      title: 'Governance Session',
+      status: 'closed',
+      anonymity: 'full',
+      created_at: now,
+      started_at: now,
+      closed_at: now + 3600000,
+      archived_at: null,
+      ...sessionOverrides,
+    })
+    const cookie = await cookieFor(userId, email)
+    return { app, env, sessionId, cookie }
+  }
+
+  it('blocks insights for zero-knowledge sessions with 403 zk_not_supported', async () => {
+    const { app, env, sessionId, cookie } = await seededApp({ anonymity: 'zero_knowledge' })
+    const response = await app.fetch(
+      new Request(`http://localhost/api/sessions/${sessionId}/insights`, {
+        headers: { cookie },
+      }),
+      env,
+    )
+    expect(response.status).toBe(403)
+    const body = (await response.json()) as any
+    expect(body.error.code).toBe('zk_not_supported')
+  })
+
+  it('blocks insights for AI-generated sessions without consent (403 consent_required)', async () => {
+    const { app, env, sessionId, cookie } = await seededApp({ ai_generated: 1, ai_consent_at: null })
+    const response = await app.fetch(
+      new Request(`http://localhost/api/sessions/${sessionId}/insights`, {
+        headers: { cookie },
+      }),
+      env,
+    )
+    expect(response.status).toBe(403)
+    const body = (await response.json()) as any
+    expect(body.error.code).toBe('consent_required')
+  })
+
+  it('allows insights for AI-generated sessions with recorded consent', async () => {
+    const { app, env, sessionId, cookie } = await seededApp({
+      ai_generated: 1,
+      ai_consent_at: Date.now(),
+    })
+    const response = await app.fetch(
+      new Request(`http://localhost/api/sessions/${sessionId}/insights`, {
+        headers: { cookie },
+      }),
+      env,
+    )
+    expect(response.status).toBe(200)
+  })
+
+  it('blocks the analyze route for zero-knowledge sessions too', async () => {
+    const { app, env, sessionId, cookie } = await seededApp({ anonymity: 'zero_knowledge' })
+    const response = await app.fetch(
+      new Request(`http://localhost/api/sessions/${sessionId}/insights/analyze`, {
+        method: 'POST',
+        headers: { cookie },
+      }),
+      env,
+    )
+    expect(response.status).toBe(403)
+    const body = (await response.json()) as any
+    expect(body.error.code).toBe('zk_not_supported')
   })
 })
 

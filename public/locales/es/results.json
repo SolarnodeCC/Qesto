@@ -22,5 +22,16 @@
   "title_save_error": "No se pudo guardar el título",
   "title_saving": "Guardando…",
   "responses_one": "{count} respuesta",
-  "responses_other": "{count} respuestas"
+  "responses_other": "{count} respuestas",
+  "similarSessions": {
+    "title": "Ecos de sesiones anteriores",
+    "description_one": "Esta sesión refleja {count} sesión anterior del equipo.",
+    "description_other": "Esta sesión refleja {count} sesiones anteriores del equipo.",
+    "match": "{percent}% de coincidencia",
+    "empty": "Aún no se han encontrado sesiones anteriores similares. Genera información de IA para comparar esta sesión con el historial de tu equipo.",
+    "planRequired": "La información entre sesiones requiere el plan Team.",
+    "planHint": "Actualiza tu plan para ver cómo esta sesión refleja las sesiones anteriores de tu equipo.",
+    "viewPlans": "Ver planes →",
+    "error": "No se pudo generar la información. Inténtalo de nuevo más tarde."
+  }
 }

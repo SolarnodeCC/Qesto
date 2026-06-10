@@ -17,10 +17,12 @@ import { toInsightsInput, type SessionBundle } from '../../lib/session-bundle'
 import { writeEvent } from '../../lib/observability'
 import { sanitizeError } from '../../lib/error-handler'
 import { safeLogContext , logEvent} from '../../lib/log'
-import { fetchSessionTitleForOwner } from '../../lib/session-repository'
+import { fetchSessionAIGovernanceForOwner } from '../../lib/session-repository'
+import { checkInsightsAllowed } from '../../lib/insights-guards'
+import { featureAllowed } from '../../lib/entitlements'
 import { fail, ok } from '../../lib/http'
 import { writeKvJson } from '../../lib/kv'
-import type { PlanTier } from '../../types'
+import type { Anonymity, PlanTier } from '../../types'
 import {
   AI_RATE_LIMIT,
   INSIGHTS_CACHE_TTL_SECONDS,
@@ -46,15 +48,29 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         })
       }
 
-      const sessionResult = await fetchSessionTitleForOwner(c.env.DB, sessionId, user.sub)
+      const sessionResult = await fetchSessionAIGovernanceForOwner(c.env.DB, sessionId, user.sub)
 
       if (!sessionResult) {
         return fail(c, 'not_found', 'Session not found or access denied', 404)
       }
 
+      // REV-06: ZK sessions never reach AI; AI-generated sessions need consent.
+      const guard = checkInsightsAllowed(sessionResult)
+      if (!guard.allowed) {
+        return fail(c, guard.code, guard.message, 403)
+      }
+
+      // REV-27: similar sessions are user-visible only for team sessions on a
+      // plan that unlocks cross-session intelligence (Vectorize query is then
+      // team-filtered — see embedAndFindSimilarSessionTitles).
+      const quotas = c.get('planQuotas')
+      const surfaceSimilar =
+        !!sessionResult.team_id && !!quotas && featureAllowed(quotas, 'crossSessionInsights')
+
       const { openResponses, pollBreakdown } = await fetchInsightsVoteContext(c.env.DB, sessionId)
 
       const similarSessionTitles: string[] = []
+      let similarSessions: { title: string; score: number }[] = []
       let sessionVector: number[] | undefined
       try {
         const embedStart = Date.now()
@@ -64,6 +80,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
             sessionId,
             sessionTitle: sessionResult.title,
             openResponses,
+            ...(surfaceSimilar ? { teamId: sessionResult.team_id } : {}),
           },
         )
         writeEvent(c.env.METRICS_AE, {
@@ -75,6 +92,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         })
         sessionVector = sim.vector
         similarSessionTitles.push(...sim.similarSessionTitles)
+        similarSessions = sim.similarSessions
       } catch (vecErr) {
         logEvent({ event: 'vectorize.query.skip', reason: (vecErr as Error).message })
       }
@@ -120,6 +138,7 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         pollBreakdown,
         similarSessionTitles,
         ...(kbContext.length > 0 ? { kbContext } : {}),
+        anonymity: sessionResult.anonymity as Anonymity,
       }
 
       const insightsInput = toInsightsInput(bundle)
@@ -163,6 +182,9 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
         // when RAG was unavailable or returned no hits; caller treats it as
         // optional metadata.
         kb_sources: kbSources,
+        // REV-27: team-filtered similar past sessions (empty unless the
+        // session belongs to a team AND the plan unlocks crossSessionInsights).
+        similar_sessions: surfaceSimilar ? similarSessions : [],
       }
 
       await writeKvJson(c.env.DECISIONS_KV, insightsCacheKey(sessionId), payload, {
@@ -177,6 +199,10 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
             sessionTitle: sessionResult.title,
             themeCount: themes.length,
             ...(sessionVector !== undefined ? { existingVector: sessionVector } : {}),
+            // ADR-0045: tag team_id/closed_at so future team-filtered
+            // similarity queries can match this session.
+            teamId: sessionResult.team_id,
+            closedAt: sessionResult.closed_at ?? Date.now(),
           },
         ).catch((vecErr) =>
           logEvent({ event: 'vectorize.upsert.skip', reason: (vecErr as Error).message }),
@@ -191,6 +217,8 @@ export function registerInsightsAnalyzeRoute(app: AiInsightsApp): void {
           model: INSIGHTS_MODEL,
           theme_count: themes.length,
           user_plan: userPlan,
+          anonymity: sessionResult.anonymity,
+          consent_verified: true,
         },
         trace_id,
       })

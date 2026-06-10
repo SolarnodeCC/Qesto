@@ -89,7 +89,7 @@ describe('ai-insights/extractThemes', () => {
     expect(prompt).toContain('Grounding body.')
     // Background block must appear before the responses so the model reads it first.
     const bgIdx = prompt.indexOf('Background knowledge')
-    const responsesIdx = prompt.indexOf('Free-text responses')
+    const responsesIdx = prompt.indexOf(__internal.UNTRUSTED_OPEN)
     expect(bgIdx).toBeGreaterThanOrEqual(0)
     expect(bgIdx).toBeLessThan(responsesIdx)
   })

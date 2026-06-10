@@ -1,0 +1,47 @@
+{
+  "description": "Mock AI theme outputs whose examples carry PII. For anonymous sessions (anonymity != 'none') the scrub must drop the flagged examples; for 'none' they are retained. `expectedKept.full` / `expectedKept.none` are the example counts per theme after scrubbing.",
+  "cases": [
+    {
+      "name": "email_in_example",
+      "themes": [
+        { "theme": "Support load", "count": 3, "examples": ["Contact jane.doe@corp.com for the runbook.", "Tickets pile up on Mondays."] }
+      ],
+      "expectedKept": { "full": [1], "none": [2] }
+    },
+    {
+      "name": "voter_id_leak",
+      "themes": [
+        { "theme": "Voting issues", "count": 2, "examples": ["voter-8f3a21 said the slider was confusing.", "The slider needs labels."] }
+      ],
+      "expectedKept": { "full": [1], "none": [2] }
+    },
+    {
+      "name": "phone_number",
+      "themes": [
+        { "theme": "Follow-ups", "count": 1, "examples": ["Call me at +31 6 1234 5678 to discuss.", "A follow-up workshop would help."] }
+      ],
+      "expectedKept": { "full": [1], "none": [2] }
+    },
+    {
+      "name": "handle_mention",
+      "themes": [
+        { "theme": "Praise", "count": 2, "examples": ["Huge thanks to @maria.k for facilitating!", "Facilitation was excellent."] }
+      ],
+      "expectedKept": { "full": [1], "none": [2] }
+    },
+    {
+      "name": "clean_examples_untouched",
+      "themes": [
+        { "theme": "Pace", "count": 4, "examples": ["The session felt rushed.", "More time per question please."] }
+      ],
+      "expectedKept": { "full": [2], "none": [2] }
+    },
+    {
+      "name": "all_examples_pii",
+      "themes": [
+        { "theme": "Identifiers", "count": 2, "examples": ["Email bob@x.io", "voter-abc was here"] }
+      ],
+      "expectedKept": { "full": [0], "none": [2] }
+    }
+  ]
+}

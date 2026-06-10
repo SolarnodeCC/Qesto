@@ -75,6 +75,12 @@ export type Env = {
   /** SEC-JWT-ROTATE-01: previous signing secret during rotation window. */
   JWT_SECRET_PREV?: string
   MULTI_REGION_WRITES_ENABLED?: string
+  /** AI-GATEWAY-01 (ADR-042 Phase 1.1): gateway id — `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID`. */
+  CLOUDFLARE_AI_GATEWAY_ID?: string
+  /** AI-GATEWAY-01: API token with AI Gateway Run permission — `wrangler secret put CLOUDFLARE_AI_GATEWAY_TOKEN`. */
+  CLOUDFLARE_AI_GATEWAY_TOKEN?: string
+  /** Optional account-id override (defaults to the wrangler.toml account). */
+  CLOUDFLARE_ACCOUNT_ID?: string
   KB_ADMIN_KEY?: string
   KB_SEARCH_SERVICE_KEY?: string
   RESEND_API_KEY?: string

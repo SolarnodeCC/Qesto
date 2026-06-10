@@ -8,6 +8,7 @@ import { csvRow } from '@api/lib/csv'
 import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import SessionTitleField from '../components/SessionTitleField'
+import SimilarSessionsResultsPanel from '../components/insights/SimilarSessionsResultsPanel'
 
 // Wordcloud/open text utilities
 const RESULT_COLORS = [
@@ -264,6 +265,10 @@ export default function Results() {
             Total votes: {results.total} · source {results.source}
           </p>
         </section>
+      )}
+
+      {(session.status === 'closed' || session.status === 'archived') && (
+        <SimilarSessionsResultsPanel sessionId={session.id} />
       )}
 
       <div className="flex items-center gap-3">
