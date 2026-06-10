@@ -95,6 +95,14 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           COMMIT_SHA: ${{ steps.sha.outputs.sha }}
 
+      - name: Purge Cloudflare cache
+        run: |
+          curl -sf -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"purge_everything":true}'
+
       - name: Verify deploy (commit parity + asset MIME types)
         run: node scripts/verify-deploy.mjs https://qesto.cc
         env:
