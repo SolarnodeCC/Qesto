@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-06-01 (UTC) — added **Sprint 81–90 Post-v5.0 Expansion Arc** (10 new epics E81–E90 → v6.0 GA) with all-agent synthesis (PO, architect, backend, frontend, security, DevOps, tester, analytics, AI strategy, marketing, market research, i18n). Previous refresh 2026-05-20._
+_Last updated: 2026-06-11 (UTC) — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0** (cadence change 10→9 working days, capacity retained at 120–150 pts; S85–S90 carry the committed v6.0 epics re-spaced, S91–S99 add 8 net-new epics E91–E98 → v7.0 GA) with agent synthesis (PO, architect, market research). Previous refresh 2026-06-01 (Sprint 81–90 Post-v5.0 Expansion Arc, E81–E90 → v6.0 GA)._
 
 ## Release status
 - **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.
@@ -222,6 +222,41 @@ _Last updated: 2026-06-01 (UTC) — added **Sprint 81–90 Post-v5.0 Expansion A
 **New ADRs:** ADR-0044 (Capacitor store GA) · ADR-0045 (marketplace billing/Stripe Connect) · ADR-0046 (agent runtime GA) · ADR-0047 (town-hall moderation DO) · ADR-0048 (recurring-workspace model) · ADR-0049 (verifiable-voting crypto) · ADR-0050 (embed SDK sandbox) · ADR-0051 (captions/translation, Workers AI) · ADR-0052 (FedRAMP full ATO + sovereign tier) · ADR-0053 (v6.0 certification). **Forbidden:** ADR-0046 (agent runtime GA) and ADR-0049 (verifiable-vote crypto) must not co-land.
 
 **Plan:** [`SPRINT81_90_PLAN.md`](../planning/SPRINT81_90_PLAN.md) (2026-06-01, all-agent synthesis). Role plans: [`SPRINT81_90_INFRA_PLAN.md`](../planning/SPRINT81_90_INFRA_PLAN.md), [`SPRINT81_90_FRONTEND_PROPOSAL.md`](../planning/SPRINT81_90_FRONTEND_PROPOSAL.md), [`SPRINT81_90_BACKEND_PROPOSAL.md`](../planning/SPRINT81_90_BACKEND_PROPOSAL.md), [`SPRINT81_90_ARCH_NOTES.md`](../planning/SPRINT81_90_ARCH_NOTES.md), [`SPRINT81_90_SECURITY_PLAN.md`](../planning/SPRINT81_90_SECURITY_PLAN.md), [`SPRINT81_90_AI_PLAN.md`](../planning/SPRINT81_90_AI_PLAN.md), [`SPRINT81_90_ANALYTICS_PLAN.md`](../planning/SPRINT81_90_ANALYTICS_PLAN.md), [`QA_COMMITMENT_SPRINTS_81_90.md`](../backlog/QA_COMMITMENT_SPRINTS_81_90.md), [`MARKETING_SPRINTS_81_90.md`](../marketing/MARKETING_SPRINTS_81_90.md), [`I18N_SPRINT_81_90_PLAN.md`](../planning/I18N_SPRINT_81_90_PLAN.md), [`MARKET_VALIDATION_S81_90.md`](../research/MARKET_VALIDATION_S81_90.md).
+
+### Sprint 85–99 — 9-Day-Cadence Re-plan toward v7.0 GA — NEW (2026-06-11)
+
+**Cadence change:** Sprints move from 10-working-day (2-week) to **9 working days**. Committed capacity is **retained at 120–150 pts/sprint**, so per-build-day load rises ~+11–12.5% — the squeeze is absorbed on *serial* windows (two-sprint RC for majors, pentests opened a sprint earlier with remediation decoupled from the sprint clock, end-of-sprint gates converted to continuous per-PR gates).
+
+**Two halves of one arc:**
+- **S85–S90 — finish v6.0.** The same committed v6.0 epics (E85–E90: continuous collaboration, verifiable governance, embed, adaptive/AAA, gov full-ATO, certification) re-spaced onto 9-day stepping. Content unchanged from the S81–S90 plan.
+- **S91–S99 — net-new horizon toward v7.0.** Eight market-validated epics that **deepen and operationalize** shipped surfaces rather than open new trust boundaries, closing on **v7.0 GA — the "Engagement Intelligence Network."**
+
+**Eight net-new epics (E91–E98):**
+
+| Epic | Sprints | Release | New buyer · moat |
+|---|---|---|---|
+| E91 — REACTIONS GA | S91–S92 | v6.1 | Creators / webinar hosts · edge latency |
+| E92 — PULSE (HR/people-ops analytics) | S91–S93 | v6.2 | HR/People-ops · native AI + zero-knowledge |
+| E93 — COPILOT GA (supervised AI co-pilot) | S92–S93 | v6.1 | Base upsell / Menti switchers · native AI |
+| E94 — LEARN (L&D / LMS via EMBED) | S93–S95 | v6.2 | L&D / LMS · engine + EMBED SDK |
+| E95 — SOVEREIGN+ (region residency + audit) | S93–S95 | v6.2 | EU/DACH public sector · residency moat |
+| E96 — CONNECT (cross-tenant federation) | S95–S97 | v7.0-rc | Multi-org events / associations · network moat |
+| E97 — STUDIO (privacy-native AI authoring) | S96–S98 | v7.0 | Content/enablement · native AI + CANVAS |
+| E98 — XR (beta) | S98–S99 | v7.0 beta | Hybrid-event / innovation (gated, speculative) |
+
+| Sprint range | Release | Target |
+|---|---|---|
+| S85–S86 | **v5.2 GA** | Continuous collaboration + STAGE hybrid events |
+| S87–S89 | **v6.0-rc** | Embed + governance GA + adaptive/AAA + gov ATO |
+| S90 | **v6.0 GA** | Certification bundle + DR drill + v5.x sunset |
+| S91–S92 | **v6.1 GA** | Creator reach (REACTIONS) + live AI co-pilot (COPILOT) |
+| S93–S95 | **v6.2 GA** | Data product (PULSE) + verticals (LEARN, SOVEREIGN+) |
+| S95–S97 | **v7.0-rc** | The network turn — federation (CONNECT) + authoring (STUDIO) |
+| S97–S99 | **v7.0 GA** | Engagement Intelligence Network GA + XR beta |
+
+**New ADRs:** ADR-0054 (cadence-9 governance) · ADR-0055 (REACTIONS GA) · ADR-0056 (agentic L2) · ADR-0057 (analytics aggregation plane) · ADR-0058 (vertical packaging) · ADR-0059 (ecosystem egress) · ADR-0060 (AI analytics narration) · ADR-0061 (agentic L3 ceiling) · ADR-0062 (scale/isolation proof) · ADR-0063 (v7.0 certification). **Do-not-co-land:** ADR-0056 ✗ ADR-0057; ADR-0059 ✗ ADR-0060; ADR-0061 ✗ any data-egress/analytics-AI GA; ADR-0062 ✗ ADR-0063.
+
+**Plan:** [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) (2026-06-11). Supporting docs: [`SPRINT85_99_ARCH_NOTES.md`](../planning/SPRINT85_99_ARCH_NOTES.md), [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md) (66 stories), [`MARKET_VALIDATION_S85_99.md`](../research/MARKET_VALIDATION_S85_99.md).
 
 ### Post-v2.2 Commercial Promise Completion
 
