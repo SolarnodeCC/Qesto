@@ -369,7 +369,7 @@ Pts: **BE** · **FE** · **SEC** · **OPS** (product-facing) · **QA** · **AI**
 | Frontend | [`SPRINT71_80_FRONTEND_PROPOSAL.md`](./SPRINT71_80_FRONTEND_PROPOSAL.md) |
 | QA | [`QA_COMMITMENT_SPRINTS_71_80.md`](../backlog/QA_COMMITMENT_SPRINTS_71_80.md) |
 | Marketing | [`MARKETING_SPRINTS_71_80.md`](../marketing/MARKETING_SPRINTS_71_80.md) |
-| i18n | [`I18N_SPRINT_71_80_PLAN.md`](../../I18N_SPRINT_71_80_PLAN.md) |
+| i18n | [`I18N_SPRINT_71_80_PLAN.md`](./I18N_SPRINT_71_80_PLAN.md) |
 | AI | `docs/AI_DECISIONS/` + stories AI-401–AI-440 in this plan |
 | Security | SEC-* table in [`QA_COMMITMENT`](../backlog/QA_COMMITMENT_SPRINTS_71_80.md) companion + SEC stories above |
 

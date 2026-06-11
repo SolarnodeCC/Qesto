@@ -64,7 +64,7 @@ Do not re-implement v4.0 surfaces; extend and GA them.
 | `audit.json` | S78 | Forensic query UI, export |
 | `realtime.json` | S79 | v3 delta indicators, bandwidth hints |
 
-Full key budget: [`I18N_SPRINT_71_80_PLAN.md`](../../I18N_SPRINT_71_80_PLAN.md).
+Full key budget: [`I18N_SPRINT_71_80_PLAN.md`](./I18N_SPRINT_71_80_PLAN.md).
 
 ---
 

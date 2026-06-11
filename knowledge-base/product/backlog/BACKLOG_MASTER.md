@@ -1458,7 +1458,7 @@ _Added per roadmap update covering Sprints 30–34 (v2.2 hardening → v2.3 inte
 
 **Master plan (all agents, 120–150 pts/sprint):** [`SPRINT60_70_PLAN.md`](../planning/SPRINT60_70_PLAN.md) — v3.1 (S60–62) → v3.2 (S63–66) → v4.0 (S67–70).
 
-**Role deep-dives:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md) (DEVOPS pool ~1,434 pts — **~25–35 pts committed per sprint**, not full catalog), [`QA_COMMITMENT_SPRINTS_60_70.md`](./QA_COMMITMENT_SPRINTS_60_70.md), [`I18N_SPRINT_60_70_PLAN.md`](../../I18N_SPRINT_60_70_PLAN.md), [`2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../operations/monitoring/2026-05-25_sprint60-70-obs-analytics-proposals.md).
+**Role deep-dives:** [`SPRINT60_70_INFRA_PLAN.md`](../planning/SPRINT60_70_INFRA_PLAN.md) (DEVOPS pool ~1,434 pts — **~25–35 pts committed per sprint**, not full catalog), [`QA_COMMITMENT_SPRINTS_60_70.md`](./QA_COMMITMENT_SPRINTS_60_70.md), [`I18N_SPRINT_60_70_PLAN.md`](../planning/I18N_SPRINT_60_70_PLAN.md), [`2026-05-25_sprint60-70-obs-analytics-proposals.md`](../../operations/monitoring/2026-05-25_sprint60-70-obs-analytics-proposals.md).
 
 #### Sprint 60–70 Story Registry — Infrastructure Scale-Out (DEVOPS backlog pool)
 
@@ -1653,7 +1653,7 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 
 **Master plan (all agents, 120–150 pts/sprint):** [`SPRINT71_80_PLAN.md`](../planning/SPRINT71_80_PLAN.md) — v4.1 (S71–S73) → v4.2 (S74–S76) → v5.0-rc (S77–S79) → v5.0 GA (S80).
 
-**Role deep-dives:** [`SPRINT71_80_INFRA_PLAN.md`](../planning/SPRINT71_80_INFRA_PLAN.md) (312 pts DevOps committed across S71–S80, ~28–35 pts/sprint), [`QA_COMMITMENT_SPRINTS_71_80.md`](./QA_COMMITMENT_SPRINTS_71_80.md), [`I18N_SPRINT_71_80_PLAN.md`](../../I18N_SPRINT_71_80_PLAN.md), [`MARKETING_SPRINTS_71_80.md`](../marketing/MARKETING_SPRINTS_71_80.md), [`SPRINT71_80_FRONTEND_PROPOSAL.md`](../planning/SPRINT71_80_FRONTEND_PROPOSAL.md).
+**Role deep-dives:** [`SPRINT71_80_INFRA_PLAN.md`](../planning/SPRINT71_80_INFRA_PLAN.md) (312 pts DevOps committed across S71–S80, ~28–35 pts/sprint), [`QA_COMMITMENT_SPRINTS_71_80.md`](./QA_COMMITMENT_SPRINTS_71_80.md), [`I18N_SPRINT_71_80_PLAN.md`](../planning/I18N_SPRINT_71_80_PLAN.md), [`MARKETING_SPRINTS_71_80.md`](../marketing/MARKETING_SPRINTS_71_80.md), [`SPRINT71_80_FRONTEND_PROPOSAL.md`](../planning/SPRINT71_80_FRONTEND_PROPOSAL.md).
 
 **Ten epics:** E71 Experience GA · E72 Event & Integrator · E73 Engagement Reliability · E74 Enterprise Identity · E75 Scale & Sovereignty · E76 Intelligent Facilitation · E77 Platform Isolation · E78 Trust & Forensics · E79 Realtime & Gov Cloud · E80 Platform Certification.
 
@@ -1690,7 +1690,7 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 
 **Master plan (all agents, 120–150 pts/sprint):** [`SPRINT81_90_PLAN.md`](../planning/SPRINT81_90_PLAN.md) — v5.1 (S81–S83) → v5.2 (S84–S86) → v6.0-rc (S87–S89) → v6.0 GA (S90).
 
-**Role deep-dives:** [`SPRINT81_90_INFRA_PLAN.md`](../planning/SPRINT81_90_INFRA_PLAN.md), [`QA_COMMITMENT_SPRINTS_81_90.md`](./QA_COMMITMENT_SPRINTS_81_90.md), [`I18N_SPRINT_81_90_PLAN.md`](../../I18N_SPRINT_81_90_PLAN.md), [`MARKETING_SPRINTS_81_90.md`](../marketing/MARKETING_SPRINTS_81_90.md), [`SPRINT81_90_FRONTEND_PROPOSAL.md`](../planning/SPRINT81_90_FRONTEND_PROPOSAL.md), [`SPRINT81_90_BACKEND_PROPOSAL.md`](../planning/SPRINT81_90_BACKEND_PROPOSAL.md), [`SPRINT81_90_ARCH_NOTES.md`](../planning/SPRINT81_90_ARCH_NOTES.md), [`SPRINT81_90_SECURITY_PLAN.md`](../planning/SPRINT81_90_SECURITY_PLAN.md), [`SPRINT81_90_AI_PLAN.md`](../planning/SPRINT81_90_AI_PLAN.md), [`SPRINT81_90_ANALYTICS_PLAN.md`](../planning/SPRINT81_90_ANALYTICS_PLAN.md), [`MARKET_VALIDATION_S81_90.md`](../research/MARKET_VALIDATION_S81_90.md).
+**Role deep-dives:** [`SPRINT81_90_INFRA_PLAN.md`](../planning/SPRINT81_90_INFRA_PLAN.md), [`QA_COMMITMENT_SPRINTS_81_90.md`](./QA_COMMITMENT_SPRINTS_81_90.md), [`I18N_SPRINT_81_90_PLAN.md`](../planning/I18N_SPRINT_81_90_PLAN.md), [`MARKETING_SPRINTS_81_90.md`](../marketing/MARKETING_SPRINTS_81_90.md), [`SPRINT81_90_FRONTEND_PROPOSAL.md`](../planning/SPRINT81_90_FRONTEND_PROPOSAL.md), [`SPRINT81_90_BACKEND_PROPOSAL.md`](../planning/SPRINT81_90_BACKEND_PROPOSAL.md), [`SPRINT81_90_ARCH_NOTES.md`](../planning/SPRINT81_90_ARCH_NOTES.md), [`SPRINT81_90_SECURITY_PLAN.md`](../planning/SPRINT81_90_SECURITY_PLAN.md), [`SPRINT81_90_AI_PLAN.md`](../planning/SPRINT81_90_AI_PLAN.md), [`SPRINT81_90_ANALYTICS_PLAN.md`](../planning/SPRINT81_90_ANALYTICS_PLAN.md), [`MARKET_VALIDATION_S81_90.md`](../research/MARKET_VALIDATION_S81_90.md).
 
 **Ten epics:** E81 Native Mobile GA · E82 Marketplace Economy · E83 Agentic Facilitation · E84 Town Hall & Hybrid Events · E85 Continuous Collaboration · E86 Verifiable Governance · E87 Embeddable Platform · E88 Adaptive Experience & AAA · E89 Gov Cloud & Full ATO · E90 Platform v6.0 Certification.
 

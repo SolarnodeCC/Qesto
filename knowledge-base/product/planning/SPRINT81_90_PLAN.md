@@ -407,7 +407,7 @@ Pts: **BE** · **FE** · **SEC** · **OPS** (product-facing) · **QA** · **AI**
 | QA | [`QA_COMMITMENT_SPRINTS_81_90.md`](../backlog/QA_COMMITMENT_SPRINTS_81_90.md) |
 | Security | [`SPRINT81_90_SECURITY_PLAN.md`](./SPRINT81_90_SECURITY_PLAN.md) |
 | Marketing | [`MARKETING_SPRINTS_81_90.md`](../marketing/MARKETING_SPRINTS_81_90.md) |
-| i18n | [`I18N_SPRINT_81_90_PLAN.md`](../../I18N_SPRINT_81_90_PLAN.md) |
+| i18n | [`I18N_SPRINT_81_90_PLAN.md`](./I18N_SPRINT_81_90_PLAN.md) |
 | AI | [`SPRINT81_90_AI_PLAN.md`](./SPRINT81_90_AI_PLAN.md) (AI-441–AI-480) |
 
 ---
