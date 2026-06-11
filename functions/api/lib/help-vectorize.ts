@@ -5,7 +5,7 @@
 
 import type { Env } from '../types'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
-import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
+import { firstEmbeddingVector } from './embedding'
 import { withTimeout } from './shared/async'
 
 export type HelpVectorizeBindings = Pick<Env, 'AI' | 'HELP_VECTORIZE'>
@@ -18,13 +18,7 @@ export const HELP_EMBED_TIMEOUT_MS = 10_000
 export const HELP_VECTORIZE_TIMEOUT_MS = 5_000
 
 function firstVector(result: unknown): number[] | undefined {
-  // Validate envelope with Zod, but return the original vector reference.
-  const validated = validateData(result, AiBatchEmbeddingResponseSchema)
-  if (!validated) return undefined
-  const raw = result as { data?: unknown }
-  const first = Array.isArray(raw.data) ? raw.data[0] : undefined
-  if (!Array.isArray(first) || first.length !== HELP_EMBED_DIM) return undefined
-  return first.every((v) => typeof v === 'number') ? (first as number[]) : undefined
+  return firstEmbeddingVector(result, HELP_EMBED_DIM)
 }
 
 

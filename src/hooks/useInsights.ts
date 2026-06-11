@@ -110,7 +110,11 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
           `/api/sessions/${encodeURIComponent(s.id)}/insights`,
         )
         if (!res.ok) {
-          if (res.status === 403) hitPlanGate = true
+          // Governance 403s (consent_required / zk_not_supported) are not
+          // plan gating — don't show the upgrade prompt for them.
+          if (res.status === 403 && res.error.code !== 'consent_required' && res.error.code !== 'zk_not_supported') {
+            hitPlanGate = true
+          }
           failed.current.add(s.id)
           return
         }
@@ -146,7 +150,9 @@ export function useInsights(closedSessions: SessionSummary[], enabled = false): 
       { method: 'POST' },
     )
     if (!res.ok) {
-      if (res.status === 403) setPlanGated(true)
+      if (res.status === 403 && res.error.code !== 'consent_required' && res.error.code !== 'zk_not_supported') {
+        setPlanGated(true)
+      }
       return
     }
     cache.current.set(sessionId, res.data as RawInsights)

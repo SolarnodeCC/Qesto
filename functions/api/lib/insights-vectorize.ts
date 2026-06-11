@@ -5,7 +5,7 @@
 
 import type { Env } from '../types'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
-import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
+import { firstEmbeddingVector } from './embedding'
 import { withTimeout } from './shared/async'
 
 export type InsightsVectorizeBindings = Pick<Env, 'AI' | 'DECISIONS_VECTORIZE'>
@@ -18,26 +18,28 @@ export const DECISIONS_EMBED_TIMEOUT_MS = 10_000
 export const DECISIONS_VECTORIZE_TIMEOUT_MS = 5_000
 
 function firstVector(result: unknown): number[] | undefined {
-  // Validate envelope with Zod, but return the original vector reference.
-  // This avoids accidental copying and keeps behavior stable for callers/tests.
-  const validated = validateData(result, AiBatchEmbeddingResponseSchema)
-  if (!validated) return undefined
-  const raw = result as { data?: unknown }
-  const first = Array.isArray(raw.data) ? raw.data[0] : undefined
-  if (!Array.isArray(first) || first.length !== DECISIONS_EMBED_DIM) return undefined
-  return first.every((v) => typeof v === 'number') ? (first as number[]) : undefined
+  return firstEmbeddingVector(result, DECISIONS_EMBED_DIM)
 }
 
 
-/** Embed title + snippet of open answers; query Vectorize for similar past sessions. */
+export type SimilarSession = { title: string; score: number }
+
+/**
+ * Embed title + snippet of open answers; query Vectorize for similar past sessions.
+ *
+ * Tenant safety (REV-27): `similarSessionTitles` only ever feeds the AI prompt.
+ * The user-visible `similarSessions` list is populated ONLY when `teamId` is
+ * provided, in which case the query is metadata-filtered to that team — titles
+ * from other tenants can never surface in a response payload.
+ */
 export async function embedAndFindSimilarSessionTitles(
   env: InsightsVectorizeBindings,
-  params: { sessionId: string; sessionTitle: string; openResponses: string[] },
-): Promise<{ vector?: number[]; similarSessionTitles: string[] }> {
+  params: { sessionId: string; sessionTitle: string; openResponses: string[]; teamId?: string | null },
+): Promise<{ vector?: number[]; similarSessionTitles: string[]; similarSessions: SimilarSession[] }> {
   const embedText = sanitizeEmbedText(
     `${params.sessionTitle}: ${params.openResponses.slice(0, 10).join('. ')}`,
   )
-  if (!embedText) return { similarSessionTitles: [] }
+  if (!embedText) return { similarSessionTitles: [], similarSessions: [] }
 
   const embedResult = await withTimeout(
     env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
@@ -46,26 +48,32 @@ export async function embedAndFindSimilarSessionTitles(
   )
   const vector = firstVector(embedResult)
   if (!vector) {
-    return { similarSessionTitles: [] }
+    return { similarSessionTitles: [], similarSessions: [] }
   }
 
   const queryResult = await withTimeout(
     env.DECISIONS_VECTORIZE.query(vector, {
       topK: DECISIONS_SIMILARITY_TOP_K,
       returnMetadata: 'all',
+      ...(params.teamId ? { filter: { team_id: params.teamId } } : {}),
     }),
     DECISIONS_VECTORIZE_TIMEOUT_MS,
     'Decision similarity query',
   )
   const similarSessionTitles: string[] = []
+  const similarSessions: SimilarSession[] = []
   const matches = queryResult.matches.filter(
     (m) => m.id !== params.sessionId && (m.score ?? 0) > DECISIONS_SIMILARITY_MIN_SCORE,
   )
   for (const match of matches) {
     const meta = match.metadata as Record<string, string> | undefined
-    if (meta?.title) similarSessionTitles.push(meta.title)
+    if (!meta?.title) continue
+    similarSessionTitles.push(meta.title)
+    if (params.teamId) {
+      similarSessions.push({ title: meta.title, score: match.score ?? 0 })
+    }
   }
-  return { vector, similarSessionTitles }
+  return { vector, similarSessionTitles, similarSessions }
 }
 
 /**

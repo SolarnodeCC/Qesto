@@ -1307,6 +1307,26 @@ export class D1PreparedStatementMock {
             status: row.status,
             closed_at: row.closed_at,
             created_at: row.created_at,
+            anonymity: row.anonymity,
+            ai_generated: row.ai_generated ?? null,
+            ai_consent_at: row.ai_consent_at ?? null,
+          }
+        : null) as T | null
+    }
+    // REV-06: fetchSessionAIGovernanceForOwner (repositories/sessionRepository.ts)
+    if (this.sql.startsWith('SELECT id, title, team_id, anonymity, ai_generated, ai_consent_at, status, closed_at')) {
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      return (row && row.owner_id === owner_id
+        ? {
+            id: row.id,
+            title: row.title,
+            team_id: row.team_id ?? null,
+            anonymity: row.anonymity,
+            ai_generated: row.ai_generated ?? null,
+            ai_consent_at: row.ai_consent_at ?? null,
+            status: row.status,
+            closed_at: row.closed_at,
           }
         : null) as T | null
     }

@@ -22,5 +22,16 @@
   "title_save_error": "Could not save title",
   "title_saving": "Saving…",
   "responses_one": "{count} response",
-  "responses_other": "{count} responses"
+  "responses_other": "{count} responses",
+  "similarSessions": {
+    "title": "Echoes of past sessions",
+    "description_one": "This session echoes {count} past team session.",
+    "description_other": "This session echoes {count} past team sessions.",
+    "match": "{percent}% match",
+    "empty": "No similar past sessions found yet. Generate AI insights to compare this session against your team's history.",
+    "planRequired": "Cross-session insights require the Team plan.",
+    "planHint": "Upgrade to see how this session echoes your team's past sessions.",
+    "viewPlans": "View plans →",
+    "error": "Could not generate insights. Please try again later."
+  }
 }

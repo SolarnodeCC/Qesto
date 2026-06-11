@@ -35,19 +35,33 @@ export type AIGatewayResponse = {
 type AIGatewayCacheMode = 'semantic' | 'exact'
 
 /**
- * Global AI Gateway configuration. Set CLOUDFLARE_AI_GATEWAY_ID via
- * `wrangler secret put CLOUDFLARE_AI_GATEWAY_ID <uuid>` in production.
- * For staging/dev, uses direct env.AI fallback if not set.
- * Phase 1.1 MVP: Gateway ID to be configured in Phase 1.2; currently falls back to direct env.AI.
+ * Static AI Gateway tuning. Deployment identity (gateway id, token, account)
+ * comes from env via `resolveGatewayConfig` — set with:
+ *   wrangler secret put CLOUDFLARE_AI_GATEWAY_ID
+ *   wrangler secret put CLOUDFLARE_AI_GATEWAY_TOKEN
+ * When either secret is absent, every call bypasses to direct env.AI.run().
  */
 export const AI_GATEWAY_CONFIG = {
-  // Example: '8a6f7e9b-1234-5678-abcd-ef0123456789'
-  // If not set, falls back to direct env.AI.run()
-  // TODO: Wire via wrangler secret after Phase 1 review
-  gatewayId: null as string | null,
   cacheMode: 'semantic' as AIGatewayCacheMode,
   cacheTtlSeconds: 3600, // 1h for semantic matches
   requestTimeoutMs: 30_000, // 30s including network latency
+}
+
+// wrangler.toml `account_id` — overridable via env for staging/alt accounts.
+const DEFAULT_ACCOUNT_ID = '5546763229b35df670e33d9316d7f2e0'
+
+export type AIGatewayResolvedConfig = {
+  gatewayId: string | null
+  token: string | null
+  accountId: string
+}
+
+function resolveGatewayConfig(env: Env): AIGatewayResolvedConfig {
+  return {
+    gatewayId: env.CLOUDFLARE_AI_GATEWAY_ID ?? null,
+    token: env.CLOUDFLARE_AI_GATEWAY_TOKEN ?? null,
+    accountId: env.CLOUDFLARE_ACCOUNT_ID ?? DEFAULT_ACCOUNT_ID,
+  }
 }
 
 /**
@@ -74,8 +88,9 @@ export async function runThroughAIGateway(
   const sanitizedInput = sanitizeAIGatewayRequest(input)
   assertSanitizedAIGatewayRequest(sanitizedInput)
 
-  // If Gateway is not configured, bypass directly to env.AI
-  if (!AI_GATEWAY_CONFIG.gatewayId) {
+  // If Gateway is not configured (either secret missing), bypass to env.AI.
+  const config = resolveGatewayConfig(env)
+  if (!config.gatewayId || !config.token) {
     const result = await env.AI.run(model, sanitizedInput)
     return {
       result,
@@ -84,8 +99,8 @@ export async function runThroughAIGateway(
     }
   }
 
-  const gatewayUrl = buildGatewayUrl(model)
-  const gatewayHeaders = buildGatewayHeaders(ctx.plan)
+  const gatewayUrl = buildGatewayUrl(config, model)
+  const gatewayHeaders = buildGatewayHeaders(config, ctx.plan)
 
   try {
     const response = await fetch(gatewayUrl, {
@@ -129,36 +144,32 @@ export async function runThroughAIGateway(
 }
 
 /**
- * Build the Cloudflare AI Gateway URL for the given model.
- * Pattern: https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{model}?gateway_id={gatewayId}
- * TODO: Phase 1.2 — Wire account_id from wrangler.toml and gatewayId from secret after Gateway provisioning.
+ * Build the canonical Cloudflare AI Gateway URL for a Workers AI model:
+ * https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/workers-ai/{model}
  */
-function buildGatewayUrl(model: string): string {
-  if (!AI_GATEWAY_CONFIG.gatewayId) {
+function buildGatewayUrl(config: AIGatewayResolvedConfig, model: string): string {
+  if (!config.gatewayId) {
     throw new Error('AI Gateway ID not configured')
   }
-  // Phase 1.2: Account ID from wrangler.toml account_id field (5546763229b35df670e33d9316d7f2e0)
-  const accountId = '5546763229b35df670e33d9316d7f2e0'
-  const encoded = encodeURIComponent(model)
-  const url = new URL(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${encoded}`)
-  url.searchParams.set('gateway_id', AI_GATEWAY_CONFIG.gatewayId)
-  return url.toString()
+  // Model ids contain `/` segments (@cf/meta/...) which the gateway expects
+  // verbatim in the path — encode each segment, keep the separators.
+  const modelPath = model.split('/').map(encodeURIComponent).join('/')
+  return `https://gateway.ai.cloudflare.com/v1/${config.accountId}/${config.gatewayId}/workers-ai/${modelPath}`
 }
 
 /**
  * Build headers for AI Gateway requests.
  * Includes auth (bearer token) and plan-based rate-limit hints.
  */
-function buildGatewayHeaders(plan: string): Record<string, string> {
-  // In production, CLOUDFLARE_API_TOKEN is stored as a secret and passed via env.
-  // For the MVP, we use the existing env.AI binding instead.
-  // TODO: Future: wire up bearer token from wrangler secret.
-  return {
+function buildGatewayHeaders(config: AIGatewayResolvedConfig, plan: string): Record<string, string> {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'User-Agent': 'Qesto/1.0',
     // Optional: add plan-based rate-limit headers
     'X-Qesto-Plan': plan,
   }
+  if (config.token) headers['Authorization'] = `Bearer ${config.token}`
+  return headers
 }
 
 /**
@@ -208,4 +219,11 @@ function hashString(s: string): string {
     hash = hash & hash // Convert to 32-bit integer
   }
   return Math.abs(hash).toString(16)
+}
+
+export const __internal = {
+  resolveGatewayConfig,
+  buildGatewayUrl,
+  buildGatewayHeaders,
+  DEFAULT_ACCOUNT_ID,
 }

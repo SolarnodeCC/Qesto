@@ -7,6 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 # Cloudflare Worker — API only. Static frontend is deployed separately to Cloudflare Pages.
 # Secrets: `wrangler secret put <NAME>` — never inline here (CLAUDE.md hard rule 2).
 #
+# AI Gateway (ADR-042 Phase 1.1 — semantic caching + per-account rate limits).
+# Create the gateway in the CF dashboard (AI → AI Gateway), then activate with:
+#   wrangler secret put CLOUDFLARE_AI_GATEWAY_ID      # gateway id/slug
+#   wrangler secret put CLOUDFLARE_AI_GATEWAY_TOKEN   # API token with AI Gateway Run permission
+# When either secret is absent every AI call bypasses the gateway (direct env.AI.run).
+#
 # ──────────────────────────────────────────────────────────────────────────────
 # BOOTSTRAP: D1 + KV bindings are commented out because their IDs are per-account.
 # Follow docs/DEPLOY_BOOTSTRAP.md once to provision the resources, paste the IDs

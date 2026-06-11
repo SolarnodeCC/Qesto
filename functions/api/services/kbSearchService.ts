@@ -18,6 +18,7 @@ import type {
   KbStatus,
 } from '../types/knowledge-base'
 import type { KbQueryFilter, KbVectorMatch, KbVectorRepository } from '../repositories/kbVectorRepository'
+import { firstEmbeddingVector } from '../lib/embedding'
 import { safeLogContext } from '../lib/log'
 
 // ─── Tunable constants ────────────────────────────────────────────────────
@@ -74,8 +75,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 }
 
 function firstEmbedding(result: unknown): number[] | undefined {
-  const data = (result as { data?: number[][] })?.data?.[0]
-  return Array.isArray(data) && data.length === KB_EMBED_DIM ? data : undefined
+  return firstEmbeddingVector(result, KB_EMBED_DIM)
 }
 
 /**

@@ -121,6 +121,17 @@ no PII in derived stores (ADR-0009); and the session-close hot path must not gai
 - A new `kind`-discriminated rollup table trades some query rigidity for schema
   flexibility — acceptable given payloads are read whole and cached.
 
+## Addendum (2026-06-10, REV-27): Results-page similarity panel
+
+The on-demand analyze route (`routes/ai-insights/register-analyze.ts`) now also tags its
+Vectorize upserts with `team_id`/`closed_at` metadata (previously only the precompute path
+did), and surfaces team-filtered similar sessions as `similar_sessions: [{ title, score }]`
+in the insights payload — rendered on the Results page. Tenant safety invariant: the
+user-visible list is populated **only** when the query carries `filter: { team_id }` and the
+plan unlocks `crossSessionInsights`; unfiltered matches remain prompt-only context. Vectors
+upserted by the analyze route before this change lack `team_id` metadata, so the panel is
+best-effort sparse until those sessions are re-analyzed.
+
 ## Back-compat / test matrix
 
 - Closed **non-ZK** session → appears in `insights_daily` with `team_id`; embedding carries

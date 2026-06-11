@@ -22,5 +22,16 @@
   "title_save_error": "Titel konnte nicht gespeichert werden",
   "title_saving": "Speichern…",
   "responses_one": "{count} Antwort",
-  "responses_other": "{count} Antworten"
+  "responses_other": "{count} Antworten",
+  "similarSessions": {
+    "title": "Anklänge an frühere Sitzungen",
+    "description_one": "Diese Sitzung ähnelt {count} früheren Team-Sitzung.",
+    "description_other": "Diese Sitzung ähnelt {count} früheren Team-Sitzungen.",
+    "match": "{percent} % Übereinstimmung",
+    "empty": "Noch keine ähnlichen früheren Sitzungen gefunden. Generieren Sie KI-Erkenntnisse, um diese Sitzung mit der Historie Ihres Teams zu vergleichen.",
+    "planRequired": "Sitzungsübergreifende Erkenntnisse erfordern den Team-Tarif.",
+    "planHint": "Führen Sie ein Upgrade durch, um zu sehen, wie diese Sitzung frühere Sitzungen Ihres Teams widerspiegelt.",
+    "viewPlans": "Tarife ansehen →",
+    "error": "Erkenntnisse konnten nicht generiert werden. Bitte versuchen Sie es später erneut."
+  }
 }
