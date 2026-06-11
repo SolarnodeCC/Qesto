@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-06-01 (UTC) — Sprint 81–85 committed plan (INSIGHTS+ + v5.1); Sprint 81–90 master plan_
+_Last updated: 2026-06-11 (UTC) — Sprint 85–99 9-day-cadence re-plan toward v7.0 (S91–S99 net-new registry added: E91–E98, 66 stories); see §Sprint 91–99. Prior: 2026-06-01 — Sprint 81–85 committed plan (INSIGHTS+ + v5.1); Sprint 81–90 master plan_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -1724,6 +1724,35 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 
 **Hard gate:** ADR-0046 (agent runtime GA) and ADR-0049 (verifiable-vote crypto) must **not** land in the same sprint — both high-risk trust surfaces; split Pentest #4/#5 scope.
 
+---
+
+### Sprint 91–99 — Net-new horizon toward v7.0 (9-day cadence; added 2026-06-11)
+
+**Master plan:** [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) — re-bases the arc onto a **9-working-day** cadence (capacity retained 120–150 pts/sprint), carries S85–S90 (v6.0) re-spaced, and adds the net-new S91–S99 horizon. Story breakdown: [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md) (66 stories). Architecture: [`SPRINT85_99_ARCH_NOTES.md`](../planning/SPRINT85_99_ARCH_NOTES.md) (ADR-0054→0063). Market validation: [`MARKET_VALIDATION_S85_99.md`](../research/MARKET_VALIDATION_S85_99.md).
+
+**Release map:** v6.1 GA (S92) → v6.2 GA (S95) → v7.0-rc (S97) → **v7.0 GA (S99)** — the "Engagement Intelligence Network."
+
+**Eight net-new epics:** E91 REACTIONS GA · E92 PULSE · E93 COPILOT GA · E94 LEARN · E95 SOVEREIGN+ · E96 CONNECT · E97 STUDIO · E98 XR (beta).
+
+#### Sprint 91–99 — Story registry (product; ~575 pts / 66 stories)
+
+| Epic | Anchor stories (P0 unless noted) | Pts | Sprints | ADR | Release |
+|------|----------------------------------|----:|---------|-----|---------|
+| **E91 REACTIONS GA** | `REACTIONS-00`, `-CHANNEL-01`, `-TYPE-01`, `-BUDGET-01`, `-ABUSE-01`, `FE-REACTIONS-RENDER-01`, `QA-REACTIONS-LOAD-01`; `-ZEROK-01` (P1) | 68 | S91–S92 | ADR-0055 | v6.1 |
+| **E92 PULSE** | `PULSE-00`, `-STORE-01`, `-LONGITUDINAL-01`, `-RETENTION-01`, `-AUDIT-01`, `SEC-PULSE-ISOLATION-01`; `-KANON-01`/`-AI-NARRATION-01`/`FE-PULSE-DASHBOARD-01` (P1) | 91 | S91–S93 | ADR-0057 | v6.2 |
+| **E93 COPILOT GA** | `COPILOT-00`, `-RUNTIME-01`, `-TOOLS-01`, `-CHECKPOINT-01`, `SEC-COPILOT-SANDBOX-01`; `-CONTEXT-01`/`FE-COPILOT-PANEL-01` (P1) | 67 | S92–S93 | ADR-0056 | v6.1 |
+| **E94 LEARN** | `LEARN-00` (EMBED gate), `-LTI-01`, `-GRADE-01`, `-SCORING-01`; `-TEMPLATES-01`/`FE-LEARN-INSTRUCTOR-01` (P1) | 61 | S93–S95 | ADR-0058 | v6.2 |
+| **E95 SOVEREIGN+** | `SOVEREIGN-00`, `-REGIONS-01`, `-AUDIT-API-01`, `-EXCLUSION-01`, `SEC-SOVEREIGN-ISOLATION-01`; `-POSTURE-01` (P1) | 68 | S93–S95 | ADR-0052↑ / 0062 | v6.2 |
+| **E96 CONNECT** | `CONNECT-00`, `-INVITE-01`, `-JOIN-01`, `-ZEROK-01`, `-ISOLATION-01`, `-SOVEREIGN-01`, `QA-CONNECT-SCALE-01`; `-AUDIT-01`/`FE-CONNECT-JOIN-UI-01` (P1) | 92 | S95–S97 | ADR-0059 / 0062 | v7.0-rc |
+| **E97 STUDIO** | `STUDIO-00`, `-COPILOT-01`, `-THEME-01`, `SEC-STUDIO-PROMPT-01`; `-LIBRARY-01`/`-SUGGEST-01`/`FE-STUDIO-AUTHORING-01` (P1) | 81 | S96–S98 | ADR-0060 | v7.0 |
+| **E98 XR (beta)** | `XR-00` (spike + kill-criterion, P0); `-SPATIAL-01`/`-AVATAR-01`/`-FALLBACK-01`/`FE-XR-LAUNCHER-01` (P1) | 47 | S98–S99 | [SLOT] | v7.0 beta |
+
+Each epic carries a parallel `I18N-*-01` line (5 locales) and is grounded in reuse of the existing question engine, `DECISIONS_VECTORIZE`, anonymity modes, EMBED SDK, CANVAS, AgentRunDO, AUDIT-API, and `planMiddleware`. Full per-story acceptance signals in [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md).
+
+**Do-not-co-land (hard gates):** ADR-0056 (agentic L2) ✗ ADR-0057 (analytics aggregation); ADR-0059 (egress) ✗ ADR-0060 (AI narration); ADR-0061 (agentic L3) ✗ any data-egress/analytics-AI GA; ADR-0062 (scale proof) ✗ ADR-0063 (v7.0 cert).
+
+**Checkpoints:** (1) EMBED ≥10 live embeds before S93 LEARN commit, else defer LEARN to S96. (2) ADR-0057 accepted before S92 ends. (3) Pentest #6 (federation + autonomy + aggregation + egress) closed by S97. (4) XR kill-criterion: <1 design-partner by S98 week 2 → pivot to v7.1. (5) Sovereign tenants hard-excluded from CONNECT federation (D1 constraint).
+
 #### Acceptance criteria — 5 critical new stories (S81–S90)
 
 **NATIVE-GA-01: iOS/Android app store release (S82, 13 pts)**
@@ -1779,4 +1808,6 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 - `SPRINT81_90_PLAN.md` — master ten-sprint plan S81–S90 (3× capacity, all agents): native mobile GA, marketplace economy, agentic facilitation, new-business epics (town hall, events, retro, ideate, governance, embed, captions), gov cloud → v6.0 GA
 - `SPRINT81_90_INFRA_PLAN.md` · `SPRINT81_90_FRONTEND_PROPOSAL.md` · `SPRINT81_90_BACKEND_PROPOSAL.md` · `SPRINT81_90_ARCH_NOTES.md` · `SPRINT81_90_SECURITY_PLAN.md` · `SPRINT81_90_AI_PLAN.md` · `SPRINT81_90_ANALYTICS_PLAN.md` — role deep-dives S81–S90
 - `QA_COMMITMENT_SPRINTS_81_90.md` · `MARKETING_SPRINTS_81_90.md` · `I18N_SPRINT_81_90_PLAN.md` · `research/MARKET_VALIDATION_S81_90.md` — QA / marketing / i18n / market-validation S81–S90
+- `SPRINT85_99_PLAN.md` — **9-day-cadence re-plan S85–S99 toward v7.0 GA** (carries v6.0 S85–S90 re-spaced + 8 net-new epics E91–E98; 2026-06-11)
+- `SPRINT85_99_ARCH_NOTES.md` · `SPRINT91_99_STORIES.md` · `research/MARKET_VALIDATION_S85_99.md` — architecture (ADR-0054→0063) / 66-story breakdown / market validation S85–S99
 - `spec/design-tokens.json` — design-token source of truth
