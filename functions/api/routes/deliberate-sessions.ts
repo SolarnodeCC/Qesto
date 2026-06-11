@@ -234,14 +234,25 @@ export function mountDeliberateSessionRoutes(parent: ParentApp) {
 
     const verified = commitmentValid && inLedger && ledgerCommitmentMatch
 
-    // A commitment present in the ledger but failing re-derivation means the
-    // ledger row was tampered with → forensics alert (SEC-VOTE-INTEGRITY-01).
-    if (inLedger && !commitmentValid) {
+    // Tamper detection → forensics alert (SEC-VOTE-INTEGRITY-01). Two distinct
+    // mutation shapes must both raise the alert:
+    //  (a) the receipt's commitment no longer re-derives from (fingerprint,
+    //      nonce, choice) — a forged/altered receipt OR a choice substitution.
+    //  (b) the receipt re-derives correctly (commitmentValid) but the STORED
+    //      ledger commitment for that nonce differs — i.e. the ledger row itself
+    //      was mutated after the voter cast. (a) alone misses (b), yet (b) is the
+    //      core "tampered ledger row" threat Pentest #5 exercises and the case
+    //      that silently shifts the published Merkle root.
+    const ledgerRowTampered = inLedger && commitmentValid && !ledgerCommitmentMatch
+    if (inLedger && (!commitmentValid || ledgerRowTampered)) {
       await recordAuditEvent(c, {
         action: 'deliberate.verify.mismatch',
         subject_type: 'session',
         subject_id: id,
-        after_snapshot: { ballotNonce, reason: 'commitment_mismatch' },
+        after_snapshot: {
+          ballotNonce,
+          reason: ledgerRowTampered ? 'ledger_row_tampered' : 'commitment_mismatch',
+        },
       })
     }
 

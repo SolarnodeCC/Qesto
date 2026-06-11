@@ -20,6 +20,7 @@ const RELEASES = [
   { version: '5.0.0-rc.1', codename: 'v5.0-rc', status: 'rc', sprint: 79 },
   { version: '5.0.0', codename: 'v5.0', status: 'ga', sprint: 80 },
   { version: '5.1.0', codename: 'v5.1', status: 'ga', sprint: 84 },
+  { version: '5.2.0-rc.1', codename: 'v5.2-rc', status: 'rc', sprint: 86 },
 ] as const
 
 export function mountPlatformRoutes(parent: ParentApp) {
@@ -29,7 +30,7 @@ export function mountPlatformRoutes(parent: ParentApp) {
     c.json({
       ok: true,
       data: {
-        api: '5.1.0',
+        api: '5.2.0-rc.1',
         realtimeDefault:
           getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
         realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),

@@ -16,6 +16,7 @@ additionally be smoke-checked manually against Workers AI before merge.
 | `insights-prompt.eval.test.ts` | `fixtures/prompt-injection.json` (15 attacks) | Every attack string is sanitized (control/zero-width stripped, length-capped) and confined inside the `<<<UNTRUSTED_PARTICIPANT_DATA>>>` fence exactly once; embedded fence markers cannot escape; system prompt carries the untrusted-data rule; anonymity rule present unless `anonymity='none'`. |
 | `insights-output.eval.test.ts` | `fixtures/golden-outputs.json` (5 accept / 8 reject), `fixtures/pii-outputs.json` (6 cases) | 100% schema acceptance of the valid corpus; 100% `InsightsValidationError` rejection of the invalid corpus (no raw pass-through); PII-bearing theme examples (emails, voter-ids, phones, @handles) dropped when `anonymity != 'none'`, retained when `'none'`. |
 | `insights-guards.eval.test.ts` | inline matrix | `checkInsightsAllowed`: zero-knowledge always blocked (`zk_not_supported`); AI-generated without `ai_consent_at` blocked (`consent_required`); plain/consented sessions allowed. |
+| `facilitation-prompt.eval.test.ts` | `fixtures/facilitation-injection.json` (10 attacks) | AGENT-FACILITATE-GA-01: the live facilitation prompt (`copilot-suggest.buildSuggestMessages`) confines the host-authored current-question text inside the `<<<UNTRUSTED_SESSION_DATA>>>` fence exactly once; embedded fence markers cannot escape; no control/zero-width chars survive; fenced field length-capped; system prompt carries the untrusted-data rule; no fence emitted when no question is active. |
 
 ## Pass criteria (hard gate)
 
@@ -28,6 +29,13 @@ additionally be smoke-checked manually against Workers AI before merge.
 
 All suites green: 15/15 injection confinement, 5/5 accept, 8/8 reject,
 6/6 PII scrub cases (both anonymity modes), 6/6 guard matrix.
+
+## Update (2026-06-11) — AGENT-FACILITATE-GA-01
+
+Added `facilitation-prompt.eval.test.ts` (+1 suite, +13 cases) covering the live
+facilitation prompt fence. Suite total: **51 → 64 green (4 suites)**. The live
+facilitation surface (`copilot-suggest.ts`) is now inside the REV-10 gate; its
+host-authored current-question text is fenced + sanitized like participant data.
 
 ## How to extend (required with every AI change)
 
