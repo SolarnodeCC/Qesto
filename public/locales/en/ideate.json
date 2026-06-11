@@ -26,5 +26,21 @@
   "moderate.mergeHint": "Select a target idea to merge into, or cancel.",
   "moderate.mergeCancel": "Cancel",
   "connection.reconnecting": "Reconnecting…",
-  "connection.failed": "Connection lost. Please refresh."
+  "connection.failed": "Connection lost. Please refresh.",
+
+  "board.subtitle": "Facilitator board",
+  "board.dotVoteTitle": "Your dot votes",
+  "board.dotsUsed": "{{used}} / {{limit}} used",
+  "board.dotMeterAria": "Dot vote usage",
+  "board.dotLimit": "Facilitator dot votes: {{limit}} per person",
+  "board.rankLabel": "Rank",
+  "board.voteSingular": "vote",
+  "board.votePlural": "votes",
+  "board.dismissAria": "Dismiss idea: {{body}}",
+  "board.mergeSelectAria": "Select idea to merge: {{body}}",
+  "board.mergeIntoAria": "Merge selected idea into: {{body}}",
+  "board.expandCluster": "Expand cluster",
+  "board.collapseCluster": "Collapse cluster",
+  "board.clusterEmpty": "No ideas in this cluster yet.",
+  "board.empty": "No ideas yet — waiting for participants to contribute."
 }
