@@ -165,7 +165,7 @@ export type QuestionKind =
   | 'slider'
 export type Anonymity = 'full' | 'partial' | 'none' | 'zero_knowledge'
 export type VotePolicy = 'once' | 'multi' | 'react'
-export type SessionMode = 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate'
+export type SessionMode = 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate' | 'deliberate'
 
 /** TOWNHALL (ADR-0044): per-session moderation model, chosen at draft. */
 export type TownhallModeration = 'pre' | 'post'
@@ -250,6 +250,8 @@ export interface PlanQuotas {
     crossSessionInsights: boolean
     /** ADR-0048: recurring workspaces (RETRO / IDEATE / EVENT) — Team tier only. */
     recurringWorkspaces: boolean
+    /** ADR-0049: DELIBERATE verifiable governance voting — Team tier only. */
+    verifiableVoting: boolean
   }
 }
 
@@ -269,6 +271,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       liveCopilot: false,
       crossSessionInsights: false,
       recurringWorkspaces: false,
+      verifiableVoting: false,
     },
   },
   starter: {
@@ -286,6 +289,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       liveCopilot: true,
       crossSessionInsights: false,
       recurringWorkspaces: false,
+      verifiableVoting: false,
     },
   },
   team: {
@@ -303,6 +307,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       liveCopilot: true,
       crossSessionInsights: true,
       recurringWorkspaces: true,
+      verifiableVoting: true,
     },
   },
 }

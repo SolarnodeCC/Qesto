@@ -38,6 +38,7 @@ import { mountPublicEventSuiteRoutes, mountTeamEventSuiteRoutes } from './routes
 import { mountTeamEventPresenterRoutes } from './routes/event-presenter'
 import { mountIdeateSessionRoutes } from './routes/ideate-sessions'
 import { mountRetroSessionRoutes } from './routes/retro-sessions'
+import { mountDeliberateSessionRoutes } from './routes/deliberate-sessions'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
@@ -322,6 +323,7 @@ export function createApp() {
   mountStageSessionRoutes(app)
   mountRetroSessionRoutes(app)
   mountIdeateSessionRoutes(app)
+  mountDeliberateSessionRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 

@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   vote_policy TEXT NOT NULL DEFAULT 'once'
     CHECK (vote_policy IN ('once','multi','react')),
   session_mode TEXT NOT NULL DEFAULT 'reflection'
-    CHECK (session_mode IN ('reflection','fun','townhall','stage','retro','ideate')),
+    CHECK (session_mode IN ('reflection','fun','townhall','stage','retro','ideate','deliberate')),
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,
@@ -191,6 +191,28 @@ CREATE TABLE IF NOT EXISTS townhall_questions (
 );
 CREATE INDEX IF NOT EXISTS idx_townhall_q_session ON townhall_questions(session_id, status);
 CREATE INDEX IF NOT EXISTS idx_townhall_q_author ON townhall_questions(author_hash);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- deliberate_ballots — DELIBERATE-RECEIPT-01 (ADR-0049). Append-only commitment
+-- ledger for cryptographically-verifiable governance voting (session_mode =
+-- 'deliberate'). ANONYMOUS by construction: voter_hash is a salted per-session
+-- SHA-256 (no user id), so the ledger survives GDPR account deletion and is
+-- unlinkable across sessions. commitment = SHA-256(fingerprint:nonce:choice) is
+-- coercion-resistant; commitments form a Merkle tree any observer can re-tally.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS deliberate_ballots (
+  id            TEXT PRIMARY KEY,                              -- uuid
+  session_id    TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  ballot_nonce  TEXT NOT NULL,                                 -- 128-bit blinding factor (hex)
+  commitment    TEXT NOT NULL,                                 -- hex SHA-256 commitment (Merkle leaf)
+  choice        TEXT NOT NULL,                                 -- public tally bucket
+  voter_hash    TEXT NOT NULL,                                 -- salted anon dedup key, no PII
+  leaf_index    INTEGER NOT NULL,                              -- insertion order, 0-based
+  created_at    INTEGER NOT NULL,                              -- epoch ms
+  UNIQUE(session_id, voter_hash),                              -- one ballot per voter per session
+  UNIQUE(session_id, ballot_nonce)                             -- nonce uniqueness (anti-replay)
+);
+CREATE INDEX IF NOT EXISTS idx_deliberate_ballots_session ON deliberate_ballots(session_id);
 CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
 -- Phase 10 Step 2: Compound index for vote aggregation by question
 CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);

@@ -29,7 +29,7 @@ type SessionRow = {
   status: 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
   anonymity: 'anonymous' | 'identified' | 'full' | 'partial' | 'none' | 'zero_knowledge'
   vote_policy?: 'once' | 'multi' | 'react'
-  session_mode?: 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate'
+  session_mode?: 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate' | 'deliberate'
   townhall_moderation?: 'pre' | 'post' | null
   created_at: number
   started_at: number | null
@@ -194,6 +194,19 @@ export class D1Mock {
   readonly customRoles = new Map<string, CustomRoleRow>()
   readonly teamRoleAssignments = new Map<string, TeamRoleAssignmentRow>()
   readonly townhallQuestions = new Map<string, TownhallQuestionRow>()
+  readonly deliberateBallots = new Map<
+    string,
+    {
+      id: string
+      session_id: string
+      ballot_nonce: string
+      commitment: string
+      choice: string
+      voter_hash: string
+      leaf_index: number
+      created_at: number
+    }
+  >()
   readonly energizers = new Map<string, EnergizerRow>()
   readonly deviceTokens = new Map<
     string,
@@ -480,6 +493,35 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       if (!row) return { meta: { changes: 0 } }
       row.session_mode = 'ideate'
+      return { meta: { changes: 1 } }
+    }
+    // DELIBERATE-RECEIPT-01: UPDATE sessions SET session_mode = 'deliberate' WHERE id = ?1 AND owner_id = ?2
+    if (this.sql.includes("session_mode = 'deliberate'")) {
+      const [id, owner_id] = this.args as [string, string]
+      const row = this.db.sessions.get(id)
+      if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
+      row.session_mode = 'deliberate'
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO deliberate_ballots')) {
+      const [id, session_id, ballot_nonce, commitment, choice, voter_hash, leaf_index, created_at] = this
+        .args as [string, string, string, string, string, string, number, number]
+      // UNIQUE(session_id, voter_hash) and UNIQUE(session_id, ballot_nonce).
+      for (const r of this.db.deliberateBallots.values()) {
+        if (r.session_id === session_id && (r.voter_hash === voter_hash || r.ballot_nonce === ballot_nonce)) {
+          throw new Error('UNIQUE constraint failed: deliberate_ballots')
+        }
+      }
+      this.db.deliberateBallots.set(id, {
+        id,
+        session_id,
+        ballot_nonce,
+        commitment,
+        choice,
+        voter_hash,
+        leaf_index,
+        created_at,
+      })
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('UPDATE sessions SET session_mode')) {
@@ -1443,6 +1485,21 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       return (row && row.owner_id === owner_id ? { id: row.id } : null) as T | null
     }
+    // DELIBERATE-RECEIPT-01: ballot count for a session.
+    if (this.sql.includes('COUNT(*) AS n FROM deliberate_ballots WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      let n = 0
+      for (const r of this.db.deliberateBallots.values()) if (r.session_id === session_id) n++
+      return { n } as T
+    }
+    // DELIBERATE-RECEIPT-01: sessionForBallot — public fields, no owner constraint.
+    if (this.sql.startsWith('SELECT id, code, created_at, session_mode, status FROM sessions WHERE id')) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      return (row
+        ? { id: row.id, code: row.code, created_at: row.created_at, session_mode: row.session_mode ?? 'reflection', status: row.status }
+        : null) as T | null
+    }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
 
@@ -1847,6 +1904,15 @@ export class D1PreparedStatementMock {
         .filter((q) => q.session_id === session_id)
         .sort((a, b) => a.position - b.position)
         .slice(0, 20)
+      return { results: rows as unknown as T[] }
+    }
+    // DELIBERATE-RECEIPT-01: ordered commitment ledger for a session.
+    if (this.sql.includes('FROM deliberate_ballots WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      const rows = [...this.db.deliberateBallots.values()]
+        .filter((r) => r.session_id === session_id)
+        .sort((a, b) => a.leaf_index - b.leaf_index)
+        .map((r) => ({ ballot_nonce: r.ballot_nonce, commitment: r.commitment, choice: r.choice, leaf_index: r.leaf_index }))
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

@@ -1,0 +1,30 @@
+id = "0054_deliberate_ballots"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-06-11"
+ticket = "ADR-0049"
+
+[rollback]
+strategy = "drop-objects"
+procedure = "DROP TABLE deliberate_ballots"
+
+[backup]
+required = false
+note = "New table only; no backfill required. session_mode enum widening is canonical in schema.sql."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[dependencies]
+tables = ["sessions", "deliberate_ballots"]
+cascade_scope = "ON DELETE CASCADE on session_id FK only"
+
+[verification]
+verify = true
+post_check = "0054_deliberate_ballots.verify.sql"

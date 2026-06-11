@@ -30,6 +30,8 @@ const RetroPresent = lazy(() => import('./pages/RetroPresent'))
 const RetroDisplay = lazy(() => import('./pages/RetroDisplay'))
 const IdeateJoin = lazy(() => import('./pages/IdeateJoin'))
 const IdeatePresent = lazy(() => import('./pages/IdeatePresent'))
+const IdeateBoardPage = lazy(() => import('./pages/IdeateBoardPage'))
+const DeliberateJoin = lazy(() => import('./pages/DeliberateJoin'))
 const EventAgendaJoin = lazy(() => import('./pages/EventAgendaJoin'))
 const EventAgendaOrganizer = lazy(() => import('./pages/EventAgendaOrganizer'))
 const EventStagePresent = lazy(() => import('./pages/EventStagePresent'))
@@ -177,7 +179,10 @@ export default function App() {
         <Route path="/r/:code/display" element={<LazySuspense pending={<LazyRoutePending />}><RetroDisplay /></LazySuspense>} />
         {/* IDEATE (ADR-0048) — AI-clustered ideation board */}
         <Route path="/sessions/:id/ideate" element={<LazySuspense pending={<LazyRoutePending />}><IdeatePresent /></LazySuspense>} />
+        <Route path="/sessions/:id/ideate/board" element={<LazySuspense pending={<LazyRoutePending />}><IdeateBoardPage /></LazySuspense>} />
         <Route path="/i/:code" element={<LazySuspense pending={<LazyRoutePending />}><IdeateJoin /></LazySuspense>} />
+        {/* DELIBERATE (ADR-0049) — sealed ballot commit */}
+        <Route path="/d/:code" element={<LazySuspense pending={<LazyRoutePending />}><DeliberateJoin /></LazySuspense>} />
         {/* STAGE (ADR-0048) — multi-track event agenda */}
         <Route path="/e/:code" element={<LazySuspense pending={<LazyRoutePending />}><EventAgendaJoin /></LazySuspense>} />
         <Route
