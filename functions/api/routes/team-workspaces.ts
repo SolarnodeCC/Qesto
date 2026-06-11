@@ -24,12 +24,14 @@ import {
 import {
   createWorkspaceInstance,
   defaultTemplateForKind,
+  listWorkspaceHistory,
   listWorkspaceInstances,
 } from '../lib/workspace-instances'
 import {
   getWorkspaceTrend,
   recomputeWorkspaceParticipationTrend,
   recomputeWorkspaceTeamHealthTrend,
+  recomputeWorkspaceTrends,
   readCachedWorkspaceTrend,
   purgeWorkspaceTrends,
   writeCachedWorkspaceTrend,
@@ -51,6 +53,9 @@ type Vars = AuthVariables & PlanVariables
 
 const WorkspaceKindSchema = z.enum(['retro', 'ideate', 'event'])
 const WorkspaceCadenceSchema = z.enum(['weekly', 'biweekly', 'sprint', 'manual'])
+
+/** On-demand /refresh debounce window (ADR-0048 §4) — skip recompute if fresher. */
+const WORKSPACE_REFRESH_DEBOUNCE_MS = 60_000
 
 const WorkspaceCreateSchema = z.object({
   kind: WorkspaceKindSchema,
@@ -304,6 +309,21 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     return c.json({ ok: true, data: { instances }, trace_id: c.get('trace_id') })
   })
 
+  // ADR-0048 §API row 7: linked instances + per-session insight summary.
+  app.get('/:id/workspaces/:wsId/history', async (c) => {
+    const { id: teamId, wsId } = c.req.param()
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team || !canReadWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
+    if (!ws) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    const history = await listWorkspaceHistory(c.env.DB, wsId)
+    return c.json({ ok: true, data: { history }, trace_id: c.get('trace_id') })
+  })
+
   app.post('/:id/workspaces/:wsId/instances', requireFeature('recurringWorkspaces'), async (c) => {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
@@ -446,6 +466,35 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     return c.json({
       ok: true,
       data: { kind, window, trend: payload },
+      trace_id: c.get('trace_id'),
+    })
+  })
+
+  // ADR-0048 §API row 8: debounced on-demand trend recompute. Covers the daily
+  // cron's freshness lag without adding hot-path cost.
+  app.post('/:id/workspaces/:wsId/refresh', requireFeature('crossSessionInsights'), async (c) => {
+    const { id: teamId, wsId } = c.req.param()
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
+    if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
+    if (!ws) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    // Debounce: skip if a trend was materialised in the last 60s.
+    const latest = await c.env.DB
+      .prepare(`SELECT MAX(computed_at) AS m FROM workspace_trend WHERE workspace_id = ?1`)
+      .bind(wsId)
+      .first<{ m: number | null }>()
+    if (latest?.m && Date.now() - latest.m < WORKSPACE_REFRESH_DEBOUNCE_MS) {
+      return c.json({ ok: true, data: { debounced: true }, trace_id: c.get('trace_id') })
+    }
+    const kv = c.env.ACTIONS_KV ?? c.env.TEAMS_KV
+    const result = await recomputeWorkspaceTrends(c.env.DB, kv, teamId, wsId, ws.kind)
+    return c.json({
+      ok: true,
+      data: { debounced: false, recomputed: result.recomputed, participation: result.participation90d },
       trace_id: c.get('trace_id'),
     })
   })

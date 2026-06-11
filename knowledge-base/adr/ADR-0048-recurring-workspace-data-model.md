@@ -1,11 +1,43 @@
 ---
 id: ADR-0048
-status: proposed
+status: accepted
 created: 2026-06-05
+accepted: 2026-06-11
 relates_to: ADR-0045-cross-session-intelligence, ADR-0044-townhall-qa-board, ADR-0010-zero-knowledge-mode, ADR-0009-pii-sanitization, ADR-KV-Tenant-Conventions, ADR-0001-do-per-session
 ---
 
 # ADR-0048: Recurring-Workspace Data Model (RETRO / IDEATE / EVENT Persistence + History)
+
+## Acceptance (Sprint 85, 2026-06-11)
+
+**Accepted.** The data model below shipped and is reconciled to the codebase:
+
+- **Schema** — `schema.sql` `workspaces` (kind `retro`/`ideate`/`event`, `cadence`,
+  `retention_days`, `last_instance_at`, `archived_at`), `sessions.workspace_id` +
+  `workspace_seq` (`ON DELETE SET NULL`), and the materialised `workspace_trend`
+  table all match §1–§3. Migration shipped as `migrations/0053_workspace_adr0048.sql`
+  (additive `ALTER`s + the `event` kind enforced in `schema.sql`'s CHECK and at the
+  API boundary, per the SQLite-CHECK note) — equivalent to the §"D1 migration" sketch
+  (`0053_workspace_recurring_model.sql`), filename differs.
+- **API** — `routes/team-workspaces.ts` implements the §"API surface" table, including
+  the S85-completed `GET …/workspaces/:wsId/history` (linked instances + per-session
+  insight summary) and `POST …/workspaces/:wsId/refresh` (debounced on-demand recompute).
+- **Compute (§4)** — Tier-1 `precomputeInsights()` ZK guard inherited verbatim; **Tier-2
+  is now the daily cron** (`worker/index.ts:handleScheduled` →
+  `recomputeStaleWorkspaceTrends`) iterating `crossSessionInsights`-entitled workspaces
+  with a newly closed instance, materialising `workspace_trend` and invalidating the KV
+  cache — closing the only divergence flagged at review (trends were previously read-time
+  only). The on-demand `/refresh` covers the daily freshness lag.
+- **RBAC (§5)** — `lib/workspace-rbac.ts` enforces the owner/admin/member/viewer matrix
+  (replacing the `0052` member-only stub).
+- **Plan gating (§6)** — `recurringWorkspaces` (create/instances) and `crossSessionInsights`
+  (trend reads/refresh) entitlements defined in `types.ts` (Team tier `true`).
+- **GDPR (§8)** — ZK write-boundary exclusion, k-anonymity floors (`K_ANON_INSTANCES = 3`,
+  `K_MIN_RESPONDENTS = 5` in `lib/workspace-trends.ts`), aggregate-only payloads, and
+  delete/retention purges (`purgeWorkspaceTrends`, action-KV purge) in place.
+
+Evidence: `tests/unit/workspace-trends-cron.test.ts`, `team-workspaces.test.ts`,
+`workspace-trends-health.test.ts`; full suite green, `tsc --noEmit` clean (Sprint 85).
 
 ## Context
 

@@ -1420,6 +1420,13 @@ export class D1PreparedStatementMock {
       })
       return (row ?? null) as T | null
     }
+    if (this.sql.includes('MAX(computed_at)') && this.sql.includes('FROM workspace_trend')) {
+      // ADR-0048 /refresh debounce: newest trend computed_at for a workspace.
+      const [workspace_id] = this.args as [string]
+      const rows = [...this.db.workspaceTrends.values()].filter((t) => t.workspace_id === workspace_id)
+      const m = rows.length ? Math.max(...rows.map((t) => t.computed_at)) : null
+      return { m } as T
+    }
     if (this.sql.includes('FROM workspace_trend') && this.sql.includes('payload_json')) {
       const [workspace_id, kind, window] = this.args as [string, string, string]
       const key = `${workspace_id}:${kind}:${window}`
@@ -1576,6 +1583,74 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.insightsDaily.values()]
         .filter((r) => r.team_id === team_id && r.day >= since_day)
         .sort((a, b) => a.day.localeCompare(b.day))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('insight_computed_at')) {
+      // ADR-0048 /history: linked instances + per-session insight summary (LEFT JOIN).
+      const [workspace_id] = this.args as [string]
+      const rows = [...this.db.sessions.values()]
+        .filter((s) => s.workspace_id === workspace_id)
+        .sort((a, b) => (b.workspace_seq ?? 0) - (a.workspace_seq ?? 0))
+        .map((s) => {
+          const insight = [...this.db.insightsDaily.values()].find((r) => r.session_id === s.id)
+          return {
+            id: s.id,
+            title: s.title,
+            status: s.status,
+            workspace_seq: s.workspace_seq ?? null,
+            created_at: s.created_at,
+            closed_at: s.closed_at ?? null,
+            insight_votes: insight ? insight.n_votes : null,
+            insight_confidence: insight ? insight.confidence : null,
+            insight_computed_at: insight ? insight.computed_at : null,
+          }
+        })
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('HAVING MAX(s.closed_at)')) {
+      // ADR-0048 §4 cron: retro/ideate workspaces with a closed instance newer
+      // than their newest trend computed_at (or no trend rows yet).
+      const rows = [...this.db.workspaces.values()]
+        .filter((w) => (w.kind === 'retro' || w.kind === 'ideate') && w.archived_at == null)
+        .filter((w) => {
+          const closed = [...this.db.sessions.values()].filter(
+            (s) =>
+              s.workspace_id === w.id &&
+              (s.status === 'closed' || s.status === 'archived') &&
+              s.closed_at != null,
+          )
+          if (closed.length === 0) return false
+          const maxClosed = Math.max(...closed.map((s) => s.closed_at as number))
+          const trends = [...this.db.workspaceTrends.values()].filter((t) => t.workspace_id === w.id)
+          const maxTrend = trends.length ? Math.max(...trends.map((t) => t.computed_at)) : 0
+          return maxClosed > maxTrend
+        })
+        .map((w) => ({ id: w.id, team_id: w.team_id, kind: w.kind }))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('COALESCE(i.n_votes, 0)') && this.sql.includes('workspace_id = ?1')) {
+      // ADR-0048 participation trend: LEFT JOIN insights_daily for n_votes.
+      const [workspace_id, cutoff] = this.args as [string, number]
+      const rows = [...this.db.sessions.values()]
+        .filter(
+          (s) =>
+            s.workspace_id === workspace_id &&
+            (s.status === 'closed' || s.status === 'archived') &&
+            s.closed_at != null &&
+            s.closed_at >= cutoff &&
+            s.anonymity !== 'zero_knowledge',
+        )
+        .sort((a, b) => (a.workspace_seq ?? 0) - (b.workspace_seq ?? 0))
+        .map((s) => {
+          const insight = [...this.db.insightsDaily.values()].find((r) => r.session_id === s.id)
+          return {
+            id: s.id,
+            workspace_seq: s.workspace_seq ?? null,
+            closed_at: s.closed_at!,
+            anonymity: s.anonymity,
+            n_votes: insight ? insight.n_votes : 0,
+          }
+        })
       return { results: rows as unknown as T[] }
     }
     if (this.sql.includes('INNER JOIN insights_daily i ON i.session_id = s.id') && this.sql.includes('workspace_id = ?1')) {

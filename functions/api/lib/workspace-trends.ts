@@ -1,15 +1,22 @@
 import { ulid } from './ulid'
 import { namespacedKey } from './tenant-namespace'
-import type { WorkspaceTrendKind, WorkspaceTrendWindow } from './workspace-types'
+import { readKvJson } from './kv'
+import { teamDocumentKey } from './kv-keys'
+import { featureAllowed } from './entitlements'
+import type { WorkspaceKind, WorkspaceTrendKind, WorkspaceTrendWindow } from './workspace-types'
 import type { z } from 'zod'
 import {
   decodeKvJson,
   RetroHealthThemeSchema,
   WorkspaceTrendUnionSchema,
 } from './boundary-decode'
+import { PLAN_QUOTAS, type PlanTier } from '../types'
 
 const K_ANON_INSTANCES = 3
 const K_MIN_RESPONDENTS = 5
+
+/** All trend windows recomputed together by the cron / refresh path. */
+const ALL_TREND_WINDOWS: WorkspaceTrendWindow[] = ['30d', '90d', '180d']
 
 export type RetroHealthTheme = {
   kind: 'retro_health'
@@ -305,6 +312,127 @@ export async function recomputeWorkspaceTeamHealthTrend(
 
 export async function purgeWorkspaceTrends(db: D1Database, workspaceId: string): Promise<void> {
   await db.prepare(`DELETE FROM workspace_trend WHERE workspace_id = ?1`).bind(workspaceId).run()
+}
+
+/** Invalidate one KV read-cache entry (mirror of writeCachedWorkspaceTrend's key). */
+export async function purgeCachedWorkspaceTrend(
+  kv: KVNamespace,
+  teamId: string,
+  workspaceId: string,
+  kind: WorkspaceTrendKind,
+  window: WorkspaceTrendWindow,
+): Promise<void> {
+  await kv.delete(trendCacheKey(teamId, workspaceId, kind, window))
+}
+
+export type RecomputeWorkspaceTrendsResult = {
+  /** Trend (kind, window) pairs that were recomputed + cache-invalidated. */
+  recomputed: Array<{ kind: WorkspaceTrendKind; window: WorkspaceTrendWindow }>
+  /** Fresh participation 90d payload, for the on-demand refresh response. */
+  participation90d: WorkspaceTrendPayload
+}
+
+/**
+ * Recompute every trend kind/window for one workspace and invalidate its KV
+ * read cache. Shared by the daily cron (Tier-2) and the on-demand Refresh
+ * (ADR-0048 §4). `participation` is always recomputed for all three windows;
+ * `team_health` only for retro workspaces (its query is retro-scoped). Defensive:
+ * cache invalidation never throws into the caller.
+ */
+export async function recomputeWorkspaceTrends(
+  db: D1Database,
+  kv: KVNamespace,
+  teamId: string,
+  workspaceId: string,
+  kind: WorkspaceKind,
+): Promise<RecomputeWorkspaceTrendsResult> {
+  const recomputed: Array<{ kind: WorkspaceTrendKind; window: WorkspaceTrendWindow }> = []
+  let participation90d: WorkspaceTrendPayload = { instanceCount: 0, message: 'insufficient_data' }
+
+  for (const window of ALL_TREND_WINDOWS) {
+    const payload = await recomputeWorkspaceParticipationTrend(db, workspaceId, window)
+    if (window === '90d') participation90d = payload
+    recomputed.push({ kind: 'participation', window })
+  }
+  if (kind === 'retro') {
+    for (const window of ALL_TREND_WINDOWS) {
+      await recomputeWorkspaceTeamHealthTrend(db, workspaceId, window)
+      recomputed.push({ kind: 'team_health', window })
+    }
+  }
+
+  for (const entry of recomputed) {
+    try {
+      await purgeCachedWorkspaceTrend(kv, teamId, workspaceId, entry.kind, entry.window)
+    } catch {
+      // Cache invalidation is best-effort; a stale entry expires via its TTL.
+    }
+  }
+
+  return { recomputed, participation90d }
+}
+
+type StaleWorkspaceRow = {
+  id: string
+  team_id: string
+  kind: string
+}
+
+/**
+ * Tier-2 daily rollup (ADR-0048 §4). Recompute `workspace_trend` for every
+ * retro/ideate workspace that has at least one instance closed AFTER its newest
+ * trend `computed_at` (or that has no trend rows yet), filtered to teams holding
+ * the `crossSessionInsights` entitlement (cost control). Invalidates the KV read
+ * cache for everything it recomputes. Returns counts for observability.
+ */
+export async function recomputeStaleWorkspaceTrends(
+  db: D1Database,
+  kv: KVNamespace,
+  teamsKv: KVNamespace,
+): Promise<{ scanned: number; recomputed: number }> {
+  // One query: workspaces whose latest closed instance is newer than their
+  // newest trend computed_at (LEFT JOIN → NULL when no trend rows exist yet).
+  const rows = await db
+    .prepare(
+      `SELECT w.id, w.team_id, w.kind
+         FROM workspaces w
+         JOIN sessions s ON s.workspace_id = w.id
+        WHERE w.kind IN ('retro', 'ideate')
+          AND w.archived_at IS NULL
+          AND s.status IN ('closed', 'archived')
+          AND s.closed_at IS NOT NULL
+        GROUP BY w.id, w.team_id, w.kind
+       HAVING MAX(s.closed_at) > COALESCE(
+                (SELECT MAX(t.computed_at) FROM workspace_trend t WHERE t.workspace_id = w.id),
+                0)`,
+    )
+    .all<StaleWorkspaceRow>()
+
+  const candidates = rows.results ?? []
+  let recomputed = 0
+  // Cache per-team entitlement so each team's plan is resolved at most once.
+  const entitledByTeam = new Map<string, boolean>()
+
+  for (const ws of candidates) {
+    let entitled = entitledByTeam.get(ws.team_id)
+    if (entitled === undefined) {
+      entitled = await teamHoldsCrossSessionInsights(teamsKv, ws.team_id)
+      entitledByTeam.set(ws.team_id, entitled)
+    }
+    if (!entitled) continue // cost control: skip non-entitled teams
+    await recomputeWorkspaceTrends(db, kv, ws.team_id, ws.id, ws.kind as WorkspaceKind)
+    recomputed++
+  }
+
+  return { scanned: candidates.length, recomputed }
+}
+
+/** Resolve a team's plan from TEAMS_KV and test the crossSessionInsights gate. */
+async function teamHoldsCrossSessionInsights(teamsKv: KVNamespace, teamId: string): Promise<boolean> {
+  const team = await readKvJson<{ plan?: PlanTier }>(teamsKv, teamDocumentKey(teamId))
+  const plan: PlanTier = team?.plan ?? 'free'
+  const quotas = PLAN_QUOTAS[plan] ?? PLAN_QUOTAS.free
+  return featureAllowed(quotas, 'crossSessionInsights')
 }
 
 /** Narrow Zod output to app payload types (exactOptionalPropertyTypes-safe). */

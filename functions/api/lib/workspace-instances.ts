@@ -107,3 +107,63 @@ export async function listWorkspaceInstances(
     closedAt: r.closed_at,
   }))
 }
+
+export type WorkspaceHistoryEntry = {
+  id: string
+  title: string
+  status: string
+  workspaceSeq: number | null
+  createdAt: number
+  closedAt: number | null
+  /** Per-session insight summary (null for sessions with no rollup, incl. ZK). */
+  insight: { responseCount: number; confidence: number | null; computedAt: number } | null
+}
+
+/**
+ * Linked instances + per-session insight summary (ADR-0048 §2 "history is a
+ * query"). LEFT JOIN to `insights_daily`: zero-knowledge instances are absent
+ * from that table by construction (Tier-1 ZK write-boundary guard), so they
+ * surface here with `insight: null` — no special-casing, no PII leak.
+ */
+export async function listWorkspaceHistory(
+  db: D1Database,
+  workspaceId: string,
+): Promise<WorkspaceHistoryEntry[]> {
+  const rows = await db
+    .prepare(
+      `SELECT s.id, s.title, s.status, s.workspace_seq, s.created_at, s.closed_at,
+              i.n_votes AS insight_votes, i.confidence AS insight_confidence, i.computed_at AS insight_computed_at
+         FROM sessions s
+         LEFT JOIN insights_daily i ON i.session_id = s.id
+        WHERE s.workspace_id = ?1
+        ORDER BY s.workspace_seq DESC`,
+    )
+    .bind(workspaceId)
+    .all<{
+      id: string
+      title: string
+      status: string
+      workspace_seq: number | null
+      created_at: number
+      closed_at: number | null
+      insight_votes: number | null
+      insight_confidence: number | null
+      insight_computed_at: number | null
+    }>()
+  return (rows.results ?? []).map((r) => ({
+    id: r.id,
+    title: r.title,
+    status: r.status,
+    workspaceSeq: r.workspace_seq,
+    createdAt: r.created_at,
+    closedAt: r.closed_at,
+    insight:
+      r.insight_computed_at != null
+        ? {
+            responseCount: r.insight_votes ?? 0,
+            confidence: r.insight_confidence ?? null,
+            computedAt: r.insight_computed_at,
+          }
+        : null,
+  }))
+}
