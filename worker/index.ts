@@ -11,6 +11,7 @@ import { safeLogContext } from '../functions/api/lib/log'
 import { processPostSessionWork } from '../functions/api/lib/queues/consumer'
 import type { PostSessionWorkMessage } from '../functions/api/lib/queues/producer'
 import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
+import { recomputeStaleWorkspaceTrends } from '../functions/api/lib/workspace-trends'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
@@ -85,6 +86,23 @@ async function handleScheduled(_event: ScheduledEvent, env: Env, _ctx: Execution
     safeLogContext(err, {
       traceId,
       route: 'worker/kb-health',
+      errorClass: err instanceof Error ? err.name : 'UnknownError',
+    })
+  }
+
+  // Tier-2 workspace-trend rollup (ADR-0048 §4). Recompute workspace_trend for
+  // entitled teams' retro/ideate workspaces that gained a newly closed instance
+  // since their last trend, and invalidate the KV read cache. Non-fatal: a
+  // failure here must not break the KB watchdog above (mirrors its handling).
+  const trendTraceId = `ws-trends-${Date.now()}`
+  try {
+    const kv = env.ACTIONS_KV ?? env.TEAMS_KV
+    const { scanned, recomputed } = await recomputeStaleWorkspaceTrends(env.DB, kv, env.TEAMS_KV)
+    console.log(`[ws-trends] OK — scanned ${scanned} stale workspace(s), recomputed ${recomputed}`)
+  } catch (err) {
+    safeLogContext(err, {
+      traceId: trendTraceId,
+      route: 'worker/ws-trends',
       errorClass: err instanceof Error ? err.name : 'UnknownError',
     })
   }

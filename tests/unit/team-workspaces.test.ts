@@ -166,6 +166,89 @@ describe('team workspaces (ADR-0048)', () => {
     expect(body.data.items).toHaveLength(2)
   })
 
+  it('history returns linked instances with per-session insight summary', async () => {
+    const db = new D1Mock()
+    const teamsKv = new KVMock()
+    const actionsKv = new KVMock()
+    await seedTeam(db, teamsKv)
+    const env = buildEnv(db, teamsKv, actionsKv)
+    const app = createApp()
+    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
+    const cookie = `qesto_session=${token}`
+
+    const createWs = await app.fetch(
+      new Request('http://local/api/teams/team-w/workspaces', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ kind: 'retro', title: 'History retro' }),
+      }),
+      env,
+    )
+    const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
+    const inst = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/instances`, { method: 'POST', headers: { cookie } }),
+      env,
+    )
+    const sessionId = ((await inst.json()) as { data: { session: { id: string } } }).data.session.id
+    db.insightsDaily.set('ins-hist', {
+      id: 'ins-hist',
+      session_id: sessionId,
+      team_id: 'team-w',
+      day: '2026-01-01',
+      themes_json: '[]',
+      confidence: 0.9,
+      n_votes: 7,
+      embedding_ref: 0,
+      computed_at: Date.now(),
+    } as never)
+
+    const hist = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/history`, { headers: { cookie } }),
+      env,
+    )
+    expect(hist.status).toBe(200)
+    const body = (await hist.json()) as {
+      data: { history: Array<{ workspaceSeq: number; insight: { responseCount: number } | null }> }
+    }
+    expect(body.data.history).toHaveLength(1)
+    expect(body.data.history[0].workspaceSeq).toBe(1)
+    expect(body.data.history[0].insight?.responseCount).toBe(7)
+  })
+
+  it('refresh recomputes trends then debounces a rapid second call', async () => {
+    const db = new D1Mock()
+    const teamsKv = new KVMock()
+    const actionsKv = new KVMock()
+    await seedTeam(db, teamsKv)
+    const env = buildEnv(db, teamsKv, actionsKv)
+    const app = createApp()
+    const token = await signJwt({ sub: 'owner', email: 'o@example.com' }, SECRET, 3600)
+    const cookie = `qesto_session=${token}`
+
+    const createWs = await app.fetch(
+      new Request('http://local/api/teams/team-w/workspaces', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie },
+        body: JSON.stringify({ kind: 'retro', title: 'Refresh retro' }),
+      }),
+      env,
+    )
+    const wsId = ((await createWs.json()) as { data: { workspace: { id: string } } }).data.workspace.id
+
+    const first = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/refresh`, { method: 'POST', headers: { cookie } }),
+      env,
+    )
+    expect(first.status).toBe(200)
+    expect(((await first.json()) as { data: { debounced: boolean } }).data.debounced).toBe(false)
+
+    const second = await app.fetch(
+      new Request(`http://local/api/teams/team-w/workspaces/${wsId}/refresh`, { method: 'POST', headers: { cookie } }),
+      env,
+    )
+    expect(((await second.json()) as { data: { debounced: boolean } }).data.debounced).toBe(true)
+  })
+
   it('denies workspace create on free plan', async () => {
     const db = new D1Mock()
     const teamsKv = new KVMock()
