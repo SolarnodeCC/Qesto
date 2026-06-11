@@ -27,6 +27,7 @@ export type DraftGateReason =
   | 'townhall_config'
   | 'stage_config'
   | 'retro_config'
+  | 'deliberate_config'
 
 const DRAFT_MESSAGES: Record<DraftGateReason, string> = {
   patch: 'Only DRAFT sessions can be edited via REST',
@@ -39,6 +40,7 @@ const DRAFT_MESSAGES: Record<DraftGateReason, string> = {
   townhall_config: 'Townhall can only be configured while the session is in DRAFT',
   stage_config: 'STAGE can only be configured while the session is in DRAFT',
   retro_config: 'Retro can only be configured while the session is in DRAFT',
+  deliberate_config: 'Deliberate voting can only be configured while the session is in DRAFT',
 }
 
 export function requireFound(session: Session | null): LifecycleOk | LifecycleErr {
