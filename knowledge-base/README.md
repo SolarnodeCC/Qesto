@@ -48,7 +48,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 - **[Market Research](./product/research/)** — Competitive intelligence, customer insights, market trends (updated quarterly)
 - **[Release Notes](./product/releases/)** — Version history, release plans, audit outcomes
 - **[Planning](./product/planning/)** — Sprint plans (S71–S80: [`SPRINT71_80_PLAN.md`](./product/planning/SPRINT71_80_PLAN.md); S60–S70: [`SPRINT60_70_PLAN.md`](./product/planning/SPRINT60_70_PLAN.md); S51–S60: [`SPRINT51_60_PLAN.md`](./product/planning/SPRINT51_60_PLAN.md); S30–S39: [`SPRINT30_39_PLAN.md`](./product/planning/SPRINT30_39_PLAN.md))
-- **i18n parallel tracks** — [`I18N_SPRINT_60_70_PLAN.md`](./I18N_SPRINT_60_70_PLAN.md), [`I18N_SPRINT_71_80_PLAN.md`](./I18N_SPRINT_71_80_PLAN.md), [`I18N_SPRINT_81_90_PLAN.md`](./I18N_SPRINT_81_90_PLAN.md)
+- **i18n parallel tracks** — [`I18N_SPRINT_60_70_PLAN.md`](./product/planning/I18N_SPRINT_60_70_PLAN.md), [`I18N_SPRINT_71_80_PLAN.md`](./product/planning/I18N_SPRINT_71_80_PLAN.md), [`I18N_SPRINT_81_90_PLAN.md`](./product/planning/I18N_SPRINT_81_90_PLAN.md)
 
 ### Quality & Operations
 
@@ -206,6 +206,11 @@ tags:
 ---
 
 ## Recent Changes
+
+**2026-06-11**: Documentation organization pass
+- Moved loose i18n sprint docs (`I18N_SPRINT_60_70_*`, `I18N_SPRINT_71_80_PLAN`, `I18N_SPRINT_81_90_PLAN`, `I18N_CI_GATES_SPRINT_60_70`) from KB root into [`product/planning/`](./product/planning/) alongside their `SPRINT*_PLAN.md` counterparts
+- Moved root-level `OBSERVABILITY_AUDIT_2026_06_05.md` into [`operations/monitoring/`](./operations/monitoring/OBSERVABILITY_AUDIT_2026-06-05.md)
+- Updated all inbound cross-references (README, `BACKLOG_MASTER`, `ROADMAP_FULL`, planning specs) to the new paths
 
 **2026-05-11**: Complete knowledge-base migration
 - Reorganized 123 files from `/docs/`, `/audits/`, root level into unified structure

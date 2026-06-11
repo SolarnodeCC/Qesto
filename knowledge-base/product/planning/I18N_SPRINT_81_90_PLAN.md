@@ -22,7 +22,7 @@ relates_to:
 
 # i18n Plan — Sprints 81–90 (Post-v5.0 Expansion Arc)
 
-_Prepared: 2026-06-01 — i18n synthesis aligned to [`SPRINT81_90_PLAN.md`](./product/planning/SPRINT81_90_PLAN.md). Baseline locales: **EN/NL/ES/DE/FR**. i18n budget ~8–13 pts/sprint (parallel track)._
+_Prepared: 2026-06-01 — i18n synthesis aligned to [`SPRINT81_90_PLAN.md`](./SPRINT81_90_PLAN.md). Baseline locales: **EN/NL/ES/DE/FR**. i18n budget ~8–13 pts/sprint (parallel track)._
 
 ---
 

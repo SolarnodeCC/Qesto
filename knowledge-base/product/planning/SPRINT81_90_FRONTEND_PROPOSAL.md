@@ -83,7 +83,7 @@ Do not re-implement v5.0 surfaces; extend and GA them.
 | `canvas.json` | S88 | Theme picker, dataviz style labels |
 | `captions.json` | S88–S89 | Overlay controls, language selector, WER indicator |
 
-Full key budget: [`I18N_SPRINT_81_90_PLAN.md`](../../I18N_SPRINT_81_90_PLAN.md).
+Full key budget: [`I18N_SPRINT_81_90_PLAN.md`](./I18N_SPRINT_81_90_PLAN.md).
 
 ---
 
@@ -440,6 +440,6 @@ _*STAGE-FOUNDATION-01 attributed to Stream B handoff in S84._
 - Prior arc: [`SPRINT71_80_FRONTEND_PROPOSAL.md`](./SPRINT71_80_FRONTEND_PROPOSAL.md)
 - Infra plan: [`SPRINT81_90_INFRA_PLAN.md`](./SPRINT81_90_INFRA_PLAN.md)
 - Marketing copy gates: [`MARKETING_SPRINTS_81_90.md`](../marketing/MARKETING_SPRINTS_81_90.md)
-- i18n key plan: [`I18N_SPRINT_81_90_PLAN.md`](../../I18N_SPRINT_81_90_PLAN.md)
+- i18n key plan: [`I18N_SPRINT_81_90_PLAN.md`](./I18N_SPRINT_81_90_PLAN.md)
 - Accessibility record: [`docs/A11Y_FULL.md`](../../../docs/A11Y_FULL.md)
 - Backlog: [`BACKLOG_MASTER.md`](../backlog/BACKLOG_MASTER.md)
