@@ -21,6 +21,7 @@ const RELEASES = [
   { version: '5.0.0', codename: 'v5.0', status: 'ga', sprint: 80 },
   { version: '5.1.0', codename: 'v5.1', status: 'ga', sprint: 84 },
   { version: '5.2.0-rc.1', codename: 'v5.2-rc', status: 'rc', sprint: 86 },
+  { version: '5.2.0', codename: 'v5.2', status: 'ga', sprint: 86 },
   { version: '5.3.0-dev', codename: 'v5.3-dev', status: 'dev', sprint: 87 },
 ] as const
 
