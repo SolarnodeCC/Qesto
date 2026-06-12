@@ -234,6 +234,14 @@ export const ClientMessageSchema = z.union([
     data: z.object({ questionId: z.string().min(1), responseId: z.string().min(1) }),
     timestamp: z.number(),
   }),
+  // DELIBERATE (ADR-0049, DELIBERATE-GA-01). Cast one governance ballot live.
+  // `choice` mirrors the REST CastSchema bound (1..200) so WS and REST agree.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('deliberate_cast'),
+    data: z.object({ choice: z.string().trim().min(1).max(200) }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>

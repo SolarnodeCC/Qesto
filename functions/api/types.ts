@@ -121,6 +121,17 @@ export type Env = {
    * material derived from it ever ships to the browser.
    */
   EMBED_WIDGET_SECRET?: string
+  /**
+   * DELIBERATE-GA-01 / M-1 (ADR-0049): optional server-side secret salt folded
+   * into the anonymous `voter_hash` one-ballot dedup token (defence-in-depth so
+   * the token no longer rests solely on the 128-bit ULID `user.sub`). Server
+   * secret — set via `wrangler pages secret put DELIBERATE_VOTER_SALT`, NEVER in
+   * wrangler.toml (hard rule #2). Fail-safe: when unset, `voterBallotHash` is
+   * byte-identical to the pre-M-1 construction, so existing ballots verify
+   * unchanged; the salt only differentiates sessions created after it is set
+   * (historical rows are never rehashed).
+   */
+  DELIBERATE_VOTER_SALT?: string
   /** LinkedIn auto-posting (MKTG): OAuth app credentials + redirect. */
   LINKEDIN_CLIENT_ID?: string
   LINKEDIN_CLIENT_SECRET?: string

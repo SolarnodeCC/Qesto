@@ -225,6 +225,9 @@ export type ClientMessage =
   // ENTERPRISE-POLISH §1c — presenter approves or rejects a pending open response.
   | { v?: LiveProtocolVersion; type: 'approve_response'; data: { questionId: string; responseId: string }; timestamp: number }
   | { v?: LiveProtocolVersion; type: 'reject_response'; data: { questionId: string; responseId: string }; timestamp: number }
+  // DELIBERATE (ADR-0049, DELIBERATE-GA-01). A participant casts one verifiable
+  // governance ballot over the live board. `choice` is the public tally bucket.
+  | { v?: LiveProtocolVersion; type: 'deliberate_cast'; data: { choice: string }; timestamp: number }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
@@ -515,6 +518,33 @@ export type ServerMessage =
       data: {
         ranking: Array<{ rank: number; ideaId: string; body: string; upvotes: number }>
         rev: number
+      }
+      timestamp: number
+    }
+  // DELIBERATE (ADR-0049, DELIBERATE-GA-01). The aggregate tally is broadcast to
+  // the WHOLE room and is anonymous-by-construction: per-choice counts + the
+  // recomputed Merkle root, NEVER voter_hash / user id / per-ballot attribution.
+  | {
+      v?: LiveProtocolVersion
+      type: 'deliberate_tally'
+      data: { tally: Record<string, number>; voteCount: number; merkleRoot: string }
+      timestamp: number
+    }
+  // Coercion-resistant receipt — sent to ONLY the casting client (the sole place
+  // the voter's secret nonce is surfaced). Never broadcast.
+  | {
+      v?: LiveProtocolVersion
+      type: 'deliberate_receipt'
+      data: {
+        receipt: {
+          sessionId: string
+          sessionFingerprint: string
+          ballotNonce: string
+          commitment: string
+          choice: string
+          leafIndex: number
+          issuedAt: number
+        }
       }
       timestamp: number
     }
