@@ -66,6 +66,12 @@ export type AuditAction =
   | 'user.suspend'
   | 'user.restore'
   | 'ldap.sync.completed'
+  // Agent action transparency (AI-461, S87): an AI agent/copilot executed an
+  // action that mutated session state. after_snapshot carries the sanitised
+  // tool call + outcome + `source: 'ai'` provenance.
+  | 'agent.action.suggestion_accepted'
+  | 'agent.action.question_injected'
+  | 'agent.action.state_changed'
 
 export interface AuditContext {
   action: AuditAction

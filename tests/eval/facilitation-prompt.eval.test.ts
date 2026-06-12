@@ -9,13 +9,18 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildSuggestMessages,
+  buildSuggestionResponse,
   sanitizeFenced,
+  COPILOT_PROMPT_VERSION,
   UNTRUSTED_OPEN,
   UNTRUSTED_CLOSE,
   FENCED_FIELD_MAX_LEN,
+  type CopilotAction,
+  type CopilotSuggestionSource,
 } from '../../functions/api/lib/copilot-suggest'
 import type { CopilotLiveContext } from '../../functions/api/lib/copilot-live-context'
 import injectionFixture from './fixtures/facilitation-injection.json'
+import suggestionPayloadFixture from './fixtures/copilot-suggestion-payload.json'
 
 const FORBIDDEN_CHARS_RE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\u200B\uFEFF\u200C\u200D]/
 
@@ -86,5 +91,45 @@ describe('eval: facilitation prompt construction (AGENT-FACILITATE-GA-01)', () =
     const user = buildSuggestMessages(noQ)[1].content
     expect(user).not.toContain(UNTRUSTED_OPEN)
     expect(user).toContain('none active')
+  })
+})
+
+// AI-463 (prompt-version stamp) + AI-464 ([AI-Generated] provenance label).
+// The suggestion payload returned to the presenter MUST always carry a `source`
+// provenance marker and the active `promptVersion`, so the eval harness/UI can
+// trace which prompt version produced which output. CI cannot reach Workers AI;
+// these assert the payload contract, not model behaviour.
+describe('eval: copilot suggestion payload provenance (AI-463 / AI-464)', () => {
+  function nActions(n: number): CopilotAction[] {
+    return Array.from({ length: n }, (_, i) => ({
+      kind: 'pacing' as const,
+      title: `action ${i}`,
+      body: 'Give the room a beat before moving on.',
+    }))
+  }
+
+  it('COPILOT_PROMPT_VERSION matches the pinned fixture version (AI-463)', () => {
+    expect(COPILOT_PROMPT_VERSION).toBe(suggestionPayloadFixture.expectedPromptVersion)
+  })
+
+  for (const c of suggestionPayloadFixture.cases) {
+    it(`stamps source + promptVersion: ${c.name}`, () => {
+      const payload = buildSuggestionResponse(
+        nActions(c.suggestionCount),
+        c.source as CopilotSuggestionSource,
+      )
+      // AI-464 — provenance marker present + correct.
+      expect(payload).toHaveProperty('source')
+      expect(payload.source).toBe(c.source)
+      // AI-463 — prompt version stamped on every payload (even the empty one).
+      expect(payload.promptVersion).toBe(COPILOT_PROMPT_VERSION)
+      expect(payload.suggestions).toHaveLength(c.suggestionCount)
+    })
+  }
+
+  it('always carries source === "ai" for model-generated suggestions (AI-464)', () => {
+    const payload = buildSuggestionResponse(nActions(2), 'ai')
+    expect(payload.source).toBe('ai')
+    expect(payload.promptVersion).toBeTruthy()
   })
 })

@@ -28,14 +28,17 @@ import {
   buildLiveContext,
   emptyLiveContext,
   parseSnapshotResponse,
+  notifyEmbedOfCopilotChange,
   type CopilotLiveContext,
 } from '../lib/copilot-live-context'
 import {
   buildSuggestMessages,
   parseSuggestions,
   fallbackSuggestions,
+  buildSuggestionResponse,
   COPILOT_MODEL,
 } from '../lib/copilot-suggest'
+import { auditAgentAction } from '../lib/agent-audit'
 import { getSessionRoomStub } from './sessions/shared'
 import { WizardAIError, WizardValidationError } from '../lib/ai-wizard'
 import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
@@ -322,9 +325,14 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
     }
     const context = r.context
 
-    // Nothing to read the room from until the session is live.
+    // Nothing to read the room from until the session is live. The empty payload
+    // still carries provenance (AI-464) + prompt version (AI-463) for trace parity.
     if (!context.isLive) {
-      return c.json({ ok: true, data: { suggestions: [], source: 'none' }, trace_id: c.get('trace_id') })
+      return c.json({
+        ok: true,
+        data: buildSuggestionResponse([], 'none'),
+        trace_id: c.get('trace_id'),
+      })
     }
 
     const ai = c.env.AI
@@ -359,7 +367,12 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       detail: actions ? 'ai' : 'fallback',
       traceId: c.get('trace_id'),
     })
-    return c.json({ ok: true, data: { suggestions, source: actions ? 'ai' : 'fallback' }, trace_id: c.get('trace_id') })
+    // AI-463/464: stamp provenance ('ai' | 'fallback') + prompt version on the payload.
+    return c.json({
+      ok: true,
+      data: buildSuggestionResponse(suggestions, actions ? 'ai' : 'fallback'),
+      trace_id: c.get('trace_id'),
+    })
   })
 
   // COPILOT-07 — record presenter acceptance (emitted before add_question inject).
@@ -400,7 +413,28 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       detail: parsed.data.kind,
       traceId: c.get('trace_id'),
     })
-    return c.json({ ok: true, data: { accepted: true }, trace_id: c.get('trace_id') })
+
+    // AI-461 — agent action transparency: record the accepted, session-mutating AI
+    // action in the audit log with sanitised tool args + `[AI-Generated]` provenance.
+    await auditAgentAction(c, {
+      action: 'agent.action.suggestion_accepted',
+      sessionId,
+      agentId: 'facilitation-copilot',
+      toolName: 'accept_suggestion',
+      toolArgs: parsed.data.kind ? { kind: parsed.data.kind } : {},
+      outcome: 'success',
+    })
+
+    // AI-462 — copilot ↔ embed handoff: an accepted suggestion changes the active
+    // question / session state. If a live embed widget exists, set the short-TTL KV
+    // flag so its next state poll learns immediately (no new DO / WS path).
+    const copilotChangedEmbed = await notifyEmbedOfCopilotChange(c.env, sessionId)
+
+    return c.json({
+      ok: true,
+      data: { accepted: true, embedNotified: copilotChangedEmbed, source: 'ai' },
+      trace_id: c.get('trace_id'),
+    })
   })
 
   app.get('/edge/status', (c) =>

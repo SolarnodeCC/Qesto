@@ -181,6 +181,18 @@ type TeamRoleAssignmentRow = {
   assigned_at: number
 }
 
+type EmbedWidgetRow = {
+  id: string
+  team_id: string
+  session_id: string
+  session_code: string
+  allowed_origins: string // JSON TEXT
+  scope: string
+  created_by: string
+  created_at: number
+  revoked_at: number | null
+}
+
 export class D1Mock {
   readonly magicLinks = new Map<string, MagicLink>()
   readonly users = new Map<string, User>()
@@ -194,6 +206,7 @@ export class D1Mock {
   readonly customRoles = new Map<string, CustomRoleRow>()
   readonly teamRoleAssignments = new Map<string, TeamRoleAssignmentRow>()
   readonly townhallQuestions = new Map<string, TownhallQuestionRow>()
+  readonly embedWidgets = new Map<string, EmbedWidgetRow>()
   readonly deliberateBallots = new Map<
     string,
     {
@@ -312,6 +325,7 @@ export class D1Mock {
       refunded_at: number | null
     }
   >()
+  readonly embedWidgets = new Map<string, EmbedWidgetRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -501,6 +515,22 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       if (!row || row.owner_id !== owner_id) return { meta: { changes: 0 } }
       row.session_mode = 'deliberate'
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO embed_widgets')) {
+      const [id, team_id, session_id, session_code, allowed_origins, scope, created_by, created_at] = this.args as [
+        string, string, string, string, string, string, string, number
+      ]
+      this.db.embedWidgets.set(id, {
+        id, team_id, session_id, session_code, allowed_origins, scope, created_by, created_at, revoked_at: null,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE embed_widgets SET revoked_at')) {
+      const [revoked_at, id, team_id] = this.args as [number, string, string]
+      const row = this.db.embedWidgets.get(id)
+      if (!row || row.team_id !== team_id) return { meta: { changes: 0 } }
+      row.revoked_at = revoked_at
       return { meta: { changes: 1 } }
     }
     if (this.sql.startsWith('INSERT INTO deliberate_ballots')) {
@@ -1486,6 +1516,18 @@ export class D1PreparedStatementMock {
       return (row && row.owner_id === owner_id ? { id: row.id } : null) as T | null
     }
     // DELIBERATE-RECEIPT-01: ballot count for a session.
+    // EMBED-SDK-01: widget token lookups
+    if (this.sql.includes('FROM embed_widgets WHERE id =')) {
+      const [id] = this.args as [string]
+      return (this.db.embedWidgets.get(id) ?? null) as T | null
+    }
+    if (this.sql.includes('FROM embed_widgets WHERE session_id =') || this.sql.includes('FROM embed_widgets WHERE session_code =')) {
+      const [val] = this.args as [string]
+      for (const r of this.db.embedWidgets.values()) {
+        if (r.session_id === val || r.session_code === val) return r as T
+      }
+      return null as T | null
+    }
     if (this.sql.includes('COUNT(*) AS n FROM deliberate_ballots WHERE session_id')) {
       const [session_id] = this.args as [string]
       let n = 0
@@ -1504,6 +1546,16 @@ export class D1PreparedStatementMock {
   }
 
   async all<T = unknown>(): Promise<{ results: T[] }> {
+    if (this.sql.includes('FROM embed_widgets WHERE team_id')) {
+      const [team_id] = this.args as [string]
+      const rows = [...this.db.embedWidgets.values()].filter((r) => r.team_id === team_id)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM embed_widgets WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      const rows = [...this.db.embedWidgets.values()].filter((r) => r.session_id === session_id)
+      return { results: rows as unknown as T[] }
+    }
     if (this.sql.includes('FROM townhall_questions WHERE session_id')) {
       const [session_id] = this.args as [string]
       const rows = [...this.db.townhallQuestions.values()]
@@ -1913,6 +1965,76 @@ export class D1PreparedStatementMock {
         .filter((r) => r.session_id === session_id)
         .sort((a, b) => a.leaf_index - b.leaf_index)
         .map((r) => ({ ballot_nonce: r.ballot_nonce, commitment: r.commitment, choice: r.choice, leaf_index: r.leaf_index }))
+      return { results: rows as unknown as T[] }
+    }
+    // EMBED-WIDGET-API-01: SELECT from embed_widgets
+    if (this.sql.includes('FROM embed_widgets WHERE team_id = ?1')) {
+      const [team_id] = this.args as [string]
+      const rows = [...this.db.embedWidgets.values()]
+        .filter((r) => r.team_id === team_id)
+        .sort((a, b) => b.created_at - a.created_at)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM embed_widgets WHERE id = ?1 AND team_id = ?2')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.embedWidgets.get(id)
+      if (!row || row.team_id !== team_id) return { results: [] }
+      return { results: [row] as unknown as T[] }
+    }
+    if (this.sql.includes('FROM embed_widgets WHERE id = ?1')) {
+      const [id] = this.args as [string]
+      const row = this.db.embedWidgets.get(id)
+      if (!row) return { results: [] }
+      return { results: [row] as unknown as T[] }
+    }
+    // EMBED-WIDGET-API-01: SELECT from sessions for embed widget visibility
+    if (this.sql.includes('FROM sessions WHERE id = ?1 OR code = ?1')) {
+      const [idOrCode] = this.args as [string]
+      const row = [...this.db.sessions.values()].find((s) => s.id === idOrCode || s.code === idOrCode)
+      if (!row) return { results: [] }
+      return {
+        results: [
+          {
+            id: row.id,
+            code: row.code,
+            title: row.title,
+            status: row.status,
+            anonymity: row.anonymity,
+          } as unknown as T,
+        ],
+      }
+    }
+    // EMBED-WIDGET-API-01: SELECT questions for active question
+    if (this.sql.includes('FROM questions WHERE session_id = ?1 ORDER BY position ASC LIMIT 1')) {
+      const [session_id] = this.args as [string]
+      const rows = [...this.db.questions.values()]
+        .filter((q) => q.session_id === session_id)
+        .sort((a, b) => a.position - b.position)
+        .slice(0, 1)
+      return { results: rows as unknown as T[] }
+    }
+    // EMBED-WIDGET-API-01: aggregate response count
+    if (this.sql.includes('SELECT COUNT(*) AS n FROM votes WHERE session_id = ?1')) {
+      const [session_id] = this.args as [string]
+      let n = 0
+      for (const vote of this.db.votes.values()) {
+        if (vote.session_id === session_id) n++
+      }
+      return { results: [{ n } as unknown as T] }
+    }
+    // EMBED-WIDGET-API-01: aggregate tallies (GROUP BY option_id)
+    if (this.sql.includes('FROM votes WHERE session_id = ?1 AND question_id = ?2') && this.sql.includes('GROUP BY option_id')) {
+      const [session_id, question_id] = this.args as [string, string]
+      const tallies = new Map<string, number>()
+      for (const vote of this.db.votes.values()) {
+        if (vote.session_id === session_id && vote.question_id === question_id) {
+          tallies.set(vote.option_id, (tallies.get(vote.option_id) ?? 0) + 1)
+        }
+      }
+      const rows = Array.from(tallies.entries()).map(([option_id, count]) => ({
+        option_id,
+        count,
+      }))
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

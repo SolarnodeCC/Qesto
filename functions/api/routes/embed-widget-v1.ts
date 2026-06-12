@@ -25,6 +25,7 @@ import {
   widgetResultsAggregate,
   type EmbedSessionView,
 } from '../repositories/embedWidgetRepository'
+import { consumeEmbedCopilotFlag } from '../lib/copilot-live-context'
 import type { Env, EmbedWidgetTokenClaims } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -112,6 +113,11 @@ export function mountEmbedWidgetV1Routes(parent: ParentApp) {
     const q = await fetchEmbedActiveQuestion(c.env.DB, session.id)
     const response_count = await widgetResponseCount(c.env.DB, session.id)
 
+    // AI-462 — copilot ↔ embed handoff: read-and-clear the copilot-change flag set
+    // by notifyEmbedOfCopilotChange. `true` exactly once per copilot mutation tells
+    // the widget to refresh immediately rather than waiting for the next poll.
+    const copilotChanged = await consumeEmbedCopilotFlag(c.env, session.id)
+
     return c.json({
       ok: true,
       data: {
@@ -120,6 +126,7 @@ export function mountEmbedWidgetV1Routes(parent: ParentApp) {
           ? { id: q.id, kind: q.kind, prompt: q.prompt, options: parseOptions(q.options_json) }
           : null,
         response_count,
+        copilotChanged,
       },
       trace_id,
     })

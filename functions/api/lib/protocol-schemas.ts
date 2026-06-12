@@ -427,6 +427,10 @@ export const AuditActionSchema = z.enum([
   'user.update',
   'user.suspend',
   'user.restore',
+  // Agent action transparency (AI-461, S87) — AI agent/copilot state mutations.
+  'agent.action.suggestion_accepted',
+  'agent.action.question_injected',
+  'agent.action.state_changed',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>
