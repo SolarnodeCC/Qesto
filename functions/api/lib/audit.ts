@@ -57,6 +57,10 @@ export type AuditAction =
   | 'deliberate.config'
   | 'deliberate.ballot.cast'
   | 'deliberate.verify.mismatch'
+  // EMBED (ADR-0050): widget-config + token lifecycle on the authenticated mint plane.
+  | 'embed.widget.create'
+  | 'embed.widget.token_mint'
+  | 'embed.widget.revoke'
   | 'user.create'
   | 'user.update'
   | 'user.suspend'

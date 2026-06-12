@@ -213,6 +213,30 @@ CREATE TABLE IF NOT EXISTS deliberate_ballots (
   UNIQUE(session_id, ballot_nonce)                             -- nonce uniqueness (anti-replay)
 );
 CREATE INDEX IF NOT EXISTS idx_deliberate_ballots_session ON deliberate_ballots(session_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- embed_widgets — EMBED-WIDGET-API-01 (ADR-0050). One row per registered
+-- embeddable-widget config. `allowed_origins` (JSON array of exact origin
+-- strings) is the SINGLE source of truth for both the minted token's `ao` claim
+-- and the embed page's frame-ancestors CSP. `created_by` is audit-only and is
+-- NEVER copied into the browser-shipped token (no PII in the embed credential).
+-- `revoked_at` is the immediate kill-switch overriding a still-unexpired token.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS embed_widgets (
+  id              TEXT PRIMARY KEY,                              -- widget config id = token `wid`
+  team_id         TEXT NOT NULL,                                 -- tenant binding
+  session_id      TEXT NOT NULL,                                 -- embedded session (canonical id)
+  session_code    TEXT NOT NULL,                                 -- public join code (token `code` claim)
+  allowed_origins TEXT NOT NULL,                                 -- JSON array of exact origin strings
+  scope           TEXT NOT NULL DEFAULT 'read'
+                    CHECK (scope IN ('read')),                   -- v1: read only
+  created_by      TEXT NOT NULL,                                 -- minting host user id (audit only)
+  created_at      INTEGER NOT NULL,                              -- epoch ms
+  revoked_at      INTEGER                                        -- NULL = active; non-NULL = revoked
+);
+CREATE INDEX IF NOT EXISTS idx_embed_widgets_team ON embed_widgets(team_id);
+CREATE INDEX IF NOT EXISTS idx_embed_widgets_session ON embed_widgets(session_id);
+
 CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
 -- Phase 10 Step 2: Compound index for vote aggregation by question
 CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);

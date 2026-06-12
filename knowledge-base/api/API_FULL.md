@@ -39,6 +39,8 @@ _Last verified: 2026-04-06 (UTC)_
 - `collaboration.routes.ts`
 - `integrations.routes.ts`
 - `misc.routes.ts`
+- `embed.ts` — EMBED authenticated widget MINT plane (ADR-0050).
+- `embed-widget-v1.ts` — EMBED public, read-only, token-gated widget data plane (ADR-0050).
 
 ## 3. Realtime protocol
 - WebSocket session channel handled by `SessionRoom`.
@@ -222,3 +224,45 @@ analyze endpoint:
   ]
   ```
   Empty array when RAG returned no hits or was unavailable.
+
+## 9. EMBED embeddable widget (ADR-0050, S87)
+
+Two route modules implement the embeddable engagement widget. The **mint plane**
+is host-authenticated; the **read plane** is token-gated and aggregate-only.
+
+### Authenticated mint plane — `functions/api/routes/embed.ts` (`/api/embed`)
+Host `authMiddleware` + `planMiddleware`, gated on the `embedWidgets` entitlement
+(Team tier+). All actions are audit-logged (`embed.widget.create`,
+`embed.widget.token_mint`, `embed.widget.revoke`).
+
+| Method + path | Purpose | Returns |
+|---|---|---|
+| `POST /api/embed/widgets` | create a widget config `{ session_id\|code, allowed_origins[] }` | `{ widget }` (201) |
+| `GET /api/embed/widgets` | list the team's configs | `{ widgets }` |
+| `POST /api/embed/widgets/:wid/token` | mint a token `{ origins[], ttl? }`; origins must ⊆ the row allowlist | `{ token, exp }` |
+| `DELETE /api/embed/widgets/:wid` | revoke (set `revoked_at`) | `{ revoked: true }` |
+
+### Public read plane — `functions/api/routes/embed-widget-v1.ts` (`/api/embed/v1`)
+Guarded by `widgetTokenMiddleware` (verify token signature/TTL/scope, enforce the
+per-token origin allowlist, revocation check). DELIBERATELY distinct from
+`/api/v1` (the API-key integrator surface). Reflected-allowlist CORS (echo the
+request `Origin` only if it is in the token `ao`, never `*`), `Vary: Origin`.
+`{ ok, data, trace_id }` envelope.
+
+| Method + path | Returns (aggregate-only) |
+|---|---|
+| `POST /api/embed/v1/handshake` | `{ participant_token, session: { code, status, title, anonymity_mode }, branding }` |
+| `GET /api/embed/v1/sessions/:idOrCode/state` | `{ status, active_question, response_count }` |
+| `GET /api/embed/v1/sessions/:idOrCode/results` | `{ question_id, counts_by_option, total }` |
+
+**Token** (HMAC-SHA-256, `functions/api/lib/embed-token.ts`): claims
+`{ v:1, wid, sid, code, tid, ao:string[], scp:'read', iat, exp }`. TTL default
+3600s, max 86400s. Signed with `EMBED_WIDGET_SECRET` (Pages secret). Read scope
+only this sprint — no vote-over-embed write path.
+
+**Structural anonymity (Pentest #5).** The read plane has NO endpoint or query
+shape capable of emitting per-participant identity. The results/state queries are
+`COUNT(*)` / `GROUP BY option_id` aggregates exclusively (see
+`repositories/embedWidgetRepository.ts`) — no `voter_id`, hash, IP, fingerprint,
+or name ever crosses `/api/embed/v1/*`. The handshake's `participant_token` is an
+anonymous, session-scoped opaque id with no identity.

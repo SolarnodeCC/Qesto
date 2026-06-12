@@ -39,6 +39,8 @@ import { mountTeamEventPresenterRoutes } from './routes/event-presenter'
 import { mountIdeateSessionRoutes } from './routes/ideate-sessions'
 import { mountRetroSessionRoutes } from './routes/retro-sessions'
 import { mountDeliberateSessionRoutes } from './routes/deliberate-sessions'
+import { mountEmbedRoutes } from './routes/embed'
+import { mountEmbedWidgetV1Routes } from './routes/embed-widget-v1'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
@@ -266,6 +268,10 @@ export function createApp() {
   mountSessionRoutes(app)
   mountTemplateRoutes(app)
   // ↓ PUBLIC routes — must stay above the auth-middleware sub-apps below
+  // EMBED public read plane (ADR-0050): token-gated, NOT session-cookie auth —
+  // must mount above the auth-middleware sub-apps so it never inherits a
+  // wildcard authMiddleware. Its own widgetTokenMiddleware is the gate.
+  mountEmbedWidgetV1Routes(app)
   mountMarketingTemplateRoutes(app)
   mountMarketingWebhookRoutes(app)
   mountSeoRoutes(app)
@@ -324,6 +330,10 @@ export function createApp() {
   mountRetroSessionRoutes(app)
   mountIdeateSessionRoutes(app)
   mountDeliberateSessionRoutes(app)
+  // EMBED authenticated mint plane (ADR-0050): host auth + planMiddleware +
+  // embedWidgets entitlement. Mounts at /api/embed (the public read plane sits
+  // under the deeper /api/embed/v1 prefix, registered above the auth sub-apps).
+  mountEmbedRoutes(app)
   mountCopilotContextRoutes(app)
   mountZoomEmbedRoutes(app)
 
