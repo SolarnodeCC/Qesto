@@ -14,6 +14,39 @@ import { sanitizePromptText } from './ai/prompt-sanitize'
 export const COPILOT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 
 /**
+ * AI-463 (S87) — prompt-version stamp on copilot suggestions.
+ *
+ * Stamped on every suggestion response so the eval harness and UI can trace which
+ * prompt version generated which output (closes S86 AI follow-up #4). Bump this
+ * whenever `buildSuggestMessages` changes; the eval golden fixtures pin the
+ * expected value, so a prompt change without a version + fixture bump fails CI.
+ */
+export const COPILOT_PROMPT_VERSION = 's87.0'
+
+/** Provenance source for a copilot suggestion payload (AI-464). */
+export type CopilotSuggestionSource = 'ai' | 'fallback' | 'none'
+
+/** The full suggestion response payload returned to the presenter. */
+export interface CopilotSuggestionResponse {
+  suggestions: CopilotAction[]
+  /** AI-464 — provenance marker: 'ai' for model-generated, 'fallback'/'none' otherwise. */
+  source: CopilotSuggestionSource
+  /** AI-463 — prompt version that produced this payload. */
+  promptVersion: string
+}
+
+/**
+ * Assemble the suggestion response payload with provenance (AI-464) and prompt
+ * version (AI-463). Single source of truth so the route and eval tests agree.
+ */
+export function buildSuggestionResponse(
+  suggestions: CopilotAction[],
+  source: CopilotSuggestionSource,
+): CopilotSuggestionResponse {
+  return { suggestions, source, promptVersion: COPILOT_PROMPT_VERSION }
+}
+
+/**
  * AGENT-FACILITATE-GA-01 — untrusted-data fence for the live facilitation prompt.
  *
  * The current-question prompt is host/participant-authored free text that flows

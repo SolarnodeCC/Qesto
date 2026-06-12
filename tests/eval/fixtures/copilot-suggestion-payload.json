@@ -1,0 +1,21 @@
+{
+  "description": "AI-463/AI-464 (S87) copilot suggestion-payload contract. buildSuggestionResponse MUST stamp every payload with a `source` provenance marker ('ai' | 'fallback' | 'none', AI-464) and the active `promptVersion` (AI-463) so the eval harness and UI can trace which prompt version produced which output. `expectedPromptVersion` pins the version: a prompt change must bump COPILOT_PROMPT_VERSION and this fixture together, else CI fails.",
+  "expectedPromptVersion": "s87.0",
+  "cases": [
+    {
+      "name": "ai_generated_suggestions",
+      "source": "ai",
+      "suggestionCount": 2
+    },
+    {
+      "name": "deterministic_fallback",
+      "source": "fallback",
+      "suggestionCount": 1
+    },
+    {
+      "name": "not_live_empty",
+      "source": "none",
+      "suggestionCount": 0
+    }
+  ]
+}

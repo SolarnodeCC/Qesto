@@ -35,7 +35,11 @@ _Last verified: 2026-04-30 (UTC)_
 - **Worker utilities**: `worker/` for backup/restore/tail.
 
 ## 2. Data architecture
-- **D1**: primary relational source (sessions, billing, events).
+- **D1**: primary relational source (sessions, billing, events). Includes
+  `embed_widgets` (ADR-0050, migration `0055`): per-team embeddable-widget configs
+  whose `allowed_origins` JSON is the single source of truth for the widget
+  token's `ao` claim and the embed page's `frame-ancestors` CSP; `revoked_at` is
+  the token kill-switch.
 - **KV namespaces**: users/sessions/teams/templates/decisions/audit/actions.
 - **DO Storage**: hot session state during live operations.
 - **Vectorize**: two indexes —

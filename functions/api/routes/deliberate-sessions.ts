@@ -22,14 +22,34 @@ import { requireFound, requireDraft } from '../lib/session-lifecycle'
 import { recordAuditEvent } from '../lib/audit'
 import {
   sessionFingerprint,
-  generateBallotNonce,
   computeCommitment,
-  voterBallotHash,
   merkleRoot,
   timingSafeEqualHex,
 } from '../lib/deliberate-crypto'
+import {
+  appendBallot,
+  loadLedger,
+  aggregateLedger,
+  projectLedger,
+} from '../lib/deliberate-ledger'
+import { rateLimit } from '../lib/rate-limit'
 import type { Env, Session } from '../types'
 import type { ParentApp } from './parent-app'
+
+// M-2 (S87): rate-limit the cast/verify/observe hot paths. `verify` and
+// `observe` recompute the full Merkle root per call (DoS at ≥1000 concurrent),
+// and `cast` mutates the append-only ledger — a per-caller fixed-window budget
+// is the codebase's existing KV-backed limiter (`lib/rate-limit.ts`), not a new
+// mechanism. Budgets are generous enough for honest voters but cap abuse.
+const CAST_RATE = { max: 10, windowSeconds: 60, prefix: 'deliberate_cast' } as const
+const VERIFY_RATE = { max: 30, windowSeconds: 60, prefix: 'deliberate_verify' } as const
+const OBSERVE_RATE = { max: 30, windowSeconds: 60, prefix: 'deliberate_observe' } as const
+
+/** Per-voter when authenticated, else per-IP — stable rate-limit identity. */
+function rateLimitKey(c: { req: { header: (n: string) => string | undefined } }, userSub?: string): string {
+  if (userSub) return `u:${userSub}`
+  return `ip:${c.req.header('cf-connecting-ip') ?? 'anonymous'}`
+}
 
 type Vars = AuthVariables & PlanVariables
 
@@ -44,25 +64,6 @@ const VerifySchema = z.object({
   commitment: z.string().length(64),
   choice: z.string().min(1).max(200),
 })
-
-type BallotRow = {
-  ballot_nonce: string
-  commitment: string
-  choice: string
-  leaf_index: number
-}
-
-/** Ordered ledger of (nonce, commitment, choice) — anonymous, observer-downloadable. */
-async function loadLedger(db: D1Database, sessionId: string): Promise<BallotRow[]> {
-  const res = await db
-    .prepare(
-      `SELECT ballot_nonce, commitment, choice, leaf_index
-         FROM deliberate_ballots WHERE session_id = ?1 ORDER BY leaf_index ASC`,
-    )
-    .bind(sessionId)
-    .all<BallotRow>()
-  return res.results ?? []
-}
 
 export function mountDeliberateSessionRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -142,6 +143,12 @@ export function mountDeliberateSessionRoutes(parent: ParentApp) {
       return c.json({ ok: false, error: { code: 'validation', message: 'Invalid ballot' }, trace_id }, 400)
     }
 
+    // M-2: per-voter rate limit on the ledger-mutating path.
+    const rl = await rateLimit(c.env.ACTIONS_KV, rateLimitKey(c, user.sub), CAST_RATE)
+    if (!rl.allowed) {
+      return c.json({ ok: false, error: { code: 'rate_limited', message: 'Too many ballots — please slow down' }, trace_id }, 429)
+    }
+
     const s = await sessionForBallot(c.env.DB, id)
     if (!s) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Deliberate session not found' }, trace_id }, 404)
@@ -153,36 +160,24 @@ export function mountDeliberateSessionRoutes(parent: ParentApp) {
       return c.json({ ok: false, error: { code: 'not_open', message: 'Voting is not open' }, trace_id }, 409)
     }
 
-    const fingerprint = await sessionFingerprint(s.id, s.code, s.created_at)
-    const ballotNonce = generateBallotNonce()
-    const commitment = await computeCommitment(fingerprint, ballotNonce, parsed.data.choice)
-    const voterHash = await voterBallotHash(fingerprint, user.sub)
-
-    // Append-only insert; leaf_index = current ledger length. UNIQUE(session,
-    // voter_hash) enforces one ballot per voter — a re-cast surfaces as a
-    // conflict, never a silent overwrite (coercion-resistance: no vote changing).
-    const count = await c.env.DB.prepare(`SELECT COUNT(*) AS n FROM deliberate_ballots WHERE session_id = ?1`)
-      .bind(id)
-      .first<{ n: number }>()
-    const leafIndex = count?.n ?? 0
-
-    try {
-      await c.env.DB.prepare(
-        `INSERT INTO deliberate_ballots (id, session_id, ballot_nonce, commitment, choice, voter_hash, leaf_index, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
-      )
-        .bind(crypto.randomUUID(), id, ballotNonce, commitment, parsed.data.choice, voterHash, leafIndex, Date.now())
-        .run()
-    } catch {
-      // UNIQUE violation → this voter already cast a ballot.
-      return c.json({ ok: false, error: { code: 'already_voted', message: 'A ballot was already cast for this session' }, trace_id }, 409)
+    // Shared append-only ledger write (same path the LIVE WS board uses).
+    // M-1: fold the optional server salt into the anonymous voter_hash.
+    const result = await appendBallot(
+      c.env.DB,
+      { id: s.id, code: s.code, created_at: s.created_at },
+      user.sub,
+      parsed.data.choice,
+      c.env.DELIBERATE_VOTER_SALT,
+    )
+    if (!result.ok) {
+      return c.json({ ok: false, error: { code: result.code, message: result.message }, trace_id }, 409)
     }
 
     await recordAuditEvent(c, {
       action: 'deliberate.ballot.cast',
       subject_type: 'session',
       subject_id: id,
-      after_snapshot: { leaf_index: leafIndex }, // no choice/voter — keep audit anonymous too
+      after_snapshot: { leaf_index: result.receipt.leafIndex }, // no choice/voter — keep audit anonymous too
     })
 
     // Coercion-resistant receipt: reveals only this voter's own choice.
@@ -190,13 +185,7 @@ export function mountDeliberateSessionRoutes(parent: ParentApp) {
       ok: true,
       data: {
         receipt: {
-          sessionId: id,
-          sessionFingerprint: fingerprint,
-          ballotNonce,
-          commitment,
-          choice: parsed.data.choice,
-          leafIndex,
-          issuedAt: Date.now(),
+          ...result.receipt,
           verifyPath: `/api/sessions/${id}/deliberate/verify`,
         },
       },
@@ -214,6 +203,12 @@ export function mountDeliberateSessionRoutes(parent: ParentApp) {
       return c.json({ ok: false, error: { code: 'validation', message: 'Invalid receipt' }, trace_id }, 400)
     }
     const { ballotNonce, commitment, choice } = parsed.data
+
+    // M-2: verify recomputes the full Merkle root per call — rate-limit per IP.
+    const rl = await rateLimit(c.env.ACTIONS_KV, rateLimitKey(c), VERIFY_RATE)
+    if (!rl.allowed) {
+      return c.json({ ok: false, error: { code: 'rate_limited', message: 'Too many verification requests — please slow down' }, trace_id }, 429)
+    }
 
     const s = await sessionForBallot(c.env.DB, id)
     if (!s) {
@@ -283,26 +278,79 @@ export function mountDeliberateSessionRoutes(parent: ParentApp) {
     }
 
     const ledger = await loadLedger(c.env.DB, id)
-    const tally: Record<string, number> = {}
-    for (const r of ledger) tally[r.choice] = (tally[r.choice] ?? 0) + 1
-    const root = await merkleRoot(ledger.map((r) => r.commitment))
+    const agg = await aggregateLedger(ledger)
 
     return c.json({
       ok: true,
       data: {
         sessionId: id,
-        voteCount: ledger.length,
-        commitmentCount: ledger.length,
-        tally,
-        merkleRoot: root,
+        voteCount: agg.voteCount,
+        commitmentCount: agg.voteCount,
+        tally: agg.tally,
+        merkleRoot: agg.merkleRoot,
         // Anonymous, re-tallyable ledger: no voter_hash, no user id.
-        ledger: ledger.map((r) => ({ leafIndex: r.leaf_index, ballotNonce: r.ballot_nonce, commitment: r.commitment, choice: r.choice })),
+        ledger: projectLedger(ledger),
       },
       trace_id,
     })
   })
 
   parent.route('/api', app)
+  mountDeliberateObserveRoute(parent)
+}
+
+/**
+ * DELIBERATE-RETALLY-01 (resolves M-3, ADR-0049): PUBLIC observer re-tally
+ * surface. ADR-0049 promises any third-party observer can independently
+ * recompute the tally + Merkle root WITHOUT trusting the host or the Qesto
+ * server. The owner-gated `/tally` cannot satisfy that, so this endpoint serves
+ * the SAME anonymous projection with NO owner auth and NO identity:
+ *
+ *   GET /api/sessions/:id/deliberate/observe
+ *     → { voteCount, tally, merkleRoot, ledger:[{leafIndex,ballotNonce,commitment,choice}] }
+ *
+ * Anonymity invariant: never exposes voter_hash, user id, or any per-voter link
+ * — exactly the projection the owner `/tally` returns. It only serves sessions
+ * actually in `session_mode='deliberate'` (404 otherwise) so it cannot be used
+ * to probe non-deliberate sessions. Rate-limited (M-2) per IP because each call
+ * recomputes the full Merkle root.
+ */
+function mountDeliberateObserveRoute(parent: ParentApp) {
+  const pub = new Hono<{ Bindings: Env }>()
+
+  pub.get('/sessions/:id/deliberate/observe', async (c) => {
+    const id = c.req.param('id')
+
+    const rl = await rateLimit(c.env.ACTIONS_KV, rateLimitKey(c), OBSERVE_RATE)
+    if (!rl.allowed) {
+      return c.json({ ok: false, error: { code: 'rate_limited', message: 'Too many requests — please slow down' } }, 429)
+    }
+
+    const s = await sessionForBallot(c.env.DB, id)
+    if (!s || s.session_mode !== 'deliberate') {
+      // Fail the same way for missing and non-deliberate so observers cannot
+      // distinguish a non-existent session from a non-governance one.
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Deliberate session not found' } }, 404)
+    }
+
+    const ledger = await loadLedger(c.env.DB, id)
+    const agg = await aggregateLedger(ledger)
+
+    return c.json({
+      ok: true,
+      data: {
+        sessionId: id,
+        voteCount: agg.voteCount,
+        commitmentCount: agg.voteCount,
+        tally: agg.tally,
+        merkleRoot: agg.merkleRoot,
+        // Anonymous, re-tallyable ledger — identical projection to owner /tally.
+        ledger: projectLedger(ledger),
+      },
+    })
+  })
+
+  parent.route('/api', pub)
 }
 
 /**

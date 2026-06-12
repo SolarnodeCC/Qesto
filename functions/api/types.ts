@@ -114,6 +114,24 @@ export type Env = {
   OAUTH_TOKEN_MEK?: string
   /** PWA push — VAPID private key (wrangler secret). */
   VAPID_PRIVATE_KEY?: string
+  /**
+   * EMBED-WIDGET-API-01 (ADR-0050): HMAC-SHA-256 signing key for origin-bound
+   * widget tokens. Server secret — set via `wrangler pages secret put
+   * EMBED_WIDGET_SECRET`, NEVER in wrangler.toml (hard rule #2). No secret
+   * material derived from it ever ships to the browser.
+   */
+  EMBED_WIDGET_SECRET?: string
+  /**
+   * DELIBERATE-GA-01 / M-1 (ADR-0049): optional server-side secret salt folded
+   * into the anonymous `voter_hash` one-ballot dedup token (defence-in-depth so
+   * the token no longer rests solely on the 128-bit ULID `user.sub`). Server
+   * secret — set via `wrangler pages secret put DELIBERATE_VOTER_SALT`, NEVER in
+   * wrangler.toml (hard rule #2). Fail-safe: when unset, `voterBallotHash` is
+   * byte-identical to the pre-M-1 construction, so existing ballots verify
+   * unchanged; the salt only differentiates sessions created after it is set
+   * (historical rows are never rehashed).
+   */
+  DELIBERATE_VOTER_SALT?: string
   /** LinkedIn auto-posting (MKTG): OAuth app credentials + redirect. */
   LINKEDIN_CLIENT_ID?: string
   LINKEDIN_CLIENT_SECRET?: string
@@ -222,6 +240,64 @@ export type Session = {
   ai_recap_edited_at?: number | null
 }
 
+// ── EMBED widget (ADR-0050) — embeddable engagement widget config + token ────
+
+/** A team's embeddable-widget configuration row (D1 `embed_widgets`). */
+export interface EmbedWidget {
+  id: string
+  team_id: string
+  session_id: string
+  session_code: string
+  /** Exact origin strings (lowercased, no trailing slash). Stored as JSON TEXT in D1. */
+  allowed_origins: string[]
+  scope: 'read'
+  /** Minting host user id — audit only; NEVER copied into the browser-shipped token. */
+  created_by: string
+  created_at: number
+  /** NULL = active; non-NULL epoch ms = revoked (immediate kill-switch). */
+  revoked_at: number | null
+}
+
+/**
+ * Signed widget-token claims (ADR-0050 §1). Compact HMAC envelope — carries
+ * tenant + session handles only, NO PII, safe to sit in third-party page source.
+ */
+export interface EmbedWidgetTokenClaims {
+  v: 1
+  /** embed_widgets.id — widget config row + revocation handle. */
+  wid: string
+  /** sessionId (canonical). */
+  sid: string
+  /** session join code (public shareable handle). */
+  code: string
+  /** teamId — tenant binding. */
+  tid: string
+  /** allowedOrigins — exact origin strings, lowercased, no trailing slash. */
+  ao: string[]
+  /** scope — READ-ONLY and the only value v1 mints. */
+  scp: 'read'
+  /** issued-at (epoch seconds). */
+  iat: number
+  /** expiry (epoch seconds) — short TTL (default 3600s; max 86400s). */
+  exp: number
+}
+
+// postMessage protocol (shared SDK ↔ embed page contract — ADR-0050 §3c).
+export type EmbedToHostMessage =
+  | { source: 'qesto-embed'; v: 1; type: 'ready' }
+  | { source: 'qesto-embed'; v: 1; type: 'resize'; height: number }
+  | {
+      source: 'qesto-embed'
+      v: 1
+      type: 'event'
+      event: 'joined' | 'voted' | 'results_updated' | 'session_closed'
+      payload?: { code?: string; questionId?: string }
+    }
+
+export type HostToEmbedMessage =
+  | { source: 'qesto-embed'; v: 1; type: 'host_ready' }
+  | { source: 'qesto-embed'; v: 1; type: 'config'; theme?: 'light' | 'dark' }
+
 export type User = {
   id: string
   email: string
@@ -252,6 +328,8 @@ export interface PlanQuotas {
     recurringWorkspaces: boolean
     /** ADR-0049: DELIBERATE verifiable governance voting — Team tier only. */
     verifiableVoting: boolean
+    /** ADR-0050: EMBED — mint origin-bound widget tokens + embed live widget — Team tier only. */
+    embedWidgets: boolean
   }
 }
 
@@ -272,6 +350,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       crossSessionInsights: false,
       recurringWorkspaces: false,
       verifiableVoting: false,
+      embedWidgets: false,
     },
   },
   starter: {
@@ -290,6 +369,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       crossSessionInsights: false,
       recurringWorkspaces: false,
       verifiableVoting: false,
+      embedWidgets: false,
     },
   },
   team: {
@@ -308,6 +388,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       crossSessionInsights: true,
       recurringWorkspaces: true,
       verifiableVoting: true,
+      embedWidgets: true,
     },
   },
 }

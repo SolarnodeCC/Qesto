@@ -643,6 +643,10 @@ These MUST be set via `wrangler secret put` before deployment:
 - `KB_ADMIN_KEY` — KB admin ops (if enabled)
 - `LDAP_URL`, `LDAP_BIND_DN` — LDAP (if enabled)
 - `INDEXNOW_KEY` — SEO indexing (if enabled)
+- `EMBED_WIDGET_SECRET` — EMBED widget-token HMAC signing key (ADR-0050). Set via
+  `wrangler pages secret put EMBED_WIDGET_SECRET`. Required for the embeddable
+  widget mint + read planes; if unset the embed API returns 503. NEVER in
+  `wrangler.toml`. No material derived from it ships to the browser.
 
 ### Checking Secrets Are Set
 

@@ -1,0 +1,30 @@
+id = "0055_embed_widgets"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-06-12"
+ticket = "ADR-0050"
+
+[rollback]
+strategy = "drop-objects"
+procedure = "DROP TABLE embed_widgets"
+
+[backup]
+required = false
+note = "New table only; no backfill required."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[dependencies]
+tables = ["embed_widgets"]
+cascade_scope = "none (team_id/session_id are soft references, no FK cascade)"
+
+[verification]
+verify = true
+post_check = "0055_embed_widgets.verify.sql"

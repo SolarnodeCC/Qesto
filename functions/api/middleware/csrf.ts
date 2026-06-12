@@ -49,6 +49,12 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // explicit in case future refactors change the verb.
   if (c.req.header('upgrade')?.toLowerCase() === 'websocket') return next()
 
+  // EMBED public read plane (ADR-0050): the widget API is DELIBERATELY a
+  // cross-origin, token-authenticated surface (no session cookie). CSRF's
+  // Origin-must-equal-PAGES_URL model does not apply; its own
+  // widgetTokenMiddleware enforces the per-token origin allowlist instead.
+  if (new URL(c.req.url).pathname.startsWith('/api/embed/v1/')) return next()
+
   const expected = resolveExpectedOrigin(c.env, c.req.url)
   if (!expected) {
     // Misconfigured deploy — fail closed.

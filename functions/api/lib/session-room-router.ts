@@ -5,6 +5,7 @@ import type { EnergizerHandler } from './session-room-energizer-handler'
 import type { TownhallHandler } from './session-room-townhall-handler'
 import type { RetroHandler } from './session-room-retro-handler'
 import type { IdeateHandler } from './session-room-ideate-handler'
+import type { DeliberateHandler } from './session-room-deliberate-handler'
 
 export type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ValidClientMessage) => Promise<void>
 
@@ -33,6 +34,7 @@ export type SessionRoomRouterDeps = {
   townhallHandler: TownhallHandler
   retroHandler: RetroHandler
   ideateHandler: IdeateHandler
+  deliberateHandler: DeliberateHandler
 }
 
 export function buildClientWsHandlers(deps: SessionRoomRouterDeps): Record<ValidClientMessage['type'], ClientWsHandler> {
@@ -118,6 +120,10 @@ export function buildClientWsHandlers(deps: SessionRoomRouterDeps): Record<Valid
         targetId: msg.data.targetId,
         sourceId: msg.data.sourceId,
       })
+    },
+    deliberate_cast: async (ws, att, msg) => {
+      if (msg.type !== 'deliberate_cast') return
+      await deps.deliberateHandler.handleCast(ws, att, { choice: msg.data.choice })
     },
     approve_response: async (ws, att, msg) => {
       if (msg.type !== 'approve_response') return

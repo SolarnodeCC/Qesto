@@ -8,6 +8,83 @@
  */
 import { z } from 'zod'
 
+/**
+ * AI-462 (S87) — copilot ↔ embed handoff bridge.
+ *
+ * When a copilot action changes the active question / session state in a session
+ * that has a live embed widget, the embed's polling loop should learn about it on
+ * its *next* poll rather than waiting a full interval. We do this with a tiny,
+ * short-TTL KV flag (no new DO, no new WebSocket path): after a successful
+ * copilot broadcast we set `embed:notify:{sessionId}` in SESSIONS_KV; the public
+ * `GET /api/embed/v1/sessions/:idOrCode/state` handler reads + clears it and
+ * surfaces `copilotChanged: true` so the widget refreshes immediately.
+ */
+export const EMBED_NOTIFY_TTL_SECONDS = 30
+
+/** KV key for the per-session embed-refresh flag. */
+export function embedNotifyKvKey(sessionId: string): string {
+  return `embed:notify:${sessionId}`
+}
+
+/**
+ * True when the session has at least one non-revoked embed widget config.
+ * Lightweight COUNT — never selects PII.
+ */
+export async function sessionHasActiveEmbedWidget(
+  db: D1Database,
+  sessionId: string,
+): Promise<boolean> {
+  const row = await db
+    .prepare(
+      `SELECT 1 AS hit FROM embed_widgets WHERE session_id = ?1 AND revoked_at IS NULL LIMIT 1`,
+    )
+    .bind(sessionId)
+    .first<{ hit: number }>()
+  return !!row
+}
+
+/**
+ * After a successful copilot broadcast, signal any live embed widget to refresh.
+ * No-op when the session has no active embed widget or SESSIONS_KV is absent.
+ * Fail-safe — a flag write must never block the copilot path.
+ */
+export async function notifyEmbedOfCopilotChange(
+  env: { DB: D1Database; SESSIONS_KV?: KVNamespace },
+  sessionId: string,
+): Promise<boolean> {
+  try {
+    if (!env.SESSIONS_KV) return false
+    if (!(await sessionHasActiveEmbedWidget(env.DB, sessionId))) return false
+    await env.SESSIONS_KV.put(embedNotifyKvKey(sessionId), '1', {
+      expirationTtl: EMBED_NOTIFY_TTL_SECONDS,
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Read-and-clear the embed-refresh flag for a session. Returns true exactly once
+ * per copilot change (the flag is deleted on read). Fail-safe — defaults to
+ * false on any error or missing KV.
+ */
+export async function consumeEmbedCopilotFlag(
+  env: { SESSIONS_KV?: KVNamespace },
+  sessionId: string,
+): Promise<boolean> {
+  try {
+    if (!env.SESSIONS_KV) return false
+    const key = embedNotifyKvKey(sessionId)
+    const flag = await env.SESSIONS_KV.get(key)
+    if (!flag) return false
+    await env.SESSIONS_KV.delete(key)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Shape of the DO `/copilot/snapshot` response `data` payload. */
 export const CopilotSnapshotSchema = z.object({
   status: z.string(),

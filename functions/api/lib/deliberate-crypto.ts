@@ -65,12 +65,27 @@ export async function computeCommitment(
  * voter identity hash plus the session fingerprint so the same person yields
  * different hashes across sessions (unlinkable) and account deletion never
  * orphans the ledger.
+ *
+ * M-1 (S87, defence-in-depth): an OPTIONAL server-side secret salt is folded in
+ * so the dedup token's secrecy no longer rests solely on `voterIdentity`
+ * (a 128-bit ULID `user.sub`) being unguessable. The salt is a
+ * `DELIBERATE_VOTER_SALT` Pages secret (NEVER in wrangler.toml) and is threaded
+ * explicitly so the caller owns the binding and the function stays pure/testable.
+ *
+ * Fail-safe / migration: when `salt` is absent or empty the construction is
+ * byte-identical to the pre-M-1 hash, so existing ledgers verify unchanged. The
+ * salt therefore only differentiates NEW sessions created after the secret is
+ * set — historical rows are never rehashed (the hash is only the per-session
+ * UNIQUE(one-ballot-per-voter) key, never compared cross-session).
  */
 export async function voterBallotHash(
   fingerprint: string,
   voterIdentity: string,
+  salt?: string,
 ): Promise<string> {
-  return (await sha256Hex(`ballot:${fingerprint}:${voterIdentity}`)).slice(0, 32)
+  const base = `ballot:${fingerprint}:${voterIdentity}`
+  const input = salt && salt.length > 0 ? `${base}:${salt}` : base
+  return (await sha256Hex(input)).slice(0, 32)
 }
 
 // ── Merkle tree over sorted commitment leaves ────────────────────────────────

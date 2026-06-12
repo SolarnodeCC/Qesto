@@ -14,6 +14,7 @@ import { EnergizerHandler } from './lib/session-room-energizer-handler'
 import { TownhallHandler } from './lib/session-room-townhall-handler'
 import { RetroHandler } from './lib/session-room-retro-handler'
 import { IdeateHandler } from './lib/session-room-ideate-handler'
+import { DeliberateHandler } from './lib/session-room-deliberate-handler'
 import { logEvent } from './lib/log'
 import { K_META, K_VOTERS } from './lib/session-room-storage-keys'
 import {
@@ -67,6 +68,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
   readonly townhallHandler: TownhallHandler
   readonly retroHandler: RetroHandler
   readonly ideateHandler: IdeateHandler
+  readonly deliberateHandler: DeliberateHandler
 
   // Tracks the in-flight voters load so a rejection can be retried (EH-03).
   private _votersInitPromise: Promise<void> | null = null
@@ -82,6 +84,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     this.townhallHandler = new TownhallHandler(handlerCtx, env)
     this.retroHandler = new RetroHandler(handlerCtx)
     this.ideateHandler = new IdeateHandler(handlerCtx, env, this.scheduleAlarm.bind(this))
+    this.deliberateHandler = new DeliberateHandler(handlerCtx, env)
 
     this.clientWsHandlers = buildClientWsHandlers({
       handleVote: (ws, att, data) => handleVote(this, ws, att, data),
@@ -96,6 +99,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
       townhallHandler: this.townhallHandler,
       retroHandler: this.retroHandler,
       ideateHandler: this.ideateHandler,
+      deliberateHandler: this.deliberateHandler,
     })
   }
 

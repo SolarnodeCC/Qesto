@@ -57,11 +57,21 @@ export type AuditAction =
   | 'deliberate.config'
   | 'deliberate.ballot.cast'
   | 'deliberate.verify.mismatch'
+  // EMBED (ADR-0050): widget-config + token lifecycle on the authenticated mint plane.
+  | 'embed.widget.create'
+  | 'embed.widget.token_mint'
+  | 'embed.widget.revoke'
   | 'user.create'
   | 'user.update'
   | 'user.suspend'
   | 'user.restore'
   | 'ldap.sync.completed'
+  // Agent action transparency (AI-461, S87): an AI agent/copilot executed an
+  // action that mutated session state. after_snapshot carries the sanitised
+  // tool call + outcome + `source: 'ai'` provenance.
+  | 'agent.action.suggestion_accepted'
+  | 'agent.action.question_injected'
+  | 'agent.action.state_changed'
 
 export interface AuditContext {
   action: AuditAction

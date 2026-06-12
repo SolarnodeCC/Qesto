@@ -234,6 +234,14 @@ export const ClientMessageSchema = z.union([
     data: z.object({ questionId: z.string().min(1), responseId: z.string().min(1) }),
     timestamp: z.number(),
   }),
+  // DELIBERATE (ADR-0049, DELIBERATE-GA-01). Cast one governance ballot live.
+  // `choice` mirrors the REST CastSchema bound (1..200) so WS and REST agree.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('deliberate_cast'),
+    data: z.object({ choice: z.string().trim().min(1).max(200) }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>
@@ -412,10 +420,17 @@ export const AuditActionSchema = z.enum([
   'deliberate.config',
   'deliberate.ballot.cast',
   'deliberate.verify.mismatch',
+  'embed.widget.create',
+  'embed.widget.token_mint',
+  'embed.widget.revoke',
   'user.create',
   'user.update',
   'user.suspend',
   'user.restore',
+  // Agent action transparency (AI-461, S87) — AI agent/copilot state mutations.
+  'agent.action.suggestion_accepted',
+  'agent.action.question_injected',
+  'agent.action.state_changed',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>
