@@ -325,7 +325,6 @@ export class D1Mock {
       refunded_at: number | null
     }
   >()
-  readonly embedWidgets = new Map<string, EmbedWidgetRow>()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())

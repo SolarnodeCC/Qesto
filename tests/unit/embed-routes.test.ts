@@ -415,3 +415,183 @@ describe('POST /api/embed/v1/handshake — anonymous participant token', () => {
     expect(raw).not.toContain(HOST)
   })
 })
+
+// ─── INVARIANT 3: Token Expiry ──────────────────────────────────────────────
+
+describe('INVARIANT 3: Token Expiry (exp claim blocks access)', () => {
+  async function createToken(db: EmbedD1, nowSecs: number, ttlSecs: number): Promise<string> {
+    const { signEmbedToken } = await import('../../functions/api/lib/embed-token')
+    const widget = {
+      id: 'wid_test',
+      team_id: HOST,
+      session_id: 'sess_1',
+      session_code: 'ABC123',
+      allowed_origins: [ORIGIN],
+      scope: 'read' as const,
+      created_by: HOST,
+      created_at: nowSecs * 1000,
+      revoked_at: null,
+    }
+    db.embedWidgets.set(widget.id, widget)
+    const res = await signEmbedToken(makeEnv(db).EMBED_WIDGET_SECRET!, {
+      wid: widget.id,
+      sid: widget.session_id,
+      code: widget.session_code,
+      tid: HOST,
+      ao: [ORIGIN],
+      ttl: ttlSecs,
+      now: nowSecs,
+    })
+    return res.token
+  }
+
+  it('valid token with future exp is accepted', async () => {
+    const db = new EmbedD1()
+    seedHost(db, 'team')
+    const now = Math.floor(Date.now() / 1000)
+    const token = await createToken(db, now, 3600)
+    const res = await widgetApi(makeEnv(db), 'sessions/sess_1/state', 'GET', token)
+    expect(res.status).toBe(200)
+  })
+
+  it('expired token (exp in the past) returns 401', async () => {
+    const db = new EmbedD1()
+    seedHost(db, 'team')
+    const now = Math.floor(Date.now() / 1000)
+    const pastNow = now - 7200
+    const token = await createToken(db, pastNow, 1800)
+    const res = await widgetApi(makeEnv(db), 'sessions/sess_1/state', 'GET', token)
+    expect(res.status).toBe(401)
+    const body = (await res.json()) as { error: { code: string } }
+    expect(body.error.code).toMatch(/token_expired|invalid_token/)
+  })
+})
+
+// ─── INVARIANT 6: Read-Scope Enforcement ────────────────────────────────────
+
+describe('INVARIANT 6: Read-Scope Enforcement (scp must be read)', () => {
+  async function tokenFor(db: EmbedD1): Promise<string> {
+    seedHost(db, 'team')
+    const wid = await createWidget(db)
+    const res = await mint(makeEnv(db), `widgets/${wid}/token`, 'POST', await cookie(), { origins: [ORIGIN] })
+    return ((await res.json()) as { data: { token: string } }).data.token
+  }
+
+  it('token with read scope is accepted', async () => {
+    const db = new EmbedD1()
+    const token = await tokenFor(db)
+    const readRes = await widgetApi(makeEnv(db), 'sessions/sess_1/state', 'GET', token)
+    expect(readRes.status).toBe(200)
+  })
+
+  it('only read scope is minted (not write or other scopes)', async () => {
+    const db = new EmbedD1()
+    const token = await tokenFor(db)
+    const parts = token.split('.')
+    expect(parts.length).toBe(2)
+    const payload = JSON.parse(Buffer.from(parts[0], 'base64url').toString()) as { scp: string }
+    expect(payload.scp).toBe('read')
+  })
+})
+
+// ─── INVARIANT 7: CSRF Exemption Scope ──────────────────────────────────────
+
+describe('INVARIANT 7: CSRF Exemption Scope (only /api/embed/v1/* is exempt)', () => {
+  async function tokenFor(db: EmbedD1): Promise<string> {
+    seedHost(db, 'team')
+    const wid = await createWidget(db)
+    const res = await mint(makeEnv(db), `widgets/${wid}/token`, 'POST', await cookie(), { origins: [ORIGIN] })
+    return ((await res.json()) as { data: { token: string } }).data.token
+  }
+
+  it('embed widget API at /api/embed/v1/* does not enforce CSRF (widget token only)', async () => {
+    const db = new EmbedD1()
+    const token = await tokenFor(db)
+    const res = await widgetApi(makeEnv(db), 'sessions/sess_1/state', 'GET', token)
+    expect(res.status).toBe(200)
+  })
+
+  it('authenticated embed mint endpoint at /api/embed/widgets enforces auth (not CSRF-exempt)', async () => {
+    const db = new EmbedD1()
+    seedHost(db, 'team')
+    const res = await mint(makeEnv(db), 'widgets', 'POST', null, {
+      session_id: 'sess_1',
+      allowed_origins: [ORIGIN],
+    })
+    expect(res.status).toBe(401)
+  })
+})
+
+// ─── INVARIANT 8: Mint Plane Tenant Isolation ──────────────────────────────
+
+describe('INVARIANT 8: Mint Plane Tenant Isolation (host cannot create widget for another team session)', () => {
+  it('host can create a widget for their own session', async () => {
+    const db = new EmbedD1()
+    db.users.set('host_alpha', { id: 'host_alpha', email: 'alpha@example.com', plan: 'team' })
+    db.sessions.set('sess_alpha', {
+      id: 'sess_alpha',
+      owner_id: 'host_alpha',
+      code: 'ALPHA123',
+      title: 'Host Alpha Session',
+      status: 'live',
+      anonymity: 'full',
+    })
+    const c = await signJwt({ sub: 'host_alpha', email: 'alpha@example.com' }, SECRET, 3600)
+    const res = await mint(makeEnv(db), 'widgets', 'POST', `qesto_session=${c}`, {
+      session_id: 'sess_alpha',
+      allowed_origins: [ORIGIN],
+    })
+    expect(res.status).toBe(201)
+  })
+
+  it('host cannot create a widget for another host\'s session', async () => {
+    const db = new EmbedD1()
+    db.users.set('host_alpha', { id: 'host_alpha', email: 'alpha@example.com', plan: 'team' })
+    db.users.set('host_beta', { id: 'host_beta', email: 'beta@example.com', plan: 'team' })
+    db.sessions.set('sess_alpha', {
+      id: 'sess_alpha',
+      owner_id: 'host_alpha',
+      code: 'ALPHA123',
+      title: 'Host Alpha Session',
+      status: 'live',
+      anonymity: 'full',
+    })
+    const c = await signJwt({ sub: 'host_beta', email: 'beta@example.com' }, SECRET, 3600)
+    const res = await mint(makeEnv(db), 'widgets', 'POST', `qesto_session=${c}`, {
+      session_id: 'sess_alpha',
+      allowed_origins: [ORIGIN],
+    })
+    expect(res.status).toBe(404)
+  })
+
+  it('host can only list their own team\'s widgets', async () => {
+    const db = new EmbedD1()
+    db.users.set('host_alpha', { id: 'host_alpha', email: 'alpha@example.com', plan: 'team' })
+    db.users.set('host_beta', { id: 'host_beta', email: 'beta@example.com', plan: 'team' })
+    db.sessions.set('sess_alpha', {
+      id: 'sess_alpha',
+      owner_id: 'host_alpha',
+      code: 'ALPHA123',
+      title: 'Host Alpha Session',
+      status: 'live',
+      anonymity: 'full',
+    })
+    const c_alpha = await signJwt({ sub: 'host_alpha', email: 'alpha@example.com' }, SECRET, 3600)
+    const createRes = await mint(makeEnv(db), 'widgets', 'POST', `qesto_session=${c_alpha}`, {
+      session_id: 'sess_alpha',
+      allowed_origins: [ORIGIN],
+    })
+    expect(createRes.status).toBe(201)
+    const c_beta = await signJwt({ sub: 'host_beta', email: 'beta@example.com' }, SECRET, 3600)
+    const listRes = await createApp().fetch(
+      new Request('http://local/api/embed/widgets', {
+        method: 'GET',
+        headers: { 'content-type': 'application/json', cookie: `qesto_session=${c_beta}` },
+      }),
+      makeEnv(db),
+    )
+    expect(listRes.status).toBe(200)
+    const body = (await listRes.json()) as { data: { widgets: unknown[] } }
+    expect(body.data.widgets).toHaveLength(0)
+  })
+})
