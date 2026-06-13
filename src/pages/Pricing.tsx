@@ -240,12 +240,12 @@ export default function Pricing() {
               </p>
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
+                  team?.features.townhallQA ? 'Townhall Q&A board (moderated, 5 000 participants)' : 'Townhall Q&A (Team tier)',
                   team?.features.samlSso ? 'SAML SSO and role scopes' : 'SSO roadmap — contact sales',
                   'Custom retention & residency',
                   team?.features.insightsAI ? 'Private Workers AI endpoints' : 'AI insights',
                   'Customer-managed keys on the roadmap',
                   'Dedicated onboarding + SLA',
-                  'Branded domain and PDF templates on the roadmap',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
                     <span className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5">

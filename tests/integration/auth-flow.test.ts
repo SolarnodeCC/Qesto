@@ -94,10 +94,12 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(meRes.status).toBe(200)
     const meBody = (await meRes.json()) as {
       ok: boolean
-      data: { id: string; email: string; townhallEnabled: boolean }
+      data: { id: string; email: string; plan: string; townhallEnabled: boolean }
     }
     expect(meBody.ok).toBe(true)
     expect(meBody.data.email).toBe('host@example.com')
+    // New users default to the free tier.
+    expect(meBody.data.plan).toBe('free')
     // /me surfaces the town hall feature flag so the dashboard can gate its entry point.
     expect(meBody.data.townhallEnabled).toBe(env.REALTIME_TOWNHALL_ENABLED === 'true')
 

@@ -41,6 +41,12 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
     ],
   },
   {
+    section: 'Live Q&A',
+    rows: [
+      ['Townhall Q&A board', false, false, true, 'quota'],
+    ],
+  },
+  {
     section: 'Admin & compliance',
     rows: [
       ['SAML SSO', false, false, true, 'quota'],
@@ -98,6 +104,8 @@ export function enrichPricingMatrix(
           return [title, F.resultsExport, S.resultsExport, T.resultsExport, source]
         case 'Branded domain & PDF templates':
           return [title, false, false, 'Roadmap', source]
+        case 'Townhall Q&A board':
+          return [title, F.townhallQA, S.townhallQA, T.townhallQA, source]
         default:
           return row
       }

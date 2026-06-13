@@ -150,7 +150,7 @@ export default function Dashboard() {
   const isSuperuser = auth.user.email === SUPERUSER_EMAIL
   const userName = auth.user.email.split('@')[0]
   const townhallFeatureEnabled = auth.user.townhallEnabled === true
-  const isTeamPlan = teams.some((tm) => tm.plan === 'team')
+  const isTeamPlan = auth.user.plan === 'team'
 
   async function onCreateTownhall() {
     if (!isTeamPlan) {
