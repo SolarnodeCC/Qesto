@@ -51,7 +51,7 @@ S71–S80 sold the **certified, scaled platform**. S81–S90 sells **reach + new
 | S85 | `MKTG-85-01` | Agile-team ICP + `/solutions/retrospectives`; `/vs/parabol`, `/vs/retrium` | 14 |
 | S86 | `MKTG-86-01` | v5.1 nurture pack; governance teaser; **v5.2 RC comms** | 16 |
 | S87 | `MKTG-87-01` | Developer/embed ICP + `/embed` hub + SDK docs landing; `/vs/typeform` (embed) | 14 |
-| S88 | `MKTG-88-01` | Accessibility + multilingual story (`/accessibility`, AAA + captions) | 14 |
+| S88 | ✅ `MKTG-88-01` | Accessibility + multilingual story (`/accessibility`, AAA + captions) | 14 |
 | S89 | `MKTG-89-01` | **v5.2 launch**; gov/public-sector GTM page (FedRAMP path) | 16 |
 | S90 | `MKTG-90-01` | **v6.0 GA launch** + year-end metrics + v6→v7 teaser | 15 |
 
