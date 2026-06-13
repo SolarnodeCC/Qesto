@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Pause, Play, Shuffle, Sparkles, Timer } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Pause, Play, Shuffle, Sparkles, Subtitles, Timer } from 'lucide-react'
 import type { SoftTimer } from './useSoftTimer'
+import { CanvasThemePicker } from '../../components/CanvasThemePicker'
+import { useT } from '../../i18n'
+import type { CaptionLocale } from '../../components/CaptionsLocalePicker'
 
 export interface PresenterControlsProps {
   id: string | undefined
@@ -32,6 +35,12 @@ export interface PresenterControlsProps {
   onTimerInputChange: (value: string) => void
   onStartTimer: () => void
   onCopyDisplayLink: () => void
+  /** Captions — FE-CAPTIONS-OVERLAY-01 */
+  captionsActive: boolean
+  captionsPlanGated: boolean
+  onToggleCaptions: () => void
+  captionLocale: CaptionLocale
+  onCaptionLocaleChange: (locale: CaptionLocale) => void
 }
 
 export function PresenterControls({
@@ -64,7 +73,13 @@ export function PresenterControls({
   onTimerInputChange,
   onStartTimer,
   onCopyDisplayLink,
+  captionsActive,
+  captionsPlanGated,
+  onToggleCaptions,
+  captionLocale,
+  onCaptionLocaleChange,
 }: PresenterControlsProps) {
+  const t = useT('captions')
   return (
     <div className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0">
 
@@ -248,6 +263,62 @@ export function PresenterControls({
           Export CSV
         </a>
       )}
+
+      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
+
+      {/* Live captions toggle — FE-CAPTIONS-OVERLAY-01 */}
+      {captionsPlanGated ? (
+        <span
+          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-pulse-400 cursor-not-allowed text-sm"
+          title={t('captions_plan_gate')}
+        >
+          <Subtitles size={14} aria-hidden="true" />
+          {t('captions_inactive')}
+          <span className="ml-1 text-xs text-amber-400">(Team+)</span>
+        </span>
+      ) : (
+        <button
+          type="button"
+          onClick={onToggleCaptions}
+          disabled={!isLive || allDone}
+          aria-pressed={captionsActive}
+          title={captionsActive ? t('stop_captions') : t('start_captions')}
+          className={[
+            'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40',
+            captionsActive
+              ? 'bg-teal-600 text-white hover:bg-teal-700'
+              : 'bg-pulse-700 text-white hover:bg-pulse-600',
+          ].join(' ')}
+        >
+          <Subtitles size={14} aria-hidden="true" />
+          {captionsActive ? t('captions_active') : t('captions_inactive')}
+        </button>
+      )}
+
+      {/* Caption locale picker — only shown when captions are active */}
+      {captionsActive && !captionsPlanGated && (
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-pulse-300 shrink-0">{t('locale_picker_label')}</span>
+          <select
+            value={captionLocale}
+            onChange={(e) => onCaptionLocaleChange(e.target.value as CaptionLocale)}
+            className="rounded border border-pulse-600 bg-pulse-800 text-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 min-h-[36px]"
+            aria-label={t('locale_picker_label')}
+          >
+            <option value="off">{t('locale_off')}</option>
+            <option value="en">{t('locale_en')}</option>
+            <option value="nl">{t('locale_nl')}</option>
+            <option value="es">{t('locale_es')}</option>
+            <option value="de">{t('locale_de')}</option>
+            <option value="fr">{t('locale_fr')}</option>
+          </select>
+        </label>
+      )}
+
+      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
+
+      {/* Canvas theme picker — CANVAS-THEME-01 */}
+      <CanvasThemePicker variant="bar" />
 
       <span className="w-px h-5 bg-pulse-700 ml-auto" aria-hidden="true" />
 

@@ -33,6 +33,7 @@ function getQuotasForPlan(plan: PlanTier): PlanQuotas {
         recurringWorkspaces: false,
         verifiableVoting: false,
         embedWidgets: false,
+        liveCaptions: false,
       },
     },
     starter: {
@@ -52,6 +53,7 @@ function getQuotasForPlan(plan: PlanTier): PlanQuotas {
         recurringWorkspaces: false,
         verifiableVoting: false,
         embedWidgets: false,
+        liveCaptions: false,
       },
     },
     team: {
@@ -71,6 +73,7 @@ function getQuotasForPlan(plan: PlanTier): PlanQuotas {
         recurringWorkspaces: true,
         verifiableVoting: true,
         embedWidgets: true,
+        liveCaptions: true,
       },
     },
   }
@@ -96,6 +99,7 @@ describe('Feature-gated routes (Phase 3)', () => {
         recurringWorkspaces: false,
         verifiableVoting: false,
         embedWidgets: false,
+        liveCaptions: false,
       },
     }
 
@@ -116,6 +120,7 @@ describe('Feature-gated routes (Phase 3)', () => {
         recurringWorkspaces: true,
         verifiableVoting: true,
         embedWidgets: true,
+        liveCaptions: true,
       },
     }
 
@@ -184,6 +189,7 @@ describe('Feature-gated routes (Phase 3)', () => {
           recurringWorkspaces: false,
           verifiableVoting: false,
           embedWidgets: false,
+          liveCaptions: false,
         },
       }
 
@@ -215,6 +221,7 @@ describe('Feature-gated routes (Phase 3)', () => {
           recurringWorkspaces: false,
           verifiableVoting: false,
           embedWidgets: false,
+          liveCaptions: false,
         },
       }
 

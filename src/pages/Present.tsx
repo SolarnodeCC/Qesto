@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
 import { Lock, Pause, Sparkles, Users } from 'lucide-react'
@@ -7,18 +7,35 @@ import { useLiveSession, type LivePollOption } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
 import { CopilotPanel } from '../components/CopilotPanel'
 import { api, getAuthToken } from '../api/client'
-import { hashWordColor, getWordFontSize, getTopWords } from './present/wordcloud'
 import { useSoftTimer } from './present/useSoftTimer'
 import { PresenterControls } from './present/PresenterControls'
+import { CanvasThemeProvider } from '../components/CanvasThemeProvider'
+import { useCanvasTheme } from '../hooks/useCanvasTheme'
+import { AdaptiveVizResults } from '../components/AdaptiveVizResults'
+import { CaptionsOverlay } from '../components/CaptionsOverlay'
+import { captionsReducer, CAPTIONS_INITIAL, type CaptionSegment } from '../hooks/useCaptions'
+import { readPersistedCaptionLocale, type CaptionLocale } from '../components/CaptionsLocalePicker'
 
 export default function Present() {
   const auth = useAuth()
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
   const presenterToken = getAuthToken()
-  const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendEnergizerActivate } = useLiveSession(
+
+  // ── Captions state (FE-CAPTIONS-OVERLAY-01) ─────────────────────────────
+  const [captionsState, captionsDispatch] = useReducer(captionsReducer, CAPTIONS_INITIAL)
+  const [captionLocale, setCaptionLocale] = useState<CaptionLocale>(readPersistedCaptionLocale)
+  // Plan gating: the server returns 403 with feature=liveCaptions when the plan
+  // is insufficient. We surface it via the captions_plan_gate affordance.
+  const [captionsPlanGated, setCaptionsPlanGated] = useState(false)
+
+  const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendEnergizerActivate, sendCaptionsStart, sendCaptionsStop, sendCaptionsSetLocale } = useLiveSession(
     id,
-    presenterToken ? { enabled: !!id, presenterToken } : { enabled: !!id },
+    {
+      ...(presenterToken ? { presenterToken } : {}),
+      enabled: !!id,
+      onCaptionSegment: (seg) => captionsDispatch({ kind: 'segment', segment: seg }),
+    },
   )
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
@@ -49,7 +66,6 @@ export default function Present() {
     () => displayOptions.map((o) => ({ ...o, count: state.results.counts[o.id] ?? 0 })),
     [displayOptions, state.results.counts],
   )
-  const max = ordered.reduce((m, o) => Math.max(m, o.count), 0)
   const tallyVisible = !hideTally && state.results.total >= minGate
   const showSentiment =
     state.role === 'presenter' &&
@@ -126,6 +142,33 @@ export default function Present() {
     timer.start(secs)
   }
 
+  // ── Captions handlers ────────────────────────────────────────────────────
+
+  function handleToggleCaptions() {
+    if (captionsState.active) {
+      sendCaptionsStop()
+      captionsDispatch({ kind: 'stop' })
+    } else {
+      // sourceLocale = the presenter's UI language (defaults to 'en').
+      sendCaptionsStart('en')
+      captionsDispatch({ kind: 'start' })
+    }
+  }
+
+  function handleCaptionLocaleChange(locale: CaptionLocale) {
+    setCaptionLocale(locale)
+    captionsDispatch({ kind: 'set_locale', locale: locale === 'off' ? 'en' : locale })
+    sendCaptionsSetLocale(locale)
+  }
+
+  // Detect plan-gate: if the WS error arrives mentioning liveCaptions, mark gated.
+  // The real enforcement is server-side; this just updates the UI affordance.
+  useEffect(() => {
+    if (state.error?.includes('liveCaptions') || state.error?.includes('feature_not_available')) {
+      setCaptionsPlanGated(true)
+    }
+  }, [state.error])
+
   // Energizer launch handlers — wired to presenter UI in Sprint C
   function handleStartQuickFinger() {
     const sourceOptions = state.question?.options.map((o) => o.label).filter(Boolean) ?? []
@@ -145,12 +188,141 @@ export default function Present() {
   }
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
 
-  const fills = [
-    'linear-gradient(135deg,#14B8A6,#0D9488)',
-    'linear-gradient(135deg,#2DD4BF,#14B8A6)',
-    'linear-gradient(135deg,#A78BFA,#8B5CF6)',
-    'linear-gradient(135deg,#C4B5FD,#A78BFA)',
-  ]
+  return (
+    <CanvasThemeProvider>
+      <PresentInner
+        id={id}
+        state={state}
+        isLive={isLive}
+        isClosed={isClosed}
+        closing={closing}
+        closeError={closeError}
+        copied={copied}
+        localPaused={localPaused}
+        hideTally={hideTally}
+        hideSentiment={hideSentiment}
+        minGate={minGate}
+        timerInput={timerInput}
+        timer={timer}
+        scale={scale}
+        containerRef={containerRef}
+        stageRef={stageRef}
+        ordered={ordered}
+        baseOptions={baseOptions}
+        tallyVisible={tallyVisible}
+        showSentiment={showSentiment}
+        sentimentLabelKey={sentimentLabelKey}
+        onBack={() => sendBack()}
+        onAdvance={() => sendAdvance()}
+        onClose={handleClose}
+        onTogglePause={handleTogglePause}
+        onToggleHideTally={() => setHideTally((v) => !v)}
+        onToggleHideSentiment={() => setHideSentiment((v) => !v)}
+        onShuffle={handleShuffle}
+        onMinGateChange={(value) => setMinGate(value)}
+        onTimerInputChange={(value) => setTimerInput(value)}
+        onStartTimer={handleStartTimer}
+        onCopyDisplayLink={handleCopyDisplayLink}
+        sendAddQuestion={sendAddQuestion}
+        captionsSegments={captionsState.segments}
+        captionsActive={captionsState.active}
+        captionsPlanGated={captionsPlanGated}
+        captionLocale={captionLocale}
+        onToggleCaptions={handleToggleCaptions}
+        onCaptionLocaleChange={handleCaptionLocaleChange}
+      />
+    </CanvasThemeProvider>
+  )
+}
+
+// ── Inner component — consumes useCanvasTheme() within the provider ────────────
+
+interface PresentInnerProps {
+  id: string | undefined
+  state: ReturnType<typeof useLiveSession>['state']
+  isLive: boolean
+  isClosed: boolean
+  closing: boolean
+  closeError: string | null
+  copied: boolean
+  localPaused: boolean
+  hideTally: boolean
+  hideSentiment: boolean
+  minGate: number
+  timerInput: string
+  timer: ReturnType<typeof useSoftTimer>
+  scale: number
+  containerRef: React.RefObject<HTMLDivElement | null>
+  stageRef: React.RefObject<HTMLDivElement | null>
+  ordered: Array<{ id: string; label: string; count: number }>
+  baseOptions: LivePollOption[]
+  tallyVisible: boolean
+  showSentiment: boolean
+  sentimentLabelKey: string
+  onBack: () => void
+  onAdvance: () => void
+  onClose: () => void
+  onTogglePause: () => void
+  onToggleHideTally: () => void
+  onToggleHideSentiment: () => void
+  onShuffle: () => void
+  onMinGateChange: (v: number) => void
+  onTimerInputChange: (v: string) => void
+  onStartTimer: () => void
+  onCopyDisplayLink: () => void
+  sendAddQuestion: ReturnType<typeof useLiveSession>['sendAddQuestion']
+  /** Captions */
+  captionsSegments: CaptionSegment[]
+  captionsActive: boolean
+  captionsPlanGated: boolean
+  captionLocale: CaptionLocale
+  onToggleCaptions: () => void
+  onCaptionLocaleChange: (locale: CaptionLocale) => void
+}
+
+function PresentInner({
+  id,
+  state,
+  isLive,
+  isClosed,
+  closing,
+  closeError,
+  copied,
+  localPaused,
+  hideTally,
+  hideSentiment,
+  minGate,
+  timerInput,
+  timer,
+  scale,
+  containerRef,
+  stageRef,
+  ordered,
+  baseOptions,
+  tallyVisible,
+  showSentiment,
+  sentimentLabelKey,
+  onBack,
+  onAdvance,
+  onClose,
+  onTogglePause,
+  onToggleHideTally,
+  onToggleHideSentiment,
+  onShuffle,
+  onMinGateChange,
+  onTimerInputChange,
+  onStartTimer,
+  onCopyDisplayLink,
+  sendAddQuestion,
+  captionsSegments,
+  captionsActive,
+  captionsPlanGated,
+  captionLocale,
+  onToggleCaptions,
+  onCaptionLocaleChange,
+}: PresentInnerProps) {
+  const t = useT('present')
+  const { theme } = useCanvasTheme()
 
   return (
     <div className="fixed inset-0 flex flex-col bg-pulse-950 animate-page-enter">
@@ -161,16 +333,23 @@ export default function Present() {
         <div style={{ width: scale * 1920, height: scale * 1080, flexShrink: 0 }}>
         <div
           ref={stageRef}
-          className="w-[1920px] h-[1080px] origin-top-left relative bg-white overflow-hidden"
+          className="w-[1920px] h-[1080px] origin-top-left relative overflow-hidden"
           id="main"
-          data-theme="light"
+          data-canvas-theme={theme}
+          style={{
+            background: 'var(--canvas-bg)',
+            fontFamily: 'var(--canvas-font-body)',
+            color: 'var(--canvas-text)',
+            lineHeight: 'var(--canvas-line-height, 1.6)',
+            letterSpacing: 'var(--canvas-letter-spacing, 0em)',
+          }}
         >
           {/* Background glow */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                'radial-gradient(1400px 700px at 10% -10%, rgba(20,184,166,0.10), transparent 60%), radial-gradient(1200px 600px at 95% 110%, rgba(139,92,246,0.10), transparent 60%)',
+                'radial-gradient(1400px 700px at 10% -10%, rgba(20,184,166,0.08), transparent 60%), radial-gradient(1200px 600px at 95% 110%, rgba(139,92,246,0.08), transparent 60%)',
             }}
           />
 
@@ -181,7 +360,7 @@ export default function Present() {
           {state.allDone && (
             <div className="absolute inset-0 z-30 flex flex-col items-center justify-center" style={{ background: 'var(--gradient-brand)' }}>
               <div className="text-[120px] mb-6" aria-hidden="true">🎉</div>
-              <h2 className="font-[family-name:var(--font-display)] font-bold text-[80px] leading-[1.1] tracking-[-0.02em] text-white text-center [text-wrap:balance]">
+              <h2 className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[80px] leading-[1.1] tracking-[-0.02em] text-white text-center [text-wrap:balance]">
                 {t('allDone.heading')}
               </h2>
               <p className="mt-6 text-[32px] text-white/80 font-medium">
@@ -197,9 +376,9 @@ export default function Present() {
           {/* Paused overlay */}
           {localPaused && !state.allDone && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-              <div className="flex items-center gap-4 bg-white rounded-2xl px-10 py-6 shadow-2xl">
+              <div className="flex items-center gap-4 rounded-2xl px-10 py-6 shadow-2xl" style={{ background: 'var(--canvas-surface)' }}>
                 <Pause size={36} className="text-amber-500" aria-hidden="true" />
-                <span className="font-bold text-[40px] text-pulse-900 tracking-tight">{t('votingPaused')}</span>
+                <span className="font-bold text-[40px] tracking-tight" style={{ color: 'var(--canvas-text)' }}>{t('votingPaused')}</span>
               </div>
             </div>
           )}
@@ -209,10 +388,10 @@ export default function Present() {
             <div className="absolute top-[20px] right-[64px] z-10 flex items-center gap-3">
               <div className="relative w-[60px] h-[60px]">
                 <svg viewBox="0 0 60 60" className="w-full h-full -rotate-90">
-                  <circle cx="30" cy="30" r="26" fill="none" stroke="#E2E8F0" strokeWidth="5" />
+                  <circle cx="30" cy="30" r="26" fill="none" stroke="var(--canvas-border)" strokeWidth="5" />
                   <circle
                     cx="30" cy="30" r="26" fill="none"
-                    stroke={timer.pct > 0.25 ? '#14B8A6' : '#EF4444'}
+                    stroke={timer.pct > 0.25 ? 'var(--canvas-accent)' : '#EF4444'}
                     strokeWidth="5"
                     strokeDasharray={`${2 * Math.PI * 26}`}
                     strokeDashoffset={`${2 * Math.PI * 26 * (1 - timer.pct)}`}
@@ -220,7 +399,7 @@ export default function Present() {
                     className="transition-[stroke-dashoffset] duration-1000"
                   />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-[14px] font-bold text-pulse-900 tabular-nums">
+                <span className="absolute inset-0 flex items-center justify-center text-[14px] font-bold tabular-nums" style={{ color: 'var(--canvas-text)' }}>
                   {Math.floor(timer.remaining / 60)}:{String(timer.remaining % 60).padStart(2, '0')}
                 </span>
               </div>
@@ -229,25 +408,36 @@ export default function Present() {
 
           {/* ── Top bar ── */}
           <div className="absolute top-[44px] left-[64px] right-[64px] flex items-center justify-between z-10">
-            <div className="flex items-center gap-3 font-[family-name:var(--font-display)] font-bold text-[28px] tracking-[-0.02em] text-pulse-900">
+            <div className="flex items-center gap-3 font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[28px] tracking-[-0.02em]" style={{ color: 'var(--canvas-text)' }}>
               <img src="/favicon.svg" alt="" width={40} height={40} />
               Qesto
             </div>
-            <div className="flex gap-7 items-center text-[20px] text-pulse-600 font-medium">
+            <div className="flex gap-7 items-center text-[20px] font-medium" style={{ color: 'var(--canvas-text-muted)' }}>
               {state.session && <span>{state.session.title}</span>}
-              <span className="w-px h-5 bg-pulse-200" />
-              <span className={`flex items-center gap-2.5 font-semibold text-pulse-900 ${state.connection === 'open' ? '' : 'opacity-60'}`}>
+              <span className="w-px h-5" style={{ background: 'var(--canvas-border)' }} aria-hidden="true" />
+              <span
+                className={`flex items-center gap-2.5 font-semibold ${state.connection === 'open' ? '' : 'opacity-60'}`}
+                style={{ color: 'var(--canvas-text)' }}
+              >
                 <span
-                  className={`w-2.5 h-2.5 rounded-full ${state.connection === 'open' ? 'bg-[var(--signal-success)]' : 'bg-pulse-400'}`}
-                  style={state.connection === 'open' ? { animation: 'pulse 1.8s infinite', boxShadow: '0 0 0 0 rgba(34,197,94,0.5)' } : undefined}
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{
+                    background: state.connection === 'open' ? 'var(--canvas-accent)' : 'var(--canvas-text-muted)',
+                    ...(state.connection === 'open' ? { animation: 'pulse 1.8s infinite', boxShadow: '0 0 0 0 rgba(34,197,94,0.5)' } : {}),
+                  }}
+                  aria-hidden="true"
                 />
                 {state.connection === 'open' ? 'Live' : state.connection}
               </span>
               {showSentiment && state.sentiment && (
                 <>
-                  <span className="w-px h-5 bg-pulse-200" />
+                  <span className="w-px h-5" style={{ background: 'var(--canvas-border)' }} aria-hidden="true" />
                   <span
-                    className="flex items-center gap-2 rounded-full px-4 py-1 text-[16px] font-semibold bg-violet-50 text-violet-800"
+                    className="flex items-center gap-2 rounded-full px-4 py-1 text-[16px] font-semibold"
+                    style={{
+                      background: 'color-mix(in srgb, var(--canvas-accent) 12%, transparent)',
+                      color: 'var(--canvas-accent)',
+                    }}
                     title={t('sentiment.hint', { count: state.sentiment.sampleSize })}
                   >
                     <Sparkles size={18} aria-hidden="true" />
@@ -260,111 +450,64 @@ export default function Present() {
 
           {/* ── Question header ── */}
           <div className="absolute top-[144px] left-[64px] right-[600px] z-10">
-            <div className="text-[20px] font-bold tracking-[0.12em] uppercase text-teal-700 mb-5">
+            <div className="text-[20px] font-bold tracking-[0.12em] uppercase mb-5" style={{ color: 'var(--canvas-accent)' }}>
               {state.question ? 'Question' : 'Waiting for question'}
             </div>
-            <h1 className="font-[family-name:var(--font-display)] font-bold text-[76px] leading-[1.05] tracking-[-0.02em] text-pulse-900 [text-wrap:balance] m-0">
+            <h1
+              className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[76px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] m-0"
+              style={{ color: 'var(--canvas-text)', lineHeight: 'var(--canvas-line-height, 1.05)' }}
+            >
               {state.question?.prompt ?? t('connectingToRoom')}
             </h1>
-            <div className="mt-5 text-[22px] text-pulse-600 flex gap-9">
+            <div className="mt-5 text-[22px] flex gap-9" style={{ color: 'var(--canvas-text-muted)' }}>
               <span className="flex items-center gap-2">
-                <Users size={20} className="text-teal-600" aria-hidden="true" />
+                <Users size={20} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
                 {state.results.total} {t('participant', { count: state.results.total })}
               </span>
               <span className="flex items-center gap-2">
-                <Lock size={20} className="text-teal-600" aria-hidden="true" />
+                <Lock size={20} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
                 {t('anonymity') ?? 'Full anonymity'}
               </span>
             </div>
           </div>
 
-          {/* ── Results: bars, wordcloud, or open text ── */}
-          {state.question?.kind === 'word_cloud' || state.question?.kind === 'open' ? (
-            <div className="absolute top-[460px] left-[64px] right-[600px] max-h-96 flex flex-col z-10">
-              {tallyVisible ? (
-                Object.entries(state.results.counts).length > 0 ? (
-                  <>
-                    <div className="flex-1 flex flex-wrap gap-x-4 gap-y-2 items-baseline justify-start py-6 overflow-y-auto">
-                      {(() => {
-                        const topWords = getTopWords(state.results.counts, 25)
-                        const maxCount = Math.max(...topWords.map(w => w[1]), 1)
-                        return topWords.map(([word, count]) => (
-                          <span
-                            key={word}
-                            style={{ fontSize: `${getWordFontSize(count, maxCount)}px` }}
-                            className={`font-bold leading-tight transition-all duration-500 shrink-0 ${hashWordColor(word)}`}
-                            title={`${word}: ${count}`}
-                            aria-label={`${word}, ${count} submission${count !== 1 ? 's' : ''}`}
-                          >
-                            {word}
-                          </span>
-                        ))
-                      })()}
-                    </div>
-                    {Object.entries(state.results.counts).length > 25 && (
-                      <p className="text-xs text-pulse-400 text-right pr-2 pb-2">
-                        Showing top 25 of {Object.entries(state.results.counts).length} unique responses
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <div className="w-full h-24 flex items-center justify-center">
-                    <p className="text-[24px] text-pulse-400 animate-pulse">Waiting for responses…</p>
-                  </div>
-                )
-              ) : (
-                <div className="w-full h-24 flex items-center justify-center">
-                  <p className="text-[24px] text-pulse-400">{t('tallyHidden')}</p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="absolute top-[460px] left-[64px] right-[600px] grid gap-7 z-10" aria-live="polite">
-              {tallyVisible
-                ? ordered.map((o, i) => {
-                    const pct = max === 0 ? 0 : Math.round((o.count / max) * 100)
-                    return (
-                      <div key={o.id} className="grid gap-2">
-                        <div className="grid grid-cols-[1fr_auto] items-baseline gap-5">
-                          <span className="text-[32px] font-semibold leading-snug text-pulse-900">{o.label}</span>
-                          <span className="font-[family-name:var(--font-display)] font-bold text-[44px] tracking-[-0.02em] text-pulse-900 tabular-nums">
-                            {pct}%
-                          </span>
-                        </div>
-                        <div role="img" aria-label={`${o.label}: ${pct}%`} className="h-6 bg-pulse-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-[width] duration-[600ms]"
-                            style={{ width: `${pct}%`, background: fills[i % fills.length] }}
-                          />
-                        </div>
-                      </div>
-                    )
-                  })
-                : ordered.map((o) => (
-                    <div key={o.id} className="grid gap-2">
-                      <div className="grid grid-cols-[1fr_auto] items-baseline gap-5">
-                        <span className="text-[32px] font-semibold leading-snug text-pulse-900">{o.label}</span>
-                        <span className="font-[family-name:var(--font-display)] font-bold text-[44px] tracking-[-0.02em] text-pulse-400 tabular-nums">—</span>
-                      </div>
-                      <div className="h-6 bg-pulse-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-pulse-200" style={{ width: '0%' }} />
-                      </div>
-                    </div>
-                  ))}
-            </div>
-          )}
+          {/* ── Results: adaptive viz (CANVAS-ADAPTIVE-VIZ-01) ── */}
+          <div className="absolute top-[460px] left-[64px] right-[600px] max-h-96 overflow-y-auto z-10">
+            <AdaptiveVizResults
+              options={ordered}
+              total={state.results.total}
+              questionKind={state.question?.kind}
+              tallyHidden={!tallyVisible}
+            />
+          </div>
 
           {/* ── Join panel ── */}
-          <div className="absolute right-[64px] top-[144px] w-[440px] p-9 bg-white border border-pulse-200 rounded-[32px] shadow-elevated z-10">
-            <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase text-teal-700 mb-3">{t('joinThisSession')}</h3>
-            {state.session && <div className="font-mono text-[20px] font-medium text-pulse-600 mb-4">qesto.cc/join</div>}
+          <div
+            className="absolute right-[64px] top-[144px] w-[440px] p-9 rounded-[32px] shadow-elevated z-10"
+            style={{ background: 'var(--canvas-surface)', border: '1px solid var(--canvas-border)' }}
+          >
+            <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase mb-3" style={{ color: 'var(--canvas-accent)' }}>
+              {t('joinThisSession')}
+            </h3>
             {state.session && (
-              <div className="font-mono text-[52px] font-medium tracking-[0.12em] leading-none mb-5 bg-clip-text text-transparent" style={{ backgroundImage: 'var(--gradient-brand)' }}>
+              <div className="font-mono text-[20px] font-medium mb-4" style={{ color: 'var(--canvas-text-muted)' }}>
+                qesto.cc/join
+              </div>
+            )}
+            {state.session && (
+              <div
+                className="font-mono text-[52px] font-medium tracking-[0.12em] leading-none mb-5 bg-clip-text text-transparent"
+                style={{ backgroundImage: 'var(--gradient-brand)' }}
+              >
                 {state.session.code}
               </div>
             )}
             {state.session && (
-              <div className="w-full aspect-square bg-pulse-50 rounded-[16px] p-3.5 shadow-[inset_0_0_0_1px_var(--surface-border)]" aria-label="QR code to join session">
+              <div
+                className="w-full aspect-square rounded-[16px] p-3.5"
+                style={{ background: 'var(--canvas-bg)', border: '1px solid var(--canvas-border)' }}
+                aria-label="QR code to join session"
+              >
                 <QRCode
                   value={`${window.location.origin}/j/${state.session.code}`}
                   size={368}
@@ -372,20 +515,41 @@ export default function Present() {
                 />
               </div>
             )}
-            <div className="mt-5 text-[18px] text-pulse-600 text-center">
-              <span className="font-[family-name:var(--font-display)] font-bold text-[26px] tracking-[-0.01em] text-pulse-900">{state.participants}</span>{' '}
+            <div className="mt-5 text-[18px] text-center" style={{ color: 'var(--canvas-text-muted)' }}>
+              <span
+                className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[26px] tracking-[-0.01em]"
+                style={{ color: 'var(--canvas-text)' }}
+              >
+                {state.participants}
+              </span>{' '}
               {t('participant', { count: state.participants })} {t('connectedLabel')}
             </div>
           </div>
 
           {state.energizer?.leaderboard && state.energizer.leaderboard.length > 0 && (
-            <div className="absolute right-[64px] top-[700px] w-[440px] p-7 bg-white border border-pulse-200 rounded-[24px] shadow-elevated z-10">
-              <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase text-orange-700 mb-4">{t('leaderboard.title')}</h3>
+            <div
+              className="absolute right-[64px] top-[700px] w-[440px] p-7 rounded-[24px] shadow-elevated z-10"
+              style={{ background: 'var(--canvas-surface)', border: '1px solid var(--canvas-border)' }}
+            >
+              <h3 className="text-[16px] font-bold tracking-[0.1em] uppercase text-orange-700 mb-4">
+                {t('leaderboard.title')}
+              </h3>
               <ol className="space-y-2">
                 {state.energizer.leaderboard.slice(0, 5).map((entry) => (
-                  <li key={entry.voterId} className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl bg-pulse-50 px-4 py-3">
-                    <span className="font-[family-name:var(--font-display)] font-bold text-[24px] text-pulse-900 tabular-nums">{entry.rank}</span>
-                    <span className="text-[18px] font-semibold text-pulse-800 truncate">{entry.label}</span>
+                  <li
+                    key={entry.voterId}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl px-4 py-3"
+                    style={{ background: 'var(--canvas-bg)' }}
+                  >
+                    <span
+                      className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[24px] tabular-nums"
+                      style={{ color: 'var(--canvas-text)' }}
+                    >
+                      {entry.rank}
+                    </span>
+                    <span className="text-[18px] font-semibold truncate" style={{ color: 'var(--canvas-text)' }}>
+                      {entry.label}
+                    </span>
                     <span className="text-[18px] font-bold text-orange-600 tabular-nums">{entry.score}</span>
                   </li>
                 ))}
@@ -395,17 +559,32 @@ export default function Present() {
 
           {/* WS / close errors */}
           {state.error && (
-            <p role="alert" className="absolute top-[1020px] left-[64px] text-sm text-red-600 z-10">{state.error}</p>
+            <p role="alert" className="absolute top-[1020px] left-[64px] text-sm text-red-600 z-10">
+              {state.error}
+            </p>
           )}
 
+          {/* Live captions overlay — FE-CAPTIONS-OVERLAY-01 */}
+          <CaptionsOverlay segments={captionsSegments} active={captionsActive} />
+
           {/* ── Bottom chrome (display only — controls are in presenter panel) ── */}
-          <div className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center border-t border-pulse-200 pt-6 z-10 text-[18px] text-pulse-600 pointer-events-none">
-            <div className="inline-flex items-center gap-2.5 px-4 py-2.5 bg-violet-50 border border-violet-200 rounded-full text-[16px] font-semibold text-violet-700">
-              <Sparkles size={16} className="text-violet-600" aria-hidden="true" />
+          <div
+            className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center pt-6 z-10 text-[18px] pointer-events-none"
+            style={{ borderTop: '1px solid var(--canvas-border)', color: 'var(--canvas-text-muted)' }}
+          >
+            <div
+              className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full text-[16px] font-semibold"
+              style={{
+                background: 'color-mix(in srgb, var(--canvas-accent) 10%, transparent)',
+                color: 'var(--canvas-accent)',
+                border: '1px solid color-mix(in srgb, var(--canvas-accent) 30%, transparent)',
+              }}
+            >
+              <Sparkles size={16} aria-hidden="true" />
               AI recap at session close · Workers AI on Cloudflare
             </div>
-            <div className="flex items-center gap-2 font-medium text-pulse-600">
-              <Lock size={18} className="text-teal-600" aria-hidden="true" />
+            <div className="flex items-center gap-2 font-medium" style={{ color: 'var(--canvas-text-muted)' }}>
+              <Lock size={18} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
               Anonymity: Full
             </div>
           </div>
@@ -433,17 +612,22 @@ export default function Present() {
         timerInput={timerInput}
         timer={timer}
         copied={copied}
-        onBack={() => sendBack()}
-        onAdvance={() => sendAdvance()}
-        onClose={handleClose}
-        onTogglePause={handleTogglePause}
-        onToggleHideTally={() => setHideTally((v) => !v)}
-        onToggleHideSentiment={() => setHideSentiment((v) => !v)}
-        onShuffle={handleShuffle}
-        onMinGateChange={(value) => setMinGate(value)}
-        onTimerInputChange={(value) => setTimerInput(value)}
-        onStartTimer={handleStartTimer}
-        onCopyDisplayLink={handleCopyDisplayLink}
+        onBack={onBack}
+        onAdvance={onAdvance}
+        onClose={onClose}
+        onTogglePause={onTogglePause}
+        onToggleHideTally={onToggleHideTally}
+        onToggleHideSentiment={onToggleHideSentiment}
+        onShuffle={onShuffle}
+        onMinGateChange={onMinGateChange}
+        onTimerInputChange={onTimerInputChange}
+        onStartTimer={onStartTimer}
+        onCopyDisplayLink={onCopyDisplayLink}
+        captionsActive={captionsActive}
+        captionsPlanGated={captionsPlanGated}
+        onToggleCaptions={onToggleCaptions}
+        captionLocale={captionLocale}
+        onCaptionLocaleChange={onCaptionLocaleChange}
       />
     </div>
   )

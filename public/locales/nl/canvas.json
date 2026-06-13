@@ -1,0 +1,16 @@
+{
+  "theme.label": "Canvas-thema",
+  "theme.default": "Standaard",
+  "theme.dark": "Donker",
+  "theme.high-contrast": "Hoog contrast",
+  "theme.brand-neutral": "Brandneutraal",
+  "theme.selected": "(geselecteerd)",
+  "viz.ariaBar": "{{label}}: {{pct}}%",
+  "viz.ariaDonut": "{{label}}: {{pct}}% van stemmen",
+  "viz.totalVotes": "{{count}} stem",
+  "viz.totalVotes_other": "{{count}} stemmen",
+  "viz.wordSubmissions": "{{word}}, {{count}} inzending",
+  "viz.wordSubmissions_other": "{{word}}, {{count}} inzendingen",
+  "viz.waitingResponses": "Wachten op reacties…",
+  "viz.tallyHidden": "Telling verborgen — de presentator zal de resultaten bekend maken."
+}

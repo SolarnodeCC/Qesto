@@ -1,4 +1,5 @@
 import type { PlanTier, Anonymity, VotePolicy, SessionMode, TownhallModeration } from '../types'
+import type { CaptionLocalePref } from './captions-config'
 
 export const SENTIMENT_RETRY_DELAY_MS = 5_000
 export const SENTIMENT_MAX_RETRIES = 1
@@ -53,6 +54,13 @@ export type Attachment = {
   permissions?: string[]
   colo?: string
   protocolVersion?: number
+  /**
+   * CAPTIONS (ADR-0051): this socket's chosen caption locale, or 'off'. Drives
+   * which translated `caption_segment` variant the DO addresses to this socket
+   * and which locales count toward the distinct-active-locale MT fan-out set.
+   * Absent = 'off' (no captions).
+   */
+  captionLocale?: CaptionLocalePref
 }
 
 export type BufferedVote = {

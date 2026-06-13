@@ -242,6 +242,26 @@ export const ClientMessageSchema = z.union([
     data: z.object({ choice: z.string().trim().min(1).max(200) }),
     timestamp: z.number(),
   }),
+  // CAPTIONS (ADR-0051). presenter start/stop + participant locale pick. Locale
+  // enums match the 5-locale matrix; 'off' disables captions for that socket.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('captions_start'),
+    data: z.object({ sourceLocale: z.enum(['en', 'nl', 'es', 'de', 'fr']) }),
+    timestamp: z.number(),
+  }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('captions_stop'),
+    data: z.object({}).strict(),
+    timestamp: z.number(),
+  }),
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('captions_set_locale'),
+    data: z.object({ locale: z.enum(['en', 'nl', 'es', 'de', 'fr', 'off']) }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>

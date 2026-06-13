@@ -6,6 +6,7 @@ import type { TownhallHandler } from './session-room-townhall-handler'
 import type { RetroHandler } from './session-room-retro-handler'
 import type { IdeateHandler } from './session-room-ideate-handler'
 import type { DeliberateHandler } from './session-room-deliberate-handler'
+import type { CaptionsHandler } from './session-room-captions-handler'
 
 export type ClientWsHandler = (ws: WebSocket, att: Attachment, msg: ValidClientMessage) => Promise<void>
 
@@ -35,6 +36,7 @@ export type SessionRoomRouterDeps = {
   retroHandler: RetroHandler
   ideateHandler: IdeateHandler
   deliberateHandler: DeliberateHandler
+  captionsHandler: CaptionsHandler
 }
 
 export function buildClientWsHandlers(deps: SessionRoomRouterDeps): Record<ValidClientMessage['type'], ClientWsHandler> {
@@ -124,6 +126,18 @@ export function buildClientWsHandlers(deps: SessionRoomRouterDeps): Record<Valid
     deliberate_cast: async (ws, att, msg) => {
       if (msg.type !== 'deliberate_cast') return
       await deps.deliberateHandler.handleCast(ws, att, { choice: msg.data.choice })
+    },
+    captions_start: async (ws, att, msg) => {
+      if (msg.type !== 'captions_start') return
+      await deps.captionsHandler.handleStart(ws, att, { sourceLocale: msg.data.sourceLocale })
+    },
+    captions_stop: async (ws, att, msg) => {
+      if (msg.type !== 'captions_stop') return
+      await deps.captionsHandler.handleStop(ws, att)
+    },
+    captions_set_locale: async (ws, att, msg) => {
+      if (msg.type !== 'captions_set_locale') return
+      await deps.captionsHandler.handleSetLocale(ws, att, { locale: msg.data.locale })
     },
     approve_response: async (ws, att, msg) => {
       if (msg.type !== 'approve_response') return

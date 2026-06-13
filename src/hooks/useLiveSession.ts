@@ -10,6 +10,7 @@ import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { enqueueOfflineVote, flushOfflineVoteQueue } from '../lib/offline-vote-queue'
 import { parseInitPayload, parseServerEnvelope } from '../lib/live-session-protocol'
 import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
+import type { CaptionSegment } from './useCaptions'
 
 const LIVE_PROTOCOL_VERSION = 1
 
@@ -219,6 +220,8 @@ type Options = {
   fingerprint?: string
   presenterToken?: string
   enabled?: boolean
+  /** Called whenever a caption_segment ServerMessage arrives. */
+  onCaptionSegment?: (seg: CaptionSegment) => void
 }
 
 export function useLiveSession(sessionId: string | undefined, opts: Options = {}) {
@@ -228,7 +231,10 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const closedByClientRef = useRef(false)
 
-  const { fingerprint, presenterToken, enabled = true } = opts
+  const { fingerprint, presenterToken, enabled = true, onCaptionSegment } = opts
+  // Stable ref so the message handler closure never captures a stale callback.
+  const onCaptionSegmentRef = useRef(onCaptionSegment)
+  onCaptionSegmentRef.current = onCaptionSegment
 
   const clearRetryTimer = () => {
     if (retryTimerRef.current) {
@@ -343,6 +349,25 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
               energizer: (msg.data.energizer as LiveEnergizerState | null | undefined) ?? null,
             })
             break
+          case 'caption_segment': {
+            const d = msg.data
+            if (
+              typeof d.id === 'string' &&
+              typeof d.ts === 'number' &&
+              typeof d.lang === 'string' &&
+              typeof d.text === 'string' &&
+              typeof d.isFinal === 'boolean'
+            ) {
+              onCaptionSegmentRef.current?.({
+                id: d.id,
+                ts: d.ts,
+                lang: d.lang,
+                text: d.text,
+                isFinal: d.isFinal,
+              })
+            }
+            break
+          }
         }
       } catch {
         /* ignore unparseable frames */
@@ -460,6 +485,38 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     })
   }, [])
 
+  // ── Captions (ADR-0051, FE-CAPTIONS-OVERLAY-01) ──────────────────────────
+
+  const sendCaptionsStart = useCallback((sourceLocale: string) => {
+    sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'captions_start',
+      data: { sourceLocale },
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  const sendCaptionsStop = useCallback(() => {
+    sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'captions_stop',
+      data: {},
+      timestamp: Date.now(),
+    })
+  }, [])
+
+  const sendCaptionsSetLocale = useCallback(
+    (locale: 'en' | 'nl' | 'es' | 'de' | 'fr' | 'off') => {
+      sendWsJson(wsRef.current, {
+        v: LIVE_PROTOCOL_VERSION,
+        type: 'captions_set_locale',
+        data: { locale },
+        timestamp: Date.now(),
+      })
+    },
+    [],
+  )
+
   return {
     state,
     sendVote,
@@ -472,5 +529,8 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     sendEnergizerActivate,
     sendEnergizerAnswer,
     sendEnergizerAdvance,
+    sendCaptionsStart,
+    sendCaptionsStop,
+    sendCaptionsSetLocale,
   }
 }

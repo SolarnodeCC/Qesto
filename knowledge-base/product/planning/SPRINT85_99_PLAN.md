@@ -224,8 +224,8 @@ Content and stories are unchanged from the accepted S81–S90 plan; only the cal
 |--------|------|------------|---------|
 | S85 | STAGE hybrid events; RETRO + IDEATE foundation; TOWNHALL 50k proof | `RETRO-WORKSPACE-01`, `STAGE-SUITE-01`, `TOWNHALL-SCALE-PROOF-50K-01` | — |
 | S86 | Continuous-collab GA; DELIBERATE foundation; v5.2 RC→GA | `RC-V52-01`, `DELIBERATE-RECEIPT-01`, `SEC-VOTE-INTEGRITY-01` | **v5.2 GA** |
-| S87 | EMBED SDK + widget API; DELIBERATE governance GA; re-tally | `EMBED-SDK-01`, `DELIBERATE-GA-01` | — |
-| S88 | CANVAS + adaptive dataviz; CAPTIONS; AAA path | `CAPTIONS-PIPELINE-01`, `CANVAS-ADAPTIVE-VIZ-01`, `FE-AAA-GA-01` | — |
+| S87 | ✅ **DONE** — EMBED SDK + widget API; DELIBERATE governance GA; re-tally | `EMBED-SDK-01`, `DELIBERATE-GA-01`, `ADR-0050`, `SEC-EMBED-ORIGIN-01`, `SEC-PEN5-PREP-01` | — |
+| S88 | ✅ **DONE** — CANVAS + adaptive dataviz; CAPTIONS (Workers AI ASR+MT); AAA core flows; ADR-0051; Pentest #5 run (crit/high=0) | `CAPTIONS-PIPELINE-01`, `CANVAS-ADAPTIVE-VIZ-01`, `FE-AAA-GA-01`, `ADR-0051`, `SEC-PEN5-01` | — |
 | S89 | Gov full-ATO path; sovereign tier; AAA GA; v6.0 RC; DR drill | `RC-V60-RC-01`, `FEDRAMP-ATO-FULL-01`, `COMPLIANCE-SOC2-ANNUAL-01` | **v6.0-rc** |
 | S90 | v6.0 GA; certification bundle; DR drill; v5.x sunset | `V60-GA-RELEASE-01`, `PLATFORM-CERTIFICATION-V6-01`, `DR-DRILL-ANNUAL-V6-01` | **v6.0 GA** |
 

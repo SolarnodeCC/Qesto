@@ -39,6 +39,7 @@ import { mountTeamEventPresenterRoutes } from './routes/event-presenter'
 import { mountIdeateSessionRoutes } from './routes/ideate-sessions'
 import { mountRetroSessionRoutes } from './routes/retro-sessions'
 import { mountDeliberateSessionRoutes } from './routes/deliberate-sessions'
+import { mountCaptionRoutes } from './routes/captions'
 import { mountEmbedRoutes } from './routes/embed'
 import { mountEmbedWidgetV1Routes } from './routes/embed-widget-v1'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
@@ -330,6 +331,9 @@ export function createApp() {
   mountRetroSessionRoutes(app)
   mountIdeateSessionRoutes(app)
   mountDeliberateSessionRoutes(app)
+  // CAPTIONS ingest plane (ADR-0051): presenter audio → ASR → MT → DO broadcast.
+  // Team-tier (liveCaptions); the ONLY audio entry point; nothing persisted.
+  mountCaptionRoutes(app)
   // EMBED authenticated mint plane (ADR-0050): host auth + planMiddleware +
   // embedWidgets entitlement. Mounts at /api/embed (the public read plane sits
   // under the deeper /api/embed/v1 prefix, registered above the auth sub-apps).

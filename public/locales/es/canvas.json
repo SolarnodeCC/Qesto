@@ -1,0 +1,16 @@
+{
+  "theme.label": "Tema de lienzo",
+  "theme.default": "Predeterminado",
+  "theme.dark": "Oscuro",
+  "theme.high-contrast": "Alto contraste",
+  "theme.brand-neutral": "Neutro de marca",
+  "theme.selected": "(seleccionado)",
+  "viz.ariaBar": "{{label}}: {{pct}}%",
+  "viz.ariaDonut": "{{label}}: {{pct}}% de votos",
+  "viz.totalVotes": "{{count}} voto",
+  "viz.totalVotes_other": "{{count}} votos",
+  "viz.wordSubmissions": "{{word}}, {{count}} envío",
+  "viz.wordSubmissions_other": "{{word}}, {{count}} envíos",
+  "viz.waitingResponses": "Esperando respuestas…",
+  "viz.tallyHidden": "Recuento oculto — el presentador revelará los resultados."
+}

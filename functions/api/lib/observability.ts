@@ -197,6 +197,9 @@ export type QestoEvent = {
     | 'waf.rule_triggered'
     | 'waf.challenge_served'
     | 'waf.false_positive_suspected'
+    // CAPTIONS (ADR-0051): trace + timing + fan-out width only — never transcript text.
+    | 'captions.segment'
+    | 'captions.asr_unavailable'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

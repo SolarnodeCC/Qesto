@@ -15,6 +15,7 @@ import { TownhallHandler } from './lib/session-room-townhall-handler'
 import { RetroHandler } from './lib/session-room-retro-handler'
 import { IdeateHandler } from './lib/session-room-ideate-handler'
 import { DeliberateHandler } from './lib/session-room-deliberate-handler'
+import { CaptionsHandler, type CaptionBroadcastPayload } from './lib/session-room-captions-handler'
 import { logEvent } from './lib/log'
 import { K_META, K_VOTERS } from './lib/session-room-storage-keys'
 import {
@@ -69,6 +70,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
   readonly retroHandler: RetroHandler
   readonly ideateHandler: IdeateHandler
   readonly deliberateHandler: DeliberateHandler
+  readonly captionsHandler: CaptionsHandler
 
   // Tracks the in-flight voters load so a rejection can be retried (EH-03).
   private _votersInitPromise: Promise<void> | null = null
@@ -85,6 +87,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     this.retroHandler = new RetroHandler(handlerCtx)
     this.ideateHandler = new IdeateHandler(handlerCtx, env, this.scheduleAlarm.bind(this))
     this.deliberateHandler = new DeliberateHandler(handlerCtx, env)
+    this.captionsHandler = new CaptionsHandler(handlerCtx)
 
     this.clientWsHandlers = buildClientWsHandlers({
       handleVote: (ws, att, data) => handleVote(this, ws, att, data),
@@ -100,6 +103,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
       retroHandler: this.retroHandler,
       ideateHandler: this.ideateHandler,
       deliberateHandler: this.deliberateHandler,
+      captionsHandler: this.captionsHandler,
     })
   }
 
@@ -110,6 +114,28 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     if (url.pathname === '/transition-to-live' && req.method === 'POST') return handleTransitionToLive(this)
     if (url.pathname === '/state' && req.method === 'GET') return handleState(this)
     if (url.pathname === '/copilot/snapshot' && req.method === 'GET') return handleCopilotSnapshot(this)
+    // CAPTIONS (ADR-0051 §3): the stateless ingest route reads the distinct active
+    // caption-locale set to bound MT fan-out, then pushes assembled segments here
+    // for broadcast. No audio/transcript is persisted — this only fans out text.
+    if (url.pathname === '/captions/active-locales' && req.method === 'GET') {
+      const state = await this.captionsHandler.getState()
+      return new Response(
+        JSON.stringify({
+          active: state?.active === true,
+          sourceLocale: state?.sourceLocale ?? null,
+          locales: this.captionsHandler.activeLocales(),
+        }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      )
+    }
+    if (url.pathname === '/captions/broadcast' && req.method === 'POST') {
+      const payload = (await req.json()) as CaptionBroadcastPayload
+      this.captionsHandler.broadcast(payload)
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
     if (url.pathname === '/ws' && req.headers.get('upgrade') === 'websocket') {
       return handleUpgrade(this, req)
     }

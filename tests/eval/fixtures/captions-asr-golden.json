@@ -1,0 +1,42 @@
+{
+  "_comment": "CAPTIONS-PIPELINE-01 ASR golden set (ADR-0051 §6, REV-10). Each case pairs a deterministic mocked Whisper transcript (`asr`) with a human reference (`reference`); the eval asserts the parsed ASR structure and that WER(reference, asr) <= CAPTION_WER_BAR for EN + the top-4 locales. CI cannot reach Workers AI, so `asr` IS the mocked model output. A locale whose ASR exceeds the bar is not enabled.",
+  "werBar": 0.25,
+  "cases": [
+    {
+      "name": "en_clean",
+      "locale": "en",
+      "reference": "welcome everyone to the quarterly all hands lets get started",
+      "asr": "welcome everyone to the quarterly all hands lets get started"
+    },
+    {
+      "name": "en_minor_errors",
+      "locale": "en",
+      "reference": "our revenue grew thirty percent this quarter across all regions",
+      "asr": "our revenue grew thirty percent this quarter across all region"
+    },
+    {
+      "name": "nl_clean",
+      "locale": "nl",
+      "reference": "welkom allemaal bij de kwartaalvergadering we beginnen zo",
+      "asr": "welkom allemaal bij de kwartaalvergadering we beginnen zo"
+    },
+    {
+      "name": "es_clean",
+      "locale": "es",
+      "reference": "bienvenidos a la reunion trimestral vamos a comenzar ahora",
+      "asr": "bienvenidos a la reunion trimestral vamos a comenzar ahora"
+    },
+    {
+      "name": "de_minor_errors",
+      "locale": "de",
+      "reference": "willkommen zur vierteljaehrlichen versammlung wir fangen gleich an",
+      "asr": "willkommen zur vierteljaehrlichen versammlung wir fangen gleich an"
+    },
+    {
+      "name": "fr_clean",
+      "locale": "fr",
+      "reference": "bienvenue a tous a la reunion trimestrielle nous allons commencer",
+      "asr": "bienvenue a tous a la reunion trimestrielle nous allons commencer"
+    }
+  ]
+}

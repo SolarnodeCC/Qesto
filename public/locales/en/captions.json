@@ -1,0 +1,18 @@
+{
+  "region_label": "Live captions",
+  "increase_font": "Increase caption text size",
+  "decrease_font": "Decrease caption text size",
+  "start_captions": "Start captions",
+  "stop_captions": "Stop captions",
+  "captions_active": "Captions on",
+  "captions_inactive": "Captions off",
+  "captions_plan_gate": "Live captions require a Team plan or higher.",
+  "upgrade_prompt": "Upgrade to Team",
+  "locale_picker_label": "Caption language",
+  "locale_off": "Off",
+  "locale_en": "English",
+  "locale_nl": "Dutch",
+  "locale_es": "Spanish",
+  "locale_de": "German",
+  "locale_fr": "French"
+}
