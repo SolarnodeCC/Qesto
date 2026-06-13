@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Users } from 'lucide-react'
 import { api } from '../api/client'
@@ -7,6 +7,8 @@ import { useT } from '../i18n'
 import { CanvasThemeProvider } from '../components/CanvasThemeProvider'
 import { useCanvasTheme } from '../hooks/useCanvasTheme'
 import { AdaptiveVizResults } from '../components/AdaptiveVizResults'
+import { CaptionsOverlay } from '../components/CaptionsOverlay'
+import { captionsReducer, CAPTIONS_INITIAL } from '../hooks/useCaptions'
 
 type Lookup =
   | { status: 'loading' }
@@ -65,7 +67,19 @@ function ErrorScreen({ message }: { message: string }) {
 }
 
 function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
-  const { state } = useLiveSession(sessionId)
+  const [captionsState, captionsDispatch] = useReducer(captionsReducer, CAPTIONS_INITIAL)
+  const captionsActiveRef = useRef(false)
+  const { state } = useLiveSession(sessionId, {
+    onCaptionSegment: (seg) => {
+      // Auto-activate the overlay on the first received segment (the presenter
+      // started captions server-side; the display just receives the segments).
+      if (!captionsActiveRef.current) {
+        captionsActiveRef.current = true
+        captionsDispatch({ kind: 'start' })
+      }
+      captionsDispatch({ kind: 'segment', segment: seg })
+    },
+  })
   const t = useT('present')
   const { theme } = useCanvasTheme()
 
@@ -197,6 +211,9 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
           Qesto
         </span>
       </div>
+
+      {/* Live captions overlay — FE-CAPTIONS-OVERLAY-01 */}
+      <CaptionsOverlay segments={captionsState.segments} active={captionsState.active} />
     </div>
   )
 }

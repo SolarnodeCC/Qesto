@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
 import { Lock, Pause, Sparkles, Users } from 'lucide-react'
@@ -12,15 +12,30 @@ import { PresenterControls } from './present/PresenterControls'
 import { CanvasThemeProvider } from '../components/CanvasThemeProvider'
 import { useCanvasTheme } from '../hooks/useCanvasTheme'
 import { AdaptiveVizResults } from '../components/AdaptiveVizResults'
+import { CaptionsOverlay } from '../components/CaptionsOverlay'
+import { captionsReducer, CAPTIONS_INITIAL, type CaptionSegment } from '../hooks/useCaptions'
+import { readPersistedCaptionLocale, type CaptionLocale } from '../components/CaptionsLocalePicker'
 
 export default function Present() {
   const auth = useAuth()
   const t = useT('present')
   const { id } = useParams<{ id: string }>()
   const presenterToken = getAuthToken()
-  const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendEnergizerActivate } = useLiveSession(
+
+  // ── Captions state (FE-CAPTIONS-OVERLAY-01) ─────────────────────────────
+  const [captionsState, captionsDispatch] = useReducer(captionsReducer, CAPTIONS_INITIAL)
+  const [captionLocale, setCaptionLocale] = useState<CaptionLocale>(readPersistedCaptionLocale)
+  // Plan gating: the server returns 403 with feature=liveCaptions when the plan
+  // is insufficient. We surface it via the captions_plan_gate affordance.
+  const [captionsPlanGated, setCaptionsPlanGated] = useState(false)
+
+  const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendEnergizerActivate, sendCaptionsStart, sendCaptionsStop, sendCaptionsSetLocale } = useLiveSession(
     id,
-    presenterToken ? { enabled: !!id, presenterToken } : { enabled: !!id },
+    {
+      ...(presenterToken ? { presenterToken } : {}),
+      enabled: !!id,
+      onCaptionSegment: (seg) => captionsDispatch({ kind: 'segment', segment: seg }),
+    },
   )
   const [closing, setClosing] = useState(false)
   const [closeError, setCloseError] = useState<string | null>(null)
@@ -127,6 +142,33 @@ export default function Present() {
     timer.start(secs)
   }
 
+  // ── Captions handlers ────────────────────────────────────────────────────
+
+  function handleToggleCaptions() {
+    if (captionsState.active) {
+      sendCaptionsStop()
+      captionsDispatch({ kind: 'stop' })
+    } else {
+      // sourceLocale = the presenter's UI language (defaults to 'en').
+      sendCaptionsStart('en')
+      captionsDispatch({ kind: 'start' })
+    }
+  }
+
+  function handleCaptionLocaleChange(locale: CaptionLocale) {
+    setCaptionLocale(locale)
+    captionsDispatch({ kind: 'set_locale', locale: locale === 'off' ? 'en' : locale })
+    sendCaptionsSetLocale(locale)
+  }
+
+  // Detect plan-gate: if the WS error arrives mentioning liveCaptions, mark gated.
+  // The real enforcement is server-side; this just updates the UI affordance.
+  useEffect(() => {
+    if (state.error?.includes('liveCaptions') || state.error?.includes('feature_not_available')) {
+      setCaptionsPlanGated(true)
+    }
+  }, [state.error])
+
   // Energizer launch handlers — wired to presenter UI in Sprint C
   function handleStartQuickFinger() {
     const sourceOptions = state.question?.options.map((o) => o.label).filter(Boolean) ?? []
@@ -182,6 +224,12 @@ export default function Present() {
         onStartTimer={handleStartTimer}
         onCopyDisplayLink={handleCopyDisplayLink}
         sendAddQuestion={sendAddQuestion}
+        captionsSegments={captionsState.segments}
+        captionsActive={captionsState.active}
+        captionsPlanGated={captionsPlanGated}
+        captionLocale={captionLocale}
+        onToggleCaptions={handleToggleCaptions}
+        onCaptionLocaleChange={handleCaptionLocaleChange}
       />
     </CanvasThemeProvider>
   )
@@ -223,6 +271,13 @@ interface PresentInnerProps {
   onStartTimer: () => void
   onCopyDisplayLink: () => void
   sendAddQuestion: ReturnType<typeof useLiveSession>['sendAddQuestion']
+  /** Captions */
+  captionsSegments: CaptionSegment[]
+  captionsActive: boolean
+  captionsPlanGated: boolean
+  captionLocale: CaptionLocale
+  onToggleCaptions: () => void
+  onCaptionLocaleChange: (locale: CaptionLocale) => void
 }
 
 function PresentInner({
@@ -259,6 +314,12 @@ function PresentInner({
   onStartTimer,
   onCopyDisplayLink,
   sendAddQuestion,
+  captionsSegments,
+  captionsActive,
+  captionsPlanGated,
+  captionLocale,
+  onToggleCaptions,
+  onCaptionLocaleChange,
 }: PresentInnerProps) {
   const t = useT('present')
   const { theme } = useCanvasTheme()
@@ -503,6 +564,9 @@ function PresentInner({
             </p>
           )}
 
+          {/* Live captions overlay — FE-CAPTIONS-OVERLAY-01 */}
+          <CaptionsOverlay segments={captionsSegments} active={captionsActive} />
+
           {/* ── Bottom chrome (display only — controls are in presenter panel) ── */}
           <div
             className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center pt-6 z-10 text-[18px] pointer-events-none"
@@ -559,6 +623,11 @@ function PresentInner({
         onTimerInputChange={onTimerInputChange}
         onStartTimer={onStartTimer}
         onCopyDisplayLink={onCopyDisplayLink}
+        captionsActive={captionsActive}
+        captionsPlanGated={captionsPlanGated}
+        onToggleCaptions={onToggleCaptions}
+        captionLocale={captionLocale}
+        onCaptionLocaleChange={onCaptionLocaleChange}
       />
     </div>
   )
