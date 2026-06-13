@@ -3,6 +3,7 @@ import { signJwt } from '../../lib/jwt'
 import { hashSessionToken, revokedSessionTokenKey } from '../../lib/session-token'
 import { writeKvText } from '../../lib/kv'
 import { authMiddleware, SESSION_COOKIE } from '../../middleware/auth'
+import { planMiddleware } from '../../middleware/plan'
 import { townhallEnabled } from '../../realtime'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { JWT_TTL_SECONDS } from './constants'
@@ -10,11 +11,11 @@ import { setAuthSessionCookie } from './cookie'
 import type { AuthApp } from './types'
 
 export function registerAuthSessionRoutes(app: AuthApp): void {
-  app.get('/me', authMiddleware, (c) => {
+  app.get('/me', authMiddleware, planMiddleware, (c) => {
     const user = c.get('user')
     return c.json({
       ok: true,
-      data: { id: user.sub, email: user.email, townhallEnabled: townhallEnabled(c.env) },
+      data: { id: user.sub, email: user.email, plan: c.get('plan'), townhallEnabled: townhallEnabled(c.env) },
       trace_id: c.get('trace_id'),
     })
   })
