@@ -1731,14 +1731,20 @@ _Added per frontend agent review of S41 PWA specs, S36 white-label APIs, admin a
 | `AI-461` | Copilot live context (k-anonymity) | 8 | P1 | S87 | ✅ **DONE (S87)** — `lib/copilot-live-context.ts`, k≥5 mood gate, ZK suppression. Tests: 8 eval cases. |
 | `AI-462` / `AI-463` / `AI-464` | Source + version + audit provenance | — | P1 | S87 | ✅ **DONE (S87)** — `lib/copilot-suggest.ts` extended (source field, promptVersion, audit trail). Enables "AI-generated" disclosure. |
 | `ADR-0050` | Embeddable SDK auth + origin sandboxing | — | P0 | S87 | ✅ **DONE (S87)** — `adr/ADR-0050-*.md` (1800+ lines) accepted. Origin-bound tokens, aggregate-only read, no per-participant field leak by construction. |
-| `CANVAS-THEME-01` | Theme system + adaptive dataviz | 13 | P1 | S88 | COMPETITIVE_EPICS E88 |
-| `CAPTIONS-PIPELINE-01` | Live captions/translation (Workers AI) | 21 | P1 | S88 | COMPETITIVE_EPICS E88; ADR-0051 |
-| `FE-AAA-GA-01` | WCAG AAA core flows | 13 | P0 | S88–S89 | Accessibility GA gate |
+| `CANVAS-THEME-01` | Theme system + adaptive dataviz | 13 | P1 | S88 | ✅ **DONE (S88)** — `CanvasThemeProvider` + `useCanvasTheme` + `CanvasThemePicker`; built-in themes (default/dark/high-contrast/brand-neutral) as CSS-var token sets (`styles/canvas-themes.css`), persisted, applied at Display/Present roots. High-contrast = AAA 7:1. COMPETITIVE_EPICS E88 |
+| `CANVAS-ADAPTIVE-VIZ-01` | Adaptive results visualization | 13 | P0 | S88 | ✅ **DONE (S88)** — `src/components/AdaptiveVizResults.tsx`; viz adapts to option count/kind/distribution, inherits theme tokens, reduced-motion + responsive. Tests: `adaptive-viz-selection.test.ts`. |
+| `CAPTIONS-PIPELINE-01` | Live captions/translation (Workers AI) | 21 | P0 | S88 | ✅ **DONE (S88)** — ADR-0051 **accepted**; `lib/ai/captions-ai.ts` (Whisper ASR + M2M100 MT, circuit-broken, Zod-validated), `lib/captions-config.ts` (5-locale matrix, WER bar 0.25, fan-out bound), `lib/captions-pipeline.ts`, `lib/session-room-captions-handler.ts`, `routes/captions.ts`. No audio/transcript persisted (test-asserted). `caption_segment` WS + `liveCaptions` FeatureKey. WER sign-off/GA = S89. COMPETITIVE_EPICS E88 |
+| `FE-CAPTIONS-OVERLAY-01` | Captions overlay UI (AAA) | 13 | P1 | S88 | ✅ **DONE (S88)** — `CaptionsOverlay` (scrim → ~12.7:1 over any theme, partial→final merge, resizable, `aria-live`), `CaptionsLocalePicker`, presenter start/stop toggle (plan-gated). Tests: `captions-overlay.test.ts` (24). |
+| `AI-465`–`AI-470` | Captions ASR+MT quality evals | 24 | P1 | S88 | ✅ **DONE (S88)** — `tests/eval/captions-quality.eval.test.ts` (16) + ASR/MT golden fixtures; WER≤0.25 gate; enabled-pair map asserted against the bar. New eval baseline (REV-10). |
+| `FE-AAA-GA-01` | WCAG AAA core flows | 13 | P0 | S88–S89 | ✅ **DONE (S88, core flows)** — join→vote→results + presenter present brought to AAA (1.4.6 7:1, 2.4.8/2.4.9, 1.4.8 resizable, focus visibility, `aria-live`). Scope in `AAA_CONFORMANCE_S88.md` (core AAA, broader AA). Re-attest new captions/canvas UIs at S89. |
+| `MKTG-88-01` | Accessibility + multilingual positioning | 14 | P1 | S88 | ✅ **DONE (S88)** — `ACCESSIBILITY_MULTILINGUAL_POSITIONING.md` + `CAPTIONS_LAUNCH_BRIEF.md`; claims flagged `check:compliance-claims`; WCAG scope bounded. |
+| `I18N-CAPTIONS-01` | Canvas + captions i18n (5 locales) | 13 | P1 | S88 | ✅ **DONE (S88)** — `{nl,de,es,fr}/canvas.json` (14 keys) + `{nl,de,es,fr}/captions.json` (16 keys), key-parity verified. |
+| `ADR-0051` | Live captions/translation pipeline | — | P0 | S88 | ✅ **DONE (S88)** — `adr/ADR-0051-live-captions-translation-pipeline.md` accepted. Workers AI only, no audio/transcript egress, `caption_segment` contract, 5-locale WER-gated matrix. |
 | `FEDRAMP-ATO-FULL-01` | FedRAMP Moderate full ATO path | 21 | P1 | S89 | ADR-0052; gov segment |
 | `SOVEREIGN-TIER-01` | Sovereign data-plane tenant tier | 13 | P1 | S89 | Deferred from S81+ |
 | `PLATFORM-CERTIFICATION-V6-01` | v6.0 GA certification bundle | 16 | P0 | S90 | DR evidence + compliance sign-off |
 | `SEC-PEN4-01` | Pentest #4 (mobile + marketplace) | 13 | P0 | S81–S83 | Security track |
-| `SEC-PEN5-01` | Pentest #5 (governance + embed + agent) | 13 | P0 | S87–S89 | Security track |
+| `SEC-PEN5-01` | Pentest #5 (governance + embed + agent) | 13 | P0 | S87–S89 | ✅ **RUN (S88)** — `security/SEC_PEN5_01_RESULTS.md`: DELIBERATE CLEAR, EMBED FINDINGS, agent CLEAR; **overall crit/high = 0 (no v6.0 RC blocker)**. 3 Med / 6 Low carried; EMBED read-plane rate-limit must close by S89. Security track |
 | `SEC-AGENT-EVAL-01` | Agent safety evaluation suite | 13 | P0 | S84 | Blocks agent marketplace public |
 
 **AI stories AI-441–AI-480:** Groomed per-sprint in [`SPRINT81_90_AI_PLAN.md`](../planning/SPRINT81_90_AI_PLAN.md) (agent runtime schema S81 → agent maturity L4 closeout S90).
