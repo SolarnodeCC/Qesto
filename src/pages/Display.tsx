@@ -4,6 +4,9 @@ import { Users } from 'lucide-react'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
+import { CanvasThemeProvider } from '../components/CanvasThemeProvider'
+import { useCanvasTheme } from '../hooks/useCanvasTheme'
+import { AdaptiveVizResults } from '../components/AdaptiveVizResults'
 
 type Lookup =
   | { status: 'loading' }
@@ -32,7 +35,11 @@ export default function Display() {
 
   if (lookup.status === 'loading') return <LoadingScreen />
   if (lookup.status === 'error') return <ErrorScreen message={lookup.message} />
-  return <LiveDisplay sessionId={lookup.sessionId} code={code ?? ''} />
+  return (
+    <CanvasThemeProvider>
+      <LiveDisplay sessionId={lookup.sessionId} code={code ?? ''} />
+    </CanvasThemeProvider>
+  )
 }
 
 function LoadingScreen() {
@@ -57,40 +64,52 @@ function ErrorScreen({ message }: { message: string }) {
   )
 }
 
-const FILLS = [
-  'linear-gradient(135deg,#14B8A6,#0D9488)',
-  'linear-gradient(135deg,#2DD4BF,#14B8A6)',
-  'linear-gradient(135deg,#A78BFA,#8B5CF6)',
-  'linear-gradient(135deg,#C4B5FD,#A78BFA)',
-]
-
 function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
   const { state } = useLiveSession(sessionId)
   const t = useT('present')
+  const { theme } = useCanvasTheme()
 
   const options = state.question?.options ?? []
   const ordered = useMemo(
     () => options.map((o) => ({ ...o, count: state.results.counts[o.id] ?? 0 })),
     [options, state.results.counts],
   )
-  const max = ordered.reduce((m, o) => Math.max(m, o.count), 0)
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
 
   return (
-    <div className="fixed inset-0 bg-[#0f1117] flex flex-col overflow-hidden" data-theme="dark">
+    <div
+      className="fixed inset-0 flex flex-col overflow-hidden"
+      data-canvas-theme={theme}
+      style={{
+        background: 'var(--canvas-bg)',
+        color: 'var(--canvas-text)',
+        fontFamily: 'var(--canvas-font-body)',
+        lineHeight: 'var(--canvas-line-height, 1.6)',
+        letterSpacing: 'var(--canvas-letter-spacing, 0em)',
+      }}
+    >
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'var(--gradient-brand)' }} />
 
       {/* Header */}
       <div className="flex items-center justify-between px-8 pt-7 pb-2 shrink-0">
-        <div className="flex items-center gap-2.5 font-[family-name:var(--font-display)] font-bold text-xl text-white">
+        <div
+          className="flex items-center gap-2.5 font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-xl"
+          style={{ color: 'var(--canvas-text)' }}
+        >
           <img src="/favicon.svg" alt="" width={26} height={26} />
           {state.session?.title ?? 'Qesto'}
         </div>
-        <div className="flex items-center gap-2 text-sm text-white/40">
+        <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--canvas-text-muted)' }}>
           <span
-            className={`w-2 h-2 rounded-full shrink-0 ${state.connection === 'open' ? 'bg-teal-400' : 'bg-white/20'}`}
-            style={state.connection === 'open' ? { animation: 'pulse 1.8s infinite' } : undefined}
+            className="w-2 h-2 rounded-full shrink-0"
+            style={{
+              background: state.connection === 'open'
+                ? 'var(--canvas-accent)'
+                : 'color-mix(in srgb, var(--canvas-text-muted) 40%, transparent)',
+              ...(state.connection === 'open' ? { animation: 'pulse 1.8s infinite' } : {}),
+            }}
+            aria-hidden="true"
           />
           {state.connection === 'open' ? t('live') : state.connection}
         </div>
@@ -101,18 +120,28 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
         {state.allDone && !isEnded ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
             <div className="text-7xl" aria-hidden="true">🎉</div>
-            <p className="text-4xl font-bold text-white">{t('allDone.heading')}</p>
-            <p className="text-white/50 text-lg">{state.session?.title}</p>
+            <p className="text-4xl font-bold" style={{ color: 'var(--canvas-text)' }}>
+              {t('allDone.heading')}
+            </p>
+            <p className="text-lg" style={{ color: 'var(--canvas-text-muted)' }}>
+              {state.session?.title}
+            </p>
           </div>
         ) : isEnded ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
-            <p className="text-3xl font-bold text-white">{t('sessionEndedTitle')}</p>
-            <p className="text-white/50">{t('sessionEndedBody')}</p>
+            <p className="text-3xl font-bold" style={{ color: 'var(--canvas-text)' }}>
+              {t('sessionEndedTitle')}
+            </p>
+            <p style={{ color: 'var(--canvas-text-muted)' }}>{t('sessionEndedBody')}</p>
           </div>
         ) : !state.question ? (
           <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="flex items-center gap-2.5 text-white/40 text-base">
-              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+            <div className="flex items-center gap-2.5 text-base" style={{ color: 'var(--canvas-text-muted)' }}>
+              <span
+                className="w-2 h-2 rounded-full animate-pulse"
+                style={{ background: 'var(--canvas-accent)' }}
+                aria-hidden="true"
+              />
               {t('waitingForQuestion')}
             </div>
           </div>
@@ -120,42 +149,37 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
           <div className="flex-1 flex flex-col gap-8 overflow-hidden">
             {/* Question prompt */}
             <div className="shrink-0">
-              <p className="text-xs font-bold tracking-[0.14em] uppercase text-teal-400 mb-3">{t('questionLabel')}</p>
-              <h1 className="font-[family-name:var(--font-display)] font-bold text-4xl leading-tight text-white [text-wrap:balance]">
+              <p
+                className="text-xs font-bold tracking-[0.14em] uppercase mb-3"
+                style={{ color: 'var(--canvas-accent)' }}
+              >
+                {t('questionLabel')}
+              </p>
+              <h1
+                className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-4xl [text-wrap:balance]"
+                style={{ color: 'var(--canvas-text)', lineHeight: 'var(--canvas-line-height, 1.6)' }}
+              >
                 {state.question.prompt}
               </h1>
-              <div className="mt-3 flex items-center gap-1.5 text-sm text-white/40">
-                <Users size={13} className="text-teal-500" aria-hidden="true" />
-                {state.results.total} {t('vote', { count: state.results.total })}
+              <div
+                className="mt-3 flex items-center gap-1.5 text-sm"
+                style={{ color: 'var(--canvas-text-muted)' }}
+              >
+                <Users size={13} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
+                <span aria-live="polite" aria-atomic="true">
+                  {state.results.total} {t('vote', { count: state.results.total })}
+                </span>
               </div>
             </div>
 
-            {/* Results bars */}
-            <div className="flex flex-col gap-5 overflow-y-auto" aria-live="polite">
-              {ordered.map((o, i) => {
-                const pct = max === 0 ? 0 : Math.round((o.count / max) * 100)
-                return (
-                  <div key={o.id} className="space-y-2">
-                    <div className="flex items-baseline justify-between gap-4">
-                      <span className="text-xl font-semibold text-white leading-snug">{o.label}</span>
-                      <span className="font-[family-name:var(--font-display)] font-bold text-3xl text-white tabular-nums shrink-0">
-                        {pct}%
-                      </span>
-                    </div>
-                    <div
-                      role="img"
-                      aria-label={`${o.label}: ${pct}%`}
-                      className="h-4 rounded-full overflow-hidden"
-                      style={{ background: 'rgba(255,255,255,0.08)' }}
-                    >
-                      <div
-                        className="h-full rounded-full transition-[width] duration-[600ms]"
-                        style={{ width: `${pct}%`, background: FILLS[i % FILLS.length] }}
-                      />
-                    </div>
-                  </div>
-                )
-              })}
+            {/* Results — adaptive viz (CANVAS-ADAPTIVE-VIZ-01) */}
+            <div className="flex-1 overflow-y-auto">
+              <AdaptiveVizResults
+                options={ordered}
+                total={state.results.total}
+                questionKind={state.question.kind}
+                tallyHidden={false}
+              />
             </div>
           </div>
         )}
@@ -164,10 +188,14 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
       {/* Footer */}
       <div
         className="shrink-0 px-8 py-4 flex items-center justify-between text-xs border-t"
-        style={{ borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.25)' }}
+        style={{ borderColor: 'var(--canvas-border)', color: 'var(--canvas-text-muted)' }}
       >
         <span>qesto.cc/j/{state.session?.code ?? code}</span>
-        <span className="font-[family-name:var(--font-display)] font-semibold">Qesto</span>
+        <span
+          className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-semibold"
+        >
+          Qesto
+        </span>
       </div>
     </div>
   )

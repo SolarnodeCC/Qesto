@@ -1,0 +1,16 @@
+{
+  "theme.label": "Canvas theme",
+  "theme.default": "Default",
+  "theme.dark": "Dark",
+  "theme.high-contrast": "High contrast",
+  "theme.brand-neutral": "Brand neutral",
+  "theme.selected": "(selected)",
+  "viz.ariaBar": "{{label}}: {{pct}}%",
+  "viz.ariaDonut": "{{label}}: {{pct}}% of votes",
+  "viz.totalVotes": "{{count}} vote",
+  "viz.totalVotes_other": "{{count}} votes",
+  "viz.wordSubmissions": "{{word}}, {{count}} submission",
+  "viz.wordSubmissions_other": "{{word}}, {{count}} submissions",
+  "viz.waitingResponses": "Waiting for responses…",
+  "viz.tallyHidden": "Tally hidden — the presenter will reveal results."
+}

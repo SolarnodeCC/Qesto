@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Download, Eye, EyeOff, Link2, Pause, Play, Shuffle, Sparkles, Timer } from 'lucide-react'
 import type { SoftTimer } from './useSoftTimer'
+import { CanvasThemePicker } from '../../components/CanvasThemePicker'
 
 export interface PresenterControlsProps {
   id: string | undefined
@@ -248,6 +249,11 @@ export function PresenterControls({
           Export CSV
         </a>
       )}
+
+      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
+
+      {/* Canvas theme picker — CANVAS-THEME-01 */}
+      <CanvasThemePicker variant="bar" />
 
       <span className="w-px h-5 bg-pulse-700 ml-auto" aria-hidden="true" />
 

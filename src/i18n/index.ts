@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 type LocaleMap = Record<string, Record<string, string>>
 type Listener = () => void
 
-const NAMESPACES = ['admin', 'auth', 'common', 'components', 'consent', 'dashboard', 'deliberate', 'embed', 'errors', 'home', 'ideate', 'insights', 'join', 'launchpad', 'login', 'not-found', 'present', 'results', 'retro', 'session-config', 'sessions', 'settings', 'solutions', 'stage', 'team', 'townhall', 'vote', 'wizard']
+const NAMESPACES = ['admin', 'auth', 'canvas', 'common', 'components', 'consent', 'dashboard', 'deliberate', 'embed', 'errors', 'home', 'ideate', 'insights', 'join', 'launchpad', 'login', 'not-found', 'present', 'results', 'retro', 'session-config', 'sessions', 'settings', 'solutions', 'stage', 'team', 'townhall', 'vote', 'wizard']
 
 let cachedLocales: LocaleMap = {}
 let currentLanguage = 'en'
