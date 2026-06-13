@@ -16,8 +16,17 @@ import type { Context, Next } from 'hono'
 import type { Env, EmbedWidgetTokenClaims } from '../types'
 import { verifyEmbedToken, originAllowed, normaliseOrigin } from '../lib/embed-token'
 import { fetchEmbedWidgetById } from '../repositories/embedWidgetRepository'
+import { rateLimit } from '../lib/rate-limit'
 
 export type WidgetVars = { widget: EmbedWidgetTokenClaims }
+
+// PEN5-E1 (ADR-0050 §5) — read-plane rate budgets. Polling reads (state/results)
+// get a generous per-minute budget sized for a ~2 rps widget; the handshake
+// (which allocates a participant token) is rarer and gets a tighter budget so a
+// token cannot be turned into a participant-token mint flood. Both are keyed per
+// widget id + origin (below) so one tenant's flood never throttles another's.
+const EMBED_READ_RATE = { max: 120, windowSeconds: 60 } as const
+const EMBED_HANDSHAKE_RATE = { max: 30, windowSeconds: 60 } as const
 
 /** Bearer first, then `?wt=` query fallback (cross-origin GET without a custom header). */
 function extractToken(c: Context): string | null {
@@ -52,8 +61,12 @@ export async function widgetTokenMiddleware(
 
   const verified = await verifyEmbedToken(secret, token)
   if (!verified.ok) {
-    const code = verified.reason === 'expired' ? 'token_expired' : 'invalid_token'
-    return deny(c, 401, code, `Widget token ${verified.reason}`)
+    // PEN5-E4 — collapse all non-expiry failure reasons to an opaque
+    // `invalid_token`; do NOT reflect the internal reason enum into the message
+    // (no oracle distinguishing malformed / bad_signature / wrong_version /
+    // wrong_scope). Expiry stays distinct so clients can re-mint deterministically.
+    if (verified.reason === 'expired') return deny(c, 401, 'token_expired', 'Widget token expired')
+    return deny(c, 401, 'invalid_token', 'Widget token invalid')
   }
   const claims = verified.claims
 
@@ -73,6 +86,36 @@ export async function widgetTokenMiddleware(
   // `ao` (checked above), never `*`.
   const normOrigin = normaliseOrigin(origin)
   if (normOrigin) c.header('Access-Control-Allow-Origin', normOrigin)
+
+  // PEN5-E1 (ADR-0050 §5) — read-plane rate limit. Keyed per widget id + origin
+  // so a flood on one widget token cannot exhaust the budget of another tenant's
+  // widget (cross-tenant isolation). Runs AFTER token+origin+revocation so the
+  // key components (`wid`, origin) are trustworthy. The handshake carries a
+  // tighter budget than the aggregate read GETs. Fail-open on KV error
+  // (availability) — the checks above are the security boundary; this is an
+  // abuse/availability control, consistent with lib/rate-limit.ts.
+  const isHandshake = c.req.path.endsWith('/handshake')
+  const budget = isHandshake ? EMBED_HANDSHAKE_RATE : EMBED_READ_RATE
+  const rl = await rateLimit(c.env.ACTIONS_KV, `${claims.wid}:${normOrigin ?? 'noorigin'}`, {
+    prefix: isHandshake ? 'embed-hs' : 'embed-read',
+    max: budget.max,
+    windowSeconds: budget.windowSeconds,
+  })
+  c.header('X-RateLimit-Limit', String(budget.max))
+  c.header('X-RateLimit-Remaining', String(Math.max(0, rl.remaining)))
+  c.header('X-RateLimit-Reset', String(Math.ceil(rl.resetAt / 1000)))
+  if (!rl.allowed) {
+    const retryAfter = Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000))
+    c.header('Retry-After', String(retryAfter))
+    return c.json(
+      {
+        ok: false,
+        error: { code: 'rate_limited', message: 'Too many requests', retryAfter },
+        trace_id: c.get('trace_id') ?? 'unknown',
+      },
+      429,
+    )
+  }
 
   c.set('widget', claims)
   await next()

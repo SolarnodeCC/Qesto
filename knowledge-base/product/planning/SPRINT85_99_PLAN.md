@@ -226,7 +226,7 @@ Content and stories are unchanged from the accepted S81–S90 plan; only the cal
 | S86 | Continuous-collab GA; DELIBERATE foundation; v5.2 RC→GA | `RC-V52-01`, `DELIBERATE-RECEIPT-01`, `SEC-VOTE-INTEGRITY-01` | **v5.2 GA** |
 | S87 | ✅ **DONE** — EMBED SDK + widget API; DELIBERATE governance GA; re-tally | `EMBED-SDK-01`, `DELIBERATE-GA-01`, `ADR-0050`, `SEC-EMBED-ORIGIN-01`, `SEC-PEN5-PREP-01` | — |
 | S88 | ✅ **DONE** — CANVAS + adaptive dataviz; CAPTIONS (Workers AI ASR+MT); AAA core flows; ADR-0051; Pentest #5 run (crit/high=0) | `CAPTIONS-PIPELINE-01`, `CANVAS-ADAPTIVE-VIZ-01`, `FE-AAA-GA-01`, `ADR-0051`, `SEC-PEN5-01` | — |
-| S89 | Gov full-ATO path; sovereign tier; AAA GA; v6.0 RC; DR drill | `RC-V60-RC-01`, `FEDRAMP-ATO-FULL-01`, `COMPLIANCE-SOC2-ANNUAL-01` | **v6.0-rc** |
+| S89 | ✅ **DONE** — Gov full-ATO path (ADR-0052) + sovereign data plane; AAA re-attest; **EMBED Pentest #5 gate closed (PEN5-E1/E3/E4)**; CAPTIONS GA sign-off; SOC 2 annual; DR drill RTO ≤ 2h; **v6.0-rc cut** | `RC-V60-RC-01`, `FEDRAMP-ATO-FULL-01`, `COMPLIANCE-SOC2-ANNUAL-01`, `PEN5-E1`, `CAPTIONS-GA-01` | **v6.0-rc** |
 | S90 | v6.0 GA; certification bundle; DR drill; v5.x sunset | `V60-GA-RELEASE-01`, `PLATFORM-CERTIFICATION-V6-01`, `DR-DRILL-ANNUAL-V6-01` | **v6.0 GA** |
 
 ### S91–S99 — net-new horizon toward v7.0 (from `SPRINT91_99_STORIES.md`)

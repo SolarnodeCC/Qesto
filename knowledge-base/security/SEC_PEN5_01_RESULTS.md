@@ -19,10 +19,18 @@ Severity legend: 🔴 Critical · 🟠 High · 🟡 Medium · ⚪ Low · ✅ Goo
 | **Agent / copilot** | **CLEAR** | 0 | 0 | 0 | 2 |
 | **Overall** | **NO RC BLOCKER** | **0** | **0** | 3 | 6 |
 
-**Overall crit/high count: 0.** On today's shipped posture **no finding blocks the v6.0 RC gate.** The single most important
-carry-forward is **EMBED M-1 (read-plane rate limit, ADR-0050 §5 unmet)** — it is *still absent in shipped code* and remains
-the one item the external testers are most likely to escalate to High under a sustained cross-tenant flood. It must close by
-**S89** to keep the gate clean. No Critical/High requires an emergency same-sprint code fix this sprint (see "Routed back to backend" at the end).
+**Overall crit/high count: 0 (sustained).** On the shipped posture **no finding blocks the v6.0 RC gate.** The single most
+important carry-forward — **EMBED M-1 / PEN5-E1 (read-plane rate limit, ADR-0050 §5)** — **is now CLOSED in shipped code
+this sprint (S89)**: `widget-token.ts:90-118` applies a per-`wid`+per-origin KV rate limit (`EMBED_READ_RATE` 120/60s,
+`EMBED_HANDSHAKE_RATE` 30/60s) returning `429 + Retry-After` over budget, keyed `${claims.wid}:${normOrigin}` for
+cross-tenant isolation, with regression coverage in `tests/unit/embed-rate-limit.test.ts`. There is therefore **no open
+EMBED availability blocker** for the v6.0 RC gate, which remains clean at crit/high = 0. The remaining EMBED carry-forward
+is **PEN5-E2** (the `tid`/`team_id` tenancy *model* decision) — a divergence, not a leak (isolation is enforced fail-safe
+on `team_id`), carried to architecture/ADR review (see disposition below). No Critical/High requires an emergency
+same-sprint code fix.
+
+**S89 closure update (2026-06-13, code-verified):** PEN5-E1, PEN5-E3, and PEN5-E4 are CLOSED in shipped code (evidence in
+the findings table and remediation tracker below). PEN5-E2 remains OPEN as an architecture decision (no code resolved it).
 
 The two prior-review fixes verified as landed and effective:
 - **DELIBERATE H-1** (ledger-row tamper now alerting) — ✅ confirmed in `deliberate-sessions.ts:241-252`.
@@ -62,10 +70,10 @@ The two prior-review fixes verified as landed and effective:
 
 | ID | Surface | STRIDE | Sev | Evidence (file:line) | Remediation | Disposition |
 |---|---|---|---|---|---|---|
-| **PEN5-E1** | EMBED | Denial of Service | 🟡 | `embed-widget-v1.ts` (no limiter); `app.ts:274` mounts the read plane with `widgetTokenMiddleware` only; `widget-token.ts:34-79` applies no rate limit; the Hono `middleware/rate-limit.ts` namespace enum (`:16`) has no embed key | Apply a per-`wid` + per-`Origin` limiter to `/api/embed/v1/*` with `429 + Retry-After`; cap `/handshake` participant-token allocation per token+origin; consider a short KV cache of the per-(session,question) tally to cut `GROUP BY` cost. **ADR-0050 §5 deliverable, still unmet.** | **S89 CARRY (must close)** — owner qesto-backend |
-| **PEN5-E2** | EMBED | Info Disclosure / Tampering | 🟡 | `embed.ts:57-59` `callerTeamId() = user.sub`; written as `team_id` at `:100`, tokenised as `tid` at `:164`; repository tenant key `WHERE … team_id = ?2` (`embedWidgetRepository.ts:89,116`) | Decide model: resolve true team and bind `team_id`/`tid` to it, OR amend ADR-0050's `tid` definition to "owning user id" + add a code comment. Isolation is *enforced* (fail-safe / more restrictive), so this is divergence, not a leak. | **S89 CARRY** — owner qesto-architect + qesto-backend |
-| **PEN5-E3** | EMBED | Tampering (latent) | ⚪ | `embedWidgetRepository.ts:140` `WHERE id = ?1 OR code = ?1`; `/handshake` calls `fetchEmbedSession(claims.sid)` directly (`embed-widget-v1.ts:77`) without the GET routes' `session.id === claims.sid` re-pin (`:65`) | Split `fetchEmbedSession` into by-id and by-code accessors so the token plane only ever resolves by the canonical id it pinned; route `/handshake` through the same post-fetch `id === claims.sid` assertion the GETs use. No live exploit (`claims.sid` is always a canonical id). | **S89 CARRY (Low)** — owner qesto-backend |
-| **PEN5-E4** | EMBED | Info Disclosure | ⚪ | `widget-token.ts:55-56` reflects `verified.reason` verbatim into `Widget token ${reason}` | Collapse all non-expiry reasons to opaque `invalid_token`; reserve `token_expired` only. Non-sensitive enum today; tighten at GA. | S89 carry (Low) — qesto-backend |
+| **PEN5-E1** | EMBED | Denial of Service | 🟡 | **FIXED (S89):** `widget-token.ts:90-118` applies a per-`wid`+per-origin KV limiter via `rateLimit(ACTIONS_KV, …)` keyed `${claims.wid}:${normOrigin}`; `EMBED_READ_RATE` 120/60s and tighter `EMBED_HANDSHAKE_RATE` 30/60s (`:28-29`); over budget returns `429` with `Retry-After` + `X-RateLimit-*` headers (`:104-117`); runs AFTER token+origin+revocation so key components are trusted; fail-open on KV error (availability control, documented `:90-96`) | Done — ADR-0050 §5 deliverable now met. Regression coverage `tests/unit/embed-rate-limit.test.ts` (429+Retry-After at cap, cross-tenant isolation, separate tighter handshake bucket, headers under budget) | ✅ **CLOSED (S89)** — owner qesto-backend |
+| **PEN5-E2** | EMBED | Info Disclosure / Tampering | 🟡 | `embed.ts:57-59` `callerTeamId() = user.sub`; written as `team_id` at `:100`, tokenised as `tid` at `:164`; repository tenant key `WHERE … team_id = ?2` (`embedWidgetRepository.ts:89,116`) | Decide model: resolve true team and bind `team_id`/`tid` to it, OR amend ADR-0050's `tid` definition to "owning user id" + add a code comment. Isolation is *enforced* (fail-safe / more restrictive), so this is divergence, not a leak. | **OPEN — carried to ADR review** (architecture decision; no code resolved it this sprint). Owner qesto-architect + PO. Not a leak, not RC-gating; tracked for ADR-0050 amendment / tenancy decision |
+| **PEN5-E3** | EMBED | Tampering (latent) | ⚪ | **FIXED (S89):** new `fetchEmbedSessionById(db, id)` — canonical-id-only `WHERE id = ?1` (`embedWidgetRepository.ts:153-162`); `/handshake` now resolves via `fetchEmbedSessionById(claims.sid)` (`embed-widget-v1.ts:81`), no longer the `id OR code` handle. The dual-handle `fetchEmbedSession` remains only on the GET routes where the post-fetch `session.id === claims.sid` re-pin already asserts canonicality (`:62-67`) | Done — token plane resolves the handshake by the canonical id it pinned; a code colliding with another session's id can no longer re-point the handshake | ✅ **CLOSED (S89)** — owner qesto-backend |
+| **PEN5-E4** | EMBED | Info Disclosure | ⚪ | **FIXED (S89):** `widget-token.ts:62-69` collapses all non-expiry verify-failure reasons to opaque `invalid_token`; only `expired` stays distinct (`token_expired`) so clients can re-mint deterministically. The internal reason enum (malformed / bad_signature / wrong_version / wrong_scope) is no longer reflected into the response — no distinguishing oracle | Done | ✅ **CLOSED (S89)** — owner qesto-backend |
 | **PEN5-D1** | DELIBERATE | Info Disclosure (defence-in-depth) | 🟡→⚪ | `deliberate-crypto.ts:81-89` `voterBallotHash` now folds the optional `DELIBERATE_VOTER_SALT`; wired through `deliberate-ledger.ts:118` and both REST (`deliberate-sessions.ts:170`) + WS (`session-room-deliberate-handler.ts:158`) paths | Provision the `DELIBERATE_VOTER_SALT` Pages secret so NEW sessions get the secret salt (devops). Construction is fail-safe byte-identical when the salt is absent, so no receipt is invalidated. **Code closed; only secret provisioning remains.** | **DOWNGRADE to ⚪** — code landed; secret-set is devops ops, not a code finding |
 | **PEN5-D2** | DELIBERATE | n/a (functional/spec) | ✅ RESOLVED | `deliberate-sessions.ts:318-354` `/observe` PUBLIC re-tally endpoint serves the same anonymous `projectLedger` projection with no auth, no identity, 404 for non-deliberate, rate-limited per IP | None — M-3 (public-tally) is now delivered and confirmed anonymity-preserving. | ✅ closed |
 | **PEN5-D3** | DELIBERATE | Info Disclosure | ⚪ | `deliberate-sessions.ts:257` `verify` returns the live `merkleRoot` to any authenticated caller before close | Optionally gate root exposure to `closed`. Low — the root reveals no individual choice. | Backlog note (Low) |
@@ -98,9 +106,9 @@ The **`/observe` public re-tally endpoint** (the prep's specific ask) is confirm
 - **PE-3 cross-origin replay:** ✅ `originAllowed` checked unconditionally before CORS/`next()` (`widget-token.ts:62`); absent/unparseable Origin → `403` (`embed-token.ts:133-136`); reflected-allowlist CORS, never `*`, with `Vary: Origin` (`widget-token.ts:40,75`).
 - **PE-4 scope/version escalation:** ✅ closed (`embed-token.ts:117-118`); read plane mounts no write route.
 - **PE-5 revocation kill-switch:** ✅ post-signature `revoked_at` read overrides `exp` (`widget-token.ts:67-70`).
-- **PE-6 rate-limit (M-1):** 🟡 **FAIL — PEN5-E1.** The read plane is unthrottled in shipped code (`app.ts:274` mounts it with `widgetTokenMiddleware` only). This is the carry-forward blocker for the gate.
-- **PE-7 session pin (M-3):** ✅ on the GET routes — `resolveTokenSession` asserts `idOrCode ∈ {sid, code}` AND `session.id === claims.sid` (`embed-widget-v1.ts:55-67`). 🟡→⚪ residual on `/handshake` + the dual-handle `OR` (PEN5-E3).
-- **PE-8 cross-tenant config (M-2):** 🟡 **PEN5-E2** — isolation enforced on `team_id = user.sub` (fail-safe), but `tid` ≠ teamId; ADR divergence to decide.
+- **PE-6 rate-limit (M-1):** ✅ **CLOSED (S89) — PEN5-E1.** The read plane is now throttled in `widget-token.ts:90-118`: per-`wid`+per-origin KV limiter (`EMBED_READ_RATE` 120/60s, `EMBED_HANDSHAKE_RATE` 30/60s), `429 + Retry-After` over budget, keyed `${claims.wid}:${normOrigin}` for cross-tenant isolation. Regression test `tests/unit/embed-rate-limit.test.ts`. No longer a gate blocker.
+- **PE-7 session pin (M-3):** ✅ on the GET routes — `resolveTokenSession` asserts `idOrCode ∈ {sid, code}` AND `session.id === claims.sid` (`embed-widget-v1.ts:56-68`). ✅ **CLOSED (S89)** on `/handshake` too — now resolves by canonical id via `fetchEmbedSessionById(claims.sid)` (`:81`); dual-handle `OR` footgun removed from the token plane (PEN5-E3).
+- **PE-8 cross-tenant config (M-2):** 🟡 **PEN5-E2 (OPEN — ADR review)** — isolation enforced on `team_id = user.sub` (fail-safe), but `tid` ≠ teamId; ADR divergence still to decide (carried, not closed; not RC-gating).
 
 ### Agent / copilot — **CLEAR**
 
@@ -136,10 +144,10 @@ not bundle into one release. The shipped code is consistent with the discipline:
 
 | ID | Item | Surface | Sev | Owner | Target | Status |
 |---|---|---|---|---|---|---|
-| PEN5-E1 | Read-plane per-`wid`+per-origin rate limit (ADR-0050 §5) | EMBED | 🟡 (avail; High if testers demonstrate cross-tenant flood) | qesto-backend | S89 (before v6.0 RC) | **OPEN — must close** |
-| PEN5-E2 | `tid`/`team_id` tenancy model decision (resolve true team OR amend ADR-0050) | EMBED | 🟡 | qesto-architect + qesto-backend | S89 | OPEN (decision) |
-| PEN5-E3 | Split `fetchEmbedSession` by-id/by-code; re-pin `/handshake` | EMBED | ⚪ | qesto-backend | S89 (bundle with E1) | OPEN |
-| PEN5-E4 | Collapse verify-failure reason to opaque `invalid_token` | EMBED | ⚪ | qesto-backend | GA hardening | OPEN |
+| PEN5-E1 | Read-plane per-`wid`+per-origin rate limit (ADR-0050 §5) | EMBED | 🟡 (avail) | qesto-backend | S89 (before v6.0 RC) | ✅ **CLOSED (S89)** — `widget-token.ts:90-118`; tests `tests/unit/embed-rate-limit.test.ts` |
+| PEN5-E2 | `tid`/`team_id` tenancy model decision (resolve true team OR amend ADR-0050) | EMBED | 🟡 | qesto-architect + PO | ADR review (post-RC OK) | **OPEN (decision)** — carried to ADR review; divergence not leak; not RC-gating |
+| PEN5-E3 | Split `fetchEmbedSession` by-id/by-code; re-pin `/handshake` | EMBED | ⚪ | qesto-backend | S89 (bundled with E1) | ✅ **CLOSED (S89)** — `fetchEmbedSessionById` `embedWidgetRepository.ts:153-162`; `/handshake` `embed-widget-v1.ts:81` |
+| PEN5-E4 | Collapse verify-failure reason to opaque `invalid_token` | EMBED | ⚪ | qesto-backend | S89 | ✅ **CLOSED (S89)** — `widget-token.ts:62-69` |
 | PEN5-D1 | Provision `DELIBERATE_VOTER_SALT` Pages secret (code already folds it) | DELIBERATE | ⚪ | qesto-devops | DELIBERATE GA | OPEN (ops only) |
 | PEN5-D3 | Gate `verify` merkleRoot exposure to `closed` | DELIBERATE | ⚪ | qesto-backend | backlog | OPEN |
 | PEN5-D4 | Make `leaf_index` monotonic OR document as display-only | DELIBERATE | ⚪ | qesto-backend | backlog | OPEN |
@@ -148,6 +156,11 @@ not bundle into one release. The shipped code is consistent with the discipline:
 **Closed this window (verified in shipped code):** DELIBERATE H-1 (✅ tamper alert), DELIBERATE M-1 (✅ voter salt folded),
 DELIBERATE M-2 (✅ cast/verify/observe rate limits), DELIBERATE M-3 (✅ public `/observe` re-tally), EMBED M-3 GET-route
 session-pin (✅ `resolveTokenSession`), AI-461 (✅ audit sanitisation), AI-462 (✅ no data leak), AI-463/464 (✅ provenance).
+
+**Closed in S89 (this sprint, code-verified):** **PEN5-E1** (✅ read-plane per-`wid`+per-origin rate limit, `429+Retry-After`,
+cross-tenant isolation — `widget-token.ts:90-118` + `tests/unit/embed-rate-limit.test.ts`), **PEN5-E3** (✅ handshake re-pin
+via `fetchEmbedSessionById`), **PEN5-E4** (✅ opaque `invalid_token`). **Still open:** PEN5-E2 (tenancy model — carried to
+ADR review, not a leak, not RC-gating) and the pre-existing Lows PEN5-D1/D3/D4 and PEN5-A2 (backlog/ops, none RC-gating).
 
 Backlog routing: PEN5-E1/E2 → `BACKLOG_MASTER.md §4` (ARCH/SEC, WSJF); PEN5-E1 must be tracked as an **S89 RC-gating** item
 even at Medium because it is a named ADR-0050 §5 deliverable and the single open item the testers can escalate.
@@ -158,7 +171,7 @@ even at Medium because it is a named ADR-0050 §5 deliverable and the single ope
 
 | # | Test | Expected | Maps to |
 |---|---|---|---|
-| RG-1 | **EMBED rate limit (after E1 fix):** flood `/api/embed/v1/sessions/:id/results` with one valid token | `429 + Retry-After`; one token's flood does not throttle another token | PE-6 / R-12 |
+| RG-1 | **EMBED rate limit (E1 fix — ✅ satisfied S89):** flood the read plane with one valid token | `429 + Retry-After`; one token's flood does not throttle another token | PE-6 / R-12 · **MET by `tests/unit/embed-rate-limit.test.ts`** (429+Retry-After at cap, cross-tenant isolation, separate tighter handshake bucket, headers under budget) |
 | RG-2 | **EMBED handshake pin (after E3 fix):** craft a token whose `sid` is a code colliding with another session's id; call `/handshake` | resolves only the token's canonical session; never a foreign session | PE-7 / R-9 |
 | RG-3 | **EMBED de-anon incl. AI-462:** snapshot `/handshake`,`/state`,`/results` | no key matches `/voter\|hash\|ip\|fingerprint\|email\|name\|user_?id/i`; `copilotChanged` is boolean only | PE-1 / R-1 |
 | RG-4 | **EMBED cross-tenant:** mint/list/revoke another tenant's `:wid` | `404`/no-op (isolation holds on `team_id`) | PE-8 / R-11 |
