@@ -439,9 +439,43 @@ starter=false, team=true`. Gate enforced at mint; widget API trusts the token.
 `allow=""`. **Embed page CSP:** `frame-ancestors <team allowed_origins>`. **Widget API CORS:**
 reflect `Origin` only if in token `ao`, `Vary: Origin`, never `*`.
 
+## Amendment 1 — embed tenancy model ratified (PEN5-E2, S90 / v6.0 GA)
+
+**Status:** accepted 2026-06-19 (S90). **Deciders:** architect, security, product-owner.
+
+Pentest #5 raised **PEN5-E2** (Medium): the widget token `tid` claim and the
+`embed_widgets.team_id` column are both set to the session-**owner's user id**
+(`callerTeamId() = user.sub`, `routes/embed.ts`), not to a separate team id, while the
+column is named `team_id`. Security's v6.0-rc gate (`SEC_V60_RC_GATE.md`) classified this
+as a **model divergence, not a leak**: tenant isolation is enforced fail-safe on the same
+value at both planes (`embedWidgetRepository.ts` keys reads on `team_id`; the token carries
+the identical `tid`), so the claim and the column **cannot diverge** and no cross-tenant
+read is reachable. It was carried out of the RC as an architecture decision (not RC-gating).
+
+**Decision (S90):** **ratify the session-ownership tenancy model** as the embed plane's
+intended design. The embed tenancy key *is* the session owner's user id, consistent with the
+DRAFT REST surface (`owner_id = user.sub`) and ADR-0050's original authorization model
+(§"the host must own the session"). The `tid` claim is hereby defined as **"the owning
+user's id (tenant key)"**, not "a team id"; the `team_id` column name is retained for schema
+stability and is understood to hold that same owner key.
+
+**Why not migrate to a real team_id now.** Introducing a distinct team-scoped tenancy for
+embed widgets is a deliberate data-model migration (backfill + dual-read + token-version
+bump) that would change a trust boundary. Shipping that inside the v6.0 **certification**
+sprint is the wrong risk; it is explicitly **out of scope for S90** and parked as a future
+backlog item should real-team embed sharing become a requirement.
+
+**Code reflecting this amendment (S90):** clarifying contracts in `routes/embed.ts`
+(`callerTeamId` doc) and `lib/embed-token.ts` (`MintTokenInput.tid` doc). No behavioural
+change — the value bound and verified is identical to the v6.0-rc code; PEN5-E2 closes as
+**resolved-by-ratification**, no longer an open architecture decision.
+
 ## Docs updated
 
 - This ADR created: `knowledge-base/adr/ADR-0050-embeddable-sdk-auth-widget-origin-sandboxing.md`.
+- Amendment 1 (S90): `routes/embed.ts` + `lib/embed-token.ts` doc comments ratifying the
+  session-ownership tenancy model; `SEC_PEN5_01_RESULTS.md` / `SEC_V60_RC_GATE.md` PEN5-E2
+  disposition updated to resolved-by-ratification.
 - Implementers must, when building EMBED-SDK-01 / EMBED-WIDGET-API-01, update:
   `SPEC_BACKEND` (mint + widget API + `widgetTokenMiddleware`), `SPEC_FRONTEND` (loader +
   sandboxed iframe + postMessage), `SPEC_INTEGRATIONS` (public widget API contract),

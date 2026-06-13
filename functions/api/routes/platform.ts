@@ -25,6 +25,7 @@ const RELEASES = [
   { version: '5.3.0-dev', codename: 'v5.3-dev', status: 'dev', sprint: 87 },
   { version: '5.4.0-dev', codename: 'v5.4-dev', status: 'dev', sprint: 88 },
   { version: '6.0.0-rc.1', codename: 'v6.0-rc', status: 'rc', sprint: 89 },
+  { version: '6.0.0', codename: 'v6.0', status: 'ga', sprint: 90 },
 ] as const
 
 export function mountPlatformRoutes(parent: ParentApp) {
@@ -34,7 +35,7 @@ export function mountPlatformRoutes(parent: ParentApp) {
     c.json({
       ok: true,
       data: {
-        api: '6.0.0-rc.1',
+        api: '6.0.0',
         realtimeDefault:
           getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
         realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),
@@ -106,10 +107,18 @@ export function mountPlatformRoutes(parent: ParentApp) {
       ok: true,
       data: {
         platformCertification: true,
+        certifiedVersion: '6.0.0',
         soc2Type2: 'closed',
+        soc2AnnualEvidence: '2026',
+        // Pentest #3 (v5.0) and Pentest #5 (v6.0 governance + embed + agent) both crit/high = 0.
         pentest3: 'complete',
+        pentest5: 'complete',
         drDrillRtoHours: 2,
+        // Bounded claim (ADR-0053): AAA on core flows + captions overlay + canvas themes; broader app AA.
         aaaConformance: 'partial',
+        fedRampAto: 'path_documented',
+        sovereignTier: 'available',
+        deprecationPolicy: 'knowledge-base/adr/ADR-0053-v6-platform-certification.md',
         certifiedAt: new Date().toISOString().slice(0, 10),
       },
       trace_id: c.get('trace_id'),
@@ -123,6 +132,24 @@ export function mountPlatformRoutes(parent: ParentApp) {
         v4MaintenanceEnd: '2028-09-16',
         v3End: '2027-12-31',
         notice: 'Sunset-Date headers on deprecated API versions',
+      },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
+  pub.get('/v5-sunset', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        // v6.0 GA (S90) starts the v5.x deprecation clock per ADR-0053.
+        // v5.x APIs remain maintained through the maintenance window; no breaking
+        // changes vs. v6.0 (additive RELEASES + version string only).
+        v5MaintenanceEnd: '2028-12-31',
+        v4MaintenanceEnd: '2028-09-16',
+        v3End: '2027-12-31',
+        currentGa: '6.0.0',
+        notice: 'Sunset-Date headers on deprecated API versions; v5.x enters maintenance at v6.0 GA',
+        policyDoc: 'knowledge-base/adr/ADR-0053-v6-platform-certification.md',
       },
       trace_id: c.get('trace_id'),
     }),
