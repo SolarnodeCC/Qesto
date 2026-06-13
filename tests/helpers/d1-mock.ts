@@ -1353,6 +1353,13 @@ export class D1PreparedStatementMock {
         : rows.reduce((sum, s) => sum + (s.anonymity !== 'none' ? 1 : 0), 0) / rows.length
       return { rate } as T
     }
+    // DELIBERATE-RECEIPT-01: ballot count for a session.
+    if (this.sql.includes('COUNT(*) AS n FROM deliberate_ballots WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      let n = 0
+      for (const r of this.db.deliberateBallots.values()) if (r.session_id === session_id) n++
+      return { n } as T
+    }
     if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { count: 0 } as T
     }
@@ -1514,7 +1521,6 @@ export class D1PreparedStatementMock {
       const row = this.db.sessions.get(id)
       return (row && row.owner_id === owner_id ? { id: row.id } : null) as T | null
     }
-    // DELIBERATE-RECEIPT-01: ballot count for a session.
     // EMBED-SDK-01: widget token lookups
     if (this.sql.includes('FROM embed_widgets WHERE id =')) {
       const [id] = this.args as [string]
@@ -1526,12 +1532,6 @@ export class D1PreparedStatementMock {
         if (r.session_id === val || r.session_code === val) return r as T
       }
       return null as T | null
-    }
-    if (this.sql.includes('COUNT(*) AS n FROM deliberate_ballots WHERE session_id')) {
-      const [session_id] = this.args as [string]
-      let n = 0
-      for (const r of this.db.deliberateBallots.values()) if (r.session_id === session_id) n++
-      return { n } as T
     }
     // DELIBERATE-RECEIPT-01: sessionForBallot — public fields, no owner constraint.
     if (this.sql.startsWith('SELECT id, code, created_at, session_mode, status FROM sessions WHERE id')) {
