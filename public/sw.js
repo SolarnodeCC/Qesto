@@ -1,5 +1,5 @@
 /* MOBILE-PWA-02 — app shell cache + offline join fallback */
-const CACHE = 'qesto-pwa-v3'
+const CACHE = 'qesto-pwa-v4'
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -22,11 +22,39 @@ self.addEventListener('fetch', (event) => {
   // host and CSP `font-src` / `style-src` rules apply correctly.
   if (url.origin !== self.location.origin) return
   if (url.pathname.startsWith('/api/')) return
+
+  // Hashed assets are content-addressed and immutable — serve from cache if present,
+  // otherwise fetch and cache. No need to revalidate since the hash changes on redeploy.
+  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/chunks/')) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached
+        return fetch(event.request).then((response) => {
+          if (response.ok) {
+            caches.open(CACHE).then((c) => c.put(event.request, response.clone()))
+          }
+          return response
+        })
+      }),
+    )
+    return
+  }
+
+  // HTML/SPA routes and other assets use network-first so deployments are picked up
+  // immediately. Cache is only used as an offline fallback.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached
-      return fetch(event.request).catch(() => caches.match('/') ?? caches.match('/index.html'))
-    }),
+    fetch(event.request)
+      .then((response) => {
+        if (response.ok) {
+          caches.open(CACHE).then((c) => c.put(event.request, response.clone()))
+        }
+        return response
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) =>
+          cached ?? caches.match('/') ?? caches.match('/index.html'),
+        ),
+      ),
   )
 })
 
