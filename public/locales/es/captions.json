@@ -1,0 +1,18 @@
+{
+  "region_label": "Subtítulos en directo",
+  "increase_font": "Aumentar el tamaño del texto de los subtítulos",
+  "decrease_font": "Reducir el tamaño del texto de los subtítulos",
+  "start_captions": "Iniciar subtítulos",
+  "stop_captions": "Detener subtítulos",
+  "captions_active": "Subtítulos activados",
+  "captions_inactive": "Subtítulos desactivados",
+  "captions_plan_gate": "Los subtítulos en directo requieren un plan Team o superior.",
+  "upgrade_prompt": "Cambiar a Team",
+  "locale_picker_label": "Idioma de los subtítulos",
+  "locale_off": "Desactivado",
+  "locale_en": "Inglés",
+  "locale_nl": "Neerlandés",
+  "locale_es": "Español",
+  "locale_de": "Alemán",
+  "locale_fr": "Francés"
+}

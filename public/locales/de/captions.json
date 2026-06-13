@@ -1,0 +1,18 @@
+{
+  "region_label": "Live-Untertitel",
+  "increase_font": "Untertitel-Textgröße vergrößern",
+  "decrease_font": "Untertitel-Textgröße verkleinern",
+  "start_captions": "Untertitel starten",
+  "stop_captions": "Untertitel stoppen",
+  "captions_active": "Untertitel an",
+  "captions_inactive": "Untertitel aus",
+  "captions_plan_gate": "Live-Untertitel erfordern einen Team-Tarif oder höher.",
+  "upgrade_prompt": "Auf Team upgraden",
+  "locale_picker_label": "Untertitelsprache",
+  "locale_off": "Aus",
+  "locale_en": "Englisch",
+  "locale_nl": "Niederländisch",
+  "locale_es": "Spanisch",
+  "locale_de": "Deutsch",
+  "locale_fr": "Französisch"
+}

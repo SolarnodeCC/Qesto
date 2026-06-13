@@ -1,0 +1,18 @@
+{
+  "region_label": "Sous-titres en direct",
+  "increase_font": "Augmenter la taille du texte des sous-titres",
+  "decrease_font": "Réduire la taille du texte des sous-titres",
+  "start_captions": "Démarrer les sous-titres",
+  "stop_captions": "Arrêter les sous-titres",
+  "captions_active": "Sous-titres activés",
+  "captions_inactive": "Sous-titres désactivés",
+  "captions_plan_gate": "Les sous-titres en direct nécessitent un forfait Team ou supérieur.",
+  "upgrade_prompt": "Passer à Team",
+  "locale_picker_label": "Langue des sous-titres",
+  "locale_off": "Désactivé",
+  "locale_en": "Anglais",
+  "locale_nl": "Néerlandais",
+  "locale_es": "Espagnol",
+  "locale_de": "Allemand",
+  "locale_fr": "Français"
+}

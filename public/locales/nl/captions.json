@@ -1,0 +1,18 @@
+{
+  "region_label": "Live ondertiteling",
+  "increase_font": "Tekstgrootte ondertiteling vergroten",
+  "decrease_font": "Tekstgrootte ondertiteling verkleinen",
+  "start_captions": "Ondertiteling starten",
+  "stop_captions": "Ondertiteling stoppen",
+  "captions_active": "Ondertiteling aan",
+  "captions_inactive": "Ondertiteling uit",
+  "captions_plan_gate": "Live ondertiteling vereist een Team-abonnement of hoger.",
+  "upgrade_prompt": "Upgraden naar Team",
+  "locale_picker_label": "Ondertitelingstaal",
+  "locale_off": "Uit",
+  "locale_en": "Engels",
+  "locale_nl": "Nederlands",
+  "locale_es": "Spaans",
+  "locale_de": "Duits",
+  "locale_fr": "Frans"
+}
