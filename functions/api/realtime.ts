@@ -228,6 +228,18 @@ export type ClientMessage =
   // DELIBERATE (ADR-0049, DELIBERATE-GA-01). A participant casts one verifiable
   // governance ballot over the live board. `choice` is the public tally bucket.
   | { v?: LiveProtocolVersion; type: 'deliberate_cast'; data: { choice: string }; timestamp: number }
+  // CAPTIONS (ADR-0051). Additive on protocol v3, NO version bump. Presenter
+  // toggles captions on/off (gated upstream on the liveCaptions entitlement);
+  // participants pick the locale they want captions in (a free read-side pref
+  // that drives the DO's distinct-active-locale MT fan-out set).
+  | { v?: LiveProtocolVersion; type: 'captions_start'; data: { sourceLocale: string }; timestamp: number }
+  | { v?: LiveProtocolVersion; type: 'captions_stop'; data: Record<string, never>; timestamp: number }
+  | {
+      v?: LiveProtocolVersion
+      type: 'captions_set_locale'
+      data: { locale: 'en' | 'nl' | 'es' | 'de' | 'fr' | 'off' }
+      timestamp: number
+    }
 
 // ── Server → Client ─────────────────────────────────────────────────────────
 export type LiveQuestion = {
@@ -546,6 +558,16 @@ export type ServerMessage =
           issuedAt: number
         }
       }
+      timestamp: number
+    }
+  // CAPTIONS (ADR-0051). Additive on protocol v3, NO version bump. A partial
+  // (isFinal:false) and its finalization (isFinal:true) share `id`; the overlay
+  // replaces in place. `lang`/`text` are ALREADY in the recipient socket's chosen
+  // locale (source or translated) — no per-recipient inference at delivery.
+  | {
+      v?: LiveProtocolVersion
+      type: 'caption_segment'
+      data: { id: string; ts: number; lang: string; text: string; isFinal: boolean }
       timestamp: number
     }
   | {

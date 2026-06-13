@@ -330,6 +330,8 @@ export interface PlanQuotas {
     verifiableVoting: boolean
     /** ADR-0050: EMBED — mint origin-bound widget tokens + embed live widget — Team tier only. */
     embedWidgets: boolean
+    /** ADR-0051: CAPTIONS — live ASR + translation caption pipeline — Team tier only. */
+    liveCaptions: boolean
   }
 }
 
@@ -351,6 +353,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       recurringWorkspaces: false,
       verifiableVoting: false,
       embedWidgets: false,
+      liveCaptions: false,
     },
   },
   starter: {
@@ -370,6 +373,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       recurringWorkspaces: false,
       verifiableVoting: false,
       embedWidgets: false,
+      liveCaptions: false,
     },
   },
   team: {
@@ -389,6 +393,7 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       recurringWorkspaces: true,
       verifiableVoting: true,
       embedWidgets: true,
+      liveCaptions: true,
     },
   },
 }

@@ -1,0 +1,34 @@
+{
+  "_comment": "CAPTIONS-PIPELINE-01 MT golden set (ADR-0051 §6, REV-10). One block per ENABLED source->target pair (S88: EN-source -> nl/es/de/fr). `mt` is the deterministic mocked M2M100 translated_text; `reference` is the human gold translation. The eval asserts the parsed MT structure and WER(reference, mt) <= CAPTION_WER_BAR. A pair whose fixtures exceed the bar is NOT added to CAPTION_PAIR_ENABLED. Non-EN-source pairs are intentionally absent (degrade-to-source until S89+).",
+  "werBar": 0.25,
+  "pairs": [
+    {
+      "source": "en",
+      "target": "nl",
+      "sourceText": "welcome everyone to the quarterly all hands",
+      "reference": "welkom allemaal bij de driemaandelijkse vergadering",
+      "mt": "welkom allemaal bij de driemaandelijkse vergadering"
+    },
+    {
+      "source": "en",
+      "target": "es",
+      "sourceText": "welcome everyone to the quarterly all hands",
+      "reference": "bienvenidos todos a la reunion trimestral",
+      "mt": "bienvenidos todos a la reunion trimestral"
+    },
+    {
+      "source": "en",
+      "target": "de",
+      "sourceText": "welcome everyone to the quarterly all hands",
+      "reference": "willkommen alle zur vierteljaehrlichen versammlung",
+      "mt": "willkommen alle zur vierteljaehrlichen versammlung"
+    },
+    {
+      "source": "en",
+      "target": "fr",
+      "sourceText": "welcome everyone to the quarterly all hands",
+      "reference": "bienvenue a tous a la reunion trimestrielle",
+      "mt": "bienvenue a tous a la reunion trimestrielle"
+    }
+  ]
+}
