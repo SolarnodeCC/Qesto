@@ -64,6 +64,11 @@ class Stmt {
       const row = [...this.db.sessions.values()].find((r) => r.id === k || r.code === k)
       return (row ? { id: row.id, code: row.code, title: row.title, status: row.status, anonymity: row.anonymity } : null) as T | null
     }
+    // PEN5-E3 — by canonical id only (no OR, no owner predicate).
+    if (s.includes('FROM sessions WHERE id = ?1') && !s.includes('owner_id') && !s.includes('OR code')) {
+      const row = this.db.sessions.get(this.args[0] as string)
+      return (row ? { id: row.id, code: row.code, title: row.title, status: row.status, anonymity: row.anonymity } : null) as T | null
+    }
     if (s.includes('FROM embed_widgets WHERE id = ?1 AND team_id = ?2')) {
       const row = this.db.embedWidgets.get(this.args[0] as string)
       return (row && row.team_id === this.args[1] ? row : null) as T | null

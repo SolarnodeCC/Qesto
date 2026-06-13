@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-06-11 (UTC) — Sprint 85–99 9-day-cadence re-plan toward v7.0 (S91–S99 net-new registry added: E91–E98, 66 stories); see §Sprint 91–99. Prior: 2026-06-01 — Sprint 81–85 committed plan (INSIGHTS+ + v5.1); Sprint 81–90 master plan_
+_Last updated: 2026-06-13 (UTC) — **Sprint 89 shipped: v6.0-rc cut.** EMBED Pentest #5 gate closed (PEN5-E1 read-plane rate limit + E3/E4); CAPTIONS GA WER sign-off; WCAG AAA re-attest; ADR-0052 (FedRAMP full-ATO + sovereign data plane) accepted; SOC 2 annual evidence; DR drill RTO ≤ 2h; platform version → 6.0.0-rc.1. See [`SPRINT89_EXECUTION.md`](../releases/SPRINT89_EXECUTION.md). Prior: 2026-06-11 — Sprint 85–99 9-day-cadence re-plan toward v7.0 (S91–S99 net-new registry: E91–E98, 66 stories); 2026-06-01 — Sprint 81–90 master plan_
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_

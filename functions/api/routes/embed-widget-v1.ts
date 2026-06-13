@@ -20,6 +20,7 @@ import { Hono } from 'hono'
 import { widgetTokenMiddleware, type WidgetVars } from '../middleware/widget-token'
 import {
   fetchEmbedSession,
+  fetchEmbedSessionById,
   fetchEmbedActiveQuestion,
   widgetResponseCount,
   widgetResultsAggregate,
@@ -74,7 +75,10 @@ export function mountEmbedWidgetV1Routes(parent: ParentApp) {
   app.post('/handshake', async (c) => {
     const trace_id = c.get('trace_id')
     const claims = c.get('widget')
-    const session = await fetchEmbedSession(c.env.DB, claims.sid)
+    // PEN5-E3 — resolve by canonical id (claims.sid is trusted), never the
+    // `id OR code` handle, so a code colliding with another session's id can't
+    // re-point the handshake at a foreign session.
+    const session = await fetchEmbedSessionById(c.env.DB, claims.sid)
     if (!session) {
       return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id }, 404)
     }

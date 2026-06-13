@@ -144,6 +144,23 @@ export async function fetchEmbedSession(
   return row ?? null
 }
 
+/**
+ * Resolve a session by its CANONICAL id only (PEN5-E3). Used wherever the caller
+ * already holds the trusted `claims.sid` (e.g. /handshake), so a join code that
+ * happens to collide with another session's id can never resolve the wrong row
+ * via the `id OR code` footgun. There is exactly one row per id (primary key).
+ */
+export async function fetchEmbedSessionById(
+  db: D1Database,
+  id: string,
+): Promise<EmbedSessionView | null> {
+  const row = await db
+    .prepare(`SELECT id, code, title, status, anonymity FROM sessions WHERE id = ?1`)
+    .bind(id)
+    .first<EmbedSessionView>()
+  return row ?? null
+}
+
 export type ActiveQuestionView = {
   id: string
   kind: string
