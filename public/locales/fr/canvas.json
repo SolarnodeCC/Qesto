@@ -1,0 +1,16 @@
+{
+  "theme.label": "Thème de la toile",
+  "theme.default": "Par défaut",
+  "theme.dark": "Sombre",
+  "theme.high-contrast": "Contraste élevé",
+  "theme.brand-neutral": "Neutre pour la marque",
+  "theme.selected": "(sélectionné)",
+  "viz.ariaBar": "{{label}}: {{pct}}%",
+  "viz.ariaDonut": "{{label}}: {{pct}}% des votes",
+  "viz.totalVotes": "{{count}} vote",
+  "viz.totalVotes_other": "{{count}} votes",
+  "viz.wordSubmissions": "{{word}}, {{count}} soumission",
+  "viz.wordSubmissions_other": "{{word}}, {{count}} soumissions",
+  "viz.waitingResponses": "En attente de réponses…",
+  "viz.tallyHidden": "Dépouillement masqué — le présentateur révélera les résultats."
+}
