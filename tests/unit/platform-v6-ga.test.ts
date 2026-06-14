@@ -40,8 +40,17 @@ describe('platform v6.0 GA contract (Sprint 90)', () => {
 
   it('lists the v6.0 GA release', async () => {
     const res = await get('/api/platform/releases')
+    expect(res.status).toBe(200)
     const body = (await res.json()) as {
       data: { releases: ReadonlyArray<{ version: string; status: string; sprint: number; codename: string }> }
+    }
+    expect(body.data.releases.length).toBeGreaterThanOrEqual(2)
+    for (const release of body.data.releases) {
+      expect(Object.keys(release).sort()).toEqual(['codename', 'sprint', 'status', 'version'])
+      expect(typeof release.version).toBe('string')
+      expect(typeof release.codename).toBe('string')
+      expect(['dev', 'rc', 'ga']).toContain(release.status)
+      expect(Number.isInteger(release.sprint)).toBe(true)
     }
     const ga = body.data.releases.find((r) => r.version === '6.0.0')
     expect(ga).toEqual({ version: '6.0.0', codename: 'v6.0', status: 'ga', sprint: 90 })
@@ -57,9 +66,14 @@ describe('platform v6.0 GA contract (Sprint 90)', () => {
     expect(body.data.pentest5).toBe('complete')
     expect(body.data.soc2Type2).toBe('closed')
     expect(body.data.drDrillRtoHours).toBe(2)
+    expect(body.data.soc2AnnualEvidence).toEqual(expect.any(String))
+    expect(body.data.pentest3).toBe('complete')
     // Bounded AAA claim held at GA (core + captions + canvas AAA, broader app AA).
     expect(body.data.aaaConformance).toBe('partial')
     expect(body.data.fedRampAto).toBe('path_documented')
+    expect(body.data.sovereignTier).toEqual(expect.any(String))
+    expect(body.data.deprecationPolicy).toEqual(expect.stringContaining('ADR-0053'))
+    expect(body.data.certifiedAt).toEqual(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/))
   })
 
   it('publishes the v5.x sunset notice', async () => {

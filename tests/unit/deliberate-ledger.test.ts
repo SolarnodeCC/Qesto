@@ -167,6 +167,29 @@ describe('deliberate-ledger: appendBallot', () => {
     expect(ledger.map((row) => row.choice)).toEqual(['approve', 'reject'])
   })
 
+  it('throws after repeated leaf_index conflicts without appending a corrupt duplicate', async () => {
+    const db = new D1Mock()
+    db.deliberateBallots.set('b_existing', {
+      id: 'b_existing',
+      session_id: SESSION.id,
+      ballot_nonce: 'nonce-existing',
+      commitment: 'a'.repeat(64),
+      choice: 'approve',
+      voter_hash: 'private-existing',
+      leaf_index: 0,
+      created_at: 1,
+    })
+    db.deliberateBallotCountOverrides.push(0, 0, 0, 0, 0)
+
+    await expect(appendBallot(asD1(db), SESSION, 'voter_b', 'reject', VOTER_SALT)).rejects.toThrow(
+      'Unable to append deliberate ballot after repeated ledger index conflicts',
+    )
+
+    const ledger = await loadLedger(asD1(db), SESSION.id)
+    expect(ledger).toHaveLength(1)
+    expect(ledger[0]).toMatchObject({ leaf_index: 0, choice: 'approve' })
+  })
+
   it('scopes duplicate-voter detection and leaf indexes to each session', async () => {
     const db = new D1Mock()
 
