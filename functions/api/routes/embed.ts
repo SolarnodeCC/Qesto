@@ -53,6 +53,14 @@ const MintTokenSchema = z.object({
  * authorises the session by ownership (`owner_id = user.sub`), so the host's
  * user id is the tenant key here — consistent with the session-ownership model
  * used across the DRAFT REST surface.
+ *
+ * PEN5-E2 resolution (ADR-0050 §Amendment 1, ratified S90/v6.0 GA): the embed
+ * tenancy key (the `team_id` column and the token `tid` claim) is intentionally
+ * the session-owner's user id, not a separate team id. Isolation is enforced
+ * fail-safe on this same value at both the column and the claim, so the two
+ * never diverge — this is a naming model, not a leak. A future real-team
+ * tenancy model is a deliberate migration, explicitly out of scope for the GA
+ * certification sprint.
  */
 function callerTeamId(c: Context<{ Bindings: Env; Variables: Vars }>): string {
   return c.get('user').sub

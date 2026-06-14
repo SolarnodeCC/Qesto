@@ -70,7 +70,7 @@ All three EMBED carry-forwards from Pentest #5 are closed and verified by readin
 
 | ID | Sev | Surface | Disposition | RC-gating? |
 |---|---|---|---|---|
-| **PEN5-E2** | 🟡 | EMBED | **OPEN — architecture decision, carried to ADR review.** The `tid` token claim is set to the owning user id (`embed.ts:57-59`, `callerTeamId() = user.sub`) while the repository tenant key is `team_id`. Isolation is *enforced* fail-safe on `team_id` (`embedWidgetRepository.ts:89,116`), so this is a model **divergence, not a leak**. No code resolved it this sprint. Owner: qesto-architect + PO — decide the tenancy model OR amend ADR-0050's `tid` definition. | No — divergence not leak |
+| **PEN5-E2** | 🟡→✅ | EMBED | **RESOLVED-BY-RATIFICATION (S90 / v6.0 GA — ADR-0050 Amendment 1).** The `tid` token claim is the owning user id (`embed.ts`, `callerTeamId() = user.sub`); the repository tenant key `team_id` holds that *same* value, and isolation is enforced fail-safe on it at both planes — claim and column cannot diverge, so this was a naming model, not a leak. S90 ratified the session-ownership tenancy model (no data-model migration in a certification sprint) and clarified the `tid`/`callerTeamId` contracts. Closed; no Medium remains open against v6.0 GA. | No |
 | **PEN5-D1** | ⚪ | DELIBERATE | Code folds the optional `DELIBERATE_VOTER_SALT` (`deliberate-crypto.ts:81-89`); only the Pages-secret provisioning remains (devops ops, fail-safe byte-identical when absent). | No |
 | **PEN5-D3** | ⚪ | DELIBERATE | `verify` returns the live `merkleRoot` pre-close (`deliberate-sessions.ts:257`); root reveals no individual choice. Backlog note. | No |
 | **PEN5-D4** | ⚪ | DELIBERATE | `leaf_index` is count-then-insert, non-atomic (`deliberate-ledger.ts:120-124`); display-only — neither tally nor root depends on it. Backlog note. | No |
@@ -117,7 +117,7 @@ with QA; none are RC-gating and none cover a crit/high finding.
 |---|---|
 | Gate | v6.0-rc security |
 | Decision | **CLEAR** (crit/high = 0; no open EMBED availability blocker) |
-| Open Medium | PEN5-E2 (architecture decision, carried to ADR review — not a leak, not RC-gating) |
+| Open Medium | none — PEN5-E2 resolved-by-ratification at S90 / v6.0 GA (ADR-0050 Amendment 1) |
 | Open Low | PEN5-D1 (ops), PEN5-D3, PEN5-D4, PEN5-A2 (backlog) |
 | Reviewer | security |
 | Date | 2026-06-13 |

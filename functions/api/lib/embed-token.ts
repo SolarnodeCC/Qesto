@@ -42,6 +42,11 @@ export interface MintTokenInput {
   wid: string
   sid: string
   code: string
+  /**
+   * Tenant key — the session-owner's user id (ADR-0050 §Amendment 1, PEN5-E2).
+   * Intentionally the same value bound to `embed_widgets.team_id`; isolation is
+   * enforced fail-safe on it at both planes, so claim and column never diverge.
+   */
   tid: string
   /** Allowed origins (will be normalised; duplicates collapsed). */
   ao: string[]
