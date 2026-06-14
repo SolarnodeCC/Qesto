@@ -210,7 +210,8 @@ CREATE TABLE IF NOT EXISTS deliberate_ballots (
   leaf_index    INTEGER NOT NULL,                              -- insertion order, 0-based
   created_at    INTEGER NOT NULL,                              -- epoch ms
   UNIQUE(session_id, voter_hash),                              -- one ballot per voter per session
-  UNIQUE(session_id, ballot_nonce)                             -- nonce uniqueness (anti-replay)
+  UNIQUE(session_id, ballot_nonce),                            -- nonce uniqueness (anti-replay)
+  UNIQUE(session_id, leaf_index)                               -- stable Merkle leaf order under concurrency
 );
 CREATE INDEX IF NOT EXISTS idx_deliberate_ballots_session ON deliberate_ballots(session_id);
 
