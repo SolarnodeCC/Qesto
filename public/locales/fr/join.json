@@ -39,6 +39,7 @@
   "final_results": "Résultats finaux",
   "total_votes": "{count} votes au total",
   "vote_recorded": "Vote enregistré — merci !",
+  "reactions_group": "Réactions en direct",
   "live_results": "Résultats en direct",
   "your_vote": "votre vote",
   "next_question_countdown": "Prochaine question dans {seconds}…",

@@ -72,6 +72,7 @@ export type AuditAction =
   | 'agent.action.suggestion_accepted'
   | 'agent.action.question_injected'
   | 'agent.action.state_changed'
+  | 'agent.action.plan_step_reviewed'
 
 export interface AuditContext {
   action: AuditAction

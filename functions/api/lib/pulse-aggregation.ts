@@ -31,6 +31,13 @@ export type PulseTeamDailyRow = {
 export const PULSE_WINDOWS = ['30d', '90d'] as const
 export type PulseWindow = (typeof PULSE_WINDOWS)[number]
 
+/** PULSE-KANON-01 — minimum cohort size before roll-up values are visible. */
+export const PULSE_K_ANON_MIN_COHORT = 5
+
+/** PULSE-RETENTION-01 — GDPR retention windows. */
+export const PULSE_RETENTION_REDACT_MS = 90 * 86_400_000
+export const PULSE_RETENTION_DELETE_MS = 7 * 365 * 86_400_000
+
 function isoDay(epochMs: number): string {
   return new Date(epochMs).toISOString().slice(0, 10)
 }
@@ -232,4 +239,152 @@ export async function fetchTeamPulseSummary(
     responseTotal: r.response_total,
     computedAt: r.computed_at,
   }))
+}
+
+export type PulseSessionTrend = {
+  sessionId: string
+  closedAt: number
+  participantCount: number
+  voteCount: number
+  participationRate: number
+  sentimentScore: number | null
+  actionCompletionRate: number
+}
+
+export type PulseLongitudinalTrends = {
+  teamId: string
+  window: PulseWindow
+  sessionCount: number
+  participationArc: number[]
+  sentimentArc: (number | null)[]
+  actionCompletionArc: number[]
+  sessions: PulseSessionTrend[]
+}
+
+function parsePayloadQuestionCount(payloadJson: string): number {
+  try {
+    const parsed = JSON.parse(payloadJson) as { questionCount?: number }
+    return typeof parsed.questionCount === 'number' ? parsed.questionCount : 0
+  } catch {
+    return 0
+  }
+}
+
+/** PULSE-LONGITUDINAL-01 — N-session participation + sentiment + action completion trends. */
+export async function fetchTeamLongitudinalTrends(
+  db: D1Database,
+  teamId: string,
+  window: PulseWindow,
+): Promise<PulseLongitudinalTrends> {
+  const since = windowStartMs(window)
+  const rows = await db
+    .prepare(
+      `SELECT session_id, closed_at, participant_count, vote_count,
+              participation_rate, sentiment_score, payload_json
+         FROM pulse_session_rollup
+        WHERE team_id = ?1 AND closed_at >= ?2
+        ORDER BY closed_at ASC
+        LIMIT 50`,
+    )
+    .bind(teamId, since)
+    .all<{
+      session_id: string
+      closed_at: number
+      participant_count: number
+      vote_count: number
+      participation_rate: number
+      sentiment_score: number | null
+      payload_json: string
+    }>()
+
+  const sessions: PulseSessionTrend[] = (rows.results ?? []).map((r) => {
+    const qCount = Math.max(1, parsePayloadQuestionCount(r.payload_json))
+    const denom = Math.max(1, r.participant_count * qCount)
+    const actionCompletionRate = Math.min(1, r.vote_count / denom)
+    return {
+      sessionId: r.session_id,
+      closedAt: r.closed_at,
+      participantCount: r.participant_count,
+      voteCount: r.vote_count,
+      participationRate: r.participation_rate,
+      sentimentScore: r.sentiment_score,
+      actionCompletionRate,
+    }
+  })
+
+  return {
+    teamId,
+    window,
+    sessionCount: sessions.length,
+    participationArc: sessions.map((s) => s.participationRate),
+    sentimentArc: sessions.map((s) => s.sentimentScore),
+    actionCompletionArc: sessions.map((s) => s.actionCompletionRate),
+    sessions,
+  }
+}
+
+export type PulseTrendRow = PulseTeamDailyRow & {
+  masked: boolean
+}
+
+/** PULSE-KANON-01 — mask cohort rows below k-anonymity floor. */
+export function applyKAnonymityToDailyRows(rows: PulseTeamDailyRow[]): PulseTrendRow[] {
+  return rows.map((row) => {
+    const masked = row.sessionCount < PULSE_K_ANON_MIN_COHORT
+    return {
+      ...row,
+      masked,
+      participationAvg: masked ? 0 : row.participationAvg,
+      sentimentAvg: masked ? null : row.sentimentAvg,
+      responseTotal: masked ? 0 : row.responseTotal,
+    }
+  })
+}
+
+/** SEC-PULSE-ISOLATION-01 — team-scoped read; returns empty when teamId mismatch. */
+export async function fetchTeamPulseSummaryIsolated(
+  db: D1Database,
+  authenticatedTeamId: string,
+  requestedTeamId: string,
+  window: PulseWindow,
+): Promise<PulseTeamDailyRow[]> {
+  if (authenticatedTeamId !== requestedTeamId) return []
+  return fetchTeamPulseSummary(db, requestedTeamId, window)
+}
+
+export type PulseRetentionResult = {
+  redactedSessions: number
+  deletedSessions: number
+  deletedDailyRows: number
+}
+
+/** PULSE-RETENTION-01 — anonymize payload after 90d; delete after 7y. */
+export async function runPulseRetentionPolicy(db: D1Database, nowMs: number = Date.now()): Promise<PulseRetentionResult> {
+  const redactBefore = nowMs - PULSE_RETENTION_REDACT_MS
+  const deleteBefore = nowMs - PULSE_RETENTION_DELETE_MS
+
+  const redact = await db
+    .prepare(
+      `UPDATE pulse_session_rollup
+          SET payload_json = '{}'
+        WHERE closed_at < ?1 AND payload_json != '{}'`,
+    )
+    .bind(redactBefore)
+    .run()
+
+  const delSessions = await db
+    .prepare(`DELETE FROM pulse_session_rollup WHERE closed_at < ?1`)
+    .bind(deleteBefore)
+    .run()
+
+  const delDaily = await db
+    .prepare(`DELETE FROM pulse_team_daily WHERE computed_at < ?1`)
+    .bind(deleteBefore)
+    .run()
+
+  return {
+    redactedSessions: redact.meta.changes ?? 0,
+    deletedSessions: delSessions.meta.changes ?? 0,
+    deletedDailyRows: delDaily.meta.changes ?? 0,
+  }
 }

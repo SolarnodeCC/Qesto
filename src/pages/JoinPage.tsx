@@ -2,7 +2,7 @@
 // the live session id via the public `/api/sessions/by-code/:code` endpoint
 // then open a WebSocket to the DO for real-time voting.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingToDocument, cacheJoinSession, readCachedJoinSession } from '../lib/branding'
@@ -19,6 +19,8 @@ import { JoinLanding } from './join/JoinLanding'
 import { SessionEndedCard } from './join/SessionEndedCard'
 import { QuestionVoteInput } from './join/QuestionVoteInput'
 import { PostVoteResults } from './join/PostVoteResults'
+import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOverlay'
+import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 
 type Lookup =
   | { status: 'loading' }
@@ -139,7 +141,22 @@ export default function JoinPage() {
 
 
 function Voter({ sessionId, title }: { sessionId: string; title: string }) {
-  const { state, sendVote, sendEnergizerAnswer } = useLiveSession(sessionId, { enabled: true })
+  const [reactionsState, reactionsDispatch] = useReducer(reactionsReducer, REACTIONS_INITIAL)
+  const onReactionDelta = useCallback(
+    (delta: { counts: Record<string, number>; total: number }) => {
+      reactionsDispatch({ kind: 'delta', counts: delta.counts, total: delta.total })
+    },
+    [],
+  )
+  const onTick = useCallback((now: number) => {
+    reactionsDispatch({ kind: 'tick', now })
+  }, [])
+  useReactionsTicker(reactionsState.total > 0, onTick)
+
+  const { state, sendVote, sendEnergizerAnswer, sendReactionSubmit } = useLiveSession(sessionId, {
+    enabled: true,
+    onReactionDelta,
+  })
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
   const t = useT('join')
   const [myVotes, setMyVotes] = useState<string[]>([])
@@ -226,7 +243,12 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       : null
 
   return (
-    <main id="main" className="min-h-screen bg-white dark:bg-[#0A0F1E] flex flex-col">
+    <main id="main" className="relative min-h-screen bg-white dark:bg-[#0A0F1E] flex flex-col">
+      <ReactionsOverlay
+        particles={reactionsState.particles}
+        total={reactionsState.total}
+        active={reactionsState.total > 0 || questionKind === 'reaction'}
+      />
       {/* Top brand bar */}
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
       <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3 flex items-center justify-between">
@@ -350,6 +372,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                 options={state.question.options}
                 results={state.results}
                 onVote={handleVote}
+                onReaction={sendReactionSubmit}
               />
             )}
 

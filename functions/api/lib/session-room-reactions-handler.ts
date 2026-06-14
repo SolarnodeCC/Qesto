@@ -12,6 +12,10 @@ import {
   REACTION_FLOOD_MULTIPLIER,
   REACTION_RATE_WINDOW_MS,
   REACTION_VOTER_FLOOD_WINDOW_MS,
+  REACTION_ABUSE_WINDOW_MS,
+  REACTION_ABUSE_STRIKE_LIMIT,
+  REACTION_ABUSE_BASE_BACKOFF_MS,
+  REACTION_ABUSE_MAX_BACKOFF_MS,
   reactionBudgetPerMinute,
 } from './reactions-config'
 import { writeEvent } from './observability'
@@ -23,6 +27,13 @@ export type ReactionCounts = Record<string, number>
 const K_REACTION_COUNTS = 'reactions:counts'
 const K_REACTION_SESSION_TS = 'reactions:session_timestamps'
 const K_REACTION_VOTER_TS = 'reactions:voter_timestamps'
+const K_REACTION_VOTER_ABUSE = 'reactions:voter_abuse'
+
+type VoterAbuseState = {
+  strikes: number[]
+  blockedUntil: number
+  consecutiveBlocks: number
+}
 
 interface StorageContext {
   storage: {
@@ -84,14 +95,21 @@ export class ReactionsHandler {
     const budget = reactionBudgetPerMinute(plan)
     const nowMs = Date.now()
 
+    if (await this.isVoterBlocked(att.voterId, nowMs)) {
+      ws.send(this.err('reaction_blocked', 'Reaction rate backoff active; retry later'))
+      return
+    }
+
     const sessionAllowed = await this.checkSessionBudget(budget, nowMs)
     if (!sessionAllowed) {
+      await this.recordAbuseStrike(att.voterId, nowMs)
       ws.send(this.err('reaction_rate_limited', 'Session reaction rate exceeded; retry with backoff'))
       return
     }
 
     const voterAllowed = await this.checkVoterFlood(att.voterId, budget, nowMs)
     if (!voterAllowed) {
+      await this.recordAbuseStrike(att.voterId, nowMs)
       ws.send(this.err('reaction_flood', 'Reaction flood detected; slow down'))
       return
     }
@@ -106,6 +124,34 @@ export class ReactionsHandler {
         detail: emojiId,
       })
     }
+  }
+
+  private async isVoterBlocked(voterId: string, nowMs: number): Promise<boolean> {
+    const all =
+      (await this.ctx.storage.get<Record<string, VoterAbuseState>>(K_REACTION_VOTER_ABUSE)) ?? {}
+    const state = all[voterId]
+    return !!state && state.blockedUntil > nowMs
+  }
+
+  /** REACTIONS-ABUSE-01 — exponential backoff after repeated overages. */
+  private async recordAbuseStrike(voterId: string, nowMs: number): Promise<void> {
+    const all =
+      (await this.ctx.storage.get<Record<string, VoterAbuseState>>(K_REACTION_VOTER_ABUSE)) ?? {}
+    const prev = all[voterId] ?? { strikes: [], blockedUntil: 0, consecutiveBlocks: 0 }
+    const strikes = [...prev.strikes.filter((t) => t > nowMs - REACTION_ABUSE_WINDOW_MS), nowMs]
+    let blockedUntil = prev.blockedUntil
+    let consecutiveBlocks = prev.consecutiveBlocks
+    if (strikes.length >= REACTION_ABUSE_STRIKE_LIMIT) {
+      consecutiveBlocks += 1
+      const backoff = Math.min(
+        REACTION_ABUSE_MAX_BACKOFF_MS,
+        REACTION_ABUSE_BASE_BACKOFF_MS * Math.pow(2, consecutiveBlocks - 1),
+      )
+      blockedUntil = nowMs + backoff
+      strikes.length = 0
+    }
+    all[voterId] = { strikes, blockedUntil, consecutiveBlocks }
+    await this.ctx.storage.put(K_REACTION_VOTER_ABUSE, all)
   }
 
   private async checkSessionBudget(budget: number, nowMs: number): Promise<boolean> {

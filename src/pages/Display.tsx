@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { Users } from 'lucide-react'
 import { api } from '../api/client'
@@ -8,7 +8,9 @@ import { CanvasThemeProvider } from '../components/CanvasThemeProvider'
 import { useCanvasTheme } from '../hooks/useCanvasTheme'
 import { AdaptiveVizResults } from '../components/AdaptiveVizResults'
 import { CaptionsOverlay } from '../components/CaptionsOverlay'
+import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOverlay'
 import { captionsReducer, CAPTIONS_INITIAL } from '../hooks/useCaptions'
+import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 
 type Lookup =
   | { status: 'loading' }
@@ -68,7 +70,19 @@ function ErrorScreen({ message }: { message: string }) {
 
 function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
   const [captionsState, captionsDispatch] = useReducer(captionsReducer, CAPTIONS_INITIAL)
+  const [reactionsState, reactionsDispatch] = useReducer(reactionsReducer, REACTIONS_INITIAL)
   const captionsActiveRef = useRef(false)
+  const onReactionDelta = useCallback(
+    (delta: { counts: Record<string, number>; total: number }) => {
+      reactionsDispatch({ kind: 'delta', counts: delta.counts, total: delta.total })
+    },
+    [],
+  )
+  const onReactionsTick = useCallback((now: number) => {
+    reactionsDispatch({ kind: 'tick', now })
+  }, [])
+  useReactionsTicker(reactionsState.total > 0, onReactionsTick)
+
   const { state } = useLiveSession(sessionId, {
     onCaptionSegment: (seg) => {
       // Auto-activate the overlay on the first received segment (the presenter
@@ -79,6 +93,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
       }
       captionsDispatch({ kind: 'segment', segment: seg })
     },
+    onReactionDelta,
   })
   const t = useT('present')
   const { theme } = useCanvasTheme()
@@ -214,6 +229,13 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
 
       {/* Live captions overlay — FE-CAPTIONS-OVERLAY-01 */}
       <CaptionsOverlay segments={captionsState.segments} active={captionsState.active} />
+
+      {/* Live reactions overlay — FE-REACTIONS-RENDER-01 */}
+      <ReactionsOverlay
+        particles={reactionsState.particles}
+        total={reactionsState.total}
+        active={reactionsState.total > 0}
+      />
     </div>
   )
 }

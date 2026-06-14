@@ -458,6 +458,7 @@ export const AuditActionSchema = z.enum([
   'agent.action.suggestion_accepted',
   'agent.action.question_injected',
   'agent.action.state_changed',
+  'agent.action.plan_step_reviewed',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>

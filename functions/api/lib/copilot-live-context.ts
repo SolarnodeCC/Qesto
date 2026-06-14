@@ -100,6 +100,9 @@ export const CopilotSnapshotSchema = z.object({
   voterCount: z.number().int().nonnegative(),
   participationRate: z.number().min(0).max(1),
   connections: z.number().int().nonnegative(),
+  optionTallies: z
+    .array(z.object({ label: z.string(), votes: z.number().int().nonnegative() }))
+    .optional(),
   mood: z
     .object({
       mood: z.enum(['positive', 'neutral', 'concerning']),
@@ -118,6 +121,8 @@ export type CopilotLiveContext = {
   responseCount: number
   participantCount: number
   participationRate: number
+  connections: number
+  optionTallies: { label: string; votes: number }[]
   mood: 'positive' | 'neutral' | 'concerning' | null
   moodSampleSize: number
   generatedAt: number
@@ -152,6 +157,8 @@ export function buildLiveContext(
     responseCount: snapshot.responseCount,
     participantCount: snapshot.voterCount,
     participationRate: snapshot.participationRate,
+    connections: snapshot.connections,
+    optionTallies: snapshot.optionTallies ?? [],
     mood: snapshot.mood?.mood ?? null,
     moodSampleSize: snapshot.mood?.sampleSize ?? 0,
     generatedAt: now,
@@ -168,6 +175,8 @@ export function emptyLiveContext(sessionId: string, now: number = Date.now()): C
     responseCount: 0,
     participantCount: 0,
     participationRate: 0,
+    connections: 0,
+    optionTallies: [],
     mood: null,
     moodSampleSize: 0,
     generatedAt: now,

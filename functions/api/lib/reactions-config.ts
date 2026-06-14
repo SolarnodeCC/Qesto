@@ -17,6 +17,14 @@ export const REACTION_VOTER_FLOOD_WINDOW_MS = 30_000
 /** Block voter after this many times their fair share in the flood window. */
 export const REACTION_FLOOD_MULTIPLIER = 3
 
+/** REACTIONS-ABUSE-01 — strikes within this window trigger exponential backoff. */
+export const REACTION_ABUSE_WINDOW_MS = 30_000
+/** Block after this many rate-limit overages within the abuse window. */
+export const REACTION_ABUSE_STRIKE_LIMIT = 3
+/** Initial backoff when abuse threshold hit (doubles per consecutive block). */
+export const REACTION_ABUSE_BASE_BACKOFF_MS = 5_000
+export const REACTION_ABUSE_MAX_BACKOFF_MS = 60_000
+
 export const REACTION_BROADCAST_DEBOUNCE_MS = 100
 
 export const DEFAULT_REACTION_EMOJIS: ReadonlyArray<{ id: string; label: string }> = [

@@ -30,12 +30,12 @@ function makeEnv(): Env {
 const get = (path: string) => createApp().fetch(new Request(`http://local${path}`), makeEnv())
 
 describe('platform v6.0 GA contract (Sprint 90)', () => {
-  it('reports api version 6.0.0', async () => {
+  it('reports current api version 6.1.0 (v6.1 GA supersedes v6.0)', async () => {
     const res = await get('/api/platform/version')
     expect(res.status).toBe(200)
     const body = (await res.json()) as { ok: boolean; data: { api: string } }
     expect(body.ok).toBe(true)
-    expect(body.data.api).toBe('6.0.0')
+    expect(body.data.api).toBe('6.1.0')
   })
 
   it('lists the v6.0 GA release', async () => {
@@ -65,7 +65,7 @@ describe('platform v6.0 GA contract (Sprint 90)', () => {
   it('publishes the v5.x sunset notice', async () => {
     const res = await get('/api/platform/v5-sunset')
     const body = (await res.json()) as { data: Record<string, unknown> }
-    expect(body.data.currentGa).toBe('6.0.0')
+    expect(body.data.currentGa).toBe('6.1.0')
     expect(typeof body.data.v5MaintenanceEnd).toBe('string')
     expect(body.data.policyDoc).toContain('ADR-0053')
   })

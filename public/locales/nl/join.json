@@ -39,6 +39,7 @@
   "final_results": "Eindresultaten",
   "total_votes": "{count} stemmen totaal",
   "vote_recorded": "Stem opgeslagen — bedankt!",
+  "reactions_group": "Live reacties",
   "live_results": "Live resultaten",
   "your_vote": "jouw stem",
   "next_question_countdown": "Volgende vraag in {seconds}…",

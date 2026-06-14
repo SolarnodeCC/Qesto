@@ -924,6 +924,42 @@ export class D1PreparedStatementMock {
       })
       return { meta: { changes: 1 } }
     }
+    if (
+      this.sql.includes('UPDATE pulse_session_rollup') &&
+      this.sql.includes("SET payload_json = '{}'")
+    ) {
+      let changes = 0
+      const [redactBefore] = this.args as [number]
+      for (const row of this.db.pulseSessionRollups.values()) {
+        if (row.closed_at < redactBefore && row.payload_json !== '{}') {
+          row.payload_json = '{}'
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM pulse_session_rollup WHERE closed_at')) {
+      const [deleteBefore] = this.args as [number]
+      let changes = 0
+      for (const [id, row] of this.db.pulseSessionRollups.entries()) {
+        if (row.closed_at < deleteBefore) {
+          this.db.pulseSessionRollups.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM pulse_team_daily WHERE computed_at')) {
+      const [deleteBefore] = this.args as [number]
+      let changes = 0
+      for (const [key, row] of this.db.pulseTeamDaily.entries()) {
+        if (row.computed_at < deleteBefore) {
+          this.db.pulseTeamDaily.delete(key)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
     if (this.sql.startsWith('INSERT INTO insights_daily')) {
       // INSIGHTS-02: (id, session_id, team_id, day, themes_json, confidence, n_votes, embedding_ref, computed_at)
       // ON CONFLICT(session_id, day) DO UPDATE — idempotent per close-day.
@@ -2183,6 +2219,17 @@ export class D1PreparedStatementMock {
       const rows = [...this.db.pulseTeamDaily.values()]
         .filter((r) => r.team_id === team_id && r.day >= since)
         .sort((a, b) => a.day.localeCompare(b.day))
+      return { results: rows as unknown as T[] }
+    }
+    if (
+      this.sql.includes('FROM pulse_session_rollup') &&
+      this.sql.includes('WHERE team_id = ?1 AND closed_at >= ?2')
+    ) {
+      const [team_id, since] = this.args as [string, number]
+      const rows = [...this.db.pulseSessionRollups.values()]
+        .filter((r) => r.team_id === team_id && r.closed_at >= since)
+        .sort((a, b) => a.closed_at - b.closed_at)
+        .slice(0, 50)
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

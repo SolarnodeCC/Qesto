@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-06-19 (UTC) — **Sprint 91 shipped: v6.1-dev foundation.** Platform version → 6.1.0-dev; ADR-0054 (cadence-9 governance), ADR-0055 (REACTIONS channel), ADR-0057 (PULSE aggregation); `REACTIONS-CHANNEL-01` + `PULSE-STORE-01` delivered. See [`SPRINT91_EXECUTION.md`](../releases/SPRINT91_EXECUTION.md). Next: S92 v6.1 GA (REACTIONS render + COPILOT foundation). Prior: 2026-06-19 — Sprint 90 shipped: v6.0 GA._
+_Last updated: 2026-06-19 (UTC) — **Sprint 92 shipped: v6.1 GA.** Platform version → 6.1.0; ADR-0056 (agentic L2); REACTIONS client GA + COPILOT L2 foundation + PULSE trends/retention. See [`SPRINT92_EXECUTION.md`](../releases/SPRINT92_EXECUTION.md). Next: S93 v6.1 RC close + LEARN/SOVEREIGN. Prior: 2026-06-19 — Sprint 91 shipped: v6.1-dev foundation._
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_

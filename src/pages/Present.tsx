@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, useCallback } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import QRCode from 'react-qr-code'
 import { Lock, Pause, Sparkles, Users } from 'lucide-react'
@@ -13,7 +13,9 @@ import { CanvasThemeProvider } from '../components/CanvasThemeProvider'
 import { useCanvasTheme } from '../hooks/useCanvasTheme'
 import { AdaptiveVizResults } from '../components/AdaptiveVizResults'
 import { CaptionsOverlay } from '../components/CaptionsOverlay'
+import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOverlay'
 import { captionsReducer, CAPTIONS_INITIAL, type CaptionSegment } from '../hooks/useCaptions'
+import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 import { readPersistedCaptionLocale, type CaptionLocale } from '../components/CaptionsLocalePicker'
 
 export default function Present() {
@@ -28,6 +30,17 @@ export default function Present() {
   // Plan gating: the server returns 403 with feature=liveCaptions when the plan
   // is insufficient. We surface it via the captions_plan_gate affordance.
   const [captionsPlanGated, setCaptionsPlanGated] = useState(false)
+  const [reactionsState, reactionsDispatch] = useReducer(reactionsReducer, REACTIONS_INITIAL)
+  const onReactionDelta = useCallback(
+    (delta: { counts: Record<string, number>; total: number }) => {
+      reactionsDispatch({ kind: 'delta', counts: delta.counts, total: delta.total })
+    },
+    [],
+  )
+  const onReactionsTick = useCallback((now: number) => {
+    reactionsDispatch({ kind: 'tick', now })
+  }, [])
+  useReactionsTicker(reactionsState.total > 0, onReactionsTick)
 
   const { state, sendAdvance, sendBack, sendPause, sendResume, sendAddQuestion, sendEnergizerActivate, sendCaptionsStart, sendCaptionsStop, sendCaptionsSetLocale } = useLiveSession(
     id,
@@ -35,6 +48,7 @@ export default function Present() {
       ...(presenterToken ? { presenterToken } : {}),
       enabled: !!id,
       onCaptionSegment: (seg) => captionsDispatch({ kind: 'segment', segment: seg }),
+      onReactionDelta,
     },
   )
   const [closing, setClosing] = useState(false)
@@ -230,6 +244,8 @@ export default function Present() {
         captionLocale={captionLocale}
         onToggleCaptions={handleToggleCaptions}
         onCaptionLocaleChange={handleCaptionLocaleChange}
+        reactionsParticles={reactionsState.particles}
+        reactionsTotal={reactionsState.total}
       />
     </CanvasThemeProvider>
   )
@@ -278,6 +294,8 @@ interface PresentInnerProps {
   captionLocale: CaptionLocale
   onToggleCaptions: () => void
   onCaptionLocaleChange: (locale: CaptionLocale) => void
+  reactionsParticles: import('../hooks/useReactions').ReactionParticle[]
+  reactionsTotal: number
 }
 
 function PresentInner({
@@ -320,6 +338,8 @@ function PresentInner({
   captionLocale,
   onToggleCaptions,
   onCaptionLocaleChange,
+  reactionsParticles,
+  reactionsTotal,
 }: PresentInnerProps) {
   const t = useT('present')
   const { theme } = useCanvasTheme()
@@ -566,6 +586,9 @@ function PresentInner({
 
           {/* Live captions overlay — FE-CAPTIONS-OVERLAY-01 */}
           <CaptionsOverlay segments={captionsSegments} active={captionsActive} />
+
+          {/* Live reactions overlay — FE-REACTIONS-RENDER-01 */}
+          <ReactionsOverlay particles={reactionsParticles} total={reactionsTotal} active={reactionsTotal > 0} />
 
           {/* ── Bottom chrome (display only — controls are in presenter panel) ── */}
           <div

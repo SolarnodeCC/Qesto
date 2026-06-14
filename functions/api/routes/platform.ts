@@ -27,6 +27,7 @@ const RELEASES = [
   { version: '6.0.0-rc.1', codename: 'v6.0-rc', status: 'rc', sprint: 89 },
   { version: '6.0.0', codename: 'v6.0', status: 'ga', sprint: 90 },
   { version: '6.1.0-dev', codename: 'v6.1-dev', status: 'dev', sprint: 91 },
+  { version: '6.1.0', codename: 'v6.1', status: 'ga', sprint: 92 },
 ] as const
 
 export function mountPlatformRoutes(parent: ParentApp) {
@@ -36,7 +37,7 @@ export function mountPlatformRoutes(parent: ParentApp) {
     c.json({
       ok: true,
       data: {
-        api: '6.0.0',
+        api: '6.1.0',
         realtimeDefault:
           getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
         realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),
@@ -148,7 +149,7 @@ export function mountPlatformRoutes(parent: ParentApp) {
         v5MaintenanceEnd: '2028-12-31',
         v4MaintenanceEnd: '2028-09-16',
         v3End: '2027-12-31',
-        currentGa: '6.0.0',
+        currentGa: '6.1.0',
         notice: 'Sunset-Date headers on deprecated API versions; v5.x enters maintenance at v6.0 GA',
         policyDoc: 'knowledge-base/adr/ADR-0053-v6-platform-certification.md',
       },

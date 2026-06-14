@@ -29,6 +29,7 @@ export const CROSS_REGION_MIRROR_TTL_SECONDS = ONE_HOUR_SECONDS
 /** Copilot context and thread cache TTL (1 hour and 1 day). */
 export const COPILOT_CONTEXT_TTL_SECONDS = ONE_HOUR_SECONDS
 export const COPILOT_THREAD_TTL_SECONDS = ONE_DAY_SECONDS
+export const COPILOT_PLAN_TTL_SECONDS = ONE_HOUR_SECONDS
 /** Short-lived session wizard draft TTL (1 day). */
 export const WIZARD_DRAFT_TTL_SECONDS = ONE_DAY_SECONDS
 /** Template KV TTL (1 year — templates are long-lived). */
