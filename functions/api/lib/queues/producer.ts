@@ -40,7 +40,7 @@ export type PostSessionWorkMessage = {
   /**
    * Task type: determines which consumer logic runs
    */
-  taskType: 'precompute_insights' | 'notify_slack' | 'notify_teams' | 'deliver_webhook' | 'deliver_marketing'
+  taskType: 'precompute_insights' | 'pulse_rollup' | 'notify_slack' | 'notify_teams' | 'deliver_webhook' | 'deliver_marketing'
 
   /**
    * Task-specific payload

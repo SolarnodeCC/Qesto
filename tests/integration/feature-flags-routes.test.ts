@@ -34,6 +34,8 @@ function getQuotasForPlan(plan: PlanTier): PlanQuotas {
         verifiableVoting: false,
         embedWidgets: false,
         liveCaptions: false,
+        liveReactions: false,
+        pulseAnalytics: false,
       },
     },
     starter: {
@@ -54,6 +56,8 @@ function getQuotasForPlan(plan: PlanTier): PlanQuotas {
         verifiableVoting: false,
         embedWidgets: false,
         liveCaptions: false,
+        liveReactions: true,
+        pulseAnalytics: false,
       },
     },
     team: {
@@ -74,6 +78,8 @@ function getQuotasForPlan(plan: PlanTier): PlanQuotas {
         verifiableVoting: true,
         embedWidgets: true,
         liveCaptions: true,
+        liveReactions: true,
+        pulseAnalytics: true,
       },
     },
   }
@@ -100,6 +106,8 @@ describe('Feature-gated routes (Phase 3)', () => {
         verifiableVoting: false,
         embedWidgets: false,
         liveCaptions: false,
+        liveReactions: false,
+        pulseAnalytics: false,
       },
     }
 
@@ -121,6 +129,8 @@ describe('Feature-gated routes (Phase 3)', () => {
         verifiableVoting: true,
         embedWidgets: true,
         liveCaptions: true,
+        liveReactions: true,
+        pulseAnalytics: true,
       },
     }
 
@@ -190,6 +200,8 @@ describe('Feature-gated routes (Phase 3)', () => {
           verifiableVoting: false,
           embedWidgets: false,
           liveCaptions: false,
+          liveReactions: false,
+          pulseAnalytics: false,
         },
       }
 
@@ -222,6 +234,8 @@ describe('Feature-gated routes (Phase 3)', () => {
           verifiableVoting: false,
           embedWidgets: false,
           liveCaptions: false,
+          liveReactions: false,
+          pulseAnalytics: false,
         },
       }
 

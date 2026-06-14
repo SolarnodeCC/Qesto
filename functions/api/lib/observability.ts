@@ -200,6 +200,11 @@ export type QestoEvent = {
     // CAPTIONS (ADR-0051): trace + timing + fan-out width only — never transcript text.
     | 'captions.segment'
     | 'captions.asr_unavailable'
+    // REACTIONS (ADR-0055): timing + volume only — never emoji payload text at scale.
+    | 'reaction.submitted'
+    | 'reaction.broadcast_latency'
+    // PULSE (ADR-0057): dashboard reads — no cohort PII.
+    | 'pulse.summary_viewed'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

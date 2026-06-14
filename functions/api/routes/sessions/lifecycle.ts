@@ -513,6 +513,28 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       )
     }
 
+    // PULSE (ADR-0057): async aggregation rollup for team-scoped sessions
+    if (c.get('plan') === 'team' && session.team_id && session.anonymity !== 'zero_knowledge') {
+      const pulseHash = computePayloadHash({ sessionId: id, closedAt })
+      enqueuePromises.push(
+        enqueuePostSessionWork(c.env, {
+          idempotencyKey: `${id}:pulse_rollup:${pulseHash}`,
+          sessionId: id,
+          userId: user.sub,
+          teamId: session.team_id,
+          taskType: 'pulse_rollup',
+          payload: {},
+          meta: { enqueuedAt: Date.now() },
+        }).catch((err) => {
+          logEvent({
+            event: 'queue.pulse.enqueue_error',
+            sessionId: id,
+            error: String(err),
+          })
+        }),
+      )
+    }
+
     // Slack notification: if integration enabled and team has Slack token
     if (c.env.INTEGRATION_ENABLED === 'true' && c.env.INTEGRATIONS_KV) {
       const hash = computePayloadHash({ sessionTitle: session.title, total })

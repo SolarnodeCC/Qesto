@@ -262,6 +262,13 @@ export const ClientMessageSchema = z.union([
     data: z.object({ locale: z.enum(['en', 'nl', 'es', 'de', 'fr', 'off']) }),
     timestamp: z.number(),
   }),
+  // REACTIONS (ADR-0055). Ephemeral emoji sub-channel; aggregate broadcast only.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('reaction_submit'),
+    data: z.object({ emojiId: z.string().min(1).max(16) }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>

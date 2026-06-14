@@ -2,13 +2,13 @@ import { createElement, type ChangeEvent } from 'react'
 import type { Question } from '../hooks/useSessions'
 
 export const QUESTION_KINDS: Question['kind'][] = [
-  'poll', 'ranking', 'open', 'consent', 'multi_select', 'likert', 'upvote', 'word_cloud', 'slider',
+  'poll', 'ranking', 'open', 'consent', 'multi_select', 'likert', 'upvote', 'word_cloud', 'slider', 'reaction',
 ]
 
 const KIND_LABELS: Record<Question['kind'], string> = {
   poll: 'Poll', ranking: 'Ranking', open: 'Open', consent: 'Consent',
   multi_select: 'Multi-select', likert: 'Likert', upvote: 'Upvote',
-  word_cloud: 'Word cloud', slider: 'Slider',
+  word_cloud: 'Word cloud', slider: 'Slider', reaction: 'Reaction',
 }
 
 const NATIVE_KIND_INPUT = 'sel' + 'ect'

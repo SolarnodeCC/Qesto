@@ -181,6 +181,7 @@ export type QuestionKind =
   | 'upvote'
   | 'word_cloud'
   | 'slider'
+  | 'reaction'
 export type Anonymity = 'full' | 'partial' | 'none' | 'zero_knowledge'
 export type VotePolicy = 'once' | 'multi' | 'react'
 export type SessionMode = 'reflection' | 'fun' | 'townhall' | 'stage' | 'retro' | 'ideate' | 'deliberate'
@@ -332,6 +333,10 @@ export interface PlanQuotas {
     embedWidgets: boolean
     /** ADR-0051: CAPTIONS — live ASR + translation caption pipeline — Team tier only. */
     liveCaptions: boolean
+    /** ADR-0055: REACTIONS — ephemeral live reaction channel — Starter+ tiers. */
+    liveReactions: boolean
+    /** ADR-0057: PULSE — HR engagement analytics product — Team tier only. */
+    pulseAnalytics: boolean
   }
 }
 
@@ -354,6 +359,8 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       verifiableVoting: false,
       embedWidgets: false,
       liveCaptions: false,
+      liveReactions: false,
+      pulseAnalytics: false,
     },
   },
   starter: {
@@ -374,6 +381,8 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       verifiableVoting: false,
       embedWidgets: false,
       liveCaptions: false,
+      liveReactions: true,
+      pulseAnalytics: false,
     },
   },
   team: {
@@ -394,6 +403,8 @@ export const PLAN_QUOTAS: Record<PlanTier, PlanQuotas> = {
       verifiableVoting: true,
       embedWidgets: true,
       liveCaptions: true,
+      liveReactions: true,
+      pulseAnalytics: true,
     },
   },
 }

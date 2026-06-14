@@ -10,6 +10,7 @@ import {
   liveProtocolFeatures,
   TOWNHALL_FEATURE,
   IDEATE_FEATURE,
+  REACTIONS_FEATURE,
   type LiveProtocolVersion,
   type LiveEnergizerState,
   type LiveQuestion,
@@ -29,6 +30,7 @@ import {
 } from './session-room-storage-keys'
 import { type Meta, type Counts, type Attachment } from './session-room-types'
 import type { SessionRoomContext } from './session-room-context'
+import { planAllowsLiveReactions } from './session-room-reactions-handler'
 
 type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
 
@@ -67,6 +69,12 @@ export async function sendInit(self: SessionRoomContext, ws: WebSocket, att: Att
   let features = liveProtocolFeatures(pv)
   if (isTownhall) features = [...features, TOWNHALL_FEATURE]
   if (isIdeate) features = [...features, IDEATE_FEATURE]
+  if (
+    planAllowsLiveReactions(meta.plan) &&
+    (question?.kind === 'reaction' || meta.votePolicy === 'react')
+  ) {
+    features = [...features, REACTIONS_FEATURE]
+  }
   // ENTERPRISE-POLISH s2a: detect presenter reconnect.
   // If this is a presenter and at least one other presenter WS is already open
   // (or the session was started by this user), flag the init so the frontend

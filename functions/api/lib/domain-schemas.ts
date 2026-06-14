@@ -146,6 +146,7 @@ export const AddQuestionSchema = z.object({
     'upvote',
     'word_cloud',
     'slider',
+    'reaction',
   ]),
   prompt: trimmed(1, 240),
   options: z
@@ -188,6 +189,15 @@ export function autoPopulateOptions(
       id: String(i + 1),
       label: String(i + 1),
     }))
+  }
+  if (kind === 'reaction') {
+    return [
+      { id: '👍', label: 'Thumbs up' },
+      { id: '❤️', label: 'Heart' },
+      { id: '😂', label: 'Laughing' },
+      { id: '🎉', label: 'Celebration' },
+      { id: '👏', label: 'Clap' },
+    ]
   }
   // word_cloud, open, consent: free-text / no options needed.
   return provided
