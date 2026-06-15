@@ -36,5 +36,8 @@
   "health.mood.neutral": "Neutraal",
   "health.mood.concerning": "Aandacht nodig",
   "health.planRequired": "Teamgezondheidstrends vereisen Team-plan met cross-session insights.",
-  "health.viewPlans": "Bekijk plannen"
+  "health.viewPlans": "Bekijk plannen",
+  "health": {
+    "planRequired": "Teamgezondheidstrends vereisen Chorus met cross-session insights."
+  }
 }

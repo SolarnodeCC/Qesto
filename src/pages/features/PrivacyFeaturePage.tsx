@@ -41,7 +41,7 @@ const certs = [
   { name: 'GDPR', label: 'DPA request' },
   { name: 'Security', label: 'Access controls' },
   { name: 'AI', label: 'Workers AI only' },
-  { name: 'Enterprise', label: 'Roadmap packet' },
+  { name: 'Chorus', label: 'Roadmap packet' },
 ]
 
 export default function PrivacyFeaturePage() {

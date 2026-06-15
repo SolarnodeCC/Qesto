@@ -148,7 +148,7 @@
   "hr.faq.q3.question": "Do we need an HRIS integration to start?",
   "hr.faq.q3.answer": "No. Most teams begin without one and decide on integrations once the listening cadence is established.",
   "hr.bottomCta.heading": "Build a culture where everyone has a voice.",
-  "hr.bottomCta.subheading": "Start free — no HR software integration required.",
+  "hr.bottomCta.subheading": "Empieza con Pulse — no se requiere integración con software de RR. HH.",
   "nonprofit.seo.title": "Qesto for Nonprofits | Consent voting and audit logs",
   "nonprofit.seo.description": "Run inclusive board votes, member consultations, and program prioritization with consent voting, anonymity options, and verifiable decision evidence.",
   "nonprofit.badge": "For Nonprofits & Communities",
@@ -209,7 +209,7 @@
   "nonprofit.faq.q3.question": "Do we have to use identified voting?",
   "nonprofit.faq.q3.answer": "No. You choose the anonymity mode per session: full anonymity, cohort grouping, or identified.",
   "nonprofit.bottomCta.heading": "Democracy starts with being heard.",
-  "nonprofit.bottomCta.subheading": "Free plan available. No credit card required.",
+  "nonprofit.bottomCta.subheading": "Pulse es gratuito. No se requiere tarjeta de crédito.",
   "consulting.seo.title": "Qesto for Consulting | Workshops with same-day evidence",
   "consulting.seo.description": "Replace sticky notes and manual synthesis with workshop workflows that leave clients with same-day decision evidence and reusable templates.",
   "consulting.badge": "For Consultants & Facilitators",
@@ -595,5 +595,15 @@
   "useCases.training.faq.q3.question": "Can we use outcomes in L&D reporting?",
   "useCases.training.faq.q3.answer": "Yes. Structured outputs feed Kirkpatrick L1 (reaction) and L2 (learning) summaries for program review.",
   "useCases.training.bottomCta.heading": "Train smarter — check understanding while it matters.",
-  "useCases.training.bottomCta.subheading": "No app required. Participants join by code on any device."
+  "useCases.training.bottomCta.subheading": "No app required. Participants join by code on any device.",
+  "nonprofit": {
+    "bottomCta": {
+      "subheading": "Pulse es gratuito. No se requiere tarjeta de crédito."
+    }
+  },
+  "hr": {
+    "bottomCta": {
+      "subheading": "Empieza con Pulse — no se requiere integración con software de RR. HH."
+    }
+  }
 }

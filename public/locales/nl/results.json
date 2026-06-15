@@ -29,7 +29,7 @@
     "description_other": "Deze sessie weerspiegelt {count} eerdere teamsessies.",
     "match": "{percent}% overeenkomst",
     "empty": "Nog geen vergelijkbare eerdere sessies gevonden. Genereer AI-inzichten om deze sessie te vergelijken met de geschiedenis van je team.",
-    "planRequired": "Sessie-overstijgende inzichten vereisen het Team-abonnement.",
+    "planRequired": "Sessie-overstijgende inzichten vereisen het Chorus-abonnement.",
     "planHint": "Upgrade om te zien hoe deze sessie eerdere sessies van je team weerspiegelt.",
     "viewPlans": "Abonnementen bekijken →",
     "error": "Inzichten konden niet worden gegenereerd. Probeer het later opnieuw."

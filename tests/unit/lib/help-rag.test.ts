@@ -13,7 +13,7 @@ describe('Help RAG - System Prompt Building', () => {
     {
       id: 'doc-2',
       title: 'Understanding Qesto Plans',
-      content: 'Qesto offers three plans: Free, Starter, and Team. Free includes basic polling...',
+      content: 'Qesto offers three plans: Pulse, Signal, and Chorus. Pulse includes basic polling...',
       topic: 'billing',
       scope: 'team',
     },

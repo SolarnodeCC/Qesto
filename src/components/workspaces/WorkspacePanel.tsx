@@ -66,7 +66,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
       <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
         <h3 className="text-heading-s font-semibold text-violet-900 dark:text-violet-200">Recurring workspaces</h3>
         <p className="text-body-s text-violet-700 dark:text-violet-300">
-          Run retros, ideation boards, and multi-session programs with Team plan.
+          Run retros, ideation boards, and multi-session programs with Chorus plan.
         </p>
         <Link
           to="/pricing"

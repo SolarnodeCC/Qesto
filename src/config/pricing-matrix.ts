@@ -51,7 +51,7 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
     rows: [
       ['SAML SSO', false, false, true, 'quota'],
       ['Residency guarantee', false, false, 'Roadmap', 'roadmap'],
-      ['Security review packet', 'Request', 'Request', 'Enterprise review', 'static'],
+      ['Security review packet', 'Request', 'Request', 'Chorus review', 'static'],
       ['Customer-managed keys', false, false, 'Roadmap', 'roadmap'],
       ['Uptime commitment', 'Community SLA', 'Community SLA', 'Order form', 'static'],
     ],

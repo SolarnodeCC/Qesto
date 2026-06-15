@@ -36,5 +36,8 @@
   "health.mood.neutral": "Neutral",
   "health.mood.concerning": "Aufmerksamkeit nötig",
   "health.planRequired": "Teamgesundheitstrends erfordern Team-Plan mit Cross-Session-Insights.",
-  "health.viewPlans": "Pläne ansehen"
+  "health.viewPlans": "Pläne ansehen",
+  "health": {
+    "planRequired": "Team-Gesundheitstrends erfordern Chorus mit sitzungsübergreifenden Erkenntnissen."
+  }
 }

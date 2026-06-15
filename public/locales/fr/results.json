@@ -29,7 +29,7 @@
     "description_other": "Cette session fait écho à {count} sessions passées de l'équipe.",
     "match": "{percent} % de correspondance",
     "empty": "Aucune session passée similaire trouvée pour le moment. Générez des informations IA pour comparer cette session à l'historique de votre équipe.",
-    "planRequired": "Les informations inter-sessions nécessitent le plan Team.",
+    "planRequired": "Les informations inter-sessions nécessitent le forfait Chorus.",
     "planHint": "Passez à un plan supérieur pour voir comment cette session fait écho aux sessions passées de votre équipe.",
     "viewPlans": "Voir les plans →",
     "error": "Impossible de générer les informations. Veuillez réessayer plus tard."

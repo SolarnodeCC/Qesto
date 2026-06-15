@@ -38,7 +38,7 @@
   },
   "crossSession": {
     "selectTeam": "Join or create a team to see cross-session insights.",
-    "planRequired": "Cross-session insights require a Team plan",
+    "planRequired": "Cross-session insights require a Chorus plan",
     "planHint": "Upgrade to see recurring themes, engagement trends, and facilitator scorecards across closed sessions.",
     "viewPlans": "View plans →",
     "windowLabel": "Trend window",

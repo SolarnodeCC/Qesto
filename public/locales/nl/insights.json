@@ -38,7 +38,7 @@
   },
   "crossSession": {
     "selectTeam": "Word lid van een team om cross-sessie-inzichten te zien.",
-    "planRequired": "Cross-sessie-inzichten vereisen een Team-abonnement",
+    "planRequired": "Cross-sessie-inzichten vereisen een Chorus-abonnement",
     "planHint": "Upgrade voor terugkerende thema's, engagementtrends en facilitator-scorecards.",
     "viewPlans": "Bekijk abonnementen →",
     "windowLabel": "Trendperiode",

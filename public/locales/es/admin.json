@@ -197,9 +197,9 @@
   "dateRangeLabel": "{{start}} – {{end}}",
   "displayNameLbl": "Nombre para mostrar",
   "nameOptionalPlaceholder": "Nombre (opcional)",
-  "planOptionFree": "Pulse (Gratis)",
-  "planOptionStarter": "Signal (Starter)",
-  "planOptionTeam": "Chorus (Team)",
+  "planOptionFree": "Pulse",
+  "planOptionStarter": "Signal",
+  "planOptionTeam": "Chorus",
   "cancelBtn": "Cancelar",
   "syntheticMetricsWarning": "Datos sintéticos — KV de métricas no listo"
 }

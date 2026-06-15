@@ -3,7 +3,7 @@
  * Authenticated host console: create widget configs, mint tokens, copy snippet,
  * preview the live embed.
  *
- * Plan gate: embedWidgets (Team tier only).
+ * Plan gate: embedWidgets (Chorus tier only).
  * When the entitlement is missing (403 from /api/embed/widgets), shows the
  * upgrade affordance matching the existing denyFeature pattern.
  */

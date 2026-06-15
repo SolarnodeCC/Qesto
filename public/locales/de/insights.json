@@ -38,7 +38,7 @@
   },
   "crossSession": {
     "selectTeam": "Treten Sie einem Team bei, um sitzungsübergreifende Einblicke zu sehen.",
-    "planRequired": "Situationsübergreifende Einblicke erfordern den Team-Plan",
+    "planRequired": "Sitzungsübergreifende Erkenntnisse erfordern einen Chorus-Plan",
     "planHint": "Upgrade für wiederkehrende Themen, Engagement-Trends und Facilitator-Scorecards.",
     "viewPlans": "Pläne ansehen →",
     "windowLabel": "Trendzeitraum",

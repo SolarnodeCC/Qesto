@@ -27,5 +27,5 @@
   "teams_status_error": "Teams-Status konnte nicht geladen werden.",
   "teams_disconnect_error": "Trennen fehlgeschlagen.",
   "teams_config_error": "Kanalkonfiguration konnte nicht gespeichert werden.",
-  "branding_description": "Logo und Farben erscheinen auf Beitrittsseiten und signierten Exports (Team-Tarif)."
+  "branding_description": "Logo und Farben erscheinen auf Join-Seiten und signierten Exporten (Chorus-Plan)."
 }
