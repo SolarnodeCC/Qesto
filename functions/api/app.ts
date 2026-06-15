@@ -44,6 +44,7 @@ import { mountCaptionRoutes } from './routes/captions'
 import { mountEmbedRoutes } from './routes/embed'
 import { mountEmbedWidgetV1Routes } from './routes/embed-widget-v1'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
+import { mountLearnRoutes } from './routes/learn'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
 import { mountTenantCostRoutes } from './routes/tenant-cost'
@@ -341,6 +342,7 @@ export function createApp() {
   // under the deeper /api/embed/v1 prefix, registered above the auth sub-apps).
   mountEmbedRoutes(app)
   mountCopilotContextRoutes(app)
+  mountLearnRoutes(app)
   mountZoomEmbedRoutes(app)
 
   return app

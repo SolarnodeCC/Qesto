@@ -140,6 +140,29 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
         headers: { 'content-type': 'application/json' },
       })
     }
+    // COPILOT-CHECKPOINT-01 (ADR-0056): the facilitator approved an L2 plan step;
+    // fan it out to the room. Aggregate `summary` only — never per-voter data.
+    if (url.pathname === '/copilot/checkpoint' && req.method === 'POST') {
+      const payload = (await req.json()) as { stepId: string; tool: string; summary: string }
+      const frame = JSON.stringify({
+        type: 'copilot_checkpoint',
+        data: { stepId: payload.stepId, tool: payload.tool, summary: payload.summary },
+        timestamp: Date.now(),
+      })
+      let delivered = 0
+      for (const ws of this.ctx.getWebSockets()) {
+        try {
+          ws.send(frame)
+          delivered++
+        } catch {
+          /* socket closed mid-broadcast — ignore */
+        }
+      }
+      return new Response(JSON.stringify({ ok: true, delivered }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }
     if (url.pathname === '/ws' && req.headers.get('upgrade') === 'websocket') {
       return handleUpgrade(this, req)
     }

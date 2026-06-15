@@ -578,6 +578,15 @@ export type ServerMessage =
       data: { counts: Record<string, number>; total: number }
       timestamp: number
     }
+  // COPILOT-CHECKPOINT-01 (ADR-0056). Additive on protocol v3, NO version bump.
+  // Broadcast ONLY after the facilitator explicitly approves an L2 plan step.
+  // `summary` is a short aggregate string — never per-voter data.
+  | {
+      v?: LiveProtocolVersion
+      type: 'copilot_checkpoint'
+      data: { stepId: string; tool: string; summary: string }
+      timestamp: number
+    }
   | {
       v?: LiveProtocolVersion
       type: 'error'

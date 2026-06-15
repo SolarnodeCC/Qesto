@@ -21,7 +21,7 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-06-19 (UTC) — **Sprint 92 shipped: v6.1 GA.** Platform version → 6.1.0; ADR-0056 (agentic L2); REACTIONS client GA + COPILOT L2 foundation + PULSE trends/retention. See [`SPRINT92_EXECUTION.md`](../releases/SPRINT92_EXECUTION.md). Next: S93 v6.1 RC close + LEARN/SOVEREIGN. Prior: 2026-06-19 — Sprint 91 shipped: v6.1-dev foundation._
+_Last updated: 2026-07-31 (UTC) — **Sprint 93 shipped: v6.2-dev open.** Platform RELEASES += 6.2.0-dev (GA stays 6.1.0); ADR-0058 (vertical packaging & tenant config). COPILOT GA (approval-gated checkpoint broadcast + SEC-COPILOT-SANDBOX-01), PULSE-AUDIT-01 aggregation audit log, SOVEREIGN+ region residency (eu/uk/ca) + LEARN LTI 1.1 consumer + EMBED traction gate. See [`SPRINT93_EXECUTION.md`](../releases/SPRINT93_EXECUTION.md). Next: S94 verticals build (LEARN grade/scoring, SOVEREIGN audit/exclusion) + Pentest #6 prep; v6.2 GA at S95. Prior: 2026-06-19 — Sprint 92 shipped: v6.1 GA (ADR-0056). See [`SPRINT92_EXECUTION.md`](../releases/SPRINT92_EXECUTION.md)._
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_

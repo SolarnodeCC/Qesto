@@ -176,6 +176,11 @@ export type QestoEvent = {
     | 'copilot.poll_drafted'
     | 'copilot.plan_created'
     | 'copilot.plan_step_reviewed'
+    // COPILOT-CHECKPOINT-01 (ADR-0056): facilitator-approved step fan-out.
+    | 'copilot.checkpoint_broadcast'
+    // LEARN (ADR-0058): LTI 1.1 launch outcomes — no PII, context id only.
+    | 'learn.lti_launched'
+    | 'learn.lti_rejected'
     | 'realtime.v2_negotiated'
     | 'federation.link_created'
     | 'federation.consent_granted'
