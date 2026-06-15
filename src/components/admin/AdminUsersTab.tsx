@@ -3,14 +3,9 @@ import { useAdminUsers, type AdminUser } from '../../hooks/useAdminUsers'
 import { useT } from '../../i18n'
 import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
 import { inputHint } from '../../ui/input-hint'
+import { PLAN_BRAND_NAMES } from '../../config/plans'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
-
-const PLAN_BRAND_NAMES: Record<AdminUser['plan'], string> = {
-  free:    'Pulse',
-  starter: 'Signal',
-  team:    'Chorus',
-}
 
 function PlanBadge({ plan }: { plan: AdminUser['plan'] }) {
   const variant: Record<AdminUser['plan'], string> = {

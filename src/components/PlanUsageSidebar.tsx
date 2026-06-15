@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
 import { type QuotaUsage } from '../hooks/useQuotaUsage'
+import { planBrandName } from '../config/plans'
 
-// Map internal plan keys to marketing names from the pricing page
-const PLAN_DISPLAY: Record<string, { name: string; color: string; dot: string }> = {
-  free:    { name: 'Pulse',  color: 'bg-pulse-100 text-pulse-700 border-pulse-200',    dot: 'bg-pulse-400' },
-  starter: { name: 'Signal', color: 'bg-teal-50 text-teal-700 border-teal-200',       dot: 'bg-teal-500' },
-  team:    { name: 'Chorus', color: 'bg-violet-50 text-violet-700 border-violet-200', dot: 'bg-violet-500' },
+// Brand names come from the shared source of truth (config/plans); colours are local.
+const PLAN_DISPLAY: Record<string, { color: string; dot: string }> = {
+  free:    { color: 'bg-pulse-100 text-pulse-700 border-pulse-200',    dot: 'bg-pulse-400' },
+  starter: { color: 'bg-teal-50 text-teal-700 border-teal-200',       dot: 'bg-teal-500' },
+  team:    { color: 'bg-violet-50 text-violet-700 border-violet-200', dot: 'bg-violet-500' },
 }
 
 // AI insight quota per plan (matches pricing page: 5/mo free, unlimited paid)
@@ -94,7 +95,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
         <div className="flex items-center justify-between">
           <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${planInfo.color}`}>
             <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${planInfo.dot}`} aria-hidden="true" />
-            {planInfo.name}
+            {planBrandName(data.plan)}
           </div>
           {isUpgradeable && (
             <Link

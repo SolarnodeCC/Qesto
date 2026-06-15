@@ -75,6 +75,21 @@ export const PLAN_DISPLAY: PlanDisplayMeta[] = [
   },
 ]
 
+/**
+ * Customer-facing brand names — the single source of truth for plan labels shown
+ * to users. Pulse / Signal / Chorus map to free / starter / team (see Pricing page).
+ */
+export const PLAN_BRAND_NAMES: Record<PlanTier, string> = {
+  free: 'Pulse',
+  starter: 'Signal',
+  team: 'Chorus',
+}
+
+/** Resolve a (possibly unknown) plan id to its customer-facing brand name. */
+export function planBrandName(plan: string): string {
+  return PLAN_BRAND_NAMES[plan as PlanTier] ?? PLAN_BRAND_NAMES.free
+}
+
 export interface PlanConfig extends PlanDisplayMeta {
   features: {
     sessionsPerMonth: number
