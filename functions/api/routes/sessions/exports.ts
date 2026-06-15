@@ -13,6 +13,7 @@ import { buildAiRecapProvenance } from '../../lib/ai/recap-provenance'
 import { loadTeamBranding } from '../../lib/team-branding'
 import { csvRow } from '../../lib/csv'
 import { generateSessionHtmlExport } from '../../lib/export-pdf'
+import { requireFeature } from '../../middleware/feature-gate'
 import type { Env } from '../../types'
 import type { Session } from '../../types'
 import type { AuthVariables } from '../../middleware/auth'
@@ -251,20 +252,11 @@ export function mountExportRoutes(
     })
   })
 
-  // GET /api/sessions/:id/export.csv — enhanced CSV export (team plan).
-  // Supersedes the previous starter-tier "Question,Option,Votes" CSV.
-  app.get('/:id/export.csv', async (c) => {
+  // GET /api/sessions/:id/export.csv — enhanced CSV export.
+  // Gated on the `resultsExport` feature (Starter + Team per PLAN_QUOTAS),
+  // matching the advertised pricing matrix. Free plans are blocked.
+  app.get('/:id/export.csv', requireFeature('resultsExport'), async (c) => {
     const traceId = c.get('trace_id')
-    if (c.get('plan') !== 'team') {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'upgrade_required', message: 'Rich export requires the Team plan' },
-          trace_id: traceId,
-        },
-        403,
-      )
-    }
     const user = c.get('user')
     const id = c.req.param('id')
     const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))

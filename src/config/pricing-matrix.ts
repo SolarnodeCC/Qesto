@@ -35,9 +35,9 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
   {
     section: 'AI insights',
     rows: [
-      ['AI draft recaps', '5 / mo', 'Unlimited', 'Unlimited', 'static'],
-      ['Evidence-anchored clusters', false, true, true, 'quota'],
-      ['Private Workers AI endpoint', false, false, true, 'quota'],
+      ['AI-generated recaps', false, false, true, 'quota'],
+      ['Evidence-anchored clusters', false, false, true, 'quota'],
+      ['Private Workers AI (no data leaves your session)', false, false, true, 'quota'],
     ],
   },
   {
@@ -60,7 +60,7 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
     section: 'Integrations',
     rows: [
       ['CSV export', true, true, true, 'quota'],
-      ['Webhooks (Slack, Notion, Workday)', false, 'Roadmap', 'Roadmap', 'roadmap'],
+      ['Outbound webhooks', false, false, true, 'static'],
       ['Branded domain & PDF templates', false, false, 'Roadmap', 'roadmap'],
     ],
   },
@@ -94,9 +94,11 @@ export function enrichPricingMatrix(
           ]
         case 'Identified mode + consent log':
           return [title, F.consentMode, S.consentMode, T.consentMode, source]
+        case 'AI-generated recaps':
+          return [title, false, false, T.insightsAI, source]
         case 'Evidence-anchored clusters':
-          return [title, F.semanticSearch, S.semanticSearch, T.semanticSearch, source]
-        case 'Private Workers AI endpoint':
+          return [title, false, false, T.insightsAI, source]
+        case 'Private Workers AI (no data leaves your session)':
           return [title, false, false, T.insightsAI, source]
         case 'SAML SSO':
           return [title, F.samlSso, S.samlSso, T.samlSso, source]

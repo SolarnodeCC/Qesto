@@ -140,7 +140,7 @@ export default function Pricing() {
                     : 'Monthly session allowance',
                   '30-day retention',
                   'Full & cohort anonymity',
-                  'Workers AI drafts — 5 / month',
+                  'AI-powered insights on Team tier',
                   free?.features.resultsExport ? 'CSV exports' : 'CSV exports on paid tiers',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
@@ -242,7 +242,7 @@ export default function Pricing() {
                 {[
                   team?.features.townhallQA ? 'Townhall Q&A board (moderated, 5 000 participants)' : 'Townhall Q&A (Team tier)',
                   team?.features.samlSso ? 'SAML SSO and role scopes' : 'SSO roadmap — contact sales',
-                  'Custom retention & residency',
+                  'Custom retention (enforced residency on roadmap)',
                   team?.features.insightsAI ? 'Private Workers AI endpoints' : 'AI insights',
                   'Customer-managed keys on the roadmap',
                   'Dedicated onboarding + SLA',
