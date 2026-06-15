@@ -10,6 +10,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher'
 import { AppearanceThemeControl } from '../components/AppearanceThemeControl'
 import { HighContrastToggle } from '../components/HighContrastToggle'
 import { createBillingPortalSession, fetchBillingInvoices, type InvoiceRow } from '../lib/account-billing'
+import { planBrandName } from '../config/plans'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 
@@ -224,8 +225,8 @@ export default function AccountSettings() {
                 <p className="text-xs uppercase tracking-wide text-pulse-400 dark:text-[#6B7A99]">
                   {t('billing.currentPlan')}
                 </p>
-                <p className="mt-1 text-xl font-semibold capitalize text-pulse-900 dark:text-[#F0F2F8]">
-                  {quotaData?.plan ?? 'free'}
+                <p className="mt-1 text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+                  {planBrandName(quotaData?.plan ?? 'free')}
                 </p>
                 {quotaData && (
                   <p className="mt-1 text-sm text-pulse-500 dark:text-[#6B7A99]">
