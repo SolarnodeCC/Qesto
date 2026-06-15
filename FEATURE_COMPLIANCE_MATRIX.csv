@@ -1,0 +1,63 @@
+Category,Feature,Promised Tier(s),Promise Details,Implementation Status,Code Location,Deployed?,Enforced?,Gap Type,Severity,Risk Level,Action Required
+PRICING,Sessions per month,Pulse,"≤5",IMPLEMENTED,src/config/pricing-matrix.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Sessions per month,Signal,"≤75",IMPLEMENTED,src/config/pricing-matrix.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Sessions per month,Chorus,"Unlimited",IMPLEMENTED,src/config/pricing-matrix.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Participants per session,Pulse,"≤50",IMPLEMENTED,functions/api/lib/sessionRoom.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Participants per session,Signal,"≤500",IMPLEMENTED,functions/api/lib/sessionRoom.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Participants per session,Chorus,"≤5000",IMPLEMENTED,functions/api/lib/sessionRoom.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Data retention,Pulse,"30 days",IMPLEMENTED,functions/api/lib/kv.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Data retention,Signal,"365 days",IMPLEMENTED,schema.sql,YES,YES,NONE,N/A,NONE,None
+PRICING,Data retention,Chorus,"Custom (7d-7yr)",PARTIAL,schema.sql,PARTIAL,NO,ENFORCEMENT_GAP,HIGH,HIGH,Implement TTL enforcement or remove from spec
+PRICING,CSV export,All,"Available",IMPLEMENTED,functions/api/routes/sessions.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Audit exports,Pulse,"Not included",CORRECT,N/A,N/A,N/A,NONE,N/A,NONE,None
+PRICING,Audit exports,Signal+,"CSV forensic export",IMPLEMENTED,functions/api/routes/admin/audit.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Anonymity modes,All,"Full & cohort anonymity",IMPLEMENTED,functions/api/schemas/session.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Identified mode + consent,Pulse,"Not included",CORRECT,N/A,N/A,N/A,NONE,N/A,NONE,None
+PRICING,Identified mode + consent,Signal+,"Included",IMPLEMENTED,schema.sql (consent_posture),YES,YES,NONE,N/A,NONE,None
+PRICING,AI drafts limit,Pulse,"5/month",IMPLEMENTED,functions/api/lib/entitlements.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,AI drafts limit,Signal+,"Unlimited",IMPLEMENTED,functions/api/lib/entitlements.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Evidence-anchored recap,Pulse,"Not included",CORRECT,N/A,N/A,N/A,NONE,N/A,NONE,None
+PRICING,Evidence-anchored recap,Signal,"Same-day recap",MISLEADING,functions/api/routes/ai.ts (gated to Team),PARTIAL,NO,FEATURE_GATING_MISMATCH,CRITICAL,CRITICAL,Either enable on Signal or correct marketing copy
+PRICING,Evidence-anchored recap,Chorus,"Included",IMPLEMENTED,functions/api/routes/ai.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Townhall Q&A board,Pulse,"Not included",CORRECT,N/A,N/A,N/A,NONE,N/A,NONE,None
+PRICING,Townhall Q&A board,Signal,"Not included",CORRECT,N/A,N/A,N/A,NONE,N/A,NONE,None
+PRICING,Townhall Q&A board,Chorus,"5000 participants moderated",UNCERTAIN,functions/api/routes/townhall.ts (if exists),UNCLEAR,UNCLEAR,DEPLOYMENT_UNCLEAR,HIGH,HIGH,Confirm GA status or add beta disclaimer
+PRICING,SAML SSO,Pulse,"Not included",CORRECT,N/A,N/A,N/A,NONE,N/A,NONE,None
+PRICING,SAML SSO,Signal,"Not included",CORRECT,N/A,N/A,N/A,NONE,N/A,NONE,None
+PRICING,SAML SSO,Chorus,"Included",IMPLEMENTED,functions/api/routes/auth/saml.ts,YES,YES,NONE,N/A,NONE,None
+PRICING,Webhooks,All,"Roadmap",PARTIAL,functions/api/routes/webhooks.ts (exists),UNCLEAR,NO,FEATURE_STATUS_UNCLEAR,MEDIUM,MEDIUM,Clarify GA status or add beta label
+PRICING,Custom residency,Chorus,"Custom retention & residency",MISLEADING,knowledge-base/security/EU_DATA_RESIDENCY.md,PARTIAL,NO,ROUTING_NOT_GUARANTEED,HIGH,HIGH,Remove from marketing or guarantee routing
+PRICING,Customer-managed keys,Chorus,"Roadmap",CORRECT,Not implemented,NO,N/A,NONE,N/A,NONE,None
+PRICING,Nonprofit discount,All,"40% off Chorus",DOCUMENTED,No API endpoint,MANUAL,N/A,PROCESS_GAP,MEDIUM,MEDIUM,Create /nonprofit-application endpoint
+SOC2,Certification status,Enterprise,"SOC 2 Type II report issued",MISLEADING,"knowledge-base/operations/compliance/SOC2_TYPE2_ROADMAP.md (2027 Q3 target)",NO,N/A,FORWARD_CLAIM,CRITICAL,CRITICAL,Change copy to "expected Q3 2027" or remove badge
+SOC2,Auditor attestation,Enterprise,"Attestation letter available under NDA",MISLEADING,No auditor yet appointed,NO,N/A,PREMATURE_CLAIM,CRITICAL,CRITICAL,Remove or change to "upon certification"
+SOC2,Access control,All,"Least-privilege IAM + JWT auth",IMPLEMENTED,functions/api/middleware/auth.ts,YES,YES,NONE,N/A,NONE,None
+SOC2,Change management,All,"Peer review + CI gates",IMPLEMENTED,GitHub workflow config,YES,YES,NONE,N/A,NONE,None
+SOC2,Monitoring,All,"Analytics Engine + health probes",PARTIAL,knowledge-base/operations/monitoring/OBSERVABILITY.md,PARTIAL,PARTIAL,INCOMPLETE_MONITORING,MEDIUM,MEDIUM,Add SLO dashboard or correct copy to "baseline"
+SOC2,Incident response,All,"Playbooks with customer notification SLAs",DOCUMENTED,knowledge-base/operations/incidents/,YES,PARTIAL,PROCESS_NOT_ENFORCED,MEDIUM,MEDIUM,Create enforcement mechanism
+SOC2,Penetration testing,Enterprise,"Annual 3rd-party pen tests",COMPLETED,knowledge-base/security/reviews/ (Pen 1-2 done),YES,YES,NONE,N/A,NONE,None
+GDPR,Privacy by design,All,"Data processed at edge with privacy defaults",IMPLEMENTED,Cloudflare Workers + anonymity modes,YES,YES,NONE,N/A,NONE,None
+GDPR,Zero-knowledge mode,All,"Individual identity never stored",IMPLEMENTED,functions/api/lib/ai/coaching.ts (checks anonymity=zero_knowledge),YES,YES,NONE,N/A,NONE,None
+GDPR,GDPR deletion,All,"DELETE /api/users/me/gdpr-delete",IMPLEMENTED,functions/api/routes/gdpr.ts,YES,YES,NONE,N/A,NONE,None
+GDPR,Deletion SLA,All,"72-hour completion",DOCUMENTED,knowledge-base/security/GDPR_DATA_SUBJECT_RUNBOOK.md,DOCUMENTED,UNCLEAR,SLA_NOT_ENFORCED,MEDIUM,MEDIUM,Implement enforcement or remove SLA
+GDPR,Automated deletion tests,All,"On roadmap for v2.3",DOCUMENTED,knowledge-base/security/GDPR-BADGE-01 (Sprint 34),ROADMAP,N/A,INCOMPLETE,MEDIUM,MEDIUM,Complete or update marketing copy
+GDPR,GDPR compliance badge,All,"On roadmap for v2.3",DOCUMENTED,GDPR-BADGE-01,ROADMAP,N/A,INCOMPLETE,MEDIUM,MEDIUM,Deploy or update copy to "Q3 2026"
+GDPR,Sub-processor registry,Enterprise,"Complete registry with DPAs",IMPLEMENTED,knowledge-base/security/SOC2_EVIDENCE.md,YES,YES,NONE,N/A,NONE,None
+GDPR,DPA template,Enterprise,"SCC template for enterprise",IMPLEMENTED,knowledge-base/security/DPA_SCC_TEMPLATE.md,YES,YES,NONE,N/A,NONE,None
+GDPR,Audit sanitization,All,"PII sanitization in logs",IMPLEMENTED,functions/api/lib/audit.ts (safeLogContext),YES,YES,NONE,N/A,NONE,None
+GDPR,Data retention by tier,All,"30d (Pulse), 365d (Signal), custom (Chorus)",IMPLEMENTED,schema.sql + KV TTL,YES,PARTIAL,INCONSISTENT_DOCS,MEDIUM,MEDIUM,Update help articles to show tier-specific retention
+AUDIT,Audit log exports,Signal+,"CSV forensic export available",IMPLEMENTED,functions/api/routes/admin/audit.ts,YES,YES,NONE,N/A,NONE,None
+AUDIT,7-year retention,All,"Retained for 7 years under GDPR/AVG",CLAIMED,"schema.sql audit_events (no TTL visible)",UNCLEAR,NO,TTL_NOT_ENFORCED,MEDIUM,MEDIUM,Implement 7-year TTL or correct copy
+AUDIT,Event tracking,All,"Session, decision, member, GDPR, action events",IMPLEMENTED,schema.sql audit_events table,YES,YES,NONE,N/A,NONE,None
+AUDIT,Evidence pack endpoint,Enterprise,"/api/compliance/evidence-pack metadata",PARTIAL,functions/api/routes/compliance.ts,YES,PARTIAL,INCOMPLETE_ARTIFACTS,MEDIUM,MEDIUM,Clarify automated vs manual artifact collection
+AUDIT,Role change tracking,Enterprise,"Role change events in audit trail",MISSING,schema.sql audit_events,NO,N/A,EVENT_MISSING,MEDIUM,MEDIUM,Add role.* event types to schema
+AI,AI question generation,Signal+,"Workers AI-based suggestions",IMPLEMENTED,functions/api/routes/ai.ts,YES,YES,NONE,N/A,NONE,None
+AI,Sentiment analysis,All,"Live response sentiment clustering",IMPLEMENTED,functions/api/lib/ai/sentiment.ts,YES,YES,UNCLEAR_MARKETING,LOW,LOW,Consider promoting or deprecating
+AI,Semantic search,Signal+,"Vectorize-powered meaning search",IMPLEMENTED,functions/api/routes/decisions-search.ts,YES,YES,HIDDEN_FEATURE,MEDIUM,MEDIUM,Add to marketing (currently hidden)
+SECURITY,HTTPS/WSS encryption,All,"Encrypted in transit",IMPLEMENTED,Cloudflare TLS 1.2+,YES,YES,NONE,N/A,NONE,None
+SECURITY,Encryption at rest,All,"D1 + KV encrypted by Cloudflare",IMPLEMENTED,Cloudflare platform,YES,YES,NONE,N/A,NONE,None
+SECURITY,Integration token encryption,All,"EncryptedTokenStore (TODO in code)",INCOMPLETE,functions/api/lib/integrations.ts,PARTIAL,NO,TOKEN_ENCRYPTION_GAP,HIGH,HIGH,Complete token encryption or remove from SOC2 claims
+FEATURES,Multi-language sessions,All,"presentation_language field in schema",IMPLEMENTED,schema.sql,YES,YES,NOT_MARKETED,LOW,NONE,Consider marketing or deprecating
+FEATURES,Team templates,Enterprise,"Session template management",IMPLEMENTED,functions/api/routes/templates.ts,YES,YES,HIDDEN_FEATURE,LOW,NONE,Consider adding to marketing
+FEATURES,Slack integration,All,"Minimal data integration (aggregate only)",IMPLEMENTED,functions/api/routes/integrations/slack.ts,YES,YES,NONE,N/A,NONE,None
+FEATURES,Microsoft Teams integration,All,"Minimal data integration (aggregate only)",IMPLEMENTED,functions/api/routes/integrations/teams.ts,YES,YES,NONE,N/A,NONE,None
