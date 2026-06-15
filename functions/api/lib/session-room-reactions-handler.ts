@@ -13,6 +13,7 @@ import {
   REACTION_RATE_WINDOW_MS,
   REACTION_VOTER_FLOOD_WINDOW_MS,
   reactionBudgetPerMinute,
+  isValidReactionEmojiId,
 } from './reactions-config'
 import { writeEvent } from './observability'
 import type { Env } from '../types'
@@ -67,7 +68,7 @@ export class ReactionsHandler {
     }
 
     const emojiId = data.emojiId
-    if (!emojiId || emojiId.length > 16) {
+    if (!emojiId || !isValidReactionEmojiId(emojiId)) {
       ws.send(this.err('validation', 'Invalid emoji'))
       return
     }
@@ -168,14 +169,14 @@ export class ReactionsHandler {
     }
   }
 
-  /** Snapshot for session close / ZK aggregate export. */
-  async snapshotForClose(anonymity: Anonymity | undefined): Promise<ReactionCounts | null> {
+  /**
+   * Snapshot for session close / ZK aggregate export.
+   * Counts are aggregate-only and identical across anonymity modes — no
+   * per-voter data is ever stored, so ZK needs no special-casing here.
+   */
+  async snapshotForClose(_anonymity: Anonymity | undefined): Promise<ReactionCounts | null> {
     const counts = await this.getCounts()
     if (Object.keys(counts).length === 0) return null
-    if (anonymity === 'zero_knowledge') {
-      // Aggregate-only — same shape, never persisted per-voter (none stored).
-      return { ...counts }
-    }
     return { ...counts }
   }
 

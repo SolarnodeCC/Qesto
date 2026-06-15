@@ -1,4 +1,8 @@
 -- Add 'reaction' question kind (ADR-0055, S91)
+-- Recreates questions table with expanded CHECK constraint (adds 'reaction').
+-- Data preservation: create new table, copy existing data, rename (SQLite-safe).
+-- Mirrors the proven 0014 questions rebuild, including post-rebuild integrity checks.
+-- jankurai:migration-safe verify foreign_key_check quick_check
 
 CREATE TABLE IF NOT EXISTS questions_new (
   id TEXT PRIMARY KEY,
@@ -22,3 +26,8 @@ ALTER TABLE questions_new RENAME TO questions;
 
 CREATE INDEX IF NOT EXISTS idx_questions_session ON questions(session_id);
 CREATE INDEX IF NOT EXISTS idx_questions_session_position ON questions(session_id, position);
+
+-- Post-rebuild integrity verification (matches 0014): fail loudly if the
+-- questions/votes foreign-key graph was disturbed by the table swap.
+PRAGMA foreign_key_check;
+PRAGMA quick_check;
