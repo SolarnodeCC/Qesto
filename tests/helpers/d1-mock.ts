@@ -220,6 +220,7 @@ export class D1Mock {
       created_at: number
     }
   >()
+  readonly deliberateBallotCountOverrides: number[] = []
   readonly energizers = new Map<string, EnergizerRow>()
   readonly deviceTokens = new Map<
     string,
@@ -562,9 +563,13 @@ export class D1PreparedStatementMock {
     if (this.sql.startsWith('INSERT INTO deliberate_ballots')) {
       const [id, session_id, ballot_nonce, commitment, choice, voter_hash, leaf_index, created_at] = this
         .args as [string, string, string, string, string, string, number, number]
-      // UNIQUE(session_id, voter_hash) and UNIQUE(session_id, ballot_nonce).
+      // UNIQUE(session_id, voter_hash), UNIQUE(session_id, ballot_nonce), and
+      // UNIQUE(session_id, leaf_index).
       for (const r of this.db.deliberateBallots.values()) {
-        if (r.session_id === session_id && (r.voter_hash === voter_hash || r.ballot_nonce === ballot_nonce)) {
+        if (
+          r.session_id === session_id &&
+          (r.voter_hash === voter_hash || r.ballot_nonce === ballot_nonce || r.leaf_index === leaf_index)
+        ) {
           throw new Error('UNIQUE constraint failed: deliberate_ballots')
         }
       }
@@ -1471,6 +1476,8 @@ export class D1PreparedStatementMock {
     // DELIBERATE-RECEIPT-01: ballot count for a session.
     if (this.sql.includes('COUNT(*) AS n FROM deliberate_ballots WHERE session_id')) {
       const [session_id] = this.args as [string]
+      const override = this.db.deliberateBallotCountOverrides.shift()
+      if (override !== undefined) return { n: override } as T
       let n = 0
       for (const r of this.db.deliberateBallots.values()) if (r.session_id === session_id) n++
       return { n } as T
@@ -1498,6 +1505,13 @@ export class D1PreparedStatementMock {
         if (q.session_id === session_id) n++
       }
       return { n } as T
+    }
+    if (this.sql.startsWith('SELECT id FROM deliberate_ballots WHERE session_id')) {
+      const [session_id, voter_hash] = this.args as [string, string]
+      for (const r of this.db.deliberateBallots.values()) {
+        if (r.session_id === session_id && r.voter_hash === voter_hash) return { id: r.id } as T
+      }
+      return null
     }
     if (this.sql.startsWith('SELECT COUNT(*)')) {
       return { count: 0 } as T

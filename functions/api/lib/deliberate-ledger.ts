@@ -5,8 +5,9 @@
  * the REST surface (`routes/deliberate-sessions.ts`) and the LIVE WebSocket
  * board (`lib/session-room-deliberate-handler.ts`, DELIBERATE-GA-01) write the
  * SAME `deliberate_ballots` table the SAME way. Both paths MUST stay consistent:
- * one-ballot-per-voter (UNIQUE conflict → `already_voted`, never overwrite),
- * leaf_index = current ledger length, no identity ever leaving the ledger.
+ * one-ballot-per-voter (voter_hash conflict → `already_voted`, never overwrite),
+ * leaf_index = current ledger length with unique retry, no identity ever leaving
+ * the ledger.
  *
  * Pure-ish: takes a `D1Database` + the pure crypto primitives; no Hono `c`, no
  * DO `ctx`, so it is callable from a Pages Function and a Durable Object alike
@@ -57,6 +58,8 @@ export type BallotSession = {
   created_at: number
 }
 
+const MAX_APPEND_ATTEMPTS = 5
+
 /** Ordered ledger of (nonce, commitment, choice) — anonymous, observer-downloadable. */
 export async function loadLedger(db: D1Database, sessionId: string): Promise<LedgerRow[]> {
   const res = await db
@@ -92,14 +95,29 @@ export function projectLedger(ledger: LedgerRow[]): Array<{
   }))
 }
 
+function isUniqueConstraintError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /UNIQUE constraint failed/i.test(message)
+}
+
+async function hasExistingVoterBallot(db: D1Database, sessionId: string, voterHash: string): Promise<boolean> {
+  const row = await db
+    .prepare(`SELECT id FROM deliberate_ballots WHERE session_id = ?1 AND voter_hash = ?2 LIMIT 1`)
+    .bind(sessionId, voterHash)
+    .first<{ id: string }>()
+  return row != null
+}
+
 /**
  * Append one ballot to the anonymous commitment ledger and return a receipt.
  *
  * Reuses the EXACT crypto path the REST cast established: sessionFingerprint →
  * generateBallotNonce → computeCommitment → voterBallotHash (with the optional
- * M-1 server salt) → append-only insert with `leaf_index = current ledger
- * length`. UNIQUE(session_id, voter_hash) enforces one ballot per voter — a
- * re-cast surfaces as a conflict (`already_voted`), NEVER a silent overwrite.
+ * M-1 server salt) → append-only insert with `leaf_index = current ledger length`.
+ * UNIQUE(session_id, leaf_index) guards concurrent casts that observe the same
+ * length; collisions re-read and retry. UNIQUE(session_id, voter_hash) enforces
+ * one ballot per voter — a re-cast surfaces as `already_voted`, NEVER a silent
+ * overwrite.
  *
  * The returned receipt is the voter's secret-bearing artifact (only place the
  * nonce is surfaced); the broadcastable aggregate is computed separately so the
@@ -113,39 +131,46 @@ export async function appendBallot(
   voterSalt: string | undefined,
 ): Promise<CastResult> {
   const fingerprint = await sessionFingerprint(session.id, session.code, session.created_at)
-  const ballotNonce = generateBallotNonce()
-  const commitment = await computeCommitment(fingerprint, ballotNonce, choice)
   const voterHash = await voterBallotHash(fingerprint, voterIdentity, voterSalt)
 
-  const count = await db
-    .prepare(`SELECT COUNT(*) AS n FROM deliberate_ballots WHERE session_id = ?1`)
-    .bind(session.id)
-    .first<{ n: number }>()
-  const leafIndex = count?.n ?? 0
+  for (let attempt = 0; attempt < MAX_APPEND_ATTEMPTS; attempt++) {
+    const count = await db
+      .prepare(`SELECT COUNT(*) AS n FROM deliberate_ballots WHERE session_id = ?1`)
+      .bind(session.id)
+      .first<{ n: number }>()
+    const leafIndex = count?.n ?? 0
+    const ballotNonce = generateBallotNonce()
+    const commitment = await computeCommitment(fingerprint, ballotNonce, choice)
 
-  try {
-    await db
-      .prepare(
-        `INSERT INTO deliberate_ballots (id, session_id, ballot_nonce, commitment, choice, voter_hash, leaf_index, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
-      )
-      .bind(crypto.randomUUID(), session.id, ballotNonce, commitment, choice, voterHash, leafIndex, Date.now())
-      .run()
-  } catch {
-    // UNIQUE(session_id, voter_hash) violation → this voter already cast a ballot.
-    return { ok: false, code: 'already_voted', message: 'A ballot was already cast for this session' }
+    try {
+      await db
+        .prepare(
+          `INSERT INTO deliberate_ballots (id, session_id, ballot_nonce, commitment, choice, voter_hash, leaf_index, created_at)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
+        )
+        .bind(crypto.randomUUID(), session.id, ballotNonce, commitment, choice, voterHash, leafIndex, Date.now())
+        .run()
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) throw error
+      if (await hasExistingVoterBallot(db, session.id, voterHash)) {
+        return { ok: false, code: 'already_voted', message: 'A ballot was already cast for this session' }
+      }
+      continue
+    }
+
+    return {
+      ok: true,
+      receipt: {
+        sessionId: session.id,
+        sessionFingerprint: fingerprint,
+        ballotNonce,
+        commitment,
+        choice,
+        leafIndex,
+        issuedAt: Date.now(),
+      },
+    }
   }
 
-  return {
-    ok: true,
-    receipt: {
-      sessionId: session.id,
-      sessionFingerprint: fingerprint,
-      ballotNonce,
-      commitment,
-      choice,
-      leafIndex,
-      issuedAt: Date.now(),
-    },
-  }
+  throw new Error('Unable to append deliberate ballot after repeated ledger index conflicts')
 }
