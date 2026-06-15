@@ -149,9 +149,9 @@ export default function Results() {
   )
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-3xl mx-auto density-pad-8 density-stack-6">
       {/* animate-page-enter: content fades in on load (LAYOUT-MOTION-01) */}
-      <div className="animate-page-enter space-y-6">
+      <div className="animate-page-enter density-stack-6">
       <header className="space-y-1">
         <div className="flex items-center justify-between">
           <SessionTitleField
@@ -195,7 +195,7 @@ export default function Results() {
       {!question ? (
         <p className="text-sm text-pulse-500">{t('no_question')}</p>
       ) : results.total === 0 ? (
-        <section className="rounded-xl border border-pulse-200 p-5 space-y-3">
+        <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-3">
           <h2 className="text-xl font-semibold">{question.prompt}</h2>
           <p className="text-sm text-pulse-500">{t('no_votes')}</p>
         </section>
@@ -204,7 +204,7 @@ export default function Results() {
         const topEntries = allEntries.slice(0, 25)
         const maxCount = Math.max(...topEntries.map(e => e[1]), 1)
         return (
-          <section className="rounded-xl border border-pulse-200 p-5 space-y-4">
+          <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-4">
             <h2 className="text-xl font-semibold">{question.prompt}</h2>
             <div className="flex flex-wrap gap-x-3 gap-y-2 items-baseline justify-start py-3">
               {topEntries.map(([word, count]) => (
@@ -224,7 +224,7 @@ export default function Results() {
           </section>
         )
       })() : (
-        <section className="rounded-xl border border-pulse-200 p-5 space-y-4">
+        <section className="rounded-xl border border-pulse-200 density-pad-5 space-y-4">
           <h2 className="text-xl font-semibold">{question.prompt}</h2>
           <ul className="space-y-3">
             {rows.map((r) => {

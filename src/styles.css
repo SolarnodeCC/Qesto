@@ -133,24 +133,25 @@
 /* `--density-scale` is set via data-density on <html> by useDensity. It scales  */
 /* the workspace's structural rhythm — section gaps and card padding — without   */
 /* touching control/icon sizing (which use fixed Tailwind spacing). Containers    */
-/* opt in with the density-stack / density-pad / density-gap utilities below.    */
+/* opt in with the density-stack-* / density-pad-* utilities below. Each utility  */
+/* mirrors the matching Tailwind step at scale 1 (comfortable), so swapping       */
+/* space-y-6 → density-stack-6 / p-8 → density-pad-8 is a no-op at the default    */
+/* density and only diverges for compact (0.75×) and spacious (1.25×).            */
 :root { --density-scale: 1; }
 [data-density='compact']  { --density-scale: 0.75; }
 [data-density='spacious'] { --density-scale: 1.25; }
 
-@utility density-stack {
-  & > * + * {
-    margin-top: calc(2rem * var(--density-scale));
-  }
-}
+@utility density-stack-4  { & > * + * { margin-top: calc(1rem   * var(--density-scale)); } }
+@utility density-stack-5  { & > * + * { margin-top: calc(1.25rem * var(--density-scale)); } }
+@utility density-stack-6  { & > * + * { margin-top: calc(1.5rem  * var(--density-scale)); } }
+@utility density-stack-8  { & > * + * { margin-top: calc(2rem   * var(--density-scale)); } }
+@utility density-stack-10 { & > * + * { margin-top: calc(2.5rem  * var(--density-scale)); } }
+@utility density-stack-12 { & > * + * { margin-top: calc(3rem   * var(--density-scale)); } }
 
-@utility density-pad {
-  padding: calc(1.5rem * var(--density-scale));
-}
-
-@utility density-gap {
-  gap: calc(1rem * var(--density-scale));
-}
+@utility density-pad-3 { padding: calc(0.75rem * var(--density-scale)); }
+@utility density-pad-5 { padding: calc(1.25rem * var(--density-scale)); }
+@utility density-pad-6 { padding: calc(1.5rem  * var(--density-scale)); }
+@utility density-pad-8 { padding: calc(2rem    * var(--density-scale)); }
 
 [data-high-contrast='true'] {
   --color-border: #000000;

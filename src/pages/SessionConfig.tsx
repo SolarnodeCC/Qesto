@@ -176,7 +176,7 @@ export default function SessionConfig() {
   )
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-6">
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto density-pad-8 density-stack-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8]">Configure</h1>
@@ -187,7 +187,7 @@ export default function SessionConfig() {
         </span>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-5">
+      <form onSubmit={handleSave} className="density-stack-5">
         <div className="space-y-2">
           <label htmlFor="session-title" className="text-sm font-medium dark:text-[#F0F2F8]">
             Title
@@ -202,7 +202,7 @@ export default function SessionConfig() {
           />
         </div>
 
-        <fieldset className="space-y-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] dark:bg-[#151C2E] p-5">
+        <fieldset className="space-y-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] dark:bg-[#151C2E] density-pad-5">
           <legend className="text-sm font-medium px-1 dark:text-[#F0F2F8]">{t('pollQuestion')}</legend>
 
           <div className="space-y-2">

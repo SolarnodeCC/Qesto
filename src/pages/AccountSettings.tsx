@@ -32,7 +32,7 @@ function SettingsSection({
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className="density-pad rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card"
+      className="density-pad-6 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card"
     >
       <h2 id={`${id}-heading`} className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">
         {title}
@@ -151,7 +151,7 @@ export default function AccountSettings() {
       onSectionChange={handleSectionChange}
       isSuperuser={isSuperuser}
     >
-      <div className="density-stack max-w-[720px] mx-auto px-6 lg:px-10 py-10 animate-page-enter">
+      <div className="density-stack-8 max-w-[720px] mx-auto px-6 lg:px-10 py-10 animate-page-enter">
         <header>
           <h1 className="text-3xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('pageTitle')}</h1>
           <p className="mt-2 text-sm text-pulse-500 dark:text-[#6B7A99]">{t('pageIntro')}</p>
