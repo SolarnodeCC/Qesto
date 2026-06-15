@@ -12,6 +12,8 @@ export type PartnerSlaSnapshot = {
   errorRatePct: number
   webhookDeliveryPct: number
   updatedAt: number
+  /** True when the response is the hardcoded SLO target default, not a live measurement. */
+  isDefault?: boolean
 }
 
 const DEFAULT_SLA: PartnerSlaSnapshot = {
@@ -21,6 +23,7 @@ const DEFAULT_SLA: PartnerSlaSnapshot = {
   errorRatePct: 0.08,
   webhookDeliveryPct: 99.4,
   updatedAt: Date.now(),
+  isDefault: true,
 }
 
 function slaKvKey(): string {

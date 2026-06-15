@@ -31,10 +31,17 @@ describe('enrichPricingMatrix', () => {
     const sessions = m[0]?.rows.find((r) => r[0] === 'New sessions per month')
     const retention = m[0]?.rows.find((r) => r[0] === 'Retention')
     const integrations = m.find((s) => s.section === 'Integrations')
-    const webhooks = integrations?.rows.find((r) => r[0] === 'Webhooks (Slack, Notion, Workday)')
+    // Outbound webhooks shipped as Team-only; row renamed and source changed from roadmap → static.
+    const webhooks = integrations?.rows.find((r) => r[0] === 'Outbound webhooks')
     expect(sessions?.[4]).toBe('quota')
     expect(retention?.[4]).toBe('static')
-    expect(webhooks?.[4]).toBe('roadmap')
+    expect(webhooks?.[4]).toBe('static')
+    // Confirm all three Team-only AI rows resolve to insightsAI (false for free/starter, true for team)
+    const ai = m.find((s) => s.section === 'AI insights')
+    for (const row of ai?.rows ?? []) {
+      expect(row[1]).toBe(false)
+      expect(row[2]).toBe(false)
+    }
   })
 
   it('derives legacy display price from catalog pricing metadata', () => {

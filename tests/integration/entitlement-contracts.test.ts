@@ -21,6 +21,16 @@ function makeEnv(db: D1Mock, sessionsKv: KVMock, teamsKv = new KVMock()): Env {
     DECISIONS_KV: new KVMock() as unknown as KVNamespace,
     AUDIT_KV: new KVMock() as unknown as KVNamespace,
     ACTIONS_KV: new KVMock() as unknown as KVNamespace,
+    METRICS_AE: {
+      writeDataPoint: () => {}, // mock Analytics Engine
+    } as unknown as AnalyticsEngineDataset,
+    AI: {
+      run: async () => ({
+        success: true,
+        result: { response: 'mocked' },
+      }),
+    } as unknown as Ai,
+    DECISIONS_VECTORIZE: undefined as unknown as VectorizeIndex,
   } as unknown as Env
 }
 
@@ -69,8 +79,9 @@ describe('Sprint 20 entitlement contracts', () => {
     env = makeEnv(db, sessionsKv, teamsKv)
   })
 
-  it('denies rich export on free/starter and allows it on team (EXPORT-RICH-01-A)', async () => {
-    // Rich export (JSON + CSV with metadata) is team-plan only per EXPORT-RICH-01-A.
+  it('gates CSV export on resultsExport entitlement: free blocked, starter/team allowed (EXPORT-RICH-01-A)', async () => {
+    // CSV export is gated on resultsExport feature: Free=false, Starter=true, Team=true.
+    // JSON/HTML/PDF exports remain team-plan only.
     addUser(db, 'free_export', 'free')
     addUser(db, 'starter_export', 'starter')
     addUser(db, 'team_export', 'team')
@@ -82,7 +93,7 @@ describe('Sprint 20 entitlement contracts', () => {
     const starterSessionId = await createSession(app, env, starterCookie, 'starter export')
     const teamSessionId = await createSession(app, env, teamCookie, 'team export')
 
-    // free → 403 on both formats
+    // free → 403 on CSV (resultsExport=false) and JSON (plan!=team)
     const freeCsvRes = await app.fetch(
       new Request(`http://local/api/sessions/${freeSessionId}/export.csv`, { headers: { cookie: freeCookie } }),
       env,
@@ -95,14 +106,21 @@ describe('Sprint 20 entitlement contracts', () => {
     )
     expect(freeJsonRes.status).toBe(403)
 
-    // starter → 403 (rich export is team-only)
+    // starter → 403 on JSON (plan!=team), but allowed on CSV by resultsExport=true
+    // CSV gets 409 session_not_closed since session is draft
     const starterCsvRes = await app.fetch(
       new Request(`http://local/api/sessions/${starterSessionId}/export.csv`, { headers: { cookie: starterCookie } }),
       env,
     )
-    expect(starterCsvRes.status).toBe(403)
+    expect(starterCsvRes.status).toBe(409) // allowed by resultsExport; blocked by session status
 
-    // team → allowed (session must be closed; draft returns 409)
+    const starterJsonRes = await app.fetch(
+      new Request(`http://local/api/sessions/${starterSessionId}/export.json`, { headers: { cookie: starterCookie } }),
+      env,
+    )
+    expect(starterJsonRes.status).toBe(403) // blocked by plan check
+
+    // team → allowed on both (session must be closed; draft returns 409)
     const teamCsvRes = await app.fetch(
       new Request(`http://local/api/sessions/${teamSessionId}/export.csv`, { headers: { cookie: teamCookie } }),
       env,
@@ -289,6 +307,255 @@ describe('Sprint 20 entitlement contracts', () => {
     const body = (await res.json()) as { error: { code: string; details: { feature: string } } }
     expect(body.error.code).toBe('feature_not_available')
     expect(body.error.details.feature).toBe('insightsAI')
+  })
+
+  it('gates CSV export on resultsExport (Free blocked, Starter/Team allowed)', async () => {
+    addUser(db, 'free_csv', 'free')
+    addUser(db, 'starter_csv', 'starter')
+    addUser(db, 'team_csv', 'team')
+    const freeCookie = await cookieFor('free_csv', 'free_csv@example.com')
+    const starterCookie = await cookieFor('starter_csv', 'starter_csv@example.com')
+    const teamCookie = await cookieFor('team_csv', 'team_csv@example.com')
+
+    const freeSessionId = await createSession(app, env, freeCookie, 'free csv export')
+    const starterSessionId = await createSession(app, env, starterCookie, 'starter csv export')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team csv export')
+
+    // Free user blocked by resultsExport=false entitlement
+    const freeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/export.csv`, { headers: { cookie: freeCookie } }),
+      env,
+    )
+    expect(freeRes.status).toBe(403)
+    const freeBody = (await freeRes.json()) as { error: { code: string; details: { feature: string } } }
+    expect(freeBody.error.code).toBe('feature_not_available')
+    expect(freeBody.error.details.feature).toBe('resultsExport')
+
+    // Starter user allowed by resultsExport=true entitlement
+    // (session is draft, so returns 409 session_not_closed, not 403)
+    const starterRes = await app.fetch(
+      new Request(`http://local/api/sessions/${starterSessionId}/export.csv`, { headers: { cookie: starterCookie } }),
+      env,
+    )
+    expect(starterRes.status).toBe(409)
+    const starterBody = (await starterRes.json()) as { error: { code: string } }
+    expect(starterBody.error.code).toBe('session_not_closed')
+
+    // Team user allowed by resultsExport=true entitlement
+    // (session is draft, so returns 409 session_not_closed, not 403)
+    const teamRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/export.csv`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    expect(teamRes.status).toBe(409)
+    const teamBody = (await teamRes.json()) as { error: { code: string } }
+    expect(teamBody.error.code).toBe('session_not_closed')
+  })
+
+  it('gates JSON export on Team plan only (Free/Starter blocked)', async () => {
+    addUser(db, 'free_json', 'free')
+    addUser(db, 'starter_json', 'starter')
+    addUser(db, 'team_json', 'team')
+    const freeCookie = await cookieFor('free_json', 'free_json@example.com')
+    const starterCookie = await cookieFor('starter_json', 'starter_json@example.com')
+    const teamCookie = await cookieFor('team_json', 'team_json@example.com')
+
+    const freeSessionId = await createSession(app, env, freeCookie, 'free json export')
+    const starterSessionId = await createSession(app, env, starterCookie, 'starter json export')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team json export')
+
+    // Free user blocked by plan check (plan !== 'team')
+    const freeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/export.json`, { headers: { cookie: freeCookie } }),
+      env,
+    )
+    expect(freeRes.status).toBe(403)
+    const freeBody = (await freeRes.json()) as { error: { code: string } }
+    expect(freeBody.error.code).toBe('upgrade_required')
+
+    // Starter user blocked by plan check
+    const starterRes = await app.fetch(
+      new Request(`http://local/api/sessions/${starterSessionId}/export.json`, { headers: { cookie: starterCookie } }),
+      env,
+    )
+    expect(starterRes.status).toBe(403)
+    const starterBody = (await starterRes.json()) as { error: { code: string } }
+    expect(starterBody.error.code).toBe('upgrade_required')
+
+    // Team user allowed by plan check
+    // (session is draft, so returns 409 session_not_closed, not 403)
+    const teamRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/export.json`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    expect(teamRes.status).toBe(409)
+    const teamBody = (await teamRes.json()) as { error: { code: string } }
+    expect(teamBody.error.code).toBe('session_not_closed')
+  })
+
+  it('gates HTML export on Team plan only (Free/Starter blocked)', async () => {
+    addUser(db, 'free_html', 'free')
+    addUser(db, 'starter_html', 'starter')
+    addUser(db, 'team_html', 'team')
+    const freeCookie = await cookieFor('free_html', 'free_html@example.com')
+    const starterCookie = await cookieFor('starter_html', 'starter_html@example.com')
+    const teamCookie = await cookieFor('team_html', 'team_html@example.com')
+
+    const freeSessionId = await createSession(app, env, freeCookie, 'free html export')
+    const starterSessionId = await createSession(app, env, starterCookie, 'starter html export')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team html export')
+
+    // Free user blocked by plan check (plan !== 'team')
+    const freeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/export.html`, { headers: { cookie: freeCookie } }),
+      env,
+    )
+    expect(freeRes.status).toBe(403)
+
+    // Starter user blocked by plan check
+    const starterRes = await app.fetch(
+      new Request(`http://local/api/sessions/${starterSessionId}/export.html`, { headers: { cookie: starterCookie } }),
+      env,
+    )
+    expect(starterRes.status).toBe(403)
+
+    // Team user allowed by plan check
+    // (session is draft, so returns 409 session_not_closed, not 403)
+    const teamRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/export.html`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    expect(teamRes.status).toBe(409)
+  })
+
+  it('gates PDF export on Team plan only (Free/Starter blocked)', async () => {
+    addUser(db, 'free_pdf', 'free')
+    addUser(db, 'starter_pdf', 'starter')
+    addUser(db, 'team_pdf', 'team')
+    const freeCookie = await cookieFor('free_pdf', 'free_pdf@example.com')
+    const starterCookie = await cookieFor('starter_pdf', 'starter_pdf@example.com')
+    const teamCookie = await cookieFor('team_pdf', 'team_pdf@example.com')
+
+    const freeSessionId = await createSession(app, env, freeCookie, 'free pdf export')
+    const starterSessionId = await createSession(app, env, starterCookie, 'starter pdf export')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team pdf export')
+
+    // Free user blocked by plan check (plan !== 'team')
+    const freeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/export.pdf`, { headers: { cookie: freeCookie } }),
+      env,
+    )
+    expect(freeRes.status).toBe(403)
+
+    // Starter user blocked by plan check
+    const starterRes = await app.fetch(
+      new Request(`http://local/api/sessions/${starterSessionId}/export.pdf`, { headers: { cookie: starterCookie } }),
+      env,
+    )
+    expect(starterRes.status).toBe(403)
+
+    // Team user allowed by plan check
+    // (session is draft, so returns 409 session_not_closed, not 403)
+    const teamRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/export.pdf`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    expect(teamRes.status).toBe(409)
+  })
+
+  it('gates GET /api/sessions/:id/insights on insightsAI (Free/Starter blocked, Team allowed)', async () => {
+    addUser(db, 'free_insights', 'free')
+    addUser(db, 'starter_insights', 'starter')
+    addUser(db, 'team_insights', 'team')
+    const freeCookie = await cookieFor('free_insights', 'free_insights@example.com')
+    const starterCookie = await cookieFor('starter_insights', 'starter_insights@example.com')
+    const teamCookie = await cookieFor('team_insights', 'team_insights@example.com')
+
+    const freeSessionId = await createSession(app, env, freeCookie, 'free insights')
+    const starterSessionId = await createSession(app, env, starterCookie, 'starter insights')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team insights')
+
+    // Free user blocked by insightsAI=false entitlement
+    const freeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/insights`, { headers: { cookie: freeCookie } }),
+      env,
+    )
+    expect(freeRes.status).toBe(403)
+    const freeBody = (await freeRes.json()) as { error: { code: string; details: { feature: string } } }
+    expect(freeBody.error.code).toBe('feature_not_available')
+    expect(freeBody.error.details.feature).toBe('insightsAI')
+
+    // Starter user blocked by insightsAI=false entitlement
+    const starterRes = await app.fetch(
+      new Request(`http://local/api/sessions/${starterSessionId}/insights`, { headers: { cookie: starterCookie } }),
+      env,
+    )
+    expect(starterRes.status).toBe(403)
+    const starterBody = (await starterRes.json()) as { error: { code: string; details: { feature: string } } }
+    expect(starterBody.error.code).toBe('feature_not_available')
+    expect(starterBody.error.details.feature).toBe('insightsAI')
+
+    // Team user allowed by insightsAI=true entitlement
+    // (session is draft, so returns 409 session_not_closed_for_insights, not 403)
+    const teamRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/insights`, { headers: { cookie: teamCookie } }),
+      env,
+    )
+    expect(teamRes.status).toBe(409)
+  })
+
+  it('gates POST /api/sessions/:id/insights/analyze on insightsAI (Free/Starter blocked, Team allowed)', async () => {
+    addUser(db, 'free_analyze', 'free')
+    addUser(db, 'starter_analyze', 'starter')
+    addUser(db, 'team_analyze', 'team')
+    const freeCookie = await cookieFor('free_analyze', 'free_analyze@example.com')
+    const starterCookie = await cookieFor('starter_analyze', 'starter_analyze@example.com')
+    const teamCookie = await cookieFor('team_analyze', 'team_analyze@example.com')
+
+    const freeSessionId = await createSession(app, env, freeCookie, 'free analyze')
+    const starterSessionId = await createSession(app, env, starterCookie, 'starter analyze')
+    const teamSessionId = await createSession(app, env, teamCookie, 'team analyze')
+
+    // Free user blocked by insightsAI=false entitlement
+    const freeRes = await app.fetch(
+      new Request(`http://local/api/sessions/${freeSessionId}/insights/analyze`, {
+        method: 'POST',
+        headers: { cookie: freeCookie },
+      }),
+      env,
+    )
+    expect(freeRes.status).toBe(403)
+    const freeBody = (await freeRes.json()) as { error: { code: string; details: { feature: string } } }
+    expect(freeBody.error.code).toBe('feature_not_available')
+    expect(freeBody.error.details.feature).toBe('insightsAI')
+
+    // Starter user blocked by insightsAI=false entitlement
+    const starterRes = await app.fetch(
+      new Request(`http://local/api/sessions/${starterSessionId}/insights/analyze`, {
+        method: 'POST',
+        headers: { cookie: starterCookie },
+      }),
+      env,
+    )
+    expect(starterRes.status).toBe(403)
+    const starterBody = (await starterRes.json()) as { error: { code: string; details: { feature: string } } }
+    expect(starterBody.error.code).toBe('feature_not_available')
+    expect(starterBody.error.details.feature).toBe('insightsAI')
+
+    // Team user passes the insightsAI gate; downstream may fail in the test env
+    // (no real AI/Vectorize binding) — what matters is status is NOT 403 feature_not_available.
+    const teamRes = await app.fetch(
+      new Request(`http://local/api/sessions/${teamSessionId}/insights/analyze`, {
+        method: 'POST',
+        headers: { cookie: teamCookie },
+      }),
+      env,
+    )
+    expect(teamRes.status).not.toBe(403)
+    if (teamRes.status === 403) {
+      const body = (await teamRes.json()) as { error: { code: string } }
+      expect(body.error.code).not.toBe('feature_not_available')
+    }
   })
 
   async function createTeam(cookie: string, name: string) {

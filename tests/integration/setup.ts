@@ -34,6 +34,13 @@ export async function testHonoApp() {
     METRICS_AE: {
       writeDataPoint: () => {}, // mock Analytics Engine
     } as unknown as AnalyticsEngineDataset,
+    AI: {
+      run: async () => ({
+        success: true,
+        result: { response: 'mocked' },
+      }),
+    } as unknown as Ai,
+    DECISIONS_VECTORIZE: undefined as unknown as VectorizeIndex,
   } as unknown as Env
 
   return {
