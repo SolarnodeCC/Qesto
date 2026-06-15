@@ -16,6 +16,11 @@ export type PlanCatalogApiRow = {
     liveCopilot: boolean
     crossSessionInsights: boolean
     recurringWorkspaces: boolean
+    verifiableVoting?: boolean
+    embedWidgets?: boolean
+    liveCaptions?: boolean
+    liveReactions?: boolean
+    pulseAnalytics?: boolean
   }
 }
 

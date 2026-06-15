@@ -67,6 +67,7 @@ export function kindLabel(kind: WizardQuestionKind): string {
     slider: 'Slider',
     upvote: 'Upvote',
     word_cloud: 'Word cloud',
+    reaction: 'Reaction',
   }
   return labels[kind] ?? kind
 }

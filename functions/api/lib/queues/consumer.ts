@@ -12,6 +12,7 @@
 import type { Env } from '../../types'
 import type { PostSessionWorkMessage } from './producer'
 import { precomputeInsights } from '../../routes/sessions/shared'
+import { rollupPulseOnSessionClose } from '../pulse-aggregation'
 import { notifySlackSessionClosed, notifyTeamsSessionClosed } from '../../routes/integrations'
 import { deliverTeamWebhooks } from '../webhooks'
 import { deliverMarketingWebhook } from '../webhooks-marketing'
@@ -48,6 +49,9 @@ export async function processPostSessionWork(
     switch (taskType) {
       case 'precompute_insights':
         await handlePrecomputeInsights(env, sessionId, userId, payload)
+        break
+      case 'pulse_rollup':
+        await rollupPulseOnSessionClose(env, sessionId)
         break
       case 'notify_slack':
         await handleNotifySlack(env, sessionId, teamId, payload)

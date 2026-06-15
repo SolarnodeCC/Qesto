@@ -39,6 +39,14 @@ import {
   COPILOT_MODEL,
 } from '../lib/copilot-suggest'
 import { auditAgentAction } from '../lib/agent-audit'
+import {
+  approvePlanStep,
+  buildCopilotPlan,
+  copilotPlanKvKey,
+  CopilotPlanSchema,
+  type CopilotPlan,
+} from '../lib/copilot-plan'
+import { validateL2PlanShape } from '../lib/agent-safety'
 import { getSessionRoomStub } from './sessions/shared'
 import { WizardAIError, WizardValidationError } from '../lib/ai-wizard'
 import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
@@ -47,7 +55,7 @@ import { sanitizeError } from '../lib/error-handler'
 import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 import { sanitizeAIGatewayRequest, assertSanitizedAIGatewayRequest } from '../lib/ai/prompt-sanitize'
-import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS } from '../lib/constants'
+import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS, COPILOT_PLAN_TTL_SECONDS } from '../lib/constants'
 import type { ParentApp } from './parent-app'
 
 type LiveContextResult =
@@ -94,6 +102,10 @@ const DraftPollBodySchema = z.object({
 
 const AcceptSuggestionSchema = z.object({
   kind: z.enum(['followup_question', 'poll_draft', 'disengagement_alert', 'pacing']).optional(),
+})
+
+const PlanStepActionSchema = z.object({
+  status: z.enum(['approved', 'dismissed']),
 })
 
 type Vars = AuthVariables & PlanVariables
@@ -309,6 +321,154 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       return c.json({ ok: false, error: { code: r.code, message: r.message }, trace_id: c.get('trace_id') }, r.status)
     }
     return c.json({ ok: true, data: { context: r.context }, trace_id: c.get('trace_id') })
+  })
+
+  // COPILOT-RUNTIME-01 (ADR-0056) — supervised multi-step plan.
+  app.post('/sessions/:sessionId/plan', async (c) => {
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
+      return c.json(
+        { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    const sessionId = c.req.param('sessionId')
+    const userId = c.get('user').sub
+    const r = await loadLiveContext(c.env, sessionId, userId)
+    if (!r.ok) {
+      return c.json({ ok: false, error: { code: r.code, message: r.message }, trace_id: c.get('trace_id') }, r.status)
+    }
+    if (!c.env.SESSIONS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'SESSIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+
+    const plan = buildCopilotPlan(sessionId, r.context)
+    const shapeErrors = validateL2PlanShape(plan.steps)
+    if (shapeErrors.length > 0) {
+      return c.json(
+        { ok: false, error: { code: 'invalid_plan', message: shapeErrors.join(';') }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+
+    await writeKvJson(c.env.SESSIONS_KV, copilotPlanKvKey(sessionId), plan, {
+      expirationTtl: COPILOT_PLAN_TTL_SECONDS,
+    })
+
+    writeEvent(c.env.METRICS_AE, {
+      name: 'copilot.plan_created',
+      userId,
+      sessionId,
+      plan: c.get('plan'),
+      count: plan.steps.length,
+      traceId: c.get('trace_id'),
+    })
+
+    return c.json({ ok: true, data: { plan }, trace_id: c.get('trace_id') })
+  })
+
+  app.get('/sessions/:sessionId/plan', async (c) => {
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
+      return c.json(
+        { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    const sessionId = c.req.param('sessionId')
+    const userId = c.get('user').sub
+    const session = await c.env.DB.prepare(`SELECT id, owner_id FROM sessions WHERE id = ?1`)
+      .bind(sessionId)
+      .first<{ id: string; owner_id: string }>()
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.owner_id !== userId) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Not session owner' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    if (!c.env.SESSIONS_KV) {
+      return c.json({ ok: true, data: { plan: null }, trace_id: c.get('trace_id') })
+    }
+    const plan = await readKvJson<CopilotPlan>(c.env.SESSIONS_KV, copilotPlanKvKey(sessionId))
+    return c.json({ ok: true, data: { plan: plan ?? null }, trace_id: c.get('trace_id') })
+  })
+
+  app.patch('/sessions/:sessionId/plan/steps/:stepId', async (c) => {
+    if (!featureAllowed(c.get('planQuotas'), 'liveCopilot')) {
+      return c.json(
+        { ok: false, error: { code: 'upgrade_required', message: 'Copilot requires paid plan' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    const sessionId = c.req.param('sessionId')
+    const stepId = c.req.param('stepId')
+    const userId = c.get('user').sub
+    const parsed = await validateBody(c, PlanStepActionSchema)
+    if ('error' in parsed) return parsed.error
+
+    const session = await c.env.DB.prepare(`SELECT id, owner_id, team_id FROM sessions WHERE id = ?1`)
+      .bind(sessionId)
+      .first<{ id: string; owner_id: string; team_id: string | null }>()
+    if (!session) {
+      return c.json(
+        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    if (session.owner_id !== userId) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Not session owner' }, trace_id: c.get('trace_id') },
+        403,
+      )
+    }
+    if (!c.env.SESSIONS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'SESSIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+
+    const key = copilotPlanKvKey(sessionId)
+    const existing = await readKvJson<CopilotPlan>(c.env.SESSIONS_KV, key)
+    if (!existing) {
+      return c.json(
+        { ok: false, error: { code: 'plan_not_found', message: 'No active copilot plan' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+    const step = existing.steps.find((s) => s.id === stepId)
+    if (!step) {
+      return c.json(
+        { ok: false, error: { code: 'step_not_found', message: 'Plan step not found' }, trace_id: c.get('trace_id') },
+        404,
+      )
+    }
+
+    const plan = approvePlanStep(existing, stepId, parsed.data.status)
+    CopilotPlanSchema.parse(plan)
+    await writeKvJson(c.env.SESSIONS_KV, key, plan, { expirationTtl: COPILOT_PLAN_TTL_SECONDS })
+
+    await auditAgentAction(c, {
+      action: 'agent.action.plan_step_reviewed',
+      sessionId,
+      agentId: 'facilitation-copilot',
+      toolName: step.tool,
+      toolArgs: { stepId, status: parsed.data.status },
+      outcome: 'success',
+    })
+
+    writeEvent(c.env.METRICS_AE, {
+      name: 'copilot.plan_step_reviewed',
+      userId,
+      sessionId,
+      teamId: session.team_id ?? undefined,
+      plan: c.get('plan'),
+      detail: parsed.data.status,
+      traceId: c.get('trace_id'),
+    })
+
+    return c.json({ ok: true, data: { plan }, trace_id: c.get('trace_id') })
   })
 
   // COPILOT-02 — structured suggestion engine grounded in the live snapshot (ADR-0046).

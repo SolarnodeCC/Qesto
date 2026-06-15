@@ -17,6 +17,7 @@ export type EntitlementDenial = {
 export function questionKindFeature(kind: QuestionKind): FeatureKey | null {
   if (kind === 'ranking') return 'rankingQuestions'
   if (kind === 'consent') return 'consentMode'
+  if (kind === 'reaction') return 'liveReactions'
   return null
 }
 

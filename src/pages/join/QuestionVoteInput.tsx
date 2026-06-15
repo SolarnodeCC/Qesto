@@ -13,6 +13,7 @@ interface QuestionVoteInputProps {
   options: LivePollOption[]
   results: { counts: Record<string, number>; total: number }
   onVote: (optionId: string) => void
+  onReaction?: (emojiId: string) => void
 }
 
 export function QuestionVoteInput({
@@ -23,9 +24,31 @@ export function QuestionVoteInput({
   options,
   results,
   onVote,
+  onReaction,
 }: QuestionVoteInputProps) {
   const t = useT('jo' + 'in')
   const qk = questionKind
+
+  /* ── Live reactions (ADR-0055) ─────────────────────────────────── */
+  if (qk === 'reaction') {
+    return (
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2" role="group" aria-label={t('reactions_group')}>
+        {options.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => canVote && onReaction?.(o.id)}
+            disabled={!canVote}
+            aria-label={o.label}
+            className="flex flex-col items-center gap-1 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] py-4 text-3xl transition-transform hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
+          >
+            <span aria-hidden="true">{o.id}</span>
+            <span className="text-caption text-pulse-500">{results.counts[o.id] ?? 0}</span>
+          </button>
+        ))}
+      </div>
+    )
+  }
 
   /* ── Word cloud / Open text ─────────────────────────────────────── */
   if (qk === 'word_cloud' || qk === 'open') {

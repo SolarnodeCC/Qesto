@@ -33,6 +33,8 @@ function ctxWithQuestion(prompt: string): CopilotLiveContext {
     responseCount: 8,
     participantCount: 20,
     participationRate: 0.4,
+    connections: 12,
+    optionTallies: [],
     mood: 'neutral',
     moodSampleSize: 8,
     generatedAt: 0,

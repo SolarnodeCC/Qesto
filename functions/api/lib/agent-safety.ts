@@ -5,7 +5,7 @@
 import { z } from 'zod'
 import { COPILOT_ACTION_KINDS } from './copilot-suggest'
 
-/** Tools an agent definition may expose (subset of live-session presenter actions). */
+/** L1 tools an agent definition may expose (subset of live-session presenter actions). */
 export const AGENT_ALLOWED_TOOLS = [
   'suggest_followup',
   'draft_poll',
@@ -13,6 +13,18 @@ export const AGENT_ALLOWED_TOOLS = [
   'pacing_hint',
 ] as const
 export type AgentAllowedTool = (typeof AGENT_ALLOWED_TOOLS)[number]
+
+/** L2 copilot plan tools (ADR-0056) — aggregate-only, no session mutations. */
+export const COPILOT_L2_ALLOWED_TOOLS = [
+  'cluster_themes',
+  'detect_anomaly',
+  'participation_alert',
+  'recommend_followup',
+] as const
+export type CopilotL2AllowedTool = (typeof COPILOT_L2_ALLOWED_TOOLS)[number]
+
+export const COPILOT_L2_MAX_STEPS = 5
+export const COPILOT_L2_DEFAULT_STEPS = 3
 
 export const AgentSandboxPolicySchema = z.object({
   maxTurns: z.number().int().min(1).max(20).default(8),
@@ -86,4 +98,27 @@ export function isAutonomousActionAllowed(
   if (BLOCKED_AUTONOMOUS_TOOLS.has(action.tool)) return false
   if (policy.requirePresenterConfirm && !action.confirmedByPresenter) return false
   return validateToolInvocation(policy, { tool: action.tool, sessionId: 'pending' }).allowed
+}
+
+/** SEC-AGENT-EVAL-02 — L2 plan tool must be on the whitelist and never mutating. */
+export function validateL2ToolAllowed(tool: string): { allowed: boolean; reason?: string } {
+  if (BLOCKED_AUTONOMOUS_TOOLS.has(tool)) {
+    return { allowed: false, reason: 'autonomous_mutation_blocked' }
+  }
+  if (!(COPILOT_L2_ALLOWED_TOOLS as readonly string[]).includes(tool)) {
+    return { allowed: false, reason: 'l2_tool_not_whitelisted' }
+  }
+  return { allowed: true }
+}
+
+export function validateL2PlanShape(steps: readonly { tool: string }[]): string[] {
+  const errors: string[] = []
+  if (steps.length < 1 || steps.length > COPILOT_L2_MAX_STEPS) {
+    errors.push('l2_plan_step_count_out_of_bounds')
+  }
+  for (const step of steps) {
+    const gate = validateL2ToolAllowed(step.tool)
+    if (!gate.allowed) errors.push(`${step.tool}:${gate.reason}`)
+  }
+  return errors
 }

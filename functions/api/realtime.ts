@@ -58,6 +58,7 @@ export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
 // clients capability-detect the same way they do for `delta_results`.
 export const TOWNHALL_FEATURE = 'townhall_board'
 export const IDEATE_FEATURE = 'ideate_board'
+export const REACTIONS_FEATURE = 'reactions_channel'
 
 export function townhallEnabled(env: { REALTIME_TOWNHALL_ENABLED?: string }): boolean {
   return getFlag(env, 'REALTIME_TOWNHALL_ENABLED')
@@ -568,6 +569,13 @@ export type ServerMessage =
       v?: LiveProtocolVersion
       type: 'caption_segment'
       data: { id: string; ts: number; lang: string; text: string; isFinal: boolean }
+      timestamp: number
+    }
+  // REACTIONS (ADR-0055). Aggregate-only delta; no per-voter fields.
+  | {
+      v?: LiveProtocolVersion
+      type: 'reaction_delta'
+      data: { counts: Record<string, number>; total: number }
       timestamp: number
     }
   | {

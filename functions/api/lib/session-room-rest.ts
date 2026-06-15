@@ -231,6 +231,11 @@ export async function handleCopilotSnapshot(self: SessionRoomContext): Promise<R
 
   const voterCount = Object.keys(voters).length
   const responseCount = Object.values(counts).reduce((sum, n) => sum + (typeof n === 'number' ? n : 0), 0)
+  const optionTallies =
+    question?.options?.map((o) => ({
+      label: o.label,
+      votes: counts[o.id] ?? 0,
+    })) ?? []
 
   return self.jsonOk({
     status,
@@ -241,6 +246,7 @@ export async function handleCopilotSnapshot(self: SessionRoomContext): Promise<R
     voterCount,
     participationRate: voterCount > 0 ? Math.min(1, responseCount / voterCount) : 0,
     connections: self.ctx.getWebSockets().length,
+    optionTallies,
     mood,
   })
 }

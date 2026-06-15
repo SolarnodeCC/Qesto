@@ -240,6 +240,33 @@ export class D1Mock {
     string,
     { team_id: string; kind: string; window: string; payload_json: string; computed_at: number }
   >()
+  readonly pulseSessionRollups = new Map<
+    string,
+    {
+      session_id: string
+      team_id: string | null
+      workspace_id: string | null
+      closed_at: number
+      participant_count: number
+      vote_count: number
+      participation_rate: number
+      sentiment_score: number | null
+      payload_json: string
+      computed_at: number
+    }
+  >()
+  readonly pulseTeamDaily = new Map<
+    string,
+    {
+      team_id: string
+      day: string
+      participation_avg: number
+      sentiment_avg: number | null
+      session_count: number
+      response_total: number
+      computed_at: number
+    }
+  >()
   readonly partnerPaymentAccounts = new Map<
     string,
     {
@@ -850,6 +877,94 @@ export class D1PreparedStatementMock {
       row.ai_dismissed_count = ai_dismissed_count
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO pulse_session_rollup')) {
+      const [
+        session_id,
+        team_id,
+        workspace_id,
+        closed_at,
+        participant_count,
+        vote_count,
+        participation_rate,
+        sentiment_score,
+        payload_json,
+        computed_at,
+      ] = this.args as [
+        string,
+        string | null,
+        string | null,
+        number,
+        number,
+        number,
+        number,
+        number | null,
+        string,
+        number,
+      ]
+      this.db.pulseSessionRollups.set(session_id, {
+        session_id,
+        team_id,
+        workspace_id,
+        closed_at,
+        participant_count,
+        vote_count,
+        participation_rate,
+        sentiment_score,
+        payload_json,
+        computed_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO pulse_team_daily')) {
+      const [team_id, day, participation_avg, sentiment_avg, session_count, response_total, computed_at] =
+        this.args as [string, string, number, number | null, number, number, number]
+      this.db.pulseTeamDaily.set(`${team_id}:${day}`, {
+        team_id,
+        day,
+        participation_avg,
+        sentiment_avg,
+        session_count,
+        response_total,
+        computed_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (
+      this.sql.includes('UPDATE pulse_session_rollup') &&
+      this.sql.includes("SET payload_json = '{}'")
+    ) {
+      let changes = 0
+      const [redactBefore] = this.args as [number]
+      for (const row of this.db.pulseSessionRollups.values()) {
+        if (row.closed_at < redactBefore && row.payload_json !== '{}') {
+          row.payload_json = '{}'
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM pulse_session_rollup WHERE closed_at')) {
+      const [deleteBefore] = this.args as [number]
+      let changes = 0
+      for (const [id, row] of this.db.pulseSessionRollups.entries()) {
+        if (row.closed_at < deleteBefore) {
+          this.db.pulseSessionRollups.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM pulse_team_daily WHERE computed_at')) {
+      const [deleteBefore] = this.args as [number]
+      let changes = 0
+      for (const [key, row] of this.db.pulseTeamDaily.entries()) {
+        if (row.computed_at < deleteBefore) {
+          this.db.pulseTeamDaily.delete(key)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
     if (this.sql.startsWith('INSERT INTO insights_daily')) {
       // INSIGHTS-02: (id, session_id, team_id, day, themes_json, confidence, n_votes, embedding_ref, computed_at)
       // ON CONFLICT(session_id, day) DO UPDATE — idempotent per close-day.
@@ -1367,6 +1482,30 @@ export class D1PreparedStatementMock {
       for (const r of this.db.deliberateBallots.values()) if (r.session_id === session_id) n++
       return { n } as T
     }
+    if (this.sql.includes('SELECT COUNT(DISTINCT voter_id) AS n FROM votes WHERE session_id = ?1')) {
+      const [session_id] = this.args as [string]
+      const voters = new Set<string>()
+      for (const vote of this.db.votes.values()) {
+        if (vote.session_id === session_id) voters.add(vote.voter_id)
+      }
+      return { n: voters.size } as T
+    }
+    if (this.sql.includes('SELECT COUNT(*) AS n FROM votes WHERE session_id = ?1')) {
+      const [session_id] = this.args as [string]
+      let n = 0
+      for (const vote of this.db.votes.values()) {
+        if (vote.session_id === session_id) n++
+      }
+      return { n } as T
+    }
+    if (this.sql.includes('SELECT COUNT(*) AS n FROM questions WHERE session_id = ?1')) {
+      const [session_id] = this.args as [string]
+      let n = 0
+      for (const q of this.db.questions.values()) {
+        if (q.session_id === session_id) n++
+      }
+      return { n } as T
+    }
     if (this.sql.startsWith('SELECT id FROM deliberate_ballots WHERE session_id')) {
       const [session_id, voter_hash] = this.args as [string, string]
       for (const r of this.db.deliberateBallots.values()) {
@@ -1430,6 +1569,45 @@ export class D1PreparedStatementMock {
     if (this.sql.startsWith('SELECT team_id, stripe_account_id, account_type, status')) {
       const [team_id] = this.args as [string]
       return (this.db.partnerPaymentAccounts.get(team_id) as T) ?? null
+    }
+    if (this.sql.includes('SELECT session_id, team_id FROM pulse_session_rollup WHERE session_id')) {
+      const [session_id] = this.args as [string]
+      const row = this.db.pulseSessionRollups.get(session_id)
+      return (row ? { session_id: row.session_id, team_id: row.team_id } : null) as T | null
+    }
+    if (this.sql.includes('AVG(participation_rate) AS participation_avg') && this.sql.includes('FROM pulse_session_rollup')) {
+      const [team_id, day] = this.args as [string, string]
+      const rows = [...this.db.pulseSessionRollups.values()].filter((r) => {
+        if (r.team_id !== team_id) return false
+        const rowDay = new Date(r.closed_at).toISOString().slice(0, 10)
+        return rowDay === day
+      })
+      if (rows.length === 0) return null
+      const participation_avg = rows.reduce((s, r) => s + r.participation_rate, 0) / rows.length
+      const sentimentScores = rows.map((r) => r.sentiment_score).filter((s): s is number => s != null)
+      const sentiment_avg =
+        sentimentScores.length > 0
+          ? sentimentScores.reduce((a, b) => a + b, 0) / sentimentScores.length
+          : null
+      const response_total = rows.reduce((s, r) => s + r.vote_count, 0)
+      return {
+        participation_avg,
+        sentiment_avg,
+        session_count: rows.length,
+        response_total,
+      } as T
+    }
+    if (this.sql.startsWith('SELECT id, team_id, workspace_id, closed_at, anonymity')) {
+      const [id] = this.args as [string]
+      const row = this.db.sessions.get(id)
+      if (!row || (row.status !== 'closed' && row.status !== 'archived')) return null
+      return {
+        id: row.id,
+        team_id: row.team_id ?? null,
+        workspace_id: row.workspace_id ?? null,
+        closed_at: row.closed_at,
+        anonymity: row.anonymity,
+      } as T
     }
     if (this.sql.startsWith('SELECT team_id FROM sessions WHERE id')) {
       const [id] = this.args as [string]
@@ -2048,6 +2226,24 @@ export class D1PreparedStatementMock {
         option_id,
         count,
       }))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.includes('FROM pulse_team_daily') && this.sql.includes('WHERE team_id = ?1 AND day >= ?2')) {
+      const [team_id, since] = this.args as [string, string]
+      const rows = [...this.db.pulseTeamDaily.values()]
+        .filter((r) => r.team_id === team_id && r.day >= since)
+        .sort((a, b) => a.day.localeCompare(b.day))
+      return { results: rows as unknown as T[] }
+    }
+    if (
+      this.sql.includes('FROM pulse_session_rollup') &&
+      this.sql.includes('WHERE team_id = ?1 AND closed_at >= ?2')
+    ) {
+      const [team_id, since] = this.args as [string, number]
+      const rows = [...this.db.pulseSessionRollups.values()]
+        .filter((r) => r.team_id === team_id && r.closed_at >= since)
+        .sort((a, b) => a.closed_at - b.closed_at)
+        .slice(0, 50)
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

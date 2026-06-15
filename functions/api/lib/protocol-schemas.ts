@@ -262,6 +262,13 @@ export const ClientMessageSchema = z.union([
     data: z.object({ locale: z.enum(['en', 'nl', 'es', 'de', 'fr', 'off']) }),
     timestamp: z.number(),
   }),
+  // REACTIONS (ADR-0055). Ephemeral emoji sub-channel; aggregate broadcast only.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('reaction_submit'),
+    data: z.object({ emojiId: z.string().min(1).max(16) }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>
@@ -451,6 +458,7 @@ export const AuditActionSchema = z.enum([
   'agent.action.suggestion_accepted',
   'agent.action.question_injected',
   'agent.action.state_changed',
+  'agent.action.plan_step_reviewed',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>

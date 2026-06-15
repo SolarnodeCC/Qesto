@@ -12,6 +12,7 @@ import { processPostSessionWork } from '../functions/api/lib/queues/consumer'
 import type { PostSessionWorkMessage } from '../functions/api/lib/queues/producer'
 import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
 import { recomputeStaleWorkspaceTrends } from '../functions/api/lib/workspace-trends'
+import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
@@ -103,6 +104,22 @@ async function handleScheduled(_event: ScheduledEvent, env: Env, _ctx: Execution
     safeLogContext(err, {
       traceId: trendTraceId,
       route: 'worker/ws-trends',
+      errorClass: err instanceof Error ? err.name : 'UnknownError',
+    })
+  }
+
+  // PULSE-RETENTION-01 — daily GDPR retention (90d redact / 7y delete).
+  const pulseTraceId = `pulse-retention-${Date.now()}`
+  try {
+    const result = await runPulseRetentionPolicy(env.DB)
+    console.log(
+      `[pulse-retention] OK — redacted ${result.redactedSessions} session row(s), ` +
+        `deleted ${result.deletedSessions} session + ${result.deletedDailyRows} daily row(s)`,
+    )
+  } catch (err) {
+    safeLogContext(err, {
+      traceId: pulseTraceId,
+      route: 'worker/pulse-retention',
       errorClass: err instanceof Error ? err.name : 'UnknownError',
     })
   }

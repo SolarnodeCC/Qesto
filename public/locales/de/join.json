@@ -39,6 +39,7 @@
   "final_results": "Endergebnisse",
   "total_votes": "{count} Stimmen insgesamt",
   "vote_recorded": "Stimme erfasst — danke!",
+  "reactions_group": "Live-Reaktionen",
   "live_results": "Live-Ergebnisse",
   "your_vote": "deine Stimme",
   "next_question_countdown": "Nächste Frage in {seconds}…",

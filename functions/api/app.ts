@@ -30,6 +30,7 @@ import { mountNativePushRoutes } from './routes/native-push'
 import { mountMarketplaceConnectRoutes } from './routes/marketplace-connect'
 import { mountMarketplaceListingRoutes } from './routes/marketplace-listings'
 import { mountTeamInsightsRoutes } from './routes/team-insights'
+import { mountPulseRoutes } from './routes/pulse'
 import { mountAgentDefinitionRoutes } from './routes/agent-definitions'
 import { mountTeamWorkspaceRoutes } from './routes/team-workspaces'
 import { mountStageSessionRoutes } from './routes/stage-sessions'
@@ -322,6 +323,7 @@ export function createApp() {
   mountMarketplaceConnectRoutes(app)
   mountMarketplaceListingRoutes(app)
   mountTeamInsightsRoutes(app)
+  mountPulseRoutes(app)
   mountAgentDefinitionRoutes(app)
   mountTeamWorkspaceRoutes(app)
   mountTeamEventAgendaRoutes(app)

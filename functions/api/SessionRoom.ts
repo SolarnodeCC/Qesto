@@ -16,6 +16,7 @@ import { RetroHandler } from './lib/session-room-retro-handler'
 import { IdeateHandler } from './lib/session-room-ideate-handler'
 import { DeliberateHandler } from './lib/session-room-deliberate-handler'
 import { CaptionsHandler, type CaptionBroadcastPayload } from './lib/session-room-captions-handler'
+import { ReactionsHandler } from './lib/session-room-reactions-handler'
 import { logEvent } from './lib/log'
 import { K_META, K_VOTERS } from './lib/session-room-storage-keys'
 import {
@@ -71,6 +72,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
   readonly ideateHandler: IdeateHandler
   readonly deliberateHandler: DeliberateHandler
   readonly captionsHandler: CaptionsHandler
+  readonly reactionsHandler: ReactionsHandler
 
   // Tracks the in-flight voters load so a rejection can be retried (EH-03).
   private _votersInitPromise: Promise<void> | null = null
@@ -88,6 +90,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     this.ideateHandler = new IdeateHandler(handlerCtx, env, this.scheduleAlarm.bind(this))
     this.deliberateHandler = new DeliberateHandler(handlerCtx, env)
     this.captionsHandler = new CaptionsHandler(handlerCtx)
+    this.reactionsHandler = new ReactionsHandler(handlerCtx, env)
 
     this.clientWsHandlers = buildClientWsHandlers({
       handleVote: (ws, att, data) => handleVote(this, ws, att, data),
@@ -104,6 +107,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
       ideateHandler: this.ideateHandler,
       deliberateHandler: this.deliberateHandler,
       captionsHandler: this.captionsHandler,
+      reactionsHandler: this.reactionsHandler,
     })
   }
 

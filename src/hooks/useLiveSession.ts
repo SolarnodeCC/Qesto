@@ -12,6 +12,11 @@ import { parseInitPayload, parseServerEnvelope } from '../lib/live-session-proto
 import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
 import type { CaptionSegment } from './useCaptions'
 
+export type ReactionDelta = {
+  counts: Record<string, number>
+  total: number
+}
+
 const LIVE_PROTOCOL_VERSION = 1
 
 export type LiveEnergizerState = {
@@ -222,6 +227,8 @@ type Options = {
   enabled?: boolean
   /** Called whenever a caption_segment ServerMessage arrives. */
   onCaptionSegment?: (seg: CaptionSegment) => void
+  /** Called whenever a reaction_delta ServerMessage arrives. */
+  onReactionDelta?: (delta: ReactionDelta) => void
 }
 
 export function useLiveSession(sessionId: string | undefined, opts: Options = {}) {
@@ -231,10 +238,12 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const closedByClientRef = useRef(false)
 
-  const { fingerprint, presenterToken, enabled = true, onCaptionSegment } = opts
+  const { fingerprint, presenterToken, enabled = true, onCaptionSegment, onReactionDelta } = opts
   // Stable ref so the message handler closure never captures a stale callback.
   const onCaptionSegmentRef = useRef(onCaptionSegment)
   onCaptionSegmentRef.current = onCaptionSegment
+  const onReactionDeltaRef = useRef(onReactionDelta)
+  onReactionDeltaRef.current = onReactionDelta
 
   const clearRetryTimer = () => {
     if (retryTimerRef.current) {
@@ -364,6 +373,17 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
                 lang: d.lang,
                 text: d.text,
                 isFinal: d.isFinal,
+              })
+            }
+            break
+          }
+          case 'reaction_delta': {
+            const d = msg.data
+            const counts = d.counts
+            if (typeof counts === 'object' && counts !== null && typeof d.total === 'number') {
+              onReactionDeltaRef.current?.({
+                counts: counts as Record<string, number>,
+                total: d.total,
               })
             }
             break
@@ -517,6 +537,15 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     [],
   )
 
+  const sendReactionSubmit = useCallback((emojiId: string) => {
+    sendWsJson(wsRef.current, {
+      v: LIVE_PROTOCOL_VERSION,
+      type: 'reaction_submit',
+      data: { emojiId },
+      timestamp: Date.now(),
+    })
+  }, [])
+
   return {
     state,
     sendVote,
@@ -532,5 +561,6 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     sendCaptionsStart,
     sendCaptionsStop,
     sendCaptionsSetLocale,
+    sendReactionSubmit,
   }
 }
