@@ -329,8 +329,8 @@ export default function TeamSettings() {
   }
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-10">
-      <div className="animate-page-enter space-y-10">
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto density-pad-8 density-stack-10">
+      <div className="animate-page-enter density-stack-10">
         <div>
           <h1 ref={h1Ref} tabIndex={-1} className="text-3xl font-semibold focus:outline-none">
             Team settings

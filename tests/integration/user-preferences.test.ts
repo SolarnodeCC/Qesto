@@ -240,4 +240,92 @@ describe('User Preferences CRUD', () => {
       expect(body.data.density).toBe(density)
     }
   })
+
+  it('persists colorScheme and highContrast preferences', async () => {
+    const app = createApp()
+    const env = makeEnv()
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+
+    const res = await app.fetch(
+      new Request('http://local/api/users/preferences', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ colorScheme: 'dark', highContrast: true }),
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as any
+    expect(body.data.colorScheme).toBe('dark')
+    expect(body.data.highContrast).toBe(true)
+  })
+
+  it('merges appearance preferences without dropping density', async () => {
+    const app = createApp()
+    const env = makeEnv()
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+
+    await app.fetch(
+      new Request('http://local/api/users/preferences', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ density: 'compact' }),
+      }),
+      env,
+    )
+    await app.fetch(
+      new Request('http://local/api/users/preferences', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ colorScheme: 'light' }),
+      }),
+      env,
+    )
+
+    const get = await app.fetch(
+      new Request('http://local/api/users/preferences', {
+        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+      }),
+      env,
+    )
+    const body = (await get.json()) as any
+    expect(body.data).toEqual({ density: 'compact', colorScheme: 'light' })
+  })
+
+  it('rejects invalid colorScheme values', async () => {
+    const app = createApp()
+    const env = makeEnv()
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+
+    const res = await app.fetch(
+      new Request('http://local/api/users/preferences', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ colorScheme: 'sepia' }),
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as any
+    expect(body.error.code).toBe('bad_request')
+  })
+
+  it('rejects non-boolean highContrast values', async () => {
+    const app = createApp()
+    const env = makeEnv()
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+
+    const res = await app.fetch(
+      new Request('http://local/api/users/preferences', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ highContrast: 'yes' }),
+      }),
+      env,
+    )
+
+    expect(res.status).toBe(400)
+  })
 })

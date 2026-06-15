@@ -6,7 +6,7 @@ import { useT } from '../i18n'
 import JoinBar from '../components/JoinBar'
 import { useAuth } from '../hooks/useAuth'
 import LanguageSwitcher from '../components/LanguageSwitcher'
-import { useColorScheme } from '../hooks/useColorScheme'
+import { useColorSchemeContext } from '../hooks/ColorSchemeProvider'
 
 function NavDropdown({ label, links }: { label: string; links: Array<{ label: string; href: string }> }) {
   const location = useLocation()
@@ -137,7 +137,7 @@ export default function MainLayout({
 }: MainLayoutProps) {
   const location = useLocation()
   const auth = useAuth()
-  const { scheme, toggle } = useColorScheme()
+  const { scheme, toggle } = useColorSchemeContext()
   const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 

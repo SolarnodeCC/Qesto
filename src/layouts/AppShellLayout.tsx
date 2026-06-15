@@ -5,7 +5,7 @@ import SkipLink from '../components/SkipLink'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { useAuth } from '../hooks/useAuth'
 import { useHelpChat } from '../hooks/useHelpChat'
-import { useColorScheme } from '../hooks/useColorScheme'
+import { useColorSchemeContext } from '../hooks/ColorSchemeProvider'
 import { useT } from '../i18n'
 import { inputHint } from '../ui/input-hint'
 import { COMPACT_CODE_FIELD_CLASS } from '../ui/input-field-class'
@@ -35,7 +35,7 @@ export default function AppShellLayout({
   const t = useT('dashboard')
   const auth = useAuth()
   const { openChat, state: helpChatState } = useHelpChat()
-  const { scheme, toggle } = useColorScheme()
+  const { scheme, toggle } = useColorSchemeContext()
   const navigate = useNavigate()
   const location = useLocation()
   const onSettingsPage = location.pathname === '/settings'

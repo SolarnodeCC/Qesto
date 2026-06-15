@@ -294,7 +294,7 @@ export default function Dashboard() {
       onSectionChange={setActiveSection}
       isSuperuser={isSuperuser}
     >
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-12">
+      <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-10 animate-page-enter density-stack-12">
         <HeroSection
           userName={userName}
           townhallFeatureEnabled={townhallFeatureEnabled}
