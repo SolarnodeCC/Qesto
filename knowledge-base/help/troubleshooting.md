@@ -220,8 +220,8 @@ You clicked CSV export but nothing happened.
 
 #### Check
 
-1. **Is it a free session?**
-   - CSV export only available on Starter+ plans
+1. **Are you on the Pulse plan?**
+   - CSV export only available on Signal+ plans
    - Upgrade to download
 
 2. **Browser popup blocker**
@@ -249,7 +249,7 @@ We can manually investigate!
 
 ## AI Insights and Analytics Issues
 
-**Note:** AI Insights requires Starter plan or higher.
+**Note:** AI Insights requires the Chorus plan.
 
 ### "Generating Insights..." Takes Too Long
 
@@ -272,8 +272,8 @@ The insights spinner has been spinning for 2+ minutes.
    - Usually solves the issue
 
 3. **Check your plan**
-   - AI Insights requires Starter+
-   - Free plan doesn't have this feature
+   - AI Insights requires Chorus
+   - Pulse and Signal plans don't have this feature
 
 4. **If still stuck**
    - Try again in 5 minutes
@@ -320,8 +320,8 @@ You see this message instead of insights.
    - Insights require open-ended responses
    - Polls alone won't generate themes
 
-3. **Are you on Starter+?**
-   - Free plan doesn't have insights
+3. **Are you on Chorus?**
+   - Pulse and Signal plans don't have insights
    - Upgrade to access
 
 4. **Did the insights fail?**
@@ -330,7 +330,7 @@ You see this message instead of insights.
 
 ### API/Webhook Issues
 
-**Note:** API access requires Team plan.
+**Note:** API access requires the Chorus plan.
 
 #### Webhook Not Firing
 
@@ -361,7 +361,7 @@ You see this message instead of insights.
    - Use correct field names
 
 3. **Check rate limits**
-   - Team plan: 1000 requests/hour
+   - Chorus plan: 1000 requests/hour
    - If exceeded, retry with exponential backoff
 
 4. **Read error message**
@@ -579,6 +579,6 @@ Host view out of sync with participants.
 ### Can't Export — Button Missing or Greyed Out
 
 1. Confirm session status is **Closed**
-2. CSV export requires **Starter+** plan
-3. Need **Export sessions** permission on team workspaces (Team custom roles)
+2. CSV export requires **Signal+** plan
+3. Need **Export sessions** permission on team workspaces (Chorus custom roles)
 

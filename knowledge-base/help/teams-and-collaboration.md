@@ -14,7 +14,7 @@ Teams organize sessions, templates, and members under one workspace. Use them wh
 
 - Several people create sessions for the same organization
 - You need shared templates or audit logs
-- You want SAML single sign-on (Starter+ or Team plan)
+- You want SAML single sign-on (Chorus plan)
 
 Personal sessions belong to your account; team sessions belong to the workspace.
 
@@ -43,9 +43,9 @@ Invites expire after a period for security. Resend if needed.
 | **Member** | Create and run sessions |
 | **Viewer** | Read-only access to team sessions |
 
-Team owners can assign **custom roles** on the Team plan with granular permissions (create, launch, export, manage auth, etc.).
+Team owners can assign **custom roles** on the Chorus plan with granular permissions (create, launch, export, manage auth, etc.).
 
-## Custom Permissions (Team Plan)
+## Custom Permissions (Chorus Plan)
 
 Examples of permission flags:
 
@@ -61,7 +61,7 @@ Assign custom roles under **Team settings → Roles**.
 
 ## SAML Single Sign-On
 
-**Requires Starter plan or higher** (basic SAML on Starter; advanced SAML/OAuth on Team).
+**Requires Chorus plan** (SAML/OAuth SSO).
 
 ### What SAML does
 
@@ -83,7 +83,7 @@ For enterprise IdP configuration help, email support@qesto.cc with your provider
 
 When creating a session, pick the team in the wizard if the session belongs to the organization.
 
-## Audit Log (Team Plan)
+## Audit Log (Chorus Plan)
 
 Team owners and users with **Read audit log** permission can view compliance events:
 
@@ -104,12 +104,12 @@ Removing a member does not delete sessions they created — ownership stays with
 ## Questions?
 
 **Q: How many teams can I create?**
-A: Free and Starter plans support multiple teams; participant limits apply per session, not per team.
+A: Pulse and Signal plans support multiple teams; participant limits apply per session, not per team.
 
 **Q: Can viewers run sessions?**
 A: No. Viewers can see team sessions but need **Member** (or custom launch permission) to go live.
 
-**Q: Who pays for the team plan?**
+**Q: Who pays for the team workspace subscription?**
 A: The team owner's billing account. Upgrade under **Settings → Billing**.
 
 **Q: Can I transfer team ownership?**

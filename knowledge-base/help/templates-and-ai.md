@@ -49,7 +49,7 @@ AI runs on Cloudflare Workers AI only; your prompts are not sent to third-party 
 
 Always review AI content before going live — you are responsible for what participants see.
 
-## AI Insights (Starter+)
+## AI Insights (Chorus)
 
 After a session **closes**, Qesto can extract themes from open-ended responses:
 
@@ -62,7 +62,7 @@ After a session **closes**, Qesto can extract themes from open-ended responses:
 
 - Session must be **closed**
 - At least one **open** (free-text) question with meaningful answers
-- **Starter plan or higher** — not available on Free
+- **Chorus plan** — not available on Pulse or Signal
 
 Poll-only sessions show tallies but not AI theme extraction.
 
@@ -84,7 +84,7 @@ See Troubleshooting → AI Insights if generation stalls or looks wrong.
 ## Questions?
 
 **Q: Does AI cost extra?**
-A: Included in Starter and Team plans for insights; question generation is available on Free with consent.
+A: Included in the Chorus plan for insights; question generation is available on Pulse and above with consent.
 
 **Q: Can I turn off AI for my team?**
 A: Simply don't use Generate or Analyze. No AI runs unless you trigger it.

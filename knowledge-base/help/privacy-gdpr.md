@@ -39,7 +39,7 @@ When a host runs a **named** or partially identified session, participants may s
 
 > I agree to the processing of my name for analytics purposes. Data is stored for a maximum of 30 days and then deleted.
 
-Consent is logged with a timestamp for audit (Team plan audit log). Hosts running sensitive surveys should use **anonymous** or **zero-knowledge** modes.
+Consent is logged with a timestamp for audit (Chorus plan audit log). Hosts running sensitive surveys should use **anonymous** or **zero-knowledge** modes.
 
 ## Encryption and Hosting
 
@@ -54,9 +54,9 @@ Consent is logged with a timestamp for audit (Team plan audit log). Hosts runnin
 | Closed session responses | 1 year (host can delete earlier) |
 | Identified participant names (with consent) | Up to 30 days for analytics, then deleted |
 | Account data | Until account deletion requested |
-| Audit logs (Team) | Per team compliance settings |
+| Audit logs (Chorus) | Per team compliance settings |
 
-Export important results before deletion (CSV on Starter+).
+Export important results before deletion (CSV on Signal+).
 
 ## Your Rights (GDPR / CCPA)
 

@@ -17,7 +17,7 @@ A: Qesto works on Chrome, Firefox, Safari, and Edge (desktop and mobile). We rec
 A: Yes! Qesto is fully responsive. Participants can join and vote from any device.
 
 **Q: How many people can join a session?**
-A: Free plan: 50 participants. Starter: 500. Team: Unlimited. You can always upgrade.
+A: Pulse: 50 participants per session. Signal: 500. Chorus: 5,000. You can always upgrade.
 
 **Q: Is there a session time limit?**
 A: No! Sessions can run as long as you need. However, we recommend closing after 2-3 hours for performance.
@@ -34,7 +34,7 @@ A: No, Qesto is standalone. But it pairs great with Zoom, Teams, or Google Meet 
 A: Yes, all data is encrypted in transit (HTTPS) and at rest.
 
 **Q: Can I export my results?**
-A: Yes! Download results as CSV from any closed session (Starter+ plans).
+A: Yes! Download results as CSV from any closed session (Signal+ plans).
 
 **Q: Do you store data outside the US?**
 A: Qesto is hosted on Cloudflare's global edge network (data centers worldwide). All data complies with GDPR and CCPA.
@@ -45,7 +45,7 @@ A: Data is retained for 1 year after a session closes. You can manually delete e
 ## Usage
 
 **Q: Can I use Qesto for free?**
-A: Yes, the Free plan includes unlimited sessions with up to 50 participants and all 9 question types.
+A: Yes, the Pulse plan includes 5 sessions per month with up to 50 participants and all 9 question types.
 
 **Q: What's included in each plan?**
 A: See our pricing page for a detailed comparison.
@@ -78,13 +78,13 @@ A: Yes. Dashboard → Templates → pick a Qesto or team template → **Use temp
 A: In the session wizard, describe your goal and AI suggests questions. Review and edit before saving. You consent to AI processing when prompted.
 
 **Q: When are AI insights available?**
-A: After a session closes, on Starter+ plans. You need open-ended responses — polls alone won't generate themes.
+A: After a session closes, on the Chorus plan. You need open-ended responses — polls alone won't generate themes.
 
 **Q: How do I invite someone to my team?**
 A: Teams → your team → Settings → **Invite member**. They accept the email link while logged in.
 
 **Q: What is SAML SSO?**
-A: Single sign-on through your company identity provider (Starter+). Configure under Team settings → Authentication.
+A: Single sign-on through your company identity provider (Chorus plan). Configure under Team settings → Authentication.
 
 **Q: I didn't receive my magic link email — what now?**
 A: Check spam, wait a few minutes, confirm the email address, and request a new link. Or sign in with password if you have one.

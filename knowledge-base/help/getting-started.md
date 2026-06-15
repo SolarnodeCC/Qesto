@@ -82,7 +82,7 @@ Warm up your audience with a fun activity before questions start.
 
 1. Click **"Close"** when done
 2. See response summaries immediately
-3. For Starter+ plans: Get AI insights on open responses
+3. For Chorus plan: Get AI insights on open responses
 
 That's it! You've run your first session.
 
@@ -200,8 +200,8 @@ You can invite more people even after the session has started:
 
 ### Session Limits
 
-- **Free plan**: Up to 50 participants per session
-- **Starter plan**: Up to 500 participants
-- **Team plan**: Unlimited participants
+- **Pulse plan**: Up to 50 participants per session
+- **Signal plan**: Up to 500 participants
+- **Chorus plan**: Up to 5,000 participants
 
 If you hit your limit, upgrade your plan or split into multiple sessions.
