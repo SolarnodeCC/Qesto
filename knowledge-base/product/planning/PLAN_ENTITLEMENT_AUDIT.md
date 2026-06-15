@@ -6,7 +6,7 @@ category: planning
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-06-15
 tags:
   - planning
   - sprints
@@ -58,7 +58,7 @@ Legend:
 - ⚠️ = implemented but weak/incomplete enforcement
 - ❌ = not implemented / not found in backend
 
-### Free
+### Pulse
 
 - 3 gelijktijdige sessies → ⚠️ Limit exists in plan config, but no clear hard gate found on session creation/start.
 - 5 beslissingen per maand → ✅ Enforced by `requireDecisionQuota()`.
@@ -67,22 +67,22 @@ Legend:
 - 30 dagen geschiedenis → ⚠️ `historyMonths` exists in limits, but no retention/access enforcement found.
 - Basisvragen (MC/open/schaal) → ⚠️ Question types exist, but plan-based type gating not consistently enforced server-side.
 
-### Starter
+### Signal
 
-- Onbeperkte sessies / beslissingen → ⚠️ Decisions are effectively unlimited above free; session concurrency cap not clearly enforced.
+- Onbeperkte sessies / beslissingen → ⚠️ Decisions are effectively unlimited above Pulse; session concurrency cap not clearly enforced.
 - Consent-modus & ranking → ⚠️ Feature flags exist, but no route-level `requireFeature` seen for these question modes.
 - Point allocation vragen → ⚠️ Same as above.
 - PDF export & audit log → ⚠️ Audit export exists, but no explicit plan gate for `auditLogExport`; PDF-specific backend gate not found.
 - Custom branding → ⚠️ Branding endpoints exist, but no explicit `customBranding` gate found.
 
-### Team
+### Chorus
 
 - Tot 10 facilitators → ❌ Limit exists in config but enforcement on team member/facilitator count not found.
 - AI insights per sessie → ✅ Gated via `requireFeature('aiInsights')`.
 - Institutional Memory → ⚠️ Decision/team retrieval exists, but no distinct entitlement gate found.
 - Decision Debt dashboard → ✅ Gated via `requireFeature('decisionDebt')`.
 - Semantisch zoeken → ⚠️ Semantic search route exists; no plan gate detected.
-- Team analytics → ⚠️ Analytics routes are available; no Team+ gate detected on core analytics endpoint.
+- Team analytics → ⚠️ Analytics routes are available; no Chorus+ gate detected on core analytics endpoint.
 - MCP API (read-only) → ❌ `mcpAccess` exists in plan model, but MCP token creation/usage routes do not enforce read-only or tier.
 
 
@@ -128,12 +128,12 @@ Legend:
 |---|---|---|---|
 | Monthly session quota | `POST /api/sessions`, `POST /api/sessions/:id/duplicate` check `PLAN_QUOTAS.maxSessionsPerMonth` through `incrementSessionQuota()` | Enforced | Contract tests cover create quota and duplicate-path denial |
 | Participant capacity | `SessionRoom` join path checks `PLAN_QUOTAS.maxParticipantsPerSession` | Enforced | Covered by realtime/session lifecycle tests; keep load/stress evidence separate |
-| Results export | `GET /api/sessions/:id/export.csv` requires `resultsExport` | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny + starter allow |
-| Ranking questions | DRAFT question create/update paths reject `ranking` when `rankingQuestions` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny + starter allow |
-| Consent mode/questions | DRAFT question create/update paths reject `consent` when `consentMode` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for free deny |
-| AI insights / Insights tab | `GET /api/sessions/:id/insights`, `GET /api/sessions/:id/insights/themes`, and legacy `POST /sessions/:id/insights/analyze` require `insightsAI` through the shared entitlement helper | Enforced 2026-05-01 | Contract tests cover free/starter denial and team allow for precomputed themes; legacy analyze uses shared `feature_not_available` response |
+| Results export | `GET /api/sessions/:id/export.csv` requires `resultsExport` | Enforced 2026-05-01 | Contract tests added 2026-05-01 for Pulse deny + Signal allow |
+| Ranking questions | DRAFT question create/update paths reject `ranking` when `rankingQuestions` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for Pulse deny + Signal allow |
+| Consent mode/questions | DRAFT question create/update paths reject `consent` when `consentMode` is false | Enforced 2026-05-01 | Contract tests added 2026-05-01 for Pulse deny |
+| AI insights / Insights tab | `GET /api/sessions/:id/insights`, `GET /api/sessions/:id/insights/themes`, and legacy `POST /sessions/:id/insights/analyze` require `insightsAI` through the shared entitlement helper | Enforced 2026-05-01 | Contract tests cover Pulse/Signal denial and Chorus allow for precomputed themes; legacy analyze uses shared `feature_not_available` response |
 | Custom branding | `customBranding` exists in plan config, but no backend branding route is present in this codebase | Classified: not implemented | Next: add route gate when branding API lands |
-| SAML SSO | `PATCH /api/teams/:id` rejects non-null `samlConfig` unless `samlSso` is true | Enforced 2026-05-01 | Contract tests added 2026-05-01 for starter deny + team allow |
+| SAML SSO | `PATCH /api/teams/:id` rejects non-null `samlConfig` unless `samlSso` is true | Enforced 2026-05-01 | Contract tests added 2026-05-01 for Signal deny + Chorus allow |
 | Team/facilitator count | `POST /api/teams/:id/members` enforces plan member cap: free=1, starter=3, team=10 | Enforced 2026-05-01 | Contract test added 2026-05-01 for limit deny |
 | Semantic search / evidence clusters | `semanticSearch` exists in plan config; no standalone semantic-search route was found. Vectorize lookup inside AI insights is currently tied to insights generation. | Classified: coupled to insights | Next: gate standalone search route if/when exposed |
 | Team analytics | Admin analytics is role-gated; session Insights is plan-gated. Team-wide analytics route is not a distinct paid endpoint yet. | Classified: mixed admin/insights coverage | Next: define route ownership before adding plan gate |

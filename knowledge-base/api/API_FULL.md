@@ -5,7 +5,7 @@ category: reference
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-06-15
 tags:
   - rest-api
   - endpoints
@@ -96,8 +96,8 @@ _Last verified: 2026-04-06 (UTC)_
 - File: `functions/api/routes/insights.ts` (new). Mounted under
   `/api/sessions/:id/insights`.
 - Auth: session cookie required. Owner-only.
-- Plan-gated to `insightsAI` feature (Team plan today, Pro+ once Pro plan
-  ships) via `requireFeature('insightsAI')` → `403 feature_not_available`.
+- Plan-gated to `insightsAI` feature (Chorus plan today, Enterprise once the
+  higher tier ships) via `requireFeature('insightsAI')` → `403 feature_not_available`.
 - Closed or archived sessions only (`409 conflict` otherwise).
 - Cache: 5-minute TTL in `SESSIONS_KV` at `insights:<model>:<sessionId>`.
 - AI: `@cf/mistral/mistral-7b-instruct-v0.2` over open responses plus top
@@ -232,7 +232,7 @@ is host-authenticated; the **read plane** is token-gated and aggregate-only.
 
 ### Authenticated mint plane — `functions/api/routes/embed.ts` (`/api/embed`)
 Host `authMiddleware` + `planMiddleware`, gated on the `embedWidgets` entitlement
-(Team tier+). All actions are audit-logged (`embed.widget.create`,
+(Chorus tier+). All actions are audit-logged (`embed.widget.create`,
 `embed.widget.token_mint`, `embed.widget.revoke`).
 
 | Method + path | Purpose | Returns |

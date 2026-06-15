@@ -6,7 +6,7 @@ category: positioning
 status: active
 version: 1.0
 created: 2026-06-13
-updated: 2026-06-13
+updated: 2026-06-15
 tags:
   - accessibility
   - wcag
@@ -200,7 +200,7 @@ Before `/accessibility` page or any public copy goes live, **flag these claims f
 
 - **Public-sector RFx:** Win ≥2 public-sector pilots (local government, education, association) in S89–S90.
 - **Multilingual sessions:** ≥10% of new signups create sessions with ≥2 languages enabled (tracked in `sessions.lang_config`).
-- **Accessibility audit adoption:** ≥50% of Pro/Enterprise teams run a formal WCAG audit on their session (tracked via `/api/audit` or feature telemetry).
+- **Accessibility audit adoption:** ≥50% of Chorus/Enterprise teams run a formal WCAG audit on their session (tracked via `/api/audit` or feature telemetry).
 - **Captions usage:** ≥25% of sessions with participants ≥10 have captions toggled on (tracked in session telemetry).
 
 ### Customer Research to Validate (Pre-Copy Launch)

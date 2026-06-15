@@ -6,7 +6,7 @@ category: features
 status: active
 version: 1.0
 created: 2026-04-15
-updated: 2026-05-11
+updated: 2026-06-15
 audience:
   - Product owner
   - Frontend engineer
@@ -45,11 +45,11 @@ _Onboarding redesign for trial users → paid conversion. WCAG AA + Lighthouse b
 2. Create team
 3. Create first session
 4. Go LIVE (show 3-min timer)
-5. Show pricing page (Free → Pro upsell)
+5. Show pricing page (Pulse → Chorus upsell)
 
 **Pain Points**:
 - Pricing page feels separate from product context
-- No visual feedback on plan limits (free: 50 participants)
+- No visual feedback on plan limits (Pulse: 50 participants)
 - CTA not prominent enough
 
 ---
@@ -81,15 +81,15 @@ _Onboarding redesign for trial users → paid conversion. WCAG AA + Lighthouse b
 ### 2. Plan Limit Indicator (Session Create Page)
 ```tsx
 // src/components/PlanLimitBanner.tsx
-// Shows: "Free plan: max 50 participants"
+// Shows: "Pulse plan: max 50 participants"
 // Styling: bg-[--color-upgrade-bg] with border-l-4 in brand-primary
-// CTA: "Upgrade to Pro" (44px touch target, blue button)
+// CTA: "Upgrade to Chorus" (44px touch target, blue button)
 ```
 
 ### 3. Pricing Integration (During First Session)
 ```
 When user starts FIRST session in DRAFT state:
-- Show inline banner: "You're on Free. Upgrade to Pro for unlimited participants + AI insights"
+- Show inline banner: "You're on Pulse. Upgrade to Chorus for unlimited participants + AI insights"
 - After LIVE: Show capacity meter (50/50 participants reached → can't add more)
 ```
 
@@ -169,7 +169,7 @@ When user starts FIRST session in DRAFT state:
 
 - Lighthouse regression: None (maintained 92+/96+/100)
 - A11y violations: 0 (maintained)
-- Conversion lift (Free → Pro): Target ≥ 5% improvement
+- Conversion lift (Pulse → Chorus): Target ≥ 5% improvement
 - Mobile usability: No touch target complaints in support
 
 ---

@@ -6,7 +6,7 @@ category: external
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-18
+updated: 2026-06-15
 audience:
   - Backend engineer
   - Architect
@@ -131,7 +131,7 @@ Response:
 |-------|---------|--------|
 | `customer.subscription.created` | `createSubscription()` | Lookup user by Stripe customer ID, create subscription record in USERS_KV |
 | `customer.subscription.updated` | `updateSubscription()` | Update plan tier, current period end, cancel status |
-| `customer.subscription.deleted` | `cancelSubscription()` | Downgrade to "free" plan, disable premium features |
+| `customer.subscription.deleted` | `cancelSubscription()` | Downgrade to Pulse plan, disable premium features |
 | `charge.dispute.created` | `escalateIssue()` | Alert admin, flag user for review |
 | `invoice.payment_failed` | `invoiceFailure()` | Notify user (email via Resend) |
 
@@ -271,8 +271,8 @@ Response:
 
 ### Rate Limiting
 
-- **Free plan**: 10 requests/min per user
-- **Pro plan**: 50 requests/min per user
+- **Pulse plan**: 10 requests/min per user
+- **Chorus plan**: 50 requests/min per user
 - **Enterprise**: Custom
 
 Enforced via in-memory cache (illustrative — **DO NOT** rely on global `Map` alone in multi-isolate production without Durable Object / KV coordination):
