@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { loadUserPreferences, patchUserPreference } from '../lib/user-preferences'
 
 export type ColorSchemePreference = 'system' | 'light' | 'dark'
 export type ResolvedColorScheme = 'light' | 'dark'
 
 const STORAGE_KEY = 'qesto:color-scheme'
 
+function isValidPreference(v: unknown): v is ColorSchemePreference {
+  return v === 'dark' || v === 'light' || v === 'system'
+}
+
 function readStored(): ColorSchemePreference | null {
   if (typeof window === 'undefined') return null
   const v = window.localStorage.getItem(STORAGE_KEY)
-  return v === 'dark' || v === 'light' || v === 'system' ? v : null
+  return isValidPreference(v) ? v : null
 }
 
 function readSystem(): ResolvedColorScheme {
@@ -46,14 +51,25 @@ export function useColorScheme(): {
     return () => mq.removeEventListener('change', onChange)
   }, [preference])
 
-  return {
-    preference,
-    scheme,
-    setPreference: setPreferenceState,
-    toggle: () =>
-      setPreferenceState((p) => {
-        const current = resolveScheme(p)
-        return current === 'dark' ? 'light' : 'dark'
-      }),
-  }
+  // Hydrate from server prefs on mount (best-effort; silently ignored on failure).
+  useEffect(() => {
+    loadUserPreferences().then((prefs) => {
+      if (isValidPreference(prefs.colorScheme)) setPreferenceState(prefs.colorScheme)
+    })
+  }, [])
+
+  const setPreference = useCallback((p: ColorSchemePreference) => {
+    setPreferenceState(p)
+    patchUserPreference({ colorScheme: p })
+  }, [])
+
+  const toggle = useCallback(() => {
+    setPreferenceState((p) => {
+      const next: ColorSchemePreference = resolveScheme(p) === 'dark' ? 'light' : 'dark'
+      patchUserPreference({ colorScheme: next })
+      return next
+    })
+  }, [])
+
+  return { preference, scheme, setPreference, toggle }
 }

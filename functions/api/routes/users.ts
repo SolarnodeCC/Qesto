@@ -8,6 +8,8 @@ import { userPrefsKey } from '../lib/kv-keys'
 
 const PrefsSchema = z.object({
   density: z.enum(['compact', 'comfortable', 'spacious']).optional(),
+  colorScheme: z.enum(['system', 'light', 'dark']).optional(),
+  highContrast: z.boolean().optional(),
 })
 
 type UserPrefs = z.infer<typeof PrefsSchema>
