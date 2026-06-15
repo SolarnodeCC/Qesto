@@ -47,7 +47,9 @@ import {
   type CopilotPlan,
 } from '../lib/copilot-plan'
 import { validateL2PlanShape } from '../lib/agent-safety'
-import { getSessionRoomStub } from './sessions/shared'
+import { enforceCopilotSandbox } from '../lib/copilot-sandbox'
+import { buildCheckpointBroadcast } from '../lib/copilot-checkpoint'
+import { getSessionRoomStub, postDO } from './sessions/shared'
 import { WizardAIError, WizardValidationError } from '../lib/ai-wizard'
 import { CircuitBreakers } from '../lib/resilience/circuit-breaker'
 import { featureAllowed } from '../lib/entitlements'
@@ -468,7 +470,39 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       traceId: c.get('trace_id'),
     })
 
-    return c.json({ ok: true, data: { plan }, trace_id: c.get('trace_id') })
+    // COPILOT-CHECKPOINT-01: broadcast to the room ONLY on explicit approval, and
+    // only after the SEC-COPILOT-SANDBOX-01 gate passes (sandboxed tool, same
+    // session, PII-safe output). Dismissed/pending steps never broadcast.
+    let broadcast = false
+    const approvedStep = plan.steps.find((s) => s.id === stepId)
+    if (parsed.data.status === 'approved' && approvedStep) {
+      const sandbox = enforceCopilotSandbox({
+        tool: approvedStep.tool,
+        sessionId,
+        context: { sessionId },
+        output: approvedStep.output,
+      })
+      const frame = sandbox.ok ? buildCheckpointBroadcast(approvedStep) : null
+      if (frame) {
+        try {
+          await postDO(c.env, sessionId, '/copilot/checkpoint', frame.data)
+          broadcast = true
+          writeEvent(c.env.METRICS_AE, {
+            name: 'copilot.checkpoint_broadcast',
+            userId,
+            sessionId,
+            teamId: session.team_id ?? undefined,
+            plan: c.get('plan'),
+            detail: approvedStep.tool,
+            traceId: c.get('trace_id'),
+          })
+        } catch {
+          /* DO unreachable (session not live) — approval stands, no broadcast */
+        }
+      }
+    }
+
+    return c.json({ ok: true, data: { plan, broadcast }, trace_id: c.get('trace_id') })
   })
 
   // COPILOT-02 — structured suggestion engine grounded in the live snapshot (ADR-0046).

@@ -122,6 +122,15 @@ export type Env = {
    */
   EMBED_WIDGET_SECRET?: string
   /**
+   * LEARN-LTI-01 (ADR-0058): LTI 1.1 consumer credentials. The LMS (Canvas /
+   * Blackboard / Moodle) signs the launch with `LTI_CONSUMER_KEY` + the shared
+   * secret. Server secret — set via `wrangler pages secret put LTI_CONSUMER_SECRET`,
+   * NEVER in wrangler.toml (hard rule #2). When either is unset, LTI launch is
+   * disabled (503), never an open launch surface.
+   */
+  LTI_CONSUMER_KEY?: string
+  LTI_CONSUMER_SECRET?: string
+  /**
    * DELIBERATE-GA-01 / M-1 (ADR-0049): optional server-side secret salt folded
    * into the anonymous `voter_hash` one-ballot dedup token (defence-in-depth so
    * the token no longer rests solely on the 128-bit ULID `user.sub`). Server

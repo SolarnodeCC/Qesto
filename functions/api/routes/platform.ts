@@ -9,6 +9,7 @@ import { readKvJson } from '../lib/kv'
 import { sloCountersKvKey } from '../lib/slo'
 import type { Env } from '../types'
 import { getFlag } from '../lib/flags'
+import { publicRegionCatalog, DEFAULT_REGION_ID } from '../lib/region-residency'
 import type { ParentApp } from './parent-app'
 
 const RELEASES = [
@@ -28,6 +29,7 @@ const RELEASES = [
   { version: '6.0.0', codename: 'v6.0', status: 'ga', sprint: 90 },
   { version: '6.1.0-dev', codename: 'v6.1-dev', status: 'dev', sprint: 91 },
   { version: '6.1.0', codename: 'v6.1', status: 'ga', sprint: 92 },
+  { version: '6.2.0-dev', codename: 'v6.2-dev', status: 'dev', sprint: 93 },
 ] as const
 
 export function mountPlatformRoutes(parent: ParentApp) {
@@ -167,6 +169,15 @@ export function mountPlatformRoutes(parent: ParentApp) {
         atoTarget: 'S81+',
         docPath: 'knowledge-base/adr/ADR-0043-fedramp-moderate-path.md',
       },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
+  // SOVEREIGN-REGIONS-01 (ADR-0058) — public region-residency catalog.
+  pub.get('/regions', (c) =>
+    c.json({
+      ok: true,
+      data: { defaultRegion: DEFAULT_REGION_ID, regions: publicRegionCatalog() },
       trace_id: c.get('trace_id'),
     }),
   )
