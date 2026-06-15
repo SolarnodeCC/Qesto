@@ -3,6 +3,7 @@
 // place (CLAUDE.md hard rule 5).
 
 import { z } from 'zod'
+import { DEFAULT_REACTION_EMOJIS } from './reactions-config'
 
 // Trim before length checks so whitespace-only inputs fail validation.
 const trimmed = (min: number, max: number) =>
@@ -191,13 +192,8 @@ export function autoPopulateOptions(
     }))
   }
   if (kind === 'reaction') {
-    return [
-      { id: '👍', label: 'Thumbs up' },
-      { id: '❤️', label: 'Heart' },
-      { id: '😂', label: 'Laughing' },
-      { id: '🎉', label: 'Celebration' },
-      { id: '👏', label: 'Clap' },
-    ]
+    // Single source of truth for the default reaction set (ADR-0055).
+    return DEFAULT_REACTION_EMOJIS.map((e) => ({ id: e.id, label: e.label }))
   }
   // word_cloud, open, consent: free-text / no options needed.
   return provided

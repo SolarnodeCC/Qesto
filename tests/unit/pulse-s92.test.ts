@@ -46,6 +46,33 @@ describe('pulse S92 (longitudinal, k-anon, retention, isolation)', () => {
     const trends = await fetchTeamLongitudinalTrends(db as unknown as D1Database, teamId, '90d')
     expect(trends.sessionCount).toBe(3)
     expect(trends.participationArc).toHaveLength(3)
+    // 10 participants is above the floor — nothing should be suppressed.
+    expect(trends.sessions.every((s) => s.masked === false)).toBe(true)
+  })
+
+  it('suppresses per-session trend metrics below the k-anonymity floor', async () => {
+    const db = new D1Mock()
+    const teamId = 'team-small'
+    const closedAt = Date.now() - 86_400_000
+    db.pulseSessionRollups.set('tiny', {
+      session_id: 'tiny',
+      team_id: teamId,
+      workspace_id: null,
+      closed_at: closedAt,
+      participant_count: PULSE_K_ANON_MIN_COHORT - 1,
+      vote_count: 6,
+      participation_rate: 0.9,
+      sentiment_score: 0.7,
+      payload_json: JSON.stringify({ questionCount: 2 }),
+      computed_at: closedAt,
+    })
+    const trends = await fetchTeamLongitudinalTrends(db as unknown as D1Database, teamId, '90d')
+    const session = trends.sessions[0]
+    expect(session?.masked).toBe(true)
+    expect(session?.sentimentScore).toBeNull()
+    expect(session?.participationRate).toBe(0)
+    expect(session?.actionCompletionRate).toBe(0)
+    expect(trends.sentimentArc[0]).toBeNull()
   })
 
   it('isolates cross-team reads', async () => {

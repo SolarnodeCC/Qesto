@@ -249,6 +249,8 @@ export type PulseSessionTrend = {
   participationRate: number
   sentimentScore: number | null
   actionCompletionRate: number
+  /** PULSE-KANON-01 — true when this session is below the cohort floor and its metrics are suppressed. */
+  masked: boolean
 }
 
 export type PulseLongitudinalTrends = {
@@ -301,14 +303,18 @@ export async function fetchTeamLongitudinalTrends(
     const qCount = Math.max(1, parsePayloadQuestionCount(r.payload_json))
     const denom = Math.max(1, r.participant_count * qCount)
     const actionCompletionRate = Math.min(1, r.vote_count / denom)
+    // PULSE-KANON-01: suppress per-session metrics below the cohort floor so
+    // trends can't expose small-cohort sentiment that /pulse/summary masks.
+    const masked = r.participant_count < PULSE_K_ANON_MIN_COHORT
     return {
       sessionId: r.session_id,
       closedAt: r.closed_at,
       participantCount: r.participant_count,
       voteCount: r.vote_count,
-      participationRate: r.participation_rate,
-      sentimentScore: r.sentiment_score,
-      actionCompletionRate,
+      participationRate: masked ? 0 : r.participation_rate,
+      sentimentScore: masked ? null : r.sentiment_score,
+      actionCompletionRate: masked ? 0 : actionCompletionRate,
+      masked,
     }
   })
 
