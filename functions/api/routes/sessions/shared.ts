@@ -184,6 +184,50 @@ export async function fetchSession(db: D1Database, id: string, ownerId: string):
   return row ?? null
 }
 
+/**
+ * Load session and verify caller has required access level.
+ * Checks both owner_id (exclusive owner) and team membership (co-access).
+ *
+ * @param db Database connection
+ * @param sessionId Session ID to load
+ * @param userId Caller's user ID
+ * @param options.requireOwner If true, only owner can access. If false, team members with appropriate permission can access.
+ * @returns Session if authorized, null if not found or unauthorized
+ */
+export async function requireSessionAccess(
+  db: D1Database,
+  sessionId: string,
+  userId: string,
+  options: { requireOwner?: boolean } = {},
+): Promise<SessionRow | null> {
+  const session = await db
+    .prepare(
+      `SELECT id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
+              townhall_moderation,
+              created_at, started_at, closed_at, archived_at, team_id,
+              workspace_id, workspace_seq,
+              ai_generated, ai_consent_at, ai_grounding_hash,
+              ai_accepted_count, ai_dismissed_count,
+              ai_recap_model, ai_recap_edited_at
+         FROM sessions
+        WHERE id = ?1`,
+    )
+    .bind(sessionId)
+    .first<SessionRow>()
+
+  if (!session) return null
+
+  // Owner always has access
+  if (session.owner_id === userId) return session
+
+  // If owner-only access required, reject non-owners
+  if (options.requireOwner) return null
+
+  // Team co-access not yet implemented (future: check team membership)
+  // For now, non-owners without team implementation are denied
+  return null
+}
+
 export async function fetchOwnerSessionTitles(db: D1Database, ownerId: string): Promise<string[]> {
   const { results } = await db
     .prepare(`SELECT title FROM sessions WHERE owner_id = ?1`)

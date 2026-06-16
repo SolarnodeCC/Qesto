@@ -3,6 +3,8 @@
  * Each service (Slack, Notion, Airtable) uses different signature schemes.
  */
 
+import { timingSafeEqual } from '../shared/crypto'
+
 /**
  * Generic HMAC-SHA256 signature verification.
  *
@@ -30,7 +32,7 @@ export async function verifyHMAC(
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('')
 
-  return computed === signature.toLowerCase()
+  return timingSafeEqual(computed, signature.toLowerCase())
 }
 
 /**
@@ -125,7 +127,7 @@ export async function verifyAirtableSignature(
   )
 
   const computed = btoa(String.fromCharCode(...new Uint8Array(hmac)))
-  return computed === signature
+  return timingSafeEqual(computed, signature)
 }
 
 /**
