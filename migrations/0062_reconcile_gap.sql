@@ -1,0 +1,11 @@
+-- 0062_reconcile_gap.sql
+-- Reconciliation no-op. Originally numbered 0025, which collided with
+-- 0025_phase2_vote_buffering.sql (a real schema migration). Two different
+-- migrations sharing one 4-digit prefix means D1 applies them in an undefined
+-- order and one can be silently skipped, causing schema drift (#530).
+--
+-- Renumbered to the next free slot (0062) to resolve the collision. This file
+-- is a pure no-op, so applying it under the new number is safe in every
+-- environment and the original 0025 schema migration is untouched.
+-- See TECH_DEBT_AUDIT_2026-05.md TD-03.
+SELECT 1; -- no-op

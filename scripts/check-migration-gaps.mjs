@@ -13,7 +13,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const migrationsDir = join(__dirname, '..', 'migrations')
 
 const files = readdirSync(migrationsDir)
-  .filter(f => f.endsWith('.sql'))
+  // `.verify.sql` files are post-apply verification companions to a migration
+  // (they share its NNNN prefix); they are not migrations themselves and must
+  // not be counted as separate sequence entries (#530).
+  .filter(f => f.endsWith('.sql') && !f.endsWith('.verify.sql'))
   .map(f => {
     const n = parseInt(f.split('_')[0], 10)
     if (isNaN(n)) throw new Error(`Migration filename has no numeric prefix: ${f}`)

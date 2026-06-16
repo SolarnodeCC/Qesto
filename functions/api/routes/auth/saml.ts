@@ -11,12 +11,47 @@ import { attachUserToTeam, loadTeam } from '../teams'
 import { JWT_TTL_SECONDS } from './constants'
 import { setAuthSessionCookie } from './cookie'
 import { authRedirectSamlFailed } from './errors'
-import type { AuthApp } from './types'
+import type { Context } from 'hono'
+import type { Env } from '../../types'
+import type { AuthApp, AuthVars } from './types'
 import { safeLogContext } from '../../lib/log'
 import { recordAuthAuditEvent } from '../../lib/audit'
+import { flagOff } from '../../lib/flags'
+
+/**
+ * SEC-SAML-01 (#529): hard kill-switch for the SAML SP.
+ *
+ * The SP parses assertions but does NOT yet verify the XML-DSig signature, so
+ * an attacker who knows the entityID + a target team_id could forge an unsigned
+ * SAMLResponse and authenticate as any user. Until signature verification ships
+ * the routes MUST be disabled in production. The flag defaults OFF: SAML is only
+ * served when `SAML_SSO_ENABLED === 'true'` is explicitly set for an env.
+ */
+function samlDisabled(c: Context<{ Bindings: Env; Variables: AuthVars }>): Response | null {
+  if (flagOff(c.env, 'SAML_SSO_ENABLED')) {
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: { code: 'saml_disabled', message: 'SAML SSO is not available' },
+        trace_id: c.get('trace_id') ?? 'unknown',
+      }),
+      {
+        status: 503,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'retry-after': '3600',
+          'x-trace-id': c.get('trace_id') ?? 'unknown',
+        },
+      },
+    )
+  }
+  return null
+}
 
 export function registerSamlRoutes(app: AuthApp): void {
   app.get('/saml/metadata', (c) => {
+    const disabled = samlDisabled(c)
+    if (disabled) return disabled
     try {
       const entityId = c.env.SAML_SP_ENTITY_ID ?? `${c.env.API_URL}`
       const acsUrl = c.env.SAML_ACS_URL ?? `${c.env.API_URL}/api/auth/saml/callback`
@@ -38,6 +73,8 @@ export function registerSamlRoutes(app: AuthApp): void {
   })
 
   app.get('/saml/init', async (c) => {
+    const disabled = samlDisabled(c)
+    if (disabled) return disabled
     try {
       const teamId = c.req.query('team_id')
       if (!teamId) {
@@ -64,6 +101,8 @@ export function registerSamlRoutes(app: AuthApp): void {
   })
 
   app.post('/saml/callback', async (c) => {
+    const disabled = samlDisabled(c)
+    if (disabled) return disabled
     const form = await c.req.formData().catch(() => null)
     if (!form) return c.redirect(`${c.env.PAGES_URL}/login?error=saml_failed`, 302)
 

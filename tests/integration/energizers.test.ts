@@ -175,6 +175,86 @@ describe('Energizers Routes', () => {
     })
   })
 
+  // SEC (#537): cross-tenant IDOR — a non-owner authenticated user must not be
+  // able to advance, inspect, or read leaderboards of another tenant's session.
+  describe('cross-tenant authorization (#537)', () => {
+    async function seedOwnerSession() {
+      const ctx = await testHonoApp()
+      const now = Date.now()
+      const ownerId = 'owner-1'
+      const attackerId = 'attacker-2'
+      ctx.db.users.set(ownerId, {
+        id: ownerId, email: 'owner@example.com', display_name: 'Owner',
+        created_at: now, last_login_at: now, plan: 'team',
+      })
+      ctx.db.users.set(attackerId, {
+        id: attackerId, email: 'attacker@example.com', display_name: 'Attacker',
+        created_at: now, last_login_at: now, plan: 'team',
+      })
+      ctx.db.sessions.set('sess-owned', {
+        id: 'sess-owned', owner_id: ownerId, code: 'OWN123', title: 'Owned',
+        status: 'energizing', anonymity: 'full', created_at: now,
+        started_at: now, closed_at: null, archived_at: null,
+      })
+      const ownerCookie = await cookieFor(ownerId, 'owner@example.com')
+      const attackerCookie = await cookieFor(attackerId, 'attacker@example.com')
+      return { ...ctx, ownerCookie, attackerCookie }
+    }
+
+    const hostEndpoints: Array<{ name: string; method: string; path: string; body?: unknown }> = [
+      { name: 'POST advance', method: 'POST', path: '/energizers/en-1/advance', body: { scores: { a: 1 }, round: 0 } },
+      { name: 'POST next', method: 'POST', path: '/energizers/en-1/next', body: {} },
+      { name: 'GET detail', method: 'GET', path: '/energizers/en-1' },
+      { name: 'GET leaderboard', method: 'GET', path: '/leaderboard' },
+    ]
+
+    for (const ep of hostEndpoints) {
+      it(`blocks a non-owner from "${ep.name}" with 404`, async () => {
+        const { app, env, attackerCookie } = await seedOwnerSession()
+        const init: RequestInit = {
+          method: ep.method,
+          headers: { cookie: attackerCookie, 'content-type': 'application/json' },
+        }
+        if (ep.body !== undefined) init.body = JSON.stringify(ep.body)
+        const res = await app.fetch(
+          new Request(`http://localhost/api/sessions/sess-owned${ep.path}`, init),
+          env,
+        )
+        expect(res.status).toBe(404)
+        const body = (await res.json()) as { ok: boolean; error: { code: string } }
+        expect(body.ok).toBe(false)
+        expect(body.error.code).toBe('not_found')
+      })
+    }
+
+    it('lets the owner past the authorization gate on their own leaderboard', async () => {
+      const { app, env, ownerCookie } = await seedOwnerSession()
+      const res = await app.fetch(
+        new Request('http://localhost/api/sessions/sess-owned/leaderboard', {
+          headers: { cookie: ownerCookie },
+        }),
+        env,
+      )
+      // The owner must NOT be rejected by the ownership check (404). (The mock
+      // D1 does not model leaderboard_entries, so a 200/500 both prove the gate
+      // was passed; only 404 would indicate the owner was wrongly denied.)
+      expect(res.status).not.toBe(404)
+    })
+
+    it('blocks a non-owner from creating an energizer with 404 (regression)', async () => {
+      const { app, env, attackerCookie } = await seedOwnerSession()
+      const res = await app.fetch(
+        new Request('http://localhost/api/sessions/sess-owned/energizers', {
+          method: 'POST',
+          headers: { cookie: attackerCookie, 'content-type': 'application/json' },
+          body: JSON.stringify({ kind: 'emoji_poll', prompt: 'gotcha' }),
+        }),
+        env,
+      )
+      expect(res.status).toBe(404)
+    })
+  })
+
   describe('Stress Test — 100+ participants', () => {
     it('should handle large participant count', () => {
       const participants = Array.from({ length: 100 }, (_, i) => `user-${i + 1}`)
