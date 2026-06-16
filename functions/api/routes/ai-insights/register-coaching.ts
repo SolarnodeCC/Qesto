@@ -1,5 +1,6 @@
 import type { Hono } from 'hono'
 import { z } from 'zod'
+import { requireFeature } from '../../middleware/feature-gate'
 import { generateFacilitatorCoaching, type CoachingTurn } from '../../lib/ai/coaching'
 import { readKvJson, writeKvJson } from '../../lib/kv'
 import { sentimentContextFromMeta } from '../../lib/ai/session-context'
@@ -51,7 +52,7 @@ async function assertSessionOwner(
 }
 
 export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types').Env; Variables: AiInsightsVars }>) {
-  app.post('/sessions/:sessionId/coaching', async (c) => {
+  app.post('/sessions/:sessionId/coaching', requireFeature('insightsAI'), async (c) => {
     const sessionId = c.req.param('sessionId')
     const user = c.get('user')
     const traceId = c.get('trace_id')

@@ -154,66 +154,67 @@ export function mountGamificationRoutes(parent: ParentApp) {
         )
       }
 
-      // Get all participants (voters)
-      const participantsResult = await c.env.DB.prepare(
-        `SELECT DISTINCT voter_id FROM votes WHERE session_id = ?1`,
+      // Get session start time (once, not per-participant)
+      const sessionStartResult = await c.env.DB.prepare(
+        `SELECT started_at FROM sessions WHERE id = ?1`,
       )
         .bind(sessionId)
-        .all<{voter_id:string}>()
+        .first<Pick<SessionRow,"started_at">>()
 
-      const participants = participantsResult.results ?? []
+      const sessionStartTime = sessionStartResult?.started_at
+
+      // Aggregate vote stats per participant (single query instead of N queries)
+      const voteStatsResult = await c.env.DB.prepare(
+        `SELECT
+           voter_id,
+           COUNT(*) as vote_count,
+           MIN(submitted_at) as first_vote_at
+         FROM votes
+         WHERE session_id = ?1
+         GROUP BY voter_id`,
+      )
+        .bind(sessionId)
+        .all<{voter_id:string; vote_count:number; first_vote_at:number|null}>()
+
+      const voteStats = voteStatsResult.results ?? []
       const awardedBadges: Record<string, string[]> = {}
+      const badgesToInsert: Array<{user_id:string; badge_type:string; session_id:string; awarded_at:number}> = []
 
       // Calculate badges for each participant
-      for (const { voter_id } of participants) {
-        // Count votes
-        const voteCountResult = await c.env.DB.prepare(
-          `SELECT COUNT(*) as count FROM votes WHERE session_id = ?1 AND voter_id = ?2`,
-        )
-          .bind(sessionId, voter_id)
-          .first<{count:number}>()
-
-        const voteCount = voteCountResult?.count ?? 0
-
-        // Get first vote timestamp
-        const firstVoteResult = await c.env.DB.prepare(
-          `SELECT MIN(submitted_at) as first_at FROM votes WHERE session_id = ?1 AND voter_id = ?2`,
-        )
-          .bind(sessionId, voter_id)
-          .first<{first_at:number|null}>()
-
-        const firstVoteTime = firstVoteResult?.first_at
-
-        // Get session start time
-        const sessionStartResult = await c.env.DB.prepare(
-          `SELECT started_at FROM sessions WHERE id = ?1`,
-        )
-          .bind(sessionId)
-          .first<Pick<SessionRow,"started_at">>()
-
-        const sessionStartTime = sessionStartResult?.started_at
-
+      for (const { voter_id, vote_count, first_vote_at } of voteStats) {
         // Determine badges
         const sessionStats = {
-          first_answer: firstVoteTime === sessionStartTime || (firstVoteTime && sessionStartTime && firstVoteTime - sessionStartTime < 1000),
-          answer_count: voteCount,
-          engagement: voteCount > 8,
+          first_answer: first_vote_at === sessionStartTime || (first_vote_at && sessionStartTime && first_vote_at - sessionStartTime < 1000),
+          answer_count: vote_count,
+          engagement: vote_count > 8,
         }
 
         const badges = determineBadgesAwarded(voter_id, sessionStats as any)
 
-        // Persist badges
+        // Queue badges for batch insert
         for (const badge of badges) {
-          await c.env.DB.prepare(
-            `INSERT OR IGNORE INTO badges (user_id, badge_type, session_id, awarded_at)
-             VALUES (?1, ?2, ?3, ?4)`,
-          )
-            .bind(voter_id, badge, sessionId, Date.now())
-            .run()
+          badgesToInsert.push({
+            user_id: voter_id,
+            badge_type: badge,
+            session_id: sessionId,
+            awarded_at: Date.now(),
+          })
 
           if (!awardedBadges[voter_id]) awardedBadges[voter_id] = []
           awardedBadges[voter_id].push(badge)
         }
+      }
+
+      // Batch insert badges
+      if (badgesToInsert.length > 0) {
+        await c.env.DB.batch(
+          badgesToInsert.map(b =>
+            c.env.DB.prepare(
+              `INSERT OR IGNORE INTO badges (user_id, badge_type, session_id, awarded_at)
+               VALUES (?1, ?2, ?3, ?4)`,
+            ).bind(b.user_id, b.badge_type, b.session_id, b.awarded_at)
+          )
+        )
       }
 
       // Audit
@@ -231,7 +232,7 @@ export function mountGamificationRoutes(parent: ParentApp) {
           data: {
             session_id: sessionId,
             badges_awarded: awardedBadges,
-            participant_count: participants.length,
+            participant_count: voteStats.length,
           },
           trace_id,
         },
