@@ -1,4 +1,6 @@
-export const INSIGHTS_MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
+// #536: single source of truth lives in lib/ai-insights.ts; re-export so
+// existing importers of this module keep working without a duplicate literal.
+export { INSIGHTS_MODEL } from '../../lib/ai-insights'
 
 export const AI_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'ai-insights' }
 

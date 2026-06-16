@@ -7,7 +7,7 @@ import type { PlanVariables } from '../../middleware/plan'
 import { denyFeature, featureAllowed, questionKindFeature } from '../../lib/entitlements'
 import { validateKvJson, PollOptionArraySchema } from '../../lib/protocol-schemas'
 import type { PollQuestionInput } from '../../lib/domain-schemas'
-import { extractThemes, type InsightTheme } from '../../lib/ai-insights'
+import { extractThemes, INSIGHTS_MODEL, type InsightTheme } from '../../lib/ai-insights'
 import { upsertInsightsSessionVector } from '../../lib/insights-vectorize'
 import { upsertInsightsDaily } from '../../lib/team-insights'
 import {
@@ -330,7 +330,7 @@ export async function precomputeInsights(
     traceId?: string | undefined
   } = {},
 ): Promise<void> {
-  const MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
+  const MODEL = INSIGHTS_MODEL
   const cacheKey = `insights:${sessionId}`
 
   // ZK exclusion at the write boundary (ADR-0045 §4) — defence in depth, not a
