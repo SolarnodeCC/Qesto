@@ -241,6 +241,8 @@ CREATE INDEX IF NOT EXISTS idx_embed_widgets_session ON embed_widgets(session_id
 CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
 -- Phase 10 Step 2: Compound index for vote aggregation by question
 CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);
+-- #540: compound index for per-participant vote aggregation at session close
+CREATE INDEX IF NOT EXISTS idx_votes_session_voter ON votes(session_id, voter_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_log — append-only trail for security, GDPR, ops
