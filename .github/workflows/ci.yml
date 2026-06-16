@@ -109,3 +109,22 @@ jobs:
           GITHUB_SHA: ${{ github.sha }}
           CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+
+      - name: Verify API health
+        run: |
+          echo "Checking API health endpoints..."
+          health=$(curl -sf https://qesto.cc/api/admin/health)
+
+          # Verify all systems are operational
+          d1_ok=$(echo "$health" | jq -r '.d1')
+          kv_ok=$(echo "$health" | jq -r '.kv')
+          do_ok=$(echo "$health" | jq -r '.do')
+
+          echo "D1: $d1_ok, KV: $kv_ok, DO: $do_ok"
+
+          if [ "$d1_ok" != "ok" ] || [ "$kv_ok" != "ok" ] || [ "$do_ok" != "ok" ]; then
+            echo "ERROR: API health check failed"
+            exit 1
+          fi
+
+          echo "✓ All API systems healthy"
