@@ -9,6 +9,8 @@
  * invalidates the cache so a later mount reflects the new value.
  */
 
+import { getAuthToken } from '../api/client'
+
 export type ColorSchemePref = 'system' | 'light' | 'dark'
 export type DensityPref = 'compact' | 'comfortable' | 'spacious'
 
@@ -20,19 +22,29 @@ export interface UserPreferences {
 
 let cached: Promise<UserPreferences> | null = null
 
+function hasAuthSession(): boolean {
+  if (typeof document === 'undefined') return false
+  if (getAuthToken()) return true
+  return document.cookie.split(';').some((part) => part.trim().startsWith('qesto_session='))
+}
+
 /** Best-effort fetch of server-side preferences. Never rejects. */
 export function loadUserPreferences(): Promise<UserPreferences> {
   if (!cached) {
-    cached = fetch('/api/users/preferences', { credentials: 'include' })
-      .then((r) => r.json() as Promise<{ ok: boolean; data?: UserPreferences }>)
-      .then((body) => (body.ok && body.data ? body.data : {}))
-      .catch(() => ({}))
+    cached = (async () => {
+      if (!hasAuthSession()) return {}
+      return fetch('/api/users/preferences', { credentials: 'include' })
+        .then((r) => (r.ok ? (r.json() as Promise<{ ok: boolean; data?: UserPreferences }>) : Promise.resolve({ ok: false })))
+        .then((body) => (body.ok && body.data ? body.data : {}))
+        .catch(() => ({}))
+    })()
   }
   return cached
 }
 
 /** Fire-and-forget persistence of a single preference; no UI dependency on result. */
 export function patchUserPreference(patch: UserPreferences): void {
+  if (!hasAuthSession()) return
   // Optimistically fold the change into the cache so concurrent mounts see it.
   cached = cached
     ? cached.then((prev) => ({ ...prev, ...patch }))

@@ -8,6 +8,8 @@ import { fetchSession } from '../sessions/shared'
 import { requireFound, requireDraft } from '../../lib/session-lifecycle'
 import { recordAuditEvent } from '../../lib/audit'
 import type { ParentApp } from '../parent-app'
+import { ensureTownhallSchema } from '../../lib/session-schema-repair'
+import { sanitizeError } from '../../lib/error-handler'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -71,7 +73,12 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
       sets.push('anonymity = ?3')
       binds.push(anonymity)
     }
-    await c.env.DB.prepare(`UPDATE sessions SET ${sets.join(', ')} WHERE id = ?1`).bind(...binds).run()
+    try {
+      await c.env.DB.prepare(`UPDATE sessions SET ${sets.join(', ')} WHERE id = ?1`).bind(...binds).run()
+    } catch (err) {
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
 
     await recordAuditEvent(c, {
       action: 'townhall.config',
@@ -230,6 +237,10 @@ export function mountTownhallRoutes(parent: ParentApp): void {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
+  app.use('*', async (c, next) => {
+    await ensureTownhallSchema(c.env.DB)
+    await next()
+  })
   registerTownhallConfigRoutes(app)
   registerTownhallDataRoutes(app)
   parent.route('/api', app)
