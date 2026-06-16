@@ -35,6 +35,9 @@ jobs:
       - name: Run quality gates
         run: bash ops/ci/quality-gates.sh
 
+      - name: Check migration numbers (no duplicates)
+        run: bash ops/ci/check-migration-numbers.sh
+
       - name: Contracts drift check
         run: bash ops/ci/contracts.sh
 
