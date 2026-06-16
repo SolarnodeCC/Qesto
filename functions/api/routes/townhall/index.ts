@@ -27,7 +27,13 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
   app.get('/sessions/:id/townhall/config', async (c) => {
     const trace_id = c.get('trace_id')
     const user = c.get('user')
-    const loaded = requireFound(await fetchSession(c.env.DB, c.req.param('id'), user.sub))
+    let loaded
+    try {
+      loaded = requireFound(await fetchSession(c.env.DB, c.req.param('id'), user.sub))
+    } catch (err) {
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
     if (!loaded.ok) {
       return c.json({ ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id }, loaded.error.status)
     }
@@ -58,7 +64,13 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
     }
     const { moderation, anonymity } = parsed.data
 
-    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    let loaded
+    try {
+      loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    } catch (err) {
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
     if (!loaded.ok) {
       return c.json({ ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id }, loaded.error.status)
     }
@@ -238,7 +250,13 @@ export function mountTownhallRoutes(parent: ParentApp): void {
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
   app.use('*', async (c, next) => {
-    await ensureTownhallSchema(c.env.DB)
+    try {
+      await ensureTownhallSchema(c.env.DB)
+    } catch (err) {
+      const trace_id = c.get('trace_id')
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
     await next()
   })
   registerTownhallConfigRoutes(app)

@@ -88,6 +88,7 @@ export async function sessionsTableNeedsModeWiden(db: D1Database): Promise<boole
       .prepare(`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'sessions'`)
       .first<{ sql: string | null }>()
     if (!row?.sql) return false
+    // sqlite_master DDL is the only reliable signal — SQLite cannot ALTER CHECK in place.
     return !row.sql.includes("'townhall'")
   } catch {
     return false
@@ -203,13 +204,9 @@ export async function rebuildSessionsTableForTownhall(db: D1Database): Promise<v
 /** Idempotent repair for townhall REST config/export paths and cold-start patch. */
 export async function ensureTownhallSchema(db: D1Database): Promise<void> {
   if (_townhallSchemaReady) return
-  try {
-    await addMissingSessionColumns(db)
-    if (await sessionsTableNeedsModeWiden(db)) {
-      await rebuildSessionsTableForTownhall(db)
-    }
-  } catch (err) {
-    console.error('[session-schema-repair] ensureTownhallSchema failed:', (err as Error).message)
+  await addMissingSessionColumns(db)
+  if (await sessionsTableNeedsModeWiden(db)) {
+    await rebuildSessionsTableForTownhall(db)
   }
   _townhallSchemaReady = true
 }

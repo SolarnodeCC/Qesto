@@ -3,6 +3,10 @@
 -- enforce session_mode IN ('reflection','fun') from runtime patchSchemaIfNeeded / 0008.
 -- jankurai:migration-safe approved=architect verify foreign_key_check quick_check
 
+-- Ensure recap columns exist on legacy DBs before the table rebuild copies them.
+ALTER TABLE sessions ADD COLUMN ai_recap_model TEXT;
+ALTER TABLE sessions ADD COLUMN ai_recap_edited_at INTEGER;
+
 CREATE TABLE sessions__mode_fix (
   id TEXT PRIMARY KEY,
   owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -38,7 +42,7 @@ INSERT INTO sessions__mode_fix (
   id, owner_id, code, title, status, anonymity, vote_policy, session_mode,
   created_at, started_at, closed_at, archived_at, team_id, workspace_id, workspace_seq,
   ai_generated, ai_consent_at, ai_grounding_hash, ai_accepted_count, ai_dismissed_count,
-  townhall_moderation, is_public
+  townhall_moderation, is_public, ai_recap_model, ai_recap_edited_at
 )
 SELECT
   id,
@@ -62,7 +66,9 @@ SELECT
   COALESCE(ai_accepted_count, 0),
   COALESCE(ai_dismissed_count, 0),
   townhall_moderation,
-  COALESCE(is_public, 1)
+  COALESCE(is_public, 1),
+  ai_recap_model,
+  ai_recap_edited_at
 FROM sessions;
 
 DROP TABLE sessions;

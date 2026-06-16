@@ -4,11 +4,13 @@
 import { useEffect, useState } from 'react'
 import { useT } from '../i18n'
 import { loadUserPreferences, patchUserPreference } from '../lib/user-preferences'
+import { useAuth } from '../hooks/useAuth'
 
 const KEY = 'qesto:high-contrast'
 
 export function HighContrastToggle() {
   const t = useT('settings')
+  const auth = useAuth()
   const [on, setOn] = useState(() => typeof window !== 'undefined' && localStorage.getItem(KEY) === '1')
 
   useEffect(() => {
@@ -16,12 +18,13 @@ export function HighContrastToggle() {
     localStorage.setItem(KEY, on ? '1' : '0')
   }, [on])
 
-  // Hydrate from server prefs on mount (best-effort; silently ignored on failure).
+  // Hydrate from server prefs once auth is known (HttpOnly cookie via credentials).
   useEffect(() => {
+    if (auth.status !== 'authenticated') return
     loadUserPreferences().then((prefs) => {
       if (typeof prefs.highContrast === 'boolean') setOn(prefs.highContrast)
     })
-  }, [])
+  }, [auth.status])
 
   function toggle() {
     setOn((prev) => {

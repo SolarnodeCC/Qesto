@@ -102,8 +102,8 @@ function AuthenticatedHelpWidget() {
 
 export default function App() {
   return (
-    <ColorSchemeProvider>
     <AuthProvider>
+    <ColorSchemeProvider>
       <HelpChatProvider>
         {/* Skip link is rendered by MainLayout on each page that uses it. */}
         <RouteAnnouncer />
@@ -199,7 +199,7 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       </HelpChatProvider>
-    </AuthProvider>
     </ColorSchemeProvider>
+    </AuthProvider>
   )
 }

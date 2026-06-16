@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { api, setAuthToken } from '../api/client'
+import { setUserPreferencesAuthKnown } from '../lib/user-preferences'
 
 export type AuthUser = { id: string; email: string; plan: 'free' | 'starter' | 'team'; townhallEnabled?: boolean }
 
@@ -26,9 +27,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     const result = await api<AuthUser>('/api/auth/me')
     if (result.ok) {
+      setUserPreferencesAuthKnown(true)
       setState({ status: 'authenticated', user: result.data })
     } else {
       setAuthToken(null)
+      setUserPreferencesAuthKnown(false)
       setState({ status: 'anonymous' })
     }
   }, [])
@@ -99,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await api('/api/auth/logout', { method: 'POST' })
     setAuthToken(null)
+    setUserPreferencesAuthKnown(false)
     setState({ status: 'anonymous' })
   }, [])
 
