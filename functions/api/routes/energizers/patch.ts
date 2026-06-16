@@ -3,14 +3,24 @@ import { sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
+import { requireSessionAccess } from '../sessions/shared'
 
 export function registerEnergizerPatchRoute(app: EnergizerApp): void {
   app.patch('/sessions/:sessionId/energizers/:energizerId', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
     const energizerId = c.req.param('energizerId')
+    const user = c.get('user')
 
     try {
+      // Verify session ownership
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const PatchEnergizerSchema = z.object({
         state: z.enum(['active', 'completed']).optional(),
         prompt: z.string().min(1).max(400).optional(),
