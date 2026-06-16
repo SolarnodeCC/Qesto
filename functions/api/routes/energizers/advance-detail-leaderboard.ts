@@ -10,14 +10,25 @@ import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, BattleRoyaleConfigSchema, BracketConfigSchema } from '../../lib/protocol-schemas'
 import type { EnergizerRow, EnergizerVoteRow, LeaderboardEntryRow } from '../../lib/db-row-types'
+import { requireSessionAccess } from '../sessions/shared'
 
 export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/advance', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
     const energizerId = c.req.param('energizerId')
+    const user = c.get('user')
 
     try {
+      // SEC (#537): advancing rounds (and awarding badges) is host-only — verify
+      // session ownership before any DB access to block cross-tenant IDOR.
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const AdvanceSchema = z.object({
         scores: z.record(z.string(), z.number()),
         round: z.number().int().nonnegative(),
@@ -154,8 +165,18 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
     const energizerId = c.req.param('energizerId')
+    const user = c.get('user')
 
     try {
+      // SEC (#537): the detail view exposes per-voter rankings/scores — host-only.
+      // Verify session ownership before reading cross-tenant energizer data.
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const result = await c.env.DB.prepare(
         `SELECT id, kind, prompt, config_json, state, position, created_at FROM energizers
          WHERE id = ?1 AND session_id = ?2`,
@@ -265,8 +286,18 @@ export function registerEnergizerAdvanceDetailLeaderboardRoutes(app: EnergizerAp
   app.get('/sessions/:sessionId/leaderboard', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
+    const user = c.get('user')
 
     try {
+      // SEC (#537): the leaderboard exposes per-user scores — host-only. Verify
+      // session ownership before reading cross-tenant leaderboard data.
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const result = await c.env.DB.prepare(
         `SELECT user_id, rank, score FROM leaderboard_entries
          WHERE session_id = ?1 ORDER BY rank ASC LIMIT 100`,

@@ -5,6 +5,7 @@ import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateData, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/protocol-schemas'
 import type { EnergizerRow } from '../../lib/db-row-types'
+import { requireSessionAccess } from '../sessions/shared'
 
 export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers/:energizerId/vote', async (c) => {
@@ -141,8 +142,18 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
     const energizerId = c.req.param('energizerId')
+    const user = c.get('user')
 
     try {
+      // SEC (#537): advancing the team quiz is a host-only control — verify the
+      // caller owns the session before any DB access to block cross-tenant IDOR.
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const energizer = await c.env.DB.prepare(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`,
       )
