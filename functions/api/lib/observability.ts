@@ -181,6 +181,11 @@ export type QestoEvent = {
     // LEARN (ADR-0058): LTI 1.1 launch outcomes — no PII, context id only.
     | 'learn.lti_launched'
     | 'learn.lti_rejected'
+    // LEARN (ADR-0058, S94): LMS grade passback outcome — no student PII.
+    | 'learn.grade_passback_success'
+    | 'learn.grade_passback_failed'
+    // SOVEREIGN+ (ADR-0058, S94): signed audit export — entry count only.
+    | 'sovereign.audit_exported'
     | 'realtime.v2_negotiated'
     | 'federation.link_created'
     | 'federation.consent_granted'

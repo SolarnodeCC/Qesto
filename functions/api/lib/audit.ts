@@ -73,6 +73,9 @@ export type AuditAction =
   | 'agent.action.question_injected'
   | 'agent.action.state_changed'
   | 'agent.action.plan_step_reviewed'
+  // LEARN (ADR-0058, S94): LMS grade passback + sovereign audit export.
+  | 'learn.grade.passback'
+  | 'sovereign.audit.export'
 
 export interface AuditContext {
   action: AuditAction

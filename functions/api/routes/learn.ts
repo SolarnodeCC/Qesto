@@ -7,14 +7,27 @@
  * - GET  /api/learn/gate        — EMBED traction checkpoint (LEARN-00), admin only.
  */
 import { Hono } from 'hono'
+import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
+import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { verifyLtiLaunch } from '../lib/lti'
 import { evaluateEmbedTractionGate } from '../lib/learn-gate'
+import { listLearnTemplates } from '../lib/learn-templates'
+import { pushGradeToLms } from '../lib/lms-grade-passback'
+import { recordAuditEvent } from '../lib/audit'
 import { writeEvent } from '../lib/observability'
 import { logEvent } from '../lib/log'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
+
+/** LEARN-GRADE-01 — instructor-initiated grade passback request body. */
+const GradePassbackSchema = z.object({
+  outcomeServiceUrl: z.string().url(),
+  resultSourcedId: z.string().min(1),
+  scoreFraction: z.number().min(0).max(1),
+  sessionId: z.string().min(1),
+})
 
 export function mountLearnRoutes(parent: ParentApp) {
   const pub = new Hono<{ Bindings: Env; Variables: { trace_id: string } }>()
@@ -84,6 +97,79 @@ export function mountLearnRoutes(parent: ParentApp) {
   })
 
   parent.route('/api/learn', pub)
+
+  // Authenticated instructor surface (LEARN-TEMPLATES-01 + LEARN-GRADE-01).
+  const authed = new Hono<{ Bindings: Env; Variables: AuthVariables & PlanVariables & { trace_id: string } }>()
+  authed.use('*', authMiddleware)
+  authed.use('*', planMiddleware)
+
+  // LEARN-TEMPLATES-01 — L&D template gallery (read-only; instructors clone client-side).
+  authed.get('/templates', (c) =>
+    c.json({ ok: true, data: { templates: listLearnTemplates() }, trace_id: c.get('trace_id') }),
+  )
+
+  // LEARN-GRADE-01 — push an assessment score to the LMS gradebook, audit-logged.
+  authed.post('/grade-passback', async (c) => {
+    const consumerKey = c.env.LTI_CONSUMER_KEY
+    const consumerSecret = c.env.LTI_CONSUMER_SECRET
+    if (!consumerKey || !consumerSecret) {
+      return c.json(
+        { ok: false, error: { code: 'lti_disabled', message: 'LTI is not configured' }, trace_id: c.get('trace_id') },
+        503,
+      )
+    }
+
+    let body: z.infer<typeof GradePassbackSchema>
+    try {
+      body = GradePassbackSchema.parse(await c.req.json())
+    } catch {
+      return c.json(
+        { ok: false, error: { code: 'invalid_body', message: 'Invalid grade passback payload' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+
+    const result = await pushGradeToLms(
+      {
+        outcomeServiceUrl: body.outcomeServiceUrl,
+        resultSourcedId: body.resultSourcedId,
+        scoreFraction: body.scoreFraction,
+        messageId: crypto.randomUUID(),
+      },
+      { consumerKey, consumerSecret },
+    )
+
+    // Audit every passback attempt (the score leaves Qesto → must be traceable).
+    await recordAuditEvent(c, {
+      action: 'learn.grade.passback',
+      subject_type: 'session',
+      subject_id: body.sessionId,
+      after_snapshot: {
+        resultSourcedId: body.resultSourcedId,
+        scoreFraction: body.scoreFraction,
+        outcome: result.ok ? 'success' : result.reason,
+      },
+      trace_id: c.get('trace_id'),
+    })
+
+    writeEvent(c.env.METRICS_AE, {
+      name: result.ok ? 'learn.grade_passback_success' : 'learn.grade_passback_failed',
+      userId: c.get('user').sub,
+      plan: c.get('plan'),
+      detail: result.ok ? 'success' : result.reason,
+      traceId: c.get('trace_id'),
+    })
+
+    if (!result.ok) {
+      return c.json(
+        { ok: false, error: { code: 'grade_passback_failed', message: result.reason }, trace_id: c.get('trace_id') },
+        502,
+      )
+    }
+    return c.json({ ok: true, data: { synced: true }, trace_id: c.get('trace_id') })
+  })
+
+  parent.route('/api/learn', authed)
 
   // LEARN-00 — EMBED traction checkpoint (admin only).
   const admin = new Hono<{ Bindings: Env; Variables: AuthVariables & AdminVariables & { trace_id: string } }>()
