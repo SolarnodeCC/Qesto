@@ -6,9 +6,19 @@ set -e
 
 echo "Checking for duplicate migration numbers..."
 
-# Extract migration number from filename (e.g., 0048_something.sql → 0048)
-duplicates=$(find migrations/ -name "[0-9][0-9][0-9][0-9]*.sql" -o -name "[0-9][0-9][0-9][0-9]*.meta.toml" | \
-  sed 's/.*\([0-9]\{4\}\)_.*/\1/' | \
+# A migration is identified by its base name (NNNN_name). Each migration may
+# have companion files that share its NNNN prefix and base name:
+#   0048_feature.sql          ← the migration
+#   0048_feature.verify.sql   ← post-apply verification
+#   0048_feature.meta.toml    ← metadata
+# These companions are NOT separate migrations, so collapse to distinct base
+# names BEFORE looking for duplicate numbers. A real collision is two DIFFERENT
+# base names sharing one NNNN prefix (e.g. 0050_one + 0050_two). (#530)
+duplicates=$(find migrations/ -maxdepth 1 -type f \( -name "[0-9][0-9][0-9][0-9]_*.sql" -o -name "[0-9][0-9][0-9][0-9]_*.meta.toml" \) | \
+  xargs -n1 basename | \
+  sed -E 's/\.verify\.sql$//; s/\.sql$//; s/\.meta\.toml$//' | \
+  sort -u | \
+  sed -E 's/_.*$//' | \
   sort | uniq -d)
 
 if [ -n "$duplicates" ]; then
