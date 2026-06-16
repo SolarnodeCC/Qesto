@@ -22,6 +22,7 @@ relates_to:
 _Hub: [Documentation map](./README.md)._
 
 _Last updated: 2026-07-31 (UTC) — **Sprint 93 shipped: v6.2-dev open.** Platform RELEASES += 6.2.0-dev (GA stays 6.1.0); ADR-0058 (vertical packaging & tenant config). COPILOT GA (approval-gated checkpoint broadcast + SEC-COPILOT-SANDBOX-01), PULSE-AUDIT-01 aggregation audit log, SOVEREIGN+ region residency (eu/uk/ca) + LEARN LTI 1.1 consumer + EMBED traction gate. See [`SPRINT93_EXECUTION.md`](../releases/SPRINT93_EXECUTION.md). Next: S94 verticals build (LEARN grade/scoring, SOVEREIGN audit/exclusion) + Pentest #6 prep; v6.2 GA at S95. Prior: 2026-06-19 — Sprint 92 shipped: v6.1 GA (ADR-0056). See [`SPRINT92_EXECUTION.md`](../releases/SPRINT92_EXECUTION.md)._
+_2026-06-16 — **EPIC-VALID added (Proposed/uncommitted)**: validation & demand-evidence discipline (7 stories, ~32 pts) from Founder's-Playbook review; governed by [`ADR-0064`](../../adr/ADR-0064-demand-evidence-adversarial-validation-gates.md). Demand-side gates (Sean Ellis/effort exit criteria, adversarial review, committed-vs-conditional horizon, non-goals contract, moat narrative, bottleneck map). Awaiting PO + architect acceptance before sprint commit. See §EPIC-VALID._
 _Sprint 17 Completion Sync: 2026-04-22_
 _Sprint 18 Active (2026-04-29 to 2026-05-13) — see SPRINT_PLAN.md §Sprint 18_
 _Sprint 19 Implementation Complete: 2026-04-30 (implemented ahead of planned 2026-05-13 to 2026-05-27 window; see SPRINT_PLAN.md §Sprint 19 for closeout evidence)_
@@ -1813,6 +1814,61 @@ Each epic carries a parallel `I18N-*-01` line (5 locales) and is grounded in reu
 - **Given** a closed session of 500 votes, **when** an observer downloads tally + commitment ledger, **then** they can locally recompute the Merkle root and confirm vote count = commitment count.
 - **Given** a tampered commitment, **when** verification runs, **then** it fails with "commitment mismatch" and raises a forensics alert.
 - **DoD:** ADR-0049 accepted; independent cryptography review; receipt renders on mobile (PDF+JSON); verify endpoint ≥1000 concurrent; receipt reveals no other-vote info (coercion-resistant); Pentest #5 forgery/replay clearance; DELIBERATE-RETALLY-01 evidence (S87).
+
+---
+
+## EPIC-VALID — Validation & Demand-Evidence Discipline (added 2026-06-16)
+
+**Governing ADR:** [`ADR-0064`](../../adr/ADR-0064-demand-evidence-adversarial-validation-gates.md) (**Proposed** — requires PO + architect acceptance before any story below is sprint-committed).
+
+**Origin:** Review of Anthropic's *Founder's Playbook: Building an AI-Native Startup* (2026) against Qesto's structure. Finding: supply-side discipline (build it safely — CLAUDE.md context, REV-10 eval gate, pentest/SOC2/FedRAMP) is mature; the gaps are **demand-side** (should we build it; have users shown they need it). These stories add six lightweight planning gates (D/A/H/S/M/B) that reuse existing roles, agents, and docs — **no new tooling, no code change**.
+
+**Status:** All **Proposed / uncommitted** — staged for PO grooming, not slotted to a calendar sprint. Scope applies to **net-new epics and new-buyer expansions only**, never to regression/hardening/compliance contracts.
+
+**Epic non-goals (Gate S, applied to this epic itself):**
+- Does **not** introduce a heavyweight Idea/MVP/Launch/Scale stage-gate process — Qesto's release/sprint cadence stays the altitude of record.
+- Does **not** add new tooling, services, or CI jobs; gates are checklist items evidenced in existing docs.
+- Does **not** gate regression, hardening, or compliance work.
+- **Evidence to expand:** if two or more net-new epics ship and later miss their demand-side exit criteria (Gate D) despite passing supply-side gates, promote these gates from "proposed" to a hard, absence-blocks-commit requirement and consider tooling support.
+
+### Story registry (EPIC-VALID; ~32 pts / 7 stories)
+
+| ID | Item | Pts | Pri | Owner | Gate | Status |
+|----|------|----:|-----|-------|------|--------|
+| `VALID-EXIT-01` | Demand-side exit-criteria template: Sean Ellis ≥40% signal (or documented B2B/low-N proxy), effort test, pre-launch false-positive definition — added to the epic/release gate checklist | 5 | P1 | product-owner | D | Proposed |
+| `VALID-ADVERSARY-01` | Adversarial validation gate: agent-produced "strongest-case-against / competitor-wins" memo required (answered, not absent) before epic ideated→committed | 5 | P1 | market-research | A | Proposed |
+| `VALID-HORIZON-01` | Committed-vs-Conditional roadmap horizon tagging: label everything past next 1–2 releases as conditional with an explicit promotion trigger (generalizes existing kill-criteria/checkpoints) | 3 | P1 | product-owner | H | Proposed |
+| `VALID-SCOPE-01` | Non-goals + evidence-to-expand contract on every net-new epic header (operationalizes the `out_of_scope` story field at epic altitude) | 3 | P1 | product-owner | S | Proposed |
+| `VALID-MOAT-01` | One-page data-flywheel / moat narrative artifact: which behavioral signals compound, how long the flywheel has spun, why a competitor can't replicate in ~2y; refreshed per major release | 5 | P2 | ai-strategy | M | Proposed |
+| `VALID-DISCOVERY-01` | User-conversation discovery evidence for new-buyer epics: structured interview framework + post-interview synthesis (supplements market/competitive validation with qualitative demand) | 8 | P2 | market-research | — | Proposed |
+| `VALID-BOTTLENECK-01` | Per-arc single-point-of-knowledge / bottleneck map: which workflows/decisions/agent-edges stall when a key human is out for a week; extends HANDOFFS.md | 3 | P2 | knowledge | B | Proposed |
+
+Each gate is owned by an existing role and evidenced in an existing doc (`BACKLOG_MASTER.md`, `ROADMAP_FULL.md`, `MARKET_VALIDATION_*`, `product/strategy/`, `HANDOFFS.md`). See [`ADR-0064`](../../adr/ADR-0064-demand-evidence-adversarial-validation-gates.md) §Decision for the full gate definitions.
+
+#### Acceptance criteria — P1 stories
+
+**VALID-EXIT-01: Demand-side exit-criteria template (5 pts, P1)**
+- **Given** a net-new or new-buyer epic in grooming, **when** the PO promotes it to committed, **then** its `BACKLOG_MASTER.md` row carries a demand-side exit block: a Sean Ellis ≥40% target (or a documented proxy for low-N enterprise segments), an effort-test statement (retention pulls, not pushed), and a false-positive definition recorded *before* launch.
+- **Given** a shipped epic 30+ days post-launch, **when** the PO reviews traction, **then** the false-positive definition is checked and an adversarial read of early numbers (Gate A) is attached.
+- **Edge:** low-N segment where 40% is not measurable → a named proxy metric is required, not a waiver.
+- **Out of scope:** retrofitting exit criteria onto already-shipped regression-contract stories.
+
+**VALID-ADVERSARY-01: Adversarial validation gate (5 pts, P1)**
+- **Given** an epic in the ideated state, **when** the PO requests promotion to committed, **then** a `qesto-market-research` (or `qesto-architect`) memo exists making the strongest case the epic fails / a competitor wins, listing the assumptions most likely wrong and the disconfirming evidence.
+- **Given** the memo exists, **when** promotion proceeds, **then** the memo's points are answered in the epic record (answered, not merely present); an unanswered memo blocks commit.
+- **Edge:** trivial/low-risk epics → a short-form memo is acceptable but not skippable.
+- **Out of scope:** automating the memo; it is an agent-assisted human-reviewed artifact.
+
+**VALID-HORIZON-01: Committed-vs-Conditional horizon tagging (3 pts, P1)**
+- **Given** `ROADMAP_FULL.md`, **when** an arc beyond the next 1–2 releases is described, **then** each item is labeled **Committed** (scheduled/sized/sprint-mapped) or **Conditional** (with an explicit promotion trigger/checkpoint).
+- **Given** a Conditional item, **when** its trigger fires (or a kill-criterion is met), **then** the roadmap records the promotion/kill decision and date.
+- **Edge:** in-flight committed arcs are not retroactively relabeled mid-sprint.
+- **Out of scope:** changing the release cadence or the existing ADR/eval/pentest gate ladder.
+
+**VALID-SCOPE-01: Non-goals + evidence-to-expand contract (3 pts, P1)**
+- **Given** a net-new epic, **when** its header is authored, **then** it states what the epic deliberately does **not** do and the specific user evidence that would justify expanding it.
+- **Given** a mid-flight feature-add request, **when** evaluated, **then** the decision references the evidence-to-expand contract rather than enthusiasm ("a critical mass of users can't get value without this").
+- **Out of scope:** the per-story `out_of_scope` field already in the story schema — this is the epic-altitude complement.
 
 ---
 
