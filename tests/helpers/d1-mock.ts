@@ -222,6 +222,10 @@ export class D1Mock {
   >()
   readonly deliberateBallotCountOverrides: number[] = []
   readonly energizers = new Map<string, EnergizerRow>()
+  readonly stripeWebhookEvents = new Map<
+    string,
+    { stripe_event_id: string; event_type: string; processed_at: number }
+  >()
   readonly deviceTokens = new Map<
     string,
     {
@@ -995,6 +999,11 @@ export class D1PreparedStatementMock {
       })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO stripe_webhook_events')) {
+      const [stripe_event_id, event_type, processed_at] = this.args as [string, string, number]
+      this.db.stripeWebhookEvents.set(stripe_event_id, { stripe_event_id, event_type, processed_at })
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith('INSERT INTO device_tokens')) {
       const [id, user_id, platform, token, app_version, locale, created_at] = this.args as [
         string, string, string, string, string | null, string | null, number,
@@ -1398,6 +1407,11 @@ export class D1PreparedStatementMock {
       return (row
         ? { email: row.email, expires_at: row.expires_at, consumed_at: row.consumed_at }
         : null) as T | null
+    }
+    if (this.sql.startsWith('SELECT stripe_event_id FROM stripe_webhook_events')) {
+      const [stripe_event_id] = this.args as [string]
+      const row = this.db.stripeWebhookEvents.get(stripe_event_id)
+      return (row ? { stripe_event_id: row.stripe_event_id } : null) as T | null
     }
     if (this.sql.startsWith('SELECT id FROM users WHERE email')) {
       const [email] = this.args as [string]

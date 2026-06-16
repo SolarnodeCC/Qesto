@@ -75,6 +75,11 @@ export async function handlePresenterAdvance(self: SessionRoomContext, ws: WebSo
   await self.ctx.storage.delete(K_SENTIMENT_MOOD)
   await self.ctx.storage.delete(K_SENTIMENT_LAST)
   self.resetVoters({})
+  // VOTE-CORRUPTION (#538): clearing K_COUNTS in storage is not enough — the
+  // in-memory tally cache (state._counts) survives navigation and would carry
+  // the previous question's counts into the next question's first vote (and get
+  // re-flushed to D1). Reset it atomically with the storage wipe.
+  self.state._counts = {}
   const advanceMsg = serverMessage({
     type: 'question',
     data: { question: nextQ, index: nextIdx, total: allQs.length },
@@ -107,6 +112,9 @@ export async function handlePresenterBack(self: SessionRoomContext, ws: WebSocke
   await self.ctx.storage.put(K_COUNTS, {} as Counts)
   await self.ctx.storage.put(K_VOTERS, {} as Votes)
   self.resetVoters({})
+  // VOTE-CORRUPTION (#538): also clear the in-memory tally cache — see
+  // handlePresenterAdvance above.
+  self.state._counts = {}
   const backMsg = serverMessage({
     type: 'question',
     data: { question: prevQ, index: prevIdx, total: allQs.length },

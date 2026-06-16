@@ -20,6 +20,14 @@ import { logEvent } from './log'
 import { sanitizePromptText } from './ai/prompt-sanitize'
 import type { Anonymity } from '../types'
 
+/**
+ * Canonical Workers-AI model for session insights (#536). Single source of
+ * truth — every insights call site imports this rather than hardcoding the
+ * model string, so the two insights route pipelines can never drift onto
+ * different models again.
+ */
+export const INSIGHTS_MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
+
 export type InsightsInput = {
   sessionTitle: string
   openResponses: string[] // raw free-text responses
@@ -274,7 +282,7 @@ async function runInsightsAI(
 export async function extractThemes(
   ai: Ai,
   input: InsightsInput,
-  model = '@cf/mistral/mistral-7b-instruct-v0.2',
+  model = INSIGHTS_MODEL,
 ): Promise<InsightsResult> {
   // Fast path: no responses → no themes. Don't burn AI quota.
   if (

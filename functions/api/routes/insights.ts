@@ -14,6 +14,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireFeature } from '../middleware/feature-gate'
 import {
+  INSIGHTS_MODEL,
   InsightsAIError,
   InsightsValidationError,
   extractThemes,
@@ -53,7 +54,6 @@ type CachedInsights = {
   cached_at: number
 }
 
-const INSIGHTS_MODEL = '@cf/mistral/mistral-7b-instruct-v0.2'
 const CACHE_TTL_SECONDS = 300 // 5 min
 // Guard against tight loops that would drain AI quota across many sessions.
 const AI_RATE_LIMIT = { max: 10, windowSeconds: 3600, prefix: 'insights-ai' }

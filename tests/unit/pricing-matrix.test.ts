@@ -31,8 +31,8 @@ describe('enrichPricingMatrix', () => {
     const sessions = m[0]?.rows.find((r) => r[0] === 'New sessions per month')
     const retention = m[0]?.rows.find((r) => r[0] === 'Retention')
     const integrations = m.find((s) => s.section === 'Integrations')
-    // Outbound webhooks shipped as Team-only; row renamed and source changed from roadmap → static.
-    const webhooks = integrations?.rows.find((r) => r[0] === 'Outbound webhooks')
+    // Outbound webhooks shipped as Team-only (Beta); source static (not roadmap).
+    const webhooks = integrations?.rows.find((r) => r[0] === 'Outbound webhooks (Beta)')
     expect(sessions?.[4]).toBe('quota')
     expect(retention?.[4]).toBe('static')
     expect(webhooks?.[4]).toBe('static')

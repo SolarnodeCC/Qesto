@@ -20,7 +20,7 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
       ['New sessions per month', '—', '—', '—', 'quota'],
       ['Max participants per session', '—', '—', '—', 'quota'],
       ['Question types', '8', '8', '8', 'static'],
-      ['Retention', '30 days', '365 days', '7d - 7yr', 'static'],
+      ['Retention', '30 days', '365 days', 'Up to 7 years', 'static'],
     ],
   },
   {
@@ -60,7 +60,7 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
     section: 'Integrations',
     rows: [
       ['CSV export', true, true, true, 'quota'],
-      ['Outbound webhooks', false, false, true, 'static'],
+      ['Outbound webhooks (Beta)', false, false, true, 'static'],
       ['Branded domain & PDF templates', false, false, 'Roadmap', 'roadmap'],
     ],
   },

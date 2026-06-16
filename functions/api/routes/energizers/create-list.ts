@@ -13,13 +13,23 @@ import { z } from 'zod'
 import type { EnergizerApp } from './types'
 import { validateKvJson, EnergizerConfigEnvelopeSchema } from '../../lib/protocol-schemas'
 import type { EnergizerRow } from '../../lib/db-row-types'
+import { requireSessionAccess } from '../sessions/shared'
 
 export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
   app.post('/sessions/:sessionId/energizers', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
+    const user = c.get('user')
 
     try {
+      // Verify session ownership
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const CreateEnergizerSchema = z.object({
         kind: z.enum(['battle_royale', 'bracket', 'emoji_poll', 'quick_finger', 'team_quiz', 'word_cloud']),
         prompt: z.string().min(1).max(400),
@@ -103,8 +113,17 @@ export function registerEnergizerCreateListRoutes(app: EnergizerApp): void {
   app.get('/sessions/:sessionId/energizers', async (c) => {
     const trace_id = c.get('trace_id')
     const sessionId = c.req.param('sessionId')
+    const user = c.get('user')
 
     try {
+      // Verify session ownership
+      const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
+      if (!session) {
+        return c.json(
+          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
+          404,
+        )
+      }
       const result = await c.env.DB.prepare(
         `SELECT id, kind, prompt, config_json, state, position, created_at FROM energizers
          WHERE session_id = ?1 ORDER BY position ASC`,

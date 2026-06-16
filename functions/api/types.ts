@@ -17,6 +17,12 @@ export type Env = {
   SAML_SP_ENTITY_ID?: string
   /** SAML Assertion Consumer Service URL (e.g. `https://api.qesto.cc/api/auth/saml/callback`). */
   SAML_ACS_URL?: string
+  /**
+   * SAML SSO master switch (#529 / SEC-SAML-01). `'true'` enables the SP routes;
+   * any other value (including unset) keeps them disabled and returns 503. MUST
+   * stay off in production until XML-DSig assertion verification ships.
+   */
+  SAML_SSO_ENABLED?: string
   /** Superuser email — bypasses all plan quotas. */
   SUPERUSER_EMAIL?: string
   /** Seed admin email — granted owner/admin in dev/test. */

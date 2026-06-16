@@ -98,10 +98,10 @@ export default defineConfig(() => {
         // The previous top-level `lines: 85` keys were in the v3 location and
         // were silently ignored (coverage was ~31% with a green build).
         thresholds: {
-          statements: 29,
-          branches: 19,
-          functions: 24,
-          lines: 30,
+          statements: 35,
+          branches: 22,
+          functions: 30,
+          lines: 36,
         },
       },
     },

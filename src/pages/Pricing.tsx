@@ -240,9 +240,9 @@ export default function Pricing() {
               </p>
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
-                  team?.features.townhallQA ? 'Townhall Q&A board (moderated, 5 000 participants)' : 'Townhall Q&A (Chorus)',
+                  team?.features.townhallQA ? 'Townhall Q&A board (Beta — moderated, up to 5 000 participants)' : 'Townhall Q&A (Team tier)',
                   team?.features.samlSso ? 'SAML SSO and role scopes' : 'SSO roadmap — contact sales',
-                  'Custom retention (enforced residency on roadmap)',
+                  'Extended data retention & exports (residency on roadmap)',
                   team?.features.insightsAI ? 'Private Workers AI endpoints' : 'AI insights',
                   'Customer-managed keys on the roadmap',
                   'Dedicated onboarding + SLA',
