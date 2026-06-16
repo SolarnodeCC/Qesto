@@ -115,7 +115,7 @@
   "complianceAudit.timestamp": "Timestamp",
   "complianceAudit.user": "User",
   "complianceAudit.details": "Details",
-  "complianceAudit.footer": "{{count}} entries — retained for 7 years under GDPR/AVG",
+  "complianceAudit.footer": "{{count}} entries — retained for the life of your account and never auto-deleted; export anytime, erased on GDPR request",
   "complianceAudit.events.session.created": "Session created",
   "complianceAudit.events.session.started": "Session started",
   "complianceAudit.events.session.closed": "Session closed",

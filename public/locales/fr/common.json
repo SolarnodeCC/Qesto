@@ -122,7 +122,7 @@
     "timestamp": "Timestamp",
     "user": "User",
     "details": "Details",
-    "footer": "{{count}} entries — retained for 7 years under GDPR/AVG",
+    "footer": "{{count}} entries — retained for the life of your account and never auto-deleted; export anytime, erased on GDPR request",
     "events": {
       "session": {
         "created": "Session created",
