@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "ws": "^8.21.0",
+    "js-yaml": "^4.2.0"
+  },
   "scripts": {
     "dev": "vite",
     "dev:api": "wrangler dev --port 8787",
