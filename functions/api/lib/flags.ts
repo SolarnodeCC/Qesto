@@ -26,6 +26,10 @@ export type FlagName =
   | 'SENTIMENT_ENABLED'
   | 'JOIN_CAPTCHA_ENABLED'
   | 'LDAP_SYNC_MOCK'
+  // SEC-SAML-01 (#529): SAML SSO is OFF unless explicitly enabled. The SP does
+  // not yet verify the XML-DSig signature on the assertion, so the routes must
+  // remain disabled (503) in production until signature verification ships.
+  | 'SAML_SSO_ENABLED'
 
 /**
  * Read a boolean feature flag from the environment.

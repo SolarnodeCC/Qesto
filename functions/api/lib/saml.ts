@@ -18,10 +18,14 @@
 //
 // SECURITY CAVEAT (documented in knowledge-base/architecture/ARCHITECTURE.md §SAML):
 //   This SP trusts the IdP's TLS transport + RelayState binding. It does NOT
-//   yet verify the XML signature on <saml:Assertion>. For v2.x this is an
-//   acceptable trade-off because customers configure the IdP per-tenant and
-//   the callback URL is over HTTPS. XML-DSig verification is tracked in
-//   BACKLOG §4 (SEC-SAML-01) and MUST ship before the "SAML SSO GA" badge.
+//   yet verify the XML signature on <saml:Assertion>. Because of this, the SAML
+//   SP routes (/saml/init, /saml/callback, /saml/metadata) are gated behind the
+//   SAML_SSO_ENABLED feature flag in functions/api/routes/auth/saml.ts, which
+//   defaults OFF (503) in production. Without signature verification an attacker
+//   who knows the entityID + a target team_id could forge an unsigned assertion
+//   and authenticate as any user (CWE-347 / CWE-287), so the flag MUST stay off
+//   until XML-DSig verification ships. Tracked in BACKLOG §4 (SEC-SAML-01, #529)
+//   and MUST ship before the "SAML SSO GA" badge.
 
 import { validateKvJson, SamlStateTokenSchema } from './protocol-schemas'
 

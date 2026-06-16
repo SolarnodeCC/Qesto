@@ -70,6 +70,12 @@ CIRCUIT_BREAKER_ENABLED = "true"
 LIVE_ENERGIZERS_ENABLED = "true"
 # Sentiment analysis: AI-powered response sentiment scoring (Workers AI per response).
 SENTIMENT_ENABLED = "true"
+# SAML SSO master switch (SEC-SAML-01, #529). MUST stay "false" in production:
+# the SP does not yet verify the XML-DSig signature on assertions, so enabling it
+# would allow forged unsigned assertions to authenticate as any user. The routes
+# return 503 while disabled. Flip to "true" only after assertion signature
+# verification ships and per-team IdP certs are stored in TEAMS_KV.
+SAML_SSO_ENABLED = "false"
 
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
@@ -212,6 +218,9 @@ SENTIMENT_ENABLED = "true"
 REALTIME_TOWNHALL_ENABLED = "true"
 RATE_LIMIT_FAIL_CLOSED = "false"
 WS_CONNECT_PER_IP_PER_MIN = "15"
+# SAML SSO kill-switch (SEC-SAML-01, #529) — disabled until assertion signature
+# verification ships. Staging may flip to "true" for IdP integration testing only.
+SAML_SSO_ENABLED = "false"
 
 # Staging D1 — provisioned with all migrations applied
 [[env.staging.d1_databases]]
