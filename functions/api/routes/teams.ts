@@ -74,6 +74,16 @@ export type Team = {
   branding?: TeamBranding | null
   createdAt: number
   personal?: true
+  /**
+   * SOVEREIGN+ (ADR-0058) config-as-data tenant residency/exclusion surface.
+   * Optional + backward compatible: absent ⇒ default region (`eu-001`), not
+   * sovereign. `isSovereign` enables the hard residency boundary + federation/
+   * egress exclusion (SOVEREIGN-EXCLUSION-01); `fedrampModerate` reflects the
+   * S89 FedRAMP boundary (ADR-0052) for the posture matrix.
+   */
+  regionId?: string
+  isSovereign?: boolean
+  fedrampModerate?: boolean
 }
 
 type Vars = AuthVariables & PlanVariables
