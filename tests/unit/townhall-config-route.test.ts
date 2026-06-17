@@ -128,8 +128,18 @@ describe('POST /api/sessions/:id/townhall/config', () => {
       makeEnv(db),
     )
     expect(res.status).toBe(200)
-    const body = (await res.json()) as { data: { sessionMode: string; moderation: string | null } }
-    expect(body.data).toMatchObject({ sessionMode: 'townhall', moderation: 'post' })
+    const body = (await res.json()) as {
+      data: { sessionMode: string; moderation: string | null; code: string; status: string; title: string }
+    }
+    // The presenter console needs code/status/title to gate the WebSocket on
+    // lifecycle state and render the join link (see TownhallPresent).
+    expect(body.data).toMatchObject({
+      sessionMode: 'townhall',
+      moderation: 'post',
+      code: 'ABC123',
+      status: 'draft',
+      title: 'All-Hands',
+    })
   })
 })
 
