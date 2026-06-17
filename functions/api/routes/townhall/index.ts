@@ -41,6 +41,10 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
     return c.json({
       ok: true,
       data: {
+        sessionId: s.id,
+        title: s.title,
+        code: s.code,
+        status: s.status,
         sessionMode: s.session_mode,
         moderation: s.townhall_moderation ?? null,
         anonymity: s.anonymity,
