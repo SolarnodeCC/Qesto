@@ -4,6 +4,7 @@ import {
   loadUserPreferences,
   patchUserPreference,
   __resetUserPreferencesForTests,
+  setUserPreferencesAuthKnown,
 } from '../../src/lib/user-preferences'
 
 function mockFetch(impl: typeof fetch) {
@@ -12,12 +13,13 @@ function mockFetch(impl: typeof fetch) {
 }
 
 function jsonResponse(body: unknown): Response {
-  return { json: () => Promise.resolve(body) } as Response
+  return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
 }
 
 describe('user-preferences client', () => {
   beforeEach(() => {
     __resetUserPreferencesForTests()
+    setUserPreferencesAuthKnown(true)
   })
 
   afterEach(() => {

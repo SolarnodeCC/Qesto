@@ -1,0 +1,26 @@
+id = "0059_townhall_session_mode_widen"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "medium"
+stage = "expand"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-06-16"
+ticket = "TOWNHALL-PROD-500"
+
+[rollback]
+strategy = "restore-backup"
+procedure = "Restore D1 snapshot taken immediately before apply; forward-fix only if snapshot unavailable"
+
+[backup]
+required = true
+note = "Table rebuild copies sessions rows; take D1 backup before apply on production"
+
+[timeouts]
+lock_timeout = "30s"
+statement_timeout = "120s"
+
+[verification]
+verify = true
+post_check = "0059_townhall_session_mode_widen.verify.sql"

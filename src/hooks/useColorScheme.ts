@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { loadUserPreferences, patchUserPreference } from '../lib/user-preferences'
+import { useAuth } from './useAuth'
 
 export type ColorSchemePreference = 'system' | 'light' | 'dark'
 export type ResolvedColorScheme = 'light' | 'dark'
@@ -32,6 +33,7 @@ export function useColorScheme(): {
   setPreference: (p: ColorSchemePreference) => void
   toggle: () => void
 } {
+  const auth = useAuth()
   const [preference, setPreferenceState] = useState<ColorSchemePreference>(() => readStored() ?? 'system')
   const [scheme, setScheme] = useState<ResolvedColorScheme>(() => resolveScheme(readStored() ?? 'system'))
 
@@ -51,12 +53,13 @@ export function useColorScheme(): {
     return () => mq.removeEventListener('change', onChange)
   }, [preference])
 
-  // Hydrate from server prefs on mount (best-effort; silently ignored on failure).
+  // Hydrate from server prefs once auth is known (HttpOnly cookie via credentials).
   useEffect(() => {
+    if (auth.status !== 'authenticated') return
     loadUserPreferences().then((prefs) => {
       if (isValidPreference(prefs.colorScheme)) setPreferenceState(prefs.colorScheme)
     })
-  }, [])
+  }, [auth.status])
 
   const setPreference = useCallback((p: ColorSchemePreference) => {
     setPreferenceState(p)

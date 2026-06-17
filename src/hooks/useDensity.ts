@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { loadUserPreferences, patchUserPreference, type DensityPref } from '../lib/user-preferences'
+import { useAuth } from './useAuth'
 
 export type Density = DensityPref
 
@@ -27,6 +28,7 @@ function applyDensity(d: Density) {
 }
 
 export function useDensity() {
+  const auth = useAuth()
   const [density, setDensityState] = useState<Density>(readStored)
 
   // Keep the DOM attribute in sync with state (covers the initial mount too).
@@ -34,15 +36,16 @@ export function useDensity() {
     applyDensity(density)
   }, [density])
 
-  // Hydrate from server prefs on mount (best-effort; silently ignored on failure).
+  // Hydrate from server prefs once auth is known (HttpOnly cookie via credentials).
   useEffect(() => {
+    if (auth.status !== 'authenticated') return
     loadUserPreferences().then((prefs) => {
       if (isValidDensity(prefs.density)) {
         setDensityState(prefs.density)
         try { localStorage.setItem(STORAGE_KEY, prefs.density) } catch { /* noop */ }
       }
     })
-  }, [])
+  }, [auth.status])
 
   const setDensity = useCallback((d: Density) => {
     try {

@@ -8,6 +8,8 @@ import { fetchSession } from '../sessions/shared'
 import { requireFound, requireDraft } from '../../lib/session-lifecycle'
 import { recordAuditEvent } from '../../lib/audit'
 import type { ParentApp } from '../parent-app'
+import { ensureTownhallSchema } from '../../lib/session-schema-repair'
+import { sanitizeError } from '../../lib/error-handler'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -25,7 +27,13 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
   app.get('/sessions/:id/townhall/config', async (c) => {
     const trace_id = c.get('trace_id')
     const user = c.get('user')
-    const loaded = requireFound(await fetchSession(c.env.DB, c.req.param('id'), user.sub))
+    let loaded
+    try {
+      loaded = requireFound(await fetchSession(c.env.DB, c.req.param('id'), user.sub))
+    } catch (err) {
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
     if (!loaded.ok) {
       return c.json({ ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id }, loaded.error.status)
     }
@@ -56,7 +64,13 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
     }
     const { moderation, anonymity } = parsed.data
 
-    const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    let loaded
+    try {
+      loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    } catch (err) {
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
     if (!loaded.ok) {
       return c.json({ ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id }, loaded.error.status)
     }
@@ -71,7 +85,12 @@ export function registerTownhallConfigRoutes(app: Hono<{ Bindings: Env; Variable
       sets.push('anonymity = ?3')
       binds.push(anonymity)
     }
-    await c.env.DB.prepare(`UPDATE sessions SET ${sets.join(', ')} WHERE id = ?1`).bind(...binds).run()
+    try {
+      await c.env.DB.prepare(`UPDATE sessions SET ${sets.join(', ')} WHERE id = ?1`).bind(...binds).run()
+    } catch (err) {
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
 
     await recordAuditEvent(c, {
       action: 'townhall.config',
@@ -230,6 +249,16 @@ export function mountTownhallRoutes(parent: ParentApp): void {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
   app.use('*', planMiddleware)
+  app.use('*', async (c, next) => {
+    try {
+      await ensureTownhallSchema(c.env.DB)
+    } catch (err) {
+      const trace_id = c.get('trace_id')
+      const sanitized = sanitizeError(err, c.env.ENV, 503)
+      return c.json({ ok: false, error: { code: 'schema_error', message: sanitized.message }, trace_id }, 503)
+    }
+    await next()
+  })
   registerTownhallConfigRoutes(app)
   registerTownhallDataRoutes(app)
   parent.route('/api', app)

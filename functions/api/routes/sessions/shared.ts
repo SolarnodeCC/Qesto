@@ -24,6 +24,7 @@ import { teamDocumentKey } from '../../lib/kv-keys'
 import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../../lib/constants'
 import { CachedThemeLabelsSchema, decodeKvJson } from '../../lib/boundary-decode'
 import { logEvent } from '../../lib/log'
+import { ensureTownhallSchema } from '../../lib/session-schema-repair'
 
 export type SessionVars = AuthVariables & PlanVariables
 export type SessionRow = Session & { team_id: string | null }
@@ -46,7 +47,8 @@ export async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   if (_schemaPatchDone) return
   _schemaPatchDone = true
   await db.prepare(`ALTER TABLE sessions ADD COLUMN vote_policy TEXT NOT NULL DEFAULT 'once' CHECK (vote_policy IN ('once','multi','react'))`).run().catch(() => {})
-  await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection' CHECK (session_mode IN ('reflection','fun'))`).run().catch(() => {})
+  // Avoid adding a narrow session_mode CHECK — legacy patch left prod unable to set 'townhall'.
+  await db.prepare(`ALTER TABLE sessions ADD COLUMN session_mode TEXT NOT NULL DEFAULT 'reflection'`).run().catch(() => {})
   // OBS-001: analytics segmentation column. Nullable — individual (no-team) sessions remain valid.
   await db.prepare(`ALTER TABLE sessions ADD COLUMN team_id TEXT DEFAULT NULL`).run().catch(() => {})
   // Sprint 18 prereq: AI provenance + GDPR consent audit trail for wizard generation.
@@ -74,6 +76,13 @@ export async function patchSchemaIfNeeded(db: D1Database): Promise<void> {
   ).run().catch(() => {})
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_name_created ON sprint19_events(event_name, created_at)`).run().catch(() => {})
   await db.prepare(`CREATE INDEX IF NOT EXISTS idx_sprint19_events_session ON sprint19_events(session_id)`).run().catch(() => {})
+  await ensureTownhallSchema(db).catch((err) => {
+    logEvent({
+      event: 'patchSchemaIfNeeded.ensureTownhallSchema_failed',
+      errorClass: err instanceof Error ? err.name : 'UnknownError',
+      message: err instanceof Error ? err.message : String(err),
+    })
+  })
 }
 
 export async function presenterPermissionsForSession(
