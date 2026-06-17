@@ -1,6 +1,6 @@
 /**
  * useEmbedWidgets — CRUD hook for embed_widgets configs (ADR-0050).
- * Authenticated host-facing; requires Team plan entitlement (embedWidgets).
+ * Authenticated host-facing; requires Chorus plan entitlement (embedWidgets).
  */
 import { useCallback, useEffect, useState } from 'react'
 import { api, type ApiError } from '../api/client'

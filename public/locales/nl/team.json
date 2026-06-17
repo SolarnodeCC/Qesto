@@ -27,5 +27,5 @@
   "teams_status_error": "Teams-status laden mislukt.",
   "teams_disconnect_error": "Verbreken mislukt.",
   "teams_config_error": "Kanaalconfiguratie opslaan mislukt.",
-  "branding_description": "Logo en kleuren verschijnen op join-pagina's en ondertekende exports (Team-plan)."
+  "branding_description": "Logo en kleuren verschijnen op join-pagina's en ondertekende exports (Chorus-abonnement)."
 }

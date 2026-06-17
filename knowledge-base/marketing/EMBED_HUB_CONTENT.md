@@ -6,7 +6,7 @@ category: messaging
 status: active
 version: 1.0
 created: 2026-06-12
-updated: 2026-06-12
+updated: 2026-06-15
 tags:
   - embed
   - widget
@@ -155,7 +155,7 @@ A: Typeform has no realtime. Mentimeter has realtime but slow cold starts and pa
 A: No. The aggregate widget itself is read-only and anonymized. You control anonymity settings per session. Audit log (for compliance review) stays server-side, encrypted. Runs under Qesto's SOC 2 Type II certification. See [privacy page](#).
 
 **Q: What's the cost?**
-A: Embed is included on all Qesto plans (Free, Pro, Enterprise). Free tier covers up to 50 participants per session. Pro tier ($X/month) unlocks unlimited participants + AI theme summaries. Enterprise pricing is custom.
+A: Embed is included on all Qesto plans (Pulse, Chorus, Enterprise). Pulse tier covers up to 50 participants per session. Chorus tier ($X/month) unlocks unlimited participants + AI theme summaries. Enterprise pricing is custom.
 
 ---
 
@@ -221,7 +221,7 @@ LMS embed, course engagement, event polling, intranet polls, headless polling SD
 
 **To Frontend:** Copy assumes ADR-0050 is accepted and widget API is stable. Test snippet placeholder (`<!-- qesto embed snippet -->`) with real token response from backend before final publish.
 
-**To Product:** Button link `/sessions/new?template=embed` or `/try-embed` needs to be wired up. Verify free-tier embed limit (50 participants) is enforced.
+**To Product:** Button link `/sessions/new?template=embed` or `/try-embed` needs to be wired up. Verify Pulse-tier embed limit (50 participants) is enforced.
 
 **To Sales:** Embed hub page is top-of-funnel; no lead capture form on `/embed` itself. Sales outreach to LMS/platform teams happens via warm intro (not form submission). See EMBED_ICP_AND_POSITIONING.md for sales plays.
 

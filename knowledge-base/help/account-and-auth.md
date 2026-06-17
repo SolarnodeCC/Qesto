@@ -60,7 +60,7 @@ Open **Settings** from the sidebar footer (`/settings`):
 - **Email** — view the address on your account
 - **Language** — choose EN, NL, ES, DE, or FR (applies across the app)
 - **List density** — compact or comfortable dashboard lists
-- **Billing** — upgrade, manage payment method, download invoices (Starter+)
+- **Billing** — upgrade, manage payment method, download invoices (Signal+)
 
 Settings is for **your account**. Team workspace settings (members, SAML) live under **Teams → [team name] → Settings**.
 

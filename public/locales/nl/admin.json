@@ -197,9 +197,9 @@
   "dateRangeLabel": "{{start}} – {{end}}",
   "displayNameLbl": "Weergavenaam",
   "nameOptionalPlaceholder": "Naam (optioneel)",
-  "planOptionFree": "Pulse (Gratis)",
-  "planOptionStarter": "Signal (Starter)",
-  "planOptionTeam": "Chorus (Team)",
+  "planOptionFree": "Pulse",
+  "planOptionStarter": "Signal",
+  "planOptionTeam": "Chorus",
   "cancelBtn": "Annuleren",
   "syntheticMetricsWarning": "Synthetische data — metrics KV niet gereed"
 }

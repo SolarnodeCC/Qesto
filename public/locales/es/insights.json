@@ -38,7 +38,7 @@
   },
   "crossSession": {
     "selectTeam": "Únete a un equipo para ver insights entre sesiones.",
-    "planRequired": "Los insights entre sesiones requieren el plan Team",
+    "planRequired": "Los insights entre sesiones requieren un plan Chorus",
     "planHint": "Actualiza para ver temas recurrentes, tendencias y scorecards de facilitador.",
     "viewPlans": "Ver planes →",
     "windowLabel": "Ventana de tendencia",

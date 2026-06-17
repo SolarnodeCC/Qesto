@@ -27,5 +27,5 @@
   "teams_status_error": "Failed to load Teams status.",
   "teams_disconnect_error": "Disconnect failed.",
   "teams_config_error": "Could not save channel configuration.",
-  "branding_description": "Logo and colors appear on join pages and signed exports (Team plan)."
+  "branding_description": "Logo and colors appear on join pages and signed exports (Chorus plan)."
 }

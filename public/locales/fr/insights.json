@@ -38,7 +38,7 @@
   },
   "crossSession": {
     "selectTeam": "Rejoignez une équipe pour voir les insights inter-sessions.",
-    "planRequired": "Les insights inter-sessions nécessitent l'offre Team",
+    "planRequired": "Les insights inter-sessions nécessitent l'offre Chorus",
     "planHint": "Passez à l'offre supérieure pour les thèmes récurrents, tendances et scorecards facilitateur.",
     "viewPlans": "Voir les offres →",
     "windowLabel": "Fenêtre de tendance",

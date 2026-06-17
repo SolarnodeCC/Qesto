@@ -29,7 +29,7 @@
     "description_other": "Esta sesión refleja {count} sesiones anteriores del equipo.",
     "match": "{percent}% de coincidencia",
     "empty": "Aún no se han encontrado sesiones anteriores similares. Genera información de IA para comparar esta sesión con el historial de tu equipo.",
-    "planRequired": "La información entre sesiones requiere el plan Team.",
+    "planRequired": "Los insights entre sesiones requieren el plan Chorus.",
     "planHint": "Actualiza tu plan para ver cómo esta sesión refleja las sesiones anteriores de tu equipo.",
     "viewPlans": "Ver planes →",
     "error": "No se pudo generar la información. Inténtalo de nuevo más tarde."

@@ -6,7 +6,7 @@ category: launch-brief
 status: active
 version: 1.0
 created: 2026-06-13
-updated: 2026-06-13
+updated: 2026-06-15
 tags:
   - captions
   - live-translation
@@ -279,7 +279,7 @@ Qesto solves this at the architecture level: Workers AI on the edge = same-regio
 - **Week 4:** Telemetry validation; final copy review + launch prep
 
 ### Sprint 89 (Amplification + GTM)
-- **Week 1:** Soft launch (email to existing Pro/Enterprise + invite beta customers)
+- **Week 1:** Soft launch (email to existing Chorus/Enterprise + invite beta customers)
 - **Week 2:** Public feature announcement + competitor vs. pages live
 - **Week 3:** Sales plays: warm outreach to public-sector prospects ("compliance-ready captions now live")
 - **Week 4:** Measure S88 KPIs (captions adoption, multilingual sessions, public-sector interest)

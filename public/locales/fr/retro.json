@@ -36,5 +36,8 @@
   "health.mood.neutral": "Neutre",
   "health.mood.concerning": "À surveiller",
   "health.planRequired": "Les tendances de santé nécessitent le plan Team avec insights inter-sessions.",
-  "health.viewPlans": "Voir les offres"
+  "health.viewPlans": "Voir les offres",
+  "health": {
+    "planRequired": "Les tendances de santé nécessitent Chorus avec insights inter-sessions."
+  }
 }

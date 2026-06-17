@@ -274,7 +274,7 @@ export function PresenterControls({
         >
           <Subtitles size={14} aria-hidden="true" />
           {t('captions_inactive')}
-          <span className="ml-1 text-xs text-amber-400">(Team+)</span>
+          <span className="ml-1 text-xs text-amber-400">(Chorus)</span>
         </span>
       ) : (
         <button

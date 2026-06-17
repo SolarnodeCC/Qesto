@@ -35,6 +35,6 @@
   "health.mood.positive": "Positive",
   "health.mood.neutral": "Neutral",
   "health.mood.concerning": "Needs attention",
-  "health.planRequired": "Team health trends require Team plan with cross-session insights.",
+  "health.planRequired": "Team health trends require Chorus plan with cross-session insights.",
   "health.viewPlans": "View plans"
 }

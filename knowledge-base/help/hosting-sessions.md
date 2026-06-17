@@ -103,9 +103,9 @@ Useful for recurring meetings, retros, or all-hands formats.
 
 - **Delete** — permanently removes a DRAFT session (cannot undo)
 - **Close** — ends a LIVE session; results preserved
-- **Archive** — moves closed sessions to historical storage (Team plan custom roles may restrict this)
+- **Archive** — moves closed sessions to historical storage (Chorus plan custom roles may restrict this)
 
-Export CSV before deleting if you need a local backup (Starter+).
+Export CSV before deleting if you need a local backup (Signal+).
 
 ## Preflight Checklist
 

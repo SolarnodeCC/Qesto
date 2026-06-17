@@ -29,7 +29,7 @@
     "description_other": "Diese Sitzung ähnelt {count} früheren Team-Sitzungen.",
     "match": "{percent} % Übereinstimmung",
     "empty": "Noch keine ähnlichen früheren Sitzungen gefunden. Generieren Sie KI-Erkenntnisse, um diese Sitzung mit der Historie Ihres Teams zu vergleichen.",
-    "planRequired": "Sitzungsübergreifende Erkenntnisse erfordern den Team-Tarif.",
+    "planRequired": "Sitzungsübergreifende Erkenntnisse erfordern den Chorus-Plan.",
     "planHint": "Führen Sie ein Upgrade durch, um zu sehen, wie diese Sitzung frühere Sitzungen Ihres Teams widerspiegelt.",
     "viewPlans": "Tarife ansehen →",
     "error": "Erkenntnisse konnten nicht generiert werden. Bitte versuchen Sie es später erneut."

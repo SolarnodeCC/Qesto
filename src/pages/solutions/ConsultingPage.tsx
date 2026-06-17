@@ -25,7 +25,7 @@ const whitelabel = [
   { key: 'Template library', value: "Your firm's session templates, not ours", sub: 'Standard discovery, offsite, and retro templates shared across your partners. New engagements launch in 60 seconds.' },
   { key: 'Deliverable export', value: 'CSV session export today', sub: 'Use exported tallies as source material for your synthesis pipeline. DOCX, Notion, and JSON exports are roadmap work.' },
   { key: 'Client data isolation', value: 'Per-client Durable Object boundary', sub: "Acme's rooms never sit next to Globex's. Retention configured per engagement, not per account." },
-  { key: 'Team SSO', value: 'SAML SSO on Team plans', sub: 'Workspace members can use configured SSO where the plan allows it. Clients can still join with a code.' },
+  { key: 'Workspace SSO', value: 'SAML SSO on Chorus plans', sub: 'Workspace members can use configured SSO where the plan allows it. Clients can still join with a code.' },
 ]
 
 export default function ConsultingPage() {

@@ -11,7 +11,7 @@ export default function FederationSettingsPage() {
       <div className="max-w-2xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">Federation</h1>
         <p className="mt-2 text-sm text-pulse-600 dark:text-[#9AA8C7]">
-          Connect trusted organizations to share templates and co-host sessions. Requires Team plan.
+          Connect trusted organizations to share templates and co-host sessions. Requires Chorus plan.
         </p>
         <label className="mt-6 block text-sm font-medium">
           Team ID

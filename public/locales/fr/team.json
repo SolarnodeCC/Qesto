@@ -27,5 +27,5 @@
   "teams_status_error": "Échec du chargement du statut Teams.",
   "teams_disconnect_error": "Échec de la déconnexion.",
   "teams_config_error": "Impossible d'enregistrer la configuration du canal.",
-  "branding_description": "Logo et couleurs apparaissent sur les pages de connexion et les exports signés (plan Team)."
+  "branding_description": "Le logo et les couleurs apparaissent sur les pages de connexion et les exports signés (forfait Chorus)."
 }

@@ -140,7 +140,7 @@ export default function Pricing() {
                     : 'Monthly session allowance',
                   '30-day retention',
                   'Full & cohort anonymity',
-                  'AI-powered insights on Team tier',
+                  'AI-powered insights on Chorus',
                   free?.features.resultsExport ? 'CSV exports' : 'CSV exports on paid tiers',
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
@@ -199,7 +199,7 @@ export default function Pricing() {
                   'Identified mode + consent logs',
                   starter?.features.insightsAI
                     ? 'Same-day evidence-anchored recap'
-                    : 'Evidence-anchored recap (AI insights on Team)',
+                    : 'Evidence-anchored recap (AI insights on Chorus)',
                   'Webhook integrations on the roadmap',
                   'Stripe-billed, cancel anytime',
                 ].map((f) => (
@@ -271,7 +271,7 @@ export default function Pricing() {
             What's in each plan — line by line.
           </h2>
           <p className="text-pulse-500 dark:text-[#6B7A99] mb-8">
-            Pulse / Signal / Chorus map to Free / Starter / Team. Rows that tie to quotas or plan flags{' '}
+            Pulse, Signal, and Chorus are Qesto&apos;s three subscription plans. Rows that tie to quotas or plan flags{' '}
             <span className="font-medium text-pulse-600 dark:text-[#8893AD]">
               hydrate from the same source as billing enforcement
             </span>
@@ -397,7 +397,7 @@ export default function Pricing() {
             Start with Pulse. Scale when the room does.
           </h2>
           <p className="text-slate-400 mb-8">
-            Free tier stays within published monthly and room limits. Upgrade when you need longer retention, consent
+            Pulse stays within published monthly and room limits. Upgrade when you need longer retention, consent
             logs, or richer exports.
           </p>
           <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>

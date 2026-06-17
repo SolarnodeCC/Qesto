@@ -6,7 +6,7 @@ category: policy
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-06-15
 tags:
   - governance
   - policy
@@ -93,6 +93,21 @@ Session roles control what actions a team member may perform within sessions.
 
 ---
 
+## Subscription Plans
+
+Plan names are **brand names — do not translate**. Use the English name verbatim in all locales. Provide a locale-appropriate descriptor only in parenthetical UI copy (e.g. "Pulse (gratis)" in NL) when the pricing UI must clarify the tier tier level; the plan name itself is always unchanged.
+
+| Plan (EN) | NL | ES | DE | FR | Notes |
+|---|---|---|---|---|---|
+| Pulse | Pulse | Pulse | Pulse | Pulse | Entry / free tier. Do not translate. |
+| Signal | Signal | Signal | Signal | Signal | First paid tier. Do not translate. |
+| Chorus | Chorus | Chorus | Chorus | Chorus | Team / organisation tier. Do not translate. |
+| Enterprise | Enterprise | Enterprise | Enterprise | Enterprise | Top tier; custom pricing. Do not translate. |
+
+**Rule (REQ-I18N-PLAN-01):** Any copy that references a subscription tier must use exactly these four names. Legacy names (Free, Starter, Team, Pro) are deprecated and must not appear in new or updated copy. If a translator encounters a legacy name, replace it with the canonical plan name above and flag the segment for review.
+
+---
+
 ## Translation QA Checklist (I18N-QA-02)
 
 Before each release, verify:
@@ -102,6 +117,7 @@ Before each release, verify:
 - [ ] No key present in other languages that is absent from `en`
 - [ ] Badge translations use the canonical names from this glossary
 - [ ] Enterprise role names match this glossary exactly
+- [ ] Subscription plan names use canonical names (Pulse/Signal/Chorus/Enterprise) — no legacy names (Free/Starter/Team/Pro)
 - [ ] Alert rule UI strings (alertRules, createAlertRule, etc.) are present in all languages
 - [ ] No truncation in key UI elements (use `scripts/check-i18n-missing.mjs`)
 
