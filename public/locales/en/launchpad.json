@@ -47,5 +47,6 @@
   "time_remaining": "{{minutes}} minutes until automatic start",
   "ai_generate_heading": "Generate questions with AI",
   "ai_topic_hint": "Topic or goal (default: \"{{title}}\")",
-  "add_question_inline": "+ Add question"
+  "add_question_inline": "+ Add question",
+  "joinPanel.startQuestions": "Start Questions"
 }

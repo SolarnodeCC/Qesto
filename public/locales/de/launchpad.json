@@ -47,5 +47,6 @@
   "time_remaining": "{{minutes}} Minuten bis zum automatischen Start",
   "ai_generate_heading": "Fragen mit KI generieren",
   "ai_topic_hint": "Thema oder Ziel (Standard: \"{{title}}\")",
-  "add_question_inline": "+ Frage hinzufügen"
+  "add_question_inline": "+ Frage hinzufügen",
+  "joinPanel.startQuestions": "Fragen starten"
 }

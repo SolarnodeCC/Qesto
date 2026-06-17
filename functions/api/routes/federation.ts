@@ -14,6 +14,11 @@ import {
 } from '../lib/federation'
 import { listFederationLibrary } from '../lib/federation-library'
 import { writeEvent } from '../lib/observability'
+import { mintFederationInvite } from '../lib/connect-invite'
+import { readKvJson } from '../lib/kv'
+import { teamDocumentKey } from '../lib/kv-keys'
+import { recordAuditEvent } from '../lib/audit'
+import type { Team } from './teams'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -23,6 +28,19 @@ const CreateLinkSchema = z.object({
   targetTeamId: z.string().min(1),
   scopes: z.array(FederationScopeSchema).min(1),
 })
+
+/** CONNECT-INVITE-01 — mint a scoped, time-limited federation invite (ADR-0062). */
+const ConnectInviteSchema = z.object({
+  hostTeamId: z.string().min(1),
+  sessionId: z.string().min(1),
+  inviteeTeamId: z.string().min(1).nullable().optional(),
+  scope: z.enum(['participate', 'co_host']).optional(),
+  ttlSeconds: z.number().int().positive().optional(),
+})
+
+function isTeamMember(team: Team, userId: string): boolean {
+  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
+}
 
 export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -65,6 +83,61 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
     }
     writeEvent(c.env.METRICS_AE, { name: 'federation.consent_granted', teamId: link.targetTeamId, detail: link.id })
     return c.json({ ok: true, data: { link }, trace_id: c.get('trace_id') })
+  })
+
+  // CONNECT-INVITE-01 (ADR-0062) — host mints a scoped, signed, TTL-bound invite
+  // admitting another tenant into a federated session. Sovereign hosts are refused
+  // at mint (sovereign exclusion is absolute, ADR-0059). Fail-closed without a key.
+  app.post('/connect/invites', async (c) => {
+    const secret = c.env.CONNECT_INVITE_SECRET
+    if (!secret) {
+      return c.json({ ok: false, error: { code: 'federation_disabled', message: 'Federation invite signing key not configured' }, trace_id: c.get('trace_id') }, 503)
+    }
+    if (!c.env.TEAMS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+    const parsed = await validateBody(c, ConnectInviteSchema)
+    if ('error' in parsed) return parsed.error
+
+    const host = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(parsed.data.hostTeamId))
+    if (!host) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Host team not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    if (!isTeamMember(host, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of the host team' }, trace_id: c.get('trace_id') }, 403)
+    }
+
+    const minted = await mintFederationInvite(
+      secret,
+      { teamId: host.id, isSovereign: host.isSovereign === true },
+      {
+        sid: parsed.data.sessionId,
+        invitee: parsed.data.inviteeTeamId ?? null,
+        scope: parsed.data.scope ?? 'participate',
+        ...(parsed.data.ttlSeconds !== undefined ? { ttl: parsed.data.ttlSeconds } : {}),
+      },
+    )
+    if (!minted.ok) {
+      // A sovereign host attempting federation is a policy event, not a no-op.
+      return c.json({ ok: false, error: { code: minted.code, message: minted.message }, trace_id: c.get('trace_id') }, 403)
+    }
+
+    await recordAuditEvent(c, {
+      action: 'connect.invite.minted',
+      subject_type: 'session',
+      subject_id: parsed.data.sessionId,
+      after_snapshot: {
+        jti: minted.claims.jti,
+        host: minted.claims.host,
+        invitee: minted.claims.invitee,
+        scope: minted.claims.scope,
+        exp: minted.claims.exp,
+      },
+      trace_id: c.get('trace_id'),
+    })
+    writeEvent(c.env.METRICS_AE, { name: 'connect.invite_minted', teamId: host.id, plan: c.get('plan'), detail: minted.claims.jti, traceId: c.get('trace_id') })
+
+    return c.json({ ok: true, data: { token: minted.token, invite: minted.claims }, trace_id: c.get('trace_id') }, 201)
   })
 
   app.get('/beta', (c) =>

@@ -1,0 +1,20 @@
+{
+  "posture.title": "Complianceposture",
+  "posture.residency": "Gegevensresidentie",
+  "posture.fedramp": "FedRAMP Moderate",
+  "posture.gdpr": "GDPR",
+  "posture.federation": "Cross-tenant federatie",
+  "posture.egress": "Partnergegevensafvoer",
+  "posture.excluded": "Uitgesloten",
+  "posture.enabled": "Ingeschakeld",
+  "posture.disabled": "Uitgeschakeld",
+  "residency.eu": "Alleen EU",
+  "residency.uk": "Alleen VK",
+  "residency.ca": "Alleen Canada",
+  "audit.title": "Verifieerbaar auditlogboek",
+  "audit.export": "Ondertekend auditlogboek exporteren",
+  "audit.verified": "Handtekening geverifieerd",
+  "audit.tampered": "Verificatie mislukt — logboek is mogelijk gewijzigd",
+  "audit.entries": "{{count}} auditingangen",
+  "regional.notice": "Verwerkingsregister"
+}

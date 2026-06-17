@@ -218,6 +218,10 @@ export type QestoEvent = {
     // PULSE (ADR-0057): dashboard reads — no cohort PII.
     | 'pulse.summary_viewed'
     | 'pulse.trends_viewed'
+    // LEARN (ADR-0058, S95): instructor analytics export — ids only, no PII.
+    | 'learn.instructor_export'
+    // CONNECT (ADR-0062, S95): federation invite mint — jti/timing only.
+    | 'connect.invite_minted'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

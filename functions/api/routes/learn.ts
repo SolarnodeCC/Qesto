@@ -15,6 +15,8 @@ import { verifyLtiLaunch } from '../lib/lti'
 import { evaluateEmbedTractionGate } from '../lib/learn-gate'
 import { listLearnTemplates } from '../lib/learn-templates'
 import { pushGradeToLms } from '../lib/lms-grade-passback'
+import { scoreCohort } from '../lib/learn-scoring'
+import { buildInstructorAnalytics, buildInstructorResultsCsv } from '../lib/learn-instructor-analytics'
 import { recordAuditEvent } from '../lib/audit'
 import { writeEvent } from '../lib/observability'
 import { logEvent } from '../lib/log'
@@ -27,6 +29,37 @@ const GradePassbackSchema = z.object({
   resultSourcedId: z.string().min(1),
   scoreFraction: z.number().min(0).max(1),
   sessionId: z.string().min(1),
+})
+
+/** FE-LEARN-INSTRUCTOR-01 — score the cohort and derive instructor analytics. */
+const QuestionResponseSchema = z.object({
+  questionId: z.string().min(1),
+  correct: z.number().int().min(0),
+  incorrect: z.number().int().min(0),
+  required: z.number().int().min(0),
+})
+const InstructorAnalyticsSchema = z.object({
+  configs: z
+    .array(
+      z.object({
+        questionId: z.string().min(1),
+        weight: z.number().min(0),
+        partialCredit: z.enum(['all_or_nothing', 'proportional']),
+      }),
+    )
+    .min(1),
+  cohort: z
+    .array(z.object({ participantId: z.string().min(1), responses: z.array(QuestionResponseSchema) }))
+    .max(5000),
+  curve: z
+    .union([
+      z.object({ kind: z.literal('none') }),
+      z.object({ kind: z.literal('linear'), points: z.number() }),
+      z.object({ kind: z.literal('bell'), targetTop: z.number() }),
+    ])
+    .optional(),
+  passThreshold: z.number().min(0).max(100).optional(),
+  format: z.enum(['json', 'csv']).optional(),
 })
 
 export function mountLearnRoutes(parent: ParentApp) {
@@ -167,6 +200,36 @@ export function mountLearnRoutes(parent: ParentApp) {
       )
     }
     return c.json({ ok: true, data: { synced: true }, trace_id: c.get('trace_id') })
+  })
+
+  // FE-LEARN-INSTRUCTOR-01 — instructor analytics: score distribution, summary
+  // stats, and per-question difficulty. CSV export (ids only, no PII) when
+  // `format: 'csv'`. Pure compute over the posted cohort (no PII stored here).
+  authed.post('/instructor/analytics', async (c) => {
+    let body: z.infer<typeof InstructorAnalyticsSchema>
+    try {
+      body = InstructorAnalyticsSchema.parse(await c.req.json())
+    } catch {
+      return c.json(
+        { ok: false, error: { code: 'invalid_body', message: 'Invalid instructor analytics payload' }, trace_id: c.get('trace_id') },
+        400,
+      )
+    }
+
+    const scores = scoreCohort(body.configs, body.cohort, body.curve ?? { kind: 'none' })
+
+    if (body.format === 'csv') {
+      writeEvent(c.env.METRICS_AE, { name: 'learn.instructor_export', userId: c.get('user').sub, plan: c.get('plan'), detail: 'csv', traceId: c.get('trace_id') })
+      return new Response(buildInstructorResultsCsv(scores), {
+        headers: {
+          'content-type': 'text/csv; charset=utf-8',
+          'content-disposition': 'attachment; filename="learn-results.csv"',
+        },
+      })
+    }
+
+    const analytics = buildInstructorAnalytics(scores, body.cohort, body.passThreshold ?? 60)
+    return c.json({ ok: true, data: { analytics }, trace_id: c.get('trace_id') })
   })
 
   parent.route('/api/learn', authed)

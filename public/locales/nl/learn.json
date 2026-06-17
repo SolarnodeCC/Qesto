@@ -1,0 +1,19 @@
+{
+  "instructor.title": "Docentenanalytics",
+  "instructor.scoreDistribution": "Scoreverdeling",
+  "instructor.difficulty": "Moeilijkheidsgraad vraag",
+  "instructor.avgScore": "Gemiddelde score",
+  "instructor.medianScore": "Mediane score",
+  "instructor.passRate": "Slagingspercentage",
+  "instructor.participants": "Deelnemers",
+  "instructor.export": "Resultaten exporteren (CSV)",
+  "instructor.hardest": "Moeilijkste vraag",
+  "instructor.easiest": "Gemakkelijkste vraag",
+  "instructor.empty": "Nog geen toetsresultaten.",
+  "grade.passback": "Synchroniseren naar cijferboek",
+  "grade.synced": "Score gesynchroniseerd naar LMS-cijferboek",
+  "templates.title": "L&D-sjablonen",
+  "templates.preQuiz": "Pre-test",
+  "templates.formative": "Formatieve controle",
+  "templates.postAssess": "Eindtoets"
+}

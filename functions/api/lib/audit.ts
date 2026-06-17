@@ -76,6 +76,8 @@ export type AuditAction =
   // LEARN (ADR-0058, S94): LMS grade passback + sovereign audit export.
   | 'learn.grade.passback'
   | 'sovereign.audit.export'
+  // CONNECT (ADR-0062, S95): federation invite mint.
+  | 'connect.invite.minted'
 
 export interface AuditContext {
   action: AuditAction

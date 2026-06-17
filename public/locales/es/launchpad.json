@@ -47,5 +47,6 @@
   "time_remaining": "{{minutes}} minutos hasta el inicio automático",
   "ai_generate_heading": "Generar preguntas con IA",
   "ai_topic_hint": "Tema u objetivo (por defecto: \"{{title}}\")",
-  "add_question_inline": "+ Añadir pregunta"
+  "add_question_inline": "+ Añadir pregunta",
+  "joinPanel.startQuestions": "Iniciar preguntas"
 }

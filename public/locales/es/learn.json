@@ -1,0 +1,19 @@
+{
+  "instructor.title": "Análisis del instructor",
+  "instructor.scoreDistribution": "Distribución de puntuaciones",
+  "instructor.difficulty": "Dificultad de la pregunta",
+  "instructor.avgScore": "Puntuación promedio",
+  "instructor.medianScore": "Puntuación mediana",
+  "instructor.passRate": "Tasa de aprobación",
+  "instructor.participants": "Participantes",
+  "instructor.export": "Exportar resultados (CSV)",
+  "instructor.hardest": "Pregunta más difícil",
+  "instructor.easiest": "Pregunta más fácil",
+  "instructor.empty": "Sin resultados de evaluación aún.",
+  "grade.passback": "Sincronizar a libro de calificaciones",
+  "grade.synced": "Puntuación sincronizada a libro de calificaciones LMS",
+  "templates.title": "Plantillas de L&D",
+  "templates.preQuiz": "Cuestionario previo",
+  "templates.formative": "Evaluación formativa",
+  "templates.postAssess": "Evaluación posterior"
+}

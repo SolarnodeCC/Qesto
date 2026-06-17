@@ -1,0 +1,19 @@
+{
+  "instructor.title": "Analyse de l'instructeur",
+  "instructor.scoreDistribution": "Distribution des scores",
+  "instructor.difficulty": "Difficulté de la question",
+  "instructor.avgScore": "Score moyen",
+  "instructor.medianScore": "Score médian",
+  "instructor.passRate": "Taux de réussite",
+  "instructor.participants": "Participants",
+  "instructor.export": "Exporter les résultats (CSV)",
+  "instructor.hardest": "Question la plus difficile",
+  "instructor.easiest": "Question la plus facile",
+  "instructor.empty": "Aucun résultat d'évaluation pour le moment.",
+  "grade.passback": "Synchroniser avec le carnet de notes",
+  "grade.synced": "Score synchronisé avec le carnet de notes LMS",
+  "templates.title": "Modèles L&D",
+  "templates.preQuiz": "Pré-questionnaire",
+  "templates.formative": "Vérification formative",
+  "templates.postAssess": "Évaluation post-test"
+}
