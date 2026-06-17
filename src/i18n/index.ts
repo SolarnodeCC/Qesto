@@ -5,7 +5,28 @@ type Listener = () => void
 
 const NAMESPACES = ['admin', 'auth', 'canvas', 'captions', 'common', 'components', 'consent', 'dashboard', 'deliberate', 'embed', 'errors', 'home', 'ideate', 'insights', 'join', 'launchpad', 'login', 'not-found', 'present', 'results', 'retro', 'session-config', 'sessions', 'settings', 'solutions', 'stage', 'team', 'townhall', 'vote', 'wizard']
 
-let cachedLocales: LocaleMap = {}
+// English locales are bundled at build time and seeded synchronously below. This
+// is the foundation of the non-blocking init: the app can render correct English
+// copy on the very first paint without any network round-trip, so first paint
+// (and the LCP text element) is never gated on fetching translations. Non-English
+// languages still load over the network and overlay onto this English baseline,
+// which doubles as the missing-key fallback. (LCP render-delay fix.)
+const EN_LOCALES: LocaleMap = (() => {
+  const modules = import.meta.glob('../../public/locales/en/*.json', {
+    eager: true,
+    import: 'default',
+  }) as Record<string, Record<string, string>>
+  const out: LocaleMap = {}
+  for (const [filePath, data] of Object.entries(modules)) {
+    const ns = filePath.slice(filePath.lastIndexOf('/') + 1).replace(/\.json$/, '')
+    out[ns] = data
+  }
+  return out
+})()
+
+// Seeded with English so `useT` resolves real strings (never raw keys) before any
+// async load completes. A non-English load replaces this map and bumps currentLanguage.
+let cachedLocales: LocaleMap = { ...EN_LOCALES }
 let currentLanguage = 'en'
 let initPromise: Promise<void> | null = null
 const listeners = new Set<Listener>()
@@ -65,6 +86,13 @@ export function detectLanguage(): string {
 }
 
 async function loadLanguage(lang: SupportedLanguage): Promise<void> {
+  // English needs no network: it is bundled and already seeded into cachedLocales.
+  if (lang === 'en') {
+    cachedLocales = { ...EN_LOCALES }
+    currentLanguage = 'en'
+    notifyI18nChanged()
+    return
+  }
   const entries = await Promise.all(NAMESPACES.map((ns) => fetchNamespace(lang, ns)))
   cachedLocales = Object.fromEntries(entries)
   currentLanguage = lang
@@ -83,51 +111,45 @@ export async function setLanguage(lang: SupportedLanguage): Promise<void> {
 }
 
 async function fetchNamespace(language: string, namespace: string): Promise<[string, Record<string, string>]> {
-  let localizedData: Record<string, string> | null = null
+  // English is the baseline (bundled) — overlaying locale keys onto it prevents
+  // raw-key rendering when a locale file is incomplete, with no extra en fetch.
+  const base = EN_LOCALES[namespace] ?? {}
+  if (language === 'en') return [namespace, base]
+
   try {
     const res = await fetch(`/locales/${language}/${namespace}.json`)
     if (res.ok) {
       const data = await res.json() as Record<string, string>
-      
-      if (typeof data === 'object' && data !== null) localizedData = data
+      if (typeof data === 'object' && data !== null) return [namespace, { ...base, ...data }]
     }
   } catch {
-    
+    // Network failure — fall through to the bundled English baseline below.
   }
 
-  // Use English as baseline and overlay locale keys to prevent raw-key rendering
-  // when locale files are incomplete.
-  if (language !== 'en') {
-    try {
-      const enRes = await fetch(`/locales/en/${namespace}.json`)
-      if (enRes.ok) {
-        const enData = await enRes.json() as Record<string, string>
-        if (typeof enData === 'object' && enData !== null) {
-          return [namespace, localizedData ? { ...enData, ...localizedData } : enData]
-        }
-      }
-    } catch {
-      
-    }
+  // Locale missing/unreadable: serve bundled English so the UI never shows raw keys.
+  if (Object.keys(base).length === 0) {
+    console.warn(`[i18n] Failed to load namespace '${namespace}' for '${language}'`)
   }
-
-  if (localizedData) return [namespace, localizedData]
-
-  console.warn(`[i18n] Failed to load namespace '${namespace}' for '${language}'`)
-  return [namespace, {}]
+  return [namespace, base]
 }
 
-// Call once before rendering the React app to avoid showing raw keys on first paint.
+// Kick off language detection + load. Safe to call WITHOUT awaiting before render:
+// English is bundled and seeded, so the first paint is correct English with no
+// network wait (LCP is not gated on translations). For a non-English visitor the
+// shell paints in English immediately, then re-renders in their language once the
+// locale files arrive — far better than a blank page blocked on ~30–60 fetches.
 export async function initI18n(): Promise<void> {
   if (initPromise) return initPromise
   initPromise = (async () => {
     const language = detectLanguage() as SupportedLanguage
     updateUrlLanguageParam(language)
+    applyDocumentLanguage(language)
+    // English is already seeded — nothing to fetch, avoid a redundant store churn.
+    if (language === 'en') return
     try {
       await loadLanguage(language)
     } catch (err) {
-      console.error('[i18n] Failed to load translations, UI will show keys as recovery:', err)
-      notifyI18nChanged()
+      console.error('[i18n] Failed to load translations, falling back to English:', err)
     }
   })()
   return initPromise
