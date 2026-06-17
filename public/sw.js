@@ -1,5 +1,5 @@
 /* MOBILE-PWA-02 — app shell cache + offline join fallback */
-const CACHE = 'qesto-pwa-v4'
+const CACHE = 'qesto-pwa-v5'
 const SHELL = ['/', '/index.html', '/icon-192.png', '/icon-512.png', '/favicon.svg', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
@@ -31,7 +31,8 @@ self.addEventListener('fetch', (event) => {
         if (cached) return cached
         return fetch(event.request).then((response) => {
           if (response.ok) {
-            caches.open(CACHE).then((c) => c.put(event.request, response.clone()))
+            const copy = response.clone()
+            caches.open(CACHE).then((c) => c.put(event.request, copy))
           }
           return response
         })
@@ -46,7 +47,8 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request)
       .then((response) => {
         if (response.ok) {
-          caches.open(CACHE).then((c) => c.put(event.request, response.clone()))
+          const copy = response.clone()
+          caches.open(CACHE).then((c) => c.put(event.request, copy))
         }
         return response
       })
