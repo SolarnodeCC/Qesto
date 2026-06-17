@@ -89,8 +89,7 @@ Presenter view (`Present.tsx`) retains its own `<main id="main">` as a full-scre
 - `@media (prefers-reduced-motion: reduce)` collapses all `--motion-duration-*` to `1ms` and applies `transition-duration: 1ms !important` globally — this fully covers `transition-[width]` bars in `Results.tsx` and `Present.tsx` without per-element guards
 
 ### 2.10 Typography (DESIGN-TYP-01 — shipped 2026-04-21)
-- Inter loaded via `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap')` in `src/styles.css`
-- Critical woff2 subset preloaded in `index.html` via `<link rel="preload" as="font" type="font/woff2" crossorigin>`
+- Inter (plus Syne and JetBrains Mono) loaded via `<link rel="stylesheet" ... display=swap>` in `index.html`, with `<link rel="preconnect">` to `fonts.googleapis.com` and `fonts.gstatic.com` to warm the connections early — keeps the font request off the CSS critical-path chain so text LCP isn't delayed. `display=swap` renders fallback text immediately (no FOIT)
 - `src/ui/tailwind-theme.ts` sets `fontFamily.sans = "Inter, ui-sans-serif, system-ui, ..."` — all body text inherits
 - DM Sans fully removed from the font stack
 
