@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { api, getAuthToken } from '../api/client'
+import { api, apiRetry, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { itemsByColumn, useRetroSession, type RetroColumn } from '../hooks/useRetroSession'
 import { RetroItemCard } from '../ui/RetroItemCard'
@@ -46,7 +46,7 @@ export default function RetroPresent() {
     if (!id) return
     setStarting(true)
     setStartError(null)
-    const res = await api<{ session: { status: string } }>(`/api/sessions/${encodeURIComponent(id)}/start`, {
+    const res = await apiRetry<{ session: { status: string } }>(`/api/sessions/${encodeURIComponent(id)}/start`, {
       method: 'POST',
     })
     setStarting(false)
