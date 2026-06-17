@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
 @import './styles/grid.css';
 @import '../design-system/colors_and_type.css';
@@ -13,8 +12,10 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ─── Google Fonts — Inter · Syne · JetBrains Mono ────────────────────────── */
-/* Single combined request for all three brand fonts with display=swap for     */
-/* optimal font loading behavior and LCP performance.                          */
+/* Loaded via <link rel="preconnect"> + <link rel="stylesheet"> in index.html,  */
+/* NOT a CSS @import. A CSS @import would chain behind this stylesheet on the    */
+/* critical path and delay text LCP; the index.html links warm the font origins */
+/* early and download the font CSS in parallel. display=swap avoids FOIT.       */
 
 /* Design token CSS variables — auto-generated from design-tokens.json */
 /* These support the @theme block and component CSS below. */

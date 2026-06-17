@@ -44,6 +44,10 @@ export default defineConfig(() => {
       outDir: 'dist',
       sourcemap: true,
       target: 'es2022',
+      // Performance budget: warn in the build log when any chunk exceeds ~250 kB
+      // (pre-gzip). Large chunks on the critical path delay LCP, so a visible
+      // signal in CI keeps bundle growth honest.
+      chunkSizeWarningLimit: 250,
       rollupOptions: {
         output: {
           // Code-split vendor libraries for caching (Phase 10 Step 1)
@@ -59,7 +63,7 @@ export default defineConfig(() => {
               return 'vendor'
             }
           },
-          // Optimize chunk size (>50kb triggers a warning)
+          // Versioned, content-hashed chunk names for immutable long-term caching.
           chunkFileNames: 'chunks/[name]-[hash].js',
           entryFileNames: '[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash][extname]',

@@ -6,6 +6,19 @@
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- Fonts: warm both Google Fonts origins early and load the brand-font CSS in
+         parallel with the app bundle. Loading the stylesheet here (rather than via
+         @import in src/styles.css) avoids a render-blocking request chain that would
+         otherwise delay text LCP — the browser would have to download styles.css,
+         then discover the font URL, then connect. preconnect + <link> warms the
+         connection up front. display=swap renders fallback text immediately (no FOIT).
+         CSP in public/_headers already allows fonts.googleapis.com / fonts.gstatic.com. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
     <meta name="theme-color" content="#0D9488" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Qesto — feel the pulse of the room, amplified by AI." />
