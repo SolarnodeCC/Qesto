@@ -3,23 +3,31 @@ import { useEffect, useRef, lazy } from 'react'
 import { LazySuspense } from './ui/lazy-suspense'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ColorSchemeProvider } from './hooks/ColorSchemeProvider'
-import { HelpChatWidget } from './components/HelpChatWidget'
 import { HelpChatProvider } from './hooks/useHelpChat'
 import { CookieConsentBanner } from './components/CookieConsentBanner'
+// Home is the `/` route — keep it eager so the landing LCP path never waits on a
+// chunk fetch. Every other page (and the authenticated-only help widget) is lazy so
+// it stays out of the critical entry chunk an anonymous visitor parses on first load.
 import Home from './pages/Home'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-import AccountSettings from './pages/AccountSettings'
-import SessionConfig from './pages/SessionConfig'
-import Launchpad from './pages/Launchpad'
-import AdminDashboard from './pages/AdminDashboard'
-import Present from './pages/Present'
-import JoinPage from './pages/JoinPage'
-import Results from './pages/Results'
-import NotFound from './pages/NotFound'
-import ResetPassword from './pages/ResetPassword'
-import TeamSettings from './pages/TeamSettings'
-import TeamInvite from './pages/TeamInvite'
+
+// Core app + auth/entry pages — lazy so they load on navigation, not on `/`.
+const Login = lazy(() => import('./pages/Login'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const AccountSettings = lazy(() => import('./pages/AccountSettings'))
+const SessionConfig = lazy(() => import('./pages/SessionConfig'))
+const Launchpad = lazy(() => import('./pages/Launchpad'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const Present = lazy(() => import('./pages/Present'))
+const JoinPage = lazy(() => import('./pages/JoinPage'))
+const Results = lazy(() => import('./pages/Results'))
+const TeamSettings = lazy(() => import('./pages/TeamSettings'))
+const TeamInvite = lazy(() => import('./pages/TeamInvite'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+// HelpChatWidget is a named export — adapt it to a default for React.lazy.
+const HelpChatWidget = lazy(() =>
+  import('./components/HelpChatWidget').then((m) => ({ default: m.HelpChatWidget })),
+)
 
 const Display = lazy(() => import('./pages/Display'))
 const TownhallJoin = lazy(() => import('./pages/TownhallJoin'))
@@ -96,8 +104,15 @@ function RouteAnnouncer() {
 
 function AuthenticatedHelpWidget() {
   const auth = useAuth()
+  // Return null before touching the lazy widget so its chunk is never even fetched
+  // for anonymous landing visitors. pending={null} — it's a floating button, not
+  // page content, so a fallback would only add visual noise.
   if (auth.status !== 'authenticated') return null
-  return <HelpChatWidget />
+  return (
+    <LazySuspense pending={null}>
+      <HelpChatWidget />
+    </LazySuspense>
+  )
 }
 
 export default function App() {
@@ -111,8 +126,8 @@ export default function App() {
         <CookieConsentBanner />
         <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/login" element={<LazySuspense pending={<LazyRoutePending />}><Login /></LazySuspense>} />
+        <Route path="/reset-password" element={<LazySuspense pending={<LazyRoutePending />}><ResetPassword /></LazySuspense>} />
         <Route path="/privacy" element={<LazySuspense pending={<LazyRoutePending />}><Privacy /></LazySuspense>} />
         <Route path="/terms" element={<LazySuspense pending={<LazyRoutePending />}><Terms /></LazySuspense>} />
         <Route path="/pricing" element={<LazySuspense pending={<LazyRoutePending />}><Pricing /></LazySuspense>} />
@@ -143,11 +158,11 @@ export default function App() {
         <Route path="/templates" element={<LazySuspense pending={<LazyRoutePending />}><TemplateGallery /></LazySuspense>} />
         <Route path="/templates/:id" element={<LazySuspense pending={<LazyRoutePending />}><TemplateDetail /></LazySuspense>} />
 
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/settings" element={<AccountSettings />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/sessions/:id" element={<SessionConfig />} />
-        <Route path="/sessions/:id/launchpad" element={<Launchpad />} />
+        <Route path="/dashboard" element={<LazySuspense pending={<LazyRoutePending />}><Dashboard /></LazySuspense>} />
+        <Route path="/settings" element={<LazySuspense pending={<LazyRoutePending />}><AccountSettings /></LazySuspense>} />
+        <Route path="/admin" element={<LazySuspense pending={<LazyRoutePending />}><AdminDashboard /></LazySuspense>} />
+        <Route path="/sessions/:id" element={<LazySuspense pending={<LazyRoutePending />}><SessionConfig /></LazySuspense>} />
+        <Route path="/sessions/:id/launchpad" element={<LazySuspense pending={<LazyRoutePending />}><Launchpad /></LazySuspense>} />
         <Route
           path="/sessions/:id/zoom-embed"
           element={
@@ -156,7 +171,7 @@ export default function App() {
             </LazySuspense>
           }
         />
-        <Route path="/sessions/:id/present" element={<Present />} />
+        <Route path="/sessions/:id/present" element={<LazySuspense pending={<LazyRoutePending />}><Present /></LazySuspense>} />
         <Route
           path="/sessions/:id/remote"
           element={
@@ -165,9 +180,9 @@ export default function App() {
             </LazySuspense>
           }
         />
-        <Route path="/sessions/:id/results" element={<Results />} />
-        <Route path="/join" element={<JoinPage />} />
-        <Route path="/j/:code" element={<JoinPage />} />
+        <Route path="/sessions/:id/results" element={<LazySuspense pending={<LazyRoutePending />}><Results /></LazySuspense>} />
+        <Route path="/join" element={<LazySuspense pending={<LazyRoutePending />}><JoinPage /></LazySuspense>} />
+        <Route path="/j/:code" element={<LazySuspense pending={<LazyRoutePending />}><JoinPage /></LazySuspense>} />
         <Route path="/display/:code" element={<LazySuspense pending={<LazyRoutePending />}><Display /></LazySuspense>} />
         {/* TOWNHALL (ADR-0044) — moderated anonymous Q&A */}
         <Route path="/sessions/:id/townhall" element={<LazySuspense pending={<LazyRoutePending />}><TownhallPresent /></LazySuspense>} />
@@ -193,10 +208,10 @@ export default function App() {
           path="/teams/:teamId/workspaces/:wsId/present"
           element={<LazySuspense pending={<LazyRoutePending />}><EventStagePresent /></LazySuspense>}
         />
-        <Route path="/teams/:id/settings" element={<TeamSettings />} />
-        <Route path="/teams/invite/:token" element={<TeamInvite />} />
-        <Route path="/teams/accept" element={<TeamInvite />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="/teams/:id/settings" element={<LazySuspense pending={<LazyRoutePending />}><TeamSettings /></LazySuspense>} />
+        <Route path="/teams/invite/:token" element={<LazySuspense pending={<LazyRoutePending />}><TeamInvite /></LazySuspense>} />
+        <Route path="/teams/accept" element={<LazySuspense pending={<LazyRoutePending />}><TeamInvite /></LazySuspense>} />
+        <Route path="*" element={<LazySuspense pending={<LazyRoutePending />}><NotFound /></LazySuspense>} />
       </Routes>
       </HelpChatProvider>
     </ColorSchemeProvider>

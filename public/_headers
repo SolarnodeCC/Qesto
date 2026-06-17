@@ -1,7 +1,15 @@
-# Security headers and default no-cache for all routes.
+# Security headers and short-TTL edge caching for the HTML shell. See ADR-0065.
 # Rule ordering matters: later rules win for conflicting headers.
+#
+# Cache-Control on the shell: s-maxage=60 lets the Cloudflare edge serve index.html
+# for up to 60s without an origin round-trip (this is what cuts the ~1.4s TTFB);
+# max-age=0 keeps browsers revalidating every load so client staleness stays ~zero;
+# stale-while-revalidate=86400 bounds tail latency by serving stale at the edge while
+# revalidating in the background. Safe vs. the deploy commit-parity check: that gate
+# (scripts/verify-deploy.mjs) only reads /api/version JSON and the local dist build,
+# never cached HTML, and CI's purge_everything resets the edge cache each release.
 /*
-  Cache-Control: no-cache, no-store, must-revalidate
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
