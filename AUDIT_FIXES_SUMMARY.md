@@ -51,7 +51,7 @@
 **Fixes**:
 - Deleted duplicate `0049_device_tokens.sql` (exact copy of 0048_device_tokens.sql)
 - Renumbered collisions to next available numbers:
-  - `0048_linkedin_posts.sql` → `0059_linkedin_posts.sql`
+  - `0048_linkedin_posts.sql` → `0064_linkedin_posts.sql`
   - `0050_stripe_webhook_events.sql` → `0060_stripe_webhook_events.sql`
   - `0056_pulse_aggregation.sql` → `0061_pulse_aggregation.sql`
 - Added CI check script to prevent future collisions

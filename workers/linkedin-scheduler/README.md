@@ -8,7 +8,7 @@ Cloudflare-native LinkedIn posting for the Qesto company page. No external tools
 | Cron Worker (Tue + Thu 09:00 UTC) | `workers/linkedin-scheduler/` |
 | Shared helpers | `functions/api/lib/linkedin.ts` |
 | Encrypted token storage | `functions/api/lib/integrations/token-store.ts` (`getStoredToken`) |
-| Post log table | `migrations/0047_linkedin_posts.sql` (`linkedin_posts`) |
+| Post log table | `migrations/0064_linkedin_posts.sql` (`linkedin_posts`) |
 
 Tokens are stored **encrypted** (AES-GCM via `OAUTH_TOKEN_MEK`) under
 `integration:token:qesto-org:linkedin`. Non-secret config lives as plain

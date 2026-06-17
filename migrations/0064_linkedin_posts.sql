@@ -1,4 +1,4 @@
--- 0047_linkedin_posts.sql
+-- 0064_linkedin_posts.sql
 -- LinkedIn auto-posting log (MKTG). One row per scheduled post attempt:
 -- successful publishes (status='posted') and failures (status='error', the
 -- LinkedIn/refresh error captured in `content`). No retry — the next cron
