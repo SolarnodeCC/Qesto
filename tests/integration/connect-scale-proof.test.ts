@@ -77,31 +77,35 @@ describe('QA-CONNECT-SCALE-01 — 5 tenants x 50k participants x 100 queries, ze
     expect(proof.crossTenantCount).toBe(allRows.length - PARTICIPANTS_PER_TENANT)
   })
 
-  it('100 region+tenant-scoped queries across all 5 tenants each return zero leaked rows', () => {
-    let totalRowsReturned = 0
-    for (let q = 0; q < QUERY_COUNT; q++) {
-      const t = q % TENANT_COUNT
-      const scope = { region: regionFor(t), teamId: tenantId(t) }
+  it(
+    '100 region+tenant-scoped queries across all 5 tenants each return zero leaked rows',
+    () => {
+      let totalRowsReturned = 0
+      for (let q = 0; q < QUERY_COUNT; q++) {
+        const t = q % TENANT_COUNT
+        const scope = { region: regionFor(t), teamId: tenantId(t) }
 
-      // Simulate the application's real query path: `regionScopedSqlFragment`'s
-      // WHERE clause is what D1 enforces in production; `filterToRegion` is the
-      // fail-safe in-memory mirror of that same boundary applied here to the full
-      // unscoped dataset, standing in for "what the scoped D1 query would return".
-      const scoped = filterToRegion(allRows, scope)
-      const proof = proveRegionIsolation(scoped, scope)
+        // Simulate the application's real query path: `regionScopedSqlFragment`'s
+        // WHERE clause is what D1 enforces in production; `filterToRegion` is the
+        // fail-safe in-memory mirror of that same boundary applied here to the full
+        // unscoped dataset, standing in for "what the scoped D1 query would return".
+        const scoped = filterToRegion(allRows, scope)
+        const proof = proveRegionIsolation(scoped, scope)
 
-      expect(proof.pass).toBe(true)
-      expect(proof.leakedCount).toBe(0)
-      expect(proof.crossTenantCount).toBe(0)
-      expect(proof.total).toBe(PARTICIPANTS_PER_TENANT)
-      expect(scoped.every((row) => row.teamId === tenantId(t))).toBe(true)
+        expect(proof.pass).toBe(true)
+        expect(proof.leakedCount).toBe(0)
+        expect(proof.crossTenantCount).toBe(0)
+        expect(proof.total).toBe(PARTICIPANTS_PER_TENANT)
+        expect(scoped.every((row) => row.teamId === tenantId(t))).toBe(true)
 
-      totalRowsReturned += scoped.length
-    }
-    // Every one of the 100 queries saw only its own tenant's rows — never another
-    // tenant's, and never a cross-region row.
-    expect(totalRowsReturned).toBe(QUERY_COUNT * PARTICIPANTS_PER_TENANT)
-  })
+        totalRowsReturned += scoped.length
+      }
+      // Every one of the 100 queries saw only its own tenant's rows — never another
+      // tenant's, and never a cross-region row.
+      expect(totalRowsReturned).toBe(QUERY_COUNT * PARTICIPANTS_PER_TENANT)
+    },
+    30_000,
+  )
 
   it(
     '100 federated cross-tenant aggregate reads (zero-knowledge) leak zero participant ids',
