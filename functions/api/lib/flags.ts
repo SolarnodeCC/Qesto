@@ -24,6 +24,10 @@ export type FlagName =
   | 'REALTIME_V2_ENABLED'
   | 'REALTIME_V3_ENABLED'
   | 'SENTIMENT_ENABLED'
+  // BETA_XR_ENABLED (ADR-0066): XR spatial/immersive session beta kill-switch.
+  // OFF by default; additive on protocol v3 (no version bump). When off, the DO
+  // ignores inbound xr_avatar_sync and omits the 'xr' init feature capability.
+  | 'BETA_XR_ENABLED'
   | 'JOIN_CAPTCHA_ENABLED'
   | 'LDAP_SYNC_MOCK'
   // SEC-SAML-01 (#529): SAML SSO is OFF unless explicitly enabled. The SP does
