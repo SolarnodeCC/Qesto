@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { api, getAuthToken } from '../api/client'
+import { api, apiRetry, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { ideasForCluster, unclusteredIdeas, useIdeateSession } from '../hooks/useIdeateSession'
 import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
@@ -57,7 +57,7 @@ export default function IdeatePresent() {
     if (!id) return
     setStarting(true)
     setStartError(null)
-    const res = await api(`/api/sessions/${encodeURIComponent(id)}/start`, { method: 'POST' })
+    const res = await apiRetry(`/api/sessions/${encodeURIComponent(id)}/start`, { method: 'POST' })
     setStarting(false)
     if (!res.ok) {
       setStartError(res.error.message)

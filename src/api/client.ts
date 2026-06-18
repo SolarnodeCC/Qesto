@@ -82,3 +82,29 @@ export async function api<T>(path: string, opts: Options = {}): Promise<ApiResul
     error: body?.error ?? { code: 'http_error', message: `HTTP ${res.status}` },
   }
 }
+
+// Error codes worth retrying: the SessionRoom Durable Object can be momentarily
+// unreachable (cold start / region blip), surfacing as `do_init_failed`, and a
+// dropped fetch surfaces as `network`. `/start` rolls the session back to draft
+// on these, so an immediate retry is safe and idempotent.
+const RETRYABLE_CODES = new Set(['do_init_failed', 'network'])
+
+/**
+ * `api()` with bounded retry on transient codes (see RETRYABLE_CODES). Non-retryable
+ * errors (validation, conflict, auth, …) return immediately. Backoff grows linearly
+ * (backoffMs, 2×backoffMs, …) so a genuinely broken backend still surfaces promptly.
+ */
+export async function apiRetry<T>(
+  path: string,
+  opts: Options = {},
+  cfg: { retries?: number; backoffMs?: number } = {},
+): Promise<ApiResult<T>> {
+  const retries = cfg.retries ?? 2
+  const backoffMs = cfg.backoffMs ?? 600
+  let last = await api<T>(path, opts)
+  for (let attempt = 1; attempt <= retries && !last.ok && RETRYABLE_CODES.has(last.error.code); attempt++) {
+    await new Promise((r) => setTimeout(r, backoffMs * attempt))
+    last = await api<T>(path, opts)
+  }
+  return last
+}

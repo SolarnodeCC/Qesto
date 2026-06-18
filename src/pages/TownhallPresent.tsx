@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { api, getAuthToken } from '../api/client'
+import { api, apiRetry, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { useTownhallSession, type TownhallItemStatus } from '../hooks/useTownhallSession'
 import { TownhallQuestionCard } from '../ui/TownhallQuestionCard'
@@ -34,6 +34,7 @@ export default function TownhallPresent() {
   const [starting, setStarting] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
   const [tab, setTab] = useState<TownhallItemStatus>('pending')
+  const startingRef = useRef(false)
 
   const live = config?.status === 'live' || config?.status === 'energizing'
   const { state, moderate } = useTownhallSession(id, {
@@ -53,18 +54,25 @@ export default function TownhallPresent() {
   }, [refreshConfig])
 
   async function handleStart() {
-    if (!id) return
+    if (!id || startingRef.current) return
+    startingRef.current = true
     setStarting(true)
     setStartError(null)
-    const res = await api<{ session: { status: string } }>(`/api/sessions/${encodeURIComponent(id)}/start`, {
-      method: 'POST',
-    })
-    setStarting(false)
-    if (!res.ok) {
-      setStartError(res.error.message)
-      return
+    try {
+      // Retry transient SessionRoom DO unavailability (do_init_failed); /start
+      // rolls back to draft on failure, so re-issuing is idempotent.
+      const res = await apiRetry<{ session: { status: string } }>(`/api/sessions/${encodeURIComponent(id)}/start`, {
+        method: 'POST',
+      })
+      if (!res.ok) {
+        setStartError(res.error.message)
+        return
+      }
+      await refreshConfig()
+    } finally {
+      startingRef.current = false
+      setStarting(false)
     }
-    await refreshConfig()
   }
 
   const counts = useMemo(() => {

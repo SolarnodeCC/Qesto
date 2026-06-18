@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSessions'
 import { useT } from '../i18n'
-import { api } from '../api/client'
+import { api, apiRetry } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
 import { LaunchpadPreFlightSkeleton } from '../components/SkeletonLoader'
 import SessionTitleField from '../components/SessionTitleField'
@@ -129,7 +129,7 @@ export default function Launchpad() {
     startingRef.current = true
     setStarting(true); setStartError(null)
     try {
-      const res = await api<{ session: unknown; question: unknown }>(
+      const res = await apiRetry<{ session: unknown; question: unknown }>(
         `/api/sessions/${encodeURIComponent(id)}/start`, { method: 'POST' },
       )
       if (!res.ok) { setStartError(res.error.message); return }
