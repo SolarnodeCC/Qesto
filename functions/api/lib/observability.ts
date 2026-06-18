@@ -222,6 +222,13 @@ export type QestoEvent = {
     | 'learn.instructor_export'
     // CONNECT (ADR-0062, S95): federation invite mint — jti/timing only.
     | 'connect.invite_minted'
+    // CONNECT (ADR-0062, S96): federated join lifecycle — counts/timing, no PII.
+    | 'connect.session_joined'
+    | 'connect.join_denied'
+    | 'connect.invite_revoked'
+    // STUDIO (ADR-0060, S96): authoring co-pilot usage — counts/timing, no content.
+    | 'studio.copilot_used'
+    | 'studio.theme_applied'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

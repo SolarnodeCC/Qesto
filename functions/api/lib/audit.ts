@@ -78,6 +78,11 @@ export type AuditAction =
   | 'sovereign.audit.export'
   // CONNECT (ADR-0062, S95): federation invite mint.
   | 'connect.invite.minted'
+  // CONNECT (ADR-0062, S96): federated join + invite revocation.
+  | 'connect.session.joined'
+  | 'connect.invite.revoked'
+  // STUDIO (ADR-0060, S96): privacy-native AI authoring co-pilot.
+  | 'studio.questions.generated'
 
 export interface AuditContext {
   action: AuditAction

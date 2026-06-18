@@ -14,8 +14,10 @@ import {
 } from '../lib/federation'
 import { listFederationLibrary } from '../lib/federation-library'
 import { writeEvent } from '../lib/observability'
-import { mintFederationInvite } from '../lib/connect-invite'
-import { readKvJson } from '../lib/kv'
+import { mintFederationInvite, verifyFederationInvite } from '../lib/connect-invite'
+import { evaluateJoin } from '../lib/connect-join'
+import { isInviteRevoked, revokeInvite } from '../lib/connect-revocation'
+import { readKvJson, writeKvJson } from '../lib/kv'
 import { teamDocumentKey } from '../lib/kv-keys'
 import { recordAuditEvent } from '../lib/audit'
 import type { Team } from './teams'
@@ -37,6 +39,22 @@ const ConnectInviteSchema = z.object({
   scope: z.enum(['participate', 'co_host']).optional(),
   ttlSeconds: z.number().int().positive().optional(),
 })
+
+/** CONNECT-JOIN-01 — accept an invite and join a federated session. */
+const ConnectJoinSchema = z.object({
+  token: z.string().min(1),
+  joiningTeamId: z.string().min(1),
+})
+
+/** CONNECT-AUDIT-01 — revoke an outstanding invite by jti. */
+const ConnectRevokeSchema = z.object({
+  hostTeamId: z.string().min(1),
+  jti: z.string().min(1),
+  sessionId: z.string().min(1),
+})
+
+const FEDERATION_MEMBERS_KEY = (sessionId: string) => `connect:session:${sessionId}:members`
+type StoredMember = { teamId: string; scope: 'participate' | 'co_host'; regionId: string; joinedAt: number }
 
 function isTeamMember(team: Team, userId: string): boolean {
   return team.ownerId === userId || team.members.some((m) => m.userId === userId)
@@ -138,6 +156,110 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
     writeEvent(c.env.METRICS_AE, { name: 'connect.invite_minted', teamId: host.id, plan: c.get('plan'), detail: minted.claims.jti, traceId: c.get('trace_id') })
 
     return c.json({ ok: true, data: { token: minted.token, invite: minted.claims }, trace_id: c.get('trace_id') }, 201)
+  })
+
+  // CONNECT-JOIN-01 (ADR-0062) — a tenant accepts an invite and joins the federated
+  // session. Re-checks the INVITEE for sovereign exclusion + region match + revocation
+  // (the mint guard only covered the host). Aggregates only cross-tenant (ZK preserved).
+  app.post('/connect/join', async (c) => {
+    const secret = c.env.CONNECT_INVITE_SECRET
+    if (!secret) {
+      return c.json({ ok: false, error: { code: 'federation_disabled', message: 'Federation invite signing key not configured' }, trace_id: c.get('trace_id') }, 503)
+    }
+    if (!c.env.TEAMS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+    const parsed = await validateBody(c, ConnectJoinSchema)
+    if ('error' in parsed) return parsed.error
+
+    const verified = await verifyFederationInvite(secret, parsed.data.token)
+    if (!verified.ok) {
+      return c.json({ ok: false, error: { code: 'invite_invalid', message: `Invite ${verified.reason}` }, trace_id: c.get('trace_id') }, 401)
+    }
+    const claims = verified.claims
+
+    const joiningTeam = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(parsed.data.joiningTeamId))
+    if (!joiningTeam) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Joining team not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    if (!isTeamMember(joiningTeam, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of the joining team' }, trace_id: c.get('trace_id') }, 403)
+    }
+    const hostTeam = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(claims.host))
+    if (!hostTeam) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Host team no longer exists' }, trace_id: c.get('trace_id') }, 404)
+    }
+
+    const revoked = await isInviteRevoked(c.env.TEAMS_KV, claims.jti)
+    const members = (await readKvJson<StoredMember[]>(c.env.TEAMS_KV, FEDERATION_MEMBERS_KEY(claims.sid))) ?? []
+
+    const decision = evaluateJoin({
+      claims,
+      tenant: {
+        teamId: joiningTeam.id,
+        isSovereign: joiningTeam.isSovereign === true,
+        regionId: joiningTeam.regionId,
+      },
+      hostRegionId: hostTeam.regionId,
+      revoked,
+      existingMembers: members,
+    })
+
+    if (!decision.ok) {
+      writeEvent(c.env.METRICS_AE, { name: 'connect.join_denied', teamId: joiningTeam.id, plan: c.get('plan'), detail: decision.code, traceId: c.get('trace_id') })
+      const status = decision.code === 'already_member' ? 409 : 403
+      return c.json({ ok: false, error: { code: decision.code, message: decision.message }, trace_id: c.get('trace_id') }, status)
+    }
+
+    members.push(decision.member)
+    await writeKvJson(c.env.TEAMS_KV, FEDERATION_MEMBERS_KEY(claims.sid), members)
+
+    await recordAuditEvent(c, {
+      action: 'connect.session.joined',
+      subject_type: 'session',
+      subject_id: claims.sid,
+      after_snapshot: { jti: claims.jti, teamId: joiningTeam.id, region: decision.member.regionId, scope: decision.member.scope },
+      trace_id: c.get('trace_id'),
+    })
+    writeEvent(c.env.METRICS_AE, { name: 'connect.session_joined', teamId: joiningTeam.id, plan: c.get('plan'), detail: claims.sid, traceId: c.get('trace_id') })
+
+    return c.json({ ok: true, data: { sessionId: claims.sid, member: decision.member, tenantCount: members.length + 1 }, trace_id: c.get('trace_id') }, 201)
+  })
+
+  // CONNECT-AUDIT-01 (ADR-0062) — host revokes an outstanding invite by jti; the
+  // join path checks this tombstone before admitting a tenant.
+  app.post('/connect/invites/revoke', async (c) => {
+    if (!c.env.TEAMS_KV) {
+      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+    }
+    const parsed = await validateBody(c, ConnectRevokeSchema)
+    if ('error' in parsed) return parsed.error
+
+    const host = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(parsed.data.hostTeamId))
+    if (!host) {
+      return c.json({ ok: false, error: { code: 'not_found', message: 'Host team not found' }, trace_id: c.get('trace_id') }, 404)
+    }
+    if (!isTeamMember(host, c.get('user').sub)) {
+      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of the host team' }, trace_id: c.get('trace_id') }, 403)
+    }
+
+    await revokeInvite(c.env.TEAMS_KV, {
+      jti: parsed.data.jti,
+      sessionId: parsed.data.sessionId,
+      revokedBy: c.get('user').sub,
+      revokedAt: Date.now(),
+    })
+
+    await recordAuditEvent(c, {
+      action: 'connect.invite.revoked',
+      subject_type: 'session',
+      subject_id: parsed.data.sessionId,
+      after_snapshot: { jti: parsed.data.jti },
+      trace_id: c.get('trace_id'),
+    })
+    writeEvent(c.env.METRICS_AE, { name: 'connect.invite_revoked', teamId: host.id, plan: c.get('plan'), detail: parsed.data.jti, traceId: c.get('trace_id') })
+
+    return c.json({ ok: true, data: { revoked: true, jti: parsed.data.jti }, trace_id: c.get('trace_id') })
   })
 
   app.get('/beta', (c) =>
