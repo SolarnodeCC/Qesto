@@ -235,6 +235,10 @@ export type QestoEvent = {
     | 'studio.library_saved'
     | 'studio.library_forked'
     | 'studio.library_deleted'
+    // XR (ADR-0066): avatar-sync fan-out latency — aggregate only. double1=durationMs,
+    // double2=batch avatar count, blob2=sessionId, blob3=teamId. NEVER carries avatarId,
+    // voterId, or coordinates.
+    | 'xr.avatar_sync_latency'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

@@ -52,5 +52,9 @@ export function parseInitPayload(data: Record<string, unknown>) {
     participants: typeof data.participants === 'number' ? data.participants : 0,
     energizer: data.energizer ?? null,
     sentiment: data.sentiment ?? null,
+    // XR (ADR-0066): additive `init.data.features[]` capability list. The DO
+    // appends the `'xr'` string when BETA_XR_ENABLED is on and the session is
+    // not zero_knowledge. Absence means the launcher must never mount.
+    features: Array.isArray(data.features) ? (data.features.filter((f) => typeof f === 'string') as string[]) : [],
   }
 }

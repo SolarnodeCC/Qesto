@@ -11,11 +11,13 @@ import {
   TOWNHALL_FEATURE,
   IDEATE_FEATURE,
   REACTIONS_FEATURE,
+  XR_FEATURE,
   type LiveProtocolVersion,
   type LiveEnergizerState,
   type LiveQuestion,
   type LiveSessionSummary,
 } from '../realtime'
+import { getFlag } from './flags'
 import { serverMessage, errorMessage, now } from './session-room-messages'
 import {
   K_META,
@@ -74,6 +76,12 @@ export async function sendInit(self: SessionRoomContext, ws: WebSocket, att: Att
     (question?.kind === 'reaction' || meta.votePolicy === 'react')
   ) {
     features = [...features, REACTIONS_FEATURE]
+  }
+  // XR (ADR-0066 D3): advertise 'xr' only when the beta flag is on AND the session
+  // is NOT zero_knowledge. ZK sessions never advertise it (avatar presence is
+  // incompatible with ZK unlinkability — R3). The launcher keys off this string.
+  if (getFlag(self.env, 'BETA_XR_ENABLED') && meta.anonymity !== 'zero_knowledge') {
+    features = [...features, XR_FEATURE]
   }
   // ENTERPRISE-POLISH s2a: detect presenter reconnect.
   // If this is a presenter and at least one other presenter WS is already open

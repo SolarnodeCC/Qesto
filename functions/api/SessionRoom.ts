@@ -17,6 +17,7 @@ import { IdeateHandler } from './lib/session-room-ideate-handler'
 import { DeliberateHandler } from './lib/session-room-deliberate-handler'
 import { CaptionsHandler, type CaptionBroadcastPayload } from './lib/session-room-captions-handler'
 import { ReactionsHandler } from './lib/session-room-reactions-handler'
+import { XrAvatarHandler } from './lib/session-room-xr-handler'
 import { logEvent } from './lib/log'
 import { K_META, K_VOTERS } from './lib/session-room-storage-keys'
 import {
@@ -73,6 +74,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
   readonly deliberateHandler: DeliberateHandler
   readonly captionsHandler: CaptionsHandler
   readonly reactionsHandler: ReactionsHandler
+  readonly xrAvatarHandler: XrAvatarHandler
 
   // Tracks the in-flight voters load so a rejection can be retried (EH-03).
   private _votersInitPromise: Promise<void> | null = null
@@ -91,6 +93,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     this.deliberateHandler = new DeliberateHandler(handlerCtx, env)
     this.captionsHandler = new CaptionsHandler(handlerCtx)
     this.reactionsHandler = new ReactionsHandler(handlerCtx, env)
+    this.xrAvatarHandler = new XrAvatarHandler(handlerCtx, env)
 
     this.clientWsHandlers = buildClientWsHandlers({
       handleVote: (ws, att, data) => handleVote(this, ws, att, data),
@@ -108,6 +111,7 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
       deliberateHandler: this.deliberateHandler,
       captionsHandler: this.captionsHandler,
       reactionsHandler: this.reactionsHandler,
+      xrAvatarHandler: this.xrAvatarHandler,
     })
   }
 
@@ -249,6 +253,9 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
 
   async webSocketClose(ws: WebSocket, _code: number, _reason: string, _wasClean: boolean): Promise<void> {
     const att = ws.deserializeAttachment() as Attachment | null
+    // XR (ADR-0066 R2): drop the socket's transient avatar pose on disconnect.
+    // Avatar state is in-DO-only and must not survive the connection.
+    this.xrAvatarHandler.forget(ws)
     try {
       ws.close(CLOSE_NORMAL, 'bye')
     } catch {

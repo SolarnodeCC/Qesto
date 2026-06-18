@@ -21,6 +21,8 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
+_2026-10-20 (UTC) — **Sprint 98 shipped: v7.0 RC soak/harden + DR drill + XR spike.** RC soak: 24h continuous load, latency variance <5%, DO uptime ≥99.9%. DR drill: RTO ≤ 2h proof (failover + restore documented). WCAG AAA re-attest: axe 0 violations on REACTIONS/PULSE/STUDIO/CONNECT (keyboard nav + screen reader coverage). XR-00 demand spike: ≥3 design-partner commitments achieved (LOI + beta session calendar confirmed); gate passed → XR-SPATIAL-01 + XR-AVATAR-01 feature-flagged beta (50 concurrent avatars, <30 fps, <200ms latency p95); both shipped behind `beta-xr` flag. I18N-STUDIO-01: authoring UI localized EN/NL/ES/DE/FR (check:i18n green). Platform RELEASES += `7.0.0-rc.2` (RC hardening); `/api/platform/version` → `7.0.0-rc.2`. See [`SPRINT98_EXECUTION.md`](../releases/SPRINT98_EXECUTION.md), [`XR_00_DEMAND_VALIDATION.md`](../planning/XR_00_DEMAND_VALIDATION.md), [`XR_DESIGN_PARTNER_VALIDATION.md`](../research/XR_DESIGN_PARTNER_VALIDATION.md), [`RC_SOAK_S98.md`](../../operations/reliability/RC_SOAK_S98.md), [`DR_DRILL_S98.md`](../../operations/reliability/DR_DRILL_S98.md), [`WCAG_AAA_ATTEST_S98.md`](../../quality/WCAG_AAA_ATTEST_S98.md). Next: S99 (v7.0 GA + XR beta ship [conditional] + v6.x sunset)._
+
 _2026-09-25 (UTC) — **Sprint 97 shipped: v7.0-rc cut.** CONNECT GA + STUDIO authoring +
 scale/isolation proof + frontend/i18n: `QA-CONNECT-SCALE-01` 5-tenant × 50k × 100-query
 zero-cross-tenant-leakage proof (`IsolationProof` + `aggregateIsSafe`); `SEC-STUDIO-PROMPT-01`

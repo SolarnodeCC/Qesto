@@ -1,0 +1,17 @@
+{
+  "enter_button": "Enter immersive mode (beta)",
+  "enter_button_hint": "Opens an experimental 3D view of this question. Voting still works the same way.",
+  "beta_badge": "Beta",
+  "overlay_title": "Immersive mode (beta)",
+  "overlay_dialog_label": "Immersive session view, beta",
+  "exit_button": "Exit immersive mode",
+  "scene_placeholder_label": "Placeholder 3D scene preview",
+  "scene_placeholder_caption": "Spatial rendering is a stub for this beta — a full 3D engine ships in a later release.",
+  "avatar_count_label": "{{count}} participant in this space",
+  "avatar_count_label_other": "{{count}} participants in this space",
+  "avatar_region_label": "Participant avatars in the shared space",
+  "question_region_label": "Active question, spatial view",
+  "connecting": "Connecting to the shared space…",
+  "fallback_notice": "You're seeing the standard 2D view. Immersive mode is optional and never required to vote.",
+  "reduced_motion_notice": "Motion is reduced because your device prefers less animation."
+}

@@ -1,0 +1,17 @@
+{
+  "enter_button": "Immersiver Modus öffnen (Beta)",
+  "enter_button_hint": "Öffnet eine experimentelle 3D-Ansicht dieser Frage. Abstimmung funktioniert auf die gleiche Weise.",
+  "beta_badge": "Beta",
+  "overlay_title": "Immersiver Modus (Beta)",
+  "overlay_dialog_label": "Immersive Sitzungsansicht, Beta",
+  "exit_button": "Immersiven Modus beenden",
+  "scene_placeholder_label": "Platzhalter 3D-Szenenvorschau",
+  "scene_placeholder_caption": "3D-Rendering ist ein Stub dieser Beta — eine vollständige Engine folgt später.",
+  "avatar_count_label": "{{count}} Teilnehmer in diesem Raum",
+  "avatar_count_label_other": "{{count}} Teilnehmer in diesem Raum",
+  "avatar_region_label": "Teilnehmer-Avatare im gemeinsamen Raum",
+  "question_region_label": "Aktive Frage, räumliche Ansicht",
+  "connecting": "Verbindung wird hergestellt…",
+  "fallback_notice": "Sie sehen die Standard-2D-Ansicht. Der immersive Modus ist optional und für das Abstimmen nie erforderlich.",
+  "reduced_motion_notice": "Bewegung ist reduziert, da Ihr Gerät weniger Animation bevorzugt."
+}

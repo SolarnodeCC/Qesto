@@ -59,6 +59,11 @@ export function liveProtocolFeatures(version: LiveProtocolVersion): string[] {
 export const TOWNHALL_FEATURE = 'townhall_board'
 export const IDEATE_FEATURE = 'ideate_board'
 export const REACTIONS_FEATURE = 'reactions_channel'
+// XR (ADR-0066). Additive on protocol v3, NO version bump (captions/townhall
+// precedent). The DO appends this string to `init.features` when BETA_XR_ENABLED
+// is on AND the session is not zero_knowledge, so the launcher capability-detects
+// the same way it does for `delta_results`. ZK sessions never advertise it.
+export const XR_FEATURE = 'xr'
 
 export function townhallEnabled(env: { REALTIME_TOWNHALL_ENABLED?: string }): boolean {
   return getFlag(env, 'REALTIME_TOWNHALL_ENABLED')
@@ -239,6 +244,21 @@ export type ClientMessage =
       v?: LiveProtocolVersion
       type: 'captions_set_locale'
       data: { locale: 'en' | 'nl' | 'es' | 'de' | 'fr' | 'off' }
+      timestamp: number
+    }
+  // XR (ADR-0066). Additive on protocol v3, NO version bump. A participant's
+  // per-frame avatar pose: quantized position (normalized -1..1 unit space) +
+  // orientation quaternion (w-last). Position/orientation ONLY — no PII. Dropped
+  // by the DO when BETA_XR_ENABLED is off or the session is zero_knowledge.
+  | {
+      v?: LiveProtocolVersion
+      type: 'xr_avatar_sync'
+      data: {
+        // [x, y, z] quantized position in the shared scene's normalized unit space (-1..1).
+        p: [number, number, number]
+        // [x, y, z, w] quantized orientation quaternion, w-last.
+        q: [number, number, number, number]
+      }
       timestamp: number
     }
 
@@ -585,6 +605,24 @@ export type ServerMessage =
       v?: LiveProtocolVersion
       type: 'copilot_checkpoint'
       data: { stepId: string; tool: string; summary: string }
+      timestamp: number
+    }
+  // XR (ADR-0066). Additive on protocol v3, NO version bump. Merged avatar scene
+  // fanned out on a fixed 10–15 Hz batch tick (townhall-style `rev` delta) — never
+  // one broadcast per inbound frame. `a` is an ephemeral per-socket avatar id (NOT
+  // voterId, NOT a name), stable for the socket lifetime only. Position/orientation
+  // ONLY — no PII. Never emitted when the flag is off or the session is ZK.
+  | {
+      v?: LiveProtocolVersion
+      type: 'xr_avatar_sync'
+      data: {
+        avatars: Array<{
+          a: string // ephemeral per-socket avatar id (non-correlatable)
+          p: [number, number, number] // position
+          q: [number, number, number, number] // orientation
+        }>
+        rev: number // monotonic scene revision
+      }
       timestamp: number
     }
   | {

@@ -122,6 +122,10 @@ enum ClientMessageType {
   ENERGIZER_ACTIVATE = 'energizer_activate', // {kind: 'quick_finger'|'team_quiz', config?}
   ENERGIZER_ANSWER = 'energizer_answer',     // {answerIndex?}
   ENERGIZER_ADVANCE = 'energizer_advance',   // {}
+
+  // XR beta (ADR-0066) — additive on protocol v3, NO version bump. Gated by
+  // BETA_XR_ENABLED; dropped in zero_knowledge sessions regardless of the flag.
+  XR_AVATAR_SYNC = 'xr_avatar_sync',         // {p:[x,y,z] (-1..1), q:[x,y,z,w]} pose; position/orientation ONLY, no PII
 }
 ```
 
@@ -195,6 +199,12 @@ enum ServerMessageType {
   // Errors & Control
   ERROR = 'error',                  // {code, message}
   SESSION_CLOSED = 'session_closed', // {} (session ended)
+
+  // XR beta (ADR-0066) — merged avatar scene fanned out on a fixed ~12.5 Hz batch
+  // tick (townhall-style monotonic `rev`), NEVER one broadcast per inbound frame.
+  // `a` is an ephemeral per-socket avatar id (NOT voterId, no name). Emitted only
+  // when BETA_XR_ENABLED is on and the session is non-ZK; init.features gains 'xr'.
+  XR_AVATAR_SYNC = 'xr_avatar_sync', // {avatars:[{a,p,q}], rev} position/orientation ONLY, no PII
 }
 ```
 

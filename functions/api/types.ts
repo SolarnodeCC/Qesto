@@ -69,6 +69,8 @@ export type Env = {
   REALTIME_V3_ENABLED?: string
   /** TOWNHALL (ADR-0044): enable the moderated anonymous Q&A board message family. */
   REALTIME_TOWNHALL_ENABLED?: string
+  /** BETA_XR_ENABLED (ADR-0066): XR spatial/immersive session beta. OFF by default. */
+  BETA_XR_ENABLED?: string
   /** SCIM API bearer token for identity provider integration. */
   SCIM_BEARER_TOKEN?: string
   /** JOIN-CAPTCHA: enable reCAPTCHA verification on session join. */

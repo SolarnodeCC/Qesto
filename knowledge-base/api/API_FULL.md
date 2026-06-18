@@ -48,6 +48,13 @@ _Last verified: 2026-04-06 (UTC)_
 - Broadcast updates for vote/reveal/timer/state transitions.
 - `ranking` submissions are normalized to multiple-choice style aggregation:
   top-ranked option is counted in `results`, and presenter/client rendering is sorted descending by vote count.
+- XR beta (ADR-0066, S98): additive `xr_avatar_sync` ClientMessage/ServerMessage pair on protocol v3 (no
+  version bump). Inbound carries a quantized pose (`p` position -1..1, `q` orientation quaternion w-last);
+  outbound fans out the merged `avatars[{a,p,q}]` scene with a monotonic `rev` on a fixed ~12.5 Hz batch tick.
+  Gated by `BETA_XR_ENABLED` and dropped in `zero_knowledge` sessions regardless of the flag; the ephemeral
+  avatar id `a` is per-socket (not `voterId`, no name) and transient (in-DO-only, cleared on disconnect).
+  When on and non-ZK, `init.data.features[]` gains `'xr'`. AE event `xr.avatar_sync_latency` carries
+  aggregate timing + batch count only — no avatar/voter id or coordinates.
 
 ## 4. Quality expectations
 - Every API change requires route tests and validation updates.

@@ -269,6 +269,27 @@ export const ClientMessageSchema = z.union([
     data: z.object({ emojiId: z.string().min(1).max(16) }),
     timestamp: z.number(),
   }),
+  // XR (ADR-0066). Avatar pose frame: quantized position (normalized -1..1 unit
+  // space) + orientation quaternion (w-last). Position/orientation ONLY — no PII.
+  // The DO drops these unless BETA_XR_ENABLED is on and the session is non-ZK.
+  z.object({
+    v: z.number().optional(),
+    type: z.literal('xr_avatar_sync'),
+    data: z.object({
+      p: z.tuple([
+        z.number().min(-1).max(1),
+        z.number().min(-1).max(1),
+        z.number().min(-1).max(1),
+      ]),
+      q: z.tuple([
+        z.number().min(-1).max(1),
+        z.number().min(-1).max(1),
+        z.number().min(-1).max(1),
+        z.number().min(-1).max(1),
+      ]),
+    }),
+    timestamp: z.number(),
+  }),
 ])
 
 export type ValidClientMessage = z.infer<typeof ClientMessageSchema>

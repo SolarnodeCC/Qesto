@@ -70,6 +70,11 @@ CIRCUIT_BREAKER_ENABLED = "true"
 LIVE_ENERGIZERS_ENABLED = "true"
 # Sentiment analysis: AI-powered response sentiment scoring (Workers AI per response).
 SENTIMENT_ENABLED = "true"
+# XR spatial/immersive session beta (ADR-0066). OFF by default — beta kill-switch.
+# Additive on protocol v3 (no version bump). When off, the DO ignores inbound
+# xr_avatar_sync and omits the 'xr' init feature capability. Excluded from
+# zero_knowledge sessions regardless of this flag.
+BETA_XR_ENABLED = "false"
 # SAML SSO master switch (SEC-SAML-01, #529). MUST stay "false" in production:
 # the SP does not yet verify the XML-DSig signature on assertions, so enabling it
 # would allow forged unsigned assertions to authenticate as any user. The routes
