@@ -1,0 +1,17 @@
+{
+  "enter_button": "Immersieve modus openen (beta)",
+  "enter_button_hint": "Opent een experimenteel 3D-weergave van deze vraag. Stemmen werkt hetzelfde.",
+  "beta_badge": "Beta",
+  "overlay_title": "Immersieve modus (beta)",
+  "overlay_dialog_label": "Immersieve sessieweergave, beta",
+  "exit_button": "Immersieve modus afsluiten",
+  "scene_placeholder_label": "Plaatsaanduiding 3D-scène voorbeeld",
+  "scene_placeholder_caption": "Ruimtelijke rendering is een stub voor deze beta — een volledige 3D-engine wordt in een later release uitgebracht.",
+  "avatar_count_label": "{{count}} deelnemer in deze ruimte",
+  "avatar_count_label_other": "{{count}} deelnemers in deze ruimte",
+  "avatar_region_label": "Deelnemeravatars in de gedeelde ruimte",
+  "question_region_label": "Actieve vraag, ruimtelijke weergave",
+  "connecting": "Verbinding maken met de gedeelde ruimte…",
+  "fallback_notice": "Je ziet de standaard 2D-weergave. Immersieve modus is optioneel en nooit vereist om te stemmen.",
+  "reduced_motion_notice": "Beweging is beperkt omdat je apparaat minder animatie voorkeurt."
+}

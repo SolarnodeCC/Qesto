@@ -1,0 +1,17 @@
+{
+  "enter_button": "Entrar en modo inmersivo (beta)",
+  "enter_button_hint": "Abre una vista 3D experimental de esta pregunta. La votación funciona igual.",
+  "beta_badge": "Beta",
+  "overlay_title": "Modo inmersivo (beta)",
+  "overlay_dialog_label": "Vista de sesión inmersiva, beta",
+  "exit_button": "Salir del modo inmersivo",
+  "scene_placeholder_label": "Vista previa de escena 3D de marcador de posición",
+  "scene_placeholder_caption": "La representación espacial es un stub para esta beta — un motor 3D completo se lanzará en una versión posterior.",
+  "avatar_count_label": "{{count}} participante en este espacio",
+  "avatar_count_label_other": "{{count}} participantes en este espacio",
+  "avatar_region_label": "Avatares de participantes en el espacio compartido",
+  "question_region_label": "Pregunta activa, vista espacial",
+  "connecting": "Conectando al espacio compartido…",
+  "fallback_notice": "Estás viendo la vista estándar 2D. El modo inmersivo es opcional y nunca necesario para votar.",
+  "reduced_motion_notice": "El movimiento se reduce porque tu dispositivo prefiere menos animación."
+}

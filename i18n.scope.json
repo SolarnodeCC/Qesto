@@ -35,7 +35,8 @@
     "team",
     "townhall",
     "vote",
-    "wizard"
+    "wizard",
+    "xr"
   ],
   "excludedNamespaces": ["solutions"],
   "excludedSourceGlobs": [
@@ -79,6 +80,7 @@
     "team": "frontend + i18n",
     "townhall": "frontend + i18n",
     "vote": "frontend + i18n",
-    "wizard": "frontend + i18n"
+    "wizard": "frontend + i18n",
+    "xr": "frontend + i18n"
   }
 }
