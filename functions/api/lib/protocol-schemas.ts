@@ -462,6 +462,15 @@ export const AuditActionSchema = z.enum([
   // LEARN (ADR-0058, S94) — LMS grade passback + sovereign audit export.
   'learn.grade.passback',
   'sovereign.audit.export',
+  // CONNECT (ADR-0062, S96) — federation invite + join lifecycle.
+  'connect.invite.minted',
+  'connect.session.joined',
+  'connect.invite.revoked',
+  // STUDIO (ADR-0060, S96/S97) — authoring co-pilot + content library.
+  'studio.questions.generated',
+  'studio.library.saved',
+  'studio.library.forked',
+  'studio.library.deleted',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>

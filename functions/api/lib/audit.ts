@@ -83,6 +83,10 @@ export type AuditAction =
   | 'connect.invite.revoked'
   // STUDIO (ADR-0060, S96): privacy-native AI authoring co-pilot.
   | 'studio.questions.generated'
+  // STUDIO-LIBRARY-01 (ADR-0060, S97): content library save/fork/delete.
+  | 'studio.library.saved'
+  | 'studio.library.forked'
+  | 'studio.library.deleted'
 
 export interface AuditContext {
   action: AuditAction

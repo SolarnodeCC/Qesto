@@ -34,6 +34,27 @@ describe('eval: studio authoring output validation', () => {
   }
 })
 
+// SEC-STUDIO-PROMPT-01: schema-valid model output carrying an injected
+// XSS/scheme/control/bidi payload inside a question prompt or option label MUST
+// have the payload neutralised in the surfaced draft — proving no raw model
+// text reaches the client even when the JSON shape itself is valid.
+describe('eval: studio output-content injection neutralisation', () => {
+  for (const c of golden.outputInject) {
+    it(`neutralises payload: ${c.name}`, () => {
+      const { drafts } = parseAuthoringResult(c.output)
+      expect(drafts).toHaveLength(c.expectDrafts)
+      const surfaced = JSON.stringify(drafts)
+      for (const needle of c.mustNotSurface) {
+        if (needle.length > 0) expect(surfaced).not.toContain(needle)
+      }
+      // every surfaced draft is still a usable, non-empty question
+      for (const d of drafts) {
+        expect(d.prompt.length).toBeGreaterThan(0)
+      }
+    })
+  }
+})
+
 describe('eval: studio prompt injection hardening', () => {
   for (const c of golden.inject) {
     it(`strips injection noise: ${c.name}`, () => {

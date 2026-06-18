@@ -18,7 +18,13 @@ export const EMBED_TEXT_MAX_LEN = 2048
 export const SENTIMENT_TEXT_MAX_LEN = 512
 
 const CONTROL_CHAR_RE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g
-const ZERO_WIDTH_RE = /\u200B|\uFEFF|\u200C|\u200D/g
+const ZERO_WIDTH_RE = /\u200B|\uFEFF|\u200C|\u200D|\u2060/g
+// Bidirectional control / override characters (LRE/RLE/PDF/LRO/RLO and the
+// isolate set LRI/RLI/FSI/PDI). These can visually reorder injected text so a
+// payload renders differently than it parses \u2014 a classic prompt-injection and
+// log/preview spoofing trick. They carry no legitimate meaning in a free-text
+// session topic or an AI-authored question label, so strip them everywhere.
+const BIDI_OVERRIDE_RE = /[\u202A-\u202E\u2066-\u2069]/g
 
 export class PromptSanitizationError extends Error {
   constructor(message: string) {
@@ -34,6 +40,7 @@ export function sanitizePromptText(input: string, maxLen = PROMPT_MAX_LEN): stri
   return input
     .replace(CONTROL_CHAR_RE, '')
     .replace(ZERO_WIDTH_RE, '')
+    .replace(BIDI_OVERRIDE_RE, '')
     .slice(0, maxLen)
     .trim()
 }
