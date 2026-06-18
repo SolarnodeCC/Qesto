@@ -21,6 +21,18 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
+_2026-09-25 (UTC) — **Sprint 97 shipped: v7.0-rc cut.** CONNECT GA + STUDIO authoring +
+scale/isolation proof + frontend/i18n: `QA-CONNECT-SCALE-01` 5-tenant × 50k × 100-query
+zero-cross-tenant-leakage proof (`IsolationProof` + `aggregateIsSafe`); `SEC-STUDIO-PROMPT-01`
+prompt-injection hardening closes Pentest #6 AI-safety scope (crit/high = 0 overall);
+`FE-CONNECT-JOIN-UI-01` federation invite-accept/join UI (co-tenant stats as counts only);
+`STUDIO-LIBRARY-01` save/list/fork; `STUDIO-SUGGEST-01` semantic next-question suggestion via
+`DECISIONS_VECTORIZE`; `FE-STUDIO-AUTHORING-01` full prompt→theme→preview/edit→apply authoring
+flow; `I18N-CONNECT-01` federation labels + isolation warnings in 5 locales. Platform `RELEASES`
++= `7.0.0-rc.1` (sprint 97); `/api/platform/version` → `7.0.0-rc.1`. See
+[`SPRINT97_EXECUTION.md`](../releases/SPRINT97_EXECUTION.md) and
+[`v7.0.0-rc.md`](../releases/v7.0.0-rc.md). Next: S98 (v7.0 RC soak/harden + DR drill + XR
+spike)._
 _2026-09-11 (UTC) — **Sprint 96 shipped: Federation + authoring build (Pentest #6 run).** CONNECT join track: `CONNECT-JOIN-01` federated join decision (`lib/connect-join.ts`) + `POST /api/federation/connect/join` (re-checks invitee sovereign exclusion + region + revocation); `CONNECT-ZEROK-01` aggregates-only federated anonymity with identity-leak guard (`lib/federation-aggregates.ts`); `CONNECT-ISOLATION-01` region+tenant isolation (reuses S95 `region-isolation`); `CONNECT-SOVEREIGN-01` hard D1 CHECK constraint (`migrations/0065_connect_federation.sql` — third sovereign layer); `CONNECT-AUDIT-01` jti-keyed invite revocation (`lib/connect-revocation.ts` + `POST /api/federation/connect/invites/revoke`). STUDIO foundation: ADR-0060 + `STUDIO-COPILOT-01` privacy-native authoring co-pilot (Workers AI, eval-gated) + `STUDIO-THEME-01` theme-aware generation. Next: S97 v7.0-rc cut (CONNECT GA + Pentest #6 close). See [`SPRINT96_EXECUTION.md`](../releases/SPRINT96_EXECUTION.md)._
 _2026-08-28 (UTC) — **Sprint 95 shipped: v6.2 GA + CONNECT opens.** Platform RELEASES += 6.2.0 (GA; 6.2.0-dev was S93). ADR-0062 accepted (federation trust model & cross-tenant isolation proof). `CONNECT-INVITE-01` scoped/TTL/HMAC-signed federation invite (`POST /api/federation/connect/invites`, sovereign-excluded at mint, audit `connect.invite.minted`); `SEC-SOVEREIGN-ISOLATION-01` `IsolationProof` harness (`lib/region-isolation.ts`); `FE-LEARN-INSTRUCTOR-01` instructor analytics backend (`POST /api/learn/instructor/analytics`); v6.2 i18n tail — new `learn`+`sovereign` namespaces in 5 locales (`I18N-LEARN-01`, `I18N-SOVEREIGN-01`, `SOVEREIGN-I18N-01`). Gates: tsc clean · Vitest 1990 · build green · check:i18n green. See [`SPRINT95_EXECUTION.md`](../releases/SPRINT95_EXECUTION.md). Next: S96 CONNECT join (join/ZK/isolation + hard sovereign D1 constraint + invite revocation) + STUDIO foundation + Pentest #6 run._
 _Last updated: 2026-07-31 (UTC) — **Sprint 93 shipped: v6.2-dev open.** Platform RELEASES += 6.2.0-dev (GA stays 6.1.0); ADR-0058 (vertical packaging & tenant config). COPILOT GA (approval-gated checkpoint broadcast + SEC-COPILOT-SANDBOX-01), PULSE-AUDIT-01 aggregation audit log, SOVEREIGN+ region residency (eu/uk/ca) + LEARN LTI 1.1 consumer + EMBED traction gate. See [`SPRINT93_EXECUTION.md`](../releases/SPRINT93_EXECUTION.md). Next: S94 verticals build (LEARN grade/scoring, SOVEREIGN audit/exclusion) + Pentest #6 prep; v6.2 GA at S95. Prior: 2026-06-19 — Sprint 92 shipped: v6.1 GA (ADR-0056). See [`SPRINT92_EXECUTION.md`](../releases/SPRINT92_EXECUTION.md)._

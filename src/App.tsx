@@ -23,6 +23,8 @@ const JoinPage = lazy(() => import('./pages/JoinPage'))
 const Results = lazy(() => import('./pages/Results'))
 const TeamSettings = lazy(() => import('./pages/TeamSettings'))
 const TeamInvite = lazy(() => import('./pages/TeamInvite'))
+const ConnectJoinPage = lazy(() => import('./pages/ConnectJoinPage'))
+const StudioPage = lazy(() => import('./pages/StudioPage'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 // HelpChatWidget is a named export — adapt it to a default for React.lazy.
 const HelpChatWidget = lazy(() =>
@@ -211,6 +213,10 @@ export default function App() {
         <Route path="/teams/:id/settings" element={<LazySuspense pending={<LazyRoutePending />}><TeamSettings /></LazySuspense>} />
         <Route path="/teams/invite/:token" element={<LazySuspense pending={<LazyRoutePending />}><TeamInvite /></LazySuspense>} />
         <Route path="/teams/accept" element={<LazySuspense pending={<LazyRoutePending />}><TeamInvite /></LazySuspense>} />
+        {/* CONNECT (ADR-0062) — federation invite join */}
+        <Route path="/connect/join" element={<LazySuspense pending={<LazyRoutePending />}><ConnectJoinPage /></LazySuspense>} />
+        {/* STUDIO (ADR-0060) — AI session-authoring co-pilot */}
+        <Route path="/studio" element={<LazySuspense pending={<LazyRoutePending />}><StudioPage /></LazySuspense>} />
         <Route path="*" element={<LazySuspense pending={<LazyRoutePending />}><NotFound /></LazySuspense>} />
       </Routes>
       </HelpChatProvider>

@@ -27,6 +27,9 @@ relates_to:
 
 # Sprint 97 — Execution Plan
 
+_Closeout (2026-09-25, UTC): v7.0-rc cut — all exit criteria below satisfied; see
+[`v7.0.0-rc.md`](./v7.0.0-rc.md)._
+
 _Goal (per [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) §S97 / [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md)): **v7.0-rc cut — CONNECT GA + Pentest #6 close.** Close out the S96 carry-forwards: scale/isolation proof for federation, prompt-injection hardening for STUDIO, and the P1 frontend/library/suggestion surfaces that complete the user-facing half of both epics._
 
 ## Scope (carried from SPRINT96_EXECUTION.md §Carry-forwards)
@@ -59,11 +62,12 @@ _Goal (per [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) §S97 / [`SP
 
 - [x] 5-tenant × 50k × 100-query scale run produces zero cross-tenant rows (evidence doc committed).
 - [x] STUDIO authoring rejects/neutralizes prompt-injection payloads in expanded eval corpus; Pentest #6 AI-safety scope closed.
-- [ ] A participant can accept a federation invite and join via UI; co-tenant stats show counts only, never tenant/participant identity.
-- [ ] An operator can save, list, and fork an authored question; fork creates an independent, editable copy.
-- [ ] After authoring question 1, the UI offers a semantically related question 2 suggestion.
-- [ ] An operator can drive the full authoring flow (prompt → theme → preview/edit → apply to session) from the UI.
-- [ ] Federation UI strings present in EN/NL/ES/DE/FR; `check:i18n` green.
+- [x] A participant can accept a federation invite and join via UI; co-tenant stats show counts only, never tenant/participant identity.
+- [x] An operator can save, list, and fork an authored question; fork creates an independent, editable copy.
+- [x] After authoring question 1, the UI offers a semantically related question 2 suggestion.
+- [x] An operator can drive the full authoring flow (prompt → theme → preview/edit → apply to session) from the UI.
+- [x] Federation UI strings present in EN/NL/ES/DE/FR; `check:i18n` green.
+- [x] v7.0-rc cut: `RELEASES` += `7.0.0-rc.1` (sprint 97); `/api/platform/version` → `7.0.0-rc.1`; release notes at [`v7.0.0-rc.md`](./v7.0.0-rc.md).
 
 ## Quality gates line
 

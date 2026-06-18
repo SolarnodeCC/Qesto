@@ -31,6 +31,7 @@ const RELEASES = [
   { version: '6.1.0', codename: 'v6.1', status: 'ga', sprint: 92 },
   { version: '6.2.0-dev', codename: 'v6.2-dev', status: 'dev', sprint: 93 },
   { version: '6.2.0', codename: 'v6.2', status: 'ga', sprint: 95 },
+  { version: '7.0.0-rc.1', codename: 'v7.0-rc', status: 'rc', sprint: 97 },
 ] as const
 
 export function mountPlatformRoutes(parent: ParentApp) {
@@ -40,6 +41,9 @@ export function mountPlatformRoutes(parent: ParentApp) {
     c.json({
       ok: true,
       data: {
+        // `api`/`currentGa` track the current GA contract, not pre-releases. The
+        // v7.0-rc cut is recorded in the RELEASES registry (GET /api/platform/releases)
+        // and flips to GA at S99; the GA-facing version stays put until then.
         api: '6.1.0',
         realtimeDefault:
           getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
