@@ -110,6 +110,12 @@ export type LiveState = {
   questionTotal: number
   /** Presenter-only aggregate mood (AI-SENTIMENT-01). */
   sentiment: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
+  /**
+   * Additive capability list from `init.data.features[]` (ADR-0066 and prior
+   * additive features). The XR launcher mounts only when `'xr'` is present
+   * here — never as a gate, always an opt-in overlay.
+   */
+  features: string[]
 }
 
 type Action =
@@ -130,6 +136,7 @@ type Action =
       participants: number
       energizer?: LiveEnergizerState | null
       sentiment?: { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null
+      features?: string[]
     }
   | { kind: 'sentiment'; mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }
   | { kind: 'question'; question: LiveQuestion; index: number; total: number }
@@ -160,6 +167,7 @@ export const INITIAL: LiveState = {
   questionIndex: 0,
   questionTotal: 0,
   sentiment: null,
+  features: [],
 }
 
 export function reducer(state: LiveState, action: Action): LiveState {
@@ -187,6 +195,7 @@ export function reducer(state: LiveState, action: Action): LiveState {
         participants: action.participants,
         energizer: action.energizer ?? null,
         sentiment: action.sentiment ?? null,
+        features: action.features ?? [],
         reconnectAttempts: 0,
         error: null,
         paused: false,
@@ -229,6 +238,19 @@ type Options = {
   onCaptionSegment?: (seg: CaptionSegment) => void
   /** Called whenever a reaction_delta ServerMessage arrives. */
   onReactionDelta?: (delta: ReactionDelta) => void
+  /**
+   * Called whenever an `xr_avatar_sync` ServerMessage arrives (ADR-0066). Only
+   * ever fires when the DO has the XR feature enabled for this session — the
+   * XR overlay is the sole consumer, kept out of core LiveState so the XR
+   * module can stay lazy-loaded and not bloat the critical bundle's state shape.
+   */
+  onXrAvatarSync?: (sync: XrAvatarSync) => void
+}
+
+/** Wire shape of the XR avatar batch (ADR-0066) — ephemeral id + pose only, no PII. */
+export type XrAvatarSync = {
+  avatars: Array<{ a: string; p: [number, number, number]; q: [number, number, number, number] }>
+  rev: number
 }
 
 export function useLiveSession(sessionId: string | undefined, opts: Options = {}) {
@@ -238,12 +260,14 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const closedByClientRef = useRef(false)
 
-  const { fingerprint, presenterToken, enabled = true, onCaptionSegment, onReactionDelta } = opts
+  const { fingerprint, presenterToken, enabled = true, onCaptionSegment, onReactionDelta, onXrAvatarSync } = opts
   // Stable ref so the message handler closure never captures a stale callback.
   const onCaptionSegmentRef = useRef(onCaptionSegment)
   onCaptionSegmentRef.current = onCaptionSegment
   const onReactionDeltaRef = useRef(onReactionDelta)
   onReactionDeltaRef.current = onReactionDelta
+  const onXrAvatarSyncRef = useRef(onXrAvatarSync)
+  onXrAvatarSyncRef.current = onXrAvatarSync
 
   const clearRetryTimer = () => {
     if (retryTimerRef.current) {
@@ -295,6 +319,7 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
               sentiment:
                 (init.sentiment as { mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number } | null | undefined) ??
                 null,
+              features: (init.features as string[] | undefined) ?? [],
             })
             break
           }
@@ -384,6 +409,16 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
               onReactionDeltaRef.current?.({
                 counts: counts as Record<string, number>,
                 total: d.total,
+              })
+            }
+            break
+          }
+          case 'xr_avatar_sync': {
+            const d = msg.data
+            if (Array.isArray(d.avatars) && typeof d.rev === 'number') {
+              onXrAvatarSyncRef.current?.({
+                avatars: d.avatars as XrAvatarSync['avatars'],
+                rev: d.rev,
               })
             }
             break
@@ -546,6 +581,21 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     })
   }, [])
 
+  // ── XR (ADR-0066, XR-AVATAR-01) ───────────────────────────────────────────
+  // Local participant's quantized pose. Caller (the lazy XR overlay) is
+  // responsible for throttling the call cadence — this just forwards a frame.
+  const sendXrAvatarSync = useCallback(
+    (p: [number, number, number], q: [number, number, number, number]) => {
+      sendWsJson(wsRef.current, {
+        v: LIVE_PROTOCOL_VERSION,
+        type: 'xr_avatar_sync',
+        data: { p, q },
+        timestamp: Date.now(),
+      })
+    },
+    [],
+  )
+
   return {
     state,
     sendVote,
@@ -562,5 +612,6 @@ export function useLiveSession(sessionId: string | undefined, opts: Options = {}
     sendCaptionsStop,
     sendCaptionsSetLocale,
     sendReactionSubmit,
+    sendXrAvatarSync,
   }
 }

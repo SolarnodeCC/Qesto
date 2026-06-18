@@ -2,7 +2,7 @@
 // the live session id via the public `/api/sessions/by-code/:code` endpoint
 // then open a WebSocket to the DO for real-time voting.
 
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingToDocument, cacheJoinSession, readCachedJoinSession } from '../lib/branding'
@@ -21,6 +21,13 @@ import { QuestionVoteInput } from './join/QuestionVoteInput'
 import { PostVoteResults } from './join/PostVoteResults'
 import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOverlay'
 import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
+import type { XrAvatarSync } from '../hooks/useLiveSession'
+
+// XR-SPATIAL-01 / XR-AVATAR-01 (ADR-0066): lazy-loaded so the immersive beta
+// module never lands in the critical bundle. Mounted only when the user
+// clicks the opt-in "Enter immersive mode (beta)" button, which itself is
+// only rendered when the DO has advertised the `'xr'` feature.
+const XrSessionOverlay = lazy(() => import('../xr/XrSessionOverlay'))
 
 type Lookup =
   | { status: 'loading' }
@@ -153,10 +160,35 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   }, [])
   useReactionsTicker(reactionsState.total > 0, onTick)
 
-  const { state, sendVote, sendEnergizerAnswer, sendReactionSubmit } = useLiveSession(sessionId, {
+  // XR-AVATAR-01 (ADR-0066): merged avatar batches arrive as a ServerMessage,
+  // not core LiveState, so the lazy XR module is the only consumer and the
+  // critical path's state shape stays unchanged when XR is off.
+  const [xrAvatars, setXrAvatars] = useState<XrAvatarSync['avatars']>([])
+  const onXrAvatarSync = useCallback((sync: XrAvatarSync) => {
+    setXrAvatars(sync.avatars)
+  }, [])
+
+  const tXr = useT('xr')
+
+  const { state, sendVote, sendEnergizerAnswer, sendReactionSubmit, sendXrAvatarSync } = useLiveSession(sessionId, {
     enabled: true,
     onReactionDelta,
+    onXrAvatarSync,
   })
+
+  // Opt-in only — never a gate. The button is rendered solely when the DO has
+  // advertised the `'xr'` capability for this (non-ZK) session; the overlay
+  // mounts only after an explicit click.
+  const xrAvailable = state.features.includes('xr')
+  const [xrOpen, setXrOpen] = useState(false)
+  const xrEnterButtonRef = useRef<HTMLButtonElement>(null)
+  const openXr = useCallback(() => setXrOpen(true), [])
+  const closeXr = useCallback(() => {
+    setXrOpen(false)
+    // Return focus to the launching control so closing the overlay never
+    // strands keyboard users (ADR-0066: dismissible, no focus trap on exit).
+    window.setTimeout(() => xrEnterButtonRef.current?.focus(), 0)
+  }, [])
   const isEnded = state.session?.status === 'closed' || state.connection === 'closed'
   const t = useT('join')
   const [myVotes, setMyVotes] = useState<string[]>([])
@@ -261,6 +293,16 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         ) : connectionLabel ? (
           <span className="text-xs text-amber-600">{connectionLabel}</span>
         ) : null}
+        {xrAvailable && (
+          <button
+            ref={xrEnterButtonRef}
+            type="button"
+            onClick={openXr}
+            className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-50 dark:bg-teal-900/20 px-3 text-xs font-medium text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          >
+            {tXr('enter_button')}
+          </button>
+        )}
       </div>
 
       <div className="flex-1 max-w-lg w-full mx-auto px-5 py-8 flex flex-col gap-6">
@@ -393,6 +435,30 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           </p>
         )}
       </div>
+
+      {/* XR-SPATIAL-01 / XR-AVATAR-01 (ADR-0066): lazy-mounted only after opt-in.
+          Never blocks the 2D path above — Suspense fallback is a minimal status
+          line, not a full-page blocker, since the 2D UI keeps running underneath. */}
+      {xrOpen && (
+        <Suspense
+          fallback={
+            <div
+              role="status"
+              aria-live="polite"
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-[#04060C]/95 text-white text-sm"
+            >
+              {tXr('connecting')}
+            </div>
+          }
+        >
+          <XrSessionOverlay
+            question={state.question}
+            avatars={xrAvatars}
+            onSendPose={sendXrAvatarSync}
+            onClose={closeXr}
+          />
+        </Suspense>
+      )}
     </main>
   )
 }
