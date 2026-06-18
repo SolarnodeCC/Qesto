@@ -26,5 +26,21 @@
   "moderate.mergeHint": "Selecciona una idea destino para combinar o cancela.",
   "moderate.mergeCancel": "Cancelar",
   "connection.reconnecting": "Reconectando…",
-  "connection.failed": "Conexión perdida. Actualiza la página."
+  "connection.failed": "Conexión perdida. Actualiza la página.",
+
+  "board.subtitle": "Tablero del facilitador",
+  "board.dotVoteTitle": "Tus votos de punto",
+  "board.dotsUsed": "{{used}} / {{limit}} usados",
+  "board.dotMeterAria": "Uso de votos de punto",
+  "board.dotLimit": "Votos de punto del facilitador: {{limit}} por persona",
+  "board.rankLabel": "Rango",
+  "board.voteSingular": "voto",
+  "board.votePlural": "votos",
+  "board.dismissAria": "Descartar idea: {{body}}",
+  "board.mergeSelectAria": "Seleccionar idea para combinar: {{body}}",
+  "board.mergeIntoAria": "Combinar idea seleccionada en: {{body}}",
+  "board.expandCluster": "Expandir cluster",
+  "board.collapseCluster": "Colapsar cluster",
+  "board.clusterEmpty": "Aún no hay ideas en este cluster.",
+  "board.empty": "Aún no hay ideas — esperando que los participantes contribuyan."
 }

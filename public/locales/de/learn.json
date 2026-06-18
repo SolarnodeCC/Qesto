@@ -1,0 +1,19 @@
+{
+  "instructor.title": "Instruktor-Analystics",
+  "instructor.scoreDistribution": "Punkteverteilung",
+  "instructor.difficulty": "Schwierigkeitsgrad der Frage",
+  "instructor.avgScore": "Durchschnittliche Punktzahl",
+  "instructor.medianScore": "Mittlere Punktzahl",
+  "instructor.passRate": "Erfolgsquote",
+  "instructor.participants": "Teilnehmer",
+  "instructor.export": "Ergebnisse exportieren (CSV)",
+  "instructor.hardest": "Schwierigste Frage",
+  "instructor.easiest": "Einfachste Frage",
+  "instructor.empty": "Noch keine Bewertungsergebnisse.",
+  "grade.passback": "Mit Noten synchronisieren",
+  "grade.synced": "Punkte mit LMS-Noten synchronisiert",
+  "templates.title": "L&D-Vorlagen",
+  "templates.preQuiz": "Vorfrage",
+  "templates.formative": "Formative Überprüfung",
+  "templates.postAssess": "Nachbewertung"
+}

@@ -46,6 +46,7 @@ import { mountEmbedWidgetV1Routes } from './routes/embed-widget-v1'
 import { mountCopilotContextRoutes } from './routes/copilot-context'
 import { mountLearnRoutes } from './routes/learn'
 import { mountSovereignRoutes } from './routes/sovereign'
+import { mountStudioRoutes } from './routes/studio'
 import { mountZoomEmbedRoutes } from './routes/zoom-embed'
 import { mountDeveloperPortalRoutes } from './routes/developer-portal'
 import { mountTenantCostRoutes } from './routes/tenant-cost'
@@ -345,6 +346,7 @@ export function createApp() {
   mountCopilotContextRoutes(app)
   mountLearnRoutes(app)
   mountSovereignRoutes(app)
+  mountStudioRoutes(app)
   mountZoomEmbedRoutes(app)
 
   return app

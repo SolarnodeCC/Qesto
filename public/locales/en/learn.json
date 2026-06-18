@@ -1,0 +1,19 @@
+{
+  "instructor.title": "Instructor analytics",
+  "instructor.scoreDistribution": "Score distribution",
+  "instructor.difficulty": "Question difficulty",
+  "instructor.avgScore": "Average score",
+  "instructor.medianScore": "Median score",
+  "instructor.passRate": "Pass rate",
+  "instructor.participants": "Participants",
+  "instructor.export": "Export results (CSV)",
+  "instructor.hardest": "Most difficult question",
+  "instructor.easiest": "Easiest question",
+  "instructor.empty": "No assessment results yet.",
+  "grade.passback": "Sync to gradebook",
+  "grade.synced": "Score synced to LMS gradebook",
+  "templates.title": "L&D templates",
+  "templates.preQuiz": "Pre-quiz",
+  "templates.formative": "Formative check",
+  "templates.postAssess": "Post-assessment"
+}

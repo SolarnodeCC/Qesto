@@ -26,5 +26,21 @@
   "moderate.mergeHint": "Wählen Sie eine Zielidee zum Zusammenführen oder brechen Sie ab.",
   "moderate.mergeCancel": "Abbrechen",
   "connection.reconnecting": "Verbindung wird wiederhergestellt…",
-  "connection.failed": "Verbindung verloren. Bitte Seite neu laden."
+  "connection.failed": "Verbindung verloren. Bitte Seite neu laden.",
+
+  "board.subtitle": "Moderator-Board",
+  "board.dotVoteTitle": "Ihre Stimmenpunkte",
+  "board.dotsUsed": "{{used}} / {{limit}} verwendet",
+  "board.dotMeterAria": "Nutzung von Stimmenpunkten",
+  "board.dotLimit": "Moderator-Stimmenpunkte: {{limit}} pro Person",
+  "board.rankLabel": "Rang",
+  "board.voteSingular": "Stimme",
+  "board.votePlural": "Stimmen",
+  "board.dismissAria": "Idee verwerfen: {{body}}",
+  "board.mergeSelectAria": "Idee auswählen zum Zusammenführen: {{body}}",
+  "board.mergeIntoAria": "Ausgewählte Idee zusammenführen in: {{body}}",
+  "board.expandCluster": "Cluster erweitern",
+  "board.collapseCluster": "Cluster ausblenden",
+  "board.clusterEmpty": "Noch keine Ideen in diesem Cluster.",
+  "board.empty": "Noch keine Ideen — warten auf Beiträge von Teilnehmern."
 }

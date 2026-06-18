@@ -180,7 +180,7 @@ export default function JoinCodePanel({
           {starting ? (
             <><SpinnerIcon />{t('starting')}</>
           ) : (
-            <><PlayIcon />Start Questions</>
+            <><PlayIcon />{t('joinPanel.startQuestions')}</>
           )}
         </button>
       ) : (

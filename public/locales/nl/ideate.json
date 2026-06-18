@@ -26,5 +26,21 @@
   "moderate.mergeHint": "Kies een doelidee om in samen te voegen, of annuleer.",
   "moderate.mergeCancel": "Annuleren",
   "connection.reconnecting": "Opnieuw verbinden…",
-  "connection.failed": "Verbinding verbroken. Vernieuw de pagina."
+  "connection.failed": "Verbinding verbroken. Vernieuw de pagina.",
+
+  "board.subtitle": "Facilitatorbord",
+  "board.dotVoteTitle": "Je stempunten",
+  "board.dotsUsed": "{{used}} / {{limit}} gebruikt",
+  "board.dotMeterAria": "Stempunten gebruik",
+  "board.dotLimit": "Facilitatorstempunten: {{limit}} per persoon",
+  "board.rankLabel": "Rang",
+  "board.voteSingular": "stem",
+  "board.votePlural": "stemmen",
+  "board.dismissAria": "Idee verwijderen: {{body}}",
+  "board.mergeSelectAria": "Idee selecteren om samen te voegen: {{body}}",
+  "board.mergeIntoAria": "Geselecteerde idee samenvoegen in: {{body}}",
+  "board.expandCluster": "Cluster uitvouwen",
+  "board.collapseCluster": "Cluster samenvouwen",
+  "board.clusterEmpty": "Nog geen ideeën in dit cluster.",
+  "board.empty": "Nog geen ideeën — wachten tot deelnemers bijdragen."
 }

@@ -1,0 +1,20 @@
+{
+  "posture.title": "Postura de cumplimiento",
+  "posture.residency": "Residencia de datos",
+  "posture.fedramp": "FedRAMP Moderate",
+  "posture.gdpr": "GDPR",
+  "posture.federation": "Federación entre inquilinos",
+  "posture.egress": "Salida de datos del socio",
+  "posture.excluded": "Excluido",
+  "posture.enabled": "Habilitado",
+  "posture.disabled": "Deshabilitado",
+  "residency.eu": "Solo UE",
+  "residency.uk": "Solo Reino Unido",
+  "residency.ca": "Solo Canadá",
+  "audit.title": "Registro de auditoría verificable",
+  "audit.export": "Exportar registro de auditoría firmado",
+  "audit.verified": "Firma verificada",
+  "audit.tampered": "Falló la verificación — el registro puede haber sido alterado",
+  "audit.entries": "{{count}} entradas de auditoría",
+  "regional.notice": "Registro de protección de datos regional"
+}

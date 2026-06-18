@@ -145,6 +145,14 @@ export type Env = {
    */
   SOVEREIGN_AUDIT_SIGNING_KEY?: string
   /**
+   * CONNECT-INVITE-01 (ADR-0062): HMAC-SHA-256 signing key for federation invite
+   * envelopes. Server secret — set via `wrangler pages secret put
+   * CONNECT_INVITE_SECRET`, NEVER in wrangler.toml (hard rule #2). When unset, the
+   * mint/verify federation endpoints are disabled (503) rather than issuing
+   * forgeable invites.
+   */
+  CONNECT_INVITE_SECRET?: string
+  /**
    * DELIBERATE-GA-01 / M-1 (ADR-0049): optional server-side secret salt folded
    * into the anonymous `voter_hash` one-ballot dedup token (defence-in-depth so
    * the token no longer rests solely on the 128-bit ULID `user.sub`). Server

@@ -1,0 +1,20 @@
+{
+  "posture.title": "Posture de conformité",
+  "posture.residency": "Résidence des données",
+  "posture.fedramp": "FedRAMP Moderate",
+  "posture.gdpr": "RGPD",
+  "posture.federation": "Fédération multi-locataire",
+  "posture.egress": "Sortie de données partenaire",
+  "posture.excluded": "Exclu",
+  "posture.enabled": "Activé",
+  "posture.disabled": "Désactivé",
+  "residency.eu": "UE uniquement",
+  "residency.uk": "Royaume-Uni uniquement",
+  "residency.ca": "Canada uniquement",
+  "audit.title": "Journal d'audit vérifiable",
+  "audit.export": "Exporter le journal d'audit signé",
+  "audit.verified": "Signature vérifiée",
+  "audit.tampered": "Échec de la vérification — le journal peut avoir été modifié",
+  "audit.entries": "{{count}} entrées d'audit",
+  "regional.notice": "Registre de protection des données régional"
+}

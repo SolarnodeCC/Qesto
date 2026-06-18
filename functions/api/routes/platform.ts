@@ -30,6 +30,7 @@ const RELEASES = [
   { version: '6.1.0-dev', codename: 'v6.1-dev', status: 'dev', sprint: 91 },
   { version: '6.1.0', codename: 'v6.1', status: 'ga', sprint: 92 },
   { version: '6.2.0-dev', codename: 'v6.2-dev', status: 'dev', sprint: 93 },
+  { version: '6.2.0', codename: 'v6.2', status: 'ga', sprint: 95 },
 ] as const
 
 export function mountPlatformRoutes(parent: ParentApp) {

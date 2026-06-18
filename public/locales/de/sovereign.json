@@ -1,0 +1,20 @@
+{
+  "posture.title": "Compliance-Übersicht",
+  "posture.residency": "Datenspeicherort",
+  "posture.fedramp": "FedRAMP Moderate",
+  "posture.gdpr": "GDPR",
+  "posture.federation": "Mandantenübergreifende Verbundzusammenarbeit",
+  "posture.egress": "Partnerendatenaustritt",
+  "posture.excluded": "Ausgeschlossen",
+  "posture.enabled": "Aktiviert",
+  "posture.disabled": "Deaktiviert",
+  "residency.eu": "Nur EU",
+  "residency.uk": "Nur Vereinigtes Königreich",
+  "residency.ca": "Nur Kanada",
+  "audit.title": "Überprüfbares Audit-Protokoll",
+  "audit.export": "Signiertes Audit-Protokoll exportieren",
+  "audit.verified": "Signatur verifiziert",
+  "audit.tampered": "Verifizierung fehlgeschlagen — Protokoll möglicherweise manipuliert",
+  "audit.entries": "{{count}} Audit-Einträge",
+  "regional.notice": "Datenschutzerklärung"
+}

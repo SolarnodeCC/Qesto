@@ -1,0 +1,20 @@
+{
+  "posture.title": "Compliance posture",
+  "posture.residency": "Data residency",
+  "posture.fedramp": "FedRAMP Moderate",
+  "posture.gdpr": "GDPR",
+  "posture.federation": "Cross-tenant federation",
+  "posture.egress": "Partner data egress",
+  "posture.excluded": "Excluded",
+  "posture.enabled": "Enabled",
+  "posture.disabled": "Disabled",
+  "residency.eu": "EU only",
+  "residency.uk": "UK only",
+  "residency.ca": "Canada only",
+  "audit.title": "Verifiable audit log",
+  "audit.export": "Export signed audit log",
+  "audit.verified": "Signature verified",
+  "audit.tampered": "Verification failed — log may be tampered",
+  "audit.entries": "{{count}} audit entries",
+  "regional.notice": "Regional data-protection register"
+}
