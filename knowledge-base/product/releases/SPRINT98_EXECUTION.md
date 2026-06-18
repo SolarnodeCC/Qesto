@@ -204,3 +204,24 @@ If the design-partner validation spike collects **fewer than 3 committed partner
 | WCAG AAA re-attest report | E2E Tester | [`knowledge-base/quality/WCAG_AAA_ATTEST_S98.md`](../../quality/WCAG_AAA_ATTEST_S98.md) |
 | Release notes (v7.0.0-rc2) | PO | [`v7.0.0-rc2.md`](./v7.0.0-rc2.md) |
 | Sprint 98 closeout summary | PO | Update top of [`knowledge-base/product/backlog/BACKLOG_MASTER.md`](../backlog/BACKLOG_MASTER.md) with rolling-update bullet |
+
+---
+
+## S98 AC → Test Traceability Matrix
+
+| Story ID | Acceptance Criterion | Test File | Test Cases |
+|---|---|---|---|
+| **XR-SPATIAL-01** | Question object appears in 3D shared space | `tests/unit/xr-handler-edge.test.ts` | (Frontend-E2E scope; backend broadcasts spatial_update via DO) |
+| **XR-SPATIAL-01** | Latency p95 <200ms confirmed in soak test | Backend: `tests/unit/xr-avatar-sync.test.ts:189–222` (`AE event privacy`) | `xr.avatar_sync_latency` emitted with correct latency measurement |
+| **XR-AVATAR-01** | All 50 avatars render concurrently at ≥25 fps | Backend: `tests/unit/xr-handler-edge.test.ts:146–197` (`avatar cap / many-socket fan-out`) | `handles 50 concurrent sockets with unique poses, all merged in one tick` (50-socket broadcast) |
+| **XR-AVATAR-01** | Avatar pose syncs at ≤30ms frequency (broadcast via xr_avatar_sync) | Backend: `tests/unit/xr-handler-edge.test.ts:92–143` (`rev monotonicity`) | `rev never decreases across consecutive flushTick calls`, `rev increments exactly once per flushTick` (12.5 Hz batch tick = 80ms per ADR, ≤30ms per-socket coalesce) |
+| **XR-AVATAR-01** | No participant identity leaked (names never transmitted; only participant.id + spatial pose + avatar_style) | Backend: `tests/unit/xr-handler-edge.test.ts:330–378` (`AE privacy invariant`) | `emits xr.avatar_sync_latency with no coordinates`, `emits xr.avatar_sync_latency with no voterId`, `emits xr.avatar_sync_latency with no ephemeral avatar id in the event payload` |
+| **XR-AVATAR-01** | AE metric `xr.avatar_concurrent_count` + `xr.avatar_sync_latency` published | Backend: `tests/unit/xr-avatar-sync.test.ts:189–222` | `emits xr.avatar_sync_latency with timing + count only, no PII` (count field in AE event) |
+| **XR-AVATAR-01** | Security review confirms no identity leakage | Backend: `tests/unit/xr-avatar-sync.test.ts:140–152` | `uses an ephemeral avatar id that is NOT the voterId` (no voterId in broadcast) |
+| **XR-AVATAR-01** | Feature flag `beta-xr` gates the feature; disabled by default | Backend: `tests/unit/xr-avatar-sync.test.ts:60–78` | `ignores inbound xr_avatar_sync when BETA_XR_ENABLED is off` (flag gate enforced) |
+| **XR-00 (Security: ZK exclusion)** | Zero-knowledge sessions exclude XR (never broadcasts xr even with flag on; never emits AE event) | Backend: `tests/unit/xr-avatar-sync.test.ts:81–99` | `ignores inbound xr_avatar_sync in a ZK session even with the flag on` |
+| **XR-00 (Security: ZK exclusion)** | ZK exclusion edge case verified | Backend: `tests/unit/xr-handler-edge.test.ts:269–307` (`ZK toggle exclusion`) | `ignores xr_avatar_sync entirely when anonymity is zero_knowledge, flag on`, `ignores xr_avatar_sync for ZK sessions even if flag is off (guard order)` |
+| **XR-00 (Security: flag-off inertness)** | Inbound xr_avatar_sync produces zero side effects when flag is off | Backend: `tests/unit/xr-handler-edge.test.ts:380–439` (`flag-off inertness`) | `ignores inbound xr_avatar_sync, no avatar state mutation`, `ignores inbound xr_avatar_sync, no broadcast on flushTick`, `ignores inbound xr_avatar_sync, no AE event emitted` |
+| **XR-00 (Security: transient state)** | Transient state cleared on disconnect (no persistence to unwind) | Backend: `tests/unit/xr-avatar-sync.test.ts:155–186` | `clears a socket avatar pose on disconnect (forget) with no persistence`, `prunes a closed socket from the broadcast set` |
+| **XR-00 (Security: transient state)** | Late-join + disconnect interleaving verified | Backend: `tests/unit/xr-handler-edge.test.ts:252–304` (`late-join + disconnect interleaving`) | `adds late-joining socket to broadcast on next tick`, `removes disconnected socket on next tick, no broadcast for it`, `never persists avatar state for disconnected sockets`, `pruneClosed removes closed sockets from broadcast even if forget was not called` |
+| **I18N-STUDIO-01** | (Orthogonal to XR backend; frontend/i18n scope) | N/A | (See `qesto-i18n` story deliverables) |
