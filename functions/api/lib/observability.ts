@@ -229,6 +229,12 @@ export type QestoEvent = {
     // STUDIO (ADR-0060, S96): authoring co-pilot usage — counts/timing, no content.
     | 'studio.copilot_used'
     | 'studio.theme_applied'
+    // STUDIO-SUGGEST-01 (ADR-0060, S97): next-question suggestion usage — count/source, no content.
+    | 'studio.suggest_used'
+    // STUDIO-LIBRARY-01 (ADR-0060, S97): content library lifecycle — ids/source, no content.
+    | 'studio.library_saved'
+    | 'studio.library_forked'
+    | 'studio.library_deleted'
   // Optional fields accept `undefined` explicitly so callers using `x ?? undefined`
   // (common pattern when normalising `null` to optional) satisfy `exactOptionalPropertyTypes`.
   userId?: string | undefined

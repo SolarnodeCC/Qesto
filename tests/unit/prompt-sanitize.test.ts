@@ -21,6 +21,18 @@ describe('sanitizePromptText', () => {
   it('returns empty string when only control characters remain', () => {
     expect(sanitizePromptText('\x00\x1F')).toBe('')
   })
+
+  it('strips bidirectional override characters (SEC-STUDIO-PROMPT-01)', () => {
+    // RLO/LRO/PDF and the isolate set can visually reorder injected text.
+    const input = 'safe‮reversed‬ plan⁦iso⁩'
+    const out = sanitizePromptText(input)
+    expect(out).toBe('safereversed planiso')
+    expect(out).not.toMatch(/[‪-‮⁦-⁩]/)
+  })
+
+  it('strips the word-joiner zero-width char', () => {
+    expect(sanitizePromptText('a⁠b')).toBe('ab')
+  })
 })
 
 describe('sanitizeEmbedText', () => {

@@ -31,6 +31,10 @@ import {
   resolveStudioTheme,
   STUDIO_THEME_NAMES,
 } from '../lib/studio-theme'
+import { suggestNextQuestions } from '../lib/studio-suggest'
+import { readKvJson } from '../lib/kv'
+import { teamDocumentKey } from '../lib/kv-keys'
+import type { Team } from './teams'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -53,6 +57,20 @@ const GenerateSchema = z.object({
   language: z.string().min(2).max(8).optional(),
   themeId: z.enum(STUDIO_THEME_NAMES).optional(),
 })
+
+// STUDIO-SUGGEST-01 — given a just-authored question, suggest a topically
+// related next question. `teamId` is required so the cross-tenant
+// DECISIONS_VECTORIZE query can be scoped to the requesting team only (REV-27).
+const SuggestSchema = z.object({
+  teamId: z.string().min(1).max(128),
+  prompt: z.string().min(1).max(2000),
+  kind: z.enum(AUTHORING_KINDS).optional(),
+  excludeSessionId: z.string().min(1).max(64).optional(),
+})
+
+function isTeamMember(team: Team, userId: string): boolean {
+  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
+}
 
 export function mountStudioRoutes(parent: ParentApp) {
   const app = new Hono<{
@@ -187,6 +205,74 @@ export function mountStudioRoutes(parent: ParentApp) {
     }
 
     return c.json({ ok: true, data: { drafts, confidence: result.confidence }, trace_id })
+  })
+
+  // STUDIO-SUGGEST-01 — suggest a topically-related next question after Q1.
+  // Embedding + semantic rank over DECISIONS_VECTORIZE (no generative step).
+  // Tenant safety: the query is metadata-filtered to a team the caller belongs
+  // to, verified here before any Vectorize access (REV-27 / ADR-0045).
+  app.post('/authoring/suggest', async (c) => {
+    const trace_id = c.get('trace_id')
+
+    let body: z.infer<typeof SuggestSchema>
+    try {
+      body = SuggestSchema.parse(await c.req.json())
+    } catch {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'invalid_body', message: 'Invalid suggestion request' },
+          trace_id,
+        },
+        400,
+      )
+    }
+
+    const user = c.get('user')
+    const plan = c.get('plan')
+
+    // Verify the caller belongs to the team BEFORE the cross-tenant index is
+    // touched — this is the gate that keeps another team's titles unreachable.
+    const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(body.teamId))
+    if (!team || !isTeamMember(team, user.sub)) {
+      return c.json(
+        { ok: false, error: { code: 'forbidden', message: 'Not a member of this team' }, trace_id },
+        403,
+      )
+    }
+
+    // Embedding + Vectorize query. The helper degrades gracefully (empty result,
+    // never throws) on AI/Vectorize faults, so this path has no 502 branch.
+    const t0 = Date.now()
+    const result = await suggestNextQuestions(c.env, {
+      teamId: body.teamId,
+      prompt: body.prompt,
+      kind: body.kind,
+      excludeSessionId: body.excludeSessionId,
+    })
+
+    logEvent({
+      event: 'studio.authoring.suggest',
+      latencyMs: Date.now() - t0,
+      count: result.suggestions.length,
+      source: result.source,
+    })
+
+    writeEvent(c.env.METRICS_AE, {
+      name: 'studio.suggest_used',
+      userId: user.sub,
+      plan,
+      count: result.suggestions.length,
+      durationMs: Date.now() - t0,
+      detail: result.source,
+      traceId: trace_id,
+    })
+
+    return c.json({
+      ok: true,
+      data: { suggestions: result.suggestions, source: result.source },
+      trace_id,
+    })
   })
 
   parent.route('/api/studio', app)

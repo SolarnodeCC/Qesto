@@ -207,6 +207,22 @@ export class D1Mock {
   readonly teamRoleAssignments = new Map<string, TeamRoleAssignmentRow>()
   readonly townhallQuestions = new Map<string, TownhallQuestionRow>()
   readonly embedWidgets = new Map<string, EmbedWidgetRow>()
+  readonly studioLibraryItems = new Map<
+    string,
+    {
+      id: string
+      team_id: string
+      created_by: string
+      source: 'authored' | 'fork'
+      forked_from_id: string | null
+      question_json: string
+      theme_id: string | null
+      title: string
+      use_count: number
+      created_at: number
+      updated_at: number
+    }
+  >()
   readonly deliberateBallots = new Map<
     string,
     {
@@ -1397,6 +1413,61 @@ export class D1PreparedStatementMock {
       }
       return { meta: { changes } }
     }
+    // STUDIO-LIBRARY-01
+    if (this.sql.startsWith('INSERT INTO studio_library_items')) {
+      const [
+        id,
+        team_id,
+        created_by,
+        source,
+        forked_from_id,
+        question_json,
+        theme_id,
+        title,
+        created_at,
+        updated_at,
+      ] = this.args as [
+        string,
+        string,
+        string,
+        'authored' | 'fork',
+        string | null,
+        string,
+        string | null,
+        string,
+        number,
+        number,
+      ]
+      this.db.studioLibraryItems.set(id, {
+        id,
+        team_id,
+        created_by,
+        source,
+        forked_from_id,
+        question_json,
+        theme_id,
+        title,
+        use_count: 0,
+        created_at,
+        updated_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE studio_library_items')) {
+      const [id, team_id, updated_at] = this.args as [string, string, number]
+      const row = this.db.studioLibraryItems.get(id)
+      if (!row || row.team_id !== team_id) return { meta: { changes: 0 } }
+      row.use_count += 1
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM studio_library_items')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.studioLibraryItems.get(id)
+      if (!row || row.team_id !== team_id) return { meta: { changes: 0 } }
+      this.db.studioLibraryItems.delete(id)
+      return { meta: { changes: 1 } }
+    }
     throw new Error(`d1-mock: unsupported run(): ${this.sql}`)
   }
 
@@ -1746,6 +1817,12 @@ export class D1PreparedStatementMock {
       return (row
         ? { id: row.id, code: row.code, created_at: row.created_at, session_mode: row.session_mode ?? 'reflection', status: row.status }
         : null) as T | null
+    }
+    // STUDIO-LIBRARY-01: tenant-scoped single-item fetch.
+    if (this.sql.includes('FROM studio_library_items') && this.sql.includes('WHERE id = ?1 AND team_id = ?2')) {
+      const [id, team_id] = this.args as [string, string]
+      const row = this.db.studioLibraryItems.get(id)
+      return (row && row.team_id === team_id ? (row as unknown as T) : null)
     }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
@@ -2258,6 +2335,15 @@ export class D1PreparedStatementMock {
         .filter((r) => r.team_id === team_id && r.closed_at >= since)
         .sort((a, b) => a.closed_at - b.closed_at)
         .slice(0, 50)
+      return { results: rows as unknown as T[] }
+    }
+    // STUDIO-LIBRARY-01: tenant-scoped list, newest-first, LIMIT/OFFSET.
+    if (this.sql.includes('FROM studio_library_items') && this.sql.includes('WHERE team_id = ?1')) {
+      const [team_id, limit, offset] = this.args as [string, number, number]
+      const rows = [...this.db.studioLibraryItems.values()]
+        .filter((r) => r.team_id === team_id)
+        .sort((a, b) => b.created_at - a.created_at)
+        .slice(offset, offset + limit)
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)
