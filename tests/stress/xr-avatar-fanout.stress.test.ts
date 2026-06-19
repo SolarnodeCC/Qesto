@@ -55,7 +55,7 @@ class MockStorageContext {
     },
   }
 
-  constructor(private env: Env) {}
+  constructor(_env: Env) {}
 
   addWebSocket(ws: WebSocket) {
     this.webSockets.push(ws)
@@ -69,7 +69,7 @@ class MockStorageContext {
     return this.webSockets
   }
 
-  setMeta(meta: MockStorageState['meta']) {
+  setMeta(meta: NonNullable<MockStorageState['meta']>) {
     this.state.meta = meta
   }
 
