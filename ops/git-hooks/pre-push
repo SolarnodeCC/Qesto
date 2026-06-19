@@ -1,10 +1,75 @@
 #!/bin/bash
 # ops/git-hooks/pre-push — Mandatory pre-push verification gate
-# Runs quality gates before allowing push to any branch.
-# Install: git config core.hooksPath ops/git-hooks
+#
+# Install (repo-local, run once per clone):
+#   bash scripts/install-git-hooks.sh
+#   # or:  just hooks
+#   # or:  pwsh scripts/install-git-hooks.ps1
+#
+# Lanes:
+#   full — ops/ci/quality-gates.sh (CI parity: tsc, test:eval, test:coverage)
+#   fast — ops/ci/quality-gates-fast.sh (tsc + npm test)
+#   skip — docs/knowledge-base only (no code gates)
+#
+# QESTO_PREPUSH_MODE=auto|fast|full|ci  (default: auto)
+# QESTO_SKIP_PREPUSH=1                  (emergency bypass — discouraged)
 
 set -e
 
-bash ops/ci/quality-gates.sh
+if [ "${QESTO_SKIP_PREPUSH:-}" = "1" ]; then
+  echo ""
+  echo "⚠ QESTO_SKIP_PREPUSH=1 — pre-push gates SKIPPED (do not use on main)." >&2
+  echo ""
+  exit 0
+fi
 
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib.sh
+source "$HOOK_DIR/lib.sh"
+# shellcheck source=env.sh
+source "$HOOK_DIR/env.sh"
+
+hook_cd_repo_root
+hook_ensure_toolchain_path
+
+# shellcheck source=../ci/lib.sh
+source "$(git rev-parse --show-toplevel)/ops/ci/lib.sh"
+
+# Replay stdin for lane selection (hook_push_targets_protected_branch reads stdin)
+HOOK_STDIN_REPLAY="$(cat)"
+if [ -z "$HOOK_STDIN_REPLAY" ]; then
+  # Some clients omit stdin; treat as fast lane
+  HOOK_STDIN_REPLAY="refs/heads/local $(git rev-parse HEAD) refs/heads/remote 0000000000000000000000000000000000000000"
+fi
+
+changed_files="$(printf '%s\n' "$HOOK_STDIN_REPLAY" | hook_collect_pushed_files || true)"
+lane="$(printf '%s\n' "$changed_files" | hook_select_lane "$changed_files")"
+
+hook_print_banner "$lane"
+
+start_ts=$SECONDS
+
+case "$lane" in
+  skip)
+    report_success "Docs-only push — skipping code quality gates"
+    if [ -n "$changed_files" ]; then
+      echo "Changed paths (sample):"
+      printf '%s\n' "$changed_files" | head -20
+    fi
+    ;;
+  fast)
+    bash ops/ci/quality-gates-fast.sh
+    ;;
+  full)
+    bash ops/ci/quality-gates.sh
+    ;;
+  *)
+    report_error "Unknown pre-push lane: $lane"
+    exit 1
+    ;;
+esac
+
+elapsed=$((SECONDS - start_ts))
+echo ""
+report_success "pre-push passed ($lane lane, ${elapsed}s)"
 exit 0

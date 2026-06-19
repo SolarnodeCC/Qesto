@@ -1,0 +1,8 @@
+# Git hooks and CI shell scripts must use LF so Git Bash executes them on Windows.
+ops/git-hooks/** text eol=lf
+ops/ci/*.sh text eol=lf
+scripts/install-git-hooks.sh text eol=lf
+scripts/test-pre-push-hook.sh text eol=lf
+scripts/ci-doctor.sh text eol=lf
+
+.github/workflows/*.lock.yml linguist-generated=true merge=ours
