@@ -121,10 +121,10 @@ wrangler pages deploy  # Deploy to Cloudflare Pages (qesto project)
 **Documentation map:** [`/knowledge-base/README.md`](./knowledge-base/README.md) — navigation by role (PO, backend, frontend, devops, security, AI).
 
 - **Shipped / roadmap truth:** [`/knowledge-base/product/roadmap/ROADMAP_FULL.md`](./knowledge-base/product/roadmap/ROADMAP_FULL.md), [`/knowledge-base/specifications/product/SPEC_PRODUCT.md`](./knowledge-base/specifications/product/SPEC_PRODUCT.md), [`/knowledge-base/architecture/ARCHITECTURE.md`](./knowledge-base/architecture/ARCHITECTURE.md).
-- **Incremental committed work:** [`/knowledge-base/product/backlog/BACKLOG_MASTER.md`](./knowledge-base/product/backlog/BACKLOG_MASTER.md), [`/knowledge-base/product/releases/ARCHIVED_SPRINTS.md`](./knowledge-base/product/releases/ARCHIVED_SPRINTS.md).
+- **Incremental committed work:** [`/knowledge-base/product/backlog/BACKLOG_ACTIVE.md`](./knowledge-base/product/backlog/BACKLOG_ACTIVE.md) (release trains), [`/knowledge-base/product/planning/RELEASE_TRAIN_MASTER.md`](./knowledge-base/product/planning/RELEASE_TRAIN_MASTER.md) (cadence contract). Archive: [`BACKLOG_MASTER.md`](./knowledge-base/product/backlog/BACKLOG_MASTER.md), [`ARCHIVED_SPRINTS.md`](./knowledge-base/product/releases/ARCHIVED_SPRINTS.md).
 - **Reference five-sprint arc (v0.1 → v0.5):** [`/knowledge-base/product/planning/SPRINT_PLAN_MASTER.md`](./knowledge-base/product/planning/SPRINT_PLAN_MASTER.md) — teaching and dependency template aligned to backlog IDs; **not** a literal greenfield schedule.
 
-**Sprint planning rule:** P0 items first, then P1; stories ≤ 13 pts; aim ~40–50 pts per two-week sprint when using the reference arc for estimation drills.
+**Sprint planning rule:** P0 items first, then P1; stories ≤ 13 pts; **release trains** target **40–60 pts** per 2–3 week train (solo+AI). Cadence contract: [`RELEASE_TRAIN_MASTER.md`](./knowledge-base/product/planning/RELEASE_TRAIN_MASTER.md); committed work: [`BACKLOG_ACTIVE.md`](./knowledge-base/product/backlog/BACKLOG_ACTIVE.md). Reference arc in [`SPRINT_PLAN_MASTER.md`](./knowledge-base/product/planning/SPRINT_PLAN_MASTER.md) is pedagogical only.
 
 ---
 

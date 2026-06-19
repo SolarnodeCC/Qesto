@@ -257,7 +257,7 @@ _Superseded: 2026-06-11 (UTC) — added **Sprint 85–99 9-Day-Cadence Re-plan t
 
 **New ADRs:** ADR-0054 (cadence-9 governance) · ADR-0055 (REACTIONS GA) · ADR-0056 (agentic L2) · ADR-0057 (analytics aggregation plane) · ADR-0058 (vertical packaging) · ADR-0059 (ecosystem egress) · ADR-0060 (AI analytics narration) · ADR-0061 (agentic L3 ceiling) · ADR-0062 (scale/isolation proof) · ADR-0063 (v7.0 certification). **Do-not-co-land:** ADR-0056 ✗ ADR-0057; ADR-0059 ✗ ADR-0060; ADR-0061 ✗ any data-egress/analytics-AI GA; ADR-0062 ✗ ADR-0063.
 
-**Plan:** [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) (2026-06-11). Supporting docs: [`SPRINT85_99_ARCH_NOTES.md`](../planning/SPRINT85_99_ARCH_NOTES.md), [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md) (66 stories), [`MARKET_VALIDATION_S85_99.md`](../research/MARKET_VALIDATION_S85_99.md).
+**Plan (S85–S99 arc, shipped v7.0):** [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) (historical). **Post-GA committed horizon:** [`RELEASE_TRAIN_MASTER.md`](../planning/RELEASE_TRAIN_MASTER.md) + [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md). Supporting: [`SPRINT85_99_ARCH_NOTES.md`](../planning/SPRINT85_99_ARCH_NOTES.md), [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md), [`MARKET_VALIDATION_S85_99.md`](../research/MARKET_VALIDATION_S85_99.md).
 
 ### Post-v2.2 Commercial Promise Completion
 

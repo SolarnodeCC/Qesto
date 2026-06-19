@@ -47,7 +47,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 - **[Backlog](./product/backlog/)** — Product backlog (master reference at `BACKLOG_MASTER.md`)
 - **[Market Research](./product/research/)** — Competitive intelligence, customer insights, market trends (updated quarterly)
 - **[Release Notes](./product/releases/)** — Version history, release plans, audit outcomes
-- **[Planning](./product/planning/)** — Sprint plans (S71–S80: [`SPRINT71_80_PLAN.md`](./product/planning/SPRINT71_80_PLAN.md); S60–S70: [`SPRINT60_70_PLAN.md`](./product/planning/SPRINT60_70_PLAN.md); S51–S60: [`SPRINT51_60_PLAN.md`](./product/planning/SPRINT51_60_PLAN.md); S30–S39: [`SPRINT30_39_PLAN.md`](./product/planning/SPRINT30_39_PLAN.md))
+- **[Planning](./product/planning/)** — Release trains: [`RELEASE_TRAIN_MASTER.md`](./product/planning/RELEASE_TRAIN_MASTER.md) + active work [`BACKLOG_ACTIVE.md`](./product/backlog/BACKLOG_ACTIVE.md). Historical sprint plans (S71–S80: [`SPRINT71_80_PLAN.md`](./product/planning/SPRINT71_80_PLAN.md); S85–S99 arc: [`SPRINT85_99_PLAN.md`](./product/planning/SPRINT85_99_PLAN.md) — superseded for forward planning)
 - **i18n parallel tracks** — [`I18N_SPRINT_60_70_PLAN.md`](./product/planning/I18N_SPRINT_60_70_PLAN.md), [`I18N_SPRINT_71_80_PLAN.md`](./product/planning/I18N_SPRINT_71_80_PLAN.md), [`I18N_SPRINT_81_90_PLAN.md`](./product/planning/I18N_SPRINT_81_90_PLAN.md)
 
 ### Quality & Operations

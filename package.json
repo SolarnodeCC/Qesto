@@ -39,6 +39,7 @@
     "check:rc": "npm run check:migrations && npm run check:kv-access && npm run check:no-any && npm run typecheck && npm run check:i18n && npm run check:tokens-drift && npm run check:baseline && npm test && npm run test:eval && npm run test:a11y && npm run build",
     "perf:audit": "node scripts/perf-audit.mjs",
     "verify:deploy": "node scripts/verify-deploy.mjs",
+    "smoke:platform-v7": "node scripts/smoke-platform-v7.mjs",
     "test:e2e": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
     "test:e2e:fullstack": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
     "test:e2e:spa": "playwright test --config tests/playwright.config.ts --project=spa-chrome",

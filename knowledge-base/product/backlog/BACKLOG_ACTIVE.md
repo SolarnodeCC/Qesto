@@ -40,21 +40,21 @@ _Hub: [Documentation map](./README.md)._
 
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
-| `OPS-CI-RUNNER-01` | 5 | P0 | devops | **Blocked (billing)** | Fix GitHub billing; local gates green — [`CI_RUNNER_STATUS_2026_06_19.md`](../../operations/CI_RUNNER_STATUS_2026_06_19.md) |
+| `OPS-CI-RUNNER-01` | 5 | P0 | devops | **Blocked (billing)** | GitHub billing fix required; local gates green + connect-scale flake fixed — [`CI_RUNNER_STATUS_2026_06_19.md`](../../operations/CI_RUNNER_STATUS_2026_06_19.md) |
 | `OPS-GIT-HOOKS-01` | 3 | P0 | devops | **Done** | `just hooks` installs `core.hooksPath`; pre-push lanes verified (`scripts/test-pre-push-hook.sh`) |
 | `SEC-JANURAI-REVERIFY-01` | 8 | P0 | security + tester | **Done** | [`JANURAI_REVERIFY_2026_06_19.md`](../../security/JANURAI_REVERIFY_2026_06_19.md) — CRITICAL-5 re-tested; 4 closed, SAML dual-gate |
 | `VALID-ADR-0064-ACCEPT` | 3 | P0 | PO + architect | **Done** | ADR-0064 accepted 2026-06-19; EPIC-VALID eligible for train commit |
 | `OPS-DR-GAP-01` | 8 | P1 | devops + backend | **Done (code)** | [`DR_KV_EXPORT_BACKUP.md`](../../operations/DR_KV_EXPORT_BACKUP.md) + weekly Worker cron; prod first-run pending |
 | `OPS-DR-GAP-02` | 8 | P1 | devops + backend | **Done** | [`DR_SNAPSHOT_CADENCE.md`](../../operations/DR_SNAPSHOT_CADENCE.md) — 30s DO alarm → R2 |
-| `OPS-S99-CLOSEOUT-01` | 5 | P0 | devops + PO | **Partial** | `scripts/smoke-platform-v7.sh`; staging curl + AE check pending operator |
-| `MKTG-V70-GA-COPY-01` | 3 | P1 | marketing | Open | GA announcement copy approved; XR labeled beta-only |
+| `OPS-S99-CLOSEOUT-01` | 5 | P0 | devops + PO | **Done (automation)** | [`OPS_S99_CLOSEOUT_EVIDENCE.md`](../../operations/OPS_S99_CLOSEOUT_EVIDENCE.md) + `scripts/smoke-platform-v7.mjs` in CI; AE table pending operator |
+| `MKTG-V70-GA-COPY-01` | 3 | P1 | marketing | **Draft** | [`MKTG_V70_GA_ANNOUNCEMENT.md`](../../marketing/MKTG_V70_GA_ANNOUNCEMENT.md) — PO sign-off before publish |
 
 ### RT-01 exit criteria
 
 - [ ] CI green rate 100% on last 10 `main` pushes _(blocked: GitHub billing — [`CI_RUNNER_STATUS_2026_06_19.md`](../../operations/CI_RUNNER_STATUS_2026_06_19.md))_
 - [x] Janurai CRITICAL exploitable = 0 on default prod — [`JANURAI_REVERIFY_2026_06_19.md`](../../security/JANURAI_REVERIFY_2026_06_19.md)
 - [x] ADR-0064 accepted
-- [ ] S99 DoD ops items (#18–22) closed in [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md) _(engineering #1–17 ✅; ops smoke/AE/deploy pending)_
+- [ ] S99 DoD ops items (#18–22) closed in [`SPRINT99_EXECUTION.md`](../releases/SPRINT99_EXECUTION.md) _(automation + docs ✅; AE operator row + XR device lab optional)_
 
 ---
 
@@ -160,4 +160,4 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 | Date | Change |
 |------|--------|
 | 2026-06-19 | Created RT-01 (stabilize) + RT-02 (UX value loop) post S99 audit; `OPS-GIT-HOOKS-01` marked done |
-| 2026-06-19 | RT-01 progress: ADR-0064 accepted, Janurai reverify done, SAML test fix; RT-03 Path A/B decision table + predictability scorecard linked |
+| 2026-06-19 | OPS-S99 closeout: platform smoke in CI, AE runbook, deploy rollback, marketing draft; connect-scale test de-flaked |

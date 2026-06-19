@@ -4,9 +4,9 @@ type: specification
 domain: product
 category: features
 status: active
-version: 1.5
+version: 1.6
 created: 2026-04-01
-updated: 2026-05-18
+updated: 2026-06-19
 audience:
   - Product owner
   - Architect
@@ -30,7 +30,7 @@ relates_to:
 
 _Hub: [Documentation map](../README.md)._
 
-_Last verified: 2026-05-18 (UTC)_
+_Last verified: 2026-05-18 (UTC) — §10 platform versions verified 2026-06-19._
 
 ## 1. Product lifecycle
 - **DRAFT**: session setup and question curation.
@@ -134,4 +134,17 @@ Three distinct surfaces; do not conflate in copy or deep links.
 - Wizard-generated sessions persist AI provenance on the DRAFT session: `ai_generated`, `ai_consent_at`, and `ai_grounding_hash`.
 - Launchpad uses `GET /api/sessions/:id/preflight` as the canonical readiness gate before `Open lobby`.
 - Density preference is persisted in `USERS_KV` and applied to three Dashboard list surfaces: sessions, Insights, and Teams.
+
+## 10. Platform version history
+
+| Version | Sprint | Shipped (plan) | GA scope (summary) | Certification |
+|---------|--------|----------------|-------------------|---------------|
+| **7.0.0** | 99 | 2026-11-03 | Engagement Intelligence Network: REACTIONS, PULSE, COPILOT, LEARN, SOVEREIGN+, CONNECT, STUDIO GA; XR beta | ADR-0063, [`PLATFORM_CERTIFICATION_V7.md`](../../security/PLATFORM_CERTIFICATION_V7.md) |
+| 6.2.0 | 95 | 2026-08-28 | PULSE + LEARN + SOVEREIGN+ GA; CONNECT opens | — |
+| 6.1.0 | 92 | 2026-06-19 | REACTIONS GA + COPILOT L2 | ADR-0056 |
+| 6.0.0 | 90 | 2026-06-19 | Platform certification v6 | ADR-0053 |
+
+_Current API version:_ `GET /api/platform/version` → `7.0.0` (verified [`platform-v7-ga.test.ts`](../../../tests/unit/platform-v7-ga.test.ts), 2026-06-19).
+
+_Last verified: 2026-06-19 (UTC) — S99 DoD engineering gates._
 

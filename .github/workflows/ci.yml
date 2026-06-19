@@ -109,6 +109,9 @@ jobs:
           fi
           echo "✓ Staging healthy"
 
+      - name: Platform v7 smoke (staging)
+        run: node scripts/smoke-platform-v7.mjs https://staging.qesto.cc
+
   build:
     name: build · deploy
     needs: [ci, deploy-staging]
@@ -179,3 +182,6 @@ jobs:
           fi
 
           echo "✓ All API systems healthy"
+
+      - name: Platform v7 smoke (OPS-S99-CLOSEOUT-01)
+        run: node scripts/smoke-platform-v7.mjs https://qesto.cc

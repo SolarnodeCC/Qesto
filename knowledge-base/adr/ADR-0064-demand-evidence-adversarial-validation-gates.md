@@ -1,21 +1,21 @@
 ---
 id: ADR-0064
-status: proposed
+status: accepted
 created: 2026-06-16
-accepted: null
+accepted: 2026-06-19
 deciders: architect, product-owner, ai-strategy, market-research
-relates_to: BACKLOG_MASTER, ROADMAP_FULL, SPRINT85_99_ARCH_NOTES, HANDOFFS, ADR-0054, ADR-0045, ADR-0010
+relates_to: BACKLOG_MASTER, BACKLOG_ACTIVE, RELEASE_TRAIN_MASTER, ROADMAP_FULL, SPRINT85_99_ARCH_NOTES, HANDOFFS, ADR-0054, ADR-0045, ADR-0010
 ---
 
 # ADR-0064: Demand-Evidence & Adversarial Validation Gates for AI-Native Roadmap Governance
 
 ## Status
 
-Proposed (2026-06-16). Foundational governance ADR. Grounds **EPIC-VALID** in
-[`BACKLOG_MASTER.md`](../product/backlog/BACKLOG_MASTER.md). No code or schema change;
-defines lightweight **planning gates** that sit alongside the existing ADR / eval / pentest
-gate ladder. Requires PO + architect acceptance before any EPIC-VALID story is committed to a
-sprint.
+Accepted (2026-06-19, RT-01). Foundational governance ADR. Grounds **EPIC-VALID** in
+[`BACKLOG_MASTER.md`](../product/backlog/BACKLOG_MASTER.md) and conditional horizon in
+[`RELEASE_TRAIN_MASTER.md`](../product/planning/RELEASE_TRAIN_MASTER.md). No code or schema change;
+defines lightweight **planning gates** alongside the existing ADR / eval / pentest ladder.
+EPIC-VALID stories may be committed to release trains; RT-03 remains conditional until Gates A + D pass.
 
 ## Context
 

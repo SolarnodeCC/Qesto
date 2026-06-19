@@ -25,7 +25,7 @@ Agent system overview, skill governance, AI decisions, and research logs.
 - **AGENT_SYSTEM_OVERVIEW.md** — Overview of the Qesto multi-agent system
 - **AGENT_SKILL_GOVERNANCE.md** — Governance rules for agents and skills
 - **reference/** — Templates, visual overviews, implementation guides
-- **research/** — AI decisions, competency scores, wave execution evidence
+- **research/** — AI decisions, competency scores, wave execution evidence, [`AGENT_PREDICTABILITY_SCORECARD.md`](./research/AGENT_PREDICTABILITY_SCORECARD.md)
 
 ## Key Documents
 
