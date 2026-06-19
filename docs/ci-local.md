@@ -17,13 +17,43 @@ GitHub Actions workflows delegate to `ops/ci/*.sh`. Run the same lanes locally:
 
 ```bash
 just setup          # npm ci + git hooks
+just hooks          # enable pre-push only (re-run after clone)
 just doctor         # verify tool versions
-git config core.hooksPath ops/git-hooks
+```
+
+On Windows (PowerShell):
+
+```powershell
+pwsh scripts/install-git-hooks.ps1
 ```
 
 ## Pre-push
 
-The `ops/git-hooks/pre-push` hook runs `bash ops/ci/quality-gates.sh`.
+Install once per clone (`just hooks`). The `ops/git-hooks/pre-push` hook selects a lane automatically:
+
+| Lane | When | Command |
+|------|------|---------|
+| **full** | Push to `main`/`master`, or trust/AI paths changed | `ops/ci/quality-gates.sh` (CI parity: tsc, `test:eval`, coverage) |
+| **fast** | Feature branches, low-risk diffs | `ops/ci/quality-gates-fast.sh` (tsc + `npm test`) |
+| **skip** | `knowledge-base/`, `docs/`, `*.md` only | No code gates |
+
+Overrides:
+
+- `QESTO_PREPUSH_MODE=fast|full|ci` — force a lane
+- `QESTO_SKIP_PREPUSH=1` — emergency bypass (avoid on `main`)
+
+Dry run without pushing:
+
+```bash
+bash scripts/test-pre-push-hook.sh
+bash scripts/test-pre-push-hook.sh full
+```
+
+**Windows:** hooks run under **Git for Windows** bash when you `git push` (not WSL `git` unless Node is installed in WSL). Verify with:
+
+```bash
+"C:\Program Files\Git\bin\bash.exe" scripts/test-pre-push-hook.sh fast
+```
 
 ## Full local CI
 

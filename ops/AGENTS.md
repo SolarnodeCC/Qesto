@@ -2,7 +2,7 @@
 
 ## Owns
 - `ops/ci/*.sh` — shared CI lanes invoked by GitHub Actions and `scripts/ci-local.sh`
-- `ops/git-hooks/` — pre-push quality gates (`git config core.hooksPath ops/git-hooks`)
+- `ops/git-hooks/` — pre-push quality gates (`just hooks` or `bash scripts/install-git-hooks.sh`)
 
 ## Forbidden
 - Product API or UI logic (belongs in `functions/api/` and `src/`)

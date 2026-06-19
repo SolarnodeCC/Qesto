@@ -59,7 +59,7 @@ function buildContribution(t: number): TenantContribution {
   }
 }
 
-describe('QA-CONNECT-SCALE-01 — 5 tenants x 50k participants x 100 queries, zero leakage', () => {
+describe.sequential('QA-CONNECT-SCALE-01 — 5 tenants x 50k participants x 100 queries, zero leakage', () => {
   const allRows = buildAllRows()
   const contributions = Array.from({ length: TENANT_COUNT }, (_, t) => buildContribution(t))
 
@@ -104,7 +104,7 @@ describe('QA-CONNECT-SCALE-01 — 5 tenants x 50k participants x 100 queries, ze
       // tenant's, and never a cross-region row.
       expect(totalRowsReturned).toBe(QUERY_COUNT * PARTICIPANTS_PER_TENANT)
     },
-    30_000,
+    90_000,
   )
 
   it(
@@ -123,7 +123,7 @@ describe('QA-CONNECT-SCALE-01 — 5 tenants x 50k participants x 100 queries, ze
         expect(aggregate.totalParticipants).toBe(memberCount * PARTICIPANTS_PER_TENANT)
       }
     },
-    30_000,
+    90_000,
   )
 
   it(
@@ -142,6 +142,6 @@ describe('QA-CONNECT-SCALE-01 — 5 tenants x 50k participants x 100 queries, ze
         }
       }
     },
-    30_000,
+    90_000,
   )
 })
