@@ -21,7 +21,8 @@
 //   yet verify the XML signature on <saml:Assertion>. Because of this, the SAML
 //   SP routes (/saml/init, /saml/callback, /saml/metadata) are gated behind the
 //   SAML_SSO_ENABLED feature flag in functions/api/routes/auth/saml.ts, which
-//   defaults OFF (503) in production. Without signature verification an attacker
+//   defaults OFF (503) in production. SAML_SIGNATURE_VERIFY_ENABLED is a second
+//   gate — both must be 'true' before routes serve traffic. Without signature
 //   who knows the entityID + a target team_id could forge an unsigned assertion
 //   and authenticate as any user (CWE-347 / CWE-287), so the flag MUST stay off
 //   until XML-DSig verification ships. Tracked in BACKLOG §4 (SEC-SAML-01, #529)

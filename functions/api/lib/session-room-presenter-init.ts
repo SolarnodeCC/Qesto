@@ -29,6 +29,7 @@ import {
   K_VOTERS,
   K_ACTIVE_ENERGIZER,
   K_SENTIMENT_MOOD,
+  K_STATUS,
 } from './session-room-storage-keys'
 import { type Meta, type Counts, type Attachment } from './session-room-types'
 import type { SessionRoomContext } from './session-room-context'
@@ -46,6 +47,7 @@ export async function sendInit(self: SessionRoomContext, ws: WebSocket, att: Att
   const question = (await self.ctx.storage.get<LiveQuestion>(K_QUESTION)) ?? null
   const allQs = (await self.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
   const questionIndex = (await self.ctx.storage.get<number>(K_QUESTION_INDEX)) ?? 0
+  const doStatus = (await self.ctx.storage.get<string>(K_STATUS)) ?? 'live'
   // Phase 2.2: Prefer in-memory cache for eventual consistency during buffering
   const counts = self.state._counts ?? (await self.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
   const energizer = (await self.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
@@ -60,7 +62,7 @@ export async function sendInit(self: SessionRoomContext, ws: WebSocket, att: Att
     id: meta.sessionId,
     code: meta.code,
     title: meta.title,
-    status: 'live',
+    status: doStatus === 'closed' ? 'closed' : doStatus === 'energizing' ? 'energizing' : 'live',
     votePolicy: meta.votePolicy,
     sessionMode: meta.sessionMode,
     ...(meta.anonymity ? { anonymity: meta.anonymity } : {}),
@@ -111,7 +113,7 @@ export async function sendInit(self: SessionRoomContext, ws: WebSocket, att: Att
         voterId: att.voterId,
         protocolVersion: pv,
         features,
-        question,
+        question: doStatus === 'energizing' ? null : question,
         questionIndex,
         questionTotal: allQs.length,
         results: { counts, total },

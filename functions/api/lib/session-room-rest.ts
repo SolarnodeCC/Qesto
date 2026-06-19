@@ -44,6 +44,7 @@ export async function handleInit(self: SessionRoomContext, req: Request): Promis
         retroCarriedActions?: string[]
         ideateDotVoteLimit?: number
         ideateClusterDebounceMs?: number
+        initialStatus?: 'energizing' | 'live'
       }
     | null
 
@@ -57,7 +58,8 @@ export async function handleInit(self: SessionRoomContext, req: Request): Promis
     await self.hydrate()
   }
 
-  if (status === 'live' || status === 'closed') {
+  const currentStatus = (await self.ctx.storage.get<string>(K_STATUS)) ?? null
+  if (currentStatus === 'live' || currentStatus === 'energizing' || currentStatus === 'closed') {
     return self.jsonError(409, 'already_initialised', 'Session already initialised')
   }
   if (!body || !body.sessionId || !body.ownerId || !body.code || !body.title) {
@@ -97,7 +99,7 @@ export async function handleInit(self: SessionRoomContext, req: Request): Promis
     await self.ctx.storage.put(TOWNHALL_KEYS.spotlight, null)
     await self.ctx.storage.put(TOWNHALL_KEYS.rev, 0)
   }
-  await self.ctx.storage.put(K_STATUS, 'live')
+  await self.ctx.storage.put(K_STATUS, body.initialStatus === 'energizing' ? 'energizing' : 'live')
   await self.ctx.storage.put(K_COUNTS, {} as Counts)
   await self.ctx.storage.put(K_VOTERS, {} as Votes)
   await self.ctx.storage.delete(K_ACTIVE_ENERGIZER)
@@ -105,7 +107,12 @@ export async function handleInit(self: SessionRoomContext, req: Request): Promis
   const allQuestions: LiveQuestion[] = body.questions ?? (body.question ? [body.question] : [])
   await self.ctx.storage.put(K_QUESTIONS, allQuestions)
   await self.ctx.storage.put(K_QUESTION_INDEX, 0)
-  if (allQuestions.length > 0) await self.ctx.storage.put(K_QUESTION, allQuestions[0])
+  if (body.initialStatus === 'energizing') {
+    // Questions are queued in storage but not exposed until transition-to-live.
+    await self.ctx.storage.delete(K_QUESTION)
+  } else if (allQuestions.length > 0) {
+    await self.ctx.storage.put(K_QUESTION, allQuestions[0])
+  }
   if (sessionMode === 'fun' && meta.questionExpiresAt) {
     await self.scheduleAlarm(meta.questionExpiresAt)
   }
@@ -176,20 +183,44 @@ export async function handleClose(self: SessionRoomContext): Promise<Response> {
 // Transitions session from ENERGIZING to LIVE. Broadcast update to all clients.
 export async function handleTransitionToLive(self: SessionRoomContext): Promise<Response> {
   const status = (await self.ctx.storage.get<string>(K_STATUS)) ?? null
-  if (status !== 'live') {
-    // Already live or not initialized, nothing to do
+  if (status !== 'energizing') {
     return self.jsonOk({ transitioned: false })
   }
-  const msg = serverMessage({
+  const allQs = (await self.ctx.storage.get<LiveQuestion[]>(K_QUESTIONS)) ?? []
+  const firstQ = allQs[0] ?? null
+  await self.ctx.storage.put(K_STATUS, 'live')
+  await self.ctx.storage.put(K_COUNTS, {} as Counts)
+  await self.ctx.storage.put(K_VOTERS, {} as Votes)
+  self.state._counts = {}
+  self.resetVoters({})
+  if (firstQ) {
+    await self.ctx.storage.put(K_QUESTION_INDEX, 0)
+    await self.ctx.storage.put(K_QUESTION, firstQ)
+  }
+  const completeMsg = serverMessage({
     type: 'session_energizing_complete',
     data: {},
     timestamp: now(),
   })
   for (const ws of self.ctx.getWebSockets()) {
     try {
-      ws.send(msg)
+      ws.send(completeMsg)
     } catch {
       /* ignore */
+    }
+  }
+  if (firstQ) {
+    const questionMsg = serverMessage({
+      type: 'question',
+      data: { question: firstQ, index: 0, total: allQs.length },
+      timestamp: now(),
+    })
+    for (const ws of self.ctx.getWebSockets()) {
+      try {
+        ws.send(questionMsg)
+      } catch {
+        /* ignore */
+      }
     }
   }
   return self.jsonOk({ transitioned: true })

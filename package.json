@@ -24,6 +24,7 @@
     "test:a11y": "vitest run tests/a11y/",
     "test:eval": "vitest run tests/eval/",
     "e2e:db:local": "wrangler d1 migrations apply qesto_3_db --local",
+    "db:local:reset": "bash scripts/reset-local-d1.sh",
     "e2e:serve:fullstack": "wrangler pages dev dist --port 8788 --d1 DB=qesto_3_db --binding JWT_SECRET=dev-secret --binding ENVIRONMENT=development --binding APP_URL=http://localhost:8788 --no-show-interactive-dev-session",
     "typecheck": "tsc --noEmit",
     "check:baseline": "node scripts/check-baseline.mjs",
@@ -62,6 +63,7 @@
     "@capacitor/preferences": "^7.0.1",
     "@capacitor/push-notifications": "^7.0.1",
     "hono": "^4.12.25",
+    "jankurai-workspace": "github:neverhuman/jankurai#v1.5.1",
     "lucide-react": "^1.18.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -89,6 +91,6 @@
     "typescript": "^6.0.3",
     "vite": "^7.3.5",
     "vitest": "^4.1.8",
-    "wrangler": "^4.100.0"
+    "wrangler": "^4.102.0"
   }
 }

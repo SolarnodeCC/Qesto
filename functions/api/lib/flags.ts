@@ -34,6 +34,9 @@ export type FlagName =
   // not yet verify the XML-DSig signature on the assertion, so the routes must
   // remain disabled (503) in production until signature verification ships.
   | 'SAML_SSO_ENABLED'
+  // SEC-SAML-01 second gate: MUST stay off until XML-DSig verification ships.
+  // Both SAML_SSO_ENABLED and this flag must be 'true' before routes serve traffic.
+  | 'SAML_SIGNATURE_VERIFY_ENABLED'
 
 /**
  * Read a boolean feature flag from the environment.

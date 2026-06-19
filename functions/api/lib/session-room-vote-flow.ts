@@ -29,6 +29,7 @@ import {
   K_SENTIMENT_LAST,
   K_SENTIMENT_RETRY_QUEUE,
   K_SENTIMENT_RETRY_COUNT,
+  K_STATUS,
 } from './session-room-storage-keys'
 import {
   type Meta,
@@ -46,8 +47,19 @@ import { canControlSession } from './session-room-presenter-init'
 
 type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
 
+async function rejectIfEnergizingPhase(
+  self: SessionRoomContext,
+  ws: WebSocket,
+): Promise<boolean> {
+  const status = (await self.ctx.storage.get<string>(K_STATUS)) ?? 'live'
+  if (status !== 'energizing') return false
+  ws.send(errorMessage('energizing', 'Questions are not open yet — complete energizers first'))
+  return true
+}
+
 // ── Presenter navigation ──────────────────────────────────────────────────
 export async function handlePresenterAdvance(self: SessionRoomContext, ws: WebSocket, att: Attachment): Promise<void> {
+  if (await rejectIfEnergizingPhase(self, ws)) return
   if (att.role !== 'presenter') {
     ws.send(errorMessage('forbidden', 'Only presenter can advance'))
     return
@@ -91,6 +103,7 @@ export async function handlePresenterAdvance(self: SessionRoomContext, ws: WebSo
 }
 
 export async function handlePresenterBack(self: SessionRoomContext, ws: WebSocket, att: Attachment): Promise<void> {
+  if (await rejectIfEnergizingPhase(self, ws)) return
   if (att.role !== 'presenter') {
     ws.send(errorMessage('forbidden', 'Only presenter can go back'))
     return
@@ -175,6 +188,7 @@ export async function handleVote(
   att: Attachment,
   data: { questionId?: string; optionId?: string },
 ): Promise<void> {
+  if (await rejectIfEnergizingPhase(self, ws)) return
   const t0 = Date.now()
   const meta = await self.ctx.storage.get<Meta>(K_META)
   const question = await self.ctx.storage.get<LiveQuestion>(K_QUESTION)

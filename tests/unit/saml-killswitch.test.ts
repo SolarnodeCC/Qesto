@@ -5,9 +5,8 @@ import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
 // SEC-SAML-01 (#529): the SAML SP does not yet verify the XML-DSig signature on
-// assertions, so the routes must be disabled (503) unless SAML_SSO_ENABLED is
-// explicitly 'true'. These tests pin the kill-switch behaviour so the routes can
-// never silently go live without signature verification.
+// assertions. Routes stay disabled (503) unless BOTH SAML_SSO_ENABLED and
+// SAML_SIGNATURE_VERIFY_ENABLED are explicitly 'true'.
 
 function kv(): KVNamespace {
   return new KVMock() as unknown as KVNamespace
@@ -35,7 +34,7 @@ function makeEnv(overrides: Partial<Env> = {}): Env {
 }
 
 describe('SAML SP kill-switch (#529)', () => {
-  it('returns 503 for /saml/metadata when the flag is unset (default off)', async () => {
+  it('returns 503 for /saml/metadata when flags are unset (default off)', async () => {
     const app = createApp()
     const res = await app.fetch(new Request('https://qesto.cc/api/auth/saml/metadata'), makeEnv())
     expect(res.status).toBe(503)
@@ -53,7 +52,7 @@ describe('SAML SP kill-switch (#529)', () => {
     expect(res.status).toBe(503)
   })
 
-  it('returns 503 for POST /saml/callback when the flag is unset — no forged assertion is parsed', async () => {
+  it('returns 503 for POST /saml/callback when flags are unset — no forged assertion is parsed', async () => {
     const app = createApp()
     const form = new FormData()
     form.set('SAMLResponse', btoa('<forged/>'))
@@ -61,6 +60,15 @@ describe('SAML SP kill-switch (#529)', () => {
     const res = await app.fetch(
       new Request('https://qesto.cc/api/auth/saml/callback', { method: 'POST', body: form }),
       makeEnv(),
+    )
+    expect(res.status).toBe(503)
+  })
+
+  it('returns 503 when SAML_SSO_ENABLED is true but signature verify is off', async () => {
+    const app = createApp()
+    const res = await app.fetch(
+      new Request('https://qesto.cc/api/auth/saml/metadata'),
+      makeEnv({ SAML_SSO_ENABLED: 'true' } as Partial<Env>),
     )
     expect(res.status).toBe(503)
   })
@@ -74,11 +82,14 @@ describe('SAML SP kill-switch (#529)', () => {
     expect(res.status).toBe(503)
   })
 
-  it('serves metadata (200) only when SAML_SSO_ENABLED === "true"', async () => {
+  it('serves metadata (200) only when BOTH SAML flags are "true"', async () => {
     const app = createApp()
     const res = await app.fetch(
       new Request('https://qesto.cc/api/auth/saml/metadata'),
-      makeEnv({ SAML_SSO_ENABLED: 'true' } as Partial<Env>),
+      makeEnv({
+        SAML_SSO_ENABLED: 'true',
+        SAML_SIGNATURE_VERIFY_ENABLED: 'true',
+      } as Partial<Env>),
     )
     expect(res.status).toBe(200)
     const xml = await res.text()
