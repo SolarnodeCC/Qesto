@@ -64,7 +64,7 @@
     "@capacitor/preferences": "^7.0.1",
     "@capacitor/push-notifications": "^7.0.1",
     "hono": "^4.12.25",
-    "jankurai-workspace": "github:neverhuman/jankurai#v1.5.1",
+    "jankurai-workspace": "github:neverhuman/jankurai#v1.6.10",
     "lucide-react": "^1.18.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
