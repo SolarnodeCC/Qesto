@@ -21,7 +21,8 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
-_Last updated: 2026-06-11 (UTC) — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0** (cadence change 10→9 working days, capacity retained at 120–150 pts; S85–S90 carry the committed v6.0 epics re-spaced, S91–S99 add 8 net-new epics E91–E98 → v7.0 GA) with agent synthesis (PO, architect, market research). Previous refresh 2026-06-01 (Sprint 81–90 Post-v5.0 Expansion Arc, E81–E90 → v6.0 GA)._
+_Last updated: 2026-11-03 (UTC) — **v7.0 GA shipped at Sprint 99** (Engagement Intelligence Network): REACTIONS / PULSE / COPILOT / LEARN / SOVEREIGN+ / CONNECT / STUDIO all GA; XR ships beta only behind `beta-xr`. Platform certified at `7.0.0` (ADR-0063: Pentest #6 closed, ADR-0062 isolation proof, DR drill ≤2h, SOC 2 annual, bounded AAA); v6.x → 24-month maintenance ending 2029-11-03. Current GA: `7.0.0`. See [`v7.0.0.md`](../releases/v7.0.0.md). Previous: 2026-06-11 — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0**_
+_Superseded: 2026-06-11 (UTC) — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0** (cadence change 10→9 working days, capacity retained at 120–150 pts; S85–S90 carry the committed v6.0 epics re-spaced, S91–S99 add 8 net-new epics E91–E98 → v7.0 GA) with agent synthesis (PO, architect, market research). Previous refresh 2026-06-01 (Sprint 81–90 Post-v5.0 Expansion Arc, E81–E90 → v6.0 GA)._
 
 ## Release status
 - **v2.0.0 (current)**: shipped core realtime sessions, auth, billing foundations, AI-assisted flows, i18n baseline, and broad automated testing.

@@ -1,6 +1,8 @@
 {
   "enter_button": "Entrer en mode immersif (bêta)",
   "enter_button_hint": "Ouvre une vue 3D expérimentale de cette question. Le vote fonctionne de la même manière.",
+  "enter_button_fallback": "Aperçu spatial (2D)",
+  "enter_button_fallback_hint": "Votre appareil ne prend pas en charge le WebXR immersif. Ceci ouvre plutôt l'aperçu 2D standard — le vote fonctionne de la même manière.",
   "beta_badge": "Bêta",
   "overlay_title": "Mode immersif (bêta)",
   "overlay_dialog_label": "Affichage immersif de la session, bêta",

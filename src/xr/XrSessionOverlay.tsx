@@ -45,6 +45,16 @@ export interface XrSessionOverlayProps {
   onSendPose: (p: [number, number, number], q: [number, number, number, number]) => void
   /** Returns to the standard 2D view. Always available — XR never gates. */
   onClose: () => void
+  /**
+   * Real WebXR device-capability result from `useWebXrSupport` (ADR-0066 D5 /
+   * FE-XR-LAUNCHER-01 / XR-FALLBACK-01). When `false`, the device has no
+   * immersive WebXR session support, so the overlay surfaces the
+   * `fallback_notice` string alongside the 2D stub scene to make clear that
+   * immersive mode is optional and voting is unaffected. The 2D scene
+   * (`XrSpatialScene`) renders identically either way — this only controls
+   * whether the fallback explanation is shown.
+   */
+  isWebXrCapable: boolean
 }
 
 /** A gently drifting placeholder pose so the wire path has real frames to send. */
@@ -56,7 +66,13 @@ function nextLocalPose(t: number): { p: [number, number, number]; q: [number, nu
   }
 }
 
-export default function XrSessionOverlay({ question, avatars, onSendPose, onClose }: XrSessionOverlayProps) {
+export default function XrSessionOverlay({
+  question,
+  avatars,
+  onSendPose,
+  onClose,
+  isWebXrCapable,
+}: XrSessionOverlayProps) {
   const t = useT('xr')
   const dialogRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -141,6 +157,14 @@ export default function XrSessionOverlay({ question, avatars, onSendPose, onClos
       <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-6 overflow-y-auto">
         <XrSpatialScene question={question} avatars={avatars} reducedMotion={reducedMotion} />
         <p className="text-xs text-white/60 text-center max-w-sm">{t('scene_placeholder_caption')}</p>
+        {!isWebXrCapable && (
+          <p
+            role="status"
+            className="text-xs text-amber-200 bg-amber-900/30 border border-amber-500/30 rounded-lg px-3 py-2 text-center max-w-sm"
+          >
+            {t('fallback_notice')}
+          </p>
+        )}
         {reducedMotion && (
           <p role="status" className="text-xs text-white/50 text-center max-w-sm">
             {t('reduced_motion_notice')}

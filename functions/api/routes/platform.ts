@@ -35,6 +35,9 @@ const RELEASES = [
   // S98 (ADR-0066): RC soak hardening + XR beta feature-flagged (BETA_XR_ENABLED,
   // conditional on the XR-00 kill-gate). RC cut, NOT GA — GA flips at S99.
   { version: '7.0.0-rc.2', codename: 'v7.0-rc', status: 'rc', sprint: 98 },
+  // S99 (ADR-0063): v7.0 GA — "Engagement Intelligence Network". Additive GA row;
+  // the rc.1/rc.2 rows are retained in the registry.
+  { version: '7.0.0', codename: 'v7.0', status: 'ga', sprint: 99 },
 ] as const
 
 export function mountPlatformRoutes(parent: ParentApp) {
@@ -45,10 +48,10 @@ export function mountPlatformRoutes(parent: ParentApp) {
       ok: true,
       data: {
         // `api`/`currentGa` track the current GA contract, not pre-releases. The
-        // v7.0-rc cut (latest: 7.0.0-rc.2, S98 soak hardening) is recorded in the
-        // RELEASES registry (GET /api/platform/releases) and flips to GA at S99;
-        // the GA-facing version stays put until then.
-        api: '6.1.0',
+        // v7.0-rc cut (rc.1 S97 / rc.2 S98 soak hardening) was promoted to GA at
+        // S99 per ADR-0063 ("Engagement Intelligence Network"). v7.0 GA is
+        // additive vs. v6.x — no breaking API change; publicApi map unchanged.
+        api: '7.0.0',
         realtimeDefault:
           getFlag(c.env, 'REALTIME_V3_ENABLED') ? 3 : getFlag(c.env, 'REALTIME_V2_DEFAULT') ? 2 : 1,
         realtimeV2Enabled: getFlag(c.env, 'REALTIME_V2_ENABLED'),
@@ -120,18 +123,25 @@ export function mountPlatformRoutes(parent: ParentApp) {
       ok: true,
       data: {
         platformCertification: true,
-        certifiedVersion: '6.0.0',
+        certifiedVersion: '7.0.0',
         soc2Type2: 'closed',
         soc2AnnualEvidence: '2026',
-        // Pentest #3 (v5.0) and Pentest #5 (v6.0 governance + embed + agent) both crit/high = 0.
+        // Pentest #3 (v5.0), #5 (v6.0 governance + embed + agent), and #6 (agent L2/L3 +
+        // analytics aggregation + ecosystem egress + federation) all crit/high = 0.
         pentest3: 'complete',
         pentest5: 'complete',
+        pentest6: 'complete',
+        // Cross-tenant isolation proof (ADR-0062 / QA-CONNECT-SCALE-01): 5 tenants ×
+        // 50k × 100 queries, zero leakage — federation certification input.
+        isolationProof: 'verified',
         drDrillRtoHours: 2,
-        // Bounded claim (ADR-0053): AAA on core flows + captions overlay + canvas themes; broader app AA.
+        // Bounded claim (ADR-0053/0063): AAA on core flows + captions + canvas + the v7
+        // surfaces (REACTIONS, PULSE, STUDIO, CONNECT); broader app AA. Kept 'partial'
+        // so the GA does not over-claim. XR is beta-only and NOT part of the GA claim.
         aaaConformance: 'partial',
         fedRampAto: 'path_documented',
         sovereignTier: 'available',
-        deprecationPolicy: 'knowledge-base/adr/ADR-0053-v6-platform-certification.md',
+        deprecationPolicy: 'knowledge-base/adr/ADR-0063-v7-platform-certification.md',
         certifiedAt: new Date().toISOString().slice(0, 10),
       },
       trace_id: c.get('trace_id'),
@@ -160,9 +170,29 @@ export function mountPlatformRoutes(parent: ParentApp) {
         v5MaintenanceEnd: '2028-12-31',
         v4MaintenanceEnd: '2028-09-16',
         v3End: '2027-12-31',
-        currentGa: '6.1.0',
+        currentGa: '7.0.0',
         notice: 'Sunset-Date headers on deprecated API versions; v5.x enters maintenance at v6.0 GA',
         policyDoc: 'knowledge-base/adr/ADR-0053-v6-platform-certification.md',
+      },
+      trace_id: c.get('trace_id'),
+    }),
+  )
+
+  pub.get('/v6-sunset', (c) =>
+    c.json({
+      ok: true,
+      data: {
+        // v7.0 GA (S99) starts the v6.x deprecation clock per ADR-0063. v6.x enters
+        // maintenance (security + critical fixes only) at v7.0 GA and is supported for
+        // a 24-month window through 2029-11-03; no breaking change vs. v7.0 at GA
+        // (additive RELEASES + version string only). No customer action required.
+        v6MaintenanceEnd: '2029-11-03',
+        v5MaintenanceEnd: '2028-12-31',
+        v4MaintenanceEnd: '2028-09-16',
+        v3End: '2027-12-31',
+        currentGa: '7.0.0',
+        notice: 'Sunset-Date headers on deprecated API versions; v6.x enters maintenance at v7.0 GA',
+        policyDoc: 'knowledge-base/adr/ADR-0063-v7-platform-certification.md',
       },
       trace_id: c.get('trace_id'),
     }),

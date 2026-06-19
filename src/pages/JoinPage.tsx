@@ -22,6 +22,7 @@ import { PostVoteResults } from './join/PostVoteResults'
 import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOverlay'
 import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 import type { XrAvatarSync } from '../hooks/useLiveSession'
+import { useWebXrSupport } from '../xr/useWebXrSupport'
 
 // XR-SPATIAL-01 / XR-AVATAR-01 (ADR-0066): lazy-loaded so the immersive beta
 // module never lands in the critical bundle. Mounted only when the user
@@ -178,8 +179,14 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
   // Opt-in only — never a gate. The button is rendered solely when the DO has
   // advertised the `'xr'` capability for this (non-ZK) session; the overlay
-  // mounts only after an explicit click.
+  // mounts only after an explicit click. The capability gate (real WebXR
+  // device detection, ADR-0066 D5 / FE-XR-LAUNCHER-01) is independent of the
+  // flag gate above and only changes the button's label/affordance and
+  // whether the overlay shows the fallback notice — it never hides the
+  // button or blocks the 2D path.
   const xrAvailable = state.features.includes('xr')
+  const webXrSupport = useWebXrSupport()
+  const isWebXrCapable = webXrSupport === 'supported'
   const [xrOpen, setXrOpen] = useState(false)
   const xrEnterButtonRef = useRef<HTMLButtonElement>(null)
   const openXr = useCallback(() => setXrOpen(true), [])
@@ -298,9 +305,10 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             ref={xrEnterButtonRef}
             type="button"
             onClick={openXr}
+            title={isWebXrCapable ? tXr('enter_button_hint') : tXr('enter_button_fallback_hint')}
             className="min-h-[44px] inline-flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-50 dark:bg-teal-900/20 px-3 text-xs font-medium text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
-            {tXr('enter_button')}
+            {isWebXrCapable ? tXr('enter_button') : tXr('enter_button_fallback')}
           </button>
         )}
       </div>
@@ -456,6 +464,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             avatars={xrAvatars}
             onSendPose={sendXrAvatarSync}
             onClose={closeXr}
+            isWebXrCapable={isWebXrCapable}
           />
         </Suspense>
       )}
