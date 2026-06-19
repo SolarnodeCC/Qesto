@@ -1,6 +1,8 @@
 {
   "enter_button": "Immersieve modus openen (beta)",
   "enter_button_hint": "Opent een experimenteel 3D-weergave van deze vraag. Stemmen werkt hetzelfde.",
+  "enter_button_fallback": "Ruimtelijke modus bekijken (2D)",
+  "enter_button_fallback_hint": "Je apparaat ondersteunt geen immersieve WebXR. Dit opent in plaats daarvan de standaard 2D-weergave — stemmen werkt hetzelfde.",
   "beta_badge": "Beta",
   "overlay_title": "Immersieve modus (beta)",
   "overlay_dialog_label": "Immersieve sessieweergave, beta",

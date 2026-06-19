@@ -1,6 +1,8 @@
 {
   "enter_button": "Enter immersive mode (beta)",
   "enter_button_hint": "Opens an experimental 3D view of this question. Voting still works the same way.",
+  "enter_button_fallback": "Preview spatial mode (2D)",
+  "enter_button_fallback_hint": "Your device doesn't support immersive WebXR. This opens the standard 2D preview instead — voting still works the same way.",
   "beta_badge": "Beta",
   "overlay_title": "Immersive mode (beta)",
   "overlay_dialog_label": "Immersive session view, beta",

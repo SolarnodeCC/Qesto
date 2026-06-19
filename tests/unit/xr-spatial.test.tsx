@@ -171,6 +171,7 @@ describe('XrSessionOverlay: opt-in entry point + pose sync (ADR-0066)', () => {
           avatars: [],
           onSendPose,
           onClose,
+          isWebXrCapable: true,
         }),
       )
     })
@@ -200,6 +201,7 @@ describe('XrSessionOverlay: opt-in entry point + pose sync (ADR-0066)', () => {
           avatars: [],
           onSendPose: vi.fn(),
           onClose,
+          isWebXrCapable: true,
         }),
       )
     })
@@ -220,6 +222,170 @@ describe('XrSessionOverlay: opt-in entry point + pose sync (ADR-0066)', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
 
     // Escape key dismisses too.
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    })
+    expect(onClose).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('useWebXrSupport / detectWebXrSupport: real WebXR device detection (ADR-0066 D5, FE-XR-LAUNCHER-01)', () => {
+  const originalXr = (navigator as Navigator & { xr?: unknown }).xr
+
+  afterEach(() => {
+    if (originalXr === undefined) {
+      delete (navigator as Navigator & { xr?: unknown }).xr
+    } else {
+      Object.defineProperty(navigator, 'xr', { value: originalXr, configurable: true })
+    }
+  })
+
+  it('resolves unsupported when navigator.xr is undefined (desktop Chrome/Firefox, jsdom, SSR)', async () => {
+    delete (navigator as Navigator & { xr?: unknown }).xr
+    const { detectWebXrSupport } = await import('../../src/xr/useWebXrSupport')
+    await expect(detectWebXrSupport()).resolves.toBe(false)
+  })
+
+  it('resolves supported when isSessionSupported("immersive-vr") resolves true (Quest 3)', async () => {
+    Object.defineProperty(navigator, 'xr', {
+      value: { isSessionSupported: vi.fn().mockResolvedValue(true) },
+      configurable: true,
+    })
+    const { detectWebXrSupport } = await import('../../src/xr/useWebXrSupport')
+    await expect(detectWebXrSupport()).resolves.toBe(true)
+  })
+
+  it('falls back to the immersive-ar probe for handheld AR (iOS Safari 16+/Android Chrome)', async () => {
+    const isSessionSupported = vi.fn().mockImplementation((mode: string) =>
+      Promise.resolve(mode === 'immersive-ar'),
+    )
+    Object.defineProperty(navigator, 'xr', { value: { isSessionSupported }, configurable: true })
+    const { detectWebXrSupport } = await import('../../src/xr/useWebXrSupport')
+    await expect(detectWebXrSupport()).resolves.toBe(true)
+    expect(isSessionSupported).toHaveBeenCalledWith('immersive-vr')
+    expect(isSessionSupported).toHaveBeenCalledWith('immersive-ar')
+  })
+
+  it('resolves unsupported (never throws) when isSessionSupported rejects', async () => {
+    Object.defineProperty(navigator, 'xr', {
+      value: { isSessionSupported: vi.fn().mockRejectedValue(new Error('denied')) },
+      configurable: true,
+    })
+    const { detectWebXrSupport } = await import('../../src/xr/useWebXrSupport')
+    await expect(detectWebXrSupport()).resolves.toBe(false)
+  })
+
+  it('useWebXrSupport hook resolves from "checking" to "supported"/"unsupported" without throwing', async () => {
+    Object.defineProperty(navigator, 'xr', {
+      value: { isSessionSupported: vi.fn().mockResolvedValue(true) },
+      configurable: true,
+    })
+    const { useWebXrSupport } = await import('../../src/xr/useWebXrSupport')
+
+    function Probe() {
+      const support = useWebXrSupport()
+      return createElement('span', { 'data-testid': 'support' }, support)
+    }
+
+    await act(async () => {
+      root.render(createElement(Probe))
+    })
+    // Allow the async isSessionSupported probe to settle.
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(container.querySelector('[data-testid="support"]')?.textContent).toBe('supported')
+  })
+})
+
+describe('XR-FALLBACK-01: explicit 2D graceful-degrade path (ADR-0066 D5)', () => {
+  it('XrSessionOverlay shows the fallback_notice only when isWebXrCapable is false', async () => {
+    const { default: XrSessionOverlay } = await import('../../src/xr/XrSessionOverlay')
+
+    await act(async () => {
+      root.render(
+        createElement(XrSessionOverlay, {
+          question: null,
+          avatars: [],
+          onSendPose: vi.fn(),
+          onClose: vi.fn(),
+          isWebXrCapable: false,
+        }),
+      )
+    })
+
+    // fallback_notice (en/xr.json) text must be present in the non-WebXR path.
+    expect(container.textContent).toContain(
+      "You're seeing the standard 2D view. Immersive mode is optional and never required to vote.",
+    )
+  })
+
+  it('XrSessionOverlay does not render the fallback_notice when the device is WebXR-capable', async () => {
+    const { default: XrSessionOverlay } = await import('../../src/xr/XrSessionOverlay')
+
+    await act(async () => {
+      root.render(
+        createElement(XrSessionOverlay, {
+          question: null,
+          avatars: [],
+          onSendPose: vi.fn(),
+          onClose: vi.fn(),
+          isWebXrCapable: true,
+        }),
+      )
+    })
+
+    expect(container.textContent).not.toContain(
+      "You're seeing the standard 2D view. Immersive mode is optional and never required to vote.",
+    )
+  })
+
+  it('the 2D canvas stub scene keeps rendering underneath the overlay regardless of WebXR capability', async () => {
+    const { default: XrSessionOverlay } = await import('../../src/xr/XrSessionOverlay')
+
+    await act(async () => {
+      root.render(
+        createElement(XrSessionOverlay, {
+          question: { id: 'q1', kind: 'poll', prompt: 'Pick one', options: [] },
+          avatars: [],
+          onSendPose: vi.fn(),
+          onClose: vi.fn(),
+          isWebXrCapable: false,
+        }),
+      )
+    })
+
+    // The 2D canvas stub (voting UI's spatial preview) renders in the
+    // non-WebXR path too — XR-FALLBACK-01 never blocks or hides the 2D plane.
+    const canvas = container.querySelector('canvas')
+    expect(canvas).toBeTruthy()
+    expect(container.textContent).toContain('Pick one')
+  })
+
+  it('remains dismissible (close button + Escape) in the non-WebXR fallback path', async () => {
+    const { default: XrSessionOverlay } = await import('../../src/xr/XrSessionOverlay')
+    const onClose = vi.fn()
+
+    await act(async () => {
+      root.render(
+        createElement(XrSessionOverlay, {
+          question: null,
+          avatars: [],
+          onSendPose: vi.fn(),
+          onClose,
+          isWebXrCapable: false,
+        }),
+      )
+    })
+
+    const closeButton = container.querySelector('button')
+    await act(async () => {
+      closeButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    })
+    expect(onClose).toHaveBeenCalledTimes(1)
+
     await act(async () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
     })

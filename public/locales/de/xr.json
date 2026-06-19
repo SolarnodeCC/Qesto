@@ -1,6 +1,8 @@
 {
   "enter_button": "Immersiver Modus öffnen (Beta)",
   "enter_button_hint": "Öffnet eine experimentelle 3D-Ansicht dieser Frage. Abstimmung funktioniert auf die gleiche Weise.",
+  "enter_button_fallback": "Räumliche Vorschau ansehen (2D)",
+  "enter_button_fallback_hint": "Ihr Gerät unterstützt kein immersives WebXR. Dies öffnet stattdessen die Standard-2D-Vorschau — Abstimmung funktioniert auf die gleiche Weise.",
   "beta_badge": "Beta",
   "overlay_title": "Immersiver Modus (Beta)",
   "overlay_dialog_label": "Immersive Sitzungsansicht, Beta",

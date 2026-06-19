@@ -30,12 +30,14 @@ function makeEnv(): Env {
 const get = (path: string) => createApp().fetch(new Request(`http://local${path}`), makeEnv())
 
 describe('platform v6.0 GA contract (Sprint 90)', () => {
-  it('reports current api version 6.1.0 (v6.1 GA supersedes v6.0)', async () => {
+  // The live /version contract now reports the current GA (7.0.0 at S99, ADR-0063);
+  // the v6.0/v6.1 GA history is asserted via the additive RELEASES registry below.
+  it('reports the current api GA version (7.0.0 supersedes v6.x)', async () => {
     const res = await get('/api/platform/version')
     expect(res.status).toBe(200)
     const body = (await res.json()) as { ok: boolean; data: { api: string } }
     expect(body.ok).toBe(true)
-    expect(body.data.api).toBe('6.1.0')
+    expect(body.data.api).toBe('7.0.0')
   })
 
   it('lists the v6.0 GA release', async () => {
@@ -62,7 +64,8 @@ describe('platform v6.0 GA contract (Sprint 90)', () => {
     const res = await get('/api/platform/certification')
     const body = (await res.json()) as { data: Record<string, unknown> }
     expect(body.data.platformCertification).toBe(true)
-    expect(body.data.certifiedVersion).toBe('6.0.0')
+    // certifiedVersion advances to the current GA (7.0.0 at S99, ADR-0063).
+    expect(body.data.certifiedVersion).toBe('7.0.0')
     expect(body.data.pentest5).toBe('complete')
     expect(body.data.soc2Type2).toBe('closed')
     expect(body.data.drDrillRtoHours).toBe(2)
@@ -72,14 +75,16 @@ describe('platform v6.0 GA contract (Sprint 90)', () => {
     expect(body.data.aaaConformance).toBe('partial')
     expect(body.data.fedRampAto).toBe('path_documented')
     expect(body.data.sovereignTier).toEqual(expect.any(String))
-    expect(body.data.deprecationPolicy).toEqual(expect.stringContaining('ADR-0053'))
+    // deprecationPolicy repointed to the current cert ADR (ADR-0063 at S99).
+    expect(body.data.deprecationPolicy).toEqual(expect.stringContaining('ADR-0063'))
     expect(body.data.certifiedAt).toEqual(expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/))
   })
 
   it('publishes the v5.x sunset notice', async () => {
     const res = await get('/api/platform/v5-sunset')
     const body = (await res.json()) as { data: Record<string, unknown> }
-    expect(body.data.currentGa).toBe('6.1.0')
+    // currentGa tracks the live GA (7.0.0 at S99); v5 policy doc stays ADR-0053.
+    expect(body.data.currentGa).toBe('7.0.0')
     expect(typeof body.data.v5MaintenanceEnd).toBe('string')
     expect(body.data.policyDoc).toContain('ADR-0053')
   })

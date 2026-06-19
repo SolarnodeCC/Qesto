@@ -33,11 +33,13 @@ describe('Sprint 92 foundation', () => {
     expect(readFileSync(path, 'utf8')).toMatch(/status: accepted/i)
   })
 
-  it('platform version is 6.1.0 GA', async () => {
+  // The live /version contract advances with each GA; as of S99 (ADR-0063) it is 7.0.0.
+  // The S92 deliverable is verified by the 6.1.0 GA release row below (additive registry).
+  it('platform version reports the current GA (7.0.0 as of S99)', async () => {
     const res = await get('/api/platform/version')
     expect(res.status).toBe(200)
     const json = (await res.json()) as { data: { api: string } }
-    expect(json.data.api).toBe('6.1.0')
+    expect(json.data.api).toBe('7.0.0')
   })
 
   it('platform releases include 6.1.0 sprint 92 GA entry', async () => {
