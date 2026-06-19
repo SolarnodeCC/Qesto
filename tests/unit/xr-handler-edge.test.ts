@@ -12,7 +12,7 @@
 //   - flag-off inertness: inbound xr_avatar_sync with flag off produces zero side effects
 //     (no broadcast, no avatar state mutation, no AE event).
 
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import type { AnalyticsEngineDataset } from '@cloudflare/workers-types'
 import { XrAvatarHandler } from '../../functions/api/lib/session-room-xr-handler'
 import { MockDurableObjectState, MockWebSocket } from '../helpers/do-mock'
@@ -216,7 +216,7 @@ describe('XrAvatarHandler — avatar cap / many-socket fan-out', () => {
     handler.flushTick()
     const broadcast = deltas(ws1)[2]
     expect(broadcast.data.avatars).toHaveLength(2)
-    const ids = broadcast.data.avatars.map((a: { a: string }) => a.a)
+    const ids = (broadcast.data.avatars as Array<{ a: string }>).map((a) => a.a)
     expect(new Set(ids).size).toBe(2)
   })
 
@@ -280,7 +280,7 @@ describe('XrAvatarHandler — late-join + disconnect interleaving', () => {
     const ws3 = connect(state, att('v3'))
 
     for (const ws of [ws1, ws2, ws3]) {
-      await handler.handleSync(asWs(ws), att(ws.deserializeAttachment().voterId), {
+      await handler.handleSync(asWs(ws), att((ws.deserializeAttachment() as { voterId: string }).voterId), {
         p: P,
         q: Q,
       })

@@ -59,8 +59,8 @@ _Goal (per [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) §S98 / [`SP
 
 3. **XR conditional track (gate: day 5, XR-00 kill-criterion pass):**
    - If kill-criterion **passes** (≥3 design-partner commitments):
-     - `qesto-backend` (days 6–9): `XR-SPATIAL-01` backend — SessionRoom xr_avatar_sync broadcast channel (WebSocket ClientMessage for `type='spatial_state'`; sync frequency ≤ 30ms), ADD platform AE metric `xr.avatar_sync_latency` (p50/p95).
-     - `qesto-frontend` (days 6–9): `XR-SPATIAL-01` + `XR-AVATAR-01` — lazy-load WebGL adapter (Three.js or Babylon.js; TBD by architect), spatial question rendering, avatar mesh system (50-avatar culling/LOD), behind `beta-xr` feature flag. Provide 2D fallback path (styled buttons, no spatial interaction) for non-WebXR browsers.
+     - `qesto-backend` (days 6–9): `XR-SPATIAL-01` backend — additive `xr_avatar_sync` WebSocket protocol on the existing SessionRoom DO (per **ADR-0066**): inbound `ClientMessage type='xr_avatar_sync'` `{ p:[x,y,z], q:[x,y,z,w] }`, outbound `ServerMessage type='xr_avatar_sync'` `{ avatars:[{a,p,q}], rev }` fanned out on a fixed ~12.5 Hz (80 ms) batch tick; ADD platform AE metric `xr.avatar_sync_latency` (durationMs + count, no PII). Gated by `BETA_XR_ENABLED`; inert when off; excluded in zero-knowledge sessions.
+     - `qesto-frontend` (days 6–9): `XR-SPATIAL-01` + `XR-AVATAR-01` — **lazy-loaded stub renderer** (no `three`/Babylon dependency this sprint per ADR-0066 D2 — engine deferred to S99), spatial question rendering + privacy-safe avatar markers (cap 50), mounted only when `'xr'` is present in `init.data.features[]` behind the `BETA_XR_ENABLED` flag and an explicit opt-in. The existing 2D UI stays the default (full device-detection launcher `FE-XR-LAUNCHER-01` and graceful 2D degrade `XR-FALLBACK-01` are **S99**, not this sprint).
      - `qesto-i18n` (days 6–9): `I18N-STUDIO-01` — extract remaining i18n keys from STUDIO authoring UI (not pulled in S97 feature), add to `studio.json` namespace across EN/NL/ES/DE/FR. Rebase from S97's base set.
    - If kill-criterion **fails** (<1 design-partner pull):
      - Skip all three (XR-SPATIAL-01, XR-AVATAR-01 remain P1 candidates for S99 or later; see §Kill Criterion).
@@ -90,7 +90,9 @@ _Goal (per [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) §S98 / [`SP
 
 **Precondition:** XR-00 kill-criterion pass (≥3 design-partner commitments).
 
-**Given** a host has initiated a LIVE session in XR beta mode (feature flag `beta-xr=true`) and participants have joined via a Meta Quest 3 or iOS Safari 16+,  
+> **Contract note (reconciled 2026-10-20):** the acceptance signals below were drafted against an early REST-broadcast sketch. The **shipped** contract is the WebSocket protocol in **ADR-0066** (`xr_avatar_sync` Client/Server messages, `{a,p,q}` avatars, single `xr.avatar_sync_latency` AE event, `BETA_XR_ENABLED` flag, stub renderer / no WebGL dependency this sprint). ADR-0066 + the code are the source of truth.
+
+**Given** a host has initiated a LIVE session in XR beta mode (feature flag `BETA_XR_ENABLED=true`, `'xr'` present in `init.data.features[]`) and participants have joined via a Meta Quest 3 or iOS Safari 16+,  
 **When** the session transitions to LIVE and the first question is loaded,  
 **Then**:
 - The question object (text + media) appears in the center of the 3D shared space.
@@ -98,13 +100,12 @@ _Goal (per [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) §S98 / [`SP
 - Latency from question-load to render <200ms (p95, measured via AE `xr.avatar_sync_latency`).
 - Non-XR browsers show a 2D fallback view (polished buttons, no spatial interaction).
 
-**Acceptance signals:**
-- `POST /api/sessions/:id/xr-broadcast` endpoint accepts `{ type: 'spatial_state', question_id, position, rotation }` and broadcasts to DO.
-- SessionRoom broadcasts `ServerMessage` with `type='spatial_update'` to all connected WebXR clients.
-- Frontend renders 3D question mesh via lazy-loaded WebGL module.
-- 2D fallback path visible in Chrome/Safari (non-WebXR).
-- Latency p95 <200ms confirmed in soak test.
-- Feature flag `beta-xr` in place; disabled by default; no GA claim.
+**Acceptance signals (shipped contract — ADR-0066):**
+- SessionRoom accepts inbound `ClientMessage type='xr_avatar_sync'` `{ p, q }` and broadcasts `ServerMessage type='xr_avatar_sync'` `{ avatars:[{a,p,q}], rev }` to connected clients on a fixed ~12.5 Hz batch tick (no per-frame broadcast).
+- Frontend renders the active question as a centered object in a lazy-loaded stub scene (`src/xr/XrSpatialScene.tsx`), driven by real question data.
+- The existing 2D UI remains the default; XR mounts only on explicit opt-in when `'xr'` is in `init.data.features[]`.
+- Latency exposed via AE `xr.avatar_sync_latency`; bounded under sustained load (`tests/stress/xr-avatar-fanout.stress.test.ts`).
+- Feature flag `BETA_XR_ENABLED` in place; disabled by default; no GA claim.
 
 ---
 
@@ -115,17 +116,17 @@ _Goal (per [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) §S98 / [`SP
 **Given** a LIVE session in XR beta mode with 50 concurrent participants,  
 **When** each participant joins and their avatar is instantiated in the shared space,  
 **Then**:
-- All 50 avatars render concurrently at ≥25 fps on Quest 3 (measured via browser performance API).
-- Avatars use non-photorealistic, privacy-safe meshes (no face/body biometrics; randomized color + shape per participant).
-- Avatar pose syncs at ≤30ms frequency (broadcast via SessionRoom `xr_avatar_sync` channel).
-- No participant identity is leaked (names are never transmitted; only participant.id + spatial pose + avatar_style).
+- Up to 50 concurrent avatars render in the stub scene without layout thrash (≥25 fps target on Quest 3 for the S99 WebGL engine; the S98 stub proves the wire/merge path).
+- Avatars are non-photorealistic, privacy-safe markers (no face/body biometrics).
+- Avatar pose is fanned out on the ~12.5 Hz (80 ms) batch tick via the SessionRoom `xr_avatar_sync` channel (pose coalesced between ticks).
+- No participant identity is leaked: only an **ephemeral per-socket id `a`** (not voterId) plus pose `p`/`q` are broadcast — never names.
 
-**Acceptance signals:**
-- Avatar mesh system accepts `{ participant_id, avatar_style, position, rotation }` from WebSocket.
-- Culling/LOD ensures <30% CPU on Quest 3 with 50 avatars (profiled via Quest dev tools).
-- AE metric `xr.avatar_concurrent_count` + `xr.avatar_sync_latency` published.
-- Security review confirms no identity leakage (participant.id + avatar_style only; no names in broadcast).
-- Feature flag `beta-xr` gates the feature; disabled by default.
+**Acceptance signals (shipped contract — ADR-0066):**
+- Handler accepts `{ p:[x,y,z], q:[x,y,z,w] }` inbound and merges sockets into `{ avatars:[{a,p,q}], rev }` with monotonic `rev`; transient in-DO state only (no D1/KV writes), released on disconnect.
+- 50-socket fan-out merges into a single broadcast per tick (`tests/unit/xr-handler-edge.test.ts`, `tests/stress/xr-avatar-fanout.stress.test.ts`).
+- AE metric `xr.avatar_sync_latency` published (durationMs + count; no coordinates, no voterId, no avatar id).
+- Security review (`XR_BETA_SECURITY_REVIEW.md`) confirms no identity leakage; ephemeral id + pose only.
+- Feature flag `BETA_XR_ENABLED` gates the feature; disabled by default; excluded in zero-knowledge sessions.
 
 ---
 
@@ -172,7 +173,7 @@ If the design-partner validation spike collects **fewer than 3 committed partner
 - **RC soak:** 24h continuous load <5% latency variance; DO uptime ≥99.9%; no cross-session leakage.
 - **DR drill:** RTO ≤ 2h measured end-to-end (failover + restore); documented in [`knowledge-base/operations/reliability/DR_DRILL_S98.md`](../../operations/reliability/DR_DRILL_S98.md).
 - **WCAG AAA:** axe scan 0 violations on REACTIONS / PULSE / STUDIO / CONNECT federation surfaces; keyboard nav + screen-reader coverage on ≥2 new surfaces.
-- **Feature flags:** `beta-xr` defaults to false; no GA feature gate; backend defaults all XR endpoints to 404 if flag disabled.
+- **Feature flags:** `BETA_XR_ENABLED` defaults to `"false"` (wrangler.toml `[vars]`); no GA feature gate; when off, inbound `xr_avatar_sync` is fully inert (no broadcast, no AE event) and `'xr'` is absent from `init.data.features[]`.
 
 ---
 
@@ -211,14 +212,14 @@ If the design-partner validation spike collects **fewer than 3 committed partner
 
 | Story ID | Acceptance Criterion | Test File | Test Cases |
 |---|---|---|---|
-| **XR-SPATIAL-01** | Question object appears in 3D shared space | `tests/unit/xr-handler-edge.test.ts` | (Frontend-E2E scope; backend broadcasts spatial_update via DO) |
+| **XR-SPATIAL-01** | Question object appears in 3D shared space | `tests/unit/xr-spatial.test.tsx` | Frontend stub scene renders question; backend broadcasts `xr_avatar_sync` via DO |
 | **XR-SPATIAL-01** | Latency p95 <200ms confirmed in soak test | Backend: `tests/unit/xr-avatar-sync.test.ts:189–222` (`AE event privacy`) | `xr.avatar_sync_latency` emitted with correct latency measurement |
-| **XR-AVATAR-01** | All 50 avatars render concurrently at ≥25 fps | Backend: `tests/unit/xr-handler-edge.test.ts:146–197` (`avatar cap / many-socket fan-out`) | `handles 50 concurrent sockets with unique poses, all merged in one tick` (50-socket broadcast) |
+| **XR-AVATAR-01** | Up to 50 avatars merge into one broadcast per tick (≥25 fps is the S99 WebGL-engine target) | Backend: `tests/unit/xr-handler-edge.test.ts:146–197` (`avatar cap / many-socket fan-out`) + `tests/stress/xr-avatar-fanout.stress.test.ts` | `handles 50 concurrent sockets with unique poses, all merged in one tick` (50-socket broadcast) |
 | **XR-AVATAR-01** | Avatar pose syncs at ≤30ms frequency (broadcast via xr_avatar_sync) | Backend: `tests/unit/xr-handler-edge.test.ts:92–143` (`rev monotonicity`) | `rev never decreases across consecutive flushTick calls`, `rev increments exactly once per flushTick` (12.5 Hz batch tick = 80ms per ADR, ≤30ms per-socket coalesce) |
-| **XR-AVATAR-01** | No participant identity leaked (names never transmitted; only participant.id + spatial pose + avatar_style) | Backend: `tests/unit/xr-handler-edge.test.ts:330–378` (`AE privacy invariant`) | `emits xr.avatar_sync_latency with no coordinates`, `emits xr.avatar_sync_latency with no voterId`, `emits xr.avatar_sync_latency with no ephemeral avatar id in the event payload` |
-| **XR-AVATAR-01** | AE metric `xr.avatar_concurrent_count` + `xr.avatar_sync_latency` published | Backend: `tests/unit/xr-avatar-sync.test.ts:189–222` | `emits xr.avatar_sync_latency with timing + count only, no PII` (count field in AE event) |
+| **XR-AVATAR-01** | No participant identity leaked (names never transmitted; only ephemeral id `a` + pose `p`/`q`) | Backend: `tests/unit/xr-handler-edge.test.ts:330–378` (`AE privacy invariant`) | `emits xr.avatar_sync_latency with no coordinates`, `emits xr.avatar_sync_latency with no voterId`, `emits xr.avatar_sync_latency with no ephemeral avatar id in the event payload` |
+| **XR-AVATAR-01** | AE metric `xr.avatar_sync_latency` published (durationMs + count; concurrent count carried as the event's `count` field) | Backend: `tests/unit/xr-avatar-sync.test.ts:189–222` | `emits xr.avatar_sync_latency with timing + count only, no PII` |
 | **XR-AVATAR-01** | Security review confirms no identity leakage | Backend: `tests/unit/xr-avatar-sync.test.ts:140–152` | `uses an ephemeral avatar id that is NOT the voterId` (no voterId in broadcast) |
-| **XR-AVATAR-01** | Feature flag `beta-xr` gates the feature; disabled by default | Backend: `tests/unit/xr-avatar-sync.test.ts:60–78` | `ignores inbound xr_avatar_sync when BETA_XR_ENABLED is off` (flag gate enforced) |
+| **XR-AVATAR-01** | Feature flag `BETA_XR_ENABLED` gates the feature; disabled by default | Backend: `tests/unit/xr-avatar-sync.test.ts:60–78` | `ignores inbound xr_avatar_sync when BETA_XR_ENABLED is off` (flag gate enforced) |
 | **XR-00 (Security: ZK exclusion)** | Zero-knowledge sessions exclude XR (never broadcasts xr even with flag on; never emits AE event) | Backend: `tests/unit/xr-avatar-sync.test.ts:81–99` | `ignores inbound xr_avatar_sync in a ZK session even with the flag on` |
 | **XR-00 (Security: ZK exclusion)** | ZK exclusion edge case verified | Backend: `tests/unit/xr-handler-edge.test.ts:269–307` (`ZK toggle exclusion`) | `ignores xr_avatar_sync entirely when anonymity is zero_knowledge, flag on`, `ignores xr_avatar_sync for ZK sessions even if flag is off (guard order)` |
 | **XR-00 (Security: flag-off inertness)** | Inbound xr_avatar_sync produces zero side effects when flag is off | Backend: `tests/unit/xr-handler-edge.test.ts:380–439` (`flag-off inertness`) | `ignores inbound xr_avatar_sync, no avatar state mutation`, `ignores inbound xr_avatar_sync, no broadcast on flushTick`, `ignores inbound xr_avatar_sync, no AE event emitted` |
