@@ -216,7 +216,7 @@ describe('XrAvatarHandler — avatar cap / many-socket fan-out', () => {
     handler.flushTick()
     const broadcast = deltas(ws1)[2]
     expect(broadcast.data.avatars).toHaveLength(2)
-    const ids = (broadcast.data.avatars as { a: string }[]).map((a) => a.a)
+    const ids = (broadcast.data.avatars as Array<{ a: string }>).map((a) => a.a)
     expect(new Set(ids).size).toBe(2)
   })
 
