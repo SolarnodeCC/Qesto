@@ -125,6 +125,77 @@ Detailed analysis of Qesto's core competitors. Updated quarterly or on-demand af
 
 ---
 
+## Vevox
+
+**Overall Assessment**: Leader in the anonymous employee-voice / HR-feedback segment. Rated #1 on G2, Capterra, and Trustpilot for anonymity-driven engagement (per market pulse, May 2026). The most direct competitive threat on Qesto's core privacy positioning — Vevox owns the "anonymous feedback" narrative today, but on a traditional cloud backend without zero-knowledge guarantees.
+
+### Recent Activity (Last 3 Months)
+
+- Mentimeter reported losing ground on anonymous engagement to Vevox (market pulse, May 2026).
+- Sustained #1 rating across G2/Capterra/Trustpilot driven by anonymity and HR/employee-sentiment use cases.
+
+### Core Features
+
+| Feature | Availability | Notes |
+|---------|--------------|-------|
+| Real-time polls | Yes | Polls, quizzes, surveys |
+| Anonymous Q&A | Yes | Core strength; positioned as fully anonymous |
+| Q&A moderation | Yes | Pre-moderation, filtering, upvoting |
+| Anonymous live discussion | Yes | Discussion boards / open text, anonymous mode |
+| Employee-voice / pulse analytics | Yes | Sentiment dashboards for HR/leadership |
+| Anonymity modes | Yes (marquee feature) | Anonymity is the brand promise |
+| Multi-language support | Yes | |
+| SSO/Enterprise auth | Yes | SAML/SSO for enterprise tiers |
+| Export/Analytics | Yes | CSV/PDF, sentiment reporting |
+| Zero-knowledge anonymity | No | Anonymity is policy/config-based, not cryptographic |
+| Durable Objects | No | Traditional cloud backend |
+| Edge-native | No | Cloud-hosted (not edge) |
+
+### Pricing Model
+
+- **Free/Starter**: Limited features, capped participants
+- **Professional / Business**: Subscription tiers, per-host/per-plan
+- **Enterprise**: Custom pricing, SSO, dedicated support, advanced analytics
+
+**Value metric**: Per-host/subscription (qualitative — exact public tiers vary; treat as posture, not quoted figures)
+
+### Positioning Statement
+
+"Anonymous polling, surveys, and Q&A that give every employee a voice"
+
+### Strengths (Why customers choose them)
+
+1. **Anonymity reputation**: #1 across G2/Capterra/Trustpilot for anonymous engagement — owns the narrative
+2. **HR / employee-voice fit**: Purpose-built for pulse surveys, psychological safety, leadership listening
+3. **Anonymous Q&A + moderation**: Mature moderation (pre-moderation, filtering, upvoting) trusted for sensitive all-hands
+4. **Sentiment analytics**: Dashboards aimed at leadership/HR decision-making
+5. **Switching momentum**: Actively winning anonymity-sensitive customers away from Mentimeter
+
+### Weaknesses (Why customers switch away)
+
+1. **Anonymity is trust-based, not provable**: Anonymity is a configuration/policy promise on a conventional backend — no cryptographic, zero-knowledge guarantee that the operator cannot re-identify participants
+2. **Cloud backend**: No edge-native delivery; cold-start and regional-latency exposure for global audiences
+3. **Scaling limits**: Strong at typical corporate sizes but not positioned for very-large (10,000+) real-time anonymous audiences
+4. **Third-party AI / data-egress exposure**: Analytics/sentiment pipelines risk participant data leaving the trust boundary (no first-party edge-AI guarantee)
+5. **Single-segment gravity**: Deep in HR/employee-voice; weaker on multi-tenant team federation and cross-segment facilitation
+
+### Qesto Differentiation
+
+- **Zero-knowledge anonymity moat**: Qesto's ANON-DEPTH work makes anonymity cryptographically provable, not just a policy toggle — the operator cannot re-identify participants. This is the structural answer to Vevox's trust-based anonymity.
+- **No third-party AI egress**: Insights run on Workers AI inside the trust boundary; participant data never leaves to an external LLM — a cleaner privacy story than cloud sentiment pipelines.
+- **Edge performance**: No cold starts, sub-100ms global responses vs. Vevox's cloud backend.
+- **Scale for anonymous audiences**: Edge + Durable Objects target 10,000+ real-time anonymous participants where Vevox hits practical limits.
+- **Multi-tenant federation (CONNECT)**: Team/role federation across tenants vs. Vevox's single-org orientation.
+- **Data residency posture**: Edge-native + GDPR-by-default data handling vs. conventional cloud storage.
+
+### Vulnerability Signals
+
+- Any Vevox customer review citing doubt that "anonymous really means anonymous" is a direct opening for Qesto's zero-knowledge proof point.
+- Requests for larger anonymous audiences or global low-latency are scale/edge wins for Qesto.
+- HR buyers asking where sentiment/AI processing happens favor Qesto's no-egress Workers-AI story.
+
+---
+
 ## Kahoot!
 
 **Overall Assessment**: Strong in K-12 education and gamification. Weak in serious facilitation and enterprise.
@@ -221,16 +292,18 @@ Detailed analysis of Qesto's core competitors. Updated quarterly or on-demand af
 
 ## Competitive Landscape Summary
 
-| Dimension | Mentimeter | Slido | Kahoot! | Poll Everywhere | **Qesto** |
-|-----------|-----------|-------|---------|-----------------|-----------|
-| Brand awareness | **Leader** | Strong | Strong | Weak | Growing |
-| Enterprise features | Strong | **Leader** | Moderate | Weak | Strong |
-| Privacy/GDPR | Moderate | Moderate | Weak | Weak | **Leader** |
-| Edge performance | No | No | No | No | **Yes** |
-| AI integration | Recent | Recent | Weak | None | **Native** |
-| Multi-segment | Good | Good | K-12 only | Education only | **Strong** |
-| Price competitiveness | Moderate | Moderate | Good | Good | **Best** |
-| Anonymity focus | Moderate | Moderate | Weak | Weak | **Strong** |
+| Dimension | Mentimeter | Slido | Vevox | Kahoot! | Poll Everywhere | **Qesto** |
+|-----------|-----------|-------|-------|---------|-----------------|-----------|
+| Brand awareness | **Leader** | Strong | Moderate | Strong | Weak | Growing |
+| Enterprise features | Strong | **Leader** | Strong | Moderate | Weak | Strong |
+| Privacy/GDPR | Moderate | Moderate | Strong | Weak | Weak | **Leader** |
+| Zero-knowledge anonymity | No | No | No | No | No | **Yes** |
+| Edge performance | No | No | No | No | No | **Yes** |
+| AI integration | Recent | Recent | Moderate | Weak | None | **Native** |
+| No third-party AI egress | No | No | No | No | No | **Yes** |
+| Multi-segment | Good | Good | HR/employee-voice | K-12 only | Education only | **Strong** |
+| Price competitiveness | Moderate | Moderate | Moderate | Good | Good | **Best** |
+| Anonymity focus | Moderate | Moderate | **Leader** | Weak | Weak | **Strong (ZK)** |
 
 ---
 
@@ -246,16 +319,18 @@ Detailed analysis of Qesto's core competitors. Updated quarterly or on-demand af
 1. **AI-powered insights**: Mentimeter and Slido adding AI recap features
 2. **Enterprise auth**: All major competitors now offer SSO
 3. **Multi-language**: All competitors support 20+ languages
+4. **Anonymity narrative**: Vevox owns the "anonymous feedback" reputation (#1 G2/Capterra/Trustpilot) — Qesto must lead with zero-knowledge anonymity to win this segment, not just claim "anonymous"
 
 ### Positioning Focus Areas (for marketing/PO)
 - Lead with **privacy** and **edge performance** (unique to Qesto)
 - Counter **Mentimeter** on price (per-session vs. per-seat savings)
 - Counter **Slido** on simplicity and no lock-in
 - Differentiate from **Kahoot!** on "serious facilitation"
+- Counter **Vevox** on provable (zero-knowledge) anonymity, no third-party AI egress, edge scale, and multi-tenant federation — Vevox claims anonymity, Qesto can prove it
 - Avoid competing with **Poll Everywhere** (education market, declining)
 
 ---
 
-**Last updated**: May 2026  
+**Last updated**: June 2026 (Vevox profile added — MARKET-RESEARCH-VEVOX-01)  
 **Next quarterly review**: August 2026  
 **Data sources**: Competitor websites, G2/Capterra reviews, ProductHunt, Reddit discussions, LinkedIn posts
