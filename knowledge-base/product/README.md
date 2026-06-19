@@ -17,23 +17,29 @@ relates_to:
 
 # Product Strategy, Roadmap & Planning
 
-Strategic direction, product roadmap, backlog, and sprint planning.
+Strategic direction, product roadmap, backlog, and **release-train** planning.
+
+> **Cadence:** Qesto plans in **release trains** (`RT-YYYY-MM`), not sprints. Committed work
+> lives in [`BACKLOG_ACTIVE.md`](./backlog/BACKLOG_ACTIVE.md); the cadence contract + horizon
+> map is [`RELEASE_TRAIN_MASTER.md`](./planning/RELEASE_TRAIN_MASTER.md). Everything labelled
+> "Sprint N" below is **historical evidence or pedagogical reference**, not open work.
 
 ## Contents
 
 - **roadmap/** — Epics, strategic roadmap, version planning
-- **releases/** — Version history, release notes, rollout plans
-- **backlog/** — Product backlog (master reference and split views)
-- **planning/** — Sprint plans, implementation specs (sprints 19-32)
+- **releases/** — Version history, release notes, rollout plans, archived sprint evidence
+- **backlog/** — Product backlog: [`BACKLOG_ACTIVE.md`](./backlog/BACKLOG_ACTIVE.md) (committed train work) + [`BACKLOG_MASTER.md`](./backlog/BACKLOG_MASTER.md) (historical archive + regression contract)
+- **planning/** — Release-train cadence contract + historical sprint plans/implementation specs
 
 ## Key Documents
 
+- [RELEASE_TRAIN_MASTER.md](./planning/RELEASE_TRAIN_MASTER.md) — **Cadence contract + horizon map (start here for forward planning)**
+- [BACKLOG_ACTIVE.md](./backlog/BACKLOG_ACTIVE.md) — **Committed release-train work (planning truth for agents)**
 - [ROADMAP_FULL.md](./roadmap/ROADMAP_FULL.md) — Complete strategic roadmap
 - [EPIC_ROADMAP_V2.2.md](./roadmap/EPIC_ROADMAP_V2.2.md) — Validated epic roadmap
-- [BACKLOG_MASTER.md](./backlog/BACKLOG_MASTER.md) — Complete product backlog
-- [SPRINT_PLAN_MASTER.md](./planning/SPRINT_PLAN_MASTER.md) — Reference five-sprint arc and current planning
-- [sprints/](./planning/sprints/) — Individual sprint 19-32 implementation specs
-- [releases/ARCHIVED_SPRINTS.md](./releases/ARCHIVED_SPRINTS.md) — Historical sprint summaries
+- [BACKLOG_MASTER.md](./backlog/BACKLOG_MASTER.md) — Full WSJF-scored backlog (historical archive)
+- [SPRINT_PLAN_MASTER.md](./planning/SPRINT_PLAN_MASTER.md) — Reference five-sprint arc (pedagogical only)
+- [releases/ARCHIVED_SPRINTS.md](./releases/ARCHIVED_SPRINTS.md) — Historical sprint summaries (evidence)
 
 ---
 

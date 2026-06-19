@@ -78,5 +78,5 @@ curl -sI https://www.mentimeter.com/plans | head -1
 - Pricing change requires `wrangler.toml` update → raise to PO
 - New competitor page requires new public route in `src/App.tsx` → raise to PO + frontend
 - Customer research reveals product gap not in `knowledge-base/product/backlog/BACKLOG_MASTER.md` → raise to PO
-- Launch plan requires engineering work not in sprint → raise to PO
+- Launch plan requires engineering work not in the active release train → raise to PO
 

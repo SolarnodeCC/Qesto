@@ -36,7 +36,7 @@ role, find the edge here first — if it is missing, add it in the same PR.
 |---|---|---|---|---|---|
 | E1 | market-research | Weekly Market Pulse + backlog research context (`knowledge-base/product/research/`) | product-owner | Weekly + on-demand query | Product Owner |
 | E2 | ai-strategy | AI-first/AI-shaped verdict + competency scorecard | product-owner | New AI feature proposed | AI Strategy Lead |
-| E3 | product-owner | Groomed story with AC (GIVEN/WHEN/THEN), WSJF, priority | architect / backend / frontend | Story enters sprint | Product Owner |
+| E3 | product-owner | Groomed story with AC (GIVEN/WHEN/THEN), WSJF, priority | architect / backend / frontend | Story promoted into a release train (row in `BACKLOG_ACTIVE.md`) | Product Owner |
 | E4 | architect | ADR + API contract (`.claude/schemas/api-contract.json`) + data model + migration plan | backend / frontend / devops | Design decision approved | Architect |
 | E5 | backend | Typed API contract + new env bindings + migration SQL | frontend (consume) / devops (deploy) | Route/schema shipped | Architect |
 | E6 | backend ↔ frontend | Shared types in `functions/api/types.ts` (read-only for FE) | both | DTO added/changed | Architect |
@@ -53,7 +53,7 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E17 | sales | Lost-deal reasons + product gaps + feature asks | product-owner / market-research | Deal closes (win/loss) | Sales Lead |
 | E18 | sales | Won deal + account context | analytics (activation) / (onboarding) | Deal won | Sales Lead |
 | E19 | sales | Enterprise security questionnaire / SSO / DPA request | security / devops | Enterprise deal in flight | Sales Lead |
-| E20 | product-owner | Shipped stories + breaking changes | release-notes | Sprint close | Product Owner |
+| E20 | product-owner | Shipped stories + breaking changes | release-notes | Release-train close | Product Owner |
 | E21 | release-notes | Customer-facing changelog | marketing (announce) | Release published | Growth Lead |
 | E22 | devops | Deploy result + health probe status | all | Post-deploy | DevOps |
 | E23 | any agent | Reproducible DO/WebSocket bug | investigate (skill) → architect | Realtime defect | QA Lead |

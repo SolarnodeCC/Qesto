@@ -173,13 +173,13 @@ When architectural decisions conflict with backend/devops/security constraints:
    - Use background job to migrate KV incrementally (per team)
    - Feature flag: old code accepts both old + new keys, writes new key only
    - Canary: deploy to 5% of users, monitor error rate before full rollout
-3. Backend-dev estimates effort — if >13 points, defer to next sprint
+3. Backend-dev estimates effort — if >13 points, split or defer to a later release train
 4. Decision logged + added to `knowledge-base/product/backlog/BACKLOG_MASTER.md §4` (Tech Debt)
 
 ### Conflict Escalation
 - **Deadlock after 2 iterations**: PO makes final call (product priority wins)
 - **Security conflict**: CSO veto (security wins, always)
-- **Architect confidence low**: Pause, gather more data, re-propose next sprint
+- **Architect confidence low**: Pause, gather more data, re-propose in a later release train
 
 ---
 

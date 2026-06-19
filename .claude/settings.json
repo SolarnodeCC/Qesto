@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'Preserve: open story IDs and their status, active TypeScript errors, files modified this session, current sprint goal. Discard: exploration dead-ends, full file contents already committed, resolved tool errors.'"
+            "command": "echo 'Preserve: open story IDs and their status, active TypeScript errors, files modified this session, current release-train goal. Discard: exploration dead-ends, full file contents already committed, resolved tool errors.'"
           }
         ]
       }

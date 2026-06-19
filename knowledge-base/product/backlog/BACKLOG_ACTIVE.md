@@ -161,3 +161,4 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 |------|--------|
 | 2026-06-19 | Created RT-01 (stabilize) + RT-02 (UX value loop) post S99 audit; `OPS-GIT-HOOKS-01` marked done |
 | 2026-06-19 | OPS-S99 closeout: platform smoke in CI, AE runbook, deploy rollback, marketing draft; connect-scale test de-flaked |
+| 2026-06-19 | Agent-system aligned to release-train cadence — PO agent/skill, HANDOFFS (E3/E20), architect/cso/release-notes/ai-strategy/marketing/i18n skills, `.claude` hooks + settings + context-preservation now reference trains and point at this file (not the deprecated `SPRINT_PLAN_MASTER.md`) |

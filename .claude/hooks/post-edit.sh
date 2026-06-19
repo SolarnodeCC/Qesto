@@ -97,15 +97,15 @@ if [[ "$FILE" == wrangler.toml ]]; then
   echo "REMINDER: wrangler.toml changed — update docs/CONFIGURATION.txt if new vars or bindings were added." >&2
 fi
 
-# ── Backlog & Sprint Plan freshness ───────────────────────────────────────────
-# Remind to keep BACKLOG.md and SPRINT_PLAN.md in sync when stories are touched.
+# ── Backlog & Release Train freshness ─────────────────────────────────────────
+# Remind to keep the active backlog and release-train docs in sync when stories are touched.
 
 if [[ "$FILE" == knowledge-base/product/backlog/BACKLOG_MASTER.md ]]; then
-  echo "REMINDER: BACKLOG.md updated — verify knowledge-base/product/planning/SPRINT_PLAN_MASTER.md Next/Upcoming Sprint sections reflect the new WSJF order." >&2
+  echo "REMINDER: BACKLOG_MASTER.md updated — if any item is now committed work, promote it into the active train in knowledge-base/product/backlog/BACKLOG_ACTIVE.md (40–60 pts/train cap)." >&2
 fi
 
-if [[ "$FILE" == knowledge-base/product/planning/SPRINT_PLAN_MASTER.md ]]; then
-  echo "REMINDER: SPRINT_PLAN.md updated — verify knowledge-base/product/backlog/BACKLOG_MASTER.md item statuses match (open/closed)." >&2
+if [[ "$FILE" == knowledge-base/product/backlog/BACKLOG_ACTIVE.md ]]; then
+  echo "REMINDER: BACKLOG_ACTIVE.md updated — verify the cadence contract knowledge-base/product/planning/RELEASE_TRAIN_MASTER.md reflects train scope/horizon, and that closed stories use merge-date-on-main as closeout." >&2
 fi
 
 # ── New route file detection ──────────────────────────────────────────────────
