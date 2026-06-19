@@ -26,6 +26,15 @@ _`OPS-DR-GAP-01` (RT-01). Closes v6/v7 Gap 1 for KV-only blobs._
 | Audit blobs | `AUDIT_KV` | None |
 | Action queues / OAuth state | `ACTIONS_KV` | Partial |
 
+## SLA & Recovery Targets
+
+| Target | Value | Rationale |
+|--------|-------|-----------|
+| **RPO (Recovery Point Objective)** | ≤ 7 days | Weekly export; max data loss is 6 days 23h 59m |
+| **RTO (Recovery Time Objective)** | ≤ 4 hours | Manual restore via `wrangler kv bulk put`; includes verification |
+| **Retention** | 90 days (R2 lifecycle) | Balances cost; audit window typically ≤ 7 years in KV, backed by D1 |
+| **Backup frequency** | Weekly (Sundays 03:00 UTC) | Matches retention cost curve; can be increased to daily if needed |
+
 ## Job design
 
 | Item | Value |
@@ -34,7 +43,7 @@ _`OPS-DR-GAP-01` (RT-01). Closes v6/v7 Gap 1 for KV-only blobs._
 | **Scheduler** | Worker cron `0 3 * * 0` (Sunday 03:00 UTC) in `wrangler.toml` |
 | **Destination** | `R2_SESSIONS` prefix `kv-backups/{audit\|actions}/{YYYY-MM-DD}/batch-{cursor}.json` |
 | **Batch size** | 500 keys per list page |
-| **RPO** | ≤ 7 days (weekly export) |
+| **Failure mode** | Non-fatal; logged + alert on zero exports (stale R2) |
 
 ## First-run evidence
 

@@ -16,13 +16,6 @@
 
 set -e
 
-if [ "${QESTO_SKIP_PREPUSH:-}" = "1" ]; then
-  echo ""
-  echo "⚠ QESTO_SKIP_PREPUSH=1 — pre-push gates SKIPPED (do not use on main)." >&2
-  echo ""
-  exit 0
-fi
-
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib.sh
 source "$HOOK_DIR/lib.sh"
@@ -31,6 +24,14 @@ source "$HOOK_DIR/env.sh"
 
 hook_cd_repo_root
 hook_ensure_toolchain_path
+
+if [ "${QESTO_SKIP_PREPUSH:-}" = "1" ]; then
+  echo ""
+  echo "⚠️  QESTO_SKIP_PREPUSH=1 — pre-push gates SKIPPED" >&2
+  hook_check_bypass_safety
+  echo ""
+  exit 0
+fi
 
 # shellcheck source=../ci/lib.sh
 source "$(git rev-parse --show-toplevel)/ops/ci/lib.sh"

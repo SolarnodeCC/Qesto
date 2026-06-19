@@ -153,3 +153,26 @@ hook_print_banner() {
   echo "══════════════════════════════════════════════════════════════"
   echo ""
 }
+
+# ─── Safety checks ──────────────────────────────────────────────────────────
+
+hook_get_current_branch() {
+  git rev-parse --abbrev-ref HEAD 2>/dev/null || echo ""
+}
+
+hook_check_bypass_safety() {
+  # Warns if QESTO_SKIP_PREPUSH=1 is used on main/master branch (incident-response only)
+  if [ "${QESTO_SKIP_PREPUSH:-0}" = "1" ]; then
+    local branch
+    branch="$(hook_get_current_branch)"
+    case "$branch" in
+      main|master)
+        echo ""
+        echo "⚠️  WARNING: Pre-push gates bypassed on protected branch '$branch'" >&2
+        echo "   This should only be used during incident response." >&2
+        echo "   Re-run full quality gates after push: QESTO_PREPUSH_MODE=full git push --force-with-lease" >&2
+        echo ""
+        ;;
+    esac
+  fi
+}

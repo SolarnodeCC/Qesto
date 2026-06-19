@@ -20,6 +20,15 @@ relates_to:
 
 _`OPS-DR-GAP-02` (RT-01). Documents the automated DO → R2 snapshot trigger and RPO bound._
 
+## SLA & Recovery Targets
+
+| Target | Value | Rationale |
+|--------|-------|-----------|
+| **RPO (session state)** | ≤ 30s | Snapshot every 30s; worst case: 29s vote data loss on DO crash |
+| **RTO (session recovery)** | ≤ 10s | DO re-init via `maybeHydrate()` restores from R2; WebSocket broadcast resync |
+| **Availability (active sessions)** | 99.5% | SLA covers DO uptime + alarm reliability; snapshotting is non-blocking |
+| **Data loss tolerance** | In-flight votes only | KV + D1 are primary; snapshot is hedge against state machine corruption |
+
 ## Summary
 
 | Item | Value |
