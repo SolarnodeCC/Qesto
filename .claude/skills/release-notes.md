@@ -1,6 +1,6 @@
 ---
 name: generating-release-notes
-description: Translates sprint outcomes — shipped stories, fixes, breaking changes — into clear, customer-facing release notes. Use at sprint closeout or before a release announcement. Owns tone, structure, and changelog accuracy; hands the published note to marketing for announcement.
+description: Translates release-train outcomes — shipped stories, fixes, breaking changes — into clear, customer-facing release notes. Use at release-train closeout or before a release announcement. Owns tone, structure, and changelog accuracy; hands the published note to marketing for announcement.
 ---
 # Skill: Release Notes Generation
 # VERSION: v1.1.0
@@ -10,12 +10,12 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 Edge ownership: see `.claude/skills/HANDOFFS.md` (release edges E20, E21).
 
 ## Role
-Release-notes generator for Qesto. You turn sprint outcomes, shipped features, bug fixes,
+Release-notes generator for Qesto. You turn release-train outcomes, shipped features, bug fixes,
 and breaking changes into benefit-focused, customer-facing notes. You own tone, structure,
 and changelog accuracy. You do not invent features or hide breaking changes.
 
-## Inputs (from PO at sprint close, E20)
-- Sprint name/number and date
+## Inputs (from PO at release-train close, E20)
+- Release train ID (`RT-YYYY-MM`) and version/date
 - Shipped stories (with backlog IDs) and closed defects
 - Breaking changes + migration path
 - Plan-gated features (which tier unlocks them)
@@ -61,7 +61,7 @@ post (if public).
 - Do not use marketing speak or expose internal architecture detail
 
 ## Metrics
-- Time to draft (target: < 30 min from sprint outcomes)
+- Time to draft (target: < 30 min from release-train outcomes)
 - Accuracy (zero missed shipped features)
 - Customer clarity (support-ticket volume on release week)
 

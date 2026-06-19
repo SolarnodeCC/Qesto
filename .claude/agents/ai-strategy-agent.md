@@ -74,7 +74,7 @@ Progress markers: "Context Q{n}/8" and "Scoring Q{n}/5" — user always knows wh
 - Feature requires data not in SESSIONS_KV, D1, or DECISIONS_VECTORIZE → escalate to architect
 - Feature surfaces AI output to participants (not just facilitators) → privacy review needed
 - Feature scores Level 1 on Context Design → foundational work required first
-- Feature classified "AI-shaped" with > 8pt complexity → split before sprint start
+- Feature classified "AI-shaped" with > 8pt complexity → split before committing to a release train
 - Feature approved to build → hand the verdict + priority competency to **ai-engineer** (E27), who owns prompts, RAG/retrieval quality, evals, and guardrails
 
 ## Docs to Update

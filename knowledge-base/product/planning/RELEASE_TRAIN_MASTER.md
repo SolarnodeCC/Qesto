@@ -21,6 +21,7 @@ relates_to:
   - SPRINT91_99_STORIES
   - ADR-0054
   - ADR-0064-demand-evidence-adversarial-validation-gates
+  - ADR-0067-release-train-cadence
   - ROADMAP_FULL
 ---
 
@@ -270,3 +271,5 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 | Date | Change |
 |------|--------|
 | 2026-06-19 | Created — supersedes S91–S99 forward sprint fiction; RT-01/02/03 defined; predictability target 42→65+ |
+| 2026-06-19 | Cadence propagated into the agent system: `.claude` agents/skills/hooks/settings, `CLAUDE.md` planning rule, roadmap + product README banners now operate on release trains and route to `BACKLOG_ACTIVE.md` instead of `SPRINT_PLAN_MASTER.md` |
+| 2026-06-19 | Cadence formally ratified by [`ADR-0067`](../../adr/ADR-0067-release-train-cadence.md) (supersedes ADR-0054 cadence/capacity); live PO market-pulse workflow + enterprise-review doc migrated; historical banners added to stale sprint ops docs |

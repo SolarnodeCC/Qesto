@@ -148,7 +148,7 @@ Follow `.claude/skills/COMMON_RULES.md` for global constraints.
 | Severity | Examples | Action |
 |---|---|---|
 | **Critical** | Auth bypass, data theft, payment fraud | Blocks release — P0 in backlog, TC=13 |
-| **High** | Privilege escalation, PII leak, CSRF | P0 next sprint |
+| **High** | Privilege escalation, PII leak, CSRF | P0 next release train |
 | **Medium** | Missing rate limit, weak validation | P2/P3 with WSJF |
 | **Low** | Best-practice deviation | Backlog note |
 
