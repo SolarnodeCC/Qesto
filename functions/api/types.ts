@@ -18,11 +18,16 @@ export type Env = {
   /** SAML Assertion Consumer Service URL (e.g. `https://api.qesto.cc/api/auth/saml/callback`). */
   SAML_ACS_URL?: string
   /**
-   * SAML SSO master switch (#529 / SEC-SAML-01). `'true'` enables the SP routes;
-   * any other value (including unset) keeps them disabled and returns 503. MUST
-   * stay off in production until XML-DSig assertion verification ships.
+   * SAML SSO master switch (#529 / SEC-SAML-01). `'true'` alone is insufficient:
+   * {@link SAML_SIGNATURE_VERIFY_ENABLED} must also be `'true'` before routes
+   * serve traffic. MUST stay off in production until XML-DSig ships.
    */
   SAML_SSO_ENABLED?: string
+  /**
+   * SEC-SAML-01 second gate — XML-DSig assertion verification implemented and on.
+   * Defaults off; flip only after `verifyAssertionSignature()` ships in saml.ts.
+   */
+  SAML_SIGNATURE_VERIFY_ENABLED?: string
   /** Superuser email — bypasses all plan quotas. */
   SUPERUSER_EMAIL?: string
   /** Seed admin email — granted owner/admin in dev/test. */

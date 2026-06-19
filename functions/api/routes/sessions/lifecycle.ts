@@ -78,6 +78,7 @@ function buildSessionInitBody(
   liveQ: LiveQuestion | null,
   questions: Question[],
   plan: string,
+  initialStatus: 'energizing' | 'live',
   extras?: {
     retroDotVoteLimit?: number
     retroCarriedActions?: string[]
@@ -102,6 +103,7 @@ function buildSessionInitBody(
     ideateDotVoteLimit: extras?.ideateDotVoteLimit,
     ideateClusterDebounceMs: extras?.ideateClusterDebounceMs,
     plan,
+    initialStatus,
   }
 }
 
@@ -171,7 +173,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         : session.session_mode === 'ideate'
           ? await loadIdeateInitExtras(c.env, id)
           : {}
-    const initBody = () => buildSessionInitBody(session, liveQ, questions, c.get('plan'), boardExtras)
+    const initBody = () => buildSessionInitBody(session, liveQ, questions, c.get('plan'), initialStatus, boardExtras)
     const logCtx = { trace_id: traceId, session_id: id, user_id: user.sub }
 
     logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx })

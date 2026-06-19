@@ -13,10 +13,10 @@ function makeAuthEnv(db: D1Mock, overrides: Partial<Env> = {}): Env {
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
     JWT_SECRET: 'integration-test-secret-at-least-32-bytes!',
-    // These tests characterize the SAML routes' enabled behaviour. The routes
-    // are gated OFF by default (#529); the kill-switch itself is covered in
-    // tests/unit/saml-killswitch.test.ts.
+    // These tests characterize the SAML routes' enabled behaviour. Both flags
+    // must be 'true' (#529 dual gate); kill-switch defaults in saml-killswitch.test.ts.
     SAML_SSO_ENABLED: 'true',
+    SAML_SIGNATURE_VERIFY_ENABLED: 'true',
     DB: db as unknown as D1Database,
     USERS_KV: new KVMock() as unknown as KVNamespace,
     SESSIONS_KV: new KVMock() as unknown as KVNamespace,

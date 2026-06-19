@@ -24,11 +24,13 @@ import { flagOff } from '../../lib/flags'
  * The SP parses assertions but does NOT yet verify the XML-DSig signature, so
  * an attacker who knows the entityID + a target team_id could forge an unsigned
  * SAMLResponse and authenticate as any user. Until signature verification ships
- * the routes MUST be disabled in production. The flag defaults OFF: SAML is only
- * served when `SAML_SSO_ENABLED === 'true'` is explicitly set for an env.
+ * the routes MUST be disabled in production. Two independent flags must be
+ * `'true'` before any SAML route serves traffic:
+ *   • `SAML_SSO_ENABLED` — operator intent to expose SSO
+ *   • `SAML_SIGNATURE_VERIFY_ENABLED` — XML-DSig verification shipped (#529)
  */
 function samlDisabled(c: Context<{ Bindings: Env; Variables: AuthVars }>): Response | null {
-  if (flagOff(c.env, 'SAML_SSO_ENABLED')) {
+  if (flagOff(c.env, 'SAML_SSO_ENABLED') || flagOff(c.env, 'SAML_SIGNATURE_VERIFY_ENABLED')) {
     return new Response(
       JSON.stringify({
         ok: false,
