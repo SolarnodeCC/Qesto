@@ -17,6 +17,11 @@ relates_to:
 
 # Sprint 60–70 Analytics & Observability Story Proposals
 
+> **Historical (pre-release-train).** This proposal predates the move to **release trains** and
+> uses the retired 120–150 pts/sprint capacity model. Any still-relevant story here is committed
+> only via a row in [`BACKLOG_ACTIVE.md`](../../product/backlog/BACKLOG_ACTIVE.md) at the
+> 40–60 pts/train cap — see [`RELEASE_TRAIN_MASTER.md`](../../product/planning/RELEASE_TRAIN_MASTER.md).
+
 _Produced by: qesto-analytics agent, 2026-05-25._  
 _Context: Activation funnel S49 review, PERF-PROOF-01 (S32), OBS-* arc (S30–S33), SCALE-PROOF-01 (S32), SUB100MS_PROOF requirement._  
 _Sprint capacity assumption: 120–150 pts/sprint. Analytics/OBS stories are ~25–40 pts of that budget; remaining capacity carries feature epics._  

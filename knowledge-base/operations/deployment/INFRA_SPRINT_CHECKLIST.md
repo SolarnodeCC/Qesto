@@ -2,17 +2,24 @@
 id: RUNBOOK-INFRA_SPRINT_CHECKLIST
 type: runbook
 category: incident
-status: active
+status: historical
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-06-19
 tags:
   - incident-response
   - operations
   - procedures
 relates_to:
   - OBSERVABILITY
+  - RELEASE_TRAIN_MASTER
 ---
+
+> **Historical (pre-release-train).** This is the Sprint 20 (May 2026) infrastructure checklist,
+> kept as evidence. Forward planning now uses **release trains** — see
+> [`RELEASE_TRAIN_MASTER.md`](../../product/planning/RELEASE_TRAIN_MASTER.md) /
+> [`BACKLOG_ACTIVE.md`](../../product/backlog/BACKLOG_ACTIVE.md). The infrastructure steps below
+> remain useful as a reusable checklist; ignore the sprint timeline framing.
 
 # Sprint 20 Infrastructure Checklist
 

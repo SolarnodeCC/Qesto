@@ -1,17 +1,25 @@
 ---
 id: ADR-0054
-status: accepted
+status: superseded
 created: 2026-06-19
 accepted: 2026-06-19
+superseded_by: ADR-0067
 deciders: architect, product-owner, devops
-relates_to: ADR-0053, SPRINT85_99_PLAN, SPRINT85_99_ARCH_NOTES, BACKLOG_MASTER
+relates_to: ADR-0053, ADR-0067, SPRINT85_99_PLAN, SPRINT85_99_ARCH_NOTES, BACKLOG_MASTER
 ---
 
 # ADR-0054: v6.x Post-GA Stabilization & Cadence-9 Governance
 
 ## Status
 
-Accepted (S91). Process backbone for the S91–S99 net-new arc toward v7.0 GA.
+**Superseded (cadence/capacity sections) by [`ADR-0067`](./ADR-0067-release-train-cadence.md)
+(2026-06-19).** Qesto now plans in **release trains** (`RT-YYYY-MM`, 40–60 pts), not nine-day
+sprints — see [`RELEASE_TRAIN_MASTER.md`](../product/planning/RELEASE_TRAIN_MASTER.md). The
+**continuous per-PR gates (§3), the RC-before-major-GA rule (§2), and the hotfix/backport lane
+(§4) remain in force** under ADR-0067 §3. The body below is retained as the historical decision
+record for the S91–S99 arc toward v7.0 GA.
+
+Originally accepted (S91). Process backbone for the S91–S99 net-new arc toward v7.0 GA.
 
 ## Context
 

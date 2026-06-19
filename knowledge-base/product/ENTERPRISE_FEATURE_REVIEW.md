@@ -425,4 +425,4 @@ Arabic and Hebrew are not in the current plan but are increasingly requested by 
 
 ---
 
-_This document should be reviewed at each sprint planning ceremony and items promoted to [`BACKLOG_MASTER.md`](./backlog/BACKLOG_MASTER.md) when committed._
+_This document should be reviewed at each release-train planning session and items promoted to [`BACKLOG_ACTIVE.md`](./backlog/BACKLOG_ACTIVE.md) when committed to a train (cadence contract: [`RELEASE_TRAIN_MASTER.md`](./planning/RELEASE_TRAIN_MASTER.md))._

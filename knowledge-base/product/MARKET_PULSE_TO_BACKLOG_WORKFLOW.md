@@ -34,7 +34,7 @@ How the Product Owner translates weekly market research into backlog prioritizat
 1. **PRIVACY-XXX** (Transparent anonymity guarantee)
    - Customer demand: HIGH | 23 mentions this week
    - Competitive signal: Both Mentimeter and Slido weak here
-   - Action: Prioritize if not already in sprint
+   - Action: Prioritize if not already in the active train
 
 2. **FEAT-YYY** (Real-time facilitator insights)
    - Competitor signal: Mentimeter launching similar feature
@@ -115,16 +115,16 @@ MARKET-RESEARCH: Facilitator pain point (45 mentions)
 
 ---
 
-## Integration with Sprint Planning
+## Integration with Release-Train Planning
 
-### Before Sprint Planning Meeting
+### Before Release-Train Planning
 
 1. **Review last week's market pulse** (5 min)
 2. **Check for new competitive threats** (3 min)
 3. **Note any high-frequency customer pain points** (2 min)
 4. **Flag stories that should be prioritized based on market data** (5 min)
 
-### During Sprint Planning
+### During Release-Train Planning
 
 When prioritizing stories, reference market research:
 
@@ -134,32 +134,32 @@ Story A: FEAT-XXX "Real-time engagement metrics"
 - Priority: P1 (before planning) → now consider P0 based on market data
 - Decision: "Market research shows 45 mentions of this pain point from facilitators.
   High-frequency ask. Competitor gap (Mentimeter weak here). Prioritize."
-- Action: Pull into sprint if capacity allows
+- Action: Pull into the active train (BACKLOG_ACTIVE.md) if capacity allows
 
 Story B: FEAT-ABC "Export to PDF"
 - Capacity: 3 points
 - Priority: P2 (low customer ask, mostly nice-to-have)
 - Market signal: Only 5 mentions in reviews (low)
-- Decision: "Low-frequency ask in market research. Defer to next sprint.
-  Focus on high-ROI items this sprint."
-- Action: Keep in backlog, re-prioritize next sprint
+- Decision: "Low-frequency ask in market research. Defer to next train.
+  Focus on high-ROI items this train."
+- Action: Keep in backlog, re-prioritize next train
 ```
 
 ---
 
-## Real-World Example: How Market Pulse Informs a Sprint
+## Real-World Example: How Market Pulse Informs a Release Train
 
-### Scenario: Sprint Planning for June Sprint (Week of May 19)
+### Scenario: Release-train planning for RT-2026-06 (Week of May 19)
 
 **Before market pulse**:
 ```
-Sprint backlog (draft):
+Train scope (draft):
 1. FEAT-ABC - Export to PDF (3pt, P2)
 2. FEAT-XXX - Real-time engagement metrics (5pt, P1)
 3. PERF-001 - Optimize WebSocket latency (5pt, P1)
 4. AUTH-015 - Transparent anonymity guarantee (8pt, P1)
 5. INTEGRATE-001 - Slack integration (8pt, P2)
-Total: 29 points (good for one dev, 2-week sprint @ ~15pt/week)
+Total: 29 points (fits a 2–3 week train; target 40–60 pts)
 ```
 
 **Weekly market pulse arrives Monday morning**:
@@ -182,26 +182,26 @@ Total: 29 points (good for one dev, 2-week sprint @ ~15pt/week)
    - Competitive gap: Mentimeter/Slido gap
 ```
 
-**PO updates sprint plan based on market data**:
+**PO updates the train scope based on market data**:
 
 ```
 **DECISION 1**: Move AUTH-015 (Transparent anonymity guarantee) from P1 to P0
 Reasoning: 35+ customer mentions + GDPR requirement + competitive gap
 
-**DECISION 2**: Pull FEAT-XXX (Real-time engagement metrics) into sprint
+**DECISION 2**: Pull FEAT-XXX (Real-time engagement metrics) into the train
 Reasoning: 45 mentions from facilitators (high signal) + competitive gap
 
-**DECISION 3**: Defer FEAT-ABC (Export to PDF) to next sprint
+**DECISION 3**: Defer FEAT-ABC (Export to PDF) to next train
 Reasoning: Only 3 mentions in customer research (low signal)
 
-**NEW SPRINT BACKLOG** (re-prioritized):
+**NEW TRAIN SCOPE** (re-prioritized in BACKLOG_ACTIVE.md):
 1. AUTH-015 - Transparent anonymity guarantee (8pt, P0) ← moved up
 2. FEAT-XXX - Real-time engagement metrics (5pt, P1) ← added
 3. PERF-001 - Optimize WebSocket latency (5pt, P1) ← keep
 4. INTEGRATE-001 - Slack integration (5pt, P2) ← lower priority
-Total: 23 points (still good for one dev)
+Total: 23 points (within the 40–60 pt train cap)
 
-DEFERRED TO NEXT SPRINT:
+DEFERRED TO NEXT TRAIN:
 - FEAT-ABC - Export to PDF (low customer demand)
 ```
 
@@ -225,16 +225,16 @@ DEFERRED TO NEXT SPRINT:
 ### Weekly (Every Monday)
 
 1. Read `/knowledge-base/product/research/WEEKLY_MARKET_PULSE.md` (5 min)
-2. Assess if any findings change sprint priorities (10 min)
+2. Assess if any findings change the active train's priorities (10 min)
 3. Annotate stories with MARKET-RESEARCH tags (10 min)
 4. Flag new stories to create (5 min)
 
-### Bi-weekly (Before Sprint Planning)
+### Per release train (before train planning)
 
-1. Review last 2 weekly pulses
+1. Review the pulses since the last train
 2. Identify trends (not just one-off mentions)
 3. Decide go/no-go on contested stories
-4. Brief team on market context for sprint
+4. Brief on market context for the train
 
 ### Monthly (End of month)
 
@@ -262,7 +262,7 @@ DEFERRED TO NEXT SPRINT:
 - **Debate with evidence** — "Market research shows customers want X" > "I think customers want X"
 - **Update backlog tags** — annotate stories so team knows why they're prioritized
 - **Create new stories from research** — if customers ask for unmet need, create a story
-- **Brief team on market context** — "This sprint prioritizes GDPR because HR teams asked for it"
+- **Brief team on market context** — "This train prioritizes GDPR because HR teams asked for it"
 
 ### ❌ DON'T
 
@@ -275,7 +275,7 @@ DEFERRED TO NEXT SPRINT:
 
 ---
 
-## Example: From Pulse to Backlog to Sprint
+## Example: From Pulse to Backlog to Release Train
 
 ### Week 1: Market Pulse Published
 
@@ -295,14 +295,14 @@ Add story:
   Research context: "12 HR professionals asking for this across communities"
 ```
 
-### Week 3: Sprint Planning
+### Week 3: Release-Train Planning
 
 ```
 During prioritization:
   PO: "PRIVACY-ZZZ has strong market signal (12 mentions). Should prioritize."
   Team: "How big is it?" 
   PO: "8 points. But it unlocks EU enterprise segment (high-value)."
-  Decision: Pull into sprint, deprioritize lower-ROI item
+  Decision: Promote into the active train (BACKLOG_ACTIVE.md), deprioritize lower-ROI item
 ```
 
 ### Week 4-5: Implementation
@@ -325,9 +325,9 @@ Marketing uses audit log feature in EU sales materials
 
 ## Questions PO Should Ask When Reading Market Pulse
 
-1. **"Do any findings change my sprint priorities?"**
+1. **"Do any findings change the active train's priorities?"**
    - If YES → adjust backlog
-   - If NO → keep sprint plan
+   - If NO → keep the train scope
 
 2. **"Is this a one-off mention or a trend?"**
    - 1 mention → note for next month
@@ -356,14 +356,14 @@ Marketing uses audit log feature in EU sales materials
 Track over time:
 
 - **Stories with market research tags**: Target 50%+ of new/modified stories
-- **Time from pulse to prioritization**: 1–2 weeks (research → sprint)
+- **Time from pulse to prioritization**: 1–2 weeks (research → train)
 - **Win rate on market-informed prioritization**: Are market-signal stories delivering value?
 - **Backlog freshness**: Monthly review to ensure backlog reflects latest market data
 
 ---
 
 **Owner**: Product Owner  
-**Cadence**: Weekly pulse → bi-weekly sprint planning → monthly strategy  
+**Cadence**: Weekly pulse → release-train planning → monthly strategy  
 **Integration logs**: [`research/MARKET_PULSE_INTEGRATION_*.md`](./research/) (one per integrated pulse week)
 
 **Latest run**: 2026-05-25 — [Week of May 19, 2026](./research/MARKET_PULSE_INTEGRATION_2026-05-19.md)
