@@ -1,2 +1,9 @@
+# Canonical host: normalise www → apex so qesto.cc is the single indexable origin
+# (avoids duplicate-content between www and non-www flagged by the SEO audit). Path
+# and query are preserved via :splat. Note: this only fires if www.qesto.cc is bound
+# as a custom domain on the Pages project; otherwise enforce it with a zone-level
+# Redirect Rule instead.
+https://www.qesto.cc/* https://qesto.cc/:splat 301
+
 # Pages Functions handles all routing (including SPA rewrites)
-# This file is intentionally minimal to avoid interfering with functions/[[path]].ts
+# This file is otherwise intentionally minimal to avoid interfering with functions/[[path]].ts
