@@ -78,6 +78,12 @@ repo — those dead references are removed. Deal-cycle tasks now live in `sales.
 > here** — they belong to the Sales node (`sales.md`). Marketing produces the MQL→SQL
 > handoff (E16); Sales runs the deal.
 
+> **SEO auditing is NOT here.** Marketing owns SEO page copy and the content roadmap, but
+> the technical/on-page organic-visibility **audit** belongs to the SEO reviewer node
+> (`seo-reviewer.md`). Before publishing SEO/landing or `/vs/[competitor]` pages, route them
+> through `/seo-reviewer`; consume its severity-classified findings back as copy/content
+> fixes (E33). Technical markup/meta/SSR fixes route to frontend (E34).
+
 ## Key Metrics
 
 | Metric | Target |
