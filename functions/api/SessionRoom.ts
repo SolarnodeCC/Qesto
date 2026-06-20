@@ -60,6 +60,12 @@ import {
 } from './lib/session-room-presenter-init'
 import { runAlarm } from './lib/session-room-alarm'
 
+// #581: hard cap on inbound WS frame size. The largest legitimate client frame
+// (energizer_activate carrying a full leaderboard) is well under this. Frames
+// larger than this are rejected before JSON.parse to avoid CPU/memory
+// amplification from a hostile socket. 64 KiB.
+const MAX_WS_FRAME_BYTES = 64 * 1024
+
 // ── DurableObject ───────────────────────────────────────────────────────────
 
 export class SessionRoom implements DurableObject, SessionRoomContext {
@@ -208,6 +214,16 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
   // ── Hibernation callbacks ─────────────────────────────────────────────────
   async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
     try {
+      // #581: reject oversized frames before decoding/parsing. For binary frames
+      // we can size-check the ArrayBuffer directly; for text we cap the string
+      // length (UTF-16 code units are an upper bound proxy that never under-counts
+      // bytes-per-char below 1, so an over-limit byte payload is always caught).
+      const frameSize = typeof message === 'string' ? message.length : message.byteLength
+      if (frameSize > MAX_WS_FRAME_BYTES) {
+        ws.send(errorMessage('frame_too_large', 'Message exceeds maximum allowed size'))
+        ws.close(CLOSE_POLICY_VIOLATION, 'frame too large')
+        return
+      }
       const text = typeof message === 'string' ? message : new TextDecoder().decode(message)
       const parsed = parseClientMessage(text)
       if (!parsed) {

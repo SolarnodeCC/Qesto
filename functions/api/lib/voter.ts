@@ -14,17 +14,20 @@ async function sha256Hex(input: string): Promise<string> {
   return out
 }
 
-// Fingerprint from the headers the Worker always sees. Browser-side components
-// (screen, timezone) land on a future `X-Qesto-Fingerprint` header when we add
-// that to the join page; for v1 the headers below are enough to keep multiple
-// tabs from the same UA bucketed together.
+// Fingerprint from the headers the Worker always sees.
+//
+// SECURITY (#583): we deliberately do NOT fold the client-controlled
+// `X-Qesto-Fingerprint` header into the dedupe identity. A voter could rotate
+// that header on every request to mint a fresh voterId and bypass vote
+// deduplication. The dedupe identity is anchored on the server-trusted
+// `cf-connecting-ip`-derived ipHash; the remaining headers only bucket multiple
+// tabs from the same UA together and cannot be used to escape a bucket.
 function fingerprintInput(request: Request): string {
   const h = request.headers
   return [
     h.get('user-agent') ?? '',
     h.get('accept-language') ?? '',
     h.get('accept-encoding') ?? '',
-    h.get('x-qesto-fingerprint') ?? '',
   ].join('|')
 }
 

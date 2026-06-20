@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
-import { RateLimiter } from '../../functions/api/lib/session-room-rate-limiter'
+import { RateLimiter, pruneRateLimitMap } from '../../functions/api/lib/session-room-rate-limiter'
 
 /**
  * Phase 2: Session Room Rate Limiter — IP and vote token bucket tests
@@ -139,6 +139,67 @@ describe('RateLimiter', () => {
 
       // Should throw, not suppress the error
       await expect(limiter.checkIpRateLimit('ip:192.168.1.1', 10)).rejects.toThrow()
+    })
+
+    // #582: the per-IP map must not grow unbounded.
+    it('prunes entries that have only stale timestamps when a new IP connects', async () => {
+      const now = Date.now()
+      storage.get.mockResolvedValue({
+        // entirely outside the 60s window → should be pruned
+        'ip:stale': [now - 120_000, now - 90_000],
+        // still active → retained
+        'ip:active': [now - 1_000],
+      })
+      storage.put.mockResolvedValue(undefined)
+
+      const result = await limiter.checkIpRateLimit('ip:new', 10)
+
+      expect(result).toBe(false)
+      const [, stored] = storage.put.mock.calls[0]
+      expect(stored['ip:stale']).toBeUndefined()
+      expect(stored['ip:active']).toBeDefined()
+      expect(stored['ip:new']).toHaveLength(1)
+    })
+
+    it('never prunes the IP currently connecting even if its own old timestamps expire', async () => {
+      const now = Date.now()
+      storage.get.mockResolvedValue({ 'ip:me': [now - 120_000] })
+      storage.put.mockResolvedValue(undefined)
+
+      await limiter.checkIpRateLimit('ip:me', 10)
+
+      const [, stored] = storage.put.mock.calls[0]
+      // The fresh timestamp keeps it alive.
+      expect(stored['ip:me']).toHaveLength(1)
+    })
+  })
+
+  describe('pruneRateLimitMap (#582)', () => {
+    it('deletes keys whose timestamps are all stale', () => {
+      const now = Date.now()
+      const cutoff = now - 60_000
+      const map: Record<string, number[]> = {
+        a: [now - 120_000],
+        b: [now - 1_000],
+      }
+      pruneRateLimitMap(map, cutoff, 'b')
+      expect(map.a).toBeUndefined()
+      expect(map.b).toHaveLength(1)
+    })
+
+    it('bounds the map size by evicting oldest-active keys', () => {
+      const now = Date.now()
+      const cutoff = now - 60_000
+      const map: Record<string, number[]> = {}
+      // 10,005 active keys with increasing recency.
+      for (let i = 0; i < 10_005; i++) {
+        map[`ip:${i}`] = [now - (10_005 - i)]
+      }
+      pruneRateLimitMap(map, cutoff, 'ip:10004')
+      expect(Object.keys(map).length).toBeLessThanOrEqual(10_000)
+      // The most-recent key (and keepKey) survive; the oldest are evicted.
+      expect(map['ip:10004']).toBeDefined()
+      expect(map['ip:0']).toBeUndefined()
     })
   })
 
