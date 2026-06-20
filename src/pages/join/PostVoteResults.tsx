@@ -44,7 +44,7 @@ export function PostVoteResults({ questionKind, ordered, resultsTotal, myVotes }
                     {o.label}
                     {isMyVote && <span className="ml-1.5 text-xs text-teal-500">· {t('your_vote')}</span>}
                   </span>
-                  <span className="text-pulse-500 dark:text-[#6B7A99] tabular-nums">{pct}%</span>
+                  <span className="text-pulse-500 dark:text-[#8A96B0] tabular-nums">{pct}%</span>
                 </div>
                 <div className="h-2 bg-pulse-100 dark:bg-white/10 rounded-full overflow-hidden">
                   <div
@@ -55,7 +55,7 @@ export function PostVoteResults({ questionKind, ordered, resultsTotal, myVotes }
               </div>
             )
           })}
-          <p className="text-xs text-pulse-400 dark:text-[#6B7A99] text-right" aria-live="polite" aria-atomic="true">
+          <p className="text-xs text-pulse-500 dark:text-[#8A96B0] text-right" aria-live="polite" aria-atomic="true">
             {t('total_votes', { count: resultsTotal })}
           </p>
         </div>

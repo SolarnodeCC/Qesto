@@ -68,7 +68,7 @@ export default function InsightThemeCard({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-pulse-400 dark:text-pulse-500 flex-shrink-0 mt-0.5"
+            className="text-pulse-500 dark:text-pulse-500 flex-shrink-0 mt-0.5"
           >
             <path d="M9 18l6-6-6-6" />
           </svg>
@@ -92,7 +92,7 @@ export default function InsightThemeCard({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-pulse-400 dark:text-pulse-500"
+            className="text-pulse-500 dark:text-pulse-500"
           >
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <path d="M3 9h18M9 21V9" />

@@ -12,7 +12,7 @@ export default function JoinBar() {
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const clean = code.trim().toUpperCase()
-    if (clean.length < 1) return
+    if (clean.length !== 6) return
     navigate(`/j/${clean}`)
   }
 
@@ -39,7 +39,7 @@ export default function JoinBar() {
           />
           <button
             type="submit"
-            disabled={code.trim().length === 0}
+            disabled={code.trim().length !== 6}
             className="inline-flex items-center rounded-md bg-teal-600 text-white text-sm font-semibold px-3 py-1.5 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors"
           >
             {t('bar_button')}

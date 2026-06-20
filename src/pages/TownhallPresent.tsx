@@ -135,7 +135,7 @@ export default function TownhallPresent() {
                 className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
                   tab === tabDef.key
                     ? 'border-teal-500 text-teal-700 dark:text-teal-400'
-                    : 'border-transparent text-pulse-500 dark:text-[#6B7A99] hover:text-pulse-800 dark:hover:text-[#F0F2F8]'
+                    : 'border-transparent text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 dark:hover:text-[#F0F2F8]'
                 }`}
               >
                 {t(tabDef.label)} ({counts[tabDef.key] ?? 0})
@@ -145,7 +145,7 @@ export default function TownhallPresent() {
 
           <section className="space-y-2" aria-live="polite">
             {visible.length === 0 ? (
-              <p className="py-8 text-center text-sm text-pulse-400">{t('console.empty')}</p>
+              <p className="py-8 text-center text-sm text-pulse-500">{t('console.empty')}</p>
             ) : (
               visible.map((item) => (
                 <TownhallQuestionCard key={item.id} item={item} variant="console" onModerate={moderate} t={t} />

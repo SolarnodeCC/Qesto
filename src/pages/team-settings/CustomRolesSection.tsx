@@ -84,7 +84,7 @@ export function CustomRolesSection({
                         </span>
                       ))}
                     </div>
-                    <p className="text-xs text-pulse-400">
+                    <p className="text-xs text-pulse-500">
                       Assigned to {assigned.length} {assigned.length === 1 ? 'member' : 'members'}.
                     </p>
                   </div>

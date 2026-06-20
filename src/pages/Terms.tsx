@@ -34,7 +34,7 @@ export default function Terms() {
           <h1 className="font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-3" style={{ ...displayFont, fontSize: 44 }}>
             Terms of Service
           </h1>
-          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#6B7A99]" style={monoFont}>
+          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 3.0.0</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-01-15</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Governing law:</strong> Netherlands</span>
@@ -54,7 +54,7 @@ export default function Terms() {
                 <li key={id}>
                   <a
                     href={`#${id}`}
-                    className="text-[13px] text-pulse-500 dark:text-[#6B7A99] hover:text-teal-700 dark:hover:text-teal-400 transition-colors"
+                    className="text-[13px] text-pulse-500 dark:text-[#8A96B0] hover:text-teal-700 dark:hover:text-teal-400 transition-colors"
                   >
                     {label}
                   </a>
@@ -216,7 +216,7 @@ export default function Terms() {
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <strong>Entire agreement.</strong> These terms + the DPA + any signed MSA = the whole deal. Nothing else.
             </p>
-            <p className="text-[13px] text-pulse-400 mt-8">
+            <p className="text-[13px] text-pulse-500 mt-8">
               Questions?{' '}
               <a href="mailto:legal@qesto.cc" className="text-teal-600 hover:underline">legal@qesto.cc</a>
             </p>

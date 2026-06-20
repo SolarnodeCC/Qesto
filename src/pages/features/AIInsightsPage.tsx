@@ -58,7 +58,7 @@ export default function AIInsightsPage() {
                   thinking, in real time.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Ask an open question. Get themes in seconds — each one backed by real responses from your room.
                 Understand what people actually think without reading every answer, so you can adapt while the
                 moment still matters.
@@ -82,7 +82,7 @@ export default function AIInsightsPage() {
                   <Sparkles size={12} />
                   AI-generated
                 </div>
-                <span className="text-[12px] text-pulse-400 dark:text-[#6B7A99]" style={monoFont}>Generated in 11.4s · 142 responses</span>
+                <span className="text-[12px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>Generated in 11.4s · 142 responses</span>
               </div>
               <h3 className="font-bold text-[20px] tracking-tight mb-4 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 What's blocking your team this quarter?
@@ -100,7 +100,7 @@ export default function AIInsightsPage() {
                         {count} evidence
                       </span>
                     </div>
-                    <p className="text-[13px] text-pulse-500 dark:text-[#6B7A99] leading-snug italic">{quote}</p>
+                    <p className="text-[13px] text-pulse-500 dark:text-[#8A96B0] leading-snug italic">{quote}</p>
                   </div>
                 ))}
               </div>
@@ -115,7 +115,7 @@ export default function AIInsightsPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Three things it does for you. Three it won't do.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
             The AI helps you read the room faster — it doesn't interpret the room for you. You stay in control.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -144,7 +144,7 @@ export default function AIInsightsPage() {
                   {icon}
                 </div>
                 <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#6B7A99] mb-3">{desc}</p>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#8A96B0] mb-3">{desc}</p>
                 <div className="bg-pulse-50 dark:bg-[#0F1525] rounded-lg p-3 text-[11.5px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed" style={monoFont}>
                   {code.map((line, i) => (
                     <div key={i}>
@@ -250,7 +250,7 @@ export default function AIInsightsPage() {
                   {icon}
                 </div>
                 <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#6B7A99]">{desc}</p>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
           </div>

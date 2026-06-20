@@ -109,8 +109,9 @@ export function QuestionVoteInput({
                 voted
                   ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                   : hasVoted
-                  ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-300 dark:text-[#6B7A99] cursor-default'
+                  ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-500 dark:text-[#8A96B0] cursor-default'
                   : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
+                !canVote && 'opacity-50 cursor-not-allowed',
               )}
             >
               {o.label}
@@ -152,6 +153,7 @@ export function QuestionVoteInput({
                   selected
                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                     : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
+                  !canVote && 'opacity-50 cursor-not-allowed',
                 )}
               >
                 <span className="flex items-center gap-3">
@@ -193,6 +195,7 @@ export function QuestionVoteInput({
                   upvoted
                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
                     : 'border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
+                  !canVote && 'opacity-50 cursor-not-allowed',
                 )}
               >
                 <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill={upvoted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
@@ -228,8 +231,9 @@ export function QuestionVoteInput({
                 voted
                   ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                   : otherVoted
-                  ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-400 dark:text-[#6B7A99] cursor-default'
+                  ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-500 dark:text-[#8A96B0] cursor-default'
                   : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
+                !canVote && 'opacity-50 cursor-not-allowed',
               )}
             >
               <span className="flex items-center gap-3">

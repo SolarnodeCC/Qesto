@@ -29,7 +29,7 @@ export default function PresenterRemotePage() {
         </div>
         <section aria-label="Q&A queue" className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-4">
           <h2 className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">Q&A queue</h2>
-          <p className="mt-2 text-xs text-pulse-500 dark:text-[#6B7A99]">Moderation UI ships in host console; remote shows live link only (S75).</p>
+          <p className="mt-2 text-xs text-pulse-500 dark:text-[#8A96B0]">Moderation UI ships in host console; remote shows live link only (S75).</p>
         </section>
       </div>
     </MainLayout>

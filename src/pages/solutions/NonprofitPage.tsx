@@ -48,7 +48,7 @@ export default function NonprofitPage() {
                   Minutes before the meeting ends.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Roll-call votes, secret ballots, and chair-called polls — run inside your board meeting, exported as
                 the minutes themselves. Identity logged where bylaws require it; anonymized where they don't.
               </p>
@@ -71,7 +71,7 @@ export default function NonprofitPage() {
               style={{ ...shadowElevated, fontFamily: 'var(--font-family-mono)', fontSize: 13, lineHeight: 1.8, color: '#262626' }}
             >
               <div
-                className="absolute top-3 right-4 text-[11px] font-bold uppercase tracking-widest text-pulse-400 dark:text-[#6B7A99]"
+                className="absolute top-3 right-4 text-[11px] font-bold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0]"
                 style={{ fontFamily: 'var(--font-family-body)' }}
               >
                 Minutes · 2026-03-14
@@ -112,7 +112,7 @@ export default function NonprofitPage() {
                 <strong className="text-teal-700 ml-1">1</strong> · Abstain:{' '}
                 <strong className="text-teal-700 ml-1">0</strong>
               </div>
-              <div className="mt-5 pt-3.5 border-t border-pulse-200 dark:border-[#1E2A45] flex justify-between text-[11px] text-pulse-500 dark:text-[#6B7A99]" style={{ fontFamily: 'var(--font-family-body)' }}>
+              <div className="mt-5 pt-3.5 border-t border-pulse-200 dark:border-[#1E2A45] flex justify-between text-[11px] text-pulse-500 dark:text-[#8A96B0]" style={{ fontFamily: 'var(--font-family-body)' }}>
                 <span>Signed: M. Holloway, Secretary</span>
                 <span>Qesto session QSTO-8H3P</span>
               </div>
@@ -138,7 +138,7 @@ export default function NonprofitPage() {
               <div key={num} className="p-7">
                 <div className="text-teal-700 dark:text-teal-400 font-semibold text-[12px] mb-2.5" style={monoFont}>Step {num}</div>
                 <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-[13.5px] text-pulse-500 dark:text-[#6B7A99] leading-relaxed">{desc}</p>
+                <p className="text-[13.5px] text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -175,7 +175,7 @@ export default function NonprofitPage() {
               "Our board meetings used to run 40 minutes long because the secretary was transcribing. Now we adjourn
               on time, and the minutes are in my inbox before I reach the elevator."
             </p>
-            <footer className="text-sm text-pulse-500 dark:text-[#6B7A99]">
+            <footer className="text-sm text-pulse-500 dark:text-[#8A96B0]">
               <strong className="text-pulse-900 dark:text-[#F0F2F8]">Teodora Marin</strong> · Board Chair, regional arts foundation
             </footer>
           </blockquote>
@@ -189,7 +189,7 @@ export default function NonprofitPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-4 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Chorus at 40% off. Because mission-first means budget-second.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-6 text-lg leading-relaxed max-w-3xl">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-6 text-lg leading-relaxed max-w-3xl">
             Registered 501(c)(3), UK charity, and EU nonprofit entities get Chorus pricing discounted across SSO,
             custom retention, and bylaw-templated motions. No seat caps.
           </p>

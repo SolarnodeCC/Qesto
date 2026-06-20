@@ -181,7 +181,7 @@ export default function TeamSwitcher() {
           }}
           className="inline-flex items-center gap-2 rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#151C2E] px-3 py-1.5 text-sm font-medium text-pulse-800 dark:text-[#F0F2F8] hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
         >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-400 shrink-0" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-500 shrink-0" aria-hidden="true">
             <path
               fillRule="evenodd"
               d="M9.586 2.586a2 2 0 112.828 2.828l-6 6a2 2 0 000 2.828l6 6a2 2 0 102.828-2.828L9.414 12H15a1 1 0 100-2H9.414l3.828-3.828a2 2 0 000-2.828z"
@@ -189,7 +189,7 @@ export default function TeamSwitcher() {
             />
           </svg>
           <span className="max-w-[140px] truncate">{label}</span>
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-400 shrink-0" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-500 shrink-0" aria-hidden="true">
             <path
               fillRule="evenodd"
               d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"

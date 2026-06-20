@@ -12,7 +12,7 @@ export function JoinLanding() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const clean = code.trim().toUpperCase()
-    if (clean.length < 1) return
+    if (clean.length !== 6) return
     navigate(`/j/${clean}`)
   }
 
@@ -41,18 +41,22 @@ export function JoinLanding() {
                 spellCheck={false}
                 autoCapitalize="characters"
                 aria-label={t('codeLabel')}
+                aria-describedby="join-code-hint"
                 className={ENTRY_CODE_FIELD_CLASS}
               />
             </label>
+            <p id="join-code-hint" className="text-center text-xs text-pulse-500 dark:text-[#A8B3CC]">
+              {t('code_length_hint')}
+            </p>
             <button
               type="submit"
-              disabled={code.trim().length === 0}
+              disabled={code.trim().length !== 6}
               className="w-full rounded-xl bg-teal-600 text-white text-sm font-semibold py-3 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
             >
               {t('joinButton')}
             </button>
           </form>
-          <p className="text-center text-xs text-pulse-400">
+          <p className="text-center text-xs text-pulse-500">
             <a href="/" className="text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">{t('back')}</a>
           </p>
         </div>

@@ -345,7 +345,7 @@ export default function TeamQuizEnergizerView({
 
       {/* ── PARTICIPANT WAITING (draft) ── */}
       {role === 'participant' && state === 'draft' && (
-        <p className="text-sm text-center text-pulse-400">Waiting for the quiz to start…</p>
+        <p className="text-sm text-center text-pulse-500">Waiting for the quiz to start…</p>
       )}
 
       {/* ── PARTICIPANT ACTIVE ── */}
@@ -377,7 +377,7 @@ export default function TeamQuizEnergizerView({
                           : 'border-red-400 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300'
                         : isCorrect
                         ? 'border-teal-300 bg-teal-50/50 dark:bg-teal-900/10 text-teal-600 dark:text-teal-400'
-                        : 'border-pulse-200 dark:border-pulse-700 text-pulse-400 opacity-60'
+                        : 'border-pulse-200 dark:border-pulse-700 text-pulse-500 opacity-60'
                       : 'border-pulse-200 dark:border-pulse-700 text-pulse-900 dark:text-pulse-100 hover:border-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/10 active:scale-95 cursor-pointer',
                   ].join(' ')}
                 >
@@ -388,7 +388,7 @@ export default function TeamQuizEnergizerView({
           </div>
           {voteError && <p className="text-sm text-red-600" role="alert">{voteError}</p>}
           {myAnswers[currentIndex] !== undefined && (
-            <p className="text-sm text-center text-pulse-400" role="status">
+            <p className="text-sm text-center text-pulse-500" role="status">
               {myAnswers[currentIndex] === currentQ?.options[currentQ.correct_index]
                 ? '✓ Correct! Waiting for next question…'
                 : '✗ Not quite — waiting for next question…'}
@@ -436,7 +436,7 @@ function ScoreBoard({
               isMe ? 'bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800' : 'bg-pulse-50 dark:bg-pulse-800',
             ].join(' ')}
           >
-            <span className="w-5 text-xs font-bold text-pulse-400 tabular-nums">{s.rank}.</span>
+            <span className="w-5 text-xs font-bold text-pulse-500 tabular-nums">{s.rank}.</span>
             <span className="flex-1 truncate text-pulse-700 dark:text-pulse-300">
               {isMe ? 'You' : `Player ${s.rank}`}
             </span>

@@ -88,7 +88,7 @@ function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }
           </button>
         </div>
 
-        <p className="mt-4 text-xs text-pulse-400 dark:text-white/30 text-center">
+        <p className="mt-4 text-xs text-pulse-500 dark:text-white/30 text-center">
           {t('templates.magicLinkExpiry')}
         </p>
       </div>
@@ -137,7 +137,7 @@ export default function TemplateDetail() {
     return (
       <MainLayout>
         <div className="min-h-[60vh] flex items-center justify-center">
-          <div className="animate-pulse text-pulse-400 dark:text-white/30">{t('loading')}</div>
+          <div className="animate-pulse text-pulse-500 dark:text-white/30">{t('loading')}</div>
         </div>
       </MainLayout>
     )
@@ -334,7 +334,7 @@ export default function TemplateDetail() {
                   {using ? t('templates.creating') : t('templates.useTemplate')}
                 </button>
 
-                <p className="mt-3 text-xs text-center text-pulse-400 dark:text-white/30">
+                <p className="mt-3 text-xs text-center text-pulse-500 dark:text-white/30">
                   {t('templates.noAccountNeeded')}
                 </p>
 
@@ -375,7 +375,7 @@ export default function TemplateDetail() {
                   <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
                     {q.text[lang] || q.text.en}
                   </p>
-                  <span className="text-xs text-pulse-400 dark:text-white/30 capitalize">{q.type}</span>
+                  <span className="text-xs text-pulse-500 dark:text-white/30 capitalize">{q.type}</span>
                 </div>
               </div>
             ))}

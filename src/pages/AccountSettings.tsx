@@ -39,7 +39,7 @@ function SettingsSection({
         {title}
       </h2>
       {description && (
-        <p className="mt-1 text-sm text-pulse-500 dark:text-[#6B7A99]">{description}</p>
+        <p className="mt-1 text-sm text-pulse-500 dark:text-[#8A96B0]">{description}</p>
       )}
       <div className="mt-4">{children}</div>
     </section>
@@ -155,13 +155,13 @@ export default function AccountSettings() {
       <div className="density-stack-8 max-w-[720px] mx-auto px-6 lg:px-10 py-10 animate-page-enter">
         <header>
           <h1 className="text-3xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('pageTitle')}</h1>
-          <p className="mt-2 text-sm text-pulse-500 dark:text-[#6B7A99]">{t('pageIntro')}</p>
+          <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0]">{t('pageIntro')}</p>
         </header>
 
         <SettingsSection id="settings-account" title={t('account.title')}>
           <dl className="space-y-3 text-sm">
             <div>
-              <dt className="text-pulse-500 dark:text-[#6B7A99]">{t('account.email')}</dt>
+              <dt className="text-pulse-500 dark:text-[#8A96B0]">{t('account.email')}</dt>
               <dd className="mt-0.5 font-medium text-pulse-900 dark:text-[#F0F2F8]">{auth.user.email}</dd>
             </div>
           </dl>
@@ -222,14 +222,14 @@ export default function AccountSettings() {
           ) : (
             <div className="space-y-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-pulse-400 dark:text-[#6B7A99]">
+                <p className="text-xs uppercase tracking-wide text-pulse-500 dark:text-[#8A96B0]">
                   {t('billing.currentPlan')}
                 </p>
                 <p className="mt-1 text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">
                   {planBrandName(quotaData?.plan ?? 'free')}
                 </p>
                 {quotaData && (
-                  <p className="mt-1 text-sm text-pulse-500 dark:text-[#6B7A99]">
+                  <p className="mt-1 text-sm text-pulse-500 dark:text-[#8A96B0]">
                     {quotaData.quotas.max_sessions_per_month > 0
                       ? t('billing.usage', {
                           used: quotaData.usage.sessions_created,
@@ -239,7 +239,7 @@ export default function AccountSettings() {
                   </p>
                 )}
                 {resetDateLabel && (
-                  <p className="mt-0.5 text-xs text-pulse-400 dark:text-[#6B7A99]">
+                  <p className="mt-0.5 text-xs text-pulse-500 dark:text-[#8A96B0]">
                     {t('billing.resetsOn', { date: resetDateLabel })}
                   </p>
                 )}
@@ -269,7 +269,7 @@ export default function AccountSettings() {
               )}
 
               {hasBillingProfile === false && !invoicesLoading && (
-                <p className="text-sm text-pulse-500 dark:text-[#6B7A99]">
+                <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">
                   {t('billing.noSubscription')}
                   <span className="block mt-1">{t('billing.noSubscriptionHint')}</span>
                 </p>
@@ -297,13 +297,13 @@ export default function AccountSettings() {
                             {t('billing.invoiceView')}
                           </a>
                         ) : (
-                          <span className="text-pulse-400 capitalize">{inv.status}</span>
+                          <span className="text-pulse-500 capitalize">{inv.status}</span>
                         )}
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-2 text-sm text-pulse-500 dark:text-[#6B7A99]">{t('billing.invoicesEmpty')}</p>
+                  <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0]">{t('billing.invoicesEmpty')}</p>
                 )}
               </div>
             </div>
@@ -318,14 +318,14 @@ export default function AccountSettings() {
           {teamsLoading ? (
             <div className="h-16 rounded-lg bg-pulse-100 dark:bg-pulse-800/60 skeleton-shimmer" aria-hidden="true" />
           ) : teams.length === 0 ? (
-            <p className="text-sm text-pulse-500 dark:text-[#6B7A99]">{t('teams.empty')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('teams.empty')}</p>
           ) : (
             <ul className="divide-y divide-pulse-100 dark:divide-[#1E2A45] rounded-lg border border-pulse-200 dark:border-[#1E2A45]">
               {teams.map((team) => (
                 <li key={team.id} className="flex items-center justify-between gap-4 px-3 py-3">
                   <div>
                     <p className="font-medium text-pulse-800 dark:text-[#F0F2F8]">{team.name}</p>
-                    <p className="text-xs text-pulse-400 dark:text-[#6B7A99] capitalize">{team.plan} plan</p>
+                    <p className="text-xs text-pulse-500 dark:text-[#8A96B0] capitalize">{team.plan} plan</p>
                   </div>
                   <Link
                     to={`/teams/${team.id}/settings`}
