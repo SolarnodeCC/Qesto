@@ -87,6 +87,11 @@ export type AuditAction =
   | 'studio.library.saved'
   | 'studio.library.forked'
   | 'studio.library.deleted'
+  // Role lifecycle on team membership (#524): emitted from member invite,
+  // role update, and member removal. before/after carry the role values.
+  | 'role.assigned'
+  | 'role.changed'
+  | 'role.removed'
 
 export interface AuditContext {
   action: AuditAction

@@ -498,6 +498,10 @@ export const AuditActionSchema = z.enum([
   'studio.library.saved',
   'studio.library.forked',
   'studio.library.deleted',
+  // Role lifecycle on team membership (#524).
+  'role.assigned',
+  'role.changed',
+  'role.removed',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>
