@@ -53,7 +53,7 @@ export function TownhallQuestionCard({ item, variant, upvoted, onUpvote, onModer
         )}
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{item.body}</p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-pulse-500 dark:text-[#6B7A99]">
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-pulse-500 dark:text-[#8A96B0]">
             <span>{item.displayName ?? t('submit.button')}</span>
             {variant === 'console' && (
               <span className={`rounded px-1.5 py-0.5 font-medium ${STATUS_BADGE[item.status] ?? ''}`}>

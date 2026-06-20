@@ -28,7 +28,7 @@ export function TeamsSection({ teams, teamsLoading }: TeamsSectionProps) {
             <li key={team.id} className="flex items-center justify-between gap-4 p-4">
               <div>
                 <p className="font-medium text-pulse-800 dark:text-[#F0F2F8]">{team.name}</p>
-                <p className="text-xs text-pulse-400 dark:text-[#6B7A99] mt-0.5 capitalize">{team.plan} plan</p>
+                <p className="text-xs text-pulse-500 dark:text-[#8A96B0] mt-0.5 capitalize">{team.plan} plan</p>
               </div>
               <Link
                 to={`/teams/${team.id}/settings`}

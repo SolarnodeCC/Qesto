@@ -52,7 +52,7 @@ export function Body({
 }
 
 export function Caption({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`text-caption font-medium text-pulse-600 dark:text-[#6B7A99] ${className}`}>{children}</span>
+  return <span className={`text-caption font-medium text-pulse-600 dark:text-[#8A96B0] ${className}`}>{children}</span>
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────
@@ -248,7 +248,7 @@ export function EmptyState({
       <Heading level="m" className="text-pulse-700 dark:text-[#A8B3CC]">
         {title}
       </Heading>
-      {description && <Body className="text-pulse-600 dark:text-[#6B7A99] mt-space-2">{description}</Body>}
+      {description && <Body className="text-pulse-600 dark:text-[#8A96B0] mt-space-2">{description}</Body>}
       {action && <div className="mt-space-4">{action}</div>}
     </div>
   )
@@ -269,7 +269,7 @@ export function StatCard({
   return (
     <Card className={`text-center space-y-1 ${className}`}>
       <p className={`text-heading-m font-bold ${colour}`}>{value}</p>
-      <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">{label}</Body>
+      <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">{label}</Body>
     </Card>
   )
 }

@@ -108,7 +108,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
       <section className="space-y-2" aria-live="polite">
         <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t('queue.title')}</h2>
         {state.items.length === 0 ? (
-          <p className="text-sm text-pulse-400">{t('queue.empty')}</p>
+          <p className="text-sm text-pulse-500">{t('queue.empty')}</p>
         ) : (
           state.items.map((item) => (
             <TownhallQuestionCard

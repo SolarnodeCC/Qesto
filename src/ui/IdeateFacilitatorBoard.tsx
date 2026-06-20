@@ -289,7 +289,7 @@ function ClusterPanel({
       {!collapsed && (
         <div id={panelId} className="mt-3 space-y-2">
           {clusterIdeas.length === 0 ? (
-            <p className="text-xs text-pulse-400">{t('board.clusterEmpty')}</p>
+            <p className="text-xs text-pulse-500">{t('board.clusterEmpty')}</p>
           ) : (
             clusterIdeas.map((idea) => (
               <FacilitatorIdeaCard
@@ -459,7 +459,7 @@ export function IdeateFacilitatorBoard({
 
       {/* Empty state */}
       {clusters.length === 0 && unclustered.length === 0 && (
-        <p className="text-center text-sm text-pulse-400">{t('board.empty')}</p>
+        <p className="text-center text-sm text-pulse-500">{t('board.empty')}</p>
       )}
     </div>
   )

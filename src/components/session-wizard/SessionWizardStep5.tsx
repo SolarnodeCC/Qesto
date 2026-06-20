@@ -71,8 +71,8 @@ export function SessionWizardStep5({
             {activeQuestions.map((q) => (
               <li key={q.id} className="text-sm flex items-start gap-2">
                 <span className="text-teal-600 mt-0.5">•</span>
-                <span className="dark:text-[#A8B3CC]">{q.prompt || <em className="text-pulse-400">No prompt</em>}</span>
-                <span className="ml-auto text-caption text-pulse-400 whitespace-nowrap">{kindLabel(q.kind)}</span>
+                <span className="dark:text-[#A8B3CC]">{q.prompt || <em className="text-pulse-500">No prompt</em>}</span>
+                <span className="ml-auto text-caption text-pulse-500 whitespace-nowrap">{kindLabel(q.kind)}</span>
               </li>
             ))}
           </ul>

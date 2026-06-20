@@ -47,7 +47,7 @@ export default function DeveloperPortalPage() {
             <h2 className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">
               {spec.info?.title ?? 'API'} · {spec.info?.version ?? 'v3'}
             </h2>
-            <p className="mt-2 text-sm text-pulse-500 dark:text-[#6B7A99]">OpenAPI {spec.openapi}</p>
+            <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0]">OpenAPI {spec.openapi}</p>
             <ul className="mt-4 space-y-2 font-mono text-sm text-pulse-700 dark:text-[#A8B3CC]">
               {paths.map((p) => (
                 <li key={p} className="rounded bg-pulse-50 dark:bg-[#0F1525] px-3 py-2">
@@ -55,7 +55,7 @@ export default function DeveloperPortalPage() {
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-xs text-pulse-400 dark:text-[#6B7A99]">
+            <p className="mt-4 text-xs text-pulse-500 dark:text-[#8A96B0]">
               Try-it console: use API key in Authorization header against /api/v3/*
             </p>
           </section>

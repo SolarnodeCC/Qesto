@@ -76,7 +76,7 @@ export function SimilarSessionsPanel({ sessionId, defaultQuery = '', enabled = t
               key={s.id}
               className="rounded-md border border-pulse-100 p-3 text-sm dark:border-[#2A3858]"
             >
-              <span className="text-xs text-pulse-400">{Math.round(s.score * 100)}% match</span>
+              <span className="text-xs text-pulse-500">{Math.round(s.score * 100)}% match</span>
               <p className="mt-1 text-pulse-700 dark:text-[#C5D0E6]">{s.excerpt}</p>
             </li>
           ))}

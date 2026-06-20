@@ -288,7 +288,7 @@ export default function TemplateGallery() {
 
           {!loading && !error && templates.length === 0 && (
             <div className="text-center py-20">
-              <BookOpen className="mx-auto h-12 w-12 text-pulse-300 dark:text-white/20 mb-4" />
+              <BookOpen className="mx-auto h-12 w-12 text-pulse-500 dark:text-white/20 mb-4" />
               <p className="text-pulse-600 dark:text-[#8893AD]">{t('templates.noTemplates')}</p>
             </div>
           )}

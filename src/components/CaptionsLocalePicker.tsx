@@ -85,7 +85,7 @@ export function CaptionsLocalePicker({ locale, onLocaleChange, captionsActive }:
 
   return (
     <label className="flex items-center gap-2 text-sm">
-      <span className="text-pulse-300 shrink-0">{t('locale_picker_label')}</span>
+      <span className="text-pulse-500 shrink-0">{t('locale_picker_label')}</span>
       <select
         value={locale}
         onChange={(e) => handleChange(e.target.value as CaptionLocale)}

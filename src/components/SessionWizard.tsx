@@ -353,7 +353,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
             <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold focus:outline-none dark:text-[#F0F2F8]">
               {STEP_LABELS[step]}
             </h2>
-            <p className="text-caption text-pulse-500 dark:text-[#6B7A99]" aria-live="polite">
+            <p className="text-caption text-pulse-500 dark:text-[#8A96B0]" aria-live="polite">
               {t('a11y.progress_label', { current: step, total: 5 })}
             </p>
           </div>
@@ -361,7 +361,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
             type="button"
             onClick={onClose}
             aria-label={t('a11y.close_label')}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-pulse-500 dark:text-[#6B7A99] hover:text-pulse-800 hover:bg-pulse-100 dark:hover:text-[#F0F2F8] dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 hover:bg-pulse-100 dark:hover:text-[#F0F2F8] dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />

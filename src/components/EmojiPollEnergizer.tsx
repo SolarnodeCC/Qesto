@@ -195,7 +195,7 @@ export default function EmojiPollEnergizerView({
               </div>
             )
           })}
-          <p className="text-xs text-pulse-400 text-right">{total} response{total !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-pulse-500 text-right">{total} response{total !== 1 ? 's' : ''}</p>
         </div>
       )}
 
@@ -208,7 +208,7 @@ export default function EmojiPollEnergizerView({
 
       {/* Participant: waiting state */}
       {role === 'participant' && state === 'draft' && (
-        <p className="text-sm text-center text-pulse-400">Waiting for the host to start the energizer…</p>
+        <p className="text-sm text-center text-pulse-500">Waiting for the host to start the energizer…</p>
       )}
 
       {/* Host controls */}

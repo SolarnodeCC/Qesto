@@ -50,7 +50,7 @@ export default function SessionConfig() {
   if (auth.status === 'loading') {
     return (
       <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
-        Loading…
+        {t('loading')}
       </MainLayout>
     )
   }
@@ -124,7 +124,7 @@ export default function SessionConfig() {
 
     // Surface the follow_ups as suggested poll prompts (up to 3)
     const suggestions = res.data.follow_ups.slice(0, 3)
-    setAiSuggestions(suggestions.length > 0 ? suggestions : ['No suggestions generated. Try adding more questions first.'])
+    setAiSuggestions(suggestions.length > 0 ? suggestions : [t('noSuggestions')])
   }
 
   function adoptSuggestion(suggestion: string) {
@@ -150,12 +150,12 @@ export default function SessionConfig() {
         options: cleanedOptions,
       }
     } else if (prompt.trim().length > 0 || cleanedOptions.length > 0) {
-      setSaveError('A poll needs a prompt and at least two non-empty options.')
+      setSaveError(t('validationNeedsPrompt'))
       return
     }
 
     if (!payload.title && !payload.question) {
-      setSaveError('No changes to save.')
+      setSaveError(t('noChanges'))
       return
     }
 
@@ -166,12 +166,17 @@ export default function SessionConfig() {
     else setSaveError(res.error.message)
   }
 
+  const STATUS_KEY: Record<string, string> = {
+    live: 'status_live', closed: 'status_closed', draft: 'status_draft', archived: 'status_archived',
+  }
+  const statusLabel = STATUS_KEY[data.session.status] ? t(STATUS_KEY[data.session.status]) : data.session.status
+
   const navSlot = (
     <Link
       to="/dashboard"
       className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
     >
-      ← Dashboard
+      ← {t('backToDashboard')}
     </Link>
   )
 
@@ -179,18 +184,18 @@ export default function SessionConfig() {
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto density-pad-8 density-stack-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8]">Configure</h1>
-          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">Join code: <code className="font-mono">{data.session.code}</code></p>
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8]">{t('configureTitle')}</h1>
+          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('joinCodeLabel')}: <code className="font-mono">{data.session.code}</code></p>
         </div>
         <span className="text-xs uppercase tracking-wider rounded-full px-2 py-0.5 bg-pulse-100 dark:bg-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC]">
-          {data.session.status}
+          {statusLabel}
         </span>
       </div>
 
       <form onSubmit={handleSave} className="density-stack-5">
         <div className="space-y-2">
           <label htmlFor="session-title" className="text-sm font-medium dark:text-[#F0F2F8]">
-            Title
+            {t('titleLabel')}
           </label>
           <input
             id="session-title"
@@ -207,14 +212,14 @@ export default function SessionConfig() {
 
           <div className="space-y-2">
             <label htmlFor="poll-prompt" className="text-sm font-medium dark:text-[#F0F2F8]">
-              Prompt
+              {t('promptLabel')}
             </label>
             <input
               id="poll-prompt"
               type="text"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              {...inputHint("What should we prioritise next quarter?")}
+              {...inputHint(t('promptPlaceholder'))}
               maxLength={240}
               className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
             />
@@ -225,7 +230,7 @@ export default function SessionConfig() {
                 type="button"
                 onClick={handleAiSuggest}
                 disabled={aiLoading}
-                aria-label="Get AI-suggested question prompts"
+                aria-label={t('aiSuggestAria')}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 dark:border-violet-800/60 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400 px-3 py-1.5 text-sm font-medium hover:bg-violet-100 dark:hover:bg-violet-900/30 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 transition-colors"
               >
                 {aiLoading ? (
@@ -240,7 +245,7 @@ export default function SessionConfig() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    Generating…
+                    {t('aiGenerating')}
                   </>
                 ) : (
                   <>
@@ -248,7 +253,7 @@ export default function SessionConfig() {
                     <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z" />
                     </svg>
-                    AI Suggest
+                    {t('aiSuggest')}
                   </>
                 )}
               </button>
@@ -268,7 +273,7 @@ export default function SessionConfig() {
                   <AIBadge />
                   <span className="text-xs text-pulse-500">{t('aiSuggestionHelp')}</span>
                 </div>
-                <ul className="space-y-1" aria-label="AI suggested prompts">
+                <ul className="space-y-1" aria-label={t('aiSuggestionsAria')}>
                   {aiSuggestions.map((suggestion, i) => (
                     <li key={i}>
                       <button
@@ -286,7 +291,7 @@ export default function SessionConfig() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium dark:text-[#F0F2F8]">Options ({options.length}/10)</p>
+            <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('optionsCount', { count: options.length })}</p>
             <ul className="space-y-2">
               {options.map((o, i) => (
                 <li key={o.id} className="flex gap-2">
@@ -294,19 +299,19 @@ export default function SessionConfig() {
                     type="text"
                     value={o.label}
                     onChange={(e) => updateOption(i, e.target.value)}
-                    {...inputHint(`Option ${i + 1}`)}
+                    {...inputHint(t('optionLabel', { number: i + 1 }))}
                     maxLength={160}
-                    aria-label={`Option ${i + 1}`}
+                    aria-label={t('optionLabel', { number: i + 1 })}
                     className="flex-1 border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                   />
                   <button
                     type="button"
                     onClick={() => removeOption(i)}
                     disabled={options.length <= 2}
-                    className="text-pulse-500 dark:text-[#6B7A99] hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm px-2"
-                    aria-label={`Remove option ${i + 1}`}
+                    className="text-pulse-500 dark:text-[#8A96B0] hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm px-2"
+                    aria-label={t('removeOptionAria', { number: i + 1 })}
                   >
-                    Remove
+                    {t('removeOption')}
                   </button>
                 </li>
               ))}
@@ -317,7 +322,7 @@ export default function SessionConfig() {
               disabled={options.length >= 10}
               className="text-sm text-teal-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              + Add option
+              {t('addOptionShort')}
             </button>
           </div>
         </fieldset>
@@ -329,7 +334,7 @@ export default function SessionConfig() {
         ) : null}
         {saved ? (
           <p role="status" className="text-sm text-teal-600">
-            Saved.
+            {t('saveSuccess')}
           </p>
         ) : null}
 
@@ -339,18 +344,18 @@ export default function SessionConfig() {
             disabled={saving}
             className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
           >
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('saving') : t('save')}
           </button>
           {data.session.status === 'live' ? (
             <Link
               to={`/sessions/${id}/present`}
               className="inline-flex items-center rounded-lg border border-teal-500 text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 px-4 py-2 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             >
-              Open presenter view →
+              {t('openPresenter')}
             </Link>
           ) : (
-            <span className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-400 dark:text-[#6B7A99] px-4 py-2 font-medium">
-              Session closed
+            <span className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-500 dark:text-[#8A96B0] px-4 py-2 font-medium">
+              {t('sessionClosed')}
             </span>
           )}
         </div>

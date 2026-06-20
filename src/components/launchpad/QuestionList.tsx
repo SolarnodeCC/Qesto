@@ -244,7 +244,7 @@ export default function QuestionList({
                   <button
                     type="button"
                     aria-label={t('drag_handle_label')}
-                    className="flex-shrink-0 text-pulse-400 dark:text-pulse-500 cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                    className="flex-shrink-0 text-pulse-500 dark:text-pulse-500 cursor-grab active:cursor-grabbing focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
                   >
                     <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                       <circle cx="9" cy="6" r="1.5" />
@@ -263,7 +263,7 @@ export default function QuestionList({
                     type="button"
                     onClick={() => startEdit(q)}
                     aria-label={t('edit_question')}
-                    className="flex-shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-500 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors"
+                    className="flex-shrink-0 text-pulse-500 hover:text-teal-600 dark:text-pulse-500 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors"
                   >
                     <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />

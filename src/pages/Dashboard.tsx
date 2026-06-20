@@ -247,7 +247,7 @@ export default function Dashboard() {
         await refresh()
       } else {
         setPendingRemoveId(null)
-        setFeedback(sessionId, 'Remove failed', true)
+        setFeedback(sessionId, t('removeFailed'), true)
       }
     } finally {
       setActionLoading((prev) => { const { [sessionId]: _drop, ...next } = prev; return next })
@@ -261,7 +261,7 @@ export default function Dashboard() {
         method: 'POST',
         body: { sessionId, name: title },
       })
-      if (res.ok) setFeedback(sessionId, 'Saved as template!', false)
+      if (res.ok) setFeedback(sessionId, t('savedAsTemplate'), false)
       else setFeedback(sessionId, res.error.message, true)
     } finally {
       setActionLoading((prev) => { const { [sessionId]: _drop, ...next } = prev; return next })

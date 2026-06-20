@@ -148,7 +148,7 @@ export default function IdeatePresent() {
 
           <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t('clusters.title')}</h2>
           {state.clusters.length === 0 ? (
-            <p className="text-sm text-pulse-400">{t('clusters.waiting')}</p>
+            <p className="text-sm text-pulse-500">{t('clusters.waiting')}</p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               {state.clusters.map((cluster, idx) => (

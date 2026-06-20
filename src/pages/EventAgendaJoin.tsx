@@ -123,7 +123,7 @@ export default function EventAgendaJoin() {
 
       <ol className="space-y-3" aria-live="polite">
         {data.slots.length === 0 ? (
-          <li className="text-sm text-pulse-400">{t('agenda.empty')}</li>
+          <li className="text-sm text-pulse-500">{t('agenda.empty')}</li>
         ) : (
           data.slots.map((slot, idx) => (
             <li
@@ -132,7 +132,7 @@ export default function EventAgendaJoin() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-pulse-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-pulse-500">
                     {t('agenda.slot', { number: idx + 1 })}
                   </p>
                   <h2 className="font-semibold text-pulse-900 dark:text-pulse-100">{slot.title}</h2>

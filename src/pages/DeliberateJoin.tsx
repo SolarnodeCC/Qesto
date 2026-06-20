@@ -137,7 +137,7 @@ function Ballot({ sessionId, title }: { sessionId: string; title: string }) {
           </h2>
 
           {choices.length === 0 && (
-            <p className="text-sm text-pulse-400">{t('ballot.noChoices')}</p>
+            <p className="text-sm text-pulse-500">{t('ballot.noChoices')}</p>
           )}
 
           <fieldset className="space-y-2" aria-label={t('ballot.chooseHeading')}>

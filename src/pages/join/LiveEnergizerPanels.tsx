@@ -53,7 +53,7 @@ export function SliderInput({
         className="w-full accent-teal-500 cursor-pointer disabled:cursor-default"
         aria-label={t('select_value_aria')}
       />
-      <div className="flex justify-between text-xs text-pulse-400">
+      <div className="flex justify-between text-xs text-pulse-500">
         <span>{options[0]?.label}</span>
         <span>{options[options.length - 1]?.label}</span>
       </div>
@@ -194,7 +194,7 @@ export function LiveTeamQuizPanel({
                         ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                         : 'border-red-400 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                       : mySubmission
-                      ? 'border-orange-100 dark:border-orange-900 bg-white/60 text-pulse-400 dark:text-[#6B7A99]'
+                      ? 'border-orange-100 dark:border-orange-900 bg-white/60 text-pulse-500 dark:text-[#8A96B0]'
                       : 'border-orange-200 dark:border-orange-800 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/30',
                   ].join(' ')}
                 >

@@ -10,24 +10,8 @@ import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import SessionTitleField from '../components/SessionTitleField'
 import SimilarSessionsResultsPanel from '../components/insights/SimilarSessionsResultsPanel'
 
-// Wordcloud/open text utilities
-const RESULT_COLORS = [
-  'text-teal-600',
-  'text-violet-600',
-  'text-orange-500',
-  'text-pink-500',
-  'text-blue-600',
-  'text-emerald-600',
-  'text-amber-600',
-  'text-rose-500',
-]
-
-function hashColor(word: string): string {
-  let h = 0
-  for (let i = 0; i < word.length; i++) h = (h * 31 + word.charCodeAt(i)) & 0xffff
-  return RESULT_COLORS[h % RESULT_COLORS.length]
-}
-
+// Word-cloud sizing: frequency maps to font size only; colour is a single
+// AA-compliant token (RES-A11Y) so size — not random hue — carries meaning.
 function getResultFontSize(count: number, maxCount: number): number {
   const ratio = maxCount > 1 ? (count - 1) / (maxCount - 1) : 0
   return Math.round(18 + ratio * 32)
@@ -105,7 +89,7 @@ export default function Results() {
           {state.error.message}
         </p>
         <Link to="/dashboard" className="text-teal-600 hover:underline">
-          ← Back to dashboard
+          ← {t('back')}
         </Link>
       </MainLayout>
     )
@@ -120,6 +104,12 @@ export default function Results() {
     })) ?? []
   const max = rows.reduce((m, r) => Math.max(m, r.count), 0)
   const winner = rows.length > 0 ? rows.reduce((best, r) => (r.count > best.count ? r : best), rows[0]) : null
+
+  const STATUS_KEY: Record<string, string> = {
+    live: 'status_live', closed: 'status_closed', draft: 'status_draft', archived: 'status_archived',
+  }
+  const statusLabel = STATUS_KEY[session.status] ? t(STATUS_KEY[session.status]) : session.status
+  const sourceLabel = t('source_label', { source: results.source === 'live' ? t('source_live') : t('source_persisted') })
 
   function handleExport() {
     if (!question) return
@@ -144,7 +134,7 @@ export default function Results() {
       to="/dashboard"
       className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
     >
-      ← Dashboard
+      ← {t('dashboard_nav')}
     </Link>
   )
 
@@ -179,15 +169,15 @@ export default function Results() {
                 : 'bg-pulse-100 text-pulse-600')
             }
           >
-            {session.status}
+            {statusLabel}
           </span>
         </div>
         <p className="text-sm text-pulse-500">
-          Join code <code className="font-mono">{session.code}</code>
+          {t('join_code')} <code className="font-mono">{session.code}</code>
           {session.closed_at
-            ? ` · closed ${new Date(session.closed_at).toLocaleString()}`
+            ? ` · ${t('closed_at', { date: new Date(session.closed_at).toLocaleString() })}`
             : results.source === 'live'
-            ? ' · live snapshot'
+            ? ` · ${t('live_snapshot')}`
             : ''}
         </p>
       </header>
@@ -211,7 +201,7 @@ export default function Results() {
                 <span
                   key={word}
                   style={{ fontSize: `${getResultFontSize(count, maxCount)}px` }}
-                  className={`font-bold leading-tight ${hashColor(word)}`}
+                  className="font-bold leading-tight text-pulse-800 dark:text-[#F0F2F8]"
                   title={`${word}: ${count}`}
                 >
                   {word}
@@ -219,7 +209,8 @@ export default function Results() {
               ))}
             </div>
             <p className="text-xs text-pulse-500">
-              Total responses: {results.total} {allEntries.length > 25 ? `(showing top 25 of ${allEntries.length} unique)` : ''} · source {results.source}
+              {t('total_responses_label', { count: results.total })}{' '}
+              {allEntries.length > 25 ? t('showing_top', { shown: 25, total: allEntries.length }) : ''} · {sourceLabel}
             </p>
           </section>
         )
@@ -236,7 +227,7 @@ export default function Results() {
                   <div className="flex justify-between text-sm">
                     <span className={isWinner ? 'font-semibold text-teal-700 dark:text-teal-400' : ''}>
                       {r.label}
-                      {isWinner ? ' · winner' : ''}
+                      {isWinner ? ` · ${t('winner')}` : ''}
                     </span>
                     <span className="font-medium">
                       {r.count} ({pct}%)
@@ -252,7 +243,7 @@ export default function Results() {
                         'h-full transition-[width] duration-500 ' +
                         (isWinner
                           ? 'bg-gradient-to-r from-teal-500 to-violet-500'
-                          : 'bg-pulse-400')
+                          : 'bg-pulse-500')
                       }
                       style={{ width: `${barPct}%` }}
                     />
@@ -262,7 +253,7 @@ export default function Results() {
             })}
           </ul>
           <p className="text-xs text-pulse-500">
-            Total votes: {results.total} · source {results.source}
+            {t('total_votes_label', { count: results.total })} · {sourceLabel}
           </p>
         </section>
       )}
@@ -278,14 +269,14 @@ export default function Results() {
           disabled={!question || results.total === 0}
           className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
         >
-          Export CSV
+          {t('export_csv')}
         </button>
         <button
           type="button"
           onClick={() => void load()}
           className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
         >
-          Refresh
+          {t('refresh')}
         </button>
       </div>
       </div>{/* end animate-page-enter */}

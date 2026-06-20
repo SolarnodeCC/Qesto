@@ -119,7 +119,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
       <div className="space-y-4" aria-live="polite">
         <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t('clusters.title')}</h2>
         {state.clusters.length === 0 ? (
-          <p className="text-sm text-pulse-400">{t('clusters.waiting')}</p>
+          <p className="text-sm text-pulse-500">{t('clusters.waiting')}</p>
         ) : (
           state.clusters.map((cluster, idx) => (
             <section key={cluster.id} className={`rounded-xl border-l-4 pl-4 ${CLUSTER_COLORS[idx % CLUSTER_COLORS.length]}`}>
