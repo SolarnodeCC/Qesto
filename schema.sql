@@ -17,10 +17,12 @@ CREATE TABLE IF NOT EXISTS users (
   created_at INTEGER NOT NULL,                                 -- unix ms
   last_login_at INTEGER,
   plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','starter','team')),
-  suspended_at INTEGER                                         -- unix ms; NULL = active
+  suspended_at INTEGER,                                        -- unix ms; NULL = active
+  stripe_customer_id TEXT                                      -- Stripe customer id ↔ user mapping (#585)
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_suspended ON users(suspended_at);
+CREATE INDEX IF NOT EXISTS idx_users_stripe_customer_id ON users(stripe_customer_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- magic_links — one-time tokens emailed for login
