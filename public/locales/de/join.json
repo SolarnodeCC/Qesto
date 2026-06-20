@@ -69,5 +69,9 @@
   "leaderboard.points": "{score} Pkt.",
   "badges.earned": "Verdiente Badges",
   "trust_badge": "Zero-Knowledge-Modus: Ihre Identität wird niemals gespeichert",
-  "trust_badge_short": "Zero-Knowledge"
+  "trust_badge_short": "Zero-Knowledge",
+  "vote_unavailable_offline": "Verbindung verloren – Verbindung wird wiederhergestellt. Die Abstimmung wird automatisch fortgesetzt, sobald du wieder online bist.",
+  "not_found_help": "Überprüfe den Code und versuche es erneut.",
+  "try_again": "Erneut versuchen",
+  "code_length_hint": "Gib den 6-stelligen Code ein"
 }

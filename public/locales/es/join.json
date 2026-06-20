@@ -69,5 +69,9 @@
   "leaderboard.points": "{score} pts",
   "badges.earned": "Insignias obtenidas",
   "trust_badge": "Modo conocimiento cero: tu identidad nunca se almacena",
-  "trust_badge_short": "Conocimiento cero"
+  "trust_badge_short": "Conocimiento cero",
+  "vote_unavailable_offline": "Conexión perdida: reconectando. La votación se reanudará automáticamente cuando vuelvas a estar en línea.",
+  "not_found_help": "Comprueba el código e inténtalo de nuevo.",
+  "try_again": "Intentar de nuevo",
+  "code_length_hint": "Introduce el código de 6 caracteres"
 }

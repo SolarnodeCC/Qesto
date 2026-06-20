@@ -33,5 +33,22 @@
     "planHint": "Upgrade om te zien hoe deze sessie eerdere sessies van je team weerspiegelt.",
     "viewPlans": "Abonnementen bekijken →",
     "error": "Inzichten konden niet worden gegenereerd. Probeer het later opnieuw."
-  }
+  },
+  "join_code": "Deelnamecode",
+  "live_snapshot": "live momentopname",
+  "closed_at": "gesloten {date}",
+  "winner": "winnaar",
+  "source_live": "live",
+  "source_persisted": "opgeslagen",
+  "source_label": "bron {source}",
+  "total_votes_label": "Totaal stemmen: {count}",
+  "total_responses_label": "Totaal reacties: {count}",
+  "showing_top": "(top {shown} van {total} unieke)",
+  "export_csv": "CSV exporteren",
+  "refresh": "Vernieuwen",
+  "dashboard_nav": "Dashboard",
+  "status_live": "Live",
+  "status_closed": "Gesloten",
+  "status_draft": "Concept",
+  "status_archived": "Gearchiveerd"
 }

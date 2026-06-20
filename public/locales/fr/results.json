@@ -33,5 +33,22 @@
     "planHint": "Passez à un plan supérieur pour voir comment cette session fait écho aux sessions passées de votre équipe.",
     "viewPlans": "Voir les plans →",
     "error": "Impossible de générer les informations. Veuillez réessayer plus tard."
-  }
+  },
+  "join_code": "Code d'accès",
+  "live_snapshot": "instantané en direct",
+  "closed_at": "fermée {date}",
+  "winner": "gagnant",
+  "source_live": "en direct",
+  "source_persisted": "enregistré",
+  "source_label": "source {source}",
+  "total_votes_label": "Total des votes : {count}",
+  "total_responses_label": "Total des réponses : {count}",
+  "showing_top": "(affichage des {shown} premiers sur {total} uniques)",
+  "export_csv": "Exporter en CSV",
+  "refresh": "Actualiser",
+  "dashboard_nav": "Tableau de bord",
+  "status_live": "En direct",
+  "status_closed": "Fermée",
+  "status_draft": "Brouillon",
+  "status_archived": "Archivée"
 }
