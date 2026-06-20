@@ -1,8 +1,8 @@
 # HANDOFFS — Qesto Agent & Skill Edge Ownership Map
-# VERSION: v1.2.0
+# VERSION: v1.3.0
 # OWNER: Architect
 
-_Last reviewed_: 2026-06-04
+_Last reviewed_: 2026-06-20
 
 > _"A company is a graph of algorithms. Bottlenecks happen where edges break and nobody owns them."_
 > The nodes (agents) are well-defined. This file makes the **edges** (handoffs between
@@ -66,6 +66,8 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E30 | ai-engineer | Participant-facing AI output / PII / prompt-injection surface | security (cso) | AI output reaches users | CSO |
 | E31 | e2e-tester | WCAG violation found in E2E audit (file:line + axe rule) → backlog P1 | frontend / product-owner | A11y audit run on new page/flow | QA Lead |
 | E32 | e2e-tester | k6 threshold breach in staging (p95 > SLA or error rate > 5%) | devops / architect | Load test run post-deploy | QA Lead |
+| E33 | seo-reviewer | SEO audit findings needing copy/content/intent fixes (severity-classified) | marketing | SEO/landing/`/vs/` page audited before publish | Growth Lead |
+| E34 | seo-reviewer | SEO findings needing technical fixes (markup/meta/H1/canonical/SSR/render, robots/sitemap → devops) | frontend | Crawl/index or on-page technical issue found | Frontend Lead |
 
 ## 3) Edge contract rules (so edges don't break)
 
@@ -124,6 +126,10 @@ The 768→1024 incident lived on this seam — now owned. Participant-facing AI 
 PII/injection surfaces gate through **security** (E30).
 
 ## Change Log
+- 2026-06-20: v1.3.0 — added the SEO-reviewer node and edges E33–E34 (audit findings →
+  marketing for copy/content, → frontend for technical markup/meta/SSR; robots/sitemap to
+  devops). Marketing owns SEO page copy and the content roadmap; the SEO reviewer audits that
+  output and routes severity-classified findings back, never editing copy or product code.
 - 2026-06-04: v1.2.0 — added the AI-engineer node and edges E27–E30 (strategy→engineering,
   engineering→backend plumbing, the ai-engineer↔knowledge RAG seam, and AI output safety).
 - 2026-06-04: v1.1.0 — added the Knowledge steward node and edges E24–E26 (doc-update

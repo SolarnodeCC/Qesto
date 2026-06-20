@@ -150,6 +150,7 @@ This project uses a layered AI agent framework:
 /ai-strategy    → loads ai-strategy.md skill pack   (AI feature advisory, maturity scoring, 4-week action plans)
 /ai-engineer    → loads ai-engineering.md skill pack (Workers-AI craft: prompts, RAG/retrieval quality, evals, AI guardrails)
 /marketing      → loads marketing.md skill pack     (top-of-funnel: CRO, copy, lifecycle email, SEO, content)
+/seo-reviewer   → loads seo-reviewer.md skill pack  (organic-visibility audit: crawl/index, technical/on-page SEO, intent, internal links, E-E-A-T)
 /sales          → loads sales.md skill pack         (deal cycle: discovery, MEDDICC, demos, objections, proposals)
 /market-research → loads market-research.md skill pack (competitors, ICP/competitor source of truth, pulse)
 /devops         → loads devops.md skill pack        (deployment, wrangler, CF infra, secrets, monitoring)
@@ -173,7 +174,7 @@ Agent `model:` frontmatter is the source of truth. Main-agent dispatch should ma
 | Tier | Model | Agents | Work types |
 |---|---|---|---|
 | High | **opus** | `qesto-architect`, `qesto-backend`, `qesto-security`, `qesto-ai-strategy`, `qesto-ai-engineer`, `qesto-market-research` | System design, ADRs, schema migrations, Durable Object / WebSocket protocol, auth flows, OWASP/STRIDE audits, abuse-surface review, prompt/RAG/eval quality, deep competitive synthesis |
-| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales`, `qesto-knowledge` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy, KB integrity + requirement traceability |
+| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales`, `qesto-knowledge`, `qesto-seo-reviewer` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy, KB integrity + requirement traceability, organic-visibility / technical-SEO audits |
 | Low | **haiku** | `qesto-tester`, `qesto-e2e-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, Playwright E2E/load/stress/a11y specs, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
 
 When the main agent needs a model not matching any sub-agent, invoke the sub-agent whose tier matches. Prefer Opus for anything touching edge runtime correctness (DO lifecycle, JWT, rate limits, multi-tenant isolation); prefer Haiku for template-heavy mechanical work.
