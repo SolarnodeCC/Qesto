@@ -32,12 +32,12 @@ function fingerprintInput(request: Request): string {
 }
 
 function clientIp(request: Request): string {
-  return (
-    request.headers.get('cf-connecting-ip') ??
-    request.headers.get('x-forwarded-for') ??
-    request.headers.get('x-real-ip') ??
-    'unknown'
-  )
+  // #584: only `cf-connecting-ip` is set by Cloudflare and trustworthy. The
+  // `x-forwarded-for` / `x-real-ip` headers are attacker-controlled and must not
+  // feed `ipHash` — which drives the anonymous voterId, the per-IP connect rate
+  // limit and the concurrent cap. Behind Cloudflare this header is always present;
+  // anything else falls back to a single stable bucket rather than a spoofable one.
+  return request.headers.get('cf-connecting-ip') ?? 'unknown'
 }
 
 export type VoterIdentity = {
