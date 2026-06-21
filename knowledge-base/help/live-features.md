@@ -71,6 +71,21 @@ minting, allowed origins), see your team's embed settings.
 
 ---
 
+## XR / Spatial Sessions (Beta)
+
+Qesto has an experimental **spatial (XR) session mode** that renders a session in an immersive
+3D space on WebXR-capable devices (such as VR headsets).
+
+- **Beta and opt-in** — XR is behind a beta flag and is off by default.
+- **Never required to vote** — XR is purely an alternative way to view a session. If a device
+  doesn't support immersive WebXR, Qesto automatically shows a **2D fallback** of the same
+  scene, so no participant is ever blocked from taking part.
+
+Because it's in beta, availability and behaviour may change. If you'd like to trial XR, contact
+support@qesto.cc.
+
+---
+
 ## Plan summary
 
 For exact plan inclusions and limits, see [Pricing and Plans](billing.md) or

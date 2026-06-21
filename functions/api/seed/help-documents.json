@@ -224,6 +224,46 @@
     "content": "## Need Help?\n\nUnsure about the right plan? Email support@qesto.cc—we can help you choose!"
   },
   {
+    "id": "enterprise-data-controls-001",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Enterprise controls for where your data lives and how organizations connect — data residency pinning, cross-org federation, and the Sovereign+ tier with verifiable audit exports.",
+    "content": "# Enterprise Data Controls\n\nFor organizations with compliance, data-sovereignty, or multi-org requirements, Qesto offers\ncontrols beyond the standard plans. These are **Chorus / enterprise** capabilities and are\ntypically configured by a team owner or administrator. For the full legal and security detail,\nyour security team can also refer to Qesto's compliance documentation; this page is the\nplain-language overview."
+  },
+  {
+    "id": "enterprise-data-controls-002",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Data Residency",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Pin a team's data to a specific region so that session data stays where your policy requires.",
+    "content": "## Data Residency\n\nPin a team's data to a specific region so that session data stays where your policy requires.\n\n- An owner sets the team's **residency region**.\n- Once pinned, Qesto enforces that the team's data is stored and processed in that region.\n- Useful for meeting EU (or other regional) data-handling requirements."
+  },
+  {
+    "id": "enterprise-data-controls-003",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Federation (cross-org trust)",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Federation lets separate Qesto organizations form trust links so they can collaborate —",
+    "content": "## Federation (cross-org trust)\n\nFederation lets separate Qesto organizations form **trust links** so they can collaborate —\nfor example, sharing a session library or running joint sessions — without merging into one\ntenant. Federation is **consent-based**: both organizations must opt in to the link, and each\nside keeps control of its own data and can revoke the link."
+  },
+  {
+    "id": "enterprise-data-controls-004",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Sovereign+ Tier",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "The Sovereign+ tier is for the strictest data-sovereignty needs.",
+    "content": "## Sovereign+ Tier\n\nThe **Sovereign+** tier is for the strictest data-sovereignty needs. On top of residency it\nadds:\n\n- **Per-region edge residency** — data stays within a designated sovereign boundary.\n- **Compliance posture matrix** — a view of how the tenant maps to its compliance controls.\n- **Verifiable audit export** — a signed export of audit activity that an auditor can\n  independently verify hasn't been tampered with.\n- **Federation eligibility controls** — decide whether (and with whom) a sovereign tenant may\n  federate."
+  },
+  {
+    "id": "enterprise-data-controls-005",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Getting these features",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Residency, Federation, and Sovereign+ are enterprise capabilities on the Chorus plan and",
+    "content": "## Getting these features\n\nResidency, Federation, and Sovereign+ are enterprise capabilities on the **Chorus** plan and\nare enabled as part of your contract and onboarding. Talk to us via\n[qesto.cc/pricing](https://qesto.cc/pricing) → *Book a walkthrough*, or contact\nsupport@qesto.cc. For data-rights and retention questions, see\n[Privacy, GDPR, and Data Rights](privacy-gdpr.md)."
+  },
+  {
     "id": "faq-001",
     "title": "Frequently Asked Questions",
     "topic": "faq",
@@ -302,6 +342,46 @@
     "scope": "free",
     "excerpt": "Have accessibility concerns?",
     "content": "## Need Help?\n\nHave accessibility concerns? Email support@qesto.cc—we're committed to inclusion!"
+  },
+  {
+    "id": "gamification-001",
+    "title": "Badges, Leaderboards, and Tournaments",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Add friendly competition to sessions with badges, live leaderboards, and bracket-style tournaments and battle-royale energizers.",
+    "content": "# Badges, Leaderboards, and Tournaments\n\nQesto can turn a session into a game — useful for trivia, training, kickoffs, and\nhigh-energy events. Three features work together: **badges**, **leaderboards**, and\n**tournaments**."
+  },
+  {
+    "id": "gamification-002",
+    "title": "Badges, Leaderboards, and Tournaments: Leaderboards",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "During scored activities (such as Team Quiz or a tournament), Qesto ranks participants in",
+    "content": "## Leaderboards\n\nDuring scored activities (such as Team Quiz or a tournament), Qesto ranks participants in\nreal time. Points reward a mix of **speed** and **accuracy**, so quick correct answers rise to\nthe top. The leaderboard can be shown on the presenter screen so the room can follow along."
+  },
+  {
+    "id": "gamification-003",
+    "title": "Badges, Leaderboards, and Tournaments: Badges",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "When a session closes, Qesto awards badges based on how people took part.",
+    "content": "## Badges\n\nWhen a session closes, Qesto awards badges based on how people took part. Badge types include:\n\n- **First answer** — first to respond\n- **Speedster** — consistently fast answers\n- **Perfect trivia** — all quiz answers correct\n- **Engagement** — answered every question\n- **Leaderboard** — finished near the top\n- **Streak** — a run of correct answers in a row\n- **Consensus** — voted with the majority\n- **Comeback** — climbed the ranking after a slow start\n\nBadges are tied to a participant's activity in that session and are a light, fun way to\nrecognize involvement."
+  },
+  {
+    "id": "gamification-004",
+    "title": "Badges, Leaderboards, and Tournaments: Tournaments",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "A tournament runs a competitive activity as elimination rounds.",
+    "content": "## Tournaments\n\nA **tournament** runs a competitive activity as elimination rounds. After each round, the\nlowest-scoring participants drop out and the field narrows until you have a winner —\nbracket-style. This is great for large groups where you want a clear champion.\n\nRelated high-energy energizer formats include **Battle Royale** (everyone competes, the field\nshrinks each round) and **Bracket** matchups. You set these up the same way as other\nenergizers while the session is in Draft."
+  },
+  {
+    "id": "gamification-005",
+    "title": "Badges, Leaderboards, and Tournaments: Which plan do I need?",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Badges and session leaderboards work in scored activities.",
+    "content": "## Which plan do I need?\n\nBadges and session leaderboards work in scored activities. Tournament brackets are part of\nQesto's paid plans — see [Pricing and Plans](billing.md) or\n[qesto.cc/pricing](https://qesto.cc/pricing) for the current breakdown. For how to add\nwarm-up activities, see the energizers section in the [FAQ](faq.md)."
   },
   {
     "id": "getting-started-001",
@@ -497,11 +577,51 @@
   },
   {
     "id": "live-features-006",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds: XR / Spatial Sessions (Beta)",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Qesto has an experimental spatial (XR) session mode that renders a session in an immersive",
+    "content": "## XR / Spatial Sessions (Beta)\n\nQesto has an experimental **spatial (XR) session mode** that renders a session in an immersive\n3D space on WebXR-capable devices (such as VR headsets).\n\n- **Beta and opt-in** — XR is behind a beta flag and is off by default.\n- **Never required to vote** — XR is purely an alternative way to view a session. If a device\n  doesn't support immersive WebXR, Qesto automatically shows a **2D fallback** of the same\n  scene, so no participant is ever blocked from taking part.\n\nBecause it's in beta, availability and behaviour may change. If you'd like to trial XR, contact\nsupport@qesto.cc.\n\n---"
+  },
+  {
+    "id": "live-features-007",
     "title": "Live Features — Captions, Reactions, Copilot, and Embeds: Plan summary",
     "topic": "getting-started",
     "scope": "starter",
     "excerpt": "For exact plan inclusions and limits, see Pricing and Plans or",
     "content": "## Plan summary\n\nFor exact plan inclusions and limits, see [Pricing and Plans](billing.md) or\n[qesto.cc/pricing](https://qesto.cc/pricing). Plan capabilities mirror in-app enforcement, so\nwhat's listed is what you get."
+  },
+  {
+    "id": "marketplace-001",
+    "title": "Template and Plugin Marketplace",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Discover ready-made session templates and plugins in the Qesto Marketplace, use them in your workspace, and publish your own free or paid listings.",
+    "content": "# Template and Plugin Marketplace\n\nThe Qesto Marketplace is where you find ready-made **session templates** and **plugins**, and\nwhere creators can **publish** their own."
+  },
+  {
+    "id": "marketplace-002",
+    "title": "Template and Plugin Marketplace: Browsing and using listings",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "plugins (add-on capabilities).",
+    "content": "## Browsing and using listings\n\n1. Open the Marketplace from your dashboard.\n2. Browse public listings — templates (pre-built question sets and session formats) and\n   plugins (add-on capabilities).\n3. Use a template to start a new session pre-filled with its questions, then customize it in\n   the session wizard."
+  },
+  {
+    "id": "marketplace-003",
+    "title": "Template and Plugin Marketplace: Publishing your own listing",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "If you've built a template or plugin worth sharing, you can list it:",
+    "content": "## Publishing your own listing\n\nIf you've built a template or plugin worth sharing, you can list it:\n\n1. Create a listing (template or plugin) from your team's marketplace area.\n2. Choose **free** or a **paid** price tier.\n3. Publish — once live, it appears to other Qesto users.\n\n### Paid listings and payouts\n\nPaid listings are sold through Qesto's billing, with payouts handled via **Stripe Connect**:\n\n- Purchases are charged securely through Stripe.\n- Your earnings accrue to a payout ledger and are paid out to your connected Stripe account.\n- You'll need to complete Stripe Connect onboarding before you can receive payouts."
+  },
+  {
+    "id": "marketplace-004",
+    "title": "Template and Plugin Marketplace: Which plan do I need?",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Anyone can browse and use public listings.",
+    "content": "## Which plan do I need?\n\nAnyone can browse and use public listings. Publishing — especially paid listings and payouts —\nis part of Qesto's paid plans. See [Pricing and Plans](billing.md) or\n[qesto.cc/pricing](https://qesto.cc/pricing) for current details, and the\n[Templates and AI](templates-and-ai.md) guide for working with templates in a session."
   },
   {
     "id": "participant-guide-001",
