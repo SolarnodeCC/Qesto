@@ -25,7 +25,12 @@ function makeForm(body: Record<string, string>): string {
 }
 
 export function makeStripeConnectClient(secretKey: string) {
-  async function call<T>(method: 'GET' | 'POST', path: string, body?: Record<string, string>): Promise<T> {
+  async function call<T>(
+    method: 'GET' | 'POST',
+    path: string,
+    body?: Record<string, string>,
+    idempotencyKey?: string,
+  ): Promise<T> {
     return CircuitBreakers.stripe.execute(
       async (signal) => {
         const init: RequestInit = {
@@ -33,6 +38,9 @@ export function makeStripeConnectClient(secretKey: string) {
           headers: {
             Authorization: `Bearer ${secretKey}`,
             ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+            // Stripe deduplicates POSTs carrying the same Idempotency-Key, so a
+            // retried/replayed transfer cannot move funds twice (#588).
+            ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
           },
           signal,
         }
@@ -75,12 +83,26 @@ export function makeStripeConnectClient(secretKey: string) {
     retrieveAccount: (accountId: string) =>
       call<StripeConnectAccount>('GET', `/accounts/${encodeURIComponent(accountId)}`),
 
-    /** Route a payout to a connected account (test-mode flow for PAYOUT-01). */
-    createTransfer: (params: { amountCents: number; currency: string; destination: string }) =>
-      call<StripeTransfer>('POST', '/transfers', {
-        amount: String(params.amountCents),
-        currency: params.currency,
-        destination: params.destination,
-      }),
+    /**
+     * Route a payout to a connected account. This issues a REAL transfer against
+     * the live Stripe API whenever STRIPE_SECRET_KEY is configured. `idempotencyKey`
+     * is required by the route layer so retries cannot double-pay (#588).
+     */
+    createTransfer: (params: {
+      amountCents: number
+      currency: string
+      destination: string
+      idempotencyKey?: string
+    }) =>
+      call<StripeTransfer>(
+        'POST',
+        '/transfers',
+        {
+          amount: String(params.amountCents),
+          currency: params.currency,
+          destination: params.destination,
+        },
+        params.idempotencyKey,
+      ),
   }
 }

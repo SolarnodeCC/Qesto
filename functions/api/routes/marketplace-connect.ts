@@ -25,6 +25,14 @@ import {
   updatePartnerAccountState,
   deriveAccountStatus,
 } from '../lib/marketplace-billing'
+import { payoutIdempotencyKey } from '../lib/marketplace-payout'
+import {
+  computeOutstandingPayoutCents,
+  findPayoutByIdempotencyKey,
+  recordPayout,
+  currentPayoutPeriod,
+} from '../lib/marketplace-payout-ledger'
+import { ulid } from '../lib/ulid'
 import type { Team } from './teams'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
@@ -151,7 +159,10 @@ export function mountMarketplaceConnectRoutes(parent: ParentApp) {
     })
   })
 
-  // POST /api/marketplace/connect/payouts — route a payout to a partner (test-mode).
+  // POST /api/marketplace/connect/payouts — route a payout to a partner. NOTE: this
+  // issues a REAL Stripe transfer whenever STRIPE_SECRET_KEY is set. The amount is
+  // capped server-side at the partner's verified outstanding balance and guarded by
+  // an idempotency key (#588) — the request body amount is validated, never trusted.
   app.post('/payouts', async (c) => {
     const parsed = await validateBody(c, PayoutSchema)
     if ('error' in parsed) return parsed.error
@@ -171,11 +182,52 @@ export function mountMarketplaceConnectRoutes(parent: ParentApp) {
       return fail(c, 'misconfigured', 'Stripe Connect not configured', 503)
     }
 
+    // #588: NEVER trust the client-supplied amount. Cap the payout at the balance
+    // the partner has actually earned (net of platform share), minus payouts
+    // already committed. Reject anything above the verified outstanding balance.
+    const outstandingCents = await computeOutstandingPayoutCents(c.env.DB, teamId)
+    if (amountCents > outstandingCents) {
+      return fail(
+        c,
+        'amount_exceeds_balance',
+        `Requested ${amountCents} exceeds the outstanding payable balance of ${outstandingCents} cents`,
+        409,
+      )
+    }
+
+    // #588: stable idempotency key (team + period + amount). A prior committed
+    // payout with this key short-circuits — retries/replays cannot double-pay.
+    const period = currentPayoutPeriod()
+    const idemKey = payoutIdempotencyKey(teamId, amountCents, period)
+    const existing = await findPayoutByIdempotencyKey(c.env.DB, idemKey)
+    if (existing && existing.status !== 'failed') {
+      return ok(c, {
+        teamId,
+        transferId: existing.stripe_transfer_id,
+        amountCents: existing.amount_cents,
+        currency: existing.currency,
+        idempotent: true,
+      })
+    }
+
     const stripe = makeStripeConnectClient(c.env.STRIPE_SECRET_KEY)
     const transfer = await stripe.createTransfer({
       amountCents,
       currency: currency.toLowerCase(),
       destination: account.stripeAccountId,
+      idempotencyKey: idemKey,
+    })
+
+    // Record the payout in the ledger so subsequent balance checks subtract it.
+    await recordPayout(c.env.DB, {
+      id: ulid(),
+      team_id: teamId,
+      idempotency_key: idemKey,
+      amount_cents: amountCents,
+      currency: currency.toLowerCase(),
+      stripe_account_id: account.stripeAccountId,
+      stripe_transfer_id: transfer.id,
+      status: 'initiated',
     })
 
     writeEvent(c.env.METRICS_AE, {
