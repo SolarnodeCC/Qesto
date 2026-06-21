@@ -4,6 +4,8 @@ title: Teams and Collaboration
 topic: account
 scope: free
 excerpt: Create teams, invite members, understand roles and permissions, and configure SAML SSO on eligible plans.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Teams and Collaboration

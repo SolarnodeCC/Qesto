@@ -4,6 +4,8 @@ title: Semantic Decision Search
 topic: getting-started
 scope: starter
 excerpt: Search decisions by meaning, not just keywords — find related past sessions while authoring new questions.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Semantic Decision Search

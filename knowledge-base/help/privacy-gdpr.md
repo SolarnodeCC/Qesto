@@ -4,6 +4,8 @@ title: Privacy, GDPR, and Data Rights
 topic: faq
 scope: free
 excerpt: How Qesto handles personal data, GDPR compliance, consent, retention, and your rights as host or participant.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Privacy, GDPR, and Data Rights
