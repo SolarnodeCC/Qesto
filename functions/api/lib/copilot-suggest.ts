@@ -203,6 +203,7 @@ function extractJson(raw: string): string | null {
  */
 export function parseSuggestions(raw: string): CopilotAction[] | null {
   const json = extractJson(raw)
+  // jankurai:allow HLT-001-DEAD-MARKER reason="explicit parse-failure guard, not a dead/placeholder marker" expires=2026-12-31
   if (!json) return null
   let parsed: unknown
   try {

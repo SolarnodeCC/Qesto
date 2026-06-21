@@ -50,6 +50,26 @@
       "command": "npx playwright test --config tests/playwright.config.ts",
       "purpose": "end-to-end browser tests",
       "lane": "e2e"
+    },
+    ".claude/": {
+      "command": "npx jankurai doctor .",
+      "purpose": "agent skill/hook control-plane integrity",
+      "lane": "doctor"
+    },
+    "agent/": {
+      "command": "npx jankurai doctor .",
+      "purpose": "standard + policy schema validation",
+      "lane": "doctor"
+    },
+    "docs/": {
+      "command": "just check",
+      "purpose": "docs build and link/lint gate",
+      "lane": "docs"
+    },
+    "knowledge-base/": {
+      "command": "npx jankurai doctor .",
+      "purpose": "KB control-file presence and integrity",
+      "lane": "doctor"
     }
   }
 }

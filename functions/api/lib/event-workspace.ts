@@ -60,6 +60,7 @@ export async function loadEventWorkspace(
 
 export async function fetchSessionConnectionCount(env: { SESSION_ROOM: DurableObjectNamespace }, sessionId: string): Promise<number | null> {
   try {
+    // jankurai:allow HLT-001-DEAD-MARKER reason="`stub` is the Cloudflare Durable Object stub API, not a placeholder" expires=2026-12-31
     const stub = env.SESSION_ROOM.idFromName(sessionId)
     const room = env.SESSION_ROOM.get(stub)
     const res = await room.fetch(new Request('https://do.internal/state', { method: 'GET' }))

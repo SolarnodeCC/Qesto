@@ -85,3 +85,8 @@ excluded_paths = [
 extra_excluded_paths = [
   ".github/workflows/daily-repo-status.lock.yml",
 ]
+# gh-aw compiles *.lock.yml workflow files; they are generated output, not
+# hand-authored CI, so they are excluded from bad-behavior scanning.
+extra_excluded_globs = [
+  "**/*.lock.yml",
+]
