@@ -4,6 +4,8 @@ title: Joining and Participating in Sessions
 topic: getting-started
 scope: free
 excerpt: How participants join a live session, submit responses, and what to expect — no account required.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Joining and Participating in Sessions

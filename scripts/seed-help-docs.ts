@@ -10,6 +10,11 @@
  * 2. Embeds each document with bge-m3
  * 3. Inserts into D1 help_documents table
  * 4. Upserts embeddings into Vectorize index
+ *
+ * NOTE: functions/api/seed/help-documents.json is a GENERATED artifact — do not
+ * edit it by hand. It is built from knowledge-base/help/*.md by
+ * `npm run help:seed:build` (scripts/generate-help-seed.mjs) and a CI drift gate
+ * (`npm run check:help-seed`) fails if it is out of sync. Edit the Markdown docs.
  */
 
 import fs from 'fs'
