@@ -12,6 +12,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { verifyLtiLaunch } from '../lib/lti'
+import { persistLaunchContext, lookupLaunchContextByResourceLink, kvNonceStore } from '../lib/lti-launch-store'
 import { evaluateEmbedTractionGate } from '../lib/learn-gate'
 import { listLearnTemplates } from '../lib/learn-templates'
 import { pushGradeToLms } from '../lib/lms-grade-passback'
@@ -23,10 +24,18 @@ import { logEvent } from '../lib/log'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 
-/** LEARN-GRADE-01 — instructor-initiated grade passback request body. */
+/**
+ * LEARN-GRADE-01 — grade passback request body.
+ *
+ * #587: the grade *target* (outcome service URL + result sourcedid) is NOT taken
+ * from the request body — it is resolved from the stored, LMS-signed launch
+ * context. The caller only names which launch (resourceLinkId, returned to the
+ * client at launch time) and supplies the score. This closes grade tampering to
+ * never-launched rows, SSRF via an attacker URL, and the consumer-secret signing
+ * oracle.
+ */
 const GradePassbackSchema = z.object({
-  outcomeServiceUrl: z.string().url(),
-  resultSourcedId: z.string().min(1),
+  resourceLinkId: z.string().min(1),
   scoreFraction: z.number().min(0).max(1),
   sessionId: z.string().min(1),
 })
@@ -100,7 +109,15 @@ export function mountLearnRoutes(parent: ParentApp) {
     // The signature base string must use the exact launch URL the LMS signed.
     const url = new URL(c.req.url)
     const launchUrl = `${url.origin}${url.pathname}`
-    const result = await verifyLtiLaunch({ method: 'POST', url: launchUrl, params, consumerSecret })
+    // #587: nonceStore rejects a replayed launch (valid signature, reused nonce)
+    // within the timestamp-skew window — OAuth 1.0a requires nonce uniqueness.
+    const result = await verifyLtiLaunch({
+      method: 'POST',
+      url: launchUrl,
+      params,
+      consumerSecret,
+      nonceStore: kvNonceStore(c.env.ACTIONS_KV),
+    })
 
     if (!result.valid) {
       logEvent({ event: 'learn.lti.rejected', reason: result.reason })
@@ -109,6 +126,14 @@ export function mountLearnRoutes(parent: ParentApp) {
         { ok: false, error: { code: 'lti_verification_failed', message: result.reason }, trace_id: c.get('trace_id') },
         401,
       )
+    }
+
+    // #587: persist the LMS-signed grade-passback target so passback never trusts
+    // request-body values. Best-effort — a storage failure must not fail the launch.
+    try {
+      await persistLaunchContext(c.env.DB, result.context)
+    } catch (err) {
+      logEvent({ event: 'learn.lti.persist_failed', reason: err instanceof Error ? err.message : String(err) })
     }
 
     writeEvent(c.env.METRICS_AE, { name: 'learn.lti_launched', detail: result.context.contextId ?? 'no_context', traceId: c.get('trace_id') })
@@ -162,10 +187,26 @@ export function mountLearnRoutes(parent: ParentApp) {
       )
     }
 
+    // #587: resolve the grade target from the STORED, LMS-signed launch context —
+    // never from the request body. No bound launch ⇒ refuse (prevents grade
+    // tampering against never-launched rows, SSRF, and using the consumer secret
+    // as a signing oracle against an attacker-chosen URL).
+    const launch = await lookupLaunchContextByResourceLink(c.env.DB, consumerKey, body.resourceLinkId)
+    if (!launch || !launch.outcomeServiceUrl || !launch.resultSourcedId) {
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'no_launch_context', message: 'No verified LTI launch is bound to this resource link' },
+          trace_id: c.get('trace_id'),
+        },
+        403,
+      )
+    }
+
     const result = await pushGradeToLms(
       {
-        outcomeServiceUrl: body.outcomeServiceUrl,
-        resultSourcedId: body.resultSourcedId,
+        outcomeServiceUrl: launch.outcomeServiceUrl,
+        resultSourcedId: launch.resultSourcedId,
         scoreFraction: body.scoreFraction,
         messageId: crypto.randomUUID(),
       },
@@ -178,7 +219,8 @@ export function mountLearnRoutes(parent: ParentApp) {
       subject_type: 'session',
       subject_id: body.sessionId,
       after_snapshot: {
-        resultSourcedId: body.resultSourcedId,
+        resourceLinkId: body.resourceLinkId,
+        resultSourcedId: launch.resultSourcedId,
         scoreFraction: body.scoreFraction,
         outcome: result.ok ? 'success' : result.reason,
       },

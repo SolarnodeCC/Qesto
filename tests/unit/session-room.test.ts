@@ -989,3 +989,39 @@ describe('Sprint 31 — Enterprise energizer activation permissions', () => {
     expect(serialized).not.toContain('"value":"A"')
   })
 })
+
+describe('#581 — inbound WS frame-size guard', () => {
+  it('rejects and closes a socket sending an oversized frame', async () => {
+    const { room, state } = await buildRoom()
+    await init(room)
+    const ws = connectVoter(state, 'anon_big')
+
+    // 64 KiB + 1 byte: just past the cap. Valid JSON so we know rejection is
+    // from the size guard, not the parser.
+    const oversized = JSON.stringify({
+      type: 'request_state',
+      data: {},
+      timestamp: 0,
+      pad: 'x'.repeat(64 * 1024 + 1),
+    })
+    await room.webSocketMessage(ws as unknown as WebSocket, oversized)
+
+    const err = ws.messages<{ type: string; data: { code?: string } }>().find((m) => m.type === 'error')
+    expect(err?.data.code).toBe('frame_too_large')
+    expect(ws.closed).toBe(true)
+  })
+
+  it('admits a frame under the size cap', async () => {
+    const { room, state } = await buildRoom()
+    await init(room)
+    const ws = connectVoter(state, 'anon_small')
+
+    await room.webSocketMessage(
+      ws as unknown as WebSocket,
+      JSON.stringify({ type: 'request_state', data: {}, timestamp: 0 }),
+    )
+    expect(ws.closed).toBe(false)
+    const init1 = ws.messages<{ type: string }>().find((m) => m.type === 'init')
+    expect(init1).toBeTruthy()
+  })
+})

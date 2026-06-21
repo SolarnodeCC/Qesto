@@ -9,7 +9,13 @@ export const ClientMessageSchema = z.union([
   z.object({
     v: z.number().optional(),
     type: z.literal('vote'),
-    data: z.object({ questionId: z.string(), optionId: z.string() }),
+    // #581: hard-bound the vote payload so a malicious socket cannot inflate
+    // storage / vote-count cardinality with an arbitrarily large optionId.
+    // 280 chars covers the longest free-text answer kind (word_cloud/open).
+    data: z.object({
+      questionId: z.string().min(1).max(64),
+      optionId: z.string().min(1).max(280),
+    }),
     timestamp: z.number(),
   }),
   z.object({
@@ -492,6 +498,10 @@ export const AuditActionSchema = z.enum([
   'studio.library.saved',
   'studio.library.forked',
   'studio.library.deleted',
+  // Role lifecycle on team membership (#524).
+  'role.assigned',
+  'role.changed',
+  'role.removed',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>

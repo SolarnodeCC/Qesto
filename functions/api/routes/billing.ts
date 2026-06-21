@@ -23,6 +23,80 @@ type Vars = AuthVariables & PlanVariables
 // KV key for Stripe customer ID — stored in USERS_KV alongside password/oauth data.
 const stripeCustomerKey = (userId: string) => `stripe:customer:${userId}`
 const stripeSubscriptionKey = (userId: string) => `stripe:subscription:${userId}`
+// Reverse index: Stripe customer id → Qesto user id (#585). Written when checkout
+// completes so webhook handlers can resolve the user without scanning KV.
+const stripeCustomerReverseKey = (customerId: string) => `stripe:customer-rev:${customerId}`
+
+/**
+ * Map a Stripe price id to a Qesto plan tier using the configured env price ids
+ * (#585). Returns null when the price id matches no known tier.
+ */
+function tierFromPriceId(env: Env, priceId: string | undefined | null): PlanTier | null {
+  if (!priceId) return null
+  if (priceId === env.STRIPE_STARTER_MONTHLY_PRICE_ID || priceId === env.STRIPE_STARTER_ANNUAL_PRICE_ID) {
+    return 'starter'
+  }
+  if (priceId === env.STRIPE_TEAM_ANNUAL_PRICE_ID) {
+    return 'team'
+  }
+  return null
+}
+
+/** Validate a plan tier coming from Stripe metadata. */
+function validTier(value: unknown): value is PlanTier {
+  return value === 'free' || value === 'starter' || value === 'team'
+}
+
+/** Set users.plan in D1 (best-effort; logs on failure). */
+async function setUserPlan(env: Env, userId: string, plan: PlanTier): Promise<void> {
+  await env.DB.prepare('UPDATE users SET plan = ?1 WHERE id = ?2').bind(plan, userId).run()
+}
+
+/** Persist the bidirectional Stripe customer ↔ user mapping (#585). */
+async function recordCustomerMapping(env: Env, userId: string, customerId: string): Promise<void> {
+  await env.USERS_KV.put(stripeCustomerKey(userId), JSON.stringify({ customerId }), {
+    expirationTtl: 86400 * 365,
+  })
+  await env.USERS_KV.put(stripeCustomerReverseKey(customerId), userId, {
+    expirationTtl: 86400 * 365,
+  })
+  try {
+    await env.DB.prepare('UPDATE users SET stripe_customer_id = ?1 WHERE id = ?2')
+      .bind(customerId, userId)
+      .run()
+  } catch {
+    // Column may not be migrated yet in some environments; KV mapping is authoritative.
+  }
+}
+
+/** Write a billing audit row using the real audit_events schema (#585). */
+async function writeBillingAudit(
+  env: Env,
+  userId: string,
+  action: string,
+  subjectId: string,
+  snapshot?: Record<string, unknown>,
+): Promise<void> {
+  try {
+    await env.DB.prepare(
+      `INSERT INTO audit_events (id, ts, actor_id, action, subject_type, subject_id, after_snapshot)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+       ON CONFLICT DO NOTHING`,
+    )
+      .bind(
+        crypto.randomUUID(),
+        Date.now(),
+        userId,
+        action,
+        'subscription',
+        subjectId,
+        snapshot ? JSON.stringify(snapshot) : '{}',
+      )
+      .run()
+  } catch (err) {
+    console.error(`[Stripe] audit write failed for ${action}: ${(err as Error).message}`)
+  }
+}
 
 /**
  * Minimal Stripe API client using fetch.
@@ -229,6 +303,9 @@ export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables
     // Route to event handler
     try {
       switch (stripeEvent.type) {
+        case 'checkout.session.completed':
+          await handleCheckoutSessionCompleted(c, stripeEvent)
+          break
         case 'customer.subscription.created':
           await handleSubscriptionCreated(c, stripeEvent)
           break
@@ -540,6 +617,51 @@ function constantTimeCompare(a: string, b: string): boolean {
 
 // ── Event handlers ─────────────────────────────────────────────────────────
 
+/**
+ * checkout.session.completed (#585): the source of truth that a user has paid.
+ * Records the Stripe customer ↔ user mapping and upgrades users.plan to the
+ * purchased tier. The tier is taken from session metadata (set at checkout) and
+ * cross-checked against the configured price ids.
+ */
+async function handleCheckoutSessionCompleted(
+  c: { env: Env },
+  event: any,
+): Promise<void> {
+  const session = event.data.object as Record<string, unknown>
+  const customerId = typeof session.customer === 'string' ? session.customer : undefined
+  const metadata = (session.metadata as Record<string, unknown> | undefined) ?? {}
+  const userId =
+    (typeof session.client_reference_id === 'string' ? session.client_reference_id : undefined) ??
+    (typeof metadata.userId === 'string' ? metadata.userId : undefined)
+
+  if (!userId) {
+    console.warn('[Stripe] checkout.session.completed without resolvable userId')
+    return
+  }
+
+  if (customerId) {
+    await recordCustomerMapping(c.env, userId, customerId)
+  }
+
+  // Determine the purchased tier: trust metadata.plan but only if it's a valid
+  // paid tier; otherwise fall back to a price-id lookup if present on the session.
+  let plan: PlanTier | null = validTier(metadata.plan) && metadata.plan !== 'free' ? metadata.plan : null
+  if (!plan && typeof session.amount_total === 'number' && session.amount_total > 0) {
+    // No usable metadata but money changed hands — default to the entry paid tier.
+    plan = 'starter'
+  }
+  if (!plan) {
+    console.warn(`[Stripe] checkout.session.completed for ${userId} with no resolvable paid plan`)
+    return
+  }
+
+  await setUserPlan(c.env, userId, plan)
+  await writeBillingAudit(c.env, userId, 'billing.checkout_completed', String(session.id ?? customerId ?? userId), {
+    plan,
+    customerId: customerId ?? null,
+  })
+}
+
 async function handleSubscriptionCreated(
   c: { env: Env },
   event: any,
@@ -551,7 +673,7 @@ async function handleSubscriptionCreated(
   const customerId = sub.customer
 
   // Look up user by customer ID
-  const userId = await findUserByCustomerId(c.env.USERS_KV, customerId)
+  const userId = await findUserByCustomerId(c.env, customerId)
   if (!userId) {
     console.warn(`[Stripe] Subscription ${sub.id} created for unknown customer ${customerId}`)
     return
@@ -564,16 +686,16 @@ async function handleSubscriptionCreated(
     { expirationTtl: 86400 * 365 },
   )
 
-  // Log audit event
-  try {
-    await c.env.DB.prepare(
-      'INSERT INTO audit_events (actor_id, action, resource_type, resource_id, ts) VALUES (?1, ?2, ?3, ?4, ?5)',
-    )
-      .bind(userId, 'billing.subscription_created', 'subscription', sub.id, Date.now())
-      .run()
-  } catch {
-    // Audit log failure is non-critical
+  // Upgrade plan to the tier implied by the subscription's price.
+  const tier = tierFromPriceId(c.env, sub.items?.data?.[0]?.price?.id)
+  if (tier && sub.status === 'active') {
+    await setUserPlan(c.env, userId, tier)
   }
+
+  await writeBillingAudit(c.env, userId, 'billing.subscription_created', sub.id, {
+    status: sub.status,
+    plan: tier,
+  })
 }
 
 async function handleSubscriptionUpdated(
@@ -587,7 +709,7 @@ async function handleSubscriptionUpdated(
   const customerId = sub.customer
 
   // Look up user by customer ID
-  const userId = await findUserByCustomerId(c.env.USERS_KV, customerId)
+  const userId = await findUserByCustomerId(c.env, customerId)
   if (!userId) return
 
   // Update subscription record (status may have changed)
@@ -597,16 +719,23 @@ async function handleSubscriptionUpdated(
     { expirationTtl: 86400 * 365 },
   )
 
-  // Log audit event
-  try {
-    await c.env.DB.prepare(
-      'INSERT INTO audit_events (actor_id, action, resource_type, resource_id, ts) VALUES (?1, ?2, ?3, ?4, ?5)',
-    )
-      .bind(userId, 'billing.subscription_updated', 'subscription', sub.id, Date.now())
-      .run()
-  } catch {
-    // Non-critical
+  // Reconcile plan with subscription status + price.
+  const tier = tierFromPriceId(c.env, sub.items?.data?.[0]?.price?.id)
+  const activeStatuses = new Set(['active', 'trialing', 'past_due'])
+  let appliedPlan: PlanTier
+  if (sub.status === 'canceled' || sub.status === 'unpaid' || sub.status === 'incomplete_expired') {
+    appliedPlan = 'free'
+  } else if (tier && activeStatuses.has(sub.status)) {
+    appliedPlan = tier
+  } else {
+    appliedPlan = tier ?? 'free'
   }
+  await setUserPlan(c.env, userId, appliedPlan)
+
+  await writeBillingAudit(c.env, userId, 'billing.subscription_updated', sub.id, {
+    status: sub.status,
+    plan: appliedPlan,
+  })
 }
 
 async function handleSubscriptionDeleted(
@@ -620,22 +749,14 @@ async function handleSubscriptionDeleted(
   const customerId = sub.customer
 
   // Look up user by customer ID
-  const userId = await findUserByCustomerId(c.env.USERS_KV, customerId)
+  const userId = await findUserByCustomerId(c.env, customerId)
   if (!userId) return
 
-  // Remove subscription record from KV (user downgraded to free)
+  // Remove subscription record from KV and downgrade to free.
   await c.env.USERS_KV.delete(stripeSubscriptionKey(userId))
+  await setUserPlan(c.env, userId, 'free')
 
-  // Log audit event
-  try {
-    await c.env.DB.prepare(
-      'INSERT INTO audit_events (actor_id, action, resource_type, resource_id, ts) VALUES (?1, ?2, ?3, ?4, ?5)',
-    )
-      .bind(userId, 'billing.subscription_deleted', 'subscription', sub.id, Date.now())
-      .run()
-  } catch {
-    // Non-critical
-  }
+  await writeBillingAudit(c.env, userId, 'billing.subscription_deleted', sub.id, { plan: 'free' })
 }
 
 async function handleSubscriptionTrialWillEnd(
@@ -649,19 +770,12 @@ async function handleSubscriptionTrialWillEnd(
   const customerId = sub.customer
 
   // Look up user by customer ID
-  const userId = await findUserByCustomerId(c.env.USERS_KV, customerId)
+  const userId = await findUserByCustomerId(c.env, customerId)
   if (!userId) return
 
-  // Log event for future email notification
-  try {
-    await c.env.DB.prepare(
-      'INSERT INTO audit_events (actor_id, action, resource_type, resource_id, ts) VALUES (?1, ?2, ?3, ?4, ?5)',
-    )
-      .bind(userId, 'billing.subscription_trial_will_end', 'subscription', sub.id, Date.now())
-      .run()
-  } catch {
-    // Non-critical
-  }
+  await writeBillingAudit(c.env, userId, 'billing.subscription_trial_will_end', sub.id, {
+    status: sub.status,
+  })
 }
 
 async function handleInvoicePaymentFailed(
@@ -673,35 +787,34 @@ async function handleInvoicePaymentFailed(
   if (!customerId) return
 
   // Look up user by customer ID
-  const userId = await findUserByCustomerId(c.env.USERS_KV, customerId)
+  const userId = await findUserByCustomerId(c.env, customerId)
   if (!userId) return
 
-  // Log audit event
-  try {
-    await c.env.DB.prepare(
-      'INSERT INTO audit_events (actor_id, action, resource_type, resource_id, ts) VALUES (?1, ?2, ?3, ?4, ?5)',
-    )
-      .bind(userId, 'billing.invoice_payment_failed', 'invoice', invoice.id, Date.now())
-      .run()
-  } catch {
-    // Non-critical
-  }
+  // A failed payment does not immediately revoke access (Stripe will retry and
+  // emit subscription.updated → past_due, then deleted on final failure); we
+  // record the failure so dunning + support have an audit trail.
+  await writeBillingAudit(c.env, userId, 'billing.invoice_payment_failed', String(invoice.id ?? customerId), {
+    customerId,
+  })
 }
 
 // ── Helper: Look up user by Stripe customer ID ────────────────────────────
 
-async function findUserByCustomerId(_kv: KVNamespace, _customerId: string): Promise<string | null> {
-  // Brute-force lookup: iterate all users in KV (limited in practice)
-  // In a production system, maintain a reverse index (customer_id → user_id)
-  // For now, this works for small-to-medium deployments
-  //
-  // Better approach (Phase 2): Add stripe_customer_id column to users table in D1,
-  // then query D1 instead of scanning KV.
-  //
-  // This is a known limitation documented in BACKLOG_MASTER.md (BILL-07).
+/**
+ * Resolve a Stripe customer id to a Qesto user id (#585). Prefers the D1
+ * `users.stripe_customer_id` column; falls back to the KV reverse index written
+ * at checkout. Returns null when no mapping exists (handlers then no-op).
+ */
+async function findUserByCustomerId(env: Env, customerId: string): Promise<string | null> {
+  try {
+    const row = await env.DB.prepare('SELECT id FROM users WHERE stripe_customer_id = ?1')
+      .bind(customerId)
+      .first<{ id: string }>()
+    if (row?.id) return row.id
+  } catch {
+    // Column may not exist in some environments; fall through to KV.
+  }
 
-  // For now, return null — webhook handlers will skip processing if user not found
-  // and log a warning. The subscription record was already created by checkout,
-  // so data is not lost; just audit trail is incomplete.
-  return null
+  const fromKv = await env.USERS_KV.get(stripeCustomerReverseKey(customerId))
+  return fromKv ?? null
 }

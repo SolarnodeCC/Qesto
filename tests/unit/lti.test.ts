@@ -92,4 +92,32 @@ describe('LTI 1.1 consumer (LEARN-LTI-01)', () => {
     expect(ctx.roles).toEqual(['A', 'B', 'C'])
     expect(ctx.contextId).toBe('c')
   })
+
+  it('extracts the LMS-signed outcome service url + result sourcedid (#587)', () => {
+    const ctx = extractLaunchContext({
+      resource_link_id: 'r',
+      lis_outcome_service_url: 'https://lms.edu/outcomes',
+      lis_result_sourcedid: 'sourced-1',
+    })
+    expect(ctx.outcomeServiceUrl).toBe('https://lms.edu/outcomes')
+    expect(ctx.resultSourcedId).toBe('sourced-1')
+  })
+
+  it('rejects a replayed nonce after a valid first launch (#587)', async () => {
+    const seen = new Set<string>()
+    const nonceStore = {
+      async seen(consumerKey: string, nonce: string) {
+        const key = `${consumerKey}:${nonce}`
+        if (seen.has(key)) return true
+        seen.add(key)
+        return false
+      },
+    }
+    const params = await signedParams({ oauth_nonce: 'replay-me' })
+    const first = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET, nonceStore })
+    expect(first.valid).toBe(true)
+    const second = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET, nonceStore })
+    expect(second.valid).toBe(false)
+    if (!second.valid) expect(second.reason).toBe('nonce_replayed')
+  })
 })

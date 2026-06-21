@@ -36,11 +36,17 @@ describe('enrichPricingMatrix', () => {
     expect(sessions?.[4]).toBe('quota')
     expect(retention?.[4]).toBe('static')
     expect(webhooks?.[4]).toBe('static')
-    // Confirm all three Team-only AI rows resolve to insightsAI (false for free/starter, true for team)
+    // Team-only AI rows resolve to insightsAI (false for free/starter, true for team).
+    // Semantic decision search (#525) is the documented exception: enabled on
+    // Signal+Chorus, so it is Signal=true while remaining off for free.
     const ai = m.find((s) => s.section === 'AI insights')
     for (const row of ai?.rows ?? []) {
       expect(row[1]).toBe(false)
-      expect(row[2]).toBe(false)
+      if (row[0] === 'Semantic decision search (by meaning)') {
+        expect(row[2]).toBe(true)
+      } else {
+        expect(row[2]).toBe(false)
+      }
     }
   })
 
