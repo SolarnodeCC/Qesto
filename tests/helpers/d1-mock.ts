@@ -1468,6 +1468,34 @@ export class D1PreparedStatementMock {
       this.db.studioLibraryItems.delete(id)
       return { meta: { changes: 1 } }
     }
+    // GDPR-BADGE-01: hard-delete a user's own analytics rows, audit trail, and account row.
+    if (this.sql.startsWith('DELETE FROM sprint19_events WHERE user_id')) {
+      const [user_id] = this.args as [string]
+      let changes = 0
+      for (const [id, row] of this.db.sprint19Events) {
+        if (row.user_id === user_id) {
+          this.db.sprint19Events.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM audit_events WHERE actor_id')) {
+      const [actor_id] = this.args as [string]
+      let changes = 0
+      for (const [id, row] of this.db.auditEvents) {
+        if (row.actor_id === actor_id) {
+          this.db.auditEvents.delete(id)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
+    if (this.sql.startsWith('DELETE FROM users WHERE id')) {
+      const [id] = this.args as [string]
+      const existed = this.db.users.delete(id)
+      return { meta: { changes: existed ? 1 : 0 } }
+    }
     throw new Error(`d1-mock: unsupported run(): ${this.sql}`)
   }
 
@@ -1828,6 +1856,12 @@ export class D1PreparedStatementMock {
   }
 
   async all<T = unknown>(): Promise<{ results: T[] }> {
+    // GDPR-BADGE-01: enumerate a user's owned sessions for deletion cascade.
+    if (this.sql.startsWith('SELECT id FROM sessions WHERE owner_id')) {
+      const [owner_id] = this.args as [string]
+      const rows = [...this.db.sessions.values()].filter((r) => r.owner_id === owner_id)
+      return { results: rows.map((r) => ({ id: r.id })) as unknown as T[] }
+    }
     if (this.sql.includes('FROM embed_widgets WHERE team_id')) {
       const [team_id] = this.args as [string]
       const rows = [...this.db.embedWidgets.values()].filter((r) => r.team_id === team_id)

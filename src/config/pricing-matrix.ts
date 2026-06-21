@@ -38,6 +38,7 @@ export const PRICING_MATRIX_BASE: PricingMatrixSection[] = [
       ['AI-generated recaps', false, false, true, 'quota'],
       ['Evidence-anchored clusters', false, false, true, 'quota'],
       ['Private Workers AI (no data leaves your session)', false, false, true, 'quota'],
+      ['Semantic decision search (by meaning)', false, true, true, 'quota'],
     ],
   },
   {
@@ -100,6 +101,8 @@ export function enrichPricingMatrix(
           return [title, false, false, T.insightsAI, source]
         case 'Private Workers AI (no data leaves your session)':
           return [title, false, false, T.insightsAI, source]
+        case 'Semantic decision search (by meaning)':
+          return [title, F.semanticSearch, S.semanticSearch, T.semanticSearch, source]
         case 'SAML SSO':
           return [title, F.samlSso, S.samlSso, T.samlSso, source]
         case 'CSV export':
