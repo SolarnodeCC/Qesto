@@ -277,6 +277,44 @@ CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role);
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- platform_roles — PLATFORM-admin authority, distinct from tenant (team) roles (#586)
+-- Team creation NEVER writes here. Bootstrapped from SUPERUSER_EMAIL/SEED_ADMIN_EMAIL
+-- env allowlist or granted by an existing platform admin. adminMiddleware/rbac
+-- treat ONLY this table (or the env allowlist) as platform-admin authority.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS platform_roles (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('platform_admin')),
+  granted_by TEXT,
+  created_at INTEGER NOT NULL,
+  UNIQUE(user_id, role)
+);
+CREATE INDEX IF NOT EXISTS idx_platform_roles_user_id ON platform_roles(user_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- lti_launch_contexts — signed LTI launch context for trusted grade passback (#587)
+-- Grade passback uses the STORED outcome service URL + result sourcedid (captured
+-- from the LMS-signed launch), never values from the passback request body.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS lti_launch_contexts (
+  id TEXT PRIMARY KEY,
+  consumer_key TEXT NOT NULL,
+  context_id TEXT,
+  resource_link_id TEXT NOT NULL,
+  lis_outcome_service_url TEXT,
+  lis_result_sourcedid TEXT,
+  lms_user_id TEXT,
+  roles TEXT,
+  qesto_session_id TEXT,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  UNIQUE(consumer_key, resource_link_id, lis_result_sourcedid)
+);
+CREATE INDEX IF NOT EXISTS idx_lti_launch_resource_link ON lti_launch_contexts(resource_link_id);
+CREATE INDEX IF NOT EXISTS idx_lti_launch_consumer_context ON lti_launch_contexts(consumer_key, context_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- metrics_summary — 5-min API performance buckets populated by scheduled worker (Phase 8)
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS metrics_summary (
@@ -393,6 +431,21 @@ CREATE TABLE IF NOT EXISTS marketplace_purchases (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_marketplace_purchases_team_listing
   ON marketplace_purchases(buyer_team_id, listing_id)
   WHERE refunded_at IS NULL;
+
+-- marketplace_payouts — payout ledger backing server-side balance checks + idempotency (#588)
+CREATE TABLE IF NOT EXISTS marketplace_payouts (
+  id TEXT PRIMARY KEY,
+  team_id TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL UNIQUE,
+  amount_cents INTEGER NOT NULL,
+  currency TEXT NOT NULL,
+  stripe_account_id TEXT NOT NULL,
+  stripe_transfer_id TEXT,
+  status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'initiated', 'paid', 'failed')),
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_marketplace_payouts_team_status ON marketplace_payouts(team_id, status);
 
 -- agent_definitions — agent marketplace registry stub (AGENT-MARKETPLACE-FOUNDATION-01, Sprint 84)
 CREATE TABLE IF NOT EXISTS agent_definitions (

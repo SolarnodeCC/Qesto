@@ -200,6 +200,8 @@ export class D1Mock {
   readonly questions = new Map<string, QuestionRow>()
   readonly votes = new Map<string, VoteRow>()
   readonly userRoles = new Map<string, UserRole>()
+  // #586: platform-admin authority lives in its own table, distinct from team roles.
+  readonly platformRoles = new Map<string, { user_id: string; role: string }>()
   readonly auditEvents = new Map<string, AuditEvent>()
   readonly insightsDaily = new Map<string, InsightsDailyRow>()
   readonly sprint19Events = new Map<string, Sprint19EventRow>()
@@ -862,6 +864,27 @@ export class D1PreparedStatementMock {
       this.db.userRoles.set(id, { user_id, role })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith('INSERT INTO platform_roles')) {
+      // INSERT INTO platform_roles (id, user_id, role, granted_by, created_at)
+      // VALUES (?1, ?2, 'platform_admin', ?3, ?4) ON CONFLICT(user_id, role) DO NOTHING
+      const [id, user_id] = this.args as [string, string]
+      for (const r of this.db.platformRoles.values()) {
+        if (r.user_id === user_id && r.role === 'platform_admin') return { meta: { changes: 0 } }
+      }
+      this.db.platformRoles.set(id, { user_id, role: 'platform_admin' })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('DELETE FROM platform_roles')) {
+      const [user_id] = this.args as [string]
+      let changes = 0
+      for (const [k, r] of this.db.platformRoles.entries()) {
+        if (r.user_id === user_id && r.role === 'platform_admin') {
+          this.db.platformRoles.delete(k)
+          changes++
+        }
+      }
+      return { meta: { changes } }
+    }
     if (this.sql.startsWith('UPDATE sessions SET ai_grounding_hash')) {
       const [hash, id, owner_id] = this.args as [string, string, string | undefined]
       const row = this.db.sessions.get(id)
@@ -1502,6 +1525,21 @@ export class D1PreparedStatementMock {
         if (r.user_id === user_id && (r.role === 'owner' || r.role === 'admin')) {
           return { role: r.role } as T
         }
+      }
+      return null
+    }
+    // #586: platform-admin authority lookups (adminMiddleware + rbac hasPlatformAdmin).
+    if (this.sql.startsWith('SELECT role FROM platform_roles WHERE user_id')) {
+      const [user_id] = this.args as [string]
+      for (const r of this.db.platformRoles.values()) {
+        if (r.user_id === user_id && r.role === 'platform_admin') return { role: r.role } as T
+      }
+      return null
+    }
+    if (this.sql.includes('FROM platform_roles') && this.sql.includes('AS ok')) {
+      const [user_id] = this.args as [string]
+      for (const r of this.db.platformRoles.values()) {
+        if (r.user_id === user_id && r.role === 'platform_admin') return { ok: 1 } as T
       }
       return null
     }

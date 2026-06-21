@@ -26,20 +26,23 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
     const offset = parseInt(c.req.query('offset') ?? '0')
 
     try {
+      // #586: platform-admin authority is read from platform_roles, NOT the
+      // team-scoped user_roles table. A platform_admin row projects to
+      // admin_role = 'admin' for backwards-compatible API shape.
       const searchLike = search ? `%${search}%` : null
       const sqlNoSearch = `
         SELECT u.id, u.email, u.display_name, u.plan, u.created_at, u.last_login_at, u.suspended_at,
-               ur.role as admin_role
+               CASE WHEN pr.role IS NOT NULL THEN 'admin' ELSE NULL END as admin_role
         FROM users u
-        LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role IN ('owner', 'admin')
+        LEFT JOIN platform_roles pr ON pr.user_id = u.id AND pr.role = 'platform_admin'
         ORDER BY u.created_at DESC
         LIMIT ?1 OFFSET ?2
       `
       const sqlSearch = `
         SELECT u.id, u.email, u.display_name, u.plan, u.created_at, u.last_login_at, u.suspended_at,
-               ur.role as admin_role
+               CASE WHEN pr.role IS NOT NULL THEN 'admin' ELSE NULL END as admin_role
         FROM users u
-        LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role IN ('owner', 'admin')
+        LEFT JOIN platform_roles pr ON pr.user_id = u.id AND pr.role = 'platform_admin'
         WHERE (u.email LIKE ?3 OR u.display_name LIKE ?3)
         ORDER BY u.created_at DESC
         LIMIT ?1 OFFSET ?2
@@ -83,12 +86,13 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
         'INSERT INTO users (id, email, display_name, created_at, plan) VALUES (?1, ?2, ?3, ?4, ?5)',
       ).bind(id, rawEmail.toLowerCase().trim(), display_name ?? null, now, plan).run()
 
+      // #586: granting admin authority writes platform_roles, NOT user_roles.
       let assignedAdminRole: AdminUser['admin_role'] = null
       if (admin_role === 'admin' || admin_role === 'owner') {
         await c.env.DB.prepare(
-          'INSERT INTO user_roles (id, user_id, role, created_at) VALUES (?1, ?2, ?3, ?4)',
-        ).bind(ulid(), id, admin_role, now).run()
-        assignedAdminRole = admin_role
+          "INSERT INTO platform_roles (id, user_id, role, granted_by, created_at) VALUES (?1, ?2, 'platform_admin', ?3, ?4) ON CONFLICT(user_id, role) DO NOTHING",
+        ).bind(ulid(), id, c.get('user')?.sub ?? 'bootstrap', now).run()
+        assignedAdminRole = 'admin'
       }
 
       const user: AdminUser = {
@@ -161,14 +165,15 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
     }
 
     if ('admin_role' in body) {
+      // #586: platform-admin grant/revoke operates on platform_roles only.
       if (body.admin_role === null) {
         await c.env.DB.prepare(
-          "DELETE FROM user_roles WHERE user_id = ?1 AND role IN ('owner', 'admin')",
+          "DELETE FROM platform_roles WHERE user_id = ?1 AND role = 'platform_admin'",
         ).bind(userId).run()
       } else if (body.admin_role === 'admin' || body.admin_role === 'owner') {
         await c.env.DB.prepare(
-          "INSERT INTO user_roles (id, user_id, role, created_at) VALUES (?1, ?2, ?3, ?4) ON CONFLICT(user_id, role) DO NOTHING",
-        ).bind(ulid(), userId, body.admin_role, Date.now()).run()
+          "INSERT INTO platform_roles (id, user_id, role, granted_by, created_at) VALUES (?1, ?2, 'platform_admin', ?3, ?4) ON CONFLICT(user_id, role) DO NOTHING",
+        ).bind(ulid(), userId, c.get('user')?.sub ?? 'bootstrap', Date.now()).run()
       }
 
       await recordAuditEvent(c, {
@@ -192,9 +197,9 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
 
     const updated = await c.env.DB.prepare(
       `SELECT u.id, u.email, u.display_name, u.plan, u.created_at, u.last_login_at, u.suspended_at,
-              ur.role as admin_role
+              CASE WHEN pr.role IS NOT NULL THEN 'admin' ELSE NULL END as admin_role
        FROM users u
-       LEFT JOIN user_roles ur ON ur.user_id = u.id AND ur.role IN ('owner', 'admin')
+       LEFT JOIN platform_roles pr ON pr.user_id = u.id AND pr.role = 'platform_admin'
        WHERE u.id = ?1`,
     ).bind(userId).first<AdminUser>()
 

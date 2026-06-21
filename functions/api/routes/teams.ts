@@ -133,9 +133,14 @@ function isMemberOrOwner(team: Team, userId: string): boolean {
 }
 
 /**
- * Persist role in D1 user_roles so the shared RBAC middleware can enforce
- * team-level permissions uniformly. Team scoping is out of v1 scope — we only
- * track a global role per user. Owners/admins of any team get owner/admin role.
+ * Persist a TENANT (team) role in D1 user_roles so the shared RBAC middleware can
+ * enforce team-level route permissions (sessions/teams CRUD). This is team-scoped
+ * authority only.
+ *
+ * SECURITY (#586): this NEVER confers platform-admin authority. Platform admin
+ * lives in the separate `platform_roles` table and is checked by adminMiddleware
+ * / the rbac admin matrix. Writing 'owner' here (e.g. ensurePersonalTeam on every
+ * signup) does not grant access to /api/admin/*.
  */
 async function upsertUserRole(db: D1Database, userId: string, role: Role): Promise<void> {
   const id = ulid()

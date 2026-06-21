@@ -1,20 +1,26 @@
-// Admin role middleware — Phase 8 Step 2
+// Platform-admin middleware — Phase 8 Step 2 / hardened for #586
 //
-// Checks that the authenticated user holds the 'owner' or 'admin' role via the
-// user_roles table in D1.  Results are cached on the Hono context so downstream
-// route handlers can read `c.get('isAdmin')` without a second DB round-trip.
+// Checks that the authenticated user holds PLATFORM-admin authority. Platform
+// authority is distinct from tenant (team) roles: it lives in the dedicated
+// `platform_roles` table (role = 'platform_admin'), NOT the team-scoped
+// `user_roles` table. This is the fix for #586 — previously any team owner (every
+// signup, via ensurePersonalTeam) wrote an 'owner' row to user_roles and was
+// therefore treated as a platform admin here.
 //
-// Seed admin is granted admin by default (dev/test only) via SEED_ADMIN_EMAIL env var.
-// In production the user_roles table is the source of truth.
+// Authority is granted ONLY by:
+//   1. the SUPERUSER_EMAIL / SEED_ADMIN_EMAIL env allowlist (bootstrap), or
+//   2. an explicit platform_roles row (granted by an existing platform admin).
 //
-// Returns 403 if the user is not an admin.
+// Results are cached on the Hono context so downstream handlers can read
+// `c.get('isAdmin')` without a second DB round-trip. Returns 403 otherwise.
 
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import type { AuthVariables } from './auth'
 
-const ADMIN_ROLES = ['owner', 'admin'] as const
-type AdminRole = (typeof ADMIN_ROLES)[number]
+// The platform-admin role label persisted in platform_roles.
+const PLATFORM_ADMIN_ROLE = 'platform_admin'
+type AdminRole = 'platform_admin'
 
 
 export type AdminVariables = {
@@ -22,7 +28,7 @@ export type AdminVariables = {
   adminRole: AdminRole
 }
 
-type UserRoleRow = { role: string }
+type PlatformRoleRow = { role: string }
 
 export const adminMiddleware: MiddlewareHandler<{
   Bindings: Env
@@ -40,31 +46,34 @@ export const adminMiddleware: MiddlewareHandler<{
     )
   }
 
-  // Seed bypass — dev / integration only.
+  // Seed bypass — dev / integration only. Bootstraps platform-admin authority
+  // from the env allowlist (#586).
   if (c.env.SEED_ADMIN_EMAIL && user.email === c.env.SEED_ADMIN_EMAIL) {
     c.set('isAdmin', true)
-    c.set('adminRole', 'admin')
+    c.set('adminRole', PLATFORM_ADMIN_ROLE)
     await next()
     return
   }
 
-  // Superuser bypass — production owner account.
+  // Superuser bypass — production owner account. Bootstraps platform-admin
+  // authority from the env allowlist (#586).
   if (c.env.SUPERUSER_EMAIL && user.email === c.env.SUPERUSER_EMAIL) {
     c.set('isAdmin', true)
-    c.set('adminRole', 'owner')
+    c.set('adminRole', PLATFORM_ADMIN_ROLE)
     await next()
     return
   }
 
-  // Query user_roles table.  The index idx_user_roles_user_id covers this lookup.
+  // Query the PLATFORM_ROLES table (#586) — NOT user_roles. Team ownership never
+  // appears here, so a team owner is not a platform admin.
   // D1 transient failure → safe deny (403), not 500.
-  let row: UserRoleRow | null = null
+  let row: PlatformRoleRow | null = null
   try {
     row = await c.env.DB.prepare(
-      `SELECT role FROM user_roles WHERE user_id = ?1 AND role IN ('owner', 'admin') LIMIT 1`,
+      `SELECT role FROM platform_roles WHERE user_id = ?1 AND role = ?2 LIMIT 1`,
     )
-      .bind(user.sub)
-      .first<UserRoleRow>()
+      .bind(user.sub, PLATFORM_ADMIN_ROLE)
+      .first<PlatformRoleRow>()
   } catch {
     return c.json(
       {
@@ -76,7 +85,7 @@ export const adminMiddleware: MiddlewareHandler<{
     )
   }
 
-  if (!row || !(ADMIN_ROLES as readonly string[]).includes(row.role)) {
+  if (!row || row.role !== PLATFORM_ADMIN_ROLE) {
     return c.json(
       {
         ok: false,
@@ -88,6 +97,6 @@ export const adminMiddleware: MiddlewareHandler<{
   }
 
   c.set('isAdmin', true)
-  c.set('adminRole', row.role as AdminRole)
+  c.set('adminRole', PLATFORM_ADMIN_ROLE)
   await next()
 }
