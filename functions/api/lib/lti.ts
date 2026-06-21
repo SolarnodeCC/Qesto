@@ -23,6 +23,23 @@ export type LtiLaunchContext = {
   roles: string[]
   /** Best-effort display name from LMS (may be absent under privacy settings). */
   personName: string | null
+  /**
+   * LMS-provided grade-passback endpoint + opaque result token. These are the
+   * ONLY trustworthy source for grade passback (#587): they are signed as part
+   * of the launch. The grade-passback route must use the STORED values, never
+   * attacker-supplied body values.
+   */
+  outcomeServiceUrl: string | null
+  resultSourcedId: string | null
+}
+
+/**
+ * Pluggable nonce store for OAuth replay protection (#587). `seen` must atomically
+ * report whether the (consumerKey, nonce) pair was already used and, if not,
+ * record it. Implementations back this with KV (TTL = skew window).
+ */
+export type LtiNonceStore = {
+  seen(consumerKey: string, nonce: string): Promise<boolean>
 }
 
 export type LtiVerifyResult =
@@ -95,7 +112,23 @@ export function extractLaunchContext(params: Record<string, string>): LtiLaunchC
     userId: params['user_id'] ?? null,
     roles,
     personName: params['lis_person_name_full'] ?? null,
+    outcomeServiceUrl: params['lis_outcome_service_url'] ?? null,
+    resultSourcedId: params['lis_result_sourcedid'] ?? null,
   }
+}
+
+/** True when any LMS role conveys instructor/admin authority (grade passback). */
+export function isInstructorRole(roles: string[]): boolean {
+  return roles.some((r) => {
+    const lower = r.toLowerCase()
+    return (
+      lower.includes('instructor') ||
+      lower.includes('administrator') ||
+      lower.includes('contentdeveloper') ||
+      lower.includes('teachingassistant') ||
+      lower.includes('mentor')
+    )
+  })
 }
 
 /**
@@ -108,8 +141,10 @@ export async function verifyLtiLaunch(args: {
   params: Record<string, string>
   consumerSecret: string
   nowSeconds?: number
+  /** Optional replay-protection store (#587). When provided, a reused nonce is rejected. */
+  nonceStore?: LtiNonceStore
 }): Promise<LtiVerifyResult> {
-  const { method, url, params, consumerSecret } = args
+  const { method, url, params, consumerSecret, nonceStore } = args
   const now = args.nowSeconds ?? Math.floor(Date.now() / 1000)
 
   if (params['lti_message_type'] !== LTI_MESSAGE_TYPE) {
@@ -138,6 +173,16 @@ export async function verifyLtiLaunch(args: {
   const expected = await signHmacSha1(baseString, consumerSecret)
   if (!timingSafeEqual(provided, expected)) {
     return { valid: false, reason: 'invalid_signature' }
+  }
+
+  // Replay protection (#587): a valid signature for a nonce we've already seen is
+  // a replayed launch. Check AFTER signature verification so attackers cannot burn
+  // a victim's nonce with forged requests. The store records the nonce atomically.
+  if (nonceStore) {
+    const alreadySeen = await nonceStore.seen(params['oauth_consumer_key'], params['oauth_nonce'])
+    if (alreadySeen) {
+      return { valid: false, reason: 'nonce_replayed' }
+    }
   }
 
   return { valid: true, context: extractLaunchContext(params) }
