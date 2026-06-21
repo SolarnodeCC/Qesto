@@ -339,8 +339,8 @@ Once all staging tests pass:
 **Error:** 401 Invalid signature
 
 **Fix:**
-1. Verify secret set: `wrangler secret list | grep MARKETING`
-2. Verify sender uses same secret: `deliverMarketingWebhook` reads `env.MARKETING_WEBHOOK_SECRET`
+1. Verify the signing key is configured: `wrangler secret list | grep MARKETING`
+2. Verify the sender reads the same binding: `deliverMarketingWebhook` uses `env.MARKETING_WEBHOOK_SECRET`
 3. Check logs: `wrangler tail | grep webhook.marketing`
 
 ---
