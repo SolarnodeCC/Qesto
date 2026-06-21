@@ -200,6 +200,9 @@ export default function Pricing() {
                   starter?.features.insightsAI
                     ? 'Same-day evidence-anchored recap'
                     : 'Evidence-anchored recap (AI insights on Chorus)',
+                  starter?.features.semanticSearch
+                    ? 'Semantic decision search — find past sessions by meaning, not just keywords'
+                    : 'Decision search (Signal and up)',
                   'Webhook integrations on the roadmap',
                   'Stripe-billed, cancel anytime',
                 ].map((f) => (
