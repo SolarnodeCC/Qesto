@@ -267,7 +267,7 @@ export function PresenterControls({
       <div role="group" aria-label={tp('ctrl.group.captions')} className="contents">
         {captionsPlanGated ? (
           <span
-            className="inline-flex items-center gap-1.5 rounded px-3 min-h-[44px] font-medium bg-pulse-700 text-pulse-400 cursor-not-allowed text-sm"
+            className="inline-flex items-center gap-1.5 rounded px-3 min-h-[44px] font-medium bg-pulse-700 text-pulse-300 cursor-not-allowed text-sm"
             title={t('captions_plan_gate')}
           >
             <Subtitles size={14} aria-hidden="true" />
