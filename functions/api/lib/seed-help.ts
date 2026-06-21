@@ -76,8 +76,10 @@ export async function seedHelpDocuments(
     let embedding_id = generateId()
     let vector: number[] | null = null
 
-    // Embed the document (title + excerpt for RAG retrieval)
-    const text_to_embed = `${doc.title} ${doc.excerpt}`
+    // Embed title + excerpt + body for RAG retrieval. Embedding the body (not
+    // just the excerpt) lets queries that match section content surface the right
+    // chunk; the seed is chunked per H2 (see scripts/generate-help-seed.mjs).
+    const text_to_embed = `${doc.title}\n${doc.excerpt}\n\n${doc.content}`
     vector = await embedText(ai as any, text_to_embed)
 
     // Insert into D1
