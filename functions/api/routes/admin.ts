@@ -27,6 +27,7 @@ import { mountOpsRoutes } from './admin/ops'
 import { mountPlatformOverviewRoutes } from './admin/platform-overview'
 import { mountObservabilityRoutes } from './admin/observability'
 import { mountUserSupportRoutes } from './admin/user-support'
+import { mountOpsControlRoutes } from './admin/ops-control'
 import { mountJourneyEventRoutes } from './admin/journey-events'
 import { mountGrowthRoutes } from './admin/growth'
 import type { AnalyticsData, DailyBucket } from './admin/types'
@@ -47,6 +48,7 @@ export function mountAdminRoutes(parent: ParentApp) {
   mountPlatformOverviewRoutes(app)
   mountObservabilityRoutes(app)
   mountUserSupportRoutes(app)
+  mountOpsControlRoutes(app)
   mountJourneyEventRoutes(app)
   mountGrowthRoutes(app)
 

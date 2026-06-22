@@ -70,6 +70,16 @@ export type AuditAction =
   | 'user.impersonate'
   | 'user.gdpr_export'
   | 'user.gdpr_delete'
+  // Platformbeheer Module 4 (OPS) — operator actions. Destructive ones
+  // (rollback, restore, secret rotation) are confirmed + audited before the
+  // external pipeline acts on the recorded request.
+  | 'ops.deploy_rollback'
+  | 'ops.cron_trigger'
+  | 'ops.secret_rotate'
+  | 'ops.incident_create'
+  | 'ops.incident_close'
+  | 'ops.backup_restore'
+  | 'ops.waf_whitelist_update'
   | 'ldap.sync.completed'
   // Agent action transparency (AI-461, S87): an AI agent/copilot executed an
   // action that mutated session state. after_snapshot carries the sanitised
