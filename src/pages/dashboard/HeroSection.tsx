@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { ChevronDown, Megaphone, Sparkles } from 'lucide-react'
 import { useT } from '../../i18n'
 import type { DashboardSection } from '../../layouts/AppShellLayout'
@@ -28,6 +29,26 @@ export function HeroSection({
   setActiveSection,
 }: HeroSectionProps) {
   const t = useT('dashboard')
+
+  // Menu Button pattern (WAI-ARIA): move focus into the menu on open and let
+  // ↑/↓ traverse the items so keyboard users get the navigation the role implies.
+  useEffect(() => {
+    if (!newMenuOpen) return
+    const first = newMenuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')
+    first?.focus()
+  }, [newMenuOpen, newMenuRef])
+
+  function onMenuKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+    e.preventDefault()
+    const items = Array.from(newMenuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])
+    if (items.length === 0) return
+    const idx = items.findIndex((el) => el === document.activeElement)
+    const next = e.key === 'ArrowDown'
+      ? items[(idx + 1) % items.length]
+      : items[(idx - 1 + items.length) % items.length]
+    next.focus()
+  }
   return (
     <section aria-labelledby="hero-heading">
       <h1
@@ -63,6 +84,7 @@ export function HeroSection({
               <div
                 role="menu"
                 aria-label={t('chooseSessionType')}
+                onKeyDown={onMenuKeyDown}
                 className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#0F1729] p-1.5 shadow-lg"
               >
                 <button
@@ -123,8 +145,8 @@ export function HeroSection({
         <button
           type="button"
           disabled
-          title="Coming soon"
-          className="inline-flex items-center gap-2 rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-transparent text-pulse-400 dark:text-[#6B7A99] px-5 py-2.5 text-sm font-semibold cursor-not-allowed opacity-60"
+          title={t('importComingSoon')}
+          className="inline-flex items-center gap-2 rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-transparent text-pulse-500 dark:text-[#8A96B0] px-5 py-2.5 text-sm font-semibold cursor-not-allowed opacity-60"
         >
           {t('importSession')}
         </button>

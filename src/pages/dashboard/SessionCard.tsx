@@ -221,7 +221,7 @@ export function SessionCard({
             {s.title}
           </p>
         </Link>
-        <div className="mt-2 flex items-center gap-2 text-xs text-pulse-400 dark:text-[#6B7A99]">
+        <div className="mt-2 flex items-center gap-2 text-xs text-pulse-500 dark:text-[#8A96B0]">
           <code className="font-mono font-semibold tracking-widest bg-pulse-100 dark:bg-pulse-800/60 text-pulse-600 dark:text-[#A8B3CC] rounded-full px-2 py-0.5">
             {s.code}
           </code>

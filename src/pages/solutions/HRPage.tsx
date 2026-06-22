@@ -83,7 +83,7 @@ export default function HRPage() {
                   Without a witch hunt.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Run quarterly climate checks, manager 360s, and open-comment sessions where people actually speak.
                 Consent rounds mean every attendee picks their visibility before the first vote — and no result is
                 shown until the floor is large enough to protect them.
@@ -113,7 +113,7 @@ export default function HRPage() {
                       className={`flex-1 py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
                         mode === key
                           ? 'bg-white dark:bg-[#151C2E] text-pulse-900 dark:text-[#F0F2F8] shadow-[var(--shadow-card)]'
-                          : 'text-pulse-500 dark:text-[#6B7A99]'
+                          : 'text-pulse-500 dark:text-[#8A96B0]'
                       }`}
                     >
                       {label}
@@ -140,7 +140,7 @@ export default function HRPage() {
                       <div className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">
                         {mode === 'ident' ? (i === 1 ? 'Alex Kim' : 'Priya Rao') : 'Participant'}
                       </div>
-                      <div className="text-[13px] text-pulse-500 dark:text-[#6B7A99]">
+                      <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0]">
                         {mode === 'anon' && 'Vote recorded · No identity linked'}
                         {mode === 'cohort' && `Vote recorded · ${i === 1 ? 'Engineering' : 'Design'} team`}
                         {mode === 'ident' && (
@@ -193,9 +193,9 @@ export default function HRPage() {
               { label: 'Recap source readiness', value: 'Same day', note: 'Session exports and reviewed themes support the follow-up package.' },
             ].map(({ label, value, note }) => (
               <div key={label} className="bg-white dark:bg-[#151C2E] rounded-2xl p-6" style={shadowCard}>
-                <div className="text-[13px] text-pulse-500 dark:text-[#6B7A99] mb-2">{label}</div>
+                <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0] mb-2">{label}</div>
                 <div className="font-bold text-4xl tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-2" style={displayFont}>{value}</div>
-                <div className="text-[13px] text-pulse-500 dark:text-[#6B7A99] leading-snug">{note}</div>
+                <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0] leading-snug">{note}</div>
               </div>
             ))}
           </div>
@@ -209,7 +209,7 @@ export default function HRPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Four HR moments Qesto was built for.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
             Each one demands a different consent posture. Qesto is the only tool that lets the room choose.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -217,8 +217,8 @@ export default function HRPage() {
               <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
                 <div className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 mb-2">{tag}</div>
                 <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-pulse-500 dark:text-[#6B7A99] text-sm leading-relaxed mb-4">{desc}</p>
-                <ul className="list-disc pl-4 space-y-1 text-sm text-pulse-500 dark:text-[#6B7A99]">
+                <p className="text-pulse-500 dark:text-[#8A96B0] text-sm leading-relaxed mb-4">{desc}</p>
+                <ul className="list-disc pl-4 space-y-1 text-sm text-pulse-500 dark:text-[#8A96B0]">
                   {items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -237,7 +237,7 @@ export default function HRPage() {
               "We used to spend two weeks arguing about whether the engagement survey was honest. Now we run the
               pulse in the room, see the tally, and the argument is about what to do about it."
             </p>
-            <footer className="text-sm text-pulse-500 dark:text-[#6B7A99]">
+            <footer className="text-sm text-pulse-500 dark:text-[#8A96B0]">
               <strong className="text-pulse-900 dark:text-[#F0F2F8]">Priya Ramanathan</strong> · Chief People Officer, mid-market SaaS
               (pilot customer)
             </footer>
@@ -275,7 +275,7 @@ export default function HRPage() {
                   {icon}
                 </div>
                 <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#6B7A99]">{desc}</p>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
           </div>

@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import { ColorSchemeProvider } from './hooks/ColorSchemeProvider'
 import { HelpChatProvider } from './hooks/useHelpChat'
 import { CookieConsentBanner } from './components/CookieConsentBanner'
+import ImpersonationBanner from './components/ImpersonationBanner'
 // Home is the `/` route — keep it eager so the landing LCP path never waits on a
 // chunk fetch. Every other page (and the authenticated-only help widget) is lazy so
 // it stays out of the critical entry chunk an anonymous visitor parses on first load.
@@ -124,6 +125,7 @@ export default function App() {
       <HelpChatProvider>
         {/* Skip link is rendered by MainLayout on each page that uses it. */}
         <RouteAnnouncer />
+        <ImpersonationBanner />
         <AuthenticatedHelpWidget />
         <CookieConsentBanner />
         <Routes>

@@ -65,6 +65,22 @@ export type AuditAction =
   | 'user.update'
   | 'user.suspend'
   | 'user.restore'
+  // Platformbeheer Module 3 (Gebruikers) — support actions. Every one is a
+  // privileged admin operation on another user's account and MUST be audited.
+  | 'user.impersonate'
+  | 'user.impersonate_stop'
+  | 'user.gdpr_export'
+  | 'user.gdpr_delete'
+  // Platformbeheer Module 4 (OPS) — operator actions. Destructive ones
+  // (rollback, restore, secret rotation) are confirmed + audited before the
+  // external pipeline acts on the recorded request.
+  | 'ops.deploy_rollback'
+  | 'ops.cron_trigger'
+  | 'ops.secret_rotate'
+  | 'ops.incident_create'
+  | 'ops.incident_close'
+  | 'ops.backup_restore'
+  | 'ops.waf_whitelist_update'
   | 'ldap.sync.completed'
   // Agent action transparency (AI-461, S87): an AI agent/copilot executed an
   // action that mutated session state. after_snapshot carries the sanitised
@@ -87,6 +103,11 @@ export type AuditAction =
   | 'studio.library.saved'
   | 'studio.library.forked'
   | 'studio.library.deleted'
+  // Role lifecycle on team membership (#524): emitted from member invite,
+  // role update, and member removal. before/after carry the role values.
+  | 'role.assigned'
+  | 'role.changed'
+  | 'role.removed'
 
 export interface AuditContext {
   action: AuditAction

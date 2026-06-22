@@ -114,7 +114,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
           <section key={col} className="space-y-2">
             <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t(`column.${col}`)}</h2>
             {itemsByColumn(state.items, col).length === 0 ? (
-              <p className="text-xs text-pulse-400">{t('column.empty')}</p>
+              <p className="text-xs text-pulse-500">{t('column.empty')}</p>
             ) : (
               itemsByColumn(state.items, col).map((item) => (
                 <RetroItemCard

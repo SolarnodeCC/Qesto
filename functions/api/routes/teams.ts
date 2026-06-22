@@ -133,9 +133,14 @@ function isMemberOrOwner(team: Team, userId: string): boolean {
 }
 
 /**
- * Persist role in D1 user_roles so the shared RBAC middleware can enforce
- * team-level permissions uniformly. Team scoping is out of v1 scope — we only
- * track a global role per user. Owners/admins of any team get owner/admin role.
+ * Persist a TENANT (team) role in D1 user_roles so the shared RBAC middleware can
+ * enforce team-level route permissions (sessions/teams CRUD). This is team-scoped
+ * authority only.
+ *
+ * SECURITY (#586): this NEVER confers platform-admin authority. Platform admin
+ * lives in the separate `platform_roles` table and is checked by adminMiddleware
+ * / the rbac admin matrix. Writing 'owner' here (e.g. ensurePersonalTeam on every
+ * signup) does not grant access to /api/admin/*.
  */
 async function upsertUserRole(db: D1Database, userId: string, role: Role): Promise<void> {
   const id = ulid()
@@ -496,6 +501,15 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       before_snapshot: roleDto(current),
       after_snapshot: roleDto(next),
     })
+    // #524: explicit role lifecycle event for a role definition change, with
+    // before/after values for compliance review.
+    await recordAuditEvent(c, {
+      action: 'role.changed',
+      subject_type: 'custom_role',
+      subject_id: current.id,
+      before_snapshot: roleDto(current),
+      after_snapshot: roleDto(next),
+    })
     return c.json({ ok: true, data: { role: roleDto(next) }, trace_id: c.get('trace_id') })
   })
 
@@ -591,6 +605,13 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       subject_id: assignment.id,
       after_snapshot: { teamId: team.id, roleId: role.id, userId: assignment.user_id },
     })
+    // #524: explicit role lifecycle event for the assigned custom role.
+    await recordAuditEvent(c, {
+      action: 'role.assigned',
+      subject_type: 'team_member',
+      subject_id: assignment.user_id,
+      after_snapshot: { teamId: team.id, roleId: role.id, roleName: role.name, userId: assignment.user_id, via: 'custom_role' },
+    })
     return c.json({ ok: true, data: { assignment }, trace_id: c.get('trace_id') }, 201)
   })
 
@@ -617,6 +638,13 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       subject_type: 'custom_role_assignment',
       subject_id: `${team.id}:${c.req.param('roleId')}:${c.req.param('userId')}`,
       before_snapshot: { teamId: team.id, roleId: c.req.param('roleId'), userId: c.req.param('userId') },
+    })
+    // #524: explicit role lifecycle event for the removed custom-role grant.
+    await recordAuditEvent(c, {
+      action: 'role.removed',
+      subject_type: 'team_member',
+      subject_id: c.req.param('userId'),
+      before_snapshot: { teamId: team.id, roleId: c.req.param('roleId'), userId: c.req.param('userId'), via: 'custom_role' },
     })
     return c.json({ ok: true, data: { removed: true }, trace_id: c.get('trace_id') })
   })
@@ -788,6 +816,13 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       subject_id: team.id,
       after_snapshot: { role: parsed.data.role, invited: true },
     })
+    // #524: explicit role lifecycle event for the assigned (invited) role.
+    await recordAuditEvent(c, {
+      action: 'role.assigned',
+      subject_type: 'team_member',
+      subject_id: email,
+      after_snapshot: { teamId: team.id, email, role: parsed.data.role, via: 'invite' },
+    })
 
     return c.json(
       { ok: true, data: { invited: true, email, role: parsed.data.role }, trace_id: c.get('trace_id') },
@@ -817,6 +852,7 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     }
 
     const before = team.members.length
+    const removedMember = team.members.find((m) => m.userId === targetId)
     team.members = team.members.filter((m) => m.userId !== targetId)
     if (team.members.length === before) {
       return c.json(
@@ -832,6 +868,13 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
       subject_type: 'team_member',
       subject_id: targetId,
       before_snapshot: { teamId: team.id },
+    })
+    // #524: explicit role lifecycle event for the removed member's role.
+    await recordAuditEvent(c, {
+      action: 'role.removed',
+      subject_type: 'team_member',
+      subject_id: targetId,
+      before_snapshot: { teamId: team.id, userId: targetId, role: removedMember?.role ?? null },
     })
 
     return c.json({ ok: true, data: { removed: true, userId: targetId }, trace_id: c.get('trace_id') })

@@ -27,7 +27,7 @@ function GlobalStatusBanner({ status, updatedAt }: { status: ServiceStatus; upda
           <span className={`w-3 h-3 rounded-full ${dotColour[status]} ${status === 'healthy' ? 'animate-pulse' : ''}`} />
           <p className={`text-heading-s font-semibold ${textColour[status]}`}>{label[status]}</p>
         </div>
-        <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">
+        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">
           Updated {new Date(updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Body>
       </div>
@@ -38,7 +38,7 @@ function GlobalStatusBanner({ status, updatedAt }: { status: ServiceStatus; upda
 function SevCard({ label, count, colour }: { label: string; count: number; colour: string }) {
   return (
     <Card className="space-y-2">
-      <Body size="s" className="text-pulse-500 dark:text-[#6B7A99] font-medium uppercase tracking-wide text-xs">{label}</Body>
+      <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] font-medium uppercase tracking-wide text-xs">{label}</Body>
       <p className={`text-heading-l font-bold ${colour}`}>{count}</p>
     </Card>
   )
@@ -67,7 +67,7 @@ function HealthCorrelationSection() {
     return (
       <Card>
         <Heading level="s" className="mb-3 border-l-4 border-teal-500 pl-3">Health correlation — last 24h</Heading>
-        <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Loading…</Body>
+        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Loading…</Body>
       </Card>
     )
   }
@@ -76,20 +76,20 @@ function HealthCorrelationSection() {
     <Card>
       <div className="mb-3 flex items-center justify-between">
         <Heading level="s" className="border-l-4 border-teal-500 pl-3">Health correlation — last 24h</Heading>
-        <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] text-xs">Energizer activity vs WebSocket health</Body>
+        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] text-xs">Energizer activity vs WebSocket health</Body>
       </div>
       {!correlation || correlation.length === 0 ? (
-        <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">No correlation data available for this period.</Body>
+        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No correlation data available for this period.</Body>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-pulse-100 dark:border-[#1E2A45]">
-                <th className="py-2 pr-4 text-left font-medium text-pulse-500 dark:text-[#6B7A99]">Hour (UTC)</th>
-                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">Activations</th>
-                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">Answers</th>
-                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">Reconnects</th>
-                <th className="py-2 text-right font-medium text-pulse-500 dark:text-[#6B7A99]">WS Errors</th>
+                <th className="py-2 pr-4 text-left font-medium text-pulse-500 dark:text-[#8A96B0]">Hour (UTC)</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">Activations</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">Answers</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">Reconnects</th>
+                <th className="py-2 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">WS Errors</th>
               </tr>
             </thead>
             <tbody>
@@ -145,7 +145,7 @@ export default function AdminOpsTab() {
         <SevCard label="SEV2 — High" count={ops.sev2} colour="text-amber-500 dark:text-amber-400" />
         <SevCard label="SEV3 — Medium" count={ops.sev3} colour="text-teal-600 dark:text-teal-400" />
         <Card className="space-y-2">
-          <Body size="s" className="text-pulse-500 dark:text-[#6B7A99] font-medium uppercase tracking-wide text-xs">Impact (24h)</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] font-medium uppercase tracking-wide text-xs">Impact (24h)</Body>
           <Body size="s">Sessions: <span className="font-semibold">{ops.impact_sessions}</span></Body>
           <Body size="s">Users: <span className="font-semibold">{ops.impact_users}</span></Body>
         </Card>
@@ -186,7 +186,7 @@ export default function AdminOpsTab() {
         <Card>
           <Heading level="s" className="mb-4 border-l-4 border-indigo-500 pl-3">Knowledge base sync</Heading>
           {kbLoading ? (
-            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Loading…</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Loading…</Body>
           ) : kbSync?.last_sync_at ? (
             <div className="space-y-3">
               <div className="flex justify-between items-start py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
@@ -215,7 +215,7 @@ export default function AdminOpsTab() {
               )}
             </div>
           ) : (
-            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">No sync data available</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No sync data available</Body>
           )}
         </Card>
       </div>
@@ -227,13 +227,13 @@ export default function AdminOpsTab() {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <Heading level="s" className="border-l-4 border-teal-500 pl-3">Issue pulse</Heading>
-          <div className="flex gap-3 text-xs text-pulse-400 dark:text-[#6B7A99]">
+          <div className="flex gap-3 text-xs text-pulse-500 dark:text-[#8A96B0]">
             <span>Errors: <strong className="text-pulse-700 dark:text-[#A8B3CC]">{ops.issues.filter(i => i.action.includes('error')).reduce((s, i) => s + i.count, 0)}</strong></span>
             <span>Info: <strong className="text-pulse-700 dark:text-[#A8B3CC]">{ops.issues.filter(i => !i.action.includes('error')).reduce((s, i) => s + i.count, 0)}</strong></span>
           </div>
         </div>
         {ops.issues.length === 0 ? (
-          <Body size="s" className="text-pulse-400">No issue data in this period.</Body>
+          <Body size="s" className="text-pulse-500">No issue data in this period.</Body>
         ) : (
           <div className="space-y-1">
             {ops.issues.map((issue) => (

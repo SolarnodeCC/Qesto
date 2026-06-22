@@ -81,4 +81,21 @@ describe('evaluateVoteAdmission', () => {
     const r = base({ bucket: { tokens: 0, lastAt: Date.now() }, paused: true })
     expect(r).toMatchObject({ ok: false, code: 'rate_limited' })
   })
+
+  // #581: free-text length defence-in-depth (independent of the WS schema bound).
+  it('rejects an oversized free-text optionId for word_cloud', () => {
+    const r = base({
+      question: { id: 'q1', kind: 'word_cloud', options: [] },
+      data: { questionId: 'q1', optionId: 'x'.repeat(281) },
+    })
+    expect(r).toMatchObject({ ok: false, code: 'bad_option', message: 'Answer too long' })
+  })
+
+  it('admits a free-text optionId exactly at the length cap', () => {
+    const r = base({
+      question: { id: 'q1', kind: 'word_cloud', options: [] },
+      data: { questionId: 'q1', optionId: 'x'.repeat(280) },
+    })
+    expect(r.ok).toBe(true)
+  })
 })

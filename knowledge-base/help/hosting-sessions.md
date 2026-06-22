@@ -4,6 +4,8 @@ title: Hosting and Running Sessions
 topic: getting-started
 scope: free
 excerpt: Session lifecycle, host controls, presenter view, duplicating sessions, and vote policies.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Hosting and Running Sessions

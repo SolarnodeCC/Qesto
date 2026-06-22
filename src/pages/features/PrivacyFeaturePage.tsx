@@ -68,7 +68,7 @@ export default function PrivacyFeaturePage() {
                   picks its posture.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Every Qesto session starts with a consent round. Participants choose whether they're identified,
                 cohort-visible, or fully anonymous for the session. Results stay hidden until the minimum tally is met.
               </p>
@@ -85,7 +85,7 @@ export default function PrivacyFeaturePage() {
             {/* Consent picker */}
             <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-7" style={shadowElevated}>
               <h3 className="font-semibold text-[17px] mb-1.5 text-pulse-900 dark:text-[#F0F2F8]">How do you want to participate?</h3>
-              <p className="text-[13px] text-pulse-500 dark:text-[#6B7A99] mb-5">Your host sets the session posture before sensitive questions open.</p>
+              <p className="text-[13px] text-pulse-500 dark:text-[#8A96B0] mb-5">Your host sets the session posture before sensitive questions open.</p>
               <div className="space-y-2">
                 {consentOptions.map(({ key, name, desc, tag }) => (
                   <button
@@ -111,7 +111,7 @@ export default function PrivacyFeaturePage() {
                     </div>
                     <div>
                       <div className="text-[14.5px] font-semibold text-pulse-900 dark:text-[#F0F2F8]">{name}</div>
-                      <div className="text-[12.5px] text-pulse-500 dark:text-[#6B7A99] leading-snug mt-0.5">{desc}</div>
+                      <div className="text-[12.5px] text-pulse-500 dark:text-[#8A96B0] leading-snug mt-0.5">{desc}</div>
                     </div>
                     <span className="text-[11px] font-semibold text-teal-700 dark:text-teal-400" style={monoFont}>{tag}</span>
                   </button>
@@ -136,7 +136,7 @@ export default function PrivacyFeaturePage() {
                   <Check size={22} />
                 </div>
                 <h3 className="font-semibold text-[16px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[#6B7A99]">{desc}</p>
+                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
             {dontGuarantees.map(({ title, desc }) => (
@@ -148,7 +148,7 @@ export default function PrivacyFeaturePage() {
                   <X size={22} />
                 </div>
                 <h3 className="font-semibold text-[16px] mb-2" style={{ color: '#DC2626' }}>{title}</h3>
-                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[#6B7A99]">{desc}</p>
+                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
           </div>
@@ -171,7 +171,7 @@ export default function PrivacyFeaturePage() {
               <div key={t} className="px-8 py-8 first:pl-0 last:pr-0 relative">
                 <div className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 mb-2">{t}</div>
                 <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm text-pulse-500 dark:text-[#6B7A99] leading-relaxed">{desc}</p>
+                <p className="text-sm text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -185,7 +185,7 @@ export default function PrivacyFeaturePage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             The paperwork your procurement team needs.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8">
             Qesto uses Cloudflare for compute/storage, Workers AI for inference, Stripe for payment processing, and
             Resend for transactional email. Formal compliance reports and residency guarantees are enterprise roadmap items.
           </p>
@@ -195,7 +195,7 @@ export default function PrivacyFeaturePage() {
                 <div className="font-bold text-[18px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-1" style={displayFont}>
                   {name}
                 </div>
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-pulse-500 dark:text-[#6B7A99]">{label}</div>
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0]">{label}</div>
               </div>
             ))}
           </div>

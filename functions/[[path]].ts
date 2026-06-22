@@ -61,11 +61,14 @@ const SEO_HONO_PATHS = new Set([
 function forwardToHono(context: { request: Request; env: Env }) {
   const waitUntil = (context as unknown as { waitUntil?: (promise: Promise<unknown>) => void }).waitUntil
   const passThroughOnException = (context as unknown as { passThroughOnException?: () => void }).passThroughOnException
-  const exec: ExecutionContext = {
+  // `tracing` is required on newer @cloudflare/workers-types' ExecutionContext but
+  // is not surfaced by the Pages Functions context, so this synthesized ctx omits
+  // it. The cast keeps the shim compatible across workers-types versions.
+  const exec = {
     waitUntil: typeof waitUntil === 'function' ? waitUntil.bind(context) : () => {},
     passThroughOnException: typeof passThroughOnException === 'function' ? passThroughOnException.bind(context) : () => {},
     props: {},
-  }
+  } as ExecutionContext
   return app.fetch(context.request, context.env, exec)
 }
 

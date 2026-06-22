@@ -50,7 +50,7 @@ export function AIChip({
           <AIBadge variant="generated" />
           <span className="text-caption text-pulse-500">{kindLabel(question.kind)}</span>
         </div>
-        <p className="text-sm text-pulse-800 dark:text-pulse-200 line-clamp-2">{question.prompt || <em className="text-pulse-400">{t('step2.chip_empty')}</em>}</p>
+        <p className="text-sm text-pulse-800 dark:text-pulse-200 line-clamp-2">{question.prompt || <em className="text-pulse-500">{t('step2.chip_empty')}</em>}</p>
       </div>
       <div className="flex items-center gap-1 shrink-0">
         <button
@@ -62,7 +62,7 @@ export function AIChip({
             'p-1.5 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
             question.accepted
               ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300'
-              : 'text-pulse-400 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20',
+              : 'text-pulse-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20',
           ].join(' ')}
         >
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -74,7 +74,7 @@ export function AIChip({
           onClick={() => setExpanded(true)}
           aria-label={t('step2.chip_edit')}
           title={t('step2.chip_edit')}
-          className="p-1.5 rounded-md text-pulse-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          className="p-1.5 rounded-md text-pulse-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -86,7 +86,7 @@ export function AIChip({
           onClick={onDismiss}
           aria-label={t('step2.chip_dismiss')}
           title={t('step2.chip_dismiss')}
-          className="p-1.5 rounded-md text-pulse-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          className="p-1.5 rounded-md text-pulse-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
           <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 6L6 18M6 6l12 12" />

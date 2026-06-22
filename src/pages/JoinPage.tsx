@@ -101,7 +101,7 @@ export default function JoinPage() {
 
   if (lookup.status === 'loading') {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-3 p-8 text-pulse-500">
+      <main id="main" tabIndex={-1} className="min-h-screen flex flex-col items-center justify-center gap-3 p-8 text-pulse-500 focus:outline-none">
         <svg
           aria-hidden="true"
           className="animate-spin w-6 h-6 text-teal-500"
@@ -132,14 +132,23 @@ export default function JoinPage() {
         </div>
         <div className="space-y-1">
           <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
-          <p className="text-sm text-pulse-500">{lookup.message}</p>
+          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('not_found_help')}</p>
         </div>
-        <a
-          href="/"
-          className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
-        >
-          {t('back_to_home')}
-        </a>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => { setLookup({ status: 'loading' }); lookupCode(code) }}
+            className="inline-flex items-center rounded-lg bg-teal-600 text-white text-sm font-semibold px-4 py-2 hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+          >
+            {t('try_again')}
+          </button>
+          <a
+            href="/"
+            className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+          >
+            {t('back_to_home')}
+          </a>
+        </div>
       </main>
     )
   }
@@ -347,7 +356,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           <div className="flex flex-col items-center justify-center gap-3 py-8" aria-live="polite" aria-atomic="true">
             <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('get_ready')}</p>
             <div className="text-6xl font-bold text-teal-600 tabular-nums">{countdown}</div>
-            <p className="text-xs text-pulse-400 dark:text-[#6B7A99]">{t('next_question_countdown', { seconds: countdown })}</p>
+            <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('next_question_countdown', { seconds: countdown })}</p>
           </div>
         )}
 
@@ -410,6 +419,15 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
                   <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                 </svg>
                 {t('voting_paused')}
+              </div>
+            )}
+
+            {/* Inline reconnect notice — the disabled vote controls below would
+                otherwise look tappable with no explanation (offline state). */}
+            {!state.paused && state.connection !== 'open' && (
+              <div className="flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 px-4 py-3 text-sm text-amber-700 dark:text-amber-300" role="status" aria-live="polite">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" aria-hidden="true" />
+                {t('vote_unavailable_offline')}
               </div>
             )}
 

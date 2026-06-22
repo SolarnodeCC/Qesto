@@ -107,7 +107,7 @@ export default function JoinCodePanel({
         aria-labelledby="join-code-heading"
         className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4 space-y-3 shadow-card"
       >
-        <h2 id="join-code-heading" className="text-caption font-medium text-pulse-500 uppercase tracking-wider dark:text-[#6B7A99]">
+        <h2 id="join-code-heading" className="text-caption font-medium text-pulse-500 uppercase tracking-wider dark:text-[#8A96B0]">
           {t('join_code_heading')}
         </h2>
         <div className="flex items-center gap-3">

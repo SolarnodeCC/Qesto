@@ -68,7 +68,7 @@ export function QuestionEditor({
             type="button"
             onClick={onDismiss}
             aria-label="Remove this question"
-            className="text-pulse-400 hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded p-0.5"
+            className="text-pulse-500 hover:text-red-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded p-0.5"
           >
             <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -111,7 +111,7 @@ export function QuestionEditor({
         <div className="space-y-2">
           {question.options.map((opt, idx) => (
             <div key={opt.id} className="flex items-center gap-2">
-              <span className="text-caption text-pulse-400 w-5 text-right select-none">{idx + 1}.</span>
+              <span className="text-caption text-pulse-500 w-5 text-right select-none">{idx + 1}.</span>
               <input
                 type="text"
                 value={opt.label}
@@ -125,7 +125,7 @@ export function QuestionEditor({
                 onClick={() => removeOption(idx)}
                 disabled={question.options.length <= 2}
                 aria-label={`Remove option ${idx + 1}`}
-                className="text-pulse-400 hover:text-red-500 disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded p-0.5"
+                className="text-pulse-500 hover:text-red-500 disabled:opacity-30 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded p-0.5"
               >
                 <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M18 6L6 18M6 6l12 12" />
@@ -142,20 +142,20 @@ export function QuestionEditor({
               + Add option
             </button>
           )}
-          <p className="text-caption text-pulse-400">
+          <p className="text-caption text-pulse-500">
             {question.kind === 'ranking' ? `${question.options.length}/8 items` : `${question.options.length}/5 options`}
             {question.options.length < 2 && ' — add at least 2'}
           </p>
         </div>
       )}
       {question.kind === 'likert' && (
-        <p className="text-caption text-pulse-400 italic">{t('step2.auto_scale_hint')}</p>
+        <p className="text-caption text-pulse-500 italic">{t('step2.auto_scale_hint')}</p>
       )}
       {question.kind === 'slider' && (
-        <p className="text-caption text-pulse-400 italic">{t('step2.auto_slider_hint')}</p>
+        <p className="text-caption text-pulse-500 italic">{t('step2.auto_slider_hint')}</p>
       )}
       {(question.kind === 'word_cloud' || question.kind === 'open') && (
-        <p className="text-caption text-pulse-400 italic">{t('step2.free_text_hint')}</p>
+        <p className="text-caption text-pulse-500 italic">{t('step2.free_text_hint')}</p>
       )}
     </div>
   )

@@ -1,6 +1,13 @@
 # Staging Rituals — Sprints 51–60
 
-Run after merging to staging (`qesto` Pages + Workers). Sign off in [`SPRINT51_60_DOD_CHECKLIST.md`](../product/planning/SPRINT51_60_DOD_CHECKLIST.md).
+> **Cadence note:** The "Sprints 51–60" framing is historical. The rituals below remain the
+> **active staging procedure** — run them per **release-train** staging gate (see
+> [`RELEASE_TRAIN_MASTER.md`](../product/planning/RELEASE_TRAIN_MASTER.md)) and sign off against
+> the current train's exit criteria in [`BACKLOG_ACTIVE.md`](../product/backlog/BACKLOG_ACTIVE.md).
+
+Run after merging to staging (`qesto` Pages + Workers). Sign off against the active release-train
+exit criteria in [`BACKLOG_ACTIVE.md`](../product/backlog/BACKLOG_ACTIVE.md) (historical sprint
+sign-off: [`SPRINT51_60_DOD_CHECKLIST.md`](../product/planning/SPRINT51_60_DOD_CHECKLIST.md)).
 
 ## 1. CI gate (pre-merge)
 

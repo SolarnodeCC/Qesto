@@ -67,19 +67,19 @@ if [[ $GATES_TRIGGERED -eq 1 ]]; then
   echo "  See .claude/QA_CHECKLIST.md for full gate definitions and how to validate." >&2
 fi
 
-# ── Backlog / Sprint Plan consistency check ───────────────────────────────────
-# Warn if source or spec files changed but backlog/sprint-plan were not updated.
+# ── Backlog / Release Train consistency check ─────────────────────────────────
+# Warn if source or spec files changed but the active backlog / release train were not updated.
 
-CHANGED_SPEC=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'docs/(SPEC|ARCHITECTURE|API_FULL)\.md$' || true)
-CHANGED_BACKLOG=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'docs/BACKLOG\.md$' || true)
-CHANGED_SPRINT=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'docs/SPRINT_PLAN\.md$' || true)
+CHANGED_SPEC=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'knowledge-base/specifications/.*\.md$' || true)
+CHANGED_BACKLOG=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'knowledge-base/product/backlog/BACKLOG_(ACTIVE|MASTER)\.md$' || true)
+CHANGED_TRAIN=$(printf "%s\n" "$CHANGED_FILES" | grep -cE 'knowledge-base/product/(backlog/BACKLOG_ACTIVE|planning/RELEASE_TRAIN_MASTER)\.md$' || true)
 
 if [[ "$CHANGED_ROUTES" -gt 0 || "$CHANGED_SCHEMA" -gt 0 || "$CHANGED_DO" -gt 0 || "$CHANGED_SPEC" -gt 0 ]]; then
   if [[ "$CHANGED_BACKLOG" -eq 0 ]]; then
     echo "BACKLOG: Significant changes made — did you add new tech-debt or close items in knowledge-base/product/backlog/BACKLOG_MASTER.md?" >&2
   fi
-  if [[ "$CHANGED_SPRINT" -eq 0 ]]; then
-    echo "SPRINT: Did you need to update the sprint status or exit criteria in knowledge-base/product/planning/SPRINT_PLAN_MASTER.md?" >&2
+  if [[ "$CHANGED_TRAIN" -eq 0 ]]; then
+    echo "RELEASE TRAIN: Did you need to update the story status or exit criteria for the active train in knowledge-base/product/backlog/BACKLOG_ACTIVE.md (cadence contract: RELEASE_TRAIN_MASTER.md)?" >&2
   fi
 fi
 

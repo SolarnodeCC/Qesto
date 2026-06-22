@@ -22,7 +22,7 @@ jobs:
       contents: read
     steps:
       # Pin to full commit SHA — tag refs can change without review
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
 
@@ -73,7 +73,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -109,6 +109,9 @@ jobs:
           fi
           echo "✓ Staging healthy"
 
+      - name: Platform v7 smoke (staging)
+        run: node scripts/smoke-platform-v7.mjs https://staging.qesto.cc
+
   build:
     name: build · deploy
     needs: [ci, deploy-staging]
@@ -118,7 +121,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -179,3 +182,6 @@ jobs:
           fi
 
           echo "✓ All API systems healthy"
+
+      - name: Platform v7 smoke (OPS-S99-CLOSEOUT-01)
+        run: node scripts/smoke-platform-v7.mjs https://qesto.cc

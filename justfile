@@ -34,8 +34,12 @@ setup:
     echo "Installing dependencies..."
     npm ci
     echo "Configuring git hooks..."
-    git config core.hooksPath ops/git-hooks
+    bash scripts/install-git-hooks.sh
     echo "Setup complete. Run 'just doctor' to verify environment."
+
+# Install / refresh git hooks only (pre-push quality gates)
+hooks:
+    bash scripts/install-git-hooks.sh
 
 # Pre-push quality gates (type check + test)
 quality-gates:
@@ -98,3 +102,4 @@ clean:
 
 # Default target
 default: doctor
+

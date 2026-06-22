@@ -33,5 +33,22 @@
     "planHint": "Actualiza tu plan para ver cómo esta sesión refleja las sesiones anteriores de tu equipo.",
     "viewPlans": "Ver planes →",
     "error": "No se pudo generar la información. Inténtalo de nuevo más tarde."
-  }
+  },
+  "join_code": "Código de acceso",
+  "live_snapshot": "instantánea en directo",
+  "closed_at": "cerrada {date}",
+  "winner": "ganador",
+  "source_live": "en directo",
+  "source_persisted": "guardado",
+  "source_label": "fuente {source}",
+  "total_votes_label": "Votos totales: {count}",
+  "total_responses_label": "Respuestas totales: {count}",
+  "showing_top": "(mostrando los {shown} principales de {total} únicos)",
+  "export_csv": "Exportar CSV",
+  "refresh": "Actualizar",
+  "dashboard_nav": "Panel",
+  "status_live": "En directo",
+  "status_closed": "Cerrada",
+  "status_draft": "Borrador",
+  "status_archived": "Archivada"
 }

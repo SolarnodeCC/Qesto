@@ -280,7 +280,7 @@ export type LiveSessionSummary = {
   id: string
   code: string
   title: string
-  status: 'live' | 'closed'
+  status: 'energizing' | 'live' | 'closed'
   votePolicy: VotePolicy
   sessionMode: SessionMode
   anonymity?: Anonymity

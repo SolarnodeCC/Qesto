@@ -98,7 +98,7 @@ export default function Home() {
             {/* AI pill */}
             <div className="flex items-center gap-2 mb-6">
               <AIBadge variant="assisted" label="AI-assisted" />
-              <span className="text-sm text-pulse-500 dark:text-[#6B7A99]">{t('heroTagline')}</span>
+              <span className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('heroTagline')}</span>
             </div>
 
             {/* H1 */}
@@ -159,7 +159,7 @@ export default function Home() {
                   </Link>
                 </>
               )}
-              <span className="text-[13px] text-pulse-400 ml-2">No card required · 2-minute setup</span>
+              <span className="text-[13px] text-pulse-500 ml-2">No card required · 2-minute setup</span>
             </div>
             <div className="mb-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <Link

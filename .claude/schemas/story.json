@@ -132,7 +132,7 @@
       "Concurrent start attempts → race condition protection"
     ],
     "out_of_scope": [
-      "Presenter view (Sprint 2)",
+      "Presenter view (deferred to a later release train)",
       "Auto-transition to presenter after start (UX-003)"
     ],
     "dependencies": ["DRAFT-API", "STATUS-SYNC"],

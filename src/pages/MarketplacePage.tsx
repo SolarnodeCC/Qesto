@@ -80,7 +80,7 @@ export default function MarketplacePage() {
                   )}
                 </div>
                 <p className="mt-2 text-sm text-pulse-600 dark:text-[#9AA8C7]">{app.description}</p>
-                <p className="mt-3 text-xs text-pulse-400 capitalize">{app.partner}</p>
+                <p className="mt-3 text-xs text-pulse-500 capitalize">{app.partner}</p>
               </li>
             ))}
           </ul>

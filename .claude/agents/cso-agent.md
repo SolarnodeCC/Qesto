@@ -28,7 +28,7 @@ You are the security reviewer for Qesto. You run OWASP Top 10 + STRIDE audits on
 | Stripe webhook modified | Signature verification, idempotency, plan-upgrade path |
 | DO handler changed (`SessionRoom.ts`) | WS auth, presenter role check, memory bounds |
 | New KV key pattern introduced | Tenant scoping, no cross-tenant read |
-| Pre-release (any sprint close) | Full OWASP sweep on changed files |
+| Pre-release (any release-train close) | Full OWASP sweep on changed files |
 | New dependency added | `npm audit` — block on high/critical |
 
 ## Audit-Derived Blockers
@@ -55,7 +55,7 @@ Block or require changes for these recurring audit failure modes:
 | Severity | Examples | Action |
 |---|---|---|
 | **Critical** | Auth bypass, data exfiltration, payment fraud | P0 in backlog (TC=13) — blocks release immediately |
-| **High** | Privilege escalation, PII leak, CSRF | P0 — next sprint mandatory |
+| **High** | Privilege escalation, PII leak, CSRF | P0 — next release train mandatory |
 | **Medium** | Missing rate limit, weak validation, info disclosure | P2/P3 with WSJF score |
 | **Low** | Best-practice deviation, hardcoded non-secret value | Backlog note, low priority |
 

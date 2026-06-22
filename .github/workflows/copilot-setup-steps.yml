@@ -19,8 +19,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        # Pin to full commit SHA — tag refs can change without review
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@v7
       - name: Install gh-aw extension
         # CLI installer lives in github/gh-aw (actions/setup-cli); the gh-aw-actions/setup
         # action used by compiled lock files is a different, runtime-only action.

@@ -44,12 +44,34 @@ done
 echo ""
 
 echo "Git Configuration:"
-hooks_path=$(git config --get core.hooksPath 2>/dev/null || echo "not set")
+hooks_path=$(git config --local --get core.hooksPath 2>/dev/null || echo "not set")
 if [ "$hooks_path" = "ops/git-hooks" ]; then
-  echo -e "${GREEN}✓${NC} core.hooksPath = ops/git-hooks"
+  echo -e "${GREEN}✓${NC} core.hooksPath = ops/git-hooks (local)"
+  if [ -x "ops/git-hooks/pre-push" ] || git ls-files -s ops/git-hooks/pre-push 2>/dev/null | grep -q '100755'; then
+    echo -e "${GREEN}✓${NC} ops/git-hooks/pre-push is executable"
+  else
+    echo -e "${YELLOW}⚠${NC} ops/git-hooks/pre-push may not be executable"
+    echo "   Run: bash scripts/install-git-hooks.sh"
+  fi
 else
   echo -e "${YELLOW}⚠${NC} core.hooksPath = $hooks_path (should be ops/git-hooks)"
-  echo "   Run: git config core.hooksPath ops/git-hooks"
+  echo "   Run: just hooks   # or: bash scripts/install-git-hooks.sh"
+fi
+echo ""
+
+echo "Security flags (wrangler.toml):"
+if [ -f wrangler.toml ]; then
+  if grep -qE '^SAML_SSO_ENABLED\s*=\s*"true"' wrangler.toml; then
+    echo -e "${RED}✗${NC} SAML_SSO_ENABLED=true in wrangler.toml (forbidden until XML-DSig ships)"
+    exit 1
+  fi
+  if grep -qE '^SAML_SIGNATURE_VERIFY_ENABLED\s*=\s*"true"' wrangler.toml; then
+    echo -e "${RED}✗${NC} SAML_SIGNATURE_VERIFY_ENABLED=true without verified implementation"
+    exit 1
+  fi
+  echo -e "${GREEN}✓${NC} SAML kill-switch flags are false in wrangler.toml"
+else
+  echo -e "${YELLOW}⚠${NC} wrangler.toml not found"
 fi
 echo ""
 
@@ -66,6 +88,6 @@ echo ""
 echo -e "${GREEN}Environment is ready for development${NC}"
 echo ""
 echo "Next steps:"
-echo "  1. git config core.hooksPath ops/git-hooks   # Setup pre-push hook"
+echo "  1. just hooks                                  # Enable pre-push quality gates"
 echo "  2. npm ci                                      # Install dependencies"
-echo "  3. bash ops/ci/quality-gates.sh               # Run quality gates"
+echo "  3. bash ops/ci/quality-gates.sh               # Run full CI parity gates"

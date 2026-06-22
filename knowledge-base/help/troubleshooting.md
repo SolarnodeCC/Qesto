@@ -4,6 +4,8 @@ title: Troubleshooting Guide
 topic: troubleshooting
 scope: starter
 excerpt: Troubleshoot common issues with live sessions, responses, analytics, and performance.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Troubleshooting Guide

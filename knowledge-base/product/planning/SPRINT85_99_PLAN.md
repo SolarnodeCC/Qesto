@@ -3,10 +3,10 @@ id: SPRINT85_99_PLAN
 type: planning
 domain: product
 category: planning
-status: active
-version: 1.0
+status: superseded-forward-planning
+version: 1.1
 created: 2026-06-11
-updated: 2026-06-11
+updated: 2026-06-19
 tags:
   - planning
   - sprints
@@ -29,13 +29,17 @@ relates_to:
   - SPRINT85_99_ARCH_NOTES
   - SPRINT91_99_STORIES
   - MARKET_VALIDATION_S85_99
+  - RELEASE_TRAIN_MASTER
+  - BACKLOG_ACTIVE
   - ROADMAP_FULL
   - BACKLOG_MASTER
 ---
 
 # Sprint 85–99 Plan — 9-Day Cadence Re-plan toward v7.0 GA
 
-_Created: 2026-06-11 (UTC). Agent-assisted synthesis: PO (lead), architect, market research. Continues and re-baselines [`SPRINT81_90_PLAN.md`](./SPRINT81_90_PLAN.md) onto a **9-working-day** sprint cadence and extends the horizon past **v6.0 GA (S90)** to **v7.0 GA (S99)**._
+> **Forward planning superseded (2026-06-19):** v7.0.0 GA shipped (S99 evidence on `main`). Post-GA committed work uses **release trains** — see [`RELEASE_TRAIN_MASTER.md`](./RELEASE_TRAIN_MASTER.md) and live stories in [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md). §S91–S99 below is **historical registry** only; do not sprint-commit from these tables.
+
+_Created: 2026-06-11 (UTC). Agent-assisted synthesis: PO (lead), architect, market research. Continues and re-baselines [`SPRINT81_90_PLAN.md`](./SPRINT81_90_PLAN.md) onto a **9-working-day** sprint cadence and extends the horizon past **v6.0 GA (S90)** to **v7.0 GA (S99)._
 
 _Planning basis: [`SPRINT81_90_PLAN.md`](./SPRINT81_90_PLAN.md) (carried S85–S90 milestones), [`SPRINT85_99_ARCH_NOTES.md`](./SPRINT85_99_ARCH_NOTES.md) (cadence recalibration + ADR-0054→0063 ladder + gates), [`SPRINT91_99_STORIES.md`](./SPRINT91_99_STORIES.md) (66 net-new stories), [`MARKET_VALIDATION_S85_99.md`](../research/MARKET_VALIDATION_S85_99.md) (epic validation + v6.x→v7.0 narrative), [`ROADMAP_FULL.md`](../roadmap/ROADMAP_FULL.md), [`BACKLOG_MASTER.md`](../backlog/BACKLOG_MASTER.md)._
 
@@ -230,6 +234,8 @@ Content and stories are unchanged from the accepted S81–S90 plan; only the cal
 | S90 | v6.0 GA; certification bundle; DR drill; v5.x sunset | `V60-GA-RELEASE-01`, `PLATFORM-CERTIFICATION-V6-01`, `DR-DRILL-ANNUAL-V6-01` | **v6.0 GA** |
 
 ### S91–S99 — net-new horizon toward v7.0 (from `SPRINT91_99_STORIES.md`)
+
+> **Superseded for forward planning.** Shipped arc closed at v7.0.0 GA. Open/deferred items remapped in [`RELEASE_TRAIN_MASTER.md`](./RELEASE_TRAIN_MASTER.md) (RT-01 stabilize · RT-02 dashboards · RT-03 conditional v7.1/XR).
 
 Pts shown are product-engineering. Add parallel SEC/QA/i18n/AI/MKT/OPS to reach 120–150.
 

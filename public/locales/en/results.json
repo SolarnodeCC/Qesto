@@ -33,5 +33,22 @@
     "planHint": "Upgrade to see how this session echoes your team's past sessions.",
     "viewPlans": "View plans →",
     "error": "Could not generate insights. Please try again later."
-  }
+  },
+  "join_code": "Join code",
+  "live_snapshot": "live snapshot",
+  "closed_at": "closed {date}",
+  "winner": "winner",
+  "source_live": "live",
+  "source_persisted": "persisted",
+  "source_label": "source {source}",
+  "total_votes_label": "Total votes: {count}",
+  "total_responses_label": "Total responses: {count}",
+  "showing_top": "(showing top {shown} of {total} unique)",
+  "export_csv": "Export CSV",
+  "refresh": "Refresh",
+  "dashboard_nav": "Dashboard",
+  "status_live": "Live",
+  "status_closed": "Closed",
+  "status_draft": "Draft",
+  "status_archived": "Archived"
 }

@@ -29,7 +29,7 @@ function makeEnv(): Env {
 const get = (path: string) => createApp().fetch(new Request(`http://local${path}`), makeEnv())
 
 describe('Sprint 91 foundation', () => {
-  it('ADR-0054/0055/0057 documents exist and are accepted', () => {
+  it('ADR-0054/0055/0057 documents exist and are formally decided', () => {
     for (const slug of [
       'ADR-0054-cadence-9-governance',
       'ADR-0055-reactions-ga-channel',
@@ -38,7 +38,9 @@ describe('Sprint 91 foundation', () => {
       const path = join(process.cwd(), 'knowledge-base/adr', `${slug}.md`)
       expect(existsSync(path)).toBe(true)
       const body = readFileSync(path, 'utf8')
-      expect(body).toMatch(/status: accepted/i)
+      // ADR-0054 was accepted and later superseded by ADR-0067 (release-train
+      // cadence); both are valid "formally decided" terminal states.
+      expect(body).toMatch(/status: (accepted|superseded)/i)
     }
   })
 

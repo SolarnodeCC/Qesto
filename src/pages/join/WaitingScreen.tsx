@@ -32,21 +32,20 @@ export function WaitingScreen({ code, lookup }: { code?: string; lookup: Waiting
             <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('waiting_status')}
           </div>
-          <p className="text-xs text-pulse-400 dark:text-[#6B7A99]">{t('waiting_auto_update')}</p>
+          <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('waiting_auto_update')}</p>
         </div>
+        {/* Decorative-only flourish — hidden from assistive tech and kept out of
+            the tab order so the waiting screen isn't cluttered with AT noise. */}
         <div
           className="cursor-pointer mt-2 transition-transform hover:scale-110 active:scale-95"
           onClick={() => setClickCount((c) => c + 1)}
-          role="button"
-          aria-label="Easter egg: Click for fun"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === 'Enter' && setClickCount((c) => c + 1)}
+          aria-hidden="true"
         >
           <span className={`text-6xl block ${shouldAnimate ? 'animate-bounce' : ''}`}>
             {currentEmoji}
           </span>
         </div>
-        <p className="text-xs text-pulse-400 dark:text-[#6B7A99]">
+        <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">
           {t('join_code_label')} <span className="font-mono font-semibold text-pulse-600 dark:text-[#A8B3CC]">{code?.toUpperCase()}</span>
         </p>
       </div>

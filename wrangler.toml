@@ -76,11 +76,12 @@ SENTIMENT_ENABLED = "true"
 # zero_knowledge sessions regardless of this flag.
 BETA_XR_ENABLED = "false"
 # SAML SSO master switch (SEC-SAML-01, #529). MUST stay "false" in production:
-# the SP does not yet verify the XML-DSig signature on assertions, so enabling it
-# would allow forged unsigned assertions to authenticate as any user. The routes
-# return 503 while disabled. Flip to "true" only after assertion signature
-# verification ships and per-team IdP certs are stored in TEAMS_KV.
+# the SP does not yet verify the XML-DSig signature on assertions. Both this flag
+# AND SAML_SIGNATURE_VERIFY_ENABLED must be "true" before routes serve traffic.
+# Flip only after assertion signature verification ships.
 SAML_SSO_ENABLED = "false"
+# SEC-SAML-01 (#529): second gate — MUST stay false until XML-DSig ships in saml.ts.
+SAML_SIGNATURE_VERIFY_ENABLED = "false"
 
 # ⚠️ PRODUCTION DATABASE — DO NOT APPLY MIGRATIONS MANUALLY
 # v2.2 migrations (0016_recaps_table.sql, 0020_v2_2_schema.sql) are staged.
@@ -190,7 +191,7 @@ dataset = "qesto_metrics"
 # This does NOT embed/sync — the embed+sync runs in CI on knowledge-base/ changes
 # (.github/workflows/kb-sync-on-merge.yml -> npm run kb:sync). The cron verifies retrieval is
 # healthy: D1 has chunks, query model/dim matches the index, and the index returns matches.
-crons = ["0 2 * * *"]
+crons = ["0 2 * * *", "0 3 * * 0"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Staging (v2.2 pre-work)
@@ -226,6 +227,8 @@ WS_CONNECT_PER_IP_PER_MIN = "15"
 # SAML SSO kill-switch (SEC-SAML-01, #529) — disabled until assertion signature
 # verification ships. Staging may flip to "true" for IdP integration testing only.
 SAML_SSO_ENABLED = "false"
+# SEC-SAML-01 (#529): second gate — MUST stay false until XML-DSig ships in saml.ts.
+SAML_SIGNATURE_VERIFY_ENABLED = "false"
 
 # Staging D1 — provisioned with all migrations applied
 [[env.staging.d1_databases]]
@@ -286,10 +289,19 @@ binding = "WORKFLOWS"
 name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
-# Staging Vectorize
+# Staging Vectorize — full parity with production so help-assistant RAG and KB
+# semantic search are testable in staging (all three indexes, bge-m3 / 1024-dim).
 [[env.staging.vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
+
+[[env.staging.vectorize]]
+binding = "HELP_VECTORIZE"
+index_name = "qesto-help"
+
+[[env.staging.vectorize]]
+binding = "KB_VECTORIZE"
+index_name = "qesto-kb-production"
 
 # Staging R2 (ADR-042 Phase 2.3)
 [[env.staging.r2_buckets]]

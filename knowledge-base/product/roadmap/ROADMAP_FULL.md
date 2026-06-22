@@ -21,6 +21,13 @@ relates_to:
 
 _Hub: [Documentation map](./README.md)._
 
+> **Forward planning runs on release trains, not sprints.** Current GA: `7.0.0`.
+> For committed forward work read [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md); for the
+> cadence contract + horizon map (RT-01 stabilize → RT-02 UX debt → RT-03 v7.1/XR conditional)
+> read [`RELEASE_TRAIN_MASTER.md`](../planning/RELEASE_TRAIN_MASTER.md). The "Next planning
+> milestones" and "Sprint N" sections below are **historical record** of how shipped versions
+> were sequenced — do **not** treat them as the next thing to build.
+
 _Last updated: 2026-11-03 (UTC) — **v7.0 GA shipped at Sprint 99** (Engagement Intelligence Network): REACTIONS / PULSE / COPILOT / LEARN / SOVEREIGN+ / CONNECT / STUDIO all GA; XR ships beta only behind `beta-xr`. Platform certified at `7.0.0` (ADR-0063: Pentest #6 closed, ADR-0062 isolation proof, DR drill ≤2h, SOC 2 annual, bounded AAA); v6.x → 24-month maintenance ending 2029-11-03. Current GA: `7.0.0`. See [`v7.0.0.md`](../releases/v7.0.0.md). Previous: 2026-06-11 — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0**_
 _Superseded: 2026-06-11 (UTC) — added **Sprint 85–99 9-Day-Cadence Re-plan toward v7.0** (cadence change 10→9 working days, capacity retained at 120–150 pts; S85–S90 carry the committed v6.0 epics re-spaced, S91–S99 add 8 net-new epics E91–E98 → v7.0 GA) with agent synthesis (PO, architect, market research). Previous refresh 2026-06-01 (Sprint 81–90 Post-v5.0 Expansion Arc, E81–E90 → v6.0 GA)._
 
@@ -257,7 +264,7 @@ _Superseded: 2026-06-11 (UTC) — added **Sprint 85–99 9-Day-Cadence Re-plan t
 
 **New ADRs:** ADR-0054 (cadence-9 governance) · ADR-0055 (REACTIONS GA) · ADR-0056 (agentic L2) · ADR-0057 (analytics aggregation plane) · ADR-0058 (vertical packaging) · ADR-0059 (ecosystem egress) · ADR-0060 (AI analytics narration) · ADR-0061 (agentic L3 ceiling) · ADR-0062 (scale/isolation proof) · ADR-0063 (v7.0 certification). **Do-not-co-land:** ADR-0056 ✗ ADR-0057; ADR-0059 ✗ ADR-0060; ADR-0061 ✗ any data-egress/analytics-AI GA; ADR-0062 ✗ ADR-0063.
 
-**Plan:** [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) (2026-06-11). Supporting docs: [`SPRINT85_99_ARCH_NOTES.md`](../planning/SPRINT85_99_ARCH_NOTES.md), [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md) (66 stories), [`MARKET_VALIDATION_S85_99.md`](../research/MARKET_VALIDATION_S85_99.md).
+**Plan (S85–S99 arc, shipped v7.0):** [`SPRINT85_99_PLAN.md`](../planning/SPRINT85_99_PLAN.md) (historical). **Post-GA committed horizon:** [`RELEASE_TRAIN_MASTER.md`](../planning/RELEASE_TRAIN_MASTER.md) + [`BACKLOG_ACTIVE.md`](../backlog/BACKLOG_ACTIVE.md). Supporting: [`SPRINT85_99_ARCH_NOTES.md`](../planning/SPRINT85_99_ARCH_NOTES.md), [`SPRINT91_99_STORIES.md`](../planning/SPRINT91_99_STORIES.md), [`MARKET_VALIDATION_S85_99.md`](../research/MARKET_VALIDATION_S85_99.md).
 
 ### Post-v2.2 Commercial Promise Completion
 

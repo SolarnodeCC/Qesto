@@ -189,12 +189,12 @@ export default function WordCloudEnergizerView({
       {/* Empty state */}
       {state === 'active' && sortedWords.length === 0 && (
         <div className="min-h-16 flex items-center justify-center">
-          <p className="text-sm text-pulse-400 animate-pulse">Waiting for words…</p>
+          <p className="text-sm text-pulse-500 animate-pulse">Waiting for words…</p>
         </div>
       )}
 
       {state !== 'draft' && total > 0 && (
-        <p className="text-xs text-pulse-400 text-right">{total} word{total !== 1 ? 's' : ''} submitted</p>
+        <p className="text-xs text-pulse-500 text-right">{total} word{total !== 1 ? 's' : ''} submitted</p>
       )}
 
       {/* ── HOST CONTROLS ── */}
@@ -227,7 +227,7 @@ export default function WordCloudEnergizerView({
 
       {/* ── PARTICIPANT DRAFT ── */}
       {role === 'participant' && state === 'draft' && (
-        <p className="text-sm text-center text-pulse-400">Waiting for the word cloud to start…</p>
+        <p className="text-sm text-center text-pulse-500">Waiting for the word cloud to start…</p>
       )}
 
       {/* ── PARTICIPANT ACTIVE: word input ── */}

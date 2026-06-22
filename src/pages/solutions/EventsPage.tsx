@@ -46,7 +46,7 @@ export default function EventsPage() {
                   answers back.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Turn any keynote, panel, or breakout into a two-way conversation. Live tallies project on the main
                 screen, AI surfaces the question a facilitator missed, and the speaker walks offstage with a recap
                 before the applause lands.
@@ -107,7 +107,7 @@ export default function EventsPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             One stage. Three sessions. Same host console.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
             Qesto adapts to the room. Projected tallies for 500. Breakout wizards for 20. Same session ID threads
             the whole day.
           </p>
@@ -156,7 +156,7 @@ export default function EventsPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             From curtain-up to recap, one session ID.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
             Here's how a 300-person half-day runs on Qesto. Every step is logged, every tally is exportable.
           </p>
           <div className="rounded-2xl overflow-hidden border border-pulse-200 dark:border-[#1E2A45] divide-y divide-pulse-200 dark:divide-[#1E2A45]">
@@ -170,7 +170,7 @@ export default function EventsPage() {
                 <span className="text-[15px] text-pulse-900 dark:text-[#F0F2F8]">{msg}</span>
                 <span
                   className={`text-[11px] font-bold uppercase tracking-widest px-2.5 py-1 rounded ${
-                    live ? 'bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400' : 'bg-pulse-100 dark:bg-[#1E2A45] text-pulse-500 dark:text-[#6B7A99]'
+                    live ? 'bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400' : 'bg-pulse-100 dark:bg-[#1E2A45] text-pulse-500 dark:text-[#8A96B0]'
                   }`}
                 >
                   {tag}
@@ -218,7 +218,7 @@ export default function EventsPage() {
                   {icon}
                 </div>
                 <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#6B7A99]">{desc}</p>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
           </div>

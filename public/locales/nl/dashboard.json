@@ -123,5 +123,8 @@
   "filterLive": "Live",
   "filterDraft": "Concept",
   "filterClosed": "Gesloten",
-  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes."
+  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes.",
+  "removeFailed": "Kon de sessie niet verwijderen. Probeer het opnieuw.",
+  "savedAsTemplate": "Opgeslagen als sjabloon!",
+  "importComingSoon": "Binnenkort beschikbaar"
 }

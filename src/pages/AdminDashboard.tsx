@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { Activity, BarChart3, LayoutDashboard, Users } from 'lucide-react'
+import { Activity, BarChart3, LayoutDashboard, Radar, Users } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAdminMetrics, type HistoricalBucket } from '../hooks/useAdminMetrics'
 import { useAdminKpis } from '../hooks/useAdminKpis'
@@ -14,18 +14,25 @@ import AuditLogViewer from '../components/AuditLogViewer'
 import AdminUsersTab from '../components/admin/AdminUsersTab'
 import AdminOpsTab from '../components/admin/AdminOpsTab'
 import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab'
+import PlatformOverviewPanel from '../components/admin/PlatformOverviewPanel'
+import ObservabilityPanel from '../components/admin/ObservabilityPanel'
+import OpsControlPanel from '../components/admin/OpsControlPanel'
+import AnalyticsAdvancedPanel from '../components/admin/AnalyticsAdvancedPanel'
 import BuildStamp from '../components/BuildStamp'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 
-type AdminTab = 'dashboard' | 'users' | 'ops' | 'analytics'
+type AdminTab = 'dashboard' | 'observability' | 'users' | 'ops' | 'analytics'
 
 const TAB_CONFIG: Array<{
   id: AdminTab
   labelKey: string
+  // Literal label override — used for tabs without an i18n key yet (Module 2).
+  label?: string
   icon: ReactNode
 }> = [
   { id: 'dashboard', labelKey: 'dashboard', icon: <LayoutDashboard size={16} aria-hidden="true" /> },
+  { id: 'observability', labelKey: 'observability', label: 'Observability', icon: <Radar size={16} aria-hidden="true" /> },
   { id: 'users', labelKey: 'users', icon: <Users size={16} aria-hidden="true" /> },
   { id: 'ops', labelKey: 'ops', icon: <Activity size={16} aria-hidden="true" /> },
   { id: 'analytics', labelKey: 'analytics', icon: <BarChart3 size={16} aria-hidden="true" /> },
@@ -65,7 +72,7 @@ function PlatformHealthStrip({
       <div className="flex items-center gap-2.5">
         <span className={`w-2 h-2 rounded-full shrink-0 ${s.dot} ${s.pulse ? 'animate-pulse' : ''}`} />
         <span className={`text-sm font-semibold ${s.text}`}>{labels[ops.status]}</span>
-        <span className="text-xs text-pulse-400 dark:text-[#6B7A99]">
+        <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
           {new Date(ops.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
@@ -99,7 +106,7 @@ function LatencySparkline({ data, emptyLabel }: { data: HistoricalBucket[]; empt
 
   if (points.length < 2) {
     return (
-      <div className="flex items-center justify-center h-[100px] text-body-s text-pulse-300 dark:text-[#3A4A6B]">
+      <div className="flex items-center justify-center h-[100px] text-body-s text-pulse-500 dark:text-[#3A4A6B]">
         {emptyLabel}
       </div>
     )
@@ -240,7 +247,7 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">
         <header>
           <Heading level="l">{t('platformAdminTitle')}</Heading>
-          <Body size="s" className="text-pulse-500 dark:text-[#6B7A99] mt-space-2">{t('realtimePlatformObservability')}</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-space-2">{t('realtimePlatformObservability')}</Body>
         </header>
 
         <div
@@ -248,7 +255,7 @@ export default function AdminDashboard() {
           aria-label="Admin sections"
           className="flex flex-wrap gap-1 rounded-xl bg-pulse-100 dark:bg-[#0F1526] p-1 w-full sm:w-auto overflow-x-auto"
         >
-          {TAB_CONFIG.map(({ id, labelKey, icon }) => (
+          {TAB_CONFIG.map(({ id, labelKey, label, icon }) => (
             <button
               key={id}
               role="tab"
@@ -261,11 +268,11 @@ export default function AdminDashboard() {
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
                 activeTab === id
                   ? 'bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] shadow-sm'
-                  : 'text-pulse-500 dark:text-[#6B7A99] hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+                  : 'text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
               ].join(' ')}
             >
               {icon}
-              {t(labelKey)}
+              {label ?? t(labelKey)}
             </button>
           ))}
         </div>
@@ -273,6 +280,8 @@ export default function AdminDashboard() {
         {activeTab === 'dashboard' && (
           <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-6">
             <PlatformHealthStrip ops={ops} t={t} onViewOps={() => setActiveTab('ops')} />
+
+            <PlatformOverviewPanel onNavigate={(tab) => setActiveTab(tab)} />
 
             {kpis && (
               <Section>
@@ -322,7 +331,7 @@ export default function AdminDashboard() {
 
             <Section>
               <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('p95LatencyTrend')}</Heading>
-              <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] mb-2">{dateRangeLabel}</Body>
+              <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mb-2">{dateRangeLabel}</Body>
               <Card>
                 <LatencySparkline data={historicalData} emptyLabel={t('noDataInRange')} />
               </Card>
@@ -332,7 +341,7 @@ export default function AdminDashboard() {
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
                 <div>
                   <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('historicalData')}</Heading>
-                  <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] mt-1">{dateRangeLabel}</Body>
+                  <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-1">{dateRangeLabel}</Body>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <input
@@ -376,20 +385,20 @@ export default function AdminDashboard() {
                   <table className="w-full text-body-s">
                     <thead className="sticky top-0 bg-white dark:bg-[#1C2540] z-10">
                       <tr className="border-b border-pulse-200 dark:border-[#1E2A45]">
-                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[#6B7A99]">{t('timestamp')}</th>
-                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[#6B7A99]">{t('route')}</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#6B7A99]">p50</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#6B7A99]">p95</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#6B7A99]">p99</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#6B7A99]">{t('errorPercent')}</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#6B7A99]">{t('requests')}</th>
+                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('timestamp')}</th>
+                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('route')}</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">p50</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">p95</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">p99</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('errorPercent')}</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('requests')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-pulse-100 dark:divide-[#1E2A45]">
                       {historicalData.map((row, idx) => (
                         <tr key={`${row.bucket_ts}-${row.route ?? 'all'}-${idx}`} className="hover:bg-pulse-50 dark:hover:bg-[#0F1526]">
                           <td className="py-2 px-2 text-pulse-700 dark:text-[#A8B3CC]">{new Date(row.bucket_ts).toLocaleString()}</td>
-                          <td className="py-2 px-2 font-mono text-xs text-pulse-500 dark:text-[#6B7A99]">{row.route ?? '(all)'}</td>
+                          <td className="py-2 px-2 font-mono text-xs text-pulse-500 dark:text-[#8A96B0]">{row.route ?? '(all)'}</td>
                           <td className="text-right py-2 px-2">{row.p50_ms}ms</td>
                           <td className="text-right py-2 px-2 font-medium">{row.p95_ms}ms</td>
                           <td className="text-right py-2 px-2">{row.p99_ms}ms</td>
@@ -412,6 +421,12 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'observability' && (
+          <div role="tabpanel" id="tabpanel-observability" aria-labelledby="tab-observability">
+            <ObservabilityPanel />
+          </div>
+        )}
+
         {activeTab === 'users' && (
           <div role="tabpanel" id="tabpanel-users" aria-labelledby="tab-users">
             <AdminUsersTab />
@@ -419,14 +434,16 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'ops' && (
-          <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops">
+          <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops" className="space-y-8">
             <AdminOpsTab />
+            <OpsControlPanel />
           </div>
         )}
 
         {activeTab === 'analytics' && (
-          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics">
+          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" className="space-y-8">
             <AdminAnalyticsTab />
+            <AnalyticsAdvancedPanel />
           </div>
         )}
 

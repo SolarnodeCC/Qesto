@@ -1,8 +1,8 @@
 # HANDOFFS — Qesto Agent & Skill Edge Ownership Map
-# VERSION: v1.2.0
+# VERSION: v1.3.0
 # OWNER: Architect
 
-_Last reviewed_: 2026-06-04
+_Last reviewed_: 2026-06-20
 
 > _"A company is a graph of algorithms. Bottlenecks happen where edges break and nobody owns them."_
 > The nodes (agents) are well-defined. This file makes the **edges** (handoffs between
@@ -36,7 +36,7 @@ role, find the edge here first — if it is missing, add it in the same PR.
 |---|---|---|---|---|---|
 | E1 | market-research | Weekly Market Pulse + backlog research context (`knowledge-base/product/research/`) | product-owner | Weekly + on-demand query | Product Owner |
 | E2 | ai-strategy | AI-first/AI-shaped verdict + competency scorecard | product-owner | New AI feature proposed | AI Strategy Lead |
-| E3 | product-owner | Groomed story with AC (GIVEN/WHEN/THEN), WSJF, priority | architect / backend / frontend | Story enters sprint | Product Owner |
+| E3 | product-owner | Groomed story with AC (GIVEN/WHEN/THEN), WSJF, priority | architect / backend / frontend | Story promoted into a release train (row in `BACKLOG_ACTIVE.md`) | Product Owner |
 | E4 | architect | ADR + API contract (`.claude/schemas/api-contract.json`) + data model + migration plan | backend / frontend / devops | Design decision approved | Architect |
 | E5 | backend | Typed API contract + new env bindings + migration SQL | frontend (consume) / devops (deploy) | Route/schema shipped | Architect |
 | E6 | backend ↔ frontend | Shared types in `functions/api/types.ts` (read-only for FE) | both | DTO added/changed | Architect |
@@ -53,7 +53,7 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E17 | sales | Lost-deal reasons + product gaps + feature asks | product-owner / market-research | Deal closes (win/loss) | Sales Lead |
 | E18 | sales | Won deal + account context | analytics (activation) / (onboarding) | Deal won | Sales Lead |
 | E19 | sales | Enterprise security questionnaire / SSO / DPA request | security / devops | Enterprise deal in flight | Sales Lead |
-| E20 | product-owner | Shipped stories + breaking changes | release-notes | Sprint close | Product Owner |
+| E20 | product-owner | Shipped stories + breaking changes | release-notes | Release-train close | Product Owner |
 | E21 | release-notes | Customer-facing changelog | marketing (announce) | Release published | Growth Lead |
 | E22 | devops | Deploy result + health probe status | all | Post-deploy | DevOps |
 | E23 | any agent | Reproducible DO/WebSocket bug | investigate (skill) → architect | Realtime defect | QA Lead |
@@ -66,6 +66,8 @@ role, find the edge here first — if it is missing, add it in the same PR.
 | E30 | ai-engineer | Participant-facing AI output / PII / prompt-injection surface | security (cso) | AI output reaches users | CSO |
 | E31 | e2e-tester | WCAG violation found in E2E audit (file:line + axe rule) → backlog P1 | frontend / product-owner | A11y audit run on new page/flow | QA Lead |
 | E32 | e2e-tester | k6 threshold breach in staging (p95 > SLA or error rate > 5%) | devops / architect | Load test run post-deploy | QA Lead |
+| E33 | seo-reviewer | SEO audit findings needing copy/content/intent fixes (severity-classified) | marketing | SEO/landing/`/vs/` page audited before publish | Growth Lead |
+| E34 | seo-reviewer | SEO findings needing technical fixes (markup/meta/H1/canonical/SSR/render, robots/sitemap → devops) | frontend | Crawl/index or on-page technical issue found | Frontend Lead |
 
 ## 3) Edge contract rules (so edges don't break)
 
@@ -124,6 +126,10 @@ The 768→1024 incident lived on this seam — now owned. Participant-facing AI 
 PII/injection surfaces gate through **security** (E30).
 
 ## Change Log
+- 2026-06-20: v1.3.0 — added the SEO-reviewer node and edges E33–E34 (audit findings →
+  marketing for copy/content, → frontend for technical markup/meta/SSR; robots/sitemap to
+  devops). Marketing owns SEO page copy and the content roadmap; the SEO reviewer audits that
+  output and routes severity-classified findings back, never editing copy or product code.
 - 2026-06-04: v1.2.0 — added the AI-engineer node and edges E27–E30 (strategy→engineering,
   engineering→backend plumbing, the ai-engineer↔knowledge RAG seam, and AI output safety).
 - 2026-06-04: v1.1.0 — added the Knowledge steward node and edges E24–E26 (doc-update

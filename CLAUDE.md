@@ -121,10 +121,10 @@ wrangler pages deploy  # Deploy to Cloudflare Pages (qesto project)
 **Documentation map:** [`/knowledge-base/README.md`](./knowledge-base/README.md) — navigation by role (PO, backend, frontend, devops, security, AI).
 
 - **Shipped / roadmap truth:** [`/knowledge-base/product/roadmap/ROADMAP_FULL.md`](./knowledge-base/product/roadmap/ROADMAP_FULL.md), [`/knowledge-base/specifications/product/SPEC_PRODUCT.md`](./knowledge-base/specifications/product/SPEC_PRODUCT.md), [`/knowledge-base/architecture/ARCHITECTURE.md`](./knowledge-base/architecture/ARCHITECTURE.md).
-- **Incremental committed work:** [`/knowledge-base/product/backlog/BACKLOG_MASTER.md`](./knowledge-base/product/backlog/BACKLOG_MASTER.md), [`/knowledge-base/product/releases/ARCHIVED_SPRINTS.md`](./knowledge-base/product/releases/ARCHIVED_SPRINTS.md).
+- **Incremental committed work:** [`/knowledge-base/product/backlog/BACKLOG_ACTIVE.md`](./knowledge-base/product/backlog/BACKLOG_ACTIVE.md) (release trains), [`/knowledge-base/product/planning/RELEASE_TRAIN_MASTER.md`](./knowledge-base/product/planning/RELEASE_TRAIN_MASTER.md) (cadence contract). Archive: [`BACKLOG_MASTER.md`](./knowledge-base/product/backlog/BACKLOG_MASTER.md), [`ARCHIVED_SPRINTS.md`](./knowledge-base/product/releases/ARCHIVED_SPRINTS.md).
 - **Reference five-sprint arc (v0.1 → v0.5):** [`/knowledge-base/product/planning/SPRINT_PLAN_MASTER.md`](./knowledge-base/product/planning/SPRINT_PLAN_MASTER.md) — teaching and dependency template aligned to backlog IDs; **not** a literal greenfield schedule.
 
-**Sprint planning rule:** P0 items first, then P1; stories ≤ 13 pts; aim ~40–50 pts per two-week sprint when using the reference arc for estimation drills.
+**Release-train planning rule (cadence, not sprints):** Qesto plans in **release trains** (`RT-YYYY-MM`), not sprints. P0 items first, then P1; stories ≤ 13 pts; each train is 2–3 weeks, one major outcome, and targets **40–60 pts** (solo+AI) — ignore the 120–194 pt sprint figures in historical docs. Closeout date = last merge date on `main`; a story is committed only when it has a row in `BACKLOG_ACTIVE.md`; horizon = current + next train, everything further out is conditional behind EPIC-VALID gates (ADR-0064). Cadence formally ratified by [`ADR-0067`](./knowledge-base/adr/ADR-0067-release-train-cadence.md) (supersedes ADR-0054). Cadence contract: [`RELEASE_TRAIN_MASTER.md`](./knowledge-base/product/planning/RELEASE_TRAIN_MASTER.md); committed work: [`BACKLOG_ACTIVE.md`](./knowledge-base/product/backlog/BACKLOG_ACTIVE.md). Reference arc in [`SPRINT_PLAN_MASTER.md`](./knowledge-base/product/planning/SPRINT_PLAN_MASTER.md) is pedagogical only.
 
 ---
 
@@ -150,6 +150,7 @@ This project uses a layered AI agent framework:
 /ai-strategy    → loads ai-strategy.md skill pack   (AI feature advisory, maturity scoring, 4-week action plans)
 /ai-engineer    → loads ai-engineering.md skill pack (Workers-AI craft: prompts, RAG/retrieval quality, evals, AI guardrails)
 /marketing      → loads marketing.md skill pack     (top-of-funnel: CRO, copy, lifecycle email, SEO, content)
+/seo-reviewer   → loads seo-reviewer.md skill pack  (organic-visibility audit: crawl/index, technical/on-page SEO, intent, internal links, E-E-A-T)
 /sales          → loads sales.md skill pack         (deal cycle: discovery, MEDDICC, demos, objections, proposals)
 /market-research → loads market-research.md skill pack (competitors, ICP/competitor source of truth, pulse)
 /devops         → loads devops.md skill pack        (deployment, wrangler, CF infra, secrets, monitoring)
@@ -173,7 +174,7 @@ Agent `model:` frontmatter is the source of truth. Main-agent dispatch should ma
 | Tier | Model | Agents | Work types |
 |---|---|---|---|
 | High | **opus** | `qesto-architect`, `qesto-backend`, `qesto-security`, `qesto-ai-strategy`, `qesto-ai-engineer`, `qesto-market-research` | System design, ADRs, schema migrations, Durable Object / WebSocket protocol, auth flows, OWASP/STRIDE audits, abuse-surface review, prompt/RAG/eval quality, deep competitive synthesis |
-| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales`, `qesto-knowledge` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy, KB integrity + requirement traceability |
+| Medium | **sonnet** | `qesto-frontend`, `qesto-devops`, `qesto-analytics`, `qesto-sales`, `qesto-knowledge`, `qesto-seo-reviewer` | React + Tailwind components, client WebSocket state, `wrangler.toml` env matrix, CI workflows, Analytics Engine queries, deal qualification + objection strategy, KB integrity + requirement traceability, organic-visibility / technical-SEO audits |
 | Low | **haiku** | `qesto-tester`, `qesto-e2e-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, Playwright E2E/load/stress/a11y specs, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
 
 When the main agent needs a model not matching any sub-agent, invoke the sub-agent whose tier matches. Prefer Opus for anything touching edge runtime correctness (DO lifecycle, JWT, rate limits, multi-tenant isolation); prefer Haiku for template-heavy mechanical work.

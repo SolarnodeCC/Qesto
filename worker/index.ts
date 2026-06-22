@@ -12,7 +12,7 @@ import { processPostSessionWork } from '../functions/api/lib/queues/consumer'
 import type { PostSessionWorkMessage } from '../functions/api/lib/queues/producer'
 import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
 import { recomputeStaleWorkspaceTrends } from '../functions/api/lib/workspace-trends'
-import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
+import { runKvBackup } from '../functions/api/lib/kv-backup'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
@@ -21,7 +21,7 @@ export { TemplateGenerationWorkflow } from './TemplateGenerationWorkflow'
 
 const app = createApp()
 
-async function handleScheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
   // KB vector retrieval health watchdog (daily, cron in wrangler.toml).
   //
   // NOTE: this cron does NOT embed/sync. The real sync runs in CI on
@@ -122,6 +122,22 @@ async function handleScheduled(_event: ScheduledEvent, env: Env, _ctx: Execution
       route: 'worker/pulse-retention',
       errorClass: err instanceof Error ? err.name : 'UnknownError',
     })
+  }
+
+  // OPS-DR-GAP-01 — weekly KV export (AUDIT_KV + ACTIONS_KV → R2). Cron: Sunday 03:00 UTC.
+  if (event.cron === '0 3 * * 0') {
+    const backupTraceId = `kv-backup-${Date.now()}`
+    try {
+      const results = await runKvBackup(env)
+      const summary = results.map((r) => `${r.namespace}:${r.keysExported}→${r.r2Key}`).join(', ')
+      console.log(`[kv-backup] OK — ${results.length} batch(es)${summary ? ` — ${summary}` : ' (empty namespaces)'}`)
+    } catch (err) {
+      safeLogContext(err, {
+        traceId: backupTraceId,
+        route: 'worker/kv-backup',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+    }
   }
 }
 

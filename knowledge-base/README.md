@@ -44,10 +44,10 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 ### Product & Roadmap
 
 - **[Roadmap](./product/roadmap/)** — Strategic direction, epics, version planning
-- **[Backlog](./product/backlog/)** — Product backlog (master reference at `BACKLOG_MASTER.md`)
+- **[Backlog](./product/backlog/)** — Committed release-train work at [`BACKLOG_ACTIVE.md`](./product/backlog/BACKLOG_ACTIVE.md); full WSJF archive at `BACKLOG_MASTER.md`
 - **[Market Research](./product/research/)** — Competitive intelligence, customer insights, market trends (updated quarterly)
 - **[Release Notes](./product/releases/)** — Version history, release plans, audit outcomes
-- **[Planning](./product/planning/)** — Sprint plans (S71–S80: [`SPRINT71_80_PLAN.md`](./product/planning/SPRINT71_80_PLAN.md); S60–S70: [`SPRINT60_70_PLAN.md`](./product/planning/SPRINT60_70_PLAN.md); S51–S60: [`SPRINT51_60_PLAN.md`](./product/planning/SPRINT51_60_PLAN.md); S30–S39: [`SPRINT30_39_PLAN.md`](./product/planning/SPRINT30_39_PLAN.md))
+- **[Planning](./product/planning/)** — Release trains: [`RELEASE_TRAIN_MASTER.md`](./product/planning/RELEASE_TRAIN_MASTER.md) + active work [`BACKLOG_ACTIVE.md`](./product/backlog/BACKLOG_ACTIVE.md). Historical sprint plans (S71–S80: [`SPRINT71_80_PLAN.md`](./product/planning/SPRINT71_80_PLAN.md); S85–S99 arc: [`SPRINT85_99_PLAN.md`](./product/planning/SPRINT85_99_PLAN.md) — superseded for forward planning)
 - **i18n parallel tracks** — [`I18N_SPRINT_60_70_PLAN.md`](./product/planning/I18N_SPRINT_60_70_PLAN.md), [`I18N_SPRINT_71_80_PLAN.md`](./product/planning/I18N_SPRINT_71_80_PLAN.md), [`I18N_SPRINT_81_90_PLAN.md`](./product/planning/I18N_SPRINT_81_90_PLAN.md)
 
 ### Quality & Operations
@@ -115,10 +115,10 @@ knowledge-base/
 │   └── monitoring/               # Observability, error patterns
 ├── product/                      # Roadmap, backlog, releases, planning, market research
 │   ├── roadmap/                  # Strategic direction and epics
-│   ├── backlog/                  # Product backlog (master reference)
+│   ├── backlog/                  # BACKLOG_ACTIVE (release-train work) + BACKLOG_MASTER (archive)
 │   ├── research/                 # Market research, competitive analysis, customer insights
 │   ├── releases/                 # Version history and rollout plans
-│   └── planning/                 # Sprint plans and implementation specs
+│   └── planning/                 # Release-train cadence (RELEASE_TRAIN_MASTER) + historical sprint plans/specs
 ├── governance/                   # Brand, i18n, database policy, design system
 ├── ai-context/                   # Agent system, skill governance, research
 │   ├── reference/                # Templates and reference docs

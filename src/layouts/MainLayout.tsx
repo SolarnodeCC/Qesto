@@ -261,7 +261,7 @@ export default function MainLayout({
 
       {!noFooter && (
         <footer className="border-t border-pulse-200 dark:border-white/7 py-6">
-          <div className="grid-container px-4 md:px-6 text-xs text-pulse-500 dark:text-[#6B7A99] flex flex-wrap items-center justify-between gap-2">
+          <div className="grid-container px-4 md:px-6 text-xs text-pulse-500 dark:text-[#8A96B0] flex flex-wrap items-center justify-between gap-2">
             <span>
               &copy; {new Date().getFullYear()} Qesto. Edge-first, privacy-by-default.
             </span>

@@ -55,7 +55,7 @@ Each file is **self-contained JSON** — no implicit ordering or dependencies.
 - **During task**: Agent can write to `.claude/.agent-state/` freely
 - **At task end**: Agent must document what's preserved and why
 - **After 24h**: Files auto-deleted (use `git add` to keep)
-- **For sprint**: Important findings moved to `knowledge-base/product/backlog/BACKLOG_MASTER.md` or `knowledge-base/product/planning/SPRINT_PLAN_MASTER.md`
+- **For the active release train**: Important findings moved to `knowledge-base/product/backlog/BACKLOG_MASTER.md` (archive/tech-debt) or `knowledge-base/product/backlog/BACKLOG_ACTIVE.md` (committed train work)
 
 ---
 
@@ -101,7 +101,7 @@ If you discovered findings that must survive:
    - Tech debt: SessionRoom idle cleanup (see .claude/.agent-state/tech-debt-log.json)
    - Perf baseline: KV hot read avg 3.2ms (see .claude/.agent-state/perf-baseline.json)
    
-   These findings survive this session and should be reviewed before next sprint.
+   These findings survive this session and should be reviewed before the next release train.
    ```
 
 ### When Task Resumes
@@ -114,11 +114,11 @@ If returning to incomplete work:
 
 2. **Continue from where you left off**:
    - Preserved ACs are the source of truth (not commit history)
-   - Preserved tech debt items are blockers for next sprint
+   - Preserved tech debt items are blockers for the next release train
    - Preserved perf measurements are the baseline for comparison
 
 3. **Merge back into docs**:
-   - Before final commit, move critical findings to `knowledge-base/product/backlog/BACKLOG_MASTER.md` or sprint docs
+   - Before final commit, move critical findings to `knowledge-base/product/backlog/BACKLOG_MASTER.md` or the active release-train doc (`BACKLOG_ACTIVE.md`)
    - Delete `.agent-state/` file once merged
    - Include merge note in commit message
 
@@ -237,9 +237,9 @@ rm .claude/.agent-state/tech-debt-log.json
 
 ---
 
-## Integration with Sprint Planning
+## Integration with Release-Train Planning
 
-Before sprint planning:
+Before planning the next release train:
 
 1. **Inventory preserved state**:
    ```bash

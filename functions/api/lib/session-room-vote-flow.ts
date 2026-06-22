@@ -29,6 +29,7 @@ import {
   K_SENTIMENT_LAST,
   K_SENTIMENT_RETRY_QUEUE,
   K_SENTIMENT_RETRY_COUNT,
+  K_STATUS,
 } from './session-room-storage-keys'
 import {
   type Meta,
@@ -46,8 +47,19 @@ import { canControlSession } from './session-room-presenter-init'
 
 type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
 
+async function rejectIfEnergizingPhase(
+  self: SessionRoomContext,
+  ws: WebSocket,
+): Promise<boolean> {
+  const status = (await self.ctx.storage.get<string>(K_STATUS)) ?? 'live'
+  if (status !== 'energizing') return false
+  ws.send(errorMessage('energizing', 'Questions are not open yet — complete energizers first'))
+  return true
+}
+
 // ── Presenter navigation ──────────────────────────────────────────────────
 export async function handlePresenterAdvance(self: SessionRoomContext, ws: WebSocket, att: Attachment): Promise<void> {
+  if (await rejectIfEnergizingPhase(self, ws)) return
   if (att.role !== 'presenter') {
     ws.send(errorMessage('forbidden', 'Only presenter can advance'))
     return
@@ -91,6 +103,7 @@ export async function handlePresenterAdvance(self: SessionRoomContext, ws: WebSo
 }
 
 export async function handlePresenterBack(self: SessionRoomContext, ws: WebSocket, att: Attachment): Promise<void> {
+  if (await rejectIfEnergizingPhase(self, ws)) return
   if (att.role !== 'presenter') {
     ws.send(errorMessage('forbidden', 'Only presenter can go back'))
     return
@@ -175,6 +188,7 @@ export async function handleVote(
   att: Attachment,
   data: { questionId?: string; optionId?: string },
 ): Promise<void> {
+  if (await rejectIfEnergizingPhase(self, ws)) return
   const t0 = Date.now()
   const meta = await self.ctx.storage.get<Meta>(K_META)
   const question = await self.ctx.storage.get<LiveQuestion>(K_QUESTION)
@@ -219,11 +233,20 @@ export async function handleVote(
   // no await inside applyVoteMutation, so concurrent vote messages from the
   // same voter serialise naturally.
   const voters = await self.ensureVoters()
+
+  // Phase 2.2: Load counts in memory first so the mutation can enforce the
+  // per-question cardinality cap (#581). Counts cache is synced to storage on flush.
+  if (!self.state._counts) {
+    self.state._counts = (await self.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+  }
+  const counts = self.state._counts
+
   const applied = applyVoteMutation(voters, {
     questionKind: question.kind,
     votePolicy,
     voterId: att.voterId,
     optionId,
+    counts,
   })
   if (!applied.ok) {
     ws.send(errorMessage(applied.code, applied.message))
@@ -231,12 +254,6 @@ export async function handleVote(
   }
   const { countKey, countDecKey } = applied
 
-  // Phase 2.2: Load and update counts in memory, buffer for later D1 flush.
-  // Counts cache is maintained in-memory and synced to storage during flush.
-  if (!self.state._counts) {
-    self.state._counts = (await self.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-  }
-  const counts = self.state._counts
   if (countKey) counts[countKey] = (counts[countKey] ?? 0) + 1
   if (countDecKey) counts[countDecKey] = Math.max(0, (counts[countDecKey] ?? 1) - 1)
 
