@@ -1,33 +1,58 @@
-[qa]
-standard = "jankurai"
-version = "1.5.1"
-runner = "playwright"
-config = "tests/playwright.config.ts"
+# Jankurai rendered UX-QA policy — Qesto
+# Schema: jankurai 1.6.10 (schemas/ux-qa.schema.json). Migrated from the 1.5.x
+# [qa] layout; the auditor only honours this file when routes carry an `id` and
+# the top-level runtime fields below are present. Runner stays Playwright via
+# ops/ci/ux-qa.sh (tests/playwright.config.ts).
+outputRoot = "."
+decisionThreshold = "error"
+readyState = "domcontentloaded"
+timeoutMs = 15000
+artifactRoot = "target/jankurai/ux-qa"
+requiredStates = ["loading", "empty", "error", "success", "permission-denied"]
+visualBaselineMode = "pass"
+visualBaselineRoot = "target/jankurai/ux-qa-baselines"
+visualDiffRoot = "target/jankurai/ux-qa-diffs"
+baselineOwner = "tools"
+stateQueryParam = "ux_state"
+screenshotRequired = true
+ariaSnapshotRequired = true
+accessibilityScanRequired = true
+viewports = ["390x844", "1440x900"]
 
 # Routes that must render without JS errors for the UX QA lane to pass.
 # Add new routes here when new top-level pages are shipped.
 [[routes]]
-path = "/"
-description = "Marketing home"
+id = "home"
+url = "http://localhost:3000/"
+states = ["loading", "empty", "error", "success"]
+viewports = ["390x844", "1440x900"]
 
 [[routes]]
-path = "/login"
-description = "Auth entry point"
+id = "login"
+url = "http://localhost:3000/login"
+states = ["loading", "empty", "error", "success"]
+viewports = ["390x844", "1440x900"]
 
 [[routes]]
-path = "/dashboard"
-description = "Authenticated dashboard (requires session cookie)"
-requires_auth = true
+id = "dashboard"
+url = "http://localhost:3000/dashboard"
+states = ["loading", "empty", "error", "success", "permission-denied"]
+viewports = ["390x844", "1440x900"]
 
 [[routes]]
-path = "/sessions/new"
-description = "Session creation flow"
-requires_auth = true
+id = "sessions-new"
+url = "http://localhost:3000/sessions/new"
+states = ["loading", "empty", "error", "success", "permission-denied"]
+viewports = ["390x844", "1440x900"]
 
 [[routes]]
-path = "/templates"
-description = "Template gallery"
+id = "templates"
+url = "http://localhost:3000/templates"
+states = ["loading", "empty", "error", "success"]
+viewports = ["390x844", "1440x900"]
 
 [[routes]]
-path = "/templates/featured"
-description = "Featured templates"
+id = "templates-featured"
+url = "http://localhost:3000/templates/featured"
+states = ["loading", "empty", "error", "success"]
+viewports = ["390x844", "1440x900"]

@@ -7,10 +7,15 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
+concurrency:
+  group: copilot-setup-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # The job MUST be called 'copilot-setup-steps' to be recognized by GitHub Copilot Agent
   copilot-setup-steps:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     # Set minimal permissions for setup steps
     # Copilot Agent receives its own token with appropriate permissions
@@ -19,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Install gh-aw extension
         # CLI installer lives in github/gh-aw (actions/setup-cli); the gh-aw-actions/setup
         # action used by compiled lock files is a different, runtime-only action.

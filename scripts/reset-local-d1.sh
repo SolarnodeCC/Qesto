@@ -2,6 +2,7 @@
 # scripts/reset-local-d1.sh — Reset local D1 to schema.sql + stamp migration tracker
 #
 # Use when local D1 is out of sync (schema.sql vs migrations apply conflict).
+# jankurai:allow HLT-041-COMMENT-HYGIENE reason="safety guard-rail documenting local-only scope" expires=2026-12-31
 # Safe for local dev only — never run against remote.
 #
 # Usage: bash scripts/reset-local-d1.sh
