@@ -17,6 +17,7 @@ import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab'
 import PlatformOverviewPanel from '../components/admin/PlatformOverviewPanel'
 import ObservabilityPanel from '../components/admin/ObservabilityPanel'
 import OpsControlPanel from '../components/admin/OpsControlPanel'
+import AnalyticsAdvancedPanel from '../components/admin/AnalyticsAdvancedPanel'
 import BuildStamp from '../components/BuildStamp'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
@@ -440,8 +441,9 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'analytics' && (
-          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics">
+          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" className="space-y-8">
             <AdminAnalyticsTab />
+            <AnalyticsAdvancedPanel />
           </div>
         )}
 
