@@ -14,6 +14,7 @@ import AuditLogViewer from '../components/AuditLogViewer'
 import AdminUsersTab from '../components/admin/AdminUsersTab'
 import AdminOpsTab from '../components/admin/AdminOpsTab'
 import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab'
+import PlatformOverviewPanel from '../components/admin/PlatformOverviewPanel'
 import BuildStamp from '../components/BuildStamp'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
@@ -273,6 +274,8 @@ export default function AdminDashboard() {
         {activeTab === 'dashboard' && (
           <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-6">
             <PlatformHealthStrip ops={ops} t={t} onViewOps={() => setActiveTab('ops')} />
+
+            <PlatformOverviewPanel onNavigate={(tab) => setActiveTab(tab)} />
 
             {kpis && (
               <Section>

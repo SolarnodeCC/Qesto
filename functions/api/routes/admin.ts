@@ -24,6 +24,7 @@ import { mountAuditRoutes } from './admin/audit'
 import { mountKbSyncRoutes } from './admin/kb-sync'
 import { mountKpisRoutes } from './admin/kpis'
 import { mountOpsRoutes } from './admin/ops'
+import { mountPlatformOverviewRoutes } from './admin/platform-overview'
 import { mountJourneyEventRoutes } from './admin/journey-events'
 import { mountGrowthRoutes } from './admin/growth'
 import type { AnalyticsData, DailyBucket } from './admin/types'
@@ -41,6 +42,7 @@ export function mountAdminRoutes(parent: ParentApp) {
   mountKbSyncRoutes(app)
   mountKpisRoutes(app)
   mountOpsRoutes(app)
+  mountPlatformOverviewRoutes(app)
   mountJourneyEventRoutes(app)
   mountGrowthRoutes(app)
 

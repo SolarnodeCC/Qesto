@@ -22,6 +22,74 @@ export type PlatformKpis = {
 
 export type ServiceStatus = 'healthy' | 'degraded' | 'down'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Platformbeheer — Module 1 (Dashboard): single "is alles oké?" overview.
+// Assembled server-side, KV-cached (TTL ~45s) so a dashboard load never fans
+// out N+1 queries against D1. See routes/admin/platform-overview.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Health of one platform component, shown as a status card. */
+export type ComponentHealth = {
+  status: ServiceStatus
+  /** Short human-readable detail (e.g. latency, headroom). Never a secret. */
+  detail: string | null
+  /** Primary numeric metric for the card, when one applies. */
+  metric: number | null
+  /** Unit for {@link metric} (e.g. 'ms', '%', 'instances'). */
+  unit: string | null
+  /** True when the value is a placeholder because the real source was unavailable. */
+  synthetic?: boolean
+}
+
+/** One open alert/incident, surfaced on the dashboard sorted by severity. */
+export type PlatformAlert = {
+  id: string
+  /** 1 = highest (SEV1) … 3 = lowest. Lower sorts first. */
+  severity: 1 | 2 | 3
+  title: string
+  /** Origin: 'incident' (OPS module) or 'health' (synthesised from a degraded probe). */
+  source: 'incident' | 'health'
+  created_at: number
+}
+
+export type PlatformOverview = {
+  generated_at: number
+  /** True when this payload was served from the KV cache rather than freshly built. */
+  cached: boolean
+  /** Status cards per system component. */
+  components: {
+    workers: ComponentHealth
+    d1: ComponentHealth
+    durable_objects: ComponentHealth
+    workers_ai: ComponentHealth
+    vectorize: ComponentHealth
+  }
+  /** "Live nu" widget. */
+  live_now: {
+    active_sessions: number
+    total_participants: number
+    ws_connections: number
+    synthetic: boolean
+  }
+  /** Business snapshot. Revenue beyond 24h is an estimate (see is_estimate). */
+  business: {
+    signups_today: number
+    active_subscriptions: number
+    total_users: number
+    revenue: {
+      window_24h_cents: number
+      window_7d_cents: number
+      window_30d_cents: number
+    }
+    /** True when 7d/30d revenue is a run-rate estimate, not settled Stripe data. */
+    is_estimate: boolean
+  }
+  /** Open alerts/incidents, highest severity first. */
+  alerts: PlatformAlert[]
+  /** Any data source that failed to load — drives the visible "degraded" state. */
+  degraded_sources: string[]
+}
+
 export type HourlyCorrelation = {
   hour: string
   energizer_activations: number
