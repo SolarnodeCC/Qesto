@@ -68,6 +68,7 @@ export type AuditAction =
   // Platformbeheer Module 3 (Gebruikers) — support actions. Every one is a
   // privileged admin operation on another user's account and MUST be audited.
   | 'user.impersonate'
+  | 'user.impersonate_stop'
   | 'user.gdpr_export'
   | 'user.gdpr_delete'
   // Platformbeheer Module 4 (OPS) — operator actions. Destructive ones

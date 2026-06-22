@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { setAuthToken } from '../../api/client'
 import { useAdminUserDetail } from '../../hooks/useAdminUserDetail'
 import { Heading, Body, Caption, Button, Card } from '../../ui/components'
 
@@ -30,16 +29,15 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
     setBusy('impersonate')
     setNotice(null)
     const res = await impersonate()
-    setBusy(null)
     if (res && res.ok) {
-      // Apply the short-lived impersonation token in memory and open the app as
-      // the target user. The audit record was already written server-side.
-      setAuthToken(res.data.token)
-      window.open('/dashboard', '_blank', 'noopener')
-      setNotice(`Impersonation session opened for ${res.data.impersonating.email} (expires in ${Math.round(res.data.expires_in / 60)} min).`)
-    } else {
-      setNotice(res && !res.ok ? `Impersonation failed: ${res.error.message}` : 'Impersonation failed.')
+      // The server set the HttpOnly impersonation cookie. Reload the app in the
+      // SAME tab so the cookie takes effect; the global banner then shows
+      // "viewing as X" with a Stop control. (A new tab would not carry it.)
+      window.location.assign('/dashboard')
+      return
     }
+    setBusy(null)
+    setNotice(res && !res.ok ? `Impersonation failed: ${res.error.message}` : 'Impersonation failed.')
   }
 
   async function handleDelete() {

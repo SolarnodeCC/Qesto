@@ -8,8 +8,10 @@
 
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { authMiddleware, type AuthVariables } from '../../middleware/auth'
+import { setCookie, deleteCookie } from 'hono/cookie'
+import { authMiddleware, IMPERSONATION_COOKIE, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
+import { rateLimit } from '../../middleware/rate-limit'
 import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
 import { validateBody } from '../../lib/request-validation'
@@ -125,10 +127,13 @@ export function mountUserSupportRoutes(
   })
 
   // ── POST /users/:id/impersonate ────────────────────────────────────────────
-  // Mints a short-TTL token for the target user. The jti encodes the acting
-  // admin so the impersonation is traceable in every downstream audit row, and
-  // an explicit user.impersonate event is always written first.
-  app.post('/users/:id/impersonate', authMiddleware, adminMiddleware, async (c) => {
+  // Sets a short-TTL impersonation cookie (preferred by authMiddleware over the
+  // admin's own session) so the admin's subsequent requests resolve as the
+  // target user. The admin's real session cookie is left untouched, so "stop"
+  // restores it without re-login. The jti encodes the acting admin for
+  // downstream traceability, and a user.impersonate event is written first — if
+  // the audit write fails, no cookie is issued.
+  app.post('/users/:id/impersonate', rateLimit({ namespace: 'admin-destructive', limit: 10, windowSec: 600 }), authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const actor = c.get('user')
     const userId = c.req.param('id')
@@ -148,8 +153,6 @@ export function mountUserSupportRoutes(
 
     const jti = `imp:${actor?.sub ?? 'unknown'}:${ulid()}`
 
-    // Audit BEFORE issuing the token — if the audit write fails we must not hand
-    // out an impersonation credential.
     await recordAuditEvent(c, {
       action: 'user.impersonate',
       subject_type: 'user',
@@ -160,11 +163,20 @@ export function mountUserSupportRoutes(
 
     const token = await signJwt({ sub: target.id, email: target.email, jti }, c.env.JWT_SECRET, IMPERSONATION_TTL_SECONDS)
 
+    // HttpOnly impersonation cookie — the credential. The SPA learns it's
+    // impersonating from /api/auth/me (cross-origin safe), not from JS cookies.
+    setCookie(c, IMPERSONATION_COOKIE, token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'None',
+      path: '/',
+      maxAge: IMPERSONATION_TTL_SECONDS,
+    })
+
     return c.json(
       {
         ok: true,
         data: {
-          token,
           expires_in: IMPERSONATION_TTL_SECONDS,
           impersonating: { id: target.id, email: target.email, display_name: target.display_name },
           actor_id: actor?.sub ?? null,
@@ -173,6 +185,27 @@ export function mountUserSupportRoutes(
       },
       200,
     )
+  })
+
+  // ── POST /impersonation/stop ───────────────────────────────────────────────
+  // Auth-only (NOT admin-gated): while impersonating, the session resolves as
+  // the non-admin target, so this must be callable by them. Clearing the
+  // impersonation cookie restores the admin's untouched session.
+  app.post('/impersonation/stop', authMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    const impersonatorId = c.get('impersonator_id')
+    deleteCookie(c, IMPERSONATION_COOKIE, { path: '/' })
+    if (impersonatorId) {
+      // Record the end of the session under the real admin actor.
+      await recordAuditEvent(c, {
+        action: 'user.impersonate_stop',
+        subject_type: 'user',
+        subject_id: c.get('user')?.sub ?? 'unknown',
+        actor_id: impersonatorId,
+        trace_id,
+      })
+    }
+    return c.json({ ok: true, data: { stopped: true }, trace_id }, 200)
   })
 
   // ── GET /users/:id/gdpr-export ─────────────────────────────────────────────
@@ -224,7 +257,7 @@ export function mountUserSupportRoutes(
   // Three-layer deletion (content + metadata + DECISIONS_VECTORIZE). Requires an
   // explicit confirm flag; the destructive confirmation UX lives client-side.
   const DeleteSchema = z.object({ confirm: z.literal(true) })
-  app.post('/users/:id/gdpr-delete', authMiddleware, adminMiddleware, async (c) => {
+  app.post('/users/:id/gdpr-delete', rateLimit({ namespace: 'admin-destructive', limit: 10, windowSec: 600 }), authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const actor = c.get('user')
     const userId = c.req.param('id')

@@ -16,8 +16,12 @@ import { ulid } from '../../lib/ulid'
 import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
 import { readKvJson, writeKvJson } from '../../lib/kv'
+import { rateLimit } from '../../middleware/rate-limit'
 import { CRON_REGISTRY, isCronMissed, nextRunAfter } from '../../lib/ops-cron'
 import type { Env } from '../../types'
+
+// Shared limiter for infra-mutating operator actions (per admin IP).
+const destructiveLimit = rateLimit({ namespace: 'admin-destructive', limit: 10, windowSec: 600 })
 
 const RUNNER_HEARTBEAT_KEY = 'ops:runner:heartbeat'
 const BACKUP_STATUS_KEY = 'ops:backup:status'
@@ -60,7 +64,7 @@ export function mountOpsControlRoutes(
     return c.json({ ok: true, data: { deploys, runner }, trace_id }, 200)
   })
 
-  app.post('/ops/deploys/:id/rollback', authMiddleware, adminMiddleware, async (c) => {
+  app.post('/ops/deploys/:id/rollback', destructiveLimit, authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const id = c.req.param('id')
     const validated = await validateBody(c, Confirm)
@@ -147,7 +151,7 @@ export function mountOpsControlRoutes(
     return c.json({ ok: true, data: { secrets }, trace_id }, 200)
   })
 
-  app.post('/ops/secrets/:name/rotate', authMiddleware, adminMiddleware, async (c) => {
+  app.post('/ops/secrets/:name/rotate', destructiveLimit, authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const name = c.req.param('name')
     const validated = await validateBody(c, Confirm)
@@ -231,7 +235,7 @@ export function mountOpsControlRoutes(
     return c.json({ ok: true, data: { backup: status ?? { last_backup_at: null, status: 'unknown' } }, trace_id }, 200)
   })
 
-  app.post('/ops/backups/restore', authMiddleware, adminMiddleware, async (c) => {
+  app.post('/ops/backups/restore', destructiveLimit, authMiddleware, adminMiddleware, async (c) => {
     const trace_id = c.get('trace_id')
     const validated = await validateBody(c, Confirm)
     if ('error' in validated) return validated.error

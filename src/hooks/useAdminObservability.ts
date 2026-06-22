@@ -25,6 +25,7 @@ export type ObservabilityThresholds = {
 
 export type ObservabilitySnapshot = {
   generated_at: number
+  cached?: boolean
   window: string
   thresholds: ObservabilityThresholds
   components: {

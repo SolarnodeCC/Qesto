@@ -13,7 +13,7 @@ import { logEvent } from '../lib/log'
 import { getFlag } from '../lib/flags'
 import { readKvText, writeKvText } from '../lib/kv'
 
-export type RateLimitNamespace = 'auth' | 'session-create' | 'join' | 'kb-search'
+export type RateLimitNamespace = 'auth' | 'session-create' | 'join' | 'kb-search' | 'admin-destructive'
 
 export type RateLimitOptions = {
   namespace: RateLimitNamespace

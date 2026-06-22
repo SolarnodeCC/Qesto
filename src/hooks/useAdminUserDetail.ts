@@ -34,7 +34,6 @@ export type UserDetail = {
 }
 
 export type ImpersonationGrant = {
-  token: string
   expires_in: number
   impersonating: { id: string; email: string; display_name: string | null }
   actor_id: string | null
