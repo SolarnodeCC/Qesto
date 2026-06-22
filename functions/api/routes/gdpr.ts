@@ -31,6 +31,7 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         USERS_KV: c.env.USERS_KV,
         TEAMS_KV: c.env.TEAMS_KV,
         SESSIONS_KV: c.env.SESSIONS_KV,
+        DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE,
       },
       user.sub,
     )
@@ -130,6 +131,7 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         USERS_KV: c.env.USERS_KV,
         TEAMS_KV: c.env.TEAMS_KV,
         SESSIONS_KV: c.env.SESSIONS_KV,
+        DECISIONS_VECTORIZE: c.env.DECISIONS_VECTORIZE,
       },
       targetUserId,
     )

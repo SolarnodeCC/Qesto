@@ -1,35 +1,267 @@
 [
   {
-    "id": "getting-started-001",
-    "title": "Getting Started with Qesto",
-    "topic": "getting-started",
+    "id": "account-and-auth-001",
+    "title": "Account and Sign-In",
+    "topic": "account",
     "scope": "free",
-    "excerpt": "Welcome to Qesto! Learn how to create your first live session and engage your team with real-time interactive questions.",
-    "content": "# Getting Started with Qesto\n\nQesto is a real-time interactive session platform that lets you run live polls, rankings, and team activities with instant feedback and AI-powered insights.\n\n## Your First Session\n\n1. **Sign up** at qesto.cc with your email\n2. **Create a team** to organize your sessions\n3. **Start a session** and invite participants\n4. **Add questions** (polls, rankings, open-ended, and more)\n5. **Go live** and watch responses come in real-time\n6. **Analyze results** with AI-powered theme extraction\n\n## Key Concepts\n\n- **Session**: A live or draft interactive event with participants\n- **Question**: A poll, ranking, consent vote, or open question\n- **Energizer**: A fun warm-up activity before the main questions\n- **Insights**: AI-extracted themes and trends from responses\n\n## What You Can Do\n\n- Run live sessions with up to 50 participants (Pulse), 500 (Signal), or 5,000 (Chorus)\n- Choose from 10 question types\n- See real-time response breakdowns\n- Export results as CSV (Signal and Chorus plans)\n- Get AI-powered insights on closed sessions (Chorus plan only)\n\nStart with a small team meeting or large all-hands to see Qesto in action!"
+    "excerpt": "Create a Qesto account, sign in with magic link or password, and manage personal settings.",
+    "content": "# Account and Sign-In"
   },
   {
-    "id": "getting-started-002",
-    "title": "Creating and Running Your First Session",
-    "topic": "getting-started",
+    "id": "account-and-auth-002",
+    "title": "Account and Sign-In: Creating an Account",
+    "topic": "account",
     "scope": "free",
-    "excerpt": "Step-by-step guide to creating a new session, adding questions, and going live with participants.",
-    "content": "# Creating and Running Your First Session\n\n## Step 1: Create a Session\n\n1. Log in to your Qesto account\n2. Click **\"New Session\"** in the dashboard\n3. Enter a session title (e.g., \"Q1 Planning Meeting\")\n4. Select your team\n5. Click **\"Create\"**\n\nYour session is now in **DRAFT** mode. You have time to configure everything before going live.\n\n## Step 2: Add Questions\n\n1. Click **\"Add Question\"**\n2. Choose a question type:\n   - **Poll**: Multiple choice with instant voting\n   - **Ranking**: Rank items in order\n   - **Consent**: Agreement scale (Strongly Disagree → Strongly Agree)\n   - **Open**: Free-text responses\n   - **Likert**: 1-5 scale survey\n   - And more...\n3. Write your question and options\n4. Click **\"Save\"**\n\n## Step 3: Add Energizers (Optional)\n\nWarm up your audience with a fun activity before questions start.\n\n1. Click **\"Add Energizer\"**\n2. Choose: Quick Finger, Team Quiz, or Word Cloud\n3. Set it up and save\n\n## Step 4: Go Live\n\n1. Click **\"Start\"** to open the session\n2. Share the session link with participants\n3. Watch responses come in real-time\n4. Click **\"Next\"** to move between questions\n\n## Step 5: Close and Analyze\n\n1. Click **\"Close\"** when done\n2. See response summaries immediately\n3. For Chorus plan: Get AI insights on open responses\n\nThat's it! You've run your first session."
+    "excerpt": "Hosts need a Qesto account to create and run sessions.",
+    "content": "## Creating an Account\n\nHosts need a Qesto account to create and run sessions. Participants usually do **not** need an account — they join via link or code.\n\n### Sign up\n\n1. Go to [qesto.cc](https://qesto.cc) and click **Sign up**\n2. Enter your email and name, and choose a password (minimum 8 characters)\n3. You are logged in and taken to the dashboard\n\nAlternatively, use **Magic link** on the login page: enter your email and click the link we send you — no password required."
   },
   {
-    "id": "getting-started-003",
-    "title": "Understanding Question Types",
-    "topic": "getting-started",
+    "id": "account-and-auth-003",
+    "title": "Account and Sign-In: Signing In",
+    "topic": "account",
     "scope": "free",
-    "excerpt": "Learn about the 10 different question types available in Qesto and when to use each one.",
-    "content": "# Understanding Question Types\n\nQesto offers 10 question types to capture different types of feedback:\n\n## Poll (Multiple Choice)\n\nAsk a question with 2-5 options. Participants select one answer.\n\n**Best for**: Decisions, preferences, quick surveys\n**Example**: \"Which feature should we build next?\"\n\n## Ranking\n\nParticipants order items from most to least preferred.\n\n**Best for**: Prioritization, preference comparison\n**Example**: \"Rank these features by importance\"\n\n## Consent Vote\n\nUse a 5-point scale (Strongly Disagree to Strongly Agree) to gauge alignment.\n\n**Best for**: Agreement testing, consensus building\n**Example**: \"I understand the new strategy\"\n\n## Open (Free Text)\n\nParticipants write in their own response.\n\n**Best for**: Ideas, feedback, open discussion\n**Example**: \"What's your biggest challenge this quarter?\"\n\n## Likert Scale\n\nRate agreement on a 5-point scale (1-5 or 1-7).\n\n**Best for**: Surveys, satisfaction, sentiment\n**Example**: \"Rate your satisfaction with our service\"\n\n## Upvote\n\nParticipants upvote their favorite options (can vote multiple times).\n\n**Best for**: Ideation, popular items\n**Example**: \"Upvote your top 3 ideas\"\n\n## Word Cloud\n\nParticipants submit words; size reflects frequency.\n\n**Best for**: Quick brainstorming, tagcloud-style feedback\n**Example**: \"What word describes our culture?\"\n\n## Slider\n\nParticipants adjust a numeric slider (0-100 or custom range).\n\n**Best for**: Quantitative ratings, benchmarking\n**Example**: \"How confident are you in this goal? (0-100)\"\n\n## Multi-Select\n\nParticipants can select multiple options (unlike Poll).\n\n**Best for**: Multiple choice with many answers\n**Example**: \"Which topics interest you?\"\n\n## Reaction\n\nParticipants choose from a set of emoji reactions to express sentiment instantly.\n\n**Best for**: Quick pulse checks, sentiment gathering\n**Example**: \"How do you feel about this proposal?\"\n\nEach type generates different insights—use the one that best matches your question!"
+    "excerpt": "Qesto supports two sign-in methods:",
+    "content": "## Signing In\n\nQesto supports two sign-in methods:\n\n### Magic link (recommended)\n\n1. Open the login page → **Magic link** tab\n2. Enter your email\n3. Check your inbox for an email from Qesto\n4. Click the link — you are signed in automatically\n\nLinks expire after a short time for security. Request a new one if yours expired.\n\n### Email and password\n\n1. Open the login page → **Log in** tab\n2. Enter email and password\n3. Click **Log in**\n\nForgot your password? Use **Reset password** on the login tab. We email you a reset link."
   },
   {
-    "id": "getting-started-004",
-    "title": "Inviting Participants and Managing Attendance",
-    "topic": "getting-started",
+    "id": "account-and-auth-004",
+    "title": "Account and Sign-In: I Didn't Receive the Magic Link",
+    "topic": "account",
     "scope": "free",
-    "excerpt": "Learn how to invite participants to your session and track who's attending.",
-    "content": "# Inviting Participants and Managing Attendance\n\n## Sharing Your Session\n\nOnce you start a session, you get a **session link** to share with participants.\n\n### Ways to Share\n\n1. **Copy Link**: Click the session link icon to copy to clipboard\n2. **Email**: Send via your email client\n3. **Slack/Teams**: Paste the link in your team chat\n4. **QR Code**: Scan with a mobile device\n5. **Project URL**: Share the custom URL (if enabled)\n\n## Participant Anonymity\n\nQesto supports both identified and anonymous responses:\n\n- **Identified**: Participants see their name when voting (great for team transparency)\n- **Anonymous**: Responses are unattributed (great for sensitive feedback)\n\nYou can toggle anonymity in session settings before starting.\n\n## Tracking Attendance\n\nDuring a live session, you can see:\n\n- **Participant count**: Live counter of who's in the session\n- **Response rate**: How many have answered each question\n- **Dropout trends**: If participants leave after a question\n\n## Inviting After Starting\n\nYou can invite more people even after the session has started:\n\n1. Click **\"Invite\"** button\n2. Copy or share the session link\n3. New participants join immediately\n\n## Session Limits\n\n- **Pulse plan**: Up to 50 participants per session\n- **Signal plan**: Up to 500 participants\n- **Chorus plan**: Up to 5,000 participants per session\n\nIf you hit your limit, upgrade your plan or split into multiple sessions."
+    "excerpt": "Create a Qesto account, sign in with magic link or password, and manage personal settings.",
+    "content": "## I Didn't Receive the Magic Link\n\nTry these steps:\n\n1. **Check spam/junk** — automated emails sometimes land there\n2. **Wait 2–3 minutes** — delivery can be delayed\n3. **Confirm the email address** — typos are the most common cause\n4. **Try again** — request a fresh link (old links expire)\n5. **Use password login** if you already set a password\n\nStill stuck? Email support@qesto.cc with the address you used. We respond within 2 hours."
+  },
+  {
+    "id": "account-and-auth-005",
+    "title": "Account and Sign-In: Personal Settings",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Open Settings from the sidebar footer (/settings):",
+    "content": "## Personal Settings\n\nOpen **Settings** from the sidebar footer (`/settings`):\n\n- **Email** — view the address on your account\n- **Language** — choose EN, NL, ES, DE, or FR (applies across the app)\n- **List density** — compact or comfortable dashboard lists\n- **Billing** — upgrade, manage payment method, download invoices (Signal+)\n\nSettings is for **your account**. Team workspace settings (members, SAML) live under **Teams → [team name] → Settings**."
+  },
+  {
+    "id": "account-and-auth-006",
+    "title": "Account and Sign-In: Signing Out",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Click your profile menu → Sign out.",
+    "content": "## Signing Out\n\nClick your profile menu → **Sign out**. Your sessions and data remain saved."
+  },
+  {
+    "id": "account-and-auth-007",
+    "title": "Account and Sign-In: Account vs Participant",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Create a Qesto account, sign in with magic link or password, and manage personal settings.",
+    "content": "## Account vs Participant\n\n| Role | Account needed? |\n|------|-----------------|\n| Host (create/run sessions) | Yes |\n| Team member (collaborate) | Yes |\n| Participant (vote in a session) | No — join via link or code |"
+  },
+  {
+    "id": "account-and-auth-008",
+    "title": "Account and Sign-In: Questions?",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "A: Contact support@qesto.cc — we can update it for you.",
+    "content": "## Questions?\n\n**Q: Can I use the same email on multiple devices?**\nA: Yes. Sign in on any supported browser; your sessions sync to your account.\n\n**Q: Can I change my email address?**\nA: Contact support@qesto.cc — we can update it for you.\n\n**Q: How do I delete my account?**\nA: Email support@qesto.cc from your account email. We process deletion requests under our privacy policy (typically within 30 days)."
+  },
+  {
+    "id": "billing-001",
+    "title": "Pricing and Plans",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Understand Qesto's three subscription plans — Pulse, Signal, and Chorus — plus payment, refunds, failed payments, and plan management.",
+    "content": "# Pricing and Plans\n\nQesto offers three subscription plans. Official names and limits are published at [qesto.cc/pricing](https://qesto.cc/pricing)."
+  },
+  {
+    "id": "billing-002",
+    "title": "Pricing and Plans: Pulse",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Perfect for trying Qesto:",
+    "content": "## Pulse\n\n**€0 / host / month**\n\nPerfect for trying Qesto:\n\n- Up to 5 new sessions per month\n- Up to 50 participants per session\n- All question types\n- 30-day retention\n- Full and cohort anonymity modes\n- Email support\n\n**Great for:** Small teams, testing, getting started"
+  },
+  {
+    "id": "billing-003",
+    "title": "Pricing and Plans: Signal",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "For facilitators running recurring rooms:",
+    "content": "## Signal\n\n**€24 / host / month billed annually** (€29 month-to-month)\n\nFor facilitators running recurring rooms:\n\n- Everything in Pulse, plus:\n- Up to 50 new sessions per month\n- Up to 500 participants per session\n- 365-day retention\n- CSV export of results\n- Identified mode + consent logs\n- Custom branding\n- Priority email support\n\n**Great for:** Departments, mid-size teams, regular facilitators"
+  },
+  {
+    "id": "billing-004",
+    "title": "Pricing and Plans: Chorus",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "For HR, events, and compliance-heavy rollouts:",
+    "content": "## Chorus\n\n**Custom annual contract** — talk to us\n\nFor HR, events, and compliance-heavy rollouts:\n\n- Everything in Signal, plus:\n- Up to 500 new sessions per month\n- Up to 5,000 participants per session\n- AI-powered insights and evidence-anchored clusters\n- SAML SSO and advanced auth\n- Townhall Q&A board\n- Cross-session intelligence\n- Embed widgets, live captions, and webhooks\n- Dedicated onboarding + SLA\n\n**Great for:** Large organizations, multiple workspaces, complex workflows"
+  },
+  {
+    "id": "billing-005",
+    "title": "Pricing and Plans: Feature Comparison",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Numeric limits hydrate from the same source as in-app enforcement (PLANQUOTAS via GET /api/plans/catalog).",
+    "content": "## Feature Comparison\n\n| Feature | Pulse | Signal | Chorus |\n|---------|-------|--------|--------|\n| New sessions / month | 5 | 50 | 500 |\n| Participants / session | 50 | 500 | 5,000 |\n| Retention | 30 days | 365 days | Custom |\n| AI Insights | — | — | ✓ |\n| CSV Export | — | ✓ | ✓ |\n| SAML SSO | — | — | ✓ |\n| Webhooks | — | — | ✓ |\n| Support | Email | Priority Email | Dedicated |\n\nNumeric limits hydrate from the same source as in-app enforcement (`PLAN_QUOTAS` via `GET /api/plans/catalog`)."
+  },
+  {
+    "id": "billing-006",
+    "title": "Pricing and Plans: Billing",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Understand Qesto's three subscription plans — Pulse, Signal, and Chorus — plus payment, refunds, failed payments, and plan management.",
+    "content": "## Billing\n\n- **Monthly**: Bill every month, cancel anytime\n- **Annual**: Save on Signal when billed annually, auto-renew yearly\n- **No setup fees**: Start immediately\n- **No lock-in**: Cancel anytime; prorated adjustments on plan changes"
+  },
+  {
+    "id": "billing-007",
+    "title": "Pricing and Plans: Upgrade/Downgrade",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Understand Qesto's three subscription plans — Pulse, Signal, and Chorus — plus payment, refunds, failed payments, and plan management.",
+    "content": "## Upgrade/Downgrade\n\n1. Go to Settings → Billing\n2. Click \"Change Plan\"\n3. Choose your new plan (Signal or Chorus)\n4. Changes take effect immediately\n5. Prorated adjustments on your next invoice\n\nReady to upgrade? Visit [qesto.cc/pricing](https://qesto.cc/pricing)\n\n---"
+  },
+  {
+    "id": "billing-008",
+    "title": "Pricing and Plans: Payment Methods and Invoicing",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Secure processing via Stripe.",
+    "content": "## Payment Methods and Invoicing\n\n### Accepted Payment Methods\n\n#### Credit/Debit Cards\n- Visa\n- Mastercard\n- American Express\n- Discover\n\nSecure processing via Stripe. Your card info is encrypted and never stored on our servers."
+  },
+  {
+    "id": "billing-009",
+    "title": "Pricing and Plans: Setting Up Billing",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Your payment method is stored securely and used for future renewals.",
+    "content": "## Setting Up Billing\n\n1. Go to Settings → Billing\n2. Click \"Add Payment Method\"\n3. Enter card details\n4. Save\n\nYour payment method is stored securely and used for future renewals."
+  },
+  {
+    "id": "billing-010",
+    "title": "Pricing and Plans: Invoices & Receipts",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Understand Qesto's three subscription plans — Pulse, Signal, and Chorus — plus payment, refunds, failed payments, and plan management.",
+    "content": "## Invoices & Receipts\n\n### Viewing Invoices\n\n1. Settings → Billing → \"Invoices\"\n2. View, download, or email invoices\n3. Invoices sent automatically to billing email\n\n### Invoice Details\n\n- Invoice number\n- Billing period\n- Amount charged\n- Payment date\n- Item breakdown (plan + prorations)"
+  },
+  {
+    "id": "billing-011",
+    "title": "Pricing and Plans: Billing Email",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Change the email where invoices are sent:",
+    "content": "## Billing Email\n\nChange the email where invoices are sent:\n\n1. Settings → Account\n2. Update \"Billing Email\"\n3. Save\n\nInvoices are sent to this email automatically."
+  },
+  {
+    "id": "billing-012",
+    "title": "Pricing and Plans: Refund Policy",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "last survey, email us within 14 days of your first billing and we'll refund the full",
+    "content": "## Refund Policy\n\n- **First-session guarantee**: If your first session doesn't beat the response rate of your\n  last survey, email us within **14 days of your first billing** and we'll refund the full\n  quarter.\n- **Monthly plans**: Cancel anytime. Cancellation takes effect immediately and there's no\n  refund for the current month.\n- **Annual plans**: Cancellation takes effect at your renewal date (you keep access until then).\n- **Disputes**: Contact support@qesto.cc\n\nThe published terms always live at [qesto.cc/pricing](https://qesto.cc/pricing) — if anything\nhere ever differs, the pricing page wins."
+  },
+  {
+    "id": "billing-013",
+    "title": "Pricing and Plans: Failed Payments",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "If your card declines, you don't lose access right away.",
+    "content": "## Failed Payments\n\nIf your card declines, you don't lose access right away. Qesto uses Stripe's standard retry\n(dunning) process:\n\n1. We'll notify you by email.\n2. Your subscription stays active (marked *past due*) while Stripe automatically retries the\n   charge over its retry window.\n3. Update your card and the next retry succeeds — nothing else changes.\n4. Only if every retry fails does the subscription end, at which point your account reverts to\n   the free **Pulse** tier. Your sessions and data are preserved; new sessions follow Pulse\n   limits until you resubscribe.\n\n**To fix:** Settings → Billing → Update payment method."
+  },
+  {
+    "id": "billing-014",
+    "title": "Pricing and Plans: Tax",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "A: Yes — registered nonprofits and accredited educational institutions get Chorus at 40% off.",
+    "content": "## Tax\n\n- US: Sales tax calculated based on your state\n- EU: VAT applied (reverse charge for B2B)\n- International: VAT/GST varies by country\n- Non-profit: Email support for discount (Chorus at 40% off for registered nonprofits and accredited educational institutions)\n\n**Q: Do you offer nonprofit or education discounts?**\nA: Yes — registered nonprofits and accredited educational institutions get Chorus at 40% off. Apply via the pricing page or email support@qesto.cc.\n\n**Q: Can I get a VAT invoice for my company?**\nA: Yes. EU B2B customers may use reverse charge. Invoices include tax details — download from Settings → Billing → Invoices.\n\n**Q: What happens to my sessions if payment fails?**\nA: After 5 days with a declined card, your plan downgrades to Pulse. Sessions and data are preserved; new sessions are limited to Pulse quotas.\n\n**Q: Can I switch from monthly to annual billing?**\nA: Yes. Settings → Billing → Change Plan → select annual. Prorated credit applies to the switch."
+  },
+  {
+    "id": "billing-015",
+    "title": "Pricing and Plans: Questions?",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Email billing@qesto.cc with:",
+    "content": "## Questions?\n\nEmail billing@qesto.cc with:\n- Your account email\n- Issue description\n- Invoice number (if relevant)\n\nWe'll respond within 24 hours.\n\n---"
+  },
+  {
+    "id": "billing-016",
+    "title": "Pricing and Plans: Upgrading and Downgrading Your Plan",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Want more features or participants?",
+    "content": "## Upgrading and Downgrading Your Plan\n\n### Upgrading Your Plan\n\nWant more features or participants?\n\n#### Steps\n\n1. Go to Settings → Billing\n2. Click \"Change Plan\"\n3. Select your new plan (Signal or Chorus)\n4. Choose billing period (Monthly or Annual)\n5. Review the charge\n6. Click \"Upgrade\"\n\n#### What Happens\n\n- **Immediate activation**: New features available right away\n- **Prorated charge**: You're charged the difference for the remainder of the current billing cycle\n- **Next renewal**: Full price for new plan\n\n**Example**: Upgrade from Pulse to Signal mid-month\n- Pulse: €0\n- Signal: €29/month\n- Days remaining: 15\n- Charge: ~€14.50 (prorated)\n- Next month: Full €29 charge\n\n### Downgrading Your Plan\n\nNeed fewer features?\n\n#### Steps\n\n1. Settings → Billing → \"Change Plan\"\n2. Select your new plan (Pulse or Signal)\n3. Review the change\n4. Click \"Downgrade\"\n\n#### What Happens\n\n- **Prorated credit**: Unused portion credited to your account\n- **Features limited**: Access to downgraded plan features immediately\n- **Active sessions**: Unaffected (you keep current sessions)\n- **Next renewal**: New plan price\n\n**Example**: Downgrade from Signal to Pulse mid-month\n- Signal: €29/month\n- Days remaining: 15\n- Credit: ~€14.50 (prorated)\n- Next month: Pulse (€0)"
+  },
+  {
+    "id": "billing-017",
+    "title": "Pricing and Plans: Timing Matters",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Understand Qesto's three subscription plans — Pulse, Signal, and Chorus — plus payment, refunds, failed payments, and plan management.",
+    "content": "## Timing Matters\n\n**Best time to change plans**: Right after your renewal date (less proration)\n\n**Can I change plans multiple times?** Yes, but note that frequent changes may incur small prorations."
+  },
+  {
+    "id": "billing-018",
+    "title": "Pricing and Plans: What About My Data?",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Downgrading doesn't delete your data:",
+    "content": "## What About My Data?\n\nDowngrading doesn't delete your data:\n\n- **Sessions**: All sessions preserved\n- **Response data**: Stays in your account\n- **Limits apply**: Pulse has lower session and participant limits per new session\n- **Export first**: If worried, export CSV from Signal before downgrading"
+  },
+  {
+    "id": "billing-019",
+    "title": "Pricing and Plans: Annual Plans",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Special rules for annual billing:",
+    "content": "## Annual Plans\n\nSpecial rules for annual billing:\n\n- **Cancellation**: Takes effect at your renewal date — you keep access for the rest of the\n  term you've paid for.\n- **First-session guarantee**: The 14-day first-session refund (see Refund Policy above) still\n  applies to your first billing.\n- **Upgrade**: Always prorated, new plan takes effect immediately."
+  },
+  {
+    "id": "billing-020",
+    "title": "Pricing and Plans: Need Help?",
+    "topic": "billing",
+    "scope": "starter",
+    "excerpt": "Unsure about the right plan?",
+    "content": "## Need Help?\n\nUnsure about the right plan? Email support@qesto.cc—we can help you choose!"
+  },
+  {
+    "id": "enterprise-data-controls-001",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Enterprise controls for where your data lives and how organizations connect — data residency pinning, cross-org federation, and the Sovereign+ tier with verifiable audit exports.",
+    "content": "# Enterprise Data Controls\n\nFor organizations with compliance, data-sovereignty, or multi-org requirements, Qesto offers\ncontrols beyond the standard plans. These are **Chorus / enterprise** capabilities and are\ntypically configured by a team owner or administrator. For the full legal and security detail,\nyour security team can also refer to Qesto's compliance documentation; this page is the\nplain-language overview."
+  },
+  {
+    "id": "enterprise-data-controls-002",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Data Residency",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Pin a team's data to a specific region so that session data stays where your policy requires.",
+    "content": "## Data Residency\n\nPin a team's data to a specific region so that session data stays where your policy requires.\n\n- An owner sets the team's **residency region**.\n- Once pinned, Qesto enforces that the team's data is stored and processed in that region.\n- Useful for meeting EU (or other regional) data-handling requirements."
+  },
+  {
+    "id": "enterprise-data-controls-003",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Federation (cross-org trust)",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Federation lets separate Qesto organizations form trust links so they can collaborate —",
+    "content": "## Federation (cross-org trust)\n\nFederation lets separate Qesto organizations form **trust links** so they can collaborate —\nfor example, sharing a session library or running joint sessions — without merging into one\ntenant. Federation is **consent-based**: both organizations must opt in to the link, and each\nside keeps control of its own data and can revoke the link."
+  },
+  {
+    "id": "enterprise-data-controls-004",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Sovereign+ Tier",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "The Sovereign+ tier is for the strictest data-sovereignty needs.",
+    "content": "## Sovereign+ Tier\n\nThe **Sovereign+** tier is for the strictest data-sovereignty needs. On top of residency it\nadds:\n\n- **Per-region edge residency** — data stays within a designated sovereign boundary.\n- **Compliance posture matrix** — a view of how the tenant maps to its compliance controls.\n- **Verifiable audit export** — a signed export of audit activity that an auditor can\n  independently verify hasn't been tampered with.\n- **Federation eligibility controls** — decide whether (and with whom) a sovereign tenant may\n  federate."
+  },
+  {
+    "id": "enterprise-data-controls-005",
+    "title": "Enterprise Data Controls — Residency, Federation, and Sovereign Tier: Getting these features",
+    "topic": "account",
+    "scope": "team",
+    "excerpt": "Residency, Federation, and Sovereign+ are enterprise capabilities on the Chorus plan and",
+    "content": "## Getting these features\n\nResidency, Federation, and Sovereign+ are enterprise capabilities on the **Chorus** plan and\nare enabled as part of your contract and onboarding. Talk to us via\n[qesto.cc/pricing](https://qesto.cc/pricing) → *Book a walkthrough*, or contact\nsupport@qesto.cc. For data-rights and retention questions, see\n[Privacy, GDPR, and Data Rights](privacy-gdpr.md)."
   },
   {
     "id": "faq-001",
@@ -37,86 +269,798 @@
     "topic": "faq",
     "scope": "free",
     "excerpt": "Answers to common questions about using Qesto, limits, compatibility, and more.",
-    "content": "# Frequently Asked Questions\n\n## General\n\n**Q: What browser do I need?**\nA: Qesto works on Chrome, Firefox, Safari, and Edge (desktop and mobile). We recommend the latest version for best compatibility.\n\n**Q: Can I use Qesto on mobile?**\nA: Yes! Qesto is fully responsive. Participants can join and vote from any device.\n\n**Q: How many people can join a session?**\nA: Pulse plan: 50 participants. Signal: 500. Chorus: Up to 5,000. You can always upgrade.\n\n**Q: Is there a session time limit?**\nA: No! Sessions can run as long as you need. However, we recommend closing after 2-3 hours for performance.\n\n**Q: Can I edit questions after starting?**\nA: No, questions are locked once the session goes live. You can add new questions, but can't edit existing ones.\n\n**Q: Do I need a video call platform to use Qesto?**\nA: No, Qesto is standalone. But it pairs great with Zoom, Teams, or Google Meet for facilitating discussions.\n\n## Data & Privacy\n\n**Q: Is my data encrypted?**\nA: Yes, all data is encrypted in transit (HTTPS) and at rest.\n\n**Q: Can I export my results?**\nA: Yes! Download results as CSV from any closed session (Starter+ plans).\n\n**Q: Do you store data outside the US?**\nA: Qesto is hosted on Cloudflare's global edge network (data centers worldwide). All data complies with GDPR and CCPA.\n\n**Q: How long do you keep my data?**\nA: Data is retained for 1 year after a session closes. You can manually delete earlier.\n\n## Usage\n\n**Q: Can I use Qesto for free?**\nA: Yes, the Pulse plan includes up to 5 sessions per month with up to 50 participants and all 10 question types.\n\n**Q: What's included in each plan?**\nA: See our pricing page for a detailed comparison.\n\n**Q: Can I cancel anytime?**\nA: Yes, no lock-in contracts. You can downgrade or cancel anytime.\n\nHave more questions? Contact support@qesto.cc"
+    "content": "# Frequently Asked Questions"
   },
   {
     "id": "faq-002",
-    "title": "Technical Troubleshooting",
+    "title": "Frequently Asked Questions: General",
     "topic": "faq",
     "scope": "free",
-    "excerpt": "Common technical issues and how to resolve them quickly.",
-    "content": "# Technical Troubleshooting\n\n## Connection Issues\n\n**Problem: \"Connection lost\" message**\n\n1. Check your internet connection\n2. Refresh the page (F5)\n3. Try a different browser\n4. Disable VPN/proxy if using one\n5. Clear browser cache (Ctrl+Shift+Delete)\n\n**Problem: Session link doesn't work**\n\n1. Make sure the session is actually started (not in DRAFT)\n2. Try the link in an incognito/private window\n3. Check the URL is correct\n4. Ask the host to restart the session\n\n## Participant Issues\n\n**Problem: \"Participant limit reached\"**\n\nYou've hit your plan's participant cap. Either:\n- Upgrade to a higher plan\n- Create a separate session for additional participants\n\n**Problem: Responses not showing**\n\n1. Refresh the page\n2. Make sure you submitted your response (look for confirmation)\n3. Check that the question is still open\n\n## Performance\n\n**Problem: Session is lagging**\n\n1. Close other browser tabs\n2. Check your internet speed (broadband recommended)\n3. If 500+ participants: wait for responses to settle\n\n**Problem: Audio/video not working**\n\nQesto doesn't include audio/video. For that, use Zoom, Teams, or Google Meet separately.\n\n## Still Stuck?\n\nEmail support@qesto.cc with:\n- Session ID\n- What you were trying to do\n- Error message (if any)\n- Browser/device info\n\nWe'll respond within 2 hours."
+    "excerpt": "A: Qesto works on Chrome, Firefox, Safari, and Edge (desktop and mobile).",
+    "content": "## General\n\n**Q: What browser do I need?**\nA: Qesto works on Chrome, Firefox, Safari, and Edge (desktop and mobile). We recommend the latest version for best compatibility.\n\n**Q: Can I use Qesto on mobile?**\nA: Yes! Qesto is fully responsive. Participants can join and vote from any device.\n\n**Q: How many people can join a session?**\nA: Pulse: 50 participants per session. Signal: 500. Chorus: 5,000. You can always upgrade.\n\n**Q: Is there a session time limit?**\nA: No! Sessions can run as long as you need. However, we recommend closing after 2-3 hours for performance.\n\n**Q: Can I edit questions after starting?**\nA: No, questions are locked once the session goes live. You can add new questions, but can't edit existing ones.\n\n**Q: Do I need a video call platform to use Qesto?**\nA: No, Qesto is standalone. But it pairs great with Zoom, Teams, or Google Meet for facilitating discussions."
   },
   {
     "id": "faq-003",
-    "title": "How to Use Energizers",
+    "title": "Frequently Asked Questions: Data & Privacy",
     "topic": "faq",
     "scope": "free",
-    "excerpt": "Learn about energizers—fun warm-up activities to engage your audience before the main questions.",
-    "content": "# How to Use Energizers\n\n## What Are Energizers?\n\nEnergizers are fun, low-pressure warm-up activities that run before your main questions. They help:\n\n- Break the ice\n- Test connection/device functionality\n- Get everyone engaged\n- Set a fun tone\n\n## Available Energizers\n\n### Quick Finger\n\nA speed game: See who can tap fastest.\n- Participants tap as fast as possible for 10 seconds\n- Leaderboard shows top tappers\n- Great for remote teams to warm up\n\n### Team Quiz\n\nA fun trivia game with instant scoring.\n- Qesto gives you 3 fun team-focused questions\n- Participants answer quickly\n- Points awarded for speed + accuracy\n- Leaderboard at the end\n\n### Word Cloud\n\nVisual brainstorm: Type a word, watch a cloud form.\n- Participants submit a single word\n- Word size reflects frequency\n- Fun way to see what's on everyone's mind\n- Great for kickoff/retrospectives\n\n## Adding Energizers\n\n1. **In DRAFT mode**: Click \"Add Energizer\"\n2. **Choose type**: Quick Finger, Team Quiz, or Word Cloud\n3. **Configure** (if needed): Set time limits, questions\n4. **Save**: Energizer is now in your session\n\n## Running Energizers\n\n1. **Start your session**: Energizers activate automatically\n2. **Let it run**: Default is 1-2 minutes per energizer\n3. **Watch live**: See responses flood in\n4. **Auto-advance**: Or click \"Next\" manually\n\n## Tips\n\n- Use 1-2 energizers max (too many kills momentum)\n- Great for sessions 30+ people\n- Optional—skip them if your group knows each other\n- Best for remote sessions (less need for in-person icebreakers)\n\nEnergizers make sessions more engaging and fun!"
+    "excerpt": "A: Yes, all data is encrypted in transit (HTTPS) and at rest.",
+    "content": "## Data & Privacy\n\n**Q: Is my data encrypted?**\nA: Yes, all data is encrypted in transit (HTTPS) and at rest.\n\n**Q: Can I export my results?**\nA: Yes! Download results as CSV from any closed session (Signal+ plans).\n\n**Q: Do you store data outside the US?**\nA: Qesto is hosted on Cloudflare's global edge network (data centers worldwide). All data complies with GDPR and CCPA.\n\n**Q: How long do you keep my data?**\nA: Data is retained for 1 year after a session closes. You can manually delete earlier."
   },
   {
     "id": "faq-004",
-    "title": "Mobile and Accessibility Features",
+    "title": "Frequently Asked Questions: Usage",
     "topic": "faq",
     "scope": "free",
-    "excerpt": "Learn about mobile support, accessibility features, and keyboard navigation.",
-    "content": "# Mobile and Accessibility Features\n\n## Mobile Support\n\nQesto is fully responsive and works on all devices:\n\n### Phones\n- Portrait and landscape orientation\n- Touch-optimized buttons and inputs\n- Fast loading on 4G/5G\n\n### Tablets\n- Full-width layout for better readability\n- Touch and stylus support\n- Landscape recommended for presentations\n\n### Desktop\n- Optimized for 1024px+ screens\n- Works great on dual monitors\n\n## Accessibility\n\nQesto meets WCAG 2.1 AA standards:\n\n### Keyboard Navigation\n- Tab through all elements\n- Enter to submit responses\n- Escape to close modals\n- Arrow keys for navigation\n\n### Screen Readers\n- All buttons and links have labels\n- Form fields are properly associated\n- Live region announcements for updates\n\n### Color & Contrast\n- High contrast colors (WCAG AA+)\n- No color-only information\n- Dark mode available\n\n### Text & Font\n- Resizable text (Ctrl+ or Cmd+)\n- Sans-serif font for readability\n- 16px minimum font size\n\n## Accessibility Settings\n\n1. Click your profile → \"Accessibility\"\n2. Options:\n   - **Reduce motion**: Disable animations\n   - **High contrast**: Increase color contrast\n   - **Large text**: Increase default font size\n   - **Dark mode**: Easy on the eyes\n\n## Need Help?\n\nHave accessibility concerns? Email support@qesto.cc—we're committed to inclusion!"
+    "excerpt": "A: Yes, the Pulse plan includes 5 sessions per month with up to 50 participants and all 9 question types.",
+    "content": "## Usage\n\n**Q: Can I use Qesto for free?**\nA: Yes, the Pulse plan includes 5 sessions per month with up to 50 participants and all 9 question types.\n\n**Q: What's included in each plan?**\nA: See our pricing page for a detailed comparison.\n\n**Q: Can I cancel anytime?**\nA: Yes, no lock-in contracts. You can downgrade or cancel anytime. Monthly cancellations take effect immediately (no refund for the current month); annual cancellations take effect at your renewal date.\n\n**Q: Can I get a refund?**\nA: Yes, under our first-session guarantee: if your first session doesn't beat the response rate of your last survey, email support@qesto.cc within 14 days of your first billing and we'll refund the full quarter. See [Pricing and Plans](billing.md) for full terms.\n\n**Q: Do participants need an account?**\nA: No. Participants join via link or code without signing up. Only hosts and team collaborators need accounts.\n\n**Q: How do I join a session?**\nA: Open the link your host shared, or go to qesto.cc/join and enter the short code. Enter a display name and wait for the host to start.\n\n**Q: Can I change my vote after submitting?**\nA: Usually no — the default is one vote per question. Hosts can set **Reactions** policy to allow updates while a question is open, or use multi-select/upvote types for multiple choices.\n\n**Q: What languages does Qesto support?**\nA: English, Dutch, Spanish, German, and French. Change language in Settings or the header language switcher.\n\n**Q: How do I duplicate a session?**\nA: Dashboard → select a session → **Duplicate**. A new DRAFT copy is created with the same questions.\n\n**Q: What's the difference between DRAFT, LIVE, and CLOSED?**\nA: DRAFT = setup only (not joinable). LIVE = participants can vote. CLOSED = interaction ended; results and insights available.\n\n**Q: Can I use templates?**\nA: Yes. Dashboard → Templates → pick a Qesto or team template → **Use template** → customize in the wizard.\n\n**Q: How does AI question generation work?**\nA: In the session wizard, describe your goal and AI suggests questions. Review and edit before saving. You consent to AI processing when prompted.\n\n**Q: When are AI insights available?**\nA: After a session closes, on the Chorus plan. You need open-ended responses — polls alone won't generate themes.\n\n**Q: How do I invite someone to my team?**\nA: Teams → your team → Settings → **Invite member**. They accept the email link while logged in.\n\n**Q: What is SAML SSO?**\nA: Single sign-on through your company identity provider (Chorus plan). Configure under Team settings → Authentication.\n\n**Q: I didn't receive my magic link email — what now?**\nA: Check spam, wait a few minutes, confirm the email address, and request a new link. Or sign in with password if you have one.\n\n**Q: Can I delete my account or session data?**\nA: Email support@qesto.cc for account deletion. Hosts can delete DRAFT sessions from the dashboard. Closed session data is retained up to 1 year unless deleted earlier.\n\n**Q: Does Qesto work with Zoom, Teams, or Meet?**\nA: Qesto handles polls and Q&A; pair it with your video call for audio/video. Share the Qesto link in the meeting chat.\n\n**Q: Can multiple people host the same session?**\nA: Add co-hosts to your team with **Launch session** permission. Only one presenter controls the live flow at a time.\n\nHave more questions? Contact support@qesto.cc\n\n---"
   },
   {
-    "id": "billing-001",
-    "title": "Pricing and Plans",
-    "topic": "billing",
-    "scope": "starter",
-    "excerpt": "Understand Qesto's three pricing tiers: Pulse, Signal, and Chorus, with features and limits for each.",
-    "content": "# Pricing and Plans\n\n## Pulse\n\n**€0 / host / month**\n\nPerfect for trying Qesto:\n\n- Up to 5 sessions per month\n- Up to 50 participants per session\n- All 10 question types\n- Basic response analytics\n- Energizers (Quick Finger, Word Cloud)\n- Email support\n\n**Great for:** Small teams, testing, getting started\n\n## Signal\n\n**€29 / host / month (or €24 / host / month billed annually, save ~17%)**\n\nFor growing teams:\n\n- Everything in Pulse, plus:\n- Up to 50 sessions per month\n- Up to 500 participants per session\n- CSV export of results\n- Custom branding\n- Live Copilot assistance\n- Live Reactions\n- Priority email support\n\n**Great for:** Departments, mid-size teams, regular users\n\n## Chorus\n\n**Custom annual contract**\n\nFor org-wide rollouts:\n\n- Everything in Signal, plus:\n- Up to 500 sessions per month\n- Up to 5,000 participants per session\n- AI-powered insights (theme extraction)\n- SAML SSO / OAuth\n- Custom roles & permissions\n- API access\n- Webhook integrations\n- Townhall Q&A mode\n- Embed widgets\n- Dedicated support (Slack/email)\n- SLA guarantees\n\n**Great for:** Large organizations, multiple teams, complex workflows\n\n## Feature Comparison\n\n| Feature | Free | Starter | Team |\n|---------|------|---------|------|\n| Sessions per month | 5 | 50 | 500 |\n| Participants per session | 50 | 500 | 5,000 |\n| Question types | 10 | 10 | 10 |\n| AI Insights | — | — | ✓ |\n| CSV Export | — | ✓ | ✓ |\n| SAML SSO | — | — | ✓ |\n| API Access | — | — | ✓ |\n| Webhooks | — | — | ✓ |\n| Support | Email | Priority Email | Dedicated |\n\n## Billing\n\n- **Monthly**: Bill every month, cancel anytime\n- **Annual**: Save ~17% vs monthly, auto-renew yearly\n- **No setup fees**: Start immediately\n- **No lock-in**: Cancel anytime, pro-rated refunds\n\n## Upgrade/Downgrade\n\n1. Go to Settings → Billing\n2. Click \"Change Plan\"\n3. Choose your new plan\n4. Changes take effect immediately\n5. Prorated adjustments on your next invoice\n\nReady to upgrade? Visit qesto.cc/pricing"
+    "id": "faq-005",
+    "title": "Frequently Asked Questions: Technical Troubleshooting",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "You've hit your plan's participant cap.",
+    "content": "## Technical Troubleshooting\n\n### Connection Issues\n\n**Problem: \"Connection lost\" message**\n\n1. Check your internet connection\n2. Refresh the page (F5)\n3. Try a different browser\n4. Disable VPN/proxy if using one\n5. Clear browser cache (Ctrl+Shift+Delete)\n\n**Problem: Session link doesn't work**\n\n1. Make sure the session is actually started (not in DRAFT)\n2. Try the link in an incognito/private window\n3. Check the URL is correct\n4. Ask the host to restart the session\n\n### Participant Issues\n\n**Problem: \"Participant limit reached\"**\n\nYou've hit your plan's participant cap. Either:\n- Upgrade to a higher plan\n- Create a separate session for additional participants\n\n**Problem: Responses not showing**\n\n1. Refresh the page\n2. Make sure you submitted your response (look for confirmation)\n3. Check that the question is still open"
   },
   {
-    "id": "billing-002",
-    "title": "Payment Methods and Invoicing",
-    "topic": "billing",
-    "scope": "starter",
-    "excerpt": "Information about accepted payment methods, invoicing, receipts, and billing management.",
-    "content": "# Payment Methods and Invoicing\n\n## Accepted Payment Methods\n\n### Credit/Debit Cards\n- Visa\n- Mastercard\n- American Express\n- Discover\n\nSecure processing via Stripe. Your card info is encrypted and never stored on our servers.\n\n## Setting Up Billing\n\n1. Go to Settings → Billing\n2. Click \"Add Payment Method\"\n3. Enter card details\n4. Save\n\nYour payment method is stored securely and used for future renewals.\n\n## Invoices & Receipts\n\n### Viewing Invoices\n\n1. Settings → Billing → \"Invoices\"\n2. View, download, or email invoices\n3. Invoices sent automatically to billing email\n\n### Invoice Details\n\n- Invoice number\n- Billing period\n- Amount charged\n- Payment date\n- Item breakdown (plan + prorations)\n\n## Billing Email\n\nChange the email where invoices are sent:\n\n1. Settings → Account\n2. Update \"Billing Email\"\n3. Save\n\nInvoices are sent to this email automatically.\n\n## Refund Policy\n\n- **Monthly plans**: Refunds only if payment processing errors. Otherwise, no refunds (but cancel anytime).\n- **Annual plans**: Pro-rated refunds if you downgrade or cancel within 30 days of purchase.\n- **Disputes**: Contact support@qesto.cc within 30 days\n\n## Failed Payments\n\nIf your card declines:\n\n1. We'll notify you via email\n2. You have 5 days to update your payment method\n3. We'll retry automatically\n4. After 5 days, your plan downgrades to Free\n\n**To fix:** Settings → Billing → Update payment method\n\n## Tax\n\n- US: Sales tax calculated based on your state\n- EU: VAT applied (reverse charge for B2B)\n- International: VAT/GST varies by country\n- Non-profit: Email support for discount\n\n## Questions?\n\nEmail billing@qesto.cc with:\n- Your account email\n- Issue description\n- Invoice number (if relevant)\n\nWe'll respond within 24 hours."
+    "id": "faq-006",
+    "title": "Frequently Asked Questions: Performance",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Qesto doesn't include audio/video.",
+    "content": "## Performance\n\n**Problem: Session is lagging**\n\n1. Close other browser tabs\n2. Check your internet speed (broadband recommended)\n3. If 500+ participants: wait for responses to settle\n\n**Problem: Audio/video not working**\n\nQesto doesn't include audio/video. For that, use Zoom, Teams, or Google Meet separately."
   },
   {
-    "id": "billing-003",
-    "title": "Upgrading and Downgrading Your Plan",
-    "topic": "billing",
+    "id": "faq-007",
+    "title": "Frequently Asked Questions: Still Stuck?",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Email support@qesto.cc with:",
+    "content": "## Still Stuck?\n\nEmail support@qesto.cc with:\n- Session ID\n- What you were trying to do\n- Error message (if any)\n- Browser/device info\n\nWe'll respond within 2 hours.\n\n---"
+  },
+  {
+    "id": "faq-008",
+    "title": "Frequently Asked Questions: How to Use Energizers",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Energizers are fun, low-pressure warm-up activities that run before your main questions.",
+    "content": "## How to Use Energizers\n\n### What Are Energizers?\n\nEnergizers are fun, low-pressure warm-up activities that run before your main questions. They help:\n\n- Break the ice\n- Test connection/device functionality\n- Get everyone engaged\n- Set a fun tone\n\n### Available Energizers\n\n#### Quick Finger\n\nA speed game: See who can tap fastest.\n- Participants tap as fast as possible for 10 seconds\n- Leaderboard shows top tappers\n- Great for remote teams to warm up\n\n#### Team Quiz\n\nA fun trivia game with instant scoring.\n- Qesto gives you 3 fun team-focused questions\n- Participants answer quickly\n- Points awarded for speed + accuracy\n- Leaderboard at the end\n\n#### Word Cloud\n\nVisual brainstorm: Type a word, watch a cloud form.\n- Participants submit a single word\n- Word size reflects frequency\n- Fun way to see what's on everyone's mind\n- Great for kickoff/retrospectives\n\n### Adding Energizers\n\n1. **In DRAFT mode**: Click \"Add Energizer\"\n2. **Choose type**: Quick Finger, Team Quiz, or Word Cloud\n3. **Configure** (if needed): Set time limits, questions\n4. **Save**: Energizer is now in your session\n\n### Running Energizers\n\n1. **Start your session**: Energizers activate automatically\n2. **Let it run**: Default is 1-2 minutes per energizer\n3. **Watch live**: See responses flood in\n4. **Auto-advance**: Or click \"Next\" manually\n\n### Tips\n\n- Use 1-2 energizers max (too many kills momentum)\n- Great for sessions 30+ people\n- Optional—skip them if your group knows each other\n- Best for remote sessions (less need for in-person icebreakers)\n\nEnergizers make sessions more engaging and fun!\n\n---"
+  },
+  {
+    "id": "faq-009",
+    "title": "Frequently Asked Questions: Mobile and Accessibility Features",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Qesto is fully responsive and works on all devices:",
+    "content": "## Mobile and Accessibility Features\n\n### Mobile Support\n\nQesto is fully responsive and works on all devices:\n\n#### Phones\n- Portrait and landscape orientation\n- Touch-optimized buttons and inputs\n- Fast loading on 4G/5G\n\n#### Tablets\n- Full-width layout for better readability\n- Touch and stylus support\n- Landscape recommended for presentations\n\n#### Desktop\n- Optimized for 1024px+ screens\n- Works great on dual monitors\n\n### Accessibility\n\nQesto meets WCAG 2.1 AA standards:\n\n#### Keyboard Navigation\n- Tab through all elements\n- Enter to submit responses\n- Escape to close modals\n- Arrow keys for navigation\n\n#### Screen Readers\n- All buttons and links have labels\n- Form fields are properly associated\n- Live region announcements for updates\n\n#### Color & Contrast\n- High contrast colors (WCAG AA+)\n- No color-only information\n- Dark mode available\n\n#### Text & Font\n- Resizable text (Ctrl+ or Cmd+)\n- Sans-serif font for readability\n- 16px minimum font size\n\n### Accessibility Settings\n\n1. Click your profile → \"Accessibility\"\n2. Options:\n   - **Reduce motion**: Disable animations\n   - **High contrast**: Increase color contrast\n   - **Large text**: Increase default font size\n   - **Dark mode**: Easy on the eyes"
+  },
+  {
+    "id": "faq-010",
+    "title": "Frequently Asked Questions: Need Help?",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Have accessibility concerns?",
+    "content": "## Need Help?\n\nHave accessibility concerns? Email support@qesto.cc—we're committed to inclusion!"
+  },
+  {
+    "id": "gamification-001",
+    "title": "Badges, Leaderboards, and Tournaments",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Add friendly competition to sessions with badges, live leaderboards, and bracket-style tournaments and battle-royale energizers.",
+    "content": "# Badges, Leaderboards, and Tournaments\n\nQesto can turn a session into a game — useful for trivia, training, kickoffs, and\nhigh-energy events. Three features work together: **badges**, **leaderboards**, and\n**tournaments**."
+  },
+  {
+    "id": "gamification-002",
+    "title": "Badges, Leaderboards, and Tournaments: Leaderboards",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "During scored activities (such as Team Quiz or a tournament), Qesto ranks participants in",
+    "content": "## Leaderboards\n\nDuring scored activities (such as Team Quiz or a tournament), Qesto ranks participants in\nreal time. Points reward a mix of **speed** and **accuracy**, so quick correct answers rise to\nthe top. The leaderboard can be shown on the presenter screen so the room can follow along."
+  },
+  {
+    "id": "gamification-003",
+    "title": "Badges, Leaderboards, and Tournaments: Badges",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "When a session closes, Qesto awards badges based on how people took part.",
+    "content": "## Badges\n\nWhen a session closes, Qesto awards badges based on how people took part. Badge types include:\n\n- **First answer** — first to respond\n- **Speedster** — consistently fast answers\n- **Perfect trivia** — all quiz answers correct\n- **Engagement** — answered every question\n- **Leaderboard** — finished near the top\n- **Streak** — a run of correct answers in a row\n- **Consensus** — voted with the majority\n- **Comeback** — climbed the ranking after a slow start\n\nBadges are tied to a participant's activity in that session and are a light, fun way to\nrecognize involvement."
+  },
+  {
+    "id": "gamification-004",
+    "title": "Badges, Leaderboards, and Tournaments: Tournaments",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "A tournament runs a competitive activity as elimination rounds.",
+    "content": "## Tournaments\n\nA **tournament** runs a competitive activity as elimination rounds. After each round, the\nlowest-scoring participants drop out and the field narrows until you have a winner —\nbracket-style. This is great for large groups where you want a clear champion.\n\nRelated high-energy energizer formats include **Battle Royale** (everyone competes, the field\nshrinks each round) and **Bracket** matchups. You set these up the same way as other\nenergizers while the session is in Draft."
+  },
+  {
+    "id": "gamification-005",
+    "title": "Badges, Leaderboards, and Tournaments: Which plan do I need?",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Badges and session leaderboards work in scored activities.",
+    "content": "## Which plan do I need?\n\nBadges and session leaderboards work in scored activities. Tournament brackets are part of\nQesto's paid plans — see [Pricing and Plans](billing.md) or\n[qesto.cc/pricing](https://qesto.cc/pricing) for the current breakdown. For how to add\nwarm-up activities, see the energizers section in the [FAQ](faq.md)."
+  },
+  {
+    "id": "getting-started-001",
+    "title": "Getting Started with Qesto",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Welcome to Qesto! Learn how to create your first live session and engage your team with real-time interactive questions.",
+    "content": "# Getting Started with Qesto\n\nQesto is a real-time interactive session platform that lets you run live polls, rankings, and team activities with instant feedback and AI-powered insights."
+  },
+  {
+    "id": "getting-started-002",
+    "title": "Getting Started with Qesto: Your First Session",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Welcome to Qesto! Learn how to create your first live session and engage your team with real-time interactive questions.",
+    "content": "## Your First Session\n\n1. **Sign up** at qesto.cc with your email\n2. **Create a team** to organize your sessions\n3. **Start a session** and invite participants\n4. **Add questions** (polls, rankings, open-ended, and more)\n5. **Go live** and watch responses come in real-time\n6. **Analyze results** with AI-powered theme extraction"
+  },
+  {
+    "id": "getting-started-003",
+    "title": "Getting Started with Qesto: Key Concepts",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Welcome to Qesto! Learn how to create your first live session and engage your team with real-time interactive questions.",
+    "content": "## Key Concepts\n\n- **Session**: A live or draft interactive event with participants\n- **Question**: A poll, ranking, consent vote, or open question\n- **Energizer**: A fun warm-up activity before the main questions\n- **Insights**: AI-extracted themes and trends from responses"
+  },
+  {
+    "id": "getting-started-004",
+    "title": "Getting Started with Qesto: What You Can Do",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Start with a small team meeting or large all-hands to see Qesto in action!",
+    "content": "## What You Can Do\n\n- Run live sessions with unlimited participants\n- Choose from 9 question types\n- See real-time response breakdowns\n- Export results as CSV\n- Get AI-powered insights on closed sessions\n\nStart with a small team meeting or large all-hands to see Qesto in action!\n\n---"
+  },
+  {
+    "id": "getting-started-005",
+    "title": "Getting Started with Qesto: Creating and Running Your First Session",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Your session is now in DRAFT mode.",
+    "content": "## Creating and Running Your First Session\n\n### Step 1: Create a Session\n\n1. Log in to your Qesto account\n2. Click **\"New Session\"** in the dashboard\n3. Enter a session title (e.g., \"Q1 Planning Meeting\")\n4. Select your team\n5. Click **\"Create\"**\n\nYour session is now in **DRAFT** mode. You have time to configure everything before going live.\n\n### Step 2: Add Questions\n\n1. Click **\"Add Question\"**\n2. Choose a question type:\n   - **Poll**: Multiple choice with instant voting\n   - **Ranking**: Rank items in order\n   - **Consent**: Agreement scale (Strongly Disagree → Strongly Agree)\n   - **Open**: Free-text responses\n   - **Likert**: 1-5 scale survey\n   - And more...\n3. Write your question and options\n4. Click **\"Save\"**\n\n### Step 3: Add Energizers (Optional)\n\nWarm up your audience with a fun activity before questions start.\n\n1. Click **\"Add Energizer\"**\n2. Choose: Quick Finger, Team Quiz, or Word Cloud\n3. Set it up and save\n\n### Step 4: Go Live\n\n1. Click **\"Start\"** to open the session\n2. Share the session link with participants\n3. Watch responses come in real-time\n4. Click **\"Next\"** to move between questions\n\n### Step 5: Close and Analyze\n\n1. Click **\"Close\"** when done\n2. See response summaries immediately\n3. For Chorus plan: Get AI insights on open responses\n\nThat's it! You've run your first session.\n\n---"
+  },
+  {
+    "id": "getting-started-006",
+    "title": "Getting Started with Qesto: Understanding Question Types",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Qesto offers 9 question types to capture different types of feedback:",
+    "content": "## Understanding Question Types\n\nQesto offers 9 question types to capture different types of feedback:\n\n### Poll (Multiple Choice)\n\nAsk a question with 2-5 options. Participants select one answer.\n\n**Best for**: Decisions, preferences, quick surveys\n**Example**: \"Which feature should we build next?\"\n\n### Ranking\n\nParticipants order items from most to least preferred.\n\n**Best for**: Prioritization, preference comparison\n**Example**: \"Rank these features by importance\"\n\n### Consent Vote\n\nUse a 5-point scale (Strongly Disagree to Strongly Agree) to gauge alignment.\n\n**Best for**: Agreement testing, consensus building\n**Example**: \"I understand the new strategy\"\n\n### Open (Free Text)\n\nParticipants write in their own response.\n\n**Best for**: Ideas, feedback, open discussion\n**Example**: \"What's your biggest challenge this quarter?\"\n\n### Likert Scale\n\nRate agreement on a 5-point scale (1-5 or 1-7).\n\n**Best for**: Surveys, satisfaction, sentiment\n**Example**: \"Rate your satisfaction with our service\"\n\n### Upvote\n\nParticipants upvote their favorite options (can vote multiple times).\n\n**Best for**: Ideation, popular items\n**Example**: \"Upvote your top 3 ideas\"\n\n### Word Cloud\n\nParticipants submit words; size reflects frequency.\n\n**Best for**: Quick brainstorming, tagcloud-style feedback\n**Example**: \"What word describes our culture?\"\n\n### Slider\n\nParticipants adjust a numeric slider (0-100 or custom range).\n\n**Best for**: Quantitative ratings, benchmarking\n**Example**: \"How confident are you in this goal? (0-100)\"\n\n### Multi-Select\n\nParticipants can select multiple options (unlike Poll).\n\n**Best for**: Multiple choice with many answers\n**Example**: \"Which topics interest you?\"\n\nEach type generates different insights—use the one that best matches your question!\n\n---"
+  },
+  {
+    "id": "getting-started-007",
+    "title": "Getting Started with Qesto: Inviting Participants and Managing Attendance",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Once you start a session, you get a session link to share with participants.",
+    "content": "## Inviting Participants and Managing Attendance\n\n### Sharing Your Session\n\nOnce you start a session, you get a **session link** to share with participants.\n\n#### Ways to Share\n\n1. **Copy Link**: Click the session link icon to copy to clipboard\n2. **Email**: Send via your email client\n3. **Slack/Teams**: Paste the link in your team chat\n4. **QR Code**: Scan with a mobile device\n5. **Project URL**: Share the custom URL (if enabled)\n\n### Participant Anonymity\n\nQesto supports both identified and anonymous responses:\n\n- **Identified**: Participants see their name when voting (great for team transparency)\n- **Anonymous**: Responses are unattributed (great for sensitive feedback)\n\nYou can toggle anonymity in session settings before starting.\n\n### Tracking Attendance\n\nDuring a live session, you can see:\n\n- **Participant count**: Live counter of who's in the session\n- **Response rate**: How many have answered each question\n- **Dropout trends**: If participants leave after a question\n\n### Inviting After Starting\n\nYou can invite more people even after the session has started:\n\n1. Click **\"Invite\"** button\n2. Copy or share the session link\n3. New participants join immediately\n\n### Session Limits\n\n- **Pulse plan**: Up to 50 participants per session\n- **Signal plan**: Up to 500 participants\n- **Chorus plan**: Up to 5,000 participants\n\nIf you hit your limit, upgrade your plan or split into multiple sessions."
+  },
+  {
+    "id": "hosting-sessions-001",
+    "title": "Hosting and Running Sessions",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Session lifecycle, host controls, presenter view, duplicating sessions, and vote policies.",
+    "content": "# Hosting and Running Sessions"
+  },
+  {
+    "id": "hosting-sessions-002",
+    "title": "Hosting and Running Sessions: Session States",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Every session moves through these states:",
+    "content": "## Session States\n\nEvery session moves through these states:\n\n```\nDRAFT → ENERGIZING (optional) → LIVE → CLOSED → ARCHIVED\n```\n\n| State | What it means |\n|-------|---------------|\n| **DRAFT** | Configure questions, energizers, and settings. Not joinable yet. |\n| **ENERGIZING** | Warm-up activities run; participants can join via WebSocket. |\n| **LIVE** | Main questions are active; real-time voting. |\n| **CLOSED** | Interaction stopped; results and insights available. |\n| **ARCHIVED** | Historical record for compliance or reference. |\n\n**Important:** Participants cannot join a DRAFT session. Share the link only after you click **Start**."
+  },
+  {
+    "id": "hosting-sessions-003",
+    "title": "Hosting and Running Sessions: Going Live",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Session lifecycle, host controls, presenter view, duplicating sessions, and vote policies.",
+    "content": "## Going Live\n\n### Without energizers\n\n1. Finish setup in DRAFT\n2. Click **Start** on the Launchpad\n3. Session goes directly to **LIVE**\n4. Share the join link or QR code\n\n### With energizers\n\n1. Add energizers in DRAFT\n2. Click **Start** → session enters **ENERGIZING**\n3. Participants join and complete warm-up activities\n4. Click **Start Questions** to move to **LIVE**"
+  },
+  {
+    "id": "hosting-sessions-004",
+    "title": "Hosting and Running Sessions: Host Controls During LIVE",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "From the Launchpad or Present view:",
+    "content": "## Host Controls During LIVE\n\nFrom the **Launchpad** or **Present** view:\n\n- **Next / Previous** — move between questions\n- **Reveal results** — show aggregated responses to participants (when enabled)\n- **Participant count** — see who is connected\n- **Close session** — end the session for everyone\n\nConfiguration changes during LIVE go through the realtime connection — do not edit via REST while live."
+  },
+  {
+    "id": "hosting-sessions-005",
+    "title": "Hosting and Running Sessions: Presenter vs Participant View",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Only the session owner or team members with Launch permission can present.",
+    "content": "## Presenter vs Participant View\n\n- **Presenter view** — full host console with controls (`/present` or Launchpad)\n- **Participant view** — voting UI only; no host controls\n\nOnly the session owner or team members with **Launch** permission can present."
+  },
+  {
+    "id": "hosting-sessions-006",
+    "title": "Hosting and Running Sessions: Session Settings (Set in DRAFT)",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Configure these in the session wizard before starting:",
+    "content": "## Session Settings (Set in DRAFT)\n\nConfigure these in the session wizard before starting:\n\n### Anonymity\n\n- **Not anonymous** — names visible to host\n- **Partial** — limited attribution\n- **Zero-knowledge** — maximum privacy for sensitive topics\n\n### Vote policy\n\n- **One vote** — single submission per question (default)\n- **Multiple votes** — for multi-select and upvote question types\n- **Reactions** — participants can update their choice while the question is open\n\n### Session mode\n\n- **Reflection mode** — host-paced; you control timing\n- **Quick mode** — automatic question timing for faster sessions"
+  },
+  {
+    "id": "hosting-sessions-007",
+    "title": "Hosting and Running Sessions: Adding Questions After Start",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Plan your question flow in DRAFT when possible.",
+    "content": "## Adding Questions After Start\n\n- **Existing questions** — locked once LIVE; you cannot edit wording or options\n- **New questions** — you can add questions during a live session in some configurations\n\nPlan your question flow in DRAFT when possible."
+  },
+  {
+    "id": "hosting-sessions-008",
+    "title": "Hosting and Running Sessions: Duplicating a Session",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Reuse a successful format:",
+    "content": "## Duplicating a Session\n\nReuse a successful format:\n\n1. Dashboard → find the session\n2. Click **Duplicate** (or the duplicate action on the session card)\n3. Enter a new title\n4. A new DRAFT copy is created with the same questions and settings\n\nUseful for recurring meetings, retros, or all-hands formats."
+  },
+  {
+    "id": "hosting-sessions-009",
+    "title": "Hosting and Running Sessions: Deleting and Archiving",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Export CSV before deleting if you need a local backup (Signal+).",
+    "content": "## Deleting and Archiving\n\n- **Delete** — permanently removes a DRAFT session (cannot undo)\n- **Close** — ends a LIVE session; results preserved\n- **Archive** — moves closed sessions to historical storage (Chorus plan custom roles may restrict this)\n\nExport CSV before deleting if you need a local backup (Signal+)."
+  },
+  {
+    "id": "hosting-sessions-010",
+    "title": "Hosting and Running Sessions: Preflight Checklist",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Before Open lobby, the Launchpad runs a preflight check:",
+    "content": "## Preflight Checklist\n\nBefore **Open lobby**, the Launchpad runs a preflight check:\n\n- At least one question (or energizer-only flow configured)\n- Valid question options (e.g. multiple choice needs 2+ options)\n- Plan limits respected (participant cap)\n\nFix any warnings before starting."
+  },
+  {
+    "id": "hosting-sessions-011",
+    "title": "Hosting and Running Sessions: Tips for Smooth Sessions",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Session lifecycle, host controls, presenter view, duplicating sessions, and vote policies.",
+    "content": "## Tips for Smooth Sessions\n\n1. **Test join flow** — open the link in an incognito window before the real audience arrives\n2. **Share link early** — during ENERGIZING so people connect before the first question\n3. **One network** — ask remote participants to avoid switching WiFi mid-session\n4. **Close when done** — triggers insights generation and frees resources"
+  },
+  {
+    "id": "hosting-sessions-012",
+    "title": "Hosting and Running Sessions: Questions?",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "A: Yes, on all plans.",
+    "content": "## Questions?\n\n**Q: Can I run two sessions at once?**\nA: Yes, on all plans. Each session is independent.\n\n**Q: Can someone else host my session?**\nA: Add them to your team with **Launch session** permission, or transfer ownership via team settings.\n\n**Q: What happens if I close my laptop mid-session?**\nA: The session stays live on the server. Reopen the presenter link to regain control."
+  },
+  {
+    "id": "live-features-001",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds",
+    "topic": "getting-started",
     "scope": "starter",
-    "excerpt": "How to upgrade to a higher plan or downgrade, with details on prorated charges and refunds.",
-    "content": "# Upgrading and Downgrading Your Plan\n\n## Upgrading Your Plan\n\nWant more features or participants?\n\n### Steps\n\n1. Go to Settings → Billing\n2. Click \"Change Plan\"\n3. Select your new plan (Signal or Chorus)\n4. Choose billing period (Monthly or Annual)\n5. Review the charge\n6. Click \"Upgrade\"\n\n### What Happens\n\n- **Immediate activation**: New features available right away\n- **Prorated charge**: You're charged the difference for the remainder of the current billing cycle\n- **Next renewal**: Full price for new plan\n\n**Example**: Upgrade from Pulse to Signal mid-month\n- Pulse plan: €0\n- Signal plan: €29/month\n- Days remaining: 15\n- Charge: ~€14.50 (prorated)\n- Next month: Full €29 charge\n\n## Downgrading Your Plan\n\nNeed fewer features?\n\n### Steps\n\n1. Settings → Billing → \"Change Plan\"\n2. Select your new plan (Pulse or Signal)\n3. Review the change\n4. Click \"Downgrade\"\n\n### What Happens\n\n- **Prorated credit**: Unused portion credited to your account\n- **Features limited**: Access to downgraded plan features immediately\n- **Active sessions**: Unaffected (you keep current sessions)\n- **Next renewal**: New plan price\n\n**Example**: Downgrade from Signal to Pulse mid-month\n- Signal plan: €29/month\n- Days remaining: 15\n- Credit: ~€14.50 (prorated)\n- Next month: Pulse (€0)\n\n## Timing Matters\n\n**Best time to change plans**: Right after your renewal date (less proration)\n\n**Can I change plans multiple times?** Yes, but note that frequent changes may incur small prorations.\n\n## What About My Data?\n\nDowngrading doesn't delete your data:\n\n- **Sessions**: All sessions preserved\n- **Response data**: Stays in your account\n- **Limits apply**: Pulse plan has 50-participant limit per new session\n- **Export first**: If worried, export CSV from Starter before downgrading\n\n## Annual Plans\n\nSpecial rules for annual billing:\n\n- **Pro-rated refund**: If you downgrade within 30 days of purchase\n- **No refund**: After 30 days; instead, pay monthly on downgraded plan next year\n- **Upgrade**: Always prorated, new plan takes effect immediately\n\n## Need Help?\n\nUnsure about the right plan? Email support@qesto.cc—we can help you choose!"
+    "excerpt": "Make sessions more accessible and interactive with live captions and translation, live reactions, the AI facilitator copilot, and embeddable widgets.",
+    "content": "# Live Features\n\nThese features add real-time interactivity and reach to a running session. Plan availability\nvaries — each section notes the plan it's included on.\n\n| Feature | What it does | Plan |\n|---------|--------------|------|\n| Live Captions & Translation | Real-time captions, translated per participant | Chorus |\n| Live Reactions | Lightweight emoji reactions during a session | Signal, Chorus |\n| Live Facilitator Copilot | AI suggestions for the host during a live session | Signal, Chorus |\n| Embed Widgets | Put a live Qesto board on your own website | Chorus |\n\n---"
+  },
+  {
+    "id": "live-features-002",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds: Live Captions & Translation",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Real-time captions of what's being said in the room, so participants who are deaf or hard of",
+    "content": "## Live Captions & Translation\n\nReal-time captions of what's being said in the room, so participants who are deaf or hard of\nhearing — or who speak a different language — can follow along.\n\n- Captions appear live as the session runs.\n- Participants can read captions **translated into their own language**.\n- Captions improve accessibility and are part of Qesto's WCAG commitment.\n\nLive Captions & Translation is included on the **Chorus** plan.\n\n---"
+  },
+  {
+    "id": "live-features-003",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds: Live Reactions",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Participants can send lightweight reactions (emoji) during a session without interrupting the",
+    "content": "## Live Reactions\n\nParticipants can send lightweight reactions (emoji) during a session without interrupting the\nflow — a quick way to gauge the room's mood in the moment. Live Reactions is available on\n**Signal** and **Chorus**.\n\n---"
+  },
+  {
+    "id": "live-features-004",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds: Live Facilitator Copilot",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "An AI assistant for the host during a live session.",
+    "content": "## Live Facilitator Copilot\n\nAn AI assistant for the **host** during a live session. The copilot watches the session\ncontext and offers suggestions — for example, what to ask next or how to respond to where the\ndiscussion is going — so a solo facilitator gets a second set of hands.\n\nThe copilot is suggestion-only: nothing changes in your session unless you accept it. Like all\nQesto AI, it runs on Cloudflare Workers AI — your session content is never sent to a\nthird-party AI provider. The Live Facilitator Copilot is available on **Signal** and\n**Chorus**.\n\n---"
+  },
+  {
+    "id": "live-features-005",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds: Embed Widgets",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Embed a live Qesto board directly in your own website, intranet page, or event microsite, so",
+    "content": "## Embed Widgets\n\nEmbed a live Qesto board directly in your own website, intranet page, or event microsite, so\nyour audience can participate without leaving your page.\n\n- Generate a widget from your team settings; Qesto issues a signed widget token.\n- The widget is **origin-sandboxed** — it only runs on the domains you authorize, so your\n  embed can't be lifted and reused elsewhere.\n- Participants interact with the embedded board exactly as they would on a Qesto join page.\n\nEmbed Widgets are included on the **Chorus** plan. For the developer-facing details (token\nminting, allowed origins), see your team's embed settings.\n\n---"
+  },
+  {
+    "id": "live-features-006",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds: XR / Spatial Sessions (Beta)",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Qesto has an experimental spatial (XR) session mode that renders a session in an immersive",
+    "content": "## XR / Spatial Sessions (Beta)\n\nQesto has an experimental **spatial (XR) session mode** that renders a session in an immersive\n3D space on WebXR-capable devices (such as VR headsets).\n\n- **Beta and opt-in** — XR is behind a beta flag and is off by default.\n- **Never required to vote** — XR is purely an alternative way to view a session. If a device\n  doesn't support immersive WebXR, Qesto automatically shows a **2D fallback** of the same\n  scene, so no participant is ever blocked from taking part.\n\nBecause it's in beta, availability and behaviour may change. If you'd like to trial XR, contact\nsupport@qesto.cc.\n\n---"
+  },
+  {
+    "id": "live-features-007",
+    "title": "Live Features — Captions, Reactions, Copilot, and Embeds: Plan summary",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "For exact plan inclusions and limits, see Pricing and Plans or",
+    "content": "## Plan summary\n\nFor exact plan inclusions and limits, see [Pricing and Plans](billing.md) or\n[qesto.cc/pricing](https://qesto.cc/pricing). Plan capabilities mirror in-app enforcement, so\nwhat's listed is what you get."
+  },
+  {
+    "id": "marketplace-001",
+    "title": "Template and Plugin Marketplace",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Discover ready-made session templates and plugins in the Qesto Marketplace, use them in your workspace, and publish your own free or paid listings.",
+    "content": "# Template and Plugin Marketplace\n\nThe Qesto Marketplace is where you find ready-made **session templates** and **plugins**, and\nwhere creators can **publish** their own."
+  },
+  {
+    "id": "marketplace-002",
+    "title": "Template and Plugin Marketplace: Browsing and using listings",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "plugins (add-on capabilities).",
+    "content": "## Browsing and using listings\n\n1. Open the Marketplace from your dashboard.\n2. Browse public listings — templates (pre-built question sets and session formats) and\n   plugins (add-on capabilities).\n3. Use a template to start a new session pre-filled with its questions, then customize it in\n   the session wizard."
+  },
+  {
+    "id": "marketplace-003",
+    "title": "Template and Plugin Marketplace: Publishing your own listing",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "If you've built a template or plugin worth sharing, you can list it:",
+    "content": "## Publishing your own listing\n\nIf you've built a template or plugin worth sharing, you can list it:\n\n1. Create a listing (template or plugin) from your team's marketplace area.\n2. Choose **free** or a **paid** price tier.\n3. Publish — once live, it appears to other Qesto users.\n\n### Paid listings and payouts\n\nPaid listings are sold through Qesto's billing, with payouts handled via **Stripe Connect**:\n\n- Purchases are charged securely through Stripe.\n- Your earnings accrue to a payout ledger and are paid out to your connected Stripe account.\n- You'll need to complete Stripe Connect onboarding before you can receive payouts."
+  },
+  {
+    "id": "marketplace-004",
+    "title": "Template and Plugin Marketplace: Which plan do I need?",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Anyone can browse and use public listings.",
+    "content": "## Which plan do I need?\n\nAnyone can browse and use public listings. Publishing — especially paid listings and payouts —\nis part of Qesto's paid plans. See [Pricing and Plans](billing.md) or\n[qesto.cc/pricing](https://qesto.cc/pricing) for current details, and the\n[Templates and AI](templates-and-ai.md) guide for working with templates in a session."
+  },
+  {
+    "id": "participant-guide-001",
+    "title": "Joining and Participating in Sessions",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "How participants join a live session, submit responses, and what to expect — no account required.",
+    "content": "# Joining and Participating in Sessions"
+  },
+  {
+    "id": "participant-guide-002",
+    "title": "Joining and Participating in Sessions: Do I Need an Account?",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Hosts and team collaborators need accounts; voters typically do not.",
+    "content": "## Do I Need an Account?\n\n**No.** Participants join with a session link or short code. You do not need to sign up or install an app.\n\nHosts and team collaborators need accounts; voters typically do not."
+  },
+  {
+    "id": "participant-guide-003",
+    "title": "Joining and Participating in Sessions: How to Join",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Your host shares one of these:",
+    "content": "## How to Join\n\nYour host shares one of these:\n\n1. **Session link** — click or paste in your browser\n2. **Short join code** — enter at qesto.cc/join\n3. **QR code** — scan with your phone camera\n\n### Step by step\n\n1. Open the link or enter the code\n2. Enter a display name (unless the session is fully anonymous)\n3. Accept GDPR consent if prompted (when the host collects identifiable data)\n4. Wait for the host to open the session — you'll see energizers or the first question\n\nWorks on phone, tablet, and desktop. Use the latest version of Chrome, Firefox, Safari, or Edge."
+  },
+  {
+    "id": "participant-guide-004",
+    "title": "Joining and Participating in Sessions: During the Session",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "How participants join a live session, submit responses, and what to expect — no account required.",
+    "content": "## During the Session\n\n- **Submit every answer** — tap or click **Submit**; a confirmation means your vote counted\n- **Stay on the question** — once the host moves to the next question, late answers are not accepted\n- **Watch the connection indicator** — if you see \"Connection lost\", refresh the page (F5)"
+  },
+  {
+    "id": "participant-guide-005",
+    "title": "Joining and Participating in Sessions: Can I Change My Answer?",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "It depends on the host's vote policy (set before the session starts):",
+    "content": "## Can I Change My Answer?\n\nIt depends on the host's **vote policy** (set before the session starts):\n\n| Policy | Behavior |\n|--------|----------|\n| **One vote** (default) | Submit once per question; changing is not allowed after submit |\n| **Multiple votes** | Used for multi-select and upvote questions — select several options |\n| **Reactions** | Live reaction-style voting; your latest choice replaces the previous one while the question is open |\n\nIf you submitted under \"One vote\" and need to correct something, ask the host — they cannot edit your response, but may note it verbally or re-ask."
+  },
+  {
+    "id": "participant-guide-006",
+    "title": "Joining and Participating in Sessions: Anonymous vs Named Sessions",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "The host chooses this before going live.",
+    "content": "## Anonymous vs Named Sessions\n\n- **Named** — your display name may appear to the host (not always to other participants)\n- **Anonymous** — responses are not attributed to you\n- **Partial / zero-knowledge** — stricter anonymity modes for sensitive feedback\n\nThe host chooses this before going live. You cannot switch modes yourself."
+  },
+  {
+    "id": "participant-guide-007",
+    "title": "Joining and Participating in Sessions: After the Session",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "When the host closes the session:",
+    "content": "## After the Session\n\nWhen the host closes the session:\n\n- You may see a thank-you or summary screen\n- Final results depend on what the host shares — some sessions show live results, others only on the host's screen\n- You cannot rejoin a closed session"
+  },
+  {
+    "id": "participant-guide-008",
+    "title": "Joining and Participating in Sessions: Troubleshooting for Participants",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "More detail: see the Troubleshooting guide or email support@qesto.cc with the session code and a screenshot.",
+    "content": "## Troubleshooting for Participants\n\n| Problem | Fix |\n|---------|-----|\n| Link says session not found | Host may not have started yet — ask them to click **Start** |\n| \"Participant limit reached\" | Host's plan is full — they need to upgrade or run a second session |\n| My vote didn't count | Did you click Submit? Refresh and check the question is still open |\n| Page frozen | Refresh (F5); your submitted answers are saved server-side |\n\nMore detail: see the Troubleshooting guide or email support@qesto.cc with the session code and a screenshot."
+  },
+  {
+    "id": "privacy-gdpr-001",
+    "title": "Privacy, GDPR, and Data Rights",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "How Qesto handles personal data, GDPR compliance, consent, retention, and your rights as host or participant.",
+    "content": "# Privacy, GDPR, and Data Rights"
+  },
+  {
+    "id": "privacy-gdpr-002",
+    "title": "Privacy, GDPR, and Data Rights: Who Is the Data Controller?",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Participants exercising rights over votes in a session should contact the host first.",
+    "content": "## Who Is the Data Controller?\n\n| Data | Controller |\n|------|------------|\n| Your Qesto account (email, billing) | Qesto |\n| Session responses and votes | **Session host** (Qesto is the processor) |\n| Team workspace metadata | Team owner / organization |\n\nParticipants exercising rights over votes in a session should contact the **host** first. Account holders contact **Qesto** at support@qesto.cc."
+  },
+  {
+    "id": "privacy-gdpr-003",
+    "title": "Privacy, GDPR, and Data Rights: What We Collect",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "How Qesto handles personal data, GDPR compliance, consent, retention, and your rights as host or participant.",
+    "content": "## What We Collect\n\n### Hosts\n\n- Email, name, authentication logs\n- Sessions, questions, configuration\n- Billing information (processed by Stripe — Qesto does not store full card numbers)\n\n### Participants\n\n- Display name (if not anonymous)\n- Responses and votes\n- Optional GDPR consent record (timestamped)\n- Technical metadata (connection events, no advertising trackers)"
+  },
+  {
+    "id": "privacy-gdpr-004",
+    "title": "Privacy, GDPR, and Data Rights: GDPR Consent for Participants",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "When a host runs a named or partially identified session, participants may see:",
+    "content": "## GDPR Consent for Participants\n\nWhen a host runs a **named** or partially identified session, participants may see:\n\n> I agree to the processing of my name for analytics purposes. Data is stored for a maximum of 30 days and then deleted.\n\nConsent is logged with a timestamp for audit (Chorus plan audit log). Hosts running sensitive surveys should use **anonymous** or **zero-knowledge** modes.\n\n**Known gap (tracked, not yet fixed):** the consent string above\n(`public/locales/*/vote.json` → `gdprConsent`, shown in all 5 supported\nlanguages) promises automatic deletion after 30 days. As of this writing\nthere is no code-enforced 30-day purge for participant names — see\n[Data Retention](#data-retention) above. This is a real discrepancy between\nparticipant-facing legal copy and actual behavior; it needs either (a) a\n30-day auto-redaction job for named-consent participant data, or (b) a copy\nchange to stop promising a specific enforced window. Raised to product-owner\nas requirement debt (see `BACKLOG_MASTER.md`)."
+  },
+  {
+    "id": "privacy-gdpr-005",
+    "title": "Privacy, GDPR, and Data Rights: Encryption and Hosting",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "How Qesto handles personal data, GDPR compliance, consent, retention, and your rights as host or participant.",
+    "content": "## Encryption and Hosting\n\n- All traffic uses **HTTPS** (encrypted in transit)\n- Data encrypted at rest on Cloudflare infrastructure\n- Global edge network — data may be processed in multiple regions; GDPR and CCPA compliant processing"
+  },
+  {
+    "id": "privacy-gdpr-006",
+    "title": "Privacy, GDPR, and Data Rights: Data Retention",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Qesto does not currently run an automatic, age-based deletion job for ordinary",
+    "content": "## Data Retention\n\nQesto does not currently run an automatic, age-based deletion job for ordinary\nclosed-session data — sessions and their responses persist until the host (or\nan account holder, for their own data) explicitly deletes them via\n`DELETE /api/sessions/:id` or the GDPR self-service endpoints below. The\nfigures below describe **plan-level retention targets** that are part of the\nproduct commitment per tier, not a currently-enforced automatic purge:\n\n| Plan | Retention target | Enforcement today |\n|------|-------------------|--------------------|\n| Pulse (free) | 30 days | Not automatically enforced — host can delete sessions any time; no cron purges them at 30 days yet |\n| Signal | 365 days | Not automatically enforced — same as above |\n| Chorus | Up to 7 years (configurable) | Not automatically enforced — same as above |\n\nOne feature **does** have a real, code-enforced retention job today: the\n**Pulse team-pulse rollup** data (`workspace_trend` / pulse aggregation rows,\nADR-0057, see `functions/api/lib/pulse-aggregation.ts`). A daily cron\n(`PULSE-RETENTION-01`, see `worker/index.ts`) redacts that rollup payload after\n90 days and hard-deletes the underlying rows after 7 years. This is narrower\nthan — and should not be confused with — the general per-tier \"Retention\" row\nabove, which today is a stated target rather than an enforced limit.\n\n| Data type | Default retention |\n|-----------|-------------------|\n| Closed session responses | No automatic purge; deleted only when host/account holder requests it (see plan-level targets above) |\n| Pulse team-rollup analytics payload | Auto-redacted after 90 days, rows deleted after 7 years (code-enforced) |\n| Identified participant names (with consent) | Stored with the session; deleted when the session or account is deleted — no separate 30-day auto-purge exists today |\n| Account data | Until account deletion requested (`DELETE /api/users/me/gdpr-delete`) |\n| Audit logs | `audit_events` D1 table; no automatic purge configured |\n\nExport important results before deletion (CSV on Signal+) — once a session is\ndeleted there is no recovery."
+  },
+  {
+    "id": "privacy-gdpr-007",
+    "title": "Privacy, GDPR, and Data Rights: Your Rights (GDPR / CCPA)",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "We respond within 30 days for verified requests.",
+    "content": "## Your Rights (GDPR / CCPA)\n\nYou can request:\n\n- **Access** — copy of your personal data\n- **Correction** — fix inaccurate account data\n- **Deletion** — erase your account or specific responses\n- **Export** — machine-readable copy (CSV for session results)\n- **Objection** — restrict certain processing\n\n### How to request\n\n- **Account holders:** email support@qesto.cc from your registered address\n- **Participants:** contact the session host; they can erase respondent data from their session\n- **Team admins:** use audit log and session management tools; contact support for bulk erasure\n\nWe respond within 30 days for verified requests."
+  },
+  {
+    "id": "privacy-gdpr-008",
+    "title": "Privacy, GDPR, and Data Rights: Anonymity Modes",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Anonymous modes do not attach names to responses in host exports or insights.",
+    "content": "## Anonymity Modes\n\n| Mode | Best for |\n|------|----------|\n| Not anonymous | Internal team transparency |\n| Partial | Balance of attribution and privacy |\n| Zero-knowledge | Sensitive HR, leadership feedback |\n\nAnonymous modes do not attach names to responses in host exports or insights."
+  },
+  {
+    "id": "privacy-gdpr-009",
+    "title": "Privacy, GDPR, and Data Rights: AI and Personal Data",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "How Qesto handles personal data, GDPR compliance, consent, retention, and your rights as host or participant.",
+    "content": "## AI and Personal Data\n\n- AI insights cluster **response text**, not identities, in anonymous sessions\n- AI question generation does not train public models on your content\n- All AI runs on Cloudflare Workers AI within our infrastructure"
+  },
+  {
+    "id": "privacy-gdpr-010",
+    "title": "Privacy, GDPR, and Data Rights: Cookies and Tracking",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "Qesto uses essential cookies for authentication and session state.",
+    "content": "## Cookies and Tracking\n\nQesto uses essential cookies for authentication and session state. We do not use third-party advertising trackers.\n\nSee the full [Privacy Policy](https://qesto.cc/privacy) and [Terms](https://qesto.cc/terms) on our website."
+  },
+  {
+    "id": "privacy-gdpr-011",
+    "title": "Privacy, GDPR, and Data Rights: Security Incidents",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "If you suspect unauthorized access to your account:",
+    "content": "## Security Incidents\n\nIf you suspect unauthorized access to your account:\n\n1. Sign out all sessions and reset your password\n2. Email security@qesto.cc immediately\n3. Review team member list for unexpected invites"
+  },
+  {
+    "id": "privacy-gdpr-012",
+    "title": "Privacy, GDPR, and Data Rights: Questions?",
+    "topic": "faq",
+    "scope": "free",
+    "excerpt": "A: Hosts with appropriate permissions can erase respondent data from a session; contact support for assistance.",
+    "content": "## Questions?\n\n**Q: Can I run Qesto in the EU for GDPR?**\nA: Yes. Qesto is designed for GDPR compliance; hosts remain controllers for session content.\n\n**Q: Does Qesto sell participant data?**\nA: No. We never sell personal data.\n\n**Q: How do I delete all data for one participant?**\nA: Hosts with appropriate permissions can erase respondent data from a session; contact support for assistance.\n\n**Q: Where is my data stored?**\nA: Cloudflare's global network. Specific region pinning for enterprise — contact sales@qesto.cc."
+  },
+  {
+    "id": "semantic-search-001",
+    "title": "Semantic Decision Search",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Search decisions by meaning, not just keywords — find related past sessions while authoring new questions.",
+    "content": "# Semantic Decision Search\n\nQesto can surface past sessions and questions that are *related in meaning* to what\nyou're writing now — even if they don't share any exact keywords. This is semantic\ndecision search."
+  },
+  {
+    "id": "semantic-search-002",
+    "title": "Semantic Decision Search: Where you'll see it",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "While authoring questions in Studio:",
+    "content": "## Where you'll see it\n\nWhile authoring questions in **Studio**:\n\n1. Start typing a question\n2. Qesto embeds your draft text and compares it against your team's past sessions\n3. Related historical questions/sessions appear as suggestions for your next question\n\nThis works on meaning, not string matching — a question about \"burnout\" can surface\na past session about \"team exhaustion\" even though the words don't overlap."
+  },
+  {
+    "id": "semantic-search-003",
+    "title": "Semantic Decision Search: What it searches",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "team's or tenant's data",
+    "content": "## What it searches\n\n- Only sessions belonging to **your team** — suggestions never cross into another\n  team's or tenant's data\n- Past session titles and questions, not raw participant responses"
+  },
+  {
+    "id": "semantic-search-004",
+    "title": "Semantic Decision Search: Plans",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "Search decisions by meaning, not just keywords — find related past sessions while authoring new questions.",
+    "content": "## Plans\n\n- **Pulse** — not included\n- **Signal** and **Chorus** — included"
+  },
+  {
+    "id": "semantic-search-005",
+    "title": "Semantic Decision Search: Tips for better matches",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "expected for new teams)",
+    "content": "## Tips for better matches\n\n- Write a full sentence, not a single word — more context gives a better match\n- If no related sessions exist yet, you'll simply see no suggestions (this is\n  expected for new teams)"
+  },
+  {
+    "id": "semantic-search-006",
+    "title": "Semantic Decision Search: Questions?",
+    "topic": "getting-started",
+    "scope": "starter",
+    "excerpt": "A: No — it compares your draft question text against past session/question",
+    "content": "## Questions?\n\n**Q: Does semantic search read participant answers?**\nA: No — it compares your draft question text against past session/question\ncontent, not individual participant responses.\n\n**Q: Why didn't I get any suggestions?**\nA: Either your team has no sufficiently similar past sessions yet, or the match\nconfidence was too low to show. Try writing a more complete question.\n\n**Q: Is this the same as AI Insights?**\nA: No. AI Insights (Chorus) extracts themes from closed-session responses.\nSemantic decision search helps you author new questions by finding related past\nones — it's available starting on the Signal plan."
+  },
+  {
+    "id": "session-modes-001",
+    "title": "Advanced Session Modes — Townhall, Retro, Ideate, Deliberate",
+    "topic": "getting-started",
+    "scope": "team",
+    "excerpt": "Beyond standard polls, Qesto offers four board-style session modes — Townhall Q&A, Retrospectives, Ideation, and Deliberate verifiable voting — available on the Chorus plan.",
+    "content": "# Advanced Session Modes\n\nStandard Qesto sessions are question-driven (polls, rankings, consent votes, open\nquestions). On top of those, Qesto offers four **board-style session modes** for richer\nformats. All four are **generally available** (shipped at v6.0.0) and are included on the\n**Chorus** plan.\n\n| Mode | What it's for | Plan |\n|------|---------------|------|\n| Townhall Q&A | Large-audience question boards with upvoting and moderation | Chorus |\n| Retro | Team retrospectives across three columns with dot-voting | Chorus |\n| Ideate | Brainstorming boards with AI clustering and dot-voting | Chorus |\n| Deliberate | Formal votes with verifiable, anonymous, re-checkable results | Chorus |\n\n---"
+  },
+  {
+    "id": "session-modes-002",
+    "title": "Advanced Session Modes — Townhall, Retro, Ideate, Deliberate: Townhall Q&A",
+    "topic": "getting-started",
+    "scope": "team",
+    "excerpt": "A live Q&A board for all-hands meetings and large audiences.",
+    "content": "## Townhall Q&A\n\nA live Q&A board for all-hands meetings and large audiences. Participants submit\nquestions and **upvote** the ones they care about, so the most-supported questions rise to\nthe top instead of getting lost in a chat stream.\n\n**How to run one**\n\n1. From your dashboard, click **Create Townhall** (visible on eligible accounts).\n2. Configure the board while it is still in **Draft**:\n   - **Moderation** — choose `pre` (questions are reviewed by a moderator before they appear)\n     or `post` (questions appear immediately and can be moderated afterward).\n   - **Anonymity** — full, partial, none, or zero-knowledge.\n3. Open the session. Share the join code with your audience.\n4. As host you can **group** duplicate or related questions together, and **spotlight** a\n   question so it appears prominently on the presenter screen while it is being answered.\n\n**Good to know**\n\n- Townhall scales to large audiences — up to the participant cap on your plan (5,000 on\n  Chorus).\n- Author identity is never exported, even when you download the question list, so anonymity\n  is preserved end-to-end.\n\n---"
+  },
+  {
+    "id": "session-modes-003",
+    "title": "Advanced Session Modes — Townhall, Retro, Ideate, Deliberate: Retro (Retrospectives)",
+    "topic": "getting-started",
+    "scope": "team",
+    "excerpt": "A structured retrospective board for recurring team rituals.",
+    "content": "## Retro (Retrospectives)\n\nA structured retrospective board for recurring team rituals. The board has three columns:\n\n- **Went well**\n- **Didn't go well**\n- **Actions**\n\n**How it works**\n\n1. Create a **Retro workspace** (a recurring workspace) for your team.\n2. Each time you run it, a fresh retro instance is created — participants add cards to each\n   column.\n3. **Dot-voting** lets each participant spend a fixed number of votes (3 by default,\n   configurable up to 10) to prioritize the cards that matter most.\n4. Choose an anonymity mode so people can speak candidly.\n\nBecause retros run as a **recurring workspace**, Qesto tracks **team health trends** across\ninstances, so you can see how sentiment and recurring themes change over time.\n\n---"
+  },
+  {
+    "id": "session-modes-004",
+    "title": "Advanced Session Modes — Townhall, Retro, Ideate, Deliberate: Ideate (Ideation Boards)",
+    "topic": "getting-started",
+    "scope": "team",
+    "excerpt": "A brainstorming board for divergent-then-convergent idea generation.",
+    "content": "## Ideate (Ideation Boards)\n\nA brainstorming board for divergent-then-convergent idea generation. Participants add idea\ncards, and Qesto helps you make sense of them.\n\n**Key features**\n\n- **AI clustering** — as ideas come in, Qesto automatically groups similar ones into themes\n  (clustering settles a few seconds after activity, so it groups in near real time without\n  thrashing).\n- **Dot-voting** — each participant gets a set number of votes (5 by default, up to 20) to\n  surface the strongest ideas.\n- **Ranking reveal** — reveal the top-ranked ideas to the room once voting is done.\n\nLike Retro, Ideate runs as a **recurring workspace**, so you can re-run the same board for a\nstanding group.\n\n---"
+  },
+  {
+    "id": "session-modes-005",
+    "title": "Advanced Session Modes — Townhall, Retro, Ideate, Deliberate: Deliberate (Verifiable Voting)",
+    "topic": "getting-started",
+    "scope": "team",
+    "excerpt": "A governance-grade voting mode for decisions that need to be trustworthy and auditable —",
+    "content": "## Deliberate (Verifiable Voting)\n\nA governance-grade voting mode for decisions that need to be **trustworthy and auditable** —\nboard resolutions, formal approvals, or elections.\n\n**What makes it different**\n\n- Every ballot is written to an **append-only, anonymous commitment ledger** — votes can't be\n  altered or deleted after the fact.\n- Each voter receives a **receipt** they can keep. Receipts are *coercion-resistant*: a\n  receipt lets you confirm your vote was counted without revealing how you voted to anyone\n  else.\n- The final tally publishes a **Merkle root** that **any participant or observer can\n  independently re-verify** against the ledger — you don't have to take Qesto's word that the\n  count is correct.\n\n**How to run one**\n\n1. Mark the session as **Deliberate** while it is in Draft.\n2. Open the session and let participants cast ballots; each gets a receipt.\n3. After voting closes, share the tally. Anyone can re-verify a receipt or the Merkle root.\n\n---"
+  },
+  {
+    "id": "session-modes-006",
+    "title": "Advanced Session Modes — Townhall, Retro, Ideate, Deliberate: Which plan do I need?",
+    "topic": "getting-started",
+    "scope": "team",
+    "excerpt": "All four advanced modes (Townhall, Retro, Ideate, Deliberate) are on the Chorus plan.",
+    "content": "## Which plan do I need?\n\nAll four advanced modes (Townhall, Retro, Ideate, Deliberate) are on the **Chorus** plan. See\n[Pricing and Plans](billing.md) or [qesto.cc/pricing](https://qesto.cc/pricing) for current\ndetails. Standard polls, rankings, consent votes, and open questions are available on every\nplan, including the free **Pulse** tier."
+  },
+  {
+    "id": "teams-and-collaboration-001",
+    "title": "Teams and Collaboration",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Create teams, invite members, understand roles and permissions, and configure SAML SSO on eligible plans.",
+    "content": "# Teams and Collaboration"
+  },
+  {
+    "id": "teams-and-collaboration-002",
+    "title": "Teams and Collaboration: Why Teams?",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Teams organize sessions, templates, and members under one workspace.",
+    "content": "## Why Teams?\n\nTeams organize sessions, templates, and members under one workspace. Use them when:\n\n- Several people create sessions for the same organization\n- You need shared templates or audit logs\n- You want SAML single sign-on (Chorus plan)\n\nPersonal sessions belong to your account; team sessions belong to the workspace."
+  },
+  {
+    "id": "teams-and-collaboration-003",
+    "title": "Teams and Collaboration: Creating a Team",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Create teams, invite members, understand roles and permissions, and configure SAML SSO on eligible plans.",
+    "content": "## Creating a Team\n\n1. Dashboard → **Teams** tab\n2. Click **Create team**\n3. Enter a team name\n4. You are the **owner** with full permissions"
+  },
+  {
+    "id": "teams-and-collaboration-004",
+    "title": "Teams and Collaboration: Inviting Members",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Invites expire after a period for security.",
+    "content": "## Inviting Members\n\n1. Open **Teams → [your team] → Settings**\n2. Click **Invite member**\n3. Enter their email — they receive an invite link\n4. They accept via **Teams → Accept invite** (must be logged in)\n\nInvites expire after a period for security. Resend if needed."
+  },
+  {
+    "id": "teams-and-collaboration-005",
+    "title": "Teams and Collaboration: Default Team Roles",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Team owners can assign custom roles on the Chorus plan with granular permissions (create, launch, export, manage auth, etc.).",
+    "content": "## Default Team Roles\n\n| Role | Typical access |\n|------|----------------|\n| **Owner** | Everything including billing and SAML |\n| **Admin** | Manage members, sessions, templates |\n| **Member** | Create and run sessions |\n| **Viewer** | Read-only access to team sessions |\n\nTeam owners can assign **custom roles** on the Chorus plan with granular permissions (create, launch, export, manage auth, etc.)."
+  },
+  {
+    "id": "teams-and-collaboration-006",
+    "title": "Teams and Collaboration: Custom Permissions (Chorus Plan)",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Examples of permission flags:",
+    "content": "## Custom Permissions (Chorus Plan)\n\nExamples of permission flags:\n\n- Create / edit / launch / close / archive sessions\n- Export results\n- Activate energizers\n- Read or write templates\n- Manage members and SAML\n- View audit log\n- Manage billing\n\nAssign custom roles under **Team settings → Roles**."
+  },
+  {
+    "id": "teams-and-collaboration-007",
+    "title": "Teams and Collaboration: SAML Single Sign-On",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Lets your organization sign in through your identity provider (Okta, Azure AD, Google Workspace, etc.) instead of magic link/password.",
+    "content": "## SAML Single Sign-On\n\n**Requires Chorus plan** (SAML/OAuth SSO).\n\n### What SAML does\n\nLets your organization sign in through your identity provider (Okta, Azure AD, Google Workspace, etc.) instead of magic link/password.\n\n### Setup overview\n\n1. Team owner → **Team settings → Authentication**\n2. Enter IdP metadata: entity ID, SSO URL, certificate\n3. Download Qesto's SP metadata for your IdP\n4. Test login with a pilot user before rolling out\n\nFor enterprise IdP configuration help, email support@qesto.cc with your provider name."
+  },
+  {
+    "id": "teams-and-collaboration-008",
+    "title": "Teams and Collaboration: Team Sessions vs Personal Sessions",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "When creating a session, pick the team in the wizard if the session belongs to the organization.",
+    "content": "## Team Sessions vs Personal Sessions\n\n- **Personal** — created from your dashboard without a team selected\n- **Team** — visible to members based on their role; shared templates and audit trail\n\nWhen creating a session, pick the team in the wizard if the session belongs to the organization."
+  },
+  {
+    "id": "teams-and-collaboration-009",
+    "title": "Teams and Collaboration: Audit Log (Chorus Plan)",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Team owners and users with Read audit log permission can view compliance events:",
+    "content": "## Audit Log (Chorus Plan)\n\nTeam owners and users with **Read audit log** permission can view compliance events:\n\n- Session started / closed\n- Exports and insight generation\n- Member changes\n- GDPR respondent erasure events\n\nAccess via team settings or session detail pages where enabled."
+  },
+  {
+    "id": "teams-and-collaboration-010",
+    "title": "Teams and Collaboration: Leaving or Removing Members",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "Removing a member does not delete sessions they created — ownership stays with the team.",
+    "content": "## Leaving or Removing Members\n\n- **Owner removes member** — Team settings → Members → Remove\n- **Member leaves** — contact the team owner to be removed (or delete your account)\n\nRemoving a member does not delete sessions they created — ownership stays with the team."
+  },
+  {
+    "id": "teams-and-collaboration-011",
+    "title": "Teams and Collaboration: Questions?",
+    "topic": "account",
+    "scope": "free",
+    "excerpt": "A: Pulse and Signal plans support multiple teams; participant limits apply per session, not per team.",
+    "content": "## Questions?\n\n**Q: How many teams can I create?**\nA: Pulse and Signal plans support multiple teams; participant limits apply per session, not per team.\n\n**Q: Can viewers run sessions?**\nA: No. Viewers can see team sessions but need **Member** (or custom launch permission) to go live.\n\n**Q: Who pays for the team workspace subscription?**\nA: The team owner's billing account. Upgrade under **Settings → Billing**.\n\n**Q: Can I transfer team ownership?**\nA: Contact support@qesto.cc — we can reassign ownership on request."
+  },
+  {
+    "id": "templates-and-ai-001",
+    "title": "Templates and AI Features",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Use session templates, generate questions with AI, and understand AI insights after sessions close.",
+    "content": "# Templates and AI Features"
+  },
+  {
+    "id": "templates-and-ai-002",
+    "title": "Templates and AI Features: Session Templates",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Templates save time by pre-loading questions, settings, and structure.",
+    "content": "## Session Templates\n\nTemplates save time by pre-loading questions, settings, and structure.\n\n### Qesto templates (curated)\n\n1. Dashboard → **Templates** tab\n2. Browse by topic (retrospectives, planning, feedback, etc.)\n3. Open a template card → review title, description, and preview\n4. Click **Use template** → confirm → session wizard opens with questions pre-filled\n5. Edit anything you need, then launch\n\nEach topic includes several starter templates so you can pick the best fit.\n\n### Your team templates\n\n- **Create from session** — save a successful session as a template from the dashboard\n- **Create blank** — Templates → **New template**\n- Team templates are shared with members who have template read/write permissions\n\nTemplates always create a new **DRAFT** session — nothing goes live until you start."
+  },
+  {
+    "id": "templates-and-ai-003",
+    "title": "Templates and AI Features: AI Question Generation",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "During session setup, use Generate with AI to draft questions:",
+    "content": "## AI Question Generation\n\nDuring session setup, use **Generate with AI** to draft questions:\n\n1. Describe your goal (e.g. \"30-minute retro for a remote product team\")\n2. AI suggests question types and wording\n3. Review, edit, or remove any suggestion before saving\n4. Consent to AI processing when prompted — required for generation\n\nAI runs on Cloudflare Workers AI only; your prompts are not sent to third-party APIs.\n\n### Refining AI output\n\n- Regenerate individual questions or the full set\n- Switch question types (poll → open, etc.)\n- Add manual questions alongside AI ones\n\nAlways review AI content before going live — you are responsible for what participants see."
+  },
+  {
+    "id": "templates-and-ai-004",
+    "title": "Templates and AI Features: AI Insights (Chorus)",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "After a session closes, Qesto can extract themes from open-ended responses:",
+    "content": "## AI Insights (Chorus)\n\nAfter a session **closes**, Qesto can extract themes from open-ended responses:\n\n1. Open the closed session → **Insights** tab\n2. Click **Analyze** (if not auto-started)\n3. Wait 10 seconds–3 minutes depending on response volume\n4. Review theme clusters with exemplar quotes\n\n### What insights need\n\n- Session must be **closed**\n- At least one **open** (free-text) question with meaningful answers\n- **Chorus plan** — not available on Pulse or Signal\n\nPoll-only sessions show tallies but not AI theme extraction.\n\n### Improving insight quality\n\n- Ask specific open questions (\"What blocked you this sprint?\" not \"Any feedback?\")\n- Aim for 10+ varied responses per open question\n- Use one language per session when possible\n\nSee Troubleshooting → AI Insights if generation stalls or looks wrong."
+  },
+  {
+    "id": "templates-and-ai-005",
+    "title": "Templates and AI Features: AI and Privacy",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "Use session templates, generate questions with AI, and understand AI insights after sessions close.",
+    "content": "## AI and Privacy\n\n- AI insights process aggregated response text, not participant identities (in anonymous modes)\n- AI-generated session metadata (`ai_generated`, consent timestamp) is stored for audit\n- Hosts review insights before sharing externally\n- No participant PII is sent to external AI providers"
+  },
+  {
+    "id": "templates-and-ai-006",
+    "title": "Templates and AI Features: Questions?",
+    "topic": "getting-started",
+    "scope": "free",
+    "excerpt": "A: Included in the Chorus plan for insights; question generation is available on Pulse and above with consent.",
+    "content": "## Questions?\n\n**Q: Does AI cost extra?**\nA: Included in the Chorus plan for insights; question generation is available on Pulse and above with consent.\n\n**Q: Can I turn off AI for my team?**\nA: Simply don't use Generate or Analyze. No AI runs unless you trigger it.\n\n**Q: Will AI replace my question wording exactly in insights?**\nA: Themes summarize patterns; exemplar quotes are verbatim from responses, not paraphrased by default.\n\n**Q: Can I save a template from an AI-generated session?**\nA: Yes — duplicate or save as template like any other session."
   },
   {
     "id": "troubleshooting-001",
-    "title": "Session Connection and Stability Issues",
+    "title": "Troubleshooting Guide",
     "topic": "troubleshooting",
     "scope": "starter",
-    "excerpt": "Troubleshoot common connection and stability problems with live sessions.",
-    "content": "# Session Connection and Stability Issues\n\n## \"Connection Lost\" Error\n\nThis means the WebSocket connection to the session dropped.\n\n### Quick Fixes (Try in Order)\n\n1. **Refresh the page** (F5 or Cmd+R)\n   - Reconnects you to the session\n   - Your responses are preserved\n\n2. **Check your internet**\n   - Is WiFi/mobile signal strong?\n   - Try switching networks if possible\n   - Restart router if WiFi is weak\n\n3. **Close other tabs/apps**\n   - Free up bandwidth\n   - Qesto needs 1-2 Mbps to function\n   - Video streaming can interfere\n\n4. **Check browser console for errors** (F12)\n   - Look for network errors\n   - Screenshot and share with support\n\n5. **Try a different browser**\n   - Chrome, Firefox, Safari, Edge all supported\n   - Rules out browser-specific issues\n\n6. **Disable VPN/Proxy**\n   - Sometimes blocks WebSocket connections\n   - Try without VPN\n\n### If It Persists\n\nEmail support@qesto.cc with:\n- Session ID\n- Error message screenshot\n- Your internet speed (speedtest.net)\n- Browser/OS\n- When it started\n\n## Responses Not Submitting\n\nYou clicked \"Submit\" but don't see confirmation.\n\n### Check\n\n1. **Is the connection stable?** Check the connection indicator\n2. **Is the question still open?** Closed questions can't accept responses\n3. **Refresh and try again** (may be a temporary glitch)\n4. **Try mobile/different device** (rules out device-specific issue)\n\n## Session Keeps Disconnecting\n\nYou reconnect, then drop again.\n\n### Causes\n\n- **Unstable internet**: Most common\n- **Network switching**: Jumping between WiFi and mobile\n- **VPN/proxy issues**: Try disabling\n- **Too many people**: Rare, but possible with 500+ participants\n\n### Solutions\n\n1. Stay on one network (don't switch WiFi/mobile)\n2. Move closer to WiFi router\n3. Use mobile hotspot as backup\n4. Disable VPN\n5. Close bandwidth-heavy apps\n\n## Responses Loading Slowly\n\nYou submitted a response, but it's taking time to show.\n\n### Normal?\n\n- With 50+ participants, slight delays (1-2s) are expected\n- With 500+ participants, expect 3-5s delays\n- Your response is queued and will show\n\n### Speed It Up\n\n1. Refresh page (forces re-sync)\n2. Check your internet speed\n3. Close other tabs\n\n## Session Ended Unexpectedly\n\nThe host closed the session while you were in it.\n\n### What Happens\n\n- You'll see \"Session Ended\" message\n- Your responses are saved\n- Results will be available shortly\n- You can refresh to see final results\n\n## Still Having Issues?\n\nEmail support@qesto.cc with:\n- **Session ID**: Bottom of the session page\n- **Time it happened**: (include timezone)\n- **Device/Browser**: (e.g., iPhone Safari)\n- **Internet connection**: (WiFi/mobile)\n- **Screenshot**: Of the error\n\nWe'll investigate and get back to you within 2 hours."
+    "excerpt": "Troubleshoot common issues with live sessions, responses, analytics, and performance.",
+    "content": "# Troubleshooting Guide"
   },
   {
     "id": "troubleshooting-002",
-    "title": "Responses and Results Not Showing",
+    "title": "Troubleshooting Guide: Session Connection and Stability Issues",
     "topic": "troubleshooting",
     "scope": "starter",
-    "excerpt": "Troubleshoot issues where responses or results aren't displaying correctly.",
-    "content": "# Responses and Results Not Showing\n\n## My Response Isn't Showing\n\nYou voted/answered, but don't see yourself in the results.\n\n### Check\n\n1. **Did you actually submit?**\n   - Look for confirmation (button change, checkmark)\n   - Try submitting again to be sure\n\n2. **Is the question still open?**\n   - Qesto closes questions when the host moves to the next question\n   - Late responses aren't accepted\n   - Wait for the next question\n\n3. **Are you logged in?**\n   - Anonymous responses don't show names\n   - Check your session settings\n\n4. **Browser issue?**\n   - Try incognito/private mode\n   - Clear cache (Ctrl+Shift+Delete)\n   - Refresh the page\n\n5. **Reconnect**\n   - Refresh (F5) to sync with server\n   - Your response should appear\n\n## Other Participants' Responses Missing\n\nSome people voted, but their votes aren't showing.\n\n### Check\n\n1. **Are they still connected?**\n   - Check participant count\n   - Ask them if they see responses from others\n\n2. **Did they submit?**\n   - Remind them to click \"Submit\"\n   - Sometimes easy to miss\n\n3. **Network lag**\n   - With 100+ people, 2-3 second delay is normal\n   - Wait a few seconds for responses to sync\n\n4. **Host refresh**\n   - Host should refresh page if seeing outdated numbers\n   - Participants will still be connected\n\n## Results Not Showing After Session Closes\n\nSession is closed, but results page is blank.\n\n### Try\n\n1. **Refresh page** (F5)\n   - Results may not have loaded initially\n\n2. **Wait 30 seconds**\n   - With large sessions, processing takes time\n   - Results will appear once calculated\n\n3. **Try different browser**\n   - Rules out browser cache issue\n\n4. **Check if session actually closed**\n   - Go to Sessions → select the session\n   - Confirm it shows \"Closed\" status\n\n## Results Page Crashed\n\nResults page won't load or keeps refreshing.\n\n### Try\n\n1. **Force refresh** (Ctrl+Shift+R on Windows, Cmd+Shift+R on Mac)\n   - Clears all cache\n\n2. **Wait 5 minutes**\n   - Large sessions need time to process\n   - Come back and try again\n\n3. **Try CSV export**\n   - If results are available, export them\n   - View in Excel/Sheets instead\n\n4. **Different browser**\n   - Try Chrome if you're in Firefox\n   - Rules out browser-specific bug\n\n## Export/Download Not Working\n\nYou clicked CSV export but nothing happened.\n\n### Check\n\n1. **Is it a free session?**\n   - CSV export only available on Signal+ plans\n   - Upgrade to download\n\n2. **Browser popup blocker**\n   - Allow popups for qesto.cc\n   - Try again\n\n3. **Check Downloads folder**\n   - File may have downloaded silently\n\n4. **Try different browser**\n   - Safari sometimes blocks downloads\n   - Try Chrome instead\n\n## Still Can't See Results?\n\nEmail support@qesto.cc with:\n- Session ID\n- Question type (Poll, Ranking, etc)\n- Number of participants\n- Screenshot of the issue\n\nWe can manually investigate!"
+    "excerpt": "This means the WebSocket connection to the session dropped.",
+    "content": "## Session Connection and Stability Issues\n\n### \"Connection Lost\" Error\n\nThis means the WebSocket connection to the session dropped.\n\n#### Quick Fixes (Try in Order)\n\n1. **Refresh the page** (F5 or Cmd+R)\n   - Reconnects you to the session\n   - Your responses are preserved\n\n2. **Check your internet**\n   - Is WiFi/mobile signal strong?\n   - Try switching networks if possible\n   - Restart router if WiFi is weak\n\n3. **Close other tabs/apps**\n   - Free up bandwidth\n   - Qesto needs 1-2 Mbps to function\n   - Video streaming can interfere\n\n4. **Check browser console for errors** (F12)\n   - Look for network errors\n   - Screenshot and share with support\n\n5. **Try a different browser**\n   - Chrome, Firefox, Safari, Edge all supported\n   - Rules out browser-specific issues\n\n6. **Disable VPN/Proxy**\n   - Sometimes blocks WebSocket connections\n   - Try without VPN\n\n#### If It Persists\n\nEmail support@qesto.cc with:\n- Session ID\n- Error message screenshot\n- Your internet speed (speedtest.net)\n- Browser/OS\n- When it started\n\n### Responses Not Submitting\n\nYou clicked \"Submit\" but don't see confirmation.\n\n#### Check\n\n1. **Is the connection stable?** Check the connection indicator\n2. **Is the question still open?** Closed questions can't accept responses\n3. **Refresh and try again** (may be a temporary glitch)\n4. **Try mobile/different device** (rules out device-specific issue)\n\n### Session Keeps Disconnecting\n\nYou reconnect, then drop again.\n\n#### Causes\n\n- **Unstable internet**: Most common\n- **Network switching**: Jumping between WiFi and mobile\n- **VPN/proxy issues**: Try disabling\n- **Too many people**: Rare, but possible with 500+ participants\n\n#### Solutions\n\n1. Stay on one network (don't switch WiFi/mobile)\n2. Move closer to WiFi router\n3. Use mobile hotspot as backup\n4. Disable VPN\n5. Close bandwidth-heavy apps\n\n### Responses Loading Slowly\n\nYou submitted a response, but it's taking time to show.\n\n#### Normal?\n\n- With 50+ participants, slight delays (1-2s) are expected\n- With 500+ participants, expect 3-5s delays\n- Your response is queued and will show\n\n#### Speed It Up\n\n1. Refresh page (forces re-sync)\n2. Check your internet speed\n3. Close other tabs\n\n### Session Ended Unexpectedly\n\nThe host closed the session while you were in it.\n\n#### What Happens\n\n- You'll see \"Session Ended\" message\n- Your responses are saved\n- Results will be available shortly\n- You can refresh to see final results\n\n### Still Having Issues?\n\nEmail support@qesto.cc with:\n- **Session ID**: Bottom of the session page\n- **Time it happened**: (include timezone)\n- **Device/Browser**: (e.g., iPhone Safari)\n- **Internet connection**: (WiFi/mobile)\n- **Screenshot**: Of the error\n\nWe'll investigate and get back to you within 2 hours.\n\n---"
   },
   {
     "id": "troubleshooting-003",
-    "title": "AI Insights and Analytics Issues",
+    "title": "Troubleshooting Guide: Responses and Results Not Showing",
     "topic": "troubleshooting",
     "scope": "starter",
-    "excerpt": "Troubleshoot problems with AI-powered insights, theme extraction, and analytics.",
-    "content": "# AI Insights and Analytics Issues\n\n**Note:** AI Insights requires the Chorus plan.\n\n## \"Generating Insights...\" Takes Too Long\n\nThe insights spinner has been spinning for 2+ minutes.\n\n### What's Normal?\n\n- 50-100 responses: 10-30 seconds\n- 100-500 responses: 30-60 seconds\n- 500+ responses: 1-3 minutes\n\n### If Waiting Longer\n\n1. **Wait a bit more**\n   - Sometimes Qesto is processing\n   - Don't refresh yet\n\n2. **Refresh the page** (F5)\n   - Resets the insights generation\n   - Usually solves the issue\n\n3. **Check your plan**\n   - AI Insights requires the Chorus plan\n   - Pulse and Signal plans don't have this feature\n\n4. **If still stuck**\n   - Try again in 5 minutes\n   - Qesto may be busy\n\n## Insights Are Blank or Wrong\n\nAI generated insights, but they seem irrelevant or generic.\n\n### Why This Happens\n\n- **Too few open responses**: Need 10+ open-ended responses for good themes\n- **Similar answers**: If everyone gives the same answer, only one theme shows\n- **Generic responses**: \"Good\" or \"Yes\" responses are harder to cluster\n- **Mixed languages**: English + other languages confuses AI\n\n### Improve Insights\n\n1. **Reword your question**\n   - More specific questions → better themes\n   - Instead of \"Feedback?\", ask \"What was your biggest challenge?\"\n\n2. **Make it open-ended**\n   - Open questions generate richer insights than polls\n\n3. **Review the responses manually**\n   - Sometimes manual reading beats AI\n   - Download CSV and group yourself\n\n4. **Try again with fresh data**\n   - Run a new session with refined questions\n\n## \"Insights Not Available\" Error\n\nYou see this message instead of insights.\n\n### Check\n\n1. **Is the session closed?**\n   - Insights only work on closed sessions\n   - Close your session first\n\n2. **Do you have an open question?**\n   - Insights require open-ended responses\n   - Polls alone won't generate themes\n\n3. **Are you on the Chorus plan?**\n   - Pulse and Signal plans don't have AI insights\n   - Upgrade to Team to access\n\n4. **Did the insights fail?**\n   - Sometimes AI analysis fails\n   - Refresh and try again\n\n## API/Webhook Issues\n\n**Note:** API access requires Chorus plan.\n\n### Webhook Not Firing\n\n1. **Check your webhook URL**\n   - Must be HTTPS\n   - Must return 200-299 status code\n\n2. **Check event type**\n   - \"session_closed\" only fires when session closes\n   - Not instant—takes 30-60 seconds\n\n3. **Check logs**\n   - Dashboard shows recent webhook attempts\n   - Look for error messages\n\n4. **Test webhook**\n   - Use https://webhook.site to test\n   - Verify your endpoint receives data\n\n### API Request Failing\n\n1. **Check authentication**\n   - Include Bearer token in header\n   - Token must be active\n\n2. **Check request body**\n   - Ensure JSON is valid\n   - Use correct field names\n\n3. **Check rate limits**\n   - Chorus plan: 1000 requests/hour\n   - If exceeded, retry with exponential backoff\n\n4. **Read error message**\n   - API returns specific error codes\n   - See API docs for meanings\n\n## Questions About Analytics?\n\nEmail support@qesto.cc and describe:\n- Session ID\n- Number of responses\n- Question type\n- What insights you expected\n\nWe can help debug!"
+    "excerpt": "You voted/answered, but don't see yourself in the results.",
+    "content": "## Responses and Results Not Showing\n\n### My Response Isn't Showing\n\nYou voted/answered, but don't see yourself in the results.\n\n#### Check\n\n1. **Did you actually submit?**\n   - Look for confirmation (button change, checkmark)\n   - Try submitting again to be sure\n\n2. **Is the question still open?**\n   - Qesto closes questions when the host moves to the next question\n   - Late responses aren't accepted\n   - Wait for the next question\n\n3. **Are you logged in?**\n   - Anonymous responses don't show names\n   - Check your session settings\n\n4. **Browser issue?**\n   - Try incognito/private mode\n   - Clear cache (Ctrl+Shift+Delete)\n   - Refresh the page\n\n5. **Reconnect**\n   - Refresh (F5) to sync with server\n   - Your response should appear\n\n### Other Participants' Responses Missing\n\nSome people voted, but their votes aren't showing.\n\n#### Check\n\n1. **Are they still connected?**\n   - Check participant count\n   - Ask them if they see responses from others\n\n2. **Did they submit?**\n   - Remind them to click \"Submit\"\n   - Sometimes easy to miss\n\n3. **Network lag**\n   - With 100+ people, 2-3 second delay is normal\n   - Wait a few seconds for responses to sync\n\n4. **Host refresh**\n   - Host should refresh page if seeing outdated numbers\n   - Participants will still be connected\n\n### Results Not Showing After Session Closes\n\nSession is closed, but results page is blank.\n\n#### Try\n\n1. **Refresh page** (F5)\n   - Results may not have loaded initially\n\n2. **Wait 30 seconds**\n   - With large sessions, processing takes time\n   - Results will appear once calculated\n\n3. **Try different browser**\n   - Rules out browser cache issue\n\n4. **Check if session actually closed**\n   - Go to Sessions → select the session\n   - Confirm it shows \"Closed\" status\n\n### Results Page Crashed\n\nResults page won't load or keeps refreshing.\n\n#### Try\n\n1. **Force refresh** (Ctrl+Shift+R on Windows, Cmd+Shift+R on Mac)\n   - Clears all cache\n\n2. **Wait 5 minutes**\n   - Large sessions need time to process\n   - Come back and try again\n\n3. **Try CSV export**\n   - If results are available, export them\n   - View in Excel/Sheets instead\n\n4. **Different browser**\n   - Try Chrome if you're in Firefox\n   - Rules out browser-specific bug\n\n### Export/Download Not Working\n\nYou clicked CSV export but nothing happened.\n\n#### Check\n\n1. **Are you on the Pulse plan?**\n   - CSV export only available on Signal+ plans\n   - Upgrade to download\n\n2. **Browser popup blocker**\n   - Allow popups for qesto.cc\n   - Try again\n\n3. **Check Downloads folder**\n   - File may have downloaded silently\n\n4. **Try different browser**\n   - Safari sometimes blocks downloads\n   - Try Chrome instead\n\n### Still Can't See Results?\n\nEmail support@qesto.cc with:\n- Session ID\n- Question type (Poll, Ranking, etc)\n- Number of participants\n- Screenshot of the issue\n\nWe can manually investigate!\n\n---"
   },
   {
     "id": "troubleshooting-004",
-    "title": "Performance, Slow Loading, and Browser Issues",
+    "title": "Troubleshooting Guide: AI Insights and Analytics Issues",
     "topic": "troubleshooting",
     "scope": "starter",
-    "excerpt": "Fix performance problems, slow loading, and browser compatibility issues.",
-    "content": "# Performance, Slow Loading, and Browser Issues\n\n## Page Loads Slowly\n\nQesto takes 5+ seconds to load.\n\n### Check Bandwidth\n\n1. **Test internet speed**: speedtest.net\n   - Need at least 2 Mbps\n   - Mobile 3G/LTE may be slow\n   - 4G/WiFi is faster\n\n2. **Check WiFi signal**\n   - Move closer to router\n   - Check if router is overloaded\n   - Switch to 5GHz band if available\n\n3. **Close other apps**\n   - Video streaming uses lots of bandwidth\n   - Pause background downloads\n   - Close video calls temporarily\n\n### Clear Cache\n\n1. **Chrome**: Ctrl+Shift+Delete\n2. **Firefox**: Ctrl+Shift+Delete\n3. **Safari**: Cmd+Option+E\n4. **Edge**: Ctrl+Shift+Delete\n\nSelect \"All time\" and clear.\n\n## Questions Won't Load\n\nYou're in a session, but questions aren't showing.\n\n### Try\n\n1. **Refresh page** (F5)\n   - Sometimes helps with loading issues\n\n2. **Hard refresh** (Ctrl+F5)\n   - Clears cache and reloads everything\n\n3. **Try different browser**\n   - Chrome, Firefox, Safari, Edge all work\n   - Narrows down if it's browser-specific\n\n4. **Check connection**\n   - Look for connection indicator\n   - If red/yellow, reconnect\n\n## UI Buttons Not Responsive\n\nYou click buttons but nothing happens.\n\n### Try\n\n1. **Wait a moment**\n   - Sometimes JS takes time to load\n   - Click once and wait 2 seconds\n\n2. **Refresh page**\n   - Full refresh fixes most UI issues\n\n3. **Check console errors**\n   - F12 → Console tab\n   - Look for red error messages\n   - Screenshot and email support@qesto.cc\n\n4. **Try without extensions**\n   - Browser extensions can interfere\n   - Try Incognito mode\n\n## Animations/Video Very Laggy\n\nWordCloud or animations are stuttering.\n\n### Causes\n\n- GPU acceleration off\n- Old browser version\n- Too many participants\n- Weak device (old phone/tablet)\n\n### Solutions\n\n1. **Update your browser**\n   - Chrome, Firefox, Safari need regular updates\n   - Outdated browsers are slower\n\n2. **Enable hardware acceleration**\n   - Chrome: Settings → System → Toggle \"Use Hardware Acceleration\"\n   - Firefox: about:config → search \"layers.acceleration.force-enabled\"\n\n3. **Close other apps**\n   - Frees up CPU/GPU\n\n4. **Use desktop instead of mobile**\n   - Phones have weaker graphics\n\n## \"Out of Memory\" Error\n\nBrowser crashes or shows memory error.\n\n### This Happens When\n\n- Session has been open 2+ hours\n- Very large sessions (1000+ participants)\n- Browser has many old tabs open\n\n### Fix\n\n1. **Close other tabs** to free up memory\n2. **Refresh Qesto page** to reset\n3. **Restart browser** if really bad\n4. **Use different device** if it persists\n\n## Browser Not Supported\n\nYou see a warning about your browser.\n\n### Supported Browsers\n\n- Chrome (latest 2 versions)\n- Firefox (latest 2 versions)\n- Safari (latest version)\n- Edge (latest version)\n\n### If Unsupported\n\n1. **Update your browser**\n   - Go to browser menu → Help → Check for updates\n\n2. **Try a different browser**\n   - Download Chrome or Firefox\n   - Same Qesto account works everywhere\n\n3. **Older phone/tablet?**\n   - Try upgrading your device OS\n   - Or use a newer device\n\n## Still Having Issues?\n\nEmail support@qesto.cc with:\n- Browser/Version (e.g., Chrome 120)\n- Operating system (Windows/Mac/iOS/Android)\n- Approximate internet speed\n- Screenshot of issue\n- When it started\n\nWe'll help troubleshoot!"
+    "excerpt": "The insights spinner has been spinning for 2+ minutes.",
+    "content": "## AI Insights and Analytics Issues\n\n**Note:** AI Insights requires the Chorus plan.\n\n### \"Generating Insights...\" Takes Too Long\n\nThe insights spinner has been spinning for 2+ minutes.\n\n#### What's Normal?\n\n- 50-100 responses: 10-30 seconds\n- 100-500 responses: 30-60 seconds\n- 500+ responses: 1-3 minutes\n\n#### If Waiting Longer\n\n1. **Wait a bit more**\n   - Sometimes Qesto is processing\n   - Don't refresh yet\n\n2. **Refresh the page** (F5)\n   - Resets the insights generation\n   - Usually solves the issue\n\n3. **Check your plan**\n   - AI Insights requires Chorus\n   - Pulse and Signal plans don't have this feature\n\n4. **If still stuck**\n   - Try again in 5 minutes\n   - Qesto may be busy\n\n### Insights Are Blank or Wrong\n\nAI generated insights, but they seem irrelevant or generic.\n\n#### Why This Happens\n\n- **Too few open responses**: Need 10+ open-ended responses for good themes\n- **Similar answers**: If everyone gives the same answer, only one theme shows\n- **Generic responses**: \"Good\" or \"Yes\" responses are harder to cluster\n- **Mixed languages**: English + other languages confuses AI\n\n#### Improve Insights\n\n1. **Reword your question**\n   - More specific questions → better themes\n   - Instead of \"Feedback?\", ask \"What was your biggest challenge?\"\n\n2. **Make it open-ended**\n   - Open questions generate richer insights than polls\n\n3. **Review the responses manually**\n   - Sometimes manual reading beats AI\n   - Download CSV and group yourself\n\n4. **Try again with fresh data**\n   - Run a new session with refined questions\n\n### \"Insights Not Available\" Error\n\nYou see this message instead of insights.\n\n#### Check\n\n1. **Is the session closed?**\n   - Insights only work on closed sessions\n   - Close your session first\n\n2. **Do you have an open question?**\n   - Insights require open-ended responses\n   - Polls alone won't generate themes\n\n3. **Are you on Chorus?**\n   - Pulse and Signal plans don't have insights\n   - Upgrade to access\n\n4. **Did the insights fail?**\n   - Sometimes AI analysis fails\n   - Refresh and try again\n\n### API/Webhook Issues\n\n**Note:** API access requires the Chorus plan.\n\n#### Webhook Not Firing\n\n1. **Check your webhook URL**\n   - Must be HTTPS\n   - Must return 200-299 status code\n\n2. **Check event type**\n   - \"session_closed\" only fires when session closes\n   - Not instant—takes 30-60 seconds\n\n3. **Check logs**\n   - Dashboard shows recent webhook attempts\n   - Look for error messages\n\n4. **Test webhook**\n   - Use https://webhook.site to test\n   - Verify your endpoint receives data\n\n#### API Request Failing\n\n1. **Check authentication**\n   - Include Bearer token in header\n   - Token must be active\n\n2. **Check request body**\n   - Ensure JSON is valid\n   - Use correct field names\n\n3. **Check rate limits**\n   - Chorus plan: 1000 requests/hour\n   - If exceeded, retry with exponential backoff\n\n4. **Read error message**\n   - API returns specific error codes\n   - See API docs for meanings\n\n### Questions About Analytics?\n\nEmail support@qesto.cc and describe:\n- Session ID\n- Number of responses\n- Question type\n- What insights you expected\n\nWe can help debug!\n\n---"
+  },
+  {
+    "id": "troubleshooting-005",
+    "title": "Troubleshooting Guide: Performance, Slow Loading, and Browser Issues",
+    "topic": "troubleshooting",
+    "scope": "starter",
+    "excerpt": "Qesto takes 5+ seconds to load.",
+    "content": "## Performance, Slow Loading, and Browser Issues\n\n### Page Loads Slowly\n\nQesto takes 5+ seconds to load.\n\n#### Check Bandwidth\n\n1. **Test internet speed**: speedtest.net\n   - Need at least 2 Mbps\n   - Mobile 3G/LTE may be slow\n   - 4G/WiFi is faster\n\n2. **Check WiFi signal**\n   - Move closer to router\n   - Check if router is overloaded\n   - Switch to 5GHz band if available\n\n3. **Close other apps**\n   - Video streaming uses lots of bandwidth\n   - Pause background downloads\n   - Close video calls temporarily\n\n#### Clear Cache\n\n1. **Chrome**: Ctrl+Shift+Delete\n2. **Firefox**: Ctrl+Shift+Delete\n3. **Safari**: Cmd+Option+E\n4. **Edge**: Ctrl+Shift+Delete\n\nSelect \"All time\" and clear.\n\n### Questions Won't Load\n\nYou're in a session, but questions aren't showing.\n\n#### Try\n\n1. **Refresh page** (F5)\n   - Sometimes helps with loading issues\n\n2. **Hard refresh** (Ctrl+F5)\n   - Clears cache and reloads everything\n\n3. **Try different browser**\n   - Chrome, Firefox, Safari, Edge all work\n   - Narrows down if it's browser-specific\n\n4. **Check connection**\n   - Look for connection indicator\n   - If red/yellow, reconnect\n\n### UI Buttons Not Responsive\n\nYou click buttons but nothing happens.\n\n#### Try\n\n1. **Wait a moment**\n   - Sometimes JS takes time to load\n   - Click once and wait 2 seconds\n\n2. **Refresh page**\n   - Full refresh fixes most UI issues\n\n3. **Check console errors**\n   - F12 → Console tab\n   - Look for red error messages\n   - Screenshot and email support@qesto.cc\n\n4. **Try without extensions**\n   - Browser extensions can interfere\n   - Try Incognito mode\n\n### Animations/Video Very Laggy\n\nWordCloud or animations are stuttering.\n\n#### Causes\n\n- GPU acceleration off\n- Old browser version\n- Too many participants\n- Weak device (old phone/tablet)\n\n#### Solutions\n\n1. **Update your browser**\n   - Chrome, Firefox, Safari need regular updates\n   - Outdated browsers are slower\n\n2. **Enable hardware acceleration**\n   - Chrome: Settings → System → Toggle \"Use Hardware Acceleration\"\n   - Firefox: about:config → search \"layers.acceleration.force-enabled\"\n\n3. **Close other apps**\n   - Frees up CPU/GPU\n\n4. **Use desktop instead of mobile**\n   - Phones have weaker graphics\n\n### \"Out of Memory\" Error\n\nBrowser crashes or shows memory error.\n\n#### This Happens When\n\n- Session has been open 2+ hours\n- Very large sessions (1000+ participants)\n- Browser has many old tabs open\n\n#### Fix\n\n1. **Close other tabs** to free up memory\n2. **Refresh Qesto page** to reset\n3. **Restart browser** if really bad\n4. **Use different device** if it persists\n\n### Browser Not Supported\n\nYou see a warning about your browser.\n\n#### Supported Browsers\n\n- Chrome (latest 2 versions)\n- Firefox (latest 2 versions)\n- Safari (latest version)\n- Edge (latest version)\n\n#### If Unsupported\n\n1. **Update your browser**\n   - Go to browser menu → Help → Check for updates\n\n2. **Try a different browser**\n   - Download Chrome or Firefox\n   - Same Qesto account works everywhere\n\n3. **Older phone/tablet?**\n   - Try upgrading your device OS\n   - Or use a newer device\n\n### Still Having Issues?\n\nEmail support@qesto.cc with:\n- Browser/Version (e.g., Chrome 120)\n- Operating system (Windows/Mac/iOS/Android)\n- Approximate internet speed\n- Screenshot of issue\n- When it started\n\nWe'll help troubleshoot!\n\n---"
+  },
+  {
+    "id": "troubleshooting-006",
+    "title": "Troubleshooting Guide: Host-Specific Issues",
+    "topic": "troubleshooting",
+    "scope": "starter",
+    "excerpt": "The session is still in DRAFT.",
+    "content": "## Host-Specific Issues\n\n### Participants Can't Join — \"Session Not Found\"\n\nThe session is still in **DRAFT**. Participants can only join after the host clicks **Start**.\n\n1. Host: open Launchpad → click **Start** or **Open lobby**\n2. Share the link again after the session is ENERGIZING or LIVE\n3. Confirm participants use the full link (not a dashboard edit URL)\n\n### Stuck in Energizing — Questions Won't Start\n\nThe session has energizers and is waiting for the host to transition.\n\n1. Host: Launchpad → click **Start Questions**\n2. Or complete/skip active energizers first\n3. Session moves to **LIVE** and questions appear for participants\n\n### Host Lost Presenter Controls\n\nPresenter connection dropped but session is still live.\n\n1. Reopen the Launchpad or Present view from the dashboard\n2. Refresh the page — you reconnect as presenter via your account token\n3. Do not start a second session for the same event\n\n### QR Code Not Scanning\n\n1. Ensure the session is started (not DRAFT)\n2. Increase screen brightness for projector sharing\n3. Copy the link manually as a fallback\n4. Short join code works at qesto.cc/join\n\n### Wrong Results on Presenter Screen\n\nHost view out of sync with participants.\n\n1. Host: hard refresh (Ctrl+Shift+R / Cmd+Shift+R)\n2. Do not refresh all participant devices — only the host\n3. Check you are on the correct question index\n\n### Can't Export — Button Missing or Greyed Out\n\n1. Confirm session status is **Closed**\n2. CSV export requires **Signal+** plan\n3. Need **Export sessions** permission on team workspaces (Chorus custom roles)"
   }
 ]

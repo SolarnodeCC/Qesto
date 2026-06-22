@@ -289,10 +289,19 @@ binding = "WORKFLOWS"
 name = "WORKFLOWS"
 class_name = "TemplateGenerationWorkflow"
 
-# Staging Vectorize
+# Staging Vectorize — full parity with production so help-assistant RAG and KB
+# semantic search are testable in staging (all three indexes, bge-m3 / 1024-dim).
 [[env.staging.vectorize]]
 binding = "DECISIONS_VECTORIZE"
 index_name = "qesto-decisions"
+
+[[env.staging.vectorize]]
+binding = "HELP_VECTORIZE"
+index_name = "qesto-help"
+
+[[env.staging.vectorize]]
+binding = "KB_VECTORIZE"
+index_name = "qesto-kb-production"
 
 # Staging R2 (ADR-042 Phase 2.3)
 [[env.staging.r2_buckets]]

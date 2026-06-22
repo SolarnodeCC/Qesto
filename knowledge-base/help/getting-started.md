@@ -4,6 +4,8 @@ title: Getting Started with Qesto
 topic: getting-started
 scope: free
 excerpt: Welcome to Qesto! Learn how to create your first live session and engage your team with real-time interactive questions.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Getting Started with Qesto

@@ -33,3 +33,4 @@ worker-configuration.d.ts
 agent/repo-score.json
 agent/repo-score.md
 target/jankurai/
+.jankurai/
