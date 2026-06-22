@@ -4,6 +4,7 @@ import { useT } from '../../i18n'
 import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
 import { inputHint } from '../../ui/input-hint'
 import { PLAN_BRAND_NAMES } from '../../config/plans'
+import UserDetailDrawer from './UserDetailDrawer'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
 
@@ -179,6 +180,7 @@ export default function AdminUsersTab() {
   } = useAdminUsers()
 
   const [modal, setModal] = useState<ModalMode | null>(null)
+  const [detailUserId, setDetailUserId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -296,6 +298,13 @@ export default function AdminUsersTab() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 justify-end">
                       <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDetailUserId(user.id)}
+                      >
+                        Manage
+                      </Button>
+                      <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => setModal({ type: 'edit', user })}
@@ -360,6 +369,10 @@ export default function AdminUsersTab() {
           onClose={() => setModal(null)}
           onSave={handleModalSave}
         />
+      )}
+
+      {detailUserId && (
+        <UserDetailDrawer userId={detailUserId} onClose={() => setDetailUserId(null)} />
       )}
     </div>
   )

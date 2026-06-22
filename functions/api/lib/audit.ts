@@ -65,6 +65,11 @@ export type AuditAction =
   | 'user.update'
   | 'user.suspend'
   | 'user.restore'
+  // Platformbeheer Module 3 (Gebruikers) — support actions. Every one is a
+  // privileged admin operation on another user's account and MUST be audited.
+  | 'user.impersonate'
+  | 'user.gdpr_export'
+  | 'user.gdpr_delete'
   | 'ldap.sync.completed'
   // Agent action transparency (AI-461, S87): an AI agent/copilot executed an
   // action that mutated session state. after_snapshot carries the sanitised
