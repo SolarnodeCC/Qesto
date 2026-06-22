@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { Activity, BarChart3, LayoutDashboard, Users } from 'lucide-react'
+import { Activity, BarChart3, LayoutDashboard, Radar, Users } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useAdminMetrics, type HistoricalBucket } from '../hooks/useAdminMetrics'
 import { useAdminKpis } from '../hooks/useAdminKpis'
@@ -14,18 +14,25 @@ import AuditLogViewer from '../components/AuditLogViewer'
 import AdminUsersTab from '../components/admin/AdminUsersTab'
 import AdminOpsTab from '../components/admin/AdminOpsTab'
 import AdminAnalyticsTab from '../components/admin/AdminAnalyticsTab'
+import PlatformOverviewPanel from '../components/admin/PlatformOverviewPanel'
+import ObservabilityPanel from '../components/admin/ObservabilityPanel'
+import OpsControlPanel from '../components/admin/OpsControlPanel'
+import AnalyticsAdvancedPanel from '../components/admin/AnalyticsAdvancedPanel'
 import BuildStamp from '../components/BuildStamp'
 
 const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
 
-type AdminTab = 'dashboard' | 'users' | 'ops' | 'analytics'
+type AdminTab = 'dashboard' | 'observability' | 'users' | 'ops' | 'analytics'
 
 const TAB_CONFIG: Array<{
   id: AdminTab
   labelKey: string
+  // Literal label override — used for tabs without an i18n key yet (Module 2).
+  label?: string
   icon: ReactNode
 }> = [
   { id: 'dashboard', labelKey: 'dashboard', icon: <LayoutDashboard size={16} aria-hidden="true" /> },
+  { id: 'observability', labelKey: 'observability', label: 'Observability', icon: <Radar size={16} aria-hidden="true" /> },
   { id: 'users', labelKey: 'users', icon: <Users size={16} aria-hidden="true" /> },
   { id: 'ops', labelKey: 'ops', icon: <Activity size={16} aria-hidden="true" /> },
   { id: 'analytics', labelKey: 'analytics', icon: <BarChart3 size={16} aria-hidden="true" /> },
@@ -248,7 +255,7 @@ export default function AdminDashboard() {
           aria-label="Admin sections"
           className="flex flex-wrap gap-1 rounded-xl bg-pulse-100 dark:bg-[#0F1526] p-1 w-full sm:w-auto overflow-x-auto"
         >
-          {TAB_CONFIG.map(({ id, labelKey, icon }) => (
+          {TAB_CONFIG.map(({ id, labelKey, label, icon }) => (
             <button
               key={id}
               role="tab"
@@ -265,7 +272,7 @@ export default function AdminDashboard() {
               ].join(' ')}
             >
               {icon}
-              {t(labelKey)}
+              {label ?? t(labelKey)}
             </button>
           ))}
         </div>
@@ -273,6 +280,8 @@ export default function AdminDashboard() {
         {activeTab === 'dashboard' && (
           <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-6">
             <PlatformHealthStrip ops={ops} t={t} onViewOps={() => setActiveTab('ops')} />
+
+            <PlatformOverviewPanel onNavigate={(tab) => setActiveTab(tab)} />
 
             {kpis && (
               <Section>
@@ -412,6 +421,12 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'observability' && (
+          <div role="tabpanel" id="tabpanel-observability" aria-labelledby="tab-observability">
+            <ObservabilityPanel />
+          </div>
+        )}
+
         {activeTab === 'users' && (
           <div role="tabpanel" id="tabpanel-users" aria-labelledby="tab-users">
             <AdminUsersTab />
@@ -419,14 +434,16 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'ops' && (
-          <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops">
+          <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops" className="space-y-8">
             <AdminOpsTab />
+            <OpsControlPanel />
           </div>
         )}
 
         {activeTab === 'analytics' && (
-          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics">
+          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" className="space-y-8">
             <AdminAnalyticsTab />
+            <AnalyticsAdvancedPanel />
           </div>
         )}
 
