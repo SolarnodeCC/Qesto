@@ -1,5 +1,6 @@
 import { createApp } from './api/app'
 import type { Env } from './api/types'
+import { injectRouteSeo } from './seo-meta'
 
 const app = createApp()
 
@@ -72,7 +73,7 @@ function forwardToHono(context: { request: Request; env: Env }) {
   return app.fetch(context.request, context.env, exec)
 }
 
-export const onRequest: PagesFunction<Env> = (context) => {
+export const onRequest: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url)
   const pathname = url.pathname
 
@@ -99,9 +100,12 @@ export const onRequest: PagesFunction<Env> = (context) => {
     return context.next()
   }
 
-  // Handle valid SPA routes by letting Cloudflare Pages serve index.html
+  // Handle valid SPA routes by letting Cloudflare Pages serve index.html, then
+  // inject this route's <head> metadata + no-JS body fallback at the edge so
+  // non-JS crawlers see per-route content instead of the homepage shell.
   if (isValidSpaRoute(pathname)) {
-    return context.next()
+    const response = await context.next()
+    return injectRouteSeo(response, pathname)
   }
 
   // Return 404 for invalid routes
