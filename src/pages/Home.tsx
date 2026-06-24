@@ -113,6 +113,11 @@ export default function Home() {
               </span>
             </h1>
 
+            {/* Supporting line — evidence register, subordinate to the H1 */}
+            <p className="text-lg leading-[1.5] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-5">
+              …and the evidence to back it up — decisions you can defend long after the meeting ends.
+            </p>
+
             {/* Sub-headline */}
             <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-8">
               Make it easy for everyone to take part, share what they think, and stay with you
@@ -208,7 +213,7 @@ export default function Home() {
               id="features-heading"
               className="font-[family-name:var(--font-display)] font-bold text-[48px] leading-[1.1] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-4 max-w-[680px]"
             >
-              Decisions you can defend, with evidence that survives the meeting.
+              Everything you need to run the room — and prove what it decided.
             </h2>
 
             <p className="text-lg text-pulse-600 dark:text-[#A8B3CC] max-w-[620px] mb-12">
