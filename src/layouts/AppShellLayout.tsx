@@ -33,6 +33,7 @@ export default function AppShellLayout({
   isSuperuser = false,
 }: AppShellLayoutProps) {
   const t = useT('dashboard')
+  const tCommon = useT('common')
   const auth = useAuth()
   const { openChat, state: helpChatState } = useHelpChat()
   const { scheme, toggle } = useColorSchemeContext()
@@ -319,7 +320,7 @@ export default function AppShellLayout({
                       onClick={() => { setAvatarMenuOpen(false); void auth.logout() }}
                       className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 hover:text-red-600 dark:hover:text-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500 transition-colors"
                     >
-                      Uitloggen
+                      {tCommon('logout')}
                     </button>
                   </div>
                 )}

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 
 test.describe('Navigation and CTA coverage', () => {
@@ -8,8 +8,8 @@ test.describe('Navigation and CTA coverage', () => {
     await expect(page).toHaveURL(/\/login(?:\?.*)?$/)
 
     await page.goto('/')
-    await page.getByRole('link', { name: /see the anonymity modes/i }).first().click()
-    await expect(page).toHaveURL(/\/pricing(?:\?.*)?$/)
+    await page.getByRole('link', { name: /browse templates/i }).first().click()
+    await expect(page).toHaveURL(/\/templates(?:\?.*)?$/)
   })
 
   test('authenticated home CTA routes to dashboard', async ({ page }) => {

@@ -81,8 +81,8 @@ export default function Login() {
   const tabClass = (active: boolean) =>
     `flex-1 py-2 text-sm font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
       active
-        ? 'bg-teal-600 text-white shadow-sm'
-        : 'text-pulse-600 dark:text-pulse-400 hover:text-pulse-900 dark:hover:text-pulse-100'
+        ? 'bg-teal-700 text-white shadow-sm'
+        : 'text-pulse-800 dark:text-pulse-300 hover:text-pulse-950 dark:hover:text-pulse-100'
     }`
 
   // Roving tab navigation (WAI-ARIA Tabs pattern): ←/→ move between tabs.

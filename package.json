@@ -47,6 +47,7 @@
     "test:e2e:a11y": "playwright test --config tests/playwright.config.ts --project=a11y-chrome",
     "test:e2e:headed": "playwright test --config tests/playwright.config.ts --headed",
     "test:e2e:chrome": "playwright test --config tests/playwright.config.ts --project=fullstack-chrome",
+    "test:e2e:marketing": "playwright test --config tests/playwright.config.ts --project=marketing-demo && node scripts/copy-marketing-videos.mjs",
     "kb:embed": "npx tsx scripts/embed-kb.ts",
     "kb:sync": "npx tsx scripts/kb-sync-cli.ts",
     "kb:health": "npx tsx scripts/kb-health.ts",

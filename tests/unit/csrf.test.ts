@@ -147,4 +147,27 @@ describe('CSRF / Origin validation', () => {
     )
     expect(res.status).toBe(201)
   })
+
+  it('allows localhost origin when PAGES_URL is a production host (split-stack local dev)', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    ;(env as unknown as { PAGES_URL: string; ENV: string }).PAGES_URL = 'https://qesto.cc'
+    ;(env as unknown as { ENV: string }).ENV = 'production'
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+
+    const res = await app.fetch(
+      new Request('http://local/api/sessions', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `qesto_session=${jwt}`,
+          origin: 'http://localhost:5173',
+        },
+        body: JSON.stringify({ title: 'local-split' }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(201)
+  })
 })

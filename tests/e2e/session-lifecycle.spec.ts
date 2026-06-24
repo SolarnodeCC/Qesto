@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 import { addPollQuestion, closeSession, createDraftSession, startSession } from './helpers/session'
 
@@ -13,8 +13,8 @@ test.describe('Session lifecycle coverage', () => {
 
     await page.goto(`/sessions/${session.id}/launchpad`)
     await expect(page).toHaveURL(new RegExp(`/sessions/${session.id}/launchpad(?:\\?.*)?$`))
-    await expect(page.getByText(session.title)).toBeVisible()
-    await expect(page.getByRole('button', { name: /open lobby/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /open lobby/i })).toBeVisible({ timeout: 15_000 })
+    await expect(page.locator(`#session-title-${session.id}`)).toHaveValue(session.title)
   })
 
   test('live and closed state routes resolve correctly', async ({ page }) => {

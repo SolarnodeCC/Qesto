@@ -26,6 +26,7 @@ describe('QA-ENT-02: built-in role permissions', () => {
 
     it('can launch sessions', () => expect(perms).toContain('session:launch'))
     it('can close sessions', () => expect(perms).toContain('session:close'))
+    it('can moderate town hall Q&A', () => expect(perms).toContain('session:moderate'))
     it('can activate energizers', () => expect(perms).toContain('energizer:activate'))
     it('can manage billing', () => expect(perms).toContain('billing:manage'))
     it('can manage team members', () => expect(perms).toContain('team:manage_members'))
@@ -36,6 +37,7 @@ describe('QA-ENT-02: built-in role permissions', () => {
 
     it('can launch sessions', () => expect(perms).toContain('session:launch'))
     it('can close sessions', () => expect(perms).toContain('session:close'))
+    it('can moderate town hall Q&A', () => expect(perms).toContain('session:moderate'))
     it('can activate energizers', () => expect(perms).toContain('energizer:activate'))
     it('cannot manage billing (not owner)', () => expect(perms).not.toContain('billing:manage'))
     it('can manage team members', () => expect(perms).toContain('team:manage_members'))
@@ -46,6 +48,7 @@ describe('QA-ENT-02: built-in role permissions', () => {
 
     it('can launch sessions', () => expect(perms).toContain('session:launch'))
     it('can close sessions', () => expect(perms).toContain('session:close'))
+    it('can moderate town hall Q&A', () => expect(perms).toContain('session:moderate'))
     it('cannot activate energizers (not presenter-gated role)', () => expect(perms).not.toContain('energizer:activate'))
     it('cannot manage billing', () => expect(perms).not.toContain('billing:manage'))
     it('cannot manage team members', () => expect(perms).not.toContain('team:manage_members'))
@@ -56,6 +59,7 @@ describe('QA-ENT-02: built-in role permissions', () => {
 
     it('cannot launch sessions', () => expect(perms).not.toContain('session:launch'))
     it('cannot close sessions', () => expect(perms).not.toContain('session:close'))
+    it('cannot moderate town hall Q&A', () => expect(perms).not.toContain('session:moderate'))
     it('cannot activate energizers', () => expect(perms).not.toContain('energizer:activate'))
     it('cannot manage billing', () => expect(perms).not.toContain('billing:manage'))
     it('cannot manage team members', () => expect(perms).not.toContain('team:manage_members'))
@@ -128,6 +132,7 @@ describe('QA-ENT-02: KNOWN_PERMISSIONS registry', () => {
   it('includes energizer:activate', () => expect(KNOWN_PERMISSIONS.has('energizer:activate')).toBe(true))
   it('includes session:launch', () => expect(KNOWN_PERMISSIONS.has('session:launch')).toBe(true))
   it('includes session:close', () => expect(KNOWN_PERMISSIONS.has('session:close')).toBe(true))
+  it('includes session:moderate', () => expect(KNOWN_PERMISSIONS.has('session:moderate')).toBe(true))
   it('rejects unknown string', () => expect(KNOWN_PERMISSIONS.has('admin:superpower' as Permission)).toBe(false))
 })
 

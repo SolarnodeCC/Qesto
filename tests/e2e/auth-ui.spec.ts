@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { createUniqueEmail, openLoginTab } from './helpers/auth'
 
 test.describe('Auth UI and validation flows', () => {
