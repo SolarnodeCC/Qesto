@@ -21,10 +21,10 @@ export function MembersSection({ members, currentUserId, isOwner, ownerId, remov
               <p className="text-sm font-medium truncate">
                 {member.email}
                 {member.userId === currentUserId ? (
-                  <span className="ml-1 text-pulse-400 text-xs">(you)</span>
+                  <span className="ml-1 text-pulse-500 text-xs">(you)</span>
                 ) : null}
               </p>
-              <p className="text-xs text-pulse-400">
+              <p className="text-xs text-pulse-500">
                 Member since {new Date(member.joinedAt).toLocaleDateString()}
               </p>
             </div>

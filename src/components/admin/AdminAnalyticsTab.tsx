@@ -32,7 +32,7 @@ function BarChart({ data, label }: { data: DailyBucket[]; label: string }) {
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[120px] text-pulse-300 text-body-s">
+      <div className="flex items-center justify-center h-[120px] text-pulse-500 text-body-s">
         No data
       </div>
     )
@@ -90,7 +90,7 @@ function ConsentDonut({ rate }: { rate: number }) {
           {Math.round(rate * 100)}%
         </text>
       </svg>
-      <Body size="s" className="text-pulse-400">Consent rate</Body>
+      <Body size="s" className="text-pulse-500">Consent rate</Body>
     </div>
   )
 }
@@ -101,7 +101,7 @@ function KpiCard({ value, label, colour = 'text-teal-600' }: { value: number; la
   return (
     <Card className="text-center space-y-1">
       <p className={`text-heading-m font-bold ${colour}`}>{value}</p>
-      <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">{label}</Body>
+      <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">{label}</Body>
     </Card>
   )
 }
@@ -178,7 +178,7 @@ function GrowthEngineSection() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard value={templates.active} label="Active templates" colour="text-teal-600" />
         <KpiCard value={templates.total_uses} label="Template uses" colour="text-purple-600" />
-        <KpiCard value={templates.discarded} label="Discarded by AI" colour="text-pulse-400" />
+        <KpiCard value={templates.discarded} label="Discarded by AI" colour="text-pulse-500" />
         <KpiCard value={webhook.total_received} label="Webhooks received" colour="text-green-600" />
       </div>
 
@@ -212,7 +212,7 @@ function GrowthEngineSection() {
         <Card>
           <Heading level="s" className="mb-4">Templates by industry</Heading>
           {industryEntries.length === 0 ? (
-            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">No templates yet</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No templates yet</Body>
           ) : (
             industryEntries.map(([industry, count]) => (
               <StatusRow
@@ -302,12 +302,12 @@ export default function AdminAnalyticsTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <Heading level="s" className="mb-1">Sessions per day</Heading>
-          <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] mb-3">Last 14 days</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mb-3">Last 14 days</Body>
           <BarChart data={a.sessions_per_day} label="Sessions per day" />
         </Card>
         <Card>
           <Heading level="s" className="mb-1">Decisions per day</Heading>
-          <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] mb-3">Last 14 days</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mb-3">Last 14 days</Body>
           <BarChart data={a.decisions_per_day} label="Decisions per day" />
         </Card>
       </div>
@@ -317,7 +317,7 @@ export default function AdminAnalyticsTab() {
         <Card className="flex flex-col items-center justify-center gap-4">
           <Heading level="s">Decision quality</Heading>
           <ConsentDonut rate={a.consent_rate} />
-          <Body size="s" className="text-pulse-400 dark:text-[#6B7A99] text-center">
+          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] text-center">
             Avg {a.avg_participants.toFixed(1)} participants per decision
           </Body>
         </Card>
@@ -348,7 +348,7 @@ export default function AdminAnalyticsTab() {
           <RateCard value={a.engagement.ws_error_rate} label="WebSocket errors" />
           <RateCard value={a.engagement.reconnect_rate} label="Reconnects" />
         </div>
-        <Body size="s" className="mt-4 text-pulse-400 dark:text-[#6B7A99]">
+        <Body size="s" className="mt-4 text-pulse-500 dark:text-[#8A96B0]">
           Export contains only aggregated counters and sanitised labels — no raw content, free text, or personal identifiers.
         </Body>
       </Card>
@@ -358,17 +358,17 @@ export default function AdminAnalyticsTab() {
         <Heading level="s" className="mb-4">Cost &amp; usage</Heading>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Sessions created</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Sessions created</Body>
             <p className="text-heading-s font-semibold text-pulse-900 dark:text-[#F0F2F8] mt-1">{a.total_sessions_created}</p>
           </div>
           <div>
-            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Decisions processed</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Decisions processed</Body>
             <p className="text-heading-s font-semibold text-pulse-900 dark:text-[#F0F2F8] mt-1">{a.total_decisions_processed}</p>
           </div>
           <div>
-            <Body size="s" className="text-pulse-400 dark:text-[#6B7A99]">Est. AI costs (month)</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Est. AI costs (month)</Body>
             <p className="text-heading-s font-semibold text-teal-600 dark:text-teal-400 mt-1">&lt; €{costEur}</p>
-            <Body size="s" className="text-pulse-300 dark:text-[#3A4A6B] mt-0.5">~€0.00001/decision</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[#3A4A6B] mt-0.5">~€0.00001/decision</Body>
           </div>
         </div>
       </Card>

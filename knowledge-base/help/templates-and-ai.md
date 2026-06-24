@@ -4,6 +4,8 @@ title: Templates and AI Features
 topic: getting-started
 scope: free
 excerpt: Use session templates, generate questions with AI, and understand AI insights after sessions close.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Templates and AI Features

@@ -101,7 +101,7 @@ export default function Pricing() {
               depends on it.
             </span>
           </h1>
-          <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed">
+          <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed">
             Every plan includes edge inference and consent-aware flows. Session and room-size limits are published per
             tier and match what the product enforces—you don’t get surprise hard-stops after you’ve committed to a
             room.
@@ -118,16 +118,16 @@ export default function Pricing() {
               <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Pulse
               </h3>
-              <p className="text-sm text-pulse-500 dark:text-[#6B7A99] mb-6 min-h-[40px]">
+              <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mb-6 min-h-[40px]">
                 For one-off team pulses and workshop tests. Always free.
               </p>
               <div className="mb-1 leading-none">
                 <span className="font-bold text-5xl tracking-tight text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                   €0
                 </span>
-                <span className="text-sm font-medium text-pulse-500 dark:text-[#6B7A99] ml-1.5">/ host / month</span>
+                <span className="text-sm font-medium text-pulse-500 dark:text-[#8A96B0] ml-1.5">/ host / month</span>
               </div>
-              <p className="text-xs text-pulse-500 dark:text-[#6B7A99] mb-6 mt-1">
+              <p className="text-xs text-pulse-500 dark:text-[#8A96B0] mb-6 mt-1">
                 No credit card.{' '}
                 {free
                   ? `Up to ${free.features.sessionsPerMonth} new sessions / month · up to ${free.features.participantsPerSession} participants per session.`
@@ -200,6 +200,9 @@ export default function Pricing() {
                   starter?.features.insightsAI
                     ? 'Same-day evidence-anchored recap'
                     : 'Evidence-anchored recap (AI insights on Chorus)',
+                  starter?.features.semanticSearch
+                    ? 'Semantic decision search — find past sessions by meaning, not just keywords'
+                    : 'Decision search (Signal and up)',
                   'Webhook integrations on the roadmap',
                   'Stripe-billed, cancel anytime',
                 ].map((f) => (
@@ -224,7 +227,7 @@ export default function Pricing() {
               <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Chorus
               </h3>
-              <p className="text-sm text-pulse-500 dark:text-[#6B7A99] mb-6 min-h-[40px]">
+              <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mb-6 min-h-[40px]">
                 For HR, events, and compliance-heavy org-wide rollouts.
               </p>
               <div className="mb-1 leading-none">
@@ -232,7 +235,7 @@ export default function Pricing() {
                   Talk to us
                 </span>
               </div>
-              <p className="text-xs text-pulse-500 dark:text-[#6B7A99] mb-6 mt-1">
+              <p className="text-xs text-pulse-500 dark:text-[#8A96B0] mb-6 mt-1">
                 Annual contract · custom scope
                 {team
                   ? ` · Up to ${team.features.sessionsPerMonth} new sessions/mo · ${team.features.participantsPerSession} participants/room`
@@ -270,7 +273,7 @@ export default function Pricing() {
           <h2 className="font-bold text-4xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             What's in each plan — line by line.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8">
             Pulse, Signal, and Chorus are Qesto&apos;s three subscription plans. Rows that tie to quotas or plan flags{' '}
             <span className="font-medium text-pulse-600 dark:text-[#8893AD]">
               hydrate from the same source as billing enforcement
@@ -281,7 +284,7 @@ export default function Pricing() {
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="text-left px-6 py-5 bg-pulse-50 dark:bg-[#0F1525] text-xs font-bold uppercase tracking-widest text-pulse-500 dark:text-[#6B7A99] border-b border-pulse-200 dark:border-white/5 w-[38%]">
+                  <th className="text-left px-6 py-5 bg-pulse-50 dark:bg-[#0F1525] text-xs font-bold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0] border-b border-pulse-200 dark:border-white/5 w-[38%]">
                     Capability
                   </th>
                   {(['Pulse', 'Signal', 'Chorus'] as const).map((p, i) => (
@@ -323,7 +326,7 @@ export default function Pricing() {
                                   <Check size={18} />
                                 </span>
                               ) : (
-                                <span className="text-pulse-300 inline-flex justify-center">
+                                <span className="text-pulse-500 inline-flex justify-center">
                                   <X size={18} />
                                 </span>
                               )
@@ -339,7 +342,7 @@ export default function Pricing() {
               </tbody>
             </table>
           </div>
-          <p className="text-sm text-pulse-500 dark:text-[#6B7A99] mt-6 max-w-3xl">
+          <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mt-6 max-w-3xl">
             Numeric limits and quota-backed feature flags mirror{' '}
             <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
             <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
@@ -358,7 +361,7 @@ export default function Pricing() {
           <h2 className="font-bold text-4xl tracking-tight mb-4 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Mission-first means budget-second.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-6 leading-relaxed">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-6 leading-relaxed">
             Registered nonprofits and accredited educational institutions get Chorus at 40% off. Apply with a copy
             of your registration and we'll turn it around in 48 hours.
           </p>
@@ -383,7 +386,7 @@ export default function Pricing() {
             {faqs.map(({ q, a }) => (
               <div key={q}>
                 <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{q}</h3>
-                <p className="text-sm text-pulse-500 dark:text-[#6B7A99] leading-relaxed">{a}</p>
+                <p className="text-sm text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{a}</p>
               </div>
             ))}
           </div>

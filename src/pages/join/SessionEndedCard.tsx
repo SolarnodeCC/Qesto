@@ -31,7 +31,7 @@ export function SessionEndedCard({ ordered, maxCount, resultsTotal }: SessionEnd
                   <span className={isWinner ? 'font-semibold text-teal-700' : 'text-pulse-700 dark:text-[#A8B3CC]'}>
                     {o.label}
                   </span>
-                  <span className="text-pulse-500 dark:text-[#6B7A99]">{o.count} · {pct}%</span>
+                  <span className="text-pulse-500 dark:text-[#8A96B0]">{o.count} · {pct}%</span>
                 </div>
                 <div className="h-2 bg-pulse-100 dark:bg-white/10 rounded-full overflow-hidden">
                   <div
@@ -42,7 +42,7 @@ export function SessionEndedCard({ ordered, maxCount, resultsTotal }: SessionEnd
               </div>
             )
           })}
-          <p className="text-xs text-pulse-400 dark:text-[#6B7A99] text-right">{t('total_votes', { count: resultsTotal })}</p>
+          <p className="text-xs text-pulse-500 dark:text-[#8A96B0] text-right">{t('total_votes', { count: resultsTotal })}</p>
         </div>
       )}
       <div className="mt-4 rounded-[14px] bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800 p-4 flex gap-3 items-start text-left">

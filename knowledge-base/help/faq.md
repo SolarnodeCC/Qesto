@@ -4,6 +4,8 @@ title: Frequently Asked Questions
 topic: faq
 scope: free
 excerpt: Answers to common questions about using Qesto, limits, compatibility, and more.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Frequently Asked Questions
@@ -51,7 +53,10 @@ A: Yes, the Pulse plan includes 5 sessions per month with up to 50 participants 
 A: See our pricing page for a detailed comparison.
 
 **Q: Can I cancel anytime?**
-A: Yes, no lock-in contracts. You can downgrade or cancel anytime.
+A: Yes, no lock-in contracts. You can downgrade or cancel anytime. Monthly cancellations take effect immediately (no refund for the current month); annual cancellations take effect at your renewal date.
+
+**Q: Can I get a refund?**
+A: Yes, under our first-session guarantee: if your first session doesn't beat the response rate of your last survey, email support@qesto.cc within 14 days of your first billing and we'll refund the full quarter. See [Pricing and Plans](billing.md) for full terms.
 
 **Q: Do participants need an account?**
 A: No. Participants join via link or code without signing up. Only hosts and team collaborators need accounts.

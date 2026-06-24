@@ -118,12 +118,8 @@ describe('Feature flags (Phase 3)', () => {
     it('supports early return pattern with flagOff', () => {
       const env = { SENTIMENT_ENABLED: 'false' }
 
-      // Simulating: if (flagOff(env, 'SENTIMENT_ENABLED')) return
-      if (flagOff(env, 'SENTIMENT_ENABLED')) {
-        expect(true).toBe(true) // Early return happened
-      } else {
-        expect(true).toBe(false) // Should not reach here
-      }
+      // Guard clause `if (flagOff(env, 'SENTIMENT_ENABLED')) return` fires when the flag is off.
+      expect(flagOff(env, 'SENTIMENT_ENABLED')).toBe(true)
     })
 
     it('supports conditional feature activation with getFlag', () => {

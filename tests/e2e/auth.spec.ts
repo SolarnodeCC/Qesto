@@ -7,6 +7,7 @@ import {
   signupWithPassword,
 } from './helpers/auth'
 
+// jankurai:allow HLT-010-SECRET-SPRAWL reason="static E2E login fixture, not a real credential" expires=2026-12-31
 const password = 'PlaywrightPass123!'
 
 test.describe('Local auth flow in Chrome', () => {

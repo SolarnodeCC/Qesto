@@ -52,7 +52,7 @@ export default function ConsultingPage() {
                   evidence, not vibes.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Run client discovery, strategy offsites, and change-management sessions where every conclusion is
                 backed by a tally. The slide deck writes itself — and it quotes the room, not your intern.
               </p>
@@ -87,12 +87,12 @@ export default function ConsultingPage() {
                         {evidence} evidence
                       </span>
                     </div>
-                    <p className="text-[13.5px] text-pulse-500 dark:text-[#6B7A99] leading-snug italic">{quote}</p>
+                    <p className="text-[13.5px] text-pulse-500 dark:text-[#8A96B0] leading-snug italic">{quote}</p>
                   </div>
                 ))}
               </div>
               <div
-                className="px-6 py-3.5 bg-pulse-50 dark:bg-[#0F1525] border-t border-pulse-200 dark:border-[#1E2A45] flex justify-between text-[12px] text-pulse-500 dark:text-[#6B7A99]"
+                className="px-6 py-3.5 bg-pulse-50 dark:bg-[#0F1525] border-t border-pulse-200 dark:border-[#1E2A45] flex justify-between text-[12px] text-pulse-500 dark:text-[#8A96B0]"
               >
                 <span>Evidence-anchored · Session QSTO-5R8K</span>
                 <span>Generated 14:42</span>
@@ -109,7 +109,7 @@ export default function ConsultingPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Discover. Workshop. Readout. Repeat.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
             Qesto sits across the three moments of a consulting engagement where your clients expect evidence —
             and where you'd usually burn a week synthesizing.
           </p>
@@ -135,10 +135,10 @@ export default function ConsultingPage() {
               },
             ].map(({ phase, title, desc, output }) => (
               <div key={phase} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
-                <div className="text-[11px] font-bold uppercase tracking-widest text-pulse-500 dark:text-[#6B7A99] mb-2.5">{phase}</div>
+                <div className="text-[11px] font-bold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0] mb-2.5">{phase}</div>
                 <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-4">{desc}</p>
-                <div className="border-t border-dashed border-pulse-200 dark:border-[#1E2A45] pt-3.5 flex items-start gap-2 text-[13px] text-pulse-500 dark:text-[#6B7A99]">
+                <p className="text-sm text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-4">{desc}</p>
+                <div className="border-t border-dashed border-pulse-200 dark:border-[#1E2A45] pt-3.5 flex items-start gap-2 text-[13px] text-pulse-500 dark:text-[#8A96B0]">
                   <ArrowRight size={16} className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5" />
                   <span>
                     <strong className="text-teal-700 dark:text-teal-400">{output.split(':')[0]}:</strong>
@@ -168,7 +168,7 @@ export default function ConsultingPage() {
                 <span className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 pt-0.5">{key}</span>
                 <span className="text-[15px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed">
                   {value}
-                  <span className="block mt-1 text-[13.5px] text-pulse-500 dark:text-[#6B7A99]">{sub}</span>
+                  <span className="block mt-1 text-[13.5px] text-pulse-500 dark:text-[#8A96B0]">{sub}</span>
                 </span>
               </div>
             ))}
@@ -184,7 +184,7 @@ export default function ConsultingPage() {
               "We used to lose three days per engagement on synthesis. Now the readout is drafted before the workshop
               ends — we spend that time on the recommendation, not the slide."
             </p>
-            <footer className="text-sm text-pulse-500 dark:text-[#6B7A99]">
+            <footer className="text-sm text-pulse-500 dark:text-[#8A96B0]">
               <strong className="text-pulse-900 dark:text-[#F0F2F8]">Marcus Viljoen</strong> · Partner, boutique strategy firm
             </footer>
           </blockquote>

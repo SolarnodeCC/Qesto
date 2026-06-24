@@ -162,7 +162,7 @@ function RetroColumnPanel({
       </form>
       <div className="flex-1 space-y-2">
         {items.length === 0 ? (
-          <p className="text-xs text-pulse-400">{t('column.empty')}</p>
+          <p className="text-xs text-pulse-500">{t('column.empty')}</p>
         ) : (
           items.map((item) => <RetroItemCard key={item.id} item={item} variant="present" t={t} />)
         )}

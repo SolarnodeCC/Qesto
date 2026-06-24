@@ -21,9 +21,16 @@ function upsertMeta(selector: string, attributes: Record<string, string>, conten
   meta.setAttribute('content', content)
 }
 
+// Production apex origin. Canonical, og:url and og:image must always resolve to this
+// host regardless of the host the visitor actually used (e.g. www.qesto.cc), so the
+// www/non-www duplicate-content signal collapses to a single canonical even for
+// JS-executing crawlers. Mirrors PAGES_URL/API_URL in wrangler.toml and the apex used
+// in public/sitemap.xml and public/robots.txt.
+const CANONICAL_ORIGIN = 'https://qesto.cc'
+
 function toAbsoluteUrl(pathOrUrl: string): string {
   if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) return pathOrUrl
-  return `${window.location.origin}${pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`}`
+  return `${CANONICAL_ORIGIN}${pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`}`
 }
 
 export default function PageSeo({

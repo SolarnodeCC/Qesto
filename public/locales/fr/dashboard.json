@@ -123,5 +123,8 @@
   "filterLive": "[TODO] Live",
   "filterDraft": "[TODO] Draft",
   "filterClosed": "[TODO] Closed",
-  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes."
+  "insightsEmpty": "[TODO] No insights generated yet. Analyze your closed sessions to surface themes.",
+  "removeFailed": "Impossible de supprimer la session. Veuillez réessayer.",
+  "savedAsTemplate": "Enregistré comme modèle !",
+  "importComingSoon": "Bientôt disponible"
 }

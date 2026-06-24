@@ -366,7 +366,7 @@ export default function AuditLogViewer() {
                     <td className="px-4 py-3 text-pulse-700 dark:text-[#A8B3CC] font-mono text-xs">
                       {event.subject_id.slice(0, 8)}…
                     </td>
-                    <td className="px-4 py-3 text-pulse-600 dark:text-[#6B7A99] text-xs">
+                    <td className="px-4 py-3 text-pulse-600 dark:text-[#8A96B0] text-xs">
                       {event.before_snapshot && event.after_snapshot
                         ? `before: ${formatSnapshot(event.before_snapshot)}`
                         : 'N/A'}
@@ -379,7 +379,7 @@ export default function AuditLogViewer() {
 
           {/* Pagination */}
           <div className="flex items-center justify-between">
-            <div className="text-xs text-pulse-600 dark:text-[#6B7A99]">
+            <div className="text-xs text-pulse-600 dark:text-[#8A96B0]">
               Showing {offset + 1}–{Math.min(offset + pageSize, total)} of {total} entries
             </div>
             <div className="flex gap-2">
@@ -390,7 +390,7 @@ export default function AuditLogViewer() {
               >
                 Previous
               </button>
-              <div className="flex items-center gap-1 text-xs text-pulse-600 dark:text-[#6B7A99]">
+              <div className="flex items-center gap-1 text-xs text-pulse-600 dark:text-[#8A96B0]">
                 Page {page} of {totalPages || 1}
               </div>
               <button

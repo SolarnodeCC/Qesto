@@ -43,6 +43,9 @@ export interface PresenterControlsProps {
   onCaptionLocaleChange: (locale: CaptionLocale) => void
 }
 
+// Shared control button height — meets the 44px touch-target minimum (A11Y-TOUCH).
+const CTRL = 'inline-flex items-center gap-1.5 rounded px-3 min-h-[44px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40'
+
 export function PresenterControls({
   id,
   isLive,
@@ -80,127 +83,119 @@ export function PresenterControls({
   onCaptionLocaleChange,
 }: PresenterControlsProps) {
   const t = useT('captions')
+  const tp = useT('present')
   return (
-    <div className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0">
+    <div
+      role="toolbar"
+      aria-label={tp('ctrl.toolbar')}
+      className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0"
+    >
 
-      {/* Back / Next question / Close session */}
-      <button
-        type="button"
-        onClick={() => onBack()}
-        disabled={!isLive || allDone || questionIndex === 0}
-        className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-pulse-600"
-      >
-        <ChevronLeft size={14} aria-hidden="true" />
-        Back
-      </button>
-      <button
-        type="button"
-        onClick={() => onAdvance()}
-        disabled={!isLive || allDone}
-        className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-teal-600 text-white hover:bg-teal-700"
-      >
-        <ChevronRight size={14} aria-hidden="true" />
-        Next question
-      </button>
-      <button
-        type="button"
-        onClick={onClose}
-        disabled={closing || isClosed}
-        className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40 bg-pulse-700 text-white hover:bg-red-700"
-      >
-        {isClosed ? 'Session closed' : closing ? 'Closing…' : 'Close session'}
-      </button>
-      {closeError && <span className="text-xs text-red-400">{closeError}</span>}
-      {id && isClosed && (
-        <Link to={`/sessions/${id}/results`} className="text-xs text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded">
-          View results →
-        </Link>
-      )}
-
-      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-      {/* Pause / Resume */}
-      <button
-        type="button"
-        onClick={onTogglePause}
-        disabled={!isLive || allDone}
-        aria-pressed={localPaused}
-        className={[
-          'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40',
-          localPaused ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-pulse-700 text-white hover:bg-pulse-600',
-        ].join(' ')}
-      >
-        {localPaused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
-        {localPaused ? 'Resume' : 'Pause'}
-      </button>
-
-      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-      {/* Hide tally live */}
-      <button
-        type="button"
-        onClick={onToggleHideTally}
-        aria-pressed={hideTally}
-        className={[
-          'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-          hideTally ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-pulse-700 text-white hover:bg-pulse-600',
-        ].join(' ')}
-      >
-        {hideTally ? <EyeOff size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
-        {hideTally ? 'Tally hidden' : 'Hide tally'}
-      </button>
-
-      {/* Show sentiment (default off) */}
-      {questionKind === 'open' && (
+      {/* Question navigation */}
+      <div role="group" aria-label={tp('ctrl.group.navigation')} className="contents">
         <button
           type="button"
-          onClick={onToggleHideSentiment}
-          aria-pressed={!hideSentiment}
-          className={[
-            'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400',
-            !hideSentiment ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-pulse-700 text-white hover:bg-pulse-600',
-          ].join(' ')}
-          title="Show or hide AI sentiment analysis"
+          onClick={() => onBack()}
+          disabled={!isLive || allDone || questionIndex === 0}
+          className={`${CTRL} bg-pulse-700 text-white hover:bg-pulse-600`}
         >
-          <Sparkles size={14} aria-hidden="true" />
-          {!hideSentiment ? 'Sentiment shown' : 'Show sentiment'}
+          <ChevronLeft size={14} aria-hidden="true" />
+          {tp('ctrl.back')}
         </button>
-      )}
-
-      {/* Option shuffle */}
-      <button
-        type="button"
-        onClick={onShuffle}
-        disabled={baseOptionsLength < 2 || allDone}
-        className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
-      >
-        <Shuffle size={14} aria-hidden="true" />
-        Shuffle options
-      </button>
+        <button
+          type="button"
+          onClick={() => onAdvance()}
+          disabled={!isLive || allDone}
+          className={`${CTRL} bg-teal-600 text-white hover:bg-teal-700`}
+        >
+          <ChevronRight size={14} aria-hidden="true" />
+          {tp('ctrl.next')}
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={closing || isClosed}
+          className={`${CTRL} bg-pulse-700 text-white hover:bg-red-700`}
+        >
+          {isClosed ? tp('ctrl.closed') : closing ? tp('ctrl.closing') : tp('ctrl.close')}
+        </button>
+        {closeError && <span className="text-xs text-red-400">{closeError}</span>}
+        {id && isClosed && (
+          <Link to={`/sessions/${id}/results`} className="text-xs text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded">
+            {tp('ctrl.viewResults')}
+          </Link>
+        )}
+      </div>
 
       <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
-      {/* Minimum tally gate */}
-      <label className="flex items-center gap-2 text-pulse-300">
-        Min. votes to show tally
-        <input
-          type="number"
-          min={0}
-          max={999}
-          value={minGate}
-          onChange={(e) => onMinGateChange(Math.max(0, parseInt(e.target.value, 10) || 0))}
-          className="w-14 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-          aria-label="Minimum votes required before tally is shown"
-        />
-      </label>
+      {/* Display options */}
+      <div role="group" aria-label={tp('ctrl.group.display')} className="contents">
+        <button
+          type="button"
+          onClick={onTogglePause}
+          disabled={!isLive || allDone}
+          aria-pressed={localPaused}
+          className={`${CTRL} ${localPaused ? 'bg-amber-500 text-white hover:bg-amber-600' : 'bg-pulse-700 text-white hover:bg-pulse-600'}`}
+        >
+          {localPaused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
+          {localPaused ? tp('ctrl.resume') : tp('ctrl.pause')}
+        </button>
+
+        <button
+          type="button"
+          onClick={onToggleHideTally}
+          aria-pressed={hideTally}
+          className={`${CTRL} ${hideTally ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-pulse-700 text-white hover:bg-pulse-600'}`}
+        >
+          {hideTally ? <EyeOff size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}
+          {hideTally ? tp('ctrl.tallyHidden') : tp('ctrl.hideTally')}
+        </button>
+
+        {questionKind === 'open' && (
+          <button
+            type="button"
+            onClick={onToggleHideSentiment}
+            aria-pressed={!hideSentiment}
+            className={`${CTRL} ${!hideSentiment ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-pulse-700 text-white hover:bg-pulse-600'}`}
+            title={tp('ctrl.sentimentTitle')}
+          >
+            <Sparkles size={14} aria-hidden="true" />
+            {!hideSentiment ? tp('ctrl.sentimentShown') : tp('ctrl.showSentiment')}
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={onShuffle}
+          disabled={baseOptionsLength < 2 || allDone}
+          className={`${CTRL} bg-pulse-700 text-white hover:bg-pulse-600`}
+        >
+          <Shuffle size={14} aria-hidden="true" />
+          {tp('ctrl.shuffle')}
+        </button>
+
+        <label className="flex items-center gap-2 text-pulse-300">
+          {tp('ctrl.minVotes')}
+          <input
+            type="number"
+            min={0}
+            max={999}
+            value={minGate}
+            onChange={(e) => onMinGateChange(Math.max(0, parseInt(e.target.value, 10) || 0))}
+            className="w-16 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+            aria-label={tp('ctrl.minVotesAria')}
+          />
+        </label>
+      </div>
 
       <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
       {/* Soft timer */}
-      <div className="flex items-center gap-2">
+      <div role="group" aria-label={tp('ctrl.group.timer')} className="flex items-center gap-2">
         <Timer size={14} className="text-pulse-400" aria-hidden="true" />
         <label className="text-pulse-300 flex items-center gap-1.5">
-          Timer
+          {tp('ctrl.timer')}
           <input
             type="number"
             min={1}
@@ -208,27 +203,27 @@ export function PresenterControls({
             value={timerInput}
             onChange={(e) => onTimerInputChange(e.target.value)}
             disabled={timer.running}
-            className="w-12 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-40"
-            aria-label="Timer duration in minutes"
+            className="w-14 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-40"
+            aria-label={tp('ctrl.timerAria')}
           />
-          min
+          {tp('ctrl.min')}
         </label>
         {timer.running ? (
           <button
             type="button"
             onClick={timer.stop}
-            className="rounded px-2.5 py-1.5 text-xs font-medium min-h-[36px] bg-red-600 text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+            className="rounded px-2.5 text-xs font-medium min-h-[44px] bg-red-600 text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
           >
-            Stop
+            {tp('ctrl.stop')}
           </button>
         ) : (
           <button
             type="button"
             onClick={onStartTimer}
             disabled={isClosed}
-            className="rounded px-2.5 py-1.5 text-xs font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
+            className="rounded px-2.5 text-xs font-medium min-h-[44px] bg-pulse-700 text-white hover:bg-pulse-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
           >
-            Start
+            {tp('ctrl.start')}
           </button>
         )}
         {timer.running && (
@@ -240,93 +235,88 @@ export function PresenterControls({
 
       <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
-      {/* One-click export */}
-      {hasSession && (
-        <button
-          type="button"
-          onClick={onCopyDisplayLink}
-          disabled={!sessionCode}
-          title="Copy display URL to embed in PowerPoint"
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
-        >
-          <Link2 size={14} aria-hidden="true" />
-          {copied ? 'Copied!' : 'Display link'}
-        </button>
-      )}
-      {id && (
-        <a
-          href={`/api/sessions/${encodeURIComponent(id)}/export.csv`}
-          download
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
-        >
-          <Download size={14} aria-hidden="true" />
-          Export CSV
-        </a>
-      )}
-
-      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
-
-      {/* Live captions toggle — FE-CAPTIONS-OVERLAY-01 */}
-      {captionsPlanGated ? (
-        <span
-          className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-pulse-400 cursor-not-allowed text-sm"
-          title={t('captions_plan_gate')}
-        >
-          <Subtitles size={14} aria-hidden="true" />
-          {t('captions_inactive')}
-          <span className="ml-1 text-xs text-amber-400">(Chorus)</span>
-        </span>
-      ) : (
-        <button
-          type="button"
-          onClick={onToggleCaptions}
-          disabled={!isLive || allDone}
-          aria-pressed={captionsActive}
-          title={captionsActive ? t('stop_captions') : t('start_captions')}
-          className={[
-            'inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40',
-            captionsActive
-              ? 'bg-teal-600 text-white hover:bg-teal-700'
-              : 'bg-pulse-700 text-white hover:bg-pulse-600',
-          ].join(' ')}
-        >
-          <Subtitles size={14} aria-hidden="true" />
-          {captionsActive ? t('captions_active') : t('captions_inactive')}
-        </button>
-      )}
-
-      {/* Caption locale picker — only shown when captions are active */}
-      {captionsActive && !captionsPlanGated && (
-        <label className="flex items-center gap-2 text-sm">
-          <span className="text-pulse-300 shrink-0">{t('locale_picker_label')}</span>
-          <select
-            value={captionLocale}
-            onChange={(e) => onCaptionLocaleChange(e.target.value as CaptionLocale)}
-            className="rounded border border-pulse-600 bg-pulse-800 text-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 min-h-[36px]"
-            aria-label={t('locale_picker_label')}
+      {/* Share and export */}
+      <div role="group" aria-label={tp('ctrl.group.export')} className="contents">
+        {hasSession && (
+          <button
+            type="button"
+            onClick={onCopyDisplayLink}
+            disabled={!sessionCode}
+            title={tp('ctrl.displayLinkTitle')}
+            className={`${CTRL} bg-pulse-700 text-white hover:bg-pulse-600`}
           >
-            <option value="off">{t('locale_off')}</option>
-            <option value="en">{t('locale_en')}</option>
-            <option value="nl">{t('locale_nl')}</option>
-            <option value="es">{t('locale_es')}</option>
-            <option value="de">{t('locale_de')}</option>
-            <option value="fr">{t('locale_fr')}</option>
-          </select>
-        </label>
-      )}
+            <Link2 size={14} aria-hidden="true" />
+            {copied ? tp('ctrl.copied') : tp('ctrl.displayLink')}
+          </button>
+        )}
+        {id && (
+          <a
+            href={`/api/sessions/${encodeURIComponent(id)}/export.csv`}
+            download
+            className={`${CTRL} bg-pulse-700 text-white hover:bg-pulse-600`}
+          >
+            <Download size={14} aria-hidden="true" />
+            {tp('ctrl.exportCsv')}
+          </a>
+        )}
+      </div>
 
       <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
 
-      {/* Canvas theme picker — CANVAS-THEME-01 */}
-      <CanvasThemePicker variant="bar" />
+      {/* Captions and language */}
+      <div role="group" aria-label={tp('ctrl.group.captions')} className="contents">
+        {captionsPlanGated ? (
+          <span
+            className="inline-flex items-center gap-1.5 rounded px-3 min-h-[44px] font-medium bg-pulse-700 text-pulse-300 cursor-not-allowed text-sm"
+            title={t('captions_plan_gate')}
+          >
+            <Subtitles size={14} aria-hidden="true" />
+            {t('captions_inactive')}
+            <span className="ml-1 text-xs text-amber-400">(Chorus)</span>
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggleCaptions}
+            disabled={!isLive || allDone}
+            aria-pressed={captionsActive}
+            title={captionsActive ? t('stop_captions') : t('start_captions')}
+            className={`${CTRL} ${captionsActive ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-pulse-700 text-white hover:bg-pulse-600'}`}
+          >
+            <Subtitles size={14} aria-hidden="true" />
+            {captionsActive ? t('captions_active') : t('captions_inactive')}
+          </button>
+        )}
+
+        {captionsActive && !captionsPlanGated && (
+          <label className="flex items-center gap-2 text-sm">
+            <span className="text-pulse-300 shrink-0">{t('locale_picker_label')}</span>
+            <select
+              value={captionLocale}
+              onChange={(e) => onCaptionLocaleChange(e.target.value as CaptionLocale)}
+              className="rounded border border-pulse-600 bg-pulse-800 text-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 min-h-[44px]"
+              aria-label={t('locale_picker_label')}
+            >
+              <option value="off">{t('locale_off')}</option>
+              <option value="en">{t('locale_en')}</option>
+              <option value="nl">{t('locale_nl')}</option>
+              <option value="es">{t('locale_es')}</option>
+              <option value="de">{t('locale_de')}</option>
+              <option value="fr">{t('locale_fr')}</option>
+            </select>
+          </label>
+        )}
+
+        <CanvasThemePicker variant="bar" />
+      </div>
 
       <span className="w-px h-5 bg-pulse-700 ml-auto" aria-hidden="true" />
 
       <Link
         to="/dashboard"
-        className="inline-flex items-center gap-1.5 rounded px-3 py-1.5 font-medium min-h-[36px] bg-pulse-700 text-white hover:bg-pulse-600 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+        className={`${CTRL} bg-pulse-700 text-white hover:bg-pulse-600`}
       >
-        ← Dashboard
+        ← {tp('ctrl.dashboard')}
       </Link>
     </div>
   )

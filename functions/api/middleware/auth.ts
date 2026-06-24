@@ -21,11 +21,18 @@ function isSessionAuthExempt(pathname: string): boolean {
 }
 
 export const SESSION_COOKIE = 'qesto_session'
+// Platformbeheer Module 3 — when present and valid, this HttpOnly cookie takes
+// precedence over the real session so the admin's requests resolve as the
+// impersonated user. The admin's own SESSION_COOKIE is left intact, so clearing
+// this cookie ("stop impersonating") restores their session without re-login.
+export const IMPERSONATION_COOKIE = 'qesto_impersonation'
 
 export type AuthVariables = {
   trace_id: string
   user: AuthClaims
   session_token: string
+  /** Set only while impersonating — the real admin acting behind the session. */
+  impersonator_id?: string
 }
 
 export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthVariables }> = async (c, next) => {
@@ -50,7 +57,22 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   const cookieToken = getCookie(c, SESSION_COOKIE)
   const authHeader = c.req.header('authorization')
   const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
-  const token = cookieToken ?? bearerToken
+
+  // Impersonation cookie wins, but only if it is a well-formed impersonation
+  // token (jti = `imp:<adminId>:<ulid>`). Anything else falls through to the
+  // normal session, so a stale/garbage cookie can never lock an admin out.
+  let impersonatorId: string | null = null
+  let activeToken: string | null = null
+  const impCookie = getCookie(c, IMPERSONATION_COOKIE)
+  if (impCookie) {
+    const impClaims = await verifyJwtWithSecrets(impCookie, jwtVerificationSecrets(c.env))
+    if (impClaims && typeof impClaims.jti === 'string' && impClaims.jti.startsWith('imp:')) {
+      activeToken = impCookie
+      impersonatorId = impClaims.jti.split(':')[1] ?? null
+    }
+  }
+
+  const token = activeToken ?? cookieToken ?? bearerToken
   if (!token) {
     return c.json(
       { ok: false, error: { code: 'unauthenticated', message: 'Missing session cookie' }, trace_id: c.get('trace_id') },
@@ -76,5 +98,6 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   }
   c.set('user', claims)
   c.set('session_token', token)
+  if (impersonatorId) c.set('impersonator_id', impersonatorId)
   await next()
 }

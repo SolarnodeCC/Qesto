@@ -21,12 +21,29 @@
     />
     <meta name="theme-color" content="#0D9488" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)" />
-    <meta name="description" content="Qesto — feel the pulse of the room, amplified by AI." />
+    <meta
+      name="description"
+      content="Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate."
+    />
+    <!-- Canonical: pin the apex host so non-JS crawlers and the audit see a single
+         canonical URL. PageSeo re-asserts the per-route canonical on the apex once
+         React mounts (src/components/PageSeo.tsx). -->
+    <link rel="canonical" href="https://qesto.cc/" />
+    <!-- Open Graph / Twitter: mirror PageSeo defaults so link/social previews and
+         crawlers that don't run JS still get rich metadata. -->
+    <meta property="og:title" content="Qesto — Real-time Feedback & AI Insights for Teams" />
+    <meta
+      property="og:description"
+      content="Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://qesto.cc/" />
+    <meta name="twitter:card" content="summary_large_image" />
     <!-- AI Training Protection: Prevent images from being used to train AI models -->
     <meta name="robots" content="noimageai" />
     <!-- Bing Webmaster Tools verification -->
     <meta name="msvalidate.01" content="23CACFDE3A88A7D1C1C76D8D91C561D2" />
-    <title>Qesto</title>
+    <title>Qesto — Real-time Feedback &amp; AI Insights for Teams</title>
     <!-- Appearance bootstrap: apply stored theme / density / high-contrast to <html>
          before first paint to avoid a flash. Mirrors useColorScheme + useDensity +
          HighContrastToggle, which re-assert these once React mounts. -->
@@ -59,7 +76,44 @@
          public/_headers whitelists clarity.ms / c.bing.com for when it loads. -->
   </head>
   <body class="bg-surface text-ink antialiased">
-    <div id="root"></div>
+    <!-- SEO fallback: real, crawler-visible content mirroring the home hero
+         (src/pages/Home.tsx). main.tsx calls createRoot(#root).render(), which clears
+         these children on mount — JS visitors get the full React app, while crawlers
+         and tools that don't execute JS still read a true H1, headings and internal
+         links. Inline styles keep the brief pre-hydration paint clean (CSP allows
+         'unsafe-inline' for style-src; see public/_headers). Text is kept identical to
+         the live headings to avoid any content mismatch. -->
+    <div id="root">
+      <main style="max-width: 760px; margin: 0 auto; padding: 64px 24px; font-family: system-ui, sans-serif">
+        <h1 style="font-size: 40px; line-height: 1.1; margin: 0 0 16px">
+          Feel the pulse of the room, amplified by AI.
+        </h1>
+        <p style="font-size: 17px; line-height: 1.5; margin: 0 0 16px">
+          …and the evidence to back it up — decisions you can defend long after the meeting ends.
+        </p>
+        <p style="font-size: 18px; line-height: 1.55; margin: 0 0 24px">
+          Make it easy for everyone to take part, share what they think, and stay with you
+          start to finish. For teachers, trainers, facilitators, and team leaders.
+        </p>
+        <h2 style="font-size: 28px; line-height: 1.15; margin: 32px 0 12px">
+          Everything you need to run the room — and prove what it decided.
+        </h2>
+        <p style="font-size: 16px; line-height: 1.6; margin: 0 0 24px">
+          Qesto helps teams and facilitators run live polls, rankings, and consent rounds
+          during workshops, classrooms, and meetings — with AI-powered insights afterward.
+        </p>
+        <nav aria-label="Primary">
+          <ul style="line-height: 1.8">
+            <li><a href="/pricing">Pricing &amp; anonymity modes</a></li>
+            <li><a href="/features/live-polling">Live polling</a></li>
+            <li><a href="/features/ai-insights">AI insights</a></li>
+            <li><a href="/use-cases/workshops">Workshops</a></li>
+            <li><a href="/templates">Templates</a></li>
+          </ul>
+        </nav>
+        <p><a href="/login">Launch your next session</a></p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

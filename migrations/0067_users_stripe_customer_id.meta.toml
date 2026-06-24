@@ -1,0 +1,30 @@
+id = "0067_users_stripe_customer_id"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "low"
+stage = "expand"
+
+[approval]
+approved_by = "backend"
+approval_date = "2026-06-20"
+ticket = "#585"
+
+[rollback]
+strategy = "drop-column"
+procedure = "ALTER TABLE users DROP COLUMN stripe_customer_id"
+
+[backup]
+required = false
+note = "Additive nullable column + index; no backfill required."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[dependencies]
+tables = ["users"]
+cascade_scope = "none"
+
+[verification]
+verify = true
+post_check = "PRAGMA foreign_key_check; PRAGMA quick_check;"

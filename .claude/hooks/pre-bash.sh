@@ -37,6 +37,7 @@ if echo "$CMD" | grep -qE "rm\s+-rf(\s+--)?\s+.*\b(src|functions|worker|tests|\.
   exit 1
 fi
 
+# jankurai:allow HLT-035-GIT-BAD-BEHAVIOR reason="defensive guard hook that BLOCKS --no-verify and reset --hard; the git phrases below are match patterns, not destructive automation" expires=2026-12-31
 # Block skipping git hooks — explicit pattern only
 if echo "$CMD" | grep -qE "git\s+(commit|rebase|push).*--no-verify"; then
   echo "BLOCKED: Do not skip git hooks (--no-verify). Fix the underlying issue instead." >&2

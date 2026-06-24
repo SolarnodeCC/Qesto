@@ -190,7 +190,7 @@ export default function AppShellLayout({
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
               onSettingsPage
                 ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                : 'text-pulse-500 dark:text-[#6B7A99] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+                : 'text-pulse-500 dark:text-[#8A96B0] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
             ].join(' ')}
           >
             <Settings size={16} aria-hidden="true" />
@@ -209,7 +209,7 @@ export default function AppShellLayout({
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors',
               helpChatState.isOpen
                 ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                : 'text-pulse-500 dark:text-[#6B7A99] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+                : 'text-pulse-500 dark:text-[#8A96B0] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
             ].join(' ')}
           >
             <HelpCircle size={16} aria-hidden="true" />
@@ -243,7 +243,7 @@ export default function AppShellLayout({
               className="hidden sm:flex items-center gap-0 rounded-lg border border-pulse-200 dark:border-[#2A3858] overflow-hidden"
               aria-label={t('joinSessionPrompt')}
             >
-              <span className="pl-3 pr-1 text-xs text-pulse-400 dark:text-[#6B7A99] whitespace-nowrap select-none">
+              <span className="pl-3 pr-1 text-xs text-pulse-500 dark:text-[#8A96B0] whitespace-nowrap select-none">
                 {t('joinSessionPrompt')}
               </span>
               <input
@@ -260,7 +260,7 @@ export default function AppShellLayout({
               <button
                 type="submit"
                 disabled={joinCode.trim().length === 0}
-                className="px-2.5 py-1.5 text-sm text-pulse-400 dark:text-[#6B7A99] hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 disabled:opacity-0 transition-colors border-l border-pulse-200 dark:border-[#2A3858]"
+                className="px-2.5 py-1.5 text-sm text-pulse-500 dark:text-[#8A96B0] hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 disabled:opacity-0 transition-colors border-l border-pulse-200 dark:border-[#2A3858]"
                 aria-label="Deelnemen"
               >
                 →
@@ -310,7 +310,7 @@ export default function AppShellLayout({
                     role="menu"
                     className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-elevated py-1 animate-page-enter"
                   >
-                    <div className="px-3 py-2 text-xs text-pulse-500 dark:text-[#6B7A99] border-b border-pulse-100 dark:border-[#1E2A45]">
+                    <div className="px-3 py-2 text-xs text-pulse-500 dark:text-[#8A96B0] border-b border-pulse-100 dark:border-[#1E2A45]">
                       {userEmail}
                     </div>
                     <button

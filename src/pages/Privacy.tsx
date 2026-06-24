@@ -35,7 +35,7 @@ export default function Privacy() {
           <h1 className="font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-3" style={{ ...displayFont, fontSize: 44 }}>
             Privacy Policy
           </h1>
-          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#6B7A99]" style={monoFont}>
+          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 2.2.0</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-06-01</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Previous:</strong> 2026-01-15</span>
@@ -55,7 +55,7 @@ export default function Privacy() {
                 <li key={id}>
                   <a
                     href={`#${id}`}
-                    className="text-[13px] text-pulse-500 dark:text-[#6B7A99] hover:text-teal-700 dark:hover:text-teal-400 transition-colors"
+                    className="text-[13px] text-pulse-500 dark:text-[#8A96B0] hover:text-teal-700 dark:hover:text-teal-400 transition-colors"
                   >
                     {label}
                   </a>
@@ -260,7 +260,7 @@ export default function Privacy() {
               {' '}· General:{' '}
               <a href="mailto:privacy@qesto.cc" className="text-teal-600 hover:underline">privacy@qesto.cc</a>
             </p>
-            <p className="text-[13px] text-pulse-400 mt-8">
+            <p className="text-[13px] text-pulse-500 mt-8">
               — This policy replaces all prior privacy statements. Prior versions available on request.
             </p>
           </main>

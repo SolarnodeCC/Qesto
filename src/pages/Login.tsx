@@ -81,9 +81,22 @@ export default function Login() {
   const tabClass = (active: boolean) =>
     `flex-1 py-2 text-sm font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
       active
-        ? 'bg-blue-600 text-white shadow-sm'
+        ? 'bg-teal-600 text-white shadow-sm'
         : 'text-pulse-600 dark:text-pulse-400 hover:text-pulse-900 dark:hover:text-pulse-100'
     }`
+
+  // Roving tab navigation (WAI-ARIA Tabs pattern): ←/→ move between tabs.
+  const TAB_ORDER: Tab[] = ['magic', 'login', 'signup']
+  function onTabKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+    e.preventDefault()
+    const i = TAB_ORDER.indexOf(tab)
+    const next = e.key === 'ArrowRight'
+      ? TAB_ORDER[(i + 1) % TAB_ORDER.length]
+      : TAB_ORDER[(i - 1 + TAB_ORDER.length) % TAB_ORDER.length]
+    setTab(next)
+    document.getElementById(`tab-${next}`)?.focus()
+  }
 
   const inputClass = LOGIN_FIELD_CLASS
 
@@ -148,21 +161,21 @@ export default function Login() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[#0A0F1E] p-1" role="tablist">
-          <button role="tab" aria-selected={tab === 'magic'} className={tabClass(tab === 'magic')} onClick={() => setTab('magic')}>
+        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[#0A0F1E] p-1" role="tablist" aria-label={t('orViaEmail')} onKeyDown={onTabKeyDown}>
+          <button type="button" id="tab-magic" role="tab" aria-selected={tab === 'magic'} aria-controls="tabpanel-magic" tabIndex={tab === 'magic' ? 0 : -1} className={tabClass(tab === 'magic')} onClick={() => setTab('magic')}>
             {t('magicLinkTab')}
           </button>
-          <button role="tab" aria-selected={tab === 'login'} className={tabClass(tab === 'login')} onClick={() => setTab('login')}>
+          <button type="button" id="tab-login" role="tab" aria-selected={tab === 'login'} aria-controls="tabpanel-login" tabIndex={tab === 'login' ? 0 : -1} className={tabClass(tab === 'login')} onClick={() => setTab('login')}>
             {t('login')}
           </button>
-          <button role="tab" aria-selected={tab === 'signup'} className={tabClass(tab === 'signup')} onClick={() => setTab('signup')}>
+          <button type="button" id="tab-signup" role="tab" aria-selected={tab === 'signup'} aria-controls="tabpanel-signup" tabIndex={tab === 'signup' ? 0 : -1} className={tabClass(tab === 'signup')} onClick={() => setTab('signup')}>
             {t('signup')}
           </button>
         </div>
 
         {/* Magic link tab */}
         {tab === 'magic' && (
-          <div role="tabpanel">
+          <div role="tabpanel" id="tabpanel-magic" aria-labelledby="tab-magic">
             {magicStatus === 'sent' ? (
               <div role="status" className="rounded-lg bg-teal-50 dark:bg-teal-900/30 p-4 text-sm text-teal-800 dark:text-teal-100">
                 <p className="font-medium">{t('checkInbox')}</p>
@@ -193,7 +206,7 @@ export default function Login() {
                     {...inputHint(t('emailPlaceholder'))}
                   />
                   {magicStatus === 'invalid' && (
-                    <p className="text-sm text-red-700 dark:text-red-300">{t('errorInvalidEmail')}</p>
+                    <p role="alert" className="text-sm text-red-700 dark:text-red-300">{t('errorInvalidEmail')}</p>
                   )}
                 </div>
                 <button type="submit" disabled={magicStatus === 'sending'} className={primaryBtn}>
@@ -209,7 +222,7 @@ export default function Login() {
 
         {/* Password login tab */}
         {tab === 'login' && (
-          <div role="tabpanel">
+          <div role="tabpanel" id="tabpanel-login" aria-labelledby="tab-login">
             {showResetForm ? (
               <form onSubmit={onResetSubmit} className="space-y-4" noValidate>
                 {resetStatus === 'sent' ? (
@@ -325,7 +338,7 @@ export default function Login() {
 
         {/* Signup tab */}
         {tab === 'signup' && (
-          <div role="tabpanel">
+          <div role="tabpanel" id="tabpanel-signup" aria-labelledby="tab-signup">
             <form onSubmit={onSignupSubmit} className="space-y-4" noValidate>
               <div className="space-y-1.5">
                 <label htmlFor="signup-email" className="block text-sm font-medium">

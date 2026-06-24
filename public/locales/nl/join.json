@@ -69,5 +69,9 @@
   "leaderboard.points": "{score} pt",
   "badges.earned": "Verdiende badges",
   "trust_badge": "Zero-knowledge modus: uw identiteit wordt nooit opgeslagen",
-  "trust_badge_short": "Zero-knowledge"
+  "trust_badge_short": "Zero-knowledge",
+  "vote_unavailable_offline": "Verbinding verbroken — opnieuw verbinden. Stemmen gaat automatisch verder zodra je weer online bent.",
+  "not_found_help": "Controleer de code en probeer het opnieuw.",
+  "try_again": "Opnieuw proberen",
+  "code_length_hint": "Voer de code van 6 tekens in"
 }

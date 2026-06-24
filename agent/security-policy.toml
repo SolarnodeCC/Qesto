@@ -1,25 +1,43 @@
-[policy]
-standard = "jankurai"
-version = "1.5.1"
+# Jankurai security-lane policy — Qesto
+# Schema: jankurai 1.6.10 (schemas/security-policy.schema.json). Migrated from the
+# 1.5.x [policy]/[[required]]/[[advisory]] layout; the auditor only honours this
+# file when it carries schema_version and the flat tool lists below.
+#
+# Qesto is a TypeScript/Cloudflare repo: npm is the real dependency audit;
+# cargo-* tools are not applicable (no Rust product surface) and are omitted.
+schema_version = "1.0.0"
 
-# Required tools — CI fails if these are missing
-[[required]]
-tool = "npm"
-command = "npm audit --audit-level=high"
-reason = "dependency vulnerability scan"
+enabled_tools = [
+  "npm",
+  "gitleaks",
+  "syft",
+  "zizmor",
+]
 
-# Advisory tools — CI warns but does not fail if not installed
-[[advisory]]
-tool = "gitleaks"
-command = "gitleaks detect --source . --redact --no-banner"
-reason = "secret detection"
+required_tools = [
+  "npm",
+]
 
-[[advisory]]
-tool = "syft"
-command = "syft . -o spdx-json=target/jankurai/sbom.spdx.json"
-reason = "SBOM generation"
+advisory_tools = [
+  "gitleaks",
+  "syft",
+  "zizmor",
+]
 
-[[advisory]]
-tool = "zizmor"
-command = "zizmor .github/workflows"
-reason = "GitHub Actions security audit"
+[severity_thresholds]
+fail_lane_on = "high"
+
+[profiles.local]
+enabled_tools = ["npm", "gitleaks", "syft", "zizmor"]
+required_tools = ["npm"]
+advisory_tools = ["gitleaks", "syft", "zizmor"]
+
+[profiles.ci]
+enabled_tools = ["npm", "gitleaks", "syft", "zizmor"]
+required_tools = ["npm", "gitleaks"]
+advisory_tools = ["syft", "zizmor"]
+
+[profiles.release]
+enabled_tools = ["npm", "gitleaks", "syft", "zizmor"]
+required_tools = ["npm", "gitleaks", "syft"]
+advisory_tools = ["zizmor"]

@@ -27,10 +27,10 @@ function UsageBar({ used, limit, warn }: { used: number; limit: number; warn?: b
   return (
     <div>
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-xs text-pulse-500 dark:text-[#6B7A99] tabular-nums">
+        <span className="text-xs text-pulse-500 dark:text-[#8A96B0] tabular-nums">
           {used} / {limit}
         </span>
-        <span className={`text-xs font-medium tabular-nums ${isHigh || warn ? 'text-amber-600 dark:text-amber-400' : 'text-pulse-400 dark:text-[#6B7A99]'}`}>
+        <span className={`text-xs font-medium tabular-nums ${isHigh || warn ? 'text-amber-600 dark:text-amber-400' : 'text-pulse-500 dark:text-[#8A96B0]'}`}>
           {pct}%
         </span>
       </div>
@@ -60,7 +60,7 @@ function FeatureRow({ label, value }: { label: string; value: boolean | string }
             <path fillRule="evenodd" d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
           </svg>
         ) : (
-          <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5 text-pulse-300 shrink-0" aria-label="Not included">
+          <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5 text-pulse-500 shrink-0" aria-label="Not included">
             <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
           </svg>
         )
@@ -111,7 +111,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-pulse-700 dark:text-[#A8B3CC] uppercase tracking-wide">Sessions / month</p>
-            <span className="text-[10px] text-pulse-400">{daysLeft}d left</span>
+            <span className="text-[10px] text-pulse-500">{daysLeft}d left</span>
           </div>
           {data.quotas.max_sessions_per_month >= 500 ? (
             <p className="text-xs text-teal-600 dark:text-teal-400 font-medium">Unlimited</p>
@@ -173,7 +173,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
       </div>
 
       {/* Reset date */}
-      <p className="text-[10px] text-pulse-400 dark:text-[#6B7A99] text-center">
+      <p className="text-[10px] text-pulse-500 dark:text-[#8A96B0] text-center">
         Quota resets {resetDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
       </p>
     </aside>

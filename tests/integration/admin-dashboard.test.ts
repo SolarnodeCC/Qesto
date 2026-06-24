@@ -138,9 +138,9 @@ describe('Admin Routes — Phase 8 Step 2', () => {
     })
   })
 
-  describe('Admin RBAC via user_roles DB (real path)', () => {
-    it('returns 403 for authenticated user without admin role (real user_roles path)', async () => {
-      // Create a fresh setup without SEED_ADMIN_EMAIL to test the real user_roles DB path
+  describe('Platform-admin authority via platform_roles (#586)', () => {
+    it('a team owner/admin in user_roles is NOT a platform admin; only platform_roles grants access', async () => {
+      // Fresh setup without SEED_ADMIN_EMAIL so the DB path is exercised.
       let app2: any
       let db2: any
       let env2: any
@@ -151,32 +151,27 @@ describe('Admin Routes — Phase 8 Step 2', () => {
         env2 = { ...setup.env, SEED_ADMIN_EMAIL: undefined }
       }
 
-      // Create a user without admin role
-      const userWithoutRole = await cookieFor('user_no_role', 'noAdmin@example.com')
+      const user = await cookieFor('user_no_role', 'noAdmin@example.com')
+      const call = () =>
+        app2.fetch(
+          new Request('http://local/api/admin/metrics/live', {
+            headers: { cookie: user, 'cf-connecting-ip': '127.0.0.1' },
+          }),
+          env2,
+        )
 
-      // First request: no user_roles entry → adminMiddleware checks DB → returns 403
-      const res1 = await app2.fetch(
-        new Request('http://local/api/admin/metrics/live', {
-          headers: { cookie: userWithoutRole, 'cf-connecting-ip': '127.0.0.1' },
-        }),
-        env2,
-      )
-      expect(res1.status).toBe(403)
+      // No roles at all → 403.
+      expect((await call()).status).toBe(403)
 
-      // Now add an admin role to user_roles in the DB
-      db2.userRoles.set('role_123', {
-        user_id: 'user_no_role',
-        role: 'admin',
-      })
+      // #586: a team-scoped owner/admin row in user_roles must NOT confer
+      // platform-admin authority — this was the privilege-escalation hole.
+      db2.userRoles.set('role_123', { user_id: 'user_no_role', role: 'admin' })
+      db2.userRoles.set('role_124', { user_id: 'user_no_role', role: 'owner' })
+      expect((await call()).status).toBe(403)
 
-      // Second request: user_roles entry exists with admin role → should be allowed
-      const res2 = await app2.fetch(
-        new Request('http://local/api/admin/metrics/live', {
-          headers: { cookie: userWithoutRole, 'cf-connecting-ip': '127.0.0.1' },
-        }),
-        env2,
-      )
-      expect(res2.status).toBe(200)
+      // Only an explicit platform_roles grant allows access.
+      db2.platformRoles.set('prole_1', { user_id: 'user_no_role', role: 'platform_admin' })
+      expect((await call()).status).toBe(200)
     })
   })
 

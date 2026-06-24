@@ -123,5 +123,8 @@
   "filterLive": "Live",
   "filterDraft": "Draft",
   "filterClosed": "Closed",
-  "insightsEmpty": "No insights generated yet. Analyze your closed sessions to surface themes."
+  "insightsEmpty": "No insights generated yet. Analyze your closed sessions to surface themes.",
+  "removeFailed": "Couldn't remove the session. Please try again.",
+  "savedAsTemplate": "Saved as template!",
+  "importComingSoon": "Coming soon"
 }

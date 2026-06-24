@@ -13,9 +13,19 @@ import type { AuthApp } from './types'
 export function registerAuthSessionRoutes(app: AuthApp): void {
   app.get('/me', authMiddleware, planMiddleware, (c) => {
     const user = c.get('user')
+    // `impersonating` is set by authMiddleware when the request resolves via the
+    // impersonation cookie; the SPA uses it to render the global "viewing as X"
+    // banner (works cross-origin, unlike a JS-readable cookie).
+    const impersonatorId = c.get('impersonator_id')
     return c.json({
       ok: true,
-      data: { id: user.sub, email: user.email, plan: c.get('plan'), townhallEnabled: townhallEnabled(c.env) },
+      data: {
+        id: user.sub,
+        email: user.email,
+        plan: c.get('plan'),
+        townhallEnabled: townhallEnabled(c.env),
+        ...(impersonatorId ? { impersonating: { email: user.email, impersonator_id: impersonatorId } } : {}),
+      },
       trace_id: c.get('trace_id'),
     })
   })

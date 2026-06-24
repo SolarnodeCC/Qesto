@@ -192,7 +192,7 @@ export default function EventStagePresent() {
                 allowFullScreen
               />
             ) : (
-              <p className="rounded-lg border border-dashed border-pulse-300 px-4 py-12 text-center text-sm text-pulse-400 dark:border-pulse-600">
+              <p className="rounded-lg border border-dashed border-pulse-300 px-4 py-12 text-center text-sm text-pulse-500 dark:border-pulse-600">
                 {t('present.slidesEmpty')}
               </p>
             )}
@@ -238,7 +238,7 @@ export default function EventStagePresent() {
             )}
             <ul className="mb-3 space-y-1 text-xs text-pulse-600 dark:text-pulse-300">
               {data.liveSessionParticipants.length === 0 ? (
-                <li className="text-pulse-400">{t('present.noLiveSessions')}</li>
+                <li className="text-pulse-500">{t('present.noLiveSessions')}</li>
               ) : (
                 data.liveSessionParticipants.map((s) => (
                   <li key={s.sessionId}>
@@ -268,7 +268,7 @@ export default function EventStagePresent() {
             </form>
             <ul className="max-h-40 space-y-1 overflow-y-auto text-sm text-pulse-700 dark:text-pulse-200" aria-live="polite">
               {data.feed.length === 0 ? (
-                <li className="text-xs text-pulse-400">{t('present.feedEmpty')}</li>
+                <li className="text-xs text-pulse-500">{t('present.feedEmpty')}</li>
               ) : (
                 data.feed.slice(0, 8).map((item) => <li key={item.id}>• {item.message}</li>)
               )}
@@ -300,7 +300,7 @@ function TalkSwitcher({
       <h2 className="mb-2 text-xs font-bold uppercase tracking-wide text-pulse-500">{t('present.talks')}</h2>
       <div className="max-h-[70vh] space-y-3 overflow-y-auto">
         {tracks.length === 0 ? (
-          <p className="text-xs text-pulse-400">{t('agenda.empty')}</p>
+          <p className="text-xs text-pulse-500">{t('agenda.empty')}</p>
         ) : (
           tracks.map((track) => (
             <div key={track.id}>
@@ -389,7 +389,7 @@ function StageQaPanel({
       </div>
       <div className="max-h-64 space-y-2 overflow-y-auto" aria-live="polite">
         {visible.length === 0 ? (
-          <p className="py-4 text-center text-xs text-pulse-400">{townhall('console.empty')}</p>
+          <p className="py-4 text-center text-xs text-pulse-500">{townhall('console.empty')}</p>
         ) : (
           visible.map((item) => (
             <TownhallQuestionCard key={item.id} item={item} variant="console" onModerate={moderate} t={townhall} />

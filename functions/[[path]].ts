@@ -1,5 +1,6 @@
 import { createApp } from './api/app'
 import type { Env } from './api/types'
+import { injectRouteSeo } from './seo-meta'
 
 const app = createApp()
 
@@ -61,15 +62,18 @@ const SEO_HONO_PATHS = new Set([
 function forwardToHono(context: { request: Request; env: Env }) {
   const waitUntil = (context as unknown as { waitUntil?: (promise: Promise<unknown>) => void }).waitUntil
   const passThroughOnException = (context as unknown as { passThroughOnException?: () => void }).passThroughOnException
-  const exec: ExecutionContext = {
+  // `tracing` is required on newer @cloudflare/workers-types' ExecutionContext but
+  // is not surfaced by the Pages Functions context, so this synthesized ctx omits
+  // it. The cast keeps the shim compatible across workers-types versions.
+  const exec = {
     waitUntil: typeof waitUntil === 'function' ? waitUntil.bind(context) : () => {},
     passThroughOnException: typeof passThroughOnException === 'function' ? passThroughOnException.bind(context) : () => {},
     props: {},
-  }
+  } as ExecutionContext
   return app.fetch(context.request, context.env, exec)
 }
 
-export const onRequest: PagesFunction<Env> = (context) => {
+export const onRequest: PagesFunction<Env> = async (context) => {
   const url = new URL(context.request.url)
   const pathname = url.pathname
 
@@ -96,9 +100,12 @@ export const onRequest: PagesFunction<Env> = (context) => {
     return context.next()
   }
 
-  // Handle valid SPA routes by letting Cloudflare Pages serve index.html
+  // Handle valid SPA routes by letting Cloudflare Pages serve index.html, then
+  // inject this route's <head> metadata + no-JS body fallback at the edge so
+  // non-JS crawlers see per-route content instead of the homepage shell.
   if (isValidSpaRoute(pathname)) {
-    return context.next()
+    const response = await context.next()
+    return injectRouteSeo(response, pathname)
   }
 
   // Return 404 for invalid routes

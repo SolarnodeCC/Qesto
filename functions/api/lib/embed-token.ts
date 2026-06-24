@@ -13,7 +13,7 @@
 import { hmacSign, base64UrlEncode, base64UrlDecode, timingSafeEqual } from './shared/crypto'
 import type { EmbedWidgetTokenClaims } from '../types'
 
-/** Default token lifetime (seconds). */
+/** Token lifetime, default value in seconds. */
 export const EMBED_TOKEN_DEFAULT_TTL = 3600
 /** Maximum token lifetime the mint endpoint may grant (seconds). */
 export const EMBED_TOKEN_MAX_TTL = 86400

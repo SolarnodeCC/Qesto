@@ -4,6 +4,8 @@ title: Privacy, GDPR, and Data Rights
 topic: faq
 scope: free
 excerpt: How Qesto handles personal data, GDPR compliance, consent, retention, and your rights as host or participant.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Privacy, GDPR, and Data Rights
@@ -41,6 +43,16 @@ When a host runs a **named** or partially identified session, participants may s
 
 Consent is logged with a timestamp for audit (Chorus plan audit log). Hosts running sensitive surveys should use **anonymous** or **zero-knowledge** modes.
 
+**Known gap (tracked, not yet fixed):** the consent string above
+(`public/locales/*/vote.json` → `gdprConsent`, shown in all 5 supported
+languages) promises automatic deletion after 30 days. As of this writing
+there is no code-enforced 30-day purge for participant names — see
+[Data Retention](#data-retention) above. This is a real discrepancy between
+participant-facing legal copy and actual behavior; it needs either (a) a
+30-day auto-redaction job for named-consent participant data, or (b) a copy
+change to stop promising a specific enforced window. Raised to product-owner
+as requirement debt (see `BACKLOG_MASTER.md`).
+
 ## Encryption and Hosting
 
 - All traffic uses **HTTPS** (encrypted in transit)
@@ -49,14 +61,37 @@ Consent is logged with a timestamp for audit (Chorus plan audit log). Hosts runn
 
 ## Data Retention
 
+Qesto does not currently run an automatic, age-based deletion job for ordinary
+closed-session data — sessions and their responses persist until the host (or
+an account holder, for their own data) explicitly deletes them via
+`DELETE /api/sessions/:id` or the GDPR self-service endpoints below. The
+figures below describe **plan-level retention targets** that are part of the
+product commitment per tier, not a currently-enforced automatic purge:
+
+| Plan | Retention target | Enforcement today |
+|------|-------------------|--------------------|
+| Pulse (free) | 30 days | Not automatically enforced — host can delete sessions any time; no cron purges them at 30 days yet |
+| Signal | 365 days | Not automatically enforced — same as above |
+| Chorus | Up to 7 years (configurable) | Not automatically enforced — same as above |
+
+One feature **does** have a real, code-enforced retention job today: the
+**Pulse team-pulse rollup** data (`workspace_trend` / pulse aggregation rows,
+ADR-0057, see `functions/api/lib/pulse-aggregation.ts`). A daily cron
+(`PULSE-RETENTION-01`, see `worker/index.ts`) redacts that rollup payload after
+90 days and hard-deletes the underlying rows after 7 years. This is narrower
+than — and should not be confused with — the general per-tier "Retention" row
+above, which today is a stated target rather than an enforced limit.
+
 | Data type | Default retention |
 |-----------|-------------------|
-| Closed session responses | 1 year (host can delete earlier) |
-| Identified participant names (with consent) | Up to 30 days for analytics, then deleted |
-| Account data | Until account deletion requested |
-| Audit logs (Chorus) | Per team compliance settings |
+| Closed session responses | No automatic purge; deleted only when host/account holder requests it (see plan-level targets above) |
+| Pulse team-rollup analytics payload | Auto-redacted after 90 days, rows deleted after 7 years (code-enforced) |
+| Identified participant names (with consent) | Stored with the session; deleted when the session or account is deleted — no separate 30-day auto-purge exists today |
+| Account data | Until account deletion requested (`DELETE /api/users/me/gdpr-delete`) |
+| Audit logs | `audit_events` D1 table; no automatic purge configured |
 
-Export important results before deletion (CSV on Signal+).
+Export important results before deletion (CSV on Signal+) — once a session is
+deleted there is no recovery.
 
 ## Your Rights (GDPR / CCPA)
 

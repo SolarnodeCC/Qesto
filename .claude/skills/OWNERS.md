@@ -1,6 +1,6 @@
 # Prompt Asset Ownership Matrix
 
-_Last reviewed_: 2026-06-04. Edge ownership (handoffs between these roles) lives in
+_Last reviewed_: 2026-06-20. Edge ownership (handoffs between these roles) lives in
 [`HANDOFFS.md`](./HANDOFFS.md).
 
 ## Agents
@@ -18,6 +18,7 @@ _Last reviewed_: 2026-06-04. Edge ownership (handoffs between these roles) lives
 - marketing-agent.md — Growth Lead
 - po-agent.md — Product Owner
 - sales-agent.md — Sales Lead
+- seo-reviewer-agent.md — Growth Lead
 - tester-agent.md — QA Lead
 
 ## Skills
@@ -43,4 +44,5 @@ _Last reviewed_: 2026-06-04. Edge ownership (handoffs between these roles) lives
 - release-notes.md — Product Owner / Growth Lead
 - review.md — QA Lead
 - sales.md — Sales Lead
+- seo-reviewer.md — Growth Lead
 - tester.md — QA Lead

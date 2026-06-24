@@ -233,11 +233,20 @@ export async function handleVote(
   // no await inside applyVoteMutation, so concurrent vote messages from the
   // same voter serialise naturally.
   const voters = await self.ensureVoters()
+
+  // Phase 2.2: Load counts in memory first so the mutation can enforce the
+  // per-question cardinality cap (#581). Counts cache is synced to storage on flush.
+  if (!self.state._counts) {
+    self.state._counts = (await self.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
+  }
+  const counts = self.state._counts
+
   const applied = applyVoteMutation(voters, {
     questionKind: question.kind,
     votePolicy,
     voterId: att.voterId,
     optionId,
+    counts,
   })
   if (!applied.ok) {
     ws.send(errorMessage(applied.code, applied.message))
@@ -245,12 +254,6 @@ export async function handleVote(
   }
   const { countKey, countDecKey } = applied
 
-  // Phase 2.2: Load and update counts in memory, buffer for later D1 flush.
-  // Counts cache is maintained in-memory and synced to storage during flush.
-  if (!self.state._counts) {
-    self.state._counts = (await self.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-  }
-  const counts = self.state._counts
   if (countKey) counts[countKey] = (counts[countKey] ?? 0) + 1
   if (countDecKey) counts[countDecKey] = Math.max(0, (counts[countDecKey] ?? 1) - 1)
 

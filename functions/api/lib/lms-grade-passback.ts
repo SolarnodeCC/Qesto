@@ -11,6 +11,7 @@
  * builders are pure and unit-tested; only the network POST is impure.
  */
 import { oauthPercentEncode, signHmacSha1, buildSignatureBaseString } from './lti'
+import { validateWebhookTargetUrl } from './webhook-url'
 
 /** Score fraction (0..1) → fixed 4-decimal string the LMS Outcomes API expects. */
 export function formatResultScore(fraction: number): string {
@@ -140,6 +141,14 @@ export async function pushGradeToLms(
   creds: { consumerKey: string; consumerSecret: string },
   fetchImpl: typeof fetch = fetch,
 ): Promise<GradePassbackResult> {
+  // SSRF guard (#587): the outcome URL originates from an LMS launch. Even though
+  // the route now uses the STORED (signed) URL, validate it here as
+  // defence-in-depth — reject private/loopback targets and non-HTTPS schemes.
+  const urlCheck = validateWebhookTargetUrl(req.outcomeServiceUrl)
+  if (!urlCheck.ok) {
+    return { ok: false, reason: `ssrf_blocked:${urlCheck.code}` }
+  }
+
   const body = buildReplaceResultXml(req)
   let header: string
   try {
@@ -157,11 +166,19 @@ export async function pushGradeToLms(
   try {
     res = await fetchImpl(req.outcomeServiceUrl, {
       method: 'POST',
+      // #587: never follow redirects — a 30x could bounce the signed POST to an
+      // internal/private endpoint (SSRF) the launch URL did not authorise.
+      redirect: 'manual',
       headers: { 'Content-Type': 'application/xml', Authorization: header },
       body,
     })
   } catch {
     return { ok: false, reason: 'network_error' }
+  }
+
+  // A redirect response is treated as a failure (manual mode surfaces it).
+  if (res.status >= 300 && res.status < 400) {
+    return { ok: false, reason: 'unexpected_redirect', status: res.status }
   }
 
   if (!res.ok) return { ok: false, reason: 'lms_http_error', status: res.status }

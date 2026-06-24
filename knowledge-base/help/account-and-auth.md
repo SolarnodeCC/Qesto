@@ -4,6 +4,8 @@ title: Account and Sign-In
 topic: account
 scope: free
 excerpt: Create a Qesto account, sign in with magic link or password, and manage personal settings.
+updated: 2026-06-21
+version: 1.0
 ---
 
 # Account and Sign-In

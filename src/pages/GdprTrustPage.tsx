@@ -36,7 +36,7 @@ export default function GdprTrustPage() {
             {
               question: 'What rights do account holders have?',
               answer:
-                'Account holders can request export or deletion of personal data. Automated deletion tests and the public GDPR badge are on the roadmap for the v2.3 compliance release.',
+                'Account holders can request export or deletion of personal data via DELETE /api/users/me/gdpr-delete (self-service, in-app) — this cascades to owned sessions, votes, and questions, and is covered by automated tests. The public GDPR badge and a downloadable evidence pack are on the roadmap.',
             },
             {
               question: 'How are participants anonymized?',

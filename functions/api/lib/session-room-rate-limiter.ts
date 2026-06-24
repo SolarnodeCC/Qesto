@@ -10,6 +10,12 @@ import type { DurableObjectStorage } from '@cloudflare/workers-types'
 
 const K_IP_RATE_LIMIT = 'ip_rate_limit'
 
+// Backstop against unbounded growth of the per-IP rate-limit map (#582). Even
+// with empty-entry pruning, a flood of distinct source IPs (or spoofed
+// X-Forwarded-For values upstream) could grow the map without bound. We cap the
+// number of tracked IP keys and evict the least-recently-active ones.
+const MAX_TRACKED_IPS = 10_000
+
 export class RateLimiter {
   constructor(private readonly storage: DurableObjectStorage) {}
 
@@ -29,6 +35,9 @@ export class RateLimiter {
 
     recent.push(nowMs)
     limits[ipHash] = recent
+
+    pruneRateLimitMap(limits, cutoffMs, ipHash)
+
     await this.storage.put(K_IP_RATE_LIMIT, limits)
     return false
   }
@@ -49,5 +58,45 @@ export class RateLimiter {
       return { bucket: { tokens: refilled, lastAt: nowMs }, allowed: false }
     }
     return { bucket: { tokens: refilled - 1, lastAt: nowMs }, allowed: true }
+  }
+}
+
+/**
+ * Prune the per-IP rate-limit map in place (#582):
+ *  - drop entries whose every timestamp is older than the window (empty after
+ *    filtering), so idle IPs do not accumulate forever;
+ *  - if the map still exceeds MAX_TRACKED_IPS, evict the entries with the oldest
+ *    most-recent activity until under the cap (never evicting `keepKey`, the IP
+ *    we just recorded).
+ */
+export function pruneRateLimitMap(
+  limits: Record<string, number[]>,
+  cutoffMs: number,
+  keepKey: string,
+): void {
+  for (const key of Object.keys(limits)) {
+    if (key === keepKey) continue
+    const recent = limits[key].filter((ts) => ts > cutoffMs)
+    if (recent.length === 0) {
+      delete limits[key]
+    } else {
+      limits[key] = recent
+    }
+  }
+
+  const keys = Object.keys(limits)
+  if (keys.length <= MAX_TRACKED_IPS) return
+
+  // Evict by oldest last-activity timestamp first.
+  const sortable = keys
+    .filter((k) => k !== keepKey)
+    .map((k) => ({ k, last: limits[k].length ? Math.max(...limits[k]) : 0 }))
+    .sort((a, b) => a.last - b.last)
+
+  let toEvict = keys.length - MAX_TRACKED_IPS
+  for (const { k } of sortable) {
+    if (toEvict <= 0) break
+    delete limits[k]
+    toEvict--
   }
 }

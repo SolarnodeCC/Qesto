@@ -144,7 +144,7 @@ export default function SolutionPageTemplate({
                   >
                     <span className="text-2xl" aria-hidden="true">{item.icon}</span>
                     <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{item.title}</h3>
-                    <p className="text-caption text-pulse-500 dark:text-[#6B7A99] leading-relaxed">{item.desc}</p>
+                    <p className="text-caption text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{item.desc}</p>
                   </li>
                 ))}
               </ul>
@@ -185,7 +185,7 @@ export default function SolutionPageTemplate({
                       {feat.ai && <AIBadge variant="analyzed" />}
                     </div>
                     <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{feat.title}</h3>
-                    <p className="text-caption text-pulse-500 dark:text-[#6B7A99] leading-relaxed">{feat.desc}</p>
+                    <p className="text-caption text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{feat.desc}</p>
                   </li>
                 ))}
               </ul>
@@ -219,7 +219,7 @@ export default function SolutionPageTemplate({
                         {metric.value}
                       </p>
                       <p className="text-heading-s font-semibold dark:text-[#F0F2F8]">{metric.label}</p>
-                      {metric.note && <p className="text-caption text-pulse-500 dark:text-[#6B7A99]">{metric.note}</p>}
+                      {metric.note && <p className="text-caption text-pulse-500 dark:text-[#8A96B0]">{metric.note}</p>}
                     </li>
                   ))}
                 </ul>
@@ -240,7 +240,7 @@ export default function SolutionPageTemplate({
               {proof.testimonial && (
                 <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-6 md:p-8 text-center space-y-3">
                   <p className="text-body-l text-pulse-700 dark:text-[#A8B3CC] leading-relaxed">"{proof.testimonial.quote}"</p>
-                  <footer className="text-caption text-pulse-600 dark:text-[#6B7A99]">
+                  <footer className="text-caption text-pulse-600 dark:text-[#8A96B0]">
                     <strong className="dark:text-[#F0F2F8]">{proof.testimonial.author}</strong>
                     {proof.testimonial.role ? `, ${proof.testimonial.role}` : ''}
                   </footer>
@@ -333,7 +333,7 @@ export default function SolutionPageTemplate({
                       className="block rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                     >
                       <p className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{link.label}</p>
-                      <p className="text-caption text-pulse-500 dark:text-[#6B7A99]">{link.desc}</p>
+                      <p className="text-caption text-pulse-500 dark:text-[#8A96B0]">{link.desc}</p>
                     </Link>
                   </li>
                 ))}
@@ -363,7 +363,7 @@ export default function SolutionPageTemplate({
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{item.question}</h3>
-                    <p className="text-caption text-pulse-500 dark:text-[#6B7A99] leading-relaxed">{item.answer}</p>
+                    <p className="text-caption text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{item.answer}</p>
                   </li>
                 ))}
               </ul>

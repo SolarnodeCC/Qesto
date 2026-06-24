@@ -4,6 +4,7 @@ import { useT } from '../../i18n'
 import { Heading, Body, Button, Card, TextInput } from '../../ui/components'
 import { inputHint } from '../../ui/input-hint'
 import { PLAN_BRAND_NAMES } from '../../config/plans'
+import UserDetailDrawer from './UserDetailDrawer'
 
 // ─── Plan badge colours ───────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ function StatusBadge({ suspended }: { suspended: boolean }) {
 }
 
 function RoleBadge({ role }: { role: 'owner' | 'admin' | null }) {
-  if (!role) return <span className="text-pulse-400">—</span>
+  if (!role) return <span className="text-pulse-500">—</span>
   const styles = role === 'owner'
     ? 'bg-purple-100 text-purple-700'
     : 'bg-blue-100 text-blue-700'
@@ -115,7 +116,7 @@ function UserModal({
         {isEdit && (
           <div className="space-y-1">
             <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('emailReadonly')}</label>
-            <p className="text-body-s text-pulse-500 dark:text-[#6B7A99] px-3 py-2 rounded-md bg-pulse-50 dark:bg-[#0F1526]">{user?.email}</p>
+            <p className="text-body-s text-pulse-500 dark:text-[#8A96B0] px-3 py-2 rounded-md bg-pulse-50 dark:bg-[#0F1526]">{user?.email}</p>
           </div>
         )}
 
@@ -179,6 +180,7 @@ export default function AdminUsersTab() {
   } = useAdminUsers()
 
   const [modal, setModal] = useState<ModalMode | null>(null)
+  const [detailUserId, setDetailUserId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -244,7 +246,7 @@ export default function AdminUsersTab() {
           onChange={handleSearchChange}
           className="w-full max-w-sm"
         />
-        <Body size="s" className="text-pulse-400 whitespace-nowrap">{total} users total</Body>
+        <Body size="s" className="text-pulse-500 whitespace-nowrap">{total} users total</Body>
       </div>
 
       {error && <Body size="s" className="text-red-600">{error}</Body>}
@@ -258,12 +260,12 @@ export default function AdminUsersTab() {
         <table className="w-full text-body-s">
           <thead>
             <tr className="border-b border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1526]">
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Plan</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Last login</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Admin role</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#6B7A99] uppercase text-xs tracking-wide">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Name</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Email</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Plan</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Last login</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Admin role</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Status</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -278,7 +280,7 @@ export default function AdminUsersTab() {
               ))
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-pulse-400">
+                <td colSpan={7} className="px-4 py-8 text-center text-pulse-500">
                   No users found
                 </td>
               </tr>
@@ -288,13 +290,20 @@ export default function AdminUsersTab() {
                   <td className="px-4 py-3 font-medium text-pulse-900 dark:text-[#F0F2F8]">
                     {user.display_name || user.email.split('@')[0]}
                   </td>
-                  <td className="px-4 py-3 text-pulse-500 dark:text-[#6B7A99]">{user.email}</td>
+                  <td className="px-4 py-3 text-pulse-500 dark:text-[#8A96B0]">{user.email}</td>
                   <td className="px-4 py-3"><PlanBadge plan={user.plan} /></td>
-                  <td className="px-4 py-3 text-pulse-400 dark:text-[#6B7A99] text-sm">{formatDate(user.last_login_at)}</td>
+                  <td className="px-4 py-3 text-pulse-500 dark:text-[#8A96B0] text-sm">{formatDate(user.last_login_at)}</td>
                   <td className="px-4 py-3"><RoleBadge role={user.admin_role} /></td>
                   <td className="px-4 py-3"><StatusBadge suspended={!!user.suspended_at} /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDetailUserId(user.id)}
+                      >
+                        Manage
+                      </Button>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -360,6 +369,10 @@ export default function AdminUsersTab() {
           onClose={() => setModal(null)}
           onSave={handleModalSave}
         />
+      )}
+
+      {detailUserId && (
+        <UserDetailDrawer userId={detailUserId} onClose={() => setDetailUserId(null)} />
       )}
     </div>
   )

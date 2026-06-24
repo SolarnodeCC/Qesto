@@ -57,7 +57,7 @@ export default function ZoomSessionEmbedPage() {
       <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{data.title}</h1>
-          <p className="text-sm text-pulse-500 dark:text-[#6B7A99]">
+          <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">
             Zoom sync: <span className="font-medium">{data.syncState}</span>
           </p>
         </div>
@@ -90,7 +90,7 @@ export default function ZoomSessionEmbedPage() {
             Session <strong className="text-pulse-900 dark:text-[#F0F2F8]">{data.sessionCode}</strong> is linked.
             Present from Qesto launchpad; participants join via code while you host in Zoom.
           </p>
-          <p className="mt-4 text-xs text-pulse-400 dark:text-[#6B7A99]">Code: {data.sessionCode}</p>
+          <p className="mt-4 text-xs text-pulse-500 dark:text-[#8A96B0]">Code: {data.sessionCode}</p>
         </section>
       )}
     </main>

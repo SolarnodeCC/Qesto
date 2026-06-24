@@ -371,7 +371,7 @@ it('Workers AI timeout/retry is explicit', async () => {
 4. **DO/Miniflare**: timeout too short? → add explicit timeout ≥ 10000ms
 
 ### Quarantine (if unresolved)
-- `it.skip('…', …) // FLAKY: reason — issue #XXX`
+- `it.skip('…', …) // FLAKY: reason — issue #XXX` <!-- jankurai:allow HLT-008-FALSE-GREEN-RISK reason="documentation teaching example, not executable test code" expires=2026-12-31 -->
 - Add to `tests/flaky.quarantine.txt`
 - GitHub issue with `flaky-test` label + remediation plan
 

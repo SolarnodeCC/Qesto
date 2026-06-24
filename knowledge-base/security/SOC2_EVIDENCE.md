@@ -33,7 +33,7 @@
 | CC6.3 | Role-based access control | `BUILTIN_ROLE_PERMISSIONS` matrix (owner/admin/member/viewer); custom roles; `rbacMiddleware` on all `/api/*` routes | ✓ Implemented |
 | CC6.6 | Encryption of data in transit | All traffic via HTTPS (Cloudflare TLS 1.2+); WebSocket over WSS | ✓ Implemented |
 | CC6.7 | Encryption of data at rest | D1 encrypted at rest by Cloudflare; KV encrypted at rest; integration tokens in EncryptedTokenStore (plaintext TODO v2.3 — see gap below) | ⚠ Partial |
-| CC6.8 | Monitoring for security events | Audit log (`audit_log` D1 table) for all auth, session lifecycle, permission events; `safeLogContext()` PII sanitization | ✓ Implemented |
+| CC6.8 | Monitoring for security events | `audit_events` D1 table (written via `lib/audit.ts` `recordAuthAuditEvent()`) for auth/admin actions, with actor, outcome, trace id; `safeLogContext()` PII sanitization. Note: the older `audit_log` table exists in `schema.sql` but nothing writes to it — it is not the active audit trail. | ✓ Implemented |
 
 ### CC7: System Operations
 

@@ -140,7 +140,15 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
             }}
             aria-hidden="true"
           />
-          {state.connection === 'open' ? t('live') : state.connection}
+          {state.connection === 'open'
+            ? t('live')
+            : state.connection === 'connecting'
+            ? t('connection.connecting')
+            : state.connection === 'reconnecting'
+            ? t('connection.reconnecting')
+            : state.connection === 'failed'
+            ? t('connection.failed')
+            : t('connection.closed')}
         </div>
       </div>
 

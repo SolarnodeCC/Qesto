@@ -64,7 +64,7 @@ export default function LivePollingPage() {
                   Hear from everyone.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Responses show up in real time as people answer. Everyone in the room can see what the group
                 thinks — while the moment still matters. No app to install, no waiting for results.
               </p>
@@ -80,7 +80,7 @@ export default function LivePollingPage() {
 
             {/* Poll preview */}
             <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-7" style={shadowElevated}>
-              <div className="flex justify-between mb-3.5 text-[11px] font-bold uppercase tracking-widest text-pulse-500 dark:text-[#6B7A99]">
+              <div className="flex justify-between mb-3.5 text-[11px] font-bold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0]">
                 <span>Question 03 of 07</span>
                 <span className="flex items-center gap-1.5 text-teal-700 dark:text-teal-400">
                   <span className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_6px_#14B8A6]" />
@@ -118,7 +118,7 @@ export default function LivePollingPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Eight primitives. Every session you'll ever need.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
             Not a kitchen sink. These are the shapes a facilitator actually reaches for, sharpened.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -133,8 +133,8 @@ export default function LivePollingPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-[16px] mb-1.5 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                  <p className="text-[13.5px] text-pulse-500 dark:text-[#6B7A99] leading-relaxed mb-1.5">{desc}</p>
-                  <span className="text-[11px] text-pulse-400 dark:text-[#6B7A99]" style={monoFont}>{tag}</span>
+                  <p className="text-[13.5px] text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-1.5">{desc}</p>
+                  <span className="text-[11px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>{tag}</span>
                 </div>
               </div>
             ))}
@@ -149,7 +149,7 @@ export default function LivePollingPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Because a tally that lags is a tally people don't trust.
           </h2>
-          <p className="text-pulse-500 dark:text-[#6B7A99] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
             The bar moves when people tap. Results don't make the room wait — so you can keep the conversation
             going without breaking the flow.
           </p>
@@ -170,7 +170,7 @@ export default function LivePollingPage() {
                   >
                     {lat}
                   </div>
-                  <div className="text-[11px] text-pulse-500 dark:text-[#6B7A99] uppercase tracking-widest">{sub}</div>
+                  <div className="text-[11px] text-pulse-500 dark:text-[#8A96B0] uppercase tracking-widest">{sub}</div>
                 </div>
               </div>
             ))}
@@ -192,7 +192,7 @@ export default function LivePollingPage() {
                   {icon}
                 </div>
                 <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#6B7A99]">{desc}</p>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
           </div>

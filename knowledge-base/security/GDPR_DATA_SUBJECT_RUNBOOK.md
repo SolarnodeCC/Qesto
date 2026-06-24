@@ -32,4 +32,9 @@ Email **privacy@qesto.cc** with account email. Verify identity via magic-link to
 ## Evidence for marketing badge
 
 - This runbook exists and is linked from [`SOC2_EVIDENCE.md`](./SOC2_EVIDENCE.md).
-- Vitest: `tests/unit/gdpr-delete.test.ts` covers delete helper.
+- Vitest: `tests/unit/gdpr-delete.test.ts` covers the deletion cascade (owned
+  sessions + votes/questions, user row, audit_events, USERS_KV/TEAMS_KV
+  membership cleanup, idempotency on repeat calls).
+- The 72h figure is a support-process SLA target for completing a request,
+  not a measured or code-enforced duration — the API path itself is
+  synchronous. No timer/queue/scheduled job exists for this flow.

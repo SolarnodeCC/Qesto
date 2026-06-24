@@ -58,7 +58,7 @@ function UpgradeGate({ t }: { t: (key: string) => string }) {
       </div>
       <div>
         <h2 className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('playground.upgradeTitle')}</h2>
-        <p className="mt-2 text-sm text-pulse-500 dark:text-[#6B7A99] max-w-sm mx-auto">{t('playground.upgradeBody')}</p>
+        <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0] max-w-sm mx-auto">{t('playground.upgradeBody')}</p>
       </div>
       <Link
         to="/pricing"
@@ -141,11 +141,11 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
       {/* Header */}
       <div className="px-4 py-3 flex flex-wrap items-start justify-between gap-2 border-b border-pulse-100 dark:border-[#1E2A45]">
         <div className="min-w-0">
-          <p className="text-xs font-mono text-pulse-400 dark:text-[#6B7A99] truncate">{widget.id}</p>
+          <p className="text-xs font-mono text-pulse-500 dark:text-[#8A96B0] truncate">{widget.id}</p>
           {session && (
             <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8] truncate mt-0.5">{session.title}</p>
           )}
-          <p className="text-xs text-pulse-400 dark:text-[#6B7A99] mt-0.5">
+          <p className="text-xs text-pulse-500 dark:text-[#8A96B0] mt-0.5">
             {t('playground.allowedOrigins')}: {widget.allowed_origins.join(', ')}
           </p>
         </div>
@@ -186,7 +186,7 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
               {minting ? t('playground.minting') : t('playground.mintToken')}
             </button>
             {token && exp && (
-              <span className="text-xs text-pulse-400 dark:text-[#6B7A99]">
+              <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
                 {t('playground.tokenExpiry')}: {new Date(exp * 1000).toLocaleTimeString()}
               </span>
             )}
@@ -318,9 +318,9 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
           {t('playground.sessionLabel')}
         </label>
         {sessionsLoading ? (
-          <p className="text-sm text-pulse-400 dark:text-[#6B7A99]">{t('playground.loadingSessions')}</p>
+          <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.loadingSessions')}</p>
         ) : liveSessions.length === 0 ? (
-          <p className="text-sm text-pulse-400 dark:text-[#6B7A99]">{t('playground.noSessions')}</p>
+          <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.noSessions')}</p>
         ) : (
           <select
             id="embed-session-select"
@@ -342,7 +342,7 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
         <label htmlFor="embed-origins-textarea" className="block text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
           {t('playground.originsLabel')}
         </label>
-        <p className="text-xs text-pulse-400 dark:text-[#6B7A99]">{t('playground.originsHint')}</p>
+        <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('playground.originsHint')}</p>
         <textarea
           id="embed-origins-textarea"
           ref={originsRef}
@@ -417,11 +417,11 @@ export default function EmbedPlayground() {
           <div className="flex items-center gap-3">
             <Link
               to="/dashboard"
-              className="text-sm text-pulse-500 dark:text-[#6B7A99] hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+              className="text-sm text-pulse-500 dark:text-[#8A96B0] hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
             >
               {t('playground.backToDashboard')}
             </Link>
-            <span className="text-pulse-300 dark:text-[#2A3858]">/</span>
+            <span className="text-pulse-500 dark:text-[#2A3858]">/</span>
           </div>
           <h1
             tabIndex={-1}
@@ -429,7 +429,7 @@ export default function EmbedPlayground() {
           >
             {t('playground.title')}
           </h1>
-          <p className="text-sm text-pulse-500 dark:text-[#6B7A99]">{t('playground.subtitle')}</p>
+          <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.subtitle')}</p>
         </header>
 
         {/* Plan gate */}
@@ -470,7 +470,7 @@ export default function EmbedPlayground() {
               )}
 
               {widgetsState.status === 'ready' && widgetsState.widgets.length === 0 && (
-                <p className="text-sm text-pulse-400 dark:text-[#6B7A99]">{t('playground.noWidgets')}</p>
+                <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.noWidgets')}</p>
               )}
 
               {widgetsState.status === 'ready' && widgetsState.widgets.length > 0 && (

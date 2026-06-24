@@ -134,7 +134,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                       <h3 className="text-xs font-semibold uppercase tracking-wide text-pulse-500">
                         {t('copilot.suggestions_title')}
                         {suggestSource === 'heuristic' && (
-                          <span className="ml-1 font-normal normal-case text-pulse-400">· {t('copilot.suggestions_fallback')}</span>
+                          <span className="ml-1 font-normal normal-case text-pulse-500">· {t('copilot.suggestions_fallback')}</span>
                         )}
                       </h3>
                       <button

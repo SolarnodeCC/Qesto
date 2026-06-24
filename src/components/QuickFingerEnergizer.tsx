@@ -332,7 +332,7 @@ export default function QuickFingerEnergizerView({
 
       {/* ── PARTICIPANT: Waiting (draft) ── */}
       {role === 'participant' && state === 'draft' && (
-        <p className="text-sm text-center text-pulse-400">Waiting for the host to start the question…</p>
+        <p className="text-sm text-center text-pulse-500">Waiting for the host to start the question…</p>
       )}
 
       {/* ── PARTICIPANT: Active — answer fast! ── */}
@@ -406,7 +406,7 @@ function LiveRankings({
   voterId?: string
 }) {
   if (rankings.length === 0) {
-    return <p className="text-sm text-pulse-400 text-center">No answers yet…</p>
+    return <p className="text-sm text-pulse-500 text-center">No answers yet…</p>
   }
 
   const sorted = [...rankings].sort((a, b) => {
@@ -426,7 +426,7 @@ function LiveRankings({
               isMe ? 'bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800' : 'bg-pulse-50 dark:bg-pulse-800',
             ].join(' ')}
           >
-            <span className="w-5 text-xs font-bold text-pulse-400 tabular-nums">{i + 1}.</span>
+            <span className="w-5 text-xs font-bold text-pulse-500 tabular-nums">{i + 1}.</span>
             <span
               className={[
                 'flex-1 truncate font-medium',
@@ -434,7 +434,7 @@ function LiveRankings({
               ].join(' ')}
             >
               {r.value}
-              {isMe && <span className="ml-1 text-xs text-pulse-400">(you)</span>}
+              {isMe && <span className="ml-1 text-xs text-pulse-500">(you)</span>}
             </span>
             <span className="text-xs tabular-nums text-pulse-500">{formatMs(r.speed_ms)}</span>
             {r.correct && r.rank === 1 && <span aria-hidden="true">🏆</span>}

@@ -8,6 +8,8 @@ import { readKvText, writeKvJson, deleteKv } from './kv'
 export type GdprDeleteResult = {
   sessionsDeleted: number
   userRowDeleted: boolean
+  /** Third privacy layer — decision vectors removed from DECISIONS_VECTORIZE. */
+  vectorsDeleted: number
 }
 
 export async function deleteUserGdprData(
@@ -16,6 +18,10 @@ export async function deleteUserGdprData(
     USERS_KV: KVNamespace
     TEAMS_KV: KVNamespace
     SESSIONS_KV?: KVNamespace
+    // Third privacy layer. Optional so existing callers keep working; when
+    // supplied, the user's decision vectors (keyed by session id, see
+    // insights-vectorize.ts) are purged alongside content + metadata.
+    DECISIONS_VECTORIZE?: VectorizeIndex
   },
   userId: string,
 ): Promise<GdprDeleteResult> {
@@ -24,6 +30,23 @@ export async function deleteUserGdprData(
   )
     .bind(userId)
     .all<{ id: string }>()
+
+  const sessionIds = (sessions ?? []).map((s) => s.id)
+
+  // Layer 3 (vector index) FIRST, while the id set is still known.
+  // DECISIONS_VECTORIZE entries are keyed by session id. HELP_VECTORIZE is
+  // intentionally NOT touched — it is keyed by help-document id and holds no
+  // user-linked PII. Best-effort: a vector-purge failure must not block the
+  // D1/KV deletion (the legal floor) that follows.
+  let vectorsDeleted = 0
+  if (env.DECISIONS_VECTORIZE && sessionIds.length > 0) {
+    try {
+      const res = (await env.DECISIONS_VECTORIZE.deleteByIds(sessionIds)) as { count?: number } | undefined
+      vectorsDeleted = typeof res?.count === 'number' ? res.count : sessionIds.length
+    } catch {
+      /* swallow — durable-record deletion below is what GDPR Art. 17 requires */
+    }
+  }
 
   let sessionsDeleted = 0
   for (const row of sessions ?? []) {
@@ -64,5 +87,6 @@ export async function deleteUserGdprData(
   return {
     sessionsDeleted,
     userRowDeleted: (userDelete.meta?.changes ?? 0) > 0,
+    vectorsDeleted,
   }
 }

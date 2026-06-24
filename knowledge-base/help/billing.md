@@ -3,7 +3,9 @@ id: billing
 title: Pricing and Plans
 topic: billing
 scope: starter
-excerpt: Understand Qesto's three subscription plans — Pulse, Signal, and Chorus — plus payment and plan management.
+excerpt: Understand Qesto's three subscription plans — Pulse, Signal, and Chorus — plus payment, refunds, failed payments, and plan management.
+updated: 2026-06-21
+version: 1.1
 ---
 
 # Pricing and Plans
@@ -143,20 +145,31 @@ Invoices are sent to this email automatically.
 
 ## Refund Policy
 
-- **Monthly plans**: Refunds only if payment processing errors. Otherwise, no refunds (but cancel anytime).
-- **Annual plans**: Prorated refunds if you downgrade or cancel within 30 days of purchase.
-- **Disputes**: Contact support@qesto.cc within 30 days
+- **First-session guarantee**: If your first session doesn't beat the response rate of your
+  last survey, email us within **14 days of your first billing** and we'll refund the full
+  quarter.
+- **Monthly plans**: Cancel anytime. Cancellation takes effect immediately and there's no
+  refund for the current month.
+- **Annual plans**: Cancellation takes effect at your renewal date (you keep access until then).
+- **Disputes**: Contact support@qesto.cc
+
+The published terms always live at [qesto.cc/pricing](https://qesto.cc/pricing) — if anything
+here ever differs, the pricing page wins.
 
 ## Failed Payments
 
-If your card declines:
+If your card declines, you don't lose access right away. Qesto uses Stripe's standard retry
+(dunning) process:
 
-1. We'll notify you via email
-2. You have 5 days to update your payment method
-3. We'll retry automatically
-4. After 5 days, your plan downgrades to Pulse
+1. We'll notify you by email.
+2. Your subscription stays active (marked *past due*) while Stripe automatically retries the
+   charge over its retry window.
+3. Update your card and the next retry succeeds — nothing else changes.
+4. Only if every retry fails does the subscription end, at which point your account reverts to
+   the free **Pulse** tier. Your sessions and data are preserved; new sessions follow Pulse
+   limits until you resubscribe.
 
-**To fix:** Settings → Billing → Update payment method
+**To fix:** Settings → Billing → Update payment method.
 
 ## Tax
 
@@ -259,9 +272,11 @@ Downgrading doesn't delete your data:
 
 Special rules for annual billing:
 
-- **Prorated refund**: If you downgrade within 30 days of purchase
-- **No refund**: After 30 days; instead, pay monthly on downgraded plan next year
-- **Upgrade**: Always prorated, new plan takes effect immediately
+- **Cancellation**: Takes effect at your renewal date — you keep access for the rest of the
+  term you've paid for.
+- **First-session guarantee**: The 14-day first-session refund (see Refund Policy above) still
+  applies to your first billing.
+- **Upgrade**: Always prorated, new plan takes effect immediately.
 
 ## Need Help?
 

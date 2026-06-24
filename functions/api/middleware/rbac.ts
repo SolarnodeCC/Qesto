@@ -80,20 +80,22 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'POST /api/billing/checkout': new Set(['owner', 'admin']),
   'GET /api/billing/invoices': new Set(['owner', 'admin']),
 
-  // Admin endpoints
-  'GET /api/admin/metrics/live': new Set(['owner', 'admin']),
-  'GET /api/admin/metrics/historical': new Set(['owner', 'admin']),
-  'POST /api/admin/metrics/export': new Set(['owner', 'admin']),
-  'GET /api/admin/audit': new Set(['owner', 'admin']),
-  'GET /api/admin/kpis': new Set(['owner', 'admin']),
-  'GET /api/admin/users': new Set(['owner', 'admin']),
-  'POST /api/admin/users': new Set(['owner', 'admin']),
-  'PATCH /api/admin/users/:id': new Set(['owner', 'admin']),
-  'POST /api/admin/users/:id/suspend': new Set(['owner', 'admin']),
-  'POST /api/admin/users/:id/restore': new Set(['owner', 'admin']),
-  'GET /api/admin/ops/summary': new Set(['owner', 'admin']),
-  'GET /api/admin/analytics': new Set(['owner', 'admin']),
-  'GET /api/admin/engagement/export.csv': new Set(['owner', 'admin']),
+  // Admin (PLATFORM) endpoints — require platform-admin authority, NOT a
+  // team-scoped owner/admin role (#586). The synthetic 'platform_admin' role is
+  // injected by getUserRoles only for users with real platform authority.
+  'GET /api/admin/metrics/live': new Set(['platform_admin']),
+  'GET /api/admin/metrics/historical': new Set(['platform_admin']),
+  'POST /api/admin/metrics/export': new Set(['platform_admin']),
+  'GET /api/admin/audit': new Set(['platform_admin']),
+  'GET /api/admin/kpis': new Set(['platform_admin']),
+  'GET /api/admin/users': new Set(['platform_admin']),
+  'POST /api/admin/users': new Set(['platform_admin']),
+  'PATCH /api/admin/users/:id': new Set(['platform_admin']),
+  'POST /api/admin/users/:id/suspend': new Set(['platform_admin']),
+  'POST /api/admin/users/:id/restore': new Set(['platform_admin']),
+  'GET /api/admin/ops/summary': new Set(['platform_admin']),
+  'GET /api/admin/analytics': new Set(['platform_admin']),
+  'GET /api/admin/engagement/export.csv': new Set(['platform_admin']),
   'GET /api/tournaments/sessions/:sessionId/bracket/:energizerId': new Set(['owner', 'admin', 'member']),
   'POST /api/tournaments/sessions/:sessionId/bracket/seed': new Set(['owner', 'admin', 'member']),
   'PATCH /api/tournaments/matches/:matchId': new Set(['owner', 'admin', 'member']),
@@ -101,7 +103,7 @@ const PERMISSION_MATRIX: Record<string, Set<string>> = {
   'POST /api/ldap/sync': new Set(['owner', 'admin']),
   'GET /api/agent/grounding': new Set(['owner', 'admin', 'member', 'viewer']),
   'GET /api/webhooks/templates': new Set(['owner', 'admin', 'member']),
-  'GET /api/admin/sprint19-baseline': new Set(['owner', 'admin']),
+  'GET /api/admin/sprint19-baseline': new Set(['platform_admin']),
   'POST /api/help/ask': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
   'POST /api/help/feedback': new Set(['owner', 'admin', 'member', 'viewer', 'guest']),
 }
@@ -163,12 +165,36 @@ function getRouteKey(method: string, path: string): string | null {
 }
 
 /**
- * Fetch user's roles from user_roles table.  Cache on context.
+ * Resolve whether a user has PLATFORM-admin authority (#586). Authority comes
+ * from the env allowlist (bootstrap) or an explicit platform_roles row — NEVER
+ * from a team-scoped user_roles owner/admin row.
  */
-async function getUserRoles(c: RbacContext, userId: string): Promise<string[]> {
+async function hasPlatformAdmin(c: RbacContext, userId: string, email: string | undefined): Promise<boolean> {
+  if (c.env.SUPERUSER_EMAIL && email === c.env.SUPERUSER_EMAIL) return true
+  if (c.env.SEED_ADMIN_EMAIL && email === c.env.SEED_ADMIN_EMAIL) return true
+  try {
+    const row = await c.env.DB.prepare(
+      `SELECT 1 AS ok FROM platform_roles WHERE user_id = ?1 AND role = 'platform_admin' LIMIT 1`,
+    )
+      .bind(userId)
+      .first<{ ok: number }>()
+    return !!row
+  } catch {
+    // Fail-safe: no platform authority on lookup failure.
+    return false
+  }
+}
+
+/**
+ * Fetch user's roles. Team-scoped roles come from user_roles; the synthetic
+ * 'platform_admin' role is appended only when the user has real platform
+ * authority (#586). Cache on context.
+ */
+async function getUserRoles(c: RbacContext, userId: string, email?: string): Promise<string[]> {
   const cached = c.get('_rbac_cache')?.roles
   if (cached) return cached
 
+  let roles: string[]
   try {
     const rows = await c.env.DB.prepare(
       `SELECT role FROM user_roles WHERE user_id = ?1`,
@@ -176,13 +202,9 @@ async function getUserRoles(c: RbacContext, userId: string): Promise<string[]> {
       .bind(userId)
       .all()
 
-    const roles = (rows.results as Array<{ role: string }>)?.map((r: { role: string }) => r.role) ?? []
+    roles = (rows.results as Array<{ role: string }>)?.map((r: { role: string }) => r.role) ?? []
     // Default to viewer if no explicit roles
     if (roles.length === 0) roles.push('viewer')
-
-    // Cache on context
-    c.set('_rbac_cache', { roles })
-    return roles
   } catch (err) {
     // Fail-safe demotion — log so ops can correlate RBAC/KV incidents (EH-05).
     console.warn('[rbac] user_roles lookup failed; demoting to viewer', {
@@ -190,8 +212,16 @@ async function getUserRoles(c: RbacContext, userId: string): Promise<string[]> {
       userId,
       message: err instanceof Error ? err.message : String(err),
     })
-    return ['viewer']
+    roles = ['viewer']
   }
+
+  // Platform authority is additive and orthogonal to team roles (#586).
+  if (await hasPlatformAdmin(c, userId, email)) {
+    roles = [...roles, 'platform_admin']
+  }
+
+  c.set('_rbac_cache', { roles })
+  return roles
 }
 
 /**
@@ -219,7 +249,7 @@ export const rbacMiddleware: MiddlewareHandler<{
   }
 
   // Fetch user's roles (or default to viewer)
-  const userRoles = await getUserRoles(c, user.sub)
+  const userRoles = await getUserRoles(c, user.sub, user.email)
   c.set('userRoles', userRoles)
 
   // Seed admin always has full access
