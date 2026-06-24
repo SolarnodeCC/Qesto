@@ -43,6 +43,32 @@
     <meta name="robots" content="noimageai" />
     <!-- Bing Webmaster Tools verification -->
     <meta name="msvalidate.01" content="23CACFDE3A88A7D1C1C76D8D91C561D2" />
+    <!-- Google Search Console verification. Replace the placeholder with the token
+         from GSC's "HTML tag" verification method; until then the property is not
+         verified via this tag (DNS verification, if configured, is independent). -->
+    <meta name="google-site-verification" content="REPLACE_WITH_GSC_TOKEN" />
+    <!-- Structured data: site-wide SoftwareApplication so search engines recognise
+         Qesto as a SaaS product (category, free tier). Kept static in the shell so
+         non-JS crawlers see it in the server-returned HTML. Per-page JSON-LD
+         (templates/features) is injected client-side via src/components/PageSeo.tsx.
+         No aggregateRating: avoid fabricated review data. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Qesto",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "url": "https://qesto.cc/",
+        "description": "Live polling, anonymous feedback, and AI-powered insights for workshops, training, and meetings. No account required to participate.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Free to start"
+        }
+      }
+    </script>
     <title>Qesto — Real-time Feedback &amp; AI Insights for Teams</title>
     <!-- Appearance bootstrap: apply stored theme / density / high-contrast to <html>
          before first paint to avoid a flash. Mirrors useColorScheme + useDensity +
