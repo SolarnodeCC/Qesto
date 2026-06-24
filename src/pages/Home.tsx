@@ -135,10 +135,10 @@ export default function Home() {
                     Go to dashboard
                   </Link>
                   <Link
-                    to="/pricing"
+                    to="/templates"
                     className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
-                    See the anonymity modes
+                    Browse templates
                   </Link>
                 </>
               ) : auth.status === 'loading' ? (
@@ -152,14 +152,14 @@ export default function Home() {
                     Launch your next session
                   </Link>
                   <Link
-                    to="/pricing"
+                    to="/templates"
                     className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
-                    See the anonymity modes
+                    Browse templates
                   </Link>
                 </>
               )}
-              <span className="text-[13px] text-pulse-500 ml-2">No card required · 2-minute setup</span>
+              <span className="text-[13px] text-pulse-500 ml-2">No card required · 2-minute setup · No account required to participate</span>
             </div>
             <div className="mb-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <Link
