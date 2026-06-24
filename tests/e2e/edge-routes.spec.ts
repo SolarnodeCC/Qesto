@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
 
 test.describe('Edge route behavior', () => {
@@ -19,13 +19,13 @@ test.describe('Edge route behavior', () => {
     await signupWithPassword(page, email, 'PlaywrightPass123!')
     await expectAuthenticatedDashboard(page)
 
-    await page.getByRole('tab', { name: /insights/i }).click()
-    await expect(page.locator('#tabpanel-insights')).toBeVisible()
+    await page.getByRole('button', { name: /insights/i }).click()
+    await expect(page.locator('#section-insights')).toBeVisible()
 
-    await page.getByRole('tab', { name: /teams/i }).click()
-    await expect(page.locator('#tabpanel-teams')).toBeVisible()
+    await page.getByRole('button', { name: /teams/i }).click()
+    await expect(page.locator('#section-teams')).toBeVisible()
 
-    await page.getByRole('tab', { name: /templates/i }).click()
-    await expect(page.locator('#tabpanel-templates')).toBeVisible()
+    await page.getByRole('button', { name: /templates/i }).click()
+    await expect(page.locator('#section-templates')).toBeVisible()
   })
 })

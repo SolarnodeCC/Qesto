@@ -65,14 +65,14 @@ export default function Home() {
         <button
           type="button"
           onClick={() => void auth.logout()}
-          className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+          className="text-sm text-teal-700 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
         >
           Sign out
         </button>
       ) : auth.status === 'anonymous' ? (
         <Link
           to="/login"
-          className="text-sm font-medium text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+          className="text-sm font-medium text-teal-700 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
         >
           Sign in
         </Link>
@@ -192,7 +192,7 @@ export default function Home() {
             >
               {FEATURE_STRIP.map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-2.5 text-sm text-pulse-600 dark:text-[#A8B3CC]">
-                  <Icon aria-hidden="true" size={16} className="text-teal-600 dark:text-teal-400 flex-shrink-0" />
+                  <Icon aria-hidden="true" size={16} className="text-teal-700 dark:text-teal-400 flex-shrink-0" />
                   {label}
                 </div>
               ))}
@@ -215,7 +215,7 @@ export default function Home() {
           <div className="max-w-[1120px] mx-auto">
 
             {/* Eyebrow */}
-            <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-teal-600 dark:text-teal-400 mb-3">
+            <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-teal-700 dark:text-teal-400 mb-3">
               Facilitator-first
             </p>
 

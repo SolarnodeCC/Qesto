@@ -1,10 +1,15 @@
 import { z } from 'zod'
 
+const PollOptionSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+})
+
 const LiveQuestionSchema = z.object({
   id: z.string(),
   kind: z.string(),
   prompt: z.string(),
-  options: z.array(z.string()).optional(),
+  options: z.array(z.union([z.string(), PollOptionSchema])).optional(),
 })
 
 const LiveSessionSummarySchema = z.object({

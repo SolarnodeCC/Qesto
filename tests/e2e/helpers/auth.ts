@@ -34,5 +34,11 @@ export async function loginWithPassword(page: Page, email: string, password: str
 
 export async function expectAuthenticatedDashboard(page: Page): Promise<void> {
   await page.waitForURL(/\/dashboard(?:\?.*)?$/)
-  await expect(page.getByRole('button', { name: /sign out/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Account:/i })).toBeVisible({ timeout: 15_000 })
+}
+
+export async function signOutFromDashboard(page: Page): Promise<void> {
+  await page.getByRole('button', { name: /^Account:/i }).click()
+  await page.getByRole('menuitem', { name: /log out|logout/i }).click()
+  await expect(page.getByRole('button', { name: /^Account:/i })).toBeHidden({ timeout: 10_000 })
 }

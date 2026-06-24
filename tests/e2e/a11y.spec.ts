@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { expectNoSeriousA11yViolations } from './helpers/a11y'
 
 const publicPages = [

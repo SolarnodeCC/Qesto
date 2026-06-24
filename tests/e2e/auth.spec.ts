@@ -1,9 +1,10 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import {
   createUniqueEmail,
   expectAuthenticatedDashboard,
   loginWithPassword,
   openLoginTab,
+  signOutFromDashboard,
   signupWithPassword,
 } from './helpers/auth'
 
@@ -22,10 +23,9 @@ test.describe('Local auth flow in Chrome', () => {
     await signupWithPassword(page, email, password)
     await expectAuthenticatedDashboard(page)
 
-    await page.getByRole('button', { name: /sign out/i }).click()
-    await page.waitForURL(/\/login(?:\?.*)?$/)
+    await signOutFromDashboard(page)
     await page.goto('/dashboard')
-    await page.waitForURL(/\/login(?:\?.*)?$/)
+    await expect(page).toHaveURL(/\/login(?:\?.*)?$/)
   })
 
   test('existing user can login with password', async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe('Local auth flow in Chrome', () => {
     await signupWithPassword(page, email, password)
     await expectAuthenticatedDashboard(page)
 
-    await page.getByRole('button', { name: /sign out/i }).click()
+    await signOutFromDashboard(page)
     await loginWithPassword(page, email, password)
     await expectAuthenticatedDashboard(page)
   })

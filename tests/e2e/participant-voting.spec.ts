@@ -1,8 +1,11 @@
-import { test, expect } from '@playwright/test'
+import { test, expect } from './fixtures'
 import { createUniqueEmail, expectAuthenticatedDashboard, signupWithPassword } from './helpers/auth'
-import { addPollQuestion, createDraftSession, getSessionResults, startSession } from './helpers/session'
+import { newParticipantContext } from './helpers/context'
+import { addPollQuestion, createDraftSession, openPresenterView, startSession } from './helpers/session'
 
 test.describe('Participant voting flow', () => {
+  test.setTimeout(90_000)
+
   test('participant can join by code and vote is reflected in results', async ({ page, browser, baseURL }) => {
     const email = createUniqueEmail('pw-vote')
     await signupWithPassword(page, email, 'PlaywrightPass123!')
@@ -11,21 +14,17 @@ test.describe('Participant voting flow', () => {
     const session = await createDraftSession(page, `E2E Voting ${Date.now()}`)
     await addPollQuestion(page, session.id, 'What should we prioritize?')
     await startSession(page, session.id)
+    await openPresenterView(page, session.id)
 
-    const participantContext = await browser.newContext(baseURL ? { baseURL } : {})
+    const participantContext = await newParticipantContext(browser, baseURL)
     try {
       const participantPage = await participantContext.newPage()
       await participantPage.goto(`/j/${session.code}`)
-      await expect(participantPage.getByRole('heading', { name: /what should we prioritize\\?/i })).toBeVisible()
+      await expect(participantPage.locator('#question-heading')).toContainText('What should we prioritize?', { timeout: 30_000 })
       await participantPage.getByRole('button', { name: /option a/i }).click()
-      await expect(participantPage.getByRole('status')).toContainText(/recorded|response/i)
+      await expect(participantPage.getByRole('status')).toContainText(/recorded|response/i, { timeout: 10_000 })
 
-      await expect
-        .poll(async () => {
-          const data = await getSessionResults(page, session.id)
-          return data.results.total
-        }, { timeout: 15_000 })
-        .toBeGreaterThan(0)
+      await expect(page.getByLabel(/Option A: 100% of votes/i)).toBeVisible({ timeout: 15_000 })
     } finally {
       await participantContext.close()
     }

@@ -197,5 +197,5 @@ export function mountPulseRoutes(parent: ParentApp) {
     })
   })
 
-  parent.route('/teams', app)
+  parent.route('/api/teams', app)
 }

@@ -10,6 +10,7 @@ const ALL_TEAM_PERMISSIONS: Permission[] = [
   'session:update',
   'session:launch',
   'session:close',
+  'session:moderate',
   'session:archive',
   'session:export',
   'energizer:activate',
@@ -24,7 +25,7 @@ const ALL_TEAM_PERMISSIONS: Permission[] = [
 export const BUILTIN_ROLE_PERMISSIONS: Record<string, Permission[]> = {
   owner: ALL_TEAM_PERMISSIONS,
   admin: ALL_TEAM_PERMISSIONS.filter((permission) => permission !== 'billing:manage'),
-  member: ['session:create', 'session:update', 'session:launch', 'session:close', 'template:read'],
+  member: ['session:create', 'session:update', 'session:launch', 'session:close', 'session:moderate', 'template:read'],
   viewer: ['template:read'],
 }
 
