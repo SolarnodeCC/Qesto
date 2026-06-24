@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
 import PageSeo from '../components/PageSeo'
+import HeroPollPreview from '../components/HeroPollPreview'
 
 const FEATURE_STRIP = [
   { icon: Sparkles, label: 'Question ideas ready in under 90 seconds' },
@@ -93,7 +94,10 @@ export default function Home() {
           aria-labelledby="hero-heading"
           className="relative overflow-hidden py-24 px-6 before:absolute before:left-1/2 before:-top-[120px] before:-translate-x-1/2 before:w-[1200px] before:h-[600px] before:bg-[radial-gradient(circle,rgba(20,184,166,0.08)_0%,transparent_60%)] before:pointer-events-none"
         >
-          <div className="max-w-[1120px] mx-auto">
+          <div className="max-w-[1120px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+            {/* ── Hero copy ─────────────────────────────────────────────── */}
+            <div>
 
             {/* AI pill */}
             <div className="flex items-center gap-2 mb-6">
@@ -187,6 +191,12 @@ export default function Home() {
                   {label}
                 </div>
               ))}
+            </div>
+            </div>
+
+            {/* ── Live product preview ──────────────────────────────────── */}
+            <div className="lg:justify-self-end w-full">
+              <HeroPollPreview />
             </div>
           </div>
         </section>
