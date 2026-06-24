@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Sparkles, Layers, FileText, Search, Cpu, Shield, Trash2, Check } from 'lucide-react'
 import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
+import Reveal from '../../components/Reveal'
 
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
@@ -110,7 +111,7 @@ export default function AIInsightsPage() {
       </section>
 
       {/* Three jobs */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Three things it does for you. Three it won't do.
@@ -160,10 +161,10 @@ export default function AIInsightsPage() {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Disclosure */}
-      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
+      <Reveal as="section" className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="bg-violet-50 dark:bg-violet-500/12 rounded-[20px] p-10 grid gap-5" style={{ gridTemplateColumns: '48px 1fr' }}>
             <div className="w-12 h-12 bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -187,10 +188,10 @@ export default function AIInsightsPage() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Anti-slop */}
-      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
+      <Reveal as="section" className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="bg-pulse-900 text-white rounded-3xl p-12 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
@@ -218,10 +219,10 @@ export default function AIInsightsPage() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Privacy */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Your responses stay private</div>
           <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
@@ -255,10 +256,10 @@ export default function AIInsightsPage() {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* CTA band */}
-      <div className="py-10 px-6">
+      <Reveal className="py-10 px-6">
         <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
           <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
             Evidence you can edit. AI you can trust.
@@ -270,7 +271,7 @@ export default function AIInsightsPage() {
             Generate a recap
           </Link>
         </div>
-      </div>
+      </Reveal>
     </MainLayout>
   )
 }

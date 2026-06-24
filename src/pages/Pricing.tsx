@@ -9,6 +9,7 @@ import {
 } from '../config/pricing-matrix'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
+import Reveal from '../components/Reveal'
 import { usePlanCatalog } from '../hooks/usePlanCatalog'
 
 const btnPrimary =
@@ -110,7 +111,7 @@ export default function Pricing() {
       </section>
 
       {/* Plans */}
-      <section className="pb-16 bg-white dark:bg-[#0A0F1E]">
+      <Reveal as="section" className="pb-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
             {/* Pulse */}
@@ -264,10 +265,10 @@ export default function Pricing() {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Feature matrix */}
-      <section id="feature-matrix" className="py-16 bg-pulse-50 dark:bg-[#0F1525] scroll-mt-20">
+      <Reveal as="section" id="feature-matrix" className="py-16 bg-pulse-50 dark:bg-[#0F1525] scroll-mt-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Feature matrix</div>
           <h2 className="font-bold text-4xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
@@ -350,10 +351,10 @@ export default function Pricing() {
             launch.
           </p>
         </div>
-      </section>
+      </Reveal>
 
       {/* Nonprofit */}
-      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
+      <Reveal as="section" className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">
             Nonprofit & education
@@ -373,10 +374,10 @@ export default function Pricing() {
             Apply for nonprofit pricing
           </Link>
         </div>
-      </section>
+      </Reveal>
 
       {/* FAQ */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Pricing questions</div>
           <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
@@ -391,10 +392,10 @@ export default function Pricing() {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* CTA band */}
-      <div className="py-10 px-6">
+      <Reveal className="py-10 px-6">
         <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
           <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
             Start with Pulse. Scale when the room does.
@@ -407,7 +408,7 @@ export default function Pricing() {
             Create your workspace
           </Link>
         </div>
-      </div>
+      </Reveal>
     </MainLayout>
   )
 }

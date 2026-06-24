@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useCountUp } from '../hooks/useCountUp'
 import { useT } from '../i18n'
 import type { PollOption, SessionStatus } from '@/types/session'
 import { api, type ApiError } from '../api/client'
@@ -15,6 +16,55 @@ import SimilarSessionsResultsPanel from '../components/insights/SimilarSessionsR
 function getResultFontSize(count: number, maxCount: number): number {
   const ratio = maxCount > 1 ? (count - 1) / (maxCount - 1) : 0
   return Math.round(18 + ratio * 32)
+}
+
+// A single tally row. The bar width already transitions via CSS; useCountUp
+// tweens the visible count/percent so the numbers move with the bar (Finding 5
+// #1). aria-label uses the final values so assistive tech is never read a
+// mid-tween number.
+function ResultRow({
+  label,
+  count,
+  pct,
+  barPct,
+  isWinner,
+  winnerSuffix,
+}: {
+  label: string
+  count: number
+  pct: number
+  barPct: number
+  isWinner: boolean
+  winnerSuffix: string
+}) {
+  const shownCount = useCountUp(count)
+  const shownPct = useCountUp(pct)
+  return (
+    <li className="space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className={isWinner ? 'font-semibold text-teal-700 dark:text-teal-400' : ''}>
+          {label}
+          {isWinner ? winnerSuffix : ''}
+        </span>
+        <span className="font-medium tabular-nums">
+          {shownCount} ({shownPct}%)
+        </span>
+      </div>
+      <div
+        role="img"
+        aria-label={`${label}: ${count} votes, ${pct}%`}
+        className="h-3 bg-pulse-100 rounded-full overflow-hidden"
+      >
+        <div
+          className={
+            'h-full transition-[width] duration-500 ' +
+            (isWinner ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-500')
+          }
+          style={{ width: `${barPct}%` }}
+        />
+      </div>
+    </li>
+  )
 }
 
 type ResultsPayload = {
@@ -221,34 +271,17 @@ export default function Results() {
             {rows.map((r) => {
               const pct = results.total === 0 ? 0 : Math.round((r.count / results.total) * 100)
               const barPct = max === 0 ? 0 : Math.round((r.count / max) * 100)
-              const isWinner = winner && r.id === winner.id && r.count > 0
+              const isWinner = !!(winner && r.id === winner.id && r.count > 0)
               return (
-                <li key={r.id} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className={isWinner ? 'font-semibold text-teal-700 dark:text-teal-400' : ''}>
-                      {r.label}
-                      {isWinner ? ` · ${t('winner')}` : ''}
-                    </span>
-                    <span className="font-medium">
-                      {r.count} ({pct}%)
-                    </span>
-                  </div>
-                  <div
-                    role="img"
-                    aria-label={`${r.label}: ${r.count} votes, ${pct}%`}
-                    className="h-3 bg-pulse-100 rounded-full overflow-hidden"
-                  >
-                    <div
-                      className={
-                        'h-full transition-[width] duration-500 ' +
-                        (isWinner
-                          ? 'bg-gradient-to-r from-teal-500 to-violet-500'
-                          : 'bg-pulse-500')
-                      }
-                      style={{ width: `${barPct}%` }}
-                    />
-                  </div>
-                </li>
+                <ResultRow
+                  key={r.id}
+                  label={r.label}
+                  count={r.count}
+                  pct={pct}
+                  barPct={barPct}
+                  isWinner={isWinner}
+                  winnerSuffix={` · ${t('winner')}`}
+                />
               )
             })}
           </ul>

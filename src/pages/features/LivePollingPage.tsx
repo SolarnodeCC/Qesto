@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { List, CheckSquare, BarChart3, MessageSquare, ThumbsUp, Move, Cloud, Gauge, Play, EyeOff, Shuffle, Users, Timer, Download } from 'lucide-react'
 import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
+import Reveal from '../../components/Reveal'
 
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
@@ -112,7 +113,7 @@ export default function LivePollingPage() {
       </section>
 
       {/* Question types */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Question types</div>
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
@@ -140,10 +141,10 @@ export default function LivePollingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Latency ladder */}
-      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
+      <Reveal as="section" className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Latency</div>
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
@@ -176,10 +177,10 @@ export default function LivePollingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Host controls */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Host controls</div>
           <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
@@ -197,10 +198,10 @@ export default function LivePollingPage() {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* CTA band */}
-      <div className="py-10 px-6">
+      <Reveal className="py-10 px-6">
         <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
           <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
             Ship the tally. Keep the room.
@@ -212,7 +213,7 @@ export default function LivePollingPage() {
             Launch your first poll
           </Link>
         </div>
-      </div>
+      </Reveal>
     </MainLayout>
   )
 }

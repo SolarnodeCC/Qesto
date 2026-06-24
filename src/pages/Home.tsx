@@ -5,6 +5,8 @@ import { useT } from '../i18n'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
 import PageSeo from '../components/PageSeo'
+import Reveal from '../components/Reveal'
+import HomePollDemo from '../components/HomePollDemo'
 
 const FEATURE_STRIP = [
   { icon: Sparkles, label: 'Question ideas ready in under 90 seconds' },
@@ -191,8 +193,16 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── Live results preview ──────────────────────────────────────────────── */}
+        <Reveal as="section" aria-label="Live results preview" className="px-6 pb-12">
+          <div className="max-w-[1120px] mx-auto flex flex-col items-center md:items-start">
+            <HomePollDemo />
+          </div>
+        </Reveal>
+
         {/* ── Feature cards ─────────────────────────────────────────────────────── */}
-        <section
+        <Reveal
+          as="section"
           aria-labelledby="features-heading"
           className="bg-pulse-50 dark:bg-[#0F1525] py-24 px-6"
           id="features"
@@ -247,7 +257,7 @@ export default function Home() {
               })}
             </ul>
           </div>
-        </section>
+        </Reveal>
 
       </div>
     </MainLayout>

@@ -348,6 +348,25 @@ html {
   animation-delay: calc(var(--stagger-index, 0) * var(--motion-stagger-secondary));
 }
 
+/* ─── Scroll reveal (Finding 5 #3) ─────────────────────────────────────────── */
+/* Apply .reveal to a section/wrapper; toggle .reveal-visible when it scrolls    */
+/* into view (driven by useInView). Hidden state only applies while NOT visible, */
+/* and the global reduced-motion override collapses the transition to ~instant.  */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity   var(--motion-duration-slow) var(--motion-ease-slow),
+    transform var(--motion-duration-slow) var(--motion-ease-slow);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ─── Button hover (fast) ──────────────────────────────────────────────────── */
 /* Applied via Tailwind in components; defined here as a reusable layer.       */
 @layer components {

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from './AIBadge'
+import Reveal from './Reveal'
 import type { SolutionPageProps } from './SolutionPageTemplate.types'
 
 export type {
@@ -125,7 +126,7 @@ export default function SolutionPageTemplate({
 
       {/* Pain points */}
       {painPoints && (
-        <section aria-labelledby="pain-points-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="pain-points-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
               <h2
@@ -150,12 +151,13 @@ export default function SolutionPageTemplate({
               </ul>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* Features */}
       {features && (
-        <section
+        <Reveal
+          as="section"
           aria-labelledby="features-heading"
           className="py-16 md:py-20 bg-gradient-to-br from-teal-50/50 to-violet-50/50 dark:from-[#0F1525] dark:to-[#0F1525] border-b border-pulse-200 dark:border-[#1E2A45]"
         >
@@ -191,12 +193,12 @@ export default function SolutionPageTemplate({
               </ul>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* Proof */}
       {proof && (
-        <section aria-labelledby="proof-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="proof-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
               <h2
@@ -248,12 +250,12 @@ export default function SolutionPageTemplate({
               )}
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* Playbook */}
       {playbook && (
-        <section aria-labelledby="playbook-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="playbook-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
               <div className="text-center max-w-3xl mx-auto space-y-3">
@@ -281,12 +283,12 @@ export default function SolutionPageTemplate({
               </ol>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* Scenarios */}
       {scenarios && (
-        <section aria-labelledby="scenarios-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="scenarios-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
               <h2
@@ -310,12 +312,12 @@ export default function SolutionPageTemplate({
               </ul>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* Related pages */}
       {related && (
-        <section aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
               <h2
@@ -340,12 +342,12 @@ export default function SolutionPageTemplate({
               </ul>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
 
       {/* FAQ */}
       {faq && (
-        <section aria-labelledby="faq-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="faq-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[900px] mx-auto space-y-8">
               <h2
@@ -369,7 +371,7 @@ export default function SolutionPageTemplate({
               </ul>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
       {faqJsonLd && (
         <script type="application/ld+json">
@@ -379,7 +381,7 @@ export default function SolutionPageTemplate({
 
       {/* Bottom CTA */}
       {bottomCta && (
-        <section aria-labelledby="cta-heading" className="py-16 md:py-24">
+        <Reveal as="section" aria-labelledby="cta-heading" className="py-16 md:py-24">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] border border-pulse-200 dark:border-[#1E2A45]">
               <h2
@@ -408,7 +410,7 @@ export default function SolutionPageTemplate({
               </div>
             </div>
           </div>
-        </section>
+        </Reveal>
       )}
     </MainLayout>
   )
