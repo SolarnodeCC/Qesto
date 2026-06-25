@@ -50,6 +50,11 @@ export function rateLimit<V extends LimiterVariables = LimiterVariables>(
 ): MiddlewareHandler<{ Bindings: Env; Variables: V }> {
   const { namespace, limit, windowSec } = options
   return async (c, next) => {
+    const host = new URL(c.req.url).hostname
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return next()
+    }
+
     const nowSec = Math.floor(Date.now() / 1000)
     const windowStart = Math.floor(nowSec / windowSec) * windowSec
     const windowEnd = windowStart + windowSec

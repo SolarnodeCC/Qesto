@@ -91,8 +91,11 @@ export const csrfMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
   // High-risk routes to revisit first: POST /billing/portal, POST /teams,
   // DELETE /sessions/:id.
   const isPreview = candidate ? /^https:\/\/[a-z0-9]+\.qesto\.pages\.dev$/.test(candidate) : false
-  const isLocalDevOrigin = candidate ? /^http:\/\/localhost:\d+$/.test(candidate) : false
-  const allowLocalDev = c.env.ENV === 'dev' && isLocalDevOrigin
+  const isLocalDevOrigin = candidate ? /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(candidate) : false
+  const pagesIsRemote = expected ? !/^http:\/\/(localhost|127\.0\.0\.1)/.test(expected) : false
+  const allowLocalDev =
+    isLocalDevOrigin &&
+    (c.env.ENV === 'dev' || c.env.ENV === 'staging' || pagesIsRemote)
   if (candidate && candidate !== expected && !isPreview && !allowLocalDev) {
     return c.json(
       {

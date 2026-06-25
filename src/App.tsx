@@ -26,6 +26,8 @@ const TeamSettings = lazy(() => import('./pages/TeamSettings'))
 const TeamInvite = lazy(() => import('./pages/TeamInvite'))
 const ConnectJoinPage = lazy(() => import('./pages/ConnectJoinPage'))
 const StudioPage = lazy(() => import('./pages/StudioPage'))
+const EmbedPlayground = lazy(() => import('./pages/EmbedPlayground'))
+const EmbedWidget = lazy(() => import('./pages/EmbedWidget'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 // HelpChatWidget is a named export — adapt it to a default for React.lazy.
 const HelpChatWidget = lazy(() =>
@@ -219,6 +221,9 @@ export default function App() {
         <Route path="/connect/join" element={<LazySuspense pending={<LazyRoutePending />}><ConnectJoinPage /></LazySuspense>} />
         {/* STUDIO (ADR-0060) — AI session-authoring co-pilot */}
         <Route path="/studio" element={<LazySuspense pending={<LazyRoutePending />}><StudioPage /></LazySuspense>} />
+        {/* EMBED (ADR-0050) — host playground + iframe widget surface */}
+        <Route path="/embed/playground" element={<LazySuspense pending={<LazyRoutePending />}><EmbedPlayground /></LazySuspense>} />
+        <Route path="/embed/widget" element={<LazySuspense pending={<LazyRoutePending />}><EmbedWidget /></LazySuspense>} />
         <Route path="*" element={<LazySuspense pending={<LazyRoutePending />}><NotFound /></LazySuspense>} />
       </Routes>
       </HelpChatProvider>

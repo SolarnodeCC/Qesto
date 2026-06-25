@@ -56,6 +56,41 @@ describe('live-session-protocol', () => {
       expect(result).toBeNull()
     })
 
+    it('parses poll options as { id, label } objects from the DO init payload', () => {
+      const payload = {
+        session: {
+          id: 's123',
+          code: 'ABC123',
+          title: 'Test Session',
+          status: 'live',
+        },
+        role: 'voter',
+        voterId: 'v_abc',
+        question: {
+          id: 'q1',
+          kind: 'poll',
+          prompt: 'What should we prioritize?',
+          options: [
+            { id: 'opt_a', label: 'Option A' },
+            { id: 'opt_b', label: 'Option B' },
+          ],
+        },
+        questionIndex: 0,
+        questionTotal: 1,
+        results: { counts: {}, total: 0 },
+        participants: 1,
+      }
+      const result = parseInitPayload(payload)
+      expect(result?.question).toMatchObject({
+        id: 'q1',
+        prompt: 'What should we prioritize?',
+        options: [
+          { id: 'opt_a', label: 'Option A' },
+          { id: 'opt_b', label: 'Option B' },
+        ],
+      })
+    })
+
     it('handles optional fields gracefully', () => {
       const payload = {
         session: {

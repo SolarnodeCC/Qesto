@@ -33,7 +33,7 @@ function SourceBadge({ source }: { source: MatrixRowSource }) {
   if (source === 'quota') return null
   const label = source === 'roadmap' ? 'Roadmap' : 'Static copy'
   return (
-    <span className="ml-2 inline-flex align-middle text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-pulse-100 text-pulse-500 dark:bg-white/10 dark:text-[#8893AD]">
+    <span className="ml-2 inline-flex align-middle text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-pulse-100 text-pulse-700 dark:bg-white/10 dark:text-[#A8B3CC]">
       {label}
     </span>
   )
@@ -345,8 +345,8 @@ export default function Pricing() {
           </div>
           <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mt-6 max-w-3xl">
             Numeric limits and quota-backed feature flags mirror{' '}
-            <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
-            <code className="text-xs bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
+            <code className="text-xs text-pulse-700 dark:text-[#A8B3CC] bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
+            <code className="text-xs text-pulse-700 dark:text-[#A8B3CC] bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
             Rows tagged static copy or roadmap are packaging claims to review against product/commerce plans before
             launch.
           </p>

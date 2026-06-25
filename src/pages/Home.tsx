@@ -7,6 +7,7 @@ import AIBadge from '../components/AIBadge'
 import PageSeo from '../components/PageSeo'
 import Reveal from '../components/Reveal'
 import HomePollDemo from '../components/HomePollDemo'
+import HeroPollPreview from '../components/HeroPollPreview'
 
 const FEATURE_STRIP = [
   { icon: Sparkles, label: 'Question ideas ready in under 90 seconds' },
@@ -66,14 +67,14 @@ export default function Home() {
         <button
           type="button"
           onClick={() => void auth.logout()}
-          className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+          className="text-sm text-teal-700 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
         >
           Sign out
         </button>
       ) : auth.status === 'anonymous' ? (
         <Link
           to="/login"
-          className="text-sm font-medium text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+          className="text-sm font-medium text-teal-700 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
         >
           Sign in
         </Link>
@@ -95,7 +96,10 @@ export default function Home() {
           aria-labelledby="hero-heading"
           className="relative overflow-hidden py-24 px-6 before:absolute before:left-1/2 before:-top-[120px] before:-translate-x-1/2 before:w-[1200px] before:h-[600px] before:bg-[radial-gradient(circle,rgba(20,184,166,0.08)_0%,transparent_60%)] before:pointer-events-none"
         >
-          <div className="max-w-[1120px] mx-auto">
+          <div className="max-w-[1120px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+            {/* ── Hero copy ─────────────────────────────────────────────── */}
+            <div>
 
             {/* AI pill */}
             <div className="flex items-center gap-2 mb-6">
@@ -114,6 +118,11 @@ export default function Home() {
                 amplified by AI.
               </span>
             </h1>
+
+            {/* Supporting line — evidence register, subordinate to the H1 */}
+            <p className="text-lg leading-[1.5] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-5">
+              …and the evidence to back it up — decisions you can defend long after the meeting ends.
+            </p>
 
             {/* Sub-headline */}
             <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-8">
@@ -137,10 +146,10 @@ export default function Home() {
                     Go to dashboard
                   </Link>
                   <Link
-                    to="/pricing"
+                    to="/templates"
                     className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
-                    See the anonymity modes
+                    Browse templates
                   </Link>
                 </>
               ) : auth.status === 'loading' ? (
@@ -154,14 +163,14 @@ export default function Home() {
                     Launch your next session
                   </Link>
                   <Link
-                    to="/pricing"
+                    to="/templates"
                     className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
-                    See the anonymity modes
+                    Browse templates
                   </Link>
                 </>
               )}
-              <span className="text-[13px] text-pulse-500 ml-2">No card required · 2-minute setup</span>
+              <span className="text-[13px] text-pulse-500 ml-2">No card required · 2-minute setup · No account required to participate</span>
             </div>
             <div className="mb-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <Link
@@ -185,10 +194,16 @@ export default function Home() {
             >
               {FEATURE_STRIP.map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-2.5 text-sm text-pulse-600 dark:text-[#A8B3CC]">
-                  <Icon aria-hidden="true" size={16} className="text-teal-600 dark:text-teal-400 flex-shrink-0" />
+                  <Icon aria-hidden="true" size={16} className="text-teal-700 dark:text-teal-400 flex-shrink-0" />
                   {label}
                 </div>
               ))}
+            </div>
+            </div>
+
+            {/* ── Live product preview ──────────────────────────────────── */}
+            <div className="lg:justify-self-end w-full">
+              <HeroPollPreview />
             </div>
           </div>
         </section>
@@ -210,7 +225,7 @@ export default function Home() {
           <div className="max-w-[1120px] mx-auto">
 
             {/* Eyebrow */}
-            <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-teal-600 dark:text-teal-400 mb-3">
+            <p className="text-[13px] font-semibold tracking-[0.08em] uppercase text-teal-700 dark:text-teal-400 mb-3">
               Facilitator-first
             </p>
 
@@ -218,7 +233,7 @@ export default function Home() {
               id="features-heading"
               className="font-[family-name:var(--font-display)] font-bold text-[48px] leading-[1.1] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-4 max-w-[680px]"
             >
-              Decisions you can defend, with evidence that survives the meeting.
+              Everything you need to run the room — and prove what it decided.
             </h2>
 
             <p className="text-lg text-pulse-600 dark:text-[#A8B3CC] max-w-[620px] mb-12">

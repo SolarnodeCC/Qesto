@@ -1,5 +1,18 @@
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 
+export type QuestionKind =
+  | 'poll'
+  | 'ranking'
+  | 'open'
+  | 'consent'
+  | 'multi_select'
+  | 'likert'
+  | 'upvote'
+  | 'word_cloud'
+  | 'slider'
+  | 'reaction'
+
+type QuestionOption = { id?: string; label: string }
 type CreatedSession = { id: string; code: string; title: string }
 type SessionResults = {
   session: { id: string; status: string; code: string; title: string }
@@ -33,7 +46,20 @@ export async function createDraftSession(page: Page, title: string): Promise<Cre
 }
 
 export async function addPollQuestion(page: Page, sessionId: string, prompt: string): Promise<void> {
-  await page.evaluate(async ({ id, questionPrompt }) => {
+  await addQuestion(page, sessionId, 'poll', prompt, [
+    { id: 'opt_a', label: 'Option A' },
+    { id: 'opt_b', label: 'Option B' },
+  ])
+}
+
+export async function addQuestion(
+  page: Page,
+  sessionId: string,
+  kind: QuestionKind,
+  prompt: string,
+  options?: QuestionOption[],
+): Promise<void> {
+  await page.evaluate(async ({ id, body }) => {
     const token = sessionStorage.getItem('qesto_token')
     const res = await fetch(`/api/sessions/${encodeURIComponent(id)}/questions`, {
       method: 'POST',
@@ -42,18 +68,31 @@ export async function addPollQuestion(page: Page, sessionId: string, prompt: str
         'content-type': 'application/json',
         ...(token ? { authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({
-        kind: 'poll',
-        prompt: questionPrompt,
-        options: [
-          { id: 'opt_a', label: 'Option A' },
-          { id: 'opt_b', label: 'Option B' },
-        ],
-      }),
+      body: JSON.stringify(body),
     })
     const json = await res.json() as ApiResponse<unknown>
     if (!res.ok || !json?.ok) throw new Error(json?.error?.message ?? `HTTP ${res.status}`)
-  }, { id: sessionId, questionPrompt: prompt })
+  }, {
+    id: sessionId,
+    body: {
+      kind,
+      prompt,
+      ...(options && options.length > 0 ? { options } : {}),
+    },
+  })
+}
+
+export async function openPresenterView(page: Page, sessionId: string): Promise<void> {
+  await page.goto(`/sessions/${sessionId}/present`)
+  await page.waitForURL(new RegExp(`/sessions/${sessionId}/present(?:\\?.*)?$`))
+}
+
+/** Presenter canvas has no `<main>`; assert the live controls toolbar instead. */
+export async function expectPresenterViewHealthy(page: Page, prompt?: string): Promise<void> {
+  await expect(page.getByRole('toolbar', { name: 'Presenter controls' })).toBeVisible()
+  if (prompt) {
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(prompt)
+  }
 }
 
 export async function startSession(page: Page, sessionId: string): Promise<void> {
