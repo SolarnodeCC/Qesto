@@ -8,6 +8,14 @@
         "QESTO_KB_SERVICE_KEY": "${QESTO_KB_SERVICE_KEY}",
         "QESTO_KB_API_TOKEN": "${QESTO_KB_API_TOKEN}"
       }
+    },
+    "qesto-devtools": {
+      "command": "npx",
+      "args": ["-y", "tsx", "scripts/mcp/devtools-server.ts"],
+      "env": {
+        "QESTO_API_BASE_URL": "${QESTO_API_BASE_URL}",
+        "QESTO_ADMIN_API_TOKEN": "${QESTO_ADMIN_API_TOKEN}"
+      }
     }
   }
 }

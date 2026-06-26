@@ -178,3 +178,18 @@ Agent `model:` frontmatter is the source of truth. Main-agent dispatch should ma
 | Low | **haiku** | `qesto-tester`, `qesto-e2e-tester`, `qesto-product-owner`, `qesto-i18n`, `qesto-marketing` | Vitest scaffolding, Playwright E2E/load/stress/a11y specs, user stories, AC, key extraction, translation stubs, release notes, marketing copy |
 
 When the main agent needs a model not matching any sub-agent, invoke the sub-agent whose tier matches. Prefer Opus for anything touching edge runtime correctness (DO lifecycle, JWT, rate limits, multi-tenant isolation); prefer Haiku for template-heavy mechanical work.
+
+### Cross-session memory (L3)
+Agents persist non-obvious decisions across sessions via a git-tracked log:
+- **Read**: the `SessionStart` hook ([`.claude/hooks/session-start.sh`](.claude/hooks/session-start.sh)) auto-surfaces the most recent entries from [`.claude/memory/LEARNINGS.md`](.claude/memory/LEARNINGS.md) into context. Grep that file for older/topic entries.
+- **Write**: append an entry (date, role, learning, why, refs) when you make a decision **not** already captured in code, git history, an ADR, or this file. The `Stop` hook reminds you after significant changes.
+- This is the agent-facing memory; `.claude/metrics/sessions.jsonl` remains commit-level metrics only. Convention is governed by [`COMMON_RULES.md`](.claude/skills/COMMON_RULES.md) §13.
+
+### Background checks (L3 "workers")
+- **Testgaps**: [`scripts/check-testgaps.mjs`](scripts/check-testgaps.mjs) (`npm run check:testgaps`) reports changed source files missing tests across the whole working tree; the `Stop` hook runs it automatically. `--strict` exits non-zero for CI.
+- **Audit**: `npm run audit` chains the read-only repo checks (`check:no-any`, `check:kv-access`, `check:testgaps`, `check:pii-log`) into one command.
+
+### MCP tooling
+Two MCP servers are registered in [`.mcp.json`](.mcp.json):
+- **`qesto-kb`** — `kb_search` semantic search over `knowledge-base/` (owned by the knowledge node).
+- **`qesto-devtools`** — read-only introspection ([`scripts/mcp/devtools-server.ts`](scripts/mcp/devtools-server.ts)): `d1_query` (read-only SQL against local D1 by default), `kv_inspect` (list/get on the KV namespaces), `platform_metrics` (wraps authed admin analytics GET endpoints). Remote/prod paths are gated behind a qesto-security review; the `pre-bash.sh` hook still blocks destructive `wrangler` commands.

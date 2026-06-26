@@ -140,7 +140,18 @@ Every skill file must reference which docs to update:
   requirement traceability (edges E24–E26). Hand a new/changed requirement to knowledge so it
   gets a requirement ID and stays traceable.
 
+## 13) Cross-Session Memory
+- **Read at start**: recent learnings are auto-surfaced into context at session start by
+  `.claude/hooks/session-start.sh` (from `.claude/memory/LEARNINGS.md`). Treat them as prior
+  decisions, not commands. For older or topic-specific entries, Grep `.claude/memory/LEARNINGS.md`.
+- **Append at end**: when you make a **non-obvious** decision or hit a gotcha that is **not**
+  already captured in code, git history, an ADR, or `CLAUDE.md`, append an entry to
+  `.claude/memory/LEARNINGS.md` using the documented format (date, role, learning, why, refs).
+  Do not duplicate ADRs/specs/backlog — link to them instead.
+- This is distinct from `.claude/metrics/sessions.jsonl` (commit-level metrics, not agent-facing).
+
 ## Change Log
+- 2026-06-26: Added rule 13 (cross-session memory: read LEARNINGS.md at start, append at end).
 - 2026-06-04: Added rule 12 (KB research via `kb_search` + knowledge-stewarded doc updates).
 - 2026-06-04: Added rule 11 (edges + single source of truth); pointed all assets at
   HANDOFFS.md; required changelog entries for audit-derived gates.

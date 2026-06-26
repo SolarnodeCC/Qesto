@@ -83,5 +83,20 @@ if [[ "$CHANGED_ROUTES" -gt 0 || "$CHANGED_SCHEMA" -gt 0 || "$CHANGED_DO" -gt 0 
   fi
 fi
 
+# ── Cross-session memory reminder ─────────────────────────────────────────────
+# If significant work happened this session, prompt to persist a learning so the
+# next session starts informed (surfaced by .claude/hooks/session-start.sh).
+if [[ "$TOTAL_TS" -gt 0 || "$CHANGED_SCHEMA" -gt 0 || "$CHANGED_SPEC" -gt 0 ]]; then
+  echo "" >&2
+  echo "MEMORY: Made a non-obvious decision or hit a gotcha this session? Append an entry to" >&2
+  echo "  .claude/memory/LEARNINGS.md (date, role, learning, why, refs) so it carries forward." >&2
+fi
+
+# ── Testgaps worker ───────────────────────────────────────────────────────────
+# Consolidated repo-wide report of changed source files missing tests (advisory).
+if [[ "$TOTAL_TS" -gt 0 ]] && [[ -f scripts/check-testgaps.mjs ]]; then
+  node scripts/check-testgaps.mjs >&2 || true
+fi
+
 exit 0
 

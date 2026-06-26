@@ -58,6 +58,8 @@
     "check:migrations": "node scripts/check-migration-gaps.mjs && node scripts/verify-migration-metadata.mjs",
     "check:kv-access": "node scripts/check-kv-access.mjs",
     "check:no-any": "node scripts/check-no-any.mjs",
+    "check:testgaps": "node scripts/check-testgaps.mjs",
+    "audit": "npm run check:no-any && npm run check:kv-access && npm run check:testgaps -- --all && npm run check:pii-log",
     "cap:sync": "npm run build && npx cap sync",
     "cap:ios": "npx cap open ios",
     "cap:android": "npx cap open android"
