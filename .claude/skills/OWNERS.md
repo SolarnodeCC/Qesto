@@ -1,7 +1,9 @@
 # Prompt Asset Ownership Matrix
 
-_Last reviewed_: 2026-06-20. Edge ownership (handoffs between these roles) lives in
-[`HANDOFFS.md`](./HANDOFFS.md).
+_Last reviewed_: 2026-06-26. Edge ownership (handoffs between these roles) lives in
+[`HANDOFFS.md`](./HANDOFFS.md). This matrix is enforced by
+`scripts/check-claude-config.mjs` (CI) — every agent/skill file must be listed here,
+and every entry must map to a real file.
 
 ## Agents
 - ai-engineer-agent.md — AI Engineering Lead
@@ -11,6 +13,7 @@ _Last reviewed_: 2026-06-20. Edge ownership (handoffs between these roles) lives
 - backend-agent.md — Architect
 - cso-agent.md — CSO
 - devops-agent.md — DevOps
+- e2e-tester-agent.md — QA Lead
 - frontend-agent.md — Frontend Lead
 - i18n-agent.md — Frontend Lead
 - knowledge-agent.md — Knowledge Lead
@@ -33,6 +36,7 @@ _Last reviewed_: 2026-06-20. Edge ownership (handoffs between these roles) lives
 - backend-perf.md — Architect
 - cso.md — CSO
 - devops.md — DevOps
+- e2e-tester.md — QA Lead
 - frontend-dev.md — Frontend Lead
 - i18n.md — Frontend Lead
 - investigate.md — QA Lead
