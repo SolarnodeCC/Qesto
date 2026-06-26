@@ -37,6 +37,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/on-stop.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-metrics.sh"
           }
         ]
       }
