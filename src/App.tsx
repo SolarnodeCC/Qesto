@@ -19,6 +19,7 @@ const AccountSettings = lazy(() => import('./pages/AccountSettings'))
 const SessionConfig = lazy(() => import('./pages/SessionConfig'))
 const Launchpad = lazy(() => import('./pages/Launchpad'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const MarketingDashboard = lazy(() => import('./pages/MarketingDashboard'))
 const Present = lazy(() => import('./pages/Present'))
 const JoinPage = lazy(() => import('./pages/JoinPage'))
 const Results = lazy(() => import('./pages/Results'))
@@ -167,6 +168,7 @@ export default function App() {
         <Route path="/dashboard" element={<LazySuspense pending={<LazyRoutePending />}><Dashboard /></LazySuspense>} />
         <Route path="/settings" element={<LazySuspense pending={<LazyRoutePending />}><AccountSettings /></LazySuspense>} />
         <Route path="/admin" element={<LazySuspense pending={<LazyRoutePending />}><AdminDashboard /></LazySuspense>} />
+        <Route path="/marketing" element={<LazySuspense pending={<LazyRoutePending />}><MarketingDashboard /></LazySuspense>} />
         <Route path="/sessions/:id" element={<LazySuspense pending={<LazyRoutePending />}><SessionConfig /></LazySuspense>} />
         <Route path="/sessions/:id/launchpad" element={<LazySuspense pending={<LazyRoutePending />}><Launchpad /></LazySuspense>} />
         <Route

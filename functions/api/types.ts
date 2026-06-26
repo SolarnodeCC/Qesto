@@ -176,6 +176,16 @@ export type Env = {
   LINKEDIN_REDIRECT_URI?: string
   /** Optional fallback org URN when the OAuth scope can't read the ACL list. */
   LINKEDIN_ORG_URN?: string
+  /** Marketing automation: Reddit OAuth app (web-app type, real refresh tokens). */
+  REDDIT_CLIENT_ID?: string
+  REDDIT_CLIENT_SECRET?: string
+  REDDIT_REDIRECT_URI?: string
+  /** Marketing automation: YouTube Data API OAuth app credentials + redirect. */
+  YOUTUBE_CLIENT_ID?: string
+  YOUTUBE_CLIENT_SECRET?: string
+  YOUTUBE_REDIRECT_URI?: string
+  /** Marketing automation: HMAC key signing short-TTL video preview URLs. */
+  VIDEO_PREVIEW_SIGNING_KEY?: string
 
   // Bindings
   DB: D1Database
@@ -206,6 +216,8 @@ export type Env = {
   INSIGHTS_QUEUE?: Queue<any>
   /** ADR-042 Phase 2.3: R2 durable session snapshots for DO recovery. */
   R2_SESSIONS?: R2Bucket
+  /** Marketing automation: Video Asset Library storage (no upload endpoint in v1). */
+  R2_VIDEOS?: R2Bucket
 }
 
 export type SessionStatus = 'draft' | 'energizing' | 'live' | 'closed' | 'archived'
