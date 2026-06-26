@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test'
+import { type Locator, type Page } from '@playwright/test'
 
 /** Cursor delay between actions (also set via Playwright `launchOptions.slowMo`). */
 export const MARKETING_SLOW_MO = 350
