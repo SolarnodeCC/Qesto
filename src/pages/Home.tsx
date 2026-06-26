@@ -6,7 +6,6 @@ import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
 import PageSeo from '../components/PageSeo'
 import Reveal from '../components/Reveal'
-import HomePollDemo from '../components/HomePollDemo'
 import HeroPollPreview from '../components/HeroPollPreview'
 
 const FEATURE_STRIP = [
@@ -207,13 +206,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        {/* ── Live results preview ──────────────────────────────────────────────── */}
-        <Reveal as="section" aria-label="Live results preview" className="px-6 pb-12">
-          <div className="max-w-[1120px] mx-auto flex flex-col items-center md:items-start">
-            <HomePollDemo />
-          </div>
-        </Reveal>
 
         {/* ── Feature cards ─────────────────────────────────────────────────────── */}
         <Reveal

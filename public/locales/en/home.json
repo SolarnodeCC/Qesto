@@ -11,13 +11,5 @@
   "loading": "Loading…",
   "signIn": "Sign in",
   "getStartedFree": "Get started free",
-  "seePricing": "See pricing",
-  "demoLabel": "Live results preview",
-  "demoCaption": "This is exactly how results move when you run a real session.",
-  "demoQuestion": "How ready does the team feel for the launch?",
-  "demoOption1": "Ready to go",
-  "demoOption2": "A few open questions",
-  "demoOption3": "Need more time",
-  "demoVotesLabel": "{{count}} live responses",
-  "demoAriaLabel": "Illustrative live-poll preview showing animated results"
+  "seePricing": "See pricing"
 }
