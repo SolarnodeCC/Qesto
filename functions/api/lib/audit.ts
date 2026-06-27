@@ -108,6 +108,17 @@ export type AuditAction =
   | 'role.assigned'
   | 'role.changed'
   | 'role.removed'
+  // Marketing Automation (single-owner internal tool) — content review,
+  // mention triage, calendar edits, and video asset library changes.
+  | 'marketing.content_item_edit'
+  | 'marketing.content_item_approve'
+  | 'marketing.content_item_reject'
+  | 'marketing.content_item_publish'
+  | 'marketing.mention_reviewed'
+  | 'marketing.calendar_create'
+  | 'marketing.calendar_update'
+  | 'marketing.calendar_delete'
+  | 'marketing.video_asset_update'
 
 export interface AuditContext {
   action: AuditAction

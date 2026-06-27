@@ -5,6 +5,7 @@ import { mountSessionRoutes } from './routes/sessions'
 import { mountBillingRoutes, mountStripeWebhookRoutes } from './routes/billing'
 import { mountInsightsRoutes } from './routes/insights'
 import { mountAdminRoutes } from './routes/admin'
+import { mountMarketingRoutes } from './routes/marketing'
 import { mountEnergizerRoutes } from './routes/energizers'
 import { mountTownhallRoutes } from './routes/townhall'
 import { mountGamificationRoutes } from './routes/gamification'
@@ -289,6 +290,7 @@ export function createApp() {
   mountBillingRoutes(app)
   mountInsightsRoutes(app)
   mountAdminRoutes(app)
+  mountMarketingRoutes(app)
   mountMultiRegionAdminRoutes(app)
   mountPhase2HealthRoutes(app)
   mountEnergizerRoutes(app)

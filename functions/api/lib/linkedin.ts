@@ -1,10 +1,12 @@
 /**
  * Shared LinkedIn auto-posting helpers (MKTG).
  *
- * Used by both the one-time OAuth Pages Function (functions/linkedin-auth.ts)
- * and the standalone cron Worker (workers/linkedin-scheduler/). Zero new deps —
- * hand-rolled `fetch` matching the Slack/Zoom/SAML integrations, plus the
- * in-repo `zod` for response validation.
+ * Used by the one-time OAuth Pages Function (functions/linkedin-auth.ts), the
+ * standalone cron Worker (workers/linkedin-scheduler/, kept running during the
+ * marketing-automation transition window), and the new Content Engine /
+ * Publisher (functions/api/lib/marketing/content-engine.ts, publisher.ts).
+ * Zero new deps — hand-rolled `fetch` matching the Slack/Zoom/SAML
+ * integrations, plus the in-repo `zod` for response validation.
  *
  * Tokens are persisted encrypted via EncryptedTokenStore under the pseudo-team
  * `LINKEDIN_TEAM_SCOPE` / service `LINKEDIN_SERVICE`. Non-secret URNs, topics,
