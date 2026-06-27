@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
+import Reveal from '../components/Reveal'
 
 type OpenApiSpec = {
   openapi?: string
@@ -43,7 +44,7 @@ export default function DeveloperPortalPage() {
         )}
 
         {spec && (
-          <section className="mt-8 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6">
+          <Reveal as="section" className="mt-8 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6">
             <h2 className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">
               {spec.info?.title ?? 'API'} · {spec.info?.version ?? 'v3'}
             </h2>
@@ -58,7 +59,7 @@ export default function DeveloperPortalPage() {
             <p className="mt-4 text-xs text-pulse-500 dark:text-[#8A96B0]">
               Try-it console: use API key in Authorization header against /api/v3/*
             </p>
-          </section>
+          </Reveal>
         )}
       </main>
     </MainLayout>

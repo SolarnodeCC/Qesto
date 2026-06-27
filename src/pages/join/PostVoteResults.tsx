@@ -1,7 +1,43 @@
 import { Sparkles } from 'lucide-react'
 import { useT } from '../../i18n'
+import { useCountUp } from '../../hooks/useCountUp'
 
 type OrderedOption = { id: string; label: string; count: number }
+
+// One live-results row. The bar width is already CSS-transitioned; useCountUp
+// tweens the visible percentage so the number moves with the bar as live votes
+// arrive (Finding 5 #1). The percentage span is not aria-live, so tweening it
+// does not spam assistive tech (the total below stays instant + aria-live).
+function PostVoteRow({
+  label,
+  pct,
+  isMyVote,
+  yourVoteLabel,
+}: {
+  label: string
+  pct: number
+  isMyVote: boolean
+  yourVoteLabel: string
+}) {
+  const shownPct = useCountUp(pct)
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-sm">
+        <span className={isMyVote ? 'font-semibold text-teal-700' : 'text-pulse-700 dark:text-[#A8B3CC]'}>
+          {label}
+          {isMyVote && <span className="ml-1.5 text-xs text-teal-500">· {yourVoteLabel}</span>}
+        </span>
+        <span className="text-pulse-500 dark:text-[#8A96B0] tabular-nums">{shownPct}%</span>
+      </div>
+      <div className="h-2 bg-pulse-100 dark:bg-white/10 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-[width] duration-300 ${isMyVote ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300 dark:bg-white/20'}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  )
+}
 
 interface PostVoteResultsProps {
   questionKind: string
@@ -36,23 +72,14 @@ export function PostVoteResults({ questionKind, ordered, resultsTotal, myVotes }
           </p>
           {ordered.map((o) => {
             const pct = resultsTotal === 0 ? 0 : Math.round((o.count / resultsTotal) * 100)
-            const isMyVote = myVotes.includes(o.id)
             return (
-              <div key={o.id} className="space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className={isMyVote ? 'font-semibold text-teal-700' : 'text-pulse-700 dark:text-[#A8B3CC]'}>
-                    {o.label}
-                    {isMyVote && <span className="ml-1.5 text-xs text-teal-500">· {t('your_vote')}</span>}
-                  </span>
-                  <span className="text-pulse-500 dark:text-[#8A96B0] tabular-nums">{pct}%</span>
-                </div>
-                <div className="h-2 bg-pulse-100 dark:bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-[width] duration-300 ${isMyVote ? 'bg-gradient-to-r from-teal-500 to-violet-500' : 'bg-pulse-300 dark:bg-white/20'}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
+              <PostVoteRow
+                key={o.id}
+                label={o.label}
+                pct={pct}
+                isMyVote={myVotes.includes(o.id)}
+                yourVoteLabel={t('your_vote')}
+              />
             )
           })}
           <p className="text-xs text-pulse-500 dark:text-[#8A96B0] text-right" aria-live="polite" aria-atomic="true">

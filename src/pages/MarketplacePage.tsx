@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
+import Reveal from '../components/Reveal'
 import { useT } from '../i18n'
 import { inputHint } from '../ui/input-hint'
 
@@ -65,7 +66,7 @@ export default function MarketplacePage() {
             {t('marketplace.loading')}
           </p>
         ) : (
-          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+          <Reveal as="ul" className="mt-8 grid gap-4 sm:grid-cols-2">
             {apps.map((app) => (
               <li
                 key={app.id}
@@ -83,7 +84,7 @@ export default function MarketplacePage() {
                 <p className="mt-3 text-xs text-pulse-500 capitalize">{app.partner}</p>
               </li>
             ))}
-          </ul>
+          </Reveal>
         )}
 
         <p className="mt-12 text-sm text-pulse-500">

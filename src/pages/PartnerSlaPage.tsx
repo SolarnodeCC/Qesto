@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
+import Reveal from '../components/Reveal'
 import { useT } from '../i18n'
 
 type SlaSnapshot = {
@@ -44,7 +45,7 @@ export default function PartnerSlaPage() {
 
         {sla ? (
           <>
-            <dl className="mt-10 grid gap-4 sm:grid-cols-2">
+            <Reveal as="dl" className="mt-10 grid gap-4 sm:grid-cols-2">
               <div className="rounded-lg border border-pulse-200 p-4 dark:border-[#2A3858]">
                 <dt className="text-xs uppercase text-pulse-500">{t('sla.uptime')}</dt>
                 <dd className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{sla.uptimePct}%</dd>
@@ -61,7 +62,7 @@ export default function PartnerSlaPage() {
                 <dt className="text-xs uppercase text-pulse-500">{t('sla.webhooks')}</dt>
                 <dd className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{sla.webhookDeliveryPct}%</dd>
               </div>
-            </dl>
+            </Reveal>
             {(sla.isDefault ?? true) && (
               <p className="mt-4 text-sm text-pulse-500 italic">
                 Metrics shown are current SLO targets. Live measurement reporting is on the roadmap.
