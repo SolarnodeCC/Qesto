@@ -27,7 +27,7 @@ down. ADRs document the target pattern; backlog stories fund the burn-down.
 | Gate | Anti-pattern counted | Abstraction to use | Baseline | ADR |
 |---|---|---|---:|---|
 | `scripts/check-ai-gateway.mjs` | raw `env.AI.run` / `ai.run(` in `functions/` | `runAI()` in `lib/ai/ai-gateway.ts` | 32 | ADR-0068 |
-| `scripts/check-d1-access.mjs` | `env.DB.prepare` in `functions/api/routes/` | `functions/api/repositories/` | 288 | ADR-0069 |
+| `scripts/check-d1-access.mjs` | `env.DB.prepare` in `functions/api/routes/` (multi-line-aware) | `functions/api/repositories/` | 329 | ADR-0069 |
 | `scripts/check-error-response.mjs` | inline `ok: false` in `functions/api/routes/` | `errorResponse()` in `lib/error-handler.ts` | 603 | ADR-0070 |
 
 All three are wired into `ops/ci/quality-gates.sh` (runs on every PR) and `npm run check:rc`.
@@ -47,6 +47,12 @@ All three are wired into `ops/ci/quality-gates.sh` (runs on every PR) and `npm r
 
 **RT-01 (now) — land the rails (P0).** This change: gates + ADRs + `errorResponse`/`runAI` + first
 burn-down. Exit signal: the 3 gates run in CI and are green at baseline.
+
+**First repository slice (done as reference impl):** `sessions/lifecycle.ts` (724→663 lines) — all 8
+D1 queries extracted to `repositories/sessionLifecycleRepository.ts`, board warm-up config to
+`services/sessionLifecycleService.ts`. This is the ADR-0069 pattern for the rest to follow. (It also
+exposed that the line-based gate missed multi-line `c.env.DB\n.prepare` calls — the gate is now
+multi-line-aware, baseline corrected 288→329.)
 
 **RT-02 → RT-03 — burn down (P0→P1), highest impact/effort first:**
 1. **errorResponse migration** — mechanical, non-AI, safe; lower `check-error-response` baseline each

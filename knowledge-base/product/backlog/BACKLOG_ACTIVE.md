@@ -70,7 +70,7 @@ ADR-0068/0069/0070.
 | `ARCH-RATCHET-01` | 5 | P0 | architect + backend | **Done** | 3 ratchet gates (`check-ai-gateway`/`check-d1-access`/`check-error-response`) wired into `quality-gates.sh` + `check:rc`; `errorResponse()` + `runAI()` added; `sovereign.ts` migrated (error baseline 610→603); ADR-0068/0069/0070 accepted |
 | `ARCH-ERROR-BUILDER-MIGRATE-01` | 8 | P1 | backend | Open | Inline `ok: false` envelopes migrated to `errorResponse()`; `check-error-response` baseline lowered toward 0 |
 | `ARCH-AI-GATEWAY-MIGRATE-01` | 8 | P1 | ai-engineer | Open | Raw `AI.run` sites routed through `runAI`; `check-ai-gateway` baseline lowered; `npm run test:eval` green (REV-10) per batch |
-| `ARCH-REPO-LAYER-01` | 13 | P1 | backend + architect | Open | God routes (`lifecycle.ts`, `billing.ts`, `integrations.ts`) extracted to services/repositories; `check-d1-access` baseline lowered |
+| `ARCH-REPO-LAYER-01` | 13 | P1 | backend + architect | In progress | First slice done: `lifecycle.ts` (724→663) → `sessionLifecycleRepository`/`sessionLifecycleService`. Remaining: `billing.ts`, `integrations.ts` extracted; `check-d1-access` baseline lowered |
 
 ---
 

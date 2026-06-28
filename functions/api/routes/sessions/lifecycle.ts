@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import type { Env } from '../../types'
 import type { SessionVars } from './shared'
 
-import { ulid } from '../../lib/ulid'
 import { requireFound, requireDraft, requireLiveForClose } from '../../lib/session-lifecycle'
 import {
   fetchSession,
@@ -16,36 +15,23 @@ import { writeEvent } from '../../lib/observability'
 import { trackSessionWrite } from '../../lib/multi-region-mutation'
 import { logEvent } from '../../lib/log'
 import { enqueuePostSessionWork, computePayloadHash } from '../../lib/queues/producer'
-import { readKvJson } from '../../lib/kv'
 import { mergeRetroActionsOnClose } from '../../lib/workspace-actions'
 import { persistRetroHealthSnapshot } from '../../lib/workspace-trends'
-import { ideateSeedKey, type IdeateSessionSeed } from '../ideate-sessions'
-import { retroSeedKey, type RetroSessionSeed } from '../retro-sessions'
-import { DEFAULT_IDEATE_TEMPLATE } from '../../lib/workspace-types'
+import { loadRetroInitExtras, loadIdeateInitExtras } from '../../services/sessionLifecycleService'
+import {
+  countDraftEnergizers,
+  startSessionTransition,
+  rollbackSessionStart,
+  countNonDraftSessions,
+  insertCloseVotes,
+  markSessionClosed,
+  countSessionQuestions,
+  transitionEnergizingToLive,
+} from '../../repositories/sessionLifecycleRepository'
 import type { Question, Session } from '../../types'
 import type { LiveQuestion } from '../../realtime'
 
 const BOARD_MODES_NO_QUESTIONS = new Set(['retro', 'townhall', 'ideate'])
-
-async function loadRetroInitExtras(env: Env, sessionId: string): Promise<{ retroDotVoteLimit?: number; retroCarriedActions?: string[] }> {
-  const seed = await readKvJson<RetroSessionSeed>(env.SESSIONS_KV, retroSeedKey(sessionId))
-  if (!seed) return {}
-  return { retroDotVoteLimit: seed.dotVoteLimit, retroCarriedActions: seed.carriedActions }
-}
-
-async function loadIdeateInitExtras(
-  env: Env,
-  sessionId: string,
-): Promise<{ ideateDotVoteLimit?: number; ideateClusterDebounceMs?: number }> {
-  const seed = await readKvJson<IdeateSessionSeed>(env.SESSIONS_KV, ideateSeedKey(sessionId))
-  if (!seed) {
-    return {
-      ideateDotVoteLimit: DEFAULT_IDEATE_TEMPLATE.dotVoteLimit,
-      ideateClusterDebounceMs: DEFAULT_IDEATE_TEMPLATE.clusterDebounceMs,
-    }
-  }
-  return { ideateDotVoteLimit: seed.dotVoteLimit, ideateClusterDebounceMs: seed.clusterDebounceMs }
-}
 
 async function doInitAlreadyInitialised(doRes: Response): Promise<boolean> {
   if (doRes.status !== 409) return false
@@ -55,22 +41,6 @@ async function doInitAlreadyInitialised(doRes: Response): Promise<boolean> {
   } catch {
     return false
   }
-}
-
-async function rollbackSessionStart(
-  db: D1Database,
-  id: string,
-  ownerId: string,
-  status: Session['status'],
-  startedAt: number,
-): Promise<void> {
-  await db
-    .prepare(
-      `UPDATE sessions SET status = 'draft', started_at = NULL
-       WHERE id = ?1 AND owner_id = ?2 AND status = ?3 AND started_at = ?4`,
-    )
-    .bind(id, ownerId, status, startedAt)
-    .run()
 }
 
 function buildSessionInitBody(
@@ -179,24 +149,14 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx })
 
     // Check if session has energizers with draft state
-    const energizers = await c.env.DB
-      .prepare(`SELECT COUNT(*) as n FROM energizers WHERE session_id = ?1 AND state = 'draft'`)
-      .bind(id)
-      .first<{ n: number }>()
-    const hasEnergizersToDo = (energizers?.n ?? 0) > 0
+    const hasEnergizersToDo = (await countDraftEnergizers(c.env.DB, id)) > 0
     const initialStatus = hasEnergizersToDo ? 'energizing' : 'live'
 
     // Conditional UPDATE: only transitions from draft → (energizing|live).
-    // `meta.changes === 0` means a concurrent request already won this write.
-    const result = await c.env.DB
-      .prepare(
-        `UPDATE sessions SET status = ?1, started_at = ?2
-         WHERE id = ?3 AND owner_id = ?4 AND status = 'draft'`,
-      )
-      .bind(initialStatus, now, id, user.sub)
-      .run()
+    // `0 changes` means a concurrent request already won this write.
+    const startedChanges = await startSessionTransition(c.env.DB, id, user.sub, initialStatus, now)
 
-    if (result.meta.changes === 0) {
+    if (startedChanges === 0) {
       // A concurrent request already transitioned the session. Confirm the DO is
       // initialised before returning success — DB status alone is not enough
       // (the winner may still be rolling back after a failed /init).
@@ -329,11 +289,8 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     // OBS-003: emit `first_session_started` iff this is the user's first non-draft session.
     // The draft→live UPDATE above already committed, so count includes this session (==1).
     try {
-      const sessionCount = await c.env.DB
-        .prepare(`SELECT COUNT(*) as n FROM sessions WHERE owner_id = ?1 AND status != 'draft'`)
-        .bind(user.sub)
-        .first<{ n: number }>()
-      if ((sessionCount?.n ?? 0) === 1) {
+      const sessionCount = await countNonDraftSessions(c.env.DB, user.sub)
+      if (sessionCount === 1) {
         writeEvent(c.env.METRICS_AE, {
           name: 'first_session_started',
           userId: user.sub,
@@ -416,22 +373,11 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     // Persist per-voter rows to D1. UNIQUE(question_id, voter_id) guards
     // against replay.
     if (questionId && voteList.length > 0) {
-      const stmt = c.env.DB.prepare(
-        `INSERT OR IGNORE INTO votes (id, session_id, question_id, voter_id, option_id, submitted_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
-      )
-      const ts = Date.now()
-      const batch = voteList.map((v) =>
-        stmt.bind(ulid(), id, questionId, v.voterId, v.optionId, ts),
-      )
-      await c.env.DB.batch(batch)
+      await insertCloseVotes(c.env.DB, id, questionId, voteList, Date.now())
     }
 
     const closedAt = Date.now()
-    await c.env.DB
-      .prepare(`UPDATE sessions SET status = 'closed', closed_at = ?1 WHERE id = ?2 AND owner_id = ?3`)
-      .bind(closedAt, id, user.sub)
-      .run()
+    await markSessionClosed(c.env.DB, id, user.sub, closedAt)
     session.status = 'closed'
     session.closed_at = closedAt
 
@@ -613,11 +559,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
 
     // Marketing webhook: internal trigger for analytics/growth (public sessions only)
     if ((session.is_public ?? 1) && c.env.MARKETING_WEBHOOK_SECRET) {
-      const questionsResult = await c.env.DB
-        .prepare('SELECT COUNT(*) as cnt FROM questions WHERE session_id = ?')
-        .bind(id)
-        .first<{ cnt: number }>()
-      const questionCount = questionsResult?.cnt ?? 0
+      const questionCount = await countSessionQuestions(c.env.DB, id)
       const hash = computePayloadHash({ sessionTitle: session.title, questionCount })
       enqueuePromises.push(
         enqueuePostSessionWork(c.env, {
@@ -691,12 +633,9 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     }
 
     // Update DB status to live
-    const result = await c.env.DB
-      .prepare(`UPDATE sessions SET status = 'live' WHERE id = ?1 AND owner_id = ?2 AND status = 'energizing'`)
-      .bind(id, user.sub)
-      .run()
+    const changed = await transitionEnergizingToLive(c.env.DB, id, user.sub)
 
-    if (result.meta.changes === 0) {
+    if (changed === 0) {
       return c.json(
         {
           ok: false,

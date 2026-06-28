@@ -7,6 +7,10 @@
  * build fails if the count exceeds the recorded baseline, so the debt can only
  * shrink. Lower BASELINE as you move queries into repositories.
  *
+ * Multiline-aware: counts `env.DB.prepare` even when written as
+ * `c.env.DB\n  .prepare(...)` (the common style), which a line-by-line scan
+ * would miss. Scans full file content, not individual lines.
+ *
  * See REFACTORING_AUDIT.md (High: "D1 access is overwhelmingly inline").
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
@@ -16,11 +20,13 @@ const ROOT = resolve(new URL('.', import.meta.url).pathname, '..')
 // Only routes are scanned — repositories/ are the intended home for prepare().
 const SCAN_DIR = resolve(ROOT, 'functions/api/routes')
 const ALLOWED = new Set()
-const PATTERN = /\benv\.DB\.prepare\b/g
+// `\s*` spans the newline in `c.env.DB\n.prepare(...)`.
+const PATTERN = /\benv\.DB\s*\.\s*prepare\b/g
 
 // Current known violations. Ratchet DOWN only — never raise this.
 // Burn down by extracting queries into functions/api/repositories/.
-const BASELINE = 288
+// 329 after the sessions/lifecycle.ts extraction (first repository slice, ADR-0069).
+const BASELINE = 329
 
 function walk(dir) {
   const out = []
@@ -35,14 +41,17 @@ function walk(dir) {
 const violations = []
 for (const file of walk(SCAN_DIR)) {
   if (ALLOWED.has(file)) continue
-  const lines = readFileSync(file, 'utf8').split('\n')
-  lines.forEach((line, i) => {
-    const matches = line.match(PATTERN)
-    if (matches) violations.push({ file: relative(ROOT, file), line: i + 1, count: matches.length, text: line.trim().slice(0, 100) })
-  })
+  const content = readFileSync(file, 'utf8')
+  PATTERN.lastIndex = 0
+  let m
+  while ((m = PATTERN.exec(content)) !== null) {
+    const line = content.slice(0, m.index).split('\n').length
+    const text = (content.split('\n')[line - 1] ?? '').trim().slice(0, 100)
+    violations.push({ file: relative(ROOT, file), line, text })
+  }
 }
 
-const total = violations.reduce((n, v) => n + v.count, 0)
+const total = violations.length
 
 if (total > BASELINE) {
   console.error(`❌ Inline D1 access in routes increased: ${total} (baseline ${BASELINE}).`)

@@ -32,8 +32,13 @@ adopted — there was no gate to make it the default.
    in route handlers. Routes parse → call a service/repository → respond.
 2. Grow the repository layer per domain (teams, billing, tournaments, sessions) opportunistically —
    extract queries from a route file as it is touched; no big-bang rewrite.
-3. Enforce with `scripts/check-d1-access.mjs` (ratchet, baseline 288, DOWN only) scanning
-   `functions/api/routes/`, wired into `ops/ci/quality-gates.sh` and `npm run check:rc`.
+3. Enforce with `scripts/check-d1-access.mjs` (multi-line-aware ratchet, baseline 329, DOWN only)
+   scanning `functions/api/routes/`, wired into `ops/ci/quality-gates.sh` and `npm run check:rc`.
+
+**First slice (reference implementation):** `sessions/lifecycle.ts` (724→663 lines) — its 8 D1 queries
+moved to `repositories/sessionLifecycleRepository.ts`, board warm-up config to
+`services/sessionLifecycleService.ts`. Handlers now orchestrate (DO init, journey events, queues) and
+delegate persistence. The remaining god routes follow this pattern as `ARCH-REPO-LAYER-01` burn-down.
 
 ## Consequences
 
