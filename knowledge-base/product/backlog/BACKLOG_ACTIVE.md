@@ -68,7 +68,8 @@ ADR-0068/0069/0070.
 | ID | Pts | Pri | Owner agent | Status | Acceptance signal |
 |----|----:|-----|-------------|--------|-------------------|
 | `ARCH-RATCHET-01` | 5 | P0 | architect + backend | **Done** | 3 ratchet gates (`check-ai-gateway`/`check-d1-access`/`check-error-response`) wired into `quality-gates.sh` + `check:rc`; `errorResponse()` + `runAI()` added; `sovereign.ts` migrated (error baseline 610→603); ADR-0068/0069/0070 accepted |
-| `ARCH-ERROR-BUILDER-MIGRATE-01` | 8 | P1 | backend | Open | Inline `ok: false` envelopes migrated to `errorResponse()`; `check-error-response` baseline lowered toward 0 |
+| `ARCH-ERROR-BUILDER-MIGRATE-01` | 8 | P1 | backend | In progress | 124 sites migrated to `errorResponse()` (sovereign + 117-site codemod across 23 files); `check-error-response` 610→480. Tricky sites (variable msg, `denyFeature()`, `details`) remain |
+| `ARCH-MEDIUM-CLEANUP-01` | 5 | P1 | backend | **Done** | Vectorize dedup (`lib/ai/embed-query.ts`), Env-narrowing (integrations/billing → `Pick<Env,…>`), dual-auth consolidation (`lib/authz-helpers.ts`), `lib/stripe-client.ts` extracted from billing |
 | `ARCH-AI-GATEWAY-MIGRATE-01` | 8 | P1 | ai-engineer | Open | Raw `AI.run` sites routed through `runAI`; `check-ai-gateway` baseline lowered; `npm run test:eval` green (REV-10) per batch |
 | `ARCH-REPO-LAYER-01` | 13 | P1 | backend + architect | In progress | First slice done: `lifecycle.ts` (724→663) → `sessionLifecycleRepository`/`sessionLifecycleService`. Remaining: `billing.ts`, `integrations.ts` extracted; `check-d1-access` baseline lowered |
 

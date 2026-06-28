@@ -26,9 +26,16 @@ down. ADRs document the target pattern; backlog stories fund the burn-down.
 
 | Gate | Anti-pattern counted | Abstraction to use | Baseline | ADR |
 |---|---|---|---:|---|
-| `scripts/check-ai-gateway.mjs` | raw `env.AI.run` / `ai.run(` in `functions/` | `runAI()` in `lib/ai/ai-gateway.ts` | 32 | ADR-0068 |
+| `scripts/check-ai-gateway.mjs` | raw `env.AI.run` / `ai.run(` in `functions/` | `runAI()` in `lib/ai/ai-gateway.ts` | 29 | ADR-0068 |
 | `scripts/check-d1-access.mjs` | `env.DB.prepare` in `functions/api/routes/` (multi-line-aware) | `functions/api/repositories/` | 329 | ADR-0069 |
-| `scripts/check-error-response.mjs` | inline `ok: false` in `functions/api/routes/` | `errorResponse()` in `lib/error-handler.ts` | 603 | ADR-0070 |
+| `scripts/check-error-response.mjs` | inline `ok: false` in `functions/api/routes/` | `errorResponse()` in `lib/error-handler.ts` | 480 | ADR-0070 |
+
+**Fix-all-High+Medium progress (build-validated, verified-safe pass):** Mediums done — vectorize dedup
+(`lib/ai/embed-query.ts`), Env-narrowing (integrations/billing → `Pick<Env,…>`), dual-auth
+consolidation (`lib/authz-helpers.ts` `authorizeTeamPermission`), error-builder migration (124 sites →
+480). High — `lib/stripe-client.ts` extracted from billing; `sessionLifecycleRepository`/`Service`.
+Remaining (deferred to a CI-enabled branch — needs `tsc`/unit/`test:eval`): `types.ts` split, frontend
+hook extraction, and billing/integrations/teams/wizard repository extraction.
 
 All three are wired into `ops/ci/quality-gates.sh` (runs on every PR) and `npm run check:rc`.
 
@@ -79,8 +86,8 @@ P0-before-P0;** until then these gates are enforced via the local pre-push hook
 
 ## Verification
 
-- Gates (no deps needed): `node scripts/check-ai-gateway.mjs` → 32; `node scripts/check-d1-access.mjs`
-  → 288; `node scripts/check-error-response.mjs` → 603. All exit 0.
+- Gates (no deps needed): `node scripts/check-ai-gateway.mjs` → 29; `node scripts/check-d1-access.mjs`
+  → 329; `node scripts/check-error-response.mjs` → 480. All exit 0.
 - `npm run check:rc` includes the three new gates.
 - On a working install / once CI is unblocked: `npm run typecheck`, `npm test`, and — because `runAI`
   touches AI code — `npm run test:eval` (REV-10).
