@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../../functions/api/app'
+import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import type { KbSyncRecord } from '../../functions/api/types/knowledge-base'
 
@@ -175,5 +176,42 @@ describe('POST /api/admin/kb-sync — writes Vectorize AND D1', () => {
     expect(json.data.documents_upserted).toBe(0)
     expect(json.data.chunks_upserted).toBe(0)
     expect(db.statements).toHaveLength(0)
+  })
+})
+
+describe('GET /api/admin/kb-sync/status — platform-admin guarded', () => {
+  const JWT_SECRET = 'kb-status-test-secret-at-least-32-bytes!!'
+
+  function statusEnv(extra: Partial<Env> = {}): Env {
+    return {
+      ENV: 'dev',
+      JWT_SECRET,
+      DB: new RecordingD1() as unknown as D1Database,
+      ...extra,
+    } as unknown as Env
+  }
+
+  it('rejects an unauthenticated request with 401 (no longer public)', async () => {
+    const res = await createApp().fetch(
+      new Request('http://local/api/admin/kb-sync/status'),
+      statusEnv(),
+    )
+    expect(res.status).toBe(401)
+  })
+
+  it('allows a platform admin (env allowlist) with 200', async () => {
+    const env = statusEnv({ SUPERUSER_EMAIL: 'root@example.com' } as Partial<Env>)
+    const jwt = await signJwt(
+      { sub: 'root-id', email: 'root@example.com', jti: 'j1' },
+      JWT_SECRET,
+      3600,
+    )
+    const res = await createApp().fetch(
+      new Request('http://local/api/admin/kb-sync/status', {
+        headers: { authorization: `Bearer ${jwt}` },
+      }),
+      env,
+    )
+    expect(res.status).toBe(200)
   })
 })

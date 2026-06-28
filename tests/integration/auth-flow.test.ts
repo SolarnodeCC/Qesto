@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
-import { verifyJwt } from '../../functions/api/lib/jwt'
+import { signJwt, verifyJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
@@ -94,12 +94,14 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(meRes.status).toBe(200)
     const meBody = (await meRes.json()) as {
       ok: boolean
-      data: { id: string; email: string; plan: string; townhallEnabled: boolean }
+      data: { id: string; email: string; plan: string; isAdmin: boolean; townhallEnabled: boolean }
     }
     expect(meBody.ok).toBe(true)
     expect(meBody.data.email).toBe('host@example.com')
     // New users default to the free tier.
     expect(meBody.data.plan).toBe('free')
+    // #586: a plain user has no platform-admin authority. The SPA gates /admin on this.
+    expect(meBody.data.isAdmin).toBe(false)
     // /me surfaces the town hall feature flag so the dashboard can gate its entry point.
     expect(meBody.data.townhallEnabled).toBe(env.REALTIME_TOWNHALL_ENABLED === 'true')
 
@@ -138,6 +140,25 @@ describe('auth round-trip (request → callback → /api/auth/me)', () => {
     expect(res.status).toBe(401)
     const body = (await res.json()) as { ok: boolean; error: { code: string } }
     expect(body.error.code).toBe('unauthenticated')
+  })
+
+  it('/api/auth/me reports isAdmin:true for an env-allowlisted superuser (#586)', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    env.SUPERUSER_EMAIL = 'root@example.com'
+    const jwt = await signJwt(
+      { sub: 'root-id', email: 'root@example.com', jti: 'j1' },
+      env.JWT_SECRET,
+      3600,
+    )
+    const res = await app.fetch(
+      new Request('http://local/api/auth/me', { headers: { cookie: `qesto_session=${jwt}` } }),
+      env,
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { ok: boolean; data: { isAdmin: boolean } }
+    expect(body.data.isAdmin).toBe(true)
   })
 
   it('returns 401 from /api/auth/me with an invalid cookie', async () => {

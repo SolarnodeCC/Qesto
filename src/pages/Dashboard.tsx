@@ -20,8 +20,6 @@ import { TemplatesSection } from './dashboard/TemplatesSection'
 import { TemplatePreviewModal } from './dashboard/TemplatePreviewModal'
 import type { Template, TemplateModalState, StatusFilter, DashboardTeam, DuplicateModalState } from './dashboard/types'
 
-const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
-
 export default function Dashboard() {
   const auth = useAuth()
   const navigate = useNavigate()
@@ -147,7 +145,7 @@ export default function Dashboard() {
     return <Navigate to="/login" replace />
   }
 
-  const isSuperuser = auth.user.email === SUPERUSER_EMAIL
+  const isSuperuser = auth.user.isAdmin === true
   const userName = auth.user.email.split('@')[0]
   const townhallFeatureEnabled = auth.user.townhallEnabled === true
   const isTeamPlan = auth.user.plan === 'team'

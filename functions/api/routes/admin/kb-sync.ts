@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { safeLogContext } from '../../lib/log'
 import type { Env } from '../../types'
-import type { AuthVariables } from '../../middleware/auth'
-import type { AdminVariables } from '../../middleware/admin'
+import { authMiddleware, type AuthVariables } from '../../middleware/auth'
+import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { KbSyncChunkFields, KbSyncDocumentFields } from '../../types/knowledge-base'
 
 /** A validated sync record (vector fields always present; D1 fields optional). */
@@ -422,7 +422,9 @@ export function mountKbSyncRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
     }
   })
 
-  app.get('/kb-sync/status', async (c) => {
+  // Platform-admin only — the Ops tab reads this via api() with a Bearer token.
+  // Previously unguarded, which leaked sync metadata to unauthenticated callers.
+  app.get('/kb-sync/status', authMiddleware, adminMiddleware, async (c) => {
     if (!c.env.ACTIONS_KV) {
       return c.json(
         {

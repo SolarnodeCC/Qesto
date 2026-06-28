@@ -5,24 +5,30 @@ import { writeKvText } from '../../lib/kv'
 import { authMiddleware, SESSION_COOKIE } from '../../middleware/auth'
 import { planMiddleware } from '../../middleware/plan'
 import { townhallEnabled } from '../../realtime'
+import { isPlatformAdmin } from '../../lib/platform-admin'
 import { recordAuthAuditEvent } from '../../lib/audit'
 import { JWT_TTL_SECONDS } from './constants'
 import { setAuthSessionCookie } from './cookie'
 import type { AuthApp } from './types'
 
 export function registerAuthSessionRoutes(app: AuthApp): void {
-  app.get('/me', authMiddleware, planMiddleware, (c) => {
+  app.get('/me', authMiddleware, planMiddleware, async (c) => {
     const user = c.get('user')
     // `impersonating` is set by authMiddleware when the request resolves via the
     // impersonation cookie; the SPA uses it to render the global "viewing as X"
     // banner (works cross-origin, unlike a JS-readable cookie).
     const impersonatorId = c.get('impersonator_id')
+    // Single source of truth for platform-admin authority (#586): the SPA gates
+    // the /admin route on this flag, so the page gate and the API gate
+    // (adminMiddleware) can never drift apart.
+    const isAdmin = await isPlatformAdmin(c.env, user.sub, user.email)
     return c.json({
       ok: true,
       data: {
         id: user.sub,
         email: user.email,
         plan: c.get('plan'),
+        isAdmin,
         townhallEnabled: townhallEnabled(c.env),
         ...(impersonatorId ? { impersonating: { email: user.email, impersonator_id: impersonatorId } } : {}),
       },
