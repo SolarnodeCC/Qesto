@@ -21,6 +21,12 @@ assert_file "package-lock.json" "npm lockfile"
 report_success "Installing dependencies"
 npm ci --silent
 
+# Claude Code config conventions (.claude/ prompt-asset layer): enforces
+# per-agent version/owner/model frontmatter, COMMON_RULES reference, OWNERS.md
+# sync, no dead skill links, and presence of the prompt-defense baseline.
+report_success "Claude config conventions (check:claude-config)"
+node scripts/check-claude-config.mjs
+
 # Type checking (fast, no emit)
 report_success "Type checking (tsc --noEmit)"
 npx tsc --noEmit

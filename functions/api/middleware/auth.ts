@@ -15,8 +15,14 @@ const SESSION_AUTH_EXEMPT = [
   '/api/partner/sla',
 ] as const
 
+/** Marketing video preview streaming — the signed HMAC token IS the auth for this one route. */
+function isVideoAssetStreamPath(pathname: string): boolean {
+  return /^\/api\/marketing\/video-assets\/[^/]+\/stream$/.test(pathname)
+}
+
 function isSessionAuthExempt(pathname: string): boolean {
   if (SESSION_AUTH_EXEMPT.some((p) => pathname.startsWith(p))) return true
+  if (isVideoAssetStreamPath(pathname)) return true
   return isPublicApiPath(pathname) && (pathname.startsWith('/api/v1/') || pathname.startsWith('/api/v2/'))
 }
 

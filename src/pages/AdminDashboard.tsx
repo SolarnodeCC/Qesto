@@ -20,8 +20,6 @@ import OpsControlPanel from '../components/admin/OpsControlPanel'
 import AnalyticsAdvancedPanel from '../components/admin/AnalyticsAdvancedPanel'
 import BuildStamp from '../components/BuildStamp'
 
-const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
-
 type AdminTab = 'dashboard' | 'observability' | 'users' | 'ops' | 'analytics'
 
 const TAB_CONFIG: Array<{
@@ -213,7 +211,9 @@ export default function AdminDashboard() {
   }
 
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
-  if (auth.user.email !== SUPERUSER_EMAIL) return <Navigate to="/dashboard" replace />
+  // Gate on server-resolved platform-admin authority (#586) — the same source
+  // of truth as the backend adminMiddleware, so the page and the APIs agree.
+  if (!auth.user.isAdmin) return <Navigate to="/dashboard" replace />
 
   const isSuperuser = true
 
@@ -249,6 +249,17 @@ export default function AdminDashboard() {
           <Heading level="l">{t('platformAdminTitle')}</Heading>
           <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-space-2">{t('realtimePlatformObservability')}</Body>
         </header>
+
+        {metricsError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-signal-error/40 bg-signal-error/10 px-4 py-3"
+          >
+            <Body size="s" className="text-signal-error">
+              {t('adminApiError')}
+            </Body>
+          </div>
+        )}
 
         <div
           role="tablist"

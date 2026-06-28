@@ -13,6 +13,17 @@ compatibility_flags = ["nodejs_compat"]
 #   wrangler secret put CLOUDFLARE_AI_GATEWAY_TOKEN   # API token with AI Gateway Run permission
 # When either secret is absent every AI call bypasses the gateway (direct env.AI.run).
 #
+# Marketing automation (Content Engine / Mention Monitor / Publisher, this Worker's
+# cron). Set on THIS Worker (qesto-api) — the OAuth *connect pages* themselves
+# (functions/{linkedin,reddit,youtube}-auth.ts) are Pages Functions and need the
+# same client id/secret + INTEGRATIONS_KV bound separately on the "qesto" Pages
+# project (dashboard → Settings → Functions), per workers/linkedin-scheduler/README.md:
+#   wrangler secret put REDDIT_CLIENT_ID
+#   wrangler secret put REDDIT_CLIENT_SECRET
+#   wrangler secret put YOUTUBE_CLIENT_ID
+#   wrangler secret put YOUTUBE_CLIENT_SECRET
+#   wrangler secret put VIDEO_PREVIEW_SIGNING_KEY   # HMAC key signing short-TTL video preview URLs
+#
 # ──────────────────────────────────────────────────────────────────────────────
 # BOOTSTRAP: D1 + KV bindings are commented out because their IDs are per-account.
 # Follow docs/DEPLOY_BOOTSTRAP.md once to provision the resources, paste the IDs
@@ -182,6 +193,13 @@ index_name = "qesto-kb-production"
 binding = "R2_SESSIONS"
 bucket_name = "qesto-sessions"
 
+# Marketing automation: Video Asset Library storage (view/tag/link only, no
+# upload endpoint in v1). Create via `wrangler r2 bucket create qesto-marketing-videos`
+# before deploying.
+[[r2_buckets]]
+binding = "R2_VIDEOS"
+bucket_name = "qesto-marketing-videos"
+
 [[analytics_engine_datasets]]
 binding = "METRICS_AE"
 dataset = "qesto_metrics"
@@ -191,7 +209,12 @@ dataset = "qesto_metrics"
 # This does NOT embed/sync — the embed+sync runs in CI on knowledge-base/ changes
 # (.github/workflows/kb-sync-on-merge.yml -> npm run kb:sync). The cron verifies retrieval is
 # healthy: D1 has chunks, query model/dim matches the index, and the index returns matches.
-crons = ["0 2 * * *", "0 3 * * 0"]
+#
+# Marketing automation (worker/index.ts -> handleScheduled):
+#   "0 6 * * 2", "0 6 * * 4", "0 6 * * 6" — Content Engine (Tue/Thu/Sat 06:00 UTC)
+#   "0 */3 * * *"                        — Mention Monitor (every 3h)
+#   "0 4 * * *"                          — OAuth token proactive refresh (daily 04:00 UTC)
+crons = ["0 2 * * *", "0 3 * * 0", "0 6 * * 2", "0 6 * * 4", "0 6 * * 6", "0 */3 * * *", "0 4 * * *"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Staging (v2.2 pre-work)
@@ -307,6 +330,12 @@ index_name = "qesto-kb-production"
 [[env.staging.r2_buckets]]
 binding = "R2_SESSIONS"
 bucket_name = "qesto-sessions-staging"
+
+# Staging Marketing automation Video Asset Library storage. Create via
+# `wrangler r2 bucket create qesto-marketing-videos-staging` before deploying.
+[[env.staging.r2_buckets]]
+binding = "R2_VIDEOS"
+bucket_name = "qesto-marketing-videos-staging"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Preview env is intentionally not defined. Will be re-added in Phase 5 once

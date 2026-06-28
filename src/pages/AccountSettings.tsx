@@ -12,8 +12,6 @@ import { HighContrastToggle } from '../components/HighContrastToggle'
 import { createBillingPortalSession, fetchBillingInvoices, type InvoiceRow } from '../lib/account-billing'
 import { planBrandName } from '../config/plans'
 
-const SUPERUSER_EMAIL = (import.meta.env.VITE_SUPERUSER_EMAIL as string | undefined) ?? ''
-
 type TeamRow = { id: string; name: string; plan: string }
 
 const DENSITY_OPTIONS: Density[] = ['compact', 'comfortable', 'spacious']
@@ -104,7 +102,7 @@ export default function AccountSettings() {
     return <Navigate to="/login" replace />
   }
 
-  const isSuperuser = auth.user.email === SUPERUSER_EMAIL
+  const isSuperuser = auth.user.isAdmin === true
 
   function handleSectionChange(section: DashboardSection) {
     navigate('/dashboard')

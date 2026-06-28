@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const testsDir = path.dirname(fileURLToPath(import.meta.url))
+const marketingVideoDir = path.join(testsDir, 'artifacts', 'marketing-videos')
 
 export default defineConfig({
   // Resolved relative to this config file (`tests/` → `tests/e2e/`)
@@ -55,6 +60,7 @@ export default defineConfig({
       testIgnore: /a11y\.spec\.ts/,
       fullyParallel: false,
       workers: 1,
+      outputDir: marketingVideoDir,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',

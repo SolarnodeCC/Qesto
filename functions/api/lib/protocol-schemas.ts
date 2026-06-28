@@ -502,6 +502,16 @@ export const AuditActionSchema = z.enum([
   'role.assigned',
   'role.changed',
   'role.removed',
+  // Marketing Automation (single-owner internal tool).
+  'marketing.content_item_edit',
+  'marketing.content_item_approve',
+  'marketing.content_item_reject',
+  'marketing.content_item_publish',
+  'marketing.mention_reviewed',
+  'marketing.calendar_create',
+  'marketing.calendar_update',
+  'marketing.calendar_delete',
+  'marketing.video_asset_update',
 ])
 
 export type ValidAuditAction = z.infer<typeof AuditActionSchema>

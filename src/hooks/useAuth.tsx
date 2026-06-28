@@ -6,6 +6,9 @@ export type AuthUser = {
   id: string
   email: string
   plan: 'free' | 'starter' | 'team'
+  /** Platform-admin authority, resolved server-side (#586). Single source of
+   * truth for gating the /admin route — must match the backend adminMiddleware. */
+  isAdmin?: boolean
   townhallEnabled?: boolean
   /** Present only while an admin is impersonating this account (Module 3). */
   impersonating?: { email: string; impersonator_id: string }

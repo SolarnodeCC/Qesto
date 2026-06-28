@@ -188,6 +188,7 @@
   "totalSessions": "Sitzungen gesamt",
   "platformOverview": "Plattformübersicht",
   "platformAdminTitle": "Plattform-Admin",
+  "adminApiError": "Einige Admin-Daten konnten nicht geladen werden. Deiner Sitzung fehlt möglicherweise der Plattform-Admin-Zugriff — lade neu oder wende dich an einen Plattform-Eigentümer.",
   "applyDateRange": "Anwenden",
   "viewOps": "OPS-Details anzeigen",
   "p95LatencyTrend": "P95-Latenz-Trend",

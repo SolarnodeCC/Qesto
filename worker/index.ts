@@ -13,6 +13,10 @@ import type { PostSessionWorkMessage } from '../functions/api/lib/queues/produce
 import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
 import { recomputeStaleWorkspaceTrends } from '../functions/api/lib/workspace-trends'
 import { runKvBackup } from '../functions/api/lib/kv-backup'
+import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
+import { runContentEngine } from '../functions/api/lib/marketing/content-engine'
+import { runMentionMonitor } from '../functions/api/lib/marketing/mention-monitor'
+import { refreshAllTokens } from '../functions/api/lib/marketing/token-status'
 
 const KB_HEALTH_SENTINEL = 'qesto knowledge base retrieval health probe'
 
@@ -135,6 +139,51 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
       safeLogContext(err, {
         traceId: backupTraceId,
         route: 'worker/kv-backup',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+    }
+  }
+
+  // Marketing Content Engine — Tue/Thu/Sat 06:00 UTC (3x/week, see ops-cron.ts 'content-engine').
+  if (event.cron === '0 6 * * 2,4,6') {
+    const traceId = `content-engine-${Date.now()}`
+    try {
+      const result = await runContentEngine(env.DB, env.AI, env.MARKETING_KV)
+      console.log(`[content-engine] OK — ${JSON.stringify(result)}`)
+    } catch (err) {
+      safeLogContext(err, {
+        traceId,
+        route: 'worker/content-engine',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+    }
+  }
+
+  // Marketing Mention Monitor — every 3h (see ops-cron.ts 'mention-monitor').
+  if (event.cron === '0 */3 * * *') {
+    const traceId = `mention-monitor-${Date.now()}`
+    try {
+      await runMentionMonitor(env, env.DB, env.MARKETING_KV)
+      console.log('[mention-monitor] OK')
+    } catch (err) {
+      safeLogContext(err, {
+        traceId,
+        route: 'worker/mention-monitor',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+    }
+  }
+
+  // Marketing OAuth proactive token refresh — daily 04:00 UTC (see ops-cron.ts 'oauth-token-refresh').
+  if (event.cron === '0 4 * * *') {
+    const traceId = `oauth-token-refresh-${Date.now()}`
+    try {
+      await refreshAllTokens(env, env.DB, env.INTEGRATIONS_KV)
+      console.log('[oauth-token-refresh] OK')
+    } catch (err) {
+      safeLogContext(err, {
+        traceId,
+        route: 'worker/oauth-token-refresh',
         errorClass: err instanceof Error ? err.name : 'UnknownError',
       })
     }

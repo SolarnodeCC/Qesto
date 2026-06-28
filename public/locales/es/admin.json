@@ -188,6 +188,7 @@
   "totalSessions": "Sesiones totales",
   "platformOverview": "Resumen de la plataforma",
   "platformAdminTitle": "Admin de plataforma",
+  "adminApiError": "No se pudieron cargar algunos datos de administración. Es posible que tu sesión no tenga acceso de administrador de plataforma — recarga o contacta con un propietario de la plataforma.",
   "applyDateRange": "Aplicar",
   "viewOps": "Ver detalles OPS",
   "p95LatencyTrend": "Tendencia de latencia P95",

@@ -188,6 +188,7 @@
   "totalSessions": "Sessions au total",
   "platformOverview": "Vue d'ensemble de la plateforme",
   "platformAdminTitle": "Admin plateforme",
+  "adminApiError": "Le chargement de certaines données d'administration a échoué. Votre session n'a peut-être pas d'accès administrateur de plateforme — rechargez ou contactez un propriétaire de la plateforme.",
   "applyDateRange": "Appliquer",
   "viewOps": "Voir les détails OPS",
   "p95LatencyTrend": "Tendance latence P95",

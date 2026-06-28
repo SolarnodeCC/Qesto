@@ -34,3 +34,6 @@ agent/repo-score.json
 agent/repo-score.md
 target/jankurai/
 .jankurai/
+
+# Local Claude Code session metrics (observability hook output)
+.claude/metrics/

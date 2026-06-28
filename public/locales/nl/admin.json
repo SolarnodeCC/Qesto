@@ -188,6 +188,7 @@
   "totalSessions": "Sessies totaal",
   "platformOverview": "Platformoverzicht",
   "platformAdminTitle": "Platformbeheer",
+  "adminApiError": "Sommige beheergegevens konden niet worden geladen. Je sessie heeft mogelijk geen platformbeheerderstoegang — herlaad of neem contact op met een platformeigenaar.",
   "applyDateRange": "Toepassen",
   "viewOps": "Bekijk OPS-details",
   "p95LatencyTrend": "P95-latentietrend",

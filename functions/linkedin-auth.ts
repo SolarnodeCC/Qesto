@@ -9,8 +9,12 @@
  * GET /linkedin-auth?error=…         → render LinkedIn error
  *
  * Bindings required on the Pages project (dashboard / pages config):
- *   LINKEDIN_KV, OAUTH_TOKEN_MEK, LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET,
- *   LINKEDIN_REDIRECT_URI, (optional) LINKEDIN_ORG_URN.
+ *   LINKEDIN_KV, INTEGRATIONS_KV, OAUTH_TOKEN_MEK, LINKEDIN_CLIENT_ID,
+ *   LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI, (optional) LINKEDIN_ORG_URN.
+ *
+ * The encrypted access/refresh token is stored on INTEGRATIONS_KV (shared
+ * with Reddit/YouTube, marketing-automation absorption) — LINKEDIN_KV is kept
+ * only for non-secret URN/topic/rotation keys and the OAuth state nonce.
  */
 
 import type { Env } from './api/types'
@@ -50,10 +54,11 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const state = url.searchParams.get('state')
   const oauthError = url.searchParams.get('error')
 
-  if (!env.LINKEDIN_KV || !env.LINKEDIN_CLIENT_ID || !env.LINKEDIN_CLIENT_SECRET || !env.LINKEDIN_REDIRECT_URI) {
-    return html(`<h1 class="err">Not configured</h1><p>Missing LinkedIn bindings/secrets on the Pages project: <code>LINKEDIN_KV</code>, <code>LINKEDIN_CLIENT_ID</code>, <code>LINKEDIN_CLIENT_SECRET</code>, <code>LINKEDIN_REDIRECT_URI</code>.</p>`, 500)
+  if (!env.LINKEDIN_KV || !env.INTEGRATIONS_KV || !env.LINKEDIN_CLIENT_ID || !env.LINKEDIN_CLIENT_SECRET || !env.LINKEDIN_REDIRECT_URI) {
+    return html(`<h1 class="err">Not configured</h1><p>Missing LinkedIn bindings/secrets on the Pages project: <code>LINKEDIN_KV</code>, <code>INTEGRATIONS_KV</code>, <code>LINKEDIN_CLIENT_ID</code>, <code>LINKEDIN_CLIENT_SECRET</code>, <code>LINKEDIN_REDIRECT_URI</code>.</p>`, 500)
   }
   const kv = env.LINKEDIN_KV
+  const tokenKv = env.INTEGRATIONS_KV
 
   // LinkedIn redirected back with an error.
   if (oauthError) {
@@ -87,7 +92,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       code,
     )
 
-    const store = createEncryptedTokenStore(kv, env)
+    const store = createEncryptedTokenStore(tokenKv, env)
     await store.storeToken(LINKEDIN_TEAM_SCOPE, LINKEDIN_SERVICE, token)
 
     const personUrn = await fetchPersonUrn(token.access_token)
