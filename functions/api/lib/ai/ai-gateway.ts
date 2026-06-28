@@ -11,7 +11,7 @@
  *
  * @see knowledge-base/adr/ADR-042-cloudflare-capability-expansion.md
  */
-import type { Env } from '../../types'
+import type { Anonymity, Env, PlanTier } from '../../types'
 import {
   assertSanitizedAIGatewayRequest,
   sanitizeAIGatewayRequest,
@@ -141,6 +141,47 @@ export async function runThroughAIGateway(
     }
     return fallbackToDirect(env, model, sanitizedInput, startMs)
   }
+}
+
+export type RunAIOptions = {
+  /** Full session context, when the caller has one (preferred). */
+  ctx?: SessionAIContext
+  /** Plan tier for rate-limit hints when no full ctx is available. */
+  plan?: PlanTier
+}
+
+/**
+ * Ergonomic facade over {@link runThroughAIGateway} (ADR-0068).
+ *
+ * The gateway wrapper requires a full {@link SessionAIContext}, which is why
+ * almost no call site adopted it — most lib/route helpers don't have one. `runAI`
+ * makes the context optional (synthesising a minimal system context) and returns
+ * the bare model result, so it is a drop-in replacement for `env.AI.run(model, input)`
+ * while still getting caching, rate limiting, prompt sanitisation and fallback.
+ *
+ * Enforced by `scripts/check-ai-gateway.mjs` (ratchet on raw `AI.run` / `ai.run(`).
+ *
+ * @example
+ *   const result = await runAI(env, model, { messages })
+ *   const result = await runAI(env, SENTIMENT_MODEL, { text }, { plan })
+ */
+export async function runAI(
+  env: Env,
+  model: string,
+  input: AIGatewayRequest,
+  opts: RunAIOptions = {},
+): Promise<unknown> {
+  const ctx: SessionAIContext = opts.ctx ?? {
+    sessionId: 'system',
+    teamId: null,
+    plan: opts.plan ?? ('free' as PlanTier),
+    anonymity: 'partial' as Anonymity,
+    locale: 'en',
+    model,
+    promptVersion: 'v1',
+  }
+  const response = await runThroughAIGateway(env, ctx, model, input)
+  return response.result
 }
 
 /**

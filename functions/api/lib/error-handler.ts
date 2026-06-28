@@ -1,5 +1,44 @@
 // Error sanitization (SEC-02): Remove sensitive details from API error responses in production.
 
+import { type Context } from 'hono'
+import type { ContentfulStatusCode } from 'hono/utils/http-status'
+import type { ApiError, Env } from '../types'
+
+/**
+ * Single builder for API error responses (ADR-0070).
+ *
+ * Replaces the ~610 hand-rolled `c.json({ ok: false, error: {...}, trace_id })`
+ * envelopes scattered across route handlers with one call site that:
+ *  - always emits the canonical {@link ApiError} shape,
+ *  - always attaches the request `trace_id`, and
+ *  - applies the SEC-02 production policy for 5xx (hide internal detail).
+ *
+ * Enforced by `scripts/check-error-response.mjs` (ratchet on inline `ok: false`).
+ *
+ * @example
+ *   return errorResponse(c, 404, 'not_found', 'Team not found')
+ */
+export function errorResponse<E extends { Bindings: Env }>(
+  c: Context<E>,
+  status: ContentfulStatusCode,
+  code: string,
+  message: string,
+): Response {
+  const isProduction = c.env.ENV === 'production'
+  // SEC-02: never leak 5xx internals in production — mirror sanitizeError().
+  const safeMessage =
+    isProduction && status >= 500
+      ? 'An unexpected error occurred. Please contact support if the problem persists.'
+      : message
+  const body: ApiError = {
+    ok: false,
+    error: { code, message: safeMessage },
+    // trace_id lives in AuthVariables; cast for contexts not typed with it (cf. middleware/csrf.ts).
+    trace_id: (c.get('trace_id' as never) as string | undefined) ?? 'unknown',
+  }
+  return c.json(body, status)
+}
+
 /**
  * Sanitizes error messages for API responses based on environment.
  * In production, sensitive 5xx details are replaced with generic messages.

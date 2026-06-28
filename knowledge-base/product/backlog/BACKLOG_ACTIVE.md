@@ -58,6 +58,22 @@ _Hub: [Documentation map](./README.md)._
 
 ---
 
+### RT-01 addendum — Architecture hardening (REFACTORING_AUDIT)
+
+**Goal:** Convert the audit's High findings into CI ratchets so debt can only shrink. Rails + first
+fix land in RT-01; burn-down is funded across RT-02→RT-03. Refs:
+[`REFACTORING_AUDIT.md`](../../../REFACTORING_AUDIT.md), [`REMEDIATION_PLAN.md`](../../../REMEDIATION_PLAN.md),
+ADR-0068/0069/0070.
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `ARCH-RATCHET-01` | 5 | P0 | architect + backend | **Done** | 3 ratchet gates (`check-ai-gateway`/`check-d1-access`/`check-error-response`) wired into `quality-gates.sh` + `check:rc`; `errorResponse()` + `runAI()` added; `sovereign.ts` migrated (error baseline 610→603); ADR-0068/0069/0070 accepted |
+| `ARCH-ERROR-BUILDER-MIGRATE-01` | 8 | P1 | backend | Open | Inline `ok: false` envelopes migrated to `errorResponse()`; `check-error-response` baseline lowered toward 0 |
+| `ARCH-AI-GATEWAY-MIGRATE-01` | 8 | P1 | ai-engineer | Open | Raw `AI.run` sites routed through `runAI`; `check-ai-gateway` baseline lowered; `npm run test:eval` green (REV-10) per batch |
+| `ARCH-REPO-LAYER-01` | 13 | P1 | backend + architect | Open | God routes (`lifecycle.ts`, `billing.ts`, `integrations.ts`) extracted to services/repositories; `check-d1-access` baseline lowered |
+
+---
+
 ## RT-02 — P1 UX debt / dashboards (`RT-2026-07`; target close 2026-07-17)
 
 **Goal:** Ship the user-facing half of v7 backends deferred from S93–S95. **No new trust boundaries.**
