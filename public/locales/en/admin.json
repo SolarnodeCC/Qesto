@@ -188,6 +188,7 @@
   "totalSessions": "Total sessions",
   "platformOverview": "Platform Overview",
   "platformAdminTitle": "Platform admin",
+  "adminApiError": "Some admin data failed to load. Your session may lack platform-admin access — reload, or contact a platform owner.",
   "applyDateRange": "Apply",
   "viewOps": "View OPS details",
   "p95LatencyTrend": "P95 latency trend",

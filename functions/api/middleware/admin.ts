@@ -17,18 +17,14 @@
 import type { MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import type { AuthVariables } from './auth'
+import { isPlatformAdmin, PLATFORM_ADMIN_ROLE } from '../lib/platform-admin'
 
-// The platform-admin role label persisted in platform_roles.
-const PLATFORM_ADMIN_ROLE = 'platform_admin'
-type AdminRole = 'platform_admin'
-
+type AdminRole = typeof PLATFORM_ADMIN_ROLE
 
 export type AdminVariables = {
   isAdmin: true
   adminRole: AdminRole
 }
-
-type PlatformRoleRow = { role: string }
 
 export const adminMiddleware: MiddlewareHandler<{
   Bindings: Env
@@ -46,46 +42,10 @@ export const adminMiddleware: MiddlewareHandler<{
     )
   }
 
-  // Seed bypass — dev / integration only. Bootstraps platform-admin authority
-  // from the env allowlist (#586).
-  if (c.env.SEED_ADMIN_EMAIL && user.email === c.env.SEED_ADMIN_EMAIL) {
-    c.set('isAdmin', true)
-    c.set('adminRole', PLATFORM_ADMIN_ROLE)
-    await next()
-    return
-  }
-
-  // Superuser bypass — production owner account. Bootstraps platform-admin
-  // authority from the env allowlist (#586).
-  if (c.env.SUPERUSER_EMAIL && user.email === c.env.SUPERUSER_EMAIL) {
-    c.set('isAdmin', true)
-    c.set('adminRole', PLATFORM_ADMIN_ROLE)
-    await next()
-    return
-  }
-
-  // Query the PLATFORM_ROLES table (#586) — NOT user_roles. Team ownership never
-  // appears here, so a team owner is not a platform admin.
-  // D1 transient failure → safe deny (403), not 500.
-  let row: PlatformRoleRow | null = null
-  try {
-    row = await c.env.DB.prepare(
-      `SELECT role FROM platform_roles WHERE user_id = ?1 AND role = ?2 LIMIT 1`,
-    )
-      .bind(user.sub, PLATFORM_ADMIN_ROLE)
-      .first<PlatformRoleRow>()
-  } catch {
-    return c.json(
-      {
-        ok: false,
-        error: { code: 'forbidden', message: 'Admin access required' },
-        trace_id: c.get('trace_id'),
-      },
-      403,
-    )
-  }
-
-  if (!row || row.role !== PLATFORM_ADMIN_ROLE) {
+  // Authority comes from the env allowlist (bootstrap) or an explicit
+  // platform_roles row — NEVER team ownership (#586). D1 transient failure →
+  // safe deny (403), not 500. See lib/platform-admin.ts.
+  if (!(await isPlatformAdmin(c.env, user.sub, user.email))) {
     return c.json(
       {
         ok: false,

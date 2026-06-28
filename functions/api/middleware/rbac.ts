@@ -10,6 +10,7 @@
 import type { Context, MiddlewareHandler } from 'hono'
 import type { Env } from '../types'
 import type { AuthVariables } from './auth'
+import { isPlatformAdmin } from '../lib/platform-admin'
 
 export type RbacVariables = {
   userRoles: readonly string[]
@@ -165,27 +166,6 @@ function getRouteKey(method: string, path: string): string | null {
 }
 
 /**
- * Resolve whether a user has PLATFORM-admin authority (#586). Authority comes
- * from the env allowlist (bootstrap) or an explicit platform_roles row — NEVER
- * from a team-scoped user_roles owner/admin row.
- */
-async function hasPlatformAdmin(c: RbacContext, userId: string, email: string | undefined): Promise<boolean> {
-  if (c.env.SUPERUSER_EMAIL && email === c.env.SUPERUSER_EMAIL) return true
-  if (c.env.SEED_ADMIN_EMAIL && email === c.env.SEED_ADMIN_EMAIL) return true
-  try {
-    const row = await c.env.DB.prepare(
-      `SELECT 1 AS ok FROM platform_roles WHERE user_id = ?1 AND role = 'platform_admin' LIMIT 1`,
-    )
-      .bind(userId)
-      .first<{ ok: number }>()
-    return !!row
-  } catch {
-    // Fail-safe: no platform authority on lookup failure.
-    return false
-  }
-}
-
-/**
  * Fetch user's roles. Team-scoped roles come from user_roles; the synthetic
  * 'platform_admin' role is appended only when the user has real platform
  * authority (#586). Cache on context.
@@ -216,7 +196,7 @@ async function getUserRoles(c: RbacContext, userId: string, email?: string): Pro
   }
 
   // Platform authority is additive and orthogonal to team roles (#586).
-  if (await hasPlatformAdmin(c, userId, email)) {
+  if (await isPlatformAdmin(c.env, userId, email)) {
     roles = [...roles, 'platform_admin']
   }
 
