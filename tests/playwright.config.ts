@@ -60,12 +60,12 @@ export default defineConfig({
       testIgnore: /a11y\.spec\.ts/,
       fullyParallel: false,
       workers: 1,
+      outputDir: marketingVideoDir,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
         video: 'on',
         viewport: { width: 1280, height: 720 },
-        recordVideo: { dir: marketingVideoDir },
         launchOptions: { slowMo: 350 },
       },
     },
