@@ -142,13 +142,18 @@ async function verifyState(state: string, secret: string): Promise<StatePayload 
 
 // ─── Provider factory ─────────────────────────────────────────────────────────
 
-function buildRedirectUri(env: Env): string {
+// Bindings that determine the OAuth callback origin (ADR-0069: narrow params).
+type RedirectEnv = Pick<Env, 'API_URL' | 'PAGES_URL'>
+
+function buildRedirectUri(env: RedirectEnv): string {
   // Worker URL governs callback origin (mirrors auth/oauth.ts behavior).
   const base = (env.API_URL ?? env.PAGES_URL).replace(/\/$/, '')
   return `${base}/api/integrations/slack/callback`
 }
 
-function getSlackProvider(env: Env): SlackProvider | null {
+function getSlackProvider(
+  env: Pick<Env, 'SLACK_CLIENT_ID' | 'SLACK_CLIENT_SECRET'> & RedirectEnv,
+): SlackProvider | null {
   if (!env.SLACK_CLIENT_ID || !env.SLACK_CLIENT_SECRET) return null
   return new SlackProvider({
     clientId: env.SLACK_CLIENT_ID,
@@ -157,12 +162,14 @@ function getSlackProvider(env: Env): SlackProvider | null {
   })
 }
 
-function buildTeamsRedirectUri(env: Env): string {
+function buildTeamsRedirectUri(env: RedirectEnv): string {
   const base = (env.API_URL ?? env.PAGES_URL).replace(/\/$/, '')
   return `${base}/api/integrations/teams/callback`
 }
 
-function getTeamsProvider(env: Env): TeamsProvider | null {
+function getTeamsProvider(
+  env: Pick<Env, 'MICROSOFT_CLIENT_ID' | 'MICROSOFT_CLIENT_SECRET' | 'MICROSOFT_TENANT_ID'> & RedirectEnv,
+): TeamsProvider | null {
   if (!env.MICROSOFT_CLIENT_ID || !env.MICROSOFT_CLIENT_SECRET) return null
   // `common` lets any work/school tenant consent; admins can lock down by
   // setting MICROSOFT_TENANT_ID to a specific GUID in wrangler.toml.
@@ -175,12 +182,12 @@ function getTeamsProvider(env: Env): TeamsProvider | null {
   })
 }
 
-function integrationsDisabled(env: Env): boolean {
+function integrationsDisabled(env: Pick<Env, 'INTEGRATION_ENABLED' | 'INTEGRATIONS_KV'>): boolean {
   return env.INTEGRATION_ENABLED !== 'true' || !env.INTEGRATIONS_KV
 }
 
 async function emitIntegrationConnected(
-  env: Env,
+  env: Pick<Env, 'DB' | 'METRICS_AE'>,
   userId: string,
   teamId: string,
   integrationType: string,
@@ -199,7 +206,7 @@ async function emitIntegrationConnected(
 
 // ─── Caller team resolution ───────────────────────────────────────────────────
 
-async function resolvePrimaryTeamId(env: Env, userId: string): Promise<string | null> {
+async function resolvePrimaryTeamId(env: Pick<Env, 'TEAMS_KV'>, userId: string): Promise<string | null> {
   // Prefer query-param-supplied teamId if the route handler validated membership.
   // For SLACK-01 we look up the user's first team from `user-teams:{userId}`.
   const raw = await readKvText(env.TEAMS_KV, `user-teams:${userId}`)

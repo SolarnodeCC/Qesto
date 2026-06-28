@@ -48,12 +48,12 @@ function validTier(value: unknown): value is PlanTier {
 }
 
 /** Set users.plan in D1 (best-effort; logs on failure). */
-async function setUserPlan(env: Env, userId: string, plan: PlanTier): Promise<void> {
+async function setUserPlan(env: Pick<Env, 'DB'>, userId: string, plan: PlanTier): Promise<void> {
   await env.DB.prepare('UPDATE users SET plan = ?1 WHERE id = ?2').bind(plan, userId).run()
 }
 
 /** Persist the bidirectional Stripe customer ↔ user mapping (#585). */
-async function recordCustomerMapping(env: Env, userId: string, customerId: string): Promise<void> {
+async function recordCustomerMapping(env: Pick<Env, 'USERS_KV' | 'DB'>, userId: string, customerId: string): Promise<void> {
   await env.USERS_KV.put(stripeCustomerKey(userId), JSON.stringify({ customerId }), {
     expirationTtl: 86400 * 365,
   })
@@ -71,7 +71,7 @@ async function recordCustomerMapping(env: Env, userId: string, customerId: strin
 
 /** Write a billing audit row using the real audit_events schema (#585). */
 async function writeBillingAudit(
-  env: Env,
+  env: Pick<Env, 'DB'>,
   userId: string,
   action: string,
   subjectId: string,
@@ -624,7 +624,7 @@ function constantTimeCompare(a: string, b: string): boolean {
  * cross-checked against the configured price ids.
  */
 async function handleCheckoutSessionCompleted(
-  c: { env: Env },
+  c: { env: Pick<Env, 'DB' | 'USERS_KV'> },
   event: any,
 ): Promise<void> {
   const session = event.data.object as Record<string, unknown>

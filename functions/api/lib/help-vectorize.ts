@@ -4,9 +4,8 @@
  */
 
 import type { Env } from '../types'
-import { sanitizeEmbedText } from './ai/prompt-sanitize'
-import { firstEmbeddingVector } from './embedding'
 import { withTimeout } from './shared/async'
+import { embedVector, queryVectors } from './ai/embed-query'
 
 export type HelpVectorizeBindings = Pick<Env, 'AI' | 'HELP_VECTORIZE'>
 
@@ -16,11 +15,6 @@ export const HELP_SIMILARITY_TOP_K = 3
 export const HELP_SIMILARITY_MIN_SCORE = 0.70
 export const HELP_EMBED_TIMEOUT_MS = 10_000
 export const HELP_VECTORIZE_TIMEOUT_MS = 5_000
-
-function firstVector(result: unknown): number[] | undefined {
-  return firstEmbeddingVector(result, HELP_EMBED_DIM)
-}
-
 
 export interface HelpDocument {
   id: string
@@ -46,33 +40,31 @@ export async function embedAndFindSimilarDocuments(
     userScope: 'free' | 'starter' | 'team'
   },
 ): Promise<{ vector?: number[]; similarDocuments: HelpQueryMatch[] }> {
-  const question = sanitizeEmbedText(params.question)
-  if (!question) return { similarDocuments: [] }
-
-  const embedResult = await withTimeout(
-    env.AI.run(HELP_EMBED_MODEL, { text: question }),
+  const vector = await embedVector(
+    env.AI,
+    HELP_EMBED_MODEL,
+    HELP_EMBED_DIM,
+    params.question,
     HELP_EMBED_TIMEOUT_MS,
     'Help question embedding',
   )
-  const vector = firstVector(embedResult)
   if (!vector) {
     return { similarDocuments: [] }
   }
-
-  const queryResult = await withTimeout(
-    env.HELP_VECTORIZE.query(vector, {
-      topK: HELP_SIMILARITY_TOP_K,
-      returnMetadata: 'all',
-    }),
-    HELP_VECTORIZE_TIMEOUT_MS,
-    'Help document similarity query',
-  )
 
   const similarDocuments: HelpQueryMatch[] = []
   const scopeHierarchy: Record<string, number> = { free: 0, starter: 1, team: 2 }
   const userScopeLevel = scopeHierarchy[params.userScope] || 2
 
-  const matches = queryResult.matches.filter((m) => (m.score ?? 0) > HELP_SIMILARITY_MIN_SCORE)
+  const matches = (
+    await queryVectors(
+      env.HELP_VECTORIZE,
+      vector,
+      { topK: HELP_SIMILARITY_TOP_K },
+      HELP_VECTORIZE_TIMEOUT_MS,
+      'Help document similarity query',
+    )
+  ).filter((m) => (m.score ?? 0) > HELP_SIMILARITY_MIN_SCORE)
   for (const match of matches) {
     const meta = match.metadata as Record<string, string> | undefined
     if (!meta?.document_id || !meta?.title) continue
@@ -108,14 +100,14 @@ export async function upsertHelpVector(
 ): Promise<void> {
   let vector = params.existingVector
   if (!vector) {
-    const textToEmbed = sanitizeEmbedText(`${params.title} ${params.content?.substring(0, 500) || ''}`)
-    if (!textToEmbed) return
-    const upsertEmbedResult = await withTimeout(
-      env.AI.run(HELP_EMBED_MODEL, { text: textToEmbed }),
+    vector = await embedVector(
+      env.AI,
+      HELP_EMBED_MODEL,
+      HELP_EMBED_DIM,
+      `${params.title} ${params.content?.substring(0, 500) || ''}`,
       HELP_EMBED_TIMEOUT_MS,
       'Help document upsert embedding',
     )
-    vector = firstVector(upsertEmbedResult)
   }
   if (!vector) return
 
@@ -137,4 +129,4 @@ export async function upsertHelpVector(
   )
 }
 
-export const __internal = { firstVector, withTimeout }
+export const __internal = { withTimeout }

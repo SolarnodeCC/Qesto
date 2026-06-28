@@ -21,7 +21,9 @@ const PATTERN = /\.AI\.run\b|\bai\.run\(/g
 
 // Current known violations. Ratchet DOWN only — never raise this.
 // Burn down by routing call sites through runAI()/runThroughAIGateway().
-const BASELINE = 32
+// 32 → 29 after the vectorize dedup folded 4 raw env.AI.run calls into the
+// shared lib/ai/embed-query.ts embedding primitive.
+const BASELINE = 29
 
 function walk(dir) {
   const out = []

@@ -20,8 +20,9 @@ const PATTERN = /ok:\s*false/g
 
 // Current known violations. Ratchet DOWN only — never raise this.
 // Burn down by replacing inline envelopes with errorResponse(c, status, code, message).
-// 610 at audit time; sovereign.ts migrated to errorResponse() as the first burn-down.
-const BASELINE = 603
+// 610 at audit time; sovereign.ts migrated to errorResponse() (→603); marketplace
+// connect/listings consolidated onto authorizeTeamPermission (→597).
+const BASELINE = 597
 
 function walk(dir) {
   const out = []
