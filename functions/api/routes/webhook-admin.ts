@@ -2,6 +2,7 @@
  * INT-WEBHOOK-STATUS-01 — team webhook delivery statistics.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { listDeliveries, loadTeamWebhooks } from '../lib/webhooks'
@@ -25,13 +26,13 @@ export function mountWebhookAdminRoutes(parent: Hono<{ Bindings: Env; Variables:
     const teamId = c.req.param('teamId')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     const user = c.get('user')
     const isAdmin =
       team.ownerId === user.sub || team.members.some((m) => m.userId === user.sub && (m.role === 'owner' || m.role === 'admin'))
     if (!isAdmin) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Team admin required' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Team admin required')
     }
 
     const configs = await loadTeamWebhooks(kv, teamId)

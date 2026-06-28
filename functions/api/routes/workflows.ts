@@ -2,6 +2,7 @@
  * WORKFLOW-ENGINE-01 — team workflow definitions (Team plan).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -31,7 +32,7 @@ export function mountWorkflowRoutes(parent: Hono<{ Bindings: Env; Variables: Var
   app.get('/', async (c) => {
     const teamId = c.req.query('teamId')
     if (!teamId || !c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_request', 'teamId required')
     }
     const workflows = await listTeamWorkflows(c.env.INTEGRATIONS_KV, teamId)
     return c.json({ ok: true, data: { workflows }, trace_id: c.get('trace_id') })
@@ -45,7 +46,7 @@ export function mountWorkflowRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       )
     }
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'INTEGRATIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'INTEGRATIONS_KV required')
     }
     const parsed = await validateBody(c, CreateWorkflowSchema)
     if ('error' in parsed) return parsed.error

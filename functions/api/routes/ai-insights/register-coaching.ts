@@ -1,4 +1,5 @@
 import type { Hono } from 'hono'
+import { errorResponse } from '../../lib/error-handler'
 import { z } from 'zod'
 import { requireFeature } from '../../middleware/feature-gate'
 import { generateFacilitatorCoaching, type CoachingTurn } from '../../lib/ai/coaching'
@@ -139,7 +140,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     const user = c.get('user')
     const session = await assertSessionOwner(c.env.DB, sessionId, user.sub)
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const history =
       c.env.SESSIONS_KV ?
@@ -180,7 +181,7 @@ export function registerCoachingRoute(app: Hono<{ Bindings: import('../../types'
     const user = c.get('user')
     const session = await assertSessionOwner(c.env.DB, sessionId, user.sub)
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const theme = c.req.query('theme') ?? session.title
     const chunks = await queryDecisionGrounding(c.env, theme, 8)

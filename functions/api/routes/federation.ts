@@ -2,6 +2,7 @@
  * FEDERATION-01 / FEDERATION-CONSENT-01 — cross-org trust links.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -68,7 +69,7 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
   app.get('/links', async (c) => {
     const teamId = c.req.query('teamId')
     if (!teamId || !c.env.TEAMS_KV) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_request', 'teamId required')
     }
     const links = await listTeamFederationLinks(c.env.TEAMS_KV, teamId)
     return c.json({ ok: true, data: { links }, trace_id: c.get('trace_id') })
@@ -76,10 +77,10 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
   app.post('/links', async (c) => {
     if (c.get('plan') !== 'team') {
-      return c.json({ ok: false, error: { code: 'upgrade_required', message: 'Federation requires Team plan' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'upgrade_required', 'Federation requires Team plan')
     }
     if (!c.env.TEAMS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV required')
     }
     const parsed = await validateBody(c, CreateLinkSchema)
     if ('error' in parsed) return parsed.error
@@ -93,11 +94,11 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
   app.post('/links/:id/consent', async (c) => {
     if (!c.env.TEAMS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV required')
     }
     const link = await consentFederationLink(c.env.TEAMS_KV, c.req.param('id'))
     if (!link) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Link not found or not pending' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Link not found or not pending')
     }
     writeEvent(c.env.METRICS_AE, { name: 'federation.consent_granted', teamId: link.targetTeamId, detail: link.id })
     return c.json({ ok: true, data: { link }, trace_id: c.get('trace_id') })
@@ -109,20 +110,20 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
   app.post('/connect/invites', async (c) => {
     const secret = c.env.CONNECT_INVITE_SECRET
     if (!secret) {
-      return c.json({ ok: false, error: { code: 'federation_disabled', message: 'Federation invite signing key not configured' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'federation_disabled', 'Federation invite signing key not configured')
     }
     if (!c.env.TEAMS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV required')
     }
     const parsed = await validateBody(c, ConnectInviteSchema)
     if ('error' in parsed) return parsed.error
 
     const host = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(parsed.data.hostTeamId))
     if (!host) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Host team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Host team not found')
     }
     if (!isTeamMember(host, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of the host team' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Not a member of the host team')
     }
 
     const minted = await mintFederationInvite(
@@ -164,10 +165,10 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
   app.post('/connect/join', async (c) => {
     const secret = c.env.CONNECT_INVITE_SECRET
     if (!secret) {
-      return c.json({ ok: false, error: { code: 'federation_disabled', message: 'Federation invite signing key not configured' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'federation_disabled', 'Federation invite signing key not configured')
     }
     if (!c.env.TEAMS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV required')
     }
     const parsed = await validateBody(c, ConnectJoinSchema)
     if ('error' in parsed) return parsed.error
@@ -180,14 +181,14 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
     const joiningTeam = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(parsed.data.joiningTeamId))
     if (!joiningTeam) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Joining team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Joining team not found')
     }
     if (!isTeamMember(joiningTeam, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of the joining team' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Not a member of the joining team')
     }
     const hostTeam = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(claims.host))
     if (!hostTeam) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Host team no longer exists' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Host team no longer exists')
     }
 
     const revoked = await isInviteRevoked(c.env.TEAMS_KV, claims.jti)
@@ -230,17 +231,17 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
   // join path checks this tombstone before admitting a tenant.
   app.post('/connect/invites/revoke', async (c) => {
     if (!c.env.TEAMS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV required')
     }
     const parsed = await validateBody(c, ConnectRevokeSchema)
     if ('error' in parsed) return parsed.error
 
     const host = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(parsed.data.hostTeamId))
     if (!host) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Host team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Host team not found')
     }
     if (!isTeamMember(host, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of the host team' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Not a member of the host team')
     }
 
     await revokeInvite(c.env.TEAMS_KV, {

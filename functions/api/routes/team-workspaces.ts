@@ -2,6 +2,7 @@
  * ADR-0048 — recurring workspaces (RETRO / IDEATE / EVENT).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -138,13 +139,13 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     try {
       team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     } catch {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     if (!team) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     if (!canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Not a member')
     }
     const kind = parsedQuery.data.kind
     const sql = kind
@@ -173,14 +174,14 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const teamId = c.req.param('id')
     const body = WorkspaceCreateSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid workspace' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid workspace')
     }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     if (!canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const now = Date.now()
     const id = ulid()
@@ -218,11 +219,11 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const row = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!row) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     return c.json({ ok: true, data: { workspace: mapWorkspace(row) }, trace_id: c.get('trace_id') })
   })
@@ -231,15 +232,15 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const body = WorkspacePatchSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid patch' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid patch')
     }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const existing = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!existing) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     let n = 1
     const sets: string[] = [`updated_at = ?${n++}`]
@@ -282,7 +283,7 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canAdminWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     await c.env.DB.prepare(`UPDATE sessions SET workspace_id = NULL, workspace_seq = NULL WHERE workspace_id = ?1`)
       .bind(wsId)
@@ -299,11 +300,11 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!ws) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     const instances = await listWorkspaceInstances(c.env.DB, wsId)
     return c.json({ ok: true, data: { instances }, trace_id: c.get('trace_id') })
@@ -314,11 +315,11 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!ws) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     const history = await listWorkspaceHistory(c.env.DB, wsId)
     return c.json({ ok: true, data: { history }, trace_id: c.get('trace_id') })
@@ -328,11 +329,11 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!ws || ws.archived_at) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     const created = await createWorkspaceInstance({
       db: c.env.DB,
@@ -383,11 +384,11 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!ws) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     const blob = c.env.ACTIONS_KV
       ? await readWorkspaceActions(c.env.ACTIONS_KV, teamId, wsId)
@@ -403,18 +404,18 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const body = ActionsPatchSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid actions' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid actions')
     }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!ws) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     if (!c.env.ACTIONS_KV) {
-      return c.json({ ok: false, error: { code: 'unavailable', message: 'Actions store unavailable' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'unavailable', 'Actions store unavailable')
     }
     const now = Date.now()
     const items = body.data.items.map((item) => ({
@@ -436,20 +437,20 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
       kind: c.req.query('kind') ?? 'participation',
     })
     if (!parsed.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid query' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid query')
     }
     const window = parsed.data.window as WorkspaceTrendWindow
     const kind = parsed.data.kind as 'participation' | 'team_health'
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!ws) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     if (kind === 'team_health' && ws.kind !== 'retro') {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Team health trends require a retro workspace' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Team health trends require a retro workspace')
     }
     const kv = c.env.ACTIONS_KV ?? c.env.TEAMS_KV
     let payload = await readCachedWorkspaceTrend(kv, teamId, wsId, kind, window)
@@ -476,11 +477,11 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const { id: teamId, wsId } = c.req.param()
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const ws = await loadWorkspaceRow(c.env.DB, wsId, teamId)
     if (!ws) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Workspace not found')
     }
     // Debounce: skip if a trend was materialised in the last 60s.
     const latest = await c.env.DB

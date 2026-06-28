@@ -2,6 +2,7 @@
  * INT-WEBHOOK-TESTING-01 — inject test webhook delivery (team admin).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -36,7 +37,7 @@ export function mountWebhookTestingRoutes(parent: Hono<{ Bindings: Env; Variable
 
     const config = await getWebhookConfig(c.env.INTEGRATIONS_KV, teamId, webhookId)
     if (!config) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Webhook not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Webhook not found')
     }
 
     const template = validated.data.templateId ? getWebhookTemplate(validated.data.templateId) : undefined

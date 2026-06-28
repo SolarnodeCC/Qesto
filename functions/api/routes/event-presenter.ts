@@ -2,6 +2,7 @@
  * FE-STAGE-PRES-01 — event presenter shell API (slide deck, talk switch, feed).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { readKvJson } from '../lib/kv'
@@ -73,11 +74,11 @@ export function mountTeamEventPresenterRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const loaded = await loadEventWorkspace(c.env.DB, teamId, wsId)
     if (!loaded) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     const sessions = await loadSessionsForWorkspace(c.env.DB, loaded.row.id)
     return c.json({
@@ -92,15 +93,15 @@ export function mountTeamEventPresenterRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const body = PresenterPutSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid presenter config' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid presenter config')
     }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const loaded = await loadEventWorkspace(c.env.DB, teamId, wsId)
     if (!loaded) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     if (body.data.slideDeckUrl != null && body.data.slideDeckUrl !== '' && !normalizeSlideDeckUrl(body.data.slideDeckUrl)) {
       return c.json(
@@ -111,7 +112,7 @@ export function mountTeamEventPresenterRoutes(parent: ParentApp) {
     if (body.data.activeSlotId) {
       const found = loaded.template.tracks.some((t) => t.slots.some((s) => s.id === body.data.activeSlotId))
       if (!found) {
-        return c.json({ ok: false, error: { code: 'validation', message: 'Unknown slot' }, trace_id: c.get('trace_id') }, 400)
+        return errorResponse(c, 400, 'validation', 'Unknown slot')
       }
     }
     loaded.template.presenter = applyPresenterPut(loaded.template.presenter, body.data)

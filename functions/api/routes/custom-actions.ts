@@ -2,6 +2,7 @@
  * CUSTOM-ACTION-PLUGIN-SDK-01 — team plugin registry.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -26,7 +27,7 @@ export function mountCustomActionRoutes(parent: Hono<{ Bindings: Env; Variables:
   app.get('/', async (c) => {
     const teamId = c.req.query('teamId')
     if (!teamId || !c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_request', 'teamId required')
     }
     const plugins = await listTeamPlugins(c.env.INTEGRATIONS_KV, teamId)
     return c.json({ ok: true, data: { plugins }, trace_id: c.get('trace_id') })
@@ -34,10 +35,10 @@ export function mountCustomActionRoutes(parent: Hono<{ Bindings: Env; Variables:
 
   app.post('/', async (c) => {
     if (c.get('plan') !== 'team') {
-      return c.json({ ok: false, error: { code: 'upgrade_required', message: 'Custom actions require Team plan' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'upgrade_required', 'Custom actions require Team plan')
     }
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'INTEGRATIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'INTEGRATIONS_KV required')
     }
     const parsed = await validateBody(c, RegisterSchema)
     if ('error' in parsed) return parsed.error

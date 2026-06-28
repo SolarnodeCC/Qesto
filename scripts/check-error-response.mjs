@@ -21,8 +21,9 @@ const PATTERN = /ok:\s*false/g
 // Current known violations. Ratchet DOWN only — never raise this.
 // Burn down by replacing inline envelopes with errorResponse(c, status, code, message).
 // 610 at audit time; sovereign.ts migrated to errorResponse() (→603); marketplace
-// connect/listings consolidated onto authorizeTeamPermission (→597).
-const BASELINE = 597
+// connect/listings consolidated onto authorizeTeamPermission (→597); clean
+// single-line envelopes across 23 route files codemodded to errorResponse() (→480).
+const BASELINE = 480
 
 function walk(dir) {
   const out = []

@@ -2,6 +2,7 @@
  * RESIDENCY-ENFORCE-01 — team residency pin API (S75).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -39,7 +40,7 @@ export function mountResidencyRoutes(parent: ParentApp) {
     const parsed = await validateBody(c, PinSchema)
     if ('error' in parsed) return parsed.error
     if (!c.env.TEAMS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV required')
     }
     const pin = { ...parsed.data, enforcedAt: Date.now() }
     await setTeamResidencyPin(c.env.TEAMS_KV, pin)

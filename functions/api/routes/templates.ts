@@ -8,6 +8,7 @@
 //   DELETE /api/templates/mine/:id  delete own template (auth required)
 
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { ulid } from '../lib/ulid'
 import { readKvText, writeKvJson, deleteKv } from '../lib/kv'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
@@ -555,16 +556,16 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const templateId = c.req.param('id')
     const body = await c.req.json().catch(() => null) as Record<string, unknown> | null
     if (!body) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'Request body required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_request', 'Request body required')
     }
     const key = `customer_template:${userId}:${templateId}`
     const raw = await readKvText(c.env.TEMPLATES_KV, key)
     if (!raw) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Template not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Template not found')
     }
     const existing = validateKvJson(raw, CustomerTemplateSchema) as CustomerTemplate | null
     if (!existing) {
-      return c.json({ ok: false, error: { code: 'invalid_state', message: 'Corrupted template record' }, trace_id: c.get('trace_id') }, 500)
+      return errorResponse(c, 500, 'invalid_state', 'Corrupted template record')
     }
     const updated: CustomerTemplate = {
       ...existing,

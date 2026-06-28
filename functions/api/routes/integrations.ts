@@ -16,6 +16,7 @@
 //   integration:config:{teamId}:slack — { channelId, channelName, teamName }
 
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
@@ -809,7 +810,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     const user = c.get('user')
     const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
     if (!teamId) {
-      return c.json({ ok: false, error: { code: 'team_required', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'team_required', 'teamId required')
     }
     const exp = Math.floor(Date.now() / 1000) + STATE_TTL_SECONDS
     const state = await signState({ teamId, userId: user.sub, exp }, c.env.JWT_SECRET)
@@ -831,7 +832,7 @@ export function mountIntegrationRoutes(parent: Hono<{ Bindings: Env; Variables: 
     const user = c.get('user')
     const teamId = c.req.query('teamId') ?? (await resolvePrimaryTeamId(c.env, user.sub))
     if (!teamId) {
-      return c.json({ ok: false, error: { code: 'team_required', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'team_required', 'teamId required')
     }
     const exp = Math.floor(Date.now() / 1000) + STATE_TTL_SECONDS
     const state = await signState({ teamId, userId: user.sub, exp }, c.env.JWT_SECRET)
