@@ -23,6 +23,18 @@
  */
 import { useMemo } from 'react'
 import { useT } from '../i18n'
+import { useCountUp } from '../hooks/useCountUp'
+
+/**
+ * Renders a single number that tweens from its previous value to `value`
+ * (Finding 5 #1), so percent/count labels move with the already-animated
+ * bars. Reduced-motion is handled inside useCountUp. Kept as a component so the
+ * hook has a stable render boundary inside the chart `.map()` loops; aria
+ * labels on the parents continue to use the final values.
+ */
+function CountUp({ value }: { value: number }) {
+  return <>{useCountUp(value)}</>
+}
 
 export type VizOption = { id: string; label: string; count: number }
 
@@ -185,7 +197,7 @@ function DonutViz({ options, total }: DonutVizProps) {
           fill="var(--canvas-text)"
           aria-hidden="true"
         >
-          {total}
+          <CountUp value={total} />
         </text>
       </svg>
 
@@ -211,7 +223,7 @@ function DonutViz({ options, total }: DonutVizProps) {
                 style={{ color: 'var(--canvas-text)' }}
                 aria-label={t('viz.ariaDonut', { label: seg.label, pct: String(pct) })}
               >
-                {pct}%
+                <CountUp value={pct} />%
               </span>
             </li>
           )
@@ -250,7 +262,7 @@ function HBarChart({ options, max, total }: HBarChartProps) {
                 className="text-sm font-bold tabular-nums shrink-0"
                 style={{ color: 'var(--canvas-text)' }}
               >
-                {totalPct}%
+                <CountUp value={totalPct} />%
               </span>
             </div>
             <div
@@ -297,7 +309,7 @@ function VBarChart({ options, max, total }: VBarChartProps) {
               className="text-xs font-bold tabular-nums"
               style={{ color: 'var(--canvas-text)' }}
             >
-              {totalPct}%
+              <CountUp value={totalPct} />%
             </span>
             <div
               role="img"

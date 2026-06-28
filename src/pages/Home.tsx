@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import MainLayout from '../layouts/MainLayout'
 import AIBadge from '../components/AIBadge'
 import PageSeo from '../components/PageSeo'
+import Reveal from '../components/Reveal'
 import HeroPollPreview from '../components/HeroPollPreview'
 
 const FEATURE_STRIP = [
@@ -207,7 +208,8 @@ export default function Home() {
         </section>
 
         {/* ── Feature cards ─────────────────────────────────────────────────────── */}
-        <section
+        <Reveal
+          as="section"
           aria-labelledby="features-heading"
           className="bg-pulse-50 dark:bg-[#0F1525] py-24 px-6"
           id="features"
@@ -262,7 +264,7 @@ export default function Home() {
               })}
             </ul>
           </div>
-        </section>
+        </Reveal>
 
       </div>
     </MainLayout>
