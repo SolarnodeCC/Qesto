@@ -3,8 +3,10 @@ import {
   WizardAIError,
   WizardValidationError,
   generateQuestions,
+  streamQuestions,
   __internal,
 } from '../../functions/api/lib/ai-wizard'
+import type { GeneratedQuestion } from '../../functions/api/lib/ai-wizard'
 
 function mockAi(response: unknown): Ai {
   return {
@@ -253,5 +255,118 @@ describe('ai-wizard/generateQuestions', () => {
 
     await generateQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G', language: 'nl' })
     expect(capturedMessages[0][0].content).toContain('Dutch')
+  })
+})
+
+// ── Streaming generation (token streaming + incremental parsing) ──────────────
+
+const { extractCompleteQuestionObjects } = __internal
+
+describe('ai-wizard/extractCompleteQuestionObjects', () => {
+  it('returns nothing while the first object is still streaming', () => {
+    const partial = '{"questions":[{"kind":"poll","prompt":"Question A?","options":[{"label":"x"}'
+    const { objects } = extractCompleteQuestionObjects(partial, 0)
+    expect(objects).toEqual([])
+  })
+
+  it('extracts each balanced object once it closes', () => {
+    const raw = '{"questions":[{"kind":"poll","prompt":"Question A?","options":[{"label":"x"},{"label":"y"}]},{"kind":"open","prompt":"Question B?","options":[{"label":"p"},{"label":"q"}]}]}'
+    const { objects } = extractCompleteQuestionObjects(raw, 0)
+    expect(objects).toHaveLength(2)
+    expect(JSON.parse(objects[0]).prompt).toBe('Question A?')
+    expect(JSON.parse(objects[1]).prompt).toBe('Question B?')
+  })
+
+  it('does not let braces inside string literals corrupt the depth count', () => {
+    const raw = '{"questions":[{"kind":"poll","prompt":"Use {curly} {braces}?","options":[{"label":"a"},{"label":"b"}]}]}'
+    const { objects } = extractCompleteQuestionObjects(raw, 0)
+    expect(objects).toHaveLength(1)
+    expect(JSON.parse(objects[0]).prompt).toBe('Use {curly} {braces}?')
+  })
+
+  it('advances the cursor so a follow-up scan only yields new objects', () => {
+    const first = '{"questions":[{"kind":"poll","prompt":"Question A?","options":[{"label":"x"},{"label":"y"}]}'
+    const r1 = extractCompleteQuestionObjects(first, 0)
+    expect(r1.objects).toHaveLength(1)
+
+    const second = first + ',{"kind":"open","prompt":"Question B?","options":[{"label":"p"},{"label":"q"}]}]}'
+    const r2 = extractCompleteQuestionObjects(second, r1.cursor)
+    expect(r2.objects).toHaveLength(1)
+    expect(JSON.parse(r2.objects[0]).prompt).toBe('Question B?')
+  })
+})
+
+const sq = (n: number) => ({
+  kind: 'poll',
+  prompt: `Question number ${n}?`,
+  options: [{ label: 'Aaa' }, { label: 'Bbb' }],
+})
+const batchJson = (nums: number[]) => JSON.stringify({ questions: nums.map(sq) })
+
+// Mock Ai whose run() returns a Workers-AI-style SSE ReadableStream, splitting
+// the JSON into small deltas to exercise incremental parsing. Each call returns
+// the next entry in jsonByCall (the FAST_MODEL path runs two parallel batches).
+function sseStreamAi(jsonByCall: string[]): Ai {
+  let call = 0
+  return {
+    run: async () => {
+      const json = jsonByCall[Math.min(call, jsonByCall.length - 1)]
+      call++
+      const enc = new TextEncoder()
+      const deltas: string[] = []
+      for (let i = 0; i < json.length; i += 17) deltas.push(json.slice(i, i + 17))
+      return new ReadableStream<Uint8Array>({
+        start(controller) {
+          for (const d of deltas) {
+            controller.enqueue(enc.encode(`data: ${JSON.stringify({ response: d })}\n\n`))
+          }
+          controller.enqueue(enc.encode('data: [DONE]\n\n'))
+          controller.close()
+        },
+      })
+    },
+  } as unknown as Ai
+}
+
+describe('ai-wizard/streamQuestions', () => {
+  it('invokes the callback once per question as it completes', async () => {
+    const ai = sseStreamAi([batchJson([1, 2, 3]), batchJson([1, 2, 3])])
+    const seen: GeneratedQuestion[] = []
+    const result = await streamQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' }, (q) => {
+      seen.push(q)
+    })
+    // Both batches return the same three prompts → deduped to three.
+    expect(seen).toHaveLength(3)
+    expect(result.questions).toHaveLength(3)
+    expect(seen.map((q) => q.id)).toEqual(result.questions.map((q) => q.id))
+    expect(seen[0].options[0].id).toBeTruthy()
+  })
+
+  it('caps emitted questions at the target count across batches', async () => {
+    const ai = sseStreamAi([batchJson([1, 2, 3, 4, 5]), batchJson([6, 7, 8, 9, 10])])
+    let count = 0
+    const result = await streamQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' }, () => {
+      count++
+    })
+    expect(result.questions).toHaveLength(__internal.TARGET_QUESTION_COUNT)
+    expect(count).toBe(__internal.TARGET_QUESTION_COUNT)
+  })
+
+  it('falls back to a single delta when run() ignores stream:true', async () => {
+    // Some environments/mocks return a plain envelope instead of a stream.
+    const ai = mockAi({ response: batchJson([1, 2, 3]) })
+    const seen: GeneratedQuestion[] = []
+    const result = await streamQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' }, (q) => {
+      seen.push(q)
+    })
+    expect(seen).toHaveLength(3)
+    expect(result.questions).toHaveLength(3)
+  })
+
+  it('throws when every batch fails', async () => {
+    const ai = { run: async () => { throw new Error('boom') } } as unknown as Ai
+    await expect(
+      streamQuestions(ai, { sessionTitle: 'T', sessionGoal: 'G' }, () => {}),
+    ).rejects.toBeInstanceOf(Error)
   })
 })
