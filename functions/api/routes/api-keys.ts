@@ -2,6 +2,7 @@
  * API-KEY-MANAGEMENT-01 — create/list/revoke team API keys.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -39,10 +40,10 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
 
   app.post('/', async (c) => {
     if (c.get('plan') !== 'team') {
-      return c.json({ ok: false, error: { code: 'upgrade_required', message: 'API keys require Team plan' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'upgrade_required', 'API keys require Team plan')
     }
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'INTEGRATIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'INTEGRATIONS_KV required')
     }
     const parsed = await validateBody(c, CreateKeySchema)
     if ('error' in parsed) return parsed.error
@@ -75,7 +76,7 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
   app.get('/', async (c) => {
     const teamId = c.req.query('teamId')
     if (!teamId || !c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'teamId required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_request', 'teamId required')
     }
     const index = (await readKvJson<string[]>(c.env.INTEGRATIONS_KV, teamApiKeyIndexKey(teamId))) ?? []
     const keys: ApiKeyRecord[] = []
@@ -88,12 +89,12 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
 
   app.delete('/:keyId', async (c) => {
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'INTEGRATIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'INTEGRATIONS_KV required')
     }
     const keyId = c.req.param('keyId')
     const record = await readKvJson<ApiKeyRecord>(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId))
     if (!record) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'API key not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'API key not found')
     }
     const updated: ApiKeyRecord = { ...record, revokedAt: Date.now() }
     await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), updated, { expirationTtl: API_KEY_REVOKED_TTL_SECONDS })
@@ -102,15 +103,15 @@ export function mountApiKeyRoutes(parent: Hono<{ Bindings: Env; Variables: Vars 
 
   app.post('/:keyId/rotate', async (c) => {
     if (c.get('plan') !== 'team') {
-      return c.json({ ok: false, error: { code: 'upgrade_required', message: 'API keys require Team plan' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'upgrade_required', 'API keys require Team plan')
     }
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'INTEGRATIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'INTEGRATIONS_KV required')
     }
     const keyId = c.req.param('keyId')
     const record = await readKvJson<ApiKeyRecord>(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId))
     if (!record || !isApiKeyActive(record)) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'API key not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'API key not found')
     }
     const revoked: ApiKeyRecord = { ...record, revokedAt: Date.now() }
     await writeKvJson(c.env.INTEGRATIONS_KV, apiKeyKvKey(keyId), revoked, { expirationTtl: API_KEY_REVOKED_TTL_SECONDS })

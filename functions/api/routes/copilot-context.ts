@@ -2,6 +2,7 @@
  * AI-401–AI-404 — copilot context bundle API (S71).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -182,7 +183,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
     const parsed = await validateBody(c, TurnBodySchema)
     if ('error' in parsed) return parsed.error
     if (!c.env.SESSIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'SESSIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'SESSIONS_KV required')
     }
     const key = copilotThreadKvKey(sessionId)
     const existing = await readKvJson<CopilotThread>(c.env.SESSIONS_KV, key)
@@ -340,7 +341,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       return c.json({ ok: false, error: { code: r.code, message: r.message }, trace_id: c.get('trace_id') }, r.status)
     }
     if (!c.env.SESSIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'SESSIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'SESSIONS_KV required')
     }
 
     const plan = buildCopilotPlan(sessionId, r.context)
@@ -428,7 +429,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       )
     }
     if (!c.env.SESSIONS_KV) {
-      return c.json({ ok: false, error: { code: 'kv_unavailable', message: 'SESSIONS_KV required' }, trace_id: c.get('trace_id') }, 503)
+      return errorResponse(c, 503, 'kv_unavailable', 'SESSIONS_KV required')
     }
 
     const key = copilotPlanKvKey(sessionId)

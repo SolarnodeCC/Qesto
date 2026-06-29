@@ -2,6 +2,7 @@
  * PARTNER-OAUTH-01 / PARTNER-INTEG-01 — partner app registry + OAuth status.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -102,7 +103,7 @@ export function mountPartnerAppRoutes(parent: Hono<{ Bindings: Env; Variables: V
     const appId = c.req.param('appId')
     const record = await readKvJson<PartnerApp>(c.env.INTEGRATIONS_KV, partnerAppKey(appId))
     if (!record || record.teamId !== teamId) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Partner app not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Partner app not found')
     }
     const secret = generatePartnerSecret()
     const rotatedAt = Date.now()

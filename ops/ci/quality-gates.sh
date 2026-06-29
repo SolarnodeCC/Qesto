@@ -27,6 +27,16 @@ npm ci --silent
 report_success "Claude config conventions (check:claude-config)"
 node scripts/check-claude-config.mjs
 
+# Architecture ratchets (REFACTORING_AUDIT.md / ADR-0068..0070): each gate counts
+# a known anti-pattern and fails if it grows — debt can only shrink, never creep.
+#   - check-ai-gateway: raw env.AI.run outside lib/ai/ai-gateway.ts (runAI facade)
+#   - check-d1-access:  inline env.DB.prepare in routes (belongs in repositories/)
+#   - check-error-response: inline `ok: false` envelopes (belongs in errorResponse())
+report_success "Architecture ratchets (AI gateway / D1 repo / error builder)"
+node scripts/check-ai-gateway.mjs
+node scripts/check-d1-access.mjs
+node scripts/check-error-response.mjs
+
 # Type checking (fast, no emit)
 report_success "Type checking (tsc --noEmit)"
 npx tsc --noEmit

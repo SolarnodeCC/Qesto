@@ -4,9 +4,8 @@
  */
 
 import type { Env } from '../types'
-import { sanitizeEmbedText } from './ai/prompt-sanitize'
-import { firstEmbeddingVector } from './embedding'
 import { withTimeout } from './shared/async'
+import { embedVector, queryVectors } from './ai/embed-query'
 
 export type InsightsVectorizeBindings = Pick<Env, 'AI' | 'DECISIONS_VECTORIZE'>
 
@@ -16,11 +15,6 @@ export const DECISIONS_SIMILARITY_TOP_K = 3
 export const DECISIONS_SIMILARITY_MIN_SCORE = 0.75
 export const DECISIONS_EMBED_TIMEOUT_MS = 10_000
 export const DECISIONS_VECTORIZE_TIMEOUT_MS = 5_000
-
-function firstVector(result: unknown): number[] | undefined {
-  return firstEmbeddingVector(result, DECISIONS_EMBED_DIM)
-}
-
 
 export type SimilarSession = { title: string; score: number }
 
@@ -36,35 +30,29 @@ export async function embedAndFindSimilarSessionTitles(
   env: InsightsVectorizeBindings,
   params: { sessionId: string; sessionTitle: string; openResponses: string[]; teamId?: string | null },
 ): Promise<{ vector?: number[]; similarSessionTitles: string[]; similarSessions: SimilarSession[] }> {
-  const embedText = sanitizeEmbedText(
+  const vector = await embedVector(
+    env.AI,
+    DECISIONS_EMBED_MODEL,
+    DECISIONS_EMBED_DIM,
     `${params.sessionTitle}: ${params.openResponses.slice(0, 10).join('. ')}`,
-  )
-  if (!embedText) return { similarSessionTitles: [], similarSessions: [] }
-
-  const embedResult = await withTimeout(
-    env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
     DECISIONS_EMBED_TIMEOUT_MS,
     'Decision embedding',
   )
-  const vector = firstVector(embedResult)
   if (!vector) {
     return { similarSessionTitles: [], similarSessions: [] }
   }
 
-  const queryResult = await withTimeout(
-    env.DECISIONS_VECTORIZE.query(vector, {
-      topK: DECISIONS_SIMILARITY_TOP_K,
-      returnMetadata: 'all',
-      ...(params.teamId ? { filter: { team_id: params.teamId } } : {}),
-    }),
-    DECISIONS_VECTORIZE_TIMEOUT_MS,
-    'Decision similarity query',
-  )
+  const matches = (
+    await queryVectors(
+      env.DECISIONS_VECTORIZE,
+      vector,
+      { topK: DECISIONS_SIMILARITY_TOP_K, ...(params.teamId ? { filter: { team_id: params.teamId } } : {}) },
+      DECISIONS_VECTORIZE_TIMEOUT_MS,
+      'Decision similarity query',
+    )
+  ).filter((m) => m.id !== params.sessionId && (m.score ?? 0) > DECISIONS_SIMILARITY_MIN_SCORE)
   const similarSessionTitles: string[] = []
   const similarSessions: SimilarSession[] = []
-  const matches = queryResult.matches.filter(
-    (m) => m.id !== params.sessionId && (m.score ?? 0) > DECISIONS_SIMILARITY_MIN_SCORE,
-  )
   for (const match of matches) {
     const meta = match.metadata as Record<string, string> | undefined
     if (!meta?.title) continue
@@ -98,14 +86,15 @@ export async function upsertInsightsSessionVector(
 ): Promise<boolean> {
   let vector = params.existingVector
   if (!vector) {
-    const title = sanitizeEmbedText(params.sessionTitle, 500)
-    if (!title) return false
-    const upsertEmbedResult = await withTimeout(
-      env.AI.run(DECISIONS_EMBED_MODEL, { text: title }),
+    vector = await embedVector(
+      env.AI,
+      DECISIONS_EMBED_MODEL,
+      DECISIONS_EMBED_DIM,
+      params.sessionTitle,
       DECISIONS_EMBED_TIMEOUT_MS,
       'Decision upsert embedding',
+      500,
     )
-    vector = firstVector(upsertEmbedResult)
   }
   if (!vector) return false
 
@@ -132,4 +121,4 @@ export async function upsertInsightsSessionVector(
   return true
 }
 
-export const __internal = { firstVector, withTimeout }
+export const __internal = { withTimeout }

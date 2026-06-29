@@ -2,6 +2,7 @@
  * STAGE-SUITE-01 — event-level start/close, live feed, per-track status.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { readKvJson } from '../lib/kv'
@@ -64,11 +65,11 @@ export function mountPublicEventSuiteRoutes(parent: ParentApp) {
   app.get('/events/:code/feed', async (c) => {
     const code = c.req.param('code').toUpperCase()
     if (!/^[0-9A-Z]{6}$/.test(code)) {
-      return c.json({ ok: false, error: { code: 'bad_code', message: 'Invalid event code' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_code', 'Invalid event code')
     }
     const row = await findEventWorkspaceByCode(c.env.DB, code)
     if (!row) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event not found')
     }
     const template = parseEventTemplate(row.template_json)
     const trackId = c.req.query('track') ?? undefined
@@ -100,11 +101,11 @@ export function mountTeamEventSuiteRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const loaded = await loadEventWorkspace(c.env.DB, teamId, wsId)
     if (!loaded) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     const sessions = await loadSessionsForWorkspace(c.env.DB, loaded.row.id)
     return c.json({
@@ -119,14 +120,14 @@ export function mountTeamEventSuiteRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const loaded = await loadEventWorkspace(c.env.DB, teamId, wsId)
     if (!loaded) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     if (loaded.template.suite.status === 'closed') {
-      return c.json({ ok: false, error: { code: 'conflict', message: 'Event is closed' }, trace_id: c.get('trace_id') }, 409)
+      return errorResponse(c, 409, 'conflict', 'Event is closed')
     }
     startEventSuite(loaded.template.suite)
     await persistTemplate(c.env.DB, wsId, teamId, loaded.template)
@@ -143,14 +144,14 @@ export function mountTeamEventSuiteRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const loaded = await loadEventWorkspace(c.env.DB, teamId, wsId)
     if (!loaded) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     if (loaded.template.suite.status === 'draft') {
-      return c.json({ ok: false, error: { code: 'conflict', message: 'Event has not started' }, trace_id: c.get('trace_id') }, 409)
+      return errorResponse(c, 409, 'conflict', 'Event has not started')
     }
     closeEventSuite(loaded.template.suite)
     await persistTemplate(c.env.DB, wsId, teamId, loaded.template)
@@ -167,18 +168,18 @@ export function mountTeamEventSuiteRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const body = FeedPostSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid feed message' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid feed message')
     }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const loaded = await loadEventWorkspace(c.env.DB, teamId, wsId)
     if (!loaded) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     if (body.data.trackId && !loaded.template.tracks.some((t) => t.id === body.data.trackId)) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Unknown track' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Unknown track')
     }
     const item = appendFeedItem(loaded.template.suite, body.data.message, body.data.trackId ?? null)
     await persistTemplate(c.env.DB, wsId, teamId, loaded.template)

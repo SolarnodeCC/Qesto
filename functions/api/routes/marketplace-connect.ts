@@ -8,14 +8,12 @@
  * the routes degrade to 503 `misconfigured` so the rest of the flow stays
  * exercisable without secrets.
  */
-import { Hono, type Context } from 'hono'
+import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
-import { readKvJson } from '../lib/kv'
-import { teamDocumentKey } from '../lib/kv-keys'
-import { hasTeamPermission } from '../lib/authz'
+import { authorizeTeamPermission } from '../lib/authz-helpers'
 import { ok, fail } from '../lib/http'
 import { writeEvent } from '../lib/observability'
 import { makeStripeConnectClient } from '../lib/stripe-connect'
@@ -33,7 +31,6 @@ import {
   currentPayoutPeriod,
 } from '../lib/marketplace-payout-ledger'
 import { ulid } from '../lib/ulid'
-import type { Team } from './teams'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -50,18 +47,6 @@ const PayoutSchema = z.object({
   currency: z.string().min(3).max(3),
 })
 
-/** Load the team and assert the caller may manage its billing. */
-async function authorizeBillingManager(
-  c: Context<{ Bindings: Env; Variables: Vars }>,
-  teamId: string,
-): Promise<{ ok: true; team: Team } | { ok: false; res: Response }> {
-  const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
-  if (!team) return { ok: false, res: fail(c, 'not_found', 'Team not found', 404) }
-  const allowed = await hasTeamPermission(c.env.DB, team, c.get('user').sub, 'billing:manage')
-  if (!allowed) return { ok: false, res: fail(c, 'forbidden', 'Billing management permission required', 403) }
-  return { ok: true, team }
-}
-
 export function mountMarketplaceConnectRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
@@ -73,7 +58,7 @@ export function mountMarketplaceConnectRoutes(parent: ParentApp) {
     if ('error' in parsed) return parsed.error
     const { teamId, country } = parsed.data
 
-    const authz = await authorizeBillingManager(c, teamId)
+    const authz = await authorizeTeamPermission(c, teamId, 'billing:manage', 'Billing management permission required')
     if (!authz.ok) return authz.res
 
     if (!c.env.STRIPE_SECRET_KEY) {
@@ -115,7 +100,7 @@ export function mountMarketplaceConnectRoutes(parent: ParentApp) {
   // GET /api/marketplace/connect/accounts/:teamId — verification-polling read.
   app.get('/accounts/:teamId', async (c) => {
     const teamId = c.req.param('teamId')
-    const authz = await authorizeBillingManager(c, teamId)
+    const authz = await authorizeTeamPermission(c, teamId, 'billing:manage', 'Billing management permission required')
     if (!authz.ok) return authz.res
 
     const account = await getPartnerAccount(c.env.DB, teamId)
@@ -168,7 +153,7 @@ export function mountMarketplaceConnectRoutes(parent: ParentApp) {
     if ('error' in parsed) return parsed.error
     const { teamId, amountCents, currency } = parsed.data
 
-    const authz = await authorizeBillingManager(c, teamId)
+    const authz = await authorizeTeamPermission(c, teamId, 'billing:manage', 'Billing management permission required')
     if (!authz.ok) return authz.res
 
     const account = await getPartnerAccount(c.env.DB, teamId)

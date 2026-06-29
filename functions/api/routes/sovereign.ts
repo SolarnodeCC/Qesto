@@ -18,6 +18,7 @@ import { writeEvent } from '../lib/observability'
 import { recordAuditEvent } from '../lib/audit'
 import { queryAuditEvents } from '../lib/audit'
 import { resolveRegion } from '../lib/region-residency'
+import { errorResponse } from '../lib/error-handler'
 import { buildSovereignPosture } from '../lib/sovereign-posture'
 import { assertFederationAllowed, assertEgressAllowed } from '../lib/sovereign-exclusion'
 import { buildSignedAuditExport, type SovereignAuditEntry } from '../lib/sovereign-audit-export'
@@ -50,10 +51,10 @@ export function mountSovereignRoutes(parent: ParentApp) {
     const teamId = c.req.param('id')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     if (!isTeamMember(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of this team' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Not a member of this team')
     }
     const posture = buildSovereignPosture(tenantConfig(team))
     return c.json({ ok: true, data: { posture }, trace_id: c.get('trace_id') })
@@ -64,10 +65,10 @@ export function mountSovereignRoutes(parent: ParentApp) {
     const teamId = c.req.param('id')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     if (!isTeamMember(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Not a member of this team' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Not a member of this team')
     }
     const cfg = tenantConfig(team)
     const federation = assertFederationAllowed(cfg)
@@ -88,20 +89,17 @@ export function mountSovereignRoutes(parent: ParentApp) {
   app.get('/:id/sovereign/audit/export', async (c) => {
     const signingKey = c.env.SOVEREIGN_AUDIT_SIGNING_KEY
     if (!signingKey) {
-      return c.json(
-        { ok: false, error: { code: 'audit_export_disabled', message: 'Audit export signing key not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'audit_export_disabled', 'Audit export signing key not configured')
     }
 
     const teamId = c.req.param('id')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     // The audit export is a compliance artifact — owner (DPO proxy) only.
     if (team.ownerId !== c.get('user').sub) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Only the team owner can export the audit log' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Only the team owner can export the audit log')
     }
 
     // Scope is decided here (never widened downstream): team-owned session subjects.

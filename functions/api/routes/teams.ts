@@ -18,6 +18,7 @@
 //   team-invite:{token}  → { teamId, email, role, createdAt } (1-day TTL)
 
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { ulid } from '../lib/ulid'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../lib/tokens'
@@ -278,11 +279,11 @@ export function mountTeamRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
   app.get('/resolve-domain', async (c) => {
     const host = (c.req.query('host') ?? '').trim().toLowerCase()
     if (!host) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'host query required' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_request', 'host query required')
     }
     const teamId = await readKvText(c.env.TEAMS_KV, teamDomainKey(host))
     if (!teamId) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Domain not mapped' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Domain not mapped')
     }
     const team = await loadTeam(c.env.TEAMS_KV, teamId)
     return c.json({

@@ -2,14 +2,12 @@
  * MARKETPLACE-PAID-LISTING-01 — paid listing CRUD (Sprint 83).
  * Extends marketplace-connect with template/plugin listings + purchases.
  */
-import { Hono, type Context } from 'hono'
+import { Hono } from 'hono'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
-import { readKvJson } from '../lib/kv'
-import { teamDocumentKey } from '../lib/kv-keys'
-import { hasTeamPermission } from '../lib/authz'
+import { authorizeTeamPermission } from '../lib/authz-helpers'
 import { ok, fail } from '../lib/http'
 import { writeEvent } from '../lib/observability'
 import { ulid } from '../lib/ulid'
@@ -26,7 +24,6 @@ import {
   MARKETPLACE_PRICE_TIERS,
 } from '../lib/marketplace-listings'
 import { splitMarketplacePayout } from '../lib/marketplace-payout'
-import type { Team } from './teams'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -57,17 +54,6 @@ const PurchaseSchema = z.object({
   buyerTeamId: z.string().min(1).max(128),
 })
 
-async function authorizeBillingManager(
-  c: Context<{ Bindings: Env; Variables: Vars }>,
-  teamId: string,
-): Promise<{ ok: true; team: Team } | { ok: false; res: Response }> {
-  const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
-  if (!team) return { ok: false, res: fail(c, 'not_found', 'Team not found', 404) }
-  const allowed = await hasTeamPermission(c.env.DB, team, c.get('user').sub, 'billing:manage')
-  if (!allowed) return { ok: false, res: fail(c, 'forbidden', 'Billing management permission required', 403) }
-  return { ok: true, team }
-}
-
 export function mountMarketplaceListingRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
   app.use('*', authMiddleware)
@@ -80,7 +66,7 @@ export function mountMarketplaceListingRoutes(parent: ParentApp) {
   app.get('/listings', async (c) => {
     const teamId = c.req.query('teamId')
     if (teamId) {
-      const authz = await authorizeBillingManager(c, teamId)
+      const authz = await authorizeTeamPermission(c, teamId, 'billing:manage', 'Billing management permission required')
       if (!authz.ok) return authz.res
       const listings = await listPartnerListings(c.env.DB, teamId)
       return ok(c, { listings })
@@ -94,7 +80,7 @@ export function mountMarketplaceListingRoutes(parent: ParentApp) {
     if ('error' in parsed) return parsed.error
     const { teamId, kind, title, description, priceTier, priceCents, currency, visibility } = parsed.data
 
-    const authz = await authorizeBillingManager(c, teamId)
+    const authz = await authorizeTeamPermission(c, teamId, 'billing:manage', 'Billing management permission required')
     if (!authz.ok) return authz.res
 
     const cents = priceCents ?? (priceTier ? priceCentsForTier(priceTier) : 0)
@@ -132,7 +118,7 @@ export function mountMarketplaceListingRoutes(parent: ParentApp) {
     const parsed = await validateBody(c, PatchListingSchema)
     if ('error' in parsed) return parsed.error
     const listingId = c.req.param('listingId')
-    const authz = await authorizeBillingManager(c, parsed.data.teamId)
+    const authz = await authorizeTeamPermission(c, parsed.data.teamId, 'billing:manage', 'Billing management permission required')
     if (!authz.ok) return authz.res
 
     const price_cents =
@@ -159,7 +145,7 @@ export function mountMarketplaceListingRoutes(parent: ParentApp) {
     const listing = await getMarketplaceListing(c.env.DB, listingId, teamId ?? undefined)
     if (!listing) return fail(c, 'not_found', 'Listing not found', 404)
     if (listing.visibility === 'private' && teamId) {
-      const authz = await authorizeBillingManager(c, teamId)
+      const authz = await authorizeTeamPermission(c, teamId, 'billing:manage', 'Billing management permission required')
       if (!authz.ok) return authz.res
     }
     return ok(c, { listing })

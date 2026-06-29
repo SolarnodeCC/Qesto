@@ -2,6 +2,7 @@
  * STAGE-AGENDA-01 — agenda API + public attendee navigation.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { readKvJson } from '../lib/kv'
@@ -32,11 +33,11 @@ export function mountPublicEventAgendaRoutes(parent: ParentApp) {
   app.get('/events/:code/agenda', async (c) => {
     const code = c.req.param('code').toUpperCase()
     if (!/^[0-9A-Z]{6}$/.test(code)) {
-      return c.json({ ok: false, error: { code: 'bad_code', message: 'Invalid event code' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'bad_code', 'Invalid event code')
     }
     const row = await findEventWorkspaceByCode(c.env.DB, code)
     if (!row) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event not found')
     }
     const template = parseEventTemplate(row.template_json)
     const trackId = c.req.query('track') ?? undefined
@@ -58,7 +59,7 @@ export function mountTeamEventAgendaRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canReadWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const row = await c.env.DB.prepare(
       `SELECT id, team_id, kind, title, template_json, cadence, retention_days, last_instance_at, archived_at,
@@ -68,7 +69,7 @@ export function mountTeamEventAgendaRoutes(parent: ParentApp) {
       .bind(wsId, teamId)
       .first<WorkspaceRow>()
     if (!row || row.kind !== 'event') {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     const template = parseEventTemplate(row.template_json)
     const sessions = await loadSessionsForWorkspace(c.env.DB, row.id)
@@ -91,11 +92,11 @@ export function mountTeamEventAgendaRoutes(parent: ParentApp) {
     const wsId = c.req.param('wsId')
     const body = AgendaPutSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid agenda' }, trace_id: c.get('trace_id') }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid agenda')
     }
     const team = await readKvJson<Team>(c.env.TEAMS_KV, teamDocumentKey(teamId))
     if (!team || !canWriteWorkspace(team, c.get('user').sub)) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Forbidden' }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Forbidden')
     }
     const row = await c.env.DB.prepare(
       `SELECT id, team_id, kind, title, template_json FROM workspaces WHERE id = ?1 AND team_id = ?2`,
@@ -103,7 +104,7 @@ export function mountTeamEventAgendaRoutes(parent: ParentApp) {
       .bind(wsId, teamId)
       .first<{ id: string; team_id: string; kind: string; title: string; template_json: string }>()
     if (!row || row.kind !== 'event') {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Event workspace not found' }, trace_id: c.get('trace_id') }, 404)
+      return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     const template = parseEventTemplate(row.template_json)
     const sessions = await loadSessionsForWorkspace(c.env.DB, row.id)
