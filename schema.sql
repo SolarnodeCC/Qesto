@@ -57,7 +57,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   closed_at INTEGER,
   archived_at INTEGER,
   team_id TEXT DEFAULT NULL,
-  workspace_id TEXT,
+  is_public INTEGER DEFAULT 1,
+  workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL,
   workspace_seq INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
