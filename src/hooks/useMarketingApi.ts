@@ -275,6 +275,60 @@ export function useVideoAssets(filter: { category?: string; tag?: string } = {})
   return { assets, loading, error, refresh, updateAsset, getPreviewUrl }
 }
 
+// ─── Video generation (manual, never cron-triggered) ─────────────────────────
+
+export interface VideoGenModel {
+  id: string
+  label: string
+}
+
+export type VideoGenJobStatus = 'submitted' | 'queued' | 'running' | 'done' | 'failed'
+
+export interface VideoGenJob {
+  jobId: string
+  model: string
+  prompt: string
+  title: string
+  tags: string[]
+  status: VideoGenJobStatus
+  videoAssetId?: string
+  error?: string
+  createdAt: number
+  updatedAt: number
+}
+
+export function useVideoGenModels() {
+  const [models, setModels] = useState<VideoGenModel[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    const res = await api<{ models: VideoGenModel[] }>('/api/marketing/video-assets/generate/models')
+    if (res.ok) {
+      setModels(res.data.models)
+      setError(null)
+    } else {
+      setError(res.error.message)
+    }
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    void refresh()
+  }, [refresh])
+
+  return { models, loading, error, refresh }
+}
+
+export async function submitVideoGeneration(fields: { model: string; prompt: string; title: string; tags: string[] }) {
+  return api<{ jobId: string }>('/api/marketing/video-assets/generate', { method: 'POST', body: fields })
+}
+
+export async function pollVideoGeneration(jobId: string) {
+  return api<VideoGenJob>(`/api/marketing/video-assets/generate/${jobId}`)
+}
+
 // ─── OAuth status ────────────────────────────────────────────────────────────
 
 export function useOauthStatus() {

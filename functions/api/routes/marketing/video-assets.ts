@@ -10,6 +10,7 @@ import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { marketingOwnerMiddleware, type MarketingOwnerVariables } from '../../middleware/marketing-owner'
 import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
+import { errorResponse } from '../../lib/error-handler'
 import {
   listVideoAssets,
   getVideoAsset,
@@ -18,6 +19,8 @@ import {
   verifyPreviewToken,
   streamVideoAsset,
 } from '../../lib/marketing/video-assets'
+import { VIDEO_GEN_MODELS, VIDEO_GEN_MODEL_IDS } from '../../lib/marketing/constants'
+import { submitVideoGeneration, getVideoGenerationStatus } from '../../lib/marketing/video-gen'
 import type { Env } from '../../types'
 
 type App = Hono<{ Bindings: Env; Variables: AuthVariables & MarketingOwnerVariables }>
@@ -84,5 +87,53 @@ export function mountVideoAssetsRoutes(app: App) {
     const asset = await getVideoAsset(c.env.DB, id)
     if (!asset) return c.json({ ok: false, error: { code: 'not_found', message: 'Video asset not found' }, trace_id }, 404)
     return streamVideoAsset(bucket, asset.r2_key)
+  })
+
+  // Manual AI video generation — owner clicks "Generate", picks a model,
+  // and submits a prompt. Never cron-invoked; see lib/marketing/video-gen.ts.
+  app.get('/video-assets/generate/models', authMiddleware, marketingOwnerMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    return c.json({ ok: true, data: { models: VIDEO_GEN_MODELS }, trace_id }, 200)
+  })
+
+  const GenerateVideo = z.object({
+    model: z.string().refine((id) => VIDEO_GEN_MODEL_IDS.has(id), { message: 'Model is not in the allowed list' }),
+    prompt: z.string().min(1).max(2000),
+    title: z.string().min(1).max(200),
+    tags: z.array(z.string().max(60)).max(20),
+  })
+  app.post('/video-assets/generate', authMiddleware, marketingOwnerMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    if (!c.env.AI || !c.env.MARKETING_KV) {
+      return errorResponse(c, 503, 'unavailable', 'AI or MARKETING_KV not configured')
+    }
+    const validated = await validateBody(c, GenerateVideo)
+    if ('error' in validated) return validated.error
+    const result = await submitVideoGeneration(c.env.AI, c.env.MARKETING_KV, validated.data)
+    if ('error' in result) {
+      return errorResponse(c, 400, 'invalid_model', result.error)
+    }
+    return c.json({ ok: true, data: { jobId: result.jobId }, trace_id }, 200)
+  })
+
+  app.get('/video-assets/generate/:jobId', authMiddleware, marketingOwnerMiddleware, async (c) => {
+    const trace_id = c.get('trace_id')
+    const jobId = c.req.param('jobId')
+    if (!c.env.AI || !c.env.MARKETING_KV || !c.env.R2_VIDEOS) {
+      return errorResponse(c, 503, 'unavailable', 'AI, MARKETING_KV, or R2_VIDEOS not configured')
+    }
+    const result = await getVideoGenerationStatus(c.env.AI, c.env.MARKETING_KV, c.env.DB, c.env.R2_VIDEOS, jobId)
+    if (!result) {
+      return errorResponse(c, 404, 'not_found', 'Generation job not found or expired')
+    }
+    if (result.justCompleted && result.job.videoAssetId) {
+      await recordAuditEvent(c, {
+        action: 'marketing.video_generate',
+        subject_type: 'video_asset',
+        subject_id: result.job.videoAssetId,
+        trace_id,
+      })
+    }
+    return c.json({ ok: true, data: result.job, trace_id }, 200)
   })
 }
