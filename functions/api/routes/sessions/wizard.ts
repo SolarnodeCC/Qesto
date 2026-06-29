@@ -14,7 +14,7 @@ import {
   autoPopulateOptions,
 } from '../../lib/domain-schemas'
 import { ensurePersonalTeam } from '../teams'
-import { WizardAIError, WizardValidationError, generateQuestions } from '../../lib/ai-wizard'
+import { WizardAIError, WizardValidationError, generateQuestions, streamQuestions } from '../../lib/ai-wizard'
 import { sanitizeError } from '../../lib/error-handler'
 import { requireFeature } from '../../middleware/feature-gate'
 import { validateKvJson, CachedQuestionsSchema } from '../../lib/protocol-schemas'
@@ -252,7 +252,22 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
         }))
         try {
           const inferenceStart = Date.now()
-          const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
+          // Stream each question to the client as it finishes generating. If
+          // token streaming fails outright, fall back to the buffered
+          // all-at-once generation so we never regress past today's behaviour.
+          let index = 0
+          let result
+          try {
+            result = await streamQuestions(c.env.AI, { ...parsed.data, language }, (q) => {
+              controller.enqueue(sse('question', { question: q, index: index++ }))
+            })
+          } catch (streamErr) {
+            if (streamErr instanceof WizardValidationError || streamErr instanceof WizardAIError) {
+              result = await generateQuestions(c.env.AI, { ...parsed.data, language })
+            } else {
+              throw streamErr
+            }
+          }
           writeEvent(c.env.METRICS_AE, {
             name: 'ai.inference',
             userId: user.sub,
@@ -262,6 +277,8 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
             count: result.questions.length,
             traceId,
           })
+          // Final authoritative payload: reconciliation for incremental clients,
+          // the full list for the fallback path, and backward-compat for old clients.
           controller.enqueue(sse('questions', {
             questions: result.questions,
             confidence: result.confidence,

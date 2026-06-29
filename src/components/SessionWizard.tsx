@@ -15,7 +15,9 @@ import {
   type Step2Mode,
   type AIPhase,
   type WizardQuestion,
+  type GeneratedQuestion,
   type GenerateQuestionsSsePayload,
+  type QuestionSsePayload,
 } from './sessionWizard.helpers'
 import { SessionWizardStep1 } from './session-wizard/SessionWizardStep1'
 import { SessionWizardStep2 } from './session-wizard/SessionWizardStep2'
@@ -190,10 +192,21 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
 
       if (!response.ok || !response.body) throw new Error(t('step2.ai_error'))
 
+      const toWizardQuestion = (q: GeneratedQuestion): WizardQuestion => ({
+        id: q.id ?? newId(),
+        kind: normalizeQuestionKind(q.kind),
+        prompt: q.prompt,
+        options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
+        fromAI: true,
+        dismissed: false,
+        accepted: false,
+      })
+
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
       let payload: GenerateQuestionsSsePayload | null = null
+      let streamedCount = 0
 
       for (;;) {
         const { value, done } = await reader.read()
@@ -208,6 +221,15 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
             const readyData = parsed.data as { groundingHash?: unknown }
             if (typeof readyData.groundingHash === 'string') setGeneratedAiGroundingHash(readyData.groundingHash)
           }
+          if (parsed?.event === 'question') {
+            const data = parsed.data as QuestionSsePayload
+            if (data?.question) {
+              // Reveal the review list on the first card, then fill in card-by-card.
+              if (streamedCount === 0) { setQuestions([]); setAiPhase('review') }
+              streamedCount++
+              setQuestions((prev) => [...prev, toWizardQuestion(data.question)])
+            }
+          }
           if (parsed?.event === 'questions') payload = parsed.data as GenerateQuestionsSsePayload
           if (parsed?.event === 'error') throw new Error(t('step2.ai_error'))
           boundary = buffer.indexOf('\n\n')
@@ -216,15 +238,12 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
 
       if (!payload) throw new Error(t('step2.ai_error'))
       setGeneratedAiGroundingHash(payload.groundingHash)
-      setQuestions(payload.questions.map((q) => ({
-        id: q.id ?? newId(),
-        kind: normalizeQuestionKind(q.kind),
-        prompt: q.prompt,
-        options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
-        fromAI: true,
-        dismissed: false,
-        accepted: false,
-      })))
+      // When questions streamed in incrementally, the list is already populated;
+      // the final payload only confirms the grounding hash. If nothing streamed
+      // (fallback path), apply the authoritative full list now.
+      if (streamedCount === 0) {
+        setQuestions(payload.questions.map(toWizardQuestion))
+      }
       setAiPhase('review')
     } catch {
       setError(t('step2.ai_error'))

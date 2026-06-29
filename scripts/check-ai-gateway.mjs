@@ -23,7 +23,10 @@ const PATTERN = /\.AI\.run\b|\bai\.run\(/g
 // Burn down by routing call sites through runAI()/runThroughAIGateway().
 // 32 → 29 after the vectorize dedup folded 4 raw env.AI.run calls into the
 // shared lib/ai/embed-query.ts embedding primitive.
-const BASELINE = 29
+// 29 → 30 for the wizard's streaming invocation (invokeAIStream, stream:true),
+// a sanctioned direct call alongside the existing non-streaming invokeAI in the
+// same module; the gateway facade does not currently expose token streaming.
+const BASELINE = 30
 
 function walk(dir) {
   const out = []

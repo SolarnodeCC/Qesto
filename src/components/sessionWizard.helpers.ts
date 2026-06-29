@@ -33,6 +33,12 @@ export type GenerateQuestionsSsePayload = {
   groundingHash: string
 }
 
+// Incremental SSE event: one question emitted the moment it finishes generating.
+export type QuestionSsePayload = {
+  question: GeneratedQuestion
+  index: number
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export function newId() {

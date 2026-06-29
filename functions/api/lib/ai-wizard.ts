@@ -287,6 +287,158 @@ async function invokeWithSecondaryModel(
   }
 }
 
+// ── Streaming generation (WIZ-AI-01 token streaming) ───────────────────────────
+// Workers AI returns a ReadableStream of SSE bytes when called with
+// stream: true. Each frame is `data: {"response":"<delta>"}` and the stream
+// terminates with `data: [DONE]`. We accumulate the deltas into a growing raw
+// string and call onDelta after each chunk so the caller can incrementally
+// parse complete question objects out of the partial JSON.
+async function invokeAIStream(
+  ai: Ai,
+  model: string,
+  messages: Array<{ role: string; content: string }>,
+  approxInputChars: number,
+  onDelta: (rawSoFar: string) => void | Promise<void>,
+): Promise<string> {
+  const t0 = Date.now()
+  const res = (await ai.run(model, {
+    messages,
+    max_tokens: MAX_TOKENS,
+    stream: true,
+  })) as unknown as ReadableStream<Uint8Array> | { response?: string } | string
+
+  // Defensive fallback: some environments/mocks ignore stream:true and return a
+  // plain envelope. Treat it as a single, already-complete delta.
+  if (!(res instanceof ReadableStream)) {
+    const raw =
+      typeof res === 'string' ? res : typeof res?.response === 'string' ? res.response : ''
+    if (raw) await onDelta(raw)
+    logEvent({
+      event: 'ai.wizard.stream_nonstream',
+      model,
+      latencyMs: Date.now() - t0,
+      approxInputChars,
+      outputChars: raw.length,
+    })
+    return raw
+  }
+
+  const reader = res.getReader()
+  const decoder = new TextDecoder()
+  let sseBuffer = ''
+  let raw = ''
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) break
+    sseBuffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n')
+    let boundary = sseBuffer.indexOf('\n\n')
+    while (boundary !== -1) {
+      const frame = sseBuffer.slice(0, boundary)
+      sseBuffer = sseBuffer.slice(boundary + 2)
+      boundary = sseBuffer.indexOf('\n\n')
+      const dataLines = frame
+        .split('\n')
+        .filter((line) => line.startsWith('data:'))
+        .map((line) => line.slice('data:'.length).trim())
+      if (dataLines.length === 0) continue
+      const payload = dataLines.join('\n')
+      if (payload === '[DONE]') continue
+      try {
+        const parsed = JSON.parse(payload) as { response?: unknown }
+        if (typeof parsed.response === 'string' && parsed.response.length > 0) {
+          raw += parsed.response
+          await onDelta(raw)
+        }
+      } catch {
+        // Ignore malformed frames; the model occasionally emits keep-alive noise.
+      }
+    }
+  }
+
+  logEvent({
+    event: 'ai.wizard.stream_ok',
+    model,
+    latencyMs: Date.now() - t0,
+    approxInputChars,
+    outputChars: raw.length,
+  })
+  return raw
+}
+
+// Validate and normalise a single question object pulled mid-stream. Reuses the
+// full repair/Zod/normalise pipeline by wrapping the object as a one-item batch,
+// so a streamed question is held to exactly the same bar as a buffered one.
+// Returns null when the object is incomplete or fails validation.
+function validateSingleQuestion(obj: unknown): GeneratedQuestion | null {
+  const result = AIQuestionsOutputSchema.safeParse(repairAIOutput({ questions: [obj] }))
+  if (!result.success || result.data.questions.length === 0) return null
+  const normalised = normalise(result.data)
+  return normalised[0] ?? null
+}
+
+// Scan accumulated raw AI text for question objects that have fully closed since
+// `cursor`. Locates the `questions` array, then walks characters tracking string
+// state and brace depth so that braces inside string literals don't corrupt the
+// count. Returns each balanced top-level object string plus the advanced cursor.
+// Pure and synchronous — exported via __internal for unit tests.
+function extractCompleteQuestionObjects(
+  raw: string,
+  cursor: number,
+): { objects: string[]; cursor: number } {
+  // Find the start of the questions array only once we are past it.
+  let scanStart = cursor
+  if (cursor === 0) {
+    const keyIdx = raw.search(/"questions"\s*:\s*\[/)
+    if (keyIdx === -1) return { objects: [], cursor: 0 }
+    scanStart = raw.indexOf('[', keyIdx) + 1
+  }
+
+  const objects: string[] = []
+  let i = scanStart
+  let nextCursor = scanStart
+  while (i < raw.length) {
+    // Skip until the next object opens.
+    if (raw[i] !== '{') {
+      i++
+      continue
+    }
+    const objStart = i
+    let depth = 0
+    let inString = false
+    let escaped = false
+    let closed = false
+    for (; i < raw.length; i++) {
+      const ch = raw[i]
+      if (escaped) {
+        escaped = false
+        continue
+      }
+      if (ch === '\\') {
+        if (inString) escaped = true
+        continue
+      }
+      if (ch === '"') {
+        inString = !inString
+        continue
+      }
+      if (inString) continue
+      if (ch === '{') depth++
+      else if (ch === '}') {
+        depth--
+        if (depth === 0) {
+          objects.push(raw.slice(objStart, i + 1))
+          i++
+          nextCursor = i
+          closed = true
+          break
+        }
+      }
+    }
+    if (!closed) break // object still streaming — stop and resume later
+  }
+  return { objects, cursor: nextCursor }
+}
+
 function parseAIQuestions(raw: string): GenerateResult {
   let cleaned: string
   try {
@@ -383,11 +535,102 @@ export async function generateQuestions(
   throw firstError instanceof Error ? firstError : new WizardAIError('AI generation failed')
 }
 
+function dedupKey(prompt: string): string {
+  return prompt.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+// Streaming counterpart of generateQuestions: runs the same parallel batches but
+// with token streaming, invoking `onQuestion` the moment each question finishes
+// generating. A shared dedup set spans both batches and the TARGET_QUESTION_COUNT
+// cap is enforced across them. Returns the merged result (same shape as
+// generateQuestions) once both streams complete. If streaming yields nothing
+// parseable, falls back to a full-buffer parse so we never regress.
+export async function streamQuestions(
+  ai: Ai,
+  input: GenerateInput,
+  onQuestion: (q: GeneratedQuestion) => void | Promise<void>,
+  model = FAST_MODEL,
+): Promise<GenerateResult> {
+  const foci = model === FAST_MODEL ? PARALLEL_BATCH_FOCI : [undefined]
+  const seen = new Set<string>()
+  const emitted: GeneratedQuestion[] = []
+  const rawByBatch: string[] = []
+  let capReached = false
+
+  const emit = async (q: GeneratedQuestion): Promise<void> => {
+    if (capReached) return
+    const key = dedupKey(q.prompt)
+    if (!key || seen.has(key)) return
+    seen.add(key)
+    emitted.push(q)
+    await onQuestion(q)
+    if (emitted.length >= TARGET_QUESTION_COUNT) capReached = true
+  }
+
+  const settled = await Promise.allSettled(
+    foci.map(async (batchFocus) => {
+      const { messages, approxInputChars } = buildMessages(input, batchFocus)
+      let scanCursor = 0
+      const raw = await invokeAIStream(ai, model, messages, approxInputChars, async (rawSoFar) => {
+        if (capReached) return
+        const { objects, cursor } = extractCompleteQuestionObjects(rawSoFar, scanCursor)
+        scanCursor = cursor
+        for (const objText of objects) {
+          if (capReached) break
+          let parsed: unknown
+          try {
+            parsed = JSON.parse(objText)
+          } catch {
+            continue // not yet valid JSON despite balanced braces — skip
+          }
+          const question = validateSingleQuestion(parsed)
+          if (question) await emit(question)
+        }
+      })
+      rawByBatch.push(raw)
+      return raw
+    }),
+  )
+
+  const anyFulfilled = settled.some((r) => r.status === 'fulfilled')
+  if (!anyFulfilled) {
+    const firstError = settled.find((r): r is PromiseRejectedResult => r.status === 'rejected')?.reason
+    throw firstError instanceof Error ? firstError : new WizardAIError('AI generation failed')
+  }
+
+  // If incremental parsing surfaced nothing (e.g. the model emitted the array in
+  // one final burst that our per-delta scan missed, or non-stream fallback), run
+  // the authoritative full-buffer parse over each batch and emit from there.
+  if (emitted.length === 0) {
+    for (const raw of rawByBatch) {
+      try {
+        const parsed = parseAIQuestions(raw)
+        for (const q of parsed.questions) await emit(q)
+      } catch {
+        // skip unparseable batch; another batch may still yield questions
+      }
+    }
+  }
+
+  if (emitted.length === 0) {
+    throw new WizardValidationError('AI response did not contain any valid questions')
+  }
+
+  const confidence = scoreConfidence(
+    rawByBatch.join(''),
+    rawByBatch.join(''),
+    emitted.length,
+  )
+  return { questions: emitted, confidence }
+}
+
 // Exported for unit tests.
 export const __internal = {
   buildSystemPrompt,
   buildUserPrompt,
   extractJson,
+  extractCompleteQuestionObjects,
+  validateSingleQuestion,
   scoreConfidence,
   FAST_MODEL,
   QUALITY_FALLBACK_MODEL,
