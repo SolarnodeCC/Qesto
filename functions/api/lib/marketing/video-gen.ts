@@ -12,7 +12,7 @@
  * frequency feature, so a stateless poll-and-advance read/write on each GET
  * is simpler than standing up DO+alarm machinery for it. None of these
  * third-party models appear in @cloudflare/workers-types' AiModelList, so
- * `ai.run()` falls through to the untyped fallback overload — every field
+ * the inference call falls through to the untyped fallback overload — every field
  * read off its response/the batch-status response is defensive.
  */
 

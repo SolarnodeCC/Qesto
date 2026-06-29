@@ -11,7 +11,7 @@ export type MarketingPlatform = 'linkedin' | 'reddit' | 'youtube'
 // Manual, owner-triggered text-to-video generation for the Video Asset
 // Library's 'other-recordings' category (never cron-invoked — see
 // video-gen.ts). This allowlist is the injection/abuse guard: routes reject
-// any model not in this set with 400 before ever calling c.env.AI.run().
+// any model not in this set with 400 before ever invoking inference.
 // Cloudflare does not publish per-video pricing for any of these models.
 export const VIDEO_GEN_MODELS: { id: string; label: string }[] = [
   { id: '@cf/google/veo-3.1-fast', label: 'Google Veo 3.1 Fast' },

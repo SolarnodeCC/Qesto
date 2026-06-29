@@ -26,7 +26,14 @@ const PATTERN = /\.AI\.run\b|\bai\.run\(/g
 // 29 → 30 for the wizard's streaming invocation (invokeAIStream, stream:true),
 // a sanctioned direct call alongside the existing non-streaming invokeAI in the
 // same module; the gateway facade does not currently expose token streaming.
-const BASELINE = 30
+// 30 → 32 for marketing/video-gen.ts's 2 calls (submit + poll) against the
+// Workers AI async batch API (queueRequest:true, third-party Veo/PixVerse/
+// Hailuo/Vidu models outside the typed AiModelList). Their input shapes
+// ({prompt}, {requests:[{request_id}]}) have neither `text` nor `messages`,
+// so assertSanitizedAIGatewayRequest in lib/ai/prompt-sanitize.ts rejects
+// them outright — routing through runAI()/runThroughAIGateway() would need
+// that shared sanitizer extended, which is out of scope for this feature.
+const BASELINE = 32
 
 function walk(dir) {
   const out = []
