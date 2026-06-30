@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
+import { BarChart3, CheckCircle2, Radio, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useSessions } from '../hooks/useSessions'
 import { useInsights } from '../hooks/useInsights'
@@ -9,6 +10,7 @@ import { useT } from '../i18n'
 import { api, getAuthToken } from '../api/client'
 import AppShellLayout, { type DashboardSection } from '../layouts/AppShellLayout'
 import { SessionListSkeleton } from '../components/SkeletonLoader'
+import { MetricCard } from '../components/MetricCard'
 import SessionWizard from '../components/SessionWizard'
 import DuplicateSessionModal from '../components/DuplicateSessionModal'
 import { HeroSection } from './dashboard/HeroSection'
@@ -36,7 +38,7 @@ export default function Dashboard() {
   )
   const { themes: insightThemes, loading: insightsLoading, planGated, analyzeSession } = useInsights(
     closedSessions,
-    activeSection === 'insights',
+    activeSection === 'insights' || activeSection === 'home',
   )
   const [wizardOpen, setWizardOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -199,6 +201,21 @@ export default function Dashboard() {
       ? [...state.sessions].sort((a, b) => b.created_at - a.created_at).slice(0, 4)
       : []
 
+  // ── Dashboard metric computations ────────────────────────────────────────
+  const metrics = useMemo(() => {
+    if (state.status !== 'ready') return null
+    const sessions = state.sessions
+    const activeSessions = sessions.filter((s) => s.status === 'live').length
+    const completedSessions = sessions.filter(
+      (s) => s.status === 'closed' || s.status === 'archived',
+    ).length
+    const nonDraft = sessions.filter((s) => s.status !== 'draft').length
+    const responseRate = nonDraft > 0
+      ? `${Math.round((completedSessions / nonDraft) * 100)}%`
+      : '—'
+    return { activeSessions, completedSessions, responseRate }
+  }, [state])
+
   const filteredSessions: SessionSummary[] =
     state.status === 'ready'
       ? (() => {
@@ -305,7 +322,45 @@ export default function Dashboard() {
           onCreateTownhall={onCreateTownhall}
           setActiveSection={setActiveSection}
         />
-        <RecentSessionsSection state={state} sessions={recentSessions} cardProps={cardProps} />
+
+        {/* ── Metric strip ─────────────────────────────────────── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            label="Active sessions"
+            value={state.status === 'ready' ? (metrics?.activeSessions ?? 0) : '—'}
+            icon={Radio}
+            iconClassName="text-teal-600 dark:text-teal-400"
+            loading={state.status === 'loading'}
+          />
+          <MetricCard
+            label="Response rate"
+            value={state.status === 'ready' ? (metrics?.responseRate ?? '—') : '—'}
+            icon={BarChart3}
+            iconClassName="text-teal-600 dark:text-teal-400"
+            loading={state.status === 'loading'}
+          />
+          <MetricCard
+            label="Sessions completed"
+            value={state.status === 'ready' ? (metrics?.completedSessions ?? 0) : '—'}
+            icon={CheckCircle2}
+            iconClassName="text-violet-600 dark:text-violet-400"
+            loading={state.status === 'loading'}
+          />
+          <MetricCard
+            label="Consent opt-in"
+            value="—"
+            icon={ShieldCheck}
+            iconClassName="text-pulse-400 dark:text-[#8A96B0]"
+          />
+        </div>
+
+        <RecentSessionsSection
+          state={state}
+          sessions={recentSessions}
+          insightThemes={insightThemes}
+          insightsLoading={insightsLoading}
+          setActiveSection={setActiveSection}
+        />
         <AllSessionsSection
           state={state}
           sessions={filteredSessions}
