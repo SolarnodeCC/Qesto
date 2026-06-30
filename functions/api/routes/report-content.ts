@@ -7,6 +7,7 @@ import { Hono } from 'hono'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 import { sendEmail } from '../lib/email'
+import { errorResponse } from '../lib/error-handler'
 
 type Vars = Record<string, unknown>
 
@@ -25,14 +26,11 @@ export function mountReportContentRoutes(parent: ParentApp) {
     const { contentLocation, illegalityType, description, notifierEmail } = body
 
     if (!contentLocation?.trim() || !illegalityType?.trim() || !notifierEmail?.trim()) {
-      return c.json(
-        { ok: false, error: 'content_location, illegality_type, and notifier_email are required' },
-        400,
-      )
+      return errorResponse(c, 400, 'missing_fields', 'content_location, illegality_type, and notifier_email are required')
     }
 
     if (!notifierEmail.includes('@')) {
-      return c.json({ ok: false, error: 'notifier_email must be a valid email address' }, 400)
+      return errorResponse(c, 400, 'invalid_email', 'notifier_email must be a valid email address')
     }
 
     const referenceId = `NaA-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
