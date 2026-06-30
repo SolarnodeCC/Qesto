@@ -210,7 +210,9 @@ export default function QuestionList({
                 </div>
               ) : (
                 <div className="flex items-center gap-3 px-[18px] py-[13px] cursor-grab active:cursor-grabbing">
-                  <GripVertical size={16} className="shrink-0 text-pulse-300 dark:text-pulse-600" aria-hidden="true" title={t('drag_handle_label')} />
+                  <span title={t('drag_handle_label')} className="shrink-0">
+                    <GripVertical size={16} className="text-pulse-300 dark:text-pulse-600" aria-hidden="true" />
+                  </span>
                   <span className="font-mono text-xs text-[var(--text-muted,#737373)] dark:text-[#6B7A99] w-4 shrink-0">{index + 1}</span>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold capitalize ${KIND_BADGE[q.kind] ?? KIND_BADGE.poll}`}>
                     {q.kind}
