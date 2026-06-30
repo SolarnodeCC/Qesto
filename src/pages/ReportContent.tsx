@@ -38,9 +38,9 @@ export default function ReportContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contentLocation, illegalityType, description, notifierEmail }),
       })
-      const data = await res.json<{ ok: boolean; referenceId?: string; error?: { message?: string } | string }>()
+      const data = (await res.json()) as { ok: boolean; referenceId?: string; error?: { code?: string; message?: string } }
       if (!res.ok || !data.ok) {
-        const msg = typeof data.error === 'string' ? data.error : data.error?.message
+        const msg = data.error?.message
         setErrorMessage(msg ?? 'Submission failed. Please try again or email abuse@qesto.cc.')
         setFormState('error')
       } else {
