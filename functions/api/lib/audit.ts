@@ -119,6 +119,7 @@ export type AuditAction =
   | 'marketing.calendar_update'
   | 'marketing.calendar_delete'
   | 'marketing.video_asset_update'
+  | 'marketing.video_generate'
 
 export interface AuditContext {
   action: AuditAction
