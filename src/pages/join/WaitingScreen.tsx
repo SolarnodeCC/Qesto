@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Clock } from 'lucide-react'
 import { useT } from '../../i18n'
 
 type WaitingLookup = { status: 'waiting'; sessionId: string; title: string }
@@ -18,10 +19,7 @@ export function WaitingScreen({ code, lookup }: { code?: string; lookup: Waiting
       </div>
       <div className="flex-1 max-w-lg w-full mx-auto px-5 py-12 flex flex-col items-center justify-center gap-8 text-center">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-violet-500 flex items-center justify-center shadow-lg" aria-hidden="true">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+          <Clock size={28} stroke="white" strokeWidth={2.5} aria-hidden="true" />
         </div>
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{lookup.title}</h1>

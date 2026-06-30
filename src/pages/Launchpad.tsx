@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSessions'
 import { useT } from '../i18n'
@@ -215,11 +216,19 @@ export default function Launchpad() {
 
   const allValid = !preFlightLoading && (preFlight ? preFlight.ready : localPreFlightItems.every((i) => i.valid))
 
+  const isLaunchReady = allValid
+  const statusLabel = data.session.status === 'energizing'
+    ? t('status_energizing') ?? 'Energizing'
+    : isLaunchReady
+      ? t('status_ready') ?? 'Draft · launch-ready'
+      : t('status_draft') ?? 'Draft'
+
   const navSlot = (
     <Link
       to="/dashboard"
-      className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+      className="inline-flex items-center gap-1.5 text-sm text-teal-700 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
     >
+      <ArrowLeft size={14} aria-hidden="true" />
       {t('back_to_dashboard')}
     </Link>
   )
@@ -227,7 +236,7 @@ export default function Launchpad() {
   return (
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen p-4 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        <header>
+        <header className="space-y-3">
           <SessionTitleField
             sessionId={id!}
             title={data.session.title}
@@ -237,6 +246,11 @@ export default function Launchpad() {
             savingLabel={t('title_saving')}
             onSaved={() => { void reload(); void refreshPreFlight() }}
           />
+          {/* Status pill */}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pulse-100 dark:bg-[#1C2540] text-xs font-semibold text-[var(--text-secondary,#525252)] dark:text-[#A8B3CC]">
+            <span className={`w-1.5 h-1.5 rounded-full ${isLaunchReady ? 'bg-green-500' : 'bg-pulse-400'}`} aria-hidden="true" />
+            {statusLabel}
+          </span>
         </header>
 
         <PreFlightStrip

@@ -128,6 +128,16 @@
   --shadow-teal:            0 4px 20px rgba(20,184,166,0.25);
   --shadow-ai:              0 4px 20px rgba(139,92,246,0.25);
   --shadow-focus-ring:      0 0 0 3px rgba(20,184,166,0.4);
+
+  /* ── Token patch: semantic aliases (design-system → productie) ── */
+  --surface-elevated:   #FFFFFF;
+  --focus-ring:         0 0 0 3px rgba(20, 184, 166, 0.4);
+  --stagger-primary:    40ms;
+  --stagger-secondary:  20ms;
+  --lh-tight:           1.1;
+  --lh-snug:            1.3;
+  --lh-normal:          1.5;
+  --lh-relaxed:         1.6;
 }
 
 /* ─── Interface density ────────────────────────────────────────────────────── */
@@ -185,6 +195,7 @@
   --shadow-teal:            0 4px 24px rgba(45,212,191,0.35);
   --shadow-ai:              0 4px 24px rgba(167,139,250,0.40);
   --shadow-focus-ring:      0 0 0 3px rgba(45,212,191,0.5);
+  --surface-elevated:       #1C2540;
 }
 
 /* No-JS / pre-hydration fallback */

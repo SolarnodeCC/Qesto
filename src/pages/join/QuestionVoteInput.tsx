@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react'
 import { useT } from '../../i18n'
 import { inputHint } from '../../ui/input-hint'
 import { ENTRY_RESPONSE_FIELD_CLASS } from '../../ui/input-field-class'
@@ -55,7 +56,7 @@ export function QuestionVoteInput({
     if (hasVoted) {
       return (
         <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700 dark:text-teal-400">
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <Check size={16} aria-hidden="true" />
           {t('vote_recorded')}
         </p>
       )
@@ -83,7 +84,7 @@ export function QuestionVoteInput({
         <button
           type="submit"
           disabled={!canVote}
-          className="w-full rounded-lg bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          className="w-full rounded-xl bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
           {t('submit')}
         </button>

@@ -187,6 +187,48 @@ Each folder mirrors the same idea:
 
 ---
 
+## Production conventions (as of 2026-06-30 Polish Pass — ADR-0068)
+
+These rules are enforced in `CLAUDE.md` (Hard Rules 9 & 10) and reviewed at PR time.
+
+### Icons — Lucide-only rule
+All icons in `src/` must be imported from `lucide-react`. Inline `<svg>` markup for icons is **forbidden**.
+
+```typescript
+// ✅
+import { Check, Loader2, Sparkles } from 'lucide-react'
+
+// ❌ — never write raw icon SVG in component files
+<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+```
+
+Exception: the circular timer-arc in `src/pages/Present.tsx` (data-driven animated progress ring, no Lucide equivalent).
+
+The design-kit HTML files in `design-system/` and `design_files/` load Lucide via unpkg CDN. **Do not copy those `<script>` tags into production** — use the `lucide-react` npm import instead.
+
+### Border-radius — two-tier rule
+
+| Element | Class | px |
+|---|---|---|
+| Cards, panels, modals, info boxes | `rounded-xl` | 12 px |
+| Buttons, inputs, dropdowns, small badges | `rounded-lg` | 8 px |
+| Status pills | `rounded-full` | — |
+
+### Token aliases
+Eight semantic aliases were added to `src/styles.css` `:root` (and dark equivalents):
+
+| Token | Light value |
+|---|---|
+| `--surface-elevated` | `#FFFFFF` |
+| `--focus-ring` | `0 0 0 3px rgba(20,184,166,.4)` |
+| `--stagger-primary` | `40ms` |
+| `--stagger-secondary` | `20ms` |
+| `--lh-tight` … `--lh-relaxed` | 1.1 / 1.3 / 1.5 / 1.6 |
+
+Prefer these aliases for surface/elevation roles; use full `--color-*` names for direct palette references. See also [`DESIGN_TOKENS_README.md`](./DESIGN_TOKENS_README.md).
+
+---
+
 ## Caveats & substitutions (flagged)
 
 1. **Fonts — Google Fonts only.** The repo references Inter, Syne, JetBrains Mono, all loaded from Google Fonts. No self-hosted woff2s were shipped in the repo; `colors_and_type.css` imports from `fonts.googleapis.com`. If you want offline/CSP-safe bundles, self-host equivalents.
