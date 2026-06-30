@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Template gallery (marketing)" description="Qesto's public /templates gallery: hero, industry + theme filters, template cards (gradient strip, badges, metadata), and signup CTA" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-body); }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  .tg-card:hover { border-color: var(--teal-400) !important; }
+  .tg-card:hover .tg-title { color: var(--teal-600); }
+  .tg-card:hover .tg-cta { gap: 8px !important; }
+</style>
+</helmet>
+<div>{{ page }}</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { dark: false, industry: '', theme: '' }
+
+  INDUSTRY = { 'hr-people': 'HR & People', 'agile-software': 'Agile & Software', 'education-training': 'Education & Training', 'leadership-management': 'Leadership & Management', 'sales-customer-success': 'Sales & Customer Success', 'healthcare': 'Healthcare', 'general': 'General' }
+  THEME = { 'team-wellbeing': 'Team Wellbeing', 'retrospective-reflection': 'Retrospective & Reflection', 'change-transformation': 'Change & Transformation', 'learning-development': 'Learning & Development', 'engagement-motivation': 'Engagement & Motivation', 'strategy-alignment': 'Strategy & Alignment', 'innovation-ideation': 'Innovation & Ideation' }
+
+  TEMPLATES = [
+    { id: 't1', title: 'Sprint retrospective', purpose: 'Surface what went well and what to change, then rank the team\u2019s top improvement for next sprint.', industry: 'agile-software', theme: 'retrospective-reflection', q: 5, min: 15, usage: 1240 },
+    { id: 't2', title: 'Team wellbeing pulse', purpose: 'A short, anonymous check on energy, workload, and support across the team this month.', industry: 'hr-people', theme: 'team-wellbeing', q: 4, min: 8, usage: 980 },
+    { id: 't3', title: 'All-hands Q&A', purpose: 'Crowd-source questions before the all-hands and let the room upvote what matters most.', industry: 'leadership-management', theme: 'engagement-motivation', q: 3, min: 10, usage: 760 },
+    { id: 't4', title: 'Change readiness check', purpose: 'Gauge how ready the organisation feels for an upcoming change and where the friction is.', industry: 'leadership-management', theme: 'change-transformation', q: 6, min: 12, usage: 420 },
+    { id: 't5', title: 'Workshop icebreaker', purpose: 'Warm up the room with low-stakes openers before the real work begins.', industry: 'education-training', theme: 'engagement-motivation', q: 3, min: 5, usage: 1530 },
+    { id: 't6', title: 'Product feedback round', purpose: 'Rate features, rank priorities, and collect verbatim feedback from real users.', industry: 'sales-customer-success', theme: 'innovation-ideation', q: 6, min: 14, usage: 610 },
+    { id: 't7', title: 'Course pulse check', purpose: 'Mid-course check on pace, clarity, and confidence so you can adjust before the end.', industry: 'education-training', theme: 'learning-development', q: 4, min: 7, usage: 340 },
+    { id: 't8', title: 'Strategy alignment vote', purpose: 'Pressure-test priorities and record a clear, weighted decision the team can stand behind.', industry: 'leadership-management', theme: 'strategy-alignment', q: 5, min: 12, usage: 290 },
+    { id: 't9', title: 'Shift handover check', purpose: 'Confirm the care team is aligned and surface concerns before the shift changes.', industry: 'healthcare', theme: 'team-wellbeing', q: 4, min: 6, usage: 180 },
+  ]
+
+  componentDidMount() {
+    this._applyTheme(); this._icons()
+    if (!this.ns().Button) this._poll = setInterval(() => { if (this.ns().Button) { clearInterval(this._poll); this.forceUpdate() } }, 60)
+  }
+  componentDidUpdate() { this._applyTheme(); this._icons() }
+  componentWillUnmount() { clearInterval(this._poll); document.body.removeAttribute('data-theme') }
+  _applyTheme() { if (this.state.dark) document.body.setAttribute('data-theme', 'dark'); else document.body.removeAttribute('data-theme') }
+  _icons() { setTimeout(() => window.lucide && window.lucide.createIcons(), 0) }
+  ns() { return window.QestoDesignSystem_10c0a6 || {} }
+  _icon(R, name, size, color) { return R.createElement('i', { 'data-lucide': name, width: size, height: size, style: { display: 'inline-flex', color: color || 'currentColor' } }) }
+
+  renderVals() { return { page: this._page(React) } }
+
+  _page(R) {
+    const NS = this.ns()
+    if (!NS.Button) return R.createElement('div', { style: { padding: 60, color: '#64748b' } }, 'Loading components…')
+    return R.createElement('div', { 'data-theme': this.state.dark ? 'dark' : undefined, style: { background: 'var(--surface-bg)', color: 'var(--text-primary)', minHeight: '100vh' } },
+      this._nav(R, NS), this._hero(R), this._filters(R), this._grid(R, NS), this._cta(R, NS))
+  }
+
+  _nav(R, NS) {
+    const { Button } = NS
+    const links = ['Product', 'Pricing', 'Solutions', 'Templates']
+    return R.createElement('header', { style: { position: 'sticky', top: 0, zIndex: 50, height: 64, background: this.state.dark ? 'rgba(10,15,30,0.8)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--surface-border)' } },
+      R.createElement('div', { className: 'wrap', style: { height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        R.createElement('a', { href: '#', style: { display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' } },
+          R.createElement('img', { src: '../../assets/qesto-mark.svg', width: 30, height: 30, alt: '' }),
+          R.createElement('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em' } }, 'Qesto')),
+        R.createElement('nav', { style: { display: 'flex', gap: 30 } }, links.map((l) => R.createElement('a', { key: l, href: '#', style: { fontSize: 15, fontWeight: l === 'Templates' ? 600 : 400, color: l === 'Templates' ? 'var(--teal-600)' : 'var(--text-secondary)', textDecoration: 'none' } }, l))),
+        R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+          R.createElement('button', { onClick: () => this.setState(s => ({ dark: !s.dark })), title: this.state.dark ? 'Light' : 'Dark', style: { width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, border: '1px solid var(--surface-border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer' } }, this._icon(R, this.state.dark ? 'sun' : 'moon', 17)),
+          R.createElement('a', { href: '#', style: { fontSize: 15, fontWeight: 500, color: 'var(--text-secondary)', textDecoration: 'none' } }, 'Log in'),
+          R.createElement(Button, { size: 'sm' }, 'Get started'))))
+  }
+
+  _hero(R) {
+    return R.createElement('section', { style: { padding: '64px 0 56px', textAlign: 'center', background: 'var(--surface-bg)' } },
+      R.createElement('div', { className: 'wrap' },
+        R.createElement('span', { style: { display: 'inline-block', marginBottom: 16, padding: '5px 14px', borderRadius: 999, fontSize: 11.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#fff', background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' } }, 'Template Gallery'),
+        R.createElement('h1', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 48, lineHeight: 1.08, letterSpacing: '-0.02em', margin: '0 0 16px', color: 'var(--text-primary)' } }, 'Ready-made session templates'),
+        R.createElement('p', { style: { fontSize: 18, color: 'var(--text-secondary)', maxWidth: 620, margin: '0 auto', lineHeight: 1.55 } }, 'Created from real Qesto sessions. Anonymised, rewritten, and ready to use in minutes.')))
+  }
+
+  _filtered() {
+    return this.TEMPLATES.filter(t => (!this.state.industry || t.industry === this.state.industry) && (!this.state.theme || t.theme === this.state.theme))
+  }
+
+  _filters(R) {
+    const s = this.state
+    const selStyle = { fontSize: 14, borderRadius: 8, border: '1px solid var(--surface-border-strong)', background: 'var(--surface-card)', color: 'var(--text-primary)', padding: '8px 12px', fontFamily: 'var(--font-body)', cursor: 'pointer' }
+    const count = this._filtered().length
+    return R.createElement('section', { style: { borderTop: '1px solid var(--surface-border)', borderBottom: '1px solid var(--surface-border)', background: 'var(--surface-bg-subtle)' } },
+      R.createElement('div', { className: 'wrap', style: { padding: '16px 24px', display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' } },
+        R.createElement('span', { style: { fontSize: 14, fontWeight: 500, color: 'var(--text-secondary)', marginRight: 4 } }, 'Filter by'),
+        R.createElement('select', { value: s.industry, onChange: e => this.setState({ industry: e.target.value }), style: selStyle },
+          R.createElement('option', { value: '' }, 'All industries'),
+          Object.entries(this.INDUSTRY).map(([k, v]) => R.createElement('option', { key: k, value: k }, v))),
+        R.createElement('select', { value: s.theme, onChange: e => this.setState({ theme: e.target.value }), style: selStyle },
+          R.createElement('option', { value: '' }, 'All themes'),
+          Object.entries(this.THEME).map(([k, v]) => R.createElement('option', { key: k, value: k }, v))),
+        (s.industry || s.theme) ? R.createElement('button', { onClick: () => this.setState({ industry: '', theme: '' }), style: { fontSize: 14, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2, fontFamily: 'var(--font-body)' } }, 'Clear filters') : null,
+        R.createElement('span', { style: { marginLeft: 'auto', fontSize: 14, color: 'var(--text-muted)' } }, count + ' templates')))
+  }
+
+  _grid(R, NS) {
+    const list = this._filtered()
+    return R.createElement('section', { style: { padding: '48px 0 56px', background: 'var(--surface-bg)' } },
+      R.createElement('div', { className: 'wrap' },
+        list.length === 0
+          ? R.createElement('div', { style: { textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' } }, this._icon(R, 'book-open', 40), R.createElement('p', { style: { marginTop: 12, fontSize: 15 } }, 'No templates found. Try adjusting your filters.'))
+          : R.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 } }, list.map(t => this._tplCard(R, t))))) }
+
+  _tplCard(R, t) {
+    return R.createElement('a', { key: t.id, href: '#', className: 'tg-card', 'aria-label': t.title, style: { display: 'block', textDecoration: 'none', borderRadius: 'var(--radius-xl)', background: 'var(--surface-card)', border: '1px solid var(--surface-border)', boxShadow: 'var(--shadow-card)', overflow: 'hidden', transition: 'border-color 200ms' } },
+      R.createElement('div', { style: { height: 4, width: '100%', background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' } }),
+      R.createElement('div', { style: { padding: 20 } },
+        R.createElement('span', { style: { display: 'inline-block', marginBottom: 12, padding: '3px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', background: this.state.dark ? 'rgba(20,184,166,0.16)' : 'var(--teal-50)', color: 'var(--teal-700)' } }, this.INDUSTRY[t.industry]),
+        R.createElement('h3', { className: 'tg-title', style: { fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px', lineHeight: 1.3, transition: 'color 200ms' } }, t.title),
+        R.createElement('p', { style: { fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 16px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } }, t.purpose),
+        R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 16, fontSize: 12.5, color: 'var(--text-muted)' } },
+          R.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: 5 } }, this._icon(R, 'book-open', 14), t.q + ' questions'),
+          R.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: 5 } }, this._icon(R, 'clock', 14), t.min + ' min'),
+          t.usage > 0 ? R.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: 5 } }, this._icon(R, 'users', 14), t.usage.toLocaleString()) : null),
+        R.createElement('div', { className: 'tg-cta', style: { marginTop: 16, display: 'flex', alignItems: 'center', gap: 4, fontSize: 14, fontWeight: 500, color: 'var(--teal-600)', transition: 'gap 200ms' } }, 'View template', this._icon(R, 'chevron-right', 16))))
+  }
+
+  _cta(R, NS) {
+    const { Button } = NS
+    return R.createElement('section', { style: { padding: '64px 0', background: 'var(--surface-bg-subtle)', borderTop: '1px solid var(--surface-border)' } },
+      R.createElement('div', { className: 'wrap', style: { maxWidth: 640, textAlign: 'center' } },
+        R.createElement('h2', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 30, letterSpacing: '-0.01em', margin: '0 0 12px', color: 'var(--text-primary)' } }, 'Want to create your own?'),
+        R.createElement('p', { style: { fontSize: 16, color: 'var(--text-secondary)', margin: '0 0 28px', lineHeight: 1.55 } }, 'Build a session in minutes, run it live, and get AI-powered insights.'),
+        R.createElement(Button, { size: 'lg' }, 'Get started free')))
+  }
+}
+</script>
+</body>
+</html>

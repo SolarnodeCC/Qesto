@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react'
+import { Check, ThumbsUp } from 'lucide-react'
 import { useT } from '../../i18n'
 import { inputHint } from '../../ui/input-hint'
 import { ENTRY_RESPONSE_FIELD_CLASS } from '../../ui/input-field-class'
@@ -165,7 +165,7 @@ export function QuestionVoteInput({
                     )}
                     aria-hidden="true"
                   >
-                    {selected && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                    {selected && <Check size={10} stroke="white" strokeWidth={3} aria-hidden="true" />}
                   </span>
                   {o.label}
                 </span>
@@ -199,10 +199,13 @@ export function QuestionVoteInput({
                   !canVote && 'opacity-50 cursor-not-allowed',
                 )}
               >
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill={upvoted ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
-                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
-                  <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-                </svg>
+                <ThumbsUp
+                  aria-hidden="true"
+                  size={14}
+                  fill={upvoted ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth={2}
+                />
                 {count}
               </button>
               <span className="text-sm text-pulse-800 dark:text-[#F0F2F8]">{o.label}</span>
@@ -245,7 +248,7 @@ export function QuestionVoteInput({
                   )}
                   aria-hidden="true"
                 >
-                  {voted && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                  {voted && <Check size={10} stroke="white" strokeWidth={3} aria-hidden="true" />}
                 </span>
                 {o.label}
               </span>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qesto — Present</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../qr.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #04060C; font-family: var(--font-body); overflow: hidden; }
+  @keyframes qpulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { TallyBar } = window.QestoDesignSystem_10c0a6
+const { useState, useEffect, useLayoutEffect, useRef } = React
+
+function Icon({ name, size = 22, color, style }) {
+  return <i data-lucide={name} width={size} height={size} style={{ display:'inline-flex', color: color||'currentColor', ...style }} />
+}
+
+function QR({ text, size = 200, style }) {
+  const ref = React.useRef(null)
+  React.useEffect(() => { window.QestoQR && window.QestoQR.render(ref.current, text, size) }, [text, size])
+  return <div ref={ref} style={{ width:size, height:size, display:'flex', alignItems:'center', justifyContent:'center', ...style }} />
+}
+
+const OPTS = [
+  ['Adopt trunk-based delivery', 38],
+  ['Invest in test automation', 52],
+  ['Cut WIP limits per squad', 24],
+  ['Pair on the riskiest work', 19],
+]
+
+function Stage({ dark }) {
+  const [counts, setCounts] = useState(OPTS.map(()=>0))
+  useEffect(() => {
+    let hold
+    const iv = setInterval(() => {
+      setCounts(prev => {
+        const next = prev.map((c,i)=> c>=OPTS[i][1]?OPTS[i][1]:Math.min(c+Math.ceil(OPTS[i][1]/8)+Math.floor(Math.random()*5),OPTS[i][1]))
+        if (next.every((c,i)=>c>=OPTS[i][1])) hold=setTimeout(()=>setCounts(OPTS.map(()=>0)),2600)
+        return next
+      })
+    }, 700)
+    return () => { clearInterval(iv); clearTimeout(hold) }
+  }, [])
+  const total = counts.reduce((s,c)=>s+c,0)
+  const maxIdx = counts.indexOf(Math.max(...counts))
+  return (
+    <div data-theme={dark ? 'dark' : undefined} style={{
+      width:1920, height:1080, position:'relative', overflow:'hidden',
+      background:'var(--surface-bg)', color:'var(--text-primary)',
+      fontFamily:'var(--font-body)',
+    }}>
+      {/* glow */}
+      <div style={{ position:'absolute', inset:0, pointerEvents:'none', background:'radial-gradient(1400px 700px at 10% -10%, rgba(20,184,166,0.08), transparent 60%), radial-gradient(1200px 600px at 95% 110%, rgba(139,92,246,0.08), transparent 60%)' }} />
+      {/* top accent */}
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:6, background:'var(--gradient-brand)' }} />
+
+      {/* top bar */}
+      <div style={{ position:'absolute', top:44, left:64, right:64, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:14, fontFamily:'var(--font-display)', fontWeight:700, fontSize:28, letterSpacing:'-0.02em' }}>
+          <img src="../../assets/qesto-mark.svg" width="40" height="40" alt="" />Qesto
+        </div>
+        <div style={{ display:'flex', gap:28, alignItems:'center', fontSize:20, fontWeight:500, color:'var(--text-secondary)' }}>
+          <span>Q3 strategy offsite</span>
+          <span style={{ width:1, height:20, background:'var(--surface-border)' }} />
+          <span style={{ display:'flex', alignItems:'center', gap:10, fontWeight:600, color:'var(--text-primary)' }}>
+            <span style={{ width:10, height:10, borderRadius:'50%', background:'var(--teal-500)', animation:'qpulse 1.8s infinite' }} />Live
+          </span>
+        </div>
+      </div>
+
+      {/* question header */}
+      <div style={{ position:'absolute', top:150, left:64, right:600 }}>
+        <div style={{ fontSize:20, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase', color:'var(--teal-700)', marginBottom:20 }}>Question 2 of 5</div>
+        <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:76, lineHeight:1.05, letterSpacing:'-0.02em', margin:0, textWrap:'balance' }}>
+          Where should the team focus to ship faster next quarter?
+        </h1>
+        <div style={{ marginTop:24, display:'flex', gap:36, fontSize:22, color:'var(--text-secondary)' }}>
+          <span style={{ display:'flex', alignItems:'center', gap:8 }}><Icon name="users" size={20} color="var(--teal-700)" />{total} participants</span>
+          <span style={{ display:'flex', alignItems:'center', gap:8 }}><Icon name="lock" size={20} color="var(--teal-700)" />Full anonymity</span>
+        </div>
+      </div>
+
+      {/* tallies */}
+      <div style={{ position:'absolute', top:470, left:64, right:600, display:'flex', flexDirection:'column', gap:28 }}>
+        {OPTS.map(([label],i)=>(
+          <div key={label} style={{ transform:'scale(1.0)' }}>
+            <TallyBarBig label={label} count={counts[i]} total={total||1} leading={i===maxIdx && total>0} dark={dark} />
+          </div>
+        ))}
+      </div>
+
+      {/* join panel */}
+      <div style={{ position:'absolute', right:64, top:150, width:440, padding:36, borderRadius:32, background:'var(--surface-card)', border:'1px solid var(--surface-border)', boxShadow:'var(--shadow-elevated)' }}>
+        <div style={{ fontSize:16, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', color:'var(--teal-700)', marginBottom:12 }}>Join this session</div>
+        <div style={{ fontFamily:'var(--font-mono)', fontSize:20, color:'var(--text-muted)', marginBottom:16 }}>qesto.cc/join</div>
+        <div style={{ fontFamily:'var(--font-mono)', fontWeight:500, fontSize:52, letterSpacing:'0.12em', lineHeight:1, marginBottom:24 }} className="text-gradient-brand">QSTO-7K2</div>
+        <div style={{ width:'100%', aspectRatio:'1', borderRadius:16, background:'#fff', border:'1px solid var(--surface-border)', display:'flex', alignItems:'center', justifyContent:'center', padding:18 }}>
+          <QR text="https://qesto.cc/join/QSTO-7K2" size={332} style={{ width:'100%', height:'100%' }} />
+        </div>
+      </div>
+
+      {/* footer hint */}
+      <div style={{ position:'absolute', bottom:44, left:64, fontSize:20, color:'var(--text-muted)', display:'flex', alignItems:'center', gap:10 }}>
+        <Icon name="smartphone" size={20} color="var(--text-muted)" />Scan or enter the code on any device — no app needed
+      </div>
+    </div>
+  )
+}
+
+// Larger tally for the projected stage (mirrors TallyBar but stage-scaled type)
+function TallyBarBig({ label, count, total, leading, dark }) {
+  const pct = total>0?Math.round(count/total*100):0
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+        <span style={{ fontSize:34, fontWeight: leading?700:500, color:'var(--text-primary)' }}>{label}</span>
+        <span style={{ fontFamily:'var(--font-mono)', fontVariantNumeric:'tabular-nums', fontSize:30, fontWeight:600, color: leading?'var(--teal-700)':'var(--text-muted)' }}>{pct}%</span>
+      </div>
+      <div style={{ height:28, borderRadius:999, background: dark?'rgba(255,255,255,0.10)':'var(--pulse-100)', overflow:'hidden' }}>
+        <div style={{ height:'100%', width:`${pct}%`, minWidth: pct>0?16:0, borderRadius:999, background:'var(--gradient-brand)', opacity: leading?1:0.82, transition:'width var(--motion-normal) var(--ease-standard)' }} />
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  const ref = useRef(null)
+  const [scale, setScale] = useState(1)
+  const [dark, setDark] = useState(false)
+  useLayoutEffect(() => {
+    const fit = () => { const s = Math.min(window.innerWidth/1920, window.innerHeight/1080); setScale(s) }
+    fit(); window.addEventListener('resize', fit); return () => window.removeEventListener('resize', fit)
+  }, [])
+  useEffect(() => { const t=setTimeout(()=>window.lucide&&window.lucide.createIcons(),0); return ()=>clearTimeout(t) }, [dark])
+  return (
+    <div style={{ position:'fixed', inset:0, display:'flex', alignItems:'center', justifyContent:'center', background:'#04060C' }}>
+      <button onClick={()=>setDark(d=>!d)} style={{
+        position:'fixed', top:16, right:16, zIndex:10, display:'flex', alignItems:'center', gap:8,
+        padding:'8px 14px', borderRadius:999, border:'1px solid rgba(255,255,255,0.18)', cursor:'pointer',
+        background:'rgba(255,255,255,0.08)', color:'#fff', fontFamily:'var(--font-body)', fontSize:13, fontWeight:600, backdropFilter:'blur(8px)',
+      }}>
+        <i data-lucide={dark?'sun':'moon'} width={15} height={15}></i>{dark?'Light canvas':'Dark canvas'}
+      </button>
+      <div style={{ width:1920*scale, height:1080*scale }}>
+        <div ref={ref} style={{ width:1920, height:1080, transformOrigin:'top left', transform:`scale(${scale})` }}>
+          <Stage dark={dark} />
+        </div>
+      </div>
+    </div>
+  )
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+</script>
+</body>
+</html>
