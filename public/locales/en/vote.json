@@ -16,7 +16,7 @@
   "nameStepRequired": "The presenter has made names mandatory.",
   "nameStepOptional": "Optional — you can also participate anonymously.",
   "namePlaceholder": "Your name or alias",
-  "gdprConsent": "I agree to the processing of my name for analytics purposes. Data is stored for a maximum of 30 days and then deleted.",
+  "gdprConsent": "I agree to the processing of my name for session analytics. Data is stored per your host's plan and deleted as described in the Privacy Policy.",
   "joinAs": "Join as {{name}}",
   "joinAnon": "Join →",
   "joinAnonLink": "Join anonymously",

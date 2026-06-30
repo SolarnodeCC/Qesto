@@ -16,7 +16,7 @@
   "nameStepRequired": "Der Präsentator hat Namen zur Pflicht gemacht.",
   "nameStepOptional": "Optional — du kannst auch anonym teilnehmen.",
   "namePlaceholder": "Dein Name oder Alias",
-  "gdprConsent": "Ich stimme der Verarbeitung meines Namens für Analysezwecke zu. Die Daten werden maximal 30 Tage gespeichert und dann gelöscht.",
+  "gdprConsent": "Ich stimme der Verarbeitung meines Namens für Sitzungsanalysen zu. Die Daten werden gemäß dem Plan des Gastgebers gespeichert und gemäß der Datenschutzrichtlinie gelöscht.",
   "joinAs": "Als {{name}} teilnehmen",
   "joinAnon": "Teilnehmen →",
   "joinAnonLink": "Anonym teilnehmen",

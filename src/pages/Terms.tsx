@@ -102,6 +102,20 @@ export default function Terms() {
               <li>Scrape, probe, or reverse-engineer the platform. Security research is welcome via our responsible disclosure program — see <a href="https://qesto.cc/security" className="text-teal-600 hover:underline">qesto.cc/security</a>.</li>
               <li>Impersonate another host or organization.</li>
             </ul>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
+              <strong>Illegal content.</strong> If you believe content on the platform is illegal, you can submit a
+              notice at{' '}
+              <a href="/legal/report" className="text-teal-600 hover:underline">qesto.cc/legal/report</a>{' '}
+              or email{' '}
+              <a href="mailto:abuse@qesto.cc" className="text-teal-600 hover:underline">abuse@qesto.cc</a>.
+              We will review every notice and respond with our decision within 5 business days (Art. 16 DSA).
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+              <strong>Cooperation with law enforcement.</strong> Qesto cooperates with Dutch law enforcement (OM /
+              politie) and other competent authorities. If content gives reasonable suspicion of a serious criminal
+              offence involving a threat to life or safety, we will proactively refer it to the relevant authority
+              without waiting for a notice (Art. 18 DSA).
+            </p>
 
             <h2 id="t4" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               4. Your content
@@ -161,6 +175,15 @@ export default function Terms() {
               On termination, you have 30 days to export. After that, data is purged on the schedule in the privacy
               policy.
             </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
+              <strong>Statement of reasons (Art. 17 DSA).</strong> When we restrict your account, remove content, or
+              disable access to your session data, we will notify you by email within 48 hours. The notice will
+              state: the specific content or behaviour that triggered the action, the policy clause(s) or legal
+              provision that applies, a description of what was done, and how to appeal. You may appeal by replying
+              to that email or contacting{' '}
+              <a href="mailto:legal@qesto.cc" className="text-teal-600 hover:underline">legal@qesto.cc</a>{' '}
+              within 14 days.
+            </p>
 
             <h2 id="t8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               8. Warranties
@@ -213,8 +236,15 @@ export default function Terms() {
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>No waiver.</strong> If we don't enforce a right, we haven't waived it.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>Entire agreement.</strong> These terms + the DPA + any signed MSA = the whole deal. Nothing else.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+              <strong>Changes to these terms.</strong> We will give you at least 30 days' advance notice of material
+              changes via in-app notification and email to the address on your account. Minor clarifications and
+              corrections take effect on publication. Continued use after the effective date of a material change
+              constitutes acceptance. If you do not accept a material change, you may cancel before the effective
+              date and receive a pro-rata refund of any prepaid fees for the remaining period.
             </p>
             <p className="text-[13px] text-pulse-500 mt-8">
               Questions?{' '}
