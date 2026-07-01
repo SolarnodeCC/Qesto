@@ -3,6 +3,7 @@ import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../EmojiPollEne
 import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../QuickFingerEnergizer'
 import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../TeamQuizEnergizer'
 import WordCloudEnergizerView, { type WordCloudEnergizer } from '../WordCloudEnergizer'
+import { Badge, type BadgeTone } from '../../ui/components'
 
 export type AnyEnergizer = EmojiPollEnergizer | QuickFingerEnergizer | TeamQuizEnergizer | WordCloudEnergizer
 
@@ -19,10 +20,11 @@ const KIND_LABELS: Record<string, string> = {
   word_cloud: 'Word Cloud',
 }
 
-const STATE_BADGE: Record<string, string> = {
-  draft:     'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  active:    'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
-  completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+/** Energizer state → shared Badge tone (DESIGN_SYSTEM_AUDIT_2026-07-01). */
+const STATE_TONE: Record<string, BadgeTone> = {
+  draft: 'neutral',
+  active: 'brand',
+  completed: 'success',
 }
 
 export default function EnergizerPanel({ energizers, sessionId, onEnergizerChange }: Props) {
@@ -52,9 +54,9 @@ export default function EnergizerPanel({ energizers, sessionId, onEnergizerChang
           </div>
 
           {/* State badge */}
-          <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold ${STATE_BADGE[energizer.state] ?? STATE_BADGE.draft}`}>
+          <Badge tone={STATE_TONE[energizer.state] ?? 'neutral'} className="shrink-0">
             {energizer.state.charAt(0).toUpperCase() + energizer.state.slice(1)}
-          </span>
+          </Badge>
         </div>
       ))}
 

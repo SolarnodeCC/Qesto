@@ -46,7 +46,7 @@ export default function MarketingDashboard() {
       <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">
         <header>
           <Heading level="l">Marketing Review Dashboard</Heading>
-          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-space-2">
+          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-2">
             Content Engine, Mention Monitor, and Video Asset Library — review queue
           </Body>
         </header>

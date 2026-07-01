@@ -1,5 +1,6 @@
 import { ArrowBigUp, Check, EyeOff, RotateCcw, MessageSquare, Star } from 'lucide-react'
 import type { TownhallBoardItem } from '../hooks/useTownhallSession'
+import { Badge, type BadgeTone } from './components'
 
 type Variant = 'audience' | 'console'
 
@@ -13,11 +14,12 @@ type Props = {
   t: (key: string, vars?: Record<string, string | number>) => string
 }
 
-const STATUS_BADGE: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-800',
-  approved: 'bg-teal-100 text-teal-800',
-  answered: 'bg-pulse-100 text-pulse-600',
-  dismissed: 'bg-red-100 text-red-700',
+/** Question-moderation state → shared Badge tone (DESIGN_SYSTEM_AUDIT_2026-07-01). */
+const MODERATION_TONE: Record<string, BadgeTone> = {
+  pending: 'warning',
+  approved: 'success',
+  answered: 'neutral',
+  dismissed: 'danger',
 }
 
 /** Shared Q&A card for the participant board (audience) and the host console. */
@@ -56,9 +58,9 @@ export function TownhallQuestionCard({ item, variant, upvoted, onUpvote, onModer
           <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-pulse-500 dark:text-[#8A96B0]">
             <span>{item.displayName ?? t('submit.button')}</span>
             {variant === 'console' && (
-              <span className={`rounded px-1.5 py-0.5 font-medium ${STATUS_BADGE[item.status] ?? ''}`}>
+              <Badge tone={MODERATION_TONE[item.status] ?? 'neutral'}>
                 {t(`console.${item.status === 'pending' ? 'pending' : item.status}`)}
-              </span>
+              </Badge>
             )}
             {variant === 'console' && (
               <span className="inline-flex items-center gap-1">

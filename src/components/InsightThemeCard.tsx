@@ -34,7 +34,7 @@ export default function InsightThemeCard({
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       className={[
-        'w-full text-left rounded-lg border border-pulse-200 bg-pulse-50 p-space-5 space-y-space-3',
+        'w-full text-left rounded-lg border border-pulse-200 bg-pulse-50 p-5 space-y-3',
         'shadow-card transition-all duration-150',
         'dark:bg-pulse-800 dark:border-pulse-700',
         onClick
@@ -46,7 +46,7 @@ export default function InsightThemeCard({
       aria-label={onClick ? `View details for theme: ${title}` : undefined}
     >
       {/* Title row */}
-      <div className="flex items-start justify-between gap-space-3">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
           <h3 className="text-body-s font-semibold text-pulse-900 dark:text-pulse-100 leading-snug">{title}</h3>
           {confidence && (
@@ -79,8 +79,8 @@ export default function InsightThemeCard({
       <p className="text-body-s text-pulse-600 dark:text-pulse-400 leading-relaxed">{description}</p>
 
       {/* Session count + trend sparkline */}
-      <div className="flex items-center justify-between gap-space-2">
-        <div className="flex items-center gap-space-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
           <svg
             aria-hidden="true"
             focusable="false"

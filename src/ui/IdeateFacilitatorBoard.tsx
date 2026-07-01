@@ -12,26 +12,9 @@
 
 import { useState } from 'react'
 import { ideasForCluster, unclusteredIdeas, type IdeateCluster, type IdeateIdea, type IdeateRankingEntry } from '../hooks/useIdeateSession'
+import { CLUSTER_BORDER_COLORS, CLUSTER_BG_COLORS } from './cluster-colors'
 
 type TFn = (key: string, vars?: Record<string, string | number>) => string
-
-const CLUSTER_BORDER_COLORS = [
-  'border-teal-400',
-  'border-violet-400',
-  'border-amber-400',
-  'border-sky-400',
-  'border-rose-400',
-  'border-emerald-400',
-]
-
-const CLUSTER_BG_COLORS = [
-  'bg-teal-50 dark:bg-teal-900/20',
-  'bg-violet-50 dark:bg-violet-900/20',
-  'bg-amber-50 dark:bg-amber-900/20',
-  'bg-sky-50 dark:bg-sky-900/20',
-  'bg-rose-50 dark:bg-rose-900/20',
-  'bg-emerald-50 dark:bg-emerald-900/20',
-]
 
 // ─── Dot vote tally bar ───────────────────────────────────────────────────────
 

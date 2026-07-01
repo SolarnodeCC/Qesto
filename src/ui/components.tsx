@@ -69,7 +69,7 @@ export function Card({
   return (
     <div
       className={`
-        rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-space-4
+        rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4
         shadow-card ${hoverable ? 'hover:shadow-elevated transition-shadow' : ''}
         ${className}
       `}
@@ -86,7 +86,7 @@ export function Section({
   children: ReactNode
   className?: string
 }) {
-  return <section className={`space-y-space-4 ${className}`}>{children}</section>
+  return <section className={`space-y-4 ${className}`}>{children}</section>
 }
 
 // ─── Buttons ──────────────────────────────────────────────────────────────
@@ -111,9 +111,9 @@ export function Button({
   const baseStyles = 'rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2'
 
   const sizeStyles = {
-    sm: 'px-space-3 py-space-2 text-body-s',
-    md: 'px-space-4 py-space-2 text-body-m',
-    lg: 'px-space-5 py-space-3 text-body-m',
+    sm: 'px-3 py-2 text-body-s',
+    md: 'px-4 py-2 text-body-m',
+    lg: 'px-5 py-3 text-body-m',
   }
 
   const variantStyles = {
@@ -175,25 +175,62 @@ export function TextInput({
 
 // ─── Data Display ──────────────────────────────────────────────────────────
 
+/**
+ * Badge — the shared pill primitive. `tone` selects a semantic color; feature
+ * families map their own states (session status, moderation, roles, …) onto
+ * these tones rather than hand-rolling per-family color maps. `dot` renders a
+ * leading status dot; `pulse` animates it (the LIVE indicator).
+ *
+ * Canonical status→tone mappings live in StatusBadge (session lifecycle) and at
+ * each family's call site. See DESIGN_SYSTEM_AUDIT_2026-07-01.
+ */
+export type BadgeTone = 'neutral' | 'brand' | 'success' | 'info' | 'warning' | 'danger' | 'ai'
+
+const BADGE_TONE_STYLES: Record<BadgeTone, string> = {
+  neutral: 'bg-pulse-100 dark:bg-pulse-800 text-pulse-600 dark:text-pulse-300 border border-pulse-200 dark:border-pulse-700',
+  brand: 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800',
+  success: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800',
+  info: 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800',
+  warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
+  danger: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
+  ai: 'bg-gradient-ai text-white border border-violet-400 dark:border-violet-500',
+}
+
+const BADGE_DOT_STYLES: Record<BadgeTone, string> = {
+  neutral: 'bg-pulse-400',
+  brand: 'bg-teal-500',
+  success: 'bg-signal-success',
+  info: 'bg-sky-500',
+  warning: 'bg-amber-500',
+  danger: 'bg-red-500',
+  ai: 'bg-white',
+}
+
 export function Badge({
   children,
-  variant = 'primary',
+  tone = 'neutral',
+  dot = false,
+  pulse = false,
   className = '',
 }: {
   children: ReactNode
-  variant?: 'primary' | 'ai' | 'success' | 'warning' | 'error'
+  tone?: BadgeTone
+  /** Render a leading status dot in the tone color. */
+  dot?: boolean
+  /** Animate the dot (use with `dot` for the LIVE indicator). */
+  pulse?: boolean
   className?: string
 }) {
-  const variantStyles = {
-    primary: 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800',
-    ai: 'bg-gradient-ai text-white border border-violet-400 dark:border-violet-500',
-    success: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800',
-    warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
-    error: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
-  }
-
   return (
-    <span className={`inline-flex items-center gap-space-1 rounded-pill px-space-3 py-space-1 text-caption ${variantStyles[variant]} ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${BADGE_TONE_STYLES[tone]} ${className}`}
+    >
+      {dot && (
+        <span
+          className={`h-1.5 w-1.5 shrink-0 rounded-full ${BADGE_DOT_STYLES[tone]} ${pulse ? 'animate-pulse' : ''}`}
+          aria-hidden="true"
+        />
+      )}
       {children}
     </span>
   )
@@ -219,7 +256,7 @@ export function MetricCard({
   return (
     <Card className={`${alert ? 'border-signal-error bg-red-50' : ''} ${className}`}>
       <Caption className={alert ? 'text-signal-error' : ''}>{label}</Caption>
-      <div className={`text-2xl font-bold mt-space-2 ${alert ? 'text-signal-error dark:text-red-400' : 'text-pulse-900 dark:text-[#F0F2F8]'}`}>
+      <div className={`text-2xl font-bold mt-2 ${alert ? 'text-signal-error dark:text-red-400' : 'text-pulse-900 dark:text-[#F0F2F8]'}`}>
         {value}
       </div>
       {trend && (
@@ -244,12 +281,12 @@ export function EmptyState({
   action?: ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-space-12 text-center">
+    <div className="flex flex-col items-center justify-center py-12 text-center">
       <Heading level="m" className="text-pulse-700 dark:text-[#A8B3CC]">
         {title}
       </Heading>
-      {description && <Body className="text-pulse-600 dark:text-[#8A96B0] mt-space-2">{description}</Body>}
-      {action && <div className="mt-space-4">{action}</div>}
+      {description && <Body className="text-pulse-600 dark:text-[#8A96B0] mt-2">{description}</Body>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   )
 }
@@ -278,7 +315,7 @@ export function StatCard({
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-space-4 h-24 bg-pulse-100 dark:bg-[#151C2E] animate-pulse ${className}`} />
+    <div className={`rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-4 h-24 bg-pulse-100 dark:bg-[#151C2E] animate-pulse ${className}`} />
   )
 }
 
