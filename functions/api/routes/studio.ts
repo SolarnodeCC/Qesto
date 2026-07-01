@@ -6,7 +6,7 @@
  * theme so the preview matches the live presentation. Workers AI only — no
  * external LLM API, no egress (ADR-0060 §1, CLAUDE.md hard rule 1).
  *
- * The c.env.AI.run(...) call is the ONLY non-pure step here; prompt building and
+ * The runAI() call is the ONLY non-pure step here; prompt building and
  * output validation live in lib/studio-authoring.ts and lib/studio-theme.ts.
  */
 import { Hono } from 'hono'
@@ -16,6 +16,7 @@ import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { recordAuditEvent } from '../lib/audit'
 import { writeEvent } from '../lib/observability'
 import { logEvent } from '../lib/log'
+import { runAI } from '../lib/ai/ai-gateway'
 import {
   buildAuthoringPrompt,
   parseAuthoringResult,
@@ -118,7 +119,7 @@ export function mountStudioRoutes(parent: ParentApp) {
     let raw: string
     const t0 = Date.now()
     try {
-      const res = await c.env.AI.run(STUDIO_MODEL, {
+      const res = await runAI(c.env, STUDIO_MODEL, {
         messages: built.messages,
         max_tokens: 800,
         stream: false,

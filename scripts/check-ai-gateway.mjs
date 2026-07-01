@@ -33,7 +33,9 @@ const PATTERN = /\.AI\.run\b|\bai\.run\(/g
 // so assertSanitizedAIGatewayRequest in lib/ai/prompt-sanitize.ts rejects
 // them outright — routing through runAI()/runThroughAIGateway() would need
 // that shared sanitizer extended, which is out of scope for this feature.
-const BASELINE = 32
+// 32 → 3 after RT-02 burn-down: all migratable sites now use runAI(); only
+// video-gen async batch (2) + ai-wizard streaming (1) remain sanctioned direct.
+const BASELINE = 3
 
 function walk(dir) {
   const out = []

@@ -3,12 +3,13 @@
  * Retrieves documents, builds system prompt, invokes Mistral with retry logic.
  */
 
-import type { D1Database, Ai } from '@cloudflare/workers-types'
+import type { D1Database } from '@cloudflare/workers-types'
 import type { Env } from '../types'
 import { embedAndFindSimilarDocuments } from './help-vectorize'
 import { getActivePrompt } from './help-prompts'
 import { safeLogContext , logEvent} from './log'
 import { sleep, withTimeout } from './shared/async'
+import { runAI, envWithAI } from './ai/ai-gateway'
 import { sanitizePromptText } from './ai/prompt-sanitize'
 import { scrubPII } from './ai/pii-scrub'
 
@@ -70,7 +71,7 @@ export interface HelpRetrievalResult {
 
 /** Retrieve help documents from Vectorize + D1, filtered by user plan scope. */
 export async function retrieveDocuments(
-  ai: Ai,
+  ai: Env['AI'],
   vectorize: Env['HELP_VECTORIZE'],
   db: D1Database,
   question: string,
@@ -152,7 +153,7 @@ ${docsStr}`
 
 /** Call Mistral 7B with retry logic and timeout handling. */
 async function runHelpAI(
-  ai: Ai,
+  ai: Env['AI'],
   messages: Array<{ role: 'system' | 'user'; content: string }>,
 ): Promise<string> {
   const maxAttempts = RETRY_DELAYS_MS.length + 1
@@ -162,10 +163,10 @@ async function runHelpAI(
     const t0 = Date.now()
     try {
       const res = (await withTimeout(
-        ai.run(HELP_MODEL, {
+        runAI(envWithAI(ai), HELP_MODEL, {
           messages,
           max_tokens: MAX_TOKENS,
-        }) as Promise<{ response?: string } | string>,
+        }),
         AI_TIMEOUT_MS,
         'Help AI response',
       )) as { response?: string } | string
@@ -204,7 +205,7 @@ async function runHelpAI(
 
 /** Complete RAG pipeline: embed question, retrieve docs, build prompt, invoke Mistral. */
 export async function askHelpAI(
-  ai: Ai,
+  ai: Env['AI'],
   vectorize: Env['HELP_VECTORIZE'],
   db: D1Database,
   question: string,

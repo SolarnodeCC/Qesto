@@ -26,7 +26,7 @@ const PATTERN = /\benv\.DB\s*\.\s*prepare\b/g
 // Current known violations. Ratchet DOWN only — never raise this.
 // Burn down by extracting queries into functions/api/repositories/.
 // 329 after the sessions/lifecycle.ts extraction (first repository slice, ADR-0069).
-const BASELINE = 329
+const BASELINE = 322
 
 function walk(dir) {
   const out = []

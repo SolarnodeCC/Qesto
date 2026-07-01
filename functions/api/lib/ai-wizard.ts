@@ -9,6 +9,8 @@
 // questions validate".
 
 import { z } from 'zod'
+import type { Env } from '../types'
+import { runAI, envWithAI } from './ai/ai-gateway'
 import { AIQuestionsOutputSchema, type AIQuestionsOutput } from './domain-schemas'
 import { ulid } from './ulid'
 import { logEvent } from './log'
@@ -220,7 +222,7 @@ const PARALLEL_BATCH_FOCI = [
 // stream: false is required — without it Workers AI may return a ReadableStream
 // which the response handler cannot consume.
 async function invokeAI(
-  ai: Ai,
+  ai: Env['AI'],
   model: string,
   messages: Array<{ role: string; content: string }>,
   approxInputChars: number,
@@ -232,7 +234,7 @@ async function invokeAI(
     }
     const t0 = Date.now()
     try {
-      const res = (await ai.run(model, {
+      const res = (await runAI(envWithAI(ai), model, {
         messages,
         max_tokens: MAX_TOKENS,
         stream: false,
@@ -271,7 +273,7 @@ async function invokeAI(
 }
 
 async function invokeWithSecondaryModel(
-  ai: Ai,
+  ai: Env['AI'],
   model: string,
   messages: Array<{ role: string; content: string }>,
   approxInputChars: number,
@@ -294,7 +296,7 @@ async function invokeWithSecondaryModel(
 // string and call onDelta after each chunk so the caller can incrementally
 // parse complete question objects out of the partial JSON.
 async function invokeAIStream(
-  ai: Ai,
+  ai: Env['AI'],
   model: string,
   messages: Array<{ role: string; content: string }>,
   approxInputChars: number,
@@ -508,7 +510,7 @@ function buildMessages(
 }
 
 export async function generateQuestions(
-  ai: Ai,
+  ai: Env['AI'],
   input: GenerateInput,
   model = FAST_MODEL,
 ): Promise<GenerateResult> {
@@ -546,7 +548,7 @@ function dedupKey(prompt: string): string {
 // generateQuestions) once both streams complete. If streaming yields nothing
 // parseable, falls back to a full-buffer parse so we never regress.
 export async function streamQuestions(
-  ai: Ai,
+  ai: Env['AI'],
   input: GenerateInput,
   onQuestion: (q: GeneratedQuestion) => void | Promise<void>,
   model = FAST_MODEL,

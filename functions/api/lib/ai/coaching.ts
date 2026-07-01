@@ -3,6 +3,7 @@
  */
 import type { Env } from '../../types'
 import { sanitizePromptText } from './prompt-sanitize'
+import { runAI } from './ai-gateway'
 import { aiOverride, aiPipeline, type SessionAIContext } from './session-context'
 
 const COACHING_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
@@ -70,7 +71,7 @@ Reply as JSON only: {"headline":"...","bullets":["...","..."],"confidence":0.0-1
   if (!sanitizedPrompt) return null
 
   const result = await aiPipeline(ctxAi, env, async (model, _signal) => {
-    return env.AI.run(model, { messages: [{ role: 'user', content: sanitizedPrompt }] })
+    return runAI(env, model, { messages: [{ role: 'user', content: sanitizedPrompt }] })
   })
   if (!result.ok) return null
 

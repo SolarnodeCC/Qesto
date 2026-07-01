@@ -1,4 +1,6 @@
-import type { D1Database, VectorizeIndex, Ai } from '@cloudflare/workers-types'
+import type { D1Database, VectorizeIndex } from '@cloudflare/workers-types'
+import type { Env } from '../types'
+import { runAI, envWithAI } from './ai/ai-gateway'
 import { safeLogContext } from './log'
 
 // Simple ULID-like ID generator (128-bit timestamp + random)
@@ -31,11 +33,11 @@ const EMBEDDING_TIMEOUT_MS = 10_000
  * Embed text using bge-m3 model via Workers AI.
  * Returns vector (array of numbers) or null on timeout/error.
  */
-async function embedText(ai: Ai, text: string): Promise<number[] | null> {
+async function embedText(ai: Env['AI'], text: string): Promise<number[] | null> {
   try {
     const start = Date.now()
     const result = (await Promise.race([
-      ai.run(EMBEDDING_MODEL, { text }),
+      runAI(envWithAI(ai), EMBEDDING_MODEL, { text }),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Embedding timeout')), EMBEDDING_TIMEOUT_MS)
       ),

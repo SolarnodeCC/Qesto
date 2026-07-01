@@ -6,12 +6,13 @@
  * model-agnostic — only this file names `@cf/openai/whisper` and
  * `@cf/meta/m2m100-1.2b`.
  *
- * Hard rule #1: Workers AI only — `c.env.AI.run(...)`. No OpenAI/Anthropic/
+ * Hard rule #1: Workers AI only via runAI() facade. No OpenAI/Anthropic/
  * third-party ASR/MT. Both calls are circuit-broken (ADR-0007 / CircuitBreakers.ai):
  * on OPEN the pipeline degrades to "captions paused" (null) rather than erroring
  * the session. Every model output is Zod-parsed before use (never trust raw text).
  */
 import { z } from 'zod'
+import { runAI } from './ai-gateway'
 import type { Env } from '../../types'
 import { CircuitBreakers } from '../resilience/circuit-breaker'
 import type { CaptionLocale } from '../captions-config'
@@ -50,7 +51,7 @@ export async function transcribeAudio(
   const bytes = audio instanceof Uint8Array ? [...audio] : audio
   return CircuitBreakers.ai.execute(
     async () => {
-      const raw = await env.AI.run(CAPTIONS_ASR_MODEL, { audio: bytes })
+      const raw = await runAI(env, CAPTIONS_ASR_MODEL, { audio: bytes })
       const parsed = WhisperResponseSchema.safeParse(raw)
       if (!parsed.success) return null
       const text = parsed.data.text.trim()
@@ -76,7 +77,7 @@ export async function translateText(
   if (sourceLang === targetLang) return { text }
   return CircuitBreakers.ai.execute(
     async () => {
-      const raw = await env.AI.run(CAPTIONS_MT_MODEL, {
+      const raw = await runAI(env, CAPTIONS_MT_MODEL, {
         text,
         source_lang: sourceLang,
         target_lang: targetLang,

@@ -19,11 +19,12 @@
 // only the requesting team's own history can ever surface. The route verifies
 // team membership before calling.
 //
-// The actual `c.env.AI.run(...)` embedding call is the only non-pure step; the
+// The Workers AI embedding step (via runAI) is the only non-pure step; the
 // prompt-free embedding + query is kept here and validation is pure/testable.
 
 import { z } from 'zod'
 import type { Env } from '../types'
+import { runAI, envWithAI } from './ai/ai-gateway'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { firstEmbeddingVector } from './embedding'
 import { withTimeout } from './shared/async'
@@ -146,7 +147,7 @@ export async function suggestNextQuestions(
   let vector: number[] | undefined
   try {
     const embedResult = await withTimeout(
-      env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
+      runAI(envWithAI(env.AI), DECISIONS_EMBED_MODEL, { text: embedText }),
       DECISIONS_EMBED_TIMEOUT_MS,
       'Studio suggest embedding',
     )

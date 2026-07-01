@@ -24,9 +24,10 @@ const PATTERN = /ok:\s*false/g
 // connect/listings consolidated onto authorizeTeamPermission (→597); clean
 // single-line envelopes across 23 route files codemodded to errorResponse() (→480);
 // batch-2: 26 low-count route files migrated (→449); batch-3: 23 low-count route
+// files codemodded (→347); batch-4: billing.ts migrated (→330).
 // files migrated to errorResponse() (→347; captcha + denyFeature data/details-bearing
 // envelopes preserved since errorResponse() carries only code+message).
-const BASELINE = 347
+const BASELINE = 330
 
 function walk(dir) {
   const out = []
