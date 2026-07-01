@@ -75,7 +75,7 @@ export function CanvasThemePicker({ variant = 'bar' }: CanvasThemePickerProps) {
                   : 'bg-pulse-700 text-white hover:bg-pulse-600'
                 : selected
                   ? 'bg-teal-100 text-teal-800 border border-teal-400 dark:bg-teal-900 dark:text-teal-200 dark:border-teal-600'
-                  : 'bg-pulse-100 text-pulse-700 border border-pulse-300 hover:border-teal-400 dark:bg-[#1C2540] dark:text-[#A8B3CC] dark:border-[#2A3858] dark:hover:border-teal-600',
+                  : 'bg-pulse-100 text-pulse-700 border border-pulse-300 hover:border-teal-400 dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-secondary)] dark:border-[var(--color-border-strong)] dark:hover:border-teal-600',
             ].join(' ')}
           >
             {/* Colour swatch */}

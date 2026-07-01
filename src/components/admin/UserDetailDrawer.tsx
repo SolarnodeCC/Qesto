@@ -9,8 +9,8 @@ import { Heading, Body, Caption, Button, Card } from '../../ui/components'
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4 py-1 text-sm">
-      <span className="text-pulse-500 dark:text-[#8A96B0]">{label}</span>
-      <span className="text-pulse-800 dark:text-[#A8B3CC] text-right">{value}</span>
+      <span className="text-pulse-500 dark:text-[var(--text-muted)]">{label}</span>
+      <span className="text-pulse-800 dark:text-[var(--text-secondary)] text-right">{value}</span>
     </div>
   )
 }
@@ -56,7 +56,7 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40" role="dialog" aria-modal="true" onClick={onClose}>
       <div
-        className="bg-white dark:bg-[#1C2540] h-full w-full max-w-lg shadow-elevated overflow-y-auto p-6 space-y-5"
+        className="bg-white dark:bg-[var(--color-surface-elevated)] h-full w-full max-w-lg shadow-elevated overflow-y-auto p-6 space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
@@ -101,7 +101,7 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
               {detail.activity.recent_sessions.length > 0 && (
                 <div className="pt-2 space-y-1">
                   {detail.activity.recent_sessions.map((s) => (
-                    <div key={s.id} className="text-xs text-pulse-600 dark:text-[#8A96B0] flex justify-between gap-2">
+                    <div key={s.id} className="text-xs text-pulse-600 dark:text-[var(--text-muted)] flex justify-between gap-2">
                       <span className="truncate">{s.title}</span>
                       <span className="shrink-0">{s.status} · {new Date(s.created_at).toLocaleDateString()}</span>
                     </div>
@@ -142,11 +142,11 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
             <Card className="space-y-1">
               <Caption>Audit trail</Caption>
               {detail.audit_trail.length === 0 ? (
-                <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No audit events.</Body>
+                <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">No audit events.</Body>
               ) : (
                 <div className="space-y-1 max-h-64 overflow-y-auto">
                   {detail.audit_trail.map((a, i) => (
-                    <div key={`${a.trace_id}-${i}`} className="text-xs font-mono text-pulse-600 dark:text-[#8A96B0] flex justify-between gap-2">
+                    <div key={`${a.trace_id}-${i}`} className="text-xs font-mono text-pulse-600 dark:text-[var(--text-muted)] flex justify-between gap-2">
                       <span>{a.action}</span>
                       <span className="shrink-0">{new Date(a.ts).toLocaleString()}</span>
                     </div>

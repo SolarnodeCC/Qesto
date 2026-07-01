@@ -24,15 +24,15 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
 
   if (!teamId) {
     return (
-      <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.selectTeam')}</p>
+      <p className="body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.selectTeam')}</p>
     )
   }
 
   if (planGated) {
     return (
       <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
-        <p className="text-body-s text-violet-800 dark:text-violet-300 font-medium">{t('crossSession.planRequired')}</p>
-        <p className="text-body-s text-violet-700 dark:text-violet-400">{t('crossSession.planHint')}</p>
+        <p className="body-s text-violet-800 dark:text-violet-300 font-medium">{t('crossSession.planRequired')}</p>
+        <p className="body-s text-violet-700 dark:text-violet-400">{t('crossSession.planHint')}</p>
         <Link
           to="/pricing"
           className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md bg-violet-600 text-white px-4 py-2 text-sm font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
@@ -47,7 +47,7 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
 
   if (error) {
     return (
-      <p role="alert" className="text-body-s text-red-600 dark:text-red-400">
+      <p role="alert" className="body-s text-red-600 dark:text-red-400">
         {t('loadError')}
       </p>
     )
@@ -71,7 +71,7 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
               'min-h-[44px] rounded-full px-3 py-2 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
               window === w
                 ? 'bg-teal-600 text-white'
-                : 'border border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC]',
+                : 'border border-pulse-200 dark:border-[var(--color-border)] text-pulse-600 dark:text-[var(--text-secondary)]',
             ].join(' ')}
           >
             {w === '30d' ? t('crossSession.window30d') : w === '90d' ? t('crossSession.window90d') : t('crossSession.window180d')}
@@ -85,13 +85,13 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
           {t('crossSession.recurringTitle')}
         </h3>
         {recurring.length === 0 ? (
-          <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.recurringEmpty')}</p>
+          <p className="body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.recurringEmpty')}</p>
         ) : (
           <ul className="space-y-2">
             {recurring.map((theme) => (
               <li
                 key={theme.label}
-                className="flex min-h-[44px] items-center justify-between gap-3 rounded-lg border border-pulse-200 dark:border-[#1E2A45] px-4 py-3"
+                className="flex min-h-[44px] items-center justify-between gap-3 rounded-lg border border-pulse-200 dark:border-[var(--color-border)] px-4 py-3"
               >
                 <span className="font-medium text-pulse-800 dark:text-pulse-100">{theme.label}</span>
                 <span className="text-xs text-pulse-500 dark:text-pulse-400">
@@ -108,7 +108,7 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
           {t('crossSession.trendTitle')}
         </h3>
         {engagement.length === 0 ? (
-          <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.trendEmpty')}</p>
+          <p className="body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.trendEmpty')}</p>
         ) : (
           <ul className="space-y-1 text-sm text-pulse-700 dark:text-pulse-300">
             {engagement.slice(-6).map((p) => (
@@ -129,15 +129,15 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
         </h3>
         {summary && (
           <dl className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4 text-sm">
-            <div className="rounded-lg bg-pulse-50 dark:bg-[#151C2E] p-3">
+            <div className="rounded-lg bg-pulse-50 dark:bg-[var(--color-surface)] p-3">
               <dt className="text-pulse-500 dark:text-pulse-400">{t('crossSession.sessionsRun')}</dt>
               <dd className="text-lg font-semibold text-pulse-900 dark:text-pulse-100">{summary.sessionsRun}</dd>
             </div>
-            <div className="rounded-lg bg-pulse-50 dark:bg-[#151C2E] p-3">
+            <div className="rounded-lg bg-pulse-50 dark:bg-[var(--color-surface)] p-3">
               <dt className="text-pulse-500 dark:text-pulse-400">{t('crossSession.avgParticipation')}</dt>
               <dd className="text-lg font-semibold text-pulse-900 dark:text-pulse-100">{summary.avgParticipation}</dd>
             </div>
-            <div className="rounded-lg bg-pulse-50 dark:bg-[#151C2E] p-3">
+            <div className="rounded-lg bg-pulse-50 dark:bg-[var(--color-surface)] p-3">
               <dt className="text-pulse-500 dark:text-pulse-400">{t('crossSession.responseRate')}</dt>
               <dd className="text-lg font-semibold text-pulse-900 dark:text-pulse-100">
                 {Math.round(summary.responseRate * 100)}%
@@ -146,13 +146,13 @@ export default function TeamInsightsPanel({ teamId, enabled }: Props) {
           </dl>
         )}
         {facilitators.length === 0 ? (
-          <p className="text-body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.scorecardEmpty')}</p>
+          <p className="body-s text-pulse-500 dark:text-pulse-400">{t('crossSession.scorecardEmpty')}</p>
         ) : (
           <ul className="space-y-2">
             {facilitators.slice(0, 5).map((f) => (
               <li
                 key={f.facilitatorId}
-                className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] px-4 py-3 text-sm"
+                className="rounded-lg border border-pulse-200 dark:border-[var(--color-border)] px-4 py-3 text-sm"
               >
                 <p className="font-medium text-pulse-800 dark:text-pulse-100">
                   {t('crossSession.facilitator', { id: f.facilitatorId.slice(0, 8) })}

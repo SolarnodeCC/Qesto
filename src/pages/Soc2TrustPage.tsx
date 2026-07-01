@@ -9,7 +9,7 @@ export default function Soc2TrustPage() {
   const t = useT('common')
 
   return (
-    <div className="dark:bg-[#0A0F1E] dark:text-[#A8B3CC]">
+    <div className="dark:bg-[var(--color-bg)] dark:text-[var(--text-secondary)]">
       <PageSeo
         title={t('soc2.seoTitle')}
         description={t('soc2.seoDescription')}

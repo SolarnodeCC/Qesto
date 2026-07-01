@@ -70,7 +70,7 @@ function NewCalendarItemForm({ onCreate }: { onCreate: ReturnType<typeof useCale
         <select
           value={platform}
           onChange={(e) => setPlatform(e.target.value as ContentItemPlatform)}
-          className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
+          className="body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
           aria-label="Platform"
         >
           <option value="linkedin">LinkedIn</option>
@@ -80,7 +80,7 @@ function NewCalendarItemForm({ onCreate }: { onCreate: ReturnType<typeof useCale
           type="datetime-local"
           value={scheduledFor}
           onChange={(e) => setScheduledFor(e.target.value)}
-          className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
+          className="body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
           aria-label="Scheduled for"
         />
       </div>
@@ -126,7 +126,7 @@ function CalendarItemRow({
           </span>
           <StatusBadge status={item.status} />
         </div>
-        <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
+        <span className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">
           {new Date(item.scheduled_for).toLocaleString()}
         </span>
       </div>
@@ -138,7 +138,7 @@ function CalendarItemRow({
             type="datetime-local"
             value={scheduledFor}
             onChange={(e) => setScheduledFor(e.target.value)}
-            className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
+            className="w-full body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
           />
           <TextInput value={notes} onChange={setNotes} hintText="Notes" />
           <div className="flex gap-2">
@@ -149,7 +149,7 @@ function CalendarItemRow({
       ) : (
         <>
           <Body size="s">{item.topic}</Body>
-          {item.notes && <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">{item.notes}</Body>}
+          {item.notes && <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">{item.notes}</Body>}
           {item.status === 'planned' && (
             <div className="flex gap-2">
               <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>Edit</Button>
@@ -184,7 +184,7 @@ export default function CalendarTab() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
+          className="body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
           aria-label="Filter by status"
         >
           <option value="">All</option>

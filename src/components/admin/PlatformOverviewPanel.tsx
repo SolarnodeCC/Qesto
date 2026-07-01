@@ -22,18 +22,18 @@ function StatusCard({ name, health }: { name: string; health: ComponentHealth })
       ? 'border-red-300 dark:border-red-800'
       : health.status === 'degraded'
         ? 'border-amber-300 dark:border-amber-800'
-        : 'border-pulse-200 dark:border-[#1E2A45]'
+        : 'border-pulse-200 dark:border-[var(--color-border)]'
   return (
     <Card className={`space-y-1 border ${border}`}>
       <div className="flex items-center justify-between gap-2">
         <Caption>{name}</Caption>
         <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${STATUS_DOT[health.status]}`} aria-label={health.status} />
       </div>
-      <div className="text-xl font-bold text-pulse-900 dark:text-[#F0F2F8]">
+      <div className="text-xl font-bold text-pulse-900 dark:text-[var(--text-primary)]">
         {health.metric !== null ? `${health.metric}${health.unit ?? ''}` : '—'}
       </div>
       {health.detail && (
-        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">
+        <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">
           {health.detail}
           {health.synthetic ? ' (synthetic)' : ''}
         </Body>
@@ -53,7 +53,7 @@ function AlertRow({ alert }: { alert: PlatformAlert }) {
   return (
     <div className="flex items-center gap-3 py-2">
       <span className={`text-xs font-semibold px-2 py-0.5 rounded ${s.chip}`}>{s.label}</span>
-      <span className="flex-1 text-sm text-pulse-800 dark:text-[#A8B3CC]">{alert.title}</span>
+      <span className="flex-1 text-sm text-pulse-800 dark:text-[var(--text-secondary)]">{alert.title}</span>
       <span className="text-xs text-pulse-400 dark:text-[#5A6788] shrink-0">
         {alert.source === 'health' ? 'health probe' : 'incident'}
       </span>
@@ -140,8 +140,8 @@ export default function PlatformOverviewPanel({ onNavigate }: { onNavigate?: (ta
                   'px-3 py-1 text-xs font-medium rounded-md min-h-[36px]',
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                   revenueWindow === w.key
-                    ? 'bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] shadow-sm'
-                    : 'text-pulse-500 dark:text-[#8A96B0]',
+                    ? 'bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] shadow-sm'
+                    : 'text-pulse-500 dark:text-[var(--text-muted)]',
                 ].join(' ')}
               >
                 {w.label}
@@ -160,7 +160,7 @@ export default function PlatformOverviewPanel({ onNavigate }: { onNavigate?: (ta
           />
         </div>
         {isEstimateWindow && (
-          <Caption className="text-pulse-500 dark:text-[#8A96B0]">
+          <Caption className="text-pulse-500 dark:text-[var(--text-muted)]">
             7d/30d revenue is a run-rate estimate from active plans — not settled Stripe data.
           </Caption>
         )}
@@ -170,7 +170,7 @@ export default function PlatformOverviewPanel({ onNavigate }: { onNavigate?: (ta
         <Heading level="m" className="border-l-4 border-teal-500 pl-3">Open alerts</Heading>
         <Card>
           {overview.alerts.length === 0 ? (
-            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No open alerts. All clear.</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">No open alerts. All clear.</Body>
           ) : (
             <div className="divide-y divide-pulse-100 dark:divide-[#1E2A45]">
               {overview.alerts.map((a) => (
@@ -190,7 +190,7 @@ export default function PlatformOverviewPanel({ onNavigate }: { onNavigate?: (ta
                 key={tab}
                 type="button"
                 onClick={() => onNavigate(tab)}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-pulse-200 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-[#0F1526] min-h-[44px] capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-[#0F1526] min-h-[44px] capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
               >
                 {tab}
               </button>

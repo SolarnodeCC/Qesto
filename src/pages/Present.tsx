@@ -11,6 +11,7 @@ import { useSoftTimer } from './present/useSoftTimer'
 import { PresenterControls } from './present/PresenterControls'
 import { CanvasThemeProvider } from '../components/CanvasThemeProvider'
 import { useCanvasTheme } from '../hooks/useCanvasTheme'
+import { JoinCodeDisplay } from '../ui/JoinCodeDisplay'
 import { AdaptiveVizResults } from '../components/AdaptiveVizResults'
 import { CaptionsOverlay } from '../components/CaptionsOverlay'
 import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOverlay'
@@ -515,12 +516,11 @@ function PresentInner({
               </div>
             )}
             {state.session && (
-              <div
-                className="font-mono text-[52px] font-medium tracking-[0.12em] leading-none mb-5 bg-clip-text text-transparent"
-                style={{ backgroundImage: 'var(--gradient-brand)' }}
-              >
-                {state.session.code}
-              </div>
+              <JoinCodeDisplay
+                code={state.session.code}
+                size="xl"
+                className="mb-5 bg-gradient-brand bg-clip-text text-transparent"
+              />
             )}
             {state.session && (
               <div

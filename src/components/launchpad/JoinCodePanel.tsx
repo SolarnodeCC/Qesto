@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import QRCode from 'react-qr-code'
 import { Check, Copy, Loader2, Rocket, Share2, Zap } from 'lucide-react'
 import { useT } from '../../i18n'
+import { JoinCodeDisplay } from '../../ui/JoinCodeDisplay'
 
 type SessionMeta = {
   code: string
@@ -78,7 +79,7 @@ export default function JoinCodePanel({
       {/* Unified join-code card — gradient-brand-subtle background */}
       <section
         aria-labelledby="join-code-heading"
-        className="rounded-xl border border-teal-100 dark:border-[#1E2A45] p-6 text-center space-y-4 shadow-card"
+        className="rounded-xl border border-teal-100 dark:border-[var(--color-border)] p-6 text-center space-y-4 shadow-card"
         style={{ background: 'var(--gradient-brand-subtle, linear-gradient(135deg,#F0FDFA 0%,#F5F3FF 100%))' }}
       >
         {/* Eyebrow */}
@@ -96,12 +97,12 @@ export default function JoinCodePanel({
           aria-label={codeCopied ? t('join_code_copied_label') : t('join_code_copy_label')}
           className="inline-flex items-center gap-2 border-none bg-transparent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-md"
         >
-          <code
-            className="text-gradient-brand font-mono font-semibold text-[2.6rem] leading-none tracking-[0.08em] select-all"
+          <JoinCodeDisplay
+            code={session.code}
+            size="lg"
+            className="text-gradient-brand select-all"
             aria-label={`${t('join_code_heading')}: ${session.code}`}
-          >
-            {session.code}
-          </code>
+          />
           <span className={`transition-colors ${codeCopied ? 'text-teal-500' : 'text-pulse-400 hover:text-pulse-600'}`}>
             {codeCopied
               ? <Check size={18} aria-hidden="true" />
@@ -137,7 +138,7 @@ export default function JoinCodePanel({
 
         {/* Live timer (energizing / live) */}
         {session.started_at !== null && (
-          <div className="pt-3 border-t border-teal-100 dark:border-[#1E2A45]">
+          <div className="pt-3 border-t border-teal-100 dark:border-[var(--color-border)]">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-pulse-400">{t('timer_label')}</p>
             <p
               className="font-mono text-2xl font-semibold text-teal-600 dark:text-teal-400"
@@ -155,7 +156,7 @@ export default function JoinCodePanel({
           type="button"
           onClick={isEnergizing ? onTransitionToLive : onStart}
           disabled={(!isEnergizing && !allValid) || starting}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] bg-gradient-brand text-white px-5 py-3 text-[15px] font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-brand text-white px-5 py-3 text-[15px] font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
           style={{ boxShadow: 'var(--shadow-teal)' }}
         >
           {starting
@@ -174,7 +175,7 @@ export default function JoinCodePanel({
           type="button"
           onClick={() => void handleShare()}
           disabled={sharing}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] border border-[var(--surface-border-strong,#D4D4D4)] dark:border-[#2A3858] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--surface-border-strong,#D4D4D4)] dark:border-[var(--color-border-strong)] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
         >
           <Share2 size={14} aria-hidden="true" />
           {sharing ? t('sharing') : t('share_button')}

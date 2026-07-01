@@ -38,29 +38,29 @@ export default function PartnerSlaPage() {
         <p className="text-sm font-medium text-teal-700 dark:text-teal-400 uppercase tracking-wide">
           {t('sla.eyebrow')}
         </p>
-        <h1 tabIndex={-1} className="text-4xl font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-2">
+        <h1 tabIndex={-1} className="text-4xl font-bold tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-2">
           {t('sla.title')}
         </h1>
-        <p className="mt-4 text-lg text-pulse-600 dark:text-[#9AA8C7]">{t('sla.subtitle')}</p>
+        <p className="mt-4 text-lg text-pulse-600 dark:text-[var(--text-muted)]">{t('sla.subtitle')}</p>
 
         {sla ? (
           <>
             <Reveal as="dl" className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[#2A3858]">
+              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[var(--color-border-strong)]">
                 <dt className="text-xs uppercase text-pulse-500">{t('sla.uptime')}</dt>
-                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{sla.uptimePct}%</dd>
+                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{sla.uptimePct}%</dd>
               </div>
-              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[#2A3858]">
+              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[var(--color-border-strong)]">
                 <dt className="text-xs uppercase text-pulse-500">{t('sla.p95')}</dt>
-                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{sla.p95LatencyMs} ms</dd>
+                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{sla.p95LatencyMs} ms</dd>
               </div>
-              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[#2A3858]">
+              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[var(--color-border-strong)]">
                 <dt className="text-xs uppercase text-pulse-500">{t('sla.errorRate')}</dt>
-                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{sla.errorRatePct}%</dd>
+                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{sla.errorRatePct}%</dd>
               </div>
-              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[#2A3858]">
+              <div className="rounded-lg border border-pulse-200 p-4 dark:border-[var(--color-border-strong)]">
                 <dt className="text-xs uppercase text-pulse-500">{t('sla.webhooks')}</dt>
-                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{sla.webhookDeliveryPct}%</dd>
+                <dd className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{sla.webhookDeliveryPct}%</dd>
               </div>
             </Reveal>
             {(sla.isDefault ?? true) && (
@@ -75,7 +75,7 @@ export default function PartnerSlaPage() {
           </p>
         )}
 
-        <p className="mt-12 text-sm text-pulse-500 border-t border-pulse-200 pt-6 dark:border-[#2A3858]">
+        <p className="mt-12 text-sm text-pulse-500 border-t border-pulse-200 pt-6 dark:border-[var(--color-border-strong)]">
           {t('sla.periodNote', { period: sla?.period ?? '30d' })}
         </p>
         <p className="mt-4 text-sm">

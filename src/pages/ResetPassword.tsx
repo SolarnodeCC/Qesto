@@ -39,7 +39,16 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex flex-col">
-    <main id="main" className="flex flex-1 items-center justify-center p-6">
+    <main id="main" className="flex flex-1 flex-col items-center justify-center p-6">
+      <div className="mb-6 flex w-full max-w-md items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
+          <img src="/favicon.svg" alt="" width={24} height={24} />
+          <span className="text-sm font-extrabold uppercase tracking-widest text-teal-700 dark:text-teal-400">Qesto</span>
+        </Link>
+        <Link to="/login" className="text-sm text-teal-600 dark:text-teal-400 hover:underline">
+          {t('login')}
+        </Link>
+      </div>
       <section className="w-full max-w-md space-y-5 rounded-xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-8 shadow-sm">
         <h1 tabIndex={-1} className="text-2xl font-semibold">{t('setNewPassword')}</h1>
 

@@ -43,10 +43,10 @@ export default function MarketingDashboard() {
 
   return (
     <AppShellLayout activeSection="home" onSectionChange={() => undefined} isSuperuser>
-      <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">
+      <div className="container-app py-10 animate-page-enter space-y-6">
         <header>
           <Heading level="l">Marketing Review Dashboard</Heading>
-          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-2">
+          <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] mt-2">
             Content Engine, Mention Monitor, and Video Asset Library — review queue
           </Body>
         </header>
@@ -68,8 +68,8 @@ export default function MarketingDashboard() {
                 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg min-h-[44px] transition-all duration-150 shrink-0',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
                 activeTab === id
-                  ? 'bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] shadow-sm'
-                  : 'text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+                  ? 'bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] shadow-sm'
+                  : 'text-pulse-500 dark:text-[var(--text-muted)] hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
               ].join(' ')}
             >
               {icon}

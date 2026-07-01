@@ -246,7 +246,7 @@ export default function AdminDashboard() {
       onSectionChange={handleSectionChange}
       isSuperuser={isSuperuser}
     >
-      <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">
+      <div className="container-app py-10 animate-page-enter space-y-6">
         <header>
           <Heading level="l">{t('platformAdminTitle')}</Heading>
           <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] mt-2">{t('realtimePlatformObservability')}</Body>

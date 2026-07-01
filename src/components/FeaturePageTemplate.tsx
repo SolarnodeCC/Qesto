@@ -129,32 +129,32 @@ export default function FeaturePageTemplate({
               <div className={hasHeroImage ? 'flex items-center gap-2' : 'flex items-center justify-center gap-2'}>
               {hero.ai && <AIBadge variant="analyzed" label="AI-assisted" />}
               {hero.badge && (
-                <span className="inline-flex items-center rounded-pill px-3 py-1 text-caption font-medium bg-teal-100 text-teal-700 border border-teal-200">
+                <span className="inline-flex items-center rounded-pill px-3 py-1 caption font-medium bg-teal-100 text-teal-700 border border-teal-200">
                   {hero.badge}
                 </span>
               )}
               </div>
               <h1
                 tabIndex={-1}
-                className="text-display-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent focus:outline-none"
+                className="h-display-l font-bold bg-gradient-brand bg-clip-text text-transparent focus:outline-none"
                 style={{ fontFamily: 'var(--font-family-display)' }}
               >
                 {hero.headline}
               </h1>
-              <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC] leading-relaxed">
+              <p className="body-l text-pulse-600 dark:text-[var(--text-secondary)] leading-relaxed">
                 {hero.subheadline}
               </p>
               <div className={hasHeroImage ? 'flex flex-wrap gap-3' : 'flex flex-wrap justify-center gap-3'}>
                 <Link
                   to={hero.primaryCta.href}
-                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                  className="inline-flex items-center rounded-lg bg-gradient-brand text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
                 >
                   {hero.primaryCta.label}
                 </Link>
                 {hero.secondaryCta && (
                   <Link
                     to={hero.secondaryCta.href}
-                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
                   >
                     {hero.secondaryCta.label}
                   </Link>
@@ -218,11 +218,11 @@ export default function FeaturePageTemplate({
                       className="animate-list-item rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-5 space-y-2 text-center shadow-card"
                       style={{ '--stagger-index': i } as React.CSSProperties}
                     >
-                      <p className="text-heading-m font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent">
+                      <p className="text-heading-m font-bold bg-gradient-brand bg-clip-text text-transparent">
                         {metric.value}
                       </p>
                       <p className="text-heading-s font-semibold">{metric.label}</p>
-                      {metric.note && <p className="text-caption text-pulse-500">{metric.note}</p>}
+                      {metric.note && <p className="caption text-pulse-500">{metric.note}</p>}
                     </li>
                   ))}
                 </ul>
@@ -232,7 +232,7 @@ export default function FeaturePageTemplate({
                 <ul className="flex flex-wrap items-center justify-center gap-3" role="list">
                   {proof.badges.map((badge) => (
                     <li key={badge.label}>
-                      <span className="inline-flex items-center rounded-pill px-3 py-1 text-caption font-medium bg-pulse-100 text-pulse-700 border border-pulse-200">
+                      <span className="inline-flex items-center rounded-pill px-3 py-1 caption font-medium bg-pulse-100 text-pulse-700 border border-pulse-200">
                         {badge.label}
                       </span>
                     </li>
@@ -242,8 +242,8 @@ export default function FeaturePageTemplate({
 
               {proof.testimonial && (
                 <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 bg-gradient-to-br from-teal-50 to-violet-50 p-6 md:p-8 text-center space-y-3">
-                  <p className="text-body-l text-pulse-700 dark:text-[#A8B3CC] leading-relaxed">"{proof.testimonial.quote}"</p>
-                  <footer className="text-caption text-pulse-600 dark:text-[#A8B3CC]">
+                  <p className="body-l text-pulse-700 dark:text-[var(--text-secondary)] leading-relaxed">"{proof.testimonial.quote}"</p>
+                  <footer className="caption text-pulse-600 dark:text-[var(--text-secondary)]">
                     <strong>{proof.testimonial.author}</strong>
                     {proof.testimonial.role ? `, ${proof.testimonial.role}` : ''}
                   </footer>
@@ -273,14 +273,14 @@ export default function FeaturePageTemplate({
                   style={{ '--stagger-index': i } as React.CSSProperties}
                 >
                   <span
-                    className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-teal-500 to-violet-600 text-white flex items-center justify-center font-bold text-sm"
+                    className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-brand text-white flex items-center justify-center font-bold text-sm"
                     aria-hidden="true"
                   >
                     {step.number}
                   </span>
                   <div className="space-y-1">
                     <h3 className="text-heading-s font-semibold">{step.title}</h3>
-                    <p className="text-caption text-pulse-500 leading-relaxed">{step.desc}</p>
+                    <p className="caption text-pulse-500 leading-relaxed">{step.desc}</p>
                   </div>
                 </li>
               ))}
@@ -311,10 +311,10 @@ export default function FeaturePageTemplate({
                   style={{ '--stagger-index': i } as React.CSSProperties}
                 >
                   <span className="text-3xl" aria-hidden="true">{item.icon}</span>
-                  <p className="text-heading-m font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent">
+                  <p className="text-heading-m font-bold bg-gradient-brand bg-clip-text text-transparent">
                     {item.metric}
                   </p>
-                  <p className="text-caption text-pulse-500 leading-relaxed">{item.desc}</p>
+                  <p className="caption text-pulse-500 leading-relaxed">{item.desc}</p>
                 </li>
               ))}
             </ul>
@@ -335,7 +335,7 @@ export default function FeaturePageTemplate({
                 >
                   {deepDive.heading}
                 </h2>
-                <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{deepDive.intro}</p>
+                <p className="body-l text-pulse-600 dark:text-[var(--text-secondary)]">{deepDive.intro}</p>
               </div>
               <ul className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
                 {deepDive.pillars.map((pillar, i) => (
@@ -345,7 +345,7 @@ export default function FeaturePageTemplate({
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{pillar.title}</h3>
-                    <p className="text-caption text-pulse-600 dark:text-[#A8B3CC] leading-relaxed">{pillar.desc}</p>
+                    <p className="caption text-pulse-600 dark:text-[var(--text-secondary)] leading-relaxed">{pillar.desc}</p>
                   </li>
                 ))}
               </ul>
@@ -373,7 +373,7 @@ export default function FeaturePageTemplate({
                     className="block rounded-xl border border-pulse-200 bg-white dark:bg-pulse-900 p-5 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     <p className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{link.label}</p>
-                    <p className="text-caption text-pulse-500">{link.desc}</p>
+                    <p className="caption text-pulse-500">{link.desc}</p>
                   </Link>
                 </li>
               ))}
@@ -402,7 +402,7 @@ export default function FeaturePageTemplate({
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold">{item.question}</h3>
-                    <p className="text-caption text-pulse-500 leading-relaxed">{item.answer}</p>
+                    <p className="caption text-pulse-500 leading-relaxed">{item.answer}</p>
                   </li>
                 ))}
               </ul>
@@ -422,23 +422,23 @@ export default function FeaturePageTemplate({
           <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
             <h2
               id="feature-cta-heading"
-              className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
+              className="text-heading-l font-bold bg-gradient-brand bg-clip-text text-transparent"
               style={{ fontFamily: 'var(--font-family-display)' }}
             >
               {bottomCta.heading}
             </h2>
-            <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{bottomCta.subheading}</p>
+            <p className="body-l text-pulse-600 dark:text-[var(--text-secondary)]">{bottomCta.subheading}</p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link
                 to={bottomCta.primaryCta.href}
-                className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                className="inline-flex items-center rounded-lg bg-gradient-brand text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
               >
                 {bottomCta.primaryCta.label}
               </Link>
               {bottomCta.secondaryCta && (
                 <Link
                   to={bottomCta.secondaryCta.href}
-                  className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+                  className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
                 >
                   {bottomCta.secondaryCta.label}
                 </Link>

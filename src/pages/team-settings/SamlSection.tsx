@@ -71,7 +71,7 @@ export function SamlSection({
         <button
           type="submit"
           disabled={samlSaving || !samlEntityId.trim() || !samlSsoUrl.trim()}
-          className="self-start inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+          className="self-start inline-flex items-center rounded-lg bg-gradient-brand text-white px-4 py-2 font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
         >
           {samlSaving ? 'Saving…' : 'Save SAML configuration'}
         </button>

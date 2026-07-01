@@ -65,7 +65,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
     return (
       <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
         <h3 className="text-heading-s font-semibold text-violet-900 dark:text-violet-200">Recurring workspaces</h3>
-        <p className="text-body-s text-violet-700 dark:text-violet-300">
+        <p className="body-s text-violet-700 dark:text-violet-300">
           Run retros, ideation boards, and multi-session programs with Chorus plan.
         </p>
         <Link
@@ -82,7 +82,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
     <div className="rounded-lg border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900/40 p-5 space-y-4">
       <div>
         <h3 className="text-heading-s font-semibold text-pulse-900 dark:text-pulse-100">Recurring workspaces</h3>
-        <p className="text-body-s text-pulse-500 dark:text-pulse-400 mt-1">
+        <p className="body-s text-pulse-500 dark:text-pulse-400 mt-1">
           Retros, ideation programs, and hybrid events that span multiple sessions.
         </p>
       </div>
@@ -121,7 +121,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
       </form>
 
       {message && (
-        <p className="text-body-s text-pulse-600 dark:text-pulse-300" role="status">
+        <p className="body-s text-pulse-600 dark:text-pulse-300" role="status">
           {message}
         </p>
       )}
@@ -129,7 +129,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
       {loading ? (
         <div className="h-16 rounded-md bg-pulse-100 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
       ) : workspaces.length === 0 ? (
-        <p className="text-body-s text-pulse-500">No workspaces yet — create one to start a recurring program.</p>
+        <p className="body-s text-pulse-500">No workspaces yet — create one to start a recurring program.</p>
       ) : (
         <ul className="divide-y divide-pulse-100 dark:divide-pulse-800">
           {workspaces.map((ws) => (
@@ -137,7 +137,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
                   <p className="font-medium text-pulse-900 dark:text-pulse-100 truncate">{ws.title}</p>
-                  <p className="text-body-s text-pulse-500">
+                  <p className="body-s text-pulse-500">
                     {KIND_LABELS[ws.kind]}
                     {ws.cadence ? ` · ${ws.cadence}` : ''}
                   </p>

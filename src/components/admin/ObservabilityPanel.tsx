@@ -26,13 +26,13 @@ function StateDot({ state }: { state: MetricState }) {
 
 function RouteTable({ rows, emptyLabel }: { rows: RouteMetric[]; emptyLabel: string }) {
   if (rows.length === 0) {
-    return <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">{emptyLabel}</Body>
+    return <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">{emptyLabel}</Body>
   }
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-body-s">
+      <table className="w-full body-s">
         <thead>
-          <tr className="border-b border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#8A96B0]">
+          <tr className="border-b border-pulse-200 dark:border-[var(--color-border)] text-pulse-600 dark:text-[var(--text-muted)]">
             <th className="text-left py-2 px-2 font-medium" />
             <th className="text-left py-2 px-2 font-medium">Route</th>
             <th className="text-right py-2 px-2 font-medium">req/min</th>
@@ -46,7 +46,7 @@ function RouteTable({ rows, emptyLabel }: { rows: RouteMetric[]; emptyLabel: str
           {rows.map((r) => (
             <tr key={r.route} className="hover:bg-pulse-50 dark:hover:bg-[#0F1526]">
               <td className="py-2 px-2"><StateDot state={r.state} /></td>
-              <td className="py-2 px-2 font-mono text-xs text-pulse-700 dark:text-[#A8B3CC]">{r.route}</td>
+              <td className="py-2 px-2 font-mono text-xs text-pulse-700 dark:text-[var(--text-secondary)]">{r.route}</td>
               <td className="text-right py-2 px-2">{r.requests_per_min.toFixed(1)}</td>
               <td className={`text-right py-2 px-2 ${STATE_STYLE[r.state].text}`}>{(r.error_rate * 100).toFixed(1)}%</td>
               <td className="text-right py-2 px-2">{r.p50_ms}ms</td>
@@ -65,7 +65,7 @@ function ComponentHeader({ title, state, synthetic }: { title: string; state: Me
     <div className="flex items-center gap-2">
       <StateDot state={state} />
       <Heading level="m" className="border-l-4 border-teal-500 pl-3">{title}</Heading>
-      {synthetic && <span className="text-xs px-2 py-0.5 rounded bg-pulse-100 dark:bg-[#1C2540] text-pulse-500 dark:text-[#8A96B0]">no data</span>}
+      {synthetic && <span className="text-xs px-2 py-0.5 rounded bg-pulse-100 dark:bg-[var(--color-surface-elevated)] text-pulse-500 dark:text-[var(--text-muted)]">no data</span>}
     </div>
   )
 }
@@ -90,8 +90,8 @@ export default function ObservabilityPanel() {
                 'px-3 py-1 text-xs font-medium rounded-md min-h-[36px]',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                 window === w
-                  ? 'bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] shadow-sm'
-                  : 'text-pulse-500 dark:text-[#8A96B0]',
+                  ? 'bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] shadow-sm'
+                  : 'text-pulse-500 dark:text-[var(--text-muted)]',
               ].join(' ')}
             >
               {w}
@@ -137,7 +137,7 @@ export default function ObservabilityPanel() {
 
           <section className="space-y-3">
             <ComponentHeader title="Workers (per route)" state={snapshot.components.workers.state} />
-            <Caption className="text-pulse-500 dark:text-[#8A96B0]">{snapshot.components.workers.note}</Caption>
+            <Caption className="text-pulse-500 dark:text-[var(--text-muted)]">{snapshot.components.workers.note}</Caption>
             <Card><RouteTable rows={snapshot.components.workers.routes} emptyLabel="No route metrics in window." /></Card>
           </section>
 
@@ -154,13 +154,13 @@ export default function ObservabilityPanel() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Card className="space-y-1">
               <ComponentHeader title="Durable Objects" state={snapshot.components.durable_objects.state} synthetic={snapshot.components.durable_objects.synthetic} />
-              <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">{snapshot.components.durable_objects.active_instances} active instances</Body>
+              <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">{snapshot.components.durable_objects.active_instances} active instances</Body>
               <Caption className="text-pulse-400 dark:text-[#5A6788]">Throughput / hibernation events via Analytics Engine — not yet wired.</Caption>
             </Card>
             <Card className="space-y-1">
               <ComponentHeader title="Vectorize" state={snapshot.components.vectorize.state} synthetic={snapshot.components.vectorize.synthetic} />
               {snapshot.components.vectorize.indexes.map((ix) => (
-                <Body key={ix.name} size="s" className="text-pulse-600 dark:text-[#A8B3CC] font-mono text-xs">
+                <Body key={ix.name} size="s" className="text-pulse-600 dark:text-[var(--text-secondary)] font-mono text-xs">
                   {ix.name}: {ix.count ?? '?'} vectors / {ix.dimensions ?? '?'}d
                 </Body>
               ))}
@@ -172,7 +172,7 @@ export default function ObservabilityPanel() {
 
           <Card className="space-y-1">
             <Heading level="m" className="border-l-4 border-pulse-400 pl-3">KV</Heading>
-            <Caption className="text-pulse-500 dark:text-[#8A96B0]">{snapshot.components.kv.note}</Caption>
+            <Caption className="text-pulse-500 dark:text-[var(--text-muted)]">{snapshot.components.kv.note}</Caption>
           </Card>
 
           <Caption className="text-pulse-400 dark:text-[#5A6788]">

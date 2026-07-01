@@ -309,7 +309,7 @@ export default function Dashboard() {
       onSectionChange={setActiveSection}
       isSuperuser={isSuperuser}
     >
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-10 animate-page-enter density-stack-12">
+      <div className="container-app py-10 animate-page-enter density-stack-12">
         <HeroSection
           userName={userName}
           townhallFeatureEnabled={townhallFeatureEnabled}
@@ -350,7 +350,7 @@ export default function Dashboard() {
             label="Consent opt-in"
             value="—"
             icon={ShieldCheck}
-            iconClassName="text-pulse-400 dark:text-[#8A96B0]"
+            iconClassName="text-pulse-400 dark:text-[var(--text-muted)]"
           />
         </div>
 

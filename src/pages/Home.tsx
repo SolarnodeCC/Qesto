@@ -103,14 +103,14 @@ export default function Home() {
             {/* AI pill */}
             <div className="flex items-center gap-2 mb-6">
               <AIBadge variant="assisted" label="AI-assisted" />
-              <span className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('heroTagline')}</span>
+              <span className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('heroTagline')}</span>
             </div>
 
             {/* H1 */}
             <h1
               id="hero-heading"
               tabIndex={-1}
-              className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-5 max-w-[920px] focus:outline-none"
+              className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[var(--text-primary)] mb-5 max-w-[920px] focus:outline-none"
             >
               Feel the pulse of the room,{' '}
               <span className="bg-[linear-gradient(to_bottom_right,#14b8a6,#8b5cf6)] bg-clip-text text-transparent">
@@ -119,16 +119,16 @@ export default function Home() {
             </h1>
 
             {/* Supporting line — evidence register, subordinate to the H1 */}
-            <p className="text-lg leading-[1.5] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-5">
+            <p className="text-lg leading-[1.5] text-pulse-600 dark:text-[var(--text-secondary)] max-w-[680px] mb-5">
               …and the evidence to back it up — decisions you can defend long after the meeting ends.
             </p>
 
             {/* Sub-headline */}
-            <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-8">
+            <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[var(--text-secondary)] max-w-[680px] mb-8">
               Make it easy for everyone to take part, share what they think, and stay with you
               start to finish. For teachers, trainers, facilitators, and team leaders.
             </p>
-            <p className="text-base leading-[1.6] text-pulse-600 dark:text-[#A8B3CC] max-w-[760px] mb-8">
+            <p className="text-base leading-[1.6] text-pulse-600 dark:text-[var(--text-secondary)] max-w-[760px] mb-8">
               Qesto helps teams and facilitators run live polls, rankings, and consent rounds during
               workshops, classrooms, and meetings. We use sign-in only to manage your account,
               sessions, and workspace access.
@@ -146,7 +146,7 @@ export default function Home() {
                   </Link>
                   <Link
                     to="/templates"
-                    className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center rounded-md bg-white dark:bg-[var(--color-surface-elevated)] border border-pulse-200 dark:border-[var(--color-border-strong)] text-pulse-900 dark:text-[var(--text-primary)] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Browse templates
                   </Link>
@@ -163,7 +163,7 @@ export default function Home() {
                   </Link>
                   <Link
                     to="/templates"
-                    className="inline-flex items-center rounded-md bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] text-pulse-900 dark:text-[#F0F2F8] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="inline-flex items-center rounded-md bg-white dark:bg-[var(--color-surface-elevated)] border border-pulse-200 dark:border-[var(--color-border-strong)] text-pulse-900 dark:text-[var(--text-primary)] px-7 py-3.5 text-[17px] font-semibold hover:border-pulse-300 transition-all duration-[120ms] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     Browse templates
                   </Link>
@@ -180,7 +180,7 @@ export default function Home() {
               </Link>
               <Link
                 to="/terms"
-                className="text-pulse-600 dark:text-[#A8B3CC] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
+                className="text-pulse-600 dark:text-[var(--text-secondary)] hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
               >
                 Terms of Service
               </Link>
@@ -188,11 +188,11 @@ export default function Home() {
 
             {/* Feature strip */}
             <div
-              className="flex flex-wrap gap-7 pt-5 border-t border-pulse-200 dark:border-[#1E2A45]"
+              className="flex flex-wrap gap-7 pt-5 border-t border-pulse-200 dark:border-[var(--color-border)]"
               aria-label="Key features"
             >
               {FEATURE_STRIP.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2.5 text-sm text-pulse-600 dark:text-[#A8B3CC]">
+                <div key={label} className="flex items-center gap-2.5 text-sm text-pulse-600 dark:text-[var(--text-secondary)]">
                   <Icon aria-hidden="true" size={16} className="text-teal-700 dark:text-teal-400 flex-shrink-0" />
                   {label}
                 </div>
@@ -211,7 +211,7 @@ export default function Home() {
         <Reveal
           as="section"
           aria-labelledby="features-heading"
-          className="bg-pulse-50 dark:bg-[#0F1525] py-24 px-6"
+          className="bg-pulse-50 dark:bg-[var(--color-bg-subtle)] py-24 px-6"
           id="features"
         >
           <div className="max-w-[1120px] mx-auto">
@@ -223,12 +223,12 @@ export default function Home() {
 
             <h2
               id="features-heading"
-              className="font-[family-name:var(--font-display)] font-bold text-[48px] leading-[1.1] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-4 max-w-[680px]"
+              className="font-[family-name:var(--font-display)] font-bold text-[48px] leading-[1.1] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[var(--text-primary)] mb-4 max-w-[680px]"
             >
               Everything you need to run the room — and prove what it decided.
             </h2>
 
-            <p className="text-lg text-pulse-600 dark:text-[#A8B3CC] max-w-[620px] mb-12">
+            <p className="text-lg text-pulse-600 dark:text-[var(--text-secondary)] max-w-[620px] mb-12">
               Ask a question. See what your room is thinking. Give people a safe way to contribute
               honestly — and leave with a clear record of what was said.
             </p>
@@ -240,7 +240,7 @@ export default function Home() {
                 return (
                   <li
                     key={card.title}
-                    className="animate-list-item bg-white dark:bg-[#151C2E] rounded-lg shadow-card hover:shadow-elevated transition-shadow duration-[120ms] p-7 flex flex-col gap-3"
+                    className="animate-list-item bg-white dark:bg-[var(--color-surface)] rounded-lg shadow-card hover:shadow-elevated transition-shadow duration-[120ms] p-7 flex flex-col gap-3"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     {/* Icon container */}
@@ -255,10 +255,10 @@ export default function Home() {
                       <Icon size={20} />
                     </div>
 
-                    <h3 className="text-[20px] font-semibold text-pulse-900 dark:text-[#F0F2F8] leading-snug">
+                    <h3 className="text-[20px] font-semibold text-pulse-900 dark:text-[var(--text-primary)] leading-snug">
                       {card.title}
                     </h3>
-                    <p className="text-[15px] text-pulse-600 dark:text-[#A8B3CC] leading-[1.55]">{card.desc}</p>
+                    <p className="text-[15px] text-pulse-600 dark:text-[var(--text-secondary)] leading-[1.55]">{card.desc}</p>
                   </li>
                 )
               })}

@@ -83,13 +83,13 @@ export default function DuplicateSessionModal({
     >
       <div
         ref={modalRef}
-        className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl max-w-md w-full p-6 animate-page-enter space-y-4 border border-pulse-200 dark:border-[#2A3858]"
+        className="bg-white dark:bg-[var(--color-surface-elevated)] rounded-xl shadow-xl max-w-md w-full p-6 animate-page-enter space-y-4 border border-pulse-200 dark:border-[var(--color-border-strong)]"
       >
-        <h2 id="duplicate-session-modal-title" className="text-xl font-semibold dark:text-[#F0F2F8]">
+        <h2 id="duplicate-session-modal-title" className="text-xl font-semibold dark:text-[var(--text-primary)]">
           {t('duplicateTitleModal.title')}
         </h2>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
-          <label htmlFor="duplicate-session-title" className="text-sm font-medium dark:text-[#F0F2F8]">
+          <label htmlFor="duplicate-session-title" className="text-sm font-medium dark:text-[var(--text-primary)]">
             {t('duplicateTitleModal.label')}
           </label>
           <input
@@ -101,7 +101,7 @@ export default function DuplicateSessionModal({
             {...inputHint(t('duplicateTitleModal.hint'))}
             maxLength={SESSION_TITLE_MAX}
             disabled={submitting}
-            className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#151C2E] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:opacity-60"
+            className="w-full border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface)] dark:text-[var(--text-primary)] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 disabled:opacity-60"
           />
           {hasNameCollision && (
             <p role="status" className="text-sm text-amber-700 dark:text-amber-400">
@@ -118,14 +118,14 @@ export default function DuplicateSessionModal({
               type="button"
               disabled={submitting}
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
+              className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
             >
               {t('duplicateTitleModal.cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting || trimmed.length === 0}
-              className="px-4 py-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
+              className="px-4 py-2 rounded-lg bg-gradient-brand text-white font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
             >
               {submitting ? t('duplicating') : t('duplicateTitleModal.confirm')}
             </button>

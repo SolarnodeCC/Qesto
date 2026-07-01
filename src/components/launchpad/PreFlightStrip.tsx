@@ -21,10 +21,10 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
   return (
     <section
       aria-label={t('checklist_title')}
-      className="rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card overflow-hidden"
+      className="rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] shadow-card overflow-hidden"
     >
       {/* Card header */}
-      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
+      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[var(--color-border)]">
         {loading
           ? <Loader2 size={17} className="text-pulse-400 animate-spin shrink-0" aria-hidden="true" />
           : <CircleCheckBig
@@ -32,7 +32,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
               className={`shrink-0 ${allValid ? 'text-green-500' : 'text-pulse-400'}`}
               aria-hidden="true"
             />}
-        <span className="text-sm font-semibold text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8]">
+        <span className="text-sm font-semibold text-[var(--text-primary,#0A0F1E)] dark:text-[var(--text-primary)]">
           {t('checklist_title')}
         </span>
         {!loading && (
@@ -64,7 +64,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
             </span>
 
             {/* Label */}
-            <span className={`text-sm ${item.valid ? 'text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8]' : 'text-red-600 dark:text-red-400'}`}>
+            <span className={`text-sm ${item.valid ? 'text-[var(--text-primary,#0A0F1E)] dark:text-[var(--text-primary)]' : 'text-red-600 dark:text-red-400'}`}>
               {item.label}
             </span>
 

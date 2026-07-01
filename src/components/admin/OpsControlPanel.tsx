@@ -46,7 +46,7 @@ function IncidentCreator({ onCreate }: { onCreate: (sev: 1 | 2 | 3, title: strin
       <select
         value={sev}
         onChange={(e) => setSev(Number(e.target.value) as 1 | 2 | 3)}
-        className="border border-pulse-300 dark:border-[#2A3858] rounded-md px-2 py-1.5 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
+        className="border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-2 py-1.5 body-s bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
         aria-label="Severity"
       >
         <option value={1}>SEV1</option>
@@ -73,7 +73,7 @@ function IncidentRow({ incident, onClose }: { incident: Incident; onClose: (id: 
     <div className="py-2 space-y-1">
       <div className="flex items-center gap-2">
         <span className={`text-xs font-semibold px-2 py-0.5 rounded ${SEV_CHIP[incident.severity]}`}>SEV{incident.severity}</span>
-        <span className="flex-1 text-sm text-pulse-800 dark:text-[#A8B3CC]">{incident.title}</span>
+        <span className="flex-1 text-sm text-pulse-800 dark:text-[var(--text-secondary)]">{incident.title}</span>
         <span className="text-xs text-pulse-400">{incident.status}</span>
       </div>
       {incident.status === 'open' && (
@@ -104,8 +104,8 @@ export default function OpsControlPanel() {
             <div key={j.key} className="flex items-center gap-3 px-4 py-3">
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${j.missed ? 'bg-red-500' : j.last_status === 'failure' ? 'bg-amber-500' : 'bg-green-500'}`} />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{j.label}</div>
-                <div className="text-xs text-pulse-500 dark:text-[#8A96B0] font-mono">{j.schedule} · last {fmt(j.last_run_at)} {j.missed && <span className="text-red-600 font-semibold">· MISSED</span>}</div>
+                <div className="text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">{j.label}</div>
+                <div className="text-xs text-pulse-500 dark:text-[var(--text-muted)] font-mono">{j.schedule} · last {fmt(j.last_run_at)} {j.missed && <span className="text-red-600 font-semibold">· MISSED</span>}</div>
               </div>
               <Button variant="ghost" size="sm" onClick={() => ops.triggerCron(j.key)}>Trigger</Button>
             </div>
@@ -125,11 +125,11 @@ export default function OpsControlPanel() {
         </div>
         <Card className="divide-y divide-pulse-100 dark:divide-[#1E2A45] p-0">
           {ops.deploys.length === 0 ? (
-            <div className="px-4 py-3"><Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No deploy history recorded.</Body></div>
+            <div className="px-4 py-3"><Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">No deploy history recorded.</Body></div>
           ) : ops.deploys.map((d) => (
             <div key={d.id} className="flex items-center gap-3 px-4 py-3">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{d.version} <span className="text-xs text-pulse-400">({d.environment})</span></div>
+                <div className="text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">{d.version} <span className="text-xs text-pulse-400">({d.environment})</span></div>
                 <div className="text-xs text-pulse-500 font-mono">{d.sha ?? ''} · {d.status} · {fmt(d.created_at)}</div>
               </div>
               {d.status === 'deployed' && (
@@ -145,12 +145,12 @@ export default function OpsControlPanel() {
         <Heading level="m" className="border-l-4 border-teal-500 pl-3">Secrets &amp; tokens</Heading>
         <Card className="divide-y divide-pulse-100 dark:divide-[#1E2A45] p-0">
           {ops.secrets.length === 0 ? (
-            <div className="px-4 py-3"><Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No tracked secrets. (Values are never shown — metadata only.)</Body></div>
+            <div className="px-4 py-3"><Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">No tracked secrets. (Values are never shown — metadata only.)</Body></div>
           ) : ops.secrets.map((s) => (
             <div key={s.name} className="flex items-center gap-3 px-4 py-3">
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${s.status === 'expired' ? 'bg-red-500' : s.status === 'expiring' ? 'bg-amber-500' : s.status === 'ok' ? 'bg-green-500' : 'bg-pulse-300'}`} />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-mono text-pulse-900 dark:text-[#F0F2F8]">{s.name}</div>
+                <div className="text-sm font-mono text-pulse-900 dark:text-[var(--text-primary)]">{s.name}</div>
                 <div className="text-xs text-pulse-500">rotated {fmt(s.last_rotated_at)} · expires {fmt(s.expires_at)}{s.rotation_requested_at ? ' · rotation requested' : ''}</div>
               </div>
               <ConfirmButton label="Rotate" confirmLabel="Confirm rotate" onConfirm={() => ops.rotateSecret(s.name)} />
@@ -166,7 +166,7 @@ export default function OpsControlPanel() {
           <IncidentCreator onCreate={ops.createIncident} />
           <div className="divide-y divide-pulse-100 dark:divide-[#1E2A45]">
             {ops.incidents.length === 0 ? (
-              <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] pt-2">No incidents.</Body>
+              <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] pt-2">No incidents.</Body>
             ) : ops.incidents.map((i) => <IncidentRow key={i.id} incident={i} onClose={ops.closeIncident} />)}
           </div>
         </Card>
@@ -176,7 +176,7 @@ export default function OpsControlPanel() {
       <section className="space-y-3">
         <Heading level="m" className="border-l-4 border-teal-500 pl-3">Backups</Heading>
         <Card className="flex items-center justify-between gap-3">
-          <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">
+          <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">
             Last D1 backup: {fmt(ops.backup?.last_backup_at ?? null)} · status {ops.backup?.status ?? 'unknown'}
           </Body>
           <ConfirmButton label="Restore…" confirmLabel="Confirm restore" onConfirm={() => ops.restoreBackup()} />

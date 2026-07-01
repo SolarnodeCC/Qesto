@@ -32,7 +32,7 @@ export function KindPicker({
       onChange: (e: ChangeEvent<{ value: string }>) => onChange(e.target.value as Question['kind']),
       disabled,
       className:
-        'rounded-md border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+        'rounded-md border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-primary)] px-2 py-1.5 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
     },
     QUESTION_KINDS.map((k) => createElement('option', { key: k, value: k }, KIND_LABELS[k])),
   )

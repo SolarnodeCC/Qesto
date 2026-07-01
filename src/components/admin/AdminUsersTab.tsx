@@ -97,12 +97,12 @@ function UserModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
-      <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-elevated w-full max-w-md mx-4 p-6 space-y-4">
+      <div className="bg-white dark:bg-[var(--color-surface-elevated)] rounded-xl shadow-elevated w-full max-w-md mx-4 p-6 space-y-4">
         <Heading level="s">{isEdit ? t('editUser') : t('createAccountTitle')}</Heading>
 
         {!isEdit && (
           <div className="space-y-1">
-            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('emailLbl')}</label>
+            <label className="body-s font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{t('emailLbl')}</label>
             <TextInput
               {...inputHint(t('namePlaceholderAdmin'))}
               value={email}
@@ -115,13 +115,13 @@ function UserModal({
 
         {isEdit && (
           <div className="space-y-1">
-            <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('emailReadonly')}</label>
-            <p className="text-body-s text-pulse-500 dark:text-[#8A96B0] px-3 py-2 rounded-md bg-pulse-50 dark:bg-[#0F1526]">{user?.email}</p>
+            <label className="body-s font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{t('emailReadonly')}</label>
+            <p className="body-s text-pulse-500 dark:text-[var(--text-muted)] px-3 py-2 rounded-md bg-pulse-50 dark:bg-[#0F1526]">{user?.email}</p>
           </div>
         )}
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('displayNameLbl')}</label>
+          <label className="body-s font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{t('displayNameLbl')}</label>
           <TextInput
             {...inputHint(t('nameOptionalPlaceholder'))}
             value={displayName}
@@ -131,11 +131,11 @@ function UserModal({
         </div>
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('planLbl')}</label>
+          <label className="body-s font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{t('planLbl')}</label>
           <select
             value={plan}
             onChange={(e) => setPlan(e.target.value as AdminUser['plan'])}
-            className="w-full border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
+            className="w-full border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 body-s bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
           >
             <option value="free">{t('planOptionFree')}</option>
             <option value="starter">{t('planOptionStarter')}</option>
@@ -144,11 +144,11 @@ function UserModal({
         </div>
 
         <div className="space-y-1">
-          <label className="text-body-s font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('adminRoleLbl')}</label>
+          <label className="body-s font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{t('adminRoleLbl')}</label>
           <select
             value={adminRole}
             onChange={(e) => setAdminRole(e.target.value as 'owner' | 'admin' | '')}
-            className="w-full border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
+            className="w-full border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 body-s bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] focus:border-teal-500 focus:ring-2 focus:ring-teal-100 focus:outline-none"
           >
             <option value="">{t('noAdminRole')}</option>
             <option value="admin">{t('admin')}</option>
@@ -251,21 +251,21 @@ export default function AdminUsersTab() {
 
       {error && <Body size="s" className="text-red-600">{error}</Body>}
       {actionError && (
-        <p className="text-body-s text-red-600" role="alert">
+        <p className="body-s text-red-600" role="alert">
           {actionError}
         </p>
       )}
 
       <Card className="overflow-x-auto p-0">
-        <table className="w-full text-body-s">
+        <table className="w-full body-s">
           <thead>
-            <tr className="border-b border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1526]">
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Email</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Plan</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Last login</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Admin role</th>
-              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[#8A96B0] uppercase text-xs tracking-wide">Status</th>
+            <tr className="border-b border-pulse-200 dark:border-[var(--color-border)] bg-pulse-50 dark:bg-[#0F1526]">
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[var(--text-muted)] uppercase text-xs tracking-wide">Name</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[var(--text-muted)] uppercase text-xs tracking-wide">Email</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[var(--text-muted)] uppercase text-xs tracking-wide">Plan</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[var(--text-muted)] uppercase text-xs tracking-wide">Last login</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[var(--text-muted)] uppercase text-xs tracking-wide">Admin role</th>
+              <th className="text-left px-4 py-3 font-medium text-pulse-600 dark:text-[var(--text-muted)] uppercase text-xs tracking-wide">Status</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -274,7 +274,7 @@ export default function AdminUsersTab() {
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
                   <td colSpan={7} className="px-4 py-3">
-                    <div className="h-4 bg-pulse-100 dark:bg-[#1C2540] rounded animate-pulse w-full" />
+                    <div className="h-4 bg-pulse-100 dark:bg-[var(--color-surface-elevated)] rounded animate-pulse w-full" />
                   </td>
                 </tr>
               ))
@@ -287,12 +287,12 @@ export default function AdminUsersTab() {
             ) : (
               users.map((user) => (
                 <tr key={user.id} className="hover:bg-pulse-50 dark:hover:bg-[#0F1526]">
-                  <td className="px-4 py-3 font-medium text-pulse-900 dark:text-[#F0F2F8]">
+                  <td className="px-4 py-3 font-medium text-pulse-900 dark:text-[var(--text-primary)]">
                     {user.display_name || user.email.split('@')[0]}
                   </td>
-                  <td className="px-4 py-3 text-pulse-500 dark:text-[#8A96B0]">{user.email}</td>
+                  <td className="px-4 py-3 text-pulse-500 dark:text-[var(--text-muted)]">{user.email}</td>
                   <td className="px-4 py-3"><PlanBadge plan={user.plan} /></td>
-                  <td className="px-4 py-3 text-pulse-500 dark:text-[#8A96B0] text-sm">{formatDate(user.last_login_at)}</td>
+                  <td className="px-4 py-3 text-pulse-500 dark:text-[var(--text-muted)] text-sm">{formatDate(user.last_login_at)}</td>
                   <td className="px-4 py-3"><RoleBadge role={user.admin_role} /></td>
                   <td className="px-4 py-3"><StatusBadge suspended={!!user.suspended_at} /></td>
                   <td className="px-4 py-3">
@@ -340,7 +340,7 @@ export default function AdminUsersTab() {
       </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-body-s text-pulse-500">
+        <div className="flex items-center justify-between body-s text-pulse-500">
           <span>Page {currentPage} of {totalPages}</span>
           <div className="flex gap-2">
             <Button

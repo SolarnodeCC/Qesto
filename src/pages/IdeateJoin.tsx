@@ -7,6 +7,7 @@ import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
 import { inputHint } from '../ui/input-hint'
 import ParticipantShell from '../layouts/ParticipantShell'
 import { CLUSTER_BORDER_COLORS, CLUSTER_COLOR_COUNT } from '../ui/cluster-colors'
+import AIBadge from '../components/AIBadge'
 
 type Lookup =
   | { status: 'loading' }
@@ -75,7 +76,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
         <button
           type="submit"
           disabled={body.trim().length < 2}
-          className="w-full min-h-[44px] rounded-lg bg-teal-600 py-2.5 font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+          className="w-full min-h-[44px] rounded-lg bg-gradient-brand py-2.5 font-medium text-white hover:brightness-110 disabled:opacity-50"
         >
           {t('submit.button')}
         </button>
@@ -110,7 +111,10 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
       )}
 
       <div className="space-y-4" aria-live="polite">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t('clusters.title')}</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t('clusters.title')}</h2>
+          <AIBadge variant="analyzed" label="AI clustering" />
+        </div>
         {state.clusters.length === 0 ? (
           <p className="text-sm text-pulse-500">{t('clusters.waiting')}</p>
         ) : (

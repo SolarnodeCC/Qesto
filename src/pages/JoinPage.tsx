@@ -125,8 +125,8 @@ export default function JoinPage() {
             <CircleAlert aria-hidden="true" className="h-5 w-5 text-red-500" />
           </div>
           <div className="space-y-1">
-            <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('not_found_help')}</p>
+            <p className="text-lg font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{t('not_found_title')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('not_found_help')}</p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -287,18 +287,18 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       : null
 
   return (
-    <main id="main" className="relative min-h-screen bg-white dark:bg-[#0A0F1E] flex flex-col">
+    <main id="main" className="relative min-h-screen bg-white dark:bg-[var(--color-bg)] flex flex-col">
       <ReactionsOverlay
         particles={reactionsState.particles}
         total={reactionsState.total}
         active={reactionsState.total > 0 || questionKind === 'reaction'}
       />
       {/* Top brand bar */}
-      <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3 flex items-center justify-between">
-        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8]">Qesto</span>
+      <div className="h-1 bg-gradient-brand" aria-hidden="true" />
+      <div className="border-b border-pulse-100 dark:border-[var(--color-border)] px-5 py-3 flex items-center justify-between">
+        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[var(--text-primary)]">Qesto</span>
         {state.connection === 'open' ? (
-          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[#A8B3CC]">
+          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[var(--text-secondary)]">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('participants_label', { count: state.participants })}
           </span>
@@ -319,7 +319,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       </div>
 
       <div className="flex-1 max-w-lg w-full mx-auto px-5 py-8 flex flex-col gap-6">
-        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
+        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">
           {title}
         </h1>
 
@@ -348,9 +348,9 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Inter-question countdown */}
         {countdown !== null && (
           <div className="flex flex-col items-center justify-center gap-3 py-8" aria-live="polite" aria-atomic="true">
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('get_ready')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('get_ready')}</p>
             <div className="text-6xl font-bold text-teal-600 tabular-nums">{countdown}</div>
-            <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('next_question_countdown', { seconds: countdown })}</p>
+            <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">{t('next_question_countdown', { seconds: countdown })}</p>
           </div>
         )}
 
@@ -358,8 +358,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {state.allDone && !isEnded && countdown === null && (
           <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
             <div className="text-6xl" aria-hidden="true">🎉</div>
-            <h2 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('allDone.heading')}</h2>
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{title}</p>
+            <h2 className="text-2xl font-bold text-pulse-900 dark:text-[var(--text-primary)]">{t('allDone.heading')}</h2>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{title}</p>
           </div>
         )}
 
@@ -402,7 +402,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (
           <section className="space-y-4" aria-labelledby="question-heading">
-            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-[#F0F2F8]">
+            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-[var(--text-primary)]">
               {state.question.prompt}
             </h2>
 

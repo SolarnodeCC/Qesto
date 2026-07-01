@@ -163,7 +163,7 @@ function Ballot({ sessionId, title }: { sessionId: string; title: string }) {
             onClick={() => void handleCast()}
             disabled={!selectedChoice || isCasting}
             aria-disabled={!selectedChoice || isCasting}
-            className="mt-5 min-h-[44px] w-full rounded-lg bg-teal-600 px-5 py-3 text-base font-semibold text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
+            className="mt-5 min-h-[44px] w-full rounded-lg bg-gradient-brand px-5 py-3 text-base font-semibold text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {isCasting ? t('ballot.casting') : t('ballot.cast')}
           </button>

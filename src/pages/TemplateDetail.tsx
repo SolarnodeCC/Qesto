@@ -47,7 +47,7 @@ function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }
         className="w-full max-w-md rounded-2xl bg-white dark:bg-[#111827] p-6"
         style={shadowElevated}
       >
-        <h2 className="font-bold text-xl text-pulse-900 dark:text-[#F0F2F8] mb-2" style={displayFont}>
+        <h2 className="font-bold text-xl text-pulse-900 dark:text-[var(--text-primary)] mb-2" style={displayFont}>
           {t('templates.magicLinkTitle')}
         </h2>
         <p className="text-sm text-pulse-600 dark:text-[#8893AD] mb-5">
@@ -226,7 +226,7 @@ export default function TemplateDetail() {
       )}
 
       {/* Back nav */}
-      <div className="border-b border-pulse-100 dark:border-white/10 bg-white dark:bg-[#0A0F1E]">
+      <div className="border-b border-pulse-100 dark:border-white/10 bg-white dark:bg-[var(--color-bg)]">
         <div className="max-w-6xl mx-auto px-6 py-3">
           <Link
             to="/templates"
@@ -239,7 +239,7 @@ export default function TemplateDetail() {
       </div>
 
       {/* Hero */}
-      <section className="py-14 bg-white dark:bg-[#0A0F1E]">
+      <section className="py-14 bg-white dark:bg-[var(--color-bg)]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
             {/* Left: Content */}
@@ -248,7 +248,7 @@ export default function TemplateDetail() {
                 {template.industry.replace(/-/g, ' ')}
               </span>
               <h1
-                className="font-bold text-4xl text-pulse-900 dark:text-[#F0F2F8] mb-4"
+                className="font-bold text-4xl text-pulse-900 dark:text-[var(--text-primary)] mb-4"
                 style={displayFont}
                 tabIndex={-1}
               >
@@ -277,7 +277,7 @@ export default function TemplateDetail() {
               {/* Best used for */}
               {bestUsedFor.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-3">
+                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[var(--text-primary)] mb-3">
                     {t('templates.bestUsedFor')}
                   </h2>
                   <ul className="flex flex-wrap gap-2">
@@ -296,7 +296,7 @@ export default function TemplateDetail() {
               {/* What you'll learn */}
               {whatYoullLearn.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-3">
+                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[var(--text-primary)] mb-3">
                     {t('templates.whatYoullLearn')}
                   </h2>
                   <ul className="space-y-2">
@@ -356,7 +356,7 @@ export default function TemplateDetail() {
       <section className="py-12 bg-pulse-50 dark:bg-[#0D1424]">
         <div className="max-w-6xl mx-auto px-6">
           <h2
-            className="font-bold text-2xl text-pulse-900 dark:text-[#F0F2F8] mb-6"
+            className="font-bold text-2xl text-pulse-900 dark:text-[var(--text-primary)] mb-6"
             style={displayFont}
           >
             {t('templates.questionsPreview')} ({template.questions.length})
@@ -372,7 +372,7 @@ export default function TemplateDetail() {
                   {idx + 1}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
+                  <p className="text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">
                     {q.text[lang] || q.text.en}
                   </p>
                   <span className="text-xs text-pulse-500 dark:text-white/30 capitalize">{q.type}</span>
@@ -384,10 +384,10 @@ export default function TemplateDetail() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-14 bg-white dark:bg-[#0A0F1E]">
+      <section className="py-14 bg-white dark:bg-[var(--color-bg)]">
         <div className="max-w-xl mx-auto px-6 text-center">
           <h2
-            className="font-bold text-2xl text-pulse-900 dark:text-[#F0F2F8] mb-3"
+            className="font-bold text-2xl text-pulse-900 dark:text-[var(--text-primary)] mb-3"
             style={displayFont}
           >
             {t('templates.readyToStart')}

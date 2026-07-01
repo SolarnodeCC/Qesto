@@ -7,6 +7,7 @@ import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
 import { inputHint } from '../ui/input-hint'
 import HostConsoleShell from '../layouts/HostConsoleShell'
 import { CLUSTER_BORDER_COLORS, CLUSTER_BG_COLORS, CLUSTER_COLOR_COUNT } from '../ui/cluster-colors'
+import AIBadge from '../components/AIBadge'
 
 type IdeateConfig = {
   sessionId: string
@@ -142,7 +143,10 @@ export default function IdeatePresent() {
             </section>
           )}
 
-          <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t('clusters.title')}</h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-pulse-500">{t('clusters.title')}</h2>
+            <AIBadge variant="analyzed" label="AI clustering" />
+          </div>
           {state.clusters.length === 0 ? (
             <p className="text-sm text-pulse-500">{t('clusters.waiting')}</p>
           ) : (
@@ -178,7 +182,7 @@ export default function IdeatePresent() {
 
           {unclusteredIdeas(activeIdeas).length > 0 && (
             <section className="space-y-2">
-              <h3 className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC]">{t('clusters.uncategorized')}</h3>
+              <h3 className="text-sm font-medium text-pulse-600 dark:text-[var(--text-secondary)]">{t('clusters.uncategorized')}</h3>
               {unclusteredIdeas(activeIdeas).map((idea) => (
                 <IdeateIdeaCard
                   key={idea.id}

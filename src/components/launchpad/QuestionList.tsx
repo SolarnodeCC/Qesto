@@ -112,25 +112,25 @@ export default function QuestionList({
   return (
     <section
       aria-label={t('questions_count', { count: orderedQuestions.length })}
-      className="rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card overflow-hidden"
+      className="rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] shadow-card overflow-hidden"
     >
       {/* Card header */}
-      <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
-        <span className="text-sm font-semibold text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8]">
+      <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[var(--color-border)]">
+        <span className="text-sm font-semibold text-[var(--text-primary,#0A0F1E)] dark:text-[var(--text-primary)]">
           {t('questions_count', { count: orderedQuestions.length })}
         </span>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => { setAddingQuestion(false) }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--surface-border,#E5E5E5)] dark:border-[#2A3858] px-2.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-400 hover:border-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--surface-border,#E5E5E5)] dark:border-[var(--color-border-strong)] px-2.5 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-400 hover:border-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 transition-colors"
           >
             <Sparkles size={13} aria-hidden="true" />{t('ai_generate_button')}
           </button>
           <button
             type="button"
             onClick={() => setAddingQuestion(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--surface-border,#E5E5E5)] dark:border-[#2A3858] bg-[var(--surface-bg-subtle,#FAFAFA)] dark:bg-[#1C2540] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-secondary,#525252)] dark:text-[#A8B3CC] hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--surface-border,#E5E5E5)] dark:border-[var(--color-border-strong)] bg-[var(--surface-bg-subtle,#FAFAFA)] dark:bg-[var(--color-surface-elevated)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-secondary,#525252)] dark:text-[var(--text-secondary)] hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
           >
             <Plus size={13} aria-hidden="true" />{t('add_question_inline')}
           </button>
@@ -190,7 +190,7 @@ export default function QuestionList({
                   <div className="space-y-1">
                     <label htmlFor={`edit-prompt-${q.id}`} className="text-xs font-medium text-[var(--text-muted,#737373)]">{t('edit_prompt_label')}</label>
                     <textarea id={`edit-prompt-${q.id}`} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} rows={2}
-                      className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" />
+                      className="w-full rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-primary)] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" />
                   </div>
                   <div className="space-y-1">
                     <label htmlFor={`edit-kind-${q.id}`} className="text-xs font-medium text-[var(--text-muted,#737373)]">{t('edit_kind_label')}</label>
@@ -203,7 +203,7 @@ export default function QuestionList({
                       {editSaving ? '…' : t('save_question')}
                     </button>
                     <button type="button" onClick={cancelEdit} disabled={editSaving}
-                      className="px-3 py-1.5 rounded-lg border border-pulse-300 dark:border-[#2A3858] text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
+                      className="px-3 py-1.5 rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-sm text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
                       {t('cancel_edit')}
                     </button>
                   </div>
@@ -217,7 +217,7 @@ export default function QuestionList({
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold capitalize ${KIND_BADGE[q.kind] ?? KIND_BADGE.poll}`}>
                     {q.kind}
                   </span>
-                  <span className="flex-1 text-sm text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8] truncate">{q.prompt}</span>
+                  <span className="flex-1 text-sm text-[var(--text-primary,#0A0F1E)] dark:text-[var(--text-primary)] truncate">{q.prompt}</span>
                   <button type="button" onClick={() => startEdit(q)} aria-label={t('edit_question')}
                     className="shrink-0 text-pulse-400 hover:text-teal-600 dark:text-pulse-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded transition-colors">
                     <Pencil size={15} aria-hidden="true" />
@@ -235,7 +235,7 @@ export default function QuestionList({
           <div className="space-y-1">
             <label htmlFor="add-prompt" className="text-xs font-medium text-[var(--text-muted,#737373)]">{t('edit_prompt_label')}</label>
             <textarea id="add-prompt" value={addPrompt} onChange={(e) => setAddPrompt(e.target.value)} rows={2} autoFocus
-              className="w-full rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" />
+              className="w-full rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-primary)] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" />
           </div>
           <div className="space-y-1">
             <label htmlFor="add-kind" className="text-xs font-medium text-[var(--text-muted,#737373)]">{t('edit_kind_label')}</label>
@@ -248,7 +248,7 @@ export default function QuestionList({
               {addSaving ? '…' : t('save_question')}
             </button>
             <button type="button" onClick={() => { setAddingQuestion(false); setAddPrompt(''); setAddError(null) }} disabled={addSaving}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-pulse-300 dark:border-[#2A3858] text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-sm text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
               <X size={13} aria-hidden="true" />{t('cancel_edit')}
             </button>
           </div>

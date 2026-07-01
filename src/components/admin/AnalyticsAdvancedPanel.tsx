@@ -30,8 +30,8 @@ export default function AnalyticsAdvancedPanel() {
                 'px-3 py-1 text-xs font-medium rounded-md min-h-[36px]',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                 window === w
-                  ? 'bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] shadow-sm'
-                  : 'text-pulse-500 dark:text-[#8A96B0]',
+                  ? 'bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] shadow-sm'
+                  : 'text-pulse-500 dark:text-[var(--text-muted)]',
               ].join(' ')}
             >
               {w}
@@ -52,8 +52,8 @@ export default function AnalyticsAdvancedPanel() {
           {funnel.map((step, i) => (
             <div key={step.key} className="space-y-1">
               <div className="flex justify-between text-sm">
-                <span className="text-pulse-800 dark:text-[#A8B3CC]">{step.label}</span>
-                <span className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+                <span className="text-pulse-800 dark:text-[var(--text-secondary)]">{step.label}</span>
+                <span className="font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
                   {step.count}
                   {i > 0 && <span className="text-pulse-400 font-normal"> · {step.conversion_from_prev_pct}% from prev · {step.drop_off_pct}% drop</span>}
                 </span>
@@ -76,9 +76,9 @@ export default function AnalyticsAdvancedPanel() {
         <Card className="space-y-1">
           {costs ? (
             <>
-              <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[#8A96B0]">Workers AI requests</span><span>{costs.workers_ai.requests}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[#8A96B0]">Est. tokens</span><span>{costs.workers_ai.est_tokens.toLocaleString()}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[#8A96B0]">Est. AI cost</span><span className="font-semibold">{fmtCents(costs.workers_ai.est_cost_cents)}{costs.workers_ai.is_estimate ? ' (est.)' : ''}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[var(--text-muted)]">Workers AI requests</span><span>{costs.workers_ai.requests}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[var(--text-muted)]">Est. tokens</span><span>{costs.workers_ai.est_tokens.toLocaleString()}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[var(--text-muted)]">Est. AI cost</span><span className="font-semibold">{fmtCents(costs.workers_ai.est_cost_cents)}{costs.workers_ai.is_estimate ? ' (est.)' : ''}</span></div>
               <Caption className="text-pulse-400 dark:text-[#5A6788]">{costs.cloudflare_billing.note}</Caption>
             </>
           ) : (
@@ -97,9 +97,9 @@ export default function AnalyticsAdvancedPanel() {
           {cohorts.length === 0 ? (
             <Body size="s" className="text-pulse-500">No cohort data in range.</Body>
           ) : (
-            <table className="w-full text-body-s">
+            <table className="w-full body-s">
               <thead>
-                <tr className="border-b border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#8A96B0]">
+                <tr className="border-b border-pulse-200 dark:border-[var(--color-border)] text-pulse-600 dark:text-[var(--text-muted)]">
                   <th className="text-left py-2 px-2 font-medium">Cohort week</th>
                   <th className="text-right py-2 px-2 font-medium">Signups</th>
                   <th className="text-right py-2 px-2 font-medium">Activated</th>

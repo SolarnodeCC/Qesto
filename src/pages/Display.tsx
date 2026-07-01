@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer, useRef, useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { Users, Loader2 } from 'lucide-react'
+import { JoinCodeDisplay } from '../ui/JoinCodeDisplay'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -224,7 +225,10 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
         className="shrink-0 px-8 py-4 flex items-center justify-between text-xs border-t"
         style={{ borderColor: 'var(--canvas-border)', color: 'var(--canvas-text-muted)' }}
       >
-        <span>qesto.cc/j/{state.session?.code ?? code}</span>
+        <span>
+          qesto.cc/j/{' '}
+          <JoinCodeDisplay code={(state.session?.code ?? code).toUpperCase()} size="sm" className="text-[var(--canvas-text-primary,var(--canvas-text-muted))]" />
+        </span>
         <span
           className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-semibold"
         >
