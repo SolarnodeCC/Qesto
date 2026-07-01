@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import QRCode from 'react-qr-code'
+import { Check, Copy, Loader2, Rocket, Share2, Zap } from 'lucide-react'
 import { useT } from '../../i18n'
 
 type SessionMeta = {
@@ -40,18 +41,13 @@ export default function JoinCodePanel({
 
   useEffect(() => {
     const startedAt = session.started_at
-    if (!startedAt) {
-      setElapsed(0)
-      return
-    }
+    if (!startedAt) { setElapsed(0); return }
     function tick() {
       setElapsed(Math.floor((Date.now() - (startedAt as number)) / 1000))
     }
     tick()
     intervalRef.current = setInterval(tick, 1000)
-    return () => {
-      if (intervalRef.current !== null) clearInterval(intervalRef.current)
-    }
+    return () => { if (intervalRef.current !== null) clearInterval(intervalRef.current) }
   }, [session.started_at])
 
   async function handleCopyCode() {
@@ -59,94 +55,92 @@ export default function JoinCodePanel({
       await navigator.clipboard.writeText(session.code)
       setCodeCopied(true)
       setTimeout(() => setCodeCopied(false), 2000)
-    } catch {
-      // Clipboard API not available
-    }
+    } catch { /* Clipboard API not available */ }
   }
 
   async function handleShare() {
     setSharing(true)
     const url = `${window.location.origin}/j/${session.code}`
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: session.title,
-          text: `Join my session: ${session.title}`,
-          url,
-        })
-      } catch {
-        // Cancelled by user
-      }
+      try { await navigator.share({ title: session.title, text: `Join my session: ${session.title}`, url }) }
+      catch { /* Cancelled */ }
     } else {
-      try {
-        await navigator.clipboard.writeText(url)
-      } catch {
-        // Clipboard API not available
-      }
+      try { await navigator.clipboard.writeText(url) }
+      catch { /* Clipboard API not available */ }
     }
     setSharing(false)
   }
 
-  const SpinnerIcon = () => (
-    <svg aria-hidden="true" className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-    </svg>
-  )
-
-  const PlayIcon = () => (
-    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M8 5v14l11-7L8 5z" />
-    </svg>
-  )
+  const isEnergizing = session.status === 'energizing'
 
   return (
-    <aside className="w-full lg:w-72 shrink-0 space-y-4">
-      {/* Join code */}
+    <aside className="w-full lg:w-[330px] shrink-0 space-y-3">
+      {/* Unified join-code card — gradient-brand-subtle background */}
       <section
         aria-labelledby="join-code-heading"
-        className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4 space-y-3 shadow-card"
+        className="rounded-xl border border-teal-100 dark:border-[#1E2A45] p-6 text-center space-y-4 shadow-card"
+        style={{ background: 'var(--gradient-brand-subtle, linear-gradient(135deg,#F0FDFA 0%,#F5F3FF 100%))' }}
       >
-        <h2 id="join-code-heading" className="text-caption font-medium text-pulse-500 uppercase tracking-wider dark:text-[#8A96B0]">
+        {/* Eyebrow */}
+        <p
+          id="join-code-heading"
+          className="text-xs font-bold tracking-[0.1em] uppercase text-teal-700 dark:text-teal-400"
+        >
           {t('join_code_heading')}
-        </h2>
-        <div className="flex items-center gap-3">
+        </p>
+
+        {/* Code + copy button */}
+        <button
+          type="button"
+          onClick={() => void handleCopyCode()}
+          aria-label={codeCopied ? t('join_code_copied_label') : t('join_code_copy_label')}
+          className="inline-flex items-center gap-2 border-none bg-transparent cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded-md"
+        >
           <code
-            className="text-4xl font-mono font-bold tracking-widest text-pulse-900 dark:text-pulse-50 select-all"
+            className="text-gradient-brand font-mono font-semibold text-[2.6rem] leading-none tracking-[0.08em] select-all"
             aria-label={`${t('join_code_heading')}: ${session.code}`}
           >
             {session.code}
           </code>
-          <button
-            type="button"
-            onClick={() => void handleCopyCode()}
-            aria-label={codeCopied ? t('join_code_copied_label') : t('join_code_copy_label')}
-            className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-pulse-300 text-pulse-500 hover:border-teal-500 hover:text-teal-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors dark:border-pulse-600 dark:text-pulse-400 dark:hover:border-teal-500 dark:hover:text-teal-400"
-          >
-            {codeCopied ? (
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-teal-600">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : (
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" />
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-              </svg>
-            )}
-          </button>
-        </div>
-        {codeCopied && (
-          <p role="status" aria-live="polite" className="text-caption text-teal-600 dark:text-teal-400 font-medium">
-            {t('join_code_copied_toast')}
-          </p>
-        )}
-        <p className="text-caption text-pulse-500 dark:text-pulse-400">{t('join_hint')}</p>
+          <span className={`transition-colors ${codeCopied ? 'text-teal-500' : 'text-pulse-400 hover:text-pulse-600'}`}>
+            {codeCopied
+              ? <Check size={18} aria-hidden="true" />
+              : <Copy size={18} aria-hidden="true" />}
+          </span>
+        </button>
 
+        {/* Copy feedback */}
+        <p
+          role="status"
+          aria-live="polite"
+          className={`text-xs font-semibold text-teal-600 dark:text-teal-400 h-4 transition-opacity ${codeCopied ? 'opacity-100' : 'opacity-0'}`}
+        >
+          {t('join_code_copied_toast')}
+        </p>
+
+        {/* QR code */}
+        <div
+          aria-label={t('qr_aria_label')}
+          className="mx-auto w-[128px] h-[128px] rounded-[14px] border border-[var(--surface-border,#E5E5E5)] bg-white flex items-center justify-center p-2.5"
+        >
+          <QRCode
+            value={`${window.location.origin}/j/${session.code}`}
+            size={104}
+            style={{ display: 'block' }}
+          />
+        </div>
+
+        {/* Hint */}
+        <p className="text-xs text-pulse-500 dark:text-pulse-400 leading-snug">
+          {t('join_hint')} <span className="font-mono text-pulse-700 dark:text-pulse-300">qesto.cc/join</span>
+        </p>
+
+        {/* Live timer (energizing / live) */}
         {session.started_at !== null && (
-          <div className="pt-2 border-t border-pulse-100 dark:border-[#1E2A45]">
-            <p className="text-caption text-pulse-500 uppercase tracking-wider">{t('timer_label')}</p>
+          <div className="pt-3 border-t border-teal-100 dark:border-[#1E2A45]">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-pulse-400">{t('timer_label')}</p>
             <p
-              className="font-mono text-2xl font-semibold text-teal-600"
+              className="font-mono text-2xl font-semibold text-teal-600 dark:text-teal-400"
               aria-live="polite"
               aria-atomic="true"
               aria-label={`${t('timer_label')} ${formatElapsed(elapsed)}`}
@@ -155,62 +149,37 @@ export default function JoinCodePanel({
             </p>
           </div>
         )}
+
+        {/* Primary CTA */}
+        <button
+          type="button"
+          onClick={isEnergizing ? onTransitionToLive : onStart}
+          disabled={(!isEnergizing && !allValid) || starting}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] bg-gradient-brand text-white px-5 py-3 text-[15px] font-semibold hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
+          style={{ boxShadow: 'var(--shadow-teal)' }}
+        >
+          {starting
+            ? <><Loader2 size={16} className="animate-spin" aria-hidden="true" />{t('starting')}</>
+            : isEnergizing
+              ? <><Zap size={16} aria-hidden="true" />{t('joinPanel.startQuestions')}</>
+              : <><Rocket size={16} aria-hidden="true" />{t('open_lobby_button')}</>}
+        </button>
+
+        {startError && (
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400">{startError}</p>
+        )}
+
+        {/* Share link */}
+        <button
+          type="button"
+          onClick={() => void handleShare()}
+          disabled={sharing}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] border border-[var(--surface-border-strong,#D4D4D4)] dark:border-[#2A3858] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+        >
+          <Share2 size={14} aria-hidden="true" />
+          {sharing ? t('sharing') : t('share_button')}
+        </button>
       </section>
-
-      {/* QR code */}
-      <div
-        aria-label={t('qr_aria_label')}
-        className="flex justify-center rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-4 shadow-sm"
-      >
-        <QRCode
-          value={`${window.location.origin}/j/${session.code}`}
-          size={140}
-          style={{ display: 'block' }}
-        />
-      </div>
-
-      {/* Primary CTA */}
-      {session.status === 'energizing' ? (
-        <button
-          type="button"
-          onClick={onTransitionToLive}
-          disabled={starting}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-3 text-base font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
-        >
-          {starting ? (
-            <><SpinnerIcon />{t('starting')}</>
-          ) : (
-            <><PlayIcon />{t('joinPanel.startQuestions')}</>
-          )}
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={onStart}
-          disabled={!allValid || starting}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-5 py-3 text-base font-semibold hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 shadow-teal transition-all btn-motion"
-        >
-          {starting ? (
-            <><SpinnerIcon />{t('starting')}</>
-          ) : (
-            <><PlayIcon />{t('open_lobby_button')}</>
-          )}
-        </button>
-      )}
-
-      {startError && (
-        <p role="alert" className="text-sm text-red-600">{startError}</p>
-      )}
-
-      {/* Share button */}
-      <button
-        type="button"
-        onClick={() => void handleShare()}
-        disabled={sharing}
-        className="w-full inline-flex items-center justify-center rounded-md border border-pulse-300 dark:border-pulse-600 text-pulse-700 dark:text-pulse-300 hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 px-4 py-2 font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
-      >
-        {sharing ? t('sharing') : t('share_button')}
-      </button>
     </aside>
   )
 }

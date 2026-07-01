@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="AI session wizard" description="Qesto's 5-step create-session wizard with the AI question generator: consent → chat → streaming generation → review chips" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-body); }
+  @keyframes wiz-card-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @keyframes wiz-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+</style>
+</helmet>
+<div>{{ page }}</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    step: 2, mode: 'ai', phase: 'consent', consent: false, prompt: '',
+    title: 'Sprint 24 retro', goal: 'Understand how the team experienced the sprint and surface improvements',
+    questions: [], editing: null, dark: false,
+    energizer: null, anonymity: 'partial', votePolicy: 'once', sessionMode: 'reflection', isPublic: true,
+  }
+
+  GEN = [
+    { id: 'q1', kind: 'Multiple choice', prompt: 'How would you rate this sprint overall?', options: ['Great', 'Solid', 'Mixed', 'Rough'] },
+    { id: 'q2', kind: 'Open text', prompt: "What's the one thing we should change next sprint?", options: [] },
+    { id: 'q3', kind: 'Ranking', prompt: 'Rank where the team should focus next', options: ['Planning', 'Communication', 'Tooling', 'Scope'] },
+    { id: 'q4', kind: 'Likert scale', prompt: 'Our workload this sprint felt sustainable', options: [] },
+  ]
+  STEP_LABELS = { 1: 'Basics', 2: 'Questions', 3: 'Energizer', 4: 'Settings', 5: 'Overview' }
+
+  componentDidMount() {
+    this._applyTheme(); this._icons()
+    if (!this.ns().Button) this._poll = setInterval(() => { if (this.ns().Button) { clearInterval(this._poll); this.forceUpdate() } }, 60)
+  }
+  componentDidUpdate() { this._applyTheme(); this._icons() }
+  componentWillUnmount() { clearInterval(this._poll); clearTimeout(this._t); document.body.removeAttribute('data-theme') }
+  _applyTheme() { if (this.state.dark) document.body.setAttribute('data-theme', 'dark'); else document.body.removeAttribute('data-theme') }
+  _icons() { setTimeout(() => window.lucide && window.lucide.createIcons(), 0) }
+  ns() { return window.QestoDesignSystem_10c0a6 || {} }
+  _icon(R, name, size, color) { return R.createElement('i', { 'data-lucide': name, width: size, height: size, style: { display: 'inline-flex', color: color || 'currentColor' } }) }
+
+  // ── AI generation simulation: stream cards in one at a time ──
+  _generate() {
+    this.setState({ phase: 'generating', questions: [] })
+    clearTimeout(this._t)
+    this._t = setTimeout(() => {
+      this.setState({ phase: 'review' })
+      const stream = (i) => {
+        if (i >= this.GEN.length) return
+        this.setState(s => ({ questions: [...s.questions, { ...this.GEN[i], accepted: false }] }))
+        this._t = setTimeout(() => stream(i + 1), 380)
+      }
+      stream(0)
+    }, 1300)
+  }
+
+  renderVals() { return { page: this._page(React) } }
+
+  _page(R) {
+    const NS = this.ns()
+    if (!NS.Button) return R.createElement('div', { style: { padding: 60, color: '#64748b', fontFamily: 'var(--font-body)' } }, 'Loading components…')
+    return R.createElement('div', { style: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: this.state.dark ? 'radial-gradient(120% 120% at 50% 0%, #18213b 0%, #0d1426 100%)' : 'radial-gradient(120% 120% at 50% 0%, #eef2fb 0%, #e3e9f6 100%)' } },
+      this._modal(R, NS))
+  }
+
+  _modal(R, NS) {
+    const s = this.state
+    return R.createElement('div', { style: { width: '100%', maxWidth: 512, maxHeight: '92vh', display: 'flex', flexDirection: 'column', background: 'var(--surface-card)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-elevated)', overflow: 'hidden' } },
+      this._header(R),
+      this._progress(R),
+      R.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 } },
+        s.step === 1 ? this._step1(R, NS)
+          : s.step === 2 ? this._step2(R, NS)
+          : s.step === 3 ? this._step3(R, NS)
+          : s.step === 4 ? this._step4(R, NS)
+          : this._step5(R, NS)),
+      this._footer(R, NS))
+  }
+
+  _header(R) {
+    const s = this.state
+    return R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px 14px', borderBottom: '1px solid var(--surface-border)', flexShrink: 0 } },
+      R.createElement('div', null,
+        R.createElement('h2', { style: { fontSize: 20, fontWeight: 600, margin: 0, color: 'var(--text-primary)' } }, this.STEP_LABELS[s.step]),
+        R.createElement('p', { style: { fontSize: 12, color: 'var(--text-muted)', margin: '3px 0 0' } }, 'Step ' + s.step + ' of 5')),
+      R.createElement('div', { style: { display: 'flex', gap: 6 } },
+        R.createElement('button', { onClick: () => this.setState(p => ({ dark: !p.dark })), title: s.dark ? 'Light' : 'Dark', style: this._iconBtn() }, this._icon(R, s.dark ? 'sun' : 'moon', 17)),
+        R.createElement('button', { title: 'Close', style: this._iconBtn() }, this._icon(R, 'x', 18))))
+  }
+  _iconBtn() { return { width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, border: 'none', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' } }
+
+  _progress(R) {
+    const s = this.state
+    return R.createElement('div', { style: { padding: '12px 24px 0', flexShrink: 0 } },
+      R.createElement('div', { style: { display: 'flex', gap: 4 } }, [1, 2, 3, 4, 5].map(n =>
+        R.createElement('div', { key: n, style: { height: 6, flex: 1, borderRadius: 999, background: n < s.step ? 'var(--teal-500)' : n === s.step ? 'var(--teal-400)' : 'var(--pulse-200)', transition: 'background 200ms' } }))))
+  }
+
+  // ── Step 1: Basics ──
+  _step1(R, NS) {
+    const { TextInput, Textarea } = NS
+    return R.createElement(React.Fragment, null,
+      R.createElement('p', { style: { fontSize: 14, fontWeight: 500, margin: 0, color: 'var(--text-primary)' } }, 'What is the session?'),
+      R.createElement(TextInput, { label: 'Session title', value: this.state.title, onChange: (v) => this.setState({ title: v }), placeholder: 'e.g. Team reflection Q2' }),
+      R.createElement(Textarea, { label: 'Goal of the session', value: this.state.goal, onChange: (v) => this.setState({ goal: v }), rows: 3, placeholder: 'e.g. Gain insight into how the team experienced the sprint…' }))
+  }
+
+  // ── Step 2: Questions (the AI wizard) ──
+  _step2(R, NS) {
+    const s = this.state
+    if (s.mode === 'idle') return this._modePicker(R)
+    if (s.mode === 'ai') return this._aiFlow(R, NS)
+    return this._manual(R, NS)
+  }
+
+  _modePicker(R) {
+    const modes = [
+      ['ai', '✨', 'AI generate', 'Give a prompt, we generate questions'],
+      ['manual', '✏️', 'Write yourself', 'Write and manage your own questions'],
+      ['template', '📋', 'From template', 'Choose from proven question sets'],
+    ]
+    return R.createElement(React.Fragment, null,
+      R.createElement('p', { style: { fontSize: 14, fontWeight: 500, margin: 0, color: 'var(--text-primary)' } }, 'How do you want to add questions?'),
+      R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, modes.map(([id, ic, label, desc]) =>
+        R.createElement('button', { key: id, onClick: () => this.setState({ mode: id, phase: 'consent' }), style: { textAlign: 'left', padding: 14, borderRadius: 'var(--radius-lg)', border: '1px solid var(--surface-border)', background: 'var(--surface-card)', cursor: 'pointer', fontFamily: 'var(--font-body)' },
+          onMouseEnter: e => { e.currentTarget.style.borderColor = 'var(--teal-400)'; e.currentTarget.style.background = 'var(--teal-50)' },
+          onMouseLeave: e => { e.currentTarget.style.borderColor = 'var(--surface-border)'; e.currentTarget.style.background = 'var(--surface-card)' } },
+          R.createElement('div', { style: { fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' } }, ic + ' ' + label),
+          R.createElement('p', { style: { fontSize: 12.5, color: 'var(--text-muted)', margin: '3px 0 0' } }, desc)))))
+  }
+
+  _backLink(R, label, onClick) {
+    return R.createElement('button', { onClick, style: { alignSelf: 'flex-start', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 12.5, fontWeight: 500, color: 'var(--teal-600)' } }, label)
+  }
+
+  _aiFlow(R, NS) {
+    const s = this.state
+    return R.createElement(React.Fragment, null,
+      this._backLink(R, '← Choose another method', () => this.setState({ mode: 'idle', phase: 'consent', questions: [] })),
+      s.phase === 'consent' ? this._aiConsent(R) : null,
+      s.phase === 'chat' ? this._aiChat(R) : null,
+      s.phase === 'generating' ? this._aiGenerating(R) : null,
+      s.phase === 'review' ? this._aiReview(R, NS) : null)
+  }
+
+  _aiConsent(R) {
+    const s = this.state
+    return R.createElement('div', { style: { borderRadius: 'var(--radius-lg)', border: '1px solid var(--violet-200)', background: this.state.dark ? 'rgba(139,92,246,0.12)' : 'var(--violet-50)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 } },
+      R.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
+        R.createElement('span', { style: { fontSize: 20, lineHeight: 1 } }, '✨'),
+        R.createElement('div', null,
+          R.createElement('p', { style: { fontSize: 14, fontWeight: 600, margin: 0, color: 'var(--text-primary)' } }, 'AI-Powered Generation'),
+          R.createElement('p', { style: { fontSize: 12.5, color: 'var(--text-muted)', margin: '3px 0 0' } }, "We'll use AI to suggest questions based on your session goal"))),
+      R.createElement('label', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' } },
+        R.createElement('input', { type: 'checkbox', checked: s.consent, onChange: e => this.setState({ consent: e.target.checked }), style: { marginTop: 2, width: 16, height: 16, accentColor: 'var(--teal-600)', cursor: 'pointer' } }),
+        R.createElement('span', { style: { fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.45 } }, 'I consent to AI processing my session title and goal')),
+      R.createElement('button', { disabled: !s.consent, onClick: () => this.setState({ phase: 'chat' }), style: this._genBtn(s.consent) }, '✨ Generate now'))
+  }
+  _genBtn(enabled) {
+    return { width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '11px 16px', borderRadius: 'var(--radius-md)', border: 'none', background: 'linear-gradient(135deg, var(--violet-500), var(--teal-500))', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: enabled ? 'pointer' : 'not-allowed', opacity: enabled ? 1 : 0.5 }
+  }
+
+  _aiChat(R) {
+    const s = this.state
+    const greeting = s.title.trim() ? 'I see session "' + s.title.trim() + '" with goal: "' + s.goal.trim() + '". Tell me which aspect to focus on, or click \u2018Generate now\u2019.' : 'Tell me what the session is about, or click \u2018Generate now\u2019.'
+    return R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+      R.createElement('p', { style: { fontSize: 13.5, fontStyle: 'italic', color: 'var(--text-secondary)', background: 'var(--pulse-50)', borderRadius: 'var(--radius-md)', padding: 12, margin: 0, lineHeight: 1.5 } }, greeting),
+      R.createElement('div', { style: { display: 'flex', gap: 8 } },
+        R.createElement('input', { type: 'text', value: s.prompt, placeholder: 'Refine the focus…', onChange: e => this.setState({ prompt: e.target.value }), onKeyDown: e => { if (e.key === 'Enter') this._generate() }, style: { flex: 1, borderRadius: 'var(--radius-md)', border: '1px solid var(--surface-border-strong)', background: 'var(--surface-card)', color: 'var(--text-primary)', padding: '10px 12px', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none' } }),
+        R.createElement('button', { onClick: () => this._generate(), style: { padding: '10px 16px', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--teal-600)', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' } }, 'Send')),
+      R.createElement('button', { onClick: () => this._generate(), style: { width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '11px 16px', borderRadius: 'var(--radius-md)', border: '2px dashed var(--violet-300)', background: 'transparent', color: 'var(--violet-600)', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-body)', cursor: 'pointer' } }, '✨ Generate now'))
+  }
+
+  _aiGenerating(R) {
+    return R.createElement('div', null,
+      R.createElement('p', { style: { fontSize: 12.5, color: 'var(--text-muted)', margin: '0 0 12px' } }, 'Generating…'),
+      R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } }, [0, 1, 2].map(i =>
+        R.createElement('div', { key: i, style: { borderRadius: 'var(--radius-md)', border: '1px solid var(--surface-border)', padding: 14, display: 'flex', flexDirection: 'column', gap: 8, animation: 'wiz-pulse 1.4s ease infinite', animationDelay: (i * 0.15) + 's' } },
+          R.createElement('div', { style: { width: 88, height: 12, borderRadius: 4, background: 'var(--violet-100)' } }),
+          R.createElement('div', { style: { width: '85%', height: 14, borderRadius: 4, background: 'var(--pulse-100)' } }),
+          R.createElement('div', { style: { width: '60%', height: 14, borderRadius: 4, background: 'var(--pulse-100)' } })))))
+  }
+
+  _aiReview(R, NS) {
+    const s = this.state
+    const visible = s.questions.filter(q => !q.dismissed)
+    return R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+      R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' } },
+        R.createElement('p', { style: { fontSize: 14, fontWeight: 600, margin: 0, color: 'var(--text-primary)' } }, 'Edit your questions'),
+        this._backLink(R, '← Back to chat', () => this.setState({ phase: 'chat' }))),
+      R.createElement('p', { style: { fontSize: 12.5, color: 'var(--violet-600)', margin: 0 } }, '✨ AI-generated content — fully editable'),
+      R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, s.questions.map(q => q.dismissed ? null : this._chip(R, NS, q))),
+      visible.length === 0 && s.phase === 'review' ? R.createElement('p', { style: { fontSize: 12.5, color: '#D97706', margin: 0 } }, 'All questions dismissed. Go back to regenerate.') : null)
+  }
+
+  _chip(R, NS, q) {
+    const editing = this.state.editing === q.id
+    if (editing) {
+      return R.createElement('div', { key: q.id, style: { display: 'flex', flexDirection: 'column', gap: 8, borderRadius: 'var(--radius-md)', border: '1px solid var(--violet-300)', padding: 12, background: this.state.dark ? 'rgba(139,92,246,0.08)' : 'var(--violet-50)' } },
+        this._backLink(R, '← Back to overview', () => this.setState({ editing: null })),
+        R.createElement('input', { type: 'text', value: q.prompt, onChange: e => this._updatePrompt(q.id, e.target.value), style: { width: '100%', borderRadius: 'var(--radius-sm)', border: '1px solid var(--surface-border-strong)', background: 'var(--surface-card)', color: 'var(--text-primary)', padding: '9px 11px', fontSize: 14, fontFamily: 'var(--font-body)', outline: 'none', boxSizing: 'border-box' } }),
+        q.options.length ? R.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, q.options.map((o, i) => R.createElement('span', { key: i, style: { fontSize: 12, padding: '4px 9px', borderRadius: 999, background: 'var(--pulse-100)', color: 'var(--text-secondary)' } }, o))) : null)
+    }
+    return R.createElement('div', { key: q.id, style: { display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 'var(--radius-md)', border: '1px solid ' + (q.accepted ? 'var(--teal-300)' : 'var(--violet-200)'), background: q.accepted ? (this.state.dark ? 'rgba(20,184,166,0.1)' : 'var(--teal-50)') : (this.state.dark ? 'rgba(139,92,246,0.07)' : 'rgba(139,92,246,0.04)'), padding: '11px 12px' } },
+      R.createElement('div', { style: { flex: 1, minWidth: 0 } },
+        R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 } },
+          R.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.03em', color: 'var(--violet-700)', background: this.state.dark ? 'rgba(139,92,246,0.2)' : 'var(--violet-100)', padding: '2px 7px', borderRadius: 999 } }, '✨ AI'),
+          R.createElement('span', { style: { fontSize: 12, color: 'var(--text-muted)' } }, q.kind)),
+        R.createElement('p', { style: { fontSize: 13.5, color: 'var(--text-primary)', margin: 0, lineHeight: 1.4 } }, q.prompt)),
+      R.createElement('div', { style: { display: 'flex', gap: 2, flexShrink: 0 } },
+        R.createElement('button', { onClick: () => this._toggleAccept(q.id), title: 'Accept this question', style: this._chipBtn(q.accepted ? 'var(--teal-700)' : 'var(--text-muted)', q.accepted ? 'var(--teal-100)' : 'transparent') }, this._icon(R, 'check', 16)),
+        R.createElement('button', { onClick: () => this.setState({ editing: q.id }), title: 'Edit this question', style: this._chipBtn('var(--text-muted)', 'transparent') }, this._icon(R, 'pencil', 15)),
+        R.createElement('button', { onClick: () => this._dismiss(q.id), title: 'Dismiss this question', style: this._chipBtn('var(--text-muted)', 'transparent') }, this._icon(R, 'x', 16))))
+  }
+  _chipBtn(color, bg) { return { width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, border: 'none', background: bg, color, cursor: 'pointer' } }
+  _toggleAccept(id) { this.setState(s => ({ questions: s.questions.map(q => q.id === id ? { ...q, accepted: !q.accepted } : q) })) }
+  _dismiss(id) { this.setState(s => ({ questions: s.questions.map(q => q.id === id ? { ...q, dismissed: true } : q) })) }
+  _updatePrompt(id, v) { this.setState(s => ({ questions: s.questions.map(q => q.id === id ? { ...q, prompt: v } : q) })) }
+
+  _manual(R, NS) {
+    return R.createElement(React.Fragment, null,
+      this._backLink(R, '← Choose another method', () => this.setState({ mode: 'idle' })),
+      R.createElement('p', { style: { fontSize: 13.5, color: 'var(--text-muted)', margin: 0 } }, this.state.mode === 'template' ? 'Choose a template from the Templates tab to seed this step.' : 'Write and manage your own questions.'))
+  }
+
+  // ── Step 3: Energizer ──
+  _step3(R, NS) {
+    const formats = [['emoji-poll', 'Emoji Poll', 'Quick mood check via emojis', 'smile'], ['quick-finger', 'Quick Finger', 'Who is fastest with the right answer?', 'zap'], ['team-quiz', 'Team Quiz', 'Short competitive quiz to warm up', 'trophy'], ['word-cloud', 'Word Cloud', 'Participants type one word, visible together', 'cloud']]
+    return R.createElement(React.Fragment, null,
+      R.createElement('p', { style: { fontSize: 14, fontWeight: 500, margin: 0, color: 'var(--text-primary)' } }, 'Add an energizer?'),
+      R.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } }, formats.map(([id, name, desc, ic]) => {
+        const on = this.state.energizer === id
+        return R.createElement('button', { key: id, onClick: () => this.setState({ energizer: on ? null : id }), style: { textAlign: 'left', padding: 14, borderRadius: 'var(--radius-lg)', border: '1px solid ' + (on ? 'var(--teal-500)' : 'var(--surface-border)'), background: on ? 'var(--teal-50)' : 'var(--surface-card)', cursor: 'pointer', fontFamily: 'var(--font-body)', display: 'flex', flexDirection: 'column', gap: 6 } },
+          R.createElement('span', { style: { color: on ? 'var(--teal-700)' : 'var(--text-secondary)' } }, this._icon(R, ic, 20)),
+          R.createElement('span', { style: { fontSize: 13.5, fontWeight: 600, color: 'var(--text-primary)' } }, name),
+          R.createElement('span', { style: { fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 } }, desc))
+      })))
+  }
+
+  // ── Step 4: Settings ──
+  _step4(R, NS) {
+    const groups = [
+      ['Anonymity', 'anonymity', [['full', 'Fully anonymous'], ['partial', 'Partial'], ['none', 'Not anonymous'], ['zero_knowledge', 'Zero-knowledge']]],
+      ['Vote policy', 'votePolicy', [['once', 'One vote'], ['multi', 'Multiple votes'], ['react', 'Reactions']]],
+    ]
+    return R.createElement(React.Fragment, null,
+      groups.map(([label, key, opts]) => R.createElement('div', { key: key, style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+        R.createElement('p', { style: { fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', margin: 0 } }, label),
+        R.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } }, opts.map(([v, l]) => {
+          const on = this.state[key] === v
+          return R.createElement('button', { key: v, onClick: () => this.setState({ [key]: v }), style: { padding: '8px 13px', borderRadius: 999, border: '1px solid ' + (on ? 'var(--teal-500)' : 'var(--surface-border)'), background: on ? 'var(--teal-50)' : 'var(--surface-card)', color: on ? 'var(--teal-700)' : 'var(--text-secondary)', fontSize: 13, fontWeight: on ? 600 : 500, fontFamily: 'var(--font-body)', cursor: 'pointer' } }, l)
+        })))),
+      R.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: 14, borderRadius: 'var(--radius-md)', border: '1px solid var(--surface-border)' } },
+        R.createElement('div', null,
+          R.createElement('p', { style: { fontSize: 13.5, fontWeight: 600, margin: 0, color: 'var(--text-primary)' } }, 'Include in template gallery'),
+          R.createElement('p', { style: { fontSize: 12, color: 'var(--text-muted)', margin: '3px 0 0', maxWidth: 320, lineHeight: 1.4 } }, 'After closing, an anonymised version may appear in the public template gallery.')),
+        R.createElement('button', { role: 'switch', 'aria-checked': this.state.isPublic, onClick: () => this.setState(s => ({ isPublic: !s.isPublic })), style: { flexShrink: 0, width: 44, height: 26, borderRadius: 999, border: 'none', padding: 0, cursor: 'pointer', position: 'relative', background: this.state.isPublic ? 'linear-gradient(135deg, var(--violet-500), var(--teal-500))' : 'var(--pulse-300)', transition: 'background 150ms' } },
+          R.createElement('span', { style: { position: 'absolute', top: 3, left: this.state.isPublic ? 21 : 3, width: 20, height: 20, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 3px rgba(10,15,30,0.3)', transition: 'left 150ms' } }))))
+  }
+
+  // ── Step 5: Overview ──
+  _step5(R, NS) {
+    const s = this.state
+    const accepted = s.questions.filter(q => !q.dismissed)
+    const rows = [
+      ['Basics', s.title, 1], ['Questions', accepted.length ? accepted.length + ' questions' : 'No questions added', 2],
+      ['Energizer', s.energizer ? s.energizer.replace('-', ' ') : 'No energizer', 3],
+      ['Settings', this._anonLabel(s.anonymity) + ' · ' + (s.votePolicy === 'once' ? 'One vote' : s.votePolicy === 'multi' ? 'Multiple votes' : 'Reactions'), 4],
+    ]
+    return R.createElement(React.Fragment, null,
+      R.createElement('p', { style: { fontSize: 14, fontWeight: 500, margin: 0, color: 'var(--text-primary)' } }, 'Overview & launch'),
+      rows.map(([label, val, step]) => R.createElement('div', { key: label, style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--surface-border)' } },
+        R.createElement('div', { style: { minWidth: 0 } },
+          R.createElement('p', { style: { fontSize: 11.5, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0 } }, label),
+          R.createElement('p', { style: { fontSize: 14, color: 'var(--text-primary)', margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, val)),
+        R.createElement('button', { onClick: () => this.setState({ step }), style: { background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, color: 'var(--teal-600)', flexShrink: 0 } }, 'Edit'))),
+      R.createElement('p', { style: { fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0', lineHeight: 1.5 } }, 'By launching the session you agree to the privacy statement. Answers are processed in accordance with your anonymity settings.'))
+  }
+  _anonLabel(a) { return { full: 'Fully anonymous', partial: 'Partial', none: 'Not anonymous', zero_knowledge: 'Zero-knowledge' }[a] }
+
+  // ── Footer ──
+  _footer(R, NS) {
+    const { Button } = NS
+    const s = this.state
+    const canNext = s.step === 1 ? (s.title.trim() && s.goal.trim()) : s.step === 2 ? (s.mode !== 'idle' && s.questions.filter(q => !q.dismissed).length > 0) : true
+    return R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, padding: '14px 24px', borderTop: '1px solid var(--surface-border)', flexShrink: 0 } },
+      s.step > 1 ? R.createElement(Button, { variant: 'ghost', onClick: () => this.setState(p => ({ step: p.step - 1 })) }, 'Back') : R.createElement('span', null),
+      s.step < 5
+        ? R.createElement(Button, { onClick: () => canNext && this.setState(p => ({ step: p.step + 1 })), disabled: !canNext, iconRight: this._icon(R, 'arrow-right', 15) }, 'Next')
+        : R.createElement(Button, { iconLeft: this._icon(R, 'rocket', 15) }, 'Start session'))
+  }
+}
+</script>
+</body>
+</html>

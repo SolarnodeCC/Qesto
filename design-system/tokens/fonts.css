@@ -1,0 +1,31 @@
+/* ===========================================================================
+   Qesto — Web fonts
+   Syne (display), Inter (body), JetBrains Mono (mono).
+
+   ACTIVE: loaded from Google Fonts, exactly as the live Qesto app loads them.
+   ─────────────────────────────────────────────────────────────────────────
+   TO SELF-HOST (offline / no-CDN): drop .woff2 files into assets/fonts/
+   (see assets/fonts/README.md for the exact filenames), then COMMENT OUT the
+   @import below and UNCOMMENT the @font-face block beneath it. No other change
+   is needed — the family names match the --font-* tokens.
+   =========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Self-hosted scaffold (inactive until you add the .woff2 files) ─────────
+@font-face {
+  font-family: 'Syne';
+  font-style: normal; font-weight: 500 800; font-display: swap;
+  src: url('../assets/fonts/Syne-VariableFont_wght.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal; font-weight: 400 700; font-display: swap;
+  src: url('../assets/fonts/Inter-VariableFont.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal; font-weight: 400 500; font-display: swap;
+  src: url('../assets/fonts/JetBrainsMono-VariableFont_wght.woff2') format('woff2');
+}
+─────────────────────────────────────────────────────────────────────────── */

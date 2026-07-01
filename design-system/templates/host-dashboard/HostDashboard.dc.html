@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Host dashboard" description="Qesto host workspace: sidebar, metrics strip, session list, and AI recap panel" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-bg-subtle); font-family: var(--font-body); color: var(--text-primary); }
+  a { color: inherit; text-decoration: none; }
+</style>
+</helmet>
+<div>{{ page }}</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { dark: false, openMenu: null, view: 'Sessions' }
+  componentDidMount() {
+    this._icons()
+    if (!this.ns().Button) this._poll = setInterval(() => { if (this.ns().Button) { clearInterval(this._poll); this.forceUpdate() } }, 60)
+  }
+  componentWillUnmount() { clearInterval(this._poll) }
+  componentDidUpdate() { this._icons() }
+  _icons() { setTimeout(() => window.lucide && window.lucide.createIcons(), 0) }
+  ns() { return window.QestoDesignSystem_10c0a6 || {} }
+  _icon(R, name, size, color) { return R.createElement('i', { 'data-lucide': name, width: size, height: size, style: { display: 'inline-flex', color: color || 'currentColor' } }) }
+
+  renderVals() { return { page: this._page(React) } }
+
+  _templates(R, NS) {
+    const { Button, Card, Badge, Eyebrow, AIBadge } = NS
+    const cats = ['All', 'Retrospective', 'Pulse & feedback', 'Decisions', 'Workshops']
+    const TPL = [
+      ['Sprint retrospective', 'What went well, what to change — ranked.', 'rocket', 5, 'Retrospective', false],
+      ['All-hands pulse', 'Quick sentiment + open questions for the whole company.', 'activity', 4, 'Pulse & feedback', true],
+      ['Team icebreaker', 'Low-stakes openers to warm up the room.', 'smile', 3, 'Workshops', false],
+      ['Consent round', 'Single-tap consent vote with a signed log.', 'shield-check', 2, 'Decisions', false],
+      ['Q&A / AMA', 'Crowd-sourced questions with live upvoting.', 'message-square', 3, 'Workshops', false],
+      ['Product feedback', 'Rate features, rank priorities, collect verbatims.', 'bar-chart-3', 6, 'Pulse & feedback', true],
+      ['Decision vote', 'Weighted options with a clear, recorded outcome.', 'check-circle-2', 3, 'Decisions', false],
+      ['Pre-read check', 'Confirm the room is ready before you start.', 'list-checks', 2, 'Workshops', false],
+    ]
+    const cat = this.state.tplCat || 'All'
+    const shown = cat === 'All' ? TPL : TPL.filter(t => t[4] === cat)
+    return R.createElement('div', { style: { padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1000 } },
+      R.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' } },
+        R.createElement('div', null, R.createElement(Eyebrow, null, 'Workspace'), R.createElement('h1', { style: { fontSize: 32, fontWeight: 600, letterSpacing: '-0.01em', margin: '8px 0 0' } }, 'Templates')),
+        R.createElement(Button, { size: 'md', iconLeft: this._icon(R, 'plus', 16) }, 'New template')),
+      R.createElement('p', { style: { fontSize: 15, color: 'var(--text-secondary)', margin: '-8px 0 0', maxWidth: 560 } }, 'Reusable question sets. Start a session from one in a click, or capture any session as a new template.'),
+      R.createElement('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, cats.map(c => {
+        const on = cat === c
+        return R.createElement('button', { key: c, onClick: () => this.setState({ tplCat: c }), style: { padding: '7px 14px', borderRadius: 999, border: '1px solid ' + (on ? 'var(--teal-500)' : 'var(--surface-border)'), background: on ? 'var(--teal-50)' : 'var(--surface-card)', color: on ? 'var(--teal-700)' : 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: on ? 600 : 500 } }, c)
+      })),
+      R.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 } }, shown.map(([name, desc, ic, q, category, ai]) =>
+        R.createElement(Card, { key: name, hoverable: true, style: { display: 'flex', flexDirection: 'column', gap: 12, padding: 20 } },
+          R.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 14 } },
+            R.createElement('div', { style: { width: 44, height: 44, flexShrink: 0, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ai ? (this.state.dark ? 'rgba(139,92,246,0.16)' : 'var(--violet-50)') : 'var(--teal-50)', color: ai ? 'var(--violet-700)' : 'var(--teal-700)' } }, this._icon(R, ic, 21)),
+            R.createElement('div', { style: { flex: 1, minWidth: 0 } },
+              R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } }, R.createElement('span', { style: { fontSize: 16, fontWeight: 600 } }, name), ai && R.createElement(AIBadge, { variant: 'assisted' })),
+              R.createElement('p', { style: { fontSize: 13.5, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '4px 0 0' } }, desc))),
+          R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 } },
+            R.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)' } }, this._icon(R, 'list', 13), q + ' questions', R.createElement('span', { style: { margin: '0 2px' } }, '·'), category),
+            R.createElement(Button, { size: 'sm', variant: 'secondary', iconLeft: this._icon(R, 'play', 13), onClick: () => this.setState({ wizard: { name, q, ai } }) }, 'Use'))))))
+  }
+
+  _seedQuestions(name, n) {
+    const banks = {
+      'Sprint retrospective': [['Multiple choice', 'How would you rate this sprint overall?'], ['Open text', 'What should we change next sprint?'], ['Ranking', 'Rank where to focus next'], ['Likert scale', 'Our workload felt sustainable'], ['Open text', 'What went well worth keeping?']],
+      'All-hands pulse': [['Likert scale', 'I have what I need to do my best work'], ['Open text', 'What is on your mind this month?'], ['Multiple choice', 'How are you feeling about our direction?'], ['Word cloud', 'One word for this quarter']],
+      'Team icebreaker': [['Multiple choice', 'Coffee, tea, or neither?'], ['Word cloud', 'Describe your week in one word'], ['Open text', 'A small win from this week']],
+      'Consent round': [['Consent', 'Do you consent to recording this session?'], ['Consent', 'May we share an anonymised recap?']],
+      'Q&A / AMA': [['Open text', 'What would you like to ask?'], ['Upvote', 'Upvote the questions you want answered'], ['Open text', 'Any follow-ups?']],
+      'Product feedback': [['Multiple choice', 'How satisfied are you overall?'], ['Ranking', 'Rank these features by priority'], ['Open text', 'What is missing for you?'], ['Likert scale', 'This product saves me time'], ['Word cloud', 'One word for the product'], ['Open text', 'Anything else?']],
+      'Decision vote': [['Multiple choice', 'Which option should we pursue?'], ['Open text', 'Why did you vote that way?'], ['Consent', 'Do you support this decision?']],
+      'Pre-read check': [['Consent', 'Did you read the pre-read?'], ['Multiple choice', 'How ready do you feel?']],
+    }
+    return (banks[name] || []).slice(0, n)
+  }
+
+  _wizardModal(R, NS) {
+    const w = this.state.wizard
+    if (!w) return null
+    const { Button } = NS
+    const qs = this._seedQuestions(w.name, w.q)
+    return R.createElement('div', { onClick: () => this.setState({ wizard: null }), style: { position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(10,15,30,0.45)', backdropFilter: 'blur(3px)' } },
+      R.createElement('div', { onClick: e => e.stopPropagation(), style: { width: '100%', maxWidth: 512, maxHeight: '90vh', display: 'flex', flexDirection: 'column', background: 'var(--surface-card)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-elevated)', overflow: 'hidden' } },
+        R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px 14px', borderBottom: '1px solid var(--surface-border)' } },
+          R.createElement('div', null, R.createElement('h2', { style: { fontSize: 20, fontWeight: 600, margin: 0 } }, 'Questions'), R.createElement('p', { style: { fontSize: 12, color: 'var(--text-muted)', margin: '3px 0 0' } }, 'Step 2 of 5 · From template')),
+          R.createElement('button', { onClick: () => this.setState({ wizard: null }), title: 'Close', style: { width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, border: 'none', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' } }, this._icon(R, 'x', 18))),
+        R.createElement('div', { style: { padding: '12px 24px 0' } }, R.createElement('div', { style: { display: 'flex', gap: 4 } }, [1,2,3,4,5].map(n => R.createElement('div', { key: n, style: { height: 6, flex: 1, borderRadius: 999, background: n < 2 ? 'var(--teal-500)' : n === 2 ? 'var(--teal-400)' : 'var(--pulse-200)' } })))),
+        R.createElement('div', { style: { flex: 1, overflowY: 'auto', padding: '18px 24px', display: 'flex', flexDirection: 'column', gap: 12 } },
+          R.createElement('div', { style: { borderRadius: 'var(--radius-md)', border: '1px solid var(--teal-200)', background: this.state.dark ? 'rgba(20,184,166,0.1)' : 'var(--teal-50)', padding: 12 } },
+            R.createElement('p', { style: { fontSize: 13.5, fontWeight: 600, margin: 0, color: 'var(--teal-800)' } }, '“' + w.name + '” is loaded'),
+            R.createElement('p', { style: { fontSize: 12.5, margin: '3px 0 0', color: 'var(--teal-700)' } }, 'Edit, remove, or add questions before you continue.')),
+          R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } }, qs.map(([kind, prompt], i) =>
+            R.createElement('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: 12, borderRadius: 'var(--radius-md)', border: '1px solid var(--surface-border)', padding: '11px 12px' } },
+              R.createElement('span', { style: { fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', minWidth: 18, marginTop: 2 } }, (i+1) + '.'),
+              R.createElement('div', { style: { flex: 1, minWidth: 0 } },
+                R.createElement('span', { style: { fontSize: 12, color: 'var(--text-muted)' } }, kind),
+                R.createElement('p', { style: { fontSize: 13.5, color: 'var(--text-primary)', margin: '2px 0 0', lineHeight: 1.4 } }, prompt)),
+              this._icon(R, 'pencil', 15, 'var(--text-muted)')))),
+          R.createElement('button', { style: { alignSelf: 'flex-start', background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, color: 'var(--teal-600)' } }, '+ Add question')),
+        R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 24px', borderTop: '1px solid var(--surface-border)' } },
+          R.createElement(Button, { variant: 'ghost', onClick: () => this.setState({ wizard: null }) }, 'Cancel'),
+          R.createElement(Button, { iconLeft: this._icon(R, 'rocket', 15), onClick: () => this.setState({ wizard: null }) }, 'Start session'))))
+  }
+
+  _rowMenu(R, i) {
+    const open = this.state.openMenu === i
+    const items = [
+      ['copy', 'Capture as template'],
+      ['files', 'Duplicate'],
+      ['download', 'Export'],
+      ['trash-2', 'Delete', 'danger'],
+    ]
+    return R.createElement('div', { style: { position: 'relative', display: 'flex' } },
+      R.createElement('button', {
+        onClick: (e) => { e.stopPropagation(); this.setState(s => ({ openMenu: s.openMenu === i ? null : i })) },
+        title: 'More actions',
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 30, height: 30, borderRadius: 8, border: 'none', background: open ? 'var(--surface-bg-subtle)' : 'transparent', color: 'var(--text-muted)', cursor: 'pointer' },
+      }, this._icon(R, 'more-horizontal', 18)),
+      open && R.createElement('div', {
+        style: { position: 'absolute', top: 36, right: 0, zIndex: 20, minWidth: 196, background: 'var(--surface-card)', border: '1px solid var(--surface-border)', borderRadius: 12, boxShadow: 'var(--shadow-elevated)', padding: 6, display: 'flex', flexDirection: 'column', gap: 2 },
+      }, items.map(([ic, label, tone]) =>
+        R.createElement('button', {
+          key: label,
+          onClick: (e) => { e.stopPropagation(); this.setState({ openMenu: null }) },
+          style: { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 10px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 500, textAlign: 'left', color: tone === 'danger' ? 'var(--signal-error)' : 'var(--text-primary)' },
+        }, this._icon(R, ic, 16, tone === 'danger' ? 'var(--signal-error)' : 'var(--text-secondary)'), label)
+      )))
+  }
+
+  _page(R) {
+    const NS = this.ns()
+    if (!NS.Button) return R.createElement('div', { style: { padding: 60, color: 'var(--text-muted)' } }, 'Loading components…')
+    return R.createElement('div', { 'data-theme': this.state.dark ? 'dark' : undefined, style: { display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--surface-bg-subtle)', color: 'var(--text-primary)' } },
+      this._sidebar(R), R.createElement('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' } }, this._topbar(R), R.createElement('div', { style: { flex: 1, overflowY: 'auto' } }, this.state.view === 'Templates' ? this._templates(R, NS) : this._dashboard(R, NS))), this._wizardModal(R, NS))
+  }
+
+  _sidebar(R) {
+    const items = [['Launchpad', 'rocket'], ['Sessions', 'layout-list'], ['Templates', 'layout-template'], ['Insights', 'sparkles'], ['Team', 'users'], ['Settings', 'settings']]
+    return R.createElement('aside', { style: { width: 240, flexShrink: 0, background: 'var(--surface-card)', borderRight: '1px solid var(--surface-border)', height: '100%', display: 'flex', flexDirection: 'column', padding: '20px 16px' } },
+      R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, padding: '4px 8px 24px' } }, R.createElement('img', { src: '../../assets/qesto-mark.svg', width: 28, height: 28, alt: '' }), R.createElement('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em' } }, 'Qesto')),
+      R.createElement('nav', { style: { display: 'flex', flexDirection: 'column', gap: 2 } }, items.map(([label, ic]) => {
+        const active = this.state.view === label
+        return R.createElement('div', { key: label, onClick: () => this.setState({ view: label, openMenu: null }), style: { display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 10, cursor: 'pointer', fontSize: 14, fontWeight: active ? 600 : 500, background: active ? 'var(--teal-50)' : 'transparent', color: active ? 'var(--teal-700)' : 'var(--text-secondary)' } }, this._icon(R, ic, 17), label)
+      })),
+      R.createElement('div', { style: { marginTop: 'auto', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 8px' } }, R.createElement('div', { style: { width: 32, height: 32, borderRadius: '50%', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 600, fontSize: 13 } }, 'AR'), R.createElement('div', { style: { lineHeight: 1.3 } }, R.createElement('div', { style: { fontSize: 13, fontWeight: 600 } }, 'Ana Ruiz'), R.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)' } }, 'Pro workspace'))))
+  }
+
+  _topbar(R) {
+    return R.createElement('div', { style: { height: 56, flexShrink: 0, borderBottom: '1px solid var(--surface-border)', background: 'var(--surface-card)', display: 'flex', alignItems: 'center', gap: 16, padding: '0 24px' } },
+      R.createElement('div', { style: { flex: 1, maxWidth: 360, position: 'relative', display: 'flex', alignItems: 'center' } },
+        R.createElement('span', { style: { position: 'absolute', left: 12, display: 'flex', color: 'var(--text-muted)' } }, this._icon(R, 'search', 16)),
+        R.createElement('input', { placeholder: 'Search sessions, templates…', style: { width: '100%', padding: '8px 12px 8px 34px', fontSize: 14, fontFamily: 'var(--font-body)', borderRadius: 10, border: '1px solid var(--surface-border)', background: 'var(--surface-bg-subtle)', outline: 'none' } })),
+      R.createElement('div', { style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 14, color: 'var(--text-muted)' } },
+        R.createElement('button', { onClick: () => this.setState(s => ({ dark: !s.dark })), title: this.state.dark ? 'Switch to light' : 'Switch to dark', style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 10, border: '1px solid var(--surface-border)', background: 'var(--surface-bg-subtle)', color: 'var(--text-secondary)', cursor: 'pointer' } }, this._icon(R, this.state.dark ? 'sun' : 'moon', 17)),
+        this._icon(R, 'bell', 18),
+        R.createElement('button', { title: 'Ask Qesto AI', style: { display: 'flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, border: '1px solid var(--violet-200)', background: this.state.dark ? 'rgba(139,92,246,0.16)' : 'var(--violet-50)', color: 'var(--violet-700)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600 } }, this._icon(R, 'sparkles', 16), 'Ask AI')))
+  }
+
+  _dashboard(R, NS) {
+    const { Button, Card, Badge, AIBadge, MetricCard, TallyBar, Eyebrow } = NS
+    const SESSIONS = [['Q3 strategy offsite', 'live', 48, '2 min ago'], ['Sprint 24 retro', 'draft', 0, '1 hr ago'], ['All-hands pulse — June', 'closed', 212, 'Yesterday'], ['Board motion: budget', 'closed', 9, '3 days ago'], ['Onboarding feedback', 'closed', 64, 'Last week']]
+    const STATUS = { live: ['Live', 'primary'], draft: ['Draft', 'neutral'], closed: ['Closed', 'success'] }
+    return R.createElement('div', { style: { padding: '32px 40px', display: 'flex', flexDirection: 'column', gap: 28, maxWidth: 1000 } },
+      R.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' } },
+        R.createElement('div', null, R.createElement(Eyebrow, null, 'Workspace'), R.createElement('h1', { style: { fontSize: 32, fontWeight: 600, letterSpacing: '-0.01em', margin: '8px 0 0' } }, 'Good morning, Ana')),
+        R.createElement(Button, { size: 'md', iconLeft: this._icon(R, 'plus', 16) }, 'New session')),
+      R.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 } },
+        R.createElement(MetricCard, { label: 'Active sessions', value: 1 }),
+        R.createElement(MetricCard, { label: 'Response rate', value: '87%', trend: { value: 4.2, direction: 'up' } }),
+        R.createElement(MetricCard, { label: 'Total participants', value: '1,284', trend: { value: 8.6, direction: 'up' } }),
+        R.createElement(MetricCard, { label: 'Consent opt-in', value: '94%' })),
+      R.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, alignItems: 'start' } },
+        R.createElement('div', null,
+          R.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 } }, R.createElement('h2', { style: { fontSize: 18, fontWeight: 600, margin: 0 } }, 'Recent sessions'), R.createElement('a', { href: '#', style: { fontSize: 13, color: 'var(--teal-700)', fontWeight: 500 } }, 'View all')),
+          R.createElement(Card, { style: { padding: 0, overflow: 'visible' } }, SESSIONS.map(([title, status, part, when], i) => {
+            const [lbl, variant] = STATUS[status]
+            return R.createElement('div', { key: title, style: { display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', borderTop: i ? '1px solid var(--surface-border)' : 'none' } },
+              R.createElement('div', { style: { flex: 1, minWidth: 0 } }, R.createElement('div', { style: { fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, title), R.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)', marginTop: 2, display: 'flex', gap: 12 } }, R.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: 4 } }, this._icon(R, 'users', 12), part), R.createElement('span', null, when))),
+              R.createElement(Badge, { variant }, lbl),
+              R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 500, color: 'var(--violet-700)', cursor: 'pointer' } }, this._icon(R, 'sparkles', 14), 'Recap'),
+              this._rowMenu(R, i))
+          }))),
+        R.createElement('div', null,
+          R.createElement('h2', { style: { fontSize: 18, fontWeight: 600, margin: '0 0 14px' } }, 'Latest AI recap'),
+          R.createElement('div', { style: { borderLeft: '3px solid var(--violet-500)', background: this.state.dark ? 'rgba(139,92,246,0.14)' : 'var(--violet-50)', borderRadius: '0 16px 16px 0', padding: '18px 20px' } },
+            R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 } }, R.createElement(AIBadge, { variant: 'analyzed' }), R.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' } }, '1.4s · 212 responses')),
+            R.createElement('div', { style: { fontSize: 15, fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' } }, 'Onboarding friction is the top theme'),
+            R.createElement('p', { style: { fontSize: 13, lineHeight: 1.5, color: 'var(--text-secondary)', margin: '0 0 14px' } }, '42 responses cluster on slow first-week setup.'),
+            R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } }, R.createElement(TallyBar, { label: 'Onboarding & access', count: 42, total: 86, leading: true }), R.createElement(TallyBar, { label: 'Tooling gaps', count: 27, total: 86 }), R.createElement(TallyBar, { label: 'Comms cadence', count: 17, total: 86 })),
+            R.createElement('div', { style: { display: 'flex', gap: 8, marginTop: 16 } }, R.createElement(Button, { size: 'sm', variant: 'secondary' }, 'Edit recap'), R.createElement(Button, { size: 'sm', variant: 'ghost' }, 'Export')))))
+    )
+  }
+}
+</script>
+</body>
+</html>

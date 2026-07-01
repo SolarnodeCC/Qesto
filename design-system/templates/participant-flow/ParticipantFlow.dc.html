@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Participant join flow" description="Mobile join → consent → vote → thanks flow for a live Qesto session" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  body { margin: 0; background: var(--surface-bg-subtle); font-family: var(--font-body); color: var(--text-primary); min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; padding: 32px; }
+  .phone { width: 390px; height: 720px; background: var(--surface-bg); border-radius: 44px; border: 10px solid #0A0F1E; box-shadow: var(--shadow-elevated); overflow: hidden; position: relative; }
+  [data-theme="dark"] .phone { border-color: #1C2540; box-shadow: 0 0 0 1px rgba(255,255,255,0.06), var(--shadow-elevated); }
+  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
+</style>
+</helmet>
+<div class="phone">
+  <div class="screen">{{ activeScreen }}</div>
+</div>
+<div style="display:flex; flex-direction:column; gap:10px">
+  {{ themeToggle }}
+  <div style="font:600 11px/1 var(--font-body); letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin:4px 0">Flow</div>
+  {{ flowRail }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { step: 0, voted: null, posture: 'anonymous', dark: false }
+
+  componentDidMount() {
+    this._applyTheme(); this._icons()
+    if (!this.ns().Button) this._poll = setInterval(() => { if (this.ns().Button) { clearInterval(this._poll); this.forceUpdate() } }, 60)
+  }
+  componentDidUpdate() { this._applyTheme(); this._icons() }
+  componentWillUnmount() { clearInterval(this._poll); document.body.removeAttribute('data-theme') }
+  _applyTheme() { if (this.state.dark) document.body.setAttribute('data-theme', 'dark'); else document.body.removeAttribute('data-theme') }
+  _icons() { setTimeout(() => window.lucide && window.lucide.createIcons(), 0) }
+
+  ns() { return window.QestoDesignSystem_10c0a6 || {} }
+
+  renderVals() {
+    const R = React
+    const { step } = this.state
+    const labels = ['Join', 'Consent', 'Vote', 'Thanks']
+    const flowRail = labels.map((label, i) => {
+      const active = step === i
+      return R.createElement('button', {
+        key: label, onClick: () => this.setState({ step: i }),
+        style: { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: active ? 600 : 500, background: active ? 'var(--teal-50)' : 'transparent', color: active ? 'var(--teal-700)' : 'var(--text-secondary)' },
+      },
+        R.createElement('span', { style: { width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 600, background: active ? 'var(--gradient-brand)' : 'var(--pulse-200)', color: active ? '#fff' : 'var(--text-muted)' } }, i + 1),
+        label)
+    })
+    const themeToggle = R.createElement('button', {
+      onClick: () => this.setState(s => ({ dark: !s.dark })),
+      title: this.state.dark ? 'Switch to light' : 'Switch to dark',
+      style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 10, border: '1px solid var(--surface-border)', background: 'var(--surface-card)', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, width: 'fit-content' },
+    }, this._icon(R, this.state.dark ? 'sun' : 'moon', 15), this.state.dark ? 'Light' : 'Dark')
+    return { flowRail, themeToggle, activeScreen: this._screen(R) }
+  }
+
+  _brandBar(R, status) {
+    return R.createElement('div', { style: { flexShrink: 0 } },
+      R.createElement('div', { style: { height: 4, background: 'var(--gradient-brand)' } }),
+      R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--surface-border)' } },
+        R.createElement('span', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em' } }, 'Qesto'),
+        status && R.createElement('span', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)' } },
+          R.createElement('span', { style: { width: 6, height: 6, borderRadius: '50%', background: 'var(--teal-500)' } }), status)
+      )
+    )
+  }
+
+  _icon(R, name, size, color) {
+    return R.createElement('i', { 'data-lucide': name, width: size, height: size, style: { display: 'inline-flex', color: color || 'currentColor' } })
+  }
+
+  _screen(R) {
+    const NS = this.ns()
+    const { Button, EntryCodeField, ConsentPicker, TallyBar, AIBadge } = NS
+    const { step } = this.state
+    if (!Button) return R.createElement('div', { style: { padding: 40, color: 'var(--text-muted)', fontSize: 14 } }, 'Loading components…')
+
+    if (step === 0) {
+      return R.createElement(R.Fragment, null,
+        this._brandBar(R),
+        R.createElement('div', { style: { flex: 1, padding: '40px 24px', display: 'flex', flexDirection: 'column', gap: 24 } },
+          R.createElement('div', null,
+            R.createElement('h1', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 28, letterSpacing: '-0.02em', margin: '0 0 8px' } }, 'Join the room'),
+            R.createElement('p', { style: { fontSize: 15, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 } }, 'Enter the 6-character code shown on screen, or scan the QR.')
+          ),
+          R.createElement(EntryCodeField, { value: this.state.code || '', onChange: (v) => this.setState({ code: v }) }),
+          R.createElement(Button, { size: 'lg', style: { width: '100%' }, disabled: (this.state.code || '').length < 4, onClick: () => this.setState({ step: 1 }) }, 'Enter session'),
+          R.createElement('p', { style: { fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', marginTop: 'auto' } }, 'No account needed to take part.')
+        )
+      )
+    }
+    if (step === 1) {
+      return R.createElement(R.Fragment, null,
+        this._brandBar(R, 'QSTO-7K2'),
+        R.createElement('div', { style: { flex: 1, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 20, overflowY: 'auto' } },
+          R.createElement('div', null,
+            R.createElement('div', { style: { fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--teal-700)', marginBottom: 8 } }, 'Before we begin'),
+            R.createElement('h1', { style: { fontSize: 22, fontWeight: 600, letterSpacing: '-0.01em', margin: '0 0 6px' } }, 'How should your answers appear?'),
+            R.createElement('p', { style: { fontSize: 14, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 } }, 'The host set this room to let you choose.')
+          ),
+          R.createElement(ConsentPicker, { value: this.state.posture, onChange: (v) => this.setState({ posture: v }) })
+        ),
+        R.createElement('div', { style: { flexShrink: 0, padding: '16px 24px', borderTop: '1px solid var(--surface-border)' } },
+          R.createElement(Button, { size: 'lg', style: { width: '100%' }, onClick: () => this.setState({ step: 2 }) }, 'Continue')
+        )
+      )
+    }
+    if (step === 2) {
+      const OPTS = [['Adopt trunk-based delivery', 38], ['Invest in test automation', 52], ['Cut WIP limits per squad', 24], ['Pair on the riskiest work', 19]]
+      const voted = this.state.voted
+      const total = OPTS.reduce((s, o) => s + o[1], 0) + (voted !== null ? 1 : 0)
+      let maxIdx = 0; OPTS.forEach((o, i) => { if ((o[1] + (voted === i ? 1 : 0)) > (OPTS[maxIdx][1] + (voted === maxIdx ? 1 : 0))) maxIdx = i })
+      return R.createElement(R.Fragment, null,
+        this._brandBar(R, '48 here'),
+        R.createElement('div', { style: { flex: 1, padding: 24, display: 'flex', flexDirection: 'column', gap: 18, overflowY: 'auto' } },
+          R.createElement('h1', { style: { fontSize: 20, fontWeight: 600, lineHeight: 1.3, margin: 0 } }, 'Where should the team focus to ship faster next quarter?'),
+          voted === null
+            ? R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 12 } },
+                OPTS.map(([label], i) => R.createElement('button', { key: label, onClick: () => this.setState({ voted: i }), style: { textAlign: 'left', padding: 16, borderRadius: 14, border: '1px solid var(--surface-border)', background: 'var(--surface-card)', fontSize: 15, fontWeight: 500, fontFamily: 'var(--font-body)', cursor: 'pointer', color: 'var(--text-primary)' } }, label)))
+            : R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
+                R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--teal-700)', fontWeight: 500 } }, this._icon(R, 'check-circle-2', 16, 'var(--teal-700)'), 'Vote counted · live results'),
+                OPTS.map(([label, c], i) => R.createElement(TallyBar, { key: label, label, count: c + (voted === i ? 1 : 0), total, leading: i === maxIdx })))
+        ),
+        R.createElement('div', { style: { flexShrink: 0, padding: '16px 24px', borderTop: '1px solid var(--surface-border)' } },
+          R.createElement(Button, { size: 'lg', style: { width: '100%' }, variant: voted === null ? 'secondary' : 'primary', disabled: voted === null, onClick: () => this.setState({ step: 3 }) }, voted === null ? 'Pick an option' : 'Next question')
+        )
+      )
+    }
+    return R.createElement(R.Fragment, null,
+      this._brandBar(R, 'QSTO-7K2'),
+      R.createElement('div', { style: { flex: 1, padding: '40px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 18 } },
+        R.createElement('div', { style: { width: 72, height: 72, borderRadius: '50%', background: 'var(--gradient-brand)', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, this._icon(R, 'check', 36, '#fff')),
+        R.createElement('h1', { style: { fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 26, letterSpacing: '-0.02em', margin: 0 } }, "You're all caught up"),
+        R.createElement('p', { style: { fontSize: 15, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 } }, 'Hang tight — the host will bring up the next question.'),
+        R.createElement(AIBadge, { variant: 'analyzed', label: 'A recap will be shared after' })
+      ),
+      R.createElement('div', { style: { flexShrink: 0, padding: '16px 24px', borderTop: '1px solid var(--surface-border)' } },
+        R.createElement(Button, { size: 'lg', variant: 'ghost', style: { width: '100%' }, onClick: () => this.setState({ step: 0, voted: null }) }, 'Restart demo')
+      )
+    )
+  }
+}
+</script>
+</body>
+</html>

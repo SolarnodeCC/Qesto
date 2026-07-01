@@ -48,5 +48,10 @@
   "ai_generate_heading": "Fragen mit KI generieren",
   "ai_topic_hint": "Thema oder Ziel (Standard: \"{{title}}\")",
   "add_question_inline": "+ Frage hinzufügen",
-  "joinPanel.startQuestions": "Fragen starten"
+  "joinPanel.startQuestions": "Fragen starten",
+  "preflight_ready": "Startbereit",
+  "preflight_not_ready": "Nicht bereit",
+  "status_ready": "Entwurf · startbereit",
+  "status_draft": "Entwurf",
+  "status_energizing": "Aufwärmphase"
 }

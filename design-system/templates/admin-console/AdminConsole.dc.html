@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Platform admin console" description="Qesto superadmin: health strip, platform stats, live metrics, latency trend, historical table, audit log, tabs" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-bg-subtle); font-family: var(--font-body); color: var(--text-primary); }
+</style>
+</helmet>
+<div>{{ page }}</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 'dashboard', dark: false }
+  componentDidMount() {
+    this._applyTheme(); this._icons()
+    if (!this.ns().StatCard) this._poll = setInterval(() => { if (this.ns().StatCard) { clearInterval(this._poll); this.forceUpdate() } }, 60)
+  }
+  componentDidUpdate() { this._applyTheme(); this._icons() }
+  componentWillUnmount() { clearInterval(this._poll); document.body.removeAttribute('data-theme') }
+  _applyTheme() { if (this.state.dark) document.body.setAttribute('data-theme', 'dark'); else document.body.removeAttribute('data-theme') }
+  _icons() { setTimeout(() => window.lucide && window.lucide.createIcons(), 0) }
+  ns() { return window.QestoDesignSystem_10c0a6 || {} }
+  _icon(R, name, size, color) { return R.createElement('i', { 'data-lucide': name, width: size, height: size, style: { display: 'inline-flex', color: color || 'currentColor' } }) }
+  _sechead(R, text) { return R.createElement('h2', { style: { fontSize: 'var(--fs-heading-s)', fontWeight: 600, borderLeft: '4px solid var(--teal-500)', paddingLeft: 12, margin: '0 0 16px' } }, text) }
+
+  renderVals() { return { page: this._page(React) } }
+
+  _page(R) {
+    const NS = this.ns()
+    if (!NS.StatCard) return R.createElement('div', { style: { padding: 60, color: 'var(--text-muted)' } }, 'Loading components…')
+    const TABS = [['dashboard', 'Dashboard', 'layout-dashboard'], ['observability', 'Observability', 'radar'], ['users', 'Users', 'users'], ['ops', 'Ops', 'activity'], ['analytics', 'Analytics', 'bar-chart-3']]
+    return R.createElement('div', { 'data-theme': this.state.dark ? 'dark' : undefined, style: { minHeight: '100vh', background: 'var(--surface-bg-subtle)', color: 'var(--text-primary)' } },
+      R.createElement('div', { style: { maxWidth: 1100, margin: '0 auto', padding: '40px 32px' } },
+        this._header(R),
+        R.createElement('div', { role: 'tablist', style: { display: 'flex', gap: 4, background: 'var(--pulse-100)', borderRadius: 'var(--radius-lg)', padding: 4, margin: '0 0 28px', width: 'fit-content', flexWrap: 'wrap' } }, TABS.map(([id, label, ic]) => {
+          const active = this.state.tab === id
+          return R.createElement('button', { key: id, role: 'tab', onClick: () => this.setState({ tab: id }), style: { display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: active ? 600 : 500, background: active ? 'var(--surface-card)' : 'transparent', color: active ? 'var(--text-primary)' : 'var(--text-muted)', boxShadow: active ? 'var(--shadow-card)' : 'none' } }, this._icon(R, ic, 16), label)
+        })),
+        this.state.tab === 'dashboard' ? this._dashboard(R, NS)
+          : this.state.tab === 'users' ? this._users(R, NS)
+          : this._placeholder(R, NS))
+    )
+  }
+
+  _header(R) {
+    return R.createElement('header', { style: { marginBottom: 24 } },
+      R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+        R.createElement('img', { src: '../../assets/qesto-mark.svg', width: 28, height: 28, alt: '' }),
+        R.createElement('h1', { style: { fontSize: 30, fontWeight: 600, letterSpacing: '-0.01em', margin: 0 } }, 'Platform admin'),
+        R.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 999, background: 'var(--pulse-900)', color: '#fff', fontSize: 11, fontWeight: 600, letterSpacing: '0.04em' } }, this._icon(R, 'shield', 12), 'SUPERADMIN'),
+        R.createElement('button', { onClick: () => this.setState(s => ({ dark: !s.dark })), title: this.state.dark ? 'Switch to light' : 'Switch to dark', style: { marginLeft: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 10, border: '1px solid var(--surface-border)', background: 'var(--surface-card)', color: 'var(--text-secondary)', cursor: 'pointer' } }, this._icon(R, this.state.dark ? 'sun' : 'moon', 17))),
+      R.createElement('p', { style: { fontSize: 15, color: 'var(--text-secondary)', margin: '6px 0 0' } }, 'Real-time platform observability across all workspaces.'))
+  }
+
+  _dashboard(R, NS) {
+    const { Card, MetricCard, StatCard, Button } = NS
+    const stats = [['Live sessions', 42, 'teal'], ['Total users', '12.4k', 'violet'], ['Sessions today', 318, 'success'], ['This month', '7,204', 'info'], ['Total sessions', '184k', 'warning'], ['Est. AI cost', '€38.20', 'teal']]
+    const hist = [['Jun 30, 09:40', '(all)', 92, 183, 241, '0.4', '12,840'], ['Jun 30, 09:35', '/api/sessions', 88, 176, 230, '0.3', '9,210'], ['Jun 30, 09:30', '/api/vote', 64, 142, 198, '0.2', '21,330'], ['Jun 30, 09:25', '/api/recap', 210, 480, 612, '1.1', '1,840'], ['Jun 30, 09:20', '(all)', 96, 188, 248, '0.5', '11,920']]
+    const audit = [['shield', 'consent.exported', 'ana@qesto.cc', 'Session QSTO-7K2 · 212 responses', '09:41'], ['user-cog', 'role.granted', 'admin@qesto.cc', 'Granted facilitator to lee@acme.co', '09:18'], ['trash-2', 'session.deleted', 'sam@northwind.io', 'Draft "Pricing test"', '08:52'], ['log-in', 'auth.sso_login', 'workspace: Acme Corp', 'SAML · 14 seats', '08:40']]
+    return R.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: 28 } },
+      this._healthStrip(R),
+      R.createElement('section', null, this._sechead(R, 'Platform overview'),
+        R.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 14 } }, stats.map(([l, v, t]) => R.createElement(StatCard, { key: l, label: l, value: v, tone: t })))),
+      R.createElement('section', null, this._sechead(R, 'Live · last 5 min'),
+        R.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 } },
+          R.createElement(MetricCard, { label: 'Active sessions', value: 42 }),
+          R.createElement(MetricCard, { label: 'Participants', value: '1,284', trend: { value: 8.6, direction: 'up' } }),
+          R.createElement(MetricCard, { label: 'Revenue 24h', value: '€612', trend: { value: 3.2, direction: 'up' } }),
+          R.createElement(MetricCard, { label: 'P95 latency', value: '183ms', trend: { value: 4, direction: 'down', inverted: true } }),
+          R.createElement(MetricCard, { label: 'Error rate', value: '0.4%' }))),
+      R.createElement('section', null, this._sechead(R, 'P95 latency trend'),
+        R.createElement('p', { style: { fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' } }, '23 Jun – 30 Jun 2026'),
+        R.createElement(Card, null, this._sparkline(R))),
+      R.createElement('section', null,
+        R.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14, flexWrap: 'wrap', gap: 10 } },
+          this._sechead(R, 'Historical data'),
+          R.createElement('div', { style: { display: 'flex', gap: 8, alignItems: 'center' } },
+            R.createElement('input', { type: 'date', defaultValue: '2026-06-23', style: { fontSize: 13, border: '1px solid var(--surface-border-strong)', borderRadius: 8, padding: '7px 10px', background: 'var(--surface-card)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' } }),
+            R.createElement('input', { type: 'date', defaultValue: '2026-06-30', style: { fontSize: 13, border: '1px solid var(--surface-border-strong)', borderRadius: 8, padding: '7px 10px', background: 'var(--surface-card)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' } }),
+            R.createElement(Button, { size: 'sm', variant: 'secondary' }, 'Apply'),
+            R.createElement(Button, { size: 'sm', variant: 'secondary', iconLeft: this._icon(R, 'download', 13) }, 'Export CSV'))),
+        R.createElement(Card, { style: { padding: 0, overflow: 'hidden' } },
+          R.createElement('table', { style: { width: '100%', fontSize: 13, borderCollapse: 'collapse' } },
+            R.createElement('thead', null, R.createElement('tr', { style: { background: 'var(--pulse-50)', borderBottom: '1px solid var(--surface-border)' } },
+              ['Timestamp', 'Route', 'p50', 'p95', 'p99', 'Error %', 'Requests'].map((h, i) => R.createElement('th', { key: h, style: { textAlign: i < 2 ? 'left' : 'right', padding: '10px 14px', fontWeight: 600, color: 'var(--text-secondary)', fontSize: 12 } }, h)))),
+            R.createElement('tbody', null, hist.map((r, i) => R.createElement('tr', { key: i, style: { borderTop: i ? '1px solid var(--surface-border)' : 'none' } },
+              R.createElement('td', { style: { padding: '10px 14px', color: 'var(--text-secondary)' } }, r[0]),
+              R.createElement('td', { style: { padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' } }, r[1]),
+              R.createElement('td', { style: { padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, r[2] + 'ms'),
+              R.createElement('td', { style: { padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: r[3] > 400 ? 'var(--signal-error)' : 'inherit' } }, r[3] + 'ms'),
+              R.createElement('td', { style: { padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, r[4] + 'ms'),
+              R.createElement('td', { style: { padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' } }, r[5] + '%'),
+              R.createElement('td', { style: { padding: '10px 14px', textAlign: 'right', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' } }, r[6])))))) ),
+      R.createElement('section', null, this._sechead(R, 'Audit log'),
+        R.createElement(Card, { style: { padding: 0, overflow: 'hidden' } }, audit.map((r, i) => R.createElement('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderTop: i ? '1px solid var(--surface-border)' : 'none' } },
+          R.createElement('span', { style: { width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pulse-100)', color: 'var(--text-secondary)' } }, this._icon(R, r[0], 15)),
+          R.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12.5, fontWeight: 600, color: 'var(--teal-700)', minWidth: 150 } }, r[1]),
+          R.createElement('span', { style: { fontSize: 13, color: 'var(--text-secondary)', minWidth: 160 } }, r[2]),
+          R.createElement('span', { style: { flex: 1, fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, r[3]),
+          R.createElement('span', { style: { fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' } }, r[4])))))
+    )
+  }
+
+  _healthStrip(R) {
+    return R.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: 'var(--radius-lg)', border: '1px solid #BBF7D0', background: '#F0FDF4', padding: '12px 18px', flexWrap: 'wrap' } },
+      R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
+        R.createElement('span', { style: { width: 9, height: 9, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px #22C55E' } }),
+        R.createElement('span', { style: { fontSize: 14, fontWeight: 600, color: '#15803D' } }, 'All systems operational'),
+        R.createElement('span', { style: { fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' } }, 'updated 09:42')),
+      R.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 14 } },
+        R.createElement('span', { style: { fontSize: 12, fontWeight: 600, color: 'var(--teal-700)' } }, 'SEV3: 1'),
+        R.createElement('a', { href: '#', style: { fontSize: 12, fontWeight: 500, color: 'var(--violet-700)', textDecoration: 'none' } }, 'View ops')))
+  }
+
+  _sparkline(R) {
+    const pts = [120, 138, 131, 156, 149, 172, 165, 158, 181, 174, 169, 192, 186, 178, 203, 188, 176, 169, 158, 183]
+    const W = 980, H = 150, PL = 40, PR = 12, PT = 14, PB = 26, cw = W - PL - PR, ch = H - PT - PB
+    const max = Math.max.apply(null, pts), min = Math.min.apply(null, pts), range = max - min || 1
+    const x = (i) => PL + (i / (pts.length - 1)) * cw, y = (v) => PT + ch - ((v - min) / range) * ch
+    const line = pts.map((p, i) => (i ? 'L' : 'M') + ' ' + x(i).toFixed(1) + ' ' + y(p).toFixed(1)).join(' ')
+    const area = line + ' L ' + x(pts.length - 1).toFixed(1) + ' ' + (PT + ch).toFixed(1) + ' L ' + x(0).toFixed(1) + ' ' + (PT + ch).toFixed(1) + ' Z'
+    const last = pts[pts.length - 1]
+    return R.createElement('svg', { viewBox: '0 0 ' + W + ' ' + H, style: { width: '100%' }, 'aria-label': 'P95 latency trend' },
+      R.createElement('defs', null, R.createElement('linearGradient', { id: 'latg', x1: '0', y1: '0', x2: '0', y2: '1' },
+        R.createElement('stop', { offset: '0%', stopColor: '#14b8a6', stopOpacity: '0.22' }),
+        R.createElement('stop', { offset: '100%', stopColor: '#14b8a6', stopOpacity: '0' }))),
+      R.createElement('path', { d: area, fill: 'url(#latg)' }),
+      R.createElement('path', { d: line, fill: 'none', stroke: '#14b8a6', strokeWidth: '1.6', strokeLinejoin: 'round' }),
+      R.createElement('circle', { cx: x(pts.length - 1), cy: y(last), r: '3.5', fill: '#14b8a6' }),
+      R.createElement('text', { x: x(pts.length - 1) - 6, y: y(last) - 8, textAnchor: 'end', fontSize: '11', fill: '#0F766E', fontWeight: '600' }, last + 'ms'),
+      R.createElement('text', { x: PL - 5, y: PT + 5, textAnchor: 'end', fontSize: '10', fill: 'var(--text-muted)' }, max + 'ms'),
+      R.createElement('text', { x: PL - 5, y: PT + ch, textAnchor: 'end', fontSize: '10', fill: 'var(--text-muted)' }, min + 'ms'),
+      R.createElement('text', { x: PL, y: H - 6, fontSize: '10', fill: 'var(--text-muted)' }, 'Jun 23'),
+      R.createElement('text', { x: W - PR, y: H - 6, textAnchor: 'end', fontSize: '10', fill: 'var(--text-muted)' }, 'Jun 30'))
+  }
+
+  _users(R, NS) {
+    const { Card, Badge, Button } = NS
+    const users = [['Ana Ruiz', 'ana@qesto.cc', 'Platform admin', 'Active', 'AR'], ['Lee Chen', 'lee@acme.co', 'Facilitator', 'Active', 'LC'], ['Sam Okafor', 'sam@northwind.io', 'Facilitator', 'Active', 'SO'], ['Priya N.', 'priya@acme.co', 'Viewer', 'Invited', 'PN'], ['Workspace: Globex', '— SSO (SAML)', 'Org · 64 seats', 'Active', 'GX']]
+    return R.createElement('section', null,
+      R.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 } }, this._sechead(R, 'Users & workspaces'), R.createElement(Button, { size: 'sm', iconLeft: this._icon(R, 'user-plus', 14) }, 'Invite')),
+      R.createElement(Card, { style: { padding: 0, overflow: 'hidden' } }, users.map((u, i) => R.createElement('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderTop: i ? '1px solid var(--surface-border)' : 'none' } },
+        R.createElement('span', { style: { width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: 'var(--gradient-brand)', color: '#fff', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, u[4]),
+        R.createElement('div', { style: { flex: 1, minWidth: 0 } }, R.createElement('div', { style: { fontSize: 14, fontWeight: 600 } }, u[0]), R.createElement('div', { style: { fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' } }, u[1])),
+        R.createElement(Badge, { variant: 'neutral' }, u[2]),
+        R.createElement(Badge, { variant: u[3] === 'Active' ? 'success' : 'warning' }, u[3]),
+        this._icon(R, 'more-horizontal', 18, 'var(--text-muted)')))))
+  }
+
+  _placeholder(R, NS) {
+    const { Card } = NS
+    const map = { observability: ['radar', 'Observability', 'Per-route traces, error budgets, and request waterfalls across the edge.'], ops: ['activity', 'Ops control', 'Incident timeline, SEV severity board, WAF rule status, and runbook actions.'], analytics: ['bar-chart-3', 'Advanced analytics', 'Cohort retention, session funnels, AI-cost breakdowns, and revenue trends.'] }
+    const [ic, title, body] = map[this.state.tab]
+    return R.createElement(Card, { style: { padding: '48px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 } },
+      R.createElement('span', { style: { width: 56, height: 56, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--teal-50)', color: 'var(--teal-700)' } }, this._icon(R, ic, 26)),
+      R.createElement('div', { style: { fontSize: 18, fontWeight: 600 } }, title),
+      R.createElement('p', { style: { fontSize: 14, color: 'var(--text-secondary)', margin: 0, maxWidth: 420, lineHeight: 1.5 } }, body))
+  }
+}
+</script>
+</body>
+</html>

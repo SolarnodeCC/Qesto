@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qesto — Pricing</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-bg); font-family: var(--font-body); color: var(--text-primary); }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { Button, Badge, Eyebrow, AIBadge } = window.QestoDesignSystem_10c0a6
+const { useState, useEffect } = React
+
+function Icon({ name, size = 18, color, style }) {
+  return <i data-lucide={name} width={size} height={size} style={{ display:'inline-flex', color: color||'currentColor', ...style }} />
+}
+
+function Nav() {
+  return (
+    <header style={{ height:64, borderBottom:'1px solid var(--surface-border)', position:'sticky', top:0, background:'rgba(255,255,255,0.85)', backdropFilter:'blur(12px)', zIndex:50 }}>
+      <div className="wrap" style={{ height:'100%', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <a href="#" style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <img src="../../assets/qesto-mark.svg" width="30" height="30" alt="" />
+          <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:22, letterSpacing:'-0.02em' }}>Qesto</span>
+        </a>
+        <nav style={{ display:'flex', gap:30 }}>
+          {['Product','Pricing','Solutions','Features'].map((l,i)=>(
+            <a key={l} href="#" style={{ fontSize:15, fontWeight:i===1?600:400, color:i===1?'var(--text-primary)':'var(--text-secondary)' }}>{l}</a>
+          ))}
+        </nav>
+        <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+          <a href="#" style={{ fontSize:14, fontWeight:500, color:'var(--teal-700)' }}>Sign in</a>
+          <Button size="md">Start free</Button>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+const PLANS = [
+  { name:'Free', price:'$0', unit:'forever', blurb:'For one-off sessions and trying Qesto with a room.', cta:'Start free', variant:'secondary', feats:['Up to 40 participants','3 question kinds','Live results','1 saved session'] },
+  { name:'Pro', price:'$24', unit:'per host / month', blurb:'For facilitators who run sessions every week.', cta:'Start 14-day trial', variant:'primary', featured:true, feats:['Up to 500 participants','All 10 question kinds','AI recaps & theme clusters','Unlimited saved sessions','Consent log export','Custom branding'] },
+  { name:'Team', price:'Custom', unit:'talk to us', blurb:'For orgs that need SSO, roles, and a signed audit trail.', cta:'Book a walkthrough', variant:'secondary', feats:['Everything in Pro','SSO & SCIM','Workspace roles','Audit & retention controls','Priority support','SLA'] },
+]
+
+function Hero() {
+  const [annual, setAnnual] = useState(true)
+  return (
+    <section style={{ padding:'72px 0 48px', textAlign:'center' }}>
+      <div className="wrap">
+        <Eyebrow>Pricing</Eyebrow>
+        <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:52, lineHeight:1.08, letterSpacing:'-0.02em', margin:'12px 0 16px', textWrap:'balance' }}>
+          Start free. Upgrade when the room grows.
+        </h1>
+        <p style={{ fontSize:19, color:'var(--text-secondary)', maxWidth:560, margin:'0 auto 28px' }}>
+          No card to start. Participants never pay, and never need an account to take part.
+        </p>
+        <div style={{ display:'inline-flex', alignItems:'center', gap:4, padding:4, borderRadius:999, background:'var(--pulse-100)' }}>
+          {['Monthly','Annual −20%'].map((l,i)=>(
+            <button key={l} onClick={()=>setAnnual(i===1)} style={{
+              padding:'8px 18px', borderRadius:999, border:'none', cursor:'pointer', fontFamily:'var(--font-body)', fontSize:14, fontWeight:600,
+              background: (annual===(i===1))?'var(--surface-card)':'transparent', color:(annual===(i===1))?'var(--text-primary)':'var(--text-muted)',
+              boxShadow:(annual===(i===1))?'var(--shadow-card)':'none',
+            }}>{l}</button>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Plans() {
+  return (
+    <section style={{ paddingBottom:72 }}>
+      <div className="wrap" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20, alignItems:'start' }}>
+        {PLANS.map(p=>(
+          <div key={p.name} style={{
+            background:'var(--surface-card)', borderRadius:20, padding:32, display:'flex', flexDirection:'column', gap:18,
+            border: p.featured?'2px solid var(--teal-500)':'1px solid var(--surface-border)',
+            boxShadow: p.featured?'var(--shadow-elevated)':'var(--shadow-card)',
+            position:'relative', transform: p.featured?'translateY(-8px)':'none',
+          }}>
+            {p.featured && <div style={{ position:'absolute', top:-13, left:32 }}><Badge variant="primary">Most popular</Badge></div>}
+            <div>
+              <div style={{ fontSize:15, fontWeight:600, color: p.featured?'var(--teal-700)':'var(--text-secondary)' }}>{p.name}</div>
+              <div style={{ display:'flex', alignItems:'baseline', gap:8, marginTop:8 }}>
+                <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:44, letterSpacing:'-0.02em' }}>{p.price}</span>
+                <span style={{ fontSize:14, color:'var(--text-muted)' }}>{p.unit}</span>
+              </div>
+              <p style={{ fontSize:14, color:'var(--text-secondary)', lineHeight:1.5, margin:'10px 0 0' }}>{p.blurb}</p>
+            </div>
+            <Button variant={p.variant} size="lg" style={{ width:'100%' }}>{p.cta}</Button>
+            <div style={{ display:'flex', flexDirection:'column', gap:11, paddingTop:6, borderTop:'1px solid var(--surface-border)' }}>
+              {p.feats.map(f=>(
+                <div key={f} style={{ display:'flex', alignItems:'flex-start', gap:10, fontSize:14, color:'var(--text-primary)' }}>
+                  <Icon name="check" size={17} color="var(--teal-600)" style={{ marginTop:1, flexShrink:0 }} />{f}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+const ROWS = [
+  ['Participants per session','40','500','Unlimited'],
+  ['Question kinds','3','All 10','All 10'],
+  ['Live results','y','y','y'],
+  ['AI recaps & theme clusters','n','ai','ai'],
+  ['Consent log export','n','y','y'],
+  ['Custom branding','n','y','y'],
+  ['SSO & SCIM','n','n','y'],
+  ['Audit & retention controls','n','n','y'],
+  ['Support','Community','Priority','Priority + SLA'],
+]
+function Cell({ v }) {
+  if (v==='y') return <Icon name="check" size={18} color="var(--teal-600)" />
+  if (v==='ai') return <span style={{ display:'inline-flex' }}><AIBadge variant="assisted" label="AI" /></span>
+  if (v==='n') return <Icon name="minus" size={18} color="var(--pulse-300)" />
+  return <span style={{ fontSize:14, color:'var(--text-secondary)' }}>{v}</span>
+}
+
+function Compare() {
+  return (
+    <section style={{ background:'var(--surface-bg-subtle)', padding:'72px 0' }}>
+      <div className="wrap">
+        <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:34, letterSpacing:'-0.02em', margin:'0 0 28px', textAlign:'center' }}>Compare plans</h2>
+        <div style={{ background:'var(--surface-card)', borderRadius:16, border:'1px solid var(--surface-border)', overflow:'hidden' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr', padding:'16px 24px', borderBottom:'1px solid var(--surface-border)', background:'var(--pulse-50)' }}>
+            <span style={{ fontSize:13, fontWeight:600, color:'var(--text-muted)' }}>Feature</span>
+            {['Free','Pro','Team'].map(h=><span key={h} style={{ fontSize:14, fontWeight:600, textAlign:'center' }}>{h}</span>)}
+          </div>
+          {ROWS.map((r,i)=>(
+            <div key={r[0]} style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr', alignItems:'center', padding:'14px 24px', borderTop: i?'1px solid var(--surface-border)':'none' }}>
+              <span style={{ fontSize:14, color:'var(--text-primary)' }}>{r[0]}</span>
+              {[1,2,3].map(c=><span key={c} style={{ display:'flex', justifyContent:'center' }}><Cell v={r[c]} /></span>)}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function App() {
+  useEffect(()=>{ const t=setTimeout(()=>window.lucide&&window.lucide.createIcons(),0); return ()=>clearTimeout(t) })
+  return <div><Nav /><Hero /><Plans /><Compare /></div>
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+</script>
+</body>
+</html>

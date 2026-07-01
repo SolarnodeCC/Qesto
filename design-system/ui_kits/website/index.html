@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qesto — Marketing</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-bg); font-family: var(--font-body); color: var(--text-primary); }
+  a { color: inherit; text-decoration: none; }
+  .icon { width: 1em; height: 1em; stroke-width: 2; vertical-align: -0.125em; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { Button, AIBadge, Eyebrow } = window.QestoDesignSystem_10c0a6
+const { useState, useEffect, useRef } = React
+
+function Icon({ name, size = 18, color, style }) {
+  return <i data-lucide={name} width={size} height={size} style={{ display:'inline-flex', color: color||'currentColor', ...style }} />
+}
+
+function Nav() {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 8)
+    window.addEventListener('scroll', h); return () => window.removeEventListener('scroll', h)
+  }, [])
+  const links = ['Product', 'Pricing', 'Solutions', 'Features']
+  return (
+    <header style={{
+      position: 'sticky', top: 0, zIndex: 50, height: 64,
+      background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)',
+      borderBottom: scrolled ? '1px solid var(--surface-border)' : '1px solid transparent',
+      transition: 'border-color var(--motion-normal) var(--ease-standard)',
+    }}>
+      <div className="wrap" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="../../assets/qesto-mark.svg" width="30" height="30" alt="" />
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, letterSpacing: '-0.02em' }}>Qesto</span>
+        </a>
+        <nav style={{ display: 'flex', gap: 30 }}>
+          {links.map((l, i) => (
+            <a key={l} href="#" style={{ fontSize: 15, fontWeight: i===0?600:400, color: i===0?'var(--text-primary)':'var(--text-secondary)' }}>{l}</a>
+          ))}
+        </nav>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <a href="#" style={{ fontSize: 14, fontWeight: 500, color: 'var(--teal-700)' }}>Sign in</a>
+          <Button size="md">Start free</Button>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+const OPTIONS = [
+  { label: 'Ship onboarding redesign', target: 142 },
+  { label: 'Cut checkout drop-off', target: 96 },
+  { label: 'Pay down API debt', target: 48 },
+]
+const TOTAL = OPTIONS.reduce((s,o)=>s+o.target,0)
+
+function HeroPreview() {
+  const [counts, setCounts] = useState(OPTIONS.map(()=>0))
+  useEffect(() => {
+    let hold
+    const iv = setInterval(() => {
+      setCounts(prev => {
+        const next = prev.map((c,i)=> c>=OPTIONS[i].target ? OPTIONS[i].target : Math.min(c + Math.ceil(OPTIONS[i].target/6) + Math.floor(Math.random()*8), OPTIONS[i].target))
+        if (next.every((c,i)=>c>=OPTIONS[i].target)) hold = setTimeout(()=>setCounts(OPTIONS.map(()=>0)), 2400)
+        return next
+      })
+    }, 650)
+    return () => { clearInterval(iv); clearTimeout(hold) }
+  }, [])
+  const total = counts.reduce((s,c)=>s+c,0)
+  return (
+    <div style={{
+      width: '100%', maxWidth: 520, marginLeft: 'auto', borderRadius: 24, padding: 28, color: '#fff',
+      background: '#0A0F1E', boxShadow: 'var(--shadow-elevated)', position: 'relative', overflow: 'hidden',
+      display: 'grid', gridTemplateRows: 'auto 1fr auto', gap: 18, aspectRatio: '16/11',
+    }}>
+      <div style={{ position:'absolute', inset:0, background:'radial-gradient(circle at 75% 12%, rgba(20,184,166,0.22), transparent 60%)', pointerEvents:'none' }} />
+      <div style={{ position:'relative', display:'flex', justifyContent:'space-between', alignItems:'center', fontSize:11, letterSpacing:'0.12em', textTransform:'uppercase', color:'rgba(255,255,255,0.6)' }}>
+        <span style={{ fontFamily:'var(--font-mono)' }}>qesto · room QSTO-7K2</span>
+        <span style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:8, height:8, borderRadius:'50%', background:'#4ade80', boxShadow:'0 0 8px #4ade80' }} />
+          <span style={{ fontFamily:'var(--font-mono)', fontVariantNumeric:'tabular-nums' }}>Live · {total} responses</span>
+        </span>
+      </div>
+      <div style={{ position:'relative', fontFamily:'var(--font-display)', fontWeight:700, fontSize:24, lineHeight:1.15, letterSpacing:'-0.01em', alignSelf:'center' }}>
+        Which sprint goal should we commit to first?
+      </div>
+      <div style={{ position:'relative', display:'grid', gap:12 }}>
+        {OPTIONS.map((o,i) => {
+          const pct = total===0?0:Math.round(counts[i]/total*100)
+          const w = Math.round(counts[i]/TOTAL*100)
+          return (
+            <div key={o.label} style={{ display:'flex', alignItems:'center', gap:12, fontSize:14 }}>
+              <span style={{ width:160, flexShrink:0, color:'rgba(255,255,255,0.85)', fontWeight:500, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{o.label}</span>
+              <div style={{ flex:1, height:14, background:'rgba(255,255,255,0.1)', borderRadius:999, overflow:'hidden' }}>
+                <div style={{ height:'100%', width:`${w}%`, borderRadius:999, background:'var(--gradient-brand)', transition:'width 500ms var(--ease-standard)' }} />
+              </div>
+              <span style={{ width:40, textAlign:'right', color:'rgba(255,255,255,0.85)', fontFamily:'var(--font-mono)', fontVariantNumeric:'tabular-nums' }}>{pct}%</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+const STRIP = [
+  ['sparkles','Question ideas in under 90 seconds'],
+  ['bar-chart-3','Live results everyone can see'],
+  ['lock','Anonymous, cohort, or identified'],
+  ['cloud','Responses stay private, always'],
+]
+
+function Hero() {
+  return (
+    <section style={{ position:'relative', overflow:'hidden', padding:'96px 0' }}>
+      <div style={{ position:'absolute', left:'50%', top:-120, transform:'translateX(-50%)', width:1200, height:600, background:'radial-gradient(circle, rgba(20,184,166,0.08) 0%, transparent 60%)', pointerEvents:'none' }} />
+      <div className="wrap" style={{ position:'relative', display:'grid', gridTemplateColumns:'1fr 1fr', gap:64, alignItems:'center' }}>
+        <div>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:24 }}>
+            <AIBadge variant="assisted" label="AI-assisted" />
+            <span style={{ fontSize:14, color:'var(--text-muted)' }}>Workers AI on the edge — no third-party models</span>
+          </div>
+          <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:60, lineHeight:1.05, letterSpacing:'-0.02em', margin:'0 0 20px', textWrap:'balance' }}>
+            Feel the pulse of the room,{' '}
+            <span className="text-gradient-brand">amplified by AI.</span>
+          </h1>
+          <p style={{ fontSize:20, lineHeight:1.55, color:'var(--text-secondary)', maxWidth:560, margin:'0 0 32px' }}>
+            Make it easy for everyone to take part, share what they think, and stay with you start to finish. For teachers, trainers, facilitators, and team leaders.
+          </p>
+          <div style={{ display:'flex', flexWrap:'wrap', alignItems:'center', gap:12, marginBottom:48 }}>
+            <Button size="lg">Launch your next session</Button>
+            <Button size="lg" variant="secondary">Browse templates</Button>
+            <span style={{ fontSize:13, color:'var(--text-muted)', marginLeft:4 }}>No card required · 2-minute setup</span>
+          </div>
+          <div style={{ display:'flex', flexWrap:'wrap', gap:'18px 28px', paddingTop:20, borderTop:'1px solid var(--surface-border)' }}>
+            {STRIP.map(([ic,label]) => (
+              <div key={label} style={{ display:'flex', alignItems:'center', gap:10, fontSize:14, color:'var(--text-secondary)' }}>
+                <Icon name={ic} size={16} color="var(--teal-700)" />{label}
+              </div>
+            ))}
+          </div>
+        </div>
+        <HeroPreview />
+      </div>
+    </section>
+  )
+}
+
+const CARDS = [
+  ['bar-chart-3','Live polling & ranking','Multi-choice, ranked Q&A, wordclouds, and 1–10 scales. Results refresh in <200ms on the edge.', false],
+  ['check-circle-2','Consent rounds','A single-tap consent vote before any recap is generated — and a signed log for compliance review.', false],
+  ['sparkles','Same-day recap','AI-assisted theme drafts help you turn real responses into a reviewed same-day recap.', true],
+  ['users','Anonymity modes','Full, cohort (roles only), or identified. Choose per session — participants see the mode on entry.', false],
+  ['qr-code','Enter in one tap','Short entry codes, QR, or magic link. Works on any device — no app, no account to participate.', false],
+  ['lock','Private by design','Responses never leave your session. No third-party AI, no data sold, no training on what your room shared.', false],
+]
+
+function Features() {
+  return (
+    <section style={{ background:'var(--surface-bg-subtle)', padding:'96px 0' }}>
+      <div className="wrap">
+        <Eyebrow>Facilitator-first</Eyebrow>
+        <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:48, lineHeight:1.1, letterSpacing:'-0.02em', margin:'12px 0 16px', maxWidth:680, textWrap:'balance' }}>
+          Everything you need to run the room — and prove what it decided.
+        </h2>
+        <p style={{ fontSize:18, color:'var(--text-secondary)', maxWidth:620, margin:'0 0 48px' }}>
+          Ask a question. See what your room is thinking. Give people a safe way to contribute honestly — and leave with a clear record of what was said.
+        </p>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24 }}>
+          {CARDS.map(([ic,title,desc,ai]) => (
+            <div key={title} style={{ background:'var(--surface-card)', borderRadius:16, boxShadow:'var(--shadow-card)', padding:28, display:'flex', flexDirection:'column', gap:12 }}>
+              <div style={{ width:44, height:44, borderRadius:12, display:'flex', alignItems:'center', justifyContent:'center', background: ai?'var(--violet-50)':'var(--teal-50)', color: ai?'var(--violet-700)':'var(--teal-700)' }}>
+                <Icon name={ic} size={20} />
+              </div>
+              <h3 style={{ fontSize:20, fontWeight:600, margin:0 }}>{title}</h3>
+              <p style={{ fontSize:15, lineHeight:1.55, color:'var(--text-secondary)', margin:0 }}>{desc}</p>
+              {ai && <div style={{ marginTop:2 }}><AIBadge variant="assisted" /></div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function CTABand() {
+  return (
+    <section style={{ padding:'96px 24px' }}>
+      <div style={{ maxWidth:1120, margin:'0 auto', background:'var(--pulse-900)', borderRadius:32, padding:'64px 48px', textAlign:'center' }}>
+        <h2 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:42, lineHeight:1.1, letterSpacing:'-0.02em', color:'#fff', margin:'0 0 16px', textWrap:'balance' }}>
+          Launch your first poll in two minutes.
+        </h2>
+        <p style={{ fontSize:18, color:'rgba(255,255,255,0.7)', maxWidth:520, margin:'0 auto 32px' }}>
+          No account required to participate. Start free, no card needed.
+        </p>
+        <div style={{ display:'flex', justifyContent:'center', gap:12 }}>
+          <Button size="lg">Start free</Button>
+          <Button size="lg" variant="secondary" style={{ background:'transparent', color:'#fff', borderColor:'rgba(255,255,255,0.3)' }}>Book a walkthrough</Button>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Footer() {
+  const cols = [
+    ['Product', ['Live polling','AI insights','Privacy','Pricing']],
+    ['Solutions', ['HR pulse','Events','Nonprofits','Consulting']],
+    ['Company', ['About','Blog','Careers','Contact']],
+    ['Legal', ['Privacy policy','Terms','Security','GDPR']],
+  ]
+  return (
+    <footer style={{ background:'var(--pulse-900)', color:'#fff', padding:'64px 0 40px' }}>
+      <div className="wrap" style={{ display:'grid', gridTemplateColumns:'1.5fr repeat(4,1fr)', gap:32 }}>
+        <div>
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:14 }}>
+            <img src="../../assets/qesto-mark.svg" width="28" height="28" alt="" />
+            <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:20, color:'#fff' }}>Qesto</span>
+          </div>
+          <p style={{ fontSize:13, color:'rgba(255,255,255,0.6)', maxWidth:220, lineHeight:1.5 }}>Your pulse to your public. Real-time sessions with evidence-anchored AI recaps.</p>
+        </div>
+        {cols.map(([h,items]) => (
+          <div key={h}>
+            <div style={{ fontSize:13, fontWeight:600, marginBottom:14, color:'rgba(255,255,255,0.9)' }}>{h}</div>
+            {items.map(it => <a key={it} href="#" style={{ display:'block', fontSize:13, color:'rgba(255,255,255,0.6)', padding:'5px 0' }}>{it}</a>)}
+          </div>
+        ))}
+      </div>
+    </footer>
+  )
+}
+
+function App() {
+  useEffect(() => { const t = setTimeout(() => window.lucide && window.lucide.createIcons(), 0); return () => clearTimeout(t) }, [])
+  return <div><Nav /><Hero /><Features /><CTABand /><Footer /></div>
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+</script>
+</body>
+</html>

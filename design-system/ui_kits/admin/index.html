@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qesto — Platform admin</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-bg-subtle); font-family: var(--font-body); color: var(--text-primary); }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
+  .sechead { font-size: var(--fs-heading-s); font-weight: 600; border-left: 4px solid var(--teal-500); padding-left: 12px; margin: 0 0 16px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const NS = window.QestoDesignSystem_10c0a6 || {}
+const { Card, MetricCard, StatCard, Button, Badge, AIBadge } = NS
+const { useState, useEffect } = React
+
+function Icon({ name, size = 16, color, style }) {
+  return <i data-lucide={name} width={size} height={size} style={{ display: 'inline-flex', color: color || 'currentColor', ...style }} />
+}
+
+const TABS = [
+  ['dashboard', 'Dashboard', 'layout-dashboard'],
+  ['observability', 'Observability', 'radar'],
+  ['users', 'Users', 'users'],
+  ['ops', 'Ops', 'activity'],
+  ['analytics', 'Analytics', 'bar-chart-3'],
+]
+
+function HealthStrip() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderRadius: 'var(--radius-lg)', border: '1px solid #BBF7D0', background: '#F0FDF4', padding: '12px 18px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#22C55E', boxShadow: '0 0 8px #22C55E' }} />
+        <span style={{ fontSize: 14, fontWeight: 600, color: '#15803D' }}>All systems operational</span>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>updated 09:42</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--teal-700)' }}>SEV3: 1</span>
+        <a href="#" style={{ fontSize: 12, fontWeight: 500, color: 'var(--violet-700)', textDecoration: 'none' }}>View ops</a>
+      </div>
+    </div>
+  )
+}
+
+// Synthetic P95 latency series → area + line sparkline (mirrors the real LatencySparkline)
+function LatencySparkline() {
+  const pts = [120, 138, 131, 156, 149, 172, 165, 158, 181, 174, 169, 192, 186, 178, 203, 188, 176, 169, 158, 183]
+  const W = 980, H = 150, PL = 40, PR = 12, PT = 14, PB = 26
+  const cw = W - PL - PR, ch = H - PT - PB
+  const max = Math.max(...pts), min = Math.min(...pts), range = max - min || 1
+  const x = (i) => PL + (i / (pts.length - 1)) * cw
+  const y = (v) => PT + ch - ((v - min) / range) * ch
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'} ${x(i).toFixed(1)} ${y(p).toFixed(1)}`).join(' ')
+  const area = `${line} L ${x(pts.length - 1).toFixed(1)} ${(PT + ch).toFixed(1)} L ${x(0).toFixed(1)} ${(PT + ch).toFixed(1)} Z`
+  const last = pts[pts.length - 1]
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%' }} aria-label="P95 latency trend">
+      <defs>
+        <linearGradient id="latg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#14b8a6" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#14b8a6" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={area} fill="url(#latg)" />
+      <path d={line} fill="none" stroke="#14b8a6" strokeWidth="1.6" strokeLinejoin="round" />
+      <circle cx={x(pts.length - 1)} cy={y(last)} r="3.5" fill="#14b8a6" />
+      <text x={x(pts.length - 1) - 6} y={y(last) - 8} textAnchor="end" fontSize="11" fill="#0F766E" fontWeight="600">{last}ms</text>
+      <text x={PL - 5} y={PT + 5} textAnchor="end" fontSize="10" fill="var(--text-muted)">{max}ms</text>
+      <text x={PL - 5} y={PT + ch} textAnchor="end" fontSize="10" fill="var(--text-muted)">{min}ms</text>
+      <text x={PL} y={H - 6} fontSize="10" fill="var(--text-muted)">Jun 23</text>
+      <text x={W - PR} y={H - 6} textAnchor="end" fontSize="10" fill="var(--text-muted)">Jun 30</text>
+    </svg>
+  )
+}
+
+const HIST = [
+  ['Jun 30, 09:40', '(all)', 92, 183, 241, '0.4', 12840],
+  ['Jun 30, 09:35', '/api/sessions', 88, 176, 230, '0.3', 9210],
+  ['Jun 30, 09:30', '/api/vote', 64, 142, 198, '0.2', 21330],
+  ['Jun 30, 09:25', '/api/recap', 210, 480, 612, '1.1', 1840],
+  ['Jun 30, 09:20', '(all)', 96, 188, 248, '0.5', 11920],
+]
+
+function DashboardTab() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      <HealthStrip />
+
+      <section>
+        <h2 className="sechead">Platform overview</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 14 }}>
+          <StatCard label="Live sessions" value={42} tone="teal" />
+          <StatCard label="Total users" value="12.4k" tone="violet" />
+          <StatCard label="Sessions today" value={318} tone="success" />
+          <StatCard label="This month" value="7,204" tone="info" />
+          <StatCard label="Total sessions" value="184k" tone="warning" />
+          <StatCard label="Est. AI cost" value="€38.20" tone="teal" />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="sechead">Live · last 5 min</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }}>
+          <MetricCard label="Active sessions" value={42} />
+          <MetricCard label="Participants" value="1,284" trend={{ value: 8.6, direction: 'up' }} />
+          <MetricCard label="Revenue 24h" value="€612" trend={{ value: 3.2, direction: 'up' }} />
+          <MetricCard label="P95 latency" value="183ms" trend={{ value: 4, direction: 'down', inverted: true }} />
+          <MetricCard label="Error rate" value="0.4%" />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="sechead">P95 latency trend</h2>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' }}>23 Jun – 30 Jun 2026</p>
+        <Card><LatencySparkline /></Card>
+      </section>
+
+      <section>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+          <h2 className="sechead" style={{ margin: 0 }}>Historical data</h2>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input type="date" defaultValue="2026-06-23" style={{ fontSize: 13, border: '1px solid var(--surface-border-strong)', borderRadius: 8, padding: '7px 10px', background: 'var(--surface-card)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }} />
+            <input type="date" defaultValue="2026-06-30" style={{ fontSize: 13, border: '1px solid var(--surface-border-strong)', borderRadius: 8, padding: '7px 10px', background: 'var(--surface-card)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }} />
+            <Button size="sm" variant="secondary">Apply</Button>
+            <Button size="sm" variant="secondary" iconLeft={<Icon name="download" size={13} />}>Export CSV</Button>
+          </div>
+        </div>
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: 'var(--pulse-50)', borderBottom: '1px solid var(--surface-border)' }}>
+                {['Timestamp', 'Route', 'p50', 'p95', 'p99', 'Error %', 'Requests'].map((h, i) => (
+                  <th key={h} style={{ textAlign: i < 2 ? 'left' : 'right', padding: '10px 14px', fontWeight: 600, color: 'var(--text-secondary)', fontSize: 12 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {HIST.map((r, i) => (
+                <tr key={i} style={{ borderTop: i ? '1px solid var(--surface-border)' : 'none' }}>
+                  <td style={{ padding: '10px 14px', color: 'var(--text-secondary)' }}>{r[0]}</td>
+                  <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>{r[1]}</td>
+                  <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r[2]}ms</td>
+                  <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: r[3] > 400 ? 'var(--signal-error)' : 'inherit' }}>{r[3]}ms</td>
+                  <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r[4]}ms</td>
+                  <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{r[5]}%</td>
+                  <td style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{r[6].toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      </section>
+
+      <section>
+        <h2 className="sechead">Audit log</h2>
+        <Card style={{ padding: 0, overflow: 'hidden' }}>
+          {[
+            ['shield', 'consent.exported', 'ana@qesto.cc', 'Session QSTO-7K2 · 212 responses', '09:41'],
+            ['user-cog', 'role.granted', 'admin@qesto.cc', 'Granted facilitator to lee@acme.co', '09:18'],
+            ['trash-2', 'session.deleted', 'sam@northwind.io', 'Draft "Pricing test"', '08:52'],
+            ['log-in', 'auth.sso_login', 'workspace: Acme Corp', 'SAML · 14 seats', '08:40'],
+          ].map((r, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px', borderTop: i ? '1px solid var(--surface-border)' : 'none' }}>
+              <span style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pulse-100)', color: 'var(--text-secondary)' }}><Icon name={r[0]} size={15} /></span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5, fontWeight: 600, color: 'var(--teal-700)', minWidth: 150 }}>{r[1]}</span>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)', minWidth: 160 }}>{r[2]}</span>
+              <span style={{ flex: 1, fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r[3]}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>{r[4]}</span>
+            </div>
+          ))}
+        </Card>
+      </section>
+    </div>
+  )
+}
+
+const USERS = [
+  ['Ana Ruiz', 'ana@qesto.cc', 'Platform admin', 'Active', 'AR'],
+  ['Lee Chen', 'lee@acme.co', 'Facilitator', 'Active', 'LC'],
+  ['Sam Okafor', 'sam@northwind.io', 'Facilitator', 'Active', 'SO'],
+  ['Priya N.', 'priya@acme.co', 'Viewer', 'Invited', 'PN'],
+  ['Workspace: Globex', '— SSO (SAML)', 'Org · 64 seats', 'Active', 'GX'],
+]
+function UsersTab() {
+  return (
+    <section>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <h2 className="sechead" style={{ margin: 0 }}>Users & workspaces</h2>
+        <Button size="sm" iconLeft={<Icon name="user-plus" size={14} />}>Invite</Button>
+      </div>
+      <Card style={{ padding: 0, overflow: 'hidden' }}>
+        {USERS.map((u, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderTop: i ? '1px solid var(--surface-border)' : 'none' }}>
+            <span style={{ width: 34, height: 34, borderRadius: '50%', flexShrink: 0, background: 'var(--gradient-brand)', color: '#fff', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{u[4]}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 600 }}>{u[0]}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{u[1]}</div>
+            </div>
+            <Badge variant="neutral">{u[2]}</Badge>
+            <Badge variant={u[3] === 'Active' ? 'success' : 'warning'}>{u[3]}</Badge>
+            <Icon name="more-horizontal" size={18} style={{ color: 'var(--text-muted)', cursor: 'pointer' }} />
+          </div>
+        ))}
+      </Card>
+    </section>
+  )
+}
+
+function Placeholder({ icon, title, body }) {
+  return (
+    <Card style={{ padding: '48px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+      <span style={{ width: 56, height: 56, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--teal-50)', color: 'var(--teal-700)' }}><Icon name={icon} size={26} /></span>
+      <div style={{ fontSize: 18, fontWeight: 600 }}>{title}</div>
+      <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: 0, maxWidth: 420, lineHeight: 1.5 }}>{body}</p>
+    </Card>
+  )
+}
+
+function App() {
+  const [tab, setTab] = useState('dashboard')
+  useEffect(() => { const t = setTimeout(() => window.lucide && window.lucide.createIcons(), 0); return () => clearTimeout(t) }, [tab])
+  return (
+    <div className="wrap">
+      <header style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="../../assets/qesto-mark.svg" width="28" height="28" alt="" />
+          <h1 style={{ fontSize: 30, fontWeight: 600, letterSpacing: '-0.01em', margin: 0 }}>Platform admin</h1>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 999, background: 'var(--pulse-900)', color: '#fff', fontSize: 11, fontWeight: 600, letterSpacing: '0.04em' }}><Icon name="shield" size={12} />SUPERADMIN</span>
+        </div>
+        <p style={{ fontSize: 15, color: 'var(--text-secondary)', margin: '6px 0 0' }}>Real-time platform observability across all workspaces.</p>
+      </header>
+
+      <div role="tablist" style={{ display: 'flex', gap: 4, background: 'var(--pulse-100)', borderRadius: 'var(--radius-lg)', padding: 4, marginBottom: 28, width: 'fit-content' }}>
+        {TABS.map(([id, label, ic]) => {
+          const active = tab === id
+          return (
+            <button key={id} role="tab" onClick={() => setTab(id)} style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+              fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: active ? 600 : 500,
+              background: active ? 'var(--surface-card)' : 'transparent', color: active ? 'var(--text-primary)' : 'var(--text-muted)',
+              boxShadow: active ? 'var(--shadow-card)' : 'none',
+            }}><Icon name={ic} size={16} />{label}</button>
+          )
+        })}
+      </div>
+
+      {tab === 'dashboard' && <DashboardTab />}
+      {tab === 'users' && <UsersTab />}
+      {tab === 'observability' && <Placeholder icon="radar" title="Observability" body="Per-route traces, error budgets, and request waterfalls across the edge. Wire to the observability panel feed." />}
+      {tab === 'ops' && <Placeholder icon="activity" title="Ops control" body="Incident timeline, SEV severity board, WAF rule status, and runbook actions. Wire to the ops summary feed." />}
+      {tab === 'analytics' && <Placeholder icon="bar-chart-3" title="Advanced analytics" body="Cohort retention, session funnels, AI-cost breakdowns, and revenue trends. Wire to the analytics engine." />}
+    </div>
+  )
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+</script>
+</body>
+</html>

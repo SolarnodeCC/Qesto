@@ -48,5 +48,10 @@
   "ai_generate_heading": "Vragen genereren met AI",
   "ai_topic_hint": "Onderwerp of doel (standaard: \"{{title}}\")",
   "add_question_inline": "+ Vraag toevoegen",
-  "joinPanel.startQuestions": "Vragen starten"
+  "joinPanel.startQuestions": "Vragen starten",
+  "preflight_ready": "Klaar om te starten",
+  "preflight_not_ready": "Niet klaar",
+  "status_ready": "Concept · klaar om te starten",
+  "status_draft": "Concept",
+  "status_energizing": "Opwarmen"
 }

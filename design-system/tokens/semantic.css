@@ -1,0 +1,39 @@
+/* ===========================================================================
+   Qesto — Semantic aliases
+   Map raw scale values to roles. Consume these in product UI, not raw scales.
+   =========================================================================== */
+
+:root {
+  /* ─── Surfaces ─────────────────────────────────────────────────────── */
+  --surface-bg:            #FFFFFF;
+  --surface-bg-subtle:     var(--pulse-50);
+  --surface-card:          #FFFFFF;
+  --surface-elevated:      #FFFFFF;
+  --surface-border:        var(--pulse-200);
+  --surface-border-strong: var(--pulse-300);
+
+  /* ─── Text ─────────────────────────────────────────────────────────── */
+  --text-primary:   var(--pulse-900);
+  --text-secondary: var(--pulse-600);
+  --text-muted:     var(--pulse-500);
+  --text-on-brand:  #FFFFFF;
+  --text-link:      var(--teal-700);
+  --text-link-ai:   var(--violet-700);
+
+  /* ─── Focus ring ───────────────────────────────────────────────────── */
+  --focus-ring: 0 0 0 3px rgba(20, 184, 166, 0.4);
+}
+
+/* ─── Dark canvas (Present mode / projected room view) ─────────────────── */
+/* Applied via [data-theme="dark"] on a wrapper. Mirrors src/styles.css.    */
+[data-theme="dark"] {
+  --surface-bg:            #0A0F1E;
+  --surface-bg-subtle:     #0F1525;
+  --surface-card:          #151C2E;
+  --surface-elevated:      #1C2540;
+  --surface-border:        #1E2A45;
+  --surface-border-strong: #2A3858;
+  --text-primary:          #F0F2F8;
+  --text-secondary:        #A8B3CC;
+  --text-muted:            #6B7A99;
+}
