@@ -78,6 +78,23 @@ export const ROUTE_SEO: Record<string, RouteSeo> = {
     intro:
       'The terms covering service use, plan limits, billing, prohibited use, and legal conditions for Qesto.',
   },
+  '/legal': {
+    title: 'Legal Information — Qesto',
+    description:
+      'Company registration, DSA contact points, content reporting, and compliance transparency for Qesto.',
+    canonicalPath: '/legal',
+    h1: 'Legal Information',
+    intro:
+      "This page fulfils Qesto's disclosure obligations under Art. 11 and Art. 15 of the Digital Services Act (EU 2022/2065), Art. 5 of the eCommerce Directive (2000/31/EC), and related Dutch law.",
+  },
+  '/legal/report': {
+    title: 'Report Illegal Content — Qesto',
+    description:
+      'Submit a notice of alleged illegal content hosted on Qesto under Art. 16 of the Digital Services Act (EU 2022/2065).',
+    canonicalPath: '/legal/report',
+    h1: 'Report Illegal Content',
+    intro: 'Art. 16, Regulation (EU) 2022/2065 (Digital Services Act)',
+  },
   '/events': {
     title: 'Qesto for Events — The room answers back',
     description:
