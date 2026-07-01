@@ -45,15 +45,17 @@ This log records what was verified, fixed in this remediation pass, or deferred 
 
 ## Deferred — GitHub issues for future releases
 
-| Finding | Severity | GitHub issue | Rationale |
-|---------|----------|--------------|-----------|
-| Custom retention enforcement (Chorus 7d–7yr auto-purge) | CRITICAL | #665 | Requires cron/worker + D1 purge job; marketing already discloses "not yet enforced" |
-| EU data residency routing guarantee | HIGH | #666 | Needs SOVEREIGN region pinning + contractual DPA workflow |
-| Public SOC 2 certification roadmap page | MEDIUM | #667 | `/trust/soc2/roadmap` — content exists in KB only |
-| GDPR-BADGE-01 automated deletion test suite | MEDIUM | #668 | Engineering badge + public evidence pack |
-| Multi-language sessions marketing | LOW | #669 | Feature exists (`presentation_language`); needs GA confirmation |
-| Sentiment analysis GA status | LOW | #670 | Clarify ship status or deprecate |
-| Nonprofit self-service application form | LOW | #671 | Mailto interim; full form/API is process improvement |
+See [`PROMISE_AUDIT_GITHUB_ISSUES.md`](./PROMISE_AUDIT_GITHUB_ISSUES.md) for ready-to-file issue bodies.
+
+| Finding | Severity | Issue template | Rationale |
+|---------|----------|----------------|-----------|
+| Custom retention enforcement (Chorus 7d–7yr auto-purge) | CRITICAL | Issue 1 | Requires cron/worker + D1 purge job; marketing already discloses "not yet enforced" |
+| EU data residency routing guarantee | HIGH | Issue 2 | Needs SOVEREIGN region pinning + contractual DPA workflow |
+| Public SOC 2 certification roadmap page | MEDIUM | Issue 3 | `/trust/soc2/roadmap` — content exists in KB only |
+| GDPR-BADGE-01 automated deletion test suite | MEDIUM | Issue 4 | Engineering badge + public evidence pack |
+| Multi-language sessions marketing | LOW | Issue 5 | Feature exists (`presentation_language`); needs GA confirmation |
+| Sentiment analysis GA status | LOW | Issue 6 | Clarify ship status or deprecate |
+| Nonprofit self-service application form | LOW | Issue 7 | Mailto interim; full form/API is process improvement |
 
 ---
 
@@ -67,6 +69,6 @@ This log records what was verified, fixed in this remediation pass, or deferred 
 - [x] Audit TTL copy corrected (all locales)
 - [x] Audit endpoint rate limiting
 - [x] GDPR trust page 72h SLA + tier retention FAQ
-- [ ] Custom retention enforcement (deferred #665)
-- [ ] EU residency routing (deferred #666)
+- [ ] Custom retention enforcement (deferred — Issue 1 in `PROMISE_AUDIT_GITHUB_ISSUES.md`)
+- [ ] EU residency routing (deferred — Issue 2)
 - [ ] Legal re-review of corrected copy (manual)
