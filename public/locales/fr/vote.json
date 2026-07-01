@@ -16,7 +16,7 @@
   "nameStepRequired": "Le présentateur a rendu les noms obligatoires.",
   "nameStepOptional": "Facultatif — vous pouvez aussi participer anonymement.",
   "namePlaceholder": "Votre nom ou alias",
-  "gdprConsent": "J'accepte le traitement de mon nom à des fins analytiques. Les données sont conservées au maximum 30 jours puis supprimées.",
+  "gdprConsent": "J'accepte le traitement de mon nom à des fins d'analyse de session. Les données sont conservées selon le plan de l'organisateur et supprimées conformément à la Politique de confidentialité.",
   "joinAs": "Participer en tant que {{name}}",
   "joinAnon": "Participer →",
   "joinAnonLink": "Participer anonymement",

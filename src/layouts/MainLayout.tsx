@@ -141,7 +141,7 @@ export default function MainLayout({
   const showTeamSwitcher = auth.status === 'authenticated' && location.pathname === '/dashboard'
   const showJoinBar = !HIDE_JOIN_BAR_PATTERNS.some((p) => p.test(location.pathname))
 
-  const MARKETING_PATHS = ['/', '/pricing', '/events', '/hr', '/nonprofit', '/consulting', '/privacy', '/terms']
+  const MARKETING_PATHS = ['/', '/pricing', '/events', '/hr', '/nonprofit', '/consulting', '/privacy', '/terms', '/legal', '/legal/report']
   const isMarketingPage =
     MARKETING_PATHS.includes(location.pathname) ||
     location.pathname.startsWith('/features/') ||
@@ -369,6 +369,22 @@ export default function MainLayout({
                     className="text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
                   >
                     {t('footer.terms')}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/legal"
+                    className="text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                  >
+                    Legal
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/legal/report"
+                    className="text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 rounded"
+                  >
+                    Report illegal content
                   </Link>
                 </li>
               </ul>

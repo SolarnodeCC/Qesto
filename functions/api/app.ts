@@ -56,6 +56,7 @@ import { mountResidencyRoutes } from './routes/residency'
 import { mountTenantNamespaceRoutes } from './routes/tenant-namespace'
 import { mountForensicsRoutes } from './routes/forensics'
 import { mountBreachRoutes } from './routes/breach'
+import { mountReportContentRoutes } from './routes/report-content'
 import { mountApiKeyRoutes } from './routes/api-keys'
 import { mountPublicApiV1Routes } from './routes/public-api-v1'
 import { mountPublicApiV2Routes } from './routes/public-api-v2'
@@ -165,9 +166,13 @@ export function createApp() {
   app.use('/api/sessions/by-code/:code', rateLimit<Vars>({ namespace: 'join', limit: 20, windowSec: 60 }))
   app.use('/api/events/:code/agenda', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
   app.use('/api/events/:code/feed', rateLimit<Vars>({ namespace: 'join', limit: 60, windowSec: 60 }))
+  // DSA Art. 16 — limit content reports to 5 per 10 min per IP to prevent abuse
+  app.use('/api/report-content', rateLimit<Vars>({ namespace: 'report-content', limit: 5, windowSec: 600 }))
 
   // Stripe webhook — public endpoint with signature verification (no user auth)
   mountStripeWebhookRoutes(app)
+  // DSA Art. 16 — public illegal content notice & action mechanism (no auth required)
+  mountReportContentRoutes(app)
   mountPublicEventAgendaRoutes(app)
   mountPublicEventSuiteRoutes(app)
 

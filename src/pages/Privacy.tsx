@@ -102,6 +102,24 @@ export default function Privacy() {
               </li>
               <li>A short-lived, session-scoped session token. No cross-session tracking.</li>
             </ul>
+            <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-5 mb-2">Educational use &amp; minors</h3>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+              Qesto accounts require the account holder to be at least 16 years old. However, participants joining a
+              session by code may include individuals under 16 — this is a designed use case for teachers,
+              trainers, and educational institutions.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+              Where participants include minors, the host (teacher, institution, or employer) acts as the data
+              controller for session responses and is responsible for ensuring an appropriate legal basis for
+              processing exists — including obtaining parental consent where required under Art. 8 GDPR and
+              Art. 16 UAVG (Dutch Implementation Act) for participants under 16. Qesto processes session data on
+              the host's instructions as processor under the Data Processing Agreement.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+              Qesto does not independently verify the age of session participants. Hosts running sessions for
+              audiences that include minors must configure appropriate anonymity settings (cohort-visible or
+              anonymous mode is recommended) and obtain the necessary consents before the session begins.
+            </p>
 
             <h2 id="s3" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               3. Consent posture
@@ -177,6 +195,20 @@ export default function Privacy() {
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Participants: for rights over responses submitted in a session, contact the host who ran that session.
               We'll help them execute the request.
+            </p>
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
+              You also have the right to lodge a complaint with a supervisory authority. In the Netherlands:{' '}
+              <strong>Autoriteit Persoonsgegevens (AP)</strong>,{' '}
+              <a
+                href="https://www.autoriteitpersoonsgegevens.nl"
+                className="text-teal-600 hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                autoriteitpersoonsgegevens.nl
+              </a>
+              . If you are located in another EU member state, you may also contact your local Data Protection
+              Authority.
             </p>
 
             <h2 id="s8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>

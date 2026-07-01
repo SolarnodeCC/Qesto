@@ -52,6 +52,8 @@ const EventStagePresent = lazy(() => import('./pages/EventStagePresent'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Pricing = lazy(() => import('./pages/Pricing'))
+const Legal = lazy(() => import('./pages/Legal'))
+const ReportContent = lazy(() => import('./pages/ReportContent'))
 
 // Solution verticals
 const EventsPage = lazy(() => import('./pages/solutions/EventsPage'))
@@ -138,6 +140,8 @@ export default function App() {
         <Route path="/privacy" element={<LazySuspense pending={<LazyRoutePending />}><Privacy /></LazySuspense>} />
         <Route path="/terms" element={<LazySuspense pending={<LazyRoutePending />}><Terms /></LazySuspense>} />
         <Route path="/pricing" element={<LazySuspense pending={<LazyRoutePending />}><Pricing /></LazySuspense>} />
+        <Route path="/legal" element={<LazySuspense pending={<LazyRoutePending />}><Legal /></LazySuspense>} />
+        <Route path="/legal/report" element={<LazySuspense pending={<LazyRoutePending />}><ReportContent /></LazySuspense>} />
 
         {/* Solution verticals */}
         <Route path="/events" element={<LazySuspense pending={<LazyRoutePending />}><EventsPage /></LazySuspense>} />
