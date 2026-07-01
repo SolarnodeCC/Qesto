@@ -2,11 +2,14 @@ import { type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
 
-type MaxWidth = 'xl' | '2xl' | '6xl'
+type MaxWidth = 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl'
 
 const MAX_WIDTH_CLASS: Record<MaxWidth, string> = {
   xl: 'max-w-xl',
   '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
   '6xl': 'max-w-6xl',
 }
 

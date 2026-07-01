@@ -17,6 +17,7 @@ import { api, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { useIdeateSession } from '../hooks/useIdeateSession'
 import { IdeateFacilitatorBoard } from '../ui/IdeateFacilitatorBoard'
+import HostConsoleShell from '../layouts/HostConsoleShell'
 
 type IdeateConfig = {
   sessionId: string
@@ -70,34 +71,15 @@ export default function IdeateBoardPage() {
   if (loadError) return <div className="p-8 text-center text-red-600">{loadError}</div>
   if (!config) return <div className="p-8 text-center text-pulse-500" aria-live="polite">…</div>
 
+  const connectionLabel =
+    live && state.connection !== 'open'
+      ? state.connection === 'failed'
+        ? t('connection.failed')
+        : t('connection.reconnecting')
+      : null
+
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-5 py-6">
-      {/* Page header */}
-      <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1
-            tabIndex={-1}
-            className="text-lg font-bold text-pulse-900 dark:text-pulse-100"
-          >
-            {config.title}
-          </h1>
-          <p className="text-sm text-pulse-500">{t('board.subtitle')}</p>
-        </div>
-
-        {/* Connection status */}
-        {live && state.connection !== 'open' && (
-          <span
-            role="status"
-            aria-live="polite"
-            className="text-xs text-amber-600"
-          >
-            {state.connection === 'failed'
-              ? t('connection.failed')
-              : t('connection.reconnecting')}
-          </span>
-        )}
-      </header>
-
+    <HostConsoleShell title={config.title} subtitle={t('board.subtitle')} connectionLabel={connectionLabel} maxWidth="6xl">
       {/* Draft start CTA */}
       {!live && (
         <section
@@ -163,6 +145,6 @@ export default function IdeateBoardPage() {
           t={t}
         />
       )}
-    </div>
+    </HostConsoleShell>
   )
 }

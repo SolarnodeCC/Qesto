@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { itemsByColumn, useRetroSession, type RetroColumn } from '../hooks/useRetroSession'
 import { RetroItemCard } from '../ui/RetroItemCard'
 import { inputHint } from '../ui/input-hint'
+import ParticipantShell from '../layouts/ParticipantShell'
 
 type Lookup =
   | { status: 'loading' }
@@ -55,17 +56,15 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
     setTimeout(() => setSubmitted(false), 3000)
   }
 
-  return (
-    <div className="mx-auto max-w-4xl space-y-6 px-5 py-8">
-      <header>
-        <h1 className="text-xl font-bold text-pulse-900 dark:text-pulse-100">{title}</h1>
-        {state.connection !== 'open' && (
-          <p className="text-xs text-amber-600">
-            {state.connection === 'failed' ? t('connection.failed') : t('connection.reconnecting')}
-          </p>
-        )}
-      </header>
+  const connectionLabel =
+    state.connection !== 'open'
+      ? state.connection === 'failed'
+        ? t('connection.failed')
+        : t('connection.reconnecting')
+      : null
 
+  return (
+    <ParticipantShell title={title} connectionLabel={connectionLabel} maxWidth="4xl">
       <form onSubmit={onSubmit} className="space-y-3 rounded-lg border border-pulse-200 p-4 dark:border-pulse-700">
         <label className="block text-sm font-semibold text-pulse-800 dark:text-pulse-200">{t('submit.title')}</label>
         <div className="flex flex-wrap gap-2" role="tablist">
@@ -131,6 +130,6 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
           </section>
         ))}
       </div>
-    </div>
+    </ParticipantShell>
   )
 }
