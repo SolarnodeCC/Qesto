@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { itemsByColumn, useRetroSession, type RetroColumn } from '../hooks/useRetroSession'
 import { RetroItemCard } from '../ui/RetroItemCard'
 import { inputHint } from '../ui/input-hint'
+import HostConsoleShell from '../layouts/HostConsoleShell'
 
 type RetroConfig = {
   sessionId: string
@@ -60,20 +61,15 @@ export default function RetroPresent() {
   if (loadError) return <div className="p-8 text-center text-red-600">{loadError}</div>
   if (!config) return <div className="p-8 text-center text-pulse-500">…</div>
 
-  return (
-    <div className="mx-auto max-w-6xl space-y-6 px-5 py-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-pulse-900 dark:text-pulse-100">{config.title}</h1>
-          <p className="text-sm text-pulse-500">{t('present.subtitle')}</p>
-        </div>
-        {live && state.connection !== 'open' && (
-          <span className="text-xs text-amber-600">
-            {state.connection === 'failed' ? t('connection.failed') : t('connection.reconnecting')}
-          </span>
-        )}
-      </header>
+  const connectionLabel =
+    live && state.connection !== 'open'
+      ? state.connection === 'failed'
+        ? t('connection.failed')
+        : t('connection.reconnecting')
+      : null
 
+  return (
+    <HostConsoleShell title={config.title} subtitle={t('present.subtitle')} connectionLabel={connectionLabel} maxWidth="6xl">
       {!live && (
         <section className="rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20">
           <p className="text-sm text-teal-800 dark:text-teal-200">{t('present.draftHint')}</p>
@@ -114,7 +110,7 @@ export default function RetroPresent() {
           ))}
         </div>
       )}
-    </div>
+    </HostConsoleShell>
   )
 }
 

@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import { useT } from '../i18n'
 import { itemsByColumn, useRetroSession, type RetroColumn } from '../hooks/useRetroSession'
 import { RetroItemCard } from '../ui/RetroItemCard'
+import BigScreenShell, { BigScreenFallback } from '../layouts/BigScreenShell'
 
 type Lookup =
   | { status: 'loading' }
@@ -32,7 +33,7 @@ export default function RetroDisplay() {
   }, [code])
 
   if (lookup.status !== 'ready') {
-    return <div className="fixed inset-0 flex items-center justify-center bg-[#0f1117] text-white/60">…</div>
+    return <BigScreenFallback>…</BigScreenFallback>
   }
   return <Screen sessionId={lookup.sessionId} title={lookup.title} code={code ?? ''} />
 }
@@ -42,16 +43,8 @@ function Screen({ sessionId, title, code }: { sessionId: string; title: string; 
   const { state } = useRetroSession(sessionId)
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#0f1117] p-8 text-white">
-      <header className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{title}</h1>
-        <span className="inline-flex items-center gap-2 text-sm text-teal-400">
-          <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-teal-400" />
-          {t('display.badge')}
-        </span>
-      </header>
-
-      <div className="grid flex-1 gap-6 md:grid-cols-3">
+    <BigScreenShell title={title} badgeLabel={t('display.badge')} code={code} pathPrefix="r" joinLabel={t('display.join')}>
+      <div className="grid h-full gap-6 md:grid-cols-3">
         {COLUMNS.map((col) => {
           const items = itemsByColumn(state.items, col)
           return (
@@ -68,10 +61,6 @@ function Screen({ sessionId, title, code }: { sessionId: string; title: string; 
           )
         })}
       </div>
-
-      <footer className="mt-6 text-center text-white/50">
-        {t('display.join')} <span className="font-semibold text-white">qesto.cc/r/{code}</span>
-      </footer>
-    </div>
+    </BigScreenShell>
   )
 }

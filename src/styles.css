@@ -117,6 +117,11 @@
   --color-surface:          #FFFFFF;
   --color-surface-elevated: #FFFFFF;
   --color-surface-overlay:  #FFFFFF;
+  /* Big-screen "stage" surface (projector/audience display). Always the       */
+  /* canonical near-black ink regardless of app theme — the projected room      */
+  /* view is intentionally dark. Consolidates the ad-hoc #0f1117 that had been   */
+  /* hardcoded across the *Display pages (see DESIGN_SYSTEM_AUDIT_2026-07-01).   */
+  --surface-stage:          #0A0F1E;
   --color-border:           #E5E5E5;
   --color-border-strong:    #D4D4D4;
   --text-primary:           #0A0F1E;

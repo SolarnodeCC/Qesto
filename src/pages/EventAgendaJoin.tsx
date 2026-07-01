@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useT } from '../i18n'
+import ParticipantShell from '../layouts/ParticipantShell'
 
 type AgendaTrack = { id: string; label: string; day: string; order: number }
 type AgendaSlot = {
@@ -78,16 +79,12 @@ export default function EventAgendaJoin() {
   if (!data) return null
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-5 py-8">
-      <header>
-        <h1 className="text-2xl font-bold text-pulse-900 dark:text-pulse-100">{data.eventTitle}</h1>
-        <p className="text-sm text-pulse-500">{t('agenda.subtitle')}</p>
-        {feedData?.status === 'live' && (
-          <span className="mt-2 inline-flex rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-bold uppercase text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
-            {t('agenda.eventLive')}
-          </span>
-        )}
-      </header>
+    <ParticipantShell title={data.eventTitle} subtitle={t('agenda.subtitle')} maxWidth="3xl">
+      {feedData?.status === 'live' && (
+        <span className="inline-flex rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-bold uppercase text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+          {t('agenda.eventLive')}
+        </span>
+      )}
 
       {feedData && feedData.feed.length > 0 && (
         <section className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20" aria-live="polite">
@@ -161,6 +158,6 @@ export default function EventAgendaJoin() {
           ))
         )}
       </ol>
-    </div>
+    </ParticipantShell>
   )
 }

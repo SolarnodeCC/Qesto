@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { ideasForCluster, unclusteredIdeas, useIdeateSession } from '../hooks/useIdeateSession'
 import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
 import { inputHint } from '../ui/input-hint'
+import HostConsoleShell from '../layouts/HostConsoleShell'
 
 type IdeateConfig = {
   sessionId: string
@@ -70,14 +71,15 @@ export default function IdeatePresent() {
   if (!config) return <div className="p-8 text-center text-pulse-500">…</div>
 
   const activeIdeas = state.ideas.filter((i) => i.status === 'active')
+  const connectionLabel =
+    live && state.connection !== 'open'
+      ? state.connection === 'failed'
+        ? t('connection.failed')
+        : t('connection.reconnecting')
+      : null
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-5 py-6">
-      <header>
-        <h1 className="text-lg font-bold text-pulse-900 dark:text-pulse-100">{config.title}</h1>
-        <p className="text-sm text-pulse-500">{t('present.subtitle')}</p>
-      </header>
-
+    <HostConsoleShell title={config.title} subtitle={t('present.subtitle')} connectionLabel={connectionLabel} maxWidth="6xl">
       {!live && (
         <section className="rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20">
           <p className="text-sm text-teal-800 dark:text-teal-200">{t('present.draftHint')}</p>
@@ -221,6 +223,6 @@ export default function IdeatePresent() {
           </form>
         </div>
       )}
-    </div>
+    </HostConsoleShell>
   )
 }

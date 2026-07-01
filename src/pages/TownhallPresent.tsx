@@ -4,6 +4,7 @@ import { api, apiRetry, getAuthToken } from '../api/client'
 import { useT } from '../i18n'
 import { useTownhallSession, type TownhallItemStatus } from '../hooks/useTownhallSession'
 import { TownhallQuestionCard } from '../ui/TownhallQuestionCard'
+import HostConsoleShell from '../layouts/HostConsoleShell'
 
 type TownhallConfig = {
   sessionId: string
@@ -85,21 +86,15 @@ export default function TownhallPresent() {
   if (!config) return <div className="p-8 text-center text-pulse-500">…</div>
 
   const visible = state.items.filter((i) => i.status === tab)
+  const connectionLabel =
+    live && state.connection !== 'open'
+      ? state.connection === 'failed'
+        ? t('connection.failed')
+        : t('connection.reconnecting')
+      : null
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5 px-5 py-6">
-      <header className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-lg font-bold text-pulse-900 dark:text-[#F0F2F8]">{config.title}</h1>
-          <p className="text-sm text-pulse-500">{t('console.title')}</p>
-        </div>
-        {live && state.connection !== 'open' && (
-          <span className="text-xs text-amber-600">
-            {state.connection === 'failed' ? t('connection.failed') : t('connection.reconnecting')}
-          </span>
-        )}
-      </header>
-
+    <HostConsoleShell title={config.title} subtitle={t('console.title')} connectionLabel={connectionLabel}>
       {!live && (
         <section className="rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20">
           <p className="text-sm text-teal-800 dark:text-teal-200">{t('present.draftHint')}</p>
@@ -154,6 +149,6 @@ export default function TownhallPresent() {
           </section>
         </>
       )}
-    </div>
+    </HostConsoleShell>
   )
 }

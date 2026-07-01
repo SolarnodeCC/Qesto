@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useT } from '../i18n'
 import { inputHint } from '../ui/input-hint'
+import HostConsoleShell from '../layouts/HostConsoleShell'
 
 type AgendaSlot = {
   id: string
@@ -161,12 +162,8 @@ export default function EventAgendaOrganizer() {
   if (!data) return <div className="p-8 text-center text-pulse-500">…</div>
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-5 py-8">
-      <header className="space-y-2">
-        <Link to="/dashboard" className="text-sm text-teal-600 hover:underline">
-          ← {t('organizer.back')}
-        </Link>
-        <h1 className="text-xl font-bold text-pulse-900 dark:text-pulse-100">{data.title}</h1>
+    <HostConsoleShell title={data.title} maxWidth="4xl">
+      <div className="space-y-2">
         <p className="text-sm text-pulse-500">
           {t('organizer.attendeeLink')}{' '}
           <Link to={data.attendeeUrl} className="font-mono font-semibold text-teal-700 dark:text-teal-400">
@@ -181,7 +178,7 @@ export default function EventAgendaOrganizer() {
             {t('organizer.openPresenter')}
           </Link>
         )}
-      </header>
+      </div>
 
       {suite && (
         <section className="rounded-xl border border-teal-200 bg-teal-50/50 p-4 dark:border-teal-800 dark:bg-teal-900/20 space-y-4">
@@ -364,6 +361,6 @@ export default function EventAgendaOrganizer() {
           </section>
         ))}
       </div>
-    </div>
+    </HostConsoleShell>
   )
 }

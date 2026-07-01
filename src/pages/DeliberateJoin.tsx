@@ -13,6 +13,7 @@ import { useT } from '../i18n'
 import { useDeliberateSession } from '../hooks/useDeliberateSession'
 import { DeliberateReceipt } from '../ui/DeliberateReceipt'
 import { DeliberateVerifyView } from '../ui/DeliberateVerifyView'
+import ParticipantShell from '../layouts/ParticipantShell'
 
 // What the session-by-code lookup returns (common shape shared by all session types).
 type SessionMeta = {
@@ -111,14 +112,7 @@ function Ballot({ sessionId, title }: { sessionId: string; title: string }) {
   if (!config) return <div className="p-8 text-center text-pulse-500">…</div>
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-5 py-8">
-      <header>
-        <h1 className="text-xl font-bold text-pulse-900 dark:text-pulse-100" tabIndex={-1}>
-          {title}
-        </h1>
-        <p className="mt-1 text-sm text-pulse-500">{t('ballot.subtitle')}</p>
-      </header>
-
+    <ParticipantShell title={title} subtitle={t('ballot.subtitle')} maxWidth="2xl">
       {/* Session not yet ready */}
       {!config.deliberateReady && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-900/20">
@@ -210,6 +204,6 @@ function Ballot({ sessionId, title }: { sessionId: string; title: string }) {
           )}
         </section>
       )}
-    </div>
+    </ParticipantShell>
   )
 }
