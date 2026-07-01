@@ -109,7 +109,7 @@ You can request:
 - **Participants:** contact the session host; they can erase respondent data from their session
 - **Team admins:** use audit log and session management tools; contact support for bulk erasure
 
-We respond within 30 days for verified requests.
+We respond within 30 days for verified requests. Self-service account deletion via `DELETE /api/users/me/gdpr-delete` is processed within 72 hours.
 
 ## Anonymity Modes
 

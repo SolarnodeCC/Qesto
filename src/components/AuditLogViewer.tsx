@@ -31,6 +31,10 @@ const ACTIONS = [
   'question.update',
   'question.delete',
   'user.role_change',
+  'role.assigned',
+  'role.changed',
+  'role.removed',
+  'team.role.create',
   'team.create',
   'team.update',
   'team.delete',
@@ -60,6 +64,14 @@ const ACTION_LABELS: Record<string, string> = {
   'ws.energizer_answered': 'WS — participant answered',
   'ws.energizer_advanced': 'WS — question advanced',
   'ws.energizer_completed': 'WS — energizer completed',
+  'role.assigned': 'Role — assigned',
+  'role.changed': 'Role — changed',
+  'role.removed': 'Role — removed',
+  'team.role.create': 'Team role — created',
+  'team.role.update': 'Team role — updated',
+  'team.role.delete': 'Team role — deleted',
+  'team.role.assign': 'Team role — assigned to member',
+  'team.role.unassign': 'Team role — unassigned from member',
 }
 
 function formatActionLabel(action: string): string {

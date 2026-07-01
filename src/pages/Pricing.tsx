@@ -12,6 +12,9 @@ import PageSeo from '../components/PageSeo'
 import Reveal from '../components/Reveal'
 import { usePlanCatalog } from '../hooks/usePlanCatalog'
 
+const NONPROFIT_APPLY_MAILTO =
+  'mailto:support@qesto.cc?subject=Nonprofit%20pricing%20application&body=Organization%20name%3A%0ARegistration%20number%3A%0ACountry%3A%0AContact%20email%3A'
+
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
@@ -366,13 +369,13 @@ export default function Pricing() {
             Registered nonprofits and accredited educational institutions get Chorus at 40% off. Apply with a copy
             of your registration and we'll turn it around in 48 hours.
           </p>
-          <Link
-            to="/pricing"
-            className={btnPrimary + ' text-base px-7 py-3.5'}
+          <a
+            href={NONPROFIT_APPLY_MAILTO}
+            className={btnPrimary + ' text-base px-7 py-3.5 inline-block'}
             style={gradientBrand}
           >
             Apply for nonprofit pricing
-          </Link>
+          </a>
         </div>
       </Reveal>
 

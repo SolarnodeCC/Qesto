@@ -167,5 +167,18 @@ describe('RBAC + Audit — Phase 8 Step 3', () => {
       expect(body.ok).toBe(true)
       expect(Array.isArray(body.data.events)).toBe(true)
     })
+
+    it('emits rate-limit headers on audit queries (promise-audit remediation)', async () => {
+      const res = await app.fetch(
+        new Request('http://qesto.test/api/admin/audit', {
+          headers: { cookie: adminCookie, 'cf-connecting-ip': '203.0.113.55' },
+        }),
+        env,
+      )
+
+      expect(res.status).toBe(200)
+      expect(res.headers.get('X-RateLimit-Limit')).toBe('120')
+      expect(res.headers.get('X-RateLimit-Remaining')).not.toBeNull()
+    })
   })
 })
