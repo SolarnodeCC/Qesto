@@ -21,9 +21,9 @@ In May–June 2026 a set of portable HTML/CSS design kits were added under `desi
 
 ### 1. Semantic token aliases in `src/styles.css`
 
-**Decision:** The existing `--color-surface-elevated`, `--shadow-focus-ring`, `--motion-stagger-primary` tokens in `src/styles.css` already cover the design-kit aliases. No new aliases were needed — the design kit's short names (`--surface-elevated`, `--focus-ring`, etc.) map directly to the existing `--color-*` / `--shadow-*` / `--motion-*` equivalents.
+**Decision:** `src/styles.css` already had `--color-surface-elevated`, `--shadow-focus-ring`, and `--motion-stagger-primary` before this pass. The design kit uses shorter names (`--surface-elevated`, `--focus-ring`, `--stagger-primary`) that don't match those. Rather than rename every production token, this pass added a thin alias layer to `:root` (and `[data-theme="dark"]`) — `--surface-elevated`, `--focus-ring`, `--stagger-primary`, `--stagger-secondary`, `--lh-tight`, `--lh-snug`, `--lh-normal`, `--lh-relaxed` — so design-kit markup can be copied into `src/` without a find-and-replace pass on token names.
 
-**Consequence:** New components should reference `--color-surface-elevated`, `--shadow-focus-ring`, and `--motion-stagger-primary` (existing names) rather than creating duplicate short aliases.
+**Consequence:** Two names now resolve to (mostly) the same value: `--color-surface-elevated` / `--surface-elevated`, `--shadow-focus-ring` / `--focus-ring`, `--motion-stagger-primary` / `--stagger-primary`. New production components should keep using the existing longer names (`--color-surface-elevated`, `--shadow-focus-ring`, `--motion-stagger-primary`); the short aliases exist for design-kit portability, not as the preferred production API.
 
 ---
 

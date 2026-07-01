@@ -49,9 +49,9 @@
   "ai_topic_hint": "Sujet ou objectif (par défaut : \"{{title}}\")",
   "add_question_inline": "+ Ajouter une question",
   "joinPanel.startQuestions": "Démarrer les questions",
-  "preflight_ready": "Ready to launch",
-  "preflight_not_ready": "Not ready",
-  "status_ready": "Draft · launch-ready",
-  "status_draft": "Draft",
-  "status_energizing": "Energizing"
+  "preflight_ready": "Prêt à démarrer",
+  "preflight_not_ready": "Pas prêt",
+  "status_ready": "Brouillon · prêt à démarrer",
+  "status_draft": "Brouillon",
+  "status_energizing": "Échauffement"
 }
