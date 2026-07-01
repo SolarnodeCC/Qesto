@@ -23,11 +23,20 @@ relates_to:
   - SPEC_FRONTEND
 ---
 
-# Design tokens (`design-tokens.json`)
+# Design tokens
 
 _Hub: [Documentation map](../README.md)._
 
-This folder holds the **visual design system** for the public site and dashboard shell. **`design-tokens.json`** is the machine-readable source of truth for colour, typography, spacing, motion, shadows, and related tokens (see `$meta` inside the JSON for a short embedded summary).
+> **⚠️ Retired pipeline (2026-07).** `design-tokens.json` and its generator
+> (`build-tokens.mjs` → `src/ui/tokens.ts` + the Tailwind theme, `DESIGN-TOK-01`)
+> have been **removed as dead code** — nothing consumed the generated output.
+> The **single source of truth for tokens is now the `@theme` block in
+> `src/styles.css`** (hand-authored; `vite build` consumes it via the
+> `@tailwindcss/vite` plugin). Edit tokens there. The prose design spec remains
+> [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) and ADR-0071.
+> The material below is retained only as historical context.
+
+This folder previously held the machine-readable **visual design system** for the public site and dashboard shell.
 
 ## Read next
 
@@ -37,7 +46,7 @@ This folder holds the **visual design system** for the public site and dashboard
 
 ## Engineering rules
 
-- **`src/ui/tokens.ts`** must be **generated** from `design-tokens.json`, not hand-edited (backlog **`DESIGN-TOK-01`**). CI should fail on drift between JSON and generated output.
+- **Tokens are hand-authored in `src/styles.css` (`@theme`)** — the single source of truth. (Historical: `DESIGN-TOK-01` proposed a `design-tokens.json` → `src/ui/tokens.ts` generator with a CI drift gate; that pipeline was built but never consumed, and was removed in 2026-07.)
 - Token or visual changes belong in **`WEBSITE_DESIGN_SPEC.md`** and **`design-tokens.json`** in the **same PR** when practical.
 
 ## Editing `design-tokens.json`

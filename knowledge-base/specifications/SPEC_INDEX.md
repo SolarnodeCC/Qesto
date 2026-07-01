@@ -109,7 +109,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 
 **Files**:
 - [`WEBSITE_DESIGN_SPEC.md`](./product/WEBSITE_DESIGN_SPEC.md) — colour language, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, accessibility as layout, KPIs.
-- `design-tokens.json` — machine-readable design tokens; source of truth for `src/ui/tokens.ts` and Tailwind config (see backlog item `DESIGN-TOK-01`). Not yet migrated to knowledge-base.
+- Design tokens — the `@theme` block in `src/styles.css` is the single, hand-authored source of truth. (The former `design-tokens.json` → `src/ui/tokens.ts` generator, `DESIGN-TOK-01`, was removed as dead code in 2026-07.)
 
 **Key Sections in WEBSITE_DESIGN_SPEC.md**:
 - §4 Design language — colour tokens, gradients, AI surface rules, typography, spacing, radius/elevation/motion, iconography (AI sparkle mark)
@@ -351,7 +351,7 @@ When navigation or **planning truth hierarchy** changes, update **[`../README.md
 7. **Architecture decision**: Update SPEC_CORE.md & reference relevant spec
 8. **Role ownership shifts** (e.g. WS-only mutation policy): tweak the **Readers** table in the affected `SPEC_*.md` (Architect row stays Primary unless governance changes)
 9. **Pre-build / sequencing policy changes** (v1 slice, spike criteria, prod gates): update [includes/PREBUILD_AND_DELIVERY.md](includes/PREBUILD_AND_DELIVERY.md) and keep **INDEX → Before you start building** links valid
-10. **Design token or visual change**: Update [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) and `design-tokens.json` (not yet migrated) — never hand-edit `src/ui/tokens.ts` directly (see `DESIGN-TOK-01`)
+10. **Design token or visual change**: Update [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) and the `@theme` block in `src/styles.css` (the single hand-authored token source; the `design-tokens.json`/`tokens.ts` generator was retired)
 
 ### Update Frequency
 - **Endpoints**: Within 1 day of merge

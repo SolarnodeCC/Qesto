@@ -55,7 +55,7 @@ Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names un
 > - §5 Layout system + component specs (§5.1 Hero · §5.2 Insights tab · §5.3 Sessions list · §5.4 "+New session" button · §5.5 AIBadge · §5.6 Session Creation Wizard · §5.7 Session Launchpad)
 > - §7 Instrumented events and 30-day KPI targets
 >
-> `src/ui/tokens.ts` is **generated** from `design-tokens.json` (backlog item `DESIGN-TOK-01`) — do not hand-edit it.
+> Design tokens live in `src/styles.css` (the `@theme` block) — the single source of truth, hand-authored. The old `design-tokens.json` → `src/ui/tokens.ts` generator (`DESIGN-TOK-01`) was removed as dead code (it had no live consumers).
 
 ## Overview
 Qesto frontend is **React 19 + Vite** with TypeScript, Tailwind CSS, and real-time WebSocket via `useSession`. Stack versions: align with [[SPEC_CORE.md#tech-stack]] (code wins if different).
@@ -228,7 +228,7 @@ components/
 
 ### Design System (src/ui/)
 
-> **Source of truth for tokens:** `src/ui/tokens.ts` is **generated** from [`design-tokens.json`](./design-tokens.json) — do not hand-edit it (see backlog item `DESIGN-TOK-01`). For colour tokens, typography scale, spacing grid, radius/elevation/motion rules, and the AI sparkle mark iconography standard, see [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) §4.
+> **Source of truth for tokens:** the `@theme` block in `src/styles.css` — hand-authored, no generator. (The former `design-tokens.json` → `src/ui/tokens.ts` / Tailwind-theme pipeline, `DESIGN-TOK-01`, was removed as dead code — it had zero live consumers.) For colour tokens, typography scale, spacing grid, radius/elevation/motion rules, and the AI sparkle mark iconography standard, see [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) §4.
 
 ```
 ui/

@@ -79,7 +79,7 @@ npm run check:tokens-drift   # Generated token artefact drift check
 
 ### Production Build
 
-> **Design-token build step:** [`design-tokens.json`](./design-tokens.json) is the source of truth for all colour, typography, spacing, radius/elevation/motion, and shadow tokens. The build pipeline must regenerate `src/ui/tokens.ts` and the Tailwind theme from this JSON before `vite build` runs (backlog item `DESIGN-TOK-01`). Drift between the JSON and runtime CSS is a CI-enforced release gate — see [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) §7 KPIs and `LAYOUT-GRID-01` for the lint rule that flags non-4-multiple vertical measurements.
+> **Design tokens:** the `@theme` block in `src/styles.css` is the single, hand-authored source of truth for all colour, typography, spacing, radius/elevation/motion, and shadow tokens; `vite build` consumes it directly via the `@tailwindcss/vite` plugin. (The former `design-tokens.json` → `src/ui/tokens.ts` / Tailwind-theme generator and its `check:tokens-drift` gate, `DESIGN-TOK-01`, were removed as dead code — nothing consumed the generated output.) See [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) §7 KPIs and `LAYOUT-GRID-01` for the lint rule that flags non-4-multiple vertical measurements.
 
 ```bash
 # Full build pipeline
