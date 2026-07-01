@@ -48,5 +48,10 @@
   "ai_generate_heading": "Generar preguntas con IA",
   "ai_topic_hint": "Tema u objetivo (por defecto: \"{{title}}\")",
   "add_question_inline": "+ Añadir pregunta",
-  "joinPanel.startQuestions": "Iniciar preguntas"
+  "joinPanel.startQuestions": "Iniciar preguntas",
+  "preflight_ready": "Ready to launch",
+  "preflight_not_ready": "Not ready",
+  "status_ready": "Draft · launch-ready",
+  "status_draft": "Draft",
+  "status_energizing": "Energizing"
 }

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qesto — Participant</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../qr.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface-bg-subtle); font-family: var(--font-body); color: var(--text-primary); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px; gap: 40px; flex-wrap: wrap; }
+  .phone { width: 390px; height: 720px; background: var(--surface-bg); border-radius: 44px; border: 10px solid #0A0F1E; box-shadow: var(--shadow-elevated); overflow: hidden; position: relative; }
+  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { Button, EntryCodeField, ConsentPicker, TallyBar, AIBadge } = window.QestoDesignSystem_10c0a6
+const { useState, useEffect } = React
+
+function Icon({ name, size = 18, color, style }) {
+  return <i data-lucide={name} width={size} height={size} style={{ display:'inline-flex', color: color||'currentColor', ...style }} />
+}
+
+function BrandBar({ status }) {
+  return (
+    <div style={{ flexShrink:0 }}>
+      <div style={{ height:4, background:'var(--gradient-brand)' }} />
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid var(--surface-border)' }}>
+        <span style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:18, letterSpacing:'-0.02em' }}>Qesto</span>
+        {status && <span style={{ display:'flex', alignItems:'center', gap:6, fontSize:12, color:'var(--text-muted)' }}><span style={{ width:6, height:6, borderRadius:'50%', background:'var(--teal-500)' }} />{status}</span>}
+      </div>
+    </div>
+  )
+}
+
+function JoinScreen({ onNext }) {
+  const [code, setCode] = useState('')
+  return (
+    <div className="screen">
+      <BrandBar />
+      <div style={{ flex:1, padding:'40px 24px', display:'flex', flexDirection:'column', gap:24 }}>
+        <div>
+          <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:28, letterSpacing:'-0.02em', margin:'0 0 8px' }}>Join the room</h1>
+          <p style={{ fontSize:15, color:'var(--text-secondary)', margin:0, lineHeight:1.5 }}>Enter the 6-character code shown on screen, or scan the QR.</p>
+        </div>
+        <EntryCodeField value={code} onChange={setCode} />
+        <Button size="lg" style={{ width:'100%' }} disabled={code.length<4} onClick={onNext}>Enter session</Button>
+        <div style={{ display:'flex', alignItems:'center', gap:10, color:'var(--text-muted)' }}>
+          <div style={{ flex:1, height:1, background:'var(--surface-border)' }} /><span style={{ fontSize:12 }}>or</span><div style={{ flex:1, height:1, background:'var(--surface-border)' }} />
+        </div>
+        <button style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'12px', borderRadius:12, border:'1px solid var(--surface-border)', background:'var(--surface-card)', fontSize:14, fontWeight:500, fontFamily:'var(--font-body)', cursor:'pointer' }}>
+          <Icon name="qr-code" size={18} color="var(--teal-700)" />Scan QR code
+        </button>
+        <p style={{ fontSize:12, color:'var(--text-muted)', textAlign:'center', marginTop:'auto' }}>No account needed to take part.</p>
+      </div>
+    </div>
+  )
+}
+
+function ConsentScreen({ onNext }) {
+  const [posture, setPosture] = useState('anonymous')
+  return (
+    <div className="screen">
+      <BrandBar status="QSTO-7K2" />
+      <div style={{ flex:1, padding:'28px 24px', display:'flex', flexDirection:'column', gap:20, overflowY:'auto' }}>
+        <div>
+          <div style={{ fontSize:12, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--teal-700)', marginBottom:8 }}>Before we begin</div>
+          <h1 style={{ fontSize:22, fontWeight:600, letterSpacing:'-0.01em', margin:'0 0 6px' }}>How should your answers appear?</h1>
+          <p style={{ fontSize:14, color:'var(--text-secondary)', margin:0, lineHeight:1.5 }}>The host set this room to let you choose. You can pick the level you're comfortable with.</p>
+        </div>
+        <ConsentPicker value={posture} onChange={setPosture} />
+      </div>
+      <div style={{ flexShrink:0, padding:'16px 24px', borderTop:'1px solid var(--surface-border)' }}>
+        <Button size="lg" style={{ width:'100%' }} onClick={onNext}>Continue</Button>
+      </div>
+    </div>
+  )
+}
+
+const VOTE_OPTS = [
+  ['Adopt trunk-based delivery', 38],
+  ['Invest in test automation', 52],
+  ['Cut WIP limits per squad', 24],
+  ['Pair on the riskiest work', 19],
+]
+
+function VoteScreen({ onNext }) {
+  const [voted, setVoted] = useState(null)
+  const total = VOTE_OPTS.reduce((s,o)=>s+o[1],0) + (voted!==null?1:0)
+  const maxIdx = (() => { let m=0; VOTE_OPTS.forEach((o,i)=>{ if((o[1]+(voted===i?1:0))>(VOTE_OPTS[m][1]+(voted===m?1:0))) m=i }); return m })()
+  return (
+    <div className="screen">
+      <BrandBar status="48 here" />
+      <div style={{ flex:1, padding:'24px', display:'flex', flexDirection:'column', gap:18, overflowY:'auto' }}>
+        <h1 style={{ fontSize:20, fontWeight:600, lineHeight:1.3, margin:0 }}>Where should the team focus to ship faster next quarter?</h1>
+        {voted===null ? (
+          <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+            {VOTE_OPTS.map(([label],i)=>(
+              <button key={label} onClick={()=>setVoted(i)} style={{
+                textAlign:'left', padding:'16px', borderRadius:14, border:'1px solid var(--surface-border)', background:'var(--surface-card)',
+                fontSize:15, fontWeight:500, fontFamily:'var(--font-body)', cursor:'pointer', color:'var(--text-primary)', transition:'border-color var(--motion-fast) var(--ease-fast)',
+              }}>{label}</button>
+            ))}
+          </div>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:13, color:'var(--teal-700)', fontWeight:500 }}>
+              <Icon name="check-circle-2" size={16} />Vote counted · live results
+            </div>
+            {VOTE_OPTS.map(([label,c],i)=>(
+              <TallyBar key={label} label={label} count={c+(voted===i?1:0)} total={total} leading={i===maxIdx} />
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{ flexShrink:0, padding:'16px 24px', borderTop:'1px solid var(--surface-border)' }}>
+        <Button size="lg" style={{ width:'100%' }} variant={voted===null?'secondary':'primary'} disabled={voted===null} onClick={onNext}>
+          {voted===null ? 'Pick an option' : 'Next question'}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function ThanksScreen({ onRestart }) {
+  return (
+    <div className="screen">
+      <BrandBar status="QSTO-7K2" />
+      <div style={{ flex:1, padding:'40px 28px', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', textAlign:'center', gap:18 }}>
+        <div style={{ width:72, height:72, borderRadius:'50%', background:'var(--gradient-brand)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <Icon name="check" size={36} color="#fff" />
+        </div>
+        <h1 style={{ fontFamily:'var(--font-display)', fontWeight:700, fontSize:26, letterSpacing:'-0.02em', margin:0 }}>You're all caught up</h1>
+        <p style={{ fontSize:15, color:'var(--text-secondary)', margin:0, lineHeight:1.5 }}>Hang tight — the host will bring up the next question. Your answers stay anonymous.</p>
+        <div style={{ marginTop:6 }}><AIBadge variant="analyzed" label="A recap will be shared after" /></div>
+      </div>
+      <div style={{ flexShrink:0, padding:'16px 24px', borderTop:'1px solid var(--surface-border)' }}>
+        <Button size="lg" variant="ghost" style={{ width:'100%' }} onClick={onRestart}>Restart demo</Button>
+      </div>
+    </div>
+  )
+}
+
+function App() {
+  const [step, setStep] = useState(0)
+  useEffect(() => { const t=setTimeout(()=>window.lucide&&window.lucide.createIcons(),0); return ()=>clearTimeout(t) })
+  const screens = [
+    <JoinScreen onNext={()=>setStep(1)} />,
+    <ConsentScreen onNext={()=>setStep(2)} />,
+    <VoteScreen onNext={()=>setStep(3)} />,
+    <ThanksScreen onRestart={()=>setStep(0)} />,
+  ]
+  const labels = ['Join','Consent','Vote','Thanks']
+  return (
+    <React.Fragment>
+      <div className="phone">{screens[step]}</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+        <div style={{ fontSize:12, fontWeight:600, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--text-muted)', marginBottom:4 }}>Flow</div>
+        {labels.map((l,i)=>(
+          <button key={l} onClick={()=>setStep(i)} style={{
+            display:'flex', alignItems:'center', gap:10, padding:'8px 14px', borderRadius:10, border:'none', cursor:'pointer', fontFamily:'var(--font-body)',
+            fontSize:14, fontWeight: step===i?600:500, background: step===i?'var(--teal-50)':'transparent', color: step===i?'var(--teal-700)':'var(--text-secondary)',
+          }}>
+            <span style={{ width:22, height:22, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, fontWeight:600, background: step===i?'var(--gradient-brand)':'var(--pulse-200)', color: step===i?'#fff':'var(--text-muted)' }}>{i+1}</span>
+            {l}
+          </button>
+        ))}
+      </div>
+    </React.Fragment>
+  )
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+</script>
+</body>
+</html>

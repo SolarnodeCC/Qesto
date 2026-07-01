@@ -92,7 +92,7 @@ export function SessionCard({
   return (
     <article
       className={[
-        'group relative flex flex-col rounded-lg border bg-white dark:bg-[#151C2E] shadow-card',
+        'group relative flex flex-col rounded-xl border bg-white dark:bg-[#151C2E] shadow-card',
         'hover:shadow-elevated transition-shadow duration-200',
         menuOpen ? 'z-30' : 'z-0',
         s.status === 'live' ? 'border-teal-400 dark:border-teal-600' : 'border-pulse-200 dark:border-[#1E2A45]',
@@ -105,7 +105,7 @@ export function SessionCard({
         to={cardLink}
         tabIndex={-1}
         aria-hidden="true"
-        className="block overflow-hidden rounded-t-lg"
+        className="block overflow-hidden rounded-t-xl"
         style={{ aspectRatio: '16/10', background: gradient }}
       />
 
@@ -240,7 +240,7 @@ export function SessionCard({
 
 export function SessionCardSkeleton() {
   return (
-    <div className="rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] overflow-hidden shadow-card" aria-hidden="true">
+    <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] overflow-hidden shadow-card" aria-hidden="true">
       <div className="skeleton-shimmer bg-pulse-200 dark:bg-pulse-800" style={{ aspectRatio: '16/10' }} />
       <div className="p-3 space-y-2">
         <div className="h-4 w-3/4 rounded bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" />

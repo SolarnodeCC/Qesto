@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Loader2, Sparkles } from 'lucide-react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useSession, type PollOption } from '../hooks/useSessions'
@@ -235,24 +236,12 @@ export default function SessionConfig() {
               >
                 {aiLoading ? (
                   <>
-                    {/* Spinner */}
-                    <svg
-                      aria-hidden="true"
-                      className="animate-spin w-3.5 h-3.5 text-violet-600"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
+                    <Loader2 size={14} aria-hidden="true" className="animate-spin text-violet-600" />
                     {t('aiGenerating')}
                   </>
                 ) : (
                   <>
-                    {/* Sparkle */}
-                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z" />
-                    </svg>
+                    <Sparkles size={14} aria-hidden="true" />
                     {t('aiSuggest')}
                   </>
                 )}

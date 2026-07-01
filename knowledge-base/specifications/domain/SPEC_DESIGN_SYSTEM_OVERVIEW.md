@@ -187,6 +187,40 @@ Each folder mirrors the same idea:
 
 ---
 
+## Production conventions (Polish Pass 2026-06-30 — ADR-0071)
+
+These rules are enforced in `CLAUDE.md` Hard Rules 9 & 10 and reviewed at PR time.
+
+### Icons — Lucide-only rule
+All icons in `src/` must be imported from `lucide-react`. Inline `<svg>` markup for icons is **forbidden**. The only exception is the circular timer-arc in `src/pages/Present.tsx` (data-driven animated SVG, no Lucide equivalent).
+
+```typescript
+// ✅
+import { Check, Loader2, Sparkles } from 'lucide-react'
+// ❌ never write raw icon SVG in component files
+```
+
+The design-kit HTML files load Lucide via unpkg CDN — do **not** copy those `<script>` tags into production.
+
+### Border-radius — two-tier rule
+
+| Element | Class | px |
+|---|---|---|
+| Cards, panels, modals, info boxes | `rounded-xl` | 12 px |
+| Buttons, inputs, dropdowns, small badges | `rounded-lg` | 8 px |
+| Status pills | `rounded-full` | — |
+
+### Existing token names (no short aliases needed)
+The design-kit short names map to existing `src/styles.css` tokens:
+
+| Design-kit name | Production token |
+|---|---|
+| `--surface-elevated` | `--color-surface-elevated` |
+| `--focus-ring` | `--shadow-focus-ring` |
+| `--stagger-primary` | `--motion-stagger-primary` |
+
+---
+
 ## Caveats & substitutions (flagged)
 
 1. **Fonts — Google Fonts only.** The repo references Inter, Syne, JetBrains Mono, all loaded from Google Fonts. No self-hosted woff2s were shipped in the repo; `colors_and_type.css` imports from `fonts.googleapis.com`. If you want offline/CSP-safe bundles, self-host equivalents.

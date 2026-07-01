@@ -1,0 +1,43 @@
+/* ===========================================================================
+   Qesto — Spacing, radius, elevation, motion
+   Spacing on a 4px baseline. Radii: sm 6 / md 10 / lg 16 / xl 24 / pill.
+   =========================================================================== */
+
+:root {
+  /* ─── Spacing (4px baseline) ───────────────────────────────────────── */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-8:  48px;
+  --space-10: 64px;
+  --space-12: 96px;
+
+  /* ─── Radius ───────────────────────────────────────────────────────── */
+  --radius-sm:   6px;    /* chips, tags */
+  --radius-md:   10px;   /* buttons, inputs */
+  --radius-lg:   16px;   /* cards */
+  --radius-xl:   24px;   /* hero panels, join panels, modals */
+  --radius-pill: 9999px;
+
+  /* ─── Elevation ────────────────────────────────────────────────────── */
+  --shadow-card:       0 2px 8px rgba(10, 15, 30, 0.06);
+  --shadow-elevated:   0 8px 24px rgba(10, 15, 30, 0.10);
+  --shadow-teal:       0 4px 20px rgba(20, 184, 166, 0.25);  /* primary hover */
+  --shadow-ai:         0 4px 20px rgba(139, 92, 246, 0.25);  /* AI surfaces */
+  --shadow-error:      0 4px 20px rgba(220, 38, 38, 0.25);
+
+  /* ─── Motion ───────────────────────────────────────────────────────── */
+  --motion-fast:   120ms;  /* @kind other */ /* hover, press, chip accept */
+  --motion-normal: 200ms;  /* @kind other */ /* tabs, toggles, tally bars */
+  --motion-slow:   300ms;  /* @kind other */ /* page / modal enter */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);   /* @kind other */ /* default */
+  --ease-enter:    cubic-bezier(0.0, 0, 0.2, 1); /* @kind other */
+  --ease-exit:     cubic-bezier(0.4, 0, 1, 1);   /* @kind other */
+  --ease-fast:     cubic-bezier(0.2, 0, 0.4, 1); /* @kind other */ /* hover / press */
+  --stagger-primary:   40ms; /* @kind other */
+  --stagger-secondary: 20ms; /* @kind other */
+}

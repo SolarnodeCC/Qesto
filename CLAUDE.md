@@ -110,6 +110,8 @@ chub annotate cloudflare/workers "finding"  # Add new annotation
    - **Roadmap**: [`/knowledge-base/product/roadmap/`](./knowledge-base/product/roadmap/)
    - **Backlog**: [`/knowledge-base/product/backlog/BACKLOG_MASTER.md`](./knowledge-base/product/backlog/)
 8. **Update this file** when new patterns are discovered
+9. **No inline `<svg>` elements** — always import icons from `lucide-react`. Never write raw SVG markup for icons in component files. The only permitted exception is the circular timer arc in `src/pages/Present.tsx` (no Lucide equivalent).
+10. **Design token conventions (ADR-0071):** cards and panels use `rounded-xl`; buttons use `rounded-lg`. Use CSS custom-property tokens (`var(--surface-border)`, `var(--text-primary)`, etc.) over hardcoded hex where a token exists. See [`/knowledge-base/adr/ADR-0071-design-system-v1.md`](./knowledge-base/adr/ADR-0071-design-system-v1.md) and [`/knowledge-base/specifications/domain/SPEC_DESIGN_SYSTEM_OVERVIEW.md`](./knowledge-base/specifications/domain/SPEC_DESIGN_SYSTEM_OVERVIEW.md).
 
 ## Deployment
 ```bash

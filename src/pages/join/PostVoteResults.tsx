@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react'
+import { Check, Sparkles } from 'lucide-react'
 import { useT } from '../../i18n'
 import { useCountUp } from '../../hooks/useCountUp'
 
@@ -54,9 +54,7 @@ export function PostVoteResults({ questionKind, ordered, resultsTotal, myVotes }
   return (
     <div className="space-y-4 pt-2 border-t border-pulse-100 dark:border-[#1E2A45]">
       <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700 dark:text-teal-400">
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
+        <Check size={16} aria-hidden="true" />
         {t('vote_recorded')}
       </p>
       <div className="flex items-center gap-2 text-[12px] text-violet-600 font-medium">
