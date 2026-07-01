@@ -9,7 +9,7 @@
 ## Conventions
 
 - API calls via `src/api/client.ts` (HttpOnly session cookies; no `sessionStorage` tokens).
-- Design tokens: `src/ui/tokens.ts` (generated — run `npm run tokens:build`).
+- Design tokens: the `@theme` block in `src/styles.css` (single hand-authored source of truth).
 - Realtime: hooks under `src/hooks/` consuming DO WebSocket protocol from `functions/api/types.ts`.
 
 ## References
