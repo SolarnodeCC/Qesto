@@ -130,10 +130,7 @@ export function mountTeamWorkspaceRoutes(parent: ParentApp) {
     const teamId = c.req.param('id')
     const parsedQuery = WorkspaceKindQuerySchema.safeParse({ kind: c.req.query('kind') })
     if (!parsedQuery.success) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Invalid kind' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Invalid kind')
     }
     let team: Team | null = null
     try {

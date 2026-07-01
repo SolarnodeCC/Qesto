@@ -1,6 +1,7 @@
 import { usePolledApi } from './usePolledApi'
+import type { ServiceStatus } from '../types/admin'
 
-export type ServiceStatus = 'healthy' | 'degraded' | 'down'
+export type { ServiceStatus } from '../types/admin'
 
 export type HourlyCorrelation = {
   hour: string

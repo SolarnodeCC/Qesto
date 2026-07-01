@@ -59,7 +59,7 @@ export function mountStageSessionRoutes(parent: ParentApp) {
     }
     const draftGate = requireDraft({ status: row.status } as Session, 'stage_config')
     if (!draftGate.ok) {
-      return c.json({ ok: false, error: draftGate.error, trace_id: c.get('trace_id') }, 409)
+      return errorResponse(c, 409, draftGate.error.code, draftGate.error.message)
     }
     await c.env.DB.prepare(`UPDATE sessions SET session_mode = 'stage' WHERE id = ?1`)
       .bind(id)

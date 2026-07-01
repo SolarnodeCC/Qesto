@@ -9,7 +9,8 @@ export type SessionBranding = {
 // localStorage is a trust boundary — narrow the parsed JSON instead of casting.
 const JoinCacheMapSchema = z.record(z.string(), z.record(z.string(), z.unknown()))
 
-export function applyBrandingToDocument(branding: SessionBranding | null | undefined): void {
+/** Applies session branding as CSS custom properties on `document.documentElement`. */
+export function applyBrandingCssVars(branding: SessionBranding | null | undefined): void {
   if (!branding || typeof document === 'undefined') return
   const root = document.documentElement
   if (branding.primaryColor) {
@@ -24,7 +25,8 @@ export function applyBrandingToDocument(branding: SessionBranding | null | undef
 
 const ENTRY_CACHE_KEY = 'qesto:entry-cache'
 
-export function cacheJoinSession(code: string, payload: Record<string, unknown>): void {
+/** Persists join lookup payload to localStorage; silently ignores quota errors. */
+export function tryCacheJoinSession(code: string, payload: Record<string, unknown>): void {
   try {
     const raw = localStorage.getItem(ENTRY_CACHE_KEY)
     const parsed: unknown = raw ? JSON.parse(raw) : {}

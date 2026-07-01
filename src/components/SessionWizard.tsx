@@ -9,7 +9,7 @@ import {
   newId,
   isQuestionValid,
   parseSseEvent,
-  normalizeQuestionKind,
+  coerceQuestionKind,
   ENERGIZER_BACKEND_KIND,
   ENERGIZER_DEFAULT_PROMPT,
   type WizardStep,
@@ -100,7 +100,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
       setTemplateSeedName(initialTemplate.name)
       setQuestions(initialTemplate.questions.map((q) => ({
         id: newId(),
-        kind: normalizeQuestionKind(q.kind),
+        kind: coerceQuestionKind(q.kind),
         prompt: q.prompt,
         options: q.options.map((o) => ({ id: o.id || newId(), label: o.label })),
         fromAI: false,
@@ -195,7 +195,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
 
       const toWizardQuestion = (q: GeneratedQuestion): WizardQuestion => ({
         id: q.id ?? newId(),
-        kind: normalizeQuestionKind(q.kind),
+        kind: coerceQuestionKind(q.kind),
         prompt: q.prompt,
         options: (q.options ?? []).map((o) => ({ id: o.id ?? newId(), label: o.label })),
         fromAI: true,

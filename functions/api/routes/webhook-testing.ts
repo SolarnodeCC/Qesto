@@ -27,10 +27,7 @@ export function mountWebhookTestingRoutes(parent: Hono<{ Bindings: Env; Variable
     const teamId = c.req.param('teamId')
     const webhookId = c.req.param('webhookId')
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json(
-        { ok: false, error: { code: 'unavailable', message: 'Integrations KV not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'unavailable', 'Integrations KV not configured')
     }
     const validated = await validateBody(c, TestWebhookSchema)
     if ('error' in validated) return validated.error

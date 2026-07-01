@@ -76,7 +76,7 @@ export function mountRetroSessionRoutes(parent: ParentApp) {
     }
     const draftGate = requireDraft({ status: row.status } as Session, 'retro_config')
     if (!draftGate.ok) {
-      return c.json({ ok: false, error: draftGate.error, trace_id: c.get('trace_id') }, 409)
+      return errorResponse(c, 409, draftGate.error.code, draftGate.error.message)
     }
     if (body.data.anonymity) {
       await c.env.DB.prepare(`UPDATE sessions SET anonymity = ?1, session_mode = 'retro' WHERE id = ?2`)

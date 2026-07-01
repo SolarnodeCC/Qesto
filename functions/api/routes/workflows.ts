@@ -40,10 +40,7 @@ export function mountWorkflowRoutes(parent: Hono<{ Bindings: Env; Variables: Var
 
   app.post('/', async (c) => {
     if (c.get('plan') !== 'team') {
-      return c.json(
-        { ok: false, error: { code: 'upgrade_required', message: 'Workflows require Team plan' }, trace_id: c.get('trace_id') },
-        403,
-      )
+      return errorResponse(c, 403, 'upgrade_required', 'Workflows require Team plan')
     }
     if (!c.env.INTEGRATIONS_KV) {
       return errorResponse(c, 503, 'kv_unavailable', 'INTEGRATIONS_KV required')

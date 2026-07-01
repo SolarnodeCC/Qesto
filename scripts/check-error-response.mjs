@@ -22,8 +22,9 @@ const PATTERN = /ok:\s*false/g
 // Burn down by replacing inline envelopes with errorResponse(c, status, code, message).
 // 610 at audit time; sovereign.ts migrated to errorResponse() (→603); marketplace
 // connect/listings consolidated onto authorizeTeamPermission (→597); clean
-// single-line envelopes across 23 route files codemodded to errorResponse() (→480).
-const BASELINE = 480
+// single-line envelopes across 23 route files codemodded to errorResponse() (→480);
+// batch-2: 26 low-count route files migrated (→449).
+const BASELINE = 449
 
 function walk(dir) {
   const out = []

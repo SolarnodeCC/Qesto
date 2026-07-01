@@ -19,10 +19,7 @@ export function mountTenantCostRoutes(parent: ParentApp) {
   app.get('/teams/:teamId/cost', async (c) => {
     const teamId = c.req.param('teamId')
     if (c.get('plan') !== 'team') {
-      return c.json(
-        { ok: false, error: { code: 'upgrade_required', message: 'Cost attribution requires Team plan' }, trace_id: c.get('trace_id') },
-        403,
-      )
+      return errorResponse(c, 403, 'upgrade_required', 'Cost attribution requires Team plan')
     }
     const month = new Date().toISOString().slice(0, 7)
     const kv = c.env.TEAMS_KV

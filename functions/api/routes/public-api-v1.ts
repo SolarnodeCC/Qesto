@@ -2,6 +2,7 @@
  * API-PUBLIC-V1-ROUTES — integrator REST surface (read-only v1).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import type { AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
@@ -29,7 +30,7 @@ export function mountPublicApiV1Routes(parent: Hono<{ Bindings: Env; Variables: 
     const sessionId = c.req.param('id')
     const session = await fetchSessionForTeam(c.env.DB, sessionId, teamId)
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' } }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const questions = await c.env.DB.prepare(
       `SELECT id, kind, prompt FROM questions WHERE session_id = ?1 ORDER BY position`,

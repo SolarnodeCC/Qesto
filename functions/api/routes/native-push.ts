@@ -2,6 +2,7 @@
  * NATIVE-PUSH-01 — register / list / revoke native device tokens (Sprint 81).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { validateBody } from '../lib/request-validation'
 import {
@@ -92,14 +93,7 @@ export function mountNativePushRoutes(parent: ParentApp) {
       .run()
 
     if (!result.meta.changes) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'not_found', message: 'Device token not found' },
-          trace_id: c.get('trace_id'),
-        },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Device token not found')
     }
 
     return c.json({

@@ -1,5 +1,5 @@
 import type { Context } from 'hono'
-import { sanitizeError } from '../../lib/error-handler'
+import { errorResponse, sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import type { Env } from '../../types'
 import type { AuthVars } from './types'
@@ -10,10 +10,7 @@ type AuthCtx = Context<{ Bindings: Env; Variables: AuthVars }>
 export function authJsonInternalError(c: AuthCtx, err: unknown, logLabel: string): Response {
   safeLogContext(err, { traceId: c.get('trace_id') ?? 'unknown', route: logLabel, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
   const { message } = sanitizeError(err, c.env.ENV, 500)
-  return c.json(
-    { ok: false, error: { code: 'internal', message }, trace_id: c.get('trace_id') },
-    500,
-  )
+  return errorResponse(c, 500, 'internal', message)
 }
 
 export function authRedirectLoginServerError(c: AuthCtx, err: unknown, logLabel: string): Response {

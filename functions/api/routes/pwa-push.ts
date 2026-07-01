@@ -2,6 +2,7 @@
  * PWA-PUSH-HARDENING-01 — subscribe / status / test notification (S71).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { validateBody } from '../lib/request-validation'
 import { computePushSla } from '../lib/push-sla'
@@ -50,10 +51,7 @@ export function mountPwaPushRoutes(parent: ParentApp) {
 
   app.put('/subscription', async (c) => {
     if (!c.env.USERS_KV) {
-      return c.json(
-        { ok: false, error: { code: 'kv_unavailable', message: 'USERS_KV required' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'kv_unavailable', 'USERS_KV required')
     }
     const parsed = await validateBody(c, PushSubscriptionSchema)
     if ('error' in parsed) return parsed.error

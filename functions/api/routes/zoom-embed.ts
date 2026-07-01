@@ -2,6 +2,7 @@
  * ZOOM-EMBED-01 / ZOOM-SYNC-01 — in-meeting embed config (S72).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { readKvJson } from '../lib/kv'
 import { zoomConfigKey, type ZoomIntegrationConfig } from './integrations'
@@ -19,16 +20,10 @@ export function mountZoomEmbedRoutes(parent: ParentApp) {
       .bind(sessionId)
       .first<{ id: string; owner_id: string; title: string; code: string }>()
     if (!row) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     if (row.owner_id !== c.get('user').sub) {
-      return c.json(
-        { ok: false, error: { code: 'forbidden', message: 'Not session owner' }, trace_id: c.get('trace_id') },
-        403,
-      )
+      return errorResponse(c, 403, 'forbidden', 'Not session owner')
     }
 
     const teamId = c.req.query('teamId')

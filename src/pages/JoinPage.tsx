@@ -5,7 +5,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import type { SessionLookupByCode } from '@/types/session'
-import { applyBrandingToDocument, cacheJoinSession, readCachedJoinSession } from '../lib/branding'
+import { applyBrandingCssVars, tryCacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { LiveQuickFingerPanel, LiveTeamQuizPanel } from './join/LiveEnergizerPanels'
@@ -47,8 +47,8 @@ export default function JoinPage() {
       `/api/sessions/by-code/${encodeURIComponent(c.toUpperCase())}`,
     )
     if (res.ok) {
-      if (res.data.branding) applyBrandingToDocument(res.data.branding)
-      cacheJoinSession(c, res.data as unknown as Record<string, unknown>)
+      if (res.data.branding) applyBrandingCssVars(res.data.branding)
+      tryCacheJoinSession(c, res.data as unknown as Record<string, unknown>)
       if (res.data.status === 'live') {
         if (pollRef.current) {
           clearInterval(pollRef.current)

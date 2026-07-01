@@ -1,3 +1,4 @@
+import { errorResponse } from '../../lib/error-handler'
 import { generateMagicLinkToken, hashMagicLinkToken } from '../../lib/tokens'
 import { magicLinkEmail, sendEmail } from '../../lib/email'
 import { rateLimit } from '../../lib/rate-limit'
@@ -25,10 +26,7 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
       const body = (await c.req.json().catch(() => null)) as unknown
       const parsed = authEmailRequestSchema.safeParse(body)
       if (!parsed.success) {
-        return c.json(
-          { ok: false, error: { code: 'validation', message: 'Invalid email' }, trace_id: c.get('trace_id') },
-          400,
-        )
+        return errorResponse(c, 400, 'validation', 'Invalid email')
       }
       const email = parsed.data.email.toLowerCase().trim()
       // SEC M-6: trust only the unspoofable edge header for rate-limit keys.
@@ -41,14 +39,7 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
           prefix: 'auth-req',
         })
         if (!ipGate.allowed) {
-          return c.json(
-            {
-              ok: false,
-              error: { code: 'rate_limited', message: 'Too many requests. Try again later.' },
-              trace_id: c.get('trace_id'),
-            },
-            429,
-          )
+          return errorResponse(c, 429, 'rate_limited', 'Too many requests. Try again later.')
         }
       }
       const emailGate = await rateLimit(c.env.ACTIONS_KV, `email:${email}`, {

@@ -59,10 +59,7 @@ export function mountPartnerAppRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
   app.post('/teams/:teamId/partner-apps', async (c) => {
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json(
-        { ok: false, error: { code: 'unavailable', message: 'Integrations KV not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'unavailable', 'Integrations KV not configured')
     }
     const teamId = c.req.param('teamId')
     const validated = await validateBody(c, CreatePartnerAppSchema)
@@ -94,10 +91,7 @@ export function mountPartnerAppRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
   app.post('/teams/:teamId/partner-apps/:appId/rotate-secret', async (c) => {
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json(
-        { ok: false, error: { code: 'unavailable', message: 'Integrations KV not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'unavailable', 'Integrations KV not configured')
     }
     const teamId = c.req.param('teamId')
     const appId = c.req.param('appId')

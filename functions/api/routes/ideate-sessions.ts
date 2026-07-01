@@ -76,7 +76,7 @@ export function mountIdeateSessionRoutes(parent: ParentApp) {
     }
     const draftGate = requireDraft({ status: row.status } as Session, 'patch')
     if (!draftGate.ok) {
-      return c.json({ ok: false, error: draftGate.error, trace_id: c.get('trace_id') }, 409)
+      return errorResponse(c, 409, draftGate.error.code, draftGate.error.message)
     }
     await c.env.DB.prepare(`UPDATE sessions SET session_mode = 'ideate' WHERE id = ?1`).bind(id).run()
     const existing = (await readKvJson<IdeateSessionSeed>(c.env.SESSIONS_KV, ideateSeedKey(id))) ?? {

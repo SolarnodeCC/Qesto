@@ -94,7 +94,8 @@ export function parseSseEvent(raw: string): { event: string; data: unknown } | n
   }
 }
 
-export function normalizeQuestionKind(kind: string): WizardQuestionKind {
+/** Coerces unknown API kind strings to a wizard-safe {@link WizardQuestionKind} (defaults to `poll`). */
+export function coerceQuestionKind(kind: string): WizardQuestionKind {
   if (kind === 'wordcloud') return 'word_cloud'
   return (['poll', 'ranking', 'open', 'multi_select', 'likert', 'slider', 'upvote', 'word_cloud'].includes(kind)
     ? kind
