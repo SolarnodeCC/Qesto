@@ -175,25 +175,62 @@ export function TextInput({
 
 // ─── Data Display ──────────────────────────────────────────────────────────
 
+/**
+ * Badge — the shared pill primitive. `tone` selects a semantic color; feature
+ * families map their own states (session status, moderation, roles, …) onto
+ * these tones rather than hand-rolling per-family color maps. `dot` renders a
+ * leading status dot; `pulse` animates it (the LIVE indicator).
+ *
+ * Canonical status→tone mappings live in StatusBadge (session lifecycle) and at
+ * each family's call site. See DESIGN_SYSTEM_AUDIT_2026-07-01.
+ */
+export type BadgeTone = 'neutral' | 'brand' | 'success' | 'info' | 'warning' | 'danger' | 'ai'
+
+const BADGE_TONE_STYLES: Record<BadgeTone, string> = {
+  neutral: 'bg-pulse-100 dark:bg-pulse-800 text-pulse-600 dark:text-pulse-300 border border-pulse-200 dark:border-pulse-700',
+  brand: 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800',
+  success: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800',
+  info: 'bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800',
+  warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
+  danger: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
+  ai: 'bg-gradient-ai text-white border border-violet-400 dark:border-violet-500',
+}
+
+const BADGE_DOT_STYLES: Record<BadgeTone, string> = {
+  neutral: 'bg-pulse-400',
+  brand: 'bg-teal-500',
+  success: 'bg-signal-success',
+  info: 'bg-sky-500',
+  warning: 'bg-amber-500',
+  danger: 'bg-red-500',
+  ai: 'bg-white',
+}
+
 export function Badge({
   children,
-  variant = 'primary',
+  tone = 'neutral',
+  dot = false,
+  pulse = false,
   className = '',
 }: {
   children: ReactNode
-  variant?: 'primary' | 'ai' | 'success' | 'warning' | 'error'
+  tone?: BadgeTone
+  /** Render a leading status dot in the tone color. */
+  dot?: boolean
+  /** Animate the dot (use with `dot` for the LIVE indicator). */
+  pulse?: boolean
   className?: string
 }) {
-  const variantStyles = {
-    primary: 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800',
-    ai: 'bg-gradient-ai text-white border border-violet-400 dark:border-violet-500',
-    success: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800',
-    warning: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
-    error: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
-  }
-
   return (
-    <span className={`inline-flex items-center gap-space-1 rounded-pill px-space-3 py-space-1 text-caption ${variantStyles[variant]} ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${BADGE_TONE_STYLES[tone]} ${className}`}
+    >
+      {dot && (
+        <span
+          className={`h-1.5 w-1.5 shrink-0 rounded-full ${BADGE_DOT_STYLES[tone]} ${pulse ? 'animate-pulse' : ''}`}
+          aria-hidden="true"
+        />
+      )}
       {children}
     </span>
   )
