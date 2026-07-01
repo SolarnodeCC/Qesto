@@ -31,4 +31,4 @@ export const LAUNCHPAD_AI_TOPIC_CLASS =
   `w-full rounded-md border border-violet-300 dark:border-violet-700/60 dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 disabled:opacity-60 ${HINT_PSEUDO}:text-pulse-500`
 
 export const DEFAULT_TEXT_INPUT_CLASS =
-  `border border-pulse-300 dark:border-[#2A3858] rounded-md px-space-3 py-space-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] ${INPUT_HINT_TEXT_CLASS} focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-400/20 focus:outline-none transition-all duration-150`
+  `border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 text-body-s bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] ${INPUT_HINT_TEXT_CLASS} focus:border-teal-500 dark:focus:border-teal-400 focus:ring-2 focus:ring-teal-100 dark:focus:ring-teal-400/20 focus:outline-none transition-all duration-150`

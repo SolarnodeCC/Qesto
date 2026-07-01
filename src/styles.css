@@ -99,6 +99,20 @@
   --color-signal-warning: #F59E0B;
   --color-signal-error:   #DC2626;
   --color-signal-info:    #0EA5E9;
+
+  /* Type scale — registered as @theme so `text-display-l` / `text-heading-*` /  */
+  /* `text-body-*` / `text-caption` resolve as real Tailwind font-size utilities  */
+  /* (size + line-height). Mirrors the design-system --fs-* scale in              */
+  /* design-system/colors_and_type.css. Callers add weight/color separately.      */
+  --text-display-xl: 3.75rem;  --text-display-xl--line-height: 1.05;
+  --text-display-l:  3rem;     --text-display-l--line-height:  1.1;
+  --text-heading-l:  2rem;     --text-heading-l--line-height:  1.2;
+  --text-heading-m:  1.5rem;   --text-heading-m--line-height:  1.3;
+  --text-heading-s:  1.25rem;  --text-heading-s--line-height:  1.35;
+  --text-body-l:     1.125rem; --text-body-l--line-height:     1.55;
+  --text-body-m:     1rem;     --text-body-m--line-height:     1.5;
+  --text-body-s:     0.875rem; --text-body-s--line-height:     1.5;
+  --text-caption:    0.75rem;  --text-caption--line-height:    1.4;
 }
 
 /* ─── Signature gradient backgrounds ───────────────────────────────────────── */
