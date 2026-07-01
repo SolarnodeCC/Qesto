@@ -8,7 +8,7 @@ import { z } from 'zod'
 import type { Env } from '../../types'
 import { rateLimit } from '../../lib/rate-limit'
 import { askHelpAI, HelpAIError, HelpValidationError } from '../../lib/help-rag'
-import { sanitizeError } from '../../lib/error-handler'
+import { errorResponse, sanitizeError } from '../../lib/error-handler'
 import { verifyJwt } from '../../lib/jwt'
 import { safeLogContext , logEvent} from '../../lib/log'
 import type { AuthVariables } from '../../middleware/auth'
@@ -36,29 +36,12 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthV
     try {
       body = await c.req.json()
     } catch {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'bad_request', message: 'Invalid JSON' },
-          trace_id: traceId,
-        },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_request', 'Invalid JSON')
     }
 
     const parsed = AskSchema.safeParse(body)
     if (!parsed.success) {
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'validation_error',
-            message: 'Question must be 1-500 characters',
-          },
-          trace_id: traceId,
-        },
-        400,
-      )
+      return errorResponse(c, 400, 'validation_error', 'Question must be 1-500 characters')
     }
 
     const { question } = parsed.data
@@ -71,18 +54,7 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthV
       prefix: 'help-ask',
     })
     if (!rl.allowed) {
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'rate_limited',
-            message: 'Too many questions; please wait before asking again',
-            details: { retry_after_seconds: Math.ceil((rl.resetAt - Date.now()) / 1000) },
-          },
-          trace_id: traceId,
-        },
-        429,
-      )
+      return errorResponse(c, 429, 'rate_limited', 'Too many questions; please wait before asking again')
     }
 
     const userScope = userPlan
@@ -124,42 +96,17 @@ export function registerHelpAskRoute(app: Hono<{ Bindings: Env; Variables: AuthV
       safeLogContext(err, { traceId: traceId, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
 
       if (err instanceof HelpValidationError) {
-        return c.json(
-          {
-            ok: false,
-            error: {
-              code: 'ai_output_invalid',
-              message: 'AI response failed validation',
-              details: err.details,
-            },
-            trace_id: traceId,
-          },
-          502,
-        )
+        return errorResponse(c, 502, 'ai_output_invalid', 'AI response failed validation')
       }
 
       if (err instanceof HelpAIError) {
         const sanitized = sanitizeError(err, c.env.ENV, 500)
-        return c.json(
-          {
-            ok: false,
-            error: { ...sanitized, code: 'ai_failed' },
-            trace_id: traceId,
-          },
-          500,
-        )
+        return errorResponse(c, 500, 'ai_failed', sanitized.message)
       }
 
       // Unknown error
       const sanitized = sanitizeError(err as Error, c.env.ENV, 500)
-      return c.json(
-        {
-          ok: false,
-          error: sanitized,
-          trace_id: traceId,
-        },
-        500,
-      )
+      return errorResponse(c, 500, sanitized.code, sanitized.message)
     }
   })
 }

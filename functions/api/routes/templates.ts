@@ -478,14 +478,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       .first()
 
     if (!sessionRow) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'not_found', message: 'Session not found' },
-          trace_id: c.get('trace_id'),
-        },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
 
     const { results: questionRows } = await c.env.DB
@@ -592,10 +585,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const raw = await readKvText(c.env.TEMPLATES_KV, key)
 
     if (!raw) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Template not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Template not found')
     }
 
     // Delete template
@@ -627,10 +617,7 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     const tmpl = SEED_TEMPLATES.find((t) => t.id === id)
 
     if (!tmpl) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Template not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Template not found')
     }
 
     return c.json({

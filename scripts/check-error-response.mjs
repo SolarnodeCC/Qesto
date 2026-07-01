@@ -23,8 +23,10 @@ const PATTERN = /ok:\s*false/g
 // 610 at audit time; sovereign.ts migrated to errorResponse() (→603); marketplace
 // connect/listings consolidated onto authorizeTeamPermission (→597); clean
 // single-line envelopes across 23 route files codemodded to errorResponse() (→480);
-// batch-2: 26 low-count route files migrated (→449).
-const BASELINE = 449
+// batch-2: 26 low-count route files migrated (→449); batch-3: 23 low-count route
+// files migrated to errorResponse() (→347; captcha + denyFeature data/details-bearing
+// envelopes preserved since errorResponse() carries only code+message).
+const BASELINE = 347
 
 function walk(dir) {
   const out = []

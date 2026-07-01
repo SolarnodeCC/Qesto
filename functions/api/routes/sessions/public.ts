@@ -3,6 +3,7 @@ import { SESSION_COOKIE } from '../../middleware/auth'
 import { jwtVerificationSecrets, verifyJwtWithSecrets } from '../../lib/jwt'
 import { deriveVoterIdentity } from '../../lib/voter'
 import { requireLiveForWebSocket } from '../../lib/session-lifecycle'
+import { errorResponse } from '../../lib/error-handler'
 import {
   fetchSessionByCode,
   getSessionRoomStub,
@@ -22,19 +23,13 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
     const traceId = c.get('trace_id')
     if (!/^[0-9A-Z]{6}$/.test(code)) {
       logEvent({ ts: new Date().toISOString(), level: 'warn', event: 'join.bad_code', trace_id: traceId })
-      return c.json(
-        { ok: false, error: { code: 'bad_code', message: 'Invalid join code' }, trace_id: traceId },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_code', 'Invalid join code')
     }
     const session = await fetchSessionByCode(c.env.DB, code)
     if (!session || session.status === 'archived' || session.status === 'closed') {
       // Log enumeration attempts for security monitoring
       logEvent({ ts: new Date().toISOString(), level: 'warn', event: 'join.not_found', trace_id: traceId })
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'No active session for that code' }, trace_id: traceId },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'No active session for that code')
     }
     if (c.env.JOIN_CAPTCHA_ENABLED === 'true') {
       const token = c.req.header('x-qesto-join-token')
@@ -68,10 +63,7 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
 
   pub.get('/:id/ws', async (c) => {
     if (c.req.header('upgrade')?.toLowerCase() !== 'websocket') {
-      return c.json(
-        { ok: false, error: { code: 'bad_request', message: 'Expected WebSocket upgrade' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_request', 'Expected WebSocket upgrade')
     }
     const id = c.req.param('id')
     const session = await c.env.DB
@@ -84,17 +76,11 @@ export function mountPublicSessionRoutes(pub: Hono<{ Bindings: Env; Variables: S
       .bind(id)
       .first<SessionRow>()
     if (!session) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const wsGate = requireLiveForWebSocket(session)
     if (!wsGate.ok) {
-      return c.json(
-        { ok: false, error: { code: wsGate.error.code, message: wsGate.error.message }, trace_id: c.get('trace_id') },
-        wsGate.error.status,
-      )
+      return errorResponse(c, wsGate.error.status, wsGate.error.code, wsGate.error.message)
     }
 
     // Presenter detection: JWT in subprotocol OR qesto_session cookie.

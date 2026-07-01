@@ -8,6 +8,7 @@ import type { AdminVariables } from '../middleware/admin'
 import type { RbacVariables } from '../middleware/rbac'
 import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-api-auth'
 import { fetchSessionForTeam } from '../repositories/sessionRepository'
+import { errorResponse } from '../lib/error-handler'
 import { ulid } from '../lib/ulid'
 import { generateJoinCode } from '../lib/code'
 import { deprecationHeaders } from '../lib/deprecation'
@@ -50,7 +51,7 @@ export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env; Variables: 
       .bind(sessionId)
       .first<{ id: string; team_id: string | null; title: string; status: string }>()
     if (!session || session.team_id !== teamId) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' } }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const questions = await c.env.DB.prepare(
       `SELECT id, kind, prompt FROM questions WHERE session_id = ?1 ORDER BY position`,
@@ -73,10 +74,10 @@ export function mountPublicApiV2Routes(parent: Hono<{ Bindings: Env; Variables: 
     const sessionId = c.req.param('id')
     const session = await fetchSessionForTeam(c.env.DB, sessionId, teamId)
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' } }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     if (session.status !== 'live' && session.status !== 'energizing') {
-      return c.json({ ok: false, error: { code: 'session_not_live', message: 'Session is not live' } }, 409)
+      return errorResponse(c, 409, 'session_not_live', 'Session is not live')
     }
     const base = (c.env.API_URL ?? c.env.PAGES_URL ?? '').replace(/\/$/, '')
     const wsBase = base.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:')

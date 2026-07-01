@@ -16,6 +16,7 @@ import { ulid } from '../../lib/ulid'
 import { signJwt } from '../../lib/jwt'
 import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
+import { errorResponse } from '../../lib/error-handler'
 import { deleteUserGdprData } from '../../lib/gdpr-delete-user'
 import type { Env } from '../../types'
 
@@ -85,7 +86,7 @@ export function mountUserSupportRoutes(
     ])
 
     if (!user) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'User not found')
     }
 
     return c.json(
@@ -139,7 +140,7 @@ export function mountUserSupportRoutes(
     const userId = c.req.param('id')
 
     if (userId === actor?.sub) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'Cannot impersonate yourself' }, trace_id }, 400)
+      return errorResponse(c, 400, 'bad_request', 'Cannot impersonate yourself')
     }
 
     const target = await c.env.DB.prepare(
@@ -148,7 +149,7 @@ export function mountUserSupportRoutes(
       .bind(userId)
       .first<{ id: string; email: string; display_name: string | null }>()
     if (!target) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'User not found')
     }
 
     const jti = `imp:${actor?.sub ?? 'unknown'}:${ulid()}`
@@ -219,7 +220,7 @@ export function mountUserSupportRoutes(
       .bind(userId)
       .first()
     if (!profile) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'User not found')
     }
     const sessions = await c.env.DB.prepare(
       `SELECT id, title, status, created_at, closed_at FROM sessions WHERE owner_id = ?1 ORDER BY created_at DESC LIMIT 1000`,
@@ -266,15 +267,12 @@ export function mountUserSupportRoutes(
     if ('error' in validated) return validated.error
 
     if (userId === actor?.sub) {
-      return c.json(
-        { ok: false, error: { code: 'bad_request', message: 'Use self-service deletion for your own account' }, trace_id },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_request', 'Use self-service deletion for your own account')
     }
 
     const exists = await c.env.DB.prepare(`SELECT id FROM users WHERE id = ?1`).bind(userId).first()
     if (!exists) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'User not found')
     }
 
     const result = await deleteUserGdprData(

@@ -7,6 +7,7 @@ import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { marketingOwnerMiddleware, type MarketingOwnerVariables } from '../../middleware/marketing-owner'
 import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
+import { errorResponse } from '../../lib/error-handler'
 import { ulid } from '../../lib/ulid'
 import type { Env } from '../../types'
 
@@ -92,7 +93,7 @@ export function mountCalendarRoutes(app: App) {
       binds.push(notes)
     }
     if (sets.length === 0) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'No fields to update' }, trace_id }, 400)
+      return errorResponse(c, 400, 'validation', 'No fields to update')
     }
     const now = Date.now()
     sets.push(`updated_at = ?${i++}`)
@@ -100,7 +101,7 @@ export function mountCalendarRoutes(app: App) {
     binds.push(id)
     const res = await c.env.DB.prepare(`UPDATE content_calendar SET ${sets.join(', ')} WHERE id = ?${i}`).bind(...binds).run()
     if ((res.meta.changes ?? 0) === 0) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Calendar item not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'Calendar item not found')
     }
     await recordAuditEvent(c, { action: 'marketing.calendar_update', subject_type: 'content_calendar', subject_id: id, trace_id })
     return c.json({ ok: true, data: { id, updated_at: now }, trace_id }, 200)
@@ -110,9 +111,9 @@ export function mountCalendarRoutes(app: App) {
     const trace_id = c.get('trace_id')
     const id = c.req.param('id')
     const row = await c.env.DB.prepare(`SELECT id, status FROM content_calendar WHERE id = ?1`).bind(id).first<{ id: string; status: string }>()
-    if (!row) return c.json({ ok: false, error: { code: 'not_found', message: 'Calendar item not found' }, trace_id }, 404)
+    if (!row) return errorResponse(c, 404, 'not_found', 'Calendar item not found')
     if (row.status !== 'planned') {
-      return c.json({ ok: false, error: { code: 'conflict', message: 'Only planned items can be deleted (would orphan generated content_items via cascade)' }, trace_id }, 409)
+      return errorResponse(c, 409, 'conflict', 'Only planned items can be deleted (would orphan generated content_items via cascade)')
     }
     await c.env.DB.prepare(`DELETE FROM content_calendar WHERE id = ?1`).bind(id).run()
     await recordAuditEvent(c, { action: 'marketing.calendar_delete', subject_type: 'content_calendar', subject_id: id, trace_id })

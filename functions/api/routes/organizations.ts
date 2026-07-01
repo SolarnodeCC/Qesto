@@ -11,6 +11,7 @@ import { readKvJson, writeKvJson } from '../lib/kv'
 import { ulid } from '../lib/ulid'
 import { validateBody } from '../lib/request-validation'
 import { featureAllowed } from '../lib/entitlements'
+import { errorResponse } from '../lib/error-handler'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -44,20 +45,10 @@ export function mountOrganizationRoutes(parent: Hono<{ Bindings: Env; Variables:
   app.post('/', async (c) => {
     const quotas = c.get('planQuotas')
     if (!featureAllowed(quotas, 'samlSso')) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'upgrade_required', message: 'Organizations require Enterprise (Team) plan' },
-          trace_id: c.get('trace_id'),
-        },
-        403,
-      )
+      return errorResponse(c, 403, 'upgrade_required', 'Organizations require Enterprise (Team) plan')
     }
     if (!c.env.TEAMS_KV) {
-      return c.json(
-        { ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV not configured')
     }
     const parsed = await validateBody(c, CreateOrgSchema)
     if ('error' in parsed) return parsed.error
@@ -80,24 +71,15 @@ export function mountOrganizationRoutes(parent: Hono<{ Bindings: Env; Variables:
 
   app.get('/:id', async (c) => {
     if (!c.env.TEAMS_KV) {
-      return c.json(
-        { ok: false, error: { code: 'kv_unavailable', message: 'TEAMS_KV not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'kv_unavailable', 'TEAMS_KV not configured')
     }
     const org = await readKvJson<Organization>(c.env.TEAMS_KV, orgKey(c.req.param('id')))
     if (!org) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Organization not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Organization not found')
     }
     const user = c.get('user')
     if (org.ownerId !== user.sub) {
-      return c.json(
-        { ok: false, error: { code: 'forbidden', message: 'Not an organization owner' }, trace_id: c.get('trace_id') },
-        403,
-      )
+      return errorResponse(c, 403, 'forbidden', 'Not an organization owner')
     }
     return c.json({ ok: true, data: org, trace_id: c.get('trace_id') })
   })

@@ -4,6 +4,7 @@ import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { ulid } from '../../lib/ulid'
 import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
+import { errorResponse } from '../../lib/error-handler'
 import { AdminCreateUserSchema, AdminPatchUserSchema } from '../../lib/domain-schemas'
 import type { Env } from '../../types'
 
@@ -68,7 +69,7 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
       return c.json({ ok: true, data: { users: results, total: countRow?.n ?? 0 }, trace_id }, 200)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch users'
-      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
+      return errorResponse(c, 500, 'internal', message)
     }
   })
 
@@ -118,7 +119,7 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
     } catch (err) {
       const msg = (err as Error).message ?? ''
       if (msg.includes('UNIQUE constraint')) {
-        return c.json({ ok: false, error: { code: 'conflict', message: 'Email already exists' }, trace_id }, 409)
+        return errorResponse(c, 409, 'conflict', 'Email already exists')
       }
       throw err
     }
@@ -136,7 +137,7 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
     ).bind(userId).first<Omit<AdminUser, 'admin_role'>>()
 
     if (!existing) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'User not found')
     }
 
     if (body.display_name !== undefined) {
@@ -213,7 +214,7 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
 
     const existing = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?1').bind(userId).first()
     if (!existing) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'User not found')
     }
 
     await c.env.DB.prepare('UPDATE users SET suspended_at = ?1 WHERE id = ?2').bind(now, userId).run()
@@ -234,7 +235,7 @@ export function mountUserRoutes(app: Hono<{ Bindings: Env; Variables: AuthVariab
 
     const existing = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?1').bind(userId).first()
     if (!existing) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'User not found')
     }
 
     await c.env.DB.prepare('UPDATE users SET suspended_at = NULL WHERE id = ?1').bind(userId).run()

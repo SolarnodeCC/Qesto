@@ -1,4 +1,4 @@
-import { sanitizeError } from '../../lib/error-handler'
+import { errorResponse, sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import type { EnergizerApp } from './types'
 import { validateData, EnergizerConfigEnvelopeSchema, EmojiPollConfigSchema, QuickFingerConfigSchema, TeamQuizConfigSchema } from '../../lib/protocol-schemas'
@@ -25,12 +25,12 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
       try {
         config = JSON.parse(energizer.config_json)
       } catch {
-        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Malformed energizer config' }, trace_id }, 500)
+        return errorResponse(c, 500, 'invalid_config', 'Malformed energizer config')
       }
 
       const validConfig = validateData(config, EnergizerConfigEnvelopeSchema)
       if (!validConfig) {
-        return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid energizer config' }, trace_id }, 500)
+        return errorResponse(c, 500, 'invalid_config', 'Invalid energizer config')
       }
 
       let results: Record<string, number> = {}
@@ -40,7 +40,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
       if (energizer.kind === 'emoji_poll') {
         const emojiConfig = validateData(config, EmojiPollConfigSchema)
         if (!emojiConfig) {
-          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid emoji poll config' }, trace_id }, 500)
+          return errorResponse(c, 500, 'invalid_config', 'Invalid emoji poll config')
         }
         const votes = await c.env.DB.prepare(
           `SELECT value, COUNT(*) as count FROM energizer_votes
@@ -58,7 +58,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
       } else if (energizer.kind === 'quick_finger') {
         const qfConfig = validateData(config, QuickFingerConfigSchema)
         if (!qfConfig) {
-          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid quick finger config' }, trace_id }, 500)
+          return errorResponse(c, 500, 'invalid_config', 'Invalid quick finger config')
         }
         const correctAnswer = qfConfig.options[qfConfig.correct_index]
 
@@ -83,7 +83,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
       } else if (energizer.kind === 'team_quiz') {
         const tqConfig = validateData(config, TeamQuizConfigSchema)
         if (!tqConfig) {
-          return c.json({ ok: false, error: { code: 'invalid_config', message: 'Invalid team quiz config' }, trace_id }, 500)
+          return errorResponse(c, 500, 'invalid_config', 'Invalid team quiz config')
         }
         const tq = tqConfig
         const qi = tq.current_index
@@ -155,7 +155,7 @@ export function registerEnergizerActiveRoute(app: EnergizerApp): void {
     } catch (err) {
       safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
-      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
+      return errorResponse(c, 500, 'internal', message)
     }
   })
 }

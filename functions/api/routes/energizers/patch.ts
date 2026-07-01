@@ -1,5 +1,5 @@
 import { recordAuditEvent } from '../../lib/audit'
-import { sanitizeError } from '../../lib/error-handler'
+import { errorResponse, sanitizeError } from '../../lib/error-handler'
 import { safeLogContext } from '../../lib/log'
 import { z } from 'zod'
 import type { EnergizerApp } from './types'
@@ -16,10 +16,7 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
       // Verify session ownership
       const session = await requireSessionAccess(c.env.DB, sessionId, user.sub, { requireOwner: true })
       if (!session) {
-        return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
-          404,
-        )
+        return errorResponse(c, 404, 'not_found', 'Session not found or access denied')
       }
       const PatchEnergizerSchema = z.object({
         state: z.enum(['active', 'completed']).optional(),
@@ -29,10 +26,7 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
       const raw = await c.req.json().catch(() => null)
       const parsed = PatchEnergizerSchema.safeParse(raw)
       if (!parsed.success) {
-        return c.json(
-          { ok: false, error: { code: 'validation', message: 'Invalid energizer patch payload' }, trace_id },
-          400,
-        )
+        return errorResponse(c, 400, 'validation', 'Invalid energizer patch payload')
       }
       const body = parsed.data
 
@@ -71,10 +65,7 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
         .run()
 
       if (result.meta?.changes === 0) {
-        return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Energizer not found' }, trace_id },
-          404,
-        )
+        return errorResponse(c, 404, 'not_found', 'Energizer not found')
       }
 
       await recordAuditEvent(c, {
@@ -89,7 +80,7 @@ export function registerEnergizerPatchRoute(app: EnergizerApp): void {
     } catch (err) {
       safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
-      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
+      return errorResponse(c, 500, 'internal', message)
     }
   })
 }

@@ -16,6 +16,7 @@ import { ulid } from '../../lib/ulid'
 import { validateBody } from '../../lib/request-validation'
 import { recordAuditEvent } from '../../lib/audit'
 import { readKvJson, writeKvJson } from '../../lib/kv'
+import { errorResponse } from '../../lib/error-handler'
 import { rateLimit } from '../../middleware/rate-limit'
 import { CRON_REGISTRY, isCronMissed, nextRunAfter } from '../../lib/ops-cron'
 import type { Env } from '../../types'
@@ -71,7 +72,7 @@ export function mountOpsControlRoutes(
     if ('error' in validated) return validated.error
 
     const row = await c.env.DB.prepare(`SELECT id, version FROM deploy_history WHERE id = ?1`).bind(id).first<{ id: string; version: string }>()
-    if (!row) return c.json({ ok: false, error: { code: 'not_found', message: 'Deploy not found' }, trace_id }, 404)
+    if (!row) return errorResponse(c, 404, 'not_found', 'Deploy not found')
 
     await c.env.DB.prepare(`UPDATE deploy_history SET status = 'rollback_requested', rolled_back_at = ?1 WHERE id = ?2`)
       .bind(Date.now(), id)
@@ -115,7 +116,7 @@ export function mountOpsControlRoutes(
     const trace_id = c.get('trace_id')
     const key = c.req.param('key')
     if (!CRON_REGISTRY.some((j) => j.key === key)) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Unknown cron job' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'Unknown cron job')
     }
     try {
       await c.env.DB.prepare(
@@ -218,7 +219,7 @@ export function mountOpsControlRoutes(
     const validated = await validateBody(c, CloseIncident)
     if ('error' in validated) return validated.error
     const exists = await c.env.DB.prepare(`SELECT id FROM incidents WHERE id = ?1`).bind(id).first()
-    if (!exists) return c.json({ ok: false, error: { code: 'not_found', message: 'Incident not found' }, trace_id }, 404)
+    if (!exists) return errorResponse(c, 404, 'not_found', 'Incident not found')
     const now = Date.now()
     await c.env.DB.prepare(`UPDATE incidents SET status = 'closed', closed_at = ?1, postmortem = ?2 WHERE id = ?3`)
       .bind(now, validated.data.postmortem ?? null, id)
@@ -260,7 +261,7 @@ export function mountOpsControlRoutes(
     const validated = await validateBody(c, WafWhitelist)
     if ('error' in validated) return validated.error
     const kv = opsKv(c.env)
-    if (!kv) return c.json({ ok: false, error: { code: 'unavailable', message: 'Ops KV not configured' }, trace_id }, 503)
+    if (!kv) return errorResponse(c, 503, 'unavailable', 'Ops KV not configured')
     const list = (await readKvJson<string[]>(kv, WAF_WHITELIST_KEY)) ?? []
     if (!list.includes(validated.data.pattern)) list.push(validated.data.pattern)
     await writeKvJson(kv, WAF_WHITELIST_KEY, list)
