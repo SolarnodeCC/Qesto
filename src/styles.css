@@ -92,6 +92,13 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+
+  /* Signal colors — registered as @theme so `bg-/text-/border-signal-*` resolve */
+  /* as real Tailwind utilities. Values mirror design-system/colors_and_type.css. */
+  --color-signal-success: #22C55E;
+  --color-signal-warning: #F59E0B;
+  --color-signal-error:   #DC2626;
+  --color-signal-info:    #0EA5E9;
 }
 
 /* ─── Signature gradient backgrounds ───────────────────────────────────────── */

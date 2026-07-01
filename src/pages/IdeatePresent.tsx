@@ -6,6 +6,7 @@ import { ideasForCluster, unclusteredIdeas, useIdeateSession } from '../hooks/us
 import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
 import { inputHint } from '../ui/input-hint'
 import HostConsoleShell from '../layouts/HostConsoleShell'
+import { CLUSTER_BORDER_COLORS, CLUSTER_BG_COLORS, CLUSTER_COLOR_COUNT } from '../ui/cluster-colors'
 
 type IdeateConfig = {
   sessionId: string
@@ -14,13 +15,6 @@ type IdeateConfig = {
   status: string
   dotVoteLimit: number
 }
-
-const CLUSTER_COLORS = [
-  'border-teal-400 bg-teal-50 dark:bg-teal-900/20',
-  'border-violet-400 bg-violet-50 dark:bg-violet-900/20',
-  'border-amber-400 bg-amber-50 dark:bg-amber-900/20',
-  'border-sky-400 bg-sky-50 dark:bg-sky-900/20',
-]
 
 export default function IdeatePresent() {
   const { id } = useParams<{ id: string }>()
@@ -156,7 +150,7 @@ export default function IdeatePresent() {
               {state.clusters.map((cluster, idx) => (
                 <section
                   key={cluster.id}
-                  className={`rounded-xl border-2 p-4 ${CLUSTER_COLORS[idx % CLUSTER_COLORS.length]}`}
+                  className={`rounded-xl border-2 p-4 ${CLUSTER_BORDER_COLORS[idx % CLUSTER_COLOR_COUNT]} ${CLUSTER_BG_COLORS[idx % CLUSTER_COLOR_COUNT]}`}
                 >
                   <h3 className="font-semibold text-pulse-900 dark:text-pulse-100">{cluster.label}</h3>
                   <p className="mb-3 text-xs text-pulse-500">

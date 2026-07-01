@@ -1,18 +1,22 @@
+import { Badge, type BadgeTone } from '../../ui/components'
 import type { Role } from './types'
 
-const colours: Record<Role, string> = {
-  owner: 'bg-violet-100 text-violet-700',
-  admin: 'bg-teal-100 text-teal-700',
-  member: 'bg-pulse-100 text-pulse-600',
-  viewer: 'bg-pulse-100 text-pulse-500',
+/**
+ * Team role → shared Badge tone. `owner` uses `brand` (teal) rather than the old
+ * violet, which collided with violet's AI-accent meaning elsewhere
+ * (DESIGN_SYSTEM_AUDIT_2026-07-01).
+ */
+const ROLE_TONE: Record<Role, BadgeTone> = {
+  owner: 'brand',
+  admin: 'info',
+  member: 'neutral',
+  viewer: 'neutral',
 }
 
 export function RoleBadge({ role }: { role: Role }) {
   return (
-    <span
-      className={`inline-block text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ${colours[role]}`}
-    >
+    <Badge tone={ROLE_TONE[role]} className="uppercase tracking-wider">
       {role}
-    </span>
+    </Badge>
   )
 }

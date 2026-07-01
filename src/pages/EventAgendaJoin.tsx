@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import { useT } from '../i18n'
 import ParticipantShell from '../layouts/ParticipantShell'
+import { Badge } from '../ui/components'
 
 type AgendaTrack = { id: string; label: string; day: string; order: number }
 type AgendaSlot = {
@@ -81,9 +82,9 @@ export default function EventAgendaJoin() {
   return (
     <ParticipantShell title={data.eventTitle} subtitle={t('agenda.subtitle')} maxWidth="3xl">
       {feedData?.status === 'live' && (
-        <span className="inline-flex rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-bold uppercase text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+        <Badge tone="success" dot pulse className="uppercase">
           {t('agenda.eventLive')}
-        </span>
+        </Badge>
       )}
 
       {feedData && feedData.feed.length > 0 && (
@@ -141,9 +142,9 @@ export default function EventAgendaJoin() {
                   )}
                 </div>
                 {slot.session?.status === 'live' && (
-                  <span className="shrink-0 rounded-full bg-teal-100 px-2 py-0.5 text-xs font-bold uppercase text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+                  <Badge tone="success" dot pulse className="shrink-0 uppercase">
                     {t('agenda.live')}
-                  </span>
+                  </Badge>
                 )}
               </div>
               {slot.session && (slot.session.status === 'live' || slot.session.status === 'energizing') && (

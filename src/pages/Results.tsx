@@ -10,6 +10,7 @@ import MainLayout from '../layouts/MainLayout'
 import { ResultsSectionSkeleton } from '../components/SkeletonLoader'
 import SessionTitleField from '../components/SessionTitleField'
 import SimilarSessionsResultsPanel from '../components/insights/SimilarSessionsResultsPanel'
+import { StatusBadge } from '../ui/StatusBadge'
 
 // Word-cloud sizing: frequency maps to font size only; colour is a single
 // AA-compliant token (RES-A11Y) so size — not random hue — carries meaning.
@@ -209,18 +210,7 @@ export default function Results() {
             }}
             className="flex-1 min-w-0"
           />
-          <span
-            className={
-              'text-xs uppercase tracking-wider rounded-full px-2 py-0.5 ' +
-              (session.status === 'live'
-                ? 'bg-teal-100 text-teal-700'
-                : session.status === 'closed'
-                ? 'bg-violet-100 text-violet-700'
-                : 'bg-pulse-100 text-pulse-600')
-            }
-          >
-            {statusLabel}
-          </span>
+          <StatusBadge status={session.status} label={statusLabel} />
         </div>
         <p className="text-sm text-pulse-500">
           {t('join_code')} <code className="font-mono">{session.code}</code>

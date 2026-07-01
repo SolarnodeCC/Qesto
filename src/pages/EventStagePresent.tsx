@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { useTownhallSession, type TownhallItemStatus } from '../hooks/useTownhallSession'
 import { TownhallQuestionCard } from '../ui/TownhallQuestionCard'
 import { inputHint } from '../ui/input-hint'
+import { Badge } from '../ui/components'
 
 type LinkedSession = {
   id: string
@@ -139,9 +140,9 @@ export default function EventStagePresent() {
             <p className="text-xs text-pulse-500">
               {t('present.liveSessions', { count: data.liveSessionCount })}
               {data.suiteStatus === 'live' && (
-                <span className="ml-2 rounded-full bg-teal-100 px-2 py-0.5 font-bold uppercase text-teal-700 dark:bg-teal-900/40 dark:text-teal-300">
+                <Badge tone="success" dot pulse className="ml-2 uppercase">
                   {t('agenda.eventLive')}
-                </span>
+                </Badge>
               )}
             </p>
           </div>
