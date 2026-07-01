@@ -6,18 +6,12 @@ import { ideasForCluster, unclusteredIdeas, useIdeateSession } from '../hooks/us
 import { IdeateIdeaCard } from '../ui/IdeateIdeaCard'
 import { inputHint } from '../ui/input-hint'
 import ParticipantShell from '../layouts/ParticipantShell'
+import { CLUSTER_BORDER_COLORS, CLUSTER_COLOR_COUNT } from '../ui/cluster-colors'
 
 type Lookup =
   | { status: 'loading' }
   | { status: 'ready'; sessionId: string; title: string }
   | { status: 'error'; message: string }
-
-const CLUSTER_COLORS = [
-  'border-teal-400',
-  'border-violet-400',
-  'border-amber-400',
-  'border-sky-400',
-]
 
 export default function IdeateJoin() {
   const { code } = useParams<{ code: string }>()
@@ -121,7 +115,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
           <p className="text-sm text-pulse-500">{t('clusters.waiting')}</p>
         ) : (
           state.clusters.map((cluster, idx) => (
-            <section key={cluster.id} className={`rounded-xl border-l-4 pl-4 ${CLUSTER_COLORS[idx % CLUSTER_COLORS.length]}`}>
+            <section key={cluster.id} className={`rounded-xl border-l-4 pl-4 ${CLUSTER_BORDER_COLORS[idx % CLUSTER_COLOR_COUNT]}`}>
               <h3 className="font-semibold text-pulse-900 dark:text-pulse-100">{cluster.label}</h3>
               <div className="mt-2 space-y-2">
                 {ideasForCluster(activeIdeas, cluster.id).map((idea) => (
