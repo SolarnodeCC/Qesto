@@ -12,6 +12,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { CheckCircle2 } from 'lucide-react'
 import type { HostToEmbedMessage, EmbedToHostMessage } from '@api/types'
 import { useT } from '../i18n'
 
@@ -287,9 +288,7 @@ export default function EmbedWidget() {
   function renderClosed(title: string) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-10 px-4 text-center" role="status" aria-live="polite">
-        <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-teal-500">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+        <CheckCircle2 size={32} className="text-teal-500" aria-hidden="true" />
         <p className="font-semibold text-base">{title}</p>
         <p className={`text-sm ${muted}`}>{t('sessionClosed')}</p>
         <p className={`text-xs ${muted}`}>{t('sessionClosedSubtext')}</p>
