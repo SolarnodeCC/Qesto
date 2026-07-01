@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { apiUrl } from '../config/api'
 import { LOGIN_FIELD_CLASS } from '../ui/input-field-class'
 import { inputHint } from '../ui/input-hint'
+import LegalFooter from '../layouts/LegalFooter'
 
 type Tab = 'magic' | 'login' | 'signup'
 type MagicStatus = 'idle' | 'sending' | 'sent' | 'invalid' | 'error'
@@ -101,13 +102,14 @@ export default function Login() {
   const inputClass = LOGIN_FIELD_CLASS
 
   const primaryBtn =
-    'w-full rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2'
+    'w-full rounded-lg bg-gradient-brand text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2'
 
   return (
-    <main id="main" className="min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-screen flex flex-col">
+    <main id="main" className="flex flex-1 items-center justify-center p-6">
       <section
         aria-labelledby="login-title"
-        className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+        className="w-full max-w-md space-y-5 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
       >
         <div className="space-y-1 text-center">
           <h1
@@ -419,6 +421,8 @@ export default function Login() {
         </p>
       </section>
     </main>
+    <LegalFooter className="px-6 pb-6" />
+    </div>
   )
 }
 

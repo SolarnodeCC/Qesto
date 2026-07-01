@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
+import { Check, X } from 'lucide-react'
 import { useT } from '../i18n'
 import { api } from '../api/client'
 import MainLayout from '../layouts/MainLayout'
@@ -71,19 +72,11 @@ export default function TeamInvite() {
               className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-teal-100"
               aria-hidden="true"
             >
-              <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8 text-teal-600" aria-hidden="true">
-                <path
-                  d="M5 13l4 4L19 7"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <Check className="h-8 w-8 text-teal-600" strokeWidth={2.5} />
             </div>
             <div aria-live="polite">
               <h1 tabIndex={-1} className="text-2xl font-semibold focus:outline-none">
-                You've joined {state.teamName}!
+                You&apos;ve joined {state.teamName}
               </h1>
               <p className="text-pulse-500 mt-2">
                 You now have access to the team's sessions and insights.
@@ -91,7 +84,7 @@ export default function TeamInvite() {
             </div>
             <Link
               to="/dashboard"
-              className="inline-flex items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
+              className="inline-flex items-center justify-center rounded-lg bg-gradient-brand text-white px-6 py-3 font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
             >
               Go to dashboard
             </Link>
@@ -104,15 +97,7 @@ export default function TeamInvite() {
               className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100"
               aria-hidden="true"
             >
-              <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8 text-red-500" aria-hidden="true">
-                <path
-                  d="M6 18L18 6M6 6l12 12"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <X className="h-8 w-8 text-red-500" strokeWidth={2.5} />
             </div>
             <div role="alert" aria-live="assertive">
               <h1 tabIndex={-1} className="text-2xl font-semibold focus:outline-none">

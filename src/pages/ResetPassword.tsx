@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
+import LegalFooter from '../layouts/LegalFooter'
 
 type Status = 'idle' | 'submitting' | 'success' | 'invalid' | 'error'
 
@@ -37,8 +38,9 @@ export default function ResetPassword() {
   }
 
   return (
-    <main id="main" className="min-h-screen flex items-center justify-center p-6">
-      <section className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-8 shadow-sm">
+    <div className="min-h-screen flex flex-col">
+    <main id="main" className="flex flex-1 items-center justify-center p-6">
+      <section className="w-full max-w-md space-y-5 rounded-xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-8 shadow-sm">
         <h1 tabIndex={-1} className="text-2xl font-semibold">{t('setNewPassword')}</h1>
 
         {invalidToken ? (
@@ -94,7 +96,7 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={status === 'submitting'}
-              className="w-full rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
+              className="w-full rounded-lg bg-gradient-brand text-white py-2.5 font-medium transition hover:brightness-110 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
             >
               {status === 'submitting' ? t('savingPassword') : t('savePasswordAndLogin')}
             </button>
@@ -102,5 +104,7 @@ export default function ResetPassword() {
         )}
       </section>
     </main>
+    <LegalFooter className="px-6 pb-6" />
+    </div>
   )
 }

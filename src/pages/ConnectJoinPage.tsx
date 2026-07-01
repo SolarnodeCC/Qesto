@@ -4,6 +4,7 @@
 // guarantee). See functions/api/routes/federation.ts `POST /connect/join`.
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useT } from '../i18n'
 import { api } from '../api/client'
@@ -95,9 +96,7 @@ export default function ConnectJoinPage() {
         <div className="mt-6 rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20" aria-live="polite">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-800" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-teal-600 dark:text-teal-300" aria-hidden="true">
-                <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <Check className="h-5 w-5 text-teal-600 dark:text-teal-300" strokeWidth={2.5} />
             </div>
             <h2 className="font-semibold text-teal-800 dark:text-teal-200">{t('join.successTitle')}</h2>
           </div>

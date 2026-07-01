@@ -4,6 +4,7 @@
 
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { CircleAlert, Loader2, Pause, ShieldCheck } from 'lucide-react'
 import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingToDocument, cacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
@@ -23,6 +24,7 @@ import { ReactionsOverlay, useReactionsTicker } from '../components/ReactionsOve
 import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 import type { XrAvatarSync } from '../hooks/useLiveSession'
 import { useWebXrSupport } from '../xr/useWebXrSupport'
+import LegalFooter from '../layouts/LegalFooter'
 
 // XR-SPATIAL-01 / XR-AVATAR-01 (ADR-0066): lazy-loaded so the immersive beta
 // module never lands in the critical bundle. Mounted only when the user
@@ -101,18 +103,13 @@ export default function JoinPage() {
 
   if (lookup.status === 'loading') {
     return (
-      <main id="main" tabIndex={-1} className="min-h-screen flex flex-col items-center justify-center gap-3 p-8 text-pulse-500 focus:outline-none">
-        <svg
-          aria-hidden="true"
-          className="animate-spin w-6 h-6 text-teal-500"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-        <span className="text-sm">{t('looking_up')}</span>
-      </main>
+      <div className="min-h-screen flex flex-col">
+        <main id="main" tabIndex={-1} className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-pulse-500 focus:outline-none">
+          <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-teal-500" />
+          <span className="text-sm">{t('looking_up')}</span>
+        </main>
+        <LegalFooter className="px-6 pb-6" />
+      </div>
     )
   }
 
@@ -122,34 +119,33 @@ export default function JoinPage() {
 
   if (lookup.status === 'error') {
     return (
-      <main id="main" className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-        </div>
-        <div className="space-y-1">
-          <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
-          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('not_found_help')}</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => { setLookup({ status: 'loading' }); lookupCode(code) }}
-            className="inline-flex items-center rounded-lg bg-teal-600 text-white text-sm font-semibold px-4 py-2 hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
-          >
-            {t('try_again')}
-          </button>
-          <a
-            href="/"
-            className="text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
-          >
-            {t('back_to_home')}
-          </a>
-        </div>
-      </main>
+      <div className="min-h-screen flex flex-col">
+        <main id="main" className="flex flex-1 flex-col items-center justify-center p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+            <CircleAlert aria-hidden="true" className="h-5 w-5 text-red-500" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('not_found_help')}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => { setLookup({ status: 'loading' }); lookupCode(code) }}
+              className="inline-flex min-h-[44px] items-center rounded-lg bg-teal-600 text-white text-sm font-semibold px-4 py-2 hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+            >
+              {t('try_again')}
+            </button>
+            <a
+              href="/"
+              className="inline-flex min-h-[44px] items-center text-sm text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+            >
+              {t('back_to_home')}
+            </a>
+          </div>
+        </main>
+        <LegalFooter className="px-6 pb-6" />
+      </div>
     )
   }
 
@@ -332,11 +328,9 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           <div
             role="status"
             aria-label={t('trust_badge')}
-            className="flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-700 dark:bg-teal-900/20 dark:text-teal-300"
+            className="flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-700 dark:bg-teal-900/20 dark:text-teal-300"
           >
-            <svg aria-hidden="true" className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-2.027-.505-3.938-1.396-5.617" />
-            </svg>
+            <ShieldCheck aria-hidden="true" className="h-4 w-4 shrink-0" />
             <span>{t('trust_badge')}</span>
           </div>
         )}
@@ -414,10 +408,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
 
             {/* Paused banner */}
             {state.paused && (
-              <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700" role="status">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
+              <div className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700" role="status">
+                <Pause aria-hidden="true" className="h-4 w-4 shrink-0" fill="currentColor" />
                 {t('voting_paused')}
               </div>
             )}
@@ -461,6 +453,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           </p>
         )}
       </div>
+
+      <LegalFooter className="px-5 pb-4" />
 
       {/* XR-SPATIAL-01 / XR-AVATAR-01 (ADR-0066): lazy-mounted only after opt-in.
           Never blocks the 2D path above — Suspense fallback is a minimal status

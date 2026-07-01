@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
 import SkipLink from '../components/SkipLink'
-import { useT } from '../i18n'
+import LegalFooter from './LegalFooter'
 
 type MaxWidth = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
 
@@ -50,7 +49,6 @@ export default function ParticipantShell({
   maxWidth = 'xl',
   children,
 }: ParticipantShellProps) {
-  const t = useT('solutions')
   return (
     <>
       <SkipLink />
@@ -74,22 +72,7 @@ export default function ParticipantShell({
           {children}
         </main>
 
-        <footer className="mt-8 border-t border-pulse-200 dark:border-[var(--color-border)] pt-4 text-xs text-pulse-500 dark:text-[var(--text-muted)]">
-          <nav aria-label="Legal" className="flex items-center justify-center gap-4">
-            <Link
-              to="/privacy"
-              className="hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
-            >
-              {t('footer.privacyPolicy')}
-            </Link>
-            <Link
-              to="/terms"
-              className="hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
-            >
-              {t('footer.terms')}
-            </Link>
-          </nav>
-        </footer>
+        <LegalFooter className="mt-8" />
       </div>
     </>
   )

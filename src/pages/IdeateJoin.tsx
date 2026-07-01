@@ -75,7 +75,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
         <button
           type="submit"
           disabled={body.trim().length < 2}
-          className="w-full rounded-lg bg-teal-600 py-2.5 font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+          className="w-full min-h-[44px] rounded-lg bg-teal-600 py-2.5 font-medium text-white hover:bg-teal-700 disabled:opacity-50"
         >
           {t('submit.button')}
         </button>

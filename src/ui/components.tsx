@@ -19,10 +19,10 @@ export function Heading({
   className?: string
 }) {
   const styles = {
-    s: 'text-heading-s font-semibold',      // 20px, 600wt
-    m: 'text-heading-m font-semibold',      // 24px, 600wt
-    l: 'text-heading-l font-semibold',      // 32px, 600wt
-    xl: 'text-display-l font-bold',         // 48px, 700wt
+    s: 'font-semibold',      // h3 — 20px via element rule
+    m: 'font-semibold',      // h2 — 24px via element rule
+    l: 'font-semibold',      // h1 — 32px via element rule
+    xl: 'h-display-l font-bold', // 48px Syne display
   }
   const tag = { s: 'h3', m: 'h2', l: 'h1', xl: 'h1' }[level] as 'h1' | 'h2' | 'h3'
   const Component = tag
@@ -44,15 +44,15 @@ export function Body({
   className?: string
 }) {
   const styles = {
-    s: 'text-body-s',      // 14px, 400wt
-    m: 'text-body-m',      // 16px, 400wt
-    l: 'text-body-l',      // 18px, 400wt
+    s: 'body-s',
+    m: 'body-m',
+    l: 'body-l',
   }
   return <p className={`${styles[size]} leading-relaxed ${className}`}>{children}</p>
 }
 
 export function Caption({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`text-caption font-medium text-pulse-600 dark:text-[#8A96B0] ${className}`}>{children}</span>
+  return <span className={`caption text-pulse-600 dark:text-[var(--text-muted)] ${className}`}>{children}</span>
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ export function Card({
   return (
     <div
       className={`
-        rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4
+        rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4
         shadow-card ${hoverable ? 'hover:shadow-elevated transition-shadow' : ''}
         ${className}
       `}
@@ -108,12 +108,12 @@ export function Button({
   className?: string
   type?: 'button' | 'submit' | 'reset'
 }) {
-  const baseStyles = 'rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2'
+  const baseStyles = 'rounded-lg font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2'
 
   const sizeStyles = {
-    sm: 'px-3 py-2 text-body-s',
-    md: 'px-4 py-2 text-body-m',
-    lg: 'px-5 py-3 text-body-m',
+    sm: 'px-3 py-2 body-s',
+    md: 'px-4 py-2 body-m',
+    lg: 'px-5 py-3 body-m',
   }
 
   const variantStyles = {
@@ -260,7 +260,7 @@ export function MetricCard({
         {value}
       </div>
       {trend && (
-        <div className={`mt-1 flex items-center gap-0.5 text-caption font-medium ${trendGood ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+        <div className={`mt-1 flex items-center gap-0.5 caption ${trendGood ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
           {trend.direction === 'up' ? '▲' : '▼'}
           {Math.abs(trend.value).toFixed(1)}%
         </div>
@@ -315,7 +315,7 @@ export function StatCard({
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-4 h-24 bg-pulse-100 dark:bg-[#151C2E] animate-pulse ${className}`} />
+    <div className={`rounded-xl border border-pulse-200 dark:border-[#1E2A45] p-4 h-24 bg-pulse-100 dark:bg-[#151C2E] animate-pulse ${className}`} />
   )
 }
 
