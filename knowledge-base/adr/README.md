@@ -18,6 +18,7 @@
 | [ADR-AI-Latency](./ADR-AI-Latency.md) | AI Latency Optimization | AI/Performance | Approved |
 | [ADR-DO-Timers](./ADR-DO-Timers.md) | Durable Object Timers | Realtime | Approved |
 | [ADR-KV-Tenant-Conventions](./ADR-KV-Tenant-Conventions.md) | KV Tenant Conventions | Data | Approved |
+| [ADR-0072](./ADR-0072-theming-mechanisms.md) | Theming mechanisms — three bounded systems | Frontend/Design | Accepted |
 
 ---
 

@@ -5,6 +5,7 @@ import { useT } from '../i18n'
 import { useTownhallSession } from '../hooks/useTownhallSession'
 import { TownhallQuestionCard } from '../ui/TownhallQuestionCard'
 import { inputHint } from '../ui/input-hint'
+import ParticipantShell from '../layouts/ParticipantShell'
 
 type Lookup =
   | { status: 'loading' }
@@ -54,17 +55,15 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
     setTimeout(() => setSubmitted(false), 3000)
   }
 
-  return (
-    <div className="mx-auto max-w-xl space-y-6 px-5 py-8">
-      <header>
-        <h1 className="text-xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{title}</h1>
-        {state.connection !== 'open' && (
-          <p className="text-xs text-amber-600">
-            {state.connection === 'failed' ? t('connection.failed') : t('connection.reconnecting')}
-          </p>
-        )}
-      </header>
+  const connectionLabel =
+    state.connection !== 'open'
+      ? state.connection === 'failed'
+        ? t('connection.failed')
+        : t('connection.reconnecting')
+      : null
 
+  return (
+    <ParticipantShell title={title} connectionLabel={connectionLabel}>
       <form onSubmit={onSubmit} className="space-y-3">
         <label htmlFor="th-body" className="block text-sm font-semibold text-pulse-800 dark:text-[#F0F2F8]">
           {t('submit.title')}
@@ -122,6 +121,6 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
           ))
         )}
       </section>
-    </div>
+    </ParticipantShell>
   )
 }
