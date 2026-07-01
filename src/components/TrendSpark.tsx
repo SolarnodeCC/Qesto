@@ -1,3 +1,7 @@
+// ADR-0071 data-viz exception: inline SVG is required for programmatic
+// sparkline rendering. Cannot be expressed with a Lucide icon.
+// Exempt from Hard Rule #9 per ADR-0071 §4 "Data visualisation components".
+
 interface TrendSparkProps {
   /** Weekly bucket counts, oldest → newest (typically 4 values) */
   data: number[]

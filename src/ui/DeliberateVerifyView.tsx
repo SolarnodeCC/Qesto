@@ -8,6 +8,7 @@
 // Accessible per WCAG 2.1 AA: status conveyed via text+icon (not color alone),
 // role="status" live region, focus management handled by parent.
 
+import { Check, CircleCheckBig, CircleX, X } from 'lucide-react'
 import type { DeliberateVerifyResult } from '../hooks/useDeliberateSession'
 
 type TFn = (key: string, vars?: Record<string, string | number>) => string
@@ -21,32 +22,19 @@ function CheckRow({ ok, label }: { ok: boolean; label: string }) {
   return (
     <li className="flex items-center gap-2 text-sm">
       {ok ? (
-        <svg
+        <Check
           aria-hidden="true"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
+          size={16}
+          strokeWidth={2.5}
           className="shrink-0 text-green-600 dark:text-green-400"
-        >
-          <polyline points="20 6 9 17 4 12" />
-        </svg>
+        />
       ) : (
-        <svg
+        <X
           aria-hidden="true"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
+          size={16}
+          strokeWidth={2.5}
           className="shrink-0 text-red-600 dark:text-red-400"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
+        />
       )}
       <span className={ok ? 'text-pulse-800 dark:text-pulse-100' : 'text-red-700 dark:text-red-400'}>
         {label}
@@ -75,34 +63,17 @@ export function DeliberateVerifyView({ result, t }: Props) {
         className="mb-4 flex items-center gap-3"
       >
         {allOk ? (
-          <svg
+          <CircleCheckBig
             aria-hidden="true"
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+            size={28}
             className="shrink-0 text-green-600 dark:text-green-400"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="16 8 10 14 7 11" />
-          </svg>
+          />
         ) : (
-          <svg
+          <CircleX
             aria-hidden="true"
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+            size={28}
             className="shrink-0 text-red-600 dark:text-red-400"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-          </svg>
+          />
         )}
         <div>
           <p

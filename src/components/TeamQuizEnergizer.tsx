@@ -7,6 +7,7 @@
 // Participant (completed): final rank
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Check } from 'lucide-react'
 import { api } from '../api/client'
 import { inputHint } from '../ui/input-hint'
 
@@ -242,9 +243,7 @@ export default function TeamQuizEnergizerView({
                       ].join(' ')}
                     >
                       {q.correct_index === oi && (
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                        <Check aria-hidden="true" className="w-2 h-2 text-white" strokeWidth={3} />
                       )}
                     </button>
                     <input

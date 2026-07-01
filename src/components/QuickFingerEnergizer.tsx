@@ -7,6 +7,7 @@
 // Participant view (completed): show result + winner
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { Check } from 'lucide-react'
 import { api } from '../api/client'
 import { inputHint } from '../ui/input-hint'
 
@@ -237,9 +238,7 @@ export default function QuickFingerEnergizerView({
                   ].join(' ')}
                 >
                   {editCorrect === idx && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
+                    <Check aria-hidden="true" className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                   )}
                 </button>
                 <input

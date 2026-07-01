@@ -1,6 +1,11 @@
 /**
  * CANVAS-ADAPTIVE-VIZ-01 — Adaptive data-visualisation component (S88)
  *
+ * ADR-0071 data-viz exception: inline SVG elements in this file are required
+ * for programmatic chart rendering (donut ring, bar charts). Cannot be
+ * expressed with Lucide icons. Exempt from Hard Rule #9 per ADR-0071 §4
+ * "Data visualisation components".
+ *
  * Selection rule:
  *   - word_cloud / open            → word-cloud scatter (existing pattern)
  *   - options > 6                  → horizontal bar (labels stay readable)

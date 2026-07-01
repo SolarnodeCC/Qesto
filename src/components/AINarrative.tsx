@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react'
 import { useT } from '../i18n'
 
 interface AINarrativeProps {
@@ -21,29 +22,23 @@ export default function AINarrative({ className = '' }: AINarrativeProps) {
         .join(' ')}
     >
       <div className="flex items-center gap-2">
-        {/* Sparkle icon — decorative */}
-        <svg
+        <Sparkles
           aria-hidden="true"
-          focusable="false"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="currentColor"
+          focusable={false}
+          size={20}
           className="text-violet-600 dark:text-violet-400 flex-shrink-0"
-        >
-          <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z" />
-        </svg>
+        />
         <h2
           id="ai-narrative-heading"
-          className="text-body-m font-semibold text-violet-900 dark:text-violet-200"
+          className="body-m font-semibold text-violet-900 dark:text-violet-200"
         >
           {t('aiNarrative.title')}
         </h2>
       </div>
-      <p className="text-body-s text-violet-800 dark:text-violet-300 leading-relaxed">
+      <p className="body-s text-violet-800 dark:text-violet-300 leading-relaxed">
         {t('aiNarrative.body1')}
       </p>
-      <p className="text-body-s text-violet-800 dark:text-violet-300 leading-relaxed">
+      <p className="body-s text-violet-800 dark:text-violet-300 leading-relaxed">
         {t('aiNarrative.body2')}
       </p>
     </section>

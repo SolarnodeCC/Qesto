@@ -70,7 +70,7 @@ function PlatformHealthStrip({
       <div className="flex items-center gap-2.5">
         <span className={`w-2 h-2 rounded-full shrink-0 ${s.dot} ${s.pulse ? 'animate-pulse' : ''}`} />
         <span className={`text-sm font-semibold ${s.text}`}>{labels[ops.status]}</span>
-        <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
+        <span className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">
           {new Date(ops.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
@@ -96,6 +96,8 @@ function PlatformHealthStrip({
   )
 }
 
+// ADR-0071 data-viz exception: inline SVG required for programmatic chart rendering.
+// Cannot be expressed with a Lucide icon. Exempt from Hard Rule #9.
 function LatencySparkline({ data, emptyLabel }: { data: HistoricalBucket[]; emptyLabel: string }) {
   const points = data
     .filter((d) => d.route === null)
@@ -104,7 +106,7 @@ function LatencySparkline({ data, emptyLabel }: { data: HistoricalBucket[]; empt
 
   if (points.length < 2) {
     return (
-      <div className="flex items-center justify-center h-[100px] text-body-s text-pulse-500 dark:text-[#3A4A6B]">
+      <div className="flex items-center justify-center h-[100px] body-s text-pulse-500 dark:text-[#3A4A6B]">
         {emptyLabel}
       </div>
     )
@@ -247,7 +249,7 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">
         <header>
           <Heading level="l">{t('platformAdminTitle')}</Heading>
-          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-2">{t('realtimePlatformObservability')}</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] mt-2">{t('realtimePlatformObservability')}</Body>
         </header>
 
         {metricsError && (
@@ -278,8 +280,8 @@ export default function AdminDashboard() {
                 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg min-h-[44px] transition-all duration-150 shrink-0',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
                 activeTab === id
-                  ? 'bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] shadow-sm'
-                  : 'text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+                  ? 'bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] shadow-sm'
+                  : 'text-pulse-500 dark:text-[var(--text-muted)] hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
               ].join(' ')}
             >
               {icon}
@@ -342,7 +344,7 @@ export default function AdminDashboard() {
 
             <Section>
               <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('p95LatencyTrend')}</Heading>
-              <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mb-2">{dateRangeLabel}</Body>
+              <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] mb-2">{dateRangeLabel}</Body>
               <Card>
                 <LatencySparkline data={historicalData} emptyLabel={t('noDataInRange')} />
               </Card>
@@ -352,21 +354,21 @@ export default function AdminDashboard() {
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
                 <div>
                   <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('historicalData')}</Heading>
-                  <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-1">{dateRangeLabel}</Body>
+                  <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] mt-1">{dateRangeLabel}</Body>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="date"
                     value={formatDateInput(startDate)}
                     onChange={(e) => setStartDate(new Date(e.target.value))}
-                    className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] min-h-[44px]"
+                    className="body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] min-h-[44px]"
                     aria-label="Start date"
                   />
                   <input
                     type="date"
                     value={formatDateInput(endDate)}
                     onChange={(e) => setEndDate(new Date(e.target.value))}
-                    className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] min-h-[44px]"
+                    className="body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] min-h-[44px]"
                     aria-label="End date"
                   />
                   <Button variant="secondary" size="sm" onClick={applyHistoricalRange} disabled={historicalLoading}>
@@ -393,23 +395,23 @@ export default function AdminDashboard() {
                 <Body className="text-signal-error">{historicalError}</Body>
               ) : historicalData.length > 0 ? (
                 <Card className="overflow-x-auto max-h-[480px] overflow-y-auto">
-                  <table className="w-full text-body-s">
-                    <thead className="sticky top-0 bg-white dark:bg-[#1C2540] z-10">
-                      <tr className="border-b border-pulse-200 dark:border-[#1E2A45]">
-                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('timestamp')}</th>
-                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('route')}</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">p50</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">p95</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">p99</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('errorPercent')}</th>
-                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[#8A96B0]">{t('requests')}</th>
+                  <table className="w-full body-s">
+                    <thead className="sticky top-0 bg-white dark:bg-[var(--color-surface-elevated)] z-10">
+                      <tr className="border-b border-pulse-200 dark:border-[var(--color-border)]">
+                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[var(--text-muted)]">{t('timestamp')}</th>
+                        <th className="text-left py-2 px-2 font-medium text-pulse-600 dark:text-[var(--text-muted)]">{t('route')}</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[var(--text-muted)]">p50</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[var(--text-muted)]">p95</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[var(--text-muted)]">p99</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[var(--text-muted)]">{t('errorPercent')}</th>
+                        <th className="text-right py-2 px-2 font-medium text-pulse-600 dark:text-[var(--text-muted)]">{t('requests')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-pulse-100 dark:divide-[#1E2A45]">
                       {historicalData.map((row, idx) => (
                         <tr key={`${row.bucket_ts}-${row.route ?? 'all'}-${idx}`} className="hover:bg-pulse-50 dark:hover:bg-[#0F1526]">
-                          <td className="py-2 px-2 text-pulse-700 dark:text-[#A8B3CC]">{new Date(row.bucket_ts).toLocaleString()}</td>
-                          <td className="py-2 px-2 font-mono text-xs text-pulse-500 dark:text-[#8A96B0]">{row.route ?? '(all)'}</td>
+                          <td className="py-2 px-2 text-pulse-700 dark:text-[var(--text-secondary)]">{new Date(row.bucket_ts).toLocaleString()}</td>
+                          <td className="py-2 px-2 font-mono text-xs text-pulse-500 dark:text-[var(--text-muted)]">{row.route ?? '(all)'}</td>
                           <td className="text-right py-2 px-2">{row.p50_ms}ms</td>
                           <td className="text-right py-2 px-2 font-medium">{row.p95_ms}ms</td>
                           <td className="text-right py-2 px-2">{row.p99_ms}ms</td>

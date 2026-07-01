@@ -11,6 +11,7 @@
 // Consistent with RetroPresent column layout convention.
 
 import { useState } from 'react'
+import { ChevronUp } from 'lucide-react'
 import { ideasForCluster, unclusteredIdeas, type IdeateCluster, type IdeateIdea, type IdeateRankingEntry } from '../hooks/useIdeateSession'
 import { CLUSTER_BORDER_COLORS, CLUSTER_BG_COLORS } from './cluster-colors'
 
@@ -254,18 +255,11 @@ function ClusterPanel({
           className="min-h-[44px] min-w-[44px] rounded-lg p-2 text-pulse-500 hover:bg-black/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:hover:bg-white/5"
           aria-label={collapsed ? t('board.expandCluster') : t('board.collapseCluster')}
         >
-          <svg
+          <ChevronUp
             aria-hidden="true"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
+            size={16}
             className={`transition-transform duration-150 ${collapsed ? 'rotate-180' : ''}`}
-          >
-            <polyline points="18 15 12 9 6 15" />
-          </svg>
+          />
         </button>
       </div>
 

@@ -224,7 +224,11 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
 
       {/* Slack card */}
       <div className="flex items-start gap-4 rounded-lg border border-pulse-200 p-4">
-        {/* Slack logo */}
+        {/*
+         * ADR-0071 brand-mark exception: Slack logo uses four distinct brand
+         * colours and cannot be expressed with a single Lucide icon.
+         * Exempt from Hard Rule #9 per ADR-0071 §4 "Third-party brand marks".
+         */}
         <svg
           aria-hidden="true"
           focusable="false"
@@ -244,7 +248,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
 
         <div className="flex-1 min-w-0 space-y-3">
           <div>
-            <h3 className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{t('slack_title')}</h3>
+            <h3 className="font-medium text-pulse-900 dark:text-[var(--text-primary)]">{t('slack_title')}</h3>
             <p className="text-sm text-pulse-500 mt-0.5">{t('slack_description')}</p>
           </div>
 
@@ -290,7 +294,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                       type="button"
                       onClick={() => void handleSlackTest()}
                       disabled={slackTesting || slackDisconnecting}
-                      className="min-h-[44px] inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-transparent text-pulse-700 dark:text-[#A8B3CC] px-4 py-2 text-sm font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                      className="min-h-[44px] inline-flex items-center rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] bg-white dark:bg-transparent text-pulse-700 dark:text-[var(--text-secondary)] px-4 py-2 text-sm font-medium hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                     >
                       {slackTesting ? 'Sending…' : t('slack_test')}
                     </button>
@@ -309,7 +313,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     onClick={() => {
                       if (id) window.location.href = `/api/integrations/slack/connect?teamId=${encodeURIComponent(id)}`
                     }}
-                    className="min-h-[44px] inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-4 py-2 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="min-h-[44px] inline-flex items-center rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                   >
                     {t('slack_connect')}
                   </button>
@@ -318,7 +322,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
 
               {slackStatus?.connected ? (
                 <fieldset className="space-y-2 border-t border-pulse-100 pt-3">
-                  <legend className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] mb-2">{tTeam('slack_notification_events')}</legend>
+                  <legend className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)] mb-2">{tTeam('slack_notification_events')}</legend>
                   <label className="flex items-center gap-3 text-sm cursor-pointer">
                     <input
                       type="checkbox"
@@ -356,7 +360,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
         </div>
         <div className="flex-1 min-w-0 space-y-3">
           <div>
-            <h3 className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{tTeam('teams_title')}</h3>
+            <h3 className="font-medium text-pulse-900 dark:text-[var(--text-primary)]">{tTeam('teams_title')}</h3>
             <p className="text-sm text-pulse-500 mt-0.5">{tTeam('teams_description')}</p>
           </div>
           {teamsLoading ? (
@@ -397,7 +401,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     onClick={() => {
                       if (id) window.location.href = `/api/integrations/teams/connect?teamId=${encodeURIComponent(id)}`
                     }}
-                    className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-4 py-2 text-sm font-medium text-white"
+                    className="min-h-[44px] rounded-lg bg-gradient-brand px-4 py-2 text-sm font-medium text-white"
                   >
                     {tTeam('teams_connect')}
                   </button>
@@ -411,9 +415,9 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     void handleTeamsConfigSave()
                   }}
                 >
-                  <p className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">{tTeam('teams_channel_config')}</p>
+                  <p className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{tTeam('teams_channel_config')}</p>
                   <label className="block text-sm">
-                    <span className="text-pulse-600 dark:text-[#A8B3CC]">{tTeam('teams_group_id')}</span>
+                    <span className="text-pulse-600 dark:text-[var(--text-secondary)]">{tTeam('teams_group_id')}</span>
                     <input
                       value={teamsGroupId}
                       onChange={(e) => setTeamsGroupId(e.target.value)}
@@ -422,7 +426,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="text-pulse-600 dark:text-[#A8B3CC]">{tTeam('teams_channel_id')}</span>
+                    <span className="text-pulse-600 dark:text-[var(--text-secondary)]">{tTeam('teams_channel_id')}</span>
                     <input
                       value={teamsChannelId}
                       onChange={(e) => setTeamsChannelId(e.target.value)}
@@ -431,7 +435,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
                     />
                   </label>
                   <label className="block text-sm">
-                    <span className="text-pulse-600 dark:text-[#A8B3CC]">{tTeam('teams_channel_name')}</span>
+                    <span className="text-pulse-600 dark:text-[var(--text-secondary)]">{tTeam('teams_channel_name')}</span>
                     <input
                       value={teamsChannelName}
                       onChange={(e) => setTeamsChannelName(e.target.value)}

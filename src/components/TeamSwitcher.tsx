@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { ArrowUpDown, Check, ChevronDown, Plus } from 'lucide-react'
 import { api } from '../api/client'
 import { inputHint } from '../ui/input-hint'
 
@@ -179,23 +180,11 @@ export default function TeamSwitcher() {
               setOpen((v) => !v)
             }
           }}
-          className="inline-flex items-center gap-2 rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#151C2E] px-3 py-1.5 text-sm font-medium text-pulse-800 dark:text-[#F0F2F8] hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
+          className="inline-flex items-center gap-2 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface)] px-3 py-1.5 text-sm font-medium text-pulse-800 dark:text-[var(--text-primary)] hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
         >
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-500 shrink-0" aria-hidden="true">
-            <path
-              fillRule="evenodd"
-              d="M9.586 2.586a2 2 0 112.828 2.828l-6 6a2 2 0 000 2.828l6 6a2 2 0 102.828-2.828L9.414 12H15a1 1 0 100-2H9.414l3.828-3.828a2 2 0 000-2.828z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <ArrowUpDown aria-hidden="true" className="h-4 w-4 text-pulse-500 shrink-0" />
           <span className="max-w-[140px] truncate">{label}</span>
-          <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-500 shrink-0" aria-hidden="true">
-            <path
-              fillRule="evenodd"
-              d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <ChevronDown aria-hidden="true" className="h-4 w-4 text-pulse-500 shrink-0" />
         </button>
 
         {/* ── Dropdown listbox ────────────────────────────────────────────── */}
@@ -204,7 +193,7 @@ export default function TeamSwitcher() {
             ref={dropdownRef}
             role="listbox"
             aria-label="Teams"
-            className="absolute right-0 top-full mt-1 z-40 w-56 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-lg py-1 animate-page-enter"
+            className="absolute right-0 top-full mt-1 z-40 w-56 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] shadow-lg py-1 animate-page-enter"
           >
             {teams.map((team) => (
               <button
@@ -218,24 +207,18 @@ export default function TeamSwitcher() {
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500',
                   team.id === activeTeamId
                     ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium'
-                    : 'text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5',
+                    : 'text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5',
                 ].join(' ')}
               >
                 {team.id === activeTeamId && (
-                  <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                  <Check aria-hidden="true" className="h-4 w-4 shrink-0" />
                 )}
                 {team.id !== activeTeamId && <span className="w-4 shrink-0" />}
                 <span className="truncate">{team.name}</span>
               </button>
             ))}
 
-            <div className="border-t border-pulse-100 dark:border-[#1E2A45] my-1" />
+            <div className="border-t border-pulse-100 dark:border-[var(--color-border)] my-1" />
 
             <button
               type="button"
@@ -245,9 +228,7 @@ export default function TeamSwitcher() {
               }}
               className="w-full text-left px-4 py-2 text-sm text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 flex items-center gap-2 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0" aria-hidden="true">
-                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-              </svg>
+              <Plus aria-hidden="true" className="h-4 w-4 shrink-0" />
               Create team
             </button>
           </div>
@@ -271,13 +252,13 @@ export default function TeamSwitcher() {
         >
           <div
             ref={modalRef}
-            className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl max-w-sm w-full p-6 animate-page-enter space-y-4"
+            className="bg-white dark:bg-[var(--color-surface-elevated)] rounded-xl shadow-xl max-w-sm w-full p-6 animate-page-enter space-y-4"
           >
-            <h2 id="create-team-modal-title" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+            <h2 id="create-team-modal-title" className="text-xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
               {teams.length === 0 ? 'Create your first team' : 'Create team'}
             </h2>
             <form onSubmit={(e) => void handleCreate(e)} className="flex flex-col gap-3">
-              <label htmlFor="new-team-name" className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
+              <label htmlFor="new-team-name" className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
                 Team name
               </label>
               <input
@@ -289,7 +270,7 @@ export default function TeamSwitcher() {
                 {...inputHint("e.g. Engineering")}
                 maxLength={100}
                 disabled={creating}
-                className="border border-pulse-300 dark:border-[#2A3858] rounded-lg px-3 py-2 bg-white dark:bg-[#0F1525] text-pulse-900 dark:text-[#F0F2F8] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:bg-pulse-50 dark:disabled:bg-[#1E2A45]"
+                className="border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-lg px-3 py-2 bg-white dark:bg-[var(--color-bg-subtle)] text-pulse-900 dark:text-[var(--text-primary)] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:bg-pulse-50 dark:disabled:bg-[#1E2A45]"
               />
               {createError ? (
                 <p role="alert" className="text-sm text-red-600">
@@ -305,14 +286,14 @@ export default function TeamSwitcher() {
                     setNewTeamName('')
                     setCreateError(null)
                   }}
-                  className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
+                  className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating || newTeamName.trim().length === 0}
-                  className="px-4 py-2 rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
+                  className="px-4 py-2 rounded-lg bg-gradient-brand text-white font-medium hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
                 >
                   {creating ? 'Creating…' : 'Create team'}
                 </button>

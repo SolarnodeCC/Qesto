@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ArrowRight, MessageSquare, Plus } from 'lucide-react'
 
 export default function InsightEmptyState({ onCreateSession }: { onCreateSession: () => void }) {
   return (
@@ -7,9 +8,7 @@ export default function InsightEmptyState({ onCreateSession }: { onCreateSession
         {/* Icon */}
         <div className="flex justify-center">
           <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-            <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-teal-600 dark:text-teal-400">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+            <MessageSquare aria-hidden="true" size={32} className="text-teal-600 dark:text-teal-400" />
           </div>
         </div>
 
@@ -30,9 +29,7 @@ export default function InsightEmptyState({ onCreateSession }: { onCreateSession
             onClick={onCreateSession}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-600 text-white px-4 py-2.5 text-sm font-medium hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
           >
-            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            <Plus aria-hidden="true" size={16} />
             Create session
           </button>
 
@@ -40,9 +37,7 @@ export default function InsightEmptyState({ onCreateSession }: { onCreateSession
             to="/dashboard?tab=sessions"
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-pulse-300 bg-white dark:bg-pulse-800 dark:border-pulse-600 text-pulse-700 dark:text-pulse-300 px-4 py-2.5 text-sm font-medium hover:bg-pulse-50 dark:hover:bg-pulse-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
           >
-            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M13 9l3 3m0 0l-3 3m3-3H8m13-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <ArrowRight aria-hidden="true" size={16} />
             Browse sessions
           </Link>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { HelpCircle, Home, Lightbulb, Library, Settings, Users } from 'lucide-react'
+import { HelpCircle, Home, Lightbulb, Library, Menu, Moon, Settings, Sparkles, Sun, Users } from 'lucide-react'
 import SkipLink from '../components/SkipLink'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { useAuth } from '../hooks/useAuth'
@@ -96,7 +96,7 @@ export default function AppShellLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-bg)] dark:bg-[#0A0F1E]">
+    <div className="flex h-screen overflow-hidden bg-[var(--color-bg)] dark:bg-[var(--color-bg)]">
       <SkipLink />
 
       {/* Mobile overlay */}
@@ -113,21 +113,19 @@ export default function AppShellLayout({
         id="dashboard-sidebar"
         aria-label="Hoofdnavigatie"
         className={[
-          'fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col border-r border-pulse-200 dark:border-[#1E2A45]',
+          'fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col border-r border-pulse-200 dark:border-[var(--color-border)]',
           'bg-white dark:bg-[#0F1628] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)]',
           'lg:static lg:z-auto lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         ].join(' ')}
       >
         {/* Logo */}
-        <div className="flex h-14 shrink-0 items-center px-5 border-b border-pulse-100 dark:border-[#1E2A45]">
+        <div className="flex h-14 shrink-0 items-center px-5 border-b border-pulse-100 dark:border-[var(--color-border)]">
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-sm font-extrabold uppercase tracking-widest text-teal-600 dark:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
           >
-            <svg aria-hidden="true" focusable="false" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-violet-500 shrink-0">
-              <path d="M12 2l1.8 5.4 5.7 0-4.6 3.4 1.8 5.4L12 13l-4.7 3.2 1.8-5.4L4.5 7.4l5.7 0z" />
-            </svg>
+            <Sparkles aria-hidden="true" focusable={false} size={14} className="text-violet-500 shrink-0" />
             Qesto
           </Link>
         </div>
@@ -147,7 +145,7 @@ export default function AppShellLayout({
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors',
                     isActive
                       ? 'border-l-2 border-teal-500 pl-[10px] bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                      : 'text-pulse-600 dark:text-[#A8B3CC] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-900 dark:hover:text-[#F0F2F8]',
+                      : 'text-pulse-600 dark:text-[var(--text-secondary)] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-900 dark:hover:text-[#F0F2F8]',
                   ].join(' ')}
                 >
                   <span className="shrink-0">{icon}</span>
@@ -171,9 +169,7 @@ export default function AppShellLayout({
                     : 'text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-500/10',
                 ].join(' ')}
               >
-                <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="h-[18px] w-[18px] shrink-0">
-                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                </svg>
+                <Settings aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
                 Admin
               </Link>
             </li>
@@ -181,7 +177,7 @@ export default function AppShellLayout({
         </ul>
 
         {/* Account links */}
-        <div className="border-t border-pulse-100 dark:border-[#1E2A45] px-2 py-3 space-y-0.5">
+        <div className="border-t border-pulse-100 dark:border-[var(--color-border)] px-2 py-3 space-y-0.5">
           <Link
             to="/settings"
             onClick={() => setSidebarOpen(false)}
@@ -191,7 +187,7 @@ export default function AppShellLayout({
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
               onSettingsPage
                 ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                : 'text-pulse-500 dark:text-[#8A96B0] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+                : 'text-pulse-500 dark:text-[var(--text-muted)] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
             ].join(' ')}
           >
             <Settings size={16} aria-hidden="true" />
@@ -210,7 +206,7 @@ export default function AppShellLayout({
               'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors',
               helpChatState.isOpen
                 ? 'bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                : 'text-pulse-500 dark:text-[#8A96B0] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
+                : 'text-pulse-500 dark:text-[var(--text-muted)] hover:bg-pulse-100 dark:hover:bg-white/5 hover:text-pulse-800 dark:hover:text-[#A8B3CC]',
             ].join(' ')}
           >
             <HelpCircle size={16} aria-hidden="true" />
@@ -223,7 +219,7 @@ export default function AppShellLayout({
       {/* ── Right column ── */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#0F1628] px-4 lg:px-6">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[#0F1628] px-4 lg:px-6">
           {/* Left: hamburger (mobile only) + compact join form */}
           <div className="flex items-center gap-3 min-w-0">
             <button
@@ -235,16 +231,14 @@ export default function AppShellLayout({
               aria-controls="dashboard-sidebar"
               onClick={() => setSidebarOpen(true)}
             >
-              <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                <path fillRule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z" clipRule="evenodd" />
-              </svg>
+              <Menu aria-hidden="true" className="w-5 h-5" />
             </button>
             <form
               onSubmit={handleJoinSubmit}
-              className="hidden sm:flex items-center gap-0 rounded-lg border border-pulse-200 dark:border-[#2A3858] overflow-hidden"
+              className="hidden sm:flex items-center gap-0 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] overflow-hidden"
               aria-label={t('joinSessionPrompt')}
             >
-              <span className="pl-3 pr-1 text-xs text-pulse-500 dark:text-[#8A96B0] whitespace-nowrap select-none">
+              <span className="pl-3 pr-1 text-xs text-pulse-500 dark:text-[var(--text-muted)] whitespace-nowrap select-none">
                 {t('joinSessionPrompt')}
               </span>
               <input
@@ -261,7 +255,7 @@ export default function AppShellLayout({
               <button
                 type="submit"
                 disabled={joinCode.trim().length === 0}
-                className="px-2.5 py-1.5 text-sm text-pulse-500 dark:text-[#8A96B0] hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 disabled:opacity-0 transition-colors border-l border-pulse-200 dark:border-[#2A3858]"
+                className="px-2.5 py-1.5 text-sm text-pulse-500 dark:text-[var(--text-muted)] hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-500/10 disabled:opacity-0 transition-colors border-l border-pulse-200 dark:border-[var(--color-border-strong)]"
                 aria-label="Deelnemen"
               >
                 →
@@ -276,19 +270,12 @@ export default function AppShellLayout({
               type="button"
               onClick={toggle}
               aria-label={scheme === 'dark' ? 'Schakel naar lichte modus' : 'Schakel naar donkere modus'}
-              className="flex items-center justify-center w-8 h-8 rounded text-pulse-500 dark:text-[#A8B3CC] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+              className="flex items-center justify-center w-8 h-8 rounded text-pulse-500 dark:text-[var(--text-secondary)] hover:text-pulse-800 dark:hover:text-[#F0F2F8] hover:bg-pulse-100 dark:hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
             >
               {scheme === 'dark' ? (
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="4" /><line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" />
-                  <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" /><line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
-                  <line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" />
-                  <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" /><line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
-                </svg>
+                <Sun aria-hidden="true" size={16} />
               ) : (
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
+                <Moon aria-hidden="true" size={16} />
               )}
             </button>
 
@@ -309,16 +296,16 @@ export default function AppShellLayout({
                 {avatarMenuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-elevated py-1 animate-page-enter"
+                    className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] shadow-elevated py-1 animate-page-enter"
                   >
-                    <div className="px-3 py-2 text-xs text-pulse-500 dark:text-[#8A96B0] border-b border-pulse-100 dark:border-[#1E2A45]">
+                    <div className="px-3 py-2 text-xs text-pulse-500 dark:text-[var(--text-muted)] border-b border-pulse-100 dark:border-[var(--color-border)]">
                       {userEmail}
                     </div>
                     <button
                       type="button"
                       role="menuitem"
                       onClick={() => { setAvatarMenuOpen(false); void auth.logout() }}
-                      className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 hover:text-red-600 dark:hover:text-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500 transition-colors"
+                      className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 hover:text-red-600 dark:hover:text-red-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500 transition-colors"
                     >
                       {tCommon('logout')}
                     </button>

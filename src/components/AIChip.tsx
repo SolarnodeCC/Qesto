@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Check, Pencil, X } from 'lucide-react'
 import { useT } from '../i18n'
 import AIBadge from './AIBadge'
 import { QuestionEditor } from './QuestionEditor'
@@ -27,7 +28,7 @@ export function AIChip({
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className="text-caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+          className="caption text-teal-600 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
         >
           {t('step2.chip_collapse')}
         </button>
@@ -48,7 +49,7 @@ export function AIChip({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <AIBadge variant="generated" />
-          <span className="text-caption text-pulse-500">{kindLabel(question.kind)}</span>
+          <span className="caption text-pulse-500">{kindLabel(question.kind)}</span>
         </div>
         <p className="text-sm text-pulse-800 dark:text-pulse-200 line-clamp-2">{question.prompt || <em className="text-pulse-500">{t('step2.chip_empty')}</em>}</p>
       </div>
@@ -65,9 +66,7 @@ export function AIChip({
               : 'text-pulse-500 hover:text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/20',
           ].join(' ')}
         >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M20 6L9 17l-5-5" />
-          </svg>
+          <Check aria-hidden="true" size={16} strokeWidth={2.5} />
         </button>
         <button
           type="button"
@@ -76,10 +75,7 @@ export function AIChip({
           title={t('step2.chip_edit')}
           className="p-1.5 rounded-md text-pulse-500 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
+          <Pencil aria-hidden="true" size={16} />
         </button>
         <button
           type="button"
@@ -88,9 +84,7 @@ export function AIChip({
           title={t('step2.chip_dismiss')}
           className="p-1.5 rounded-md text-pulse-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
-          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
+          <X aria-hidden="true" size={16} />
         </button>
       </div>
     </div>

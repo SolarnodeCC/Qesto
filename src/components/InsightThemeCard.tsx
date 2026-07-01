@@ -1,3 +1,4 @@
+import { ChevronRight, LayoutGrid } from 'lucide-react'
 import type { InsightConfidence } from '../hooks/useInsights'
 import TrendSpark from './TrendSpark'
 
@@ -48,7 +49,7 @@ export default function InsightThemeCard({
       {/* Title row */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-body-s font-semibold text-pulse-900 dark:text-pulse-100 leading-snug">{title}</h3>
+          <h3 className="body-s font-semibold text-pulse-900 dark:text-pulse-100 leading-snug">{title}</h3>
           {confidence && (
             <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${CONFIDENCE_STYLES[confidence].chip}`}>
               {CONFIDENCE_STYLES[confidence].label}
@@ -57,47 +58,28 @@ export default function InsightThemeCard({
         </div>
         {/* Drill-down chevron — only when clickable */}
         {onClick && (
-          <svg
+          <ChevronRight
             aria-hidden="true"
-            focusable="false"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            focusable={false}
+            size={16}
             className="text-pulse-500 dark:text-pulse-500 flex-shrink-0 mt-0.5"
-          >
-            <path d="M9 18l6-6-6-6" />
-          </svg>
+          />
         )}
       </div>
 
       {/* Description */}
-      <p className="text-body-s text-pulse-600 dark:text-pulse-400 leading-relaxed">{description}</p>
+      <p className="body-s text-pulse-600 dark:text-pulse-400 leading-relaxed">{description}</p>
 
       {/* Session count + trend sparkline */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <svg
+          <LayoutGrid
             aria-hidden="true"
-            focusable="false"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            focusable={false}
+            size={14}
             className="text-pulse-500 dark:text-pulse-500"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M3 9h18M9 21V9" />
-          </svg>
-          <span className="text-caption text-pulse-500 dark:text-pulse-400">
+          />
+          <span className="caption text-pulse-500 dark:text-pulse-400">
             {sessionCount} {sessionCount === 1 ? 'session' : 'sessions'}
           </span>
         </div>
