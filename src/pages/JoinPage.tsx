@@ -471,6 +471,17 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           />
         </Suspense>
       )}
+
+      {/* Footer — legal links required for consent collection */}
+      <div className="border-t border-pulse-100 dark:border-[#1E2A45] px-5 py-4 flex flex-wrap items-center justify-center gap-4 text-xs text-pulse-600 dark:text-[#A8B3CC]">
+        <a href="/privacy" className="hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded px-1">
+          Privacy
+        </a>
+        <span className="text-pulse-300 dark:text-[#6B7A99]" aria-hidden="true">•</span>
+        <a href="/terms" className="hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded px-1">
+          Terms
+        </a>
+      </div>
     </main>
   )
 }
