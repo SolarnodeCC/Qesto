@@ -87,7 +87,7 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
         </span>
 
         {/* Title */}
-        <h3 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-2 line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+        <h3 className="font-semibold text-base text-pulse-900 dark:text-[var(--text-primary)] mb-2 line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
           {title}
         </h3>
 
@@ -203,7 +203,7 @@ export default function TemplateGallery() {
             {t('templates.galleryBadge')}
           </div>
           <h1
-            className="font-bold text-4xl md:text-5xl text-pulse-900 dark:text-[#F0F2F8] mb-4"
+            className="font-bold text-4xl md:text-5xl text-pulse-900 dark:text-[var(--text-primary)] mb-4"
             style={displayFont}
             tabIndex={-1}
           >
@@ -226,7 +226,7 @@ export default function TemplateGallery() {
           <select
             value={industry}
             onChange={(e) => setIndustry(e.target.value as Industry | '')}
-            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[#F0F2F8] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             aria-label={t('templates.filterIndustry')}
           >
             <option value="">{t('templates.allIndustries')}</option>
@@ -239,7 +239,7 @@ export default function TemplateGallery() {
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value as Theme | '')}
-            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[#F0F2F8] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             aria-label={t('templates.filterTheme')}
           >
             <option value="">{t('templates.allThemes')}</option>
@@ -307,7 +307,7 @@ export default function TemplateGallery() {
       <section className="py-16 bg-pulse-50 dark:bg-[#0D1424]">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2
-            className="font-bold text-3xl text-pulse-900 dark:text-[#F0F2F8] mb-4"
+            className="font-bold text-3xl text-pulse-900 dark:text-[var(--text-primary)] mb-4"
             style={displayFont}
           >
             {t('templates.ctaHeading')}

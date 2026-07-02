@@ -57,8 +57,8 @@ function UpgradeGate({ t }: { t: (key: string) => string }) {
         </svg>
       </div>
       <div>
-        <h2 className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('playground.upgradeTitle')}</h2>
-        <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0] max-w-sm mx-auto">{t('playground.upgradeBody')}</p>
+        <h2 className="text-xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{t('playground.upgradeTitle')}</h2>
+        <p className="mt-2 text-sm text-pulse-500 dark:text-[var(--text-muted)] max-w-sm mx-auto">{t('playground.upgradeBody')}</p>
       </div>
       <Link
         to="/pricing"
@@ -135,17 +135,17 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
 
   return (
     <article
-      className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] overflow-hidden"
+      className="rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] overflow-hidden"
       aria-label={`Widget ${widget.id}`}
     >
       {/* Header */}
-      <div className="px-4 py-3 flex flex-wrap items-start justify-between gap-2 border-b border-pulse-100 dark:border-[#1E2A45]">
+      <div className="px-4 py-3 flex flex-wrap items-start justify-between gap-2 border-b border-pulse-100 dark:border-[var(--color-border)]">
         <div className="min-w-0">
-          <p className="text-xs font-mono text-pulse-500 dark:text-[#8A96B0] truncate">{widget.id}</p>
+          <p className="text-xs font-mono text-pulse-500 dark:text-[var(--text-muted)] truncate">{widget.id}</p>
           {session && (
-            <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8] truncate mt-0.5">{session.title}</p>
+            <p className="text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)] truncate mt-0.5">{session.title}</p>
           )}
-          <p className="text-xs text-pulse-500 dark:text-[#8A96B0] mt-0.5">
+          <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)] mt-0.5">
             {t('playground.allowedOrigins')}: {widget.allowed_origins.join(', ')}
           </p>
         </div>
@@ -181,12 +181,12 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
               type="button"
               onClick={() => void handleMint()}
               disabled={minting}
-              className="inline-flex items-center justify-center rounded-lg border border-pulse-200 dark:border-[#2A3858] px-4 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors min-h-[40px]"
+              className="inline-flex items-center justify-center rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] px-4 py-2 text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors min-h-[40px]"
             >
               {minting ? t('playground.minting') : t('playground.mintToken')}
             </button>
             {token && exp && (
-              <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
+              <span className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">
                 {t('playground.tokenExpiry')}: {new Date(exp * 1000).toLocaleTimeString()}
               </span>
             )}
@@ -196,7 +196,7 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
             <>
               {/* Token display */}
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-pulse-600 dark:text-[#A8B3CC]">
+                <label className="block text-xs font-medium text-pulse-600 dark:text-[var(--text-secondary)]">
                   {t('playground.tokenLabel')}
                 </label>
                 <div className="flex gap-2">
@@ -204,12 +204,12 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
                     readOnly
                     value={token}
                     aria-label={t('playground.tokenLabel')}
-                    className="flex-1 min-w-0 rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-pulse-50 dark:bg-[#0F1628] px-3 py-2 text-xs font-mono text-pulse-700 dark:text-[#A8B3CC] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    className="flex-1 min-w-0 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-pulse-50 dark:bg-[#0F1628] px-3 py-2 text-xs font-mono text-pulse-700 dark:text-[var(--text-secondary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                   />
                   <button
                     type="button"
                     onClick={() => void handleCopyToken()}
-                    className="shrink-0 rounded-lg border border-pulse-200 dark:border-[#2A3858] px-3 py-2 text-sm text-pulse-600 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[40px] min-w-[44px]"
+                    className="shrink-0 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] px-3 py-2 text-sm text-pulse-600 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[40px] min-w-[44px]"
                     aria-label={tokenCopied ? t('playground.tokenCopied') : t('playground.copyToken')}
                   >
                     {tokenCopied ? t('playground.tokenCopied') : '⧉'}
@@ -219,17 +219,17 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
 
               {/* Snippet */}
               <div className="space-y-1">
-                <label className="block text-xs font-medium text-pulse-600 dark:text-[#A8B3CC]">
+                <label className="block text-xs font-medium text-pulse-600 dark:text-[var(--text-secondary)]">
                   {t('playground.snippetLabel')}
                 </label>
                 <div className="relative">
-                  <pre className="rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-pulse-50 dark:bg-[#0F1628] px-4 py-3 text-xs font-mono text-pulse-700 dark:text-[#A8B3CC] overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
+                  <pre className="rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-pulse-50 dark:bg-[#0F1628] px-4 py-3 text-xs font-mono text-pulse-700 dark:text-[var(--text-secondary)] overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
                     {buildSnippet(widget.session_code, token, widget.allowed_origins[0] ?? window.location.origin)}
                   </pre>
                   <button
                     type="button"
                     onClick={() => void handleCopySnippet()}
-                    className="absolute top-2 right-2 rounded border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] px-2 py-1 text-xs text-pulse-600 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[32px]"
+                    className="absolute top-2 right-2 rounded border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface-elevated)] px-2 py-1 text-xs text-pulse-600 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[32px]"
                     aria-label={snippetCopied ? t('playground.snippetCopied') : t('playground.copySnippet')}
                   >
                     {snippetCopied ? t('playground.snippetCopied') : t('playground.copySnippet')}
@@ -257,7 +257,7 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
                       title={t('playground.previewLabel')}
                       loading="lazy"
                       style={{ width: '100%', height: '360px', border: 'none', borderRadius: '8px', display: 'block' }}
-                      className="border border-pulse-200 dark:border-[#1E2A45] rounded-lg"
+                      className="border border-pulse-200 dark:border-[var(--color-border)] rounded-lg"
                     />
                   </div>
                 )}
@@ -307,27 +307,27 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
   return (
     <form
       onSubmit={(e) => void handleSubmit(e)}
-      className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-4"
+      className="rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-5 space-y-4"
       aria-label={t('playground.createWidget')}
     >
-      <h2 className="text-base font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('playground.createWidget')}</h2>
+      <h2 className="text-base font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{t('playground.createWidget')}</h2>
 
       {/* Session selector */}
       <div className="space-y-1">
-        <label htmlFor="embed-session-select" className="block text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
+        <label htmlFor="embed-session-select" className="block text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
           {t('playground.sessionLabel')}
         </label>
         {sessionsLoading ? (
-          <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.loadingSessions')}</p>
+          <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('playground.loadingSessions')}</p>
         ) : liveSessions.length === 0 ? (
-          <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.noSessions')}</p>
+          <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('playground.noSessions')}</p>
         ) : (
           <select
             id="embed-session-select"
             value={sessionId}
             onChange={(e) => setSessionId(e.target.value)}
             required
-            className="w-full rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#0F1628] px-3 py-2 text-sm text-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
+            className="w-full rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[#0F1628] px-3 py-2 text-sm text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
           >
             <option value="">{t('playground.sessionPlaceholder')}</option>
             {liveSessions.map((s) => (
@@ -339,10 +339,10 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
 
       {/* Origins textarea */}
       <div className="space-y-1">
-        <label htmlFor="embed-origins-textarea" className="block text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
+        <label htmlFor="embed-origins-textarea" className="block text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
           {t('playground.originsLabel')}
         </label>
-        <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('playground.originsHint')}</p>
+        <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">{t('playground.originsHint')}</p>
         <textarea
           id="embed-origins-textarea"
           ref={originsRef}
@@ -351,7 +351,7 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
           placeholder={t('playground.originsPlaceholder')}
           rows={3}
           required
-          className="w-full rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#0F1628] px-3 py-2 text-sm font-mono text-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 resize-y"
+          className="w-full rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[#0F1628] px-3 py-2 text-sm font-mono text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 resize-y"
         />
       </div>
 
@@ -417,19 +417,19 @@ export default function EmbedPlayground() {
           <div className="flex items-center gap-3">
             <Link
               to="/dashboard"
-              className="text-sm text-pulse-500 dark:text-[#8A96B0] hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+              className="text-sm text-pulse-500 dark:text-[var(--text-muted)] hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
             >
               {t('playground.backToDashboard')}
             </Link>
-            <span className="text-pulse-500 dark:text-[#2A3858]">/</span>
+            <span className="text-pulse-500 dark:text-[var(--color-border-strong)]">/</span>
           </div>
           <h1
             tabIndex={-1}
-            className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]"
+            className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]"
           >
             {t('playground.title')}
           </h1>
-          <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.subtitle')}</p>
+          <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('playground.subtitle')}</p>
         </header>
 
         {/* Plan gate */}
@@ -457,20 +457,20 @@ export default function EmbedPlayground() {
 
             {/* Widget list */}
             <section aria-label="Embed widgets">
-              <h2 className="text-base font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-4">
+              <h2 className="text-base font-semibold text-pulse-900 dark:text-[var(--text-primary)] mb-4">
                 Your embed widgets
               </h2>
 
               {widgetsState.status === 'loading' && (
                 <div className="space-y-3" aria-busy="true" aria-label="Loading widgets">
                   {[0, 1].map((i) => (
-                    <div key={i} className="h-24 rounded-xl bg-pulse-100 dark:bg-[#151C2E] animate-pulse" aria-hidden="true" />
+                    <div key={i} className="h-24 rounded-xl bg-pulse-100 dark:bg-[var(--color-surface)] animate-pulse" aria-hidden="true" />
                   ))}
                 </div>
               )}
 
               {widgetsState.status === 'ready' && widgetsState.widgets.length === 0 && (
-                <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('playground.noWidgets')}</p>
+                <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('playground.noWidgets')}</p>
               )}
 
               {widgetsState.status === 'ready' && widgetsState.widgets.length > 0 && (
