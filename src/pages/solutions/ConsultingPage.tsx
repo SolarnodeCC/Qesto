@@ -134,7 +134,7 @@ export default function ConsultingPage() {
                 output: "Output: reviewed recap source material for the sponsor.",
               },
             ].map(({ phase, title, desc, output }) => (
-              <div key={phase} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={phase} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="text-[11px] font-bold uppercase tracking-widest text-pulse-500 dark:text-[var(--text-muted)] mb-2.5">{phase}</div>
                 <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900 dark:text-[var(--text-primary)]">{title}</h3>
                 <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed mb-4">{desc}</p>
@@ -158,7 +158,7 @@ export default function ConsultingPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
             White-label the room. Keep your brand on the deliverable.
           </h2>
-          <div className="rounded-2xl overflow-hidden border border-pulse-200 dark:border-[var(--color-border)] divide-y divide-pulse-200 dark:divide-[var(--color-border)]">
+          <div className="rounded-xl overflow-hidden border border-pulse-200 dark:border-[var(--color-border)] divide-y divide-pulse-200 dark:divide-[var(--color-border)]">
             {whitelabel.map(({ key, value, sub }) => (
               <div
                 key={key}

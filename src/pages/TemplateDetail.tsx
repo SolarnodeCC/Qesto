@@ -44,7 +44,7 @@ function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true">
       <div
-        className="w-full max-w-md rounded-2xl bg-white dark:bg-[#111827] p-6"
+        className="w-full max-w-md rounded-xl bg-white dark:bg-[#111827] p-6"
         style={shadowElevated}
       >
         <h2 className="font-bold text-xl text-pulse-900 dark:text-[var(--text-primary)] mb-2" style={displayFont}>
@@ -316,7 +316,7 @@ export default function TemplateDetail() {
             {/* Right: CTA card */}
             <div className="lg:sticky lg:top-24">
               <div
-                className="rounded-2xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 p-6"
+                className="rounded-xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 p-6"
                 style={shadowCard}
               >
                 <div className="h-1 -mx-6 -mt-6 rounded-t-2xl mb-5" style={gradientBrand} />

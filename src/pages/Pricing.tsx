@@ -281,7 +281,7 @@ export default function Pricing() {
             </span>
             ; other rows describe roadmap or packaging details.
           </p>
-          <div className="bg-white dark:bg-[var(--color-surface)] rounded-2xl overflow-hidden" style={shadowCard}>
+          <div className="bg-white dark:bg-[var(--color-surface)] rounded-xl overflow-hidden" style={shadowCard}>
             <table className="w-full border-collapse">
               <thead>
                 <tr>

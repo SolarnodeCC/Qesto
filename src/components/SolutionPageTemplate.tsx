@@ -383,7 +383,7 @@ export default function SolutionPageTemplate({
       {bottomCta && (
         <Reveal as="section" aria-labelledby="cta-heading" className="py-16 md:py-24">
           <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[var(--color-border)] dark:to-[var(--color-border)] border border-pulse-200 dark:border-[var(--color-border)]">
+            <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-xl bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[var(--color-border)] dark:to-[var(--color-border)] border border-pulse-200 dark:border-[var(--color-border)]">
               <h2
                 id="cta-heading"
                 className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"

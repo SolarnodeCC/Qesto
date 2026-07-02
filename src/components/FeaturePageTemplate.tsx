@@ -419,7 +419,7 @@ export default function FeaturePageTemplate({
       {/* Bottom CTA */}
       <section aria-labelledby="feature-cta-heading" className="py-16 md:py-24">
         <div className="grid-container px-4 md:px-6">
-          <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
+          <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-xl bg-gradient-to-br from-teal-50 to-violet-50 border border-pulse-200">
             <h2
               id="feature-cta-heading"
               className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"

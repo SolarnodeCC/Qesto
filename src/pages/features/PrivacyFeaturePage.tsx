@@ -132,7 +132,7 @@ export default function PrivacyFeaturePage() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {doGuarantees.map(({ title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
                   <Check size={22} />
                 </div>
@@ -141,7 +141,7 @@ export default function PrivacyFeaturePage() {
               </div>
             ))}
             {dontGuarantees.map(({ title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                   style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}

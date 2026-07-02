@@ -73,7 +73,7 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
   return (
     <Link
       to={`/templates/${template.id}`}
-      className="group block rounded-2xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 overflow-hidden"
+      className="group block rounded-xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 overflow-hidden"
       style={shadowCard}
       aria-label={title}
     >
@@ -269,7 +269,7 @@ export default function TemplateGallery() {
           {loading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-56 rounded-2xl bg-pulse-100 dark:bg-white/5 animate-pulse" />
+                <div key={i} className="h-56 rounded-xl bg-pulse-100 dark:bg-white/5 animate-pulse" />
               ))}
             </div>
           )}

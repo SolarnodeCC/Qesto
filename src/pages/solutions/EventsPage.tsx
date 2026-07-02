@@ -112,7 +112,7 @@ export default function EventsPage() {
             the whole day.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden bg-pulse-900 text-white">
+            <div className="rounded-xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden bg-pulse-900 text-white">
               <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>01</div>
               <div>
                 <h3 className="text-[22px] font-semibold mb-2.5">Keynote</h3>
@@ -123,7 +123,7 @@ export default function EventsPage() {
               </div>
             </div>
             <div
-              className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900"
+              className="rounded-xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900"
               style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #F5F3FF 100%)' }}
             >
               <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>02</div>
@@ -135,7 +135,7 @@ export default function EventsPage() {
                 </p>
               </div>
             </div>
-            <div className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900 dark:text-[var(--text-primary)] bg-teal-50 dark:bg-teal-500/12">
+            <div className="rounded-xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900 dark:text-[var(--text-primary)] bg-teal-50 dark:bg-teal-500/12">
               <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>03</div>
               <div>
                 <h3 className="text-[22px] font-semibold mb-2.5">Workshop</h3>
@@ -159,7 +159,7 @@ export default function EventsPage() {
           <p className="text-pulse-500 dark:text-[var(--text-muted)] mb-8 text-lg">
             Here's how a 300-person half-day runs on Qesto. Every step is logged, every tally is exportable.
           </p>
-          <div className="rounded-2xl overflow-hidden border border-pulse-200 dark:border-[var(--color-border)] divide-y divide-pulse-200 dark:divide-[var(--color-border)]">
+          <div className="rounded-xl overflow-hidden border border-pulse-200 dark:border-[var(--color-border)] divide-y divide-pulse-200 dark:divide-[var(--color-border)]">
             {timeline.map(({ time, msg, tag, live }) => (
               <div
                 key={time}
@@ -209,7 +209,7 @@ export default function EventsPage() {
                 ai: true,
               },
             ].map(({ icon, title, desc, ai }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
                     ai ? 'bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400' : 'bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400'

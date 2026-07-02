@@ -192,7 +192,7 @@ export default function HRPage() {
               { label: 'Minimum tally threshold', value: '5', note: 'Results stay hidden until five voices are in. No single-voter exposure.' },
               { label: 'Recap source readiness', value: 'Same day', note: 'Session exports and reviewed themes support the follow-up package.' },
             ].map(({ label, value, note }) => (
-              <div key={label} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-6" style={shadowCard}>
+              <div key={label} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-6" style={shadowCard}>
                 <div className="text-[13px] text-pulse-500 dark:text-[var(--text-muted)] mb-2">{label}</div>
                 <div className="font-bold text-4xl tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mb-2" style={displayFont}>{value}</div>
                 <div className="text-[13px] text-pulse-500 dark:text-[var(--text-muted)] leading-snug">{note}</div>
@@ -214,7 +214,7 @@ export default function HRPage() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {useCases.map(({ tag, title, desc, items }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 mb-2">{tag}</div>
                 <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900 dark:text-[var(--text-primary)]">{title}</h3>
                 <p className="text-pulse-500 dark:text-[var(--text-muted)] text-sm leading-relaxed mb-4">{desc}</p>
@@ -270,7 +270,7 @@ export default function HRPage() {
                 desc: 'Identity rows purge on your schedule — 30 days, 90, custom. Aggregate tallies live longer for trend reporting, with no link back.',
               },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>

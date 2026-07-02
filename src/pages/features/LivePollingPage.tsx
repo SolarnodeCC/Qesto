@@ -154,7 +154,7 @@ export default function LivePollingPage() {
             The bar moves when people tap. Results don't make the room wait — so you can keep the conversation
             going without breaking the flow.
           </p>
-          <div className="rounded-2xl overflow-hidden border border-pulse-200 dark:border-[var(--color-border)] divide-y divide-pulse-200 dark:divide-[var(--color-border)]">
+          <div className="rounded-xl overflow-hidden border border-pulse-200 dark:border-[var(--color-border)] divide-y divide-pulse-200 dark:divide-[var(--color-border)]">
             {latencyRows.map(({ hop, title, desc, lat, sub, highlight }) => (
               <div
                 key={hop}
@@ -188,7 +188,7 @@ export default function LivePollingPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {hostControls.map(({ icon, title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>

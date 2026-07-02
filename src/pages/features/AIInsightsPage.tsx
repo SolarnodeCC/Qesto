@@ -140,7 +140,7 @@ export default function AIInsightsPage() {
                 code: ['// missed', '→ "compensation fairness" (14 ev)', '→ host-only'],
               },
             ].map(({ icon, title, desc, code }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>
@@ -246,7 +246,7 @@ export default function AIInsightsPage() {
                 desc: 'All analysis data lives with the session. When you remove a session, everything that was generated goes with it.',
               },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="w-12 h-12 rounded-xl bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>

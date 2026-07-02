@@ -128,7 +128,7 @@ export default function NonprofitPage() {
           <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
             Four steps from "any objections?" to signed minutes.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-pulse-200 dark:divide-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-pulse-200 dark:divide-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] rounded-xl overflow-hidden">
             {[
               { num: '01', title: 'Chair calls the vote', desc: 'Pick the motion from the agenda, set identified or secret, and launch. Every director\'s device lights up.' },
               { num: '02', title: 'Directors cast', desc: 'For, against, abstain. Quorum tracked live. Proxy votes pre-loaded against the director\'s name.' },

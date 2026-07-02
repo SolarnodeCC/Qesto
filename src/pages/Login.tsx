@@ -107,7 +107,7 @@ export default function Login() {
     <main id="main" className="min-h-screen flex items-center justify-center p-6">
       <section
         aria-labelledby="login-title"
-        className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+        className="w-full max-w-md space-y-5 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
       >
         <div className="space-y-1 text-center">
           <h1
