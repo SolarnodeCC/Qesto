@@ -52,7 +52,7 @@ export function Body({
 }
 
 export function Caption({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`caption text-pulse-500 dark:text-pulse-400 ${className}`}>{children}</span>
+  return <span className={`caption text-pulse-500 dark:text-pulse-200 ${className}`}>{children}</span>
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────
