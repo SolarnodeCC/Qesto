@@ -150,6 +150,12 @@
   --text-secondary:         #525252;
   --text-muted:             #737373;
   --color-ink:              #0A0F1E;
+
+  /* Surface token aliases (backward compatibility for component usage) */
+  --surface-border:         var(--color-border);
+  --surface-bg-subtle:      var(--color-bg-subtle);
+  --surface-border-strong:  var(--color-border-strong);
+
   --shadow-card:            0 2px 8px rgba(10,15,30,0.06);
   --shadow-elevated:        0 8px 24px rgba(10,15,30,0.10);
   --shadow-teal:            0 4px 20px rgba(20,184,166,0.25);
@@ -217,6 +223,12 @@
   --text-secondary:         #A8B3CC;
   --text-muted:             #6B7A99;
   --color-ink:              #F0F2F8;
+
+  /* Surface token aliases (backward compatibility for component usage) */
+  --surface-border:         var(--color-border);
+  --surface-bg-subtle:      var(--color-bg-subtle);
+  --surface-border-strong:  var(--color-border-strong);
+
   --shadow-card:            0 0 0 1px rgba(255,255,255,0.06);
   --shadow-elevated:        0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.07);
   --shadow-teal:            0 4px 24px rgba(45,212,191,0.35);
