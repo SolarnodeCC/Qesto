@@ -68,7 +68,7 @@ For HR, events, and compliance-heavy rollouts:
 |---------|-------|--------|--------|
 | New sessions / month | 5 | 50 | 500 |
 | Participants / session | 50 | 500 | 5,000 |
-| Retention | 30 days | 365 days | Custom |
+| Retention | 30 days | 365 days | 7 days – 7 years (configurable) |
 | AI Insights | — | — | ✓ |
 | CSV Export | — | ✓ | ✓ |
 | SAML SSO | — | — | ✓ |
