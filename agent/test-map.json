@@ -11,6 +11,11 @@
       "purpose": "rendered UX QA for web alias surface",
       "lane": "web"
     },
+    "functions/": {
+      "command": "just fast",
+      "purpose": "typecheck, unit tests, and build for edge functions",
+      "lane": "fast"
+    },
     "functions/api/": {
       "command": "just fast",
       "purpose": "typecheck, unit tests, and build for Hono API",
@@ -21,8 +26,13 @@
       "purpose": "typecheck and build for scheduled worker",
       "lane": "fast"
     },
+    "workers/": {
+      "command": "just fast",
+      "purpose": "typecheck and build for standalone workers",
+      "lane": "fast"
+    },
     "migrations/": {
-      "command": "npm test -- --run tests/unit/migrations",
+      "command": "npm test -- --run tests/unit/migration",
       "purpose": "migration safety unit tests",
       "lane": "db"
     },
@@ -52,14 +62,14 @@
       "lane": "e2e"
     },
     ".claude/": {
-      "command": "npx jankurai doctor .",
+      "command": "just check",
       "purpose": "agent skill/hook control-plane integrity",
-      "lane": "doctor"
+      "lane": "check"
     },
     "agent/": {
-      "command": "npx jankurai doctor .",
+      "command": "just check",
       "purpose": "standard + policy schema validation",
-      "lane": "doctor"
+      "lane": "check"
     },
     "docs/": {
       "command": "just check",
@@ -67,9 +77,9 @@
       "lane": "docs"
     },
     "knowledge-base/": {
-      "command": "npx jankurai doctor .",
+      "command": "just check",
       "purpose": "KB control-file presence and integrity",
-      "lane": "doctor"
+      "lane": "check"
     }
   }
 }

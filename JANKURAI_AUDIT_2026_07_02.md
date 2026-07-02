@@ -46,7 +46,7 @@ Governance artifacts otherwise present and healthy: `agent/owner-map.json`, `age
 - **Code shape dimension scored 0**: the same design-system template JS files exceed the 500/1000-LOC ceilings; they drag the whole dimension down. Consolidating the 6× `support.js` into one shared module fixes both this and the duplication cap.
 - **TypeScript boundary casts** (`HLT-031`, 33 findings): unvalidated `as` casts at I/O boundaries, e.g. `functions/api/lib/ai-wizard.ts:349` (`JSON.parse(payload) as {…}`), `functions/api/lib/ai/ai-gateway.ts:123` (`await response.json() as {…}`). Prefer zod `safeParse` (already the repo pattern elsewhere).
 - **Python containment scored 0**: `packages/sdk-python/` sits outside the allowed Python roots for the declared target stack. Either allow-list the SDK path in policy or relocate; today it zeroes a 4-point dimension.
-- **Secret-like content (critical per rubric, low real risk)**: `tests/e2e/marketing/demo-data.ts` contains `password: 'DemoShowcase2026!'` — a demo fixture, but it trips the `secret-like-content-detected` cap (60). Move to an env-injected fixture or add a scoped scan exception.
+- **Secret-like content (critical per rubric, low real risk)**: `tests/e2e/marketing/demo-data.ts` contains a hardcoded demo-seed `password` literal — a throwaway fixture, but it trips the `secret-like-content-detected` cap (60). Move to an env-injected fixture or add a scoped scan exception.
 - **PII in `.env.example`**: `VITE_SUPERUSER_EMAIL=oostelaar@hotmail.com` — a real personal address committed and baked into the client bundle (superuser gating hint). Replace with a placeholder domain; keep enforcement server-side (comment says it already is).
 
 ## Security — Qesto-specific rules (manual pass, all verified)
@@ -86,6 +86,53 @@ Governance artifacts otherwise present and healthy: `agent/owner-map.json`, `age
 5. Decide the rendered UX-QA runner story (vendor `@jankurai/ux-qa` build in CI, or re-point the lane at `ops/ci/ux-qa.sh`) and drop the branded-Chrome pin (P1-4..5).
 6. Deduplicate `design-system/templates` support/ds-base modules (P2) — biggest single score lever after the justfile.
 7. Then re-baseline `agent/baselines/main.repo-score.json` from a clean advisory run in a dedicated commit.
+
+## Remediation applied in this PR (2026-07-02)
+
+Fixes landed for the genuine defects; false positives left untouched (they were
+never code issues). After the fixes: **findings 217 → 114**, **raw score 70 → 74**,
+**caps 17 → 14**.
+
+- **P0 justfile** restored as a regular file (mode `100644`) — all 14 `just` recipes
+  parse again. Proof-lanes/test-routing dimension recovered **95 → 100**.
+- **Governance routing**: added `functions/` + `workers/` owners and `fast`-lane
+  routes; repointed the `db` lane to the real migration tests
+  (`tests/unit/migration`, 15 passing) and the ex-`doctor` routes to `just check`.
+- **Generated zones**: removed the two stale `src/ui/tokens.ts` /
+  `tailwind-theme.ts` entries (no such files/generator).
+- **Untracked** `tests/tests/artifacts/playwright-report/index.html`;
+  added `tests/**/artifacts/` to `.gitignore`.
+- **CI browser**: `ops/ci/ux-qa.sh` now installs branded `chrome` to match the
+  `spa-chrome` project's channel pin.
+- **Reference/SDK exclusions** (user-approved): `design-system/` and
+  `packages/sdk-python/` added to `[scan].extra_excluded_paths`. Python-containment
+  dimension recovered **0 → 90**; code-shape's 1,658-line ×6 mockup dupes cleared.
+- **PII**: `.env.example` superuser email replaced with a placeholder.
+- **Secret fixtures**: `tests/e2e/marketing/demo-data.ts` excluded; report literal
+  redacted.
+
+### Why the headline score is still 60 (two remaining, larger levers)
+
+1. **Code shape 0/12** is now driven by *real* oversized product files
+   (e.g. `functions/api/routes/integrations.ts`, 1,029 LOC > the 500/1000 ceilings),
+   not the excluded mockups. Recovering it needs genuine route-handler
+   decomposition — a substantial product refactor, out of scope for this config PR.
+2. **Tool/policy version mismatch (P1-6)** caps the final score at 60. The repo's
+   `agent/audit-policy.toml` declares `[dead_language] allow_terms`
+   (`fallback`, `stub`, `placeholder`, `deprecated`, `stale`) and `[caps]` for
+   jankurai **1.6.10**, but the pinned auditor is **1.5.1**, which does not read
+   those blocks. So legitimate product-code vocabulary (`env.SESSION_ROOM.get(stub)`,
+   graceful-degradation `fallback` branches, the `placeholder=` HTML attribute) and
+   test-fixture secrets keep firing `HLT-001` / `HLT-010` and hold the caps at
+   60–64. Clearing them requires either upgrading the auditor to the version the
+   policy targets, or narrowly excluding first-party test fixtures — a decision
+   deferred to the maintainer, not something to force via broad scan suppression.
+
+**Re-baseline is intentionally NOT done here**: the standard gates a baseline refresh
+on a clean advisory run (≥ 85). Because the true 1.5.1 score of this repo is ~60
+(not the aspirational 93 in `agent/baselines/main.repo-score.json`), refreshing the
+baseline is a maintainer decision — accept an honest ~74-raw/60-final baseline so the
+ratchet reflects reality, or first resolve levers (1) and (2) above.
 
 ## Artifact index (local, gitignored — regenerate to inspect)
 
