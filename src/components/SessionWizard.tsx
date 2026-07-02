@@ -365,7 +365,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
     >
       <div
         ref={dialogRef}
-        className="bg-white dark:bg-[#1C2540] rounded-2xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
+        className="bg-white dark:bg-[#1C2540] rounded-xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-pulse-200 dark:border-[#1E2A45] flex-shrink-0">

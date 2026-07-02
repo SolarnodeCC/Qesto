@@ -69,7 +69,7 @@ export function Card({
   return (
     <div
       className={`
-        rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4
+        rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4
         shadow-card ${hoverable ? 'hover:shadow-elevated transition-shadow' : ''}
         ${className}
       `}
