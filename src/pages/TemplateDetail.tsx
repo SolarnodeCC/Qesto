@@ -44,24 +44,24 @@ function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true">
       <div
-        className="w-full max-w-md rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] p-6"
+        className="w-full max-w-md rounded-2xl bg-white dark:bg-[#111827] p-6"
         style={shadowElevated}
       >
-        <h2 className="font-bold text-xl text-pulse-900 dark:text-[var(--text-primary)] mb-2" style={displayFont}>
+        <h2 className="font-bold text-xl text-pulse-900 dark:text-[#F0F2F8] mb-2" style={displayFont}>
           {t('templates.magicLinkTitle')}
         </h2>
-        <p className="text-sm text-pulse-600 dark:text-[var(--text-muted)] mb-5">
+        <p className="text-sm text-pulse-600 dark:text-[#8893AD] mb-5">
           {t('templates.magicLinkDescription')}
         </p>
 
         {/* Link display */}
         <div className="flex items-center gap-2 p-3 rounded-xl bg-pulse-50 dark:bg-white/5 border border-pulse-200 dark:border-white/10 mb-4">
-          <span className="flex-1 text-sm text-pulse-700 dark:text-[var(--text-muted)] truncate font-mono">
+          <span className="flex-1 text-sm text-pulse-700 dark:text-[#8893AD] truncate font-mono">
             {link}
           </span>
           <button
             onClick={copyLink}
-            className="shrink-0 p-2 rounded-lg text-pulse-600 dark:text-[var(--text-muted)] hover:bg-pulse-100 dark:hover:bg-white/10 transition-colors"
+            className="shrink-0 p-2 rounded-lg text-pulse-600 dark:text-[#8893AD] hover:bg-pulse-100 dark:hover:bg-white/10 transition-colors"
             aria-label={copied ? t('copied') : t('copyLink')}
           >
             {copied ? <Check className="h-4 w-4 text-teal-500" /> : <Copy className="h-4 w-4" />}
@@ -82,7 +82,7 @@ function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }
           </a>
           <button
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-sm font-medium text-pulse-700 dark:text-[var(--text-muted)] border border-pulse-200 dark:border-white/20 hover:bg-pulse-50 dark:hover:bg-white/5 transition-colors"
+            className="px-4 py-2.5 rounded-xl text-sm font-medium text-pulse-700 dark:text-[#8893AD] border border-pulse-200 dark:border-white/20 hover:bg-pulse-50 dark:hover:bg-white/5 transition-colors"
           >
             {t('close')}
           </button>
@@ -147,7 +147,7 @@ export default function TemplateDetail() {
     return (
       <MainLayout>
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-          <p className="text-pulse-600 dark:text-[var(--text-muted)]">{error || t('error')}</p>
+          <p className="text-pulse-600 dark:text-[#8893AD]">{error || t('error')}</p>
           <Link to="/templates" className="text-sm text-teal-600 dark:text-teal-400 underline">
             {t('templates.backToGallery')}
           </Link>
@@ -226,11 +226,11 @@ export default function TemplateDetail() {
       )}
 
       {/* Back nav */}
-      <div className="border-b border-pulse-100 dark:border-white/10 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <div className="border-b border-pulse-100 dark:border-white/10 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6 py-3">
           <Link
             to="/templates"
-            className="inline-flex items-center gap-1.5 text-sm text-pulse-600 dark:text-[var(--text-muted)] hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-pulse-600 dark:text-[#8893AD] hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
             {t('templates.backToGallery')}
@@ -239,7 +239,7 @@ export default function TemplateDetail() {
       </div>
 
       {/* Hero */}
-      <section className="py-14 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <section className="py-14 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
             {/* Left: Content */}
@@ -248,16 +248,16 @@ export default function TemplateDetail() {
                 {template.industry.replace(/-/g, ' ')}
               </span>
               <h1
-                className="font-bold text-4xl text-pulse-900 dark:text-[var(--text-primary)] mb-4"
+                className="font-bold text-4xl text-pulse-900 dark:text-[#F0F2F8] mb-4"
                 style={displayFont}
                 tabIndex={-1}
               >
                 {title}
               </h1>
-              <p className="text-lg text-pulse-600 dark:text-[var(--text-muted)] mb-8">{purpose}</p>
+              <p className="text-lg text-pulse-600 dark:text-[#8893AD] mb-8">{purpose}</p>
 
               {/* Meta row */}
-              <div className="flex flex-wrap gap-5 text-sm text-pulse-600 dark:text-[var(--text-muted)] mb-10">
+              <div className="flex flex-wrap gap-5 text-sm text-pulse-600 dark:text-[#8893AD] mb-10">
                 <span className="flex items-center gap-1.5">
                   <BookOpen className="h-4 w-4 text-teal-500" />
                   {template.questions.length} {t('templates.questions')}
@@ -277,14 +277,14 @@ export default function TemplateDetail() {
               {/* Best used for */}
               {bestUsedFor.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[var(--text-primary)] mb-3">
+                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-3">
                     {t('templates.bestUsedFor')}
                   </h2>
                   <ul className="flex flex-wrap gap-2">
                     {bestUsedFor.map((use, i) => (
                       <li
                         key={i}
-                        className="px-3 py-1.5 rounded-full text-sm bg-pulse-50 dark:bg-white/5 text-pulse-700 dark:text-[var(--text-muted)] border border-pulse-200 dark:border-white/10"
+                        className="px-3 py-1.5 rounded-full text-sm bg-pulse-50 dark:bg-white/5 text-pulse-700 dark:text-[#8893AD] border border-pulse-200 dark:border-white/10"
                       >
                         {use}
                       </li>
@@ -296,12 +296,12 @@ export default function TemplateDetail() {
               {/* What you'll learn */}
               {whatYoullLearn.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[var(--text-primary)] mb-3">
+                  <h2 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-3">
                     {t('templates.whatYoullLearn')}
                   </h2>
                   <ul className="space-y-2">
                     {whatYoullLearn.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-pulse-600 dark:text-[var(--text-muted)]">
+                      <li key={i} className="flex items-start gap-2 text-sm text-pulse-600 dark:text-[#8893AD]">
                         <span className="mt-0.5 h-4 w-4 shrink-0 rounded-full flex items-center justify-center" style={gradientBrand}>
                           <Check className="h-2.5 w-2.5 text-white" />
                         </span>
@@ -316,12 +316,12 @@ export default function TemplateDetail() {
             {/* Right: CTA card */}
             <div className="lg:sticky lg:top-24">
               <div
-                className="rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] border border-pulse-100 dark:border-white/10 p-6"
+                className="rounded-2xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 p-6"
                 style={shadowCard}
               >
                 <div className="h-1 -mx-6 -mt-6 rounded-t-2xl mb-5" style={gradientBrand} />
 
-                <p className="text-sm text-pulse-600 dark:text-[var(--text-muted)] mb-5">
+                <p className="text-sm text-pulse-600 dark:text-[#8893AD] mb-5">
                   {t('templates.ctaCardDescription')}
                 </p>
 
@@ -340,7 +340,7 @@ export default function TemplateDetail() {
 
                 <hr className="my-5 border-pulse-100 dark:border-white/10" />
 
-                <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)] text-center">
+                <p className="text-xs text-pulse-500 dark:text-[#8893AD] text-center">
                   {t('templates.wantToCustomize')}{' '}
                   <Link to="/login" className="text-teal-600 dark:text-teal-400 underline">
                     {t('login')}
@@ -353,10 +353,10 @@ export default function TemplateDetail() {
       </section>
 
       {/* Questions preview */}
-      <section className="py-12 bg-pulse-50 dark:bg-[var(--color-bg-subtle)]">
+      <section className="py-12 bg-pulse-50 dark:bg-[#0D1424]">
         <div className="max-w-6xl mx-auto px-6">
           <h2
-            className="font-bold text-2xl text-pulse-900 dark:text-[var(--text-primary)] mb-6"
+            className="font-bold text-2xl text-pulse-900 dark:text-[#F0F2F8] mb-6"
             style={displayFont}
           >
             {t('templates.questionsPreview')} ({template.questions.length})
@@ -365,14 +365,14 @@ export default function TemplateDetail() {
             {template.questions.map((q, idx) => (
               <div
                 key={q.id}
-                className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] border border-pulse-100 dark:border-white/10"
+                className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10"
                 style={shadowCard}
               >
                 <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={gradientBrand}>
                   {idx + 1}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">
+                  <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
                     {q.text[lang] || q.text.en}
                   </p>
                   <span className="text-xs text-pulse-500 dark:text-white/30 capitalize">{q.type}</span>
@@ -384,15 +384,15 @@ export default function TemplateDetail() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-14 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <section className="py-14 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-xl mx-auto px-6 text-center">
           <h2
-            className="font-bold text-2xl text-pulse-900 dark:text-[var(--text-primary)] mb-3"
+            className="font-bold text-2xl text-pulse-900 dark:text-[#F0F2F8] mb-3"
             style={displayFont}
           >
             {t('templates.readyToStart')}
           </h2>
-          <p className="text-pulse-600 dark:text-[var(--text-muted)] mb-6">
+          <p className="text-pulse-600 dark:text-[#8893AD] mb-6">
             {t('templates.readyToStartDescription')}
           </p>
           <button

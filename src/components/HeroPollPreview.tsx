@@ -96,7 +96,7 @@ export default function HeroPollPreview() {
       aria-hidden="true"
       className="relative w-full max-w-[520px] mx-auto rounded-3xl p-6 sm:p-7 text-white grid overflow-hidden"
       style={{
-        background: 'var(--color-bg-subtle)',
+        background: '#0A0F1E',
         aspectRatio: '16 / 11',
         gridTemplateRows: 'auto 1fr auto',
         gap: 16,

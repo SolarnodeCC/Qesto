@@ -48,7 +48,7 @@ function Screen({ sessionId, title, code }: { sessionId: string; title: string; 
         {COLUMNS.map((col) => {
           const items = itemsByColumn(state.items, col)
           return (
-            <section key={col} className="flex flex-col rounded-xl bg-white/5 p-5">
+            <section key={col} className="flex flex-col rounded-2xl bg-white/5 p-5">
               <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-teal-300">{t(`column.${col}`)}</h2>
               <div className="flex-1 space-y-3 overflow-y-auto">
                 {items.length === 0 ? (

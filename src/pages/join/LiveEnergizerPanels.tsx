@@ -86,18 +86,18 @@ export function LiveQuickFingerPanel({
     <section className="rounded-xl border border-teal-200 dark:border-teal-800 bg-teal-50 dark:bg-teal-900/20 p-4 space-y-4" aria-labelledby="live-quick-finger-heading">
       <div className="flex items-center gap-2">
         <Sparkles size={18} className="text-teal-600" aria-hidden="true" />
-        <h2 id="live-quick-finger-heading" className="font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
+        <h2 id="live-quick-finger-heading" className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
           {energizer.title || t('quickFinger.title')}
         </h2>
       </div>
-      {energizer.prompt && <p className="text-sm text-pulse-700 dark:text-[var(--text-secondary)]">{energizer.prompt}</p>}
+      {energizer.prompt && <p className="text-sm text-pulse-700 dark:text-[#A8B3CC]">{energizer.prompt}</p>}
 
       {myAnswer ? (
-        <div className="rounded-lg bg-white dark:bg-[var(--color-surface)] border border-teal-200 dark:border-teal-800 px-3 py-2 text-sm" role="status" aria-live="polite">
+        <div className="rounded-lg bg-white dark:bg-[#151C2E] border border-teal-200 dark:border-teal-800 px-3 py-2 text-sm" role="status" aria-live="polite">
           <p className="font-medium text-teal-800 dark:text-teal-300">
             {myAnswer.correct ? t('quickFinger.correct') : t('quickFinger.incorrect')}
           </p>
-          <p className="text-pulse-500 dark:text-[var(--text-secondary)]">
+          <p className="text-pulse-500 dark:text-[#A8B3CC]">
             {t('quickFinger.speed', { ms: myAnswer.speedMs })}
             {myAnswer.rank > 0 ? ` · #${myAnswer.rank}` : ''}
           </p>
@@ -109,12 +109,12 @@ export function LiveQuickFingerPanel({
               key={option}
               type="button"
               onClick={() => onAnswer(energizer.id, option)}
-              className="w-full rounded-lg border border-teal-200 dark:border-teal-800 bg-white dark:bg-[var(--color-surface-elevated)] px-4 py-3 text-left text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)] hover:border-teal-500 hover:bg-teal-100 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="w-full rounded-lg border border-teal-200 dark:border-teal-800 bg-white dark:bg-[#1C2540] px-4 py-3 text-left text-sm font-medium text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-500 hover:bg-teal-100 dark:hover:bg-teal-900/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             >
               {option}
             </button>
           ))}
-          {options.length === 0 && <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('quickFinger.waiting')}</p>}
+          {options.length === 0 && <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('quickFinger.waiting')}</p>}
         </div>
       )}
 
@@ -158,7 +158,7 @@ export function LiveTeamQuizPanel({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-orange-600" aria-hidden="true" />
-          <h2 id="live-team-quiz-heading" className="font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
+          <h2 id="live-team-quiz-heading" className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
             {energizer.title || t('teamQuiz.title')}
           </h2>
         </div>
@@ -168,13 +168,13 @@ export function LiveTeamQuizPanel({
       </div>
 
       {energizer.status === 'completed' ? (
-        <div className="rounded-lg bg-white dark:bg-[var(--color-surface)] border border-orange-200 dark:border-orange-800 px-3 py-3 text-sm text-center">
-          <p className="font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{t('teamQuiz.completed')}</p>
-          <p className="text-pulse-500 dark:text-[var(--text-secondary)]">{t('teamQuiz.score', { score: myScore?.score ?? 0 })}</p>
+        <div className="rounded-lg bg-white dark:bg-[#151C2E] border border-orange-200 dark:border-orange-800 px-3 py-3 text-sm text-center">
+          <p className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('teamQuiz.completed')}</p>
+          <p className="text-pulse-500 dark:text-[#A8B3CC]">{t('teamQuiz.score', { score: myScore?.score ?? 0 })}</p>
         </div>
       ) : question ? (
         <>
-          <p className="text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">{question.prompt}</p>
+          <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{question.prompt}</p>
           <div className="grid gap-2">
             {question.options.map((option) => {
               const isMine = mySubmission?.value === option
@@ -192,8 +192,8 @@ export function LiveTeamQuizPanel({
                         ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                         : 'border-red-400 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                       : mySubmission
-                      ? 'border-orange-100 dark:border-orange-900 bg-white/60 text-pulse-500 dark:text-[var(--text-muted)]'
-                      : 'border-orange-200 dark:border-orange-800 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] hover:border-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/30',
+                      ? 'border-orange-100 dark:border-orange-900 bg-white/60 text-pulse-500 dark:text-[#8A96B0]'
+                      : 'border-orange-200 dark:border-orange-800 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-orange-500 hover:bg-orange-100 dark:hover:bg-orange-900/30',
                   ].join(' ')}
                 >
                   {option}
@@ -202,13 +202,13 @@ export function LiveTeamQuizPanel({
             })}
           </div>
           {mySubmission && (
-            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]" role="status">
+            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]" role="status">
               {mySubmission.correct ? t('teamQuiz.correct') : t('teamQuiz.locked')}
             </p>
           )}
         </>
       ) : (
-        <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('teamQuiz.waiting')}</p>
+        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('teamQuiz.waiting')}</p>
       )}
 
       <LiveLeaderboard energizer={energizer} voterId={voterId} />
@@ -242,7 +242,7 @@ function BadgeRow({ badges }: { badges: NonNullable<LiveEnergizerState['leaderbo
   return (
     <div className="flex flex-wrap gap-1" aria-label={t('badges.earned')}>
       {badges.map((badge) => (
-        <span key={badge.id} className="rounded-full bg-white dark:bg-[var(--color-surface-elevated)] border border-pulse-200 dark:border-[var(--color-border-strong)] px-2 py-1 text-[11px] font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
+        <span key={badge.id} className="rounded-full bg-white dark:bg-[#1C2540] border border-pulse-200 dark:border-[#2A3858] px-2 py-1 text-[11px] font-medium text-pulse-700 dark:text-[#A8B3CC]">
           {badge.label}
         </span>
       ))}

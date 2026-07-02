@@ -54,7 +54,7 @@ export default function LanguageSwitcher() {
         aria-expanded={open}
         aria-label={`Language: ${LANGUAGE_LABELS[current]}. Change language`}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface)] px-2.5 py-1.5 text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)] hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-[#151C2E] px-2.5 py-1.5 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:text-teal-600 dark:hover:border-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 min-h-[44px]"
       >
         <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-pulse-500 shrink-0">
           <path d="M10 2a8 8 0 100 16A8 8 0 0010 2zM4.07 9a6.03 6.03 0 011.38-3.27A9.68 9.68 0 007.5 7.05V9H4.07zm0 2H7.5v1.95a9.68 9.68 0 01-2.05 1.32A6.03 6.03 0 014.07 11zm5.43 3.87V11h2.5v1.95a9.68 9.68 0 01-2.5 1.92zm2.5-5.87H9.5V7.05a9.68 9.68 0 012.5 1.9V9zm1.93-.27a9.68 9.68 0 00-2.05-1.68A6.03 6.03 0 0115.93 9h-2.03zm0 2h2.03a6.03 6.03 0 01-1.38 3.27 9.68 9.68 0 00-2.05-1.32A9.68 9.68 0 0013.93 11zm-4.43 5.87A9.68 9.68 0 017.5 14.95V13H5.45a6.03 6.03 0 004.05 3.87zM7.5 11H5.07a6.03 6.03 0 001.38 3.27A9.68 9.68 0 007.5 13v-2z" />
@@ -69,7 +69,7 @@ export default function LanguageSwitcher() {
         <ul
           role="listbox"
           aria-label="Choose language"
-          className="absolute right-0 top-full mt-1 z-50 w-40 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] shadow-lg py-1 animate-page-enter"
+          className="absolute right-0 top-full mt-1 z-50 w-40 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-lg py-1 animate-page-enter"
         >
           {SUPPORTED_LANGUAGES.map((lang) => (
             <li key={lang} role="none">
@@ -83,7 +83,7 @@ export default function LanguageSwitcher() {
                   'focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-500',
                   lang === current
                     ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 font-medium'
-                    : 'text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5',
+                    : 'text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5',
                 ].join(' ')}
               >
                 {lang === current && (

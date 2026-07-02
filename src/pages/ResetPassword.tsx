@@ -38,7 +38,7 @@ export default function ResetPassword() {
 
   return (
     <main id="main" className="min-h-screen flex items-center justify-center p-6">
-      <section className="w-full max-w-md space-y-5 rounded-xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-8 shadow-sm">
+      <section className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 bg-white dark:bg-pulse-800 dark:border-pulse-700 p-8 shadow-sm">
         <h1 tabIndex={-1} className="text-2xl font-semibold">{t('setNewPassword')}</h1>
 
         {invalidToken ? (

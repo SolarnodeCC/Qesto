@@ -86,10 +86,10 @@ export default function ConnectJoinPage() {
 
   return (
     <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8">
-      <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">
+      <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
         {t('join.title')}
       </h1>
-      <p className="mt-2 text-sm text-pulse-600 dark:text-[var(--text-secondary)]">{t('join.subtitle')}</p>
+      <p className="mt-2 text-sm text-pulse-600 dark:text-[#9AA8C7]">{t('join.subtitle')}</p>
 
       {state.status === 'success' ? (
         <div className="mt-6 rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20" aria-live="polite">
@@ -110,16 +110,16 @@ export default function ConnectJoinPage() {
 
           <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
             <div>
-              <dt className="text-pulse-500 dark:text-[var(--text-secondary)]">{t('join.scopeLabel')}</dt>
-              <dd className="font-medium text-pulse-900 dark:text-[var(--text-primary)]">{state.data.member.scope}</dd>
+              <dt className="text-pulse-500 dark:text-[#9AA8C7]">{t('join.scopeLabel')}</dt>
+              <dd className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{state.data.member.scope}</dd>
             </div>
             <div>
-              <dt className="text-pulse-500 dark:text-[var(--text-secondary)]">{t('join.regionLabel')}</dt>
-              <dd className="font-medium text-pulse-900 dark:text-[var(--text-primary)]">{state.data.member.regionId}</dd>
+              <dt className="text-pulse-500 dark:text-[#9AA8C7]">{t('join.regionLabel')}</dt>
+              <dd className="font-medium text-pulse-900 dark:text-[#F0F2F8]">{state.data.member.regionId}</dd>
             </div>
           </dl>
 
-          <p className="mt-4 text-xs text-pulse-500 dark:text-[var(--text-secondary)]">{t('join.privacyNote')}</p>
+          <p className="mt-4 text-xs text-pulse-500 dark:text-[#9AA8C7]">{t('join.privacyNote')}</p>
 
           <button
             type="button"
@@ -132,12 +132,12 @@ export default function ConnectJoinPage() {
       ) : (
         <form className="mt-6 space-y-5" onSubmit={(e) => void handleSubmit(e)}>
           <div>
-            <label htmlFor="connect-token" className="block text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">
+            <label htmlFor="connect-token" className="block text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
               {t('join.tokenLabel')}
             </label>
             <textarea
               id="connect-token"
-              className="mt-1 w-full rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="mt-1 w-full rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[#2A3858] dark:bg-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
               rows={3}
               value={token}
               onChange={(e) => setToken(e.target.value)}
@@ -147,13 +147,13 @@ export default function ConnectJoinPage() {
           </div>
 
           <div>
-            <label htmlFor="connect-team-id" className="block text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">
+            <label htmlFor="connect-team-id" className="block text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
               {t('join.teamIdLabel')}
             </label>
             <input
               id="connect-team-id"
               type="text"
-              className="mt-1 w-full min-h-[44px] rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+              className="mt-1 w-full min-h-[44px] rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[#2A3858] dark:bg-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
               value={joiningTeamId}
               onChange={(e) => setJoiningTeamId(e.target.value)}
               placeholder={t('join.teamIdPlaceholder')}

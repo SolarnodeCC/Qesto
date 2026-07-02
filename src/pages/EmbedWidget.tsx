@@ -12,7 +12,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { CheckCircle2 } from 'lucide-react'
 import type { HostToEmbedMessage, EmbedToHostMessage } from '@api/types'
 import { useT } from '../i18n'
 
@@ -248,10 +247,10 @@ export default function EmbedWidget() {
 
   // ── Theme class ─────────────────────────────────────────────────────────────
   const isDark = theme === 'dark'
-  const bg = isDark ? 'bg-[var(--color-surface)] text-[var(--text-primary)]' : 'bg-white text-[var(--color-surface)]'
-  const border = isDark ? 'border-[var(--color-border)]' : 'border-[var(--color-border)]'
-  const muted = isDark ? 'text-[var(--text-muted)]' : 'text-slate-500'
-  const card = isDark ? 'bg-[var(--color-surface)] border-[var(--color-border)]' : 'bg-slate-50 border-slate-200'
+  const bg = isDark ? 'bg-[#0F1628] text-[#F0F2F8]' : 'bg-white text-[#1A2035]'
+  const border = isDark ? 'border-[#1E2A45]' : 'border-[#E2E8F0]'
+  const muted = isDark ? 'text-[#6B7A99]' : 'text-slate-500'
+  const card = isDark ? 'bg-[#151C2E] border-[#1E2A45]' : 'bg-slate-50 border-slate-200'
 
   // ── Render helpers ──────────────────────────────────────────────────────────
   function renderLoading() {
@@ -288,7 +287,9 @@ export default function EmbedWidget() {
   function renderClosed(title: string) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-10 px-4 text-center" role="status" aria-live="polite">
-        <CheckCircle2 size={32} className="text-teal-500" aria-hidden="true" />
+        <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-teal-500">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
         <p className="font-semibold text-base">{title}</p>
         <p className={`text-sm ${muted}`}>{t('sessionClosed')}</p>
         <p className={`text-xs ${muted}`}>{t('sessionClosedSubtext')}</p>

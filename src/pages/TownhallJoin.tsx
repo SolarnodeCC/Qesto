@@ -65,7 +65,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
   return (
     <ParticipantShell title={title} connectionLabel={connectionLabel}>
       <form onSubmit={onSubmit} className="space-y-3">
-        <label htmlFor="th-body" className="block text-sm font-semibold text-pulse-800 dark:text-[var(--text-primary)]">
+        <label htmlFor="th-body" className="block text-sm font-semibold text-pulse-800 dark:text-[#F0F2F8]">
           {t('submit.title')}
         </label>
         <textarea
@@ -80,7 +80,7 @@ function Board({ sessionId, title }: { sessionId: string; title: string }) {
         {nameAllowed && (
           <div className="flex items-center gap-2 text-sm">
             <input id="th-usename" type="checkbox" checked={useName} onChange={(e) => setUseName(e.target.checked)} />
-            <label htmlFor="th-usename" className="text-pulse-600 dark:text-[var(--text-secondary)]">
+            <label htmlFor="th-usename" className="text-pulse-600 dark:text-[#A8B3CC]">
               {t('submit.nameToggle')}
             </label>
             {useName && (

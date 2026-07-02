@@ -18,7 +18,7 @@ const NONPROFIT_APPLY_MAILTO =
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[var(--text-primary)] text-sm border border-pulse-300 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface-elevated)] hover:border-pulse-500 dark:hover:border-[var(--color-border-strong)] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -36,7 +36,7 @@ function SourceBadge({ source }: { source: MatrixRowSource }) {
   if (source === 'quota') return null
   const label = source === 'roadmap' ? 'Roadmap' : 'Static copy'
   return (
-    <span className="ml-2 inline-flex align-middle text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-pulse-100 text-pulse-700 dark:bg-white/10 dark:text-[var(--text-secondary)]">
+    <span className="ml-2 inline-flex align-middle text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-pulse-100 text-pulse-700 dark:bg-white/10 dark:text-[#A8B3CC]">
       {label}
     </span>
   )
@@ -93,11 +93,11 @@ export default function Pricing() {
       />
 
       {/* Hero */}
-      <section className="py-16 md:py-20 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3 inline-block">Pricing</div>
           <h1
-            className="font-bold text-5xl md:text-6xl tracking-tight mb-5 text-pulse-900 dark:text-[var(--text-primary)]"
+            className="font-bold text-5xl md:text-6xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]"
             style={displayFont}
           >
             Start free. Pay when a room{' '}
@@ -105,7 +105,7 @@ export default function Pricing() {
               depends on it.
             </span>
           </h1>
-          <p className="text-lg text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed">
+          <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed">
             Every plan includes edge inference and consent-aware flows. Session and room-size limits are published per
             tier and match what the product enforces—you don’t get surprise hard-stops after you’ve committed to a
             room.
@@ -114,24 +114,24 @@ export default function Pricing() {
       </section>
 
       {/* Plans */}
-      <Reveal as="section" className="pb-16 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <Reveal as="section" className="pb-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
             {/* Pulse */}
-            <div className="bg-white dark:bg-[var(--color-surface)] rounded-[20px] p-8 flex flex-col relative" style={shadowCard}>
-              <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+            <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-8 flex flex-col relative" style={shadowCard}>
+              <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Pulse
               </h3>
-              <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)] mb-6 min-h-[40px]">
+              <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mb-6 min-h-[40px]">
                 For one-off team pulses and workshop tests. Always free.
               </p>
               <div className="mb-1 leading-none">
-                <span className="font-bold text-5xl tracking-tight text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+                <span className="font-bold text-5xl tracking-tight text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                   €0
                 </span>
-                <span className="text-sm font-medium text-pulse-500 dark:text-[var(--text-muted)] ml-1.5">/ host / month</span>
+                <span className="text-sm font-medium text-pulse-500 dark:text-[#8A96B0] ml-1.5">/ host / month</span>
               </div>
-              <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)] mb-6 mt-1">
+              <p className="text-xs text-pulse-500 dark:text-[#8A96B0] mb-6 mt-1">
                 No credit card.{' '}
                 {free
                   ? `Up to ${free.features.sessionsPerMonth} new sessions / month · up to ${free.features.participantsPerSession} participants per session.`
@@ -147,7 +147,7 @@ export default function Pricing() {
                   'AI-powered insights on Chorus',
                   free?.features.resultsExport ? 'CSV exports' : 'CSV exports on paid tiers',
                 ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[var(--text-secondary)]">
+                  <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
                     <span className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5">
                       <Check size={18} />
                     </span>
@@ -155,7 +155,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link to="/login" className={btnSecondary + ' w-full justify-center dark:bg-[var(--color-surface-elevated)] dark:border-[var(--color-border-strong)] dark:text-[var(--text-primary)]'}>
+              <Link to="/login" className={btnSecondary + ' w-full justify-center dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                 Start free
               </Link>
             </div>
@@ -227,19 +227,19 @@ export default function Pricing() {
             </div>
 
             {/* Chorus */}
-            <div className="bg-white dark:bg-[var(--color-surface)] rounded-[20px] p-8 flex flex-col relative" style={shadowCard}>
-              <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+            <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-8 flex flex-col relative" style={shadowCard}>
+              <h3 className="font-bold text-2xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Chorus
               </h3>
-              <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)] mb-6 min-h-[40px]">
+              <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mb-6 min-h-[40px]">
                 For HR, events, and compliance-heavy org-wide rollouts.
               </p>
               <div className="mb-1 leading-none">
-                <span className="font-bold text-4xl tracking-tight text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+                <span className="font-bold text-4xl tracking-tight text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                   Talk to us
                 </span>
               </div>
-              <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)] mb-6 mt-1">
+              <p className="text-xs text-pulse-500 dark:text-[#8A96B0] mb-6 mt-1">
                 Annual contract · custom scope
                 {team
                   ? ` · Up to ${team.features.sessionsPerMonth} new sessions/mo · ${team.features.participantsPerSession} participants/room`
@@ -254,7 +254,7 @@ export default function Pricing() {
                   'Customer-managed keys on the roadmap',
                   'Dedicated onboarding + SLA',
                 ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[var(--text-secondary)]">
+                  <li key={f} className="flex items-start gap-2.5 text-pulse-700 dark:text-[#A8B3CC]">
                     <span className="text-teal-600 dark:text-teal-400 flex-shrink-0 mt-0.5">
                       <Check size={18} />
                     </span>
@@ -262,7 +262,7 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link to="/pricing" className={btnSecondary + ' w-full justify-center dark:bg-[var(--color-surface-elevated)] dark:border-[var(--color-border-strong)] dark:text-[var(--text-primary)]'}>
+              <Link to="/pricing" className={btnSecondary + ' w-full justify-center dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                 Book a walkthrough
               </Link>
             </div>
@@ -271,31 +271,31 @@ export default function Pricing() {
       </Reveal>
 
       {/* Feature matrix */}
-      <Reveal as="section" id="feature-matrix" className="py-16 bg-pulse-50 dark:bg-[var(--color-border)] scroll-mt-20">
+      <Reveal as="section" id="feature-matrix" className="py-16 bg-pulse-50 dark:bg-[#0F1525] scroll-mt-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Feature matrix</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-2 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-2 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             What's in each plan — line by line.
           </h2>
-          <p className="text-pulse-500 dark:text-[var(--text-muted)] mb-8">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8">
             Pulse, Signal, and Chorus are Qesto&apos;s three subscription plans. Rows that tie to quotas or plan flags{' '}
-            <span className="font-medium text-pulse-600 dark:text-[var(--text-muted)]">
+            <span className="font-medium text-pulse-600 dark:text-[#8893AD]">
               hydrate from the same source as billing enforcement
             </span>
             ; other rows describe roadmap or packaging details.
           </p>
-          <div className="bg-white dark:bg-[var(--color-surface)] rounded-xl overflow-hidden" style={shadowCard}>
+          <div className="bg-white dark:bg-[#151C2E] rounded-2xl overflow-hidden" style={shadowCard}>
             <table className="w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="text-left px-6 py-5 bg-pulse-50 dark:bg-[var(--color-border)] text-xs font-bold uppercase tracking-widest text-pulse-500 dark:text-[var(--text-muted)] border-b border-pulse-200 dark:border-white/5 w-[38%]">
+                  <th className="text-left px-6 py-5 bg-pulse-50 dark:bg-[#0F1525] text-xs font-bold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0] border-b border-pulse-200 dark:border-white/5 w-[38%]">
                     Capability
                   </th>
                   {(['Pulse', 'Signal', 'Chorus'] as const).map((p, i) => (
                     <th
                       key={p}
-                      className={`px-6 py-5 bg-pulse-50 dark:bg-[var(--color-border)] border-b border-pulse-200 dark:border-white/5 text-center text-[15px] font-bold tracking-tight ${
-                        i === 1 ? 'text-teal-700 dark:text-teal-400' : 'text-pulse-900 dark:text-[var(--text-primary)]'
+                      className={`px-6 py-5 bg-pulse-50 dark:bg-[#0F1525] border-b border-pulse-200 dark:border-white/5 text-center text-[15px] font-bold tracking-tight ${
+                        i === 1 ? 'text-teal-700 dark:text-teal-400' : 'text-pulse-900 dark:text-[#F0F2F8]'
                       }`}
                       style={displayFont}
                     >
@@ -318,12 +318,12 @@ export default function Pricing() {
                     </tr>
                     {rows.map((row) => (
                       <tr key={row[0]} className="border-b border-pulse-100 dark:border-white/5 last:border-b-0">
-                        <td className="px-6 py-4 font-semibold text-pulse-900 dark:text-[var(--text-primary)] text-sm">
+                        <td className="px-6 py-4 font-semibold text-pulse-900 dark:text-[#F0F2F8] text-sm">
                           {row[0]}
                           <SourceBadge source={row[4]} />
                         </td>
                         {([row[1], row[2], row[3]] as MatrixVal[]).map((v, i) => (
-                          <td key={i} className="px-6 py-4 text-center text-pulse-600 dark:text-[var(--text-secondary)] text-[13px]" style={monoFont}>
+                          <td key={i} className="px-6 py-4 text-center text-pulse-600 dark:text-[#A8B3CC] text-[13px]" style={monoFont}>
                             {typeof v === 'boolean' ? (
                               v ? (
                                 <span className="text-teal-600 dark:text-teal-400 inline-flex justify-center">
@@ -346,10 +346,10 @@ export default function Pricing() {
               </tbody>
             </table>
           </div>
-          <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)] mt-6 max-w-3xl">
+          <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mt-6 max-w-3xl">
             Numeric limits and quota-backed feature flags mirror{' '}
-            <code className="text-xs text-pulse-700 dark:text-[var(--text-secondary)] bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
-            <code className="text-xs text-pulse-700 dark:text-[var(--text-secondary)] bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
+            <code className="text-xs text-pulse-700 dark:text-[#A8B3CC] bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
+            <code className="text-xs text-pulse-700 dark:text-[#A8B3CC] bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
             Rows tagged static copy or roadmap are packaging claims to review against product/commerce plans before
             launch.
           </p>
@@ -357,15 +357,15 @@ export default function Pricing() {
       </Reveal>
 
       {/* Nonprofit */}
-      <Reveal as="section" className="py-16 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <Reveal as="section" className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">
             Nonprofit & education
           </div>
-          <h2 className="font-bold text-4xl tracking-tight mb-4 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-4 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Mission-first means budget-second.
           </h2>
-          <p className="text-pulse-500 dark:text-[var(--text-muted)] mb-6 leading-relaxed">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-6 leading-relaxed">
             Registered nonprofits and accredited educational institutions get Chorus at 40% off. Apply with a copy
             of your registration and we'll turn it around in 48 hours.
           </p>
@@ -380,17 +380,17 @@ export default function Pricing() {
       </Reveal>
 
       {/* FAQ */}
-      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[var(--color-border)]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Pricing questions</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Answers to what you're about to ask.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {faqs.map(({ q, a }) => (
               <div key={q}>
-                <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[var(--text-primary)]">{q}</h3>
-                <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed">{a}</p>
+                <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{q}</h3>
+                <p className="text-sm text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{a}</p>
               </div>
             ))}
           </div>

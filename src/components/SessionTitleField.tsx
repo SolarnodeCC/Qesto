@@ -74,7 +74,7 @@ export default function SessionTitleField({
 
   if (!editable) {
     return (
-      <h1 tabIndex={-1} className={`text-3xl font-semibold focus:outline-none dark:text-[var(--text-primary)] ${className}`}>
+      <h1 tabIndex={-1} className={`text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8] ${className}`}>
         {title}
       </h1>
     )
@@ -83,7 +83,7 @@ export default function SessionTitleField({
   return (
     <div className={`space-y-1 ${className}`}>
       {label && (
-        <label htmlFor={`session-title-${sessionId}`} className="caption text-pulse-500">
+        <label htmlFor={`session-title-${sessionId}`} className="text-caption text-pulse-500">
           {label}
         </label>
       )}
@@ -97,7 +97,7 @@ export default function SessionTitleField({
         disabled={saving}
         maxLength={SESSION_TITLE_MAX}
         aria-invalid={error ? true : undefined}
-        className="w-full text-3xl font-semibold bg-transparent border-b border-transparent hover:border-pulse-200 focus:border-teal-500 focus:outline-none focus:ring-0 dark:text-[var(--text-primary)] dark:hover:border-[var(--color-border-strong)] dark:focus:border-teal-500 disabled:opacity-60 px-0 py-1"
+        className="w-full text-3xl font-semibold bg-transparent border-b border-transparent hover:border-pulse-200 focus:border-teal-500 focus:outline-none focus:ring-0 dark:text-[#F0F2F8] dark:hover:border-[#2A3858] dark:focus:border-teal-500 disabled:opacity-60 px-0 py-1"
       />
       {(saving || error) && (
         <p

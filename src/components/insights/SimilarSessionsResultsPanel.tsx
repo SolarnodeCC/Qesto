@@ -91,7 +91,7 @@ export default function SimilarSessionsResultsPanel({ sessionId }: { sessionId: 
   return (
     <section
       aria-label={t('similarSessions.title')}
-      className="rounded-xl border border-pulse-200 dark:border-[var(--color-border-strong)] p-5 space-y-3"
+      className="rounded-xl border border-pulse-200 dark:border-[#2A3858] p-5 space-y-3"
     >
       <h2 className="text-lg font-semibold dark:text-pulse-100">{t('similarSessions.title')}</h2>
       {similar.length > 0 ? (
@@ -102,7 +102,7 @@ export default function SimilarSessionsResultsPanel({ sessionId }: { sessionId: 
           <ul className="space-y-2">
             {similar.map((s) => (
               <li key={s.title} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-pulse-700 dark:text-[var(--text-secondary)] truncate">{s.title}</span>
+                <span className="text-pulse-700 dark:text-[#A8B3CC] truncate">{s.title}</span>
                 <span className="shrink-0 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 px-2 py-0.5 text-xs font-medium">
                   {t('similarSessions.match', { percent: Math.round(s.score * 100) })}
                 </span>
@@ -117,7 +117,7 @@ export default function SimilarSessionsResultsPanel({ sessionId }: { sessionId: 
             type="button"
             onClick={() => void handleGenerate()}
             disabled={generating}
-            className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 px-4 py-2 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
+            className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-500 hover:text-teal-700 dark:hover:border-teal-600 dark:hover:text-teal-400 px-4 py-2 text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion"
           >
             {generating ? t('generatingInsights') : t('generateInsights')}
           </button>

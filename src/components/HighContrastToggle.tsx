@@ -36,7 +36,7 @@ export function HighContrastToggle() {
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium text-pulse-800 dark:text-[var(--text-secondary)]">{t('appearance.highContrastLabel')}</p>
+      <p className="text-sm font-medium text-pulse-800 dark:text-[#A8B3CC]">{t('appearance.highContrastLabel')}</p>
       <button
         type="button"
         role="switch"
@@ -48,7 +48,7 @@ export function HighContrastToggle() {
           'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
           on
             ? 'bg-teal-600 text-white'
-            : 'border border-pulse-200 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5',
+            : 'border border-pulse-200 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5',
         ].join(' ')}
       >
         {on ? t('appearance.highContrastOn') : t('appearance.highContrastOff')}

@@ -25,7 +25,7 @@ export function SessionWizardStep4({
   return (
     <div className="space-y-5">
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium dark:text-[var(--text-primary)]">{t('step4.anonymity.label')}</legend>
+        <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.anonymity.label')}</legend>
         <div className="flex gap-2 flex-wrap">
           {(['full', 'partial', 'none', 'zero_knowledge'] as const).map((val) => (
             <button
@@ -36,7 +36,7 @@ export function SessionWizardStep4({
                 'px-3 py-1.5 rounded-lg border text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                 anonymity === val
                   ? 'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                  : 'border-pulse-300 dark:border-[var(--color-border-strong)] hover:border-teal-300',
+                  : 'border-pulse-300 dark:border-[#2A3858] hover:border-teal-300',
               ].join(' ')}
             >
               {t(`step4.anonymity.${val}`)}
@@ -46,7 +46,7 @@ export function SessionWizardStep4({
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium dark:text-[var(--text-primary)]">{t('step4.votePolicy.label')}</legend>
+        <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.votePolicy.label')}</legend>
         <div className="flex gap-2 flex-wrap">
           {(['once', 'multi', 'react'] as const).map((val) => (
             <button
@@ -57,7 +57,7 @@ export function SessionWizardStep4({
                 'px-3 py-1.5 rounded-lg border text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                 votePolicy === val
                   ? 'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                  : 'border-pulse-300 dark:border-[var(--color-border-strong)] hover:border-teal-300',
+                  : 'border-pulse-300 dark:border-[#2A3858] hover:border-teal-300',
               ].join(' ')}
             >
               {t(`step4.votePolicy.${val}`)}
@@ -67,7 +67,7 @@ export function SessionWizardStep4({
       </fieldset>
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium dark:text-[var(--text-primary)]">{t('step4.mode.label')}</legend>
+        <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.mode.label')}</legend>
         <div className="flex gap-2 flex-wrap">
           {([
             { val: 'reflection' as const, label: t('step4.mode.reflection_title') },
@@ -81,7 +81,7 @@ export function SessionWizardStep4({
                 'px-3 py-1.5 rounded-lg border text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                 sessionMode === val
                   ? 'border-teal-500 dark:border-teal-400 bg-teal-50 dark:bg-teal-500/10 text-teal-700 dark:text-teal-300'
-                  : 'border-pulse-300 dark:border-[var(--color-border-strong)] hover:border-teal-300',
+                  : 'border-pulse-300 dark:border-[#2A3858] hover:border-teal-300',
               ].join(' ')}
             >
               {label}
@@ -112,7 +112,7 @@ export function SessionWizardStep4({
           />
         </button>
         <div>
-          <p className="text-sm font-medium dark:text-[var(--text-primary)]">{t('step4.isPublic.label')}</p>
+          <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.isPublic.label')}</p>
           <p className="text-caption text-pulse-500">{t('step4.isPublic.description')}</p>
         </div>
       </div>

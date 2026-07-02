@@ -31,13 +31,13 @@ export default function Terms() {
       <div className="border-b border-pulse-200 pb-6 pt-14">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Legal</div>
-          <h1 className="font-bold tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mb-3" style={{ ...displayFont, fontSize: 44 }}>
+          <h1 className="font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-3" style={{ ...displayFont, fontSize: 44 }}>
             Terms of Service
           </h1>
-          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[var(--text-muted)]" style={monoFont}>
-            <span><strong className="text-pulse-600 dark:text-[var(--text-secondary)] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 3.0.0</span>
-            <span><strong className="text-pulse-600 dark:text-[var(--text-secondary)] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-01-15</span>
-            <span><strong className="text-pulse-600 dark:text-[var(--text-secondary)] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Governing law:</strong> Netherlands</span>
+          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
+            <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 3.0.0</span>
+            <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-01-15</span>
+            <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Governing law:</strong> Netherlands</span>
           </div>
         </div>
       </div>
@@ -48,13 +48,13 @@ export default function Terms() {
 
           {/* TOC */}
           <aside className="hidden md:block" style={{ position: 'sticky', top: 80, height: 'fit-content' }}>
-            <h5 className="text-[13px] font-bold text-pulse-900 dark:text-[var(--text-primary)] mb-3">On this page</h5>
+            <h5 className="text-[13px] font-bold text-pulse-900 dark:text-[#F0F2F8] mb-3">On this page</h5>
             <ol className="space-y-1.5 list-decimal list-inside">
               {toc.map(({ id, label }) => (
                 <li key={id}>
                   <a
                     href={`#${id}`}
-                    className="text-[13px] text-pulse-500 dark:text-[var(--text-muted)] hover:text-teal-700 dark:hover:text-teal-400 transition-colors"
+                    className="text-[13px] text-pulse-500 dark:text-[#8A96B0] hover:text-teal-700 dark:hover:text-teal-400 transition-colors"
                   >
                     {label}
                   </a>
@@ -65,44 +65,44 @@ export default function Terms() {
 
           {/* Prose */}
           <main className="min-w-0">
-            <p className="text-[17px] text-pulse-900 dark:text-[var(--text-primary)] leading-relaxed mb-8">
+            <p className="text-[17px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed mb-8">
               These terms govern your use of Qesto. They're short because our product is. If something here
               contradicts your master services agreement with us, the MSA wins.
             </p>
 
-            <h2 id="t1" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t1" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               1. The deal
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               We provide a real-time polling and session platform. You pay for it (or use the free tier), run
               sessions on it, and keep ownership of everything you put in. We keep ownership of the platform itself.
             </p>
 
-            <h2 id="t2" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t2" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               2. Your account
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               You must be 16 or older to create an account. You're responsible for what happens on it — keep
               credentials safe, use SSO if your org offers it. If your account is compromised, tell us within 72
               hours.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               One human, one account. Don't share logins. Teams scale with the Chorus plan, not by rotating a
               single seat.
             </p>
 
-            <h2 id="t3" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t3" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               3. Acceptable use
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-3">Don't use Qesto to:</p>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-3">Don't use Qesto to:</p>
+            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li>Run sessions that violate local law or published terms of a venue.</li>
               <li>Collect responses from children under 13 (or your jurisdiction's equivalent) without verified parental consent.</li>
               <li>Attempt to re-identify anonymous participants. Doing so terminates your account immediately.</li>
               <li>Scrape, probe, or reverse-engineer the platform. Security research is welcome via our responsible disclosure program — see <a href="https://qesto.cc/security" className="text-teal-600 hover:underline">qesto.cc/security</a>.</li>
               <li>Impersonate another host or organization.</li>
             </ul>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>Illegal content.</strong> If you believe content on the platform is illegal, you can submit a
               notice at{' '}
               <a href="/legal/report" className="text-teal-600 hover:underline">qesto.cc/legal/report</a>{' '}
@@ -110,33 +110,33 @@ export default function Terms() {
               <a href="mailto:abuse@qesto.cc" className="text-teal-600 hover:underline">abuse@qesto.cc</a>.
               We will review every notice and respond with our decision within 5 business days (Art. 16 DSA).
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <strong>Cooperation with law enforcement.</strong> Qesto cooperates with Dutch law enforcement (OM /
               politie) and other competent authorities. If content gives reasonable suspicion of a serious criminal
               offence involving a threat to life or safety, we will proactively refer it to the relevant authority
               without waiting for a notice (Art. 18 DSA).
             </p>
 
-            <h2 id="t4" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t4" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               4. Your content
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               You own the session data you collect — questions, responses, recaps. We hold it as processor, under
               our DPA. We do not train models on it, do not share it, do not sell it.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               You grant us a minimum license to run the platform: we need to store, process, and transmit your
               content to you and your participants. Nothing more.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Exports are yours. Today Qesto provides CSV session exports where your plan includes exports. If you
               cancel, you have 30 days to pull your available data before we purge.
             </p>
 
-            <h2 id="t5" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t5" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               5. Payment &amp; plans
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Plans are monthly or annual. Prepaid, non-refundable except as required by law — but:{' '}
               <em>
                 if your first pulse doesn't beat your previous survey's response rate, email us within 14 days and
@@ -144,38 +144,38 @@ export default function Terms() {
               </em>{' '}
               We believe in the tool.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Plan limits are enforced in the product before a session starts. We do not charge surprise usage
               overages; any expanded commercial terms belong in a signed order form or plan update.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Price changes affect your next renewal, not the current term. We give 60 days' notice.
             </p>
 
-            <h2 id="t6" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t6" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               6. Service levels
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Pulse and Signal are provided on a best-effort basis. Any formal uptime commitment for enterprise
               customers belongs in a signed order form or master services agreement.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Credits for downtime are capped at the prior month's fees, processed within the next invoice cycle.
             </p>
 
-            <h2 id="t7" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t7" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               7. Termination
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               You can cancel any time from the billing page. We can terminate for breach, non-payment, or use that
               threatens the platform's integrity (malware, fraud, abuse). Egregious violations — re-identifying
               participants, attacking the platform — terminate without warning.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               On termination, you have 30 days to export. After that, data is purged on the schedule in the privacy
               policy.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>Statement of reasons (Art. 17 DSA).</strong> When we restrict your account, remove content, or
               disable access to your session data, we will notify you by email within 48 hours. The notice will
               state: the specific content or behaviour that triggered the action, the policy clause(s) or legal
@@ -185,61 +185,61 @@ export default function Terms() {
               within 14 days.
             </p>
 
-            <h2 id="t8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               8. Warranties
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               We warrant that Qesto operates as documented. We do <strong>not</strong> warrant that it's fit for any
               particular purpose beyond "running polling sessions." Don't use it for medical triage, legal evidence
               preservation, or anything life-critical.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               The platform is provided "as is" beyond the above. All other warranties, express or implied, are
               disclaimed to the extent the law allows.
             </p>
 
-            <h2 id="t9" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t9" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               9. Liability
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Our aggregate liability for any claim is capped at the fees you paid in the 12 months before the
               claim arose. We're not liable for indirect, consequential, or punitive damages — lost profits, lost
               opportunity, reputational harm — even if we knew they were possible.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               This cap doesn't apply to gross negligence, willful misconduct, or liability the law says we can't cap.
             </p>
 
-            <h2 id="t10" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t10" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               10. Disputes
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Governing law: Netherlands. Courts of Amsterdam have exclusive jurisdiction. Before filing, notify us
               at{' '}
               <a href="mailto:legal@qesto.cc" className="text-teal-600 hover:underline">legal@qesto.cc</a>; we'll
               engage within 30 days.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               EU consumers retain their local forum rights. Nothing here waives them.
             </p>
 
-            <h2 id="t11" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-10 mb-4" style={displayFont}>
+            <h2 id="t11" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
               11. Misc
             </h2>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>Assignment.</strong> You can't assign these terms; we can, on notice, to a successor in
               interest.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>Severability.</strong> If a clause is unenforceable, the rest stands.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>No waiver.</strong> If we don't enforce a right, we haven't waived it.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
               <strong>Entire agreement.</strong> These terms + the DPA + any signed MSA = the whole deal. Nothing else.
             </p>
-            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-4">
+            <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <strong>Changes to these terms.</strong> We will give you at least 30 days' advance notice of material
               changes via in-app notification and email to the address on your account. Minor clarifications and
               corrections take effect on publication. Continued use after the effective date of a material change

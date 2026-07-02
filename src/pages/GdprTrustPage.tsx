@@ -7,7 +7,7 @@ import PageSeo from '../components/PageSeo'
  */
 export default function GdprTrustPage() {
   return (
-    <div className="dark:bg-[var(--color-bg-subtle)] dark:text-[var(--text-secondary)]">
+    <div className="dark:bg-[#0A0F1E] dark:text-[#A8B3CC]">
       <PageSeo
         title="GDPR & Data Trust — Qesto"
         description="How Qesto handles EU data, subprocessors, anonymity modes, and your rights under GDPR."

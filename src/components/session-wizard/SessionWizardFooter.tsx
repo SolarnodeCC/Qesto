@@ -34,12 +34,12 @@ export function SessionWizardFooter({
 }: WizardFooterProps) {
   const t = useT('wizard')
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-t border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] flex-shrink-0 gap-3">
+    <div className="flex items-center justify-between px-6 py-4 border-t border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] flex-shrink-0 gap-3">
       {step > 1 && !jumpedFrom5 ? (
         <button
           type="button"
           onClick={onBack}
-          className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-transparent dark:text-[var(--text-secondary)] text-sm hover:bg-pulse-50 dark:hover:bg-[var(--color-border)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent dark:text-[#A8B3CC] text-sm hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
           {t('nav.back')}
         </button>
@@ -47,7 +47,7 @@ export function SessionWizardFooter({
         <button
           type="button"
           onClick={onBackToOverview}
-          className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-transparent dark:text-[var(--text-secondary)] text-sm hover:bg-pulse-50 dark:hover:bg-[var(--color-border)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          className="px-4 py-2 rounded-lg border border-pulse-300 dark:border-[#2A3858] dark:bg-transparent dark:text-[#A8B3CC] text-sm hover:bg-pulse-50 dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
           ← Overview
         </button>

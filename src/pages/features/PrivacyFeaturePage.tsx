@@ -8,7 +8,7 @@ import Reveal from '../../components/Reveal'
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[var(--text-primary)] text-sm border border-pulse-300 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface-elevated)] hover:border-pulse-500 dark:hover:border-[var(--color-border-strong)] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -58,18 +58,18 @@ export default function PrivacyFeaturePage() {
       />
 
       {/* Hero */}
-      <section className="py-16 md:py-20 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
               <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Privacy by Default</div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 The room{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
                   picks its posture.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
                 Every Qesto session starts with a consent round. Participants choose whether they're identified,
                 cohort-visible, or fully anonymous for the session. Results stay hidden until the minimum tally is met.
               </p>
@@ -77,16 +77,16 @@ export default function PrivacyFeaturePage() {
                 <Link to="/privacy" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
                   Read the DPA
                 </Link>
-                <Link to="/privacy" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[var(--color-surface-elevated)] dark:border-[var(--color-border-strong)] dark:text-[var(--text-primary)]'}>
+                <Link to="/privacy" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                   Full privacy policy
                 </Link>
               </div>
             </div>
 
             {/* Consent picker */}
-            <div className="bg-white dark:bg-[var(--color-surface)] rounded-[20px] p-7" style={shadowElevated}>
-              <h3 className="font-semibold text-[17px] mb-1.5 text-pulse-900 dark:text-[var(--text-primary)]">How do you want to participate?</h3>
-              <p className="text-[13px] text-pulse-500 dark:text-[var(--text-muted)] mb-5">Your host sets the session posture before sensitive questions open.</p>
+            <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-7" style={shadowElevated}>
+              <h3 className="font-semibold text-[17px] mb-1.5 text-pulse-900 dark:text-[#F0F2F8]">How do you want to participate?</h3>
+              <p className="text-[13px] text-pulse-500 dark:text-[#8A96B0] mb-5">Your host sets the session posture before sensitive questions open.</p>
               <div className="space-y-2">
                 {consentOptions.map(({ key, name, desc, tag }) => (
                   <button
@@ -95,7 +95,7 @@ export default function PrivacyFeaturePage() {
                     className={`w-full text-left p-4 rounded-xl grid gap-3.5 items-center border-2 transition-all ${
                       selected === key
                         ? 'border-teal-500 bg-teal-50 dark:bg-teal-500/12'
-                        : 'border-pulse-200 dark:border-[var(--color-border)] hover:border-pulse-300'
+                        : 'border-pulse-200 dark:border-[#1E2A45] hover:border-pulse-300'
                     }`}
                     style={{ gridTemplateColumns: '24px 1fr auto' }}
                   >
@@ -111,8 +111,8 @@ export default function PrivacyFeaturePage() {
                       )}
                     </div>
                     <div>
-                      <div className="text-[14.5px] font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{name}</div>
-                      <div className="text-[12.5px] text-pulse-500 dark:text-[var(--text-muted)] leading-snug mt-0.5">{desc}</div>
+                      <div className="text-[14.5px] font-semibold text-pulse-900 dark:text-[#F0F2F8]">{name}</div>
+                      <div className="text-[12.5px] text-pulse-500 dark:text-[#8A96B0] leading-snug mt-0.5">{desc}</div>
                     </div>
                     <span className="text-[11px] font-semibold text-teal-700 dark:text-teal-400" style={monoFont}>{tag}</span>
                   </button>
@@ -124,24 +124,24 @@ export default function PrivacyFeaturePage() {
       </section>
 
       {/* Guarantees */}
-      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[var(--color-border)]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Guarantees</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Four things we do. Four things we don't.
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {doGuarantees.map(({ title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
                 <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
                   <Check size={22} />
                 </div>
-                <h3 className="font-semibold text-[16px] mb-2 text-pulse-900 dark:text-[var(--text-primary)]">{title}</h3>
-                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[var(--text-muted)]">{desc}</p>
+                <h3 className="font-semibold text-[16px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
+                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
             {dontGuarantees.map(({ title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
                 <div
                   className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
                   style={{ background: 'rgba(220,38,38,0.08)', color: '#DC2626' }}
@@ -149,7 +149,7 @@ export default function PrivacyFeaturePage() {
                   <X size={22} />
                 </div>
                 <h3 className="font-semibold text-[16px] mb-2" style={{ color: '#DC2626' }}>{title}</h3>
-                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[var(--text-muted)]">{desc}</p>
+                <p className="text-[13.5px] leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
               </div>
             ))}
           </div>
@@ -157,13 +157,13 @@ export default function PrivacyFeaturePage() {
       </Reveal>
 
       {/* Data lifecycle */}
-      <Reveal as="section" className="py-16 bg-white dark:bg-[var(--color-bg-subtle)]">
+      <Reveal as="section" className="py-16 bg-white dark:bg-[#0A0F1E]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Data lifecycle</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Where your data lives, and for how long.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-pulse-200 dark:divide-[var(--color-border)]">
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-pulse-200 dark:divide-[#1E2A45]">
             {[
               { t: 'During the session', title: 'In secure session storage', desc: 'Votes, tallies, and consent choices are isolated to your session. No sharing across sessions, no replication.' },
               { t: 'After close', title: 'In your workspace', desc: 'Session locks. Session data remains in the configured Cloudflare data stores for the retention window.' },
@@ -171,8 +171,8 @@ export default function PrivacyFeaturePage() {
             ].map(({ t, title, desc }) => (
               <div key={t} className="px-8 py-8 first:pl-0 last:pr-0 relative">
                 <div className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 mb-2">{t}</div>
-                <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[var(--text-primary)]">{title}</h3>
-                <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed">{desc}</p>
+                <h3 className="font-semibold text-[17px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
+                <p className="text-sm text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
@@ -180,23 +180,23 @@ export default function PrivacyFeaturePage() {
       </Reveal>
 
       {/* Certifications */}
-      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[var(--color-border)]">
+      <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Certifications</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             The paperwork your procurement team needs.
           </h2>
-          <p className="text-pulse-500 dark:text-[var(--text-muted)] mb-8">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8">
             Qesto uses Cloudflare for compute/storage, Workers AI for inference, Stripe for payment processing, and
             Resend for transactional email. Formal compliance reports and residency guarantees are enterprise roadmap items.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {certs.map(({ name, label }) => (
-              <div key={name} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-5.5 text-center" style={shadowCard}>
-                <div className="font-bold text-[18px] tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mb-1" style={displayFont}>
+              <div key={name} className="bg-white dark:bg-[#151C2E] rounded-xl p-5.5 text-center" style={shadowCard}>
+                <div className="font-bold text-[18px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-1" style={displayFont}>
                   {name}
                 </div>
-                <div className="text-[11px] font-semibold uppercase tracking-widest text-pulse-500 dark:text-[var(--text-muted)]">{label}</div>
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-pulse-500 dark:text-[#8A96B0]">{label}</div>
               </div>
             ))}
           </div>

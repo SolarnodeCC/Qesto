@@ -34,7 +34,7 @@ export function AllSessionsSection({
   return (
     <section id="section-all-sessions" aria-labelledby="all-sessions-heading">
       <div className="flex items-center justify-between mb-4">
-        <h2 id="all-sessions-heading" className="text-xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
+        <h2 id="all-sessions-heading" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">
           {t('allSessions')}
         </h2>
       </div>
@@ -59,7 +59,7 @@ export function AllSessionsSection({
       ) : state.status === 'error' ? (
         <p role="alert" className="text-sm text-red-600">{state.error.message}</p>
       ) : sessions.length === 0 ? (
-        <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)] py-6 text-center">
+        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] py-6 text-center">
           {search || statusFilter !== 'all' ? t('noMatchingSearch') : t('noSessionsYet')}
         </p>
       ) : (

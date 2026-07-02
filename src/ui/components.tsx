@@ -19,10 +19,10 @@ export function Heading({
   className?: string
 }) {
   const styles = {
-    s: 'text-heading-s font-semibold',
-    m: 'text-heading-m font-semibold',
-    l: 'text-heading-l font-semibold',
-    xl: 'h-display-l',
+    s: 'text-heading-s font-semibold',      // 20px, 600wt
+    m: 'text-heading-m font-semibold',      // 24px, 600wt
+    l: 'text-heading-l font-semibold',      // 32px, 600wt
+    xl: 'text-display-l font-bold',         // 48px, 700wt
   }
   const tag = { s: 'h3', m: 'h2', l: 'h1', xl: 'h1' }[level] as 'h1' | 'h2' | 'h3'
   const Component = tag
@@ -44,15 +44,15 @@ export function Body({
   className?: string
 }) {
   const styles = {
-    s: 'body-s',      // 14px, 400wt
-    m: 'body-m',      // 16px, 400wt
-    l: 'body-l',      // 18px, 400wt
+    s: 'text-body-s',      // 14px, 400wt
+    m: 'text-body-m',      // 16px, 400wt
+    l: 'text-body-l',      // 18px, 400wt
   }
   return <p className={`${styles[size]} leading-relaxed ${className}`}>{children}</p>
 }
 
 export function Caption({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`caption text-pulse-500 dark:text-pulse-200 ${className}`}>{children}</span>
+  return <span className={`text-caption font-medium text-pulse-600 dark:text-[#8A96B0] ${className}`}>{children}</span>
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ export function Card({
   return (
     <div
       className={`
-        rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-pulse-50 dark:bg-[var(--color-surface)] p-4
+        rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#151C2E] p-4
         shadow-card ${hoverable ? 'hover:shadow-elevated transition-shadow' : ''}
         ${className}
       `}
@@ -122,11 +122,11 @@ export function Button({
       hover:shadow-teal dark:hover:shadow-[0_4px_24px_rgba(45,212,191,0.35)] ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     secondary: `
-      border border-teal-500 dark:border-teal-400 text-teal-700 dark:text-teal-400 bg-white dark:bg-[var(--color-surface-elevated)]
+      border border-teal-500 dark:border-teal-400 text-teal-700 dark:text-teal-400 bg-white dark:bg-[#1C2540]
       hover:bg-teal-50 dark:hover:bg-teal-500/10 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     ghost: `
-      text-pulse-700 dark:text-[var(--text-secondary)] bg-transparent
+      text-pulse-700 dark:text-[#A8B3CC] bg-transparent
       hover:bg-pulse-100 dark:hover:bg-white/8 ${!disabled ? 'cursor-pointer' : 'opacity-50 cursor-not-allowed'}
     `,
     danger: `
@@ -256,7 +256,7 @@ export function MetricCard({
   return (
     <Card className={`${alert ? 'border-signal-error bg-red-50' : ''} ${className}`}>
       <Caption className={alert ? 'text-signal-error' : ''}>{label}</Caption>
-      <div className={`text-2xl font-bold mt-2 ${alert ? 'text-signal-error dark:text-red-400' : 'text-pulse-900 dark:text-[var(--text-primary)]'}`}>
+      <div className={`text-2xl font-bold mt-2 ${alert ? 'text-signal-error dark:text-red-400' : 'text-pulse-900 dark:text-[#F0F2F8]'}`}>
         {value}
       </div>
       {trend && (
@@ -282,10 +282,10 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <Heading level="m" className="text-pulse-700 dark:text-[var(--text-secondary)]">
+      <Heading level="m" className="text-pulse-700 dark:text-[#A8B3CC]">
         {title}
       </Heading>
-      {description && <Body className="text-pulse-600 dark:text-[var(--text-muted)] mt-2">{description}</Body>}
+      {description && <Body className="text-pulse-600 dark:text-[#8A96B0] mt-2">{description}</Body>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   )
@@ -306,7 +306,7 @@ export function StatCard({
   return (
     <Card className={`text-center space-y-1 ${className}`}>
       <p className={`text-heading-m font-bold ${colour}`}>{value}</p>
-      <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">{label}</Body>
+      <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">{label}</Body>
     </Card>
   )
 }
@@ -315,10 +315,10 @@ export function StatCard({
 
 export function SkeletonCard({ className = '' }: { className?: string }) {
   return (
-    <div className={`rounded-lg border border-pulse-200 dark:border-[var(--color-border)] p-4 h-24 bg-pulse-100 dark:bg-[var(--color-surface)] animate-pulse ${className}`} />
+    <div className={`rounded-lg border border-pulse-200 dark:border-[#1E2A45] p-4 h-24 bg-pulse-100 dark:bg-[#151C2E] animate-pulse ${className}`} />
   )
 }
 
 export function SkeletonLine({ className = '' }: { className?: string }) {
-  return <div className={`h-4 bg-pulse-200 dark:bg-[var(--color-surface-elevated)] rounded-md animate-pulse ${className}`} />
+  return <div className={`h-4 bg-pulse-200 dark:bg-[#1C2540] rounded-md animate-pulse ${className}`} />
 }

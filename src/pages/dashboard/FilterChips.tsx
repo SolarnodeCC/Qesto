@@ -21,7 +21,7 @@ export function FilterChips({ value, onChange }: { value: StatusFilter; onChange
             'rounded-full px-3 py-1 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
             value === id
               ? 'bg-teal-600 text-white shadow-inner'
-              : 'bg-white dark:bg-[var(--color-surface)] border border-pulse-200 dark:border-[var(--color-border)] text-pulse-600 dark:text-[var(--text-secondary)] hover:border-teal-400 dark:hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400',
+              : 'bg-white dark:bg-[#151C2E] border border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC] hover:border-teal-400 dark:hover:border-teal-600 hover:text-teal-700 dark:hover:text-teal-400',
           ].join(' ')}
         >
           {label}
