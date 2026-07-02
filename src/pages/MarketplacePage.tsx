@@ -42,10 +42,10 @@ export default function MarketplacePage() {
         <p className="text-sm font-medium text-teal-700 dark:text-teal-400 uppercase tracking-wide">
           {t('marketplace.eyebrow')}
         </p>
-        <h1 tabIndex={-1} className="text-4xl font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-2">
+        <h1 tabIndex={-1} className="text-4xl font-bold tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mt-2">
           {t('marketplace.title')}
         </h1>
-        <p className="mt-4 text-lg text-pulse-600 dark:text-[#9AA8C7]">{t('marketplace.subtitle')}</p>
+        <p className="mt-4 text-lg text-pulse-600 dark:text-[var(--text-secondary)]">{t('marketplace.subtitle')}</p>
 
         <label className="mt-8 block">
           <span className="sr-only">{t('marketplace.searchLabel')}</span>
@@ -57,7 +57,7 @@ export default function MarketplacePage() {
               setQuery(e.target.value)
             }}
             {...inputHint(t('marketplace.searchPlaceholder'))}
-            className="w-full rounded-lg border border-pulse-200 px-4 py-3 text-sm dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8]"
+            className="w-full rounded-lg border border-pulse-200 px-4 py-3 text-sm dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-primary)]"
           />
         </label>
 
@@ -70,17 +70,17 @@ export default function MarketplacePage() {
             {apps.map((app) => (
               <li
                 key={app.id}
-                className="rounded-xl border border-pulse-200 p-5 dark:border-[#2A3858] dark:bg-[#1C2540]"
+                className="rounded-xl border border-pulse-200 p-5 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)]"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">{app.name}</h2>
+                  <h2 className="font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{app.name}</h2>
                   {app.badge && (
                     <span className="rounded-full bg-teal-100 px-2 py-0.5 text-xs font-medium text-teal-800 dark:bg-teal-900/40 dark:text-teal-300">
                       {app.badge}
                     </span>
                   )}
                 </div>
-                <p className="mt-2 text-sm text-pulse-600 dark:text-[#9AA8C7]">{app.description}</p>
+                <p className="mt-2 text-sm text-pulse-600 dark:text-[var(--text-secondary)]">{app.description}</p>
                 <p className="mt-3 text-xs text-pulse-500 capitalize">{app.partner}</p>
               </li>
             ))}

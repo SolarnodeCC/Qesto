@@ -27,14 +27,14 @@ function UsageBar({ used, limit, warn }: { used: number; limit: number; warn?: b
   return (
     <div>
       <div className="flex justify-between items-baseline mb-1">
-        <span className="text-xs text-pulse-500 dark:text-[#8A96B0] tabular-nums">
+        <span className="text-xs text-pulse-500 dark:text-[var(--text-muted)] tabular-nums">
           {used} / {limit}
         </span>
-        <span className={`text-xs font-medium tabular-nums ${isHigh || warn ? 'text-amber-600 dark:text-amber-400' : 'text-pulse-500 dark:text-[#8A96B0]'}`}>
+        <span className={`text-xs font-medium tabular-nums ${isHigh || warn ? 'text-amber-600 dark:text-amber-400' : 'text-pulse-500 dark:text-[var(--text-muted)]'}`}>
           {pct}%
         </span>
       </div>
-      <div className="h-1.5 rounded-full bg-pulse-100 dark:bg-[#1C2540] overflow-hidden">
+      <div className="h-1.5 rounded-full bg-pulse-100 dark:bg-[var(--color-surface-elevated)] overflow-hidden">
         <div
           className={`h-full rounded-full transition-[width] duration-500 ${
             pct >= 100 ? 'bg-red-500' : isHigh ? 'bg-amber-500' : 'bg-teal-500'
@@ -52,8 +52,8 @@ function UsageBar({ used, limit, warn }: { used: number; limit: number; warn?: b
 
 function FeatureRow({ label, value }: { label: string; value: boolean | string }) {
   return (
-    <div className="flex items-center justify-between gap-2 py-1.5 border-b border-pulse-100 dark:border-[#1E2A45] last:border-0">
-      <span className="text-xs text-pulse-600 dark:text-[#A8B3CC]">{label}</span>
+    <div className="flex items-center justify-between gap-2 py-1.5 border-b border-pulse-100 dark:border-[var(--color-border)] last:border-0">
+      <span className="text-xs text-pulse-600 dark:text-[var(--text-secondary)]">{label}</span>
       {typeof value === 'boolean' ? (
         value ? (
           <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5 text-teal-500 shrink-0" aria-label="Included">
@@ -65,7 +65,7 @@ function FeatureRow({ label, value }: { label: string; value: boolean | string }
           </svg>
         )
       ) : (
-        <span className="text-xs font-medium text-pulse-700 dark:text-[#F0F2F8]">{value}</span>
+        <span className="text-xs font-medium text-pulse-700 dark:text-[var(--text-primary)]">{value}</span>
       )}
     </div>
   )
@@ -82,7 +82,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
     return (
       <aside className="space-y-3" aria-label="Plan usage loading">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-10 rounded-lg bg-pulse-100 dark:bg-[#151C2E] skeleton-shimmer" aria-hidden="true" />
+          <div key={i} className="h-10 rounded-lg bg-pulse-100 dark:bg-[var(--color-surface)] skeleton-shimmer" aria-hidden="true" />
         ))}
       </aside>
     )
@@ -91,7 +91,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
   return (
     <aside aria-label="Subscription overview" className="space-y-4">
       {/* Plan badge + upgrade CTA */}
-      <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-4 space-y-3">
+      <div className="rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${planInfo.color}`}>
             <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${planInfo.dot}`} aria-hidden="true" />
@@ -110,7 +110,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
         {/* Sessions this month */}
         <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-pulse-700 dark:text-[#A8B3CC] uppercase tracking-wide">Sessions / month</p>
+            <p className="text-xs font-semibold text-pulse-700 dark:text-[var(--text-secondary)] uppercase tracking-wide">Sessions / month</p>
             <span className="text-[10px] text-pulse-500">{daysLeft}d left</span>
           </div>
           {data.quotas.max_sessions_per_month >= 500 ? (
@@ -129,8 +129,8 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
 
         {/* Participants per session */}
         <div className="space-y-0.5">
-          <p className="text-xs font-semibold text-pulse-700 dark:text-[#A8B3CC] uppercase tracking-wide">Participants / session</p>
-          <p className="text-xs text-pulse-600 dark:text-[#A8B3CC]">
+          <p className="text-xs font-semibold text-pulse-700 dark:text-[var(--text-secondary)] uppercase tracking-wide">Participants / session</p>
+          <p className="text-xs text-pulse-600 dark:text-[var(--text-secondary)]">
             {data.quotas.max_participants_per_session >= 5000
               ? 'Unlimited'
               : `Up to ${data.quotas.max_participants_per_session.toLocaleString()}`}
@@ -139,7 +139,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
 
         {/* AI insights */}
         <div className="space-y-1">
-          <p className="text-xs font-semibold text-pulse-700 dark:text-[#A8B3CC] uppercase tracking-wide">AI insights / month</p>
+          <p className="text-xs font-semibold text-pulse-700 dark:text-[var(--text-secondary)] uppercase tracking-wide">AI insights / month</p>
           {aiLimit === null ? (
             <p className="text-xs text-teal-600 dark:text-teal-400 font-medium">Unlimited</p>
           ) : data.quotas.features_unlocked.insightsAI ? (
@@ -159,8 +159,8 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
       </div>
 
       {/* Feature matrix */}
-      <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-4">
-        <p className="text-xs font-semibold text-pulse-700 dark:text-[#A8B3CC] uppercase tracking-wide mb-2">Included features</p>
+      <div className="rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-4">
+        <p className="text-xs font-semibold text-pulse-700 dark:text-[var(--text-secondary)] uppercase tracking-wide mb-2">Included features</p>
         <div>
           <FeatureRow label="Results export (CSV)" value={data.quotas.features_unlocked.resultsExport} />
           <FeatureRow label="AI evidence clusters" value={data.quotas.features_unlocked.semanticSearch} />
@@ -173,7 +173,7 @@ export default function PlanUsageSidebar({ data, loading }: Props) {
       </div>
 
       {/* Reset date */}
-      <p className="text-[10px] text-pulse-500 dark:text-[#8A96B0] text-center">
+      <p className="text-[10px] text-pulse-500 dark:text-[var(--text-muted)] text-center">
         Quota resets {resetDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
       </p>
     </aside>

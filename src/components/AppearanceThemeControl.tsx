@@ -19,7 +19,7 @@ export function AppearanceThemeControl() {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium text-pulse-800 dark:text-[#A8B3CC]">{t('appearance.themeLabel')}</p>
+      <p className="text-sm font-medium text-pulse-800 dark:text-[var(--text-secondary)]">{t('appearance.themeLabel')}</p>
       <div className="flex flex-wrap gap-2" role="group" aria-label={t('appearance.themeLabel')}>
         {OPTIONS.map((option) => {
           const selected = preference === option
@@ -34,7 +34,7 @@ export function AppearanceThemeControl() {
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
                 selected
                   ? 'bg-teal-600 text-white'
-                  : 'border border-pulse-200 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5',
+                  : 'border border-pulse-200 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5',
               ].join(' ')}
             >
               {label[option]}

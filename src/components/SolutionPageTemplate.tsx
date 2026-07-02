@@ -48,7 +48,7 @@ export default function SolutionPageTemplate({
     <MainLayout navSlot={navSlot}>
       {/* Hero */}
       {hero && (
-        <section className="animate-page-enter bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0A0F1E] dark:to-[#0A0F1E] border-b border-pulse-200 dark:border-[#1E2A45]">
+        <section className="animate-page-enter bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[var(--color-bg-subtle)] dark:to-[var(--color-bg-subtle)] border-b border-pulse-200 dark:border-[var(--color-border)]">
           <div className="grid-container px-4 md:px-6 py-16 md:py-24">
             <div
               className={`col-span-full max-w-[1120px] mx-auto ${
@@ -68,7 +68,7 @@ export default function SolutionPageTemplate({
                 >
                   {hero.headline}
                 </h1>
-                <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC] leading-relaxed">
+                <p className="text-body-l text-pulse-600 dark:text-[var(--text-secondary)] leading-relaxed">
                   {hero.subheadline}
                 </p>
                 <div className="flex flex-wrap gap-3">
@@ -81,7 +81,7 @@ export default function SolutionPageTemplate({
                   {hero.secondaryCta && (
                     <Link
                       to={hero.secondaryCta.href}
-                      className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#F0F2F8] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[#1C2540]"
+                      className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-primary)] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[var(--color-surface-elevated)]"
                     >
                       {hero.secondaryCta.label}
                     </Link>
@@ -126,12 +126,12 @@ export default function SolutionPageTemplate({
 
       {/* Pain points */}
       {painPoints && (
-        <Reveal as="section" aria-labelledby="pain-points-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="pain-points-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[var(--color-border)]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
               <h2
                 id="pain-points-heading"
-                className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
+                className="text-heading-l font-semibold text-center dark:text-[var(--text-primary)]"
                 style={{ fontFamily: 'var(--font-family-display)' }}
               >
                 {painPoints.heading}
@@ -140,12 +140,12 @@ export default function SolutionPageTemplate({
                 {painPoints.items.map((item, i) => (
                   <li
                     key={item.title}
-                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 space-y-3 shadow-card"
+                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-6 space-y-3 shadow-card"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <span className="text-2xl" aria-hidden="true">{item.icon}</span>
-                    <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{item.title}</h3>
-                    <p className="text-caption text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{item.desc}</p>
+                    <h3 className="text-heading-s font-semibold dark:text-[var(--text-primary)]">{item.title}</h3>
+                    <p className="text-caption text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed">{item.desc}</p>
                   </li>
                 ))}
               </ul>
@@ -159,35 +159,35 @@ export default function SolutionPageTemplate({
         <Reveal
           as="section"
           aria-labelledby="features-heading"
-          className="py-16 md:py-20 bg-gradient-to-br from-teal-50/50 to-violet-50/50 dark:from-[#0F1525] dark:to-[#0F1525] border-b border-pulse-200 dark:border-[#1E2A45]"
+          className="py-16 md:py-20 bg-gradient-to-br from-teal-50/50 to-violet-50/50 dark:from-[var(--color-border)] dark:to-[var(--color-border)] border-b border-pulse-200 dark:border-[var(--color-border)]"
         >
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
               <div className="text-center space-y-3">
                 <h2
                   id="features-heading"
-                  className="text-heading-l font-semibold dark:text-[#F0F2F8]"
+                  className="text-heading-l font-semibold dark:text-[var(--text-primary)]"
                   style={{ fontFamily: 'var(--font-family-display)' }}
                 >
                   {features.heading}
                 </h2>
                 {features.subheading && (
-                  <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC] max-w-2xl mx-auto">{features.subheading}</p>
+                  <p className="text-body-l text-pulse-600 dark:text-[var(--text-secondary)] max-w-2xl mx-auto">{features.subheading}</p>
                 )}
               </div>
               <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" role="list">
                 {features.items.map((feat, i) => (
                   <li
                     key={feat.title}
-                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-3 shadow-card hover:shadow-elevated transition-shadow"
+                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-5 space-y-3 shadow-card hover:shadow-elevated transition-shadow"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-2xl" aria-hidden="true">{feat.icon}</span>
                       {feat.ai && <AIBadge variant="analyzed" />}
                     </div>
-                    <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{feat.title}</h3>
-                    <p className="text-caption text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{feat.desc}</p>
+                    <h3 className="text-heading-s font-semibold dark:text-[var(--text-primary)]">{feat.title}</h3>
+                    <p className="text-caption text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed">{feat.desc}</p>
                   </li>
                 ))}
               </ul>
@@ -198,12 +198,12 @@ export default function SolutionPageTemplate({
 
       {/* Proof */}
       {proof && (
-        <Reveal as="section" aria-labelledby="proof-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="proof-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[var(--color-border)]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
               <h2
                 id="proof-heading"
-                className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
+                className="text-heading-l font-semibold text-center dark:text-[var(--text-primary)]"
                 style={{ fontFamily: 'var(--font-family-display)' }}
               >
                 {proof.heading}
@@ -214,14 +214,14 @@ export default function SolutionPageTemplate({
                   {proof.metrics.map((metric, i) => (
                     <li
                       key={metric.label}
-                      className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-2 text-center shadow-card"
+                      className="animate-list-item rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-5 space-y-2 text-center shadow-card"
                       style={{ '--stagger-index': i } as React.CSSProperties}
                     >
                       <p className="text-heading-m font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent">
                         {metric.value}
                       </p>
-                      <p className="text-heading-s font-semibold dark:text-[#F0F2F8]">{metric.label}</p>
-                      {metric.note && <p className="text-caption text-pulse-500 dark:text-[#8A96B0]">{metric.note}</p>}
+                      <p className="text-heading-s font-semibold dark:text-[var(--text-primary)]">{metric.label}</p>
+                      {metric.note && <p className="text-caption text-pulse-500 dark:text-[var(--text-muted)]">{metric.note}</p>}
                     </li>
                   ))}
                 </ul>
@@ -231,7 +231,7 @@ export default function SolutionPageTemplate({
                 <ul className="flex flex-wrap items-center justify-center gap-3" role="list">
                   {proof.badges.map((badge) => (
                     <li key={badge.label}>
-                      <span className="inline-flex items-center rounded-pill px-3 py-1 text-caption font-medium bg-pulse-100 dark:bg-[#1E2A45] text-pulse-700 dark:text-[#A8B3CC] border border-pulse-200 dark:border-[#1E2A45]">
+                      <span className="inline-flex items-center rounded-pill px-3 py-1 text-caption font-medium bg-pulse-100 dark:bg-[var(--color-border)] text-pulse-700 dark:text-[var(--text-secondary)] border border-pulse-200 dark:border-[var(--color-border)]">
                         {badge.label}
                       </span>
                     </li>
@@ -240,10 +240,10 @@ export default function SolutionPageTemplate({
               )}
 
               {proof.testimonial && (
-                <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-6 md:p-8 text-center space-y-3">
-                  <p className="text-body-l text-pulse-700 dark:text-[#A8B3CC] leading-relaxed">"{proof.testimonial.quote}"</p>
-                  <footer className="text-caption text-pulse-600 dark:text-[#8A96B0]">
-                    <strong className="dark:text-[#F0F2F8]">{proof.testimonial.author}</strong>
+                <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 dark:border-[var(--color-border)] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[var(--color-border)] dark:to-[var(--color-border)] p-6 md:p-8 text-center space-y-3">
+                  <p className="text-body-l text-pulse-700 dark:text-[var(--text-secondary)] leading-relaxed">"{proof.testimonial.quote}"</p>
+                  <footer className="text-caption text-pulse-600 dark:text-[var(--text-muted)]">
+                    <strong className="dark:text-[var(--text-primary)]">{proof.testimonial.author}</strong>
                     {proof.testimonial.role ? `, ${proof.testimonial.role}` : ''}
                   </footer>
                 </blockquote>
@@ -255,29 +255,29 @@ export default function SolutionPageTemplate({
 
       {/* Playbook */}
       {playbook && (
-        <Reveal as="section" aria-labelledby="playbook-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="playbook-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[var(--color-border)]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
               <div className="text-center max-w-3xl mx-auto space-y-3">
                 <h2
                   id="playbook-heading"
-                  className="text-heading-l font-semibold dark:text-[#F0F2F8]"
+                  className="text-heading-l font-semibold dark:text-[var(--text-primary)]"
                   style={{ fontFamily: 'var(--font-family-display)' }}
                 >
                   {playbook.heading}
                 </h2>
-                <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{playbook.intro}</p>
+                <p className="text-body-l text-pulse-600 dark:text-[var(--text-secondary)]">{playbook.intro}</p>
               </div>
               <ol className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
                 {playbook.steps.map((step, i) => (
                   <li
                     key={step.title}
-                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-6 space-y-3"
+                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[var(--color-border)] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[var(--color-border)] dark:to-[var(--color-border)] p-6 space-y-3"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <p className="text-caption font-semibold text-teal-700 dark:text-teal-400">Step {i + 1}</p>
-                    <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{step.title}</h3>
-                    <p className="text-caption text-pulse-600 dark:text-[#A8B3CC] leading-relaxed">{step.desc}</p>
+                    <h3 className="text-heading-s font-semibold dark:text-[var(--text-primary)]">{step.title}</h3>
+                    <p className="text-caption text-pulse-600 dark:text-[var(--text-secondary)] leading-relaxed">{step.desc}</p>
                   </li>
                 ))}
               </ol>
@@ -288,12 +288,12 @@ export default function SolutionPageTemplate({
 
       {/* Scenarios */}
       {scenarios && (
-        <Reveal as="section" aria-labelledby="scenarios-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="scenarios-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[var(--color-border)]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
               <h2
                 id="scenarios-heading"
-                className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
+                className="text-heading-l font-semibold text-center dark:text-[var(--text-primary)]"
                 style={{ fontFamily: 'var(--font-family-display)' }}
               >
                 {scenarios.heading}
@@ -302,11 +302,11 @@ export default function SolutionPageTemplate({
                 {scenarios.items.map((s, i) => (
                   <li
                     key={s.title}
-                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-6 space-y-2"
+                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[var(--color-border)] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[var(--color-border)] dark:to-[var(--color-border)] p-6 space-y-2"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{s.title}</h3>
-                    <p className="text-caption text-pulse-600 dark:text-[#A8B3CC] leading-relaxed">{s.desc}</p>
+                    <p className="text-caption text-pulse-600 dark:text-[var(--text-secondary)] leading-relaxed">{s.desc}</p>
                   </li>
                 ))}
               </ul>
@@ -317,12 +317,12 @@ export default function SolutionPageTemplate({
 
       {/* Related pages */}
       {related && (
-        <Reveal as="section" aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[var(--color-border)]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
               <h2
                 id="related-heading"
-                className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
+                className="text-heading-l font-semibold text-center dark:text-[var(--text-primary)]"
                 style={{ fontFamily: 'var(--font-family-display)' }}
               >
                 {related.heading}
@@ -332,10 +332,10 @@ export default function SolutionPageTemplate({
                   <li key={link.href} className="animate-list-item" style={{ '--stagger-index': i } as React.CSSProperties}>
                     <Link
                       to={link.href}
-                      className="block rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                      className="block rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-5 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                     >
                       <p className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{link.label}</p>
-                      <p className="text-caption text-pulse-500 dark:text-[#8A96B0]">{link.desc}</p>
+                      <p className="text-caption text-pulse-500 dark:text-[var(--text-muted)]">{link.desc}</p>
                     </Link>
                   </li>
                 ))}
@@ -347,12 +347,12 @@ export default function SolutionPageTemplate({
 
       {/* FAQ */}
       {faq && (
-        <Reveal as="section" aria-labelledby="faq-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
+        <Reveal as="section" aria-labelledby="faq-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[var(--color-border)]">
           <div className="grid-container px-4 md:px-6">
             <div className="col-span-full max-w-[900px] mx-auto space-y-8">
               <h2
                 id="faq-heading"
-                className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
+                className="text-heading-l font-semibold text-center dark:text-[var(--text-primary)]"
                 style={{ fontFamily: 'var(--font-family-display)' }}
               >
                 {faq.heading}
@@ -361,11 +361,11 @@ export default function SolutionPageTemplate({
                 {faq.items.map((item, i) => (
                   <li
                     key={item.question}
-                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 md:p-6 space-y-2 shadow-card"
+                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-5 md:p-6 space-y-2 shadow-card"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
-                    <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{item.question}</h3>
-                    <p className="text-caption text-pulse-500 dark:text-[#8A96B0] leading-relaxed">{item.answer}</p>
+                    <h3 className="text-heading-s font-semibold dark:text-[var(--text-primary)]">{item.question}</h3>
+                    <p className="text-caption text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed">{item.answer}</p>
                   </li>
                 ))}
               </ul>
@@ -383,7 +383,7 @@ export default function SolutionPageTemplate({
       {bottomCta && (
         <Reveal as="section" aria-labelledby="cta-heading" className="py-16 md:py-24">
           <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] border border-pulse-200 dark:border-[#1E2A45]">
+            <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-xl bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[var(--color-border)] dark:to-[var(--color-border)] border border-pulse-200 dark:border-[var(--color-border)]">
               <h2
                 id="cta-heading"
                 className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
@@ -391,7 +391,7 @@ export default function SolutionPageTemplate({
               >
                 {bottomCta.heading}
               </h2>
-              <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{bottomCta.subheading}</p>
+              <p className="text-body-l text-pulse-600 dark:text-[var(--text-secondary)]">{bottomCta.subheading}</p>
               <div className="flex flex-wrap justify-center gap-3">
                 <Link
                   to={bottomCta.primaryCta.href}
@@ -402,7 +402,7 @@ export default function SolutionPageTemplate({
                 {bottomCta.secondaryCta && (
                   <Link
                     to={bottomCta.secondaryCta.href}
-                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#F0F2F8] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[#1C2540]"
+                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-primary)] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[var(--color-surface-elevated)]"
                   >
                     {bottomCta.secondaryCta.label}
                   </Link>

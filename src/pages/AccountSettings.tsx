@@ -31,13 +31,13 @@ function SettingsSection({
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className="density-pad-6 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card"
+      className="density-pad-6 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] shadow-card"
     >
-      <h2 id={`${id}-heading`} className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+      <h2 id={`${id}-heading`} className="text-lg font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
         {title}
       </h2>
       {description && (
-        <p className="mt-1 text-sm text-pulse-500 dark:text-[#8A96B0]">{description}</p>
+        <p className="mt-1 text-sm text-pulse-500 dark:text-[var(--text-muted)]">{description}</p>
       )}
       <div className="mt-4">{children}</div>
     </section>
@@ -152,21 +152,21 @@ export default function AccountSettings() {
     >
       <div className="density-stack-8 max-w-[720px] mx-auto px-6 lg:px-10 py-10 animate-page-enter">
         <header>
-          <h1 className="text-3xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('pageTitle')}</h1>
-          <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0]">{t('pageIntro')}</p>
+          <h1 className="text-3xl font-bold text-pulse-900 dark:text-[var(--text-primary)]">{t('pageTitle')}</h1>
+          <p className="mt-2 text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('pageIntro')}</p>
         </header>
 
         <SettingsSection id="settings-account" title={t('account.title')}>
           <dl className="space-y-3 text-sm">
             <div>
-              <dt className="text-pulse-500 dark:text-[#8A96B0]">{t('account.email')}</dt>
-              <dd className="mt-0.5 font-medium text-pulse-900 dark:text-[#F0F2F8]">{auth.user.email}</dd>
+              <dt className="text-pulse-500 dark:text-[var(--text-muted)]">{t('account.email')}</dt>
+              <dd className="mt-0.5 font-medium text-pulse-900 dark:text-[var(--text-primary)]">{auth.user.email}</dd>
             </div>
           </dl>
           <button
             type="button"
             onClick={() => void auth.logout()}
-            className="mt-4 rounded-lg border border-pulse-200 dark:border-[#2A3858] px-4 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            className="mt-4 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] px-4 py-2 text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             {t('account.logout')}
           </button>
@@ -189,7 +189,7 @@ export default function AccountSettings() {
           <div className="mt-4">
             <HighContrastToggle />
           </div>
-          <p className="mt-6 text-sm font-medium text-pulse-800 dark:text-[#A8B3CC]">{t('appearance.densityLabel')}</p>
+          <p className="mt-6 text-sm font-medium text-pulse-800 dark:text-[var(--text-secondary)]">{t('appearance.densityLabel')}</p>
           <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label={t('appearance.densityLabel')}>
             {DENSITY_OPTIONS.map((option) => {
               const selected = density === option
@@ -204,7 +204,7 @@ export default function AccountSettings() {
                     'focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1',
                     selected
                       ? 'bg-teal-600 text-white'
-                      : 'border border-pulse-200 dark:border-[#2A3858] text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5',
+                      : 'border border-pulse-200 dark:border-[var(--color-border-strong)] text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5',
                   ].join(' ')}
                 >
                   {densityLabel[option]}
@@ -220,14 +220,14 @@ export default function AccountSettings() {
           ) : (
             <div className="space-y-4">
               <div>
-                <p className="text-xs uppercase tracking-wide text-pulse-500 dark:text-[#8A96B0]">
+                <p className="text-xs uppercase tracking-wide text-pulse-500 dark:text-[var(--text-muted)]">
                   {t('billing.currentPlan')}
                 </p>
-                <p className="mt-1 text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+                <p className="mt-1 text-xl font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
                   {planBrandName(quotaData?.plan ?? 'free')}
                 </p>
                 {quotaData && (
-                  <p className="mt-1 text-sm text-pulse-500 dark:text-[#8A96B0]">
+                  <p className="mt-1 text-sm text-pulse-500 dark:text-[var(--text-muted)]">
                     {quotaData.quotas.max_sessions_per_month > 0
                       ? t('billing.usage', {
                           used: quotaData.usage.sessions_created,
@@ -237,7 +237,7 @@ export default function AccountSettings() {
                   </p>
                 )}
                 {resetDateLabel && (
-                  <p className="mt-0.5 text-xs text-pulse-500 dark:text-[#8A96B0]">
+                  <p className="mt-0.5 text-xs text-pulse-500 dark:text-[var(--text-muted)]">
                     {t('billing.resetsOn', { date: resetDateLabel })}
                   </p>
                 )}
@@ -254,7 +254,7 @@ export default function AccountSettings() {
                   type="button"
                   disabled={portalLoading}
                   onClick={() => void handleManageBilling()}
-                  className="inline-flex items-center rounded-lg border border-pulse-200 dark:border-[#2A3858] px-4 py-2 text-sm font-medium text-pulse-700 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  className="inline-flex items-center rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] px-4 py-2 text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 >
                   {portalLoading ? t('billing.manageLoading') : t('billing.manage')}
                 </button>
@@ -267,21 +267,21 @@ export default function AccountSettings() {
               )}
 
               {hasBillingProfile === false && !invoicesLoading && (
-                <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">
+                <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">
                   {t('billing.noSubscription')}
                   <span className="block mt-1">{t('billing.noSubscriptionHint')}</span>
                 </p>
               )}
 
               <div>
-                <h3 className="text-sm font-semibold text-pulse-800 dark:text-[#F0F2F8]">{t('billing.invoices')}</h3>
+                <h3 className="text-sm font-semibold text-pulse-800 dark:text-[var(--text-primary)]">{t('billing.invoices')}</h3>
                 {invoicesLoading ? (
                   <div className="mt-2 h-12 rounded bg-pulse-100 dark:bg-pulse-800/60 skeleton-shimmer" aria-hidden="true" />
                 ) : invoices.length > 0 ? (
-                  <ul className="mt-2 divide-y divide-pulse-100 dark:divide-[#1E2A45] rounded-lg border border-pulse-200 dark:border-[#1E2A45]">
+                  <ul className="mt-2 divide-y divide-pulse-100 dark:divide-[var(--color-border)] rounded-lg border border-pulse-200 dark:border-[var(--color-border)]">
                     {invoices.map((inv) => (
                       <li key={inv.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                        <span className="text-pulse-700 dark:text-[#A8B3CC]">
+                        <span className="text-pulse-700 dark:text-[var(--text-secondary)]">
                           {new Date(inv.created * 1000).toLocaleDateString()} ·{' '}
                           {(inv.amount_due / 100).toFixed(2)} {inv.currency.toUpperCase()}
                         </span>
@@ -301,7 +301,7 @@ export default function AccountSettings() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-2 text-sm text-pulse-500 dark:text-[#8A96B0]">{t('billing.invoicesEmpty')}</p>
+                  <p className="mt-2 text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('billing.invoicesEmpty')}</p>
                 )}
               </div>
             </div>
@@ -316,14 +316,14 @@ export default function AccountSettings() {
           {teamsLoading ? (
             <div className="h-16 rounded-lg bg-pulse-100 dark:bg-pulse-800/60 skeleton-shimmer" aria-hidden="true" />
           ) : teams.length === 0 ? (
-            <p className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('teams.empty')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{t('teams.empty')}</p>
           ) : (
-            <ul className="divide-y divide-pulse-100 dark:divide-[#1E2A45] rounded-lg border border-pulse-200 dark:border-[#1E2A45]">
+            <ul className="divide-y divide-pulse-100 dark:divide-[var(--color-border)] rounded-lg border border-pulse-200 dark:border-[var(--color-border)]">
               {teams.map((team) => (
                 <li key={team.id} className="flex items-center justify-between gap-4 px-3 py-3">
                   <div>
-                    <p className="font-medium text-pulse-800 dark:text-[#F0F2F8]">{team.name}</p>
-                    <p className="text-xs text-pulse-500 dark:text-[#8A96B0] capitalize">{team.plan} plan</p>
+                    <p className="font-medium text-pulse-800 dark:text-[var(--text-primary)]">{team.name}</p>
+                    <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)] capitalize">{team.plan} plan</p>
                   </div>
                   <Link
                     to={`/teams/${team.id}/settings`}

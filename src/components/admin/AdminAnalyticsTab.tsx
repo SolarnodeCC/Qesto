@@ -101,14 +101,14 @@ function KpiCard({ value, label, colour = 'text-teal-600' }: { value: number; la
   return (
     <Card className="text-center space-y-1">
       <p className={`text-heading-m font-bold ${colour}`}>{value}</p>
-      <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">{label}</Body>
+      <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">{label}</Body>
     </Card>
   )
 }
 
 function RateCard({ value, label }: { value: number; label: string }) {
   const pct = Math.round(value * 100)
-  const colour = pct > 5 ? 'text-red-600 dark:text-red-400' : 'text-pulse-700 dark:text-[#A8B3CC]'
+  const colour = pct > 5 ? 'text-red-600 dark:text-red-400' : 'text-pulse-700 dark:text-[var(--text-secondary)]'
   return <KpiCard value={pct} label={`${label} (%)`} colour={colour} />
 }
 
@@ -116,9 +116,9 @@ function RateCard({ value, label }: { value: number; label: string }) {
 
 function StatusRow({ label, count }: { label: string; count: number }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45] last:border-0">
-      <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">{label}</Body>
-      <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{count}</Body>
+    <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[var(--color-border)] last:border-0">
+      <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">{label}</Body>
+      <Body size="s" className="font-semibold text-pulse-800 dark:text-[var(--text-primary)]">{count}</Body>
     </div>
   )
 }
@@ -188,23 +188,23 @@ function GrowthEngineSection() {
           <Heading level="s" className="mb-4">Webhook health</Heading>
           <div className="flex items-center gap-2 mb-4">
             <span className={`inline-block w-2.5 h-2.5 rounded-full ${dot}`} aria-hidden="true" />
-            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{statusLabel}</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[var(--text-primary)]">{statusLabel}</Body>
           </div>
-          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45]">
-            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Last received</Body>
-            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{lastReceivedDisplay}</Body>
+          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[var(--color-border)]">
+            <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Last received</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[var(--text-primary)]">{lastReceivedDisplay}</Body>
           </div>
-          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45]">
-            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Workflows queued</Body>
-            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{webhook.total_queued}</Body>
+          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[var(--color-border)]">
+            <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Workflows queued</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[var(--text-primary)]">{webhook.total_queued}</Body>
           </div>
-          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[#1E2A45]">
-            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Private sessions skipped</Body>
-            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{webhook.total_skipped}</Body>
+          <div className="flex items-center justify-between py-2 border-b border-pulse-100 dark:border-[var(--color-border)]">
+            <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Private sessions skipped</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[var(--text-primary)]">{webhook.total_skipped}</Body>
           </div>
           <div className="flex items-center justify-between py-2">
-            <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Last template created</Body>
-            <Body size="s" className="font-semibold text-pulse-800 dark:text-[#F0F2F8]">{lastTemplateDisplay}</Body>
+            <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Last template created</Body>
+            <Body size="s" className="font-semibold text-pulse-800 dark:text-[var(--text-primary)]">{lastTemplateDisplay}</Body>
           </div>
         </Card>
 
@@ -212,7 +212,7 @@ function GrowthEngineSection() {
         <Card>
           <Heading level="s" className="mb-4">Templates by industry</Heading>
           {industryEntries.length === 0 ? (
-            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No templates yet</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">No templates yet</Body>
           ) : (
             industryEntries.map(([industry, count]) => (
               <StatusRow
@@ -302,12 +302,12 @@ export default function AdminAnalyticsTab() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <Heading level="s" className="mb-1">Sessions per day</Heading>
-          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mb-3">Last 14 days</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] mb-3">Last 14 days</Body>
           <BarChart data={a.sessions_per_day} label="Sessions per day" />
         </Card>
         <Card>
           <Heading level="s" className="mb-1">Decisions per day</Heading>
-          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mb-3">Last 14 days</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] mb-3">Last 14 days</Body>
           <BarChart data={a.decisions_per_day} label="Decisions per day" />
         </Card>
       </div>
@@ -317,7 +317,7 @@ export default function AdminAnalyticsTab() {
         <Card className="flex flex-col items-center justify-center gap-4">
           <Heading level="s">Decision quality</Heading>
           <ConsentDonut rate={a.consent_rate} />
-          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] text-center">
+          <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] text-center">
             Avg {a.avg_participants.toFixed(1)} participants per decision
           </Body>
         </Card>
@@ -348,7 +348,7 @@ export default function AdminAnalyticsTab() {
           <RateCard value={a.engagement.ws_error_rate} label="WebSocket errors" />
           <RateCard value={a.engagement.reconnect_rate} label="Reconnects" />
         </div>
-        <Body size="s" className="mt-4 text-pulse-500 dark:text-[#8A96B0]">
+        <Body size="s" className="mt-4 text-pulse-500 dark:text-[var(--text-muted)]">
           Export contains only aggregated counters and sanitised labels — no raw content, free text, or personal identifiers.
         </Body>
       </Card>
@@ -358,17 +358,17 @@ export default function AdminAnalyticsTab() {
         <Heading level="s" className="mb-4">Cost &amp; usage</Heading>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Sessions created</Body>
-            <p className="text-heading-s font-semibold text-pulse-900 dark:text-[#F0F2F8] mt-1">{a.total_sessions_created}</p>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">Sessions created</Body>
+            <p className="text-heading-s font-semibold text-pulse-900 dark:text-[var(--text-primary)] mt-1">{a.total_sessions_created}</p>
           </div>
           <div>
-            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Decisions processed</Body>
-            <p className="text-heading-s font-semibold text-pulse-900 dark:text-[#F0F2F8] mt-1">{a.total_decisions_processed}</p>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">Decisions processed</Body>
+            <p className="text-heading-s font-semibold text-pulse-900 dark:text-[var(--text-primary)] mt-1">{a.total_decisions_processed}</p>
           </div>
           <div>
-            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Est. AI costs (month)</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">Est. AI costs (month)</Body>
             <p className="text-heading-s font-semibold text-teal-600 dark:text-teal-400 mt-1">&lt; €{costEur}</p>
-            <Body size="s" className="text-pulse-500 dark:text-[#3A4A6B] mt-0.5">~€0.00001/decision</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--color-border-strong)] mt-0.5">~€0.00001/decision</Body>
           </div>
         </div>
       </Card>

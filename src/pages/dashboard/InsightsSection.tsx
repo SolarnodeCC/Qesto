@@ -34,7 +34,7 @@ export function InsightsSection({
   const t = useT('dashboard')
   return (
     <section id="section-insights" aria-labelledby="insights-heading">
-      <h2 id="insights-heading" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-6">
+      <h2 id="insights-heading" className="text-xl font-semibold text-pulse-900 dark:text-[var(--text-primary)] mb-6">
         {t('insights')}
       </h2>
       <div className="space-y-6">
@@ -87,7 +87,7 @@ export function InsightsSection({
                     key={s.id}
                     type="button"
                     onClick={() => void analyzeSession(s.id)}
-                    className="w-full text-left flex items-center justify-between gap-3 p-3 rounded-lg border border-pulse-200 dark:border-[#1E2A45] hover:border-teal-400 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors"
+                    className="w-full text-left flex items-center justify-between gap-3 p-3 rounded-lg border border-pulse-200 dark:border-[var(--color-border)] hover:border-teal-400 dark:hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:focus-visible:ring-teal-400 focus-visible:ring-offset-2 transition-colors"
                   >
                     <span className="text-sm font-medium text-pulse-800 dark:text-pulse-200">{s.title}</span>
                     <span className="text-xs text-teal-600 dark:text-teal-400 font-medium flex items-center gap-1">

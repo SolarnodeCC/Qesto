@@ -22,10 +22,10 @@ export function TemplatesSection({
   const t = useT('dashboard')
   return (
     <section id="section-templates" aria-labelledby="inspiration-heading">
-      <h2 id="inspiration-heading" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-2">
+      <h2 id="inspiration-heading" className="text-xl font-semibold text-pulse-900 dark:text-[var(--text-primary)] mb-2">
         {t('inspiration')}
       </h2>
-      <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] mb-6">{t('templateCatalogueIntro')}</p>
+      <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)] mb-6">{t('templateCatalogueIntro')}</p>
       {templatesLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
@@ -33,7 +33,7 @@ export function TemplatesSection({
           ))}
         </div>
       ) : templates.length === 0 ? (
-        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('noTemplatesAvailable')}</p>
+        <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('noTemplatesAvailable')}</p>
       ) : (
         <div className="space-y-8">
           {customerTemplates.length > 0 && (

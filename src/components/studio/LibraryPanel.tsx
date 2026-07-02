@@ -13,8 +13,8 @@ type Props = {
 
 export function LibraryPanel({ t, items, loading, forkingId, deletingId, onFork, onDelete }: Props) {
   return (
-    <section aria-labelledby="studio-library-heading" className="rounded-lg border border-pulse-200 bg-white p-5 dark:border-[#2A3858] dark:bg-pulse-900/40">
-      <h2 id="studio-library-heading" className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+    <section aria-labelledby="studio-library-heading" className="rounded-lg border border-pulse-200 bg-white p-5 dark:border-[var(--color-border-strong)] dark:bg-pulse-900/40">
+      <h2 id="studio-library-heading" className="text-lg font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
         {t('library.heading')}
       </h2>
 
@@ -27,7 +27,7 @@ export function LibraryPanel({ t, items, loading, forkingId, deletingId, onFork,
       )}
 
       {!loading && items.length === 0 && (
-        <p className="mt-3 text-sm text-pulse-500 dark:text-[#9AA8C7]">{t('library.empty')}</p>
+        <p className="mt-3 text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('library.empty')}</p>
       )}
 
       {!loading && items.length > 0 && (
@@ -35,18 +35,18 @@ export function LibraryPanel({ t, items, loading, forkingId, deletingId, onFork,
           {items.map((item) => (
             <li
               key={item.id}
-              className="flex flex-col gap-2 rounded border border-pulse-200 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-[#2A3858]"
+              className="flex flex-col gap-2 rounded border border-pulse-200 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-[var(--color-border-strong)]"
             >
               <div>
-                <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{item.title}</p>
-                <p className="text-xs text-pulse-500 dark:text-[#9AA8C7]">{t('library.useCount', { count: item.use_count })}</p>
+                <p className="text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">{item.title}</p>
+                <p className="text-xs text-pulse-500 dark:text-[var(--text-secondary)]">{t('library.useCount', { count: item.use_count })}</p>
               </div>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => onFork(item.id)}
                   disabled={forkingId === item.id}
-                  className="min-h-[44px] rounded-lg border border-pulse-300 px-3 py-1.5 text-sm font-medium text-pulse-700 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50 dark:border-[#2A3858] dark:text-[#A8B3CC] dark:hover:bg-white/5"
+                  className="min-h-[44px] rounded-lg border border-pulse-300 px-3 py-1.5 text-sm font-medium text-pulse-700 hover:bg-pulse-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50 dark:border-[var(--color-border-strong)] dark:text-[var(--text-secondary)] dark:hover:bg-white/5"
                 >
                   {forkingId === item.id ? t('library.forking') : t('library.fork')}
                 </button>
