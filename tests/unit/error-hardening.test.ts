@@ -181,3 +181,42 @@ describe('SessionRoom ensureVoters retry on storage failure (EH-03)', () => {
     expect(voters.anon_a).toEqual(['opt_x'])
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SessionRoom.fetch() converts an uncaught handler throw into a 500 Response
+// instead of rejecting the caller's stub.fetch() (the opaque
+// "Session room unavailable" production failure mode).
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('SessionRoom.fetch hardening (uncaught handler throw → 500 Response)', () => {
+  it('returns a structured 500 instead of rejecting when a handler throws', async () => {
+    const state = new MockDurableObjectState()
+    const env = {
+      ENV: 'dev',
+      PAGES_URL: 'http://local',
+      API_URL: 'http://local',
+      JWT_SECRET: TEST_SECRET,
+    } as unknown as Env
+
+    // Force any storage read to throw, simulating a fault inside handleInit.
+    state.storage.get = (async () => {
+      throw new Error('storage exploded')
+    }) as typeof state.storage.get
+
+    const room = new SessionRoom(state as unknown as DurableObjectState, env)
+
+    // The call must resolve to a 500 Response — NOT reject — so the REST layer
+    // sees an actionable error instead of an opaque stub.fetch() rejection.
+    const res = await room.fetch(
+      new Request('https://do.internal/init', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ sessionId: 's1', ownerId: 'o1', code: 'ABC123', title: 'T' }),
+      }),
+    )
+    expect(res.status).toBe(500)
+    const body = (await res.json()) as { ok: boolean; error: { code: string } }
+    expect(body.ok).toBe(false)
+    expect(body.error.code).toBe('do_internal_error')
+  })
+})

@@ -242,7 +242,18 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         return c.json({ ok: true, data: { session, question: liveQ }, trace_id: traceId })
       }
       // All other DO errors: roll back DB so the session stays startable.
-      logEvent({ ts: new Date().toISOString(), level: 'warn', event: 'session.start.do_failure', ...logCtx, do_status: doRes.status })
+      // Capture the DO's own error envelope (code/message) so the failure is
+      // correlatable with the matching `do.fetch_unhandled_error` DO-side log.
+      const doErr = (await doRes.json().catch(() => null)) as { error?: { code?: string; message?: string } } | null
+      logEvent({
+        ts: new Date().toISOString(),
+        level: 'warn',
+        event: 'session.start.do_failure',
+        ...logCtx,
+        do_status: doRes.status,
+        do_error_code: doErr?.error?.code,
+        do_error_message: doErr?.error?.message,
+      })
       try {
         await rollbackSessionStart(c.env.DB, id, user.sub, initialStatus, now)
       } catch (rbErr) {
