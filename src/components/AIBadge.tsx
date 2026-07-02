@@ -30,7 +30,7 @@ export default function AIBadge({ variant = 'assisted', label, className = '' }:
   return (
     <span
       className={[
-        'inline-flex items-center gap-1 rounded-pill px-3 py-1',
+        'inline-flex items-center gap-1 rounded-full px-3 py-1',
         'bg-violet-100 text-violet-700 text-caption font-medium',
         'border border-violet-200',
         'dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-700',
