@@ -31,7 +31,7 @@ function relativeTime(ts: number): string {
 function ListRowSkeleton({ isFirst }: { isFirst: boolean }) {
   return (
     <div
-      className={`flex items-center gap-4 px-[18px] py-[14px] ${isFirst ? '' : 'border-t border-pulse-100 dark:border-[#1E2A45]'}`}
+      className={`flex items-center gap-4 px-[18px] py-[14px] ${isFirst ? '' : 'border-t border-pulse-100 dark:border-[var(--color-border)]'}`}
       aria-hidden="true"
     >
       <div className="flex-1 min-w-0 space-y-1.5">
@@ -58,12 +58,12 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-4">
+      <h2 className="text-lg font-semibold text-pulse-900 dark:text-[var(--text-primary)] mb-4">
         Latest AI recap
       </h2>
       {/* Violet left-border accent panel — matches design reference exactly */}
       <div
-        className="rounded-r-xl border border-l-0 border-pulse-200 dark:border-[#1E2A45] bg-violet-50/70 dark:bg-[#1A1036]/60"
+        className="rounded-r-xl border border-l-0 border-pulse-200 dark:border-[var(--color-border)] bg-violet-50/70 dark:bg-[#1A1036]/60"
         style={{ borderLeft: '3px solid #7C3AED' }}
       >
         <div className="px-5 py-[18px]">
@@ -81,8 +81,8 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
               <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-500">
                 <Sparkles size={20} aria-hidden="true" />
               </span>
-              <p className="text-sm font-semibold text-pulse-700 dark:text-[#A8B3CC]">No AI recap yet</p>
-              <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">
+              <p className="text-sm font-semibold text-pulse-700 dark:text-[var(--text-secondary)]">No AI recap yet</p>
+              <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">
                 Complete a session to generate insights
               </p>
               <button
@@ -102,16 +102,16 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
                   <Sparkles size={10} aria-hidden="true" />
                   AI recap
                 </span>
-                <span className="font-mono text-[11px] text-pulse-400 dark:text-[#8A96B0]">
+                <span className="font-mono text-[11px] text-pulse-400 dark:text-[var(--text-muted)]">
                   {themes.length} theme{themes.length !== 1 ? 's' : ''}
                 </span>
               </div>
 
               {/* Top theme */}
-              <div className="text-[15px] font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-1 leading-snug">
+              <div className="text-[15px] font-semibold text-pulse-900 dark:text-[var(--text-primary)] mb-1 leading-snug">
                 {top.title}
               </div>
-              <p className="text-[13px] leading-relaxed text-pulse-600 dark:text-[#A8B3CC] mb-4 line-clamp-3">
+              <p className="text-[13px] leading-relaxed text-pulse-600 dark:text-[var(--text-secondary)] mb-4 line-clamp-3">
                 {top.description}
               </p>
 
@@ -122,7 +122,7 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
                   return (
                     <div key={t.id}>
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-[12px] text-pulse-700 dark:text-[#A8B3CC] truncate pr-2 leading-none">
+                        <span className="text-[12px] text-pulse-700 dark:text-[var(--text-secondary)] truncate pr-2 leading-none">
                           {t.title}
                         </span>
                         <span className="text-[11px] font-semibold text-violet-700 dark:text-violet-300 shrink-0 leading-none">
@@ -195,7 +195,7 @@ export function RecentSessionsSection({
           <div className="flex items-center justify-between mb-4">
             <h2
               id="recent-heading"
-              className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]"
+              className="text-lg font-semibold text-pulse-900 dark:text-[var(--text-primary)]"
             >
               {t('recentSessions')}
             </h2>
@@ -213,7 +213,7 @@ export function RecentSessionsSection({
           </div>
 
           {/* List card */}
-          <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card overflow-hidden">
+          <div className="rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] shadow-card overflow-hidden">
             {isLoading ? (
               [0, 1, 2, 3].map((i) => <ListRowSkeleton key={i} isFirst={i === 0} />)
             ) : state.status === 'error' ? (
@@ -222,7 +222,7 @@ export function RecentSessionsSection({
               </p>
             ) : sessions.length === 0 ? (
               <div className="flex flex-col items-center text-center py-10 px-6 gap-2">
-                <p className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
+                <p className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
                   {t('noSessionsYet')}
                 </p>
               </div>
@@ -233,19 +233,19 @@ export function RecentSessionsSection({
                   return (
                     <li
                       key={s.id}
-                      className={`flex items-center gap-4 px-[18px] py-[14px] hover:bg-pulse-50 dark:hover:bg-[#1C2540]/60 transition-colors ${
-                        i === 0 ? '' : 'border-t border-pulse-100 dark:border-[#1E2A45]'
+                      className={`flex items-center gap-4 px-[18px] py-[14px] hover:bg-pulse-50 dark:hover:bg-[var(--color-surface-elevated)]/60 transition-colors ${
+                        i === 0 ? '' : 'border-t border-pulse-100 dark:border-[var(--color-border)]'
                       }`}
                     >
                       {/* Title + meta */}
                       <div className="flex-1 min-w-0">
                         <Link
                           to={link}
-                          className="block text-[15px] font-semibold text-pulse-900 dark:text-[#F0F2F8] truncate hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+                          className="block text-[15px] font-semibold text-pulse-900 dark:text-[var(--text-primary)] truncate hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
                         >
                           {s.title}
                         </Link>
-                        <div className="flex items-center gap-3 mt-0.5 text-[12px] text-pulse-500 dark:text-[#8A96B0]">
+                        <div className="flex items-center gap-3 mt-0.5 text-[12px] text-pulse-500 dark:text-[var(--text-muted)]">
                           <time dateTime={new Date(s.created_at).toISOString()}>
                             {relativeTime(s.created_at)}
                           </time>
