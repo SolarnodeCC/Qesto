@@ -19,10 +19,10 @@ export function Heading({
   className?: string
 }) {
   const styles = {
-    s: '',      // h3 — 20px, 600wt
-    m: '',      // h2 — 24px, 600wt
-    l: '',      // h1 — 32px, 600wt
-    xl: 'h-display-l',  // 48px, 700wt
+    s: 'text-heading-s font-semibold',
+    m: 'text-heading-m font-semibold',
+    l: 'text-heading-l font-semibold',
+    xl: 'h-display-l',
   }
   const tag = { s: 'h3', m: 'h2', l: 'h1', xl: 'h1' }[level] as 'h1' | 'h2' | 'h3'
   const Component = tag
@@ -48,11 +48,11 @@ export function Body({
     m: 'body-m',      // 16px, 400wt
     l: 'body-l',      // 18px, 400wt
   }
-  return <p className={`${styles[size]} ${className}`}>{children}</p>
+  return <p className={`${styles[size]} leading-relaxed ${className}`}>{children}</p>
 }
 
 export function Caption({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <span className={`caption ${className}`}>{children}</span>
+  return <span className={`caption text-pulse-500 dark:text-pulse-400 ${className}`}>{children}</span>
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────

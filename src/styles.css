@@ -558,6 +558,42 @@ html {
   color: var(--text-muted);
 }
 
+/* ─── Shorthand typography utilities (Phase 1 audit fix) ──────────────────────── */
+/* Aliases for common typography sizes used throughout the design system.          */
+@utility body-s {
+  font-size: var(--fs-body-s);
+  line-height: 1.5;
+  font-weight: var(--fw-regular);
+}
+
+@utility body-m {
+  font-size: var(--fs-body-m);
+  line-height: 1.5;
+  font-weight: var(--fw-regular);
+}
+
+@utility body-l {
+  font-size: var(--fs-body-l);
+  line-height: 1.55;
+  font-weight: var(--fw-regular);
+}
+
+@utility h-display-l {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-display-l);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+@utility caption {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
 /* MOBILE-02/03 — touch targets and presenter controls */
 @media (hover: none) and (pointer: coarse) {
   button,

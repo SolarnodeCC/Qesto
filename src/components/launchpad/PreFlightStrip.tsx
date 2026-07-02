@@ -21,10 +21,10 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
   return (
     <section
       aria-label={t('checklist_title')}
-      className="rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card overflow-hidden"
+      className="rounded-xl border border-[var(--color-border,#E5E5E5)] dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card overflow-hidden"
     >
       {/* Card header */}
-      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
+      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[var(--color-border,#E5E5E5)] dark:border-[#1E2A45]">
         {loading
           ? <Loader2 size={17} className="text-pulse-400 animate-spin shrink-0" aria-hidden="true" />
           : <CircleCheckBig
@@ -47,7 +47,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
       </div>
 
       {/* Check rows */}
-      <ul className="divide-y divide-[var(--surface-border,#E5E5E5)] dark:divide-[#1E2A45]">
+      <ul className="divide-y divide-[var(--color-border,#E5E5E5)] dark:divide-[#1E2A45]">
         {items.map((item) => (
           <li key={item.key} className="flex items-center gap-3 px-5 py-3">
             {/* Status icon */}
@@ -78,10 +78,14 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
         ))}
       </ul>
 
-      {/* Error banner */}
-      {error && (
-        <p role="alert" className="px-5 py-2.5 text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800">
-          {error}
+      {/* Loading or error feedback */}
+      {(loading || error) && (
+        <p role={error ? 'alert' : 'status'} className={`px-5 py-2.5 text-sm border-t ${
+          error
+            ? 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+            : 'text-pulse-600 dark:text-pulse-400 bg-pulse-50 dark:bg-pulse-900/10 border-pulse-200 dark:border-pulse-800'
+        }`}>
+          {error || t('preflight_checking')}
         </p>
       )}
     </section>
