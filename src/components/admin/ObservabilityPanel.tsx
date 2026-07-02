@@ -155,7 +155,7 @@ export default function ObservabilityPanel() {
             <Card className="space-y-1">
               <ComponentHeader title="Durable Objects" state={snapshot.components.durable_objects.state} synthetic={snapshot.components.durable_objects.synthetic} />
               <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">{snapshot.components.durable_objects.active_instances} active instances</Body>
-              <Caption className="text-pulse-400 dark:text-[#5A6788]">Throughput / hibernation events via Analytics Engine — not yet wired.</Caption>
+              <Caption className="text-pulse-400 dark:text-[var(--text-muted)]">Throughput / hibernation events via Analytics Engine — not yet wired.</Caption>
             </Card>
             <Card className="space-y-1">
               <ComponentHeader title="Vectorize" state={snapshot.components.vectorize.state} synthetic={snapshot.components.vectorize.synthetic} />
@@ -165,7 +165,7 @@ export default function ObservabilityPanel() {
                 </Body>
               ))}
               {snapshot.components.vectorize.query_latency_ms !== null && (
-                <Caption className="text-pulse-400 dark:text-[#5A6788]">describe() latency: {snapshot.components.vectorize.query_latency_ms}ms</Caption>
+                <Caption className="text-pulse-400 dark:text-[var(--text-muted)]">describe() latency: {snapshot.components.vectorize.query_latency_ms}ms</Caption>
               )}
             </Card>
           </div>
@@ -175,7 +175,7 @@ export default function ObservabilityPanel() {
             <Caption className="text-pulse-500 dark:text-[var(--text-muted)]">{snapshot.components.kv.note}</Caption>
           </Card>
 
-          <Caption className="text-pulse-400 dark:text-[#5A6788]">
+          <Caption className="text-pulse-400 dark:text-[var(--text-muted)]">
             Generated {new Date(snapshot.generated_at).toLocaleTimeString()} · window {snapshot.window}
           </Caption>
         </>

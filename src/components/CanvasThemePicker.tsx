@@ -23,14 +23,14 @@ const THEME_SWATCH_BG: Record<CanvasTheme, string> = {
   'brand-neutral': '#1C243A',
 }
 const THEME_SWATCH_BORDER: Record<CanvasTheme, string> = {
-  default:        '#E5E5E5',
+  default:        'var(--color-border)',
   dark:           'var(--color-border-strong)',
   'high-contrast': '#000000',
   'brand-neutral': '#2E3A56',
 }
 const THEME_SWATCH_DOT: Record<CanvasTheme, string> = {
   default:        '#0F766E',
-  dark:           '#2DD4BF',
+  dark:           'var(--text-primary)',
   'high-contrast': '#005C5C',
   'brand-neutral': '#34D399',
 }

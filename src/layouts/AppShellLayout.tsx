@@ -114,7 +114,7 @@ export default function AppShellLayout({
         aria-label="Hoofdnavigatie"
         className={[
           'fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col border-r border-pulse-200 dark:border-[var(--color-border)]',
-          'bg-white dark:bg-[#0F1628] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)]',
+          'bg-white dark:bg-[var(--color-surface)] transition-transform duration-200 ease-[cubic-bezier(0.2,0,0,1)]',
           'lg:static lg:z-auto lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         ].join(' ')}
@@ -223,7 +223,7 @@ export default function AppShellLayout({
       {/* ── Right column ── */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
-        <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[#0F1628] px-4 lg:px-6">
+        <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-4 lg:px-6">
           {/* Left: hamburger (mobile only) + compact join form */}
           <div className="flex items-center gap-3 min-w-0">
             <button

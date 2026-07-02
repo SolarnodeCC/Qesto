@@ -248,8 +248,8 @@ export default function EmbedWidget() {
 
   // ── Theme class ─────────────────────────────────────────────────────────────
   const isDark = theme === 'dark'
-  const bg = isDark ? 'bg-[#0F1628] text-[var(--text-primary)]' : 'bg-white text-[#1A2035]'
-  const border = isDark ? 'border-[var(--color-border)]' : 'border-[#E2E8F0]'
+  const bg = isDark ? 'bg-[var(--color-surface)] text-[var(--text-primary)]' : 'bg-white text-[var(--color-surface)]'
+  const border = isDark ? 'border-[var(--color-border)]' : 'border-[var(--color-border)]'
   const muted = isDark ? 'text-[var(--text-muted)]' : 'text-slate-500'
   const card = isDark ? 'bg-[var(--color-surface)] border-[var(--color-border)]' : 'bg-slate-50 border-slate-200'
 

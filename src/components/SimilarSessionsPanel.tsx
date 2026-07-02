@@ -52,7 +52,7 @@ export function SimilarSessionsPanel({ sessionId, defaultQuery = '', enabled = t
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           {...inputHint(t('similar.hint'))}
-          className="min-w-0 flex-1 rounded-md border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-[#141B33] dark:text-[var(--text-primary)]"
+          className="min-w-0 flex-1 rounded-md border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface)] dark:text-[var(--text-primary)]"
           aria-label={t('similar.hint')}
         />
         <button
@@ -77,7 +77,7 @@ export function SimilarSessionsPanel({ sessionId, defaultQuery = '', enabled = t
               className="rounded-md border border-pulse-100 p-3 text-sm dark:border-[var(--color-border-strong)]"
             >
               <span className="text-xs text-pulse-500">{Math.round(s.score * 100)}% match</span>
-              <p className="mt-1 text-pulse-700 dark:text-[#C5D0E6]">{s.excerpt}</p>
+              <p className="mt-1 text-pulse-700 dark:text-[var(--text-secondary)]">{s.excerpt}</p>
             </li>
           ))}
         </ul>

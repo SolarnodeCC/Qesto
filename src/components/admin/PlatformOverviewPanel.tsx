@@ -54,7 +54,7 @@ function AlertRow({ alert }: { alert: PlatformAlert }) {
     <div className="flex items-center gap-3 py-2">
       <span className={`text-xs font-semibold px-2 py-0.5 rounded ${s.chip}`}>{s.label}</span>
       <span className="flex-1 text-sm text-pulse-800 dark:text-[var(--text-secondary)]">{alert.title}</span>
-      <span className="text-xs text-pulse-400 dark:text-[#5A6788] shrink-0">
+      <span className="text-xs text-pulse-400 dark:text-[var(--text-muted)] shrink-0">
         {alert.source === 'health' ? 'health probe' : 'incident'}
       </span>
     </div>
@@ -199,7 +199,7 @@ export default function PlatformOverviewPanel({ onNavigate }: { onNavigate?: (ta
         </section>
       )}
 
-      <Caption className="text-pulse-400 dark:text-[#5A6788]">
+      <Caption className="text-pulse-400 dark:text-[var(--text-muted)]">
         Generated {new Date(overview.generated_at).toLocaleTimeString()} · {overview.cached ? 'cached' : 'fresh'}
       </Caption>
     </div>

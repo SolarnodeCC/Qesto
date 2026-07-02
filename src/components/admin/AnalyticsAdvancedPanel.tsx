@@ -79,7 +79,7 @@ export default function AnalyticsAdvancedPanel() {
               <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[var(--text-muted)]">Workers AI requests</span><span>{costs.workers_ai.requests}</span></div>
               <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[var(--text-muted)]">Est. tokens</span><span>{costs.workers_ai.est_tokens.toLocaleString()}</span></div>
               <div className="flex justify-between text-sm"><span className="text-pulse-600 dark:text-[var(--text-muted)]">Est. AI cost</span><span className="font-semibold">{fmtCents(costs.workers_ai.est_cost_cents)}{costs.workers_ai.is_estimate ? ' (est.)' : ''}</span></div>
-              <Caption className="text-pulse-400 dark:text-[#5A6788]">{costs.cloudflare_billing.note}</Caption>
+              <Caption className="text-pulse-400 dark:text-[var(--text-muted)]">{costs.cloudflare_billing.note}</Caption>
             </>
           ) : (
             <Body size="s" className="text-pulse-500">Loading…</Body>
@@ -119,7 +119,7 @@ export default function AnalyticsAdvancedPanel() {
             </table>
           )}
         </Card>
-        <Caption className="text-pulse-400 dark:text-[#5A6788]">
+        <Caption className="text-pulse-400 dark:text-[var(--text-muted)]">
           SEO (Search Console) and LinkedIn reach/engagement require external-API importers — surfaced as deferred in their endpoints.
         </Caption>
       </section>

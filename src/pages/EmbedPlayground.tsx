@@ -204,7 +204,7 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
                     readOnly
                     value={token}
                     aria-label={t('playground.tokenLabel')}
-                    className="flex-1 min-w-0 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-pulse-50 dark:bg-[#0F1628] px-3 py-2 text-xs font-mono text-pulse-700 dark:text-[var(--text-secondary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    className="flex-1 min-w-0 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-pulse-50 dark:bg-[var(--color-surface)] px-3 py-2 text-xs font-mono text-pulse-700 dark:text-[var(--text-secondary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                   />
                   <button
                     type="button"
@@ -223,7 +223,7 @@ function WidgetRow({ widget, sessions, onRevoke, onMintToken, t }: WidgetRowProp
                   {t('playground.snippetLabel')}
                 </label>
                 <div className="relative">
-                  <pre className="rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-pulse-50 dark:bg-[#0F1628] px-4 py-3 text-xs font-mono text-pulse-700 dark:text-[var(--text-secondary)] overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
+                  <pre className="rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-pulse-50 dark:bg-[var(--color-surface)] px-4 py-3 text-xs font-mono text-pulse-700 dark:text-[var(--text-secondary)] overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">
                     {buildSnippet(widget.session_code, token, widget.allowed_origins[0] ?? window.location.origin)}
                   </pre>
                   <button
@@ -327,7 +327,7 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
             value={sessionId}
             onChange={(e) => setSessionId(e.target.value)}
             required
-            className="w-full rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[#0F1628] px-3 py-2 text-sm text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
+            className="w-full rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface)] px-3 py-2 text-sm text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 min-h-[44px]"
           >
             <option value="">{t('playground.sessionPlaceholder')}</option>
             {liveSessions.map((s) => (
@@ -351,7 +351,7 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
           placeholder={t('playground.originsPlaceholder')}
           rows={3}
           required
-          className="w-full rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[#0F1628] px-3 py-2 text-sm font-mono text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 resize-y"
+          className="w-full rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface)] px-3 py-2 text-sm font-mono text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 resize-y"
         />
       </div>
 

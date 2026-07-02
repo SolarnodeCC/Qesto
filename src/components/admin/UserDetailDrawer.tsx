@@ -90,7 +90,7 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
               <Row label="Plan" value={detail.subscription.plan} />
               <Row label="Stripe customer" value={detail.subscription.has_stripe ? detail.subscription.stripe_customer_id : 'none'} />
               {!detail.subscription.live_sync_available && (
-                <Caption className="text-pulse-400 dark:text-[#5A6788]">No Stripe customer linked — live billing sync unavailable.</Caption>
+                <Caption className="text-pulse-400 dark:text-[var(--text-muted)]">No Stripe customer linked — live billing sync unavailable.</Caption>
               )}
             </Card>
 

@@ -21,10 +21,10 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
   return (
     <section
       aria-label={t('checklist_title')}
-      className="rounded-xl border border-[var(--color-border,#E5E5E5)] dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] shadow-card overflow-hidden"
+      className="rounded-xl border border-[var(--color-border,var(--color-border))] dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] shadow-card overflow-hidden"
     >
       {/* Card header */}
-      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[var(--color-border,#E5E5E5)] dark:border-[var(--color-border)]">
+      <div className="flex items-center gap-2 px-5 py-3.5 border-b border-[var(--color-border,var(--color-border))] dark:border-[var(--color-border)]">
         {loading
           ? <Loader2 size={17} className="text-pulse-400 animate-spin shrink-0" aria-hidden="true" />
           : <CircleCheckBig
@@ -47,7 +47,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
       </div>
 
       {/* Check rows */}
-      <ul className="divide-y divide-[var(--color-border,#E5E5E5)] dark:divide-[var(--color-border)]">
+      <ul className="divide-y divide-[var(--color-border,var(--color-border))] dark:divide-[var(--color-border)]">
         {items.map((item) => (
           <li key={item.key} className="flex items-center gap-3 px-5 py-3">
             {/* Status icon */}
@@ -70,7 +70,7 @@ export default function PreFlightStrip({ items, loading, error }: Props) {
 
             {/* Status message */}
             {item.message && (
-              <span className="ml-auto text-xs text-[var(--text-muted,#737373)] dark:text-[var(--text-muted)]">
+              <span className="ml-auto text-xs text-[var(--text-muted,var(--text-muted))] dark:text-[var(--text-muted)]">
                 {item.message}
               </span>
             )}

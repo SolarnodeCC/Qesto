@@ -85,13 +85,13 @@ export function HeroSection({
                 role="menu"
                 aria-label={t('chooseSessionType')}
                 onKeyDown={onMenuKeyDown}
-                className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[#0F1729] p-1.5 shadow-lg"
+                className="absolute left-0 z-20 mt-2 w-72 rounded-xl border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface)] p-1.5 shadow-lg"
               >
                 <button
                   type="button"
                   role="menuitem"
                   onClick={() => { onToggleMenu(); onOpenWizard() }}
-                  className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-pulse-50 dark:hover:bg-[#1A2440] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-pulse-50 dark:hover:bg-[var(--color-surface-elevated)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 >
                   <Sparkles size={18} className="mt-0.5 shrink-0 text-teal-600 dark:text-teal-400" aria-hidden="true" />
                   <span className="min-w-0">
@@ -103,7 +103,7 @@ export function HeroSection({
                   type="button"
                   role="menuitem"
                   onClick={() => { onToggleMenu(); void onCreateTownhall() }}
-                  className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-pulse-50 dark:hover:bg-[#1A2440] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                  className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left hover:bg-pulse-50 dark:hover:bg-[var(--color-surface-elevated)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                 >
                   <Megaphone size={18} className="mt-0.5 shrink-0 text-violet-600 dark:text-violet-400" aria-hidden="true" />
                   <span className="min-w-0">

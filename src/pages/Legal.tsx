@@ -92,7 +92,7 @@ export default function Legal() {
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
               {/* TODO before go-live: replace with actual registered street address from KvK 88214503 */}
               <strong>Registered address:</strong> Amsterdam, the Netherlands{' '}
-              <span className="text-xs text-pulse-400 dark:text-[#5A6380]">(full address available from KvK 88214503)</span>
+              <span className="text-xs text-pulse-400 dark:text-[var(--text-muted)]">(full address available from KvK 88214503)</span>
             </p>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[var(--text-secondary)] mb-2">
               <strong>KvK (Chamber of Commerce):</strong> 88214503

@@ -44,7 +44,7 @@ function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true">
       <div
-        className="w-full max-w-md rounded-xl bg-white dark:bg-[#111827] p-6"
+        className="w-full max-w-md rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] p-6"
         style={shadowElevated}
       >
         <h2 className="font-bold text-xl text-pulse-900 dark:text-[var(--text-primary)] mb-2" style={displayFont}>
@@ -316,7 +316,7 @@ export default function TemplateDetail() {
             {/* Right: CTA card */}
             <div className="lg:sticky lg:top-24">
               <div
-                className="rounded-xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 p-6"
+                className="rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] border border-pulse-100 dark:border-white/10 p-6"
                 style={shadowCard}
               >
                 <div className="h-1 -mx-6 -mt-6 rounded-t-2xl mb-5" style={gradientBrand} />
@@ -353,7 +353,7 @@ export default function TemplateDetail() {
       </section>
 
       {/* Questions preview */}
-      <section className="py-12 bg-pulse-50 dark:bg-[#0D1424]">
+      <section className="py-12 bg-pulse-50 dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6">
           <h2
             className="font-bold text-2xl text-pulse-900 dark:text-[var(--text-primary)] mb-6"
@@ -365,7 +365,7 @@ export default function TemplateDetail() {
             {template.questions.map((q, idx) => (
               <div
                 key={q.id}
-                className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10"
+                className="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] border border-pulse-100 dark:border-white/10"
                 style={shadowCard}
               >
                 <span className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white" style={gradientBrand}>

@@ -63,7 +63,7 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
       </h2>
       {/* Violet left-border accent panel — matches design reference exactly */}
       <div
-        className="rounded-r-xl border border-l-0 border-pulse-200 dark:border-[var(--color-border)] bg-violet-50/70 dark:bg-[#1A1036]/60"
+        className="rounded-r-xl border border-l-0 border-pulse-200 dark:border-[var(--color-border)] bg-violet-50/70 dark:bg-[var(--color-surface)]/60"
         style={{ borderLeft: '3px solid #7C3AED' }}
       >
         <div className="px-5 py-[18px]">

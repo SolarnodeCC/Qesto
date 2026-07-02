@@ -42,7 +42,7 @@ export function TemplatePreviewModal({ modal, onClose, onUse, error }: TemplateP
         <div
           role="img"
           aria-label={tmpl.previewAlt}
-          className="h-32 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-[linear-gradient(135deg,#f0fdfa_0%,#eef2ff_52%,#fff7ed_100%)] dark:bg-[linear-gradient(135deg,#103f3c_0%,#24255a_52%,#3f2a12_100%)] p-4 grid grid-cols-[1fr_88px] gap-4 overflow-hidden"
+          className="h-32 rounded-lg border border-pulse-200 dark:border-[var(--color-border-strong)] bg-[linear-gradient(135deg,#f0fdfa_0%,#eef2ff_52%,#fff7ed_100%)] dark:bg-[linear-gradient(135deg,#103f3c_0%,#24255a_52%,var(--text-muted)_100%)] p-4 grid grid-cols-[1fr_88px] gap-4 overflow-hidden"
         >
           <div className="space-y-2" aria-hidden="true">
             <div className="h-3 w-32 rounded-full bg-white/80 dark:bg-white/20" />

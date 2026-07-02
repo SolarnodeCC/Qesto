@@ -42,7 +42,7 @@ export function TemplateGroup({
             <div
               role="img"
               aria-label={tmpl.previewAlt}
-              className="h-24 bg-[linear-gradient(135deg,#f0fdfa_0%,#eef2ff_55%,#fff7ed_100%)] dark:bg-[linear-gradient(135deg,#103f3c_0%,#24255a_55%,#3f2a12_100%)] p-3"
+              className="h-24 bg-[linear-gradient(135deg,#f0fdfa_0%,#eef2ff_55%,#fff7ed_100%)] dark:bg-[linear-gradient(135deg,#103f3c_0%,#24255a_55%,var(--text-muted)_100%)] p-3"
             >
               <div className="flex h-full items-end justify-between gap-3" aria-hidden="true">
                 <BookOpen className="h-7 w-7 text-teal-700/60 dark:text-teal-300/70" />

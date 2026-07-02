@@ -368,7 +368,7 @@ export default function AdminAnalyticsTab() {
           <div>
             <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">Est. AI costs (month)</Body>
             <p className="text-heading-s font-semibold text-teal-600 dark:text-teal-400 mt-1">&lt; €{costEur}</p>
-            <Body size="s" className="text-pulse-500 dark:text-[#3A4A6B] mt-0.5">~€0.00001/decision</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--color-border-strong)] mt-0.5">~€0.00001/decision</Body>
           </div>
         </div>
       </Card>

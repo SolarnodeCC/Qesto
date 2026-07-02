@@ -104,7 +104,7 @@ function LatencySparkline({ data, emptyLabel }: { data: HistoricalBucket[]; empt
 
   if (points.length < 2) {
     return (
-      <div className="flex items-center justify-center h-[100px] text-body-s text-pulse-500 dark:text-[#3A4A6B]">
+      <div className="flex items-center justify-center h-[100px] text-body-s text-pulse-500 dark:text-[var(--color-border-strong)]">
         {emptyLabel}
       </div>
     )

@@ -121,7 +121,7 @@ export default function JoinCodePanel({
         {/* QR code */}
         <div
           aria-label={t('qr_aria_label')}
-          className="mx-auto w-[128px] h-[128px] rounded-[14px] border border-[var(--color-border,#E5E5E5)] bg-white flex items-center justify-center p-2.5"
+          className="mx-auto w-[128px] h-[128px] rounded-[14px] border border-[var(--color-border,var(--color-border))] bg-white flex items-center justify-center p-2.5"
         >
           <QRCode
             value={`${window.location.origin}/j/${session.code}`}
@@ -174,7 +174,7 @@ export default function JoinCodePanel({
           type="button"
           onClick={() => void handleShare()}
           disabled={sharing}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] border border-[var(--color-border-strong,#D4D4D4)] dark:border-[var(--color-border-strong)] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] border border-[var(--color-border-strong,var(--color-border))] dark:border-[var(--color-border-strong)] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
         >
           <Share2 size={14} aria-hidden="true" />
           {sharing ? t('sharing') : t('share_button')}

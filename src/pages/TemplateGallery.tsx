@@ -73,7 +73,7 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
   return (
     <Link
       to={`/templates/${template.id}`}
-      className="group block rounded-xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 overflow-hidden"
+      className="group block rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] border border-pulse-100 dark:border-white/10 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 overflow-hidden"
       style={shadowCard}
       aria-label={title}
     >
@@ -216,7 +216,7 @@ export default function TemplateGallery() {
       </section>
 
       {/* Filters */}
-      <section className="border-y border-pulse-100 dark:border-white/10 bg-pulse-50 dark:bg-[#0D1424]">
+      <section className="border-y border-pulse-100 dark:border-white/10 bg-pulse-50 dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap gap-3 items-center">
           <span className="text-sm font-medium text-pulse-700 dark:text-[var(--text-muted)] mr-2">
             {t('templates.filterBy')}
@@ -226,7 +226,7 @@ export default function TemplateGallery() {
           <select
             value={industry}
             onChange={(e) => setIndustry(e.target.value as Industry | '')}
-            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[var(--color-bg-subtle)] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             aria-label={t('templates.filterIndustry')}
           >
             <option value="">{t('templates.allIndustries')}</option>
@@ -239,7 +239,7 @@ export default function TemplateGallery() {
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value as Theme | '')}
-            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[var(--color-bg-subtle)] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             aria-label={t('templates.filterTheme')}
           >
             <option value="">{t('templates.allThemes')}</option>
@@ -304,7 +304,7 @@ export default function TemplateGallery() {
       </section>
 
       {/* CTA section */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0D1424]">
+      <section className="py-16 bg-pulse-50 dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2
             className="font-bold text-3xl text-pulse-900 dark:text-[var(--text-primary)] mb-4"

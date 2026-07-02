@@ -247,7 +247,7 @@ export default function Launchpad() {
             onSaved={() => { void reload(); void refreshPreFlight() }}
           />
           {/* Status pill */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pulse-100 dark:bg-[var(--color-surface-elevated)] text-xs font-semibold text-[var(--text-secondary,#525252)] dark:text-[var(--text-secondary)]">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pulse-100 dark:bg-[var(--color-surface-elevated)] text-xs font-semibold text-[var(--text-secondary,var(--text-muted))] dark:text-[var(--text-secondary)]">
             <span className={`w-1.5 h-1.5 rounded-full ${isLaunchReady ? 'bg-green-500' : 'bg-pulse-400'}`} aria-hidden="true" />
             {statusLabel}
           </span>
