@@ -350,7 +350,7 @@ export default function Dashboard() {
             label="Consent opt-in"
             value="—"
             icon={ShieldCheck}
-            iconClassName="text-pulse-400 dark:text-[var(--text-muted)]"
+            iconClassName="text-pulse-400 dark:text-[#8A96B0]"
           />
         </div>
 

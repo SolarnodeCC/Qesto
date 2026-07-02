@@ -23,10 +23,10 @@ function MentionRow({ mention, onToggleReviewed }: { mention: Mention; onToggleR
         <div className="flex items-center gap-2">
           <PlatformBadge platform={mention.platform} />
           {mention.author && (
-            <span className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{mention.author}</span>
+            <span className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">{mention.author}</span>
           )}
         </div>
-        <span className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">
+        <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
           {new Date(mention.fetched_at).toLocaleString()}
         </span>
       </div>
@@ -45,7 +45,7 @@ function MentionRow({ mention, onToggleReviewed }: { mention: Mention; onToggleR
             await onToggleReviewed(mention.id, !reviewed)
             setBusy(false)
           }}
-          className={`text-sm font-medium hover:underline ${reviewed ? 'text-pulse-500 dark:text-[var(--text-muted)]' : 'text-teal-600 dark:text-teal-400'}`}
+          className={`text-sm font-medium hover:underline ${reviewed ? 'text-pulse-500 dark:text-[#8A96B0]' : 'text-teal-600 dark:text-teal-400'}`}
         >
           {reviewed ? 'Mark unreviewed' : 'Mark reviewed'}
         </button>
@@ -70,7 +70,7 @@ export default function MentionsFeedTab() {
           <select
             value={platformFilter}
             onChange={(e) => setPlatformFilter(e.target.value)}
-            className="text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
+            className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
             aria-label="Filter by platform"
           >
             <option value="">All platforms</option>
@@ -81,7 +81,7 @@ export default function MentionsFeedTab() {
           <select
             value={reviewedFilter}
             onChange={(e) => setReviewedFilter(e.target.value)}
-            className="text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
+            className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
             aria-label="Filter by reviewed status"
           >
             <option value="0">Unreviewed</option>

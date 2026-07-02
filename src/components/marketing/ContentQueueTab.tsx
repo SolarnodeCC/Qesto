@@ -68,7 +68,7 @@ function ContentItemCard({
           <PlatformBadge platform={item.platform} />
           <StatusBadge status={item.status} />
         </div>
-        <span className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">
+        <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
           {new Date(item.generated_at).toLocaleString()}
         </span>
       </div>
@@ -79,7 +79,7 @@ function ContentItemCard({
           onChange={(e) => setBody(e.target.value)}
           disabled={!editable}
           rows={4}
-          className="w-full text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] disabled:opacity-60"
+          className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] disabled:opacity-60"
           aria-label="LinkedIn post body"
         />
       )}
@@ -90,14 +90,14 @@ function ContentItemCard({
           onChange={(e) => setScript(e.target.value)}
           disabled={!editable}
           rows={6}
-          className="w-full text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] disabled:opacity-60"
+          className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] disabled:opacity-60"
           aria-label="YouTube script"
         />
       )}
 
       {item.platform === 'youtube' && (
         <div>
-          <label className="text-xs font-medium text-pulse-600 dark:text-[var(--text-muted)]" htmlFor={`yt-id-${item.id}`}>
+          <label className="text-xs font-medium text-pulse-600 dark:text-[#8A96B0]" htmlFor={`yt-id-${item.id}`}>
             Uploaded YouTube video ID (required before publish)
           </label>
           <input
@@ -107,7 +107,7 @@ function ContentItemCard({
             onChange={(e) => setYoutubeVideoId(e.target.value)}
             disabled={!editable}
             placeholder="e.g. dQw4w9WgXcQ"
-            className="mt-1 w-full text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] disabled:opacity-60"
+            className="mt-1 w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] disabled:opacity-60"
           />
         </div>
       )}
@@ -180,7 +180,7 @@ export default function ContentQueueTab() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
+          className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
           aria-label="Filter by status"
         >
           <option value="draft">Draft</option>

@@ -396,7 +396,7 @@ function PresentInner({
           {/* Paused overlay */}
           {localPaused && !state.allDone && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-              <div className="flex items-center gap-4 rounded-xl px-10 py-6 shadow-2xl" style={{ background: 'var(--canvas-surface)' }}>
+              <div className="flex items-center gap-4 rounded-2xl px-10 py-6 shadow-2xl" style={{ background: 'var(--canvas-surface)' }}>
                 <Pause size={36} className="text-amber-500" aria-hidden="true" />
                 <span className="font-bold text-[40px] tracking-tight" style={{ color: 'var(--canvas-text)' }}>{t('votingPaused')}</span>
               </div>

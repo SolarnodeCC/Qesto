@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useRef, useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
-import { Users, Loader2 } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
 import { useT } from '../i18n'
@@ -49,7 +49,10 @@ export default function Display() {
 function LoadingScreen() {
   return (
     <div className="fixed inset-0 bg-[#0f1117] flex items-center justify-center">
-      <Loader2 size={32} className="animate-spin text-teal-500" aria-hidden="true" />
+      <svg aria-hidden="true" className="animate-spin w-8 h-8 text-teal-500" viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
     </div>
   )
 }

@@ -32,7 +32,7 @@ export function BrandingSection({ team, teamId, brandingDescription, onTeamUpdat
           if (res.ok) onTeamUpdate(res.data.team)
         }}
       >
-        <label className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
+        <label className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
           Logo URL
           <input
             name="logoUrl"
@@ -41,7 +41,7 @@ export function BrandingSection({ team, teamId, brandingDescription, onTeamUpdat
             className="mt-1 w-full border border-pulse-300 rounded-lg px-3 py-2 text-sm"
           />
         </label>
-        <label className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
+        <label className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
           Primary color
           <input
             name="primaryColor"
@@ -51,7 +51,7 @@ export function BrandingSection({ team, teamId, brandingDescription, onTeamUpdat
             className="mt-1 w-full border border-pulse-300 rounded-lg px-3 py-2 text-sm font-mono"
           />
         </label>
-        <label className="text-sm font-medium text-pulse-700 dark:text-[var(--text-secondary)]">
+        <label className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
           Secondary color
           <input
             name="secondaryColor"

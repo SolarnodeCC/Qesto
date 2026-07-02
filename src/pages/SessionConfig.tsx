@@ -185,17 +185,17 @@ export default function SessionConfig() {
     <MainLayout navSlot={navSlot} mainClassName="min-h-screen max-w-2xl mx-auto density-pad-8 density-stack-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[var(--text-primary)]">{t('configureTitle')}</h1>
-          <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('joinCodeLabel')}: <code className="font-mono">{data.session.code}</code></p>
+          <h1 tabIndex={-1} className="text-3xl font-semibold focus:outline-none dark:text-[#F0F2F8]">{t('configureTitle')}</h1>
+          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('joinCodeLabel')}: <code className="font-mono">{data.session.code}</code></p>
         </div>
-        <span className="text-xs uppercase tracking-wider rounded-full px-2 py-0.5 bg-pulse-100 dark:bg-[var(--color-border)] text-pulse-600 dark:text-[var(--text-secondary)]">
+        <span className="text-xs uppercase tracking-wider rounded-full px-2 py-0.5 bg-pulse-100 dark:bg-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC]">
           {statusLabel}
         </span>
       </div>
 
       <form onSubmit={handleSave} className="density-stack-5">
         <div className="space-y-2">
-          <label htmlFor="session-title" className="text-sm font-medium dark:text-[var(--text-primary)]">
+          <label htmlFor="session-title" className="text-sm font-medium dark:text-[#F0F2F8]">
             {t('titleLabel')}
           </label>
           <input
@@ -204,15 +204,15 @@ export default function SessionConfig() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             maxLength={120}
-            className="w-full border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-primary)] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+            className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
           />
         </div>
 
-        <fieldset className="space-y-3 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] dark:bg-[var(--color-surface)] density-pad-5">
-          <legend className="text-sm font-medium px-1 dark:text-[var(--text-primary)]">{t('pollQuestion')}</legend>
+        <fieldset className="space-y-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] dark:bg-[#151C2E] density-pad-5">
+          <legend className="text-sm font-medium px-1 dark:text-[#F0F2F8]">{t('pollQuestion')}</legend>
 
           <div className="space-y-2">
-            <label htmlFor="poll-prompt" className="text-sm font-medium dark:text-[var(--text-primary)]">
+            <label htmlFor="poll-prompt" className="text-sm font-medium dark:text-[#F0F2F8]">
               {t('promptLabel')}
             </label>
             <input
@@ -222,7 +222,7 @@ export default function SessionConfig() {
               onChange={(e) => setPrompt(e.target.value)}
               {...inputHint(t('promptPlaceholder'))}
               maxLength={240}
-              className="w-full border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-primary)] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+              className="w-full border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
             />
 
             {/* AI Suggest button */}
@@ -280,7 +280,7 @@ export default function SessionConfig() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium dark:text-[var(--text-primary)]">{t('optionsCount', { count: options.length })}</p>
+            <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('optionsCount', { count: options.length })}</p>
             <ul className="space-y-2">
               {options.map((o, i) => (
                 <li key={o.id} className="flex gap-2">
@@ -291,13 +291,13 @@ export default function SessionConfig() {
                     {...inputHint(t('optionLabel', { number: i + 1 }))}
                     maxLength={160}
                     aria-label={t('optionLabel', { number: i + 1 })}
-                    className="flex-1 border border-pulse-300 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-primary)] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                    className="flex-1 border border-pulse-300 dark:border-[#2A3858] dark:bg-[#1C2540] dark:text-[#F0F2F8] rounded-lg px-3 py-2 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                   />
                   <button
                     type="button"
                     onClick={() => removeOption(i)}
                     disabled={options.length <= 2}
-                    className="text-pulse-500 dark:text-[var(--text-muted)] hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm px-2"
+                    className="text-pulse-500 dark:text-[#8A96B0] hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-sm px-2"
                     aria-label={t('removeOptionAria', { number: i + 1 })}
                   >
                     {t('removeOption')}
@@ -343,7 +343,7 @@ export default function SessionConfig() {
               {t('openPresenter')}
             </Link>
           ) : (
-            <span className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] text-pulse-500 dark:text-[var(--text-muted)] px-4 py-2 font-medium">
+            <span className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-500 dark:text-[#8A96B0] px-4 py-2 font-medium">
               {t('sessionClosed')}
             </span>
           )}

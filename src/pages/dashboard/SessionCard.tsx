@@ -26,7 +26,7 @@ export function StatusBadge({ status }: { status: string }) {
     )
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-pulse-100 dark:bg-pulse-800 text-pulse-600 dark:text-[var(--text-secondary)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+    <span className="inline-flex items-center gap-1 rounded-full bg-pulse-100 dark:bg-pulse-800 text-pulse-600 dark:text-[#A8B3CC] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
       Concept
     </span>
   )
@@ -92,10 +92,10 @@ export function SessionCard({
   return (
     <article
       className={[
-        'group relative flex flex-col rounded-xl border bg-white dark:bg-[var(--color-surface)] shadow-card',
+        'group relative flex flex-col rounded-xl border bg-white dark:bg-[#151C2E] shadow-card',
         'hover:shadow-elevated transition-shadow duration-200',
         menuOpen ? 'z-30' : 'z-0',
-        s.status === 'live' ? 'border-teal-400 dark:border-teal-600' : 'border-pulse-200 dark:border-[var(--color-border)]',
+        s.status === 'live' ? 'border-teal-400 dark:border-teal-600' : 'border-pulse-200 dark:border-[#1E2A45]',
         s.status === 'live' ? 'border-l-[3px] border-l-teal-500' : '',
       ].join(' ')}
       aria-label={`${s.title} — ${s.status}`}
@@ -120,21 +120,21 @@ export function SessionCard({
           aria-expanded={menuOpen}
           aria-haspopup="menu"
           aria-label={`Opties voor ${s.title}`}
-          className="flex items-center justify-center w-7 h-7 rounded-md bg-white/80 dark:bg-[var(--color-surface)]/80 backdrop-blur-sm text-pulse-600 dark:text-[var(--text-secondary)] hover:bg-white dark:hover:bg-[var(--color-surface-elevated)] border border-pulse-200 dark:border-[var(--color-border)] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
+          className="flex items-center justify-center w-7 h-7 rounded-md bg-white/80 dark:bg-[#151C2E]/80 backdrop-blur-sm text-pulse-600 dark:text-[#A8B3CC] hover:bg-white dark:hover:bg-[#1C2540] border border-pulse-200 dark:border-[#1E2A45] shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
         >
           <MoreHorizontal size={14} aria-hidden="true" />
         </button>
         {menuOpen && (
           <ul
             role="menu"
-            className="absolute right-0 bottom-full mb-1 z-50 min-w-[180px] max-h-[min(70vh,320px)] overflow-y-auto rounded-lg border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] shadow-elevated py-1 animate-page-enter"
+            className="absolute right-0 bottom-full mb-1 z-50 min-w-[180px] max-h-[min(70vh,320px)] overflow-y-auto rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] shadow-elevated py-1 animate-page-enter"
           >
             <li role="none">
               <Link
                 to={`/sessions/${s.id}/results`}
                 role="menuitem"
                 onClick={() => setMenuOpen(false)}
-                className="block px-3 py-2 text-sm text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500"
+                className="block px-3 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500"
               >
                 {t('postSessionReview')}
               </Link>
@@ -145,7 +145,7 @@ export function SessionCard({
                 role="menuitem"
                 disabled={actionLoading[s.id] === 'export'}
                 onClick={() => { setMenuOpen(false); onExportCSV(s.id, s.title) }}
-                className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
+                className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
               >
                 {t('exportExcel')}
               </button>
@@ -156,7 +156,7 @@ export function SessionCard({
                 role="menuitem"
                 disabled={!!actionLoading[s.id]}
                 onClick={() => { setMenuOpen(false); onDuplicate(s.id, s.title) }}
-                className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
+                className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
               >
                 {actionLoading[s.id] === 'duplicate' ? t('duplicating') : t('duplicate')}
               </button>
@@ -167,12 +167,12 @@ export function SessionCard({
                 role="menuitem"
                 disabled={!!actionLoading[s.id]}
                 onClick={() => { setMenuOpen(false); onSaveAsTemplate(s.id, s.title) }}
-                className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[var(--text-secondary)] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
+                className="w-full text-left px-3 py-2 text-sm text-pulse-700 dark:text-[#A8B3CC] hover:bg-teal-50 dark:hover:bg-teal-500/10 hover:text-teal-700 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-inset focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
               >
                 {actionLoading[s.id] === 'template' ? t('saving') : t('template')}
               </button>
             </li>
-            <li role="separator" className="my-1 border-t border-pulse-100 dark:border-[var(--color-border)]" />
+            <li role="separator" className="my-1 border-t border-pulse-100 dark:border-[#1E2A45]" />
             {pendingRemoveId === s.id ? (
               <li role="none" className="px-3 py-2">
                 <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1.5">{t('confirmDelete')}</p>
@@ -188,7 +188,7 @@ export function SessionCard({
                   <button
                     type="button"
                     onClick={() => { setMenuOpen(false); onPendingRemoveChange(null) }}
-                    className="flex-1 rounded border border-pulse-200 dark:border-[var(--color-border-strong)] text-xs font-medium px-2 py-1 text-pulse-600 dark:text-[var(--text-secondary)] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    className="flex-1 rounded border border-pulse-200 dark:border-[#2A3858] text-xs font-medium px-2 py-1 text-pulse-600 dark:text-[#A8B3CC] hover:bg-pulse-50 dark:hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
                   >
                     {t('cancel')}
                   </button>
@@ -217,12 +217,12 @@ export function SessionCard({
           to={cardLink}
           className="block group/title focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
         >
-          <p className="text-sm font-semibold text-pulse-900 dark:text-[var(--text-primary)] line-clamp-2 group-hover/title:text-teal-600 dark:group-hover/title:text-teal-400 leading-snug">
+          <p className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8] line-clamp-2 group-hover/title:text-teal-600 dark:group-hover/title:text-teal-400 leading-snug">
             {s.title}
           </p>
         </Link>
-        <div className="mt-2 flex items-center gap-2 text-xs text-pulse-500 dark:text-[var(--text-muted)]">
-          <code className="font-mono font-semibold tracking-widest bg-pulse-100 dark:bg-pulse-800/60 text-pulse-600 dark:text-[var(--text-secondary)] rounded-full px-2 py-0.5">
+        <div className="mt-2 flex items-center gap-2 text-xs text-pulse-500 dark:text-[#8A96B0]">
+          <code className="font-mono font-semibold tracking-widest bg-pulse-100 dark:bg-pulse-800/60 text-pulse-600 dark:text-[#A8B3CC] rounded-full px-2 py-0.5">
             {s.code}
           </code>
           <span aria-hidden="true">·</span>
@@ -240,7 +240,7 @@ export function SessionCard({
 
 export function SessionCardSkeleton() {
   return (
-    <div className="rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] overflow-hidden shadow-card" aria-hidden="true">
+    <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] overflow-hidden shadow-card" aria-hidden="true">
       <div className="skeleton-shimmer bg-pulse-200 dark:bg-pulse-800" style={{ aspectRatio: '16/10' }} />
       <div className="p-3 space-y-2">
         <div className="h-4 w-3/4 rounded bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" />

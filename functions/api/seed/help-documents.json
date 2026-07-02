@@ -285,7 +285,7 @@
     "topic": "faq",
     "scope": "free",
     "excerpt": "A: Yes, all data is encrypted in transit (HTTPS) and at rest.",
-    "content": "## Data & Privacy\n\n**Q: Is my data encrypted?**\nA: Yes, all data is encrypted in transit (HTTPS) and at rest.\n\n**Q: Can I export my results?**\nA: Yes! Download results as CSV from any closed session (Signal+ plans).\n\n**Q: Do you store data outside the US?**\nA: Qesto is hosted on Cloudflare's global edge network (data centers worldwide). All data complies with GDPR and CCPA.\n\n**Q: How long do you keep my data?**\nA: Data is retained for 1 year after a session closes. You can manually delete earlier."
+    "content": "## Data & Privacy\n\n**Q: Is my data encrypted?**\nA: Yes, all data is encrypted in transit (HTTPS) and at rest.\n\n**Q: Can I export my results?**\nA: Yes! Download results as CSV from any closed session (Signal+ plans).\n\n**Q: Do you store data outside the US?**\nA: Qesto is hosted on Cloudflare's global edge network (data centers worldwide). All data complies with GDPR and CCPA.\n\n**Q: How long do you keep my data?**\nA: Retention depends on your plan — Pulse targets 30 days, Signal 365 days, and Chorus offers configurable retention from 7 days up to 7 years. Sessions persist until you delete them; automatic age-based purges are not yet enforced for ordinary session data. See the Data Retention help article for details."
   },
   {
     "id": "faq-004",

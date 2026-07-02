@@ -9,7 +9,7 @@ export default function Soc2TrustPage() {
   const t = useT('common')
 
   return (
-    <div className="dark:bg-[var(--color-bg-subtle)] dark:text-[var(--text-secondary)]">
+    <div className="dark:bg-[#0A0F1E] dark:text-[#A8B3CC]">
       <PageSeo
         title={t('soc2.seoTitle')}
         description={t('soc2.seoDescription')}
@@ -45,7 +45,7 @@ export default function Soc2TrustPage() {
         }}
         bottomCta={{
           heading: 'Audit-ready platform',
-          subheading: 'Qesto maintains security and availability controls aligned with SOC 2 Type II.',
+          subheading: t('soc2.bottomSubheading'),
           primaryCta: { label: 'Get started', href: '/login' },
         }}
       />

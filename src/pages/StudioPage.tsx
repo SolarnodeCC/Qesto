@@ -219,19 +219,19 @@ export default function StudioPage() {
 
   return (
     <MainLayout mainClassName="min-h-screen max-w-4xl mx-auto p-8">
-      <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">
+      <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
         {t('page.title')}
       </h1>
-      <p className="mt-2 text-sm text-pulse-600 dark:text-[var(--text-secondary)]">{t('page.subtitle')}</p>
+      <p className="mt-2 text-sm text-pulse-600 dark:text-[#9AA8C7]">{t('page.subtitle')}</p>
 
       {teams.length > 1 && (
         <div className="mt-4">
-          <label htmlFor="studio-team" className="block text-sm font-medium text-pulse-900 dark:text-[var(--text-primary)]">
+          <label htmlFor="studio-team" className="block text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
             {t('page.teamLabel')}
           </label>
           <select
             id="studio-team"
-            className="mt-1 min-h-[44px] rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            className="mt-1 min-h-[44px] rounded-lg border border-pulse-200 px-3 py-2 text-sm dark:border-[#2A3858] dark:bg-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
           >

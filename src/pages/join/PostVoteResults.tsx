@@ -23,11 +23,11 @@ function PostVoteRow({
   return (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
-        <span className={isMyVote ? 'font-semibold text-teal-700' : 'text-pulse-700 dark:text-[var(--text-secondary)]'}>
+        <span className={isMyVote ? 'font-semibold text-teal-700' : 'text-pulse-700 dark:text-[#A8B3CC]'}>
           {label}
           {isMyVote && <span className="ml-1.5 text-xs text-teal-500">· {yourVoteLabel}</span>}
         </span>
-        <span className="text-pulse-500 dark:text-[var(--text-muted)] tabular-nums">{shownPct}%</span>
+        <span className="text-pulse-500 dark:text-[#8A96B0] tabular-nums">{shownPct}%</span>
       </div>
       <div className="h-2 bg-pulse-100 dark:bg-white/10 rounded-full overflow-hidden">
         <div
@@ -52,7 +52,7 @@ export function PostVoteResults({ questionKind, ordered, resultsTotal, myVotes }
   if (['word_cloud', 'open', 'slider'].includes(questionKind)) return null
 
   return (
-    <div className="space-y-4 pt-2 border-t border-pulse-100 dark:border-[var(--color-border)]">
+    <div className="space-y-4 pt-2 border-t border-pulse-100 dark:border-[#1E2A45]">
       <p role="status" aria-live="polite" className="flex items-center gap-2 text-sm font-medium text-teal-700 dark:text-teal-400">
         <Check size={16} aria-hidden="true" />
         {t('vote_recorded')}
@@ -64,7 +64,7 @@ export function PostVoteResults({ questionKind, ordered, resultsTotal, myVotes }
 
       {resultsTotal > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-pulse-500 dark:text-[var(--text-secondary)] flex items-center gap-1.5">
+          <p className="text-xs font-semibold uppercase tracking-wider text-pulse-500 dark:text-[#A8B3CC] flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('live_results')}
           </p>
@@ -80,7 +80,7 @@ export function PostVoteResults({ questionKind, ordered, resultsTotal, myVotes }
               />
             )
           })}
-          <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)] text-right" aria-live="polite" aria-atomic="true">
+          <p className="text-xs text-pulse-500 dark:text-[#8A96B0] text-right" aria-live="polite" aria-atomic="true">
             {t('total_votes', { count: resultsTotal })}
           </p>
         </div>

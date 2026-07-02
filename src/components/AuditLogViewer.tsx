@@ -31,6 +31,10 @@ const ACTIONS = [
   'question.update',
   'question.delete',
   'user.role_change',
+  'role.assigned',
+  'role.changed',
+  'role.removed',
+  'team.role.create',
   'team.create',
   'team.update',
   'team.delete',
@@ -60,6 +64,14 @@ const ACTION_LABELS: Record<string, string> = {
   'ws.energizer_answered': 'WS — participant answered',
   'ws.energizer_advanced': 'WS — question advanced',
   'ws.energizer_completed': 'WS — energizer completed',
+  'role.assigned': 'Role — assigned',
+  'role.changed': 'Role — changed',
+  'role.removed': 'Role — removed',
+  'team.role.create': 'Team role — created',
+  'team.role.update': 'Team role — updated',
+  'team.role.delete': 'Team role — deleted',
+  'team.role.assign': 'Team role — assigned to member',
+  'team.role.unassign': 'Team role — unassigned from member',
 }
 
 function formatActionLabel(action: string): string {
@@ -221,7 +233,7 @@ export default function AuditLogViewer() {
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label htmlFor="action-filter" className="block text-xs font-medium text-pulse-700 dark:text-[var(--text-secondary)] mb-1">
+            <label htmlFor="action-filter" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               Action
             </label>
             <select
@@ -231,7 +243,7 @@ export default function AuditLogViewer() {
                 setFilters({ ...filters, action: e.target.value })
                 setPage(1)
               }}
-              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-pulse-800 dark:text-[var(--text-primary)] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
+              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[#1C2540] px-3 py-2 text-sm text-pulse-800 dark:text-[#F0F2F8] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
             >
               <option value="">All actions</option>
               {ACTIONS.map((a) => (
@@ -243,7 +255,7 @@ export default function AuditLogViewer() {
           </div>
 
           <div>
-            <label htmlFor="subject-filter" className="block text-xs font-medium text-pulse-700 dark:text-[var(--text-secondary)] mb-1">
+            <label htmlFor="subject-filter" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               Subject Type
             </label>
             <select
@@ -253,7 +265,7 @@ export default function AuditLogViewer() {
                 setFilters({ ...filters, subjectType: e.target.value })
                 setPage(1)
               }}
-              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-pulse-800 dark:text-[var(--text-primary)] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
+              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[#1C2540] px-3 py-2 text-sm text-pulse-800 dark:text-[#F0F2F8] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
             >
               <option value="">All types</option>
               {SUBJECT_TYPES.map((t) => (
@@ -265,7 +277,7 @@ export default function AuditLogViewer() {
           </div>
 
           <div>
-            <label htmlFor="start-date" className="block text-xs font-medium text-pulse-700 dark:text-[var(--text-secondary)] mb-1">
+            <label htmlFor="start-date" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               Start Date
             </label>
             <input
@@ -276,12 +288,12 @@ export default function AuditLogViewer() {
                 setFilters({ ...filters, startDate: e.target.value })
                 setPage(1)
               }}
-              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-pulse-800 dark:text-[var(--text-primary)] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
+              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[#1C2540] px-3 py-2 text-sm text-pulse-800 dark:text-[#F0F2F8] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
             />
           </div>
 
           <div>
-            <label htmlFor="end-date" className="block text-xs font-medium text-pulse-700 dark:text-[var(--text-secondary)] mb-1">
+            <label htmlFor="end-date" className="block text-xs font-medium text-pulse-700 dark:text-[#A8B3CC] mb-1">
               End Date
             </label>
             <input
@@ -292,7 +304,7 @@ export default function AuditLogViewer() {
                 setFilters({ ...filters, endDate: e.target.value })
                 setPage(1)
               }}
-              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-pulse-800 dark:text-[var(--text-primary)] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
+              className="w-full rounded-md border border-pulse-200 bg-white dark:bg-[#1C2540] px-3 py-2 text-sm text-pulse-800 dark:text-[#F0F2F8] focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20"
             />
           </div>
         </div>
@@ -303,14 +315,14 @@ export default function AuditLogViewer() {
             type="button"
             disabled={exporting}
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 rounded-md border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-transparent text-pulse-700 dark:text-[var(--text-secondary)] px-4 py-2 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent text-pulse-700 dark:text-[#A8B3CC] px-4 py-2 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 hover:border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50"
           >
             {exporting ? 'Exporting…' : 'Export CSV'}
           </button>
           <button
             type="button"
             onClick={resetFilters}
-            className="inline-flex items-center gap-2 text-sm text-pulse-600 dark:text-[var(--text-secondary)] hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
+            className="inline-flex items-center gap-2 text-sm text-pulse-600 dark:text-[#A8B3CC] hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded"
           >
             Reset filters
           </button>
@@ -336,25 +348,25 @@ export default function AuditLogViewer() {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-pulse-200 dark:border-[var(--color-border)]">
+          <div className="overflow-x-auto rounded-lg border border-pulse-200 dark:border-[#1E2A45]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-pulse-200 dark:border-[var(--color-border)] bg-pulse-50 dark:bg-[var(--color-border)]">
-                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">Timestamp</th>
-                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">User</th>
-                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">Action</th>
-                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">Subject</th>
-                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">Subject ID</th>
-                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{t('changeSummary')}</th>
+                <tr className="border-b border-pulse-200 dark:border-[#1E2A45] bg-pulse-50 dark:bg-[#0F1525]">
+                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[#A8B3CC]">Timestamp</th>
+                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[#A8B3CC]">User</th>
+                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[#A8B3CC]">Action</th>
+                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[#A8B3CC]">Subject</th>
+                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[#A8B3CC]">Subject ID</th>
+                  <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[#A8B3CC]">{t('changeSummary')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-pulse-200 dark:divide-[var(--color-border)]">
+              <tbody className="divide-y divide-pulse-200 dark:divide-[#1E2A45]">
                 {events.map((event) => (
                   <tr key={event.id} className="hover:bg-pulse-50 dark:hover:bg-white/5">
-                    <td className="px-4 py-3 text-pulse-700 dark:text-[var(--text-secondary)]">
+                    <td className="px-4 py-3 text-pulse-700 dark:text-[#A8B3CC]">
                       {new Date(event.ts).toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-pulse-700 dark:text-[var(--text-secondary)] font-mono text-xs">
+                    <td className="px-4 py-3 text-pulse-700 dark:text-[#A8B3CC] font-mono text-xs">
                       {event.actor_id || 'system'}
                     </td>
                     <td className="px-4 py-3">
@@ -362,11 +374,11 @@ export default function AuditLogViewer() {
                         {formatActionLabel(event.action)}
                       </code>
                     </td>
-                    <td className="px-4 py-3 text-pulse-700 dark:text-[var(--text-secondary)]">{event.subject_type}</td>
-                    <td className="px-4 py-3 text-pulse-700 dark:text-[var(--text-secondary)] font-mono text-xs">
+                    <td className="px-4 py-3 text-pulse-700 dark:text-[#A8B3CC]">{event.subject_type}</td>
+                    <td className="px-4 py-3 text-pulse-700 dark:text-[#A8B3CC] font-mono text-xs">
                       {event.subject_id.slice(0, 8)}…
                     </td>
-                    <td className="px-4 py-3 text-pulse-600 dark:text-[var(--text-muted)] text-xs">
+                    <td className="px-4 py-3 text-pulse-600 dark:text-[#8A96B0] text-xs">
                       {event.before_snapshot && event.after_snapshot
                         ? `before: ${formatSnapshot(event.before_snapshot)}`
                         : 'N/A'}
@@ -379,24 +391,24 @@ export default function AuditLogViewer() {
 
           {/* Pagination */}
           <div className="flex items-center justify-between">
-            <div className="text-xs text-pulse-600 dark:text-[var(--text-muted)]">
+            <div className="text-xs text-pulse-600 dark:text-[#8A96B0]">
               Showing {offset + 1}–{Math.min(offset + pageSize, total)} of {total} entries
             </div>
             <div className="flex gap-2">
               <button
                 disabled={page === 1}
                 onClick={() => setPage(page - 1)}
-                className="rounded-md border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-transparent text-pulse-700 dark:text-[var(--text-secondary)] px-3 py-2 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent text-pulse-700 dark:text-[#A8B3CC] px-3 py-2 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 Previous
               </button>
-              <div className="flex items-center gap-1 text-xs text-pulse-600 dark:text-[var(--text-muted)]">
+              <div className="flex items-center gap-1 text-xs text-pulse-600 dark:text-[#8A96B0]">
                 Page {page} of {totalPages || 1}
               </div>
               <button
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
-                className="rounded-md border border-pulse-200 dark:border-[var(--color-border-strong)] bg-white dark:bg-transparent text-pulse-700 dark:text-[var(--text-secondary)] px-3 py-2 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="rounded-md border border-pulse-200 dark:border-[#2A3858] bg-white dark:bg-transparent text-pulse-700 dark:text-[#A8B3CC] px-3 py-2 text-sm font-medium hover:bg-teal-50 dark:hover:bg-teal-900/20 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 Next
               </button>

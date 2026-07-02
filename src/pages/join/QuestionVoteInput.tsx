@@ -41,7 +41,7 @@ export function QuestionVoteInput({
             onClick={() => canVote && onReaction?.(o.id)}
             disabled={!canVote}
             aria-label={o.label}
-            className="flex flex-col items-center gap-1 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] py-4 text-3xl transition-transform hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
+            className="flex flex-col items-center gap-1 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] py-4 text-3xl transition-transform hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-50"
           >
             <span aria-hidden="true">{o.id}</span>
             <span className="text-caption text-pulse-500">{results.counts[o.id] ?? 0}</span>
@@ -110,8 +110,8 @@ export function QuestionVoteInput({
                 voted
                   ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                   : hasVoted
-                  ? 'border-pulse-200 dark:border-[var(--color-border)] text-pulse-500 dark:text-[var(--text-muted)] cursor-default'
-                  : 'border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-700 dark:text-[var(--text-secondary)] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
+                  ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-500 dark:text-[#8A96B0] cursor-default'
+                  : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-700 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
                 !canVote && 'opacity-50 cursor-not-allowed',
               )}
             >
@@ -153,7 +153,7 @@ export function QuestionVoteInput({
                   'w-full text-left rounded-lg border px-4 py-3.5 font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2',
                   selected
                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
-                    : 'border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
+                    : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
                   !canVote && 'opacity-50 cursor-not-allowed',
                 )}
               >
@@ -185,7 +185,7 @@ export function QuestionVoteInput({
           const upvoted = myVotes.includes(o.id)
           const count = results.counts[o.id] ?? 0
           return (
-            <li key={o.id} className="flex items-center gap-3 rounded-lg border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] px-4 py-3">
+            <li key={o.id} className="flex items-center gap-3 rounded-lg border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] px-4 py-3">
               <button
                 type="button"
                 onClick={() => !upvoted && canVote && onVote(o.id)}
@@ -195,7 +195,7 @@ export function QuestionVoteInput({
                   'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                   upvoted
                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
-                    : 'border-pulse-200 dark:border-[var(--color-border)] text-pulse-600 dark:text-[var(--text-secondary)] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
+                    : 'border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
                   !canVote && 'opacity-50 cursor-not-allowed',
                 )}
               >
@@ -208,7 +208,7 @@ export function QuestionVoteInput({
                 />
                 {count}
               </button>
-              <span className="text-sm text-pulse-800 dark:text-[var(--text-primary)]">{o.label}</span>
+              <span className="text-sm text-pulse-800 dark:text-[#F0F2F8]">{o.label}</span>
             </li>
           )
         })}
@@ -235,8 +235,8 @@ export function QuestionVoteInput({
                 voted
                   ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300'
                   : otherVoted
-                  ? 'border-pulse-200 dark:border-[var(--color-border)] text-pulse-500 dark:text-[var(--text-muted)] cursor-default'
-                  : 'border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
+                  ? 'border-pulse-200 dark:border-[#1E2A45] text-pulse-500 dark:text-[#8A96B0] cursor-default'
+                  : 'border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 active:scale-[0.99]',
                 !canVote && 'opacity-50 cursor-not-allowed',
               )}
             >

@@ -7,8 +7,6 @@
  *   analyzed  — content was AI-analyzed/summarized
  */
 
-import { Sparkles } from 'lucide-react'
-
 type AIBadgeVariant = 'assisted' | 'generated' | 'analyzed'
 
 interface AIBadgeProps {
@@ -32,8 +30,8 @@ export default function AIBadge({ variant = 'assisted', label, className = '' }:
   return (
     <span
       className={[
-        'inline-flex items-center gap-1 rounded-full px-3 py-1',
-        'bg-violet-100 caption font-medium',
+        'inline-flex items-center gap-1 rounded-pill px-3 py-1',
+        'bg-violet-100 text-violet-700 text-caption font-medium',
         'border border-violet-200',
         'dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-700',
         className,
@@ -43,7 +41,17 @@ export default function AIBadge({ variant = 'assisted', label, className = '' }:
       aria-label={visibleLabel}
       title={defaults.tooltip}
     >
-      <Sparkles size={12} aria-hidden="true" />
+      {/* Sparkle icon — decorative */}
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+      >
+        <path d="M12 2l2.09 6.26L20 10l-5.91 1.74L12 18l-2.09-5.26L4 11l5.91-1.74L12 2z" />
+      </svg>
       {visibleLabel}
     </span>
   )
