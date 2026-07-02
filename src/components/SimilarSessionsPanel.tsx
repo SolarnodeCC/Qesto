@@ -43,16 +43,16 @@ export function SimilarSessionsPanel({ sessionId, defaultQuery = '', enabled = t
   if (!enabled) return null
 
   return (
-    <section className="rounded-lg border border-pulse-200 bg-white p-4 dark:border-[#2A3858] dark:bg-[#1C2540]">
-      <h3 className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('similar.title')}</h3>
-      <p className="mt-1 text-xs text-pulse-500 dark:text-[#9AA8C7]">{t('similar.description')}</p>
+    <section className="rounded-lg border border-pulse-200 bg-white p-4 dark:border-[var(--color-border-strong)] dark:bg-[var(--color-surface-elevated)]">
+      <h3 className="text-sm font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{t('similar.title')}</h3>
+      <p className="mt-1 text-xs text-pulse-500 dark:text-[var(--text-secondary)]">{t('similar.description')}</p>
       <div className="mt-3 flex gap-2">
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           {...inputHint(t('similar.hint'))}
-          className="min-w-0 flex-1 rounded-md border border-pulse-200 px-3 py-2 text-sm dark:border-[#2A3858] dark:bg-[#141B33] dark:text-[#F0F2F8]"
+          className="min-w-0 flex-1 rounded-md border border-pulse-200 px-3 py-2 text-sm dark:border-[var(--color-border-strong)] dark:bg-[#141B33] dark:text-[var(--text-primary)]"
           aria-label={t('similar.hint')}
         />
         <button
@@ -74,7 +74,7 @@ export function SimilarSessionsPanel({ sessionId, defaultQuery = '', enabled = t
           {results.map((s) => (
             <li
               key={s.id}
-              className="rounded-md border border-pulse-100 p-3 text-sm dark:border-[#2A3858]"
+              className="rounded-md border border-pulse-100 p-3 text-sm dark:border-[var(--color-border-strong)]"
             >
               <span className="text-xs text-pulse-500">{Math.round(s.score * 100)}% match</span>
               <p className="mt-1 text-pulse-700 dark:text-[#C5D0E6]">{s.excerpt}</p>

@@ -78,7 +78,7 @@ export default function JoinCodePanel({
       {/* Unified join-code card — gradient-brand-subtle background */}
       <section
         aria-labelledby="join-code-heading"
-        className="rounded-xl border border-teal-100 dark:border-[#1E2A45] p-6 text-center space-y-4 shadow-card"
+        className="rounded-xl border border-teal-100 dark:border-[var(--color-border)] p-6 text-center space-y-4 shadow-card"
         style={{ background: 'var(--gradient-brand-subtle, linear-gradient(135deg,#F0FDFA 0%,#F5F3FF 100%))' }}
       >
         {/* Eyebrow */}
@@ -137,7 +137,7 @@ export default function JoinCodePanel({
 
         {/* Live timer (energizing / live) */}
         {session.started_at !== null && (
-          <div className="pt-3 border-t border-teal-100 dark:border-[#1E2A45]">
+          <div className="pt-3 border-t border-teal-100 dark:border-[var(--color-border)]">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-pulse-400">{t('timer_label')}</p>
             <p
               className="font-mono text-2xl font-semibold text-teal-600 dark:text-teal-400"
@@ -174,7 +174,7 @@ export default function JoinCodePanel({
           type="button"
           onClick={() => void handleShare()}
           disabled={sharing}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] border border-[var(--color-border-strong,#D4D4D4)] dark:border-[#2A3858] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
+          className="w-full inline-flex items-center justify-center gap-2 rounded-[var(--radius-md,10px)] border border-[var(--color-border-strong,#D4D4D4)] dark:border-[var(--color-border-strong)] bg-transparent text-pulse-600 dark:text-pulse-300 px-4 py-2.5 text-[13.5px] font-semibold hover:border-teal-400 hover:text-teal-700 dark:hover:border-teal-500 dark:hover:text-teal-400 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors"
         >
           <Share2 size={14} aria-hidden="true" />
           {sharing ? t('sharing') : t('share_button')}

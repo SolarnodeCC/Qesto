@@ -339,7 +339,7 @@ export default function AuditLogViewer() {
           <div className="overflow-x-auto rounded-lg border border-pulse-200 dark:border-[var(--color-border)]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-pulse-200 dark:border-[var(--color-border)] bg-pulse-50 dark:bg-[#0F1525]">
+                <tr className="border-b border-pulse-200 dark:border-[var(--color-border)] bg-pulse-50 dark:bg-[var(--color-border)]">
                   <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">Timestamp</th>
                   <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">User</th>
                   <th className="px-4 py-3 text-left font-medium text-pulse-700 dark:text-[var(--text-secondary)]">Action</th>

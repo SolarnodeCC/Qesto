@@ -96,7 +96,7 @@ export default function AppShellLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-bg)] dark:bg-[#0A0F1E]">
+    <div className="flex h-screen overflow-hidden bg-[var(--color-bg)] dark:bg-[var(--color-bg-subtle)]">
       <SkipLink />
 
       {/* Mobile overlay */}

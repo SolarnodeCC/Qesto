@@ -80,7 +80,7 @@ export function SessionWizardStep2({
       {/* Mode selector */}
       {step2Mode === 'idle' && (
         <div className="space-y-3">
-          <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('step2.mode_title')}</p>
+          <p className="text-sm font-medium dark:text-[var(--text-primary)]">{t('step2.mode_title')}</p>
           <div className="grid grid-cols-1 gap-2">
             {([
               { id: 'ai', label: t('step2.ai.label'), desc: t('step2.ai.desc'), icon: '✨' },
@@ -95,9 +95,9 @@ export function SessionWizardStep2({
                   if (mode.id === 'manual') { onQuestionsChange([emptyQuestion()]); onTemplateSeedNameChange(null) }
                   if (mode.id === 'ai') onAiPhaseChange('consent')
                 }}
-                className="text-left p-3 rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
+                className="text-left p-3 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 transition-colors"
               >
-                <span className="font-medium text-sm dark:text-[#F0F2F8]">{mode.icon} {mode.label}</span>
+                <span className="font-medium text-sm dark:text-[var(--text-primary)]">{mode.icon} {mode.label}</span>
                 <p className="text-caption text-pulse-500 mt-0.5">{mode.desc}</p>
               </button>
             ))}
@@ -121,7 +121,7 @@ export function SessionWizardStep2({
               <div className="flex items-start gap-2">
                 <span className="text-xl">✨</span>
                 <div>
-                  <p className="font-medium text-sm dark:text-[#F0F2F8]">{t('step2.ai_consent_v2.title')}</p>
+                  <p className="font-medium text-sm dark:text-[var(--text-primary)]">{t('step2.ai_consent_v2.title')}</p>
                   <p className="text-caption text-pulse-500 mt-0.5">{t('step2.ai_consent_v2.description')}</p>
                 </div>
               </div>
@@ -132,7 +132,7 @@ export function SessionWizardStep2({
                   onChange={(e) => onAiConsentChange(e.target.checked)}
                   className="mt-0.5 rounded border-pulse-300 text-teal-600 focus:ring-teal-500"
                 />
-                <span className="text-sm dark:text-[#A8B3CC]">{t('step2.ai_consent_v2.checkbox')}</span>
+                <span className="text-sm dark:text-[var(--text-secondary)]">{t('step2.ai_consent_v2.checkbox')}</span>
               </label>
               <button
                 type="button"
@@ -159,7 +159,7 @@ export function SessionWizardStep2({
                   onChange={(e) => onAiPromptChange(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') onGenerate() }}
                   {...inputHint(t('step2.ai_hint'))}
-                  className="flex-1 rounded-lg border border-pulse-300 dark:border-[#2A3858] bg-transparent dark:bg-[#1C2540] px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
+                  className="flex-1 rounded-lg border border-pulse-300 dark:border-[var(--color-border-strong)] bg-transparent dark:bg-[var(--color-surface-elevated)] px-3 py-2 text-sm focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200"
                 />
                 <button
                   type="button"
@@ -190,7 +190,7 @@ export function SessionWizardStep2({
           {aiPhase === 'review' && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium dark:text-[#F0F2F8]">{t('step2.ai_review_title')}</p>
+                <p className="text-sm font-medium dark:text-[var(--text-primary)]">{t('step2.ai_review_title')}</p>
                 <button
                   type="button"
                   onClick={() => {

@@ -248,10 +248,10 @@ export default function EmbedWidget() {
 
   // ── Theme class ─────────────────────────────────────────────────────────────
   const isDark = theme === 'dark'
-  const bg = isDark ? 'bg-[#0F1628] text-[#F0F2F8]' : 'bg-white text-[#1A2035]'
-  const border = isDark ? 'border-[#1E2A45]' : 'border-[#E2E8F0]'
-  const muted = isDark ? 'text-[#6B7A99]' : 'text-slate-500'
-  const card = isDark ? 'bg-[#151C2E] border-[#1E2A45]' : 'bg-slate-50 border-slate-200'
+  const bg = isDark ? 'bg-[#0F1628] text-[var(--text-primary)]' : 'bg-white text-[#1A2035]'
+  const border = isDark ? 'border-[var(--color-border)]' : 'border-[#E2E8F0]'
+  const muted = isDark ? 'text-[var(--text-muted)]' : 'text-slate-500'
+  const card = isDark ? 'bg-[var(--color-surface)] border-[var(--color-border)]' : 'bg-slate-50 border-slate-200'
 
   // ── Render helpers ──────────────────────────────────────────────────────────
   function renderLoading() {
