@@ -24,7 +24,7 @@
 
 import { z } from 'zod'
 import type { Env } from '../types'
-import { runAI, envWithAI } from './ai/ai-gateway'
+import { runAI } from './ai/ai-gateway'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { firstEmbeddingVector } from './embedding'
 import { withTimeout } from './shared/async'
@@ -36,8 +36,6 @@ import {
 } from './insights-vectorize'
 import type { AuthoringQuestionKind } from './studio-authoring'
 import { ulid } from './ulid'
-
-export type StudioSuggestBindings = Pick<Env, 'AI' | 'DECISIONS_VECTORIZE'>
 
 /** Embedding model + dim are re-exported from the decisions pipeline so the
  *  embedding model ↔ index dimension invariant lives in exactly one place. */
@@ -134,7 +132,7 @@ export function draftFromRelatedSession(related: RelatedSession): SuggestedDraft
  * than throwing — the authoring surface always has a safe, empty result.
  */
 export async function suggestNextQuestions(
-  env: StudioSuggestBindings,
+  env: Env,
   input: SuggestInput,
 ): Promise<SuggestResult> {
   const empty: SuggestResult = { suggestions: [], source: 'none' }
@@ -147,7 +145,7 @@ export async function suggestNextQuestions(
   let vector: number[] | undefined
   try {
     const embedResult = await withTimeout(
-      runAI(envWithAI(env.AI), DECISIONS_EMBED_MODEL, { text: embedText }),
+      runAI(env, DECISIONS_EMBED_MODEL, { text: embedText }),
       DECISIONS_EMBED_TIMEOUT_MS,
       'Studio suggest embedding',
     )

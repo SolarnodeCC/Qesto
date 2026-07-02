@@ -199,7 +199,7 @@ export default function NonprofitPage() {
           <div className="flex flex-wrap gap-3">
             <a href={NONPROFIT_APPLY_MAILTO} className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
               Apply for nonprofit pricing
-            </Link>
+            </a>
             <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[var(--color-surface-elevated)] dark:border-[var(--color-border-strong)] dark:text-[var(--text-primary)]'}>
               See full plan matrix
             </Link>
