@@ -26,9 +26,9 @@ down. ADRs document the target pattern; backlog stories fund the burn-down.
 
 | Gate | Anti-pattern counted | Abstraction to use | Baseline | ADR |
 |---|---|---|---:|---|
-| `scripts/check-ai-gateway.mjs` | raw `env.AI.run` / `ai.run(` in `functions/` | `runAI()` in `lib/ai/ai-gateway.ts` | 29 | ADR-0068 |
-| `scripts/check-d1-access.mjs` | `env.DB.prepare` in `functions/api/routes/` (multi-line-aware) | `functions/api/repositories/` | 329 | ADR-0069 |
-| `scripts/check-error-response.mjs` | inline `ok: false` in `functions/api/routes/` | `errorResponse()` in `lib/error-handler.ts` | 480 | ADR-0070 |
+| `scripts/check-ai-gateway.mjs` | raw `env.AI.run` / `ai.run(` in `functions/` | `runAI()` in `lib/ai/ai-gateway.ts` | 3 | ADR-0068 |
+| `scripts/check-d1-access.mjs` | `env.DB.prepare` in `functions/api/routes/` (multi-line-aware) | `functions/api/repositories/` | 322 | ADR-0069 |
+| `scripts/check-error-response.mjs` | inline `ok: false` in `functions/api/routes/` | `errorResponse()` in `lib/error-handler.ts` | 330 | ADR-0070 |
 
 **Fix-all-High+Medium progress (build-validated, verified-safe pass):** Mediums done — vectorize dedup
 (`lib/ai/embed-query.ts`), Env-narrowing (integrations/billing → `Pick<Env,…>`), dual-auth
@@ -86,8 +86,54 @@ P0-before-P0;** until then these gates are enforced via the local pre-push hook
 
 ## Verification
 
-- Gates (no deps needed): `node scripts/check-ai-gateway.mjs` → 29; `node scripts/check-d1-access.mjs`
-  → 329; `node scripts/check-error-response.mjs` → 480. All exit 0.
+- Gates (no deps needed): `node scripts/check-ai-gateway.mjs` → 32; `node scripts/check-d1-access.mjs`
+  → 329; `node scripts/check-error-response.mjs` → 449. All exit 0.
 - `npm run check:rc` includes the three new gates.
 - On a working install / once CI is unblocked: `npm run typecheck`, `npm test`, and — because `runAI`
   touches AI code — `npm run test:eval` (REV-10).
+
+## Remediation pass — 2026-07-01
+
+**Scope:** Address all remaining open Low findings; batch-2 `errorResponse` burn-down; document deferred
+High/Medium items as GitHub issues for future release trains.
+
+### Resolved in this pass
+
+| Audit finding | Action | Outcome |
+|---|---|---|
+| 🟢 Low — duplicated admin hooks | `useAdminUsers` + `useAdminUserDetail` refactored onto `useApiQuery` | **Resolved** |
+| 🟢 Low — duplicated `ServiceStatus` union | Hoisted to `src/types/admin.ts`; re-exported from ops hooks | **Resolved** |
+| 🟢 Low — misleading function names | Renamed `applyBrandingCssVars`, `tryCacheJoinSession`, `coerceQuestionKind` | **Resolved** |
+| 🟢 Low — energizer kind literals | `EnergizerBackendKind` added to `src/types/session.ts`; used in `useLiveSession` | **Resolved** |
+| 🟡 Medium — error envelopes (partial) | 31 inline envelopes in 26 route files → `errorResponse()`; baseline **480 → 449** | **Partial** (449 remain) |
+
+### Previously resolved (prior passes — unchanged)
+
+| Audit finding | Status |
+|---|---|
+| 🟡 Medium — Vectorize dedup | **Resolved** — `lib/ai/embed-query.ts` |
+| 🟡 Medium — Env narrowing (integrations/billing) | **Resolved** — `Pick<Env,…>` |
+| 🟡 Medium — dual auth | **Resolved** — `lib/authz-helpers.ts` |
+| 🟠 High — lifecycle god route (slice) | **Partial** — `sessionLifecycleRepository` + `sessionLifecycleService` |
+| 🟠 High — billing Stripe client | **Partial** — `lib/stripe-client.ts` extracted |
+
+### Deferred — file as GitHub issues
+
+See [`docs/refactoring-deferred-issues.md`](./docs/refactoring-deferred-issues.md) for ready-to-file issue bodies (8 items covering all remaining High/Medium/Low findings). GitHub issue creation requires repo `issues:write` — not available in the cloud agent token; maintainers should file from that doc.
+
+## RT-02 burn-down pass — 2026-07-01 (continued)
+
+### Completed in this pass
+
+| Track | Action | Baseline change |
+|---|---|---|
+| **errorResponse** | Batch-3: 23 route files (102 sites); batch-4: `billing.ts` (17 sites) | 449 → **330** |
+| **runAI()** | Migrated 29 call sites across lib + routes; extended sanitizer for ASR/audio payloads | 32 → **3** (video-gen async batch ×2 + wizard stream ×1 sanctioned) |
+| **billing repository** | `repositories/billingRepository.ts` — plan, Stripe customer, audit, webhook idempotency, insights count | D1: 329 → **322** |
+
+### Still deferred
+
+- God routes: `integrations.ts`, `teams.ts`, `sessions/wizard.ts` (service extraction)
+- Error envelopes: 330 remain (incl. `teams.ts` ×30, `wizard.ts` ×37, energizer routes)
+- D1 inline: 322 remain
+- `types.ts` split, frontend hook extraction (see deferred issues doc)

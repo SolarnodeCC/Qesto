@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { errorResponse } from '../../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { Env } from '../../types'
@@ -39,7 +40,7 @@ export function mountJourneyEventRoutes(app: Hono<{ Bindings: Env; Variables: Au
     const endMs = endParam ? Date.parse(endParam) : Date.now()
 
     if ((startMs !== null && Number.isNaN(startMs)) || Number.isNaN(endMs) || (startMs !== null && startMs >= endMs)) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid baseline date range' }, trace_id }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid baseline date range')
     }
 
     const bindRange = (stmt: D1PreparedStatement) => (startMs === null ? stmt : stmt.bind(startMs, endMs))
@@ -148,7 +149,7 @@ export function mountJourneyEventRoutes(app: Hono<{ Bindings: Env; Variables: Au
       return c.json({ ok: true, data: baseline, trace_id }, 200)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to compute Sprint 19 baseline'
-      return c.json({ ok: false, error: { code: 'internal', message }, trace_id }, 500)
+      return errorResponse(c, 500, 'internal', message)
     }
   })
 }

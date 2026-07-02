@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import { readKvJson } from '../../lib/kv'
+import { errorResponse } from '../../lib/error-handler'
 import { validateBody } from '../../lib/request-validation'
 import { AdminMetricsExportSchema } from '../../lib/domain-schemas'
 import type { Env } from '../../types'
@@ -175,39 +176,18 @@ export function mountMetricsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVar
     const routeParam = c.req.query('route') ?? null
 
     if (!startParam || !endParam) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'start and end query params are required (ISO 8601)' },
-          trace_id,
-        },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'start and end query params are required (ISO 8601)')
     }
 
     const startMs = Date.parse(startParam)
     const endMs = Date.parse(endParam)
     if (isNaN(startMs) || isNaN(endMs) || startMs >= endMs) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Invalid date range — start must be before end' },
-          trace_id,
-        },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Invalid date range — start must be before end')
     }
 
     const MAX_RANGE_MS = 30 * 24 * 60 * 60 * 1000
     if (endMs - startMs > MAX_RANGE_MS) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'validation', message: 'Date range must not exceed 30 days' },
-          trace_id,
-        },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Date range must not exceed 30 days')
     }
 
     try {
@@ -250,10 +230,7 @@ export function mountMetricsRoutes(app: Hono<{ Bindings: Env; Variables: AuthVar
     const startMs = Date.parse(startParam)
     const endMs = Date.parse(endParam)
     if (startMs >= endMs) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'start must be before end' }, trace_id },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'start must be before end')
     }
 
     const MAX_ROWS = 10_000

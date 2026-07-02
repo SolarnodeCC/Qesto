@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { seedSingleEliminationBracket } from '../lib/tournament-bracket'
+import { errorResponse } from '../lib/error-handler'
 import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 
@@ -38,10 +39,7 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
   app.post('/sessions/:sessionId/bracket/seed', async (c) => {
     const body = SeedSchema.safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Invalid seed payload' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Invalid seed payload')
     }
     const { energizerId, participants } = body.data
     const existing = await c.env.DB.prepare(
@@ -50,10 +48,7 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
       .bind(energizerId)
       .first<{ n: number }>()
     if ((existing?.n ?? 0) > 0) {
-      return c.json(
-        { ok: false, error: { code: 'already_seeded', message: 'Bracket already seeded for this energizer' }, trace_id: c.get('trace_id') },
-        409,
-      )
+      return errorResponse(c, 409, 'already_seeded', 'Bracket already seeded for this energizer')
     }
 
     const seeds = seedSingleEliminationBracket(energizerId, participants)
@@ -110,10 +105,7 @@ export function mountTournamentRoutes(parent: Hono<{ Bindings: Env; Variables: V
       })
       .safeParse(await c.req.json().catch(() => null))
     if (!body.success) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'winnerId required' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'winnerId required')
     }
     const id = c.req.param('matchId')
     await c.env.DB.prepare(

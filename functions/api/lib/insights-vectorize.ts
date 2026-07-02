@@ -31,7 +31,7 @@ export async function embedAndFindSimilarSessionTitles(
   params: { sessionId: string; sessionTitle: string; openResponses: string[]; teamId?: string | null },
 ): Promise<{ vector?: number[]; similarSessionTitles: string[]; similarSessions: SimilarSession[] }> {
   const vector = await embedVector(
-    env.AI,
+    env,
     DECISIONS_EMBED_MODEL,
     DECISIONS_EMBED_DIM,
     `${params.sessionTitle}: ${params.openResponses.slice(0, 10).join('. ')}`,
@@ -87,7 +87,7 @@ export async function upsertInsightsSessionVector(
   let vector = params.existingVector
   if (!vector) {
     vector = await embedVector(
-      env.AI,
+      env,
       DECISIONS_EMBED_MODEL,
       DECISIONS_EMBED_DIM,
       params.sessionTitle,

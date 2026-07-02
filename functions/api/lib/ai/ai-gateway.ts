@@ -19,7 +19,8 @@ import {
 import type { SessionAIContext } from './session-context'
 
 export type AIGatewayRequest = {
-  model: string
+  /** Optional when using {@link runAI} (model is passed separately). */
+  model?: string
   messages?: Array<{ role: string; content: string }>
   text?: string // for sentiment model (distilbert)
   [key: string]: unknown
@@ -85,7 +86,7 @@ export async function runThroughAIGateway(
   input: AIGatewayRequest,
 ): Promise<AIGatewayResponse> {
   const startMs = Date.now()
-  const sanitizedInput = sanitizeAIGatewayRequest(input)
+  const sanitizedInput = sanitizeAIGatewayRequest({ ...input, model })
   assertSanitizedAIGatewayRequest(sanitizedInput)
 
   // If Gateway is not configured (either secret missing), bypass to env.AI.
@@ -148,6 +149,11 @@ export type RunAIOptions = {
   ctx?: SessionAIContext
   /** Plan tier for rate-limit hints when no full ctx is available. */
   plan?: PlanTier
+}
+
+/** Minimal Env shim when only the AI binding is available (tests, legacy `ai: Ai` params). */
+export function envWithAI(ai: Env['AI']): Env {
+  return { AI: ai } as Env
 }
 
 /**

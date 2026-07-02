@@ -9,7 +9,7 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { determineBadgesAwarded } from '../lib/gamification'
 import { recordAuditEvent } from '../lib/audit'
-import { sanitizeError } from '../lib/error-handler'
+import { errorResponse, sanitizeError } from '../lib/error-handler'
 import { safeLogContext } from '../lib/log'
 import type { Env } from '../types'
 import type { BadgeRow, SessionRow } from '../lib/db-row-types'
@@ -29,10 +29,7 @@ export function mountGamificationRoutes(parent: ParentApp) {
 
     // Only allow viewing own badges
     if (userId !== user.sub) {
-      return c.json(
-        { ok: false, error: { code: 'forbidden', message: 'Cannot view other users\' badges' }, trace_id },
-        403
-      )
+      return errorResponse(c, 403, 'forbidden', "Cannot view other users' badges")
     }
 
     try {
@@ -64,10 +61,7 @@ export function mountGamificationRoutes(parent: ParentApp) {
     } catch (err) {
       safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
-      return c.json(
-        { ok: false, error: { code: 'internal', message }, trace_id },
-        500
-      )
+      return errorResponse(c, 500, 'internal', message)
     }
   })
 
@@ -86,10 +80,7 @@ export function mountGamificationRoutes(parent: ParentApp) {
         .first<Pick<SessionRow,"id">>()
 
       if (!sessionCheck) {
-        return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
-          404
-        )
+        return errorResponse(c, 404, 'not_found', 'Session not found or access denied')
       }
 
       const result = await c.env.DB.prepare(
@@ -126,10 +117,7 @@ export function mountGamificationRoutes(parent: ParentApp) {
     } catch (err) {
       safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
-      return c.json(
-        { ok: false, error: { code: 'internal', message }, trace_id },
-        500
-      )
+      return errorResponse(c, 500, 'internal', message)
     }
   })
 
@@ -148,10 +136,7 @@ export function mountGamificationRoutes(parent: ParentApp) {
         .first<Pick<SessionRow,"id"|"owner_id">>()
 
       if (!sessionResult) {
-        return c.json(
-          { ok: false, error: { code: 'not_found', message: 'Session not found or access denied' }, trace_id },
-          404
-        )
+        return errorResponse(c, 404, 'not_found', 'Session not found or access denied')
       }
 
       // Get session start time (once, not per-participant)
@@ -241,10 +226,7 @@ export function mountGamificationRoutes(parent: ParentApp) {
     } catch (err) {
       safeLogContext(err, { traceId: trace_id, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
       const { message } = sanitizeError(err, c.env.ENV, 500)
-      return c.json(
-        { ok: false, error: { code: 'internal', message }, trace_id },
-        500
-      )
+      return errorResponse(c, 500, 'internal', message)
     }
   })
 

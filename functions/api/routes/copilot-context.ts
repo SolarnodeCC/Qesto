@@ -58,6 +58,7 @@ import { sanitizeError } from '../lib/error-handler'
 import { writeEvent } from '../lib/observability'
 import type { Env } from '../types'
 import { sanitizeAIGatewayRequest, assertSanitizedAIGatewayRequest } from '../lib/ai/prompt-sanitize'
+import { runAI } from '../lib/ai/ai-gateway'
 import { COPILOT_CONTEXT_TTL_SECONDS, COPILOT_THREAD_TTL_SECONDS, COPILOT_PLAN_TTL_SECONDS } from '../lib/constants'
 import type { ParentApp } from './parent-app'
 
@@ -205,8 +206,8 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
           ],
         })
         assertSanitizedAIGatewayRequest(aiInput)
-        const result = (await c.env.AI.run(aiInput.model, {
-          messages: aiInput.messages,
+        const result = (await runAI(c.env, aiInput.model, {
+          messages: aiInput.messages ?? [],
         })) as { response?: string }
         if (result?.response?.trim()) assistantText = result.response.trim().slice(0, 2000)
       } catch {
@@ -537,7 +538,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
         // ADR-0046: copilot inference runs off the DO hot path, behind the AI circuit breaker.
         const text = await CircuitBreakers.ai.execute(
           async () => {
-            const result = (await ai.run(COPILOT_MODEL, { messages: buildSuggestMessages(context) })) as { response?: string }
+            const result = (await runAI(c.env, COPILOT_MODEL, { messages: buildSuggestMessages(context) })) as { response?: string }
             return result?.response ?? ''
           },
           () => '',

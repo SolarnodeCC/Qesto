@@ -20,6 +20,7 @@ import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { featureAllowed, denyFeature } from '../lib/entitlements'
 import { fetchSession } from './sessions/shared'
 import { requireFound } from '../lib/session-lifecycle'
+import { errorResponse } from '../lib/error-handler'
 import { getSessionRoomStub } from './sessions/shared'
 import { assembleSegment } from '../lib/captions-pipeline'
 import { isCaptionLocale, type CaptionLocale } from '../lib/captions-config'
@@ -67,10 +68,7 @@ export function mountCaptionRoutes(parent: ParentApp) {
     // Presenter ownership: fetchSession scopes by owner_id, so only the host can ingest.
     const loaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
     if (!loaded.ok) {
-      return c.json(
-        { ok: false, error: { code: loaded.error.code, message: loaded.error.message }, trace_id },
-        loaded.error.status,
-      )
+      return errorResponse(c, loaded.error.status, loaded.error.code, loaded.error.message)
     }
 
     const meta = MetaSchema.safeParse({
@@ -80,17 +78,17 @@ export function mountCaptionRoutes(parent: ParentApp) {
       id: c.req.query('id'),
     })
     if (!meta.success) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Invalid caption metadata' }, trace_id }, 400)
+      return errorResponse(c, 400, 'validation', 'Invalid caption metadata')
     }
     const sourceLocale = meta.data.sourceLocale as CaptionLocale
 
     // Read the raw audio chunk into a request-scoped buffer (never persisted).
     const buf = await c.req.arrayBuffer()
     if (buf.byteLength === 0) {
-      return c.json({ ok: false, error: { code: 'validation', message: 'Empty audio chunk' }, trace_id }, 400)
+      return errorResponse(c, 400, 'validation', 'Empty audio chunk')
     }
     if (buf.byteLength > MAX_AUDIO_BYTES) {
-      return c.json({ ok: false, error: { code: 'payload_too_large', message: 'Audio chunk too large' }, trace_id }, 413)
+      return errorResponse(c, 413, 'payload_too_large', 'Audio chunk too large')
     }
     const audio = [...new Uint8Array(buf)]
 
@@ -136,7 +134,7 @@ export function mountCaptionRoutes(parent: ParentApp) {
       })
     } catch (err) {
       logEvent({ event: 'captions.broadcast_fault', traceId: trace_id, errorClass: err instanceof Error ? err.name : 'Unknown' })
-      return c.json({ ok: false, error: { code: 'broadcast_failed', message: 'Caption broadcast failed' }, trace_id }, 502)
+      return errorResponse(c, 502, 'broadcast_failed', 'Caption broadcast failed')
     }
 
     // AE: trace + timing + locale fan-out width only — NEVER transcript text.

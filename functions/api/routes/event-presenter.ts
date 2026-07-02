@@ -104,10 +104,7 @@ export function mountTeamEventPresenterRoutes(parent: ParentApp) {
       return errorResponse(c, 404, 'not_found', 'Event workspace not found')
     }
     if (body.data.slideDeckUrl != null && body.data.slideDeckUrl !== '' && !normalizeSlideDeckUrl(body.data.slideDeckUrl)) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Slide URL must be HTTPS from an allowed provider' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Slide URL must be HTTPS from an allowed provider')
     }
     if (body.data.activeSlotId) {
       const found = loaded.template.tracks.some((t) => t.slots.some((s) => s.id === body.data.activeSlotId))

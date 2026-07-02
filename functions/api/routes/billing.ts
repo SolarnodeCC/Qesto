@@ -8,6 +8,7 @@
 //   POST /api/billing/subscription   Stripe subscription management
 
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { getQuotaUsage } from '../lib/quota'
 import { readKvText } from '../lib/kv'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
@@ -17,6 +18,15 @@ import { BillingSubscriptionSchema } from '../lib/domain-schemas'
 import { validateKvJson, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema, StripeWebhookEventSchema, StripeSubscriptionObjectSchema } from '../lib/protocol-schemas'
 import { PLAN_QUOTAS, type Env, type PlanQuotas, type PlanTier } from '../types'
 import { makeStripeClient } from '../lib/stripe-client'
+import {
+  countInsightsThisMonth,
+  findUserIdByStripeCustomerId,
+  insertBillingAuditEvent,
+  isStripeWebhookEventProcessed,
+  recordStripeWebhookEvent,
+  setStripeCustomerId,
+  setUserPlan as setUserPlanInDb,
+} from '../repositories/billingRepository'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -49,7 +59,11 @@ function validTier(value: unknown): value is PlanTier {
 
 /** Set users.plan in D1 (best-effort; logs on failure). */
 async function setUserPlan(env: Pick<Env, 'DB'>, userId: string, plan: PlanTier): Promise<void> {
-  await env.DB.prepare('UPDATE users SET plan = ?1 WHERE id = ?2').bind(plan, userId).run()
+  try {
+    await setUserPlanInDb(env.DB, userId, plan)
+  } catch (err) {
+    console.error(`[Stripe] setUserPlan failed for ${userId}: ${(err as Error).message}`)
+  }
 }
 
 /** Persist the bidirectional Stripe customer ↔ user mapping (#585). */
@@ -61,9 +75,7 @@ async function recordCustomerMapping(env: Pick<Env, 'USERS_KV' | 'DB'>, userId: 
     expirationTtl: 86400 * 365,
   })
   try {
-    await env.DB.prepare('UPDATE users SET stripe_customer_id = ?1 WHERE id = ?2')
-      .bind(customerId, userId)
-      .run()
+    await setStripeCustomerId(env.DB, userId, customerId)
   } catch {
     // Column may not be migrated yet in some environments; KV mapping is authoritative.
   }
@@ -78,21 +90,7 @@ async function writeBillingAudit(
   snapshot?: Record<string, unknown>,
 ): Promise<void> {
   try {
-    await env.DB.prepare(
-      `INSERT INTO audit_events (id, ts, actor_id, action, subject_type, subject_id, after_snapshot)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-       ON CONFLICT DO NOTHING`,
-    )
-      .bind(
-        crypto.randomUUID(),
-        Date.now(),
-        userId,
-        action,
-        'subscription',
-        subjectId,
-        snapshot ? JSON.stringify(snapshot) : '{}',
-      )
-      .run()
+    await insertBillingAuditEvent(env.DB, userId, action, subjectId, snapshot)
   } catch (err) {
     console.error(`[Stripe] audit write failed for ${action}: ${(err as Error).message}`)
   }
@@ -157,33 +155,24 @@ export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables
   parent.post('/api/billing/webhook/stripe', async (c) => {
     const traceId = c.get('trace_id')
     if (!c.env.STRIPE_WEBHOOK_SECRET) {
-      return c.json(
-        { ok: false, error: { code: 'misconfigured', message: 'Stripe webhook not configured' }, trace_id: traceId },
-        503,
-      )
+      return errorResponse(c, 503, 'misconfigured', 'Stripe webhook not configured')
     }
 
     // Read raw body for signature verification (Hono stores parsed JSON, we need raw)
     const rawBody = await c.req.text()
     if (!rawBody) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'Empty body' }, trace_id: traceId }, 400)
+      return errorResponse(c, 400, 'bad_request', 'Empty body')
     }
 
     // Verify Stripe signature: Stripe-Signature = t=<timestamp>,v1=<signature>,v0=<legacy>
     const sigHeader = c.req.header('stripe-signature')
     if (!sigHeader) {
-      return c.json(
-        { ok: false, error: { code: 'unauthorized', message: 'Missing Stripe-Signature header' }, trace_id: traceId },
-        401,
-      )
+      return errorResponse(c, 401, 'unauthorized', 'Missing Stripe-Signature header')
     }
 
     const verified = await verifyStripeSignature(rawBody, sigHeader, c.env.STRIPE_WEBHOOK_SECRET)
     if (!verified) {
-      return c.json(
-        { ok: false, error: { code: 'unauthorized', message: 'Invalid Stripe signature' }, trace_id: traceId },
-        401,
-      )
+      return errorResponse(c, 401, 'unauthorized', 'Invalid Stripe signature')
     }
 
     // Parse event
@@ -191,25 +180,18 @@ export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables
     try {
       event = JSON.parse(rawBody)
     } catch {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'Invalid JSON' }, trace_id: traceId }, 400)
+      return errorResponse(c, 400, 'bad_request', 'Invalid JSON')
     }
 
     const parsed = StripeWebhookEventSchema.safeParse(event)
     if (!parsed.success) {
-      return c.json(
-        { ok: false, error: { code: 'bad_request', message: 'Invalid event schema' }, trace_id: traceId },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_request', 'Invalid event schema')
     }
 
     const stripeEvent = parsed.data
 
     // Check idempotency: has this event been processed?
-    const existing = await c.env.DB.prepare(
-      'SELECT stripe_event_id FROM stripe_webhook_events WHERE stripe_event_id = ?1',
-    )
-      .bind(stripeEvent.id)
-      .first<{ stripe_event_id: string }>()
+    const existing = await isStripeWebhookEventProcessed(c.env.DB, stripeEvent.id)
 
     if (existing) {
       return c.json(
@@ -247,19 +229,12 @@ export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables
       const errorMsg = err instanceof Error ? err.message : 'Unknown error'
       console.error(`[Stripe Webhook] Event ${stripeEvent.id} handler failed: ${errorMsg}`)
       // Record failure but don't mark as processed
-      return c.json(
-        { ok: false, error: { code: 'internal_error', message: 'Event handler failed' }, trace_id: traceId },
-        500,
-      )
+      return errorResponse(c, 500, 'internal_error', 'Event handler failed')
     }
 
     // Mark event as processed
     try {
-      await c.env.DB.prepare(
-        'INSERT INTO stripe_webhook_events (stripe_event_id, event_type, processed_at) VALUES (?1, ?2, ?3)',
-      )
-        .bind(stripeEvent.id, stripeEvent.type, Date.now())
-        .run()
+      await recordStripeWebhookEvent(c.env.DB, stripeEvent.id, stripeEvent.type, Date.now())
     } catch (err) {
       console.error(`[Stripe Webhook] Failed to record event ${stripeEvent.id}: ${err}`)
       // Still return 200 — event was handled, just logging failed
@@ -291,14 +266,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
     // Verify auth: can only check own quota
     if (user.sub !== userId) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'forbidden', message: 'Can only check your own quota' },
-          trace_id: c.get('trace_id'),
-        },
-        403,
-      )
+      return errorResponse(c, 403, 'forbidden', 'Can only check your own quota')
     }
 
     const usage = await getQuotaUsage(c.env.SESSIONS_KV, userId, quotas.maxSessionsPerMonth)
@@ -308,13 +276,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime()
     let insightsUsedThisMonth = 0
     try {
-      const row = await c.env.DB
-        .prepare(
-          `SELECT COUNT(*) as n FROM audit_events WHERE action = 'insights.generate' AND actor_id = ?1 AND ts >= ?2`,
-        )
-        .bind(userId, monthStart)
-        .first<{ n: number }>()
-      insightsUsedThisMonth = row?.n ?? 0
+      insightsUsedThisMonth = await countInsightsThisMonth(c.env.DB, userId, monthStart)
     } catch {
       // audit_events table may not exist in older deploys
     }
@@ -349,10 +311,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const user = c.get('user')
 
     if (!c.env.STRIPE_SECRET_KEY) {
-      return c.json(
-        { ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'misconfigured', 'Stripe not configured')
     }
 
     // Look up Stripe customer ID stored in USERS_KV
@@ -360,10 +319,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const record = validateKvJson(raw, StripeCustomerRecordSchema)
 
     if (!record?.customerId) {
-      return c.json(
-        { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'no_subscription', 'No Stripe subscription found for this account')
     }
 
     const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
@@ -379,18 +335,12 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   app.get('/billing/invoices', authMiddleware, async (c) => {
     const user = c.get('user')
     if (!c.env.STRIPE_SECRET_KEY) {
-      return c.json(
-        { ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'misconfigured', 'Stripe not configured')
     }
     const raw = await readKvText(c.env.USERS_KV, stripeCustomerKey(user.sub))
     const record = validateKvJson(raw, StripeCustomerRecordSchema)
     if (!record?.customerId) {
-      return c.json(
-        { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'no_subscription', 'No Stripe subscription found for this account')
     }
     const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
     const result = await stripe.invoices.list({ customer: record.customerId, limit: 20 })
@@ -401,10 +351,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
   app.post('/billing/subscription', authMiddleware, async (c) => {
     const user = c.get('user')
     if (!c.env.STRIPE_SECRET_KEY) {
-      return c.json(
-        { ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'misconfigured', 'Stripe not configured')
     }
 
     const validated = await validateBody(c, BillingSubscriptionSchema)
@@ -414,10 +361,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const subRaw = await readKvText(c.env.USERS_KV, stripeSubscriptionKey(user.sub))
     const subRecord = validateKvJson(subRaw, StripeSubscriptionRecordSchema)
     if (!subRecord?.subscriptionId) {
-      return c.json(
-        { ok: false, error: { code: 'no_subscription', message: 'No Stripe subscription found for this account' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'no_subscription', 'No Stripe subscription found for this account')
     }
 
     const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
@@ -436,7 +380,7 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const user = c.get('user')
     const traceId = c.get('trace_id')
     if (!c.env.STRIPE_SECRET_KEY) {
-      return c.json({ ok: false, error: { code: 'misconfigured', message: 'Stripe not configured' }, trace_id: traceId }, 503)
+      return errorResponse(c, 503, 'misconfigured', 'Stripe not configured')
     }
     const body = await c.req.json().catch(() => null) as Record<string, unknown> | null
     const plan = (body?.plan as string) ?? 'starter'
@@ -446,11 +390,11 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
     const pricing = catalogPricing(c.env)
     const planRow = pricing[plan as keyof typeof pricing]
     if (!planRow) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'Unknown plan' }, trace_id: traceId }, 400)
+      return errorResponse(c, 400, 'bad_request', 'Unknown plan')
     }
     const priceId = interval === 'annual' ? planRow.annual_price_id : planRow.monthly_price_id
     if (!priceId) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: `No ${interval} price configured for plan ${plan}` }, trace_id: traceId }, 400)
+      return errorResponse(c, 400, 'bad_request', `No ${interval} price configured for plan ${plan}`)
     }
 
     const stripe = makeStripeClient(c.env.STRIPE_SECRET_KEY)
@@ -725,10 +669,8 @@ async function handleInvoicePaymentFailed(
  */
 async function findUserByCustomerId(env: Env, customerId: string): Promise<string | null> {
   try {
-    const row = await env.DB.prepare('SELECT id FROM users WHERE stripe_customer_id = ?1')
-      .bind(customerId)
-      .first<{ id: string }>()
-    if (row?.id) return row.id
+    const fromDb = await findUserIdByStripeCustomerId(env.DB, customerId)
+    if (fromDb) return fromDb
   } catch {
     // Column may not exist in some environments; fall through to KV.
   }

@@ -10,6 +10,7 @@ import {
   type InsightsVectorizeBindings,
 } from './insights-vectorize'
 import { upsertTeamInsightRollup, type TeamInsightKind } from './team-insights'
+import { runAI } from './ai/ai-gateway'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { withTimeout } from './shared/async'
 import { InsightThemesJsonSchema, decodeKvJson } from './boundary-decode'
@@ -133,7 +134,7 @@ export async function clusterRecurringThemes(
     const embedText = sanitizeEmbedText(`Team recurring themes: ${seedLabels.join('; ')}`)
     if (!embedText) throw new Error('empty_embed_text')
     const embedResult = await withTimeout(
-      env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
+      runAI(env as import('../types').Env, DECISIONS_EMBED_MODEL, { text: embedText }),
       10_000,
       'Team insight embedding',
     )

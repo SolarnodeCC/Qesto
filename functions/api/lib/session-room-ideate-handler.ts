@@ -4,6 +4,7 @@
 import type { Env } from '../types'
 import type { ServerMessage } from '../realtime'
 import { LIVE_PROTOCOL_VERSION } from '../realtime'
+import { runAI } from './ai/ai-gateway'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { DECISIONS_EMBED_MODEL, DECISIONS_EMBED_DIM } from './insights-vectorize'
 import { validateData, AiBatchEmbeddingResponseSchema } from './protocol-schemas'
@@ -350,7 +351,7 @@ export class IdeateHandler {
       if (!embedText) continue
       try {
         const result = await withTimeout(
-          this.env.AI.run(DECISIONS_EMBED_MODEL, { text: embedText }),
+          runAI(this.env, DECISIONS_EMBED_MODEL, { text: embedText }),
           8_000,
           'Ideate embedding',
         )

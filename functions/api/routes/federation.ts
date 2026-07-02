@@ -138,7 +138,7 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
     )
     if (!minted.ok) {
       // A sovereign host attempting federation is a policy event, not a no-op.
-      return c.json({ ok: false, error: { code: minted.code, message: minted.message }, trace_id: c.get('trace_id') }, 403)
+      return errorResponse(c, 403, minted.code, minted.message)
     }
 
     await recordAuditEvent(c, {
@@ -175,7 +175,7 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
 
     const verified = await verifyFederationInvite(secret, parsed.data.token)
     if (!verified.ok) {
-      return c.json({ ok: false, error: { code: 'invite_invalid', message: `Invite ${verified.reason}` }, trace_id: c.get('trace_id') }, 401)
+      return errorResponse(c, 401, 'invite_invalid', `Invite ${verified.reason}`)
     }
     const claims = verified.claims
 
@@ -209,7 +209,7 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
     if (!decision.ok) {
       writeEvent(c.env.METRICS_AE, { name: 'connect.join_denied', teamId: joiningTeam.id, plan: c.get('plan'), detail: decision.code, traceId: c.get('trace_id') })
       const status = decision.code === 'already_member' ? 409 : 403
-      return c.json({ ok: false, error: { code: decision.code, message: decision.message }, trace_id: c.get('trace_id') }, status)
+      return errorResponse(c, status, decision.code, decision.message)
     }
 
     members.push(decision.member)
@@ -278,10 +278,7 @@ export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: V
   app.get('/library', async (c) => {
     const teamId = c.req.query('teamId')
     if (!teamId || !c.env.TEAMS_KV || !c.env.TEMPLATES_KV) {
-      return c.json(
-        { ok: false, error: { code: 'bad_request', message: 'teamId required' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_request', 'teamId required')
     }
     const entries = await listFederationLibrary(c.env.TEAMS_KV, c.env.TEMPLATES_KV, teamId)
     return c.json({ ok: true, data: { entries }, trace_id: c.get('trace_id') })

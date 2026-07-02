@@ -41,7 +41,7 @@ export async function embedAndFindSimilarDocuments(
   },
 ): Promise<{ vector?: number[]; similarDocuments: HelpQueryMatch[] }> {
   const vector = await embedVector(
-    env.AI,
+    env,
     HELP_EMBED_MODEL,
     HELP_EMBED_DIM,
     params.question,
@@ -101,7 +101,7 @@ export async function upsertHelpVector(
   let vector = params.existingVector
   if (!vector) {
     vector = await embedVector(
-      env.AI,
+      env,
       HELP_EMBED_MODEL,
       HELP_EMBED_DIM,
       `${params.title} ${params.content?.substring(0, 500) || ''}`,

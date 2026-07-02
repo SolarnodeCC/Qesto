@@ -19,6 +19,7 @@ import type {
 } from '../types/knowledge-base'
 import type { KbQueryFilter, KbVectorMatch, KbVectorRepository } from '../repositories/kbVectorRepository'
 import { firstEmbeddingVector } from '../lib/embedding'
+import { runAI, envWithAI } from '../lib/ai/ai-gateway'
 import { safeLogContext } from '../lib/log'
 
 // ─── Tunable constants ────────────────────────────────────────────────────
@@ -174,7 +175,7 @@ export class KbSearchService {
     let vector: number[]
     try {
       const result = await withTimeout(
-        this.ai.run(KB_EMBED_MODEL, { text: query }),
+        runAI(envWithAI(this.ai), KB_EMBED_MODEL, { text: query }),
         KB_EMBED_TIMEOUT_MS,
         'KB query embedding',
       )

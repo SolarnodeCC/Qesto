@@ -21,7 +21,7 @@ import {
   type InsightTheme,
 } from '../lib/ai-insights'
 import { checkInsightsAllowed } from '../lib/insights-guards'
-import { sanitizeError } from '../lib/error-handler'
+import { errorResponse, sanitizeError } from '../lib/error-handler'
 import { readKvJson, writeKvJson } from '../lib/kv'
 import { rateLimit } from '../lib/rate-limit'
 import { validateData, validateKvJson, PollOptionArraySchema, CachedInsightsSchema } from '../lib/protocol-schemas'
@@ -204,33 +204,16 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
 
     const session = await fetchOwnedSession(c.env.DB, id, user.sub)
     if (!session) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     if (session.status !== 'closed' && session.status !== 'archived') {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'conflict', message: 'Insights are only available for closed sessions' },
-          trace_id: c.get('trace_id'),
-        },
-        409,
-      )
+      return errorResponse(c, 409, 'conflict', 'Insights are only available for closed sessions')
     }
 
     // REV-06: ZK sessions never reach AI; AI-generated sessions need consent.
     const guard = checkInsightsAllowed(session)
     if (!guard.allowed) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: guard.code, message: guard.message },
-          trace_id: c.get('trace_id'),
-        },
-        403,
-      )
+      return errorResponse(c, 403, guard.code, guard.message)
     }
 
     // Cache check before rate limit — hits don't consume AI quota.
@@ -255,14 +238,7 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     // Rate limit only applies to fresh AI calls.
     const rl = await rateLimit(c.env.ACTIONS_KV, user.sub, AI_RATE_LIMIT)
     if (!rl.allowed) {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'rate_limited', message: 'Too many insights requests; try again later' },
-          trace_id: c.get('trace_id'),
-        },
-        429,
-      )
+      return errorResponse(c, 429, 'rate_limited', 'Too many insights requests; try again later')
     }
 
     const [openResponses, pollBreakdown, trend] = await Promise.all([
@@ -286,29 +262,11 @@ export function mountInsightsRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       themes = result.themes
     } catch (err) {
       if (err instanceof InsightsValidationError) {
-        return c.json(
-          {
-            ok: false,
-            error: {
-              code: 'ai_output_invalid',
-              message: 'AI returned an output that failed validation',
-              details: err.details,
-            },
-            trace_id: c.get('trace_id'),
-          },
-          502,
-        )
+        return errorResponse(c, 502, 'ai_output_invalid', 'AI returned an output that failed validation')
       }
       if (err instanceof InsightsAIError) {
         const sanitized = sanitizeError(err, c.env.ENV, 500)
-        return c.json(
-          {
-            ok: false,
-            error: { ...sanitized, code: 'ai_failed' },
-            trace_id: c.get('trace_id'),
-          },
-          500,
-        )
+        return errorResponse(c, 500, 'ai_failed', sanitized.message)
       }
       throw err
     }

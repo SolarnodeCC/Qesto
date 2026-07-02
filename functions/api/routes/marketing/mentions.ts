@@ -2,6 +2,7 @@
 // collected by the Mention Monitor cron). Read + mark-reviewed only.
 
 import { Hono } from 'hono'
+import { errorResponse } from '../../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { marketingOwnerMiddleware, type MarketingOwnerVariables } from '../../middleware/marketing-owner'
@@ -65,7 +66,7 @@ export function mountMentionsRoutes(app: App) {
       .bind(validated.data.reviewed ? 1 : 0, id)
       .run()
     if ((res.meta.changes ?? 0) === 0) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Mention not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'Mention not found')
     }
     await recordAuditEvent(c, { action: 'marketing.mention_reviewed', subject_type: 'mention', subject_id: id, after_snapshot: { reviewed: validated.data.reviewed }, trace_id })
     return c.json({ ok: true, data: { id, reviewed: validated.data.reviewed }, trace_id }, 200)

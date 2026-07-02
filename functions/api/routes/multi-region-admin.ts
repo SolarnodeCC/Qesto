@@ -7,6 +7,7 @@ import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import type { PlanVariables } from '../middleware/plan'
 import type { RbacVariables } from '../middleware/rbac'
 import { readKvJson, writeKvJson } from '../lib/kv'
+import { errorResponse } from '../lib/error-handler'
 import {
   getMultiRegionConfig,
   getMultiRegionRoutingSnapshot,
@@ -53,17 +54,11 @@ export function mountMultiRegionAdminRoutes(parent: Hono<{ Bindings: Env; Variab
 
   app.post('/multi-region/failover', async (c) => {
     if (c.env.MULTI_REGION_FAILOVER_ENABLED !== 'true') {
-      return c.json(
-        { ok: false, error: { code: 'disabled', message: 'Failover drill disabled' }, trace_id: c.get('trace_id') },
-        403,
-      )
+      return errorResponse(c, 403, 'disabled', 'Failover drill disabled')
     }
     const kv = c.env.MULTI_REGION_STATE_KV
     if (!kv) {
-      return c.json(
-        { ok: false, error: { code: 'not_configured', message: 'MULTI_REGION_STATE_KV not bound' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'not_configured', 'MULTI_REGION_STATE_KV not bound')
     }
     await setMultiRegionFailoverActive(kv, true)
     const colo = (c.req.raw as Request & { cf?: { colo?: string } }).cf?.colo ?? null
@@ -79,10 +74,7 @@ export function mountMultiRegionAdminRoutes(parent: Hono<{ Bindings: Env; Variab
   app.delete('/multi-region/failover', async (c) => {
     const kv = c.env.MULTI_REGION_STATE_KV
     if (!kv) {
-      return c.json(
-        { ok: false, error: { code: 'not_configured', message: 'MULTI_REGION_STATE_KV not bound' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'not_configured', 'MULTI_REGION_STATE_KV not bound')
     }
     await setMultiRegionFailoverActive(kv, false)
     return c.json({ ok: true, data: { failoverActive: false }, trace_id: c.get('trace_id') })

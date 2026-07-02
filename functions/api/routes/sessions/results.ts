@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { errorResponse } from '../../lib/error-handler'
 import type { Env } from '../../types'
 import type { SessionVars } from './shared'
 
@@ -11,17 +12,11 @@ export function mountResultsRoutes(app: Hono<{ Bindings: Env; Variables: Session
     const id = c.req.param('id')
     const resultsLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
     if (!resultsLoaded.ok) {
-      return c.json(
-        { ok: false, error: { code: resultsLoaded.error.code, message: resultsLoaded.error.message }, trace_id: c.get('trace_id') },
-        resultsLoaded.error.status,
-      )
+      return errorResponse(c, resultsLoaded.error.status, resultsLoaded.error.code, resultsLoaded.error.message)
     }
     const resultsGate = rejectDraftForResults(resultsLoaded.session)
     if (!resultsGate.ok) {
-      return c.json(
-        { ok: false, error: { code: resultsGate.error.code, message: resultsGate.error.message }, trace_id: c.get('trace_id') },
-        resultsGate.error.status,
-      )
+      return errorResponse(c, resultsGate.error.status, resultsGate.error.code, resultsGate.error.message)
     }
     const session = resultsGate.session
     const questions = await fetchQuestions(c.env.DB, id)

@@ -10,13 +10,13 @@
 // best-effort; the handler falls back to the pure-text summary on error.
 //
 // CB-02: Workers AI circuit breaker wraps runInsightsAI — 3 failures in 60s → OPEN.
-// The breaker uses a no-op signal because Workers AI.run() doesn't accept AbortSignal;
 // per-call timeout is handled by withTimeout(AI_TIMEOUT_MS=25s).
 
 import { z } from 'zod'
 import { CircuitBreakers } from './resilience/circuit-breaker'
 import { sleep, withTimeout } from './shared/async'
 import { logEvent } from './log'
+import { runAI, envWithAI } from './ai/ai-gateway'
 import { sanitizePromptText } from './ai/prompt-sanitize'
 import type { Anonymity } from '../types'
 
@@ -242,10 +242,10 @@ async function runInsightsAI(
     const t0 = Date.now()
     try {
       const res = (await withTimeout(
-        ai.run(model, {
+        runAI(envWithAI(ai), model, {
           messages,
           max_tokens: MAX_TOKENS,
-        }) as Promise<{ response?: string } | string>,
+        }),
         AI_TIMEOUT_MS,
         'AI insights extraction',
       )) as { response?: string } | string

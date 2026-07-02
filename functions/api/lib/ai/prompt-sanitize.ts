@@ -1,6 +1,6 @@
 /**
  * Sanitize user-supplied text before inclusion in Workers AI prompts or embeddings.
- * Applied at the AI gateway choke point and all direct env.AI.run() bypass paths.
+ * Applied at the AI gateway choke point (`runAI` / `runThroughAIGateway`).
  */
 
 export type SanitizableAIRequest = {
@@ -69,6 +69,9 @@ export function sanitizeAIGatewayRequest(input: SanitizableAIRequest): Sanitizab
 
 /** Throw when a sanitized gateway request has no usable prompt content. */
 export function assertSanitizedAIGatewayRequest(input: SanitizableAIRequest): void {
+  // ASR and other non-chat payloads (audio bytes, async batch handles, etc.)
+  if ('audio' in input && input.audio != null) return
+  if ('requests' in input && input.requests != null) return
   if (typeof input.text === 'string') {
     if (!input.text) throw new PromptSanitizationError('Prompt text is empty after sanitization')
     return

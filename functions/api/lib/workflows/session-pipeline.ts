@@ -2,15 +2,14 @@
 // Orchestrates: rewrite → similarity check → proper noun scan → classification → storage
 
 import { z } from 'zod'
+import type { Env } from '../../types'
+import { runAI } from '../ai/ai-gateway'
+import { logEvent } from '../log'
 import { SessionWebhookPayload, TemplateRecord, ClassificationOutput, Lang } from '../template-schemas'
 import { createTemplateId } from '../templates-kv'
-import { logEvent } from '../log'
-import type { Env } from '../../types'
 
-/** Minimal structural contract for the Workers AI binding as used by this pipeline. */
-interface WorkflowAi {
-  run(model: string, options: Record<string, unknown>): Promise<{ response: string }>
-}
+/** Minimal structural contract for workflow AI steps — delegates to runAI(). */
+type WorkflowAi = Pick<Env, 'AI' | 'CLOUDFLARE_AI_GATEWAY_ID' | 'CLOUDFLARE_AI_GATEWAY_TOKEN' | 'CLOUDFLARE_ACCOUNT_ID'>
 
 export interface WorkflowInput extends SessionWebhookPayload {
   // Original question text (from session metadata, not answers)
@@ -35,13 +34,13 @@ export async function sessionPipelineWorkflow(input: WorkflowInput, env: Env): P
   }
 
   // Step 2: Rewrite questions
-  const rewriteResults = await rewriteQuestions(input.originalQuestions, env.AI)
+  const rewriteResults = await rewriteQuestions(input.originalQuestions, env)
 
   // Step 3: Similarity check
-  const checkedQuestions = await similarityCheck(input.originalQuestions, rewriteResults, env.AI)
+  const checkedQuestions = await similarityCheck(input.originalQuestions, rewriteResults, env)
 
   // Step 4: Proper noun scan
-  const scannedQuestions = await properNounScan(checkedQuestions, env.AI)
+  const scannedQuestions = await properNounScan(checkedQuestions, env)
 
   // Early exit if no questions remain
   if (scannedQuestions.length === 0) {
@@ -53,7 +52,7 @@ export async function sessionPipelineWorkflow(input: WorkflowInput, env: Env): P
   }
 
   // Step 5: Classification
-  const classification = await classify(scannedQuestions, input.language as Lang, env.AI)
+  const classification = await classify(scannedQuestions, input.language as Lang, env)
 
   // Step 6: Generate template
   const template = buildTemplateRecord(input, scannedQuestions, classification, input.language as Lang)
@@ -73,6 +72,19 @@ export async function sessionPipelineWorkflow(input: WorkflowInput, env: Env): P
 // Worker AI calls (mock for MVP; integrate with c.env.AI in real implementation)
 // ─────────────────────────────────────────────────────────────────────────────
 
+async function workflowAI(
+  env: WorkflowAi,
+  model: string,
+  input: Record<string, unknown>,
+): Promise<{ response: string }> {
+  const raw = await runAI(env as Env, model, input)
+  if (typeof raw === 'string') return { response: raw }
+  if (raw && typeof raw === 'object' && 'response' in raw) {
+    return { response: String((raw as { response?: string }).response ?? '') }
+  }
+  return { response: JSON.stringify(raw) }
+}
+
 async function rewriteQuestions(
   originalQuestions: Array<{ text: string; kind: string }>,
   ai: WorkflowAi
@@ -80,7 +92,7 @@ async function rewriteQuestions(
   const prompt = buildRewritePrompt(originalQuestions)
 
   try {
-    const result = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+    const result = await workflowAI(ai, '@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         {
           role: 'system',
@@ -118,7 +130,7 @@ async function similarityCheck(
     const prompt = `Original: "${result.original}"\nRewritten: "${result.rewritten}"\n\nRate similarity 0-100 (0=completely different, 100=identical).`
 
     try {
-      const response = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+      const response = await workflowAI(ai, '@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
         messages: [
           {
             role: 'system',
@@ -163,7 +175,7 @@ async function properNounScan(
   const prompt = `List any proper nouns (names, places, companies, brands) in these questions:\n${questions.map((q) => `- "${q.text}"`).join('\n')}`
 
   try {
-    const result = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+    const result = await workflowAI(ai, '@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         {
           role: 'system',
@@ -200,7 +212,7 @@ ${questions.map((q) => `- ${q.text}`).join('\n')}
 Return JSON with: industry, theme, topic, confidence (0-100), purpose_nl, purpose_en, purpose_de, purpose_fr, bestUsedFor (array), estimatedMinutes (number), whatYoullLearn (array)`
 
   try {
-    const result = await ai.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+    const result = await workflowAI(ai, '@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
       messages: [
         {
           role: 'system',

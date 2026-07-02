@@ -2,6 +2,7 @@
  * KB-RAG-01 — decision memory grounding for agents.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import type { AdminVariables } from '../middleware/admin'
@@ -20,10 +21,7 @@ export function mountAgentGroundingRoutes(parent: Hono<{ Bindings: Env; Variable
   app.get('/grounding', async (c) => {
     const q = c.req.query('q') ?? ''
     if (q.trim().length < 3) {
-      return c.json(
-        { ok: false, error: { code: 'bad_query', message: 'Query must be at least 3 characters' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_query', 'Query must be at least 3 characters')
     }
     writeEvent(c.env.METRICS_AE, { name: 'kb_rag.query', userId: c.get('user').sub, detail: q.slice(0, 80) })
     const chunks = await queryDecisionGrounding(c.env, q, 8)

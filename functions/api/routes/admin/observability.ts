@@ -10,6 +10,7 @@
 // returned with `synthetic: true` rather than fabricated — the UI flags it.
 
 import { Hono } from 'hono'
+import { errorResponse } from '../../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
@@ -249,10 +250,7 @@ export function mountObservabilityRoutes(
     const merged = mergeThresholds(validated.data)
     const kv = c.env.METRICS_KV
     if (!kv) {
-      return c.json(
-        { ok: false, error: { code: 'unavailable', message: 'Metrics KV not configured' }, trace_id },
-        503,
-      )
+      return errorResponse(c, 503, 'unavailable', 'Metrics KV not configured')
     }
     await writeKvJson(kv, THRESHOLDS_KEY, merged)
     return c.json({ ok: true, data: merged, trace_id }, 200)

@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { api } from '../api/client'
+import { useApiQuery } from './useApiQuery'
 
 export type AdminUser = {
   id: string
@@ -18,32 +19,22 @@ export type UsersListResult = {
 }
 
 export function useAdminUsers() {
-  const [users, setUsers] = useState<AdminUser[]>([])
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [offset, setOffset] = useState(0)
   const limit = 50
 
-  const fetchUsers = useCallback(async (q: string, off: number) => {
-    setLoading(true)
-    const params = new URLSearchParams({ limit: String(limit), offset: String(off) })
-    if (q) params.set('search', q)
-    const res = await api<UsersListResult>(`/api/admin/users?${params}`)
-    if (res.ok) {
-      setUsers(res.data.users)
-      setTotal(res.data.total)
-      setError(null)
-    } else {
-      setError(res.error.message)
-    }
-    setLoading(false)
-  }, [])
+  const path = (() => {
+    const params = new URLSearchParams({ limit: String(limit), offset: String(offset) })
+    if (search) params.set('search', search)
+    return `/api/admin/users?${params}`
+  })()
 
-  useEffect(() => {
-    fetchUsers(search, offset)
-  }, [fetchUsers, search, offset])
+  const { data, loading, error: apiError, reload } = useApiQuery<UsersListResult>(path)
+  const users = data?.users ?? []
+  const total = data?.total ?? 0
+  const error = apiError?.message ?? null
+
+  const refresh = useCallback(() => reload(), [reload])
 
   const createUser = useCallback(async (data: {
     email: string
@@ -53,34 +44,34 @@ export function useAdminUsers() {
   }) => {
     const res = await api<AdminUser>('/api/admin/users', { method: 'POST', body: data })
     if (res.ok) {
-      await fetchUsers(search, offset)
+      await refresh()
     }
     return res
-  }, [fetchUsers, search, offset])
+  }, [refresh])
 
   const updateUser = useCallback(async (id: string, data: { display_name?: string | null | undefined; plan?: string | undefined; admin_role?: 'admin' | 'owner' | null | undefined }) => {
     const res = await api<AdminUser>(`/api/admin/users/${id}`, { method: 'PATCH', body: data })
     if (res.ok) {
-      setUsers(prev => prev.map(u => u.id === id ? res.data : u))
+      await reload()
     }
     return res
-  }, [])
+  }, [reload])
 
   const suspendUser = useCallback(async (id: string) => {
     const res = await api<{ suspended_at: number }>(`/api/admin/users/${id}/suspend`, { method: 'POST' })
     if (res.ok) {
-      setUsers(prev => prev.map(u => u.id === id ? { ...u, suspended_at: res.data.suspended_at } : u))
+      await reload()
     }
     return res
-  }, [])
+  }, [reload])
 
   const restoreUser = useCallback(async (id: string) => {
     const res = await api<{ suspended_at: null }>(`/api/admin/users/${id}/restore`, { method: 'POST' })
     if (res.ok) {
-      setUsers(prev => prev.map(u => u.id === id ? { ...u, suspended_at: null } : u))
+      await reload()
     }
     return res
-  }, [])
+  }, [reload])
 
   return {
     users,
@@ -96,6 +87,6 @@ export function useAdminUsers() {
     updateUser,
     suspendUser,
     restoreUser,
-    refresh: () => fetchUsers(search, offset),
+    refresh,
   }
 }

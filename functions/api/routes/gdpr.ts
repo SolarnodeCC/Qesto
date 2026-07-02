@@ -7,6 +7,7 @@ import { writeEvent } from '../lib/observability'
 import { deleteUserGdprData } from '../lib/gdpr-delete-user'
 import { recordAuthAuditEvent } from '../lib/audit'
 import { ok } from '../lib/http'
+import { errorResponse } from '../lib/error-handler'
 import type { Env } from '../types'
 
 // Match the Vars shape used in app.ts so this sub-router composes cleanly.
@@ -89,7 +90,7 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     ).bind(teamId).first<{ owner_id: string }>()
 
     if (!team) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Team not found' }, trace_id: traceId }, 404)
+      return errorResponse(c, 404, 'not_found', 'Team not found')
     }
     if (team.owner_id !== actor.sub) {
       void recordAuthAuditEvent(c.env.DB, {
@@ -101,12 +102,12 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
         outcome: 'failure',
         detail: 'forbidden_not_owner',
       })
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'Only the team owner can request member deletion' }, trace_id: traceId }, 403)
+      return errorResponse(c, 403, 'forbidden', 'Only the team owner can request member deletion')
     }
 
     // Prevent owners from deleting themselves via this route (use /me/gdpr-delete)
     if (targetUserId === actor.sub) {
-      return c.json({ ok: false, error: { code: 'bad_request', message: 'Use /api/users/me/gdpr-delete to delete your own account' }, trace_id: traceId }, 400)
+      return errorResponse(c, 400, 'bad_request', 'Use /api/users/me/gdpr-delete to delete your own account')
     }
 
     // Verify target is actually a member of this team
@@ -115,7 +116,7 @@ export function mountGdprRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>
     ).bind(teamId, targetUserId).first()
 
     if (!membership) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'User is not a member of this team' }, trace_id: traceId }, 404)
+      return errorResponse(c, 404, 'not_found', 'User is not a member of this team')
     }
 
     writeEvent(c.env.METRICS_AE, {

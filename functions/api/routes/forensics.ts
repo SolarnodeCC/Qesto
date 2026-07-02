@@ -2,6 +2,7 @@
  * AUDIT-API-QUERY-01 / WEBHOOK-DELIVERY-SLA-01 / SEC-CMK-01 (S78).
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../middleware/admin'
 import { AuditQuerySchema, filterAuditRecords, type AuditRecord } from '../lib/audit-query'
@@ -26,10 +27,7 @@ export function mountForensicsRoutes(parent: ParentApp) {
       limit: c.req.query('limit') ? Number(c.req.query('limit')) : 100,
     })
     if (!parsed.success) {
-      return c.json(
-        { ok: false, error: { code: 'bad_request', message: parsed.error.message }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_request', parsed.error.message)
     }
     const raw = c.env.AUDIT_KV ? await readKvJson<AuditRecord[]>(c.env.AUDIT_KV, 'audit:recent') : []
     const records = filterAuditRecords(raw ?? [], parsed.data)

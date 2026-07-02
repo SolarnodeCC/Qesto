@@ -27,6 +27,7 @@ import {
   type EmbedSessionView,
 } from '../repositories/embedWidgetRepository'
 import { consumeEmbedCopilotFlag } from '../lib/copilot-live-context'
+import { errorResponse } from '../lib/error-handler'
 import type { Env, EmbedWidgetTokenClaims } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -80,7 +81,7 @@ export function mountEmbedWidgetV1Routes(parent: ParentApp) {
     // re-point the handshake at a foreign session.
     const session = await fetchEmbedSessionById(c.env.DB, claims.sid)
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
 
     // The participant token is anonymous BY CONSTRUCTION: a random,
@@ -111,7 +112,7 @@ export function mountEmbedWidgetV1Routes(parent: ParentApp) {
     const claims = c.get('widget')
     const session = await resolveTokenSession(c.env.DB, claims, c.req.param('idOrCode'))
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
 
     const q = await fetchEmbedActiveQuestion(c.env.DB, session.id)
@@ -142,7 +143,7 @@ export function mountEmbedWidgetV1Routes(parent: ParentApp) {
     const claims = c.get('widget')
     const session = await resolveTokenSession(c.env.DB, claims, c.req.param('idOrCode'))
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
 
     const q = await fetchEmbedActiveQuestion(c.env.DB, session.id)

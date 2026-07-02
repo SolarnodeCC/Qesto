@@ -9,6 +9,7 @@ import type { Env } from '../../types'
 import { verifyJwt } from '../../lib/jwt'
 import type { AuthVariables } from '../../middleware/auth'
 import { safeLogContext , logEvent} from '../../lib/log'
+import { errorResponse } from '../../lib/error-handler'
 
 const FeedbackSchema = z.object({
   documentId: z.string().min(1),
@@ -34,29 +35,12 @@ export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: 
     try {
       body = await c.req.json()
     } catch {
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'bad_request', message: 'Invalid JSON' },
-          trace_id: traceId,
-        },
-        400,
-      )
+      return errorResponse(c, 400, 'bad_request', 'Invalid JSON')
     }
 
     const parsed = FeedbackSchema.safeParse(body)
     if (!parsed.success) {
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'validation_error',
-            message: 'Missing required fields: documentId, helpful',
-          },
-          trace_id: traceId,
-        },
-        400,
-      )
+      return errorResponse(c, 400, 'validation_error', 'Missing required fields: documentId, helpful')
     }
 
     const { documentId, helpful, feedbackText } = parsed.data
@@ -122,17 +106,7 @@ export function registerHelpFeedbackRoute(app: Hono<{ Bindings: Env; Variables: 
     } catch (err) {
       safeLogContext(err, { traceId: traceId, route: c.req.path, errorClass: err instanceof Error ? err.name : 'UnknownError', statusCode: 500 })
 
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'internal_error',
-            message: 'Failed to store feedback',
-          },
-          trace_id: traceId,
-        },
-        500,
-      )
+      return errorResponse(c, 500, 'internal_error', 'Failed to store feedback')
     }
   })
 }

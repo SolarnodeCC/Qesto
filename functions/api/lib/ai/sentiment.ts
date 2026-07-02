@@ -3,6 +3,7 @@
  */
 import type { Env } from '../../types'
 import { SENTIMENT_TEXT_MAX_LEN, sanitizePromptText } from './prompt-sanitize'
+import { runAI } from './ai-gateway'
 import { aiOverride, aiPipeline, SENTIMENT_MODEL, type SessionAIContext } from './session-context'
 
 export type SessionMood = 'positive' | 'neutral' | 'concerning'
@@ -65,7 +66,7 @@ export async function analyzeOpenResponseSentiment(
     const sanitized = sanitizePromptText(text, SENTIMENT_TEXT_MAX_LEN)
     if (!sanitized) continue
     const result = await aiPipeline(ctxSentiment, env, async (model, _signal) => {
-      return env.AI.run(model, { text: sanitized })
+      return runAI(env, model, { text: sanitized })
     })
     if (!result.ok) {
       if (result.code === 'ai_timeout') hasTimeout = true

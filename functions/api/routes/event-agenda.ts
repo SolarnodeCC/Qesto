@@ -113,10 +113,7 @@ export function mountTeamEventAgendaRoutes(parent: ParentApp) {
       for (const slot of track.slots) {
         if (slot.sessionId) {
           if (!sessions.has(slot.sessionId)) {
-            return c.json(
-              { ok: false, error: { code: 'validation', message: 'Slot references unknown session' }, trace_id: c.get('trace_id') },
-              400,
-            )
+            return errorResponse(c, 400, 'validation', 'Slot references unknown session')
           }
           linkedIds.add(slot.sessionId)
         }

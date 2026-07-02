@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { featureAllowed } from '../lib/entitlements'
+import { errorResponse } from '../lib/error-handler'
 import { fetchLdapDirectory, syncLdapDirectoryToTeam } from '../lib/ldap-sync'
 import {
   loadLdapGroupMap,
@@ -51,20 +52,14 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>)
     const traceId = c.get('trace_id')
     const quotas = c.get('planQuotas')
     if (!featureAllowed(quotas, 'samlSso')) {
-      return c.json(
-        { ok: false, error: { code: 'upgrade_required', message: 'LDAP sync requires Enterprise plan' }, trace_id: traceId },
-        403,
-      )
+      return errorResponse(c, 403, 'upgrade_required', 'LDAP sync requires Enterprise plan')
     }
 
     const validated = await validateBody(c, LdapSyncBodySchema)
     if ('error' in validated) return validated.error
     const teamId = validated.data.teamId ?? c.env.LDAP_TEAM_ID
     if (!teamId) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'teamId required (body or LDAP_TEAM_ID)' }, trace_id: traceId },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'teamId required (body or LDAP_TEAM_ID)')
     }
 
     try {
@@ -104,17 +99,7 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>)
             ? 'ldap_not_configured'
             : 'ldap_sync_failed'
       const status = code === 'not_found' ? 404 : code === 'ldap_not_configured' ? 503 : 502
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code,
-            message,
-          },
-          trace_id: traceId,
-        },
-        status,
-      )
+      return errorResponse(c, status, code, message)
     }
   })
 
@@ -122,10 +107,7 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>)
     const teamId = c.req.param('teamId')
     const body = (await c.req.json().catch(() => null)) as LdapGroupMap | null
     if (!body || typeof body !== 'object') {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Invalid group map' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Invalid group map')
     }
     await saveLdapGroupMap(c.env.TEAMS_KV, teamId, body)
     return c.json({ ok: true, data: { teamId, map: body }, trace_id: c.get('trace_id') })
@@ -151,10 +133,7 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>)
     const teamId = c.req.param('teamId')
     const body = (await c.req.json().catch(() => null)) as LdapSyncFilter | null
     if (!body) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Invalid filter' }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Invalid filter')
     }
     await writeKvJson(c.env.TEAMS_KV, ldapFilterKey(teamId), body)
     return c.json({ ok: true, data: { teamId, filter: body }, trace_id: c.get('trace_id') })

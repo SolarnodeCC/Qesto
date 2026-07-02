@@ -2,6 +2,7 @@
  * PARTNER-BRANDING-01 — team partner theme for sessions and emails.
  */
 import { Hono } from 'hono'
+import { errorResponse } from '../lib/error-handler'
 import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
@@ -47,10 +48,7 @@ export function mountPartnerBrandingRoutes(parent: Hono<{ Bindings: Env; Variabl
 
   app.put('/teams/:teamId/partner-branding', async (c) => {
     if (!c.env.INTEGRATIONS_KV) {
-      return c.json(
-        { ok: false, error: { code: 'unavailable', message: 'Branding storage unavailable' }, trace_id: c.get('trace_id') },
-        503,
-      )
+      return errorResponse(c, 503, 'unavailable', 'Branding storage unavailable')
     }
     const teamId = c.req.param('teamId')
     const validated = await validateBody(c, BrandingSchema)

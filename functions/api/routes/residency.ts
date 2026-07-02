@@ -32,10 +32,7 @@ export function mountResidencyRoutes(parent: ParentApp) {
 
   app.put('/pin', async (c) => {
     if (c.get('plan') !== 'team') {
-      return c.json(
-        { ok: false, error: { code: 'upgrade_required', message: 'Residency pinning requires Team plan' }, trace_id: c.get('trace_id') },
-        403,
-      )
+      return errorResponse(c, 403, 'upgrade_required', 'Residency pinning requires Team plan')
     }
     const parsed = await validateBody(c, PinSchema)
     if ('error' in parsed) return parsed.error

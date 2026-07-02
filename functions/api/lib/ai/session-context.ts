@@ -1,6 +1,6 @@
 /**
  * AI-CONTEXT-01 — typed Workers AI context for all inference paths.
- * All Workers AI.run() calls are routed through the AI Gateway wrapper (ai-gateway.ts)
+ * All Workers AI inference is routed through the AI Gateway wrapper (ai-gateway.ts)
  * for semantic caching, rate limiting, and cost analytics.
  * @see knowledge-base/architecture/AI_CONTEXT_SPEC.md
  * @see ai-gateway.ts — AI Gateway + fallback logic
@@ -134,7 +134,7 @@ export async function aiPipeline<T>(
  * Routes through the Gateway for semantic caching + rate limiting, with fallback to direct env.AI.
  * Wraps with circuit breaker + observability logging.
  *
- * Usage (replaces inline env.AI.run() calls):
+ * Usage (replaces inline Workers AI calls):
  * ```
  * const result = await runAI(ctx, env, '@cf/meta/distilbert-sst-2-int8', { text: 'hello' });
  * ```

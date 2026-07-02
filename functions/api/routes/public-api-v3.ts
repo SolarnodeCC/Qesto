@@ -5,6 +5,7 @@ import { Hono } from 'hono'
 import { z } from 'zod'
 import { publicApiKeyMiddleware, type ApiKeyVars } from '../middleware/public-api-auth'
 import { apiKeyHasScope } from '../lib/api-keys'
+import { errorResponse } from '../lib/error-handler'
 import { OPENAPI_V3_SPEC } from '../lib/openapi-v3-spec'
 import { withIdempotency } from '../lib/idempotency'
 import { generateJoinCode } from '../lib/code'
@@ -43,7 +44,7 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
 
   app.get('/sessions', async (c) => {
     if (!apiKeyHasScope(c.get('apiKey'), 'read')) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'read scope required' } }, 403)
+      return errorResponse(c, 403, 'forbidden', 'read scope required')
     }
     const sessions = await listSessionsForTeam(c.env.DB, c.get('apiKey').teamId)
     return c.json({ ok: true, data: { sessions, apiVersion: 3 } })
@@ -51,7 +52,7 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
 
   app.post('/sessions', async (c) => {
     if (!apiKeyHasScope(c.get('apiKey'), 'write')) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'write scope required' } }, 403)
+      return errorResponse(c, 403, 'forbidden', 'write scope required')
     }
     const parsed = await validateBody(c, CreateSessionSchema)
     if ('error' in parsed) return parsed.error
@@ -76,13 +77,13 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
 
   app.get('/sessions/:id/results', async (c) => {
     if (!apiKeyHasScope(c.get('apiKey'), 'read')) {
-      return c.json({ ok: false, error: { code: 'forbidden', message: 'read scope required' } }, 403)
+      return errorResponse(c, 403, 'forbidden', 'read scope required')
     }
     const { teamId } = c.get('apiKey')
     const sessionId = c.req.param('id')
     const session = await fetchSessionForTeam(c.env.DB, sessionId, teamId)
     if (!session) {
-      return c.json({ ok: false, error: { code: 'not_found', message: 'Session not found' } }, 404)
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const questions = await c.env.DB.prepare(
       `SELECT id, kind, prompt FROM questions WHERE session_id = ?1 ORDER BY position`,
@@ -103,7 +104,7 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
   app.get('/usage', async (c) => {
     const kv = c.env.ACTIONS_KV ?? c.env.INTEGRATIONS_KV
     if (!kv) {
-      return c.json({ ok: false, error: { code: 'unavailable', message: 'Usage metering unavailable' } }, 503)
+      return errorResponse(c, 503, 'unavailable', 'Usage metering unavailable')
     }
     const usage = await getApiUsageForTeam(kv, c.get('apiKey').teamId)
     return c.json({ ok: true, data: { usage, quota: { requestsPerDay: 50_000 } } })

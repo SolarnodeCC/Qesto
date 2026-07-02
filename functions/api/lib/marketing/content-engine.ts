@@ -11,6 +11,7 @@
  * the rest of the run (no retry; the operator can reschedule the slot).
  */
 
+import { runAI, envWithAI } from '../ai/ai-gateway'
 import { ulid } from '../ulid'
 import { acquireLock, releaseLock, recordLockRun } from './engine-lock'
 import { logCronRun } from './cron-log'
@@ -69,7 +70,7 @@ export async function runContentEngine(
       try {
         if (row.platform === 'linkedin') {
           const { system, user } = buildLinkedInPrompt(row.topic, 'en')
-          const result = (await ai.run(LINKEDIN_MODEL, {
+          const result = (await runAI(envWithAI(ai), LINKEDIN_MODEL, {
             messages: [
               { role: 'system', content: system },
               { role: 'user', content: user },
@@ -96,7 +97,7 @@ export async function runContentEngine(
             videoTitle = v?.title
           }
           const { system, user } = buildYouTubePrompt(row.topic, videoTitle)
-          const result = (await ai.run(YOUTUBE_MODEL, {
+          const result = (await runAI(envWithAI(ai), YOUTUBE_MODEL, {
             messages: [
               { role: 'system', content: system },
               { role: 'user', content: user },

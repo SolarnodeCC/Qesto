@@ -3,18 +3,23 @@
  *
  * Both `lib/insights-vectorize.ts` and `lib/help-vectorize.ts` (and future
  * indices) embed text with bge-m3 then query a Vectorize index with a timeout.
- * That transport boilerplate (sanitize → ai.run → firstEmbeddingVector →
+ * That transport boilerplate (sanitize → runAI → firstEmbeddingVector →
  * index.query under withTimeout) lived duplicated in each file; it now lives
  * here. Index-specific constants, score thresholds, metadata shaping and filters
  * stay in the callers.
  */
 import type { Env } from '../../types'
+import { runAI } from './ai-gateway'
 import { sanitizeEmbedText } from './prompt-sanitize'
 import { firstEmbeddingVector } from '../embedding'
 import { withTimeout } from '../shared/async'
 
-type AiBinding = Env['AI']
 type VectorizeBinding = Env['DECISIONS_VECTORIZE']
+
+export type EmbedEnv = Pick<
+  Env,
+  'AI' | 'CLOUDFLARE_AI_GATEWAY_ID' | 'CLOUDFLARE_AI_GATEWAY_TOKEN' | 'CLOUDFLARE_ACCOUNT_ID'
+>
 
 /**
  * Sanitize `rawText`, embed it with `model`, and return the first vector of
@@ -22,7 +27,7 @@ type VectorizeBinding = Env['DECISIONS_VECTORIZE']
  * or the embedding has no usable vector.
  */
 export async function embedVector(
-  ai: AiBinding,
+  env: EmbedEnv,
   model: string,
   dim: number,
   rawText: string,
@@ -32,7 +37,7 @@ export async function embedVector(
 ): Promise<number[] | undefined> {
   const text = maxLen === undefined ? sanitizeEmbedText(rawText) : sanitizeEmbedText(rawText, maxLen)
   if (!text) return undefined
-  const result = await withTimeout(ai.run(model, { text }), timeoutMs, label)
+  const result = await withTimeout(runAI(env as Env, model, { text }), timeoutMs, label)
   return firstEmbeddingVector(result, dim)
 }
 

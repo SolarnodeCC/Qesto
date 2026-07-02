@@ -6,6 +6,7 @@
 // we always rehydrate from the `init` payload on reconnect.
 
 import type { PollOption, QuestionKind } from '@api/types'
+import type { EnergizerBackendKind } from '../types/session'
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { enqueueOfflineVote, flushOfflineVoteQueue } from '../lib/offline-vote-queue'
 import { parseInitPayload, parseServerEnvelope } from '../lib/live-session-protocol'
@@ -21,7 +22,7 @@ const LIVE_PROTOCOL_VERSION = 1
 
 export type LiveEnergizerState = {
   id: string
-  kind: 'quick_finger' | 'team_quiz' | 'emoji_poll' | 'word_cloud'
+  kind: EnergizerBackendKind
   title: string
   status: 'active' | 'completed'
   prompt?: string

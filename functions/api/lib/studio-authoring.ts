@@ -8,7 +8,7 @@
 // (AIQuestionsOutputSchema), normalised (synthesised option/draft ids), and
 // scored with a heuristic confidence.
 //
-// The actual `c.env.AI.run(...)` call is kept thin in routes/studio.ts — this
+// The actual `runAI()` call is kept thin in routes/studio.ts — this
 // module never touches the network. Workers AI model id is exported for the
 // route: `@cf/meta/llama-3.3-70b-instruct-fp8-fast`.
 

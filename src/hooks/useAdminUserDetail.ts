@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { api } from '../api/client'
 import { API_BASE_URL } from '../config/api'
+import { useApiQuery } from './useApiQuery'
 
 export type UserDetail = {
   account: {
@@ -41,27 +42,9 @@ export type ImpersonationGrant = {
 
 /** Module 3 — fetch a single user's support detail + privileged actions. */
 export function useAdminUserDetail(userId: string | null) {
-  const [detail, setDetail] = useState<UserDetail | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const refresh = useCallback(async () => {
-    if (!userId) return
-    setLoading(true)
-    const res = await api<UserDetail>(`/api/admin/users/${userId}/detail`)
-    if (res.ok) {
-      setDetail(res.data)
-      setError(null)
-    } else {
-      setError(res.error.message)
-    }
-    setLoading(false)
-  }, [userId])
-
-  useEffect(() => {
-    setDetail(null)
-    void refresh()
-  }, [refresh])
+  const path = userId ? `/api/admin/users/${userId}/detail` : undefined
+  const { data: detail, loading, error: apiError, reload: refresh } = useApiQuery<UserDetail>(path)
+  const error = apiError?.message ?? null
 
   const impersonate = useCallback(async () => {
     if (!userId) return null

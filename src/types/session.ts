@@ -45,3 +45,6 @@ export type SessionLookupByCode = Pick<Session, 'id' | 'title' | 'code'> & {
  * Backend also supports `consent`; the wizard uses separate UX for ballots.
  */
 export type WizardQuestionKind = Exclude<QuestionKind, 'consent'>
+
+/** Backend energizer kinds surfaced in live session WebSocket state. */
+export type EnergizerBackendKind = 'quick_finger' | 'team_quiz' | 'emoji_poll' | 'word_cloud'
