@@ -7,7 +7,7 @@ import PageSeo from '../../components/PageSeo'
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[var(--text-primary)] text-sm border border-pulse-300 dark:border-[var(--color-border-strong)] bg-white dark:bg-[var(--color-surface-elevated)] hover:border-pulse-500 dark:hover:border-[var(--color-border-strong)] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -72,18 +72,18 @@ export default function HRPage() {
       />
 
       {/* Hero */}
-      <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
+      <section className="py-16 md:py-20 bg-white dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Qesto for HR</div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
                 Honest pulse.{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
                   Without a witch hunt.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[var(--text-muted)] leading-relaxed mb-8">
                 Run quarterly climate checks, manager 360s, and open-comment sessions where people actually speak.
                 Consent rounds mean every attendee picks their visibility before the first vote — and no result is
                 shown until the floor is large enough to protect them.
@@ -92,7 +92,7 @@ export default function HRPage() {
                 <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
                   Start a pulse
                 </Link>
-                <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
+                <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[var(--color-surface-elevated)] dark:border-[var(--color-border-strong)] dark:text-[var(--text-primary)]'}>
                   Book a walkthrough
                 </Link>
                 <span className="text-xs text-pulse-500" style={{ fontFamily: 'var(--font-family-mono)' }}>
@@ -102,9 +102,9 @@ export default function HRPage() {
             </div>
 
             {/* Mode card */}
-            <div className="bg-white dark:bg-[#151C2E] rounded-[20px] p-6" style={shadowElevated}>
+            <div className="bg-white dark:bg-[var(--color-surface)] rounded-[20px] p-6" style={shadowElevated}>
               {/* Tabs */}
-              <div className="flex gap-1.5 p-1 bg-pulse-100 dark:bg-[#1E2A45] rounded-xl mb-5">
+              <div className="flex gap-1.5 p-1 bg-pulse-100 dark:bg-[var(--color-border)] rounded-xl mb-5">
                 {([['anon', 'Anonymous'], ['cohort', 'Cohort-visible'], ['ident', 'Identified']] as [Mode, string][]).map(
                   ([key, label]) => (
                     <button
@@ -112,8 +112,8 @@ export default function HRPage() {
                       onClick={() => setMode(key)}
                       className={`flex-1 py-2.5 rounded-lg text-[13px] font-semibold transition-all ${
                         mode === key
-                          ? 'bg-white dark:bg-[#151C2E] text-pulse-900 dark:text-[#F0F2F8] shadow-[var(--shadow-card)]'
-                          : 'text-pulse-500 dark:text-[#8A96B0]'
+                          ? 'bg-white dark:bg-[var(--color-surface)] text-pulse-900 dark:text-[var(--text-primary)] shadow-[var(--shadow-card)]'
+                          : 'text-pulse-500 dark:text-[var(--text-muted)]'
                       }`}
                     >
                       {label}
@@ -125,7 +125,7 @@ export default function HRPage() {
               {/* Rows */}
               <div className="space-y-2.5 mb-3">
                 {[1, 2].map((i) => (
-                  <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl bg-pulse-50 dark:bg-[#0F1525]">
+                  <div key={i} className="flex items-center gap-3 p-3.5 rounded-xl bg-pulse-50 dark:bg-[var(--color-border)]">
                     <div
                       className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold ${
                         mode === 'ident'
@@ -137,10 +137,10 @@ export default function HRPage() {
                       {mode === 'ident' ? (i === 1 ? 'AK' : 'PR') : '?'}
                     </div>
                     <div className="flex-1">
-                      <div className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+                      <div className="text-sm font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
                         {mode === 'ident' ? (i === 1 ? 'Alex Kim' : 'Priya Rao') : 'Participant'}
                       </div>
-                      <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0]">
+                      <div className="text-[13px] text-pulse-500 dark:text-[var(--text-muted)]">
                         {mode === 'anon' && 'Vote recorded · No identity linked'}
                         {mode === 'cohort' && `Vote recorded · ${i === 1 ? 'Engineering' : 'Design'} team`}
                         {mode === 'ident' && (
@@ -156,15 +156,15 @@ export default function HRPage() {
               </div>
 
               {/* Tally */}
-              <div className="p-4 rounded-xl bg-pulse-50 dark:bg-[#0F1525] space-y-2">
+              <div className="p-4 rounded-xl bg-pulse-50 dark:bg-[var(--color-border)] space-y-2">
                 {[
                   { lbl: 'Strongly agree', pct: 62, n: 29 },
                   { lbl: 'Agree', pct: 26, n: 12 },
                   { lbl: 'Disagree', pct: 12, n: 6 },
                 ].map(({ lbl, pct, n }) => (
                   <div key={lbl} className="flex items-center gap-2.5 text-[13px]">
-                    <span className="w-[90px] font-medium text-pulse-700 dark:text-[#A8B3CC]">{lbl}</span>
-                    <div className="flex-1 h-2.5 bg-white dark:bg-[#1E2A45] rounded-full overflow-hidden">
+                    <span className="w-[90px] font-medium text-pulse-700 dark:text-[var(--text-secondary)]">{lbl}</span>
+                    <div className="flex-1 h-2.5 bg-white dark:bg-[var(--color-border)] rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, ...gradientBrand }} />
                     </div>
                     <span className="w-8 text-right text-pulse-500" style={{ fontFamily: 'var(--font-family-mono)', fontVariantNumeric: 'tabular-nums' }}>
@@ -179,10 +179,10 @@ export default function HRPage() {
       </section>
 
       {/* Proof stats */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <section className="py-16 bg-pulse-50 dark:bg-[var(--color-border)]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Proof</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
             HR teams run Qesto when results have to be defensible.
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
@@ -192,10 +192,10 @@ export default function HRPage() {
               { label: 'Minimum tally threshold', value: '5', note: 'Results stay hidden until five voices are in. No single-voter exposure.' },
               { label: 'Recap source readiness', value: 'Same day', note: 'Session exports and reviewed themes support the follow-up package.' },
             ].map(({ label, value, note }) => (
-              <div key={label} className="bg-white dark:bg-[#151C2E] rounded-2xl p-6" style={shadowCard}>
-                <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0] mb-2">{label}</div>
-                <div className="font-bold text-4xl tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-2" style={displayFont}>{value}</div>
-                <div className="text-[13px] text-pulse-500 dark:text-[#8A96B0] leading-snug">{note}</div>
+              <div key={label} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-6" style={shadowCard}>
+                <div className="text-[13px] text-pulse-500 dark:text-[var(--text-muted)] mb-2">{label}</div>
+                <div className="font-bold text-4xl tracking-tight text-pulse-900 dark:text-[var(--text-primary)] mb-2" style={displayFont}>{value}</div>
+                <div className="text-[13px] text-pulse-500 dark:text-[var(--text-muted)] leading-snug">{note}</div>
               </div>
             ))}
           </div>
@@ -203,22 +203,22 @@ export default function HRPage() {
       </section>
 
       {/* Use cases */}
-      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
+      <section className="py-16 bg-white dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Where it fits</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
             Four HR moments Qesto was built for.
           </h2>
-          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[var(--text-muted)] mb-8 text-lg">
             Each one demands a different consent posture. Qesto is the only tool that lets the room choose.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {useCases.map(({ tag, title, desc, items }) => (
-              <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="text-[11px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 mb-2">{tag}</div>
-                <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-pulse-500 dark:text-[#8A96B0] text-sm leading-relaxed mb-4">{desc}</p>
-                <ul className="list-disc pl-4 space-y-1 text-sm text-pulse-500 dark:text-[#8A96B0]">
+                <h3 className="font-semibold text-[20px] mb-2.5 text-pulse-900 dark:text-[var(--text-primary)]">{title}</h3>
+                <p className="text-pulse-500 dark:text-[var(--text-muted)] text-sm leading-relaxed mb-4">{desc}</p>
+                <ul className="list-disc pl-4 space-y-1 text-sm text-pulse-500 dark:text-[var(--text-muted)]">
                   {items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -230,15 +230,15 @@ export default function HRPage() {
       </section>
 
       {/* Quote */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
+      <section className="py-16 bg-pulse-50 dark:bg-[var(--color-border)]">
         <div className="max-w-6xl mx-auto px-6">
           <blockquote className="max-w-3xl mx-auto text-center">
-            <p className="text-[20px] leading-relaxed text-pulse-900 dark:text-[#F0F2F8] mb-6 italic">
+            <p className="text-[20px] leading-relaxed text-pulse-900 dark:text-[var(--text-primary)] mb-6 italic">
               "We used to spend two weeks arguing about whether the engagement survey was honest. Now we run the
               pulse in the room, see the tally, and the argument is about what to do about it."
             </p>
-            <footer className="text-sm text-pulse-500 dark:text-[#8A96B0]">
-              <strong className="text-pulse-900 dark:text-[#F0F2F8]">Priya Ramanathan</strong> · Chief People Officer, mid-market SaaS
+            <footer className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">
+              <strong className="text-pulse-900 dark:text-[var(--text-primary)]">Priya Ramanathan</strong> · Chief People Officer, mid-market SaaS
               (pilot customer)
             </footer>
           </blockquote>
@@ -246,10 +246,10 @@ export default function HRPage() {
       </section>
 
       {/* Compliance */}
-      <section className="py-16 bg-white dark:bg-[#0A0F1E]">
+      <section className="py-16 bg-white dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Compliance posture</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[var(--text-primary)]" style={displayFont}>
             Built to survive your legal team.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -270,12 +270,12 @@ export default function HRPage() {
                 desc: 'Identity rows purge on your schedule — 30 days, 90, custom. Aggregate tallies live longer for trend reporting, with no link back.',
               },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
+              <div key={title} className="bg-white dark:bg-[var(--color-surface)] rounded-xl p-7" style={shadowCard}>
                 <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>
-                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
-                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[#8A96B0]">{desc}</p>
+                <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[var(--text-primary)]">{title}</h3>
+                <p className="text-sm leading-relaxed text-pulse-500 dark:text-[var(--text-muted)]">{desc}</p>
               </div>
             ))}
           </div>

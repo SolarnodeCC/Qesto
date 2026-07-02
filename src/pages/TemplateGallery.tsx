@@ -73,7 +73,7 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
   return (
     <Link
       to={`/templates/${template.id}`}
-      className="group block rounded-2xl bg-white dark:bg-[#111827] border border-pulse-100 dark:border-white/10 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 overflow-hidden"
+      className="group block rounded-xl bg-white dark:bg-[var(--color-bg-subtle)] border border-pulse-100 dark:border-white/10 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 overflow-hidden"
       style={shadowCard}
       aria-label={title}
     >
@@ -87,17 +87,17 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
         </span>
 
         {/* Title */}
-        <h3 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-2 line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+        <h3 className="font-semibold text-base text-pulse-900 dark:text-[var(--text-primary)] mb-2 line-clamp-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
           {title}
         </h3>
 
         {/* Purpose */}
-        <p className="text-sm text-pulse-600 dark:text-[#8893AD] line-clamp-2 mb-4">
+        <p className="text-sm text-pulse-600 dark:text-[var(--text-muted)] line-clamp-2 mb-4">
           {purpose}
         </p>
 
         {/* Metadata row */}
-        <div className="flex items-center gap-4 text-xs text-pulse-500 dark:text-[#8893AD]">
+        <div className="flex items-center gap-4 text-xs text-pulse-500 dark:text-[var(--text-muted)]">
           <span className="flex items-center gap-1">
             <BookOpen className="h-3.5 w-3.5" />
             {template.questions.length} {t('templates.questions')}
@@ -194,7 +194,7 @@ export default function TemplateGallery() {
       />
 
       {/* Hero */}
-      <section className="py-14 md:py-20 bg-white dark:bg-[#0A0F1E]">
+      <section className="py-14 md:py-20 bg-white dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <div
             className="inline-block text-xs font-bold tracking-widest uppercase mb-4 px-3 py-1 rounded-full text-white"
@@ -203,22 +203,22 @@ export default function TemplateGallery() {
             {t('templates.galleryBadge')}
           </div>
           <h1
-            className="font-bold text-4xl md:text-5xl text-pulse-900 dark:text-[#F0F2F8] mb-4"
+            className="font-bold text-4xl md:text-5xl text-pulse-900 dark:text-[var(--text-primary)] mb-4"
             style={displayFont}
             tabIndex={-1}
           >
             {t('templates.galleryHeading')}
           </h1>
-          <p className="text-lg text-pulse-600 dark:text-[#8893AD] max-w-2xl mx-auto">
+          <p className="text-lg text-pulse-600 dark:text-[var(--text-muted)] max-w-2xl mx-auto">
             {t('templates.gallerySubheading')}
           </p>
         </div>
       </section>
 
       {/* Filters */}
-      <section className="border-y border-pulse-100 dark:border-white/10 bg-pulse-50 dark:bg-[#0D1424]">
+      <section className="border-y border-pulse-100 dark:border-white/10 bg-pulse-50 dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap gap-3 items-center">
-          <span className="text-sm font-medium text-pulse-700 dark:text-[#8893AD] mr-2">
+          <span className="text-sm font-medium text-pulse-700 dark:text-[var(--text-muted)] mr-2">
             {t('templates.filterBy')}
           </span>
 
@@ -226,7 +226,7 @@ export default function TemplateGallery() {
           <select
             value={industry}
             onChange={(e) => setIndustry(e.target.value as Industry | '')}
-            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[#F0F2F8] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[var(--color-bg-subtle)] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             aria-label={t('templates.filterIndustry')}
           >
             <option value="">{t('templates.allIndustries')}</option>
@@ -239,7 +239,7 @@ export default function TemplateGallery() {
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value as Theme | '')}
-            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#111827] text-pulse-900 dark:text-[#F0F2F8] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="text-sm rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[var(--color-bg-subtle)] text-pulse-900 dark:text-[var(--text-primary)] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
             aria-label={t('templates.filterTheme')}
           >
             <option value="">{t('templates.allThemes')}</option>
@@ -251,32 +251,32 @@ export default function TemplateGallery() {
           {(industry || theme) && (
             <button
               onClick={() => { setIndustry(''); setTheme('') }}
-              className="text-sm text-pulse-500 dark:text-[#8893AD] hover:text-teal-600 dark:hover:text-teal-400 transition-colors underline underline-offset-2"
+              className="text-sm text-pulse-500 dark:text-[var(--text-muted)] hover:text-teal-600 dark:hover:text-teal-400 transition-colors underline underline-offset-2"
             >
               {t('templates.clearFilters')}
             </button>
           )}
 
-          <span className="ml-auto text-sm text-pulse-500 dark:text-[#8893AD]">
+          <span className="ml-auto text-sm text-pulse-500 dark:text-[var(--text-muted)]">
             {loading ? t('loading') : t('templates.templateCount', { count: templates.length })}
           </span>
         </div>
       </section>
 
       {/* Grid */}
-      <section className="py-12 bg-white dark:bg-[#0A0F1E]">
+      <section className="py-12 bg-white dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-6xl mx-auto px-6">
           {loading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-56 rounded-2xl bg-pulse-100 dark:bg-white/5 animate-pulse" />
+                <div key={i} className="h-56 rounded-xl bg-pulse-100 dark:bg-white/5 animate-pulse" />
               ))}
             </div>
           )}
 
           {!loading && error && (
             <div className="text-center py-20">
-              <p className="text-pulse-600 dark:text-[#8893AD] mb-4">{t('error')}</p>
+              <p className="text-pulse-600 dark:text-[var(--text-muted)] mb-4">{t('error')}</p>
               <button
                 onClick={() => setIndustry(industry)}
                 className="text-sm text-teal-600 dark:text-teal-400 underline"
@@ -289,7 +289,7 @@ export default function TemplateGallery() {
           {!loading && !error && templates.length === 0 && (
             <div className="text-center py-20">
               <BookOpen className="mx-auto h-12 w-12 text-pulse-500 dark:text-white/20 mb-4" />
-              <p className="text-pulse-600 dark:text-[#8893AD]">{t('templates.noTemplates')}</p>
+              <p className="text-pulse-600 dark:text-[var(--text-muted)]">{t('templates.noTemplates')}</p>
             </div>
           )}
 
@@ -304,15 +304,15 @@ export default function TemplateGallery() {
       </section>
 
       {/* CTA section */}
-      <section className="py-16 bg-pulse-50 dark:bg-[#0D1424]">
+      <section className="py-16 bg-pulse-50 dark:bg-[var(--color-bg-subtle)]">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <h2
-            className="font-bold text-3xl text-pulse-900 dark:text-[#F0F2F8] mb-4"
+            className="font-bold text-3xl text-pulse-900 dark:text-[var(--text-primary)] mb-4"
             style={displayFont}
           >
             {t('templates.ctaHeading')}
           </h2>
-          <p className="text-pulse-600 dark:text-[#8893AD] mb-8">
+          <p className="text-pulse-600 dark:text-[var(--text-muted)] mb-8">
             {t('templates.ctaSubheading')}
           </p>
           <Link

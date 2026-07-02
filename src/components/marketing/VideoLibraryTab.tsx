@@ -77,7 +77,7 @@ function GenerateVideoPanel({ onDone }: { onDone: () => void }) {
         value={model}
         onChange={(e) => setModel(e.target.value)}
         disabled={busy || modelsLoading}
-        className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
+        className="w-full text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
         aria-label="Generation model"
       >
         <option value="">Select a model</option>
@@ -95,7 +95,7 @@ function GenerateVideoPanel({ onDone }: { onDone: () => void }) {
         placeholder="Describe the clip to generate"
         rows={3}
         disabled={busy}
-        className="w-full text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] placeholder:text-pulse-400"
+        className="w-full text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] placeholder:text-pulse-400"
       />
       <Button
         size="sm"
@@ -178,7 +178,7 @@ function VideoAssetCard({
         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
           {asset.category}
         </span>
-        <span className="text-xs text-pulse-500 dark:text-[#8A96B0]">
+        <span className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">
           {formatDuration(asset.duration_sec)} · {formatBytes(asset.size_bytes)}
         </span>
       </div>
@@ -189,7 +189,7 @@ function VideoAssetCard({
         <button
           type="button"
           onClick={preview}
-          className="w-full rounded-md border border-pulse-300 dark:border-[#2A3858] py-6 text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-pulse-50 dark:hover:bg-[#0F1526]"
+          className="w-full rounded-md border border-pulse-300 dark:border-[var(--color-border-strong)] py-6 text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-pulse-50 dark:hover:bg-[var(--color-bg-subtle)]"
         >
           Load preview
         </button>
@@ -210,7 +210,7 @@ function VideoAssetCard({
           <Body size="s" className="font-medium">{asset.title}</Body>
           <div className="flex gap-1.5 flex-wrap">
             {tags.map((tag) => (
-              <span key={tag} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-pulse-100 dark:bg-[#1C2540] text-pulse-600 dark:text-[#8A96B0]">
+              <span key={tag} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-pulse-100 dark:bg-[var(--color-surface-elevated)] text-pulse-600 dark:text-[var(--text-muted)]">
                 {tag}
               </span>
             ))}
@@ -237,7 +237,7 @@ export default function VideoLibraryTab() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="text-body-s border border-pulse-300 dark:border-[#2A3858] rounded-md px-3 py-1.5 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8]"
+            className="text-body-s border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)]"
             aria-label="Filter by category"
           >
             <option value="">All categories</option>

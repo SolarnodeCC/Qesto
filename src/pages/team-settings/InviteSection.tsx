@@ -51,7 +51,7 @@ export function InviteSection({
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member' | 'viewer')}
               disabled={inviting}
-              className="border border-pulse-300 dark:border-[#2A3858] rounded-lg px-3 py-2 bg-white dark:bg-[#1C2540] text-pulse-900 dark:text-[#F0F2F8] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:bg-pulse-50 dark:disabled:bg-[#1E2A45]"
+              className="border border-pulse-300 dark:border-[var(--color-border-strong)] rounded-lg px-3 py-2 bg-white dark:bg-[var(--color-surface-elevated)] text-pulse-900 dark:text-[var(--text-primary)] outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 dark:focus:ring-teal-400/20 disabled:bg-pulse-50 dark:disabled:bg-[var(--color-border)]"
             >
               <option value="member">Member</option>
               <option value="admin">Admin</option>

@@ -178,7 +178,7 @@ export default function IdeatePresent() {
 
           {unclusteredIdeas(activeIdeas).length > 0 && (
             <section className="space-y-2">
-              <h3 className="text-sm font-medium text-pulse-600 dark:text-[#A8B3CC]">{t('clusters.uncategorized')}</h3>
+              <h3 className="text-sm font-medium text-pulse-600 dark:text-[var(--text-secondary)]">{t('clusters.uncategorized')}</h3>
               {unclusteredIdeas(activeIdeas).map((idea) => (
                 <IdeateIdeaCard
                   key={idea.id}
