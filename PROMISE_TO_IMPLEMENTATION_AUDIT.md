@@ -1,7 +1,10 @@
 # Qesto Promise-to-Implementation Audit
 **Date:** June 15, 2026  
+**Remediation review:** July 1, 2026  
 **Audit Level:** STRICT (customer-facing commitments)  
-**Status:** ⚠️ **GAPS IDENTIFIED** — See Action Items
+**Status:** ✅ **CRITICAL MARKETING GAPS RESOLVED** — see [`knowledge-base/quality/audits/PROMISE_AUDIT_RESOLUTION_2026-07-01.md`](./knowledge-base/quality/audits/PROMISE_AUDIT_RESOLUTION_2026-07-01.md)
+
+> This document is the original audit snapshot. For current resolution status, use the resolution log and updated quick reference (`PROMISE_AUDIT_QUICK_REFERENCE.md`).
 
 ---
 

@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { CheckCircle } from 'lucide-react'
 import MainLayout from '../../layouts/MainLayout'
+
+const NONPROFIT_APPLY_MAILTO =
+  'mailto:support@qesto.cc?subject=Nonprofit%20pricing%20application&body=Organization%20name%3A%0ARegistration%20number%3A%0ACountry%3A%0AContact%20email%3A'
 import PageSeo from '../../components/PageSeo'
 
 const btnPrimary =
@@ -194,7 +197,7 @@ export default function NonprofitPage() {
             custom retention, and bylaw-templated motions. No seat caps.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link to="/pricing" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
+            <a href={NONPROFIT_APPLY_MAILTO} className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>
               Apply for nonprofit pricing
             </Link>
             <Link to="/pricing" className={btnSecondary + ' text-base px-7 py-3.5 dark:bg-[var(--color-surface-elevated)] dark:border-[var(--color-border-strong)] dark:text-[var(--text-primary)]'}>

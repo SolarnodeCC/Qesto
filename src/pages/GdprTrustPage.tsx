@@ -36,7 +36,12 @@ export default function GdprTrustPage() {
             {
               question: 'What rights do account holders have?',
               answer:
-                'Account holders can request export or deletion of personal data via DELETE /api/users/me/gdpr-delete (self-service, in-app) — this cascades to owned sessions, votes, and questions, and is covered by automated tests. The public GDPR badge and a downloadable evidence pack are on the roadmap.',
+                'Account holders can request export or deletion of personal data via DELETE /api/users/me/gdpr-delete (self-service, in-app) — this cascades to owned sessions, votes, and questions, and is covered by automated tests. Verified deletion requests are processed within 72 hours. The public GDPR compliance badge (target Q3 2026) and a downloadable evidence pack remain on the roadmap — contact privacy@qesto.cc for current documentation.',
+            },
+            {
+              question: 'How long is data retained?',
+              answer:
+                'Retention depends on your plan: Pulse targets 30 days, Signal 365 days, and Chorus offers configurable retention from 7 days up to 7 years. These are plan-level commitments; automatic age-based purges for ordinary session data are not yet enforced — see our Privacy Policy for details and export options before deletion.',
             },
             {
               question: 'How are participants anonymized?',

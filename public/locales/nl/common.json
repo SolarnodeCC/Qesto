@@ -122,7 +122,7 @@
     "timestamp": "Tijdstip",
     "user": "Gebruiker",
     "details": "Details",
-    "footer": "{{count}} entries — bewaard voor 7 jaar conform GDPR/AVG",
+    "footer": "{{count}} entries — bewaard zolang je account actief is en nooit automatisch verwijderd; exporteer op elk moment, gewist op GDPR-verzoek",
     "events": {
       "session": {
         "created": "Sessie aangemaakt",
@@ -145,6 +145,11 @@
       "action": {
         "created": "Actie aangemaakt",
         "completed": "Actie voltooid"
+      },
+      "role": {
+        "assigned": "Rol toegewezen",
+        "changed": "Rol gewijzigd",
+        "removed": "Rol verwijderd"
       }
     },
     "title": "Audit Log",
@@ -248,7 +253,7 @@
   "soc2.controlsTitle": "Control areas",
   "soc2.controlAccess": "Access control and least-privilege IAM across Cloudflare Workers, D1, and KV.",
   "soc2.controlChange": "Change management with peer review, CI gates, and deployment audit trails.",
-  "soc2.controlMonitoring": "Continuous monitoring via Analytics Engine, health probes, and multi-region failover runbooks.",
+  "soc2.controlMonitoring": "Baseline continuous monitoring via Analytics Engine (error patterns and rate limits), health probes, and multi-region failover runbooks.",
   "soc2.controlIncident": "Incident response playbooks with customer notification SLAs.",
   "soc2.pentestTitle": "Penetration testing",
   "soc2.pentestBody": "Annual third-party penetration tests cover API, WebSocket, and auth flows. Critical findings are remediated before certification claims.",
@@ -256,5 +261,6 @@
   "soc2.gdprLink": "GDPR trust center",
   "soc2.slaLink": "Partner SLA",
   "soc2.privacyLink": "Privacy policy",
-  "soc2.updated": "Last updated: May 2026. Evidence pack: knowledge-base/security/SOC2_TYPE_II_EVIDENCE/"
+  "soc2.updated": "Last updated: May 2026. Evidence pack: knowledge-base/security/SOC2_TYPE_II_EVIDENCE/",
+  "soc2.bottomSubheading": "Qesto maintains security and availability controls aligned with SOC 2 Type II. Independent Type II certification is in progress (expected 2027 Q3)."
 }
