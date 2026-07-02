@@ -4,6 +4,7 @@
 
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { AlertCircle, Loader2, ShieldCheck, Pause } from 'lucide-react'
 import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingCssVars, tryCacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
@@ -102,15 +103,7 @@ export default function JoinPage() {
   if (lookup.status === 'loading') {
     return (
       <main id="main" tabIndex={-1} className="min-h-screen flex flex-col items-center justify-center gap-3 p-8 text-pulse-500 focus:outline-none">
-        <svg
-          aria-hidden="true"
-          className="animate-spin w-6 h-6 text-teal-500"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
+        <Loader2 size={24} className="animate-spin text-teal-500" aria-hidden="true" />
         <span className="text-sm">{t('looking_up')}</span>
       </main>
     )
@@ -124,11 +117,7 @@ export default function JoinPage() {
     return (
       <main id="main" className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-4">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
+          <AlertCircle size={20} className="text-red-500" aria-hidden="true" />
         </div>
         <div className="space-y-1">
           <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
@@ -334,9 +323,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             aria-label={t('trust_badge')}
             className="flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-700 dark:bg-teal-900/20 dark:text-teal-300"
           >
-            <svg aria-hidden="true" className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-2.027-.505-3.938-1.396-5.617" />
-            </svg>
+            <ShieldCheck size={16} className="shrink-0" aria-hidden="true" />
             <span>{t('trust_badge')}</span>
           </div>
         )}
@@ -415,9 +402,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             {/* Paused banner */}
             {state.paused && (
               <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700" role="status">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
+                <Pause size={16} className="shrink-0" aria-hidden="true" />
                 {t('voting_paused')}
               </div>
             )}
@@ -486,6 +471,17 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           />
         </Suspense>
       )}
+
+      {/* Footer — legal links required for consent collection */}
+      <div className="border-t border-pulse-100 dark:border-[#1E2A45] px-5 py-4 flex flex-wrap items-center justify-center gap-4 text-xs text-pulse-600 dark:text-[#A8B3CC]">
+        <a href="/privacy" className="hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded px-1">
+          Privacy
+        </a>
+        <span className="text-pulse-300 dark:text-[#6B7A99]" aria-hidden="true">•</span>
+        <a href="/terms" className="hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded px-1">
+          Terms
+        </a>
+      </div>
     </main>
   )
 }
