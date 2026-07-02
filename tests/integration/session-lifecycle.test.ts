@@ -61,6 +61,18 @@ const DO_OK = makeDO(200, { ok: true, data: { initialised: true } })
 const DO_ALREADY_INIT = makeDO(409, { ok: false, error: { code: 'already_initialised', message: 'Session already initialised' } })
 const DO_FAIL = makeDO(500, { ok: false, error: { code: 'internal_error', message: 'DO unavailable' } })
 
+// A DO whose fetch() *rejects* — mirrors an uncaught exception inside a handler,
+// which the runtime surfaces to the caller as a rejected stub.fetch() promise.
+function makeRejectingDO(): DurableObjectNamespace {
+  return {
+    idFromName: () => ({ toString: () => 'do-id' }) as unknown as DurableObjectId,
+    get: () =>
+      ({
+        fetch: () => Promise.reject(new Error('The Durable Object reset because its code threw an exception.')),
+      }) as unknown as DurableObjectStub,
+  } as unknown as DurableObjectNamespace
+}
+
 function makeCapturingWsDO(capture: { headers?: Headers }): DurableObjectNamespace {
   return {
     idFromName: () => ({ toString: () => 'do-id' }) as unknown as DurableObjectId,
@@ -231,6 +243,33 @@ describe('POST /api/sessions/:id/start', () => {
       envOk,
     )
     expect(r2.status).toBe(200)
+    expect(db.sessions.get(sessionId)?.status).toBe('live')
+  })
+
+  it('DO fetch rejects (handler threw) → rollback to draft → retryable do_init_failed', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const cookie = await cookieFor('user_reject', 'reject@example.com')
+    const sessionId = await createSession(db, app, makeEnv(db, DO_OK), cookie)
+    seedPollQuestion(db, sessionId)
+
+    // stub.fetch() rejects — the production "Session room unavailable" case.
+    const res = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      makeEnv(db, makeRejectingDO()),
+    )
+    expect(res.status).toBe(500)
+    const body = (await res.json()) as { error: { code: string } }
+    // Must stay retryable and roll the session back so the retry can succeed.
+    expect(body.error.code).toBe('do_init_failed')
+    expect(db.sessions.get(sessionId)?.status).toBe('draft')
+
+    // Retry against a healthy DO succeeds.
+    const retry = await app.fetch(
+      new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
+      makeEnv(db, DO_OK),
+    )
+    expect(retry.status).toBe(200)
     expect(db.sessions.get(sessionId)?.status).toBe('live')
   })
 

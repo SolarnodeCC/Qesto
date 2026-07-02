@@ -122,6 +122,32 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
   }
 
   async fetch(req: Request): Promise<Response> {
+    // A throw inside any handler propagates out of the DO and *rejects* the
+    // caller's `stub.fetch()` — which the REST layer can only surface as an
+    // opaque "Session room unavailable" (do_init_failed) with no diagnostics,
+    // triggering a pointless client retry loop. Catch it here so the true cause
+    // is logged DO-side (with stack) and the caller gets an actionable 500
+    // Response instead of a bare rejection.
+    try {
+      return await this.dispatchFetch(req)
+    } catch (err) {
+      const url = new URL(req.url)
+      logEvent({
+        event: 'do.fetch_unhandled_error',
+        route: url.pathname,
+        method: req.method,
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+        errorMessage: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      })
+      return new Response(
+        JSON.stringify({ ok: false, error: { code: 'do_internal_error', message: 'Session room encountered an internal error' } }),
+        { status: 500, headers: { 'content-type': 'application/json' } },
+      )
+    }
+  }
+
+  private async dispatchFetch(req: Request): Promise<Response> {
     const url = new URL(req.url)
     if (url.pathname === '/init' && req.method === 'POST') return handleInit(this, req)
     if (url.pathname === '/close' && req.method === 'POST') return handleClose(this)
