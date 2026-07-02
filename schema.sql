@@ -17,12 +17,10 @@ CREATE TABLE IF NOT EXISTS users (
   created_at INTEGER NOT NULL,                                 -- unix ms
   last_login_at INTEGER,
   plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','starter','team')),
-  suspended_at INTEGER,                                        -- unix ms; NULL = active
-  stripe_customer_id TEXT                                      -- Stripe customer id ↔ user mapping (#585)
+  suspended_at INTEGER                                         -- unix ms; NULL = active
 );
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_suspended ON users(suspended_at);
-CREATE INDEX IF NOT EXISTS idx_users_stripe_customer_id ON users(stripe_customer_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- magic_links — one-time tokens emailed for login
@@ -53,13 +51,14 @@ CREATE TABLE IF NOT EXISTS sessions (
   vote_policy TEXT NOT NULL DEFAULT 'once'
     CHECK (vote_policy IN ('once','multi','react')),
   session_mode TEXT NOT NULL DEFAULT 'reflection'
-    CHECK (session_mode IN ('reflection','fun','townhall','stage','retro','ideate','deliberate')),
+    CHECK (session_mode IN ('reflection','fun','townhall','stage','retro','ideate')),
   created_at INTEGER NOT NULL,
   started_at INTEGER,
   closed_at INTEGER,
   archived_at INTEGER,
   team_id TEXT DEFAULT NULL,
-  workspace_id TEXT,
+  is_public INTEGER DEFAULT 1,
+  workspace_id TEXT REFERENCES workspaces(id) ON DELETE SET NULL,
   workspace_seq INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_owner ON sessions(owner_id);
@@ -144,7 +143,7 @@ CREATE TABLE IF NOT EXISTS questions (
   position INTEGER NOT NULL,                                   -- 0-indexed order
   kind TEXT NOT NULL CHECK (kind IN (
     'poll', 'ranking', 'consent', 'open', 'word_cloud',
-    'multi_select', 'likert', 'upvote', 'slider', 'reaction'
+    'multi_select', 'likert', 'upvote', 'slider'
   )),
   prompt TEXT NOT NULL,
   options_json TEXT NOT NULL DEFAULT '[]',                     -- JSON array of {id,label}
@@ -193,58 +192,9 @@ CREATE TABLE IF NOT EXISTS townhall_questions (
 );
 CREATE INDEX IF NOT EXISTS idx_townhall_q_session ON townhall_questions(session_id, status);
 CREATE INDEX IF NOT EXISTS idx_townhall_q_author ON townhall_questions(author_hash);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- deliberate_ballots — DELIBERATE-RECEIPT-01 (ADR-0049). Append-only commitment
--- ledger for cryptographically-verifiable governance voting (session_mode =
--- 'deliberate'). ANONYMOUS by construction: voter_hash is a salted per-session
--- SHA-256 (no user id), so the ledger survives GDPR account deletion and is
--- unlinkable across sessions. commitment = SHA-256(fingerprint:nonce:choice) is
--- coercion-resistant; commitments form a Merkle tree any observer can re-tally.
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS deliberate_ballots (
-  id            TEXT PRIMARY KEY,                              -- uuid
-  session_id    TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
-  ballot_nonce  TEXT NOT NULL,                                 -- 128-bit blinding factor (hex)
-  commitment    TEXT NOT NULL,                                 -- hex SHA-256 commitment (Merkle leaf)
-  choice        TEXT NOT NULL,                                 -- public tally bucket
-  voter_hash    TEXT NOT NULL,                                 -- salted anon dedup key, no PII
-  leaf_index    INTEGER NOT NULL,                              -- insertion order, 0-based
-  created_at    INTEGER NOT NULL,                              -- epoch ms
-  UNIQUE(session_id, voter_hash),                              -- one ballot per voter per session
-  UNIQUE(session_id, ballot_nonce),                            -- nonce uniqueness (anti-replay)
-  UNIQUE(session_id, leaf_index)                               -- stable Merkle leaf order under concurrency
-);
-CREATE INDEX IF NOT EXISTS idx_deliberate_ballots_session ON deliberate_ballots(session_id);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- embed_widgets — EMBED-WIDGET-API-01 (ADR-0050). One row per registered
--- embeddable-widget config. `allowed_origins` (JSON array of exact origin
--- strings) is the SINGLE source of truth for both the minted token's `ao` claim
--- and the embed page's frame-ancestors CSP. `created_by` is audit-only and is
--- NEVER copied into the browser-shipped token (no PII in the embed credential).
--- `revoked_at` is the immediate kill-switch overriding a still-unexpired token.
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS embed_widgets (
-  id              TEXT PRIMARY KEY,                              -- widget config id = token `wid`
-  team_id         TEXT NOT NULL,                                 -- tenant binding
-  session_id      TEXT NOT NULL,                                 -- embedded session (canonical id)
-  session_code    TEXT NOT NULL,                                 -- public join code (token `code` claim)
-  allowed_origins TEXT NOT NULL,                                 -- JSON array of exact origin strings
-  scope           TEXT NOT NULL DEFAULT 'read'
-                    CHECK (scope IN ('read')),                   -- v1: read only
-  created_by      TEXT NOT NULL,                                 -- minting host user id (audit only)
-  created_at      INTEGER NOT NULL,                              -- epoch ms
-  revoked_at      INTEGER                                        -- NULL = active; non-NULL = revoked
-);
-CREATE INDEX IF NOT EXISTS idx_embed_widgets_team ON embed_widgets(team_id);
-CREATE INDEX IF NOT EXISTS idx_embed_widgets_session ON embed_widgets(session_id);
-
 CREATE INDEX IF NOT EXISTS idx_votes_question ON votes(question_id);
 -- Phase 10 Step 2: Compound index for vote aggregation by question
 CREATE INDEX IF NOT EXISTS idx_votes_session_question ON votes(session_id, question_id);
--- #540: compound index for per-participant vote aggregation at session close
-CREATE INDEX IF NOT EXISTS idx_votes_session_voter ON votes(session_id, voter_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- audit_log — append-only trail for security, GDPR, ops
@@ -275,44 +225,6 @@ CREATE TABLE IF NOT EXISTS user_roles (
 );
 CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON user_roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_roles_role ON user_roles(role);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- platform_roles — PLATFORM-admin authority, distinct from tenant (team) roles (#586)
--- Team creation NEVER writes here. Bootstrapped from SUPERUSER_EMAIL/SEED_ADMIN_EMAIL
--- env allowlist or granted by an existing platform admin. adminMiddleware/rbac
--- treat ONLY this table (or the env allowlist) as platform-admin authority.
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS platform_roles (
-  id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('platform_admin')),
-  granted_by TEXT,
-  created_at INTEGER NOT NULL,
-  UNIQUE(user_id, role)
-);
-CREATE INDEX IF NOT EXISTS idx_platform_roles_user_id ON platform_roles(user_id);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- lti_launch_contexts — signed LTI launch context for trusted grade passback (#587)
--- Grade passback uses the STORED outcome service URL + result sourcedid (captured
--- from the LMS-signed launch), never values from the passback request body.
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS lti_launch_contexts (
-  id TEXT PRIMARY KEY,
-  consumer_key TEXT NOT NULL,
-  context_id TEXT,
-  resource_link_id TEXT NOT NULL,
-  lis_outcome_service_url TEXT,
-  lis_result_sourcedid TEXT,
-  lms_user_id TEXT,
-  roles TEXT,
-  qesto_session_id TEXT,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  UNIQUE(consumer_key, resource_link_id, lis_result_sourcedid)
-);
-CREATE INDEX IF NOT EXISTS idx_lti_launch_resource_link ON lti_launch_contexts(resource_link_id);
-CREATE INDEX IF NOT EXISTS idx_lti_launch_consumer_context ON lti_launch_contexts(consumer_key, context_id);
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- metrics_summary — 5-min API performance buckets populated by scheduled worker (Phase 8)
@@ -431,21 +343,6 @@ CREATE TABLE IF NOT EXISTS marketplace_purchases (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_marketplace_purchases_team_listing
   ON marketplace_purchases(buyer_team_id, listing_id)
   WHERE refunded_at IS NULL;
-
--- marketplace_payouts — payout ledger backing server-side balance checks + idempotency (#588)
-CREATE TABLE IF NOT EXISTS marketplace_payouts (
-  id TEXT PRIMARY KEY,
-  team_id TEXT NOT NULL,
-  idempotency_key TEXT NOT NULL UNIQUE,
-  amount_cents INTEGER NOT NULL,
-  currency TEXT NOT NULL,
-  stripe_account_id TEXT NOT NULL,
-  stripe_transfer_id TEXT,
-  status TEXT NOT NULL DEFAULT 'pending'
-    CHECK (status IN ('pending', 'initiated', 'paid', 'failed')),
-  created_at INTEGER NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_marketplace_payouts_team_status ON marketplace_payouts(team_id, status);
 
 -- agent_definitions — agent marketplace registry stub (AGENT-MARKETPLACE-FOUNDATION-01, Sprint 84)
 CREATE TABLE IF NOT EXISTS agent_definitions (
@@ -741,34 +638,3 @@ CREATE TABLE IF NOT EXISTS team_quiz_responses (
 );
 CREATE INDEX IF NOT EXISTS idx_tqr_energizer ON team_quiz_responses(energizer_id);
 CREATE INDEX IF NOT EXISTS idx_tqr_voter ON team_quiz_responses(energizer_id, voter_id);
-
--- ─────────────────────────────────────────────────────────────────────────────
--- pulse_session_rollup / pulse_team_daily — PULSE analytics (ADR-0057, S91)
--- ─────────────────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS pulse_session_rollup (
-  session_id TEXT PRIMARY KEY REFERENCES sessions(id) ON DELETE CASCADE,
-  team_id TEXT,
-  workspace_id TEXT,
-  closed_at INTEGER NOT NULL,
-  participant_count INTEGER NOT NULL DEFAULT 0,
-  vote_count INTEGER NOT NULL DEFAULT 0,
-  participation_rate REAL NOT NULL DEFAULT 0,
-  sentiment_score REAL,
-  payload_json TEXT NOT NULL DEFAULT '{}',
-  computed_at INTEGER NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_pulse_session_team_closed
-  ON pulse_session_rollup(team_id, closed_at DESC);
-
-CREATE TABLE IF NOT EXISTS pulse_team_daily (
-  team_id TEXT NOT NULL,
-  day TEXT NOT NULL,
-  participation_avg REAL NOT NULL DEFAULT 0,
-  sentiment_avg REAL,
-  session_count INTEGER NOT NULL DEFAULT 0,
-  response_total INTEGER NOT NULL DEFAULT 0,
-  computed_at INTEGER NOT NULL,
-  PRIMARY KEY (team_id, day)
-);
-CREATE INDEX IF NOT EXISTS idx_pulse_team_daily_day
-  ON pulse_team_daily(team_id, day DESC);
