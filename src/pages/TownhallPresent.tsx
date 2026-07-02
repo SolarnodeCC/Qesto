@@ -130,7 +130,7 @@ export default function TownhallPresent() {
                 className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${
                   tab === tabDef.key
                     ? 'border-teal-500 text-teal-700 dark:text-teal-400'
-                    : 'border-transparent text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 dark:hover:text-[#F0F2F8]'
+                    : 'border-transparent text-pulse-500 dark:text-[var(--text-muted)] hover:text-pulse-800 dark:hover:text-[var(--text-primary)]'
                 }`}
               >
                 {t(tabDef.label)} ({counts[tabDef.key] ?? 0})

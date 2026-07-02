@@ -42,18 +42,19 @@ describe('PULSE dashboard API (FE-PULSE-DASHBOARD-01 backend)', () => {
     }
     await writeKvJson(teamsKv as unknown as KVNamespace, teamDocumentKey(teamId), team)
 
-    db.pulseTeamDaily.set(`${teamId}:2026-06-01`, {
+    // Use dates within the 30-day window (today is 2026-07-02, window starts 2026-06-02)
+    db.pulseTeamDaily.set(`${teamId}:2026-06-02`, {
       team_id: teamId,
-      day: '2026-06-01',
+      day: '2026-06-02',
       participation_avg: 0.75,
       sentiment_avg: 0.5,
       session_count: PULSE_K_ANON_MIN_COHORT,
       response_total: 120,
       computed_at: now,
     })
-    db.pulseTeamDaily.set(`${teamId}:2026-06-02`, {
+    db.pulseTeamDaily.set(`${teamId}:2026-07-01`, {
       team_id: teamId,
-      day: '2026-06-02',
+      day: '2026-07-01',
       participation_avg: 0.4,
       sentiment_avg: 0.2,
       session_count: PULSE_K_ANON_MIN_COHORT - 1,

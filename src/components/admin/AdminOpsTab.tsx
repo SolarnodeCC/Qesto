@@ -27,7 +27,7 @@ function GlobalStatusBanner({ status, updatedAt }: { status: ServiceStatus; upda
           <span className={`w-3 h-3 rounded-full ${dotColour[status]} ${status === 'healthy' ? 'animate-pulse' : ''}`} />
           <p className={`text-heading-s font-semibold ${textColour[status]}`}>{label[status]}</p>
         </div>
-        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">
+        <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">
           Updated {new Date(updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Body>
       </div>
@@ -38,7 +38,7 @@ function GlobalStatusBanner({ status, updatedAt }: { status: ServiceStatus; upda
 function SevCard({ label, count, colour }: { label: string; count: number; colour: string }) {
   return (
     <Card className="space-y-2">
-      <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] font-medium uppercase tracking-wide text-xs">{label}</Body>
+      <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] font-medium uppercase tracking-wide text-xs">{label}</Body>
       <p className={`text-heading-l font-bold ${colour}`}>{count}</p>
     </Card>
   )
@@ -48,7 +48,7 @@ function ServiceRow({ name, status }: { name: string; status: ServiceStatus }) {
   const statusText = { healthy: 'Operational', degraded: 'Degraded', down: 'Down' }
   const textColor = { healthy: 'text-green-600 dark:text-green-400', degraded: 'text-amber-600 dark:text-amber-400', down: 'text-red-600 dark:text-red-400' }
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-pulse-100 dark:border-[#1E2A45] last:border-0">
+    <div className="flex items-center justify-between py-2.5 border-b border-pulse-100 dark:border-[var(--color-border)] last:border-0">
       <div className="flex items-center gap-3">
         <StatusDot status={status} />
         <Body size="s">{name}</Body>
@@ -67,7 +67,7 @@ function HealthCorrelationSection() {
     return (
       <Card>
         <Heading level="s" className="mb-3 border-l-4 border-teal-500 pl-3">Health correlation — last 24h</Heading>
-        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Loading…</Body>
+        <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">Loading…</Body>
       </Card>
     )
   }
@@ -76,26 +76,26 @@ function HealthCorrelationSection() {
     <Card>
       <div className="mb-3 flex items-center justify-between">
         <Heading level="s" className="border-l-4 border-teal-500 pl-3">Health correlation — last 24h</Heading>
-        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] text-xs">Energizer activity vs WebSocket health</Body>
+        <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] text-xs">Energizer activity vs WebSocket health</Body>
       </div>
       {!correlation || correlation.length === 0 ? (
-        <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No correlation data available for this period.</Body>
+        <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">No correlation data available for this period.</Body>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-pulse-100 dark:border-[#1E2A45]">
-                <th className="py-2 pr-4 text-left font-medium text-pulse-500 dark:text-[#8A96B0]">Hour (UTC)</th>
-                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">Activations</th>
-                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">Answers</th>
-                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">Reconnects</th>
-                <th className="py-2 text-right font-medium text-pulse-500 dark:text-[#8A96B0]">WS Errors</th>
+              <tr className="border-b border-pulse-100 dark:border-[var(--color-border)]">
+                <th className="py-2 pr-4 text-left font-medium text-pulse-500 dark:text-[var(--text-muted)]">Hour (UTC)</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[var(--text-muted)]">Activations</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[var(--text-muted)]">Answers</th>
+                <th className="py-2 pr-4 text-right font-medium text-pulse-500 dark:text-[var(--text-muted)]">Reconnects</th>
+                <th className="py-2 text-right font-medium text-pulse-500 dark:text-[var(--text-muted)]">WS Errors</th>
               </tr>
             </thead>
             <tbody>
               {correlation.map((row) => (
-                <tr key={row.hour} className="border-b border-pulse-100 dark:border-[#1E2A45] last:border-0">
-                  <td className="py-2 pr-4 font-mono text-xs text-pulse-600 dark:text-[#A8B3CC]">
+                <tr key={row.hour} className="border-b border-pulse-100 dark:border-[var(--color-border)] last:border-0">
+                  <td className="py-2 pr-4 font-mono text-xs text-pulse-600 dark:text-[var(--text-secondary)]">
                     {row.hour.slice(11, 16)}
                   </td>
                   <td className="py-2 pr-4 text-right font-semibold">{row.energizer_activations}</td>
@@ -145,7 +145,7 @@ export default function AdminOpsTab() {
         <SevCard label="SEV2 — High" count={ops.sev2} colour="text-amber-500 dark:text-amber-400" />
         <SevCard label="SEV3 — Medium" count={ops.sev3} colour="text-teal-600 dark:text-teal-400" />
         <Card className="space-y-2">
-          <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] font-medium uppercase tracking-wide text-xs">Impact (24h)</Body>
+          <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)] font-medium uppercase tracking-wide text-xs">Impact (24h)</Body>
           <Body size="s">Sessions: <span className="font-semibold">{ops.impact_sessions}</span></Body>
           <Body size="s">Users: <span className="font-semibold">{ops.impact_users}</span></Body>
         </Card>
@@ -164,16 +164,16 @@ export default function AdminOpsTab() {
         <Card>
           <Heading level="s" className="mb-4 border-l-4 border-teal-500 pl-3">Realtime reliability</Heading>
           <div className="space-y-3">
-            <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
-              <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">WebSocket error rate</Body>
+            <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[var(--color-border)]">
+              <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">WebSocket error rate</Body>
               <Body size="s" className="font-semibold">{pct(ops.realtime.ws_error_rate)}</Body>
             </div>
-            <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
-              <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Reconnect rate</Body>
+            <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[var(--color-border)]">
+              <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Reconnect rate</Body>
               <Body size="s" className="font-semibold">{pct(ops.realtime.reconnect_rate)}</Body>
             </div>
             <div className="flex justify-between items-center py-1">
-              <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Vote P95 latency</Body>
+              <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Vote P95 latency</Body>
               <Body size="s" className="font-semibold">
                 {ops.realtime.vote_p95_ms !== null
                   ? `${ops.realtime.vote_p95_ms}ms`
@@ -186,36 +186,36 @@ export default function AdminOpsTab() {
         <Card>
           <Heading level="s" className="mb-4 border-l-4 border-indigo-500 pl-3">Knowledge base sync</Heading>
           {kbLoading ? (
-            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Loading…</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">Loading…</Body>
           ) : kbSync?.last_sync_at ? (
             <div className="space-y-3">
-              <div className="flex justify-between items-start py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
-                <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Last updated</Body>
+              <div className="flex justify-between items-start py-1 border-b border-pulse-100 dark:border-[var(--color-border)]">
+                <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Last updated</Body>
                 <Body size="s" className="font-semibold text-right">
                   {new Date(kbSync.last_sync_at).toLocaleString()}
                 </Body>
               </div>
               {kbSync.vectors_upserted !== undefined && (
-                <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
-                  <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Vectors</Body>
+                <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[var(--color-border)]">
+                  <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Vectors</Body>
                   <Body size="s" className="font-semibold">{kbSync.vectors_upserted}</Body>
                 </div>
               )}
               {kbSync.documents_upserted !== undefined && (
-                <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[#1E2A45]">
-                  <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Documents</Body>
+                <div className="flex justify-between items-center py-1 border-b border-pulse-100 dark:border-[var(--color-border)]">
+                  <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Documents</Body>
                   <Body size="s" className="font-semibold">{kbSync.documents_upserted}</Body>
                 </div>
               )}
               {kbSync.chunks_upserted !== undefined && (
                 <div className="flex justify-between items-center py-1">
-                  <Body size="s" className="text-pulse-600 dark:text-[#A8B3CC]">Chunks</Body>
+                  <Body size="s" className="text-pulse-600 dark:text-[var(--text-secondary)]">Chunks</Body>
                   <Body size="s" className="font-semibold">{kbSync.chunks_upserted}</Body>
                 </div>
               )}
             </div>
           ) : (
-            <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">No sync data available</Body>
+            <Body size="s" className="text-pulse-500 dark:text-[var(--text-muted)]">No sync data available</Body>
           )}
         </Card>
       </div>
@@ -227,9 +227,9 @@ export default function AdminOpsTab() {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <Heading level="s" className="border-l-4 border-teal-500 pl-3">Issue pulse</Heading>
-          <div className="flex gap-3 text-xs text-pulse-500 dark:text-[#8A96B0]">
-            <span>Errors: <strong className="text-pulse-700 dark:text-[#A8B3CC]">{ops.issues.filter(i => i.action.includes('error')).reduce((s, i) => s + i.count, 0)}</strong></span>
-            <span>Info: <strong className="text-pulse-700 dark:text-[#A8B3CC]">{ops.issues.filter(i => !i.action.includes('error')).reduce((s, i) => s + i.count, 0)}</strong></span>
+          <div className="flex gap-3 text-xs text-pulse-500 dark:text-[var(--text-muted)]">
+            <span>Errors: <strong className="text-pulse-700 dark:text-[var(--text-secondary)]">{ops.issues.filter(i => i.action.includes('error')).reduce((s, i) => s + i.count, 0)}</strong></span>
+            <span>Info: <strong className="text-pulse-700 dark:text-[var(--text-secondary)]">{ops.issues.filter(i => !i.action.includes('error')).reduce((s, i) => s + i.count, 0)}</strong></span>
           </div>
         </div>
         {ops.issues.length === 0 ? (
@@ -237,8 +237,8 @@ export default function AdminOpsTab() {
         ) : (
           <div className="space-y-1">
             {ops.issues.map((issue) => (
-              <div key={issue.action} className="flex items-center justify-between py-1.5 border-b border-pulse-100 dark:border-[#1E2A45] last:border-0">
-                <Body size="s" className="font-mono text-pulse-600 dark:text-[#A8B3CC]">{issue.action}</Body>
+              <div key={issue.action} className="flex items-center justify-between py-1.5 border-b border-pulse-100 dark:border-[var(--color-border)] last:border-0">
+                <Body size="s" className="font-mono text-pulse-600 dark:text-[var(--text-secondary)]">{issue.action}</Body>
                 <Body size="s" className="font-semibold">{issue.count}</Body>
               </div>
             ))}

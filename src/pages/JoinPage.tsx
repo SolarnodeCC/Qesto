@@ -4,6 +4,7 @@
 
 import { Suspense, lazy, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { AlertCircle, Loader2, ShieldCheck, Pause } from 'lucide-react'
 import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingToDocument, cacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
@@ -102,15 +103,7 @@ export default function JoinPage() {
   if (lookup.status === 'loading') {
     return (
       <main id="main" tabIndex={-1} className="min-h-screen flex flex-col items-center justify-center gap-3 p-8 text-pulse-500 focus:outline-none">
-        <svg
-          aria-hidden="true"
-          className="animate-spin w-6 h-6 text-teal-500"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
+        <Loader2 size={24} className="animate-spin text-teal-500" aria-hidden="true" />
         <span className="text-sm">{t('looking_up')}</span>
       </main>
     )
@@ -124,15 +117,11 @@ export default function JoinPage() {
     return (
       <main id="main" className="min-h-screen flex flex-col items-center justify-center p-8 text-center space-y-4">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-500">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
+          <AlertCircle size={20} className="text-red-500" aria-hidden="true" />
         </div>
         <div className="space-y-1">
-          <p className="text-lg font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('not_found_title')}</p>
-          <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('not_found_help')}</p>
+          <p className="text-lg font-semibold text-pulse-900 dark:text-[var(--text-primary)]">{t('not_found_title')}</p>
+          <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('not_found_help')}</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -291,7 +280,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       : null
 
   return (
-    <main id="main" className="relative min-h-screen bg-white dark:bg-[#0A0F1E] flex flex-col">
+    <main id="main" className="relative min-h-screen bg-white dark:bg-[var(--color-bg-subtle)] flex flex-col">
       <ReactionsOverlay
         particles={reactionsState.particles}
         total={reactionsState.total}
@@ -299,10 +288,10 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       />
       {/* Top brand bar */}
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3 flex items-center justify-between">
-        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8]">Qesto</span>
+      <div className="border-b border-pulse-100 dark:border-[var(--color-border)] px-5 py-3 flex items-center justify-between">
+        <span className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[var(--text-primary)]">Qesto</span>
         {state.connection === 'open' ? (
-          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[#A8B3CC]">
+          <span className="flex items-center gap-1.5 text-xs text-pulse-500 dark:text-[var(--text-secondary)]">
             <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" aria-hidden="true" />
             {t('participants_label', { count: state.participants })}
           </span>
@@ -323,7 +312,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
       </div>
 
       <div className="flex-1 max-w-lg w-full mx-auto px-5 py-8 flex flex-col gap-6">
-        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
+        <h1 tabIndex={-1} className="text-2xl font-semibold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">
           {title}
         </h1>
 
@@ -334,9 +323,7 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             aria-label={t('trust_badge')}
             className="flex items-center gap-2 rounded-lg border border-teal-200 bg-teal-50 px-3 py-2 text-sm text-teal-800 dark:border-teal-700 dark:bg-teal-900/20 dark:text-teal-300"
           >
-            <svg aria-hidden="true" className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 12c0 6.627 5.373 12 12 12s12-5.373 12-12c0-2.027-.505-3.938-1.396-5.617" />
-            </svg>
+            <ShieldCheck size={16} className="shrink-0" aria-hidden="true" />
             <span>{t('trust_badge')}</span>
           </div>
         )}
@@ -354,9 +341,9 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Inter-question countdown */}
         {countdown !== null && (
           <div className="flex flex-col items-center justify-center gap-3 py-8" aria-live="polite" aria-atomic="true">
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('get_ready')}</p>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('get_ready')}</p>
             <div className="text-6xl font-bold text-teal-600 tabular-nums">{countdown}</div>
-            <p className="text-xs text-pulse-500 dark:text-[#8A96B0]">{t('next_question_countdown', { seconds: countdown })}</p>
+            <p className="text-xs text-pulse-500 dark:text-[var(--text-muted)]">{t('next_question_countdown', { seconds: countdown })}</p>
           </div>
         )}
 
@@ -364,8 +351,8 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {state.allDone && !isEnded && countdown === null && (
           <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
             <div className="text-6xl" aria-hidden="true">🎉</div>
-            <h2 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{t('allDone.heading')}</h2>
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{title}</p>
+            <h2 className="text-2xl font-bold text-pulse-900 dark:text-[var(--text-primary)]">{t('allDone.heading')}</h2>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{title}</p>
           </div>
         )}
 
@@ -408,16 +395,14 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (
           <section className="space-y-4" aria-labelledby="question-heading">
-            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-[#F0F2F8]">
+            <h2 id="question-heading" className="text-lg font-medium text-pulse-900 dark:text-[var(--text-primary)]">
               {state.question.prompt}
             </h2>
 
             {/* Paused banner */}
             {state.paused && (
               <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700" role="status">
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
-                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-                </svg>
+                <Pause size={16} className="shrink-0" aria-hidden="true" />
                 {t('voting_paused')}
               </div>
             )}
@@ -486,6 +471,17 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           />
         </Suspense>
       )}
+
+      {/* Footer — legal links required for consent collection */}
+      <div className="border-t border-pulse-100 dark:border-[var(--color-border)] px-5 py-4 flex flex-wrap items-center justify-center gap-4 text-xs text-pulse-600 dark:text-[var(--text-secondary)]">
+        <a href="/privacy" className="hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded px-1">
+          Privacy
+        </a>
+        <span className="text-pulse-300 dark:text-[var(--text-muted)]" aria-hidden="true">•</span>
+        <a href="/terms" className="hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 rounded px-1">
+          Terms
+        </a>
+      </div>
     </main>
   )
 }

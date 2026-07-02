@@ -19,14 +19,14 @@ export function JoinLanding() {
   return (
     <main id="main" className="min-h-screen flex flex-col">
       <div className="h-1 bg-gradient-to-br from-teal-500 to-violet-500" aria-hidden="true" />
-      <div className="border-b border-pulse-100 dark:border-[#1E2A45] px-5 py-3">
-        <a href="/" className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">Qesto</a>
+      <div className="border-b border-pulse-100 dark:border-[var(--color-border)] px-5 py-3">
+        <a href="/" className="font-[family-name:var(--font-display)] font-bold text-[18px] tracking-[-0.02em] text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 rounded">Qesto</a>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-12">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2">
-            <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">{t('heading')}</h1>
-            <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('subtitle')}</p>
+            <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[var(--text-primary)] focus:outline-none">{t('heading')}</h1>
+            <p className="text-sm text-pulse-500 dark:text-[var(--text-secondary)]">{t('subtitle')}</p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-3">
             <label className="block">
@@ -45,7 +45,7 @@ export function JoinLanding() {
                 className={ENTRY_CODE_FIELD_CLASS}
               />
             </label>
-            <p id="join-code-hint" className="text-center text-xs text-pulse-500 dark:text-[#A8B3CC]">
+            <p id="join-code-hint" className="text-center text-xs text-pulse-500 dark:text-[var(--text-secondary)]">
               {t('code_length_hint')}
             </p>
             <button

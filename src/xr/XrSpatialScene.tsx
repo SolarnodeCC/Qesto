@@ -120,7 +120,7 @@ export function XrSpatialScene({ question, avatars, reducedMotion }: XrSpatialSc
   const renderedCount = Math.min(avatars.length, MAX_RENDERED_AVATARS)
 
   return (
-    <div className="relative w-full aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden border border-teal-500/30 bg-[#070B16]">
+    <div className="relative w-full aspect-square max-w-sm mx-auto rounded-xl overflow-hidden border border-teal-500/30 bg-[#070B16]">
       <canvas
         ref={canvasRef}
         width={360}

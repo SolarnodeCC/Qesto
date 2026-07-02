@@ -365,15 +365,15 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
     >
       <div
         ref={dialogRef}
-        className="bg-white dark:bg-[#1C2540] rounded-2xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
+        className="bg-white dark:bg-[var(--color-surface-elevated)] rounded-xl shadow-elevated w-full max-w-lg max-h-[90vh] flex flex-col animate-modal-enter"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-pulse-200 dark:border-[#1E2A45] flex-shrink-0">
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-pulse-200 dark:border-[var(--color-border)] flex-shrink-0">
           <div className="space-y-1">
-            <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold focus:outline-none dark:text-[#F0F2F8]">
+            <h2 ref={headingRef} tabIndex={-1} className="text-xl font-semibold focus:outline-none dark:text-[var(--text-primary)]">
               {STEP_LABELS[step]}
             </h2>
-            <p className="text-caption text-pulse-500 dark:text-[#8A96B0]" aria-live="polite">
+            <p className="text-caption text-pulse-500 dark:text-[var(--text-muted)]" aria-live="polite">
               {t('a11y.progress_label', { current: step, total: 5 })}
             </p>
           </div>
@@ -381,7 +381,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
             type="button"
             onClick={onClose}
             aria-label={t('a11y.close_label')}
-            className="w-9 h-9 flex items-center justify-center rounded-lg text-pulse-500 dark:text-[#8A96B0] hover:text-pulse-800 hover:bg-pulse-100 dark:hover:text-[#F0F2F8] dark:hover:bg-[#1E2A45] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-pulse-500 dark:text-[var(--text-muted)] hover:text-pulse-800 hover:bg-pulse-100 dark:hover:text-[var(--text-primary)] dark:hover:bg-[var(--color-border)] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -396,7 +396,7 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
                 role="listitem"
                 className={[
                   'h-1.5 flex-1 rounded-pill transition-colors',
-                  s < step ? 'bg-teal-500' : s === step ? 'bg-teal-400' : 'bg-pulse-200 dark:bg-[#1E2A45]',
+                  s < step ? 'bg-teal-500' : s === step ? 'bg-teal-400' : 'bg-pulse-200 dark:bg-[var(--color-border)]',
                 ].join(' ')}
                 aria-label={`Step ${s}${s === step ? ' (current)' : s < step ? ' (complete)' : ''}`}
               />

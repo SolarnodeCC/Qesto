@@ -148,7 +148,7 @@ export default function WordCloudEnergizerView({
   const sortedWords = Object.entries(words).sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 space-y-4">
+    <div className="rounded-xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5">

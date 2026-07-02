@@ -107,7 +107,7 @@ export default function Login() {
     <main id="main" className="min-h-screen flex items-center justify-center p-6">
       <section
         aria-labelledby="login-title"
-        className="w-full max-w-md space-y-5 rounded-2xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
+        className="w-full max-w-md space-y-5 rounded-xl border border-pulse-200 dark:border-[var(--color-border)] bg-white dark:bg-[var(--color-surface)] p-8 shadow-sm dark:shadow-[0_0_0_1px_rgba(255,255,255,0.06)]"
       >
         <div className="space-y-1 text-center">
           <h1
@@ -161,7 +161,7 @@ export default function Login() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[#0A0F1E] p-1" role="tablist" aria-label={t('orViaEmail')} onKeyDown={onTabKeyDown}>
+        <div className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[var(--color-bg-subtle)] p-1" role="tablist" aria-label={t('orViaEmail')} onKeyDown={onTabKeyDown}>
           <button type="button" id="tab-magic" role="tab" aria-selected={tab === 'magic'} aria-controls="tabpanel-magic" tabIndex={tab === 'magic' ? 0 : -1} className={tabClass(tab === 'magic')} onClick={() => setTab('magic')}>
             {t('magicLinkTab')}
           </button>

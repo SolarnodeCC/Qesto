@@ -18,19 +18,19 @@ const THEME_LABELS: Record<CanvasTheme, string> = {
 /** Swatch colours map the --canvas-bg of each theme for visual preview. */
 const THEME_SWATCH_BG: Record<CanvasTheme, string> = {
   default:        '#FFFFFF',
-  dark:           '#0A0F1E',
+  dark:           'var(--color-bg-subtle)',
   'high-contrast': '#FFFFFF',
   'brand-neutral': '#1C243A',
 }
 const THEME_SWATCH_BORDER: Record<CanvasTheme, string> = {
-  default:        '#E5E5E5',
-  dark:           '#2A3858',
+  default:        'var(--color-border)',
+  dark:           'var(--color-border-strong)',
   'high-contrast': '#000000',
   'brand-neutral': '#2E3A56',
 }
 const THEME_SWATCH_DOT: Record<CanvasTheme, string> = {
   default:        '#0F766E',
-  dark:           '#2DD4BF',
+  dark:           'var(--text-primary)',
   'high-contrast': '#005C5C',
   'brand-neutral': '#34D399',
 }
@@ -75,7 +75,7 @@ export function CanvasThemePicker({ variant = 'bar' }: CanvasThemePickerProps) {
                   : 'bg-pulse-700 text-white hover:bg-pulse-600'
                 : selected
                   ? 'bg-teal-100 text-teal-800 border border-teal-400 dark:bg-teal-900 dark:text-teal-200 dark:border-teal-600'
-                  : 'bg-pulse-100 text-pulse-700 border border-pulse-300 hover:border-teal-400 dark:bg-[#1C2540] dark:text-[#A8B3CC] dark:border-[#2A3858] dark:hover:border-teal-600',
+                  : 'bg-pulse-100 text-pulse-700 border border-pulse-300 hover:border-teal-400 dark:bg-[var(--color-surface-elevated)] dark:text-[var(--text-secondary)] dark:border-[var(--color-border-strong)] dark:hover:border-teal-600',
             ].join(' ')}
           >
             {/* Colour swatch */}

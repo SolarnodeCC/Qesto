@@ -14,7 +14,7 @@ export function SuggestionChips({ t, suggestions, onAccept }: Props) {
 
   return (
     <section aria-labelledby="studio-suggest-heading" className="space-y-2">
-      <h2 id="studio-suggest-heading" className="text-sm font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+      <h2 id="studio-suggest-heading" className="text-sm font-semibold text-pulse-900 dark:text-[var(--text-primary)]">
         {t('suggest.heading')}
       </h2>
       <ul className="flex flex-wrap gap-2">
