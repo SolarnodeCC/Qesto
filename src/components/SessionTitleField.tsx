@@ -83,7 +83,7 @@ export default function SessionTitleField({
   return (
     <div className={`space-y-1 ${className}`}>
       {label && (
-        <label htmlFor={`session-title-${sessionId}`} className="text-caption text-pulse-500">
+        <label htmlFor={`session-title-${sessionId}`} className="caption text-pulse-500">
           {label}
         </label>
       )}
