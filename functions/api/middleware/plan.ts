@@ -44,6 +44,17 @@ export const planMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   c,
   next,
 ) => {
+  // ARCH-HONO-01/02: this middleware is registered app.use('*') on ~12 sub-apps
+  // that all mount at the /api root, so a single request passes through it many
+  // times. Resolve the plan once — re-running `SELECT plan FROM users` per
+  // registration multiplied D1 read load ~10x and stacked 1500ms timeouts during
+  // the 2026-07-03 D1 storage-reset incident. `plan` is always a truthy tier
+  // string once set, so this guard is safe and idempotent.
+  if (c.get('plan')) {
+    await next()
+    return
+  }
+
   const user = c.get('user')
   if (!user) {
     // The read-only KB search route can be reached via the KB service key
