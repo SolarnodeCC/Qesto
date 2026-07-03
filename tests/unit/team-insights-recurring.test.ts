@@ -8,6 +8,11 @@ import {
 import { upsertInsightsDaily } from '../../functions/api/lib/team-insights'
 import { D1Mock } from '../helpers/d1-mock'
 
+// clusterRecurringThemes filters rows against a rolling window computed from
+// the real clock, so seeded days must be computed, not hardcoded — fixed dates
+// fall out of the window as the calendar moves.
+const isoDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10)
+
 describe('team-insights-recurring (INSIGHTS-03)', () => {
   it('enforces k-anonymity floor — fewer than 3 sessions yields no themes', async () => {
     const db = new D1Mock()
@@ -16,7 +21,7 @@ describe('team-insights-recurring (INSIGHTS-03)', () => {
         id: `row-${i}`,
         session_id: `sess-${i}`,
         team_id: 'team-1',
-        day: '2026-06-01',
+        day: isoDaysAgo(5),
         themes_json: JSON.stringify([{ theme: 'engagement', count: 2, examples: [] }]),
         confidence: 0.5,
         n_votes: 8,
@@ -41,7 +46,7 @@ describe('team-insights-recurring (INSIGHTS-03)', () => {
         id: `row-${i}`,
         session_id: `sess-${i}`,
         team_id: 'team-2',
-        day: `2026-06-0${i + 1}`,
+        day: isoDaysAgo(10 - i),
         themes_json: JSON.stringify([{ theme: 'Team morale', count: 3, examples: [] }]),
         confidence: 0.6,
         n_votes: 12,

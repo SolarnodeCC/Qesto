@@ -3,6 +3,7 @@ import type { Env } from '../../types'
 import type { SessionVars } from './shared'
 
 import { requireFound, requireDraft, requireLiveForClose } from '../../lib/session-lifecycle'
+import { errorResponse } from '../../lib/error-handler'
 import {
   fetchSession,
   fetchQuestions,
@@ -368,14 +369,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         user_id: user.sub,
         ...describeDOError(err),
       })
-      return c.json(
-        {
-          ok: false,
-          error: { code: 'do_close_failed', message: 'Session room unavailable, please try again' },
-          trace_id: c.get('trace_id'),
-        },
-        500,
-      )
+      return errorResponse(c, 500, 'do_close_failed', 'Session room unavailable, please try again')
     }
     if (!doRes.ok) {
       return c.json(
