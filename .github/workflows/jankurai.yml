@@ -30,10 +30,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install jankurai
+      # jankurai is a Rust CLI vendored via the `jankurai-workspace` dependency in
+      # package.json (pinned in package-lock.json to the v1.6.10 tag). `npm ci`
+      # above places the workspace under node_modules/; build the CLI from it with
+      # cargo so the installed version is governed by the lockfile — a single
+      # source of truth, no separate tag pin to drift. rustup/cargo are preinstalled
+      # on ubuntu-latest runners.
+      - name: Install jankurai (v1.6.10, from locked workspace)
         run: |
-          npm install "git+https://github.com/neverhuman/jankurai.git#v1.5.1"
-          echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+          cargo install --path node_modules/jankurai-workspace/crates/jankurai --locked --force
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          "$HOME/.cargo/bin/jankurai" version
 
       - name: Prepare baseline
         run: |

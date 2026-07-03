@@ -1,5 +1,5 @@
 # Generated file zones — DO NOT EDIT BY HAND in these paths.
-# Schema: jankurai 1.5.1 (path, source, command, read_only)
+# Schema: jankurai 1.6.10 (path, source, command, read_only)
 
 [[zone]]
 path = "contracts/generated/api.d.ts"

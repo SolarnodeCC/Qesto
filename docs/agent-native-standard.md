@@ -2,7 +2,7 @@
 
 Qesto targets **jankurai HL3** conformance. The canonical standard text is maintained upstream:
 
-- https://github.com/neverhuman/jankurai/blob/v1.5.1/docs/agent-native-standard.md
+- https://github.com/neverhuman/jankurai/blob/v1.6.10/docs/agent-native-standard.md
 
 Local bindings:
 

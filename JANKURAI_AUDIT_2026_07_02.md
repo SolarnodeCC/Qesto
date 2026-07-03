@@ -111,28 +111,43 @@ never code issues). After the fixes: **findings 217 → 114**, **raw score 70 �
 - **Secret fixtures**: `tests/e2e/marketing/demo-data.ts` excluded; report literal
   redacted.
 
-### Why the headline score is still 60 (two remaining, larger levers)
+### Update — P1-6 resolved: standardized on jankurai v1.6.10
 
-1. **Code shape 0/12** is now driven by *real* oversized product files
-   (e.g. `functions/api/routes/integrations.ts`, 1,029 LOC > the 500/1000 ceilings),
-   not the excluded mockups. Recovering it needs genuine route-handler
-   decomposition — a substantial product refactor, out of scope for this config PR.
-2. **Tool/policy version mismatch (P1-6)** caps the final score at 60. The repo's
-   `agent/audit-policy.toml` declares `[dead_language] allow_terms`
-   (`fallback`, `stub`, `placeholder`, `deprecated`, `stale`) and `[caps]` for
-   jankurai **1.6.10**, but the pinned auditor is **1.5.1**, which does not read
-   those blocks. So legitimate product-code vocabulary (`env.SESSION_ROOM.get(stub)`,
-   graceful-degradation `fallback` branches, the `placeholder=` HTML attribute) and
-   test-fixture secrets keep firing `HLT-001` / `HLT-010` and hold the caps at
-   60–64. Clearing them requires either upgrading the auditor to the version the
-   policy targets, or narrowly excluding first-party test fixtures — a decision
-   deferred to the maintainer, not something to force via broad scan suppression.
+The version skew (P1-6) is now fixed. Investigation showed the repo was **already
+pinned to v1.6.10** in `package.json` / `package-lock.json` (commit `3c80445`) and in
+the `agent/audit-policy.toml` / `agent/ux-qa.toml` schemas; only two CI files carried a
+stale `#v1.5.1` override, and the original audit accidentally ran 1.5.1 via
+`npm install …#v1.5.1` instead of `npm ci`. The proper v1.6.10 install (cargo build
+from the lockfile-pinned workspace, in CI + a reproducible `scripts/install-jankurai.sh`)
+makes the repo's own policy authoritative: **the `[dead_language]` allow-list is now
+honored — `HLT-001` dead-markers dropped 36 → 4** (`fallback`, `stub`, `placeholder`,
+`deprecated` cleared), and every `scan` exclusion (design-system, sdk-python,
+demo-data) is applied.
 
-**Re-baseline is intentionally NOT done here**: the standard gates a baseline refresh
-on a clean advisory run (≥ 85). Because the true 1.5.1 score of this repo is ~60
-(not the aspirational 93 in `agent/baselines/main.repo-score.json`), refreshing the
-baseline is a maintainer decision — accept an honest ~74-raw/60-final baseline so the
-ratchet reflects reality, or first resolve levers (1) and (2) above.
+### Why the headline score is still 60 under a correct v1.6.10
+
+Three drivers remain, none of which is an installation defect:
+
+1. **Code shape 0/12** — *real* oversized product files (e.g.
+   `functions/api/routes/integrations.ts`, 1,029 LOC > the 500/1000 ceilings). Needs
+   genuine route-handler decomposition — a product refactor, not a config change.
+2. **Generated gh-aw workflow (`ci-bad-behavior` + `docker-bad-behavior`, 27 findings)**
+   — all on `.github/workflows/daily-repo-status.lock.yml`, a compiled/generated file.
+   v1.6.10's CI/Docker detectors (`is_ci_file`) hard-code their own path filter and only
+   skip `docs/`, `generated/`, `target/`, and test paths; they do **not** consult the
+   policy's `scan.excluded_paths` / `extra_excluded_globs` or `generated-zones.toml`.
+   So this generated file cannot be excluded via config — an upstream detector gap.
+3. **Test-fixture secret (`secret-like`, the binding 60-cap)** — a fake fixture secret
+   in `tests/integration/…​.test.ts`. The secret detector doesn't exempt test fixtures;
+   suppressing it means dropping `tests/` from the whole scan inventory (broad) or an
+   upstream allow-list — a maintainer call, not a code defect.
+
+**Re-baseline decision (maintainer):** with a *working* v1.6.10 install, the
+`jankurai.yml` ratchet lane now actually runs on `main` and will compare against the
+accepted baseline. The stored baseline (93) is aspirational — the honest v1.6.10 score
+is 60 (raw 74). Options: (a) refresh `agent/baselines/main.repo-score.json` to the
+honest score so the ratchet reflects reality and protects forward, or (b) first resolve
+levers (1)–(3) above. Not done unilaterally here.
 
 ## Artifact index (local, gitignored — regenerate to inspect)
 
