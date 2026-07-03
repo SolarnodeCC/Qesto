@@ -17,11 +17,8 @@ score:
     #!/bin/bash
     set -e
     mkdir -p agent target/jankurai
-    if command -v jankurai >/dev/null 2>&1; then
-      jankurai . --json agent/repo-score.json --md agent/repo-score.md
-    else
-      npx --yes jankurai@1.5.1 . --json agent/repo-score.json --md agent/repo-score.md
-    fi
+    command -v jankurai >/dev/null 2>&1 || bash scripts/install-jankurai.sh
+    jankurai audit . --mode advisory --json agent/repo-score.json --md agent/repo-score.md
 
 # Rendered UX QA (Playwright SPA lane)
 ux-qa:
@@ -35,7 +32,13 @@ setup:
     npm ci
     echo "Configuring git hooks..."
     git config core.hooksPath ops/git-hooks
+    echo "Installing jankurai audit CLI (v1.6.10)..."
+    bash scripts/install-jankurai.sh
     echo "Setup complete. Run 'just doctor' to verify environment."
+
+# Install/refresh the jankurai audit CLI (v1.6.10, pinned via package-lock.json)
+install-jankurai:
+    bash scripts/install-jankurai.sh
 
 # Pre-push quality gates (type check + test)
 quality-gates:
@@ -62,9 +65,9 @@ verify: check
     #!/bin/bash
     set -e
     mkdir -p agent
-    npm list -g jankurai || npm install -g jankurai
+    command -v jankurai >/dev/null 2>&1 || bash scripts/install-jankurai.sh
     echo "Running jankurai audit..."
-    jankurai . --json agent/repo-score.json --md agent/repo-score.md || true
+    jankurai audit . --mode advisory --json agent/repo-score.json --md agent/repo-score.md || true
     echo "Building..."
     npm run build
     echo "Full verification complete."
@@ -75,10 +78,11 @@ security:
     set -e
     echo "Security checks..."
     npm audit --audit-level=moderate || true
-    mkdir -p agent
-    npm list -g jankurai || npm install -g jankurai
-    echo "Running jankurai security audit..."
-    jankurai . --json agent/repo-score.json --md agent/repo-score.md || true
+    mkdir -p agent target/jankurai/security
+    command -v jankurai >/dev/null 2>&1 || bash scripts/install-jankurai.sh
+    echo "Running jankurai security lane..."
+    jankurai security run . --out target/jankurai/security/evidence.json || true
+    jankurai audit . --mode advisory --json agent/repo-score.json --md agent/repo-score.md || true
 
 # Run dev server (frontend only)
 dev-frontend:
@@ -98,3 +102,4 @@ clean:
 
 # Default target
 default: doctor
+

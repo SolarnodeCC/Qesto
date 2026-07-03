@@ -26,7 +26,7 @@ install_jankurai() {
     return 0
   fi
   report_success "Installing jankurai via npm git dependency"
-  npm install --no-save "git+https://github.com/neverhuman/jankurai.git#v1.5.1" 2>/dev/null || true
+  npm install --no-save "git+https://github.com/neverhuman/jankurai.git#v1.6.10" 2>/dev/null || true
   if [ -x node_modules/.bin/jankurai ]; then
     export PATH="$PWD/node_modules/.bin:$PATH"
     return 0
@@ -34,7 +34,7 @@ install_jankurai() {
   if command -v cargo >/dev/null 2>&1; then
     report_success "Installing jankurai via cargo (fresh clone)"
     TMP_DIR=$(mktemp -d)
-    git clone --depth 1 --branch v1.5.1 https://github.com/neverhuman/jankurai.git "$TMP_DIR" 2>/dev/null || true
+    git clone --depth 1 --branch v1.6.10 https://github.com/neverhuman/jankurai.git "$TMP_DIR" 2>/dev/null || true
     if [ -d "$TMP_DIR/crates/jankurai" ]; then
       cargo install --path "$TMP_DIR/crates/jankurai" --locked --force
     fi

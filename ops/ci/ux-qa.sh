@@ -15,7 +15,7 @@ npm run build
 
 report_success "Playwright rendered UX (SPA public routes)"
 if [ -f "tests/playwright.config.ts" ]; then
-  npx playwright install chromium --with-deps
+  npx playwright install chrome --with-deps
   npx playwright test --config tests/playwright.config.ts --project=spa-chrome
 else
   report_error "tests/playwright.config.ts missing"

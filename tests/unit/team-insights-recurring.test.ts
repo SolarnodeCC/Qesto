@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   RECURRING_K_ANON_SESSIONS,
   clusterRecurringThemes,
@@ -9,6 +9,17 @@ import { upsertInsightsDaily } from '../../functions/api/lib/team-insights'
 import { D1Mock } from '../helpers/d1-mock'
 
 describe('team-insights-recurring (INSIGHTS-03)', () => {
+  // Freeze the clock: fixtures use fixed 2026-06 dates and assertions run against a
+  // relative '30d' window, so a real clock makes these tests fail once wall-time
+  // drifts past the window. Mid-June keeps all 2026-06-0x rows in-window.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-06-20T12:00:00Z'))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('enforces k-anonymity floor — fewer than 3 sessions yields no themes', async () => {
     const db = new D1Mock()
     for (let i = 0; i < 2; i++) {

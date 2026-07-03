@@ -1,7 +1,7 @@
 /**
  * INSIGHTS-09 / INSIGHTS-10 — ZK exclusion + crossSessionInsights entitlement contracts.
  */
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
@@ -43,10 +43,18 @@ describe('insights entitlement contracts (INSIGHTS-09/10)', () => {
   let env: Env
 
   beforeEach(() => {
+    // Freeze the clock: fixtures use fixed 2026-06-02 dates and the scorecard/export
+    // filter by a relative 30-day window, so a real clock makes these fail once
+    // wall-time drifts past the window.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-06-15T12:00:00Z'))
     db = new D1Mock()
     teamsKv = new KVMock()
     app = createApp()
     env = makeEnv(db, teamsKv)
+  })
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('denies cross-session trends on starter plan', async () => {

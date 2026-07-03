@@ -1,17 +1,5 @@
 # Generated file zones — DO NOT EDIT BY HAND in these paths.
-# Schema: jankurai 1.5.1 (path, source, command, read_only)
-
-[[zone]]
-path = "src/ui/tokens.ts"
-source = "docs/spec/design-tokens.json"
-command = "npm run tokens:build"
-read_only = true
-
-[[zone]]
-path = "src/ui/tailwind-theme.ts"
-source = "docs/spec/design-tokens.json"
-command = "npm run tokens:build"
-read_only = true
+# Schema: jankurai 1.6.10 (path, source, command, read_only)
 
 [[zone]]
 path = "contracts/generated/api.d.ts"

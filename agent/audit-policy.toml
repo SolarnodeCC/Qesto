@@ -84,6 +84,19 @@ excluded_paths = [
 # and other generated artifacts that must not be hand-audited.
 extra_excluded_paths = [
   ".github/workflows/daily-repo-status.lock.yml",
+  # Design-system reference kit: standalone HTML/JS/CSS preview scaffolds and UI
+  # kits under design-system/ (templates/*/support.js, ui_kits/*.js, etc.).
+  # Reference artifacts, not product runtime code — not imported by src/ or
+  # functions/. Excluded from product-code scoring like contracts/generated/ and
+  # dist/. (The shipped design system lives in src/ and uses CSS custom-property
+  # tokens per ADR-0071.)
+  "design-system/",
+  # Published Python client SDK — a client library, not the exception-only
+  # AI/data service the target stack scopes Python to. Not product runtime.
+  "packages/sdk-python/",
+  # E2E demo-seed fixture: contains a throwaway demo password used only to seed
+  # showcase data in Playwright runs. Not a real credential.
+  "tests/e2e/marketing/demo-data.ts",
 ]
 # gh-aw compiles *.lock.yml workflow files; they are generated output, not
 # hand-authored CI, so they are excluded from bad-behavior scanning.

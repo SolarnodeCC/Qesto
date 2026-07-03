@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   deleteTeamInsightRollups,
   getTeamInsightRollup,
@@ -21,6 +21,17 @@ const dailyRow = (over: Partial<Parameters<typeof upsertInsightsDaily>[1]> = {})
 })
 
 describe('team-insights repository', () => {
+  // Freeze the clock so fixed 2026 fixture dates keep a stable relationship to the
+  // relative window(s) resolved from "now" — otherwise these pass only by wall-clock
+  // coincidence and drift into failure over time.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-07-03T12:00:00Z'))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('upserts and reads team insight rollup', async () => {
     const db = new D1Mock()
     const row = {

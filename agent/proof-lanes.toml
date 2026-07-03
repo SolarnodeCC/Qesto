@@ -25,7 +25,7 @@ purpose = "rendered UX QA for React SPA"
 
 [[lane]]
 name = "db"
-command = "npm test -- --run tests/unit/migrations"
+command = "npm test -- --run tests/unit/migration"
 purpose = "migration safety proof"
 
 [[lane]]

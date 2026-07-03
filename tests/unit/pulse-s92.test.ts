@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   applyKAnonymityToDailyRows,
   fetchTeamLongitudinalTrends,
@@ -9,6 +9,17 @@ import {
 import { D1Mock } from '../helpers/d1-mock'
 
 describe('pulse S92 (longitudinal, k-anon, retention, isolation)', () => {
+  // Freeze the clock so fixed 2026 fixture dates keep a stable relationship to the
+  // relative window(s) resolved from "now" — otherwise these pass only by wall-clock
+  // coincidence and drift into failure over time.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-07-03T12:00:00Z'))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('masks daily rows below k-anonymity floor', () => {
     const masked = applyKAnonymityToDailyRows([
       {

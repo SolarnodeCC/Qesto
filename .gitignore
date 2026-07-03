@@ -15,6 +15,7 @@ coverage/
 
 # Playwright (reports + artefacts live under tests/artifacts when using tests/playwright.config.ts)
 /tests/artifacts/
+tests/**/artifacts/
 /test-results/
 /playwright-report/
 /blob-report/

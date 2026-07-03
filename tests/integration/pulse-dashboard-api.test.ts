@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import { teamDocumentKey } from '../../functions/api/lib/kv-keys'
@@ -15,6 +15,18 @@ async function cookieFor(userId: string, email: string): Promise<string> {
 }
 
 describe('PULSE dashboard API (FE-PULSE-DASHBOARD-01 backend)', () => {
+  // Freeze the clock: fixtures use fixed 2026-06/07 dates and the pulse summary
+  // filters by a relative 30-day window, so a real clock makes these fail once
+  // wall-time drifts past the window. 2026-07-02 keeps 2026-06-02 (window start)
+  // and 2026-07-01 in range.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-07-02T12:00:00Z'))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('team member can read pulse summary with k-anon masking', async () => {
     const db = new D1Mock()
     const teamsKv = new KVMock()
