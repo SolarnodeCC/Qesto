@@ -25,16 +25,17 @@ export { TemplateGenerationWorkflow } from './TemplateGenerationWorkflow'
 
 const app = createApp()
 
-async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
-  // KB vector retrieval health watchdog (daily, cron in wrangler.toml).
-  //
-  // NOTE: this cron does NOT embed/sync. The real sync runs in CI on
-  // knowledge-base/ changes (.github/workflows/kb-sync-on-merge.yml → npm run
-  // kb:sync), because a Worker cannot run the tsx CLI or read git. Instead this
-  // watchdog verifies retrieval is actually HEALTHY end-to-end: D1 has chunks,
-  // the query embedding model matches the index dimensions, and the index
-  // returns matches. (This is exactly the failure mode that silently broke
-  // retrieval before — a 384-dim query model against a 1024-dim index.)
+// KB vector retrieval health watchdog (daily 02:00 UTC cron in wrangler.toml).
+//
+// NOTE: this cron does NOT embed/sync. The real sync runs in CI on
+// knowledge-base/ changes (.github/workflows/kb-sync-on-merge.yml → npm run
+// kb:sync), because a Worker cannot run the tsx CLI or read git. Instead this
+// watchdog verifies retrieval is actually HEALTHY end-to-end: D1 has chunks,
+// the query embedding model matches the index dimensions, and the index
+// returns matches. (This is exactly the failure mode that silently broke
+// retrieval before — a 384-dim query model against a 1024-dim index.)
+// Never throws — logs and returns so sibling jobs still run.
+async function runKbHealthWatchdog(env: Env): Promise<void> {
   const traceId = `kb-health-${Date.now()}`
   try {
     // 1. How many chunks SHOULD be searchable? D1 is the source of truth that
@@ -94,42 +95,52 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
       errorClass: err instanceof Error ? err.name : 'UnknownError',
     })
   }
+}
 
-  // Tier-2 workspace-trend rollup (ADR-0048 §4). Recompute workspace_trend for
-  // entitled teams' retro/ideate workspaces that gained a newly closed instance
-  // since their last trend, and invalidate the KV read cache. Non-fatal: a
-  // failure here must not break the KB watchdog above (mirrors its handling).
-  const trendTraceId = `ws-trends-${Date.now()}`
-  try {
-    const kv = env.ACTIONS_KV ?? env.TEAMS_KV
-    const { scanned, recomputed } = await recomputeStaleWorkspaceTrends(env.DB, kv, env.TEAMS_KV)
-    console.log(`[ws-trends] OK — scanned ${scanned} stale workspace(s), recomputed ${recomputed}`)
-  } catch (err) {
-    safeLogContext(err, {
-      traceId: trendTraceId,
-      route: 'worker/ws-trends',
-      errorClass: err instanceof Error ? err.name : 'UnknownError',
-    })
-  }
+async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionContext): Promise<void> {
+  // Daily 02:00 UTC batch — KB health watchdog, workspace-trend rollup, pulse
+  // retention. Gated on the exact cron expression so the other schedules
+  // (every-3h mention monitor, etc.) don't re-run these daily jobs.
+  if (event.cron === '0 2 * * *') {
+    await runKbHealthWatchdog(env)
 
-  // PULSE-RETENTION-01 — daily GDPR retention (90d redact / 7y delete).
-  const pulseTraceId = `pulse-retention-${Date.now()}`
-  try {
-    const result = await runPulseRetentionPolicy(env.DB)
-    console.log(
-      `[pulse-retention] OK — redacted ${result.redactedSessions} session row(s), ` +
-        `deleted ${result.deletedSessions} session + ${result.deletedDailyRows} daily row(s)`,
-    )
-  } catch (err) {
-    safeLogContext(err, {
-      traceId: pulseTraceId,
-      route: 'worker/pulse-retention',
-      errorClass: err instanceof Error ? err.name : 'UnknownError',
-    })
+    // Tier-2 workspace-trend rollup (ADR-0048 §4). Recompute workspace_trend for
+    // entitled teams' retro/ideate workspaces that gained a newly closed instance
+    // since their last trend, and invalidate the KV read cache. Non-fatal: a
+    // failure here must not break the KB watchdog above (mirrors its handling).
+    const trendTraceId = `ws-trends-${Date.now()}`
+    try {
+      const kv = env.ACTIONS_KV ?? env.TEAMS_KV
+      const { scanned, recomputed } = await recomputeStaleWorkspaceTrends(env.DB, kv, env.TEAMS_KV)
+      console.log(`[ws-trends] OK — scanned ${scanned} stale workspace(s), recomputed ${recomputed}`)
+    } catch (err) {
+      safeLogContext(err, {
+        traceId: trendTraceId,
+        route: 'worker/ws-trends',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+    }
+
+    // PULSE-RETENTION-01 — daily GDPR retention (90d redact / 7y delete).
+    const pulseTraceId = `pulse-retention-${Date.now()}`
+    try {
+      const result = await runPulseRetentionPolicy(env.DB)
+      console.log(
+        `[pulse-retention] OK — redacted ${result.redactedSessions} session row(s), ` +
+          `deleted ${result.deletedSessions} session + ${result.deletedDailyRows} daily row(s)`,
+      )
+    } catch (err) {
+      safeLogContext(err, {
+        traceId: pulseTraceId,
+        route: 'worker/pulse-retention',
+        errorClass: err instanceof Error ? err.name : 'UnknownError',
+      })
+    }
   }
 
   // OPS-DR-GAP-01 — weekly KV export (AUDIT_KV + ACTIONS_KV → R2). Cron: Sunday 03:00 UTC.
-  if (event.cron === '0 3 * * 0') {
+  // Cloudflare day-of-week: 1 = Sunday (see wrangler.toml [triggers]).
+  if (event.cron === '0 3 * * 1') {
     const backupTraceId = `kv-backup-${Date.now()}`
     try {
       const results = await runKvBackup(env)
@@ -145,7 +156,8 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
   }
 
   // Marketing Content Engine — Tue/Thu/Sat 06:00 UTC (3x/week, see ops-cron.ts 'content-engine').
-  if (event.cron === '0 6 * * 2,4,6') {
+  // Cloudflare day-of-week: 3=Tue, 5=Thu, 7=Sat (1=Sunday; see wrangler.toml [triggers]).
+  if (event.cron === '0 6 * * 3,5,7') {
     const traceId = `content-engine-${Date.now()}`
     try {
       const result = await runContentEngine(env.DB, env.AI, env.MARKETING_KV)

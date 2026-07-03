@@ -1,0 +1,33 @@
+id = "0078_widen_session_mode"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "high"
+stage = "expand"
+
+[approval]
+approved_by = "backend"
+approval_date = "2026-07-03"
+ticket = "INCIDENT-2026-07-03"
+
+[rollback]
+strategy = "table-rebuild"
+procedure = "Restore sessions from the pre-migration backup; the widen is forward-only (SQLite cannot narrow a CHECK in place either)."
+
+[backup]
+required = true
+note = "Full table rebuild (DROP TABLE sessions + copy). Take a D1 export/backup before applying; verify row counts match post-apply."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "60s"
+
+[dependencies]
+tables = ["sessions", "users", "workspaces"]
+cascade_scope = "sessions FK children (questions, votes, energizers, townhall_questions) — FKs deferred via PRAGMA foreign_keys=OFF during rebuild"
+
+[verification]
+verify = true
+post_check = "PRAGMA foreign_key_check; PRAGMA quick_check;"
+
+[notes]
+context = "Replaces the runtime rebuildSessionsTableForTownhall() request-path DDL removed in the same change. Apply only after reconciling the migration tracker per knowledge-base/operations/deployment/PRODUCTION-DB-MIGRATION-FIX.md. Safe to skip if `SELECT sql FROM sqlite_master WHERE name='sessions'` already contains 'deliberate'."
