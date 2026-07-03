@@ -8,7 +8,7 @@ import {
   fetchQuestions,
   questionToLive,
   postDO,
-  getSessionRoomStub,
+  describeDOError,
   recordSprint19JourneyEvent,
 } from './shared'
 import { writeEvent } from '../../lib/observability'
@@ -143,14 +143,13 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         : session.session_mode === 'ideate'
           ? await loadIdeateInitExtras(c.env, id)
           : {}
+    // Check if session has energizers with draft state
+    const hasEnergizersToDo = (await countDraftEnergizers(c.env.DB, id)) > 0
+    const initialStatus = hasEnergizersToDo ? 'energizing' : 'live'
     const initBody = () => buildSessionInitBody(session, liveQ, questions, c.get('plan'), initialStatus, boardExtras)
     const logCtx = { trace_id: traceId, session_id: id, user_id: user.sub }
 
     logEvent({ ts: new Date().toISOString(), level: 'info', event: 'session.start.attempt', ...logCtx })
-
-    // Check if session has energizers with draft state
-    const hasEnergizersToDo = (await countDraftEnergizers(c.env.DB, id)) > 0
-    const initialStatus = hasEnergizersToDo ? 'energizing' : 'live'
 
     // Conditional UPDATE: only transitions from draft → (energizing|live).
     // `0 changes` means a concurrent request already won this write.
@@ -166,7 +165,15 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         let doRes: Response
         try {
           doRes = await postDO(c.env, id, '/init', initBody())
-        } catch {
+        } catch (err) {
+          logEvent({
+            ts: new Date().toISOString(),
+            level: 'error',
+            event: 'session.start.do_network_error',
+            ...logCtx,
+            concurrent: true,
+            ...describeDOError(err),
+          })
           const latest = await fetchSession(c.env.DB, id, user.sub)
           if (latest?.status === 'draft') {
             return c.json(
@@ -214,9 +221,14 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
     try {
       doRes = await postDO(c.env, id, '/init', initBody())
     } catch (doNetworkErr) {
-      
       // Roll back the DB transition so the session remains startable.
-      logEvent({ ts: new Date().toISOString(), level: 'error', event: 'session.start.do_network_error', ...logCtx, err: String(doNetworkErr) })
+      logEvent({
+        ts: new Date().toISOString(),
+        level: 'error',
+        event: 'session.start.do_network_error',
+        ...logCtx,
+        ...describeDOError(doNetworkErr),
+      })
       try {
         await rollbackSessionStart(c.env.DB, id, user.sub, initialStatus, now)
       } catch { /* best-effort rollback */ }
@@ -341,8 +353,30 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       )
     }
     const session = liveClose.session
-    const room = await getSessionRoomStub(c.env, id)
-    const doRes = await room.fetch('https://do.internal/close', { method: 'POST' })
+    let doRes: Response
+    try {
+      doRes = await postDO(c.env, id, '/close')
+    } catch (err) {
+      // A stub.fetch rejection used to escape to Hono's generic 500 handler
+      // with no diagnostics — same failure class as /start's do_init_failed.
+      logEvent({
+        ts: new Date().toISOString(),
+        level: 'error',
+        event: 'session.close.do_network_error',
+        trace_id: c.get('trace_id'),
+        session_id: id,
+        user_id: user.sub,
+        ...describeDOError(err),
+      })
+      return c.json(
+        {
+          ok: false,
+          error: { code: 'do_close_failed', message: 'Session room unavailable, please try again' },
+          trace_id: c.get('trace_id'),
+        },
+        500,
+      )
+    }
     if (!doRes.ok) {
       return c.json(
         {
@@ -657,11 +691,21 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
       )
     }
 
-    // Notify DO to update its internal state (if it exists)
+    // Notify DO to update its internal state (if it exists). Best-effort by
+    // design — the DB transition already committed — but log the failure so
+    // a room stuck in energizing is diagnosable.
     try {
-      const room = await getSessionRoomStub(c.env, id)
-      await room.fetch('https://do.internal/transition-to-live', { method: 'POST' })
-    } catch {
+      await postDO(c.env, id, '/transition-to-live')
+    } catch (err) {
+      logEvent({
+        ts: new Date().toISOString(),
+        level: 'warn',
+        event: 'session.transition_to_live.do_network_error',
+        trace_id: traceId,
+        session_id: id,
+        user_id: user.sub,
+        ...describeDOError(err),
+      })
     }
 
     session.status = 'live'

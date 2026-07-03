@@ -308,13 +308,61 @@ export async function getSessionRoomStub(env: Env, sessionId: string): Promise<D
   return env.SESSION_ROOM.get(id)
 }
 
-export async function postDO(env: Env, sessionId: string, path: string, body: unknown): Promise<Response> {
-  const room = await getSessionRoomStub(env, sessionId)
-  return room.fetch(`https://do.internal${path}`, {
+// Classifies a stub.fetch rejection for structured logging. Cloudflare DO
+// exceptions carry `retryable` (request confirmed NOT delivered — safe to
+// retry regardless of idempotency) and `overloaded` flags.
+export function describeDOError(err: unknown): {
+  errorClass: string
+  errorMessage: string
+  retryable: boolean
+  overloaded: boolean
+  stack?: string
+} {
+  return {
+    errorClass: err instanceof Error ? err.name : 'UnknownError',
+    errorMessage: err instanceof Error ? err.message : String(err),
+    retryable: (err as { retryable?: boolean })?.retryable === true,
+    overloaded: (err as { overloaded?: boolean })?.overloaded === true,
+    ...(err instanceof Error && err.stack ? { stack: err.stack } : {}),
+  }
+}
+
+// Single choke point for SessionRoom DO fetches. A rejection here used to
+// surface to the caller as an opaque "Session room unavailable" with no
+// diagnostics; now every rejection is logged with class/message/retryable,
+// and rejections Cloudflare marks `retryable` (guaranteed undelivered) get
+// exactly one retry on a fresh stub, per CF guidance.
+export async function fetchDO(env: Env, sessionId: string, path: string, init: RequestInit): Promise<Response> {
+  const url = `https://do.internal${path}`
+  try {
+    const room = await getSessionRoomStub(env, sessionId)
+    return await room.fetch(url, init)
+  } catch (err) {
+    const info = describeDOError(err)
+    logEvent({ event: 'do.stub_fetch_rejected', session_id: sessionId, path, attempt: 1, ...info })
+    if (!info.retryable) throw err
+    try {
+      const room = await getSessionRoomStub(env, sessionId)
+      const res = await room.fetch(url, init)
+      logEvent({ event: 'do.stub_fetch_retry_success', session_id: sessionId, path })
+      return res
+    } catch (err2) {
+      logEvent({ event: 'do.stub_fetch_rejected', session_id: sessionId, path, attempt: 2, ...describeDOError(err2) })
+      throw err2
+    }
+  }
+}
+
+export async function postDO(env: Env, sessionId: string, path: string, body?: unknown): Promise<Response> {
+  // Stringify before any fetch so a serialisation throw happens once, up
+  // front, and is classed by the caller's catch instead of aborting a retry.
+  const init: RequestInit = {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  })
+    ...(body !== undefined
+      ? { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }
+      : {}),
+  }
+  return fetchDO(env, sessionId, path, init)
 }
 
 // Best-effort background insight generation triggered on session close.
