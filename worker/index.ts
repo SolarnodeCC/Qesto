@@ -139,7 +139,8 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
   }
 
   // OPS-DR-GAP-01 — weekly KV export (AUDIT_KV + ACTIONS_KV → R2). Cron: Sunday 03:00 UTC.
-  if (event.cron === '0 3 * * 0') {
+  // Cloudflare day-of-week: 1 = Sunday (see wrangler.toml [triggers]).
+  if (event.cron === '0 3 * * 1') {
     const backupTraceId = `kv-backup-${Date.now()}`
     try {
       const results = await runKvBackup(env)
@@ -155,7 +156,8 @@ async function handleScheduled(event: ScheduledEvent, env: Env, _ctx: ExecutionC
   }
 
   // Marketing Content Engine — Tue/Thu/Sat 06:00 UTC (3x/week, see ops-cron.ts 'content-engine').
-  if (event.cron === '0 6 * * 2,4,6') {
+  // Cloudflare day-of-week: 3=Tue, 5=Thu, 7=Sat (1=Sunday; see wrangler.toml [triggers]).
+  if (event.cron === '0 6 * * 3,5,7') {
     const traceId = `content-engine-${Date.now()}`
     try {
       const result = await runContentEngine(env.DB, env.AI, env.MARKETING_KV)

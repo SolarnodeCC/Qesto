@@ -35,7 +35,8 @@ id = "2385a9ede5974147bb15716dcc3b27a9"
 ENV = "production"
 
 [triggers]
-crons = ["0 9 * * 2", "0 9 * * 4"] # Tue & Thu at 09:00 UTC
+# Cloudflare day-of-week is 1=Sunday … 7=Saturday (NOT standard 0=Sun); Tue=3, Thu=5.
+crons = ["0 9 * * 3", "0 9 * * 5"] # Tue & Thu at 09:00 UTC
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Staging — deploy with: wrangler deploy --env staging
@@ -61,4 +62,5 @@ id = "8c394153bb6f41e89990424209282dae"
 ENV = "staging"
 
 [env.staging.triggers]
-crons = ["0 9 * * 2", "0 9 * * 4"]
+# Cloudflare day-of-week: Tue=3, Thu=5 (1=Sunday).
+crons = ["0 9 * * 3", "0 9 * * 5"]
