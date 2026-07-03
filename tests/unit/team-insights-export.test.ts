@@ -1,9 +1,20 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { insightsExportToCsv } from '../../functions/api/lib/team-insights-export'
 import { escapeCsvCell } from '../../functions/api/lib/csv'
 import { computeFacilitatorScorecard } from '../../functions/api/lib/team-insights-scorecard'
 
 describe('team-insights-export (INSIGHTS-07)', () => {
+  // Freeze the clock so fixed 2026 fixture dates keep a stable relationship to the
+  // relative window(s) resolved from "now" — otherwise these pass only by wall-clock
+  // coincidence and drift into failure over time.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-07-03T12:00:00Z'))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('sanitizes formula-injection prefixes in CSV cells', () => {
     expect(escapeCsvCell('=SUM(A1)')).toBe(`"'=SUM(A1)"`)
     expect(escapeCsvCell('+cmd')).toBe(`"'+cmd"`)
