@@ -218,14 +218,15 @@ describe('POST /api/sessions/:id/start', () => {
     expect(db.sessions.get(sessionId)?.status).toBe('live')
   })
 
-  it('DO transient failure → rollback to draft → retry with working DO succeeds', async () => {
+  it('DO refuses init (non-200) → rollback to draft → retry with working DO succeeds', async () => {
     const db = new D1Mock()
     const app = createApp()
     const cookie = await cookieFor('user_5', 'user5@example.com')
     const sessionId = await createSession(db, app, makeEnv(db, DO_OK), cookie)
     seedPollQuestion(db, sessionId)
 
-    // First attempt: DO unavailable → 500, DB rolled back to draft.
+    // First attempt: DO responds non-200 → deterministic refusal surfaced as the
+    // non-retryable do_init_error, DB rolled back to draft so a later start works.
     const envFail = makeEnv(db, DO_FAIL)
     const r1 = await app.fetch(
       new Request(`http://local/api/sessions/${sessionId}/start`, { method: 'POST', headers: { cookie } }),
@@ -233,7 +234,7 @@ describe('POST /api/sessions/:id/start', () => {
     )
     expect(r1.status).toBe(500)
     const b1 = (await r1.json()) as { error: { code: string } }
-    expect(b1.error.code).toBe('do_init_failed')
+    expect(b1.error.code).toBe('do_init_error')
     expect(db.sessions.get(sessionId)?.status).toBe('draft') // rolled back
 
     // Retry: DO is now available → succeeds.

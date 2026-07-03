@@ -303,7 +303,34 @@ export function questionToLive(q: Question): LiveQuestion {
   return { id: q.id, kind: q.kind, prompt: q.prompt, options: q.options }
 }
 
+// Thrown when the SESSION_ROOM Durable Object binding is absent from the
+// runtime (e.g. the Pages project is missing the DO binding, or the DO-hosting
+// Worker failed to deploy). This is a *deterministic* infrastructure failure —
+// every session/mode fails identically and no retry can help — so it must be
+// surfaced distinctly instead of masquerading as a transient `TypeError`.
+export class DOBindingUnavailableError extends Error {
+  readonly binding = 'SESSION_ROOM'
+  constructor() {
+    super('SESSION_ROOM Durable Object binding is not available in this runtime')
+    this.name = 'DOBindingUnavailableError'
+  }
+}
+
+// True for failures that will recur identically on every attempt — retrying is
+// pointless and only prolongs the outage for the user. A missing binding is the
+// canonical case; classifying it here keeps the retry/response logic in one place.
+export function isDeterministicDOFailure(err: unknown): boolean {
+  return err instanceof DOBindingUnavailableError
+}
+
 export async function getSessionRoomStub(env: Env, sessionId: string): Promise<DurableObjectStub> {
+  // Guard the binding before touching it: if SESSION_ROOM is unwired,
+  // `env.SESSION_ROOM.idFromName` is a bare `TypeError` buried inside
+  // `do.stub_fetch_rejected`. Detecting it here yields an actionable,
+  // greppable signal (`do.binding_unavailable`) and a typed, non-retryable error.
+  if (typeof env.SESSION_ROOM?.idFromName !== 'function') {
+    throw new DOBindingUnavailableError()
+  }
   const id = env.SESSION_ROOM.idFromName(sessionId)
   return env.SESSION_ROOM.get(id)
 }
@@ -338,6 +365,13 @@ export async function fetchDO(env: Env, sessionId: string, path: string, init: R
     const room = await getSessionRoomStub(env, sessionId)
     return await room.fetch(url, init)
   } catch (err) {
+    // A missing DO binding is deterministic and infrastructural — log it under a
+    // distinct, greppable event so it is not lost among transient stub blips, and
+    // never retry (a fresh stub cannot conjure a binding that isn't wired up).
+    if (isDeterministicDOFailure(err)) {
+      logEvent({ event: 'do.binding_unavailable', session_id: sessionId, path, ...describeDOError(err) })
+      throw err
+    }
     const info = describeDOError(err)
     logEvent({ event: 'do.stub_fetch_rejected', session_id: sessionId, path, attempt: 1, ...info })
     if (!info.retryable) throw err
