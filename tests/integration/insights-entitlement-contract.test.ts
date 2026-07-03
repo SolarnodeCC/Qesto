@@ -14,6 +14,10 @@ import type { Team } from '../../functions/api/routes/teams'
 
 const SECRET = 'integration-test-secret-at-least-32-bytes!'
 
+// The scorecard reads a rolling window relative to the real clock, so seeded
+// days must be computed, not hardcoded — fixed dates fall out of range over time.
+const isoDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10)
+
 function makeEnv(db: D1Mock, teamsKv: KVMock): Env {
   return {
     ENV: 'dev',
@@ -126,7 +130,7 @@ describe('insights entitlement contracts (INSIGHTS-09/10)', () => {
       id: 'rz',
       session_id: 'sess-zk',
       team_id: 'team-zk',
-      day: '2026-06-02',
+      day: isoDaysAgo(2),
       themes_json: '[]',
       confidence: 0.9,
       n_votes: 50,
@@ -152,7 +156,7 @@ describe('insights entitlement contracts (INSIGHTS-09/10)', () => {
       id: 'ro',
       session_id: 'sess-ok',
       team_id: 'team-zk',
-      day: '2026-06-02',
+      day: isoDaysAgo(2),
       themes_json: JSON.stringify([{ theme: 'Safety', count: 1, examples: [] }]),
       confidence: 0.6,
       n_votes: 10,

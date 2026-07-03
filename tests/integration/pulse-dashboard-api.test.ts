@@ -14,6 +14,10 @@ async function cookieFor(userId: string, email: string): Promise<string> {
   return `qesto_session=${await signJwt({ sub: userId, email }, SECRET, 3600)}`
 }
 
+// Seeded days must track the real clock: the summary endpoint filters on a
+// rolling window, so hardcoded dates silently fall out of range over time.
+const isoDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10)
+
 describe('PULSE dashboard API (FE-PULSE-DASHBOARD-01 backend)', () => {
   // Freeze the clock: fixtures use fixed 2026-06/07 dates and the pulse summary
   // filters by a relative 30-day window, so a real clock makes these fail once
@@ -54,19 +58,22 @@ describe('PULSE dashboard API (FE-PULSE-DASHBOARD-01 backend)', () => {
     }
     await writeKvJson(teamsKv as unknown as KVNamespace, teamDocumentKey(teamId), team)
 
-    // Use dates within the 30-day window (today is 2026-07-02, window starts 2026-06-02)
-    db.pulseTeamDaily.set(`${teamId}:2026-06-02`, {
+    // Two days inside the 30-day window: one at the cohort floor (unmasked),
+    // one below it (masked).
+    const unmaskedDay = isoDaysAgo(20)
+    const maskedDay = isoDaysAgo(2)
+    db.pulseTeamDaily.set(`${teamId}:${unmaskedDay}`, {
       team_id: teamId,
-      day: '2026-06-02',
+      day: unmaskedDay,
       participation_avg: 0.75,
       sentiment_avg: 0.5,
       session_count: PULSE_K_ANON_MIN_COHORT,
       response_total: 120,
       computed_at: now,
     })
-    db.pulseTeamDaily.set(`${teamId}:2026-07-01`, {
+    db.pulseTeamDaily.set(`${teamId}:${maskedDay}`, {
       team_id: teamId,
-      day: '2026-07-01',
+      day: maskedDay,
       participation_avg: 0.4,
       sentiment_avg: 0.2,
       session_count: PULSE_K_ANON_MIN_COHORT - 1,
