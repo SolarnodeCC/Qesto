@@ -182,7 +182,7 @@ describe('POST /api/sessions/:id/start — SessionRoom stub.fetch failure handli
     expect(db.sessions.get(SESSION_ID)?.status).toBe('draft')
   })
 
-  it('does not retry when the DO returns a non-200 Response (existing refused-init path)', async () => {
+  it('surfaces the DO\'s real error under a non-retryable code when the DO returns non-200', async () => {
     const db = new D1Mock()
     seed(db)
     const room = makeRoomNamespace([doError500])
@@ -190,10 +190,42 @@ describe('POST /api/sessions/:id/start — SessionRoom stub.fetch failure handli
 
     expect(res.status).toBe(500)
     const body = (await res.json()) as { error: { code: string; message: string } }
-    expect(body.error.code).toBe('do_init_failed')
-    expect(body.error.message).toBe('DurableObject refused init (500)')
+    // A DO refusal is deterministic: surface the real cause and use a code that
+    // is NOT in the client's RETRYABLE_CODES set, so the browser stops looping.
+    expect(body.error.code).toBe('do_init_error')
+    expect(body.error.message).toContain('do_internal_error')
     expect(room.counts().fetchCalls).toBe(1)
     expect(db.sessions.get(SESSION_ID)?.status).toBe('draft')
+  })
+
+  it('reports a missing SESSION_ROOM binding distinctly and never retries', async () => {
+    const db = new D1Mock()
+    seed(db)
+    const logSpy = vi.spyOn(console, 'log')
+    // Env with no SESSION_ROOM binding at all — the deterministic outage that
+    // makes every session/mode fail identically in production.
+    const env = makeEnv(db, undefined as unknown as DurableObjectNamespace)
+    const res = await start(env, await cookie())
+
+    expect(res.status).toBe(503)
+    const body = (await res.json()) as { error: { code: string; message: string } }
+    expect(body.error.code).toBe('do_unavailable')
+    // Rolled back so the session stays startable once the binding is restored.
+    expect(db.sessions.get(SESSION_ID)?.status).toBe('draft')
+
+    const events = logSpy.mock.calls
+      .map(([line]) => {
+        try {
+          return JSON.parse(line as string) as Record<string, unknown>
+        } catch {
+          return null
+        }
+      })
+      .filter((e): e is Record<string, unknown> => e !== null)
+    expect(events.find((e) => e.event === 'do.binding_unavailable')).toMatchObject({
+      path: '/init',
+      errorClass: 'DOBindingUnavailableError',
+    })
   })
 })
 

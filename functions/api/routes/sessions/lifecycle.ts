@@ -10,6 +10,7 @@ import {
   questionToLive,
   postDO,
   describeDOError,
+  isDeterministicDOFailure,
   recordSprint19JourneyEvent,
 } from './shared'
 import { writeEvent } from '../../lib/observability'
@@ -75,6 +76,42 @@ function buildSessionInitBody(
     ideateClusterDebounceMs: extras?.ideateClusterDebounceMs,
     plan,
     initialStatus,
+  }
+}
+
+// Map a caught `postDO('/init')` rejection to a client-facing envelope. A
+// deterministic failure (missing DO binding) is surfaced as a non-retryable
+// `do_unavailable` (503) so the browser stops the pointless retry loop; a
+// transient stub rejection keeps the retryable `do_init_failed` (500) that the
+// client intentionally backs off and retries.
+function doThrowResponse(err: unknown): { status: 503 | 500; code: string; message: string } {
+  if (isDeterministicDOFailure(err)) {
+    return {
+      status: 503,
+      code: 'do_unavailable',
+      message: 'The realtime service is currently unavailable. Please contact support if this persists.',
+    }
+  }
+  return { status: 500, code: 'do_init_failed', message: 'Session room unavailable, please try again' }
+}
+
+// Map a DO non-200 `/init` response to a client-facing envelope. The DO refused
+// init for a concrete reason (e.g. `do_internal_error`, `bad_request`) — this is
+// deterministic, so surface the DO's real code/message under a non-retryable
+// `do_init_error` (the client's RETRYABLE_CODES set excludes it) instead of the
+// opaque, retryable `do_init_failed`. Falls back to the HTTP status when the DO
+// body carries no structured error.
+function doRefusedResponse(
+  doStatus: number,
+  doErr: { error?: { code?: string; message?: string } } | null,
+): { code: string; message: string } {
+  const doCode = doErr?.error?.code
+  const doMessage = doErr?.error?.message
+  return {
+    code: 'do_init_error',
+    message: doCode
+      ? `Session room could not start (${doCode}${doMessage ? `: ${doMessage}` : ''})`
+      : `Session room refused to start (HTTP ${doStatus})`,
   }
 }
 
@@ -173,6 +210,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
             event: 'session.start.do_network_error',
             ...logCtx,
             concurrent: true,
+            deterministic: isDeterministicDOFailure(err),
             ...describeDOError(err),
           })
           const latest = await fetchSession(c.env.DB, id, user.sub)
@@ -182,18 +220,26 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
               409,
             )
           }
+          const resp = doThrowResponse(err)
           return c.json(
-            {
-              ok: false,
-              error: { code: 'do_init_failed', message: 'Session room unavailable, please try again' },
-              trace_id: traceId,
-            },
-            500,
+            { ok: false, error: { code: resp.code, message: resp.message }, trace_id: traceId },
+            resp.status,
           )
         }
         if (doRes.status === 200 || (await doInitAlreadyInitialised(doRes))) {
           return c.json({ ok: true, data: { session: current, question: liveQ }, trace_id: traceId })
         }
+        const doErr = (await doRes.json().catch(() => null)) as { error?: { code?: string; message?: string } } | null
+        logEvent({
+          ts: new Date().toISOString(),
+          level: 'warn',
+          event: 'session.start.do_failure',
+          ...logCtx,
+          concurrent: true,
+          do_status: doRes.status,
+          do_error_code: doErr?.error?.code,
+          do_error_message: doErr?.error?.message,
+        })
         const latest = await fetchSession(c.env.DB, id, user.sub)
         if (latest?.status === 'draft') {
           return c.json(
@@ -201,12 +247,9 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
             409,
           )
         }
+        const refused = doRefusedResponse(doRes.status, doErr)
         return c.json(
-          {
-            ok: false,
-            error: { code: 'do_init_failed', message: 'Session room unavailable, please try again' },
-            trace_id: traceId,
-          },
+          { ok: false, error: { code: refused.code, message: refused.message }, trace_id: traceId },
           500,
         )
       }
@@ -228,6 +271,7 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         level: 'error',
         event: 'session.start.do_network_error',
         ...logCtx,
+        deterministic: isDeterministicDOFailure(doNetworkErr),
         ...describeDOError(doNetworkErr),
       })
       try {
@@ -242,9 +286,10 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         value: 1,
         traceId,
       })
+      const resp = doThrowResponse(doNetworkErr)
       return c.json(
-        { ok: false, error: { code: 'do_init_failed', message: 'Session room unavailable, please try again' }, trace_id: traceId },
-        500,
+        { ok: false, error: { code: resp.code, message: resp.message }, trace_id: traceId },
+        resp.status,
       )
     }
     if (doRes.status !== 200) {
@@ -283,10 +328,11 @@ export function mountLifecycleRoutes(app: Hono<{ Bindings: Env; Variables: Sessi
         value: 1,
         traceId,
       })
+      const refused = doRefusedResponse(doRes.status, doErr)
       return c.json(
         {
           ok: false,
-          error: { code: 'do_init_failed', message: `DurableObject refused init (${doRes.status})` },
+          error: { code: refused.code, message: refused.message },
           trace_id: traceId,
         },
         500,
