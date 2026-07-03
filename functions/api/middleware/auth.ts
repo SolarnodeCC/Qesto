@@ -42,6 +42,14 @@ export type AuthVariables = {
 }
 
 export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthVariables }> = async (c, next) => {
+  // ARCH-HONO-01/02: registered app.use('*') on ~12 sub-apps mounted at /api, so
+  // one request passes through auth many times. Once a prior pass has verified
+  // the JWT and set `user` (always alongside `session_token`), re-verifying is
+  // wasted CPU and yields the same result — short-circuit idempotently.
+  if (c.get('user')) {
+    await next()
+    return
+  }
   const pathname = new URL(c.req.url).pathname
   if (isSessionAuthExempt(pathname)) {
     await next()

@@ -56,6 +56,42 @@ describe('planMiddleware resilience', () => {
     expect(body.data.maxSessionsPerMonth).toBe(PLAN_QUOTAS.team.maxSessionsPerMonth)
   })
 
+  it('queries D1 once even when registered multiple times (ARCH-HONO-01/02 amplification fix)', async () => {
+    // Reproduces the incident wiring: planMiddleware mounted app.use('*') on
+    // several sub-apps that all land at /api, so one request passes through it
+    // repeatedly. The per-request memo must collapse that to a single lookup.
+    let prepareCalls = 0
+    const countingDb = {
+      prepare: (sql: string) => {
+        if (sql.includes('SELECT plan FROM users')) prepareCalls++
+        return {
+          bind: () => ({
+            first: async () => ({ plan: 'team' }),
+          }),
+        }
+      },
+    } as unknown as D1Database
+
+    const app = new Hono<{ Bindings: Env; Variables: Vars }>()
+    app.use('*', async (c, next) => {
+      c.set('trace_id', 'trace-test')
+      c.set('user', { sub: 'user_1', email: 'user@example.com', iat: 1, exp: 2 })
+      await next()
+    })
+    // Three registrations stand in for the ~12 duplicate /api-root mounts.
+    app.use('*', planMiddleware)
+    app.use('*', planMiddleware)
+    app.use('*', planMiddleware)
+    app.get('/probe', (c) => c.json({ ok: true, data: { plan: c.get('plan') } }))
+
+    const res = await app.fetch(new Request('http://local/probe'), makeEnv(countingDb))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { data: { plan: string } }
+    expect(body.data.plan).toBe('team')
+    // The load-bearing assertion: one D1 read, not three.
+    expect(prepareCalls).toBe(1)
+  })
+
   it('falls back to the free plan when D1 lookup fails', async () => {
     const failingDb = {
       prepare: () => ({

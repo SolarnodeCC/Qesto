@@ -275,6 +275,15 @@ export function createApp() {
   // BEFORE are unaffected. PUBLIC routes must be mounted before the first
   // auth-middleware sub-app (mountEnergizerRoutes). See ARCH-HONO-01/02 in
   // BACKLOG_MASTER.md for the planned structural fix.
+  //
+  // Interim mitigation (2026-07-03 D1 incident): the duplicate registrations
+  // made auth/plan middleware execute 8-9x per request, and each plan pass ran
+  // its own `SELECT plan FROM users` — a ~10x D1 amplifier that turned a D1
+  // storage-reset into 13s requests. authMiddleware/planMiddleware are now
+  // idempotent per request (they short-circuit once `user`/`plan` is set), so
+  // the amplification is neutralized. The deeper fix — removing the wildcard
+  // app.use('*') calls and hoisting auth/plan to a single /api/* registration
+  // with a public-route allowlist — remains ARCH-HONO-01/02.
   // ──────────────────────────────────────────────────────────────────────────
   mountAuthRoutes(app)
   mountSessionRoutes(app)
