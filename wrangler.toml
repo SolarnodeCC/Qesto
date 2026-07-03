@@ -211,10 +211,15 @@ dataset = "qesto_metrics"
 # healthy: D1 has chunks, query model/dim matches the index, and the index returns matches.
 #
 # Marketing automation (worker/index.ts -> handleScheduled):
-#   "0 6 * * 2", "0 6 * * 4", "0 6 * * 6" — Content Engine (Tue/Thu/Sat 06:00 UTC)
-#   "0 */3 * * *"                        — Mention Monitor (every 3h)
-#   "0 4 * * *"                          — OAuth token proactive refresh (daily 04:00 UTC)
-crons = ["0 2 * * *", "0 3 * * 0", "0 6 * * 2", "0 6 * * 4", "0 6 * * 6", "0 */3 * * *", "0 4 * * *"]
+#   "0 6 * * 2,4,6" — Content Engine (Tue/Thu/Sat 06:00 UTC; single expression — the
+#                     handler and ops-cron.ts registry match on this exact string)
+#   "0 */3 * * *"   — Mention Monitor (every 3h)
+#   "0 4 * * *"     — OAuth token proactive refresh (daily 04:00 UTC)
+#
+# ⚠️ Cloudflare allows at most 5 cron triggers per Worker — we are at the limit.
+# To add a schedule, combine it into an existing expression (day-of-week lists etc.)
+# or dispatch off an existing firing; a 6th entry makes the schedules deploy fail.
+crons = ["0 2 * * *", "0 3 * * 0", "0 6 * * 2,4,6", "0 */3 * * *", "0 4 * * *"]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Staging (v2.2 pre-work)
