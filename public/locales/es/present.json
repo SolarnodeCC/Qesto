@@ -116,6 +116,7 @@
   "ctrl.copied": "¡Copiado!",
   "ctrl.displayLinkTitle": "Copiar la URL de pantalla para insertarla en PowerPoint",
   "ctrl.exportCsv": "Exportar CSV",
+  "ctrl.exportCsvDisabledTitle": "La exportación a CSV está disponible una vez cerrada la sesión.",
   "ctrl.dashboard": "Panel",
   "connection.connecting": "Conectando…",
   "connection.reconnecting": "Reconectando…",

@@ -18,6 +18,10 @@ import { captionsReducer, CAPTIONS_INITIAL, type CaptionSegment } from '../hooks
 import { reactionsReducer, REACTIONS_INITIAL } from '../hooks/useReactions'
 import { readPersistedCaptionLocale, type CaptionLocale } from '../components/CaptionsLocalePicker'
 
+// Minimum stage scale before the 1920×1080 canvas lets its type shrink further —
+// below this, the container scrolls instead so text stays legible.
+const STAGE_SCALE_FLOOR = 0.45
+
 export default function Present() {
   const auth = useAuth()
   const t = useT('present')
@@ -94,6 +98,7 @@ export default function Present() {
         : 'sentiment.neutral'
 
   const [scale, setScale] = useState(1)
+  const [scaleClamped, setScaleClamped] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
@@ -101,9 +106,11 @@ export default function Present() {
       const container = containerRef.current
       if (!container || !stageRef.current) return
       const { width, height } = container.getBoundingClientRect()
-      const s = Math.min(width / 1920, height / 1080)
+      const natural = Math.min(width / 1920, height / 1080)
+      const s = Math.max(STAGE_SCALE_FLOOR, natural)
       stageRef.current.style.transform = `scale(${s})`
       setScale(s)
+      setScaleClamped(natural < STAGE_SCALE_FLOOR)
     }
     fit()
     window.addEventListener('resize', fit)
@@ -219,6 +226,7 @@ export default function Present() {
         timerInput={timerInput}
         timer={timer}
         scale={scale}
+        scaleClamped={scaleClamped}
         containerRef={containerRef}
         stageRef={stageRef}
         ordered={ordered}
@@ -268,6 +276,7 @@ interface PresentInnerProps {
   timerInput: string
   timer: ReturnType<typeof useSoftTimer>
   scale: number
+  scaleClamped: boolean
   containerRef: React.RefObject<HTMLDivElement | null>
   stageRef: React.RefObject<HTMLDivElement | null>
   ordered: Array<{ id: string; label: string; count: number }>
@@ -313,6 +322,7 @@ function PresentInner({
   timerInput,
   timer,
   scale,
+  scaleClamped,
   containerRef,
   stageRef,
   ordered,
@@ -349,7 +359,14 @@ function PresentInner({
       {/* COPILOT-05 — presenter-only live facilitator copilot (ADR-0046) */}
       <CopilotPanel sessionId={id} enabled={state.role === 'presenter' && isLive} onAddQuestion={sendAddQuestion} />
       {/* ── 1920×1080 letterboxed stage ────────────────────────────────────── */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
+      <div
+        ref={containerRef}
+        className={
+          scaleClamped
+            ? 'flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex items-start justify-center'
+            : 'flex-1 min-h-0 overflow-hidden flex items-center justify-center'
+        }
+      >
         <div style={{ width: scale * 1920, height: scale * 1080, flexShrink: 0 }}>
         <div
           ref={stageRef}
@@ -470,16 +487,16 @@ function PresentInner({
 
           {/* ── Question header ── */}
           <div className="absolute top-[144px] left-[64px] right-[600px] z-10">
-            <div className="text-[20px] font-bold tracking-[0.12em] uppercase mb-5" style={{ color: 'var(--canvas-accent)' }}>
+            <div className="text-[24px] font-bold tracking-[0.12em] uppercase mb-5" style={{ color: 'var(--canvas-accent)' }}>
               {state.question ? 'Question' : 'Waiting for question'}
             </div>
             <h1
-              className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[76px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] m-0"
+              className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[96px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] m-0"
               style={{ color: 'var(--canvas-text)', lineHeight: 'var(--canvas-line-height, 1.05)' }}
             >
               {state.question?.prompt ?? t('connectingToRoom')}
             </h1>
-            <div className="mt-5 text-[22px] flex gap-9" style={{ color: 'var(--canvas-text-muted)' }}>
+            <div className="mt-5 text-[26px] flex gap-9" style={{ color: 'var(--canvas-text-muted)' }}>
               <span className="flex items-center gap-2">
                 <Users size={20} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
                 {state.results.total} {t('participant', { count: state.results.total })}
@@ -608,7 +625,7 @@ function PresentInner({
             </div>
             <div className="flex items-center gap-2 font-medium" style={{ color: 'var(--canvas-text-muted)' }}>
               <Lock size={18} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
-              Anonymity: Full
+              {t('anonymity') ?? 'Full anonymity'}
             </div>
           </div>
         </div>

@@ -7,6 +7,8 @@
   "captions_active": "Untertitel an",
   "captions_inactive": "Untertitel aus",
   "captions_plan_gate": "Live-Untertitel erfordern einen Chorus-Plan.",
+  "captions_coming_soon": "Live-Untertitel folgen in Kürze.",
+  "captions_coming_soon_badge": "Bald",
   "upgrade_prompt": "Upgrade auf Chorus",
   "locale_picker_label": "Untertitelsprache",
   "locale_off": "Aus",

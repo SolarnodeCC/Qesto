@@ -116,6 +116,7 @@
   "ctrl.copied": "Gekopieerd!",
   "ctrl.displayLinkTitle": "Weergave-URL kopiëren om in PowerPoint in te sluiten",
   "ctrl.exportCsv": "CSV exporteren",
+  "ctrl.exportCsvDisabledTitle": "CSV exporteren is beschikbaar zodra de sessie is gesloten.",
   "ctrl.dashboard": "Dashboard",
   "connection.connecting": "Verbinden…",
   "connection.reconnecting": "Opnieuw verbinden…",
