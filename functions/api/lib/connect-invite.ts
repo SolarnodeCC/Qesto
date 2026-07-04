@@ -19,6 +19,7 @@
  * join path (S96) re-checks the invitee with the same guard.
  */
 
+import { z } from 'zod'
 import { hmacSign, base64UrlEncode, base64UrlDecode, timingSafeEqual } from './shared/crypto'
 import { assertFederationAllowed, type SovereignTenantConfig, type ExclusionViolation } from './sovereign-exclusion'
 
@@ -53,6 +54,20 @@ const textEncoder = new TextEncoder()
 const textDecoder = new TextDecoder()
 
 const VALID_SCOPES: ReadonlySet<string> = new Set<FederationInviteScope>(['participate', 'co_host'])
+
+// Structural schema for the decoded invite payload (HLT-031, issue #686). `v` and
+// `scope` are validated as primitives here — not literals — so version/scope
+// mismatches keep their distinct `wrong_version` / `bad_scope` reasons below.
+const FederationInviteClaimsSchema = z.object({
+  v: z.number(),
+  jti: z.string(),
+  sid: z.string(),
+  host: z.string(),
+  invitee: z.string().nullable(),
+  scope: z.string(),
+  iat: z.number(),
+  exp: z.number(),
+})
 
 /** Clamp a requested TTL into [1, INVITE_MAX_TTL], defaulting when unset/invalid. */
 export function clampInviteTtl(ttl: number | undefined): number {
@@ -139,28 +154,29 @@ export async function verifyFederationInvite(
   const expectedMac = await hmacSign(secret, payload)
   if (!timingSafeEqual(mac, expectedMac)) return { ok: false, reason: 'bad_signature' }
 
-  let claims: FederationInviteClaims
+  let raw: unknown
   try {
-    claims = JSON.parse(textDecoder.decode(base64UrlDecode(payload))) as FederationInviteClaims
+    raw = JSON.parse(textDecoder.decode(base64UrlDecode(payload)))
   } catch {
     return { ok: false, reason: 'malformed' }
   }
-
-  if (claims.v !== 1) return { ok: false, reason: 'wrong_version' }
-  if (!VALID_SCOPES.has(claims.scope)) return { ok: false, reason: 'bad_scope' }
-  if (
-    typeof claims.sid !== 'string' ||
-    typeof claims.host !== 'string' ||
-    typeof claims.exp !== 'number' ||
-    typeof claims.iat !== 'number' ||
-    !(claims.invitee === null || typeof claims.invitee === 'string')
-  ) {
-    return { ok: false, reason: 'malformed' }
-  }
+  // Validate the decoded payload's shape at the boundary instead of casting it
+  // (HLT-031, #686). This subsumes the previous manual sid/host/exp/iat/invitee
+  // type checks.
+  const parsed = FederationInviteClaimsSchema.safeParse(raw)
+  if (!parsed.success) return { ok: false, reason: 'malformed' }
+  if (parsed.data.v !== 1) return { ok: false, reason: 'wrong_version' }
+  if (!VALID_SCOPES.has(parsed.data.scope)) return { ok: false, reason: 'bad_scope' }
 
   const now = opts.now ?? Math.floor(Date.now() / 1000)
-  if (now >= claims.exp) return { ok: false, reason: 'expired' }
+  if (now >= parsed.data.exp) return { ok: false, reason: 'expired' }
 
+  // v is proven 1 and scope proven a valid FederationInviteScope above.
+  const claims: FederationInviteClaims = {
+    ...parsed.data,
+    v: 1,
+    scope: parsed.data.scope as FederationInviteScope,
+  }
   return { ok: true, claims }
 }
 
