@@ -172,11 +172,27 @@ id = "xxxxxxxxxxxxxxxx"
 binding = "ACTIONS_KV"
 id = "xxxxxxxxxxxxxxxx"
 
-# Durable Objects
+# Durable Objects — this block lives in the WORKER's wrangler.toml (repo root,
+# `name = "qesto-api"`) and needs no script_name there because SessionRoom is
+# co-located in that same script. The PAGES project (`qesto`) has NO
+# wrangler.toml of its own — it deploys via a bare
+# `wrangler pages deploy dist --project-name=qesto` CLI call with no config
+# file, so this binding does not exist in git for Pages at all. It is a
+# CROSS-SCRIPT binding configured ONLY in the Cloudflare dashboard:
+# Workers & Pages → qesto (Pages project) → Settings → Functions →
+# Durable Object bindings. It MUST use these exact values (verified against
+# functions/api/types.ts Env.SESSION_ROOM and worker/index.ts):
+#   Variable name (binding) = "SESSION_ROOM"   <- NOT "SessionRoom" (that's the class name only)
+#   Durable Object class    = "SessionRoom"
+#   Service (script_name)   = "qesto-api"      <- NOT "qesto" — that's the Pages project name
+#   Environment              = production
+# See knowledge-base/operations/SESSION_ROOM_RECOVERY.md if this binding goes
+# missing (INCIDENT-2026-07-03): the Pages project returns a 503
+# `do_unavailable` for every /start call, deterministically, for every session.
 [[durable_objects.bindings]]
-name = "SessionRoom"
+name = "SESSION_ROOM"
 class_name = "SessionRoom"
-script_name = "qesto"
+script_name = "qesto-api"
 environment = "production"
 
 # Analytics Engine
@@ -277,7 +293,7 @@ export interface Env {
   DECISIONS_VECTORIZE: Vectorize
   EVENTS: AnalyticsEngine
   LOGS_BUCKET: R2Bucket
-  SessionRoom: DurableObjectNamespace
+  SESSION_ROOM: DurableObjectNamespace
   AI: Ai  // Workers AI
   
   // Public variables
