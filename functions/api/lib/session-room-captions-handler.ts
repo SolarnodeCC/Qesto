@@ -14,9 +14,11 @@
  * Audio/transcript are never received here and never persisted. The DO sees only
  * small typed text segments to fan out.
  */
+import { z } from 'zod'
 import { LIVE_PROTOCOL_VERSION_V3 } from '../realtime'
 import type { Attachment } from './session-room-types'
 import {
+  CAPTION_LOCALES,
   type CaptionLocale,
   type CaptionLocalePref,
   isCaptionLocale,
@@ -32,17 +34,26 @@ export type CaptionState = {
 
 const K_CAPTIONS = 'captions:state'
 
-/** Assembled segment the ingest route hands to the DO: source text + per-locale variants. */
-export type CaptionBroadcastPayload = {
-  id: string
-  ts: number
-  isFinal: boolean
-  sourceLocale: CaptionLocale
+/**
+ * Assembled segment the ingest route hands to the DO: source text + per-locale variants.
+ *
+ * Validated at the DO ingress boundary (HLT-031, issue #686): the `/captions/broadcast`
+ * route decodes the request body with this schema via `decodeRequestBody` rather than a
+ * bare `JSON.parse(...) as CaptionBroadcastPayload`, so a malformed cross-worker payload
+ * is rejected instead of fanned out to sockets.
+ */
+export const CaptionBroadcastPayloadSchema = z.object({
+  id: z.string(),
+  ts: z.number(),
+  isFinal: z.boolean(),
+  sourceLocale: z.enum(CAPTION_LOCALES),
   /** Source-language text (always present). */
-  sourceText: string
+  sourceText: z.string(),
   /** Translated variants by target locale (only enabled, distinct active remote locales). */
-  variants: Partial<Record<CaptionLocale, string>>
-}
+  variants: z.partialRecord(z.enum(CAPTION_LOCALES), z.string()),
+})
+
+export type CaptionBroadcastPayload = z.infer<typeof CaptionBroadcastPayloadSchema>
 
 interface StorageContext {
   storage: {

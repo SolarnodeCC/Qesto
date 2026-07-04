@@ -11,12 +11,25 @@
  *
  * @see knowledge-base/adr/ADR-042-cloudflare-capability-expansion.md
  */
+import { z } from 'zod'
 import type { Anonymity, Env, PlanTier } from '../../types'
 import {
   assertSanitizedAIGatewayRequest,
   sanitizeAIGatewayRequest,
 } from './prompt-sanitize'
 import type { SessionAIContext } from './session-context'
+
+/**
+ * Shape of the raw AI Gateway HTTP response. Validated at the boundary
+ * (HLT-031, issue #686) instead of `(await response.json()) as {...}` — a
+ * malformed gateway body falls back to direct env.AI rather than propagating
+ * an unchecked shape downstream.
+ */
+export const AIGatewayRawResponseSchema = z.object({
+  result: z.unknown().optional(),
+  cached: z.boolean().optional(),
+  cache_age: z.number().optional(),
+})
 
 export type AIGatewayRequest = {
   /** Optional when using {@link runAI} (model is passed separately). */
@@ -120,11 +133,12 @@ export async function runThroughAIGateway(
       throw new Error(`AI Gateway error: ${response.status} ${response.statusText}`)
     }
 
-    const data = (await response.json()) as {
-      result?: unknown
-      cached?: boolean
-      cache_age?: number
+    const parsed = AIGatewayRawResponseSchema.safeParse(await response.json())
+    if (!parsed.success) {
+      // Gateway returned an unexpected body shape — treat like a gateway fault.
+      return fallbackToDirect(env, model, sanitizedInput, startMs)
     }
+    const data = parsed.data
 
     const response_obj: AIGatewayResponse = {
       result: data.result,

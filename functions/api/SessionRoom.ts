@@ -15,7 +15,8 @@ import { TownhallHandler } from './lib/session-room-townhall-handler'
 import { RetroHandler } from './lib/session-room-retro-handler'
 import { IdeateHandler } from './lib/session-room-ideate-handler'
 import { DeliberateHandler } from './lib/session-room-deliberate-handler'
-import { CaptionsHandler, type CaptionBroadcastPayload } from './lib/session-room-captions-handler'
+import { CaptionsHandler, CaptionBroadcastPayloadSchema } from './lib/session-room-captions-handler'
+import { decodeRequestBody } from './lib/boundary-decode'
 import { ReactionsHandler } from './lib/session-room-reactions-handler'
 import { XrAvatarHandler } from './lib/session-room-xr-handler'
 import { logEvent } from './lib/log'
@@ -59,12 +60,22 @@ import {
   broadcastParticipants,
 } from './lib/session-room-presenter-init'
 import { runAlarm } from './lib/session-room-alarm'
+import { z } from 'zod'
 
 // #581: hard cap on inbound WS frame size. The largest legitimate client frame
 // (energizer_activate carrying a full leaderboard) is well under this. Frames
 // larger than this are rejected before JSON.parse to avoid CPU/memory
 // amplification from a hostile socket. 64 KiB.
 const MAX_WS_FRAME_BYTES = 64 * 1024
+
+// COPILOT-CHECKPOINT-01 (ADR-0056): shape of the internal `/copilot/checkpoint`
+// payload the API worker posts. Validated at the DO ingress boundary (HLT-031,
+// issue #686) instead of a bare `JSON.parse(...) as {...}` cast.
+const CopilotCheckpointPayloadSchema = z.object({
+  stepId: z.string(),
+  tool: z.string(),
+  summary: z.string(),
+})
 
 // ── DurableObject ───────────────────────────────────────────────────────────
 
@@ -169,8 +180,17 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
       )
     }
     if (url.pathname === '/captions/broadcast' && req.method === 'POST') {
-      const payload = (await req.json()) as CaptionBroadcastPayload
-      this.captionsHandler.broadcast(payload)
+      const decoded = await decodeRequestBody(req, CaptionBroadcastPayloadSchema)
+      if (!decoded.ok) {
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: { code: 'invalid_payload', message: 'Malformed caption broadcast payload' },
+          }),
+          { status: 400, headers: { 'content-type': 'application/json' } },
+        )
+      }
+      this.captionsHandler.broadcast(decoded.data)
       return new Response(JSON.stringify({ ok: true }), {
         status: 200,
         headers: { 'content-type': 'application/json' },
@@ -179,7 +199,17 @@ export class SessionRoom implements DurableObject, SessionRoomContext {
     // COPILOT-CHECKPOINT-01 (ADR-0056): the facilitator approved an L2 plan step;
     // fan it out to the room. Aggregate `summary` only — never per-voter data.
     if (url.pathname === '/copilot/checkpoint' && req.method === 'POST') {
-      const payload = (await req.json()) as { stepId: string; tool: string; summary: string }
+      const decoded = await decodeRequestBody(req, CopilotCheckpointPayloadSchema)
+      if (!decoded.ok) {
+        return new Response(
+          JSON.stringify({
+            ok: false,
+            error: { code: 'invalid_payload', message: 'Malformed checkpoint payload' },
+          }),
+          { status: 400, headers: { 'content-type': 'application/json' } },
+        )
+      }
+      const payload = decoded.data
       const frame = JSON.stringify({
         type: 'copilot_checkpoint',
         data: { stepId: payload.stepId, tool: payload.tool, summary: payload.summary },
