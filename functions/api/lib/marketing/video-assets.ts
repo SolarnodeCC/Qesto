@@ -7,7 +7,9 @@
  * token IS the auth for that one route (added to SESSION_AUTH_EXEMPT).
  */
 
+import { z } from 'zod'
 import { hmacSign, timingSafeEqual } from '../shared/crypto'
+import { decodeKvJson } from '../boundary-decode'
 
 export interface VideoAssetRow {
   id: string
@@ -35,13 +37,10 @@ export async function listVideoAssets(
   const res = await db.prepare(`SELECT * FROM video_assets ORDER BY created_at DESC`).all<VideoAssetRow>()
   const rows = res.results ?? []
   if (!filter.tag) return rows
-  return rows.filter((r) => {
-    try {
-      return (JSON.parse(r.tags) as string[]).includes(filter.tag!)
-    } catch {
-      return false
-    }
-  })
+  return rows.filter(
+    // Validate the D1 JSON tags column at the boundary (HLT-031, #686).
+    (r) => decodeKvJson(r.tags, z.array(z.string()))?.includes(filter.tag!) ?? false,
+  )
 }
 
 export async function getVideoAsset(db: D1Database, id: string): Promise<VideoAssetRow | null> {

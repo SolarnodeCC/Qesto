@@ -16,7 +16,9 @@
  * read off its response/the batch-status response is defensive.
  */
 
+import { z } from 'zod'
 import { ulid } from '../ulid'
+import { decodeKvJson } from '../boundary-decode'
 import { VIDEO_GEN_MODEL_IDS } from './constants'
 
 const JOB_TTL_SEC = 24 * 60 * 60
@@ -24,19 +26,25 @@ const KV_PREFIX = 'mktg:video-gen:'
 
 export type VideoGenJobStatus = 'submitted' | 'queued' | 'running' | 'done' | 'failed'
 
-export interface VideoGenJob {
-  jobId: string
-  model: string
-  prompt: string
-  title: string
-  tags: string[]
-  requestId: string
-  status: VideoGenJobStatus
-  videoAssetId?: string
-  error?: string
-  createdAt: number
-  updatedAt: number
-}
+const VideoGenJobStatusSchema = z.enum(['submitted', 'queued', 'running', 'done', 'failed'])
+
+// Validate the KV-stored job at the boundary (HLT-031, #686) instead of
+// `JSON.parse(raw) as VideoGenJob`.
+export const VideoGenJobSchema = z.object({
+  jobId: z.string(),
+  model: z.string(),
+  prompt: z.string(),
+  title: z.string(),
+  tags: z.array(z.string()),
+  requestId: z.string(),
+  status: VideoGenJobStatusSchema,
+  videoAssetId: z.string().optional(),
+  error: z.string().optional(),
+  createdAt: z.number(),
+  updatedAt: z.number(),
+})
+
+export type VideoGenJob = z.infer<typeof VideoGenJobSchema>
 
 function errMsg(err: unknown): string {
   return err instanceof Error ? err.message : String(err)
@@ -107,7 +115,8 @@ export async function getVideoGenerationStatus(
 ): Promise<VideoGenStatusResult | null> {
   const raw = await kv.get(jobKey(jobId))
   if (!raw) return null
-  const job = JSON.parse(raw) as VideoGenJob
+  const job = decodeKvJson(raw, VideoGenJobSchema)
+  if (!job) throw new Error(`Malformed video-gen job in KV: ${jobId}`)
   if (job.status === 'done' || job.status === 'failed') return { job, justCompleted: false }
 
   try {

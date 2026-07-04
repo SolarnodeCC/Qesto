@@ -3,6 +3,7 @@
 // a short-TTL Worker-signed URL.
 
 import { useRef, useState } from 'react'
+import { z } from 'zod'
 import {
   useVideoAssets,
   useVideoGenModels,
@@ -140,7 +141,9 @@ function VideoAssetCard({
 }) {
   let tags: string[] = []
   try {
-    tags = JSON.parse(asset.tags) as string[]
+    // Validate the tags column at the boundary (HLT-031, #686) rather than casting.
+    const parsed = z.array(z.string()).safeParse(JSON.parse(asset.tags))
+    if (parsed.success) tags = parsed.data
   } catch {
     tags = []
   }
