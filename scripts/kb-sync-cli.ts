@@ -3,6 +3,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { execSync } from 'child_process';
+import { z } from 'zod';
+
+// Validate vectorize API responses at the boundary (HLT-031, #686).
+const UpsertResponseSchema = z.object({
+  data: z.object({ vectors_upserted: z.number().optional() }).optional(),
+});
+const DeleteResponseSchema = z.object({
+  data: z.object({ vectors_deleted: z.number().optional() }).optional(),
+});
 
 interface SyncManifest {
   version: 1;
@@ -188,8 +197,8 @@ async function uploadVectors(
         throw new Error(`HTTP ${response.status}: ${body}`);
       }
 
-      const data = (await response.json()) as { data?: { vectors_upserted?: number } };
-      const upserted = data.data?.vectors_upserted || batch.length;
+      const parsed = UpsertResponseSchema.safeParse(await response.json());
+      const upserted = (parsed.success ? parsed.data.data?.vectors_upserted : undefined) || batch.length;
 
       success += upserted;
       batch.forEach((v) => uploadedIds.push(v.id));
@@ -290,8 +299,8 @@ async function deleteVectors(vectorIds: string[]): Promise<{ success: number; fa
         throw new Error(`HTTP ${response.status}: ${body}`);
       }
 
-      const data = (await response.json()) as { data?: { vectors_deleted?: number } };
-      const deleted = data.data?.vectors_deleted || batch.length;
+      const parsed = DeleteResponseSchema.safeParse(await response.json());
+      const deleted = (parsed.success ? parsed.data.data?.vectors_deleted : undefined) || batch.length;
 
       success += deleted;
       console.log(`  ✓ Batch ${batchNum}/${totalBatches}: ${deleted} vectors deleted`);
