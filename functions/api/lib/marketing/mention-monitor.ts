@@ -6,7 +6,9 @@
  * Cron: every 3h (wrangler.toml [triggers]).
  */
 
+import { z } from 'zod'
 import { ulid } from '../ulid'
+import { decodeKvJson } from '../boundary-decode'
 import { createEncryptedTokenStore } from '../integrations/token-store'
 import { logCronRun } from './cron-log'
 import { MARKETING_TEAM_SCOPE, MENTION_RETENTION_MS, type MarketingPlatform } from './constants'
@@ -82,11 +84,13 @@ async function pollPlatform(
   let result: { mentions: NormalizedMention[]; nextCursor: string | null }
   if (platform === 'reddit') {
     const queriesRaw = await kv.get(reddit.KV_REDDIT_QUERIES)
-    const queries = queriesRaw ? (JSON.parse(queriesRaw) as string[]) : reddit.DEFAULT_REDDIT_QUERIES
+    // Validate the KV-stored query list at the boundary (HLT-031, #686); fall
+    // back to defaults on missing/malformed data.
+    const queries = decodeKvJson(queriesRaw, z.array(z.string())) ?? reddit.DEFAULT_REDDIT_QUERIES
     result = await reddit.fetchMentions(accessToken, queries, cursor)
   } else {
     const queriesRaw = await kv.get(youtube.KV_YOUTUBE_QUERIES)
-    const queries = queriesRaw ? (JSON.parse(queriesRaw) as string[]) : youtube.DEFAULT_YOUTUBE_QUERIES
+    const queries = decodeKvJson(queriesRaw, z.array(z.string())) ?? youtube.DEFAULT_YOUTUBE_QUERIES
     result = await youtube.fetchMentions(accessToken, queries, cursor)
   }
 

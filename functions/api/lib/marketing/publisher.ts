@@ -17,6 +17,16 @@ import {
 } from '../linkedin'
 import * as youtube from './youtube'
 import type { YouTubeMetadata } from './tone'
+import { z } from 'zod'
+import { decodeKvJson } from '../boundary-decode'
+
+// Validate the stored YouTube metadata JSON at the boundary (HLT-031, #686)
+// instead of `JSON.parse(row.metadata) as YouTubeMetadata`.
+const YouTubeMetadataSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  tags: z.array(z.string()),
+}) satisfies z.ZodType<YouTubeMetadata>
 
 export interface PublisherEnv {
   LINKEDIN_CLIENT_ID?: string
@@ -147,7 +157,8 @@ export async function publishContentItem(
       accessToken = refreshed.access_token
     }
 
-    const metadata = JSON.parse(row.metadata) as YouTubeMetadata
+    const metadata = decodeKvJson(row.metadata, YouTubeMetadataSchema)
+    if (!metadata) throw new Error(`Malformed YouTube metadata for queue row ${row.id}`)
     const res = await youtube.publishMetadata(accessToken, row.youtube_video_id, metadata)
     if (!res.ok) throw new Error(`YouTube videos.update HTTP ${res.status}: ${res.detail}`)
 

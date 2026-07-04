@@ -16,6 +16,7 @@ import { parsePayloadQuestionCount } from '../../functions/api/lib/pulse-aggrega
 import { verifyEmbedToken } from '../../functions/api/lib/embed-token'
 import { verifyFederationInvite } from '../../functions/api/lib/connect-invite'
 import { hmacSign, base64UrlEncode } from '../../functions/api/lib/shared/crypto'
+import { VideoGenJobSchema } from '../../functions/api/lib/marketing/video-gen'
 
 function makeEnv(): Env {
   return {
@@ -180,6 +181,23 @@ describe('federation invite validates claim shape after signature check (#686)',
     const res = await verifyFederationInvite(SECRET, await signRawToken(SECRET, { ...valid, scope: 'admin' }))
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('bad_scope')
+  })
+})
+
+describe('marketing VideoGenJob schema validates KV job blobs (#686)', () => {
+  const valid = {
+    jobId: 'j1', model: 'm', prompt: 'p', title: 't', tags: ['a'],
+    requestId: 'r', status: 'running', createdAt: 1, updatedAt: 2,
+  }
+
+  it('accepts a well-formed job', () => {
+    expect(VideoGenJobSchema.safeParse(valid).success).toBe(true)
+  })
+
+  it('rejects an unknown status and a missing required field', () => {
+    expect(VideoGenJobSchema.safeParse({ ...valid, status: 'paused' }).success).toBe(false)
+    const { requestId: _drop, ...missing } = valid
+    expect(VideoGenJobSchema.safeParse(missing).success).toBe(false)
   })
 })
 
