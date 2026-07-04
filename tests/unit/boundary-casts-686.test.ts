@@ -12,6 +12,7 @@ import {
   CaptionBroadcastPayloadSchema,
 } from '../../functions/api/lib/session-room-captions-handler'
 import { AIGatewayRawResponseSchema } from '../../functions/api/lib/ai/ai-gateway'
+import { parsePayloadQuestionCount } from '../../functions/api/lib/pulse-aggregation'
 
 function makeEnv(): Env {
   return {
@@ -109,5 +110,17 @@ describe('AI Gateway response schema (#686)', () => {
   it('rejects wrong-typed cache fields (would fall back to direct AI)', () => {
     expect(AIGatewayRawResponseSchema.safeParse({ cached: 'yes' }).success).toBe(false)
     expect(AIGatewayRawResponseSchema.safeParse({ cache_age: '5' }).success).toBe(false)
+  })
+})
+
+describe('pulse parsePayloadQuestionCount tolerates malformed input (#686)', () => {
+  it('reads a valid questionCount', () => {
+    expect(parsePayloadQuestionCount(JSON.stringify({ questionCount: 7 }))).toBe(7)
+  })
+
+  it('returns 0 for malformed JSON, wrong types, or missing field', () => {
+    expect(parsePayloadQuestionCount('not json')).toBe(0)
+    expect(parsePayloadQuestionCount(JSON.stringify({ questionCount: 'x' }))).toBe(0)
+    expect(parsePayloadQuestionCount(JSON.stringify({}))).toBe(0)
   })
 })

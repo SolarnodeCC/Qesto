@@ -346,9 +346,11 @@ async function invokeAIStream(
       const payload = dataLines.join('\n')
       if (payload === '[DONE]') continue
       try {
-        const parsed = JSON.parse(payload) as { response?: unknown }
-        if (typeof parsed.response === 'string' && parsed.response.length > 0) {
-          raw += parsed.response
+        // Validate the SSE frame at the boundary (HLT-031, #686) instead of a
+        // bare `JSON.parse(...) as {...}` cast.
+        const parsed = z.object({ response: z.string() }).safeParse(JSON.parse(payload))
+        if (parsed.success && parsed.data.response.length > 0) {
+          raw += parsed.data.response
           await onDelta(raw)
         }
       } catch {
