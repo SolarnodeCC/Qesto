@@ -3,6 +3,13 @@ name: CI security · jankurai audit
 on:
   push:
     branches: [main]
+  # Run the audit BEFORE merge, not only after (issue #612). Without a
+  # pull_request trigger the ratchet witness could only observe a regression on
+  # the next push to main — by which point the bad commit was already merged.
+  # Making the lane a required check in branch protection (so a ratchet failure
+  # blocks the PR) is the complementary GitHub-settings step tracked in #612.
+  pull_request:
+    branches: [main]
 
 concurrency:
   group: jankurai-${{ github.ref }}
