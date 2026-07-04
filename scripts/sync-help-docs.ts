@@ -27,6 +27,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import { fileURLToPath } from 'url'
+import { z } from 'zod'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -102,8 +103,19 @@ async function embedWithCF(text: string): Promise<number[]> {
     body: JSON.stringify({ text }),
   })
   if (!res.ok) throw new Error(`Embed failed: ${res.status} ${await res.text()}`)
-  const data = (await res.json()) as any
-  const embeddings = data.result?.data?.[0]?.embeddings || data.result?.embeddings
+  // Validate the embedding response at the boundary (HLT-031, #686) instead of `as any`.
+  const parsed = z
+    .object({
+      result: z
+        .object({
+          data: z.array(z.object({ embeddings: z.array(z.number()).optional() })).optional(),
+          embeddings: z.array(z.number()).optional(),
+        })
+        .optional(),
+    })
+    .safeParse(await res.json())
+  const result = parsed.success ? parsed.data.result : undefined
+  const embeddings = result?.data?.[0]?.embeddings || result?.embeddings
   if (!Array.isArray(embeddings)) throw new Error('Invalid embedding response')
   if (embeddings.length !== EMBED_DIM) throw new Error(`Expected ${EMBED_DIM}-dim (bge-m3), got ${embeddings.length}`)
   return embeddings
