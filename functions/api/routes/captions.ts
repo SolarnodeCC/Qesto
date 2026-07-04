@@ -101,8 +101,10 @@ export function mountCaptionRoutes(parent: ParentApp) {
     try {
       const res = await room.fetch('https://do.internal/captions/active-locales')
       if (res.ok) {
-        const body = (await res.json()) as { locales?: string[] }
-        activeLocales = (body.locales ?? []).filter(isCaptionLocale)
+        // Validate the DO response at the boundary (HLT-031, #686) instead of a
+        // bare `(await res.json()) as {...}` cast.
+        const parsed = z.object({ locales: z.array(z.string()).optional() }).safeParse(await res.json())
+        activeLocales = (parsed.success ? parsed.data.locales ?? [] : []).filter(isCaptionLocale)
       }
     } catch (err) {
       // DO unreachable → translate to nothing (source-only); never error the chunk.

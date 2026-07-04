@@ -2,8 +2,10 @@
  * PULSE aggregation store (ADR-0057, PULSE-STORE-01).
  * Tier-1 per-session rollup + Tier-2 team daily time-series.
  */
+import { z } from 'zod'
 import type { Env } from '../types'
 import { logEvent } from './log'
+import { decodeKvJson } from './boundary-decode'
 
 export type PulseSessionRollup = {
   sessionId: string
@@ -263,13 +265,12 @@ export type PulseLongitudinalTrends = {
   sessions: PulseSessionTrend[]
 }
 
-function parsePayloadQuestionCount(payloadJson: string): number {
-  try {
-    const parsed = JSON.parse(payloadJson) as { questionCount?: number }
-    return typeof parsed.questionCount === 'number' ? parsed.questionCount : 0
-  } catch {
-    return 0
-  }
+export function parsePayloadQuestionCount(payloadJson: string): number {
+  // Validate the stored payload at the boundary (HLT-031, #686) instead of a
+  // bare `JSON.parse(...) as {...}` cast; decodeKvJson returns null on any
+  // malformed/mismatched input.
+  const parsed = decodeKvJson(payloadJson, z.object({ questionCount: z.number().optional() }))
+  return parsed?.questionCount ?? 0
 }
 
 /** PULSE-LONGITUDINAL-01 — N-session participation + sentiment + action completion trends. */
