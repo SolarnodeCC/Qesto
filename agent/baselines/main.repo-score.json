@@ -1,6 +1,6 @@
 {
-  "report_fingerprint": "sha256:f10786b4af272e2188d68d7ef654af5bec0fa0239f6433a785e99488a0b29ae9",
-  "input_fingerprint": "sha256:fc7886a854608eb66e3566c616c8f9b60297447b2ec5ea8ca48680b90179bd9d",
+  "report_fingerprint": "sha256:bf68fb60389b4d082990a67c6cf19d9866f647970ff7a4fa0874538916123fb9",
+  "input_fingerprint": "sha256:3572d30839a226c105786371e64b310b981757370a1591b59927cc46e48d61fb",
   "policy_fingerprint": "sha256:7c364f112e2c6ecf45c0bf183f80439ef79859071af77d5044b460682fd81ddf",
   "manifest_fingerprints": {
     "owner_map": "sha256:8ff317d428fba2c796de365b5e2b9869abeb3f2f897b126bd53b9ced1fa351d8",
@@ -11,7 +11,7 @@
     "standard_version": "sha256:900406ca2731434714c0d0fc05ecf6474bacd7338d6d7edeabae54d844ea46d3"
   },
   "dirty_worktree": true,
-  "generated_at": "1783078489",
+  "generated_at": "1783148905",
   "schema_url": "schemas/repo-score.schema.json",
   "standard": "jankurai",
   "standard_version": "0.9.0",
@@ -62,7 +62,6 @@
     "HLT-034-CI-BAD-BEHAVIOR on .github/workflows/jankurai.yml",
     "HLT-042-CI-LOCAL-PARITY on .github/workflows/playwright.yml",
     "HLT-042-CI-LOCAL-PARITY on .github/workflows/vectorize-health.yml",
-    "HLT-010-SECRET-SPRAWL on agent/baselines/main.repo-score.md",
     "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
     "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
     "HLT-003-OWNERLESS-PATH on agent/owner-map.json",
@@ -111,6 +110,7 @@
     "HLT-031-TYPESCRIPT-BAD-BEHAVIOR on functions/api/routes/captions.ts",
     "HLT-030-SQL-BAD-BEHAVIOR on migrations/0057_add_reaction_question_kind.sql",
     "HLT-021-DESTRUCTIVE-MIGRATION on migrations/0057_add_reaction_question_kind.sql",
+    "HLT-030-SQL-BAD-BEHAVIOR on migrations/0078_widen_session_mode.sql",
     "HLT-035-GIT-BAD-BEHAVIOR on ops/git-hooks/lib.sh",
     "HLT-000-SCORE-DIMENSION:stack on packages/sdk-js/index.js",
     "HLT-035-GIT-BAD-BEHAVIOR on scripts/create-sprint-56-60-branches.ps1",
@@ -131,14 +131,14 @@
     "HLT-001-DEAD-MARKER on src/pages/Privacy.tsx"
   ],
   "repo": ".",
-  "run_id": "1783078489",
-  "started_at": "1783078489",
-  "elapsed_ms": 23293,
+  "run_id": "1783148905",
+  "started_at": "1783148905",
+  "elapsed_ms": 14182,
   "scope": {
     "mode": "full",
     "paths": []
   },
-  "score": 60,
+  "score": 64,
   "raw_score": 72,
   "decision": {
     "status": "advisory",
@@ -147,7 +147,7 @@
     "hard_findings": 105,
     "soft_findings": 9,
     "ratchet": {
-      "baseline_score": 60,
+      "baseline_score": 64,
       "allowed_drop": 0,
       "passed": false,
       "score_delta": 0,
@@ -160,7 +160,7 @@
     }
   },
   "git": {
-    "head": "4d6f384",
+    "head": "900bfa0",
     "base": null,
     "changed_files": 0,
     "mode": "full",
@@ -190,7 +190,6 @@
     "fallback-soup-in-product-code",
     "future-hostile-dead-language-in-product-code",
     "direct-db-access-from-wrong-layer",
-    "secret-like-content-detected",
     "destructive-migration-risk",
     "input-boundary-gap",
     "agent-tool-supply-chain-gap",
@@ -466,7 +465,7 @@
         "security lane present",
         "canonical security lane wrapper present",
         "agent-readiness audit gate found in CI",
-        "sql bad-behavior hard findings: 1",
+        "sql bad-behavior hard findings: 2",
         "typescript bad-behavior hard findings: 34",
         "docker bad-behavior hard findings: 2",
         "ci bad-behavior hard findings: 25",
@@ -493,7 +492,7 @@
         "TODO/stub marker found",
         "fallback soup marker found",
         "future-hostile/dead-language marker found",
-        "sql bad-behavior hard findings: 1",
+        "sql bad-behavior hard findings: 2",
         "typescript bad-behavior hard findings: 34",
         "docker bad-behavior hard findings: 2",
         "ci bad-behavior hard findings: 25",
@@ -1204,7 +1203,7 @@
     "artifact": {
       "path": "target/jankurai/security/evidence.json",
       "envelope_exit_code": 0,
-      "elapsed_ms": 676,
+      "elapsed_ms": 521,
       "wrapper_strict": false,
       "profile": "local",
       "commands_ran": 1,
@@ -1213,8 +1212,8 @@
       "required_commands_skipped": 0,
       "required_commands_failed": 0,
       "blocking_commands": [],
-      "generated_at": "1783012635",
-      "git_head": "e3c654eed2520dd7b9cf601e94a280fa871b7796"
+      "generated_at": "1783112326",
+      "git_head": "900bfa0e00568a156512f5ba775d42e3a608d015"
     }
   },
   "boundaries": {
@@ -1234,7 +1233,7 @@
   "copy_code": {
     "schema_version": "1.1.0",
     "generated_by": "jankurai copy-code",
-    "generated_at": "2026-07-03T11:34:26.934719013+00:00",
+    "generated_at": "2026-07-04T07:08:11.714159338+00:00",
     "repo": ".",
     "auditor_version": "1.6.10",
     "status": "review",
@@ -1272,7 +1271,7 @@
       ]
     },
     "summary": {
-      "files_scanned": 2234,
+      "files_scanned": 2328,
       "files_considered": 689,
       "active_files": 689,
       "exact_file_classes": 0,
@@ -4386,28 +4385,6 @@
       "owner": "workspace"
     },
     {
-      "severity": "critical",
-      "category": "security",
-      "path": "agent/baselines/main.repo-score.md",
-      "problem": "secret-like value or credential material appears in repository text",
-      "agent_fix": "remove and rotate the credential, add local and CI secret scanning, and scan transcripts/artifacts/MCP config for related exposure",
-      "evidence": [
-        "Evidence: const SECRET = 'integration-test-secret-at-least-32-bytes!'"
-      ],
-      "check_id": "HLT-010-SECRET-SPRAWL:security",
-      "hardness": "hard",
-      "confidence": 0.95,
-      "evidence_kind": "repository-scan",
-      "rerun_command": "just security",
-      "fingerprint": "sha256:fbdc3acf6a5791e31134b6960bda06dcf6e4d9c2789e3ec5afb87244e374264c",
-      "rule_id": "HLT-010-SECRET-SPRAWL",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "docs_url": "docs/audit-rubric.md#top-level-risk-mapping",
-      "owner": "agent",
-      "line": 1394
-    },
-    {
       "severity": "medium",
       "category": "boundary",
       "path": "agent/boundaries.toml",
@@ -4519,27 +4496,6 @@
       "severity": "high",
       "category": "context",
       "path": "agent/owner-map.json",
-      "problem": "path `AUDIT_FIXES_SUMMARY.md` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "AUDIT_FIXES_SUMMARY.md"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:871e4049db146ff6baede28720ce075026efe51a9c02960a1457ccb689c3dc06",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
       "problem": "path `BingSiteAuth.xml` has no owner-map route",
       "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
       "evidence": [
@@ -4603,27 +4559,6 @@
       "severity": "high",
       "category": "context",
       "path": "agent/owner-map.json",
-      "problem": "path `JANURAI_AUDIT_2026_06_15.md` has no owner-map route",
-      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
-      "evidence": [
-        "JANURAI_AUDIT_2026_06_15.md"
-      ],
-      "check_id": "HLT-003-OWNERLESS-PATH:context",
-      "hardness": "hard",
-      "confidence": 0.88,
-      "evidence_kind": "policy-manifest",
-      "rerun_command": "just fast",
-      "fingerprint": "sha256:a42411e4d67c7407e459d568fa78cb90ba43c6f5f0673fd5a4bd969640656440",
-      "rule_id": "HLT-003-OWNERLESS-PATH",
-      "tlr": "Context/setup",
-      "lane": "fast",
-      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
-      "owner": "agent"
-    },
-    {
-      "severity": "high",
-      "category": "context",
-      "path": "agent/owner-map.json",
       "problem": "path `PROMISE_AUDIT_QUICK_REFERENCE.md` has no owner-map route",
       "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
       "evidence": [
@@ -4635,6 +4570,48 @@
       "evidence_kind": "policy-manifest",
       "rerun_command": "just fast",
       "fingerprint": "sha256:5d66bb9467b495a64b42b3e9885f75d6fcb5a71491a01b987b2b5f80abdbe986",
+      "rule_id": "HLT-003-OWNERLESS-PATH",
+      "tlr": "Context/setup",
+      "lane": "fast",
+      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
+      "owner": "agent"
+    },
+    {
+      "severity": "high",
+      "category": "context",
+      "path": "agent/owner-map.json",
+      "problem": "path `PROMISE_TO_IMPLEMENTATION_AUDIT.md` has no owner-map route",
+      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
+      "evidence": [
+        "PROMISE_TO_IMPLEMENTATION_AUDIT.md"
+      ],
+      "check_id": "HLT-003-OWNERLESS-PATH:context",
+      "hardness": "hard",
+      "confidence": 0.88,
+      "evidence_kind": "policy-manifest",
+      "rerun_command": "just fast",
+      "fingerprint": "sha256:a291a8eb33da9df026fda76049522251ca5b6a24500f35afb8c8d01f0999ffa0",
+      "rule_id": "HLT-003-OWNERLESS-PATH",
+      "tlr": "Context/setup",
+      "lane": "fast",
+      "docs_url": "agent/JANKURAI_STANDARD.md#ownership-boundaries",
+      "owner": "agent"
+    },
+    {
+      "severity": "high",
+      "category": "context",
+      "path": "agent/owner-map.json",
+      "problem": "path `PR_COMMANDS.sh` has no owner-map route",
+      "agent_fix": "add the narrowest stable prefix for this path to `agent/owner-map.json`",
+      "evidence": [
+        "PR_COMMANDS.sh"
+      ],
+      "check_id": "HLT-003-OWNERLESS-PATH:context",
+      "hardness": "hard",
+      "confidence": 0.88,
+      "evidence_kind": "policy-manifest",
+      "rerun_command": "just fast",
+      "fingerprint": "sha256:5dd53fb66a35fcd91093cc5f79865c8128a848d9b8ae01883d4e74d582b7a6f9",
       "rule_id": "HLT-003-OWNERLESS-PATH",
       "tlr": "Context/setup",
       "lane": "fast",
@@ -5637,6 +5614,32 @@
     },
     {
       "severity": "high",
+      "category": "data",
+      "path": "migrations/0078_widen_session_mode.sql",
+      "problem": "SQLite migration disables integrity safeguards without re-check proof",
+      "agent_fix": "avoid unsafe PRAGMAs, or re-enable constraints and run foreign_key_check plus integrity checks",
+      "evidence": [
+        "detector=sql.migration.sqlite-unsafe-pragma",
+        "proof-window=sqlite-integrity-check",
+        "snippet=PRAGMA foreign_keys=OFF"
+      ],
+      "check_id": "HLT-030-SQL-BAD-BEHAVIOR:data",
+      "hardness": "hard",
+      "confidence": 0.95,
+      "evidence_kind": "sql",
+      "rerun_command": "just fast",
+      "fingerprint": "sha256:212898cb759e15dad0656cbba9f2e89814441ac72d803f2929ea626af15262e4",
+      "rule_id": "HLT-030-SQL-BAD-BEHAVIOR",
+      "tlr": "Contracts/data",
+      "lane": "db",
+      "docs_url": "docs/BAD_SQL.md",
+      "owner": "db",
+      "line": 19,
+      "matched_term": "pragma foreign_keys",
+      "reason": "unsafe PRAGMAs can bypass schema or foreign-key integrity during migration"
+    },
+    {
+      "severity": "high",
       "category": "agent",
       "path": "ops/git-hooks/lib.sh",
       "problem": "script force-pushes or mirrors refs to the remote",
@@ -6404,6 +6407,16 @@
       "why": "destructive migration lacks documented safety evidence"
     },
     {
+      "path": "migrations/0078_widen_session_mode.sql",
+      "priority": "high",
+      "rule_id": "HLT-030-SQL-BAD-BEHAVIOR",
+      "tlr": "Contracts/data",
+      "lane": "db",
+      "owner": "db",
+      "task": "avoid unsafe PRAGMAs, or re-enable constraints and run foreign_key_check plus integrity checks",
+      "why": "SQLite migration disables integrity safeguards without re-check proof"
+    },
+    {
       "path": "scripts/embed-kb.ts",
       "priority": "high",
       "rule_id": "HLT-031-TYPESCRIPT-BAD-BEHAVIOR",
@@ -6720,16 +6733,6 @@
       "owner": "agent",
       "task": "delete the stale copy, move history to VCS/archive tooling, or document owner, proof lane, expiry, and migration plan",
       "why": "active source path looks like an old, backup, copied, or parked implementation"
-    },
-    {
-      "path": "agent/baselines/main.repo-score.md",
-      "priority": "critical",
-      "rule_id": "HLT-010-SECRET-SPRAWL",
-      "tlr": "Security, secrets, agency",
-      "lane": "security",
-      "owner": "agent",
-      "task": "remove and rotate the credential, add local and CI secret scanning, and scan transcripts/artifacts/MCP config for related exposure",
-      "why": "secret-like value or credential material appears in repository text"
     },
     {
       "path": ".claude/skills/cso.md",
