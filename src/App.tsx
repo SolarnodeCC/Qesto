@@ -110,12 +110,18 @@ function RouteAnnouncer() {
   return null
 }
 
+const PRESENT_ROUTE = /^\/sessions\/[^/]+\/present$/
+
 function AuthenticatedHelpWidget() {
   const auth = useAuth()
+  const location = useLocation()
   // Return null before touching the lazy widget so its chunk is never even fetched
   // for anonymous landing visitors. pending={null} — it's a floating button, not
   // page content, so a fallback would only add visual noise.
   if (auth.status !== 'authenticated') return null
+  // The Present screen has its own floating controls (AI copilot); the generic
+  // help widget only adds clutter while a host is projecting to an audience.
+  if (PRESENT_ROUTE.test(location.pathname)) return null
   return (
     <LazySuspense pending={null}>
       <HelpChatWidget />

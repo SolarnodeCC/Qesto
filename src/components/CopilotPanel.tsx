@@ -83,6 +83,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
           aria-label={t('copilot.title')}
           className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] text-pulse-900 dark:text-[#F0F2F8] shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden"
         >
+          <div className="h-1.5" style={{ background: 'var(--gradient-ai)' }} aria-hidden="true" />
           <header className="flex items-center justify-between gap-2 border-b border-pulse-100 dark:border-[#1E2A45] bg-violet-50 dark:bg-violet-900/20 px-4 py-2.5">
             <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-violet-800 dark:text-violet-300">
               <Sparkles size={16} className="text-violet-600" aria-hidden="true" />
@@ -265,7 +266,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
           type="button"
           onClick={() => setOpen(true)}
           aria-label={t('copilot.open')}
-          className="inline-flex items-center gap-2 rounded-full bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-violet-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-ai px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:brightness-110 transition-[filter] focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400"
         >
           <Sparkles size={16} aria-hidden="true" />
           {t('copilot.title')}

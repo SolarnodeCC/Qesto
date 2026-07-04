@@ -116,6 +116,7 @@
   "ctrl.copied": "Copied!",
   "ctrl.displayLinkTitle": "Copy display URL to embed in PowerPoint",
   "ctrl.exportCsv": "Export CSV",
+  "ctrl.exportCsvDisabledTitle": "Export CSV is available once the session is closed.",
   "ctrl.dashboard": "Dashboard",
   "connection.connecting": "Connecting…",
   "connection.reconnecting": "Reconnecting…",

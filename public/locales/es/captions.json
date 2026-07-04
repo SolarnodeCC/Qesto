@@ -7,6 +7,8 @@
   "captions_active": "Subtítulos activados",
   "captions_inactive": "Subtítulos desactivados",
   "captions_plan_gate": "Los subtítulos en vivo requieren un plan Chorus.",
+  "captions_coming_soon": "Los subtítulos en directo llegarán próximamente.",
+  "captions_coming_soon_badge": "Próximamente",
   "upgrade_prompt": "Actualizar a Chorus",
   "locale_picker_label": "Idioma de los subtítulos",
   "locale_off": "Desactivado",

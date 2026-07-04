@@ -116,6 +116,7 @@
   "ctrl.copied": "Kopiert!",
   "ctrl.displayLinkTitle": "Anzeige-URL kopieren, um sie in PowerPoint einzubetten",
   "ctrl.exportCsv": "CSV exportieren",
+  "ctrl.exportCsvDisabledTitle": "CSV-Export ist verfügbar, sobald die Sitzung geschlossen ist.",
   "ctrl.dashboard": "Dashboard",
   "connection.connecting": "Verbindung wird hergestellt…",
   "connection.reconnecting": "Verbindung wird wiederhergestellt…",

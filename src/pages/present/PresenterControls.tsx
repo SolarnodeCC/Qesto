@@ -44,7 +44,7 @@ export interface PresenterControlsProps {
 }
 
 // Shared control button height — meets the 44px touch-target minimum (A11Y-TOUCH).
-const CTRL = 'inline-flex items-center gap-1.5 rounded px-3 min-h-[44px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40'
+const CTRL = 'inline-flex items-center gap-1.5 rounded-lg px-3 min-h-[44px] font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40'
 
 export function PresenterControls({
   id,
@@ -84,6 +84,8 @@ export function PresenterControls({
 }: PresenterControlsProps) {
   const t = useT('captions')
   const tp = useT('present')
+  // Captions toggle is a disabled "coming soon" affordance until audio capture ships.
+  void onToggleCaptions
   return (
     <div
       role="toolbar"
@@ -121,7 +123,7 @@ export function PresenterControls({
         </button>
         {closeError && <span className="text-xs text-red-400">{closeError}</span>}
         {id && isClosed && (
-          <Link to={`/sessions/${id}/results`} className="text-xs text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded">
+          <Link to={`/sessions/${id}/results`} className="text-xs text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 rounded-lg">
             {tp('ctrl.viewResults')}
           </Link>
         )}
@@ -183,7 +185,7 @@ export function PresenterControls({
             max={999}
             value={minGate}
             onChange={(e) => onMinGateChange(Math.max(0, parseInt(e.target.value, 10) || 0))}
-            className="w-16 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+            className="w-16 rounded-lg border border-pulse-600 bg-pulse-800 text-white text-center px-1 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
             aria-label={tp('ctrl.minVotesAria')}
           />
         </label>
@@ -203,7 +205,7 @@ export function PresenterControls({
             value={timerInput}
             onChange={(e) => onTimerInputChange(e.target.value)}
             disabled={timer.running}
-            className="w-14 rounded border border-pulse-600 bg-pulse-800 text-white text-center px-1 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-40"
+            className="w-14 rounded-lg border border-pulse-600 bg-pulse-800 text-white text-center px-1 min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:opacity-40"
             aria-label={tp('ctrl.timerAria')}
           />
           {tp('ctrl.min')}
@@ -212,7 +214,7 @@ export function PresenterControls({
           <button
             type="button"
             onClick={timer.stop}
-            className="rounded px-2.5 text-xs font-medium min-h-[44px] bg-red-600 text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+            className="rounded-lg px-2.5 text-xs font-medium min-h-[44px] bg-red-600 text-white hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
           >
             {tp('ctrl.stop')}
           </button>
@@ -221,7 +223,7 @@ export function PresenterControls({
             type="button"
             onClick={onStartTimer}
             disabled={isClosed}
-            className="rounded px-2.5 text-xs font-medium min-h-[44px] bg-pulse-700 text-white hover:bg-pulse-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
+            className="rounded-lg px-2.5 text-xs font-medium min-h-[44px] bg-pulse-700 text-white hover:bg-pulse-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 disabled:opacity-40"
           >
             {tp('ctrl.start')}
           </button>
@@ -250,14 +252,24 @@ export function PresenterControls({
           </button>
         )}
         {id && (
-          <a
-            href={`/api/sessions/${encodeURIComponent(id)}/export.csv`}
-            download
-            className={`${CTRL} bg-pulse-700 text-white hover:bg-pulse-600`}
-          >
-            <Download size={14} aria-hidden="true" />
-            {tp('ctrl.exportCsv')}
-          </a>
+          isClosed ? (
+            <a
+              href={`/api/sessions/${encodeURIComponent(id)}/export.csv`}
+              download
+              className={`${CTRL} bg-pulse-700 text-white hover:bg-pulse-600`}
+            >
+              <Download size={14} aria-hidden="true" />
+              {tp('ctrl.exportCsv')}
+            </a>
+          ) : (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-lg px-3 min-h-[44px] font-medium bg-pulse-700 text-pulse-300 cursor-not-allowed text-sm"
+              title={tp('ctrl.exportCsvDisabledTitle')}
+            >
+              <Download size={14} aria-hidden="true" />
+              {tp('ctrl.exportCsv')}
+            </span>
+          )
         )}
       </div>
 
@@ -265,28 +277,16 @@ export function PresenterControls({
 
       {/* Captions and language */}
       <div role="group" aria-label={tp('ctrl.group.captions')} className="contents">
-        {captionsPlanGated ? (
-          <span
-            className="inline-flex items-center gap-1.5 rounded px-3 min-h-[44px] font-medium bg-pulse-700 text-pulse-300 cursor-not-allowed text-sm"
-            title={t('captions_plan_gate')}
-          >
-            <Subtitles size={14} aria-hidden="true" />
-            {t('captions_inactive')}
-            <span className="ml-1 text-xs text-amber-400">(Chorus)</span>
+        <span
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 min-h-[44px] font-medium bg-pulse-700 text-pulse-300 cursor-not-allowed text-sm"
+          title={captionsPlanGated ? t('captions_plan_gate') : t('captions_coming_soon')}
+        >
+          <Subtitles size={14} aria-hidden="true" />
+          {t('captions_inactive')}
+          <span className="ml-1 text-xs text-amber-400">
+            {captionsPlanGated ? '(Chorus)' : t('captions_coming_soon_badge')}
           </span>
-        ) : (
-          <button
-            type="button"
-            onClick={onToggleCaptions}
-            disabled={!isLive || allDone}
-            aria-pressed={captionsActive}
-            title={captionsActive ? t('stop_captions') : t('start_captions')}
-            className={`${CTRL} ${captionsActive ? 'bg-teal-600 text-white hover:bg-teal-700' : 'bg-pulse-700 text-white hover:bg-pulse-600'}`}
-          >
-            <Subtitles size={14} aria-hidden="true" />
-            {captionsActive ? t('captions_active') : t('captions_inactive')}
-          </button>
-        )}
+        </span>
 
         {captionsActive && !captionsPlanGated && (
           <label className="flex items-center gap-2 text-sm">
@@ -294,7 +294,7 @@ export function PresenterControls({
             <select
               value={captionLocale}
               onChange={(e) => onCaptionLocaleChange(e.target.value as CaptionLocale)}
-              className="rounded border border-pulse-600 bg-pulse-800 text-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 min-h-[44px]"
+              className="rounded-lg border border-pulse-600 bg-pulse-800 text-white px-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 min-h-[44px]"
               aria-label={t('locale_picker_label')}
             >
               <option value="off">{t('locale_off')}</option>

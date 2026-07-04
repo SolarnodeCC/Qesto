@@ -7,6 +7,8 @@
   "captions_active": "Captions on",
   "captions_inactive": "Captions off",
   "captions_plan_gate": "Live captions require a Chorus plan.",
+  "captions_coming_soon": "Live captions are coming soon.",
+  "captions_coming_soon_badge": "Soon",
   "upgrade_prompt": "Upgrade to Chorus",
   "locale_picker_label": "Caption language",
   "locale_off": "Off",

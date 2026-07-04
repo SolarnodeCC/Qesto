@@ -7,6 +7,8 @@
   "captions_active": "Ondertiteling aan",
   "captions_inactive": "Ondertiteling uit",
   "captions_plan_gate": "Live ondertiteling vereist een Chorus-abonnement.",
+  "captions_coming_soon": "Live ondertiteling komt binnenkort beschikbaar.",
+  "captions_coming_soon_badge": "Binnenkort",
   "upgrade_prompt": "Upgrade naar Chorus",
   "locale_picker_label": "Ondertitelingstaal",
   "locale_off": "Uit",
