@@ -4,10 +4,10 @@ import { signJwt } from '../../functions/api/lib/jwt'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 async function cookieFor(userId: string, email: string): Promise<string> {
-  return `qesto_session=${await signJwt({ sub: userId, email }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: userId, email }, TEST_JWT_SECRET, 3600)}`
 }
 
 describe('LEARN instructor analytics API (FE-LEARN-INSTRUCTOR-01)', () => {
@@ -28,7 +28,7 @@ describe('LEARN instructor analytics API (FE-LEARN-INSTRUCTOR-01)', () => {
       ENV: 'dev',
       PAGES_URL: 'http://local',
       API_URL: 'http://local',
-      JWT_SECRET: SECRET,
+      JWT_SECRET: TEST_JWT_SECRET,
       DB: db as unknown as D1Database,
       USERS_KV: new KVMock() as unknown as KVNamespace,
       SESSIONS_KV: new KVMock() as unknown as KVNamespace,
@@ -88,7 +88,7 @@ describe('LEARN instructor analytics API (FE-LEARN-INSTRUCTOR-01)', () => {
       ENV: 'dev',
       PAGES_URL: 'http://local',
       API_URL: 'http://local',
-      JWT_SECRET: SECRET,
+      JWT_SECRET: TEST_JWT_SECRET,
       DB: db as unknown as D1Database,
       USERS_KV: new KVMock() as unknown as KVNamespace,
       SESSIONS_KV: new KVMock() as unknown as KVNamespace,

@@ -10,7 +10,7 @@ import { KVMock } from '../helpers/kv-mock'
 // the real Hono stack (auth → admin → csrf → rate-limit → handler), which the
 // pure-unit tests don't cover.
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 const ADMIN_EMAIL = 'admin@example.com'
 const ADMIN_ID = 'admin-user-1'
 
@@ -23,7 +23,7 @@ function makeEnv(db: D1Mock): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     SEED_ADMIN_EMAIL: ADMIN_EMAIL,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),
@@ -38,7 +38,7 @@ function makeEnv(db: D1Mock): Env {
 }
 
 async function cookie(userId: string, email: string): Promise<string> {
-  return `qesto_session=${await signJwt({ sub: userId, email }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: userId, email }, TEST_JWT_SECRET, 3600)}`
 }
 
 function adminReq(path: string, init: RequestInit & { cookie: string }): Request {
@@ -147,7 +147,7 @@ describe('Platformbeheer — impersonation', () => {
     const env = makeEnv(new D1Mock())
     // Admin's real session cookie + an impersonation cookie for a target user.
     const sessionCk = await cookie(ADMIN_ID, ADMIN_EMAIL)
-    const impToken = await signJwt({ sub: 'target-7', email: 'target@example.com', jti: `imp:${ADMIN_ID}:abc` }, SECRET, 900)
+    const impToken = await signJwt({ sub: 'target-7', email: 'target@example.com', jti: `imp:${ADMIN_ID}:abc` }, TEST_JWT_SECRET, 900)
     const res = await createApp().fetch(
       new Request('http://local/api/auth/me', {
         headers: { 'cf-connecting-ip': '127.0.0.1', cookie: `${sessionCk}; qesto_impersonation=${impToken}` },
@@ -165,7 +165,7 @@ describe('Platformbeheer — impersonation', () => {
     const env = makeEnv(new D1Mock())
     const sessionCk = await cookie(ADMIN_ID, ADMIN_EMAIL)
     // A normal token (no imp: jti) in the impersonation cookie must be ignored.
-    const bogus = await signJwt({ sub: 'attacker', email: 'attacker@example.com' }, SECRET, 900)
+    const bogus = await signJwt({ sub: 'attacker', email: 'attacker@example.com' }, TEST_JWT_SECRET, 900)
     const res = await createApp().fetch(
       new Request('http://local/api/auth/me', {
         headers: { 'cf-connecting-ip': '127.0.0.1', cookie: `${sessionCk}; qesto_impersonation=${bogus}` },

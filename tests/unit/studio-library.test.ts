@@ -9,7 +9,7 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 const USER_A = 'user_a'
 const USER_B = 'user_b'
@@ -31,7 +31,7 @@ function makeEnv(db: D1Mock, teamsKv: KVMock): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     DB: db as unknown as D1Database,
     USERS_KV: kv() as unknown as KVNamespace,
     SESSIONS_KV: kv() as unknown as KVNamespace,
@@ -70,7 +70,7 @@ function seedTeam(teamsKv: KVMock, teamId: string, ownerId: string) {
 }
 
 async function cookie(userId: string): Promise<string> {
-  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, TEST_JWT_SECRET, 3600)}`
 }
 
 function setup() {

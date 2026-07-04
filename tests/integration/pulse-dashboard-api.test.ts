@@ -8,10 +8,10 @@ import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 import { PULSE_K_ANON_MIN_COHORT } from '../../functions/api/lib/pulse-aggregation'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 async function cookieFor(userId: string, email: string): Promise<string> {
-  return `qesto_session=${await signJwt({ sub: userId, email }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: userId, email }, TEST_JWT_SECRET, 3600)}`
 }
 
 // Seeded days must track the real clock: the summary endpoint filters on a
@@ -85,7 +85,7 @@ describe('PULSE dashboard API (FE-PULSE-DASHBOARD-01 backend)', () => {
       ENV: 'dev',
       PAGES_URL: 'http://local',
       API_URL: 'http://local',
-      JWT_SECRET: SECRET,
+      JWT_SECRET: TEST_JWT_SECRET,
       DB: db as unknown as D1Database,
       TEAMS_KV: teamsKv as unknown as KVNamespace,
       USERS_KV: new KVMock() as unknown as KVNamespace,
@@ -150,7 +150,7 @@ describe('PULSE dashboard API (FE-PULSE-DASHBOARD-01 backend)', () => {
       ENV: 'dev',
       PAGES_URL: 'http://local',
       API_URL: 'http://local',
-      JWT_SECRET: SECRET,
+      JWT_SECRET: TEST_JWT_SECRET,
       DB: db as unknown as D1Database,
       TEAMS_KV: teamsKv as unknown as KVNamespace,
       USERS_KV: new KVMock() as unknown as KVNamespace,

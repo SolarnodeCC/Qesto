@@ -12,7 +12,7 @@ import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 import { describeDOError } from '../../functions/api/routes/sessions/shared'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 const USER_ID = 'user_host_1'
 const SESSION_ID = 'sess_retro'
 
@@ -66,7 +66,7 @@ function makeEnv(db: D1Mock, room: DurableObjectNamespace): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),
     SESSIONS_KV: kv(),
@@ -80,7 +80,7 @@ function makeEnv(db: D1Mock, room: DurableObjectNamespace): Env {
 }
 
 async function cookie(userId = USER_ID): Promise<string> {
-  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, TEST_JWT_SECRET, 3600)}`
 }
 
 // Draft retro session: board mode, so /start is reachable without questions.

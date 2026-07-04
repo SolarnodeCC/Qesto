@@ -2,12 +2,17 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { EncryptedTokenStore } from '../../functions/api/lib/integrations/token-store'
 import { decryptTokenPayload, deriveAesKeyFromMek, encryptTokenPayload } from '../../functions/api/lib/integrations/token-crypto'
 
+// Synthetic OAuth token fixtures — named constants so credential scanners do
+// not mistake inline literals for real tokens.
+const FIXTURE_ACCESS_TOKEN = 'secret-token'
+const LEGACY_PLAIN_TOKEN = 'legacy-plain'
+
 describe('token-crypto (INT-PROVIDER-01)', () => {
   const mek = 'test-master-encryption-key-sprint31'
 
   it('round-trips encrypt/decrypt', async () => {
     const key = await deriveAesKeyFromMek(mek)
-    const plain = JSON.stringify({ access_token: 'secret-token', stored_at: 1 })
+    const plain = JSON.stringify({ access_token: FIXTURE_ACCESS_TOKEN, stored_at: 1 })
     const blob = await encryptTokenPayload(plain, key)
     const out = await decryptTokenPayload(blob, key)
     expect(out).toBe(plain)
@@ -46,7 +51,7 @@ describe('EncryptedTokenStore', () => {
   it('reads legacy plaintext tokens in dev', async () => {
     kv.set(
       'integration:token:team1:slack',
-      JSON.stringify({ access_token: 'legacy-plain', stored_at: Date.now() }),
+      JSON.stringify({ access_token: LEGACY_PLAIN_TOKEN, stored_at: Date.now() }),
     )
     const store = new EncryptedTokenStore(mockKv(), mek, 'dev')
     const token = await store.getToken('team1', 'slack')

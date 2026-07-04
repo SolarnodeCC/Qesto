@@ -5,7 +5,7 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 function kv(): KVNamespace {
   return new KVMock() as unknown as KVNamespace
@@ -17,7 +17,7 @@ function makeEnv(): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),
     SESSIONS_KV: kv(),
@@ -30,7 +30,7 @@ function makeEnv(): Env {
 }
 
 async function cookieFor(userId: string, email: string): Promise<string> {
-  const token = await signJwt({ sub: userId, email }, SECRET, 3600)
+  const token = await signJwt({ sub: userId, email }, TEST_JWT_SECRET, 3600)
   return `qesto_session=${token}`
 }
 

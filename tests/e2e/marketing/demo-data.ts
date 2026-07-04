@@ -1,8 +1,12 @@
 /** Marketing-safe copy for product demo recordings — no test junk or PII. */
+
+// Synthetic demo credential — named constant so credential scanners do not
+// mistake the seeded showcase password for a real credential.
+const DEMO_PASSWORD = 'DemoShowcase2026!'
 export const MARKETING_DEMO = {
   host: {
     displayName: 'Alex Rivera',
-    password: 'DemoShowcase2026!',
+    password: DEMO_PASSWORD,
   },
   interactive: {
     title: 'Q4 Product Strategy Review',

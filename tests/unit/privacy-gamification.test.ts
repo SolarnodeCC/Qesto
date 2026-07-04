@@ -44,6 +44,7 @@ describe('detectPII', () => {
   })
 
   it('detects JWT tokens', () => {
+    // jankurai:allow HLT-010-SECRET-SPRAWL reason=synthetic JWT-shaped fixture exercising the PII detector expires=2027-12-31
     const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.signature'
     expect(detectPII(jwt)).toContain('jwt')
   })
@@ -136,6 +137,7 @@ describe('PRIVACY-GAM-01: PII in event fields is detected', () => {
     const { blobs } = captureWriteDataPoint({
       name: 'ws.energizer_activated',
       sessionId: 'session-abc',
+      // jankurai:allow HLT-010-SECRET-SPRAWL reason=synthetic JWT-shaped fixture exercising the PII detector expires=2027-12-31
       traceId: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyMSJ9.signature',
       plan: 'free',
     })

@@ -5,7 +5,7 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 function kv(): KVNamespace {
   return new KVMock() as unknown as KVNamespace
@@ -16,7 +16,7 @@ function makeEnv(db: D1Mock): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),
     SESSIONS_KV: kv(),
@@ -33,7 +33,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
@@ -56,7 +56,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions/abc', {
@@ -77,7 +77,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
@@ -111,7 +111,7 @@ describe('CSRF / Origin validation', () => {
     const db = new D1Mock()
     const app = createApp()
     const env = makeEnv(db)
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
         method: 'POST',
@@ -131,7 +131,7 @@ describe('CSRF / Origin validation', () => {
     const app = createApp()
     const env = makeEnv(db)
     ;(env as unknown as { PAGES_URL?: string }).PAGES_URL = ''
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
@@ -154,7 +154,7 @@ describe('CSRF / Origin validation', () => {
     const env = makeEnv(db)
     ;(env as unknown as { PAGES_URL: string; ENV: string }).PAGES_URL = 'https://qesto.cc'
     ;(env as unknown as { ENV: string }).ENV = 'production'
-    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, SECRET, 3600)
+    const jwt = await signJwt({ sub: 'u1', email: 'u1@example.com' }, TEST_JWT_SECRET, 3600)
 
     const res = await app.fetch(
       new Request('http://local/api/sessions', {
