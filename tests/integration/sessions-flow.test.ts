@@ -376,8 +376,11 @@ describe('POST /api/sessions/:id/questions — response contract + malformed JSO
       prompt: expect.any(String),
     })
 
-    // Assert no internal fields leak
-    expect(JSON.stringify(addQBody)).not.toMatch(/password|jwt|secret|_internal/i)
+    // Assert no internal fields leak. Match against object *keys* only — the
+    // serialized body embeds random ULIDs (id/session_id/team_id), and a bare
+    // /jwt|secret/ over the whole blob flakes whenever a random Crockford-base32
+    // ID happens to contain those letters (e.g. team_id "…QYTJWT9…").
+    expect(JSON.stringify(addQBody)).not.toMatch(/"[^"]*(password|jwt|secret|_internal)[^"]*"\s*:/i)
   })
 
   it('400: malformed JSON body', async () => {
