@@ -13,6 +13,9 @@ import {
 } from '../../functions/api/lib/session-room-captions-handler'
 import { AIGatewayRawResponseSchema } from '../../functions/api/lib/ai/ai-gateway'
 import { parsePayloadQuestionCount } from '../../functions/api/lib/pulse-aggregation'
+import { verifyEmbedToken } from '../../functions/api/lib/embed-token'
+import { verifyFederationInvite } from '../../functions/api/lib/connect-invite'
+import { hmacSign, base64UrlEncode } from '../../functions/api/lib/shared/crypto'
 
 function makeEnv(): Env {
   return {
@@ -110,6 +113,73 @@ describe('AI Gateway response schema (#686)', () => {
   it('rejects wrong-typed cache fields (would fall back to direct AI)', () => {
     expect(AIGatewayRawResponseSchema.safeParse({ cached: 'yes' }).success).toBe(false)
     expect(AIGatewayRawResponseSchema.safeParse({ cache_age: '5' }).success).toBe(false)
+  })
+})
+
+// Craft a correctly-signed token over arbitrary (possibly malformed) claims, so
+// we can prove signature verification passes yet claim-shape validation rejects.
+async function signRawToken(secret: string, claims: unknown): Promise<string> {
+  const payload = base64UrlEncode(new TextEncoder().encode(JSON.stringify(claims)))
+  const mac = await hmacSign(secret, payload)
+  return `${payload}.${mac}`
+}
+
+describe('embed token validates claim shape after signature check (#686)', () => {
+  const SECRET = 'embed-widget-secret-at-least-32-bytes!!'
+  const now = Math.floor(Date.now() / 1000)
+  const valid = {
+    v: 1, wid: 'w', sid: 's', code: 'C', tid: 't',
+    ao: ['https://x.example.com'], scp: 'read', iat: now, exp: now + 3600,
+  }
+
+  it('accepts a correctly-signed valid payload', async () => {
+    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, valid))
+    expect(res.ok).toBe(true)
+  })
+
+  it('rejects a signed payload with a wrong-typed field as malformed', async () => {
+    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, { ...valid, exp: 'later' }))
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('malformed')
+  })
+
+  it('rejects a signed payload missing a required field as malformed', async () => {
+    const { wid: _drop, ...missing } = valid
+    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, missing))
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('malformed')
+  })
+
+  it('still distinguishes wrong_version from malformed', async () => {
+    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, { ...valid, v: 2 }))
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('wrong_version')
+  })
+})
+
+describe('federation invite validates claim shape after signature check (#686)', () => {
+  const SECRET = 'test-connect-invite-secret'
+  const now = Math.floor(Date.now() / 1000)
+  const valid = {
+    v: 1, jti: 'j', sid: 's', host: 'team_h', invitee: null,
+    scope: 'participate', iat: now, exp: now + 3600,
+  }
+
+  it('accepts a correctly-signed valid payload', async () => {
+    const res = await verifyFederationInvite(SECRET, await signRawToken(SECRET, valid))
+    expect(res.ok).toBe(true)
+  })
+
+  it('rejects a signed payload with a wrong-typed field as malformed', async () => {
+    const res = await verifyFederationInvite(SECRET, await signRawToken(SECRET, { ...valid, sid: 42 }))
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('malformed')
+  })
+
+  it('still distinguishes bad_scope from malformed', async () => {
+    const res = await verifyFederationInvite(SECRET, await signRawToken(SECRET, { ...valid, scope: 'admin' }))
+    expect(res.ok).toBe(false)
+    if (!res.ok) expect(res.reason).toBe('bad_scope')
   })
 })
 

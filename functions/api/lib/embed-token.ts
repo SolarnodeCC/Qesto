@@ -10,8 +10,25 @@
 //
 // Verification re-signs the payload and compares with a timing-safe equality.
 
+import { z } from 'zod'
 import { hmacSign, base64UrlEncode, base64UrlDecode, timingSafeEqual } from './shared/crypto'
 import type { EmbedWidgetTokenClaims } from '../types'
+
+// Structural schema for the decoded token payload (HLT-031, issue #686). `v` and
+// `scp` are validated as primitives here — not literals — so the version/scope
+// mismatches keep their distinct `wrong_version` / `wrong_scope` reasons below
+// rather than collapsing into a generic parse failure.
+const EmbedWidgetTokenClaimsSchema = z.object({
+  v: z.number(),
+  wid: z.string(),
+  sid: z.string(),
+  code: z.string(),
+  tid: z.string(),
+  ao: z.array(z.string()),
+  scp: z.string(),
+  iat: z.number(),
+  exp: z.number(),
+})
 
 /** Token lifetime, default value in seconds. */
 export const EMBED_TOKEN_DEFAULT_TTL = 3600
@@ -112,21 +129,23 @@ export async function verifyEmbedToken(
   const expectedMac = await hmacSign(secret, payload)
   if (!timingSafeEqual(mac, expectedMac)) return { ok: false, reason: 'bad_signature' }
 
-  let claims: EmbedWidgetTokenClaims
+  let raw: unknown
   try {
-    const json = textDecoder.decode(base64UrlDecode(payload))
-    claims = JSON.parse(json) as EmbedWidgetTokenClaims
+    raw = JSON.parse(textDecoder.decode(base64UrlDecode(payload)))
   } catch {
     return { ok: false, reason: 'malformed' }
   }
-  if (claims.v !== 1) return { ok: false, reason: 'wrong_version' }
-  if (claims.scp !== 'read') return { ok: false, reason: 'wrong_scope' }
-  if (!Array.isArray(claims.ao) || typeof claims.exp !== 'number' || typeof claims.iat !== 'number') {
-    return { ok: false, reason: 'malformed' }
-  }
+  // Validate the decoded payload's shape at the boundary instead of casting it
+  // (HLT-031, #686). This subsumes the previous manual ao/exp/iat type checks.
+  const parsed = EmbedWidgetTokenClaimsSchema.safeParse(raw)
+  if (!parsed.success) return { ok: false, reason: 'malformed' }
+  if (parsed.data.v !== 1) return { ok: false, reason: 'wrong_version' }
+  if (parsed.data.scp !== 'read') return { ok: false, reason: 'wrong_scope' }
   const now = opts.now ?? Math.floor(Date.now() / 1000)
-  if (now >= claims.exp) return { ok: false, reason: 'expired' }
+  if (now >= parsed.data.exp) return { ok: false, reason: 'expired' }
 
+  // v and scp are proven to be the literal types above.
+  const claims: EmbedWidgetTokenClaims = { ...parsed.data, v: 1, scp: 'read' }
   return { ok: true, claims }
 }
 
