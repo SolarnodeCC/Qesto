@@ -57,7 +57,9 @@ streaming_runtime_drift = 78
 #   deprecated  — explicit deprecation markers on superseded fields/routes
 #   stale       — cache-staleness semantics (SWR / KV revalidation)
 [dead_language]
-allow_terms = ["placeholder", "stub", "fallback", "deprecated", "stale"]
+# "old" is load-bearing product copy ("at least 16 years old" in the privacy
+# policy age-gate) — a false positive for the future-hostile term detector (#687).
+allow_terms = ["placeholder", "stub", "fallback", "deprecated", "stale", "old"]
 
 [limits]
 # Qesto is a TypeScript/React + Hono-on-Workers repo (no Rust/Python product

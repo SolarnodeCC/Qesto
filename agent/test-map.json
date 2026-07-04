@@ -31,6 +31,41 @@
       "purpose": "typecheck and build for standalone workers",
       "lane": "fast"
     },
+    "packages/": {
+      "command": "just fast",
+      "purpose": "typecheck and build for SDK packages",
+      "lane": "fast"
+    },
+    "design-system/": {
+      "command": "just check",
+      "purpose": "design-token integrity gate",
+      "lane": "check"
+    },
+    "public/": {
+      "command": "just check",
+      "purpose": "static asset integrity gate",
+      "lane": "check"
+    },
+    "tools/": {
+      "command": "just check",
+      "purpose": "internal tooling integrity gate",
+      "lane": "check"
+    },
+    "scripts/": {
+      "command": "just check",
+      "purpose": "build/CI/dev script integrity gate",
+      "lane": "check"
+    },
+    "justfile": {
+      "command": "just check",
+      "purpose": "proof-lane recipe integrity",
+      "lane": "check"
+    },
+    "crates/": {
+      "command": "just check",
+      "purpose": "reference-profile alias stub integrity",
+      "lane": "check"
+    },
     "migrations/": {
       "command": "npm test -- --run tests/unit/migration",
       "purpose": "migration safety unit tests",
@@ -41,6 +76,16 @@
       "purpose": "schema integrity via unit tests",
       "lane": "db"
     },
+    "db/": {
+      "command": "npm test -- --run tests/unit/migration",
+      "purpose": "database fixtures and seed integrity",
+      "lane": "db"
+    },
+    "import-vectors.ps1": {
+      "command": "just check",
+      "purpose": "vector import script integrity",
+      "lane": "check"
+    },
     "ops/": {
       "command": "just security",
       "purpose": "CI lanes and secret scanning",
@@ -49,6 +94,16 @@
     ".github/workflows/": {
       "command": "just security",
       "purpose": "workflow security posture",
+      "lane": "security"
+    },
+    ".github/": {
+      "command": "just security",
+      "purpose": "CI control-plane docs, pins, and generated lockfiles",
+      "lane": "security"
+    },
+    "wrangler.toml": {
+      "command": "just security",
+      "purpose": "deploy config and binding posture",
       "lane": "security"
     },
     "contracts/": {
@@ -71,6 +126,11 @@
       "purpose": "standard + policy schema validation",
       "lane": "check"
     },
+    ".jankurai/": {
+      "command": "just check",
+      "purpose": "audit artifact and score-history integrity",
+      "lane": "check"
+    },
     "docs/": {
       "command": "just check",
       "purpose": "docs build and link/lint gate",
@@ -79,6 +139,96 @@
     "knowledge-base/": {
       "command": "just check",
       "purpose": "KB control-file presence and integrity",
+      "lane": "check"
+    },
+    "index.html": {
+      "command": "just check",
+      "purpose": "SPA entrypoint integrity",
+      "lane": "check"
+    },
+    "package.json": {
+      "command": "just check",
+      "purpose": "manifest + dependency integrity",
+      "lane": "check"
+    },
+    "package-lock.json": {
+      "command": "just check",
+      "purpose": "lockfile integrity",
+      "lane": "check"
+    },
+    "tsconfig.json": {
+      "command": "just check",
+      "purpose": "TypeScript config integrity",
+      "lane": "check"
+    },
+    "vite.config.ts": {
+      "command": "just check",
+      "purpose": "build config integrity",
+      "lane": "check"
+    },
+    "capacitor.config.ts": {
+      "command": "just check",
+      "purpose": "mobile shell config integrity",
+      "lane": "check"
+    },
+    "i18n.scope.json": {
+      "command": "just check",
+      "purpose": "i18n scope config integrity",
+      "lane": "check"
+    },
+    ".mcp.json": {
+      "command": "just check",
+      "purpose": "MCP server config integrity",
+      "lane": "check"
+    },
+    ".npmrc": {
+      "command": "just check",
+      "purpose": "npm config integrity",
+      "lane": "check"
+    },
+    ".pre-commit-config.yaml": {
+      "command": "just check",
+      "purpose": "pre-commit hook config integrity",
+      "lane": "check"
+    },
+    ".gitignore": {
+      "command": "just check",
+      "purpose": "ignore rules integrity",
+      "lane": "check"
+    },
+    ".gitattributes": {
+      "command": "just check",
+      "purpose": "repo attribute config integrity",
+      "lane": "check"
+    },
+    ".dev.vars.example": {
+      "command": "just check",
+      "purpose": "root config example integrity",
+      "lane": "check"
+    },
+    ".env.example": {
+      "command": "just check",
+      "purpose": "root config example integrity",
+      "lane": "check"
+    },
+    "AGENTS.md": {
+      "command": "just check",
+      "purpose": "agent control-doc integrity",
+      "lane": "check"
+    },
+    "CLAUDE.md": {
+      "command": "just check",
+      "purpose": "L1 context doc integrity",
+      "lane": "check"
+    },
+    "README.md": {
+      "command": "just check",
+      "purpose": "root readme integrity",
+      "lane": "check"
+    },
+    "FEATURE_COMPLIANCE_MATRIX.csv": {
+      "command": "just check",
+      "purpose": "compliance matrix integrity",
       "lane": "check"
     }
   }
