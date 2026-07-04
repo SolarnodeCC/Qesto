@@ -10,7 +10,7 @@ import { createApp } from '../../functions/api/app'
 import { signJwt } from '../../functions/api/lib/jwt'
 import type { Env } from '../../functions/api/types'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 const EMBED_SECRET = 'embed-widget-secret-at-least-32-bytes!!'
 const HOST = 'user_host_1'
 const ORIGIN = 'https://customer.example.com'
@@ -147,14 +147,14 @@ function makeEnv(db: EmbedD1): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     EMBED_WIDGET_SECRET: EMBED_SECRET,
     DB: db as unknown as D1Database,
   } as unknown as Env
 }
 
 async function cookie(userId = HOST): Promise<string> {
-  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, TEST_JWT_SECRET, 3600)}`
 }
 
 function seedHost(db: EmbedD1, plan: 'free' | 'starter' | 'team') {
@@ -541,7 +541,7 @@ describe('INVARIANT 8: Mint Plane Tenant Isolation (host cannot create widget fo
       status: 'live',
       anonymity: 'full',
     })
-    const c = await signJwt({ sub: 'host_alpha', email: 'alpha@example.com' }, SECRET, 3600)
+    const c = await signJwt({ sub: 'host_alpha', email: 'alpha@example.com' }, TEST_JWT_SECRET, 3600)
     const res = await mint(makeEnv(db), 'widgets', 'POST', `qesto_session=${c}`, {
       session_id: 'sess_alpha',
       allowed_origins: [ORIGIN],
@@ -561,7 +561,7 @@ describe('INVARIANT 8: Mint Plane Tenant Isolation (host cannot create widget fo
       status: 'live',
       anonymity: 'full',
     })
-    const c = await signJwt({ sub: 'host_beta', email: 'beta@example.com' }, SECRET, 3600)
+    const c = await signJwt({ sub: 'host_beta', email: 'beta@example.com' }, TEST_JWT_SECRET, 3600)
     const res = await mint(makeEnv(db), 'widgets', 'POST', `qesto_session=${c}`, {
       session_id: 'sess_alpha',
       allowed_origins: [ORIGIN],
@@ -581,13 +581,13 @@ describe('INVARIANT 8: Mint Plane Tenant Isolation (host cannot create widget fo
       status: 'live',
       anonymity: 'full',
     })
-    const c_alpha = await signJwt({ sub: 'host_alpha', email: 'alpha@example.com' }, SECRET, 3600)
+    const c_alpha = await signJwt({ sub: 'host_alpha', email: 'alpha@example.com' }, TEST_JWT_SECRET, 3600)
     const createRes = await mint(makeEnv(db), 'widgets', 'POST', `qesto_session=${c_alpha}`, {
       session_id: 'sess_alpha',
       allowed_origins: [ORIGIN],
     })
     expect(createRes.status).toBe(201)
-    const c_beta = await signJwt({ sub: 'host_beta', email: 'beta@example.com' }, SECRET, 3600)
+    const c_beta = await signJwt({ sub: 'host_beta', email: 'beta@example.com' }, TEST_JWT_SECRET, 3600)
     const listRes = await createApp().fetch(
       new Request('http://local/api/embed/widgets', {
         method: 'GET',

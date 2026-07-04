@@ -21,6 +21,14 @@ Read the full policy at [docs/agent-native-standard.md](../docs/agent-native-sta
 | web / ux-qa | `just ux-qa` |
 | release | `just verify` |
 
+## Baseline note
+
+The accepted baseline is `agent/baselines/main.repo-score.json` **only**. Do not
+commit report `.md` copies into `agent/baselines/` — the auditor's secret-scan
+carve-out (`is_tracked_auditor_score_artifact`) exempts only the `.json`, so a
+committed baseline `.md` re-triggers `HLT-010-SECRET-SPRAWL` on its own evidence
+text.
+
 ## Layout note
 
 Qesto uses `src/` for the web surface (not `apps/web/`). `apps/web/AGENTS.md` documents the alias.

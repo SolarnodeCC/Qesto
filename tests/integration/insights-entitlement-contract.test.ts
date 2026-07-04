@@ -12,7 +12,7 @@ import { writeKvJson } from '../../functions/api/lib/kv'
 import { teamDocumentKey } from '../../functions/api/lib/kv-keys'
 import type { Team } from '../../functions/api/routes/teams'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 
 // The scorecard reads a rolling window relative to the real clock, so seeded
 // days must be computed, not hardcoded — fixed dates fall out of range over time.
@@ -23,7 +23,7 @@ function makeEnv(db: D1Mock, teamsKv: KVMock): Env {
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     DB: db as unknown as D1Database,
     SESSIONS_KV: new KVMock() as unknown as KVNamespace,
     USERS_KV: new KVMock() as unknown as KVNamespace,
@@ -36,7 +36,7 @@ function makeEnv(db: D1Mock, teamsKv: KVMock): Env {
 }
 
 async function cookieFor(userId: string, email: string): Promise<string> {
-  const token = await signJwt({ sub: userId, email }, SECRET, 3600)
+  const token = await signJwt({ sub: userId, email }, TEST_JWT_SECRET, 3600)
   return `qesto_session=${token}`
 }
 

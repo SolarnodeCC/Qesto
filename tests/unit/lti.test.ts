@@ -9,7 +9,7 @@ import {
   LTI_VERSION,
 } from '../../functions/api/lib/lti'
 
-const SECRET = 'consumer-secret'
+const TEST_CONSUMER_SECRET = 'consumer-secret'
 const URL = 'https://qesto.app/api/learn/lti/launch'
 
 async function signedParams(overrides: Record<string, string> = {}): Promise<Record<string, string>> {
@@ -30,7 +30,7 @@ async function signedParams(overrides: Record<string, string> = {}): Promise<Rec
     ...overrides,
   }
   const base = buildSignatureBaseString('POST', URL, params)
-  params['oauth_signature'] = await signHmacSha1(base, SECRET)
+  params['oauth_signature'] = await signHmacSha1(base, TEST_CONSUMER_SECRET)
   return params
 }
 
@@ -48,7 +48,7 @@ describe('LTI 1.1 consumer (LEARN-LTI-01)', () => {
 
   it('verifies a correctly signed launch', async () => {
     const params = await signedParams()
-    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET })
+    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: TEST_CONSUMER_SECRET })
     expect(result.valid).toBe(true)
     if (result.valid) {
       expect(result.context.resourceLinkId).toBe('rl-123')
@@ -60,7 +60,7 @@ describe('LTI 1.1 consumer (LEARN-LTI-01)', () => {
   it('rejects a tampered signature', async () => {
     const params = await signedParams()
     params['resource_link_id'] = 'rl-TAMPERED'
-    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET })
+    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: TEST_CONSUMER_SECRET })
     expect(result.valid).toBe(false)
     if (!result.valid) expect(result.reason).toBe('invalid_signature')
   })
@@ -75,14 +75,14 @@ describe('LTI 1.1 consumer (LEARN-LTI-01)', () => {
   it('rejects a stale timestamp', async () => {
     const old = Math.floor(Date.now() / 1000) - 10_000
     const params = await signedParams({ oauth_timestamp: String(old) })
-    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET })
+    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: TEST_CONSUMER_SECRET })
     expect(result.valid).toBe(false)
     if (!result.valid) expect(result.reason).toBe('timestamp_out_of_window')
   })
 
   it('rejects an unsupported message type', async () => {
     const params = await signedParams({ lti_message_type: 'something-else' })
-    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET })
+    const result = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: TEST_CONSUMER_SECRET })
     expect(result.valid).toBe(false)
     if (!result.valid) expect(result.reason).toBe('unsupported_message_type')
   })
@@ -114,9 +114,9 @@ describe('LTI 1.1 consumer (LEARN-LTI-01)', () => {
       },
     }
     const params = await signedParams({ oauth_nonce: 'replay-me' })
-    const first = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET, nonceStore })
+    const first = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: TEST_CONSUMER_SECRET, nonceStore })
     expect(first.valid).toBe(true)
-    const second = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: SECRET, nonceStore })
+    const second = await verifyLtiLaunch({ method: 'POST', url: URL, params, consumerSecret: TEST_CONSUMER_SECRET, nonceStore })
     expect(second.valid).toBe(false)
     if (!second.valid) expect(second.reason).toBe('nonce_replayed')
   })

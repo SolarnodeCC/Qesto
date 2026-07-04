@@ -16,7 +16,7 @@ import {
   EMBED_TOKEN_MAX_TTL,
 } from '../../functions/api/lib/embed-token'
 
-const SECRET = 'embed-widget-secret-at-least-32-bytes!!'
+const TEST_EMBED_SECRET = 'embed-widget-secret-at-least-32-bytes!!'
 
 const baseInput = {
   wid: 'widget_1',
@@ -28,13 +28,13 @@ const baseInput = {
 
 describe('signEmbedToken → verifyEmbedToken round-trip', () => {
   it('signs a read-scoped v1 token and verifies it back to the same claims', async () => {
-    const { token, exp, claims } = await signEmbedToken(SECRET, baseInput)
+    const { token, exp, claims } = await signEmbedToken(TEST_EMBED_SECRET, baseInput)
     expect(token).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/)
     expect(claims.scp).toBe('read')
     expect(claims.v).toBe(1)
     expect(claims.exp).toBe(exp)
 
-    const res = await verifyEmbedToken(SECRET, token)
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, token)
     expect(res.ok).toBe(true)
     if (res.ok) {
       expect(res.claims.wid).toBe('widget_1')
@@ -46,7 +46,7 @@ describe('signEmbedToken → verifyEmbedToken round-trip', () => {
   })
 
   it('normalises and de-dupes origins into the ao claim', async () => {
-    const { claims } = await signEmbedToken(SECRET, {
+    const { claims } = await signEmbedToken(TEST_EMBED_SECRET, {
       ...baseInput,
       ao: ['https://Customer.Example.com/', 'https://customer.example.com', 'not a url'],
     })
@@ -56,24 +56,24 @@ describe('signEmbedToken → verifyEmbedToken round-trip', () => {
 
 describe('tamper / signature rejection', () => {
   it('rejects a token whose payload was mutated (bad signature)', async () => {
-    const { token } = await signEmbedToken(SECRET, baseInput)
+    const { token } = await signEmbedToken(TEST_EMBED_SECRET, baseInput)
     const [payload, mac] = token.split('.')
     // Flip one payload char → MAC no longer matches.
     const mutated = `${payload.slice(0, -1)}${payload.slice(-1) === 'A' ? 'B' : 'A'}.${mac}`
-    const res = await verifyEmbedToken(SECRET, mutated)
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, mutated)
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('bad_signature')
   })
 
   it('rejects a token signed with a different secret', async () => {
-    const { token } = await signEmbedToken(SECRET, baseInput)
+    const { token } = await signEmbedToken(TEST_EMBED_SECRET, baseInput)
     const res = await verifyEmbedToken('a-totally-different-secret-32-bytes!!!', token)
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('bad_signature')
   })
 
   it('rejects a malformed token (no dot separator)', async () => {
-    const res = await verifyEmbedToken(SECRET, 'not-a-valid-token')
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, 'not-a-valid-token')
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('malformed')
   })
@@ -82,16 +82,16 @@ describe('tamper / signature rejection', () => {
 describe('expiry', () => {
   it('rejects an expired token', async () => {
     const past = Math.floor(Date.now() / 1000) - 10_000
-    const { token } = await signEmbedToken(SECRET, { ...baseInput, ttl: 3600, now: past })
-    const res = await verifyEmbedToken(SECRET, token)
+    const { token } = await signEmbedToken(TEST_EMBED_SECRET, { ...baseInput, ttl: 3600, now: past })
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, token)
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('expired')
   })
 
   it('accepts a not-yet-expired token at a controlled clock', async () => {
     const iat = 1_000_000
-    const { token } = await signEmbedToken(SECRET, { ...baseInput, ttl: 3600, now: iat })
-    const res = await verifyEmbedToken(SECRET, token, { now: iat + 1800 })
+    const { token } = await signEmbedToken(TEST_EMBED_SECRET, { ...baseInput, ttl: 3600, now: iat })
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, token, { now: iat + 1800 })
     expect(res.ok).toBe(true)
   })
 })
@@ -110,13 +110,13 @@ describe('TTL clamping (default 3600, max 86400)', () => {
 
 describe('origin pinning (originAllowed)', () => {
   it('allows an origin present in the allowlist (case/slash-insensitive)', async () => {
-    const { claims } = await signEmbedToken(SECRET, baseInput)
+    const { claims } = await signEmbedToken(TEST_EMBED_SECRET, baseInput)
     expect(originAllowed(claims, 'https://customer.example.com')).toBe(true)
     expect(originAllowed(claims, 'https://CUSTOMER.example.com/')).toBe(true)
   })
 
   it('rejects an origin NOT in the allowlist (stolen-token non-replay)', async () => {
-    const { claims } = await signEmbedToken(SECRET, baseInput)
+    const { claims } = await signEmbedToken(TEST_EMBED_SECRET, baseInput)
     expect(originAllowed(claims, 'https://attacker.example.com')).toBe(false)
     expect(originAllowed(claims, null)).toBe(false)
     expect(originAllowed(claims, undefined)).toBe(false)

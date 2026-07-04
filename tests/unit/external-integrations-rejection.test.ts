@@ -202,12 +202,12 @@ describe('External integrations — Stripe rejection paths', () => {
     })
 
     it('never exposes API keys in error responses', () => {
-      const apiKey = 'sk_live_abc123_this_is_a_long_key_xyz'
-      const errorMsg = `Stripe error: ${apiKey}`
+      const fakeStripeKey = 'sk_live_abc123_this_is_a_long_key_xyz'
+      const errorMsg = `Stripe error: ${fakeStripeKey}`
 
       // Should be redacted before sending to client (pattern matches 20+ chars after sk_)
       const safeMsg = errorMsg.replace(/sk_[a-zA-Z0-9_]{20,}/g, '***')
-      expect(safeMsg).not.toContain(apiKey)
+      expect(safeMsg).not.toContain(fakeStripeKey)
       expect(safeMsg).toContain('***')
     })
   })

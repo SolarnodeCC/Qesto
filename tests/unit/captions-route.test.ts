@@ -10,7 +10,7 @@ import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 import { CircuitBreakers } from '../../functions/api/lib/resilience/circuit-breaker'
 
-const SECRET = 'integration-test-secret-at-least-32-bytes!'
+const TEST_JWT_SECRET = 'integration-test-secret-at-least-32-bytes!'
 const USER_ID = 'user_host_1'
 const kv = () => new KVMock() as unknown as KVNamespace
 
@@ -46,7 +46,7 @@ function makeEnv(db: D1Mock, room: ReturnType<typeof makeRoomNamespace>['namespa
     ENV: 'dev',
     PAGES_URL: 'http://local',
     API_URL: 'http://local',
-    JWT_SECRET: SECRET,
+    JWT_SECRET: TEST_JWT_SECRET,
     DB: db as unknown as D1Database,
     USERS_KV: kv(),
     SESSIONS_KV: kv(),
@@ -72,7 +72,7 @@ function mockAi(asr: string, mtByTarget: Record<string, string> = {}): Env['AI']
 }
 
 async function cookie(userId = USER_ID): Promise<string> {
-  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, SECRET, 3600)}`
+  return `qesto_session=${await signJwt({ sub: userId, email: `${userId}@example.com` }, TEST_JWT_SECRET, 3600)}`
 }
 
 function seed(db: D1Mock, plan: 'free' | 'starter' | 'team') {

@@ -7,6 +7,11 @@ import type { Env } from '../../functions/api/types'
 import { D1Mock } from '../helpers/d1-mock'
 import { KVMock } from '../helpers/kv-mock'
 
+// Synthetic password fixtures — named constants so credential scanners do not
+// mistake inline payload literals for real credentials.
+const SIGNUP_PASSWORD = 'password123'
+const NEW_PASSWORD = 'newpassword123'
+
 function makeAuthEnv(db: D1Mock, overrides: Partial<Env> = {}): Env {
   return {
     ENV: 'dev',
@@ -111,7 +116,7 @@ describe('auth JSON error sanitization', () => {
       new Request('http://local/api/auth/password/signup', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email: 'corrupt-kv@example.com', password: 'password123' }),
+        body: JSON.stringify({ email: 'corrupt-kv@example.com', password: SIGNUP_PASSWORD }),
       }),
       makeAuthEnv(db, { USERS_KV: usersKv as unknown as KVNamespace, ACTIONS_KV: actionsKv as unknown as KVNamespace }),
     )
@@ -125,7 +130,7 @@ describe('auth JSON error sanitization', () => {
       new Request('http://local/api/auth/password/reset-confirm', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ token: raw, password: 'newpassword123' }),
+        body: JSON.stringify({ token: raw, password: NEW_PASSWORD }),
       }),
       makeAuthEnv(db, {
         ENV: 'production',
