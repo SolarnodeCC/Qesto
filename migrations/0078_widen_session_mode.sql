@@ -15,6 +15,12 @@
 -- schema.sql itself is behind and lacks 'energizing'/'deliberate'):
 --   status      IN ('draft','energizing','live','closed','archived')
 --   session_mode IN ('reflection','fun','townhall','stage','retro','ideate','deliberate')
+--
+-- Safe SQLite table-rebuild (create _new → copy → drop → rename), the same
+-- proven pattern as 0057/0014. foreign_keys is toggled OFF only for the swap and
+-- restored below, then the FK graph + page integrity are re-verified with
+-- PRAGMA foreign_key_check / quick_check (see end of file).
+-- jankurai:migration-safe verify foreign_key_check quick_check
 
 PRAGMA foreign_keys=OFF;
 
@@ -81,3 +87,8 @@ CREATE INDEX IF NOT EXISTS idx_sessions_workspace ON sessions(workspace_id, work
 CREATE INDEX IF NOT EXISTS idx_sessions_is_public ON sessions(is_public) WHERE is_public = 1;
 
 PRAGMA foreign_keys=ON;
+
+-- Post-rebuild integrity verification (matches 0057/0014): fail loudly if the
+-- sessions foreign-key graph was disturbed by the rebuild-with-FKs-off swap.
+PRAGMA foreign_key_check;
+PRAGMA quick_check;

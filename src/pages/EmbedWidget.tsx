@@ -12,10 +12,22 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { z } from 'zod'
 import type { HostToEmbedMessage, EmbedToHostMessage } from '@api/types'
 import { useT } from '../i18n'
 
 // ── API response shapes (aggregate-only, no PII) ──────────────────────────────
+
+// The widget API envelope crosses a trust boundary (fetch JSON from the public
+// embed read-plane). Validate the envelope shape with zod instead of a bare
+// `res.json() as {...}` cast (#686); `data` stays generic and is typed by the
+// caller. A malformed / non-object body yields a clean "HTTP N" error rather
+// than an unchecked cast.
+export const WidgetEnvelopeSchema = z.object({
+  ok: z.boolean().optional(),
+  data: z.unknown().optional(),
+  error: z.object({ message: z.string().optional() }).optional(),
+})
 
 type HandshakeResponse = {
   participant_token: string
@@ -72,7 +84,8 @@ async function widgetFetch<T>(
       },
       signal: opts.signal ?? null,
     })
-    const json = await res.json() as { ok?: boolean; data?: T; error?: { message?: string } }
+    const parsed = WidgetEnvelopeSchema.safeParse(await res.json())
+    const json = parsed.success ? parsed.data : null
     if (res.ok && json?.ok) return { ok: true, data: json.data as T }
     return { ok: false, status: res.status, message: json?.error?.message ?? `HTTP ${res.status}` }
   } catch (err) {

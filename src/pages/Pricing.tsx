@@ -4,7 +4,6 @@ import { Check, X } from 'lucide-react'
 import {
   enrichPricingMatrix,
   PRICING_MATRIX_BASE,
-  type MatrixRowSource,
   type MatrixVal,
 } from '../config/pricing-matrix'
 import MainLayout from '../layouts/MainLayout'
@@ -14,6 +13,9 @@ import { usePlanCatalog } from '../hooks/usePlanCatalog'
 
 const NONPROFIT_APPLY_MAILTO =
   'mailto:support@qesto.cc?subject=Nonprofit%20pricing%20application&body=Organization%20name%3A%0ARegistration%20number%3A%0ACountry%3A%0AContact%20email%3A'
+
+const CHORUS_WALKTHROUGH_MAILTO =
+  'mailto:support@qesto.cc?subject=Chorus%20walkthrough%20request&body=Organization%3A%0ATeam%20size%3A%0AWhat%20you%20want%20to%20run%3A%0APreferred%20times%3A'
 
 const btnPrimary =
   'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
@@ -30,16 +32,6 @@ function formatEuro(cents: number | null): string | null {
   if (cents === null) return null
   const amount = cents / 100
   return Number.isInteger(amount) ? `€${amount}` : `€${amount.toFixed(2)}`
-}
-
-function SourceBadge({ source }: { source: MatrixRowSource }) {
-  if (source === 'quota') return null
-  const label = source === 'roadmap' ? 'Roadmap' : 'Static copy'
-  return (
-    <span className="ml-2 inline-flex align-middle text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-pulse-100 text-pulse-700 dark:bg-white/10 dark:text-[#A8B3CC]">
-      {label}
-    </span>
-  )
 }
 
 const faqs = [
@@ -82,7 +74,6 @@ export default function Pricing() {
 
   const starterAnnual = formatEuro(starter?.pricing.annual_cents ?? 2400)
   const starterMonthly = formatEuro(starter?.pricing.monthly_cents ?? 2900)
-  const starterPriceIds = [starter?.pricing.annual_price_id, starter?.pricing.monthly_price_id].filter(Boolean)
 
   return (
     <MainLayout>
@@ -169,7 +160,7 @@ export default function Pricing() {
                 className="absolute -top-3 left-6 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full"
                 style={gradientBrand}
               >
-                Most chosen
+                Recommended
               </div>
               <h3 className="font-bold text-2xl tracking-tight mb-2" style={displayFont}>
                 Signal
@@ -189,11 +180,6 @@ export default function Pricing() {
                   ? ` · Up to ${starter.features.sessionsPerMonth} new sessions/mo · ${starter.features.participantsPerSession} participants/room`
                   : ''}
               </p>
-              {starterPriceIds.length > 0 ? (
-                <p className="text-[11px] text-slate-500 mb-6 -mt-4" style={monoFont}>
-                  Stripe prices: {starterPriceIds.join(' / ')}
-                </p>
-              ) : null}
               <ul className="space-y-3 text-sm flex-1 mb-7">
                 {[
                   starter
@@ -262,9 +248,9 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link to="/pricing" className={btnSecondary + ' w-full justify-center dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
+              <a href={CHORUS_WALKTHROUGH_MAILTO} className={btnSecondary + ' w-full justify-center dark:bg-[#1C2540] dark:border-[#2A3858] dark:text-[#F0F2F8]'}>
                 Book a walkthrough
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -278,11 +264,8 @@ export default function Pricing() {
             What's in each plan — line by line.
           </h2>
           <p className="text-pulse-500 dark:text-[#8A96B0] mb-8">
-            Pulse, Signal, and Chorus are Qesto&apos;s three subscription plans. Rows that tie to quotas or plan flags{' '}
-            <span className="font-medium text-pulse-600 dark:text-[#8893AD]">
-              hydrate from the same source as billing enforcement
-            </span>
-            ; other rows describe roadmap or packaging details.
+            Pulse, Signal, and Chorus are Qesto&apos;s three subscription plans. Session and participant limits shown
+            here are the same ones the product enforces in-app — no surprise hard-stops after you commit to a room.
           </p>
           <div className="bg-white dark:bg-[#151C2E] rounded-2xl overflow-hidden" style={shadowCard}>
             <table className="w-full border-collapse">
@@ -320,7 +303,6 @@ export default function Pricing() {
                       <tr key={row[0]} className="border-b border-pulse-100 dark:border-white/5 last:border-b-0">
                         <td className="px-6 py-4 font-semibold text-pulse-900 dark:text-[#F0F2F8] text-sm">
                           {row[0]}
-                          <SourceBadge source={row[4]} />
                         </td>
                         {([row[1], row[2], row[3]] as MatrixVal[]).map((v, i) => (
                           <td key={i} className="px-6 py-4 text-center text-pulse-600 dark:text-[#A8B3CC] text-[13px]" style={monoFont}>
@@ -347,11 +329,8 @@ export default function Pricing() {
             </table>
           </div>
           <p className="text-sm text-pulse-500 dark:text-[#8A96B0] mt-6 max-w-3xl">
-            Numeric limits and quota-backed feature flags mirror{' '}
-            <code className="text-xs text-pulse-700 dark:text-[#A8B3CC] bg-pulse-100 dark:bg-white/10 px-1 rounded">PLAN_QUOTAS</code> via{' '}
-            <code className="text-xs text-pulse-700 dark:text-[#A8B3CC] bg-pulse-100 dark:bg-white/10 px-1 rounded">GET /api/plans/catalog</code>.
-            Rows tagged static copy or roadmap are packaging claims to review against product/commerce plans before
-            launch.
+            Session and participant limits above match exactly what your plan enforces in-app. Questions about a
+            specific capability? <a href={CHORUS_WALKTHROUGH_MAILTO} className="text-teal-600 dark:text-teal-400 hover:underline">Talk to us</a>.
           </p>
         </div>
       </Reveal>

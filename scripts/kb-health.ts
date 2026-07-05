@@ -41,6 +41,35 @@ const SyncManifestSchema = z.object({
 
 type SyncManifest = z.infer<typeof SyncManifestSchema>
 
+// Cloudflare Vectorize v2 REST responses cross a trust boundary (external HTTP
+// JSON). Validate the fields we read with zod instead of a bare `r.json() as any`
+// so a shape change surfaces as a null field, not an unchecked cast (#686). The
+// count key has drifted across API versions, so all fields are optional.
+export const CfVectorizeApiResponseSchema = z
+  .object({
+    success: z.boolean().optional(),
+    errors: z.array(z.object({ message: z.string().optional() })).optional(),
+    result: z
+      .object({
+        config: z.object({ dimensions: z.number().optional() }).optional(),
+        dimensions: z.number().optional(),
+        vectorCount: z.number().optional(),
+        vectorsCount: z.number().optional(),
+        count: z.number().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough()
+
+type CfVectorizeApiResponse = z.infer<typeof CfVectorizeApiResponseSchema>
+
+async function fetchCfJson(url: string, headers: Record<string, string>): Promise<CfVectorizeApiResponse> {
+  const raw: unknown = await fetch(url, { headers }).then((r) => r.json() as Promise<unknown>)
+  const parsed = CfVectorizeApiResponseSchema.safeParse(raw)
+  return parsed.success ? parsed.data : {}
+}
+
 interface IndexSpec {
   binding: string
   name: string
@@ -110,16 +139,16 @@ async function fetchIndexInfo(accountId: string, token: string, name: string): P
   const headers = { Authorization: `Bearer ${token}` }
   try {
     const [cfg, info] = await Promise.all([
-      fetch(base, { headers }).then((r) => r.json() as Promise<any>),
-      fetch(`${base}/info`, { headers }).then((r) => r.json() as Promise<any>),
+      fetchCfJson(base, headers),
+      fetchCfJson(`${base}/info`, headers),
     ])
-    if (cfg?.success === false) {
+    if (cfg.success === false) {
       return { name, error: cfg.errors?.[0]?.message ?? 'index not found' }
     }
-    const dimensions: unknown = cfg?.result?.config?.dimensions ?? info?.result?.dimensions
+    const dimensions = cfg.result?.config?.dimensions ?? info.result?.dimensions
     // Count key has drifted across Vectorize API versions — accept any spelling.
-    const vectorCount: unknown =
-      info?.result?.vectorCount ?? info?.result?.vectorsCount ?? info?.result?.count
+    const vectorCount =
+      info.result?.vectorCount ?? info.result?.vectorsCount ?? info.result?.count
     const out: IndexInfo = { name }
     if (typeof dimensions === 'number') out.dimensions = dimensions
     if (typeof vectorCount === 'number') out.vectorCount = vectorCount
@@ -196,7 +225,11 @@ async function main() {
   process.exit(hardFailure ? 1 : 0)
 }
 
-main().catch((err) => {
-  console.error('kb-health failed:', err instanceof Error ? err.message : String(err))
-  process.exit(1)
-})
+// Only run when invoked as a script (`npx tsx scripts/kb-health.ts`), not when a
+// test imports an exported schema from this module.
+if (process.argv[1]?.endsWith('kb-health.ts')) {
+  main().catch((err) => {
+    console.error('kb-health failed:', err instanceof Error ? err.message : String(err))
+    process.exit(1)
+  })
+}

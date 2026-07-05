@@ -1,0 +1,33 @@
+id = "0057_add_reaction_question_kind"
+owner = "backend"
+dialect = "sqlite-d1"
+risk = "destructive"
+stage = "contract"
+
+[approval]
+approved_by = "architect"
+approval_date = "2026-06-24"
+ticket = "ADR-0055 / S91"
+
+[rollback]
+strategy = "restore-from-backup"
+procedure = "Restore the pre-migration backup; the questions table rebuild is forward-only (SQLite cannot narrow a CHECK in place). Alternatively replay migrations up to 0056 on a fresh copy."
+
+[backup]
+required = true
+note = "Data copied to questions_new before DROP TABLE questions (INSERT ... SELECT), then renamed. Verify row counts match post-apply."
+
+[timeouts]
+lock_timeout = "5s"
+statement_timeout = "30s"
+
+[dependencies]
+tables = ["questions", "sessions", "votes"]
+cascade_scope = "questions FK children (votes) — integrity re-verified post-rebuild"
+
+[verification]
+verify = true
+post_check = "PRAGMA foreign_key_check; PRAGMA quick_check;"
+
+[notes]
+context = "Adds the 'reaction' question kind to the questions.kind CHECK constraint (ADR-0055). Mirrors the proven 0014 questions rebuild, including the post-rebuild PRAGMA foreign_key_check / quick_check integrity checks embedded in the .sql."

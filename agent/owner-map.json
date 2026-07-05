@@ -30,7 +30,6 @@
     "functions/[[path]].ts": "tools",
     "worker/": "tools",
     "workers/": "tools",
-    "crates/": "agent",
     "migrations/": "db",
     "schema.sql": "db",
     "db/": "db",

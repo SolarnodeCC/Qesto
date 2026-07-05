@@ -61,11 +61,6 @@
       "purpose": "proof-lane recipe integrity",
       "lane": "check"
     },
-    "crates/": {
-      "command": "just check",
-      "purpose": "reference-profile alias stub integrity",
-      "lane": "check"
-    },
     "migrations/": {
       "command": "npm test -- --run tests/unit/migration",
       "purpose": "migration safety unit tests",
