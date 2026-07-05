@@ -17,6 +17,8 @@ import { verifyEmbedToken } from '../../functions/api/lib/embed-token'
 import { verifyFederationInvite } from '../../functions/api/lib/connect-invite'
 import { hmacSign, base64UrlEncode } from '../../functions/api/lib/shared/crypto'
 import { VideoGenJobSchema } from '../../functions/api/lib/marketing/video-gen'
+import { CfVectorizeApiResponseSchema } from '../../scripts/kb-health'
+import { WidgetEnvelopeSchema } from '../../src/pages/EmbedWidget'
 
 function makeEnv(): Env {
   return {
@@ -198,6 +200,36 @@ describe('marketing VideoGenJob schema validates KV job blobs (#686)', () => {
     expect(VideoGenJobSchema.safeParse({ ...valid, status: 'paused' }).success).toBe(false)
     const { requestId: _drop, ...missing } = valid
     expect(VideoGenJobSchema.safeParse(missing).success).toBe(false)
+  })
+})
+
+describe('kb-health CfVectorizeApiResponse schema validates external API JSON (#686)', () => {
+  it('accepts the config and info response shapes', () => {
+    expect(CfVectorizeApiResponseSchema.safeParse({ result: { config: { dimensions: 1024 } } }).success).toBe(true)
+    expect(CfVectorizeApiResponseSchema.safeParse({ result: { dimensions: 1024, vectorCount: 42 } }).success).toBe(true)
+    expect(CfVectorizeApiResponseSchema.safeParse({ success: false, errors: [{ message: 'nope' }] }).success).toBe(true)
+    expect(CfVectorizeApiResponseSchema.safeParse({}).success).toBe(true)
+  })
+
+  it('rejects wrong-typed fields the health check reads as numbers', () => {
+    expect(CfVectorizeApiResponseSchema.safeParse({ result: { config: { dimensions: '1024' } } }).success).toBe(false)
+    expect(CfVectorizeApiResponseSchema.safeParse({ result: { vectorCount: 'many' } }).success).toBe(false)
+    expect(CfVectorizeApiResponseSchema.safeParse({ success: 'no' }).success).toBe(false)
+  })
+})
+
+describe('embed widget envelope schema validates fetched JSON (#686)', () => {
+  it('accepts a well-formed envelope and an empty body', () => {
+    expect(WidgetEnvelopeSchema.safeParse({ ok: true, data: { anything: 1 } }).success).toBe(true)
+    expect(WidgetEnvelopeSchema.safeParse({ ok: false, error: { message: 'gone' } }).success).toBe(true)
+    expect(WidgetEnvelopeSchema.safeParse({}).success).toBe(true)
+  })
+
+  it('rejects a non-object body and wrong-typed envelope fields', () => {
+    expect(WidgetEnvelopeSchema.safeParse('not-json').success).toBe(false)
+    expect(WidgetEnvelopeSchema.safeParse(null).success).toBe(false)
+    expect(WidgetEnvelopeSchema.safeParse({ ok: 'yes' }).success).toBe(false)
+    expect(WidgetEnvelopeSchema.safeParse({ error: { message: 42 } }).success).toBe(false)
   })
 })
 
