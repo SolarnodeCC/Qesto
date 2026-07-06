@@ -188,7 +188,7 @@
     },
     ".gitignore": {
       "command": "just check",
-      "purpose": "ignore rules integrity",
+      "purpose": "git exclusion-list config integrity",
       "lane": "check"
     },
     ".gitattributes": {

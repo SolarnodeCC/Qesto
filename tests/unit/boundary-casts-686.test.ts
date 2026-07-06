@@ -128,7 +128,9 @@ async function signRawToken(secret: string, claims: unknown): Promise<string> {
 }
 
 describe('embed token validates claim shape after signature check (#686)', () => {
-  const SECRET = 'embed-widget-secret-at-least-32-bytes!!'
+  // Test-fixture HMAC secret (mirrors embed-token.test.ts' TEST_EMBED_SECRET) —
+  // not a real credential.
+  const TEST_EMBED_SECRET = 'embed-widget-secret-at-least-32-bytes!!'
   const now = Math.floor(Date.now() / 1000)
   const valid = {
     v: 1, wid: 'w', sid: 's', code: 'C', tid: 't',
@@ -136,32 +138,33 @@ describe('embed token validates claim shape after signature check (#686)', () =>
   }
 
   it('accepts a correctly-signed valid payload', async () => {
-    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, valid))
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, await signRawToken(TEST_EMBED_SECRET, valid))
     expect(res.ok).toBe(true)
   })
 
   it('rejects a signed payload with a wrong-typed field as malformed', async () => {
-    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, { ...valid, exp: 'later' }))
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, await signRawToken(TEST_EMBED_SECRET, { ...valid, exp: 'later' }))
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('malformed')
   })
 
   it('rejects a signed payload missing a required field as malformed', async () => {
     const { wid: _drop, ...missing } = valid
-    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, missing))
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, await signRawToken(TEST_EMBED_SECRET, missing))
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('malformed')
   })
 
   it('still distinguishes wrong_version from malformed', async () => {
-    const res = await verifyEmbedToken(SECRET, await signRawToken(SECRET, { ...valid, v: 2 }))
+    const res = await verifyEmbedToken(TEST_EMBED_SECRET, await signRawToken(TEST_EMBED_SECRET, { ...valid, v: 2 }))
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('wrong_version')
   })
 })
 
 describe('federation invite validates claim shape after signature check (#686)', () => {
-  const SECRET = 'test-connect-invite-secret'
+  // Test-fixture HMAC secret (mirrors connect-invite.test.ts' TEST_INVITE_SECRET).
+  const TEST_INVITE_SECRET = 'test-connect-invite-secret'
   const now = Math.floor(Date.now() / 1000)
   const valid = {
     v: 1, jti: 'j', sid: 's', host: 'team_h', invitee: null,
@@ -169,18 +172,18 @@ describe('federation invite validates claim shape after signature check (#686)',
   }
 
   it('accepts a correctly-signed valid payload', async () => {
-    const res = await verifyFederationInvite(SECRET, await signRawToken(SECRET, valid))
+    const res = await verifyFederationInvite(TEST_INVITE_SECRET, await signRawToken(TEST_INVITE_SECRET, valid))
     expect(res.ok).toBe(true)
   })
 
   it('rejects a signed payload with a wrong-typed field as malformed', async () => {
-    const res = await verifyFederationInvite(SECRET, await signRawToken(SECRET, { ...valid, sid: 42 }))
+    const res = await verifyFederationInvite(TEST_INVITE_SECRET, await signRawToken(TEST_INVITE_SECRET, { ...valid, sid: 42 }))
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('malformed')
   })
 
   it('still distinguishes bad_scope from malformed', async () => {
-    const res = await verifyFederationInvite(SECRET, await signRawToken(SECRET, { ...valid, scope: 'admin' }))
+    const res = await verifyFederationInvite(TEST_INVITE_SECRET, await signRawToken(TEST_INVITE_SECRET, { ...valid, scope: 'admin' }))
     expect(res.ok).toBe(false)
     if (!res.ok) expect(res.reason).toBe('bad_scope')
   })
