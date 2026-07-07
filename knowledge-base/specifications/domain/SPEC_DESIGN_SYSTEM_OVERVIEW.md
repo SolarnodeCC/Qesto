@@ -6,7 +6,7 @@ category: visual
 status: active
 version: 1.0
 created: 2026-04-01
-updated: 2026-05-18
+updated: 2026-07-07
 audience:
   - UI/UX specialist
   - Frontend engineer
@@ -30,7 +30,7 @@ _Hub: [Documentation map](../README.md) · Technical specs: [INDEX.md](../SPEC_I
 
 > Qesto is a real-time interactive session platform — **feel the pulse of the room, amplified by AI**. Mentimeter-style live polling, ranking, wordclouds, and consent votes, with Workers AI-backed insights running on Cloudflare's edge.
 
-The folders **`design-system/`** and **`design_files/`** at the repository root hold portable HTML/CSS kits (preview cards, UI kits, assets). This document is the **canonical prose overview** of brand foundations for those kits and for anyone wiring Qesto visuals outside the main app.
+The portable HTML/CSS kit (preview cards, UI kits, templates, assets) lives at **`knowledge-base/governance/design-system/`**. This document is the **canonical prose overview** of brand foundations for that kit and for anyone wiring Qesto visuals outside the main app. (The former root-level `design-system/` working kit and its `design_files/` sibling were removed in 2026-07; the kit's net-new material was folded into the governance copy and its live token CSS relocated to `src/styles/tokens.css` — see ADR-0071.)
 
 ---
 
@@ -40,7 +40,7 @@ All visual, copy, and token material was extracted from this repository (no Figm
 
 - **GitHub:** `SolarnodeCC/Qesto` @ `main` (private)
 - **Key files referenced:**
-  - [`design-tokens.json`](./design-tokens.json) — canonical token source (machine-readable)
+  - `src/styles.css` (`@theme` block) + [`src/styles/tokens.css`](../../../src/styles/tokens.css) — the hand-authored, live token source of truth (the former `docs/spec/design-tokens.json` generator was removed as dead code in 2026-07)
   - [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md) — target-state visual and UX spec
   - [`../BRAND_VOICE.md`](../../governance/BRAND_VOICE.md) — tone, vocabulary, CTA rules
   - [`../DESIGN_GRID_GUIDE.md`](../../architecture/DESIGN_GRID_GUIDE.md) — 12/8/4 responsive grid, 4px baseline
@@ -160,7 +160,7 @@ If none is truthful for the feature, the AI claim doesn't belong on that page.
 
 **The sparkle.** A 4-point sparkle glyph (lucide `Sparkles` or equivalent) in `violet-500` at `icon-s` is the **AI mark**. It prefixes any AI-suggested content, sits inside the `+ New session` button, and accompanies every AI badge variant. Users learn: **violet + sparkle = AI at work**.
 
-**CDN.** Lucide is used via the package in the codebase. For standalone HTML artefacts under `design-system/` / `design_files/`, link via `<script src="https://unpkg.com/lucide@latest"></script>` then `<i data-lucide="sparkles"></i>` + `lucide.createIcons()`. This is a **CDN substitution** of the bundled package — the glyphs are identical.
+**CDN.** Lucide is used via the package in the codebase. For standalone HTML artefacts under `knowledge-base/governance/design-system/`, link via `<script src="https://unpkg.com/lucide@latest"></script>` then `<i data-lucide="sparkles"></i>` + `lucide.createIcons()`. This is a **CDN substitution** of the bundled package — the glyphs are identical.
 
 **Emoji.** Used in one place only — the Home.tsx hero feature strip (✨ 📊 🔒). Not part of the system proper; can be replaced by lucide `Sparkles` / `BarChart3` / `Lock` for more polish. Do **not** introduce emoji elsewhere.
 
@@ -172,18 +172,21 @@ No bespoke illustrations exist in the repo — empty states use lucide glyphs at
 
 ---
 
-## Portable kit folders (`design-system/`, `design_files/`)
+## Portable kit folder (`knowledge-base/governance/design-system/`)
 
-Each folder mirrors the same idea:
+The single portable reference kit. **Reference-only — nothing here is imported by the app.**
 
-- **`README.md`** — entry stub linking here (design-system only; design_files uses `DESIGN_SYSTEM.md` as stub).
-- **`SKILL.md`** — Claude Code skill entry point where present (`design-system/`).
-- **`colors_and_type.css`** — CSS custom properties for token dump + semantic type roles.
-- **`assets/`** — brand marks (`favicon.svg`, etc.).
-- **`preview/`** — small HTML cards (design-system).
-- **`ui_kits/`** — marketing site, dashboard, present, participant HTML kits.
+- **`README.md`** — entry stub linking here.
+- **`SKILL.md`** — Claude Code skill entry point.
+- **`colors_and_type.css`** — token dump + semantic type roles (monolithic). The app's *live* copy of these tokens is [`src/styles/tokens.css`](../../../src/styles/tokens.css); keep the two in sync.
+- **`tokens/`** — the same tokens split into `fonts.css` · `colors.css` · `semantic.css` · `typography.css` · `layout.css`, with `styles.css` as the entry point.
+- **`assets/`** — brand marks (`favicon.svg`, `qesto-mark.svg`) + PWA icons.
+- **`preview/`** — small HTML specimen cards (colours, type, spacing, shadows, radius, motion, components).
+- **`ui_kits/`** — full-surface recreations: `website/` (+ `pricing.html`), `dashboard/`, `present/`, `participant/`, `admin/` (superadmin console); `qr.js` is the shared real-QR renderer.
+- **`templates/`** — copy-to-start Design Components (`.dc.html`): `marketing-home`, `host-dashboard`, `participant-flow`, `admin-console`, `session-wizard`, `template-gallery`.
+- **`copy_deck.md`** — canonical copy snippets (heroes, CTAs, empty states, errors, AI disclosures, consent microcopy).
 
-**`copy_deck.md`** — canonical copy snippets (heroes, CTAs, empty states, errors, AI disclosures, consent microcopy).
+> **History (2026-07):** a newer working copy of this kit briefly lived at the repository root (`design-system/`). Its live token CSS was moved to `src/styles/tokens.css`, its net-new material (`tokens/`, `templates/`, the `admin/` ui_kit, `pricing.html`, `qr.js`) was folded in here, and the root folder was deleted (ADR-0071). Older root-kit variants of the four shared ui_kits remain recoverable from git history.
 
 ---
 

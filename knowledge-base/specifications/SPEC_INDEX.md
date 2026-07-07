@@ -55,7 +55,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 | Public / anonymous abuse surface? | [Abuse table](includes/PREBUILD_AND_DELIVERY.md#abuse-and-public-endpoints) + [SPEC_BACKEND.md](SPEC_BACKEND.md) |
 | Data retention / TTL intent? | [Retention](includes/PREBUILD_AND_DELIVERY.md#retention-and-deletion-intent) + [SPEC_DATAMODEL.md](SPEC_DATAMODEL.md) |
 | One local dev path? | [Golden path](includes/PREBUILD_AND_DELIVERY.md#golden-path-local) |
-| **Build UI / apply design system?** | [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) (colour, typography, spacing, component specs, motion, KPIs) · `design-tokens.json` (machine-readable tokens — not yet in knowledge-base) |
+| **Build UI / apply design system?** | [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) (colour, typography, spacing, component specs, motion, KPIs) · tokens in `src/styles.css` (`@theme`) + `src/styles/tokens.css` |
 
 ---
 
@@ -260,7 +260,7 @@ Read the canonical include first: **[includes/PREBUILD_AND_DELIVERY.md](includes
 |------|-----------|-----------|-------|
 | **Understand system** | SPEC_CORE | SPEC_DATAMODEL | Mental model of architecture |
 | **Build UI component** | SPEC_FRONTEND | SPEC_REALTIME (if live) | Hooks, routing, state mgmt |
-| **Apply design system / UI** | [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) | `design-tokens.json` (not yet migrated) · SPEC_FRONTEND | Colour, typography, spacing, component specs |
+| **Apply design system / UI** | [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) | tokens in `src/styles.css` + `src/styles/tokens.css` · SPEC_FRONTEND | Colour, typography, spacing, component specs |
 | **Add API endpoint** | SPEC_BACKEND | SPEC_CORE | Middleware, validation patterns |
 | **Implement real-time feature** | SPEC_REALTIME | SPEC_FRONTEND | WebSocket protocol, DO internals |
 | **Integrate new service** | SPEC_INTEGRATIONS | SPEC_DEPLOYMENT | Auth flows, secrets management |
@@ -311,10 +311,10 @@ docs/spec/
 │   └── PREBUILD_AND_DELIVERY.md   ← scope, gates, spike, golden path (canonical)
 ├── SPEC_CORE.md … SPEC_DEPLOYMENT.md   ← seven domain technical specs
 ├── SPEC_PRODUCT.md                ← short shipped-product specification (stub at docs/SPEC.md)
-├── SPEC_DESIGN_SYSTEM_OVERVIEW.md ← portable-kit brand foundations (design-system / design_files)
+├── SPEC_DESIGN_SYSTEM_OVERVIEW.md ← portable-kit brand foundations (governance/design-system)
 ├── WEBSITE_DESIGN_SPEC.md         ← visual UX source of truth for UI
-├── design-tokens.json             ← machine-readable tokens → generates src/ui/tokens.ts
-├── design-tokens.README.md        ← token editing rules (start here for tokens)
+├── (tokens live in src/styles.css @theme + src/styles/tokens.css — design-tokens.json retired 2026-07)
+├── DESIGN_TOKENS_README.md        ← token editing rules (start here for tokens)
 ├── DESIGN_SPEC_TRIAL_ACTIVATION.md
 ├── I18N_ARCHITECTURE_CONTRACT.md
 └── sprints/
@@ -415,7 +415,7 @@ Each spec includes links to critical source files:
 - **Deploy process?** → SPEC_DEPLOYMENT.md
 - **Integrate a service?** → SPEC_INTEGRATIONS.md
 - **Build UI?** → SPEC_FRONTEND.md
-- **Design system / colours / tokens?** → [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) + `design-tokens.json` (not yet migrated)
+- **Design system / colours / tokens?** → [WEBSITE_DESIGN_SPEC.md](./product/WEBSITE_DESIGN_SPEC.md) + tokens in `src/styles.css` (`@theme`) / `src/styles/tokens.css`
 
 ---
 

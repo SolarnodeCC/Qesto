@@ -43,7 +43,7 @@ This document is the single source of truth for the visual, interaction, and nar
 1. Captures the current-state design baseline (what ships in `src/`) and the gaps an external design review surfaced.
 2. Defines the target-state design language — colour, typography, spacing, motion, component conventions.
 3. Translates the review's recommendations into concrete, buildable backlog items.
-4. Companion to `design-tokens.json` in this folder, which is the machine-readable token source.
+4. Companion to the live token CSS — `src/styles.css` (`@theme`) + `src/styles/tokens.css` — the hand-authored token source (the former `design-tokens.json` generator was retired in 2026-07).
 
 Out of scope: presenter/voter runtime (see `docs/spec/SPEC_FRONTEND.md#routes--pages` and `docs/spec/SPEC_REALTIME.md`), admin panel redesign, mobile-remote UX.
 
@@ -756,4 +756,4 @@ Cross-linked to backlog items in §12 of `docs/BACKLOG.md`.
 - `docs/ACCESSIBILITY_GUIDE.md` — a11y requirements.
 - `docs/I18N_GLOSSARY.md` — translation conventions.
 - `docs/BACKLOG.md` §12 — Website Design Wave items.
-- `docs/spec/design-tokens.json` — machine-readable tokens.
+- `src/styles.css` (`@theme`) + `src/styles/tokens.css` — the hand-authored live token source (the former `docs/spec/design-tokens.json` generator was retired in 2026-07).

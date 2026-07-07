@@ -87,12 +87,13 @@ excluded_paths = [
 extra_excluded_paths = [
   ".github/workflows/daily-repo-status.lock.yml",
   # Design-system reference kit: standalone HTML/JS/CSS preview scaffolds and UI
-  # kits under design-system/ (templates/*/support.js, ui_kits/*.js, etc.).
-  # Reference artifacts, not product runtime code — not imported by src/ or
-  # functions/. Excluded from product-code scoring like contracts/generated/ and
-  # dist/. (The shipped design system lives in src/ and uses CSS custom-property
-  # tokens per ADR-0071.)
-  "design-system/",
+  # kits under knowledge-base/governance/design-system/ (templates/*/support.js,
+  # ui_kits/*.js, etc.). Reference artifacts, not product runtime code — not
+  # imported by src/ or functions/. Excluded from product-code scoring like
+  # contracts/generated/ and dist/. (The shipped design system lives in src/ and
+  # uses CSS custom-property tokens per ADR-0071; the root design-system/ working
+  # kit was removed in 2026-07 and its token CSS moved to src/styles/tokens.css.)
+  "knowledge-base/governance/design-system/",
   # Published Python client SDK — a client library, not the exception-only
   # AI/data service the target stack scopes Python to. Not product runtime.
   "packages/sdk-python/",

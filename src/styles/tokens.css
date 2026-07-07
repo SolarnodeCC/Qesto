@@ -1,6 +1,12 @@
 /* ===========================================================================
    Qesto Design System — Colors & Type
-   Source: docs/spec/design-tokens.json (v1.0.0) + src/styles.css in Qesto repo
+   Live token source for the app, imported by src/styles.css. Defines the short
+   token aliases (--teal/violet/pulse/signal-*, --surface-*, --text-link*), the
+   signature gradients (--gradient-brand / -ai / -brand-subtle), and the
+   typography classes (.h-display-*, h1-h3, .body-*, .caption, .caption-step).
+   Complements the Tailwind-namespaced tokens in src/styles.css's @theme block.
+   (Relocated 2026-07 from the removed root design-system/ reference kit; see
+   ADR-0071.)
    =========================================================================== */
 
 :root {

@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 @import './styles/grid.css';
-@import '../design-system/colors_and_type.css';
+@import './styles/tokens.css';
 @import './styles/canvas-themes.css';
 
 /* Dark mode follows the `data-theme="dark"` attribute that useColorScheme sets  */
