@@ -48,7 +48,7 @@ Route + hook tables = **UI navigation**; **code (`src/`)** wins on prop names un
 
 ## Design System Reference
 
-> **All visual decisions — colour tokens, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, AI sparkle mark iconography, and acceptance KPIs — are governed by [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md).** Machine-readable tokens live in [`design-tokens.json`](./design-tokens.json). These files are the source of truth and take precedence over any inline values in this spec.
+> **All visual decisions — colour tokens, typography scale, spacing grid, component specs (hero, dashboard, wizard, launchpad), motion rules, AI sparkle mark iconography, and acceptance KPIs — are governed by [`WEBSITE_DESIGN_SPEC.md`](../product/WEBSITE_DESIGN_SPEC.md).** The live tokens are hand-authored in `src/styles.css` (`@theme`) + `src/styles/tokens.css`. These are the source of truth and take precedence over any inline values in this spec.
 >
 > Key entry points (same `docs/spec/` directory):
 > - §4 Colour, typography, spacing, radius/elevation/motion, AI surface rules

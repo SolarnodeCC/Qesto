@@ -21,7 +21,6 @@
     "src/": "tools",
     "apps/web/": "tools",
     "packages/": "tools",
-    "design-system/": "tools",
     "public/": "tools",
     "tools/": "tools",
     "scripts/": "ops",

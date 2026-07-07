@@ -36,11 +36,6 @@
       "purpose": "typecheck and build for SDK packages",
       "lane": "fast"
     },
-    "design-system/": {
-      "command": "just check",
-      "purpose": "design-token integrity gate",
-      "lane": "check"
-    },
     "public/": {
       "command": "just check",
       "purpose": "static asset integrity gate",

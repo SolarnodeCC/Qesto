@@ -88,4 +88,33 @@ All four Launchpad components were rebuilt to match the design kit:
 
 - **CLAUDE.md Hard Rules 9 & 10** enforce these conventions for all future work (human and AI-agent).
 - Any new component PR containing inline `<svg>` icons or `rounded-lg` on a card-level element should be rejected at review.
-- The design kit HTML files in `design-system/` and `design_files/` remain **reference only** — they load Lucide via unpkg CDN and must never be copied verbatim into production.
+- The design kit HTML files remain **reference only** — they load Lucide via unpkg CDN and must never be copied verbatim into production.
+
+---
+
+## Amendment (2026-07-07) — root `design-system/` kit removed; token CSS relocated
+
+Follow-up to the original decision. During a design-system review it emerged that the root
+`design-system/` folder was **not** purely reference material: `src/styles.css` imported
+`design-system/colors_and_type.css`, making it a live build dependency. That file is the sole
+definition site for the signature gradients (`--gradient-brand` / `--gradient-ai` /
+`--gradient-brand-subtle`), the short token aliases (`--teal/violet/pulse/signal-*`,
+`--surface-border*`, `--text-link*`), and the app's typography classes (`.h-display-*`, styled
+`h1`–`h3`, `.body-*`, `.caption`, `.caption-step`). Deleting the folder would have broken the
+production CSS build.
+
+**Decisions:**
+
+1. **Relocated** `design-system/colors_and_type.css` → **`src/styles/tokens.css`** (verbatim), and
+   repointed the `src/styles.css` import. Tokens now have a first-class home under `src/` alongside
+   `grid.css` and `canvas-themes.css`. The token source of truth is `src/styles.css` (`@theme`) +
+   `src/styles/tokens.css` — no `docs/spec/design-tokens.json` (that generator was retired in 2026-07).
+2. **Consolidated the portable kit** at `knowledge-base/governance/design-system/`. The root folder
+   was a newer working copy; its net-new material (`tokens/`, `templates/`, the `admin/` ui_kit,
+   `pricing.html`, `qr.js`) was folded into the governance kit, and the root `design-system/` folder
+   was **deleted**. Older root-kit variants of the four shared ui_kits remain in git history.
+3. The "reference only / never copied into production" rule above applies to the **governance kit's
+   HTML/CDN artifacts**. The token CSS is now maintained directly in `src/styles/tokens.css`; the
+   governance `colors_and_type.css` is a reference mirror and must be kept in sync when tokens change.
+
+The Hard Rules 9 & 10 in `CLAUDE.md` are unaffected (icon policy and radius conventions still hold).
