@@ -14,6 +14,7 @@ on:
 permissions:
   contents: read
   issues: read
+  actions: read # read prior run artifacts to restore the sync manifest
 
 concurrency:
   group: kb-sync-${{ github.ref }}
@@ -26,6 +27,7 @@ jobs:
     permissions:
       contents: read
       issues: read
+      actions: read # read prior run artifacts to restore the sync manifest
     steps:
       - name: Checkout code
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -37,6 +39,26 @@ jobs:
         with:
           node-version: '24'
           cache: 'npm'
+
+      # The sync manifest (.kb-sync-manifest.json) holds per-file hashes + vector
+      # ids from the last sync — the state that lets this run detect changed AND
+      # deleted docs. It is runtime state (not committed), so restore it from the
+      # most recent successful run's artifact. Missing/empty is safe: the sync
+      # then treats every file as new and prunes nothing.
+      - name: Restore previous sync manifest
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id=$(gh run list --workflow kb-sync-on-merge.yml --branch main \
+            --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
+          if [ -n "$run_id" ]; then
+            echo "Restoring manifest from run $run_id"
+            gh run download "$run_id" -n kb-sync-manifest --dir . \
+              || echo "No manifest artifact on run $run_id — starting fresh."
+          else
+            echo "No previous successful run — starting with an empty manifest."
+          fi
 
       - name: Run KB Sync
         run: bash ops/ci/kb-sync.sh

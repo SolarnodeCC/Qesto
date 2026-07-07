@@ -59,13 +59,6 @@ const apiKey = process.env.CLOUDFLARE_API_TOKEN || ''
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || ''
 const dbId = process.env.CLOUDFLARE_D1_DATABASE_ID || ''
 
-if (!isDryRun && (!apiKey || !accountId || !dbId)) {
-  console.error(
-    'Error: Missing env vars. Set CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DATABASE_ID',
-  )
-  process.exit(1)
-}
-
 function sha256(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex')
 }
@@ -116,9 +109,13 @@ function parseYAMLSimple(yaml: string): Record<string, unknown> {
       inArray = null
     }
 
-    // Key: value pairs
+    // Key: value pairs. Exclude the list keys: a bracketed `tags: [...]` /
+    // `relates_to: [...]` was already parsed into an array above (and reset
+    // inArray to null), so without this guard the generic matcher would clobber
+    // that array with the raw string — which later throws on `.join()` and drops
+    // the whole file.
     const match = line.match(/^([a-z_]+):\s*(.+)$/)
-    if (match && !inArray) {
+    if (match && !inArray && match[1] !== 'tags' && match[1] !== 'relates_to') {
       const [, key, value] = match
       result[key] = value.trim().replace(/['"]/g, '')
     }
@@ -127,28 +124,103 @@ function parseYAMLSimple(yaml: string): Record<string, unknown> {
   return result
 }
 
-function parseFrontmatter(markdown: string): {
+// Map a top-level knowledge-base/ folder to the closest KbType. Files without
+// frontmatter still need a `type` for the kb_documents row + Vectorize metadata
+// filter; default to 'unknown' when the folder isn't a recognised bucket.
+// Keep in sync with KbType in functions/api/types/knowledge-base.ts.
+function inferTypeFromPath(relPath: string): string {
+  const top = relPath.split(path.sep)[0]
+  switch (top) {
+    case 'adr':
+      return 'adr'
+    case 'specifications':
+      return 'spec'
+    case 'operations':
+      return 'guide'
+    case 'experiments':
+      return 'experiment'
+    default:
+      return 'unknown'
+  }
+}
+
+// Stable, collision-free doc id for a file that has no frontmatter `id`. Derived
+// from the repo-relative path so two different files never collide on the old
+// 'unknown' fallback (which produced duplicate `unknown#0` chunk ids and made
+// the D1 upsert clobber unrelated docs on the doc_id PRIMARY KEY).
+function idFromPath(filePath: string): string {
+  const rel = path.relative(kbRoot, filePath).replace(/\.md$/i, '')
+  return rel.replace(/[^a-zA-Z0-9._-]+/g, '-')
+}
+
+function firstH1(body: string): string | undefined {
+  const m = body.match(/^#\s+(.+)$/m)
+  return m ? m[1].trim() : undefined
+}
+
+// Coerce a frontmatter list field to a string[]. parseYAMLSimple leaves an
+// un-bracketed inline list (`tags: a, b`) as a raw string, which later blows up
+// on `.join()` and drops the whole file. Normalise here instead. (F1)
+export function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map((v) => String(v))
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((s) => s.trim().replace(/['"]/g, ''))
+      .filter(Boolean)
+  }
+  return []
+}
+
+// Synthesize metadata for a file with no YAML frontmatter so it is embedded like
+// any other doc instead of being silently dropped (F1). type/domain are inferred
+// from the folder; status defaults to 'accepted' so the doc is visible to
+// default kb_search (which filters status='accepted').
+export function deriveMetaFromPath(filePath: string, body: string): FrontmatterMeta {
+  const rel = path.relative(kbRoot, filePath)
+  const top = rel.split(path.sep)[0] || 'unknown'
+  return {
+    id: idFromPath(filePath),
+    type: inferTypeFromPath(rel),
+    domain: top,
+    status: 'accepted',
+    tags: [],
+    relates_to: [],
+    title: firstH1(body) || path.basename(filePath, '.md'),
+  }
+}
+
+export function parseFrontmatter(
+  markdown: string,
+  filePath: string,
+): {
   meta: FrontmatterMeta
   body: string
 } {
   const match = markdown.match(/^---\n([\s\S]*?)\n---\n/)
   if (!match) {
-    throw new Error('No YAML frontmatter found')
+    // No frontmatter — synthesize metadata from the path instead of throwing.
+    // Previously these files (~28% of the corpus) were caught and dropped from
+    // the index entirely. F1.
+    return { meta: deriveMetaFromPath(filePath, markdown), body: markdown }
   }
 
   const yamlText = match[1]
   const body = markdown.slice(match[0].length)
   const parsed = parseYAMLSimple(yamlText)
+  const fallback = deriveMetaFromPath(filePath, body)
 
   return {
     meta: {
-      id: String(parsed.id || 'unknown'),
-      type: String(parsed.type || 'unknown'),
-      domain: String(parsed.domain || 'unknown'),
+      // id/type/domain/title fall back to path-derived values (never the old
+      // 'unknown' id) so a doc missing a field still lands with a unique id.
+      id: parsed.id ? String(parsed.id) : fallback.id,
+      type: String(parsed.type || fallback.type),
+      domain: String(parsed.domain || fallback.domain),
       status: String(parsed.status || 'draft'),
-      tags: (parsed.tags as string[]) || [],
-      relates_to: (parsed.relates_to as string[]) || [],
-      ...(parsed.title ? { title: String(parsed.title) } : {}),
+      tags: toStringArray(parsed.tags),
+      relates_to: toStringArray(parsed.relates_to),
+      title: parsed.title ? String(parsed.title) : (fallback.title ?? path.basename(filePath, '.md')),
       ...(parsed.version ? { version: String(parsed.version) } : {}),
       ...(parsed.owner ? { owner: String(parsed.owner) } : {}),
       ...(parsed.category ? { category: String(parsed.category) } : {}),
@@ -157,7 +229,7 @@ function parseFrontmatter(markdown: string): {
   }
 }
 
-function chunkMarkdown(docId: string, body: string, meta: FrontmatterMeta): Chunk[] {
+export function chunkMarkdown(docId: string, body: string, meta: FrontmatterMeta): Chunk[] {
   const sections = parseMarkdownSections(body)
   const chunks: Chunk[] = []
   let chunkIndex = 0
@@ -204,10 +276,13 @@ interface Section {
   startLine: number
 }
 
-function parseMarkdownSections(body: string): Section[] {
+export function parseMarkdownSections(body: string): Section[] {
   const sections: Section[] = []
   const lines = body.split('\n')
-  let current: Section | null = null
+  // Seed a preamble section so content before the first heading (or files with
+  // no headings at all — common in release notes and READMEs) is still chunked
+  // and embedded. packIntoChunks drops it if empty, so no phantom chunk. (F1)
+  let current: Section | null = { heading: 'Overview', level: 0, content: '', startLine: 1 }
   let lineNum = 1
 
   for (const line of lines) {
@@ -311,7 +386,9 @@ function walkKbFiles(): string[] {
     const entries = fs.readdirSync(dir, { withFileTypes: true })
     for (const entry of entries) {
       if (entry.isDirectory()) {
-        // Skip archive, migration, and specification folders (already have YAML, don't re-embed)
+        // Skip archive/ (superseded docs) and migration/ (DB migration scripts,
+        // not knowledge). Everything else is embedded. Keep this exclusion list
+        // in sync with EMBED_EXCLUDE_DIRS in scripts/kb-health.ts.
         if (['archive', 'migration'].includes(entry.name)) continue
         walk(path.join(dir, entry.name))
       } else if (entry.isFile() && entry.name.endsWith('.md')) {
@@ -325,6 +402,13 @@ function walkKbFiles(): string[] {
 }
 
 async function main() {
+  if (!isDryRun && (!apiKey || !accountId || !dbId)) {
+    console.error(
+      'Error: Missing env vars. Set CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DATABASE_ID',
+    )
+    process.exit(1)
+  }
+
   console.log(`Knowledge-Base Vectorization (ADR-040 Phase 1)`)
   console.log(`KB Root: ${kbRoot}`)
   console.log(`Dry Run: ${isDryRun}`)
@@ -338,6 +422,7 @@ async function main() {
   let chunkCount = 0
   let embeddingCount = 0
   let errorCount = 0
+  let fileErrorCount = 0
 
   const vectorUpserts: KbSyncRecord[] = []
   const startTime = Date.now()
@@ -347,7 +432,7 @@ async function main() {
 
     try {
       const content = fs.readFileSync(file, 'utf8')
-      const { meta, body } = parseFrontmatter(content)
+      const { meta, body } = parseFrontmatter(content, file)
       const chunks = chunkMarkdown(meta.id, body, meta)
 
       if (isDryRun) {
@@ -425,7 +510,7 @@ async function main() {
       processedCount++
     } catch (e) {
       console.error(`✗ ${file}: ${(e as Error).message}`)
-      errorCount++
+      fileErrorCount++
     }
   }
 
@@ -436,8 +521,18 @@ async function main() {
   console.log(`  Files processed: ${processedCount}`)
   console.log(`  Total chunks: ${chunkCount}`)
   console.log(`  Embeddings created: ${embeddingCount}`)
-  console.log(`  Errors: ${errorCount}`)
+  console.log(`  Chunk errors: ${errorCount}`)
+  console.log(`  File errors: ${fileErrorCount}`)
   console.log(`  Time: ${(elapsed / 1000).toFixed(1)}s`)
+
+  // A file that fails to process is a doc missing from the index — surface it
+  // as a non-zero exit so `npm run kb:embed` fails loudly instead of exiting 0
+  // with docs silently dropped. Transient per-chunk embed errors stay advisory
+  // (the corpus-completeness health gate catches systematic under-embedding).
+  if (!isDryRun && fileErrorCount > 0) {
+    console.error(`\n✗ ${fileErrorCount} file(s) failed to process — failing run.`)
+    process.exitCode = 1
+  }
 
   if (!isDryRun && vectorUpserts.length > 0) {
     console.log()
@@ -455,7 +550,11 @@ async function main() {
   console.log(`Phase 1 complete!`)
 }
 
-main().catch((e) => {
-  console.error(`Fatal: ${(e as Error).message}`)
-  process.exit(1)
-})
+// Only run when invoked as a script (`npx tsx scripts/embed-kb.ts`), not when a
+// test imports the exported pure helpers from this module.
+if (process.argv[1]?.endsWith('embed-kb.ts')) {
+  main().catch((e) => {
+    console.error(`Fatal: ${(e as Error).message}`)
+    process.exit(1)
+  })
+}

@@ -33,9 +33,12 @@ fi
 report_success "Installing dependencies"
 npm ci --silent
 
-# Run KB Sync (exit code doesn't matter, KB sync is advisory)
+# Run KB Sync (exit code doesn't matter, KB sync is advisory).
+# --delete prunes vectors/D1 rows for KB files removed since the last sync;
+# it only fires for files present in the restored manifest but absent on disk,
+# so a missing/empty manifest is safe (nothing to delete).
 report_success "Syncing knowledge base"
-npm run kb:sync || {
+npm run kb:sync -- --delete || {
   report_error "KB sync failed, creating fallback manifest"
   true  # Don't fail, KB sync is advisory
 }
