@@ -27,6 +27,10 @@ import { z } from 'zod'
 const KB_DIR = 'knowledge-base'
 const MANIFEST_FILE = '.kb-sync-manifest.json'
 const KB_EXPECTED_DIM = 1024 // bge-m3 — must match scripts/embed-kb.ts and kbSearchService.ts
+// Directories excluded from embedding — MUST match walkKbFiles() in
+// scripts/embed-kb.ts. archive/ = superseded docs, migration/ = DB scripts.
+// Kept here so the health gate measures the SAME corpus the embedder ingests.
+const EMBED_EXCLUDE_DIRS = ['archive', 'migration']
 
 const ManifestFileSchema = z.object({
   hash: z.string(),
@@ -110,6 +114,27 @@ function walkKbFiles(): string[] {
   return out.sort()
 }
 
+// The set of files the embedder actually ingests — walkKbFiles() minus the
+// excluded dirs. Mirrors walkKbFiles() in scripts/embed-kb.ts so "embeddable
+// files" here means the same thing as "files that get a vector". This is the
+// denominator for the corpus-completeness gate below. (F3/F5)
+function walkEmbeddableFiles(): string[] {
+  const out: string[] = []
+  function walk(dir: string) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        if (EMBED_EXCLUDE_DIRS.includes(entry.name)) continue
+        walk(full)
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        out.push(full)
+      }
+    }
+  }
+  if (fs.existsSync(KB_DIR)) walk(KB_DIR)
+  return out.sort()
+}
+
 function sha256(file: string): string {
   return crypto.createHash('sha256').update(fs.readFileSync(file, 'utf-8')).digest('hex')
 }
@@ -162,7 +187,10 @@ async function main() {
   let hardFailure = false
   const manifest = loadManifest()
   const files = walkKbFiles()
-  const expectedVectors = Object.values(manifest.files ?? {}).reduce((s, f) => s + (f.vectorCount ?? 0), 0)
+  const embeddable = walkEmbeddableFiles()
+  const tracked = manifest.files ?? {}
+  const trackedCount = Object.keys(tracked).length
+  const expectedVectors = Object.values(tracked).reduce((s, f) => s + (f.vectorCount ?? 0), 0)
   const { changed, deleted } = pendingChanges(manifest)
 
   console.log('KB Vectorize health check\n=========================\n')
@@ -170,12 +198,32 @@ async function main() {
   // ── Local ────────────────────────────────────────────────────────────────
   console.log('Local (knowledge-base/ + manifest):')
   console.log(`  KB markdown files on disk : ${files.length}`)
-  console.log(`  Files tracked in manifest : ${Object.keys(manifest.files ?? {}).length}`)
+  console.log(`  Embeddable files (target) : ${embeddable.length}`)
+  console.log(`  Files tracked in manifest : ${trackedCount}`)
   console.log(`  Expected vectors (manifest): ${expectedVectors}`)
   console.log(`  Last sync                 : ${manifest.lastSync ? new Date(manifest.lastSync).toISOString() : 'never'}`)
   console.log(`  Pending changes           : ${changed.length} changed/new, ${deleted.length} deleted`)
   if (changed.length || deleted.length) {
     console.log('  → KB is out of date vs the index. Run `npm run kb:sync` (CI does this on merge).')
+  }
+
+  // Corpus-completeness gate (the check that catches docs on disk but missing
+  // from the index — what the old manifest-vs-live drift check was blind to).
+  // Every embeddable file must be represented in the manifest, i.e. actually
+  // synced. Only assert once a manifest exists: an empty/first-run manifest
+  // can't distinguish "not synced yet" from "silently dropped".
+  if (trackedCount > 0) {
+    const untracked = embeddable.filter((f) => !Object.prototype.hasOwnProperty.call(tracked, f))
+    if (untracked.length > 0) {
+      console.log(`  ✗ ${untracked.length} embeddable file(s) are NOT in the sync manifest — never embedded:`)
+      for (const f of untracked.slice(0, 20)) console.log(`      - ${f}`)
+      if (untracked.length > 20) console.log(`      … and ${untracked.length - 20} more`)
+      hardFailure = true
+    } else {
+      console.log('  ✓ Corpus complete — every embeddable file is tracked in the manifest.')
+    }
+  } else {
+    console.log('  ⚠ manifest empty — corpus-completeness check skipped (first run / manifest not restored).')
   }
   console.log('')
 
@@ -184,8 +232,8 @@ async function main() {
   const token = process.env.CLOUDFLARE_API_TOKEN
   if (!accountId || !token) {
     console.log('Remote: skipped (set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN to check live indexes).')
-    console.log('\nVerdict: local-only check passed.')
-    process.exit(0)
+    console.log(`\nVerdict: ${hardFailure ? 'PROBLEMS FOUND (see ✗ above)' : 'local-only check passed'}.`)
+    process.exit(hardFailure ? 1 : 0)
   }
 
   console.log('Remote (Cloudflare Vectorize):')
@@ -204,11 +252,22 @@ async function main() {
       console.log(`    ✗ dimension ${info.dimensions} != expected ${spec.expectedDim} — retrieval will fail`)
       hardFailure = true
     }
-    if (spec.fileBacked && typeof info.vectorCount === 'number' && info.vectorCount === 0 && files.length > 0) {
-      console.log(`    ✗ index is EMPTY but ${files.length} KB files exist — never synced. Run \`npm run kb:sync\`.`)
+    if (spec.fileBacked && typeof info.vectorCount === 'number' && info.vectorCount === 0 && embeddable.length > 0) {
+      console.log(`    ✗ index is EMPTY but ${embeddable.length} embeddable KB files exist — never synced. Run \`npm run kb:sync\`.`)
       hardFailure = true
     } else if (!spec.fileBacked && info.vectorCount === 0) {
       console.log(`    ⚠ index is empty — ${spec.binding} feature has no vectors to retrieve (re-seed/re-index).`)
+    }
+    // Lower bound: with the preamble fix every embeddable file yields >=1 chunk,
+    // so the live vector count must be >= the embeddable file count. Falling
+    // below it means a large slice of the corpus is missing from the index.
+    if (
+      spec.fileBacked &&
+      typeof info.vectorCount === 'number' &&
+      info.vectorCount > 0 &&
+      info.vectorCount < embeddable.length
+    ) {
+      console.log(`    ⚠ index has ${info.vectorCount} vectors but ${embeddable.length} embeddable files exist — under-embedded (expect >=1 vector/file).`)
     }
     if (
       spec.fileBacked &&

@@ -4,9 +4,9 @@ type: guide
 domain: governance
 category: policy
 status: active
-version: 1.0
+version: 1.1
 created: 2026-04-01
-updated: 2026-05-11
+updated: 2026-07-07
 tags:
   - governance
   - policy
@@ -18,8 +18,22 @@ relates_to:
 # Qesto Knowledge Base
 
 **Migration Date**: 2026-05-11  
-**Total Documents**: 123 markdown files + design assets  
+**Total Documents**: 476 markdown files + design assets (458 embedded into the KB vector index; `archive/` + `migration/` are excluded)  
 **Structure**: Complete reorganization for RAG optimization and discoverability
+
+### Document counts by area (2026-07-07)
+
+| Area | .md files | Area | .md files |
+|---|---|---|---|
+| `product/` | 153 | `governance/` | 18 |
+| `adr/` | 72 | `specifications/` | 16 |
+| `operations/` | 59 | `help/` | 16 |
+| `quality/` | 39 | `marketing/` | 9 |
+| `security/` | 30 | `architecture/` | 7 |
+| `ai-context/` | 19 | `api/` | 6 |
+| `metadata/` | 18 | `experiments/` / `compliance/` | 2 each |
+
+`archive/` holds 7 superseded docs (not embedded). Regenerate with `find knowledge-base -name '*.md' | wc -l`.
 
 ---
 
@@ -38,7 +52,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 ### Core Reference
 
 - **[Architecture](./architecture/README.md)** — System design, technical decisions, Cloudflare optimizations
-- **[Architecture Decision Records (ADRs)](./adr/)** — 12 key technical decisions
+- **[Architecture Decision Records (ADRs)](./adr/)** — 72 technical decisions
 - **[Specifications](./specifications/)** — Domain specs (core, backend, frontend, realtime, integrations, data, deployment)
 
 ### Product & Roadmap
@@ -97,7 +111,7 @@ This is the centralized knowledge base for the Qesto project. All documentation,
 
 ```
 knowledge-base/
-├── adr/                          # 12 Architecture Decision Records
+├── adr/                          # 72 Architecture Decision Records
 ├── architecture/                 # System design and technical overview
 ├── specifications/               # Domain, product, and feature specs
 │   ├── domain/                   # SPEC_CORE, BACKEND, FRONTEND, REALTIME, etc.
@@ -207,6 +221,11 @@ tags:
 
 ## Recent Changes
 
+**2026-07-07**: KB vector-pipeline coverage fix + count refresh
+- Refreshed counts: KB now holds **476** markdown files / **72** ADRs (was documented as 123 / 12)
+- Fixed the embed pipeline so files without YAML frontmatter (~28% of the corpus) and content before the first heading are now embedded instead of silently dropped
+- Added a corpus-completeness gate to `scripts/kb-health.ts` that fails CI when embeddable files are missing from the sync manifest
+
 **2026-06-11**: Documentation organization pass
 - Moved loose i18n sprint docs (`I18N_SPRINT_60_70_*`, `I18N_SPRINT_71_80_PLAN`, `I18N_SPRINT_81_90_PLAN`, `I18N_CI_GATES_SPRINT_60_70`) from KB root into [`product/planning/`](./product/planning/) alongside their `SPRINT*_PLAN.md` counterparts
 - Moved root-level `OBSERVABILITY_AUDIT_2026_06_05.md` into [`operations/monitoring/`](./operations/monitoring/OBSERVABILITY_AUDIT_2026-06-05.md)
@@ -252,6 +271,6 @@ Legacy, superseded, or implementation-specific docs are preserved in [`/archive/
 
 ---
 
-**Last Updated**: 2026-05-11  
-**Maintainer**: Knowledge Base Migration Script  
-**Source**: claude/migrate-knowledge-base-I0PpQ branch
+**Last Updated**: 2026-07-07  
+**Maintainer**: Knowledge stewardship (`/knowledge` role)  
+**Source**: claude/migrate-knowledge-base-I0PpQ branch (initial migration)

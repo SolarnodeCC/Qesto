@@ -31,15 +31,21 @@ const KB_DIR = 'knowledge-base';
 const BATCH_SIZE = 200;
 
 function loadManifest(): SyncManifest {
-  if (fs.existsSync(MANIFEST_FILE)) {
-    return JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf-8'));
+  const empty: SyncManifest = { version: 1, lastSync: 0, syncCount: 0, files: {} };
+  if (!fs.existsSync(MANIFEST_FILE)) return empty;
+  try {
+    const raw = JSON.parse(fs.readFileSync(MANIFEST_FILE, 'utf-8'));
+    // Be defensive: CI historically wrote a `{status:'unavailable'}` fallback
+    // stub with no `files` key. Normalise so `manifest.files[...]` never throws.
+    return {
+      version: 1,
+      lastSync: typeof raw?.lastSync === 'number' ? raw.lastSync : 0,
+      syncCount: typeof raw?.syncCount === 'number' ? raw.syncCount : 0,
+      files: raw?.files && typeof raw.files === 'object' ? raw.files : {},
+    };
+  } catch {
+    return empty;
   }
-  return {
-    version: 1,
-    lastSync: 0,
-    syncCount: 0,
-    files: {},
-  };
 }
 
 function saveManifest(manifest: SyncManifest): void {
@@ -137,7 +143,12 @@ async function embedFiles(files: string[]): Promise<Map<string, { vectors: Array
     const byFile = new Map<string, { vectors: Array<{ id: string; values: number[]; metadata: Record<string, unknown> }> }>();
 
     for (const vec of vectors) {
-      const docFile = vec.metadata?.doc_id;
+      // Key by the repo-relative file path (carried in `document.file_path`),
+      // NOT doc_id. detectChanges()/the manifest are keyed by path, and sync()
+      // calls computeFileHash() on this key — a doc_id there throws ENOENT and
+      // silently aborts the whole sync (which is why the manifest never
+      // persisted). Fall back to doc_id only for legacy vector-only records.
+      const docFile: string | undefined = vec.document?.file_path ?? vec.metadata?.doc_id;
       if (!docFile) continue;
 
       if (!byFile.has(docFile)) {
