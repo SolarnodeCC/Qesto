@@ -11,8 +11,6 @@ import type { Env, TownhallModeration } from '../types'
 import type { ServerMessage, TownhallItem, TownhallBoardItem, TownhallModerateAction } from '../realtime'
 import {
   TOWNHALL_KEYS,
-  newSubmitBucket,
-  consumeSubmitToken,
   nextRev,
   createTownhallItem,
   isDuplicateBody,
@@ -21,8 +19,8 @@ import {
   isAudienceVisible,
   mergedUpvoteCount,
   toBoardItem,
-  type TokenBucket,
 } from './session-room-townhall'
+import { newSubmitBucket, consumeSubmitToken, type TokenBucket } from './board-submit-rate'
 import { LIVE_PROTOCOL_VERSION } from '../realtime'
 
 type Meta = {
