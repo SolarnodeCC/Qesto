@@ -71,31 +71,11 @@
     <title>Qesto — Real-time Feedback &amp; AI Insights for Teams</title>
     <!-- Appearance bootstrap: apply stored theme / density / high-contrast to <html>
          before first paint to avoid a flash. Mirrors useColorScheme + useDensity +
-         HighContrastToggle, which re-assert these once React mounts. -->
-    <script>
-      (function () {
-        try {
-          var el = document.documentElement
-          var pref = localStorage.getItem('qesto:color-scheme')
-          var resolved =
-            pref === 'light' || pref === 'dark'
-              ? pref
-              : window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-                ? 'dark'
-                : 'light'
-          el.dataset.theme = resolved
-          el.dataset.themePreference =
-            pref === 'light' || pref === 'dark' || pref === 'system' ? pref : 'system'
-          var den = localStorage.getItem('qesto-density')
-          el.dataset.density =
-            den === 'compact' || den === 'comfortable' || den === 'spacious' ? den : 'comfortable'
-          el.dataset.highContrast =
-            localStorage.getItem('qesto:high-contrast') === '1' ? 'true' : 'false'
-        } catch (e) {
-          /* localStorage unavailable — hooks will set these on mount */
-        }
-      })()
-    </script>
+         HighContrastToggle, which re-assert these once React mounts. Kept as an
+         external, same-origin, render-blocking script (NOT inline) so the CSP can
+         drop `script-src 'unsafe-inline'` — see public/theme-bootstrap.js and
+         public/_headers. -->
+    <script src="/theme-bootstrap.js"></script>
     <!-- Microsoft Clarity (project x06dypkbyr) is loaded lazily after cookie consent.
          See src/lib/clarity.ts + src/components/CookieConsentBanner.tsx. The CSP in
          public/_headers whitelists clarity.ms / c.bing.com for when it loads. -->
