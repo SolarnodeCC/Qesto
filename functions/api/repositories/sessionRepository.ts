@@ -94,7 +94,7 @@ export async function listSessionsForTeam(db: D1Database, teamId: string, limit 
 export async function createDraftSessionForTeam(
   db: D1Database,
   params: { id: string; teamId: string; ownerId: string; title: string; code: string },
-): Promise<void> {
+): Promise<{ createdAt: number }> {
   const now = Date.now()
   await db
     .prepare(
@@ -103,6 +103,53 @@ export async function createDraftSessionForTeam(
     )
     .bind(params.id, params.title, params.code, params.teamId, params.ownerId, now)
     .run()
+  return { createdAt: now }
+}
+
+export type QuestionSummaryRow = { id: string; kind: string; prompt: string }
+export type VoteCountRow = { question_id: string; option_id: string; count: number }
+
+/**
+ * Questions + aggregated vote counts for the public `GET /sessions/:id/results`
+ * endpoints. Single implementation behind the v1/v2/v3 wrappers — response
+ * field names differ per version (v2 says `votes`, v1/v3 say `vote_counts`)
+ * but the data is identical.
+ */
+export async function fetchSessionResultsData(
+  db: D1Database,
+  sessionId: string,
+): Promise<{ questions: QuestionSummaryRow[]; voteCounts: VoteCountRow[] }> {
+  const questions = await db
+    .prepare(`SELECT id, kind, prompt FROM questions WHERE session_id = ?1 ORDER BY position`)
+    .bind(sessionId)
+    .all<QuestionSummaryRow>()
+  const votes = await db
+    .prepare(
+      `SELECT question_id, option_id, COUNT(*) as count FROM votes WHERE session_id = ?1 GROUP BY question_id, option_id`,
+    )
+    .bind(sessionId)
+    .all<VoteCountRow>()
+  return { questions: questions.results ?? [], voteCounts: votes.results ?? [] }
+}
+
+/** Persist the wizard-refine grounding hash for cache replays (WIZ-AI). */
+export async function updateSessionGroundingHash(db: D1Database, sessionId: string, hash: string): Promise<void> {
+  await db.prepare(`UPDATE sessions SET ai_grounding_hash = ?1 WHERE id = ?2`).bind(hash, sessionId).run()
+}
+
+export type SessionRowBasic = { id: string; team_id: string | null; title: string; status: string }
+
+/**
+ * Minimal un-scoped session row. Exists for the public v2 results contract,
+ * which exposes exactly these four fields (snake_case) and does its own
+ * team check; prefer {@link fetchSessionForTeam} elsewhere.
+ */
+export async function fetchSessionRowBasic(db: D1Database, sessionId: string): Promise<SessionRowBasic | null> {
+  const row = await db
+    .prepare(`SELECT id, team_id, title, status FROM sessions WHERE id = ?1`)
+    .bind(sessionId)
+    .first<SessionRowBasic>()
+  return row ?? null
 }
 
 /** Batch-append questions to a session starting at `startPosition` (one D1 batch). */

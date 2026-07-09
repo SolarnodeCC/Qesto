@@ -36,6 +36,7 @@ import { suggestNextQuestions } from '../lib/studio-suggest'
 import { readKvJson } from '../lib/kv'
 import { teamDocumentKey } from '../lib/kv-keys'
 import type { Team } from './teams'
+import { isTeamMember } from '../lib/authz-helpers'
 import type { Env } from '../types'
 import type { ParentApp } from './parent-app'
 
@@ -69,9 +70,6 @@ const SuggestSchema = z.object({
   excludeSessionId: z.string().min(1).max(64).optional(),
 })
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
-}
 
 export function mountStudioRoutes(parent: ParentApp) {
   const app = new Hono<{

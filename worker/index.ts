@@ -11,6 +11,7 @@ import { safeLogContext } from '../functions/api/lib/log'
 import { processPostSessionWork } from '../functions/api/lib/queues/consumer'
 import type { PostSessionWorkMessage } from '../functions/api/lib/queues/producer'
 import { KB_EMBED_MODEL, KB_EMBED_DIM } from '../functions/api/services/kbSearchService'
+import { runAI } from '../functions/api/lib/ai/ai-gateway'
 import { recomputeStaleWorkspaceTrends } from '../functions/api/lib/workspace-trends'
 import { runKvBackup } from '../functions/api/lib/kv-backup'
 import { runPulseRetentionPolicy } from '../functions/api/lib/pulse-aggregation'
@@ -57,7 +58,7 @@ async function runKbHealthWatchdog(env: Env): Promise<void> {
 
     // 2. Embed a sentinel with the SAME model the index was built with and
     //    confirm dimensions match. A mismatch means queries cannot retrieve.
-    const aiRes = (await env.AI.run(KB_EMBED_MODEL, { text: KB_HEALTH_SENTINEL })) as { data?: number[][] }
+    const aiRes = (await runAI(env, KB_EMBED_MODEL, { text: KB_HEALTH_SENTINEL })) as { data?: number[][] }
     const vector = aiRes?.data?.[0]
     if (!Array.isArray(vector) || vector.length !== KB_EMBED_DIM) {
       safeLogContext(

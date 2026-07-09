@@ -15,7 +15,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
 import { BillingSubscriptionSchema } from '../lib/domain-schemas'
-import { validateKvJson, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema, StripeWebhookEventSchema, StripeSubscriptionObjectSchema } from '../lib/protocol-schemas'
+import { validateKvJson, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema, StripeWebhookEventSchema, StripeSubscriptionObjectSchema, type ValidStripeWebhookEvent } from '../lib/protocol-schemas'
 import { PLAN_QUOTAS, type Env, type PlanQuotas, type PlanTier } from '../types'
 import { makeStripeClient } from '../lib/stripe-client'
 import {
@@ -149,7 +149,7 @@ function catalogPricing(env: Env) {
 }
 
 // Mount Stripe webhook handler (no auth required — signature verification instead)
-export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
+export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   // POST /api/billing/webhook/stripe — Handle inbound Stripe webhook events
   // Signature verification + idempotency + event routing
   parent.post('/api/billing/webhook/stripe', async (c) => {
@@ -429,21 +429,35 @@ export function mountBillingRoutes(parent: Hono<{ Bindings: Env; Variables: Vars
 
 // ── Stripe webhook signature verification ──────────────────────────────────
 
+// Stripe's official libraries reject events whose timestamp is outside a
+// tolerance window (default 5 min) to bound replay of a captured payload +
+// signature. Event-id idempotency (stripe_webhook_events) is the primary replay
+// defence; this is defense-in-depth matching Stripe's own behaviour (CWE-294).
+const STRIPE_SIGNATURE_TOLERANCE_SECONDS = 300
+
 async function verifyStripeSignature(body: string, sigHeader: string, secret: string): Promise<boolean> {
   try {
-    // Parse Stripe-Signature header: t=<timestamp>,v1=<signature>,v0=<legacy>
-    const parts = sigHeader.split(',').reduce(
-      (acc, part) => {
-        const [k, v] = part.split('=')
-        acc[k] = v
-        return acc
-      },
-      {} as Record<string, string>,
-    )
+    // Parse Stripe-Signature header: t=<timestamp>,v1=<signature>,v0=<legacy>.
+    // During secret rotation Stripe sends MULTIPLE v1 signatures (one per active
+    // secret), so collect them all rather than keeping only the last.
+    let timestamp: string | undefined
+    const v1Signatures: string[] = []
+    for (const part of sigHeader.split(',')) {
+      const idx = part.indexOf('=')
+      if (idx === -1) continue
+      const k = part.slice(0, idx).trim()
+      const v = part.slice(idx + 1).trim()
+      if (k === 't') timestamp = v
+      else if (k === 'v1') v1Signatures.push(v)
+    }
+    if (!timestamp || v1Signatures.length === 0) return false
 
-    const timestamp = parts.t
-    const signature = parts.v1
-    if (!timestamp || !signature) return false
+    // Replay-window guard: reject timestamps outside the tolerance in either
+    // direction (stale captures and implausible future timestamps alike).
+    const tsSeconds = Number(timestamp)
+    if (!Number.isFinite(tsSeconds)) return false
+    const nowSeconds = Math.floor(Date.now() / 1000)
+    if (Math.abs(nowSeconds - tsSeconds) > STRIPE_SIGNATURE_TOLERANCE_SECONDS) return false
 
     // Reconstruct signed content: <timestamp>.<body>
     const signedContent = `${timestamp}.${body}`
@@ -461,8 +475,8 @@ async function verifyStripeSignature(body: string, sigHeader: string, secret: st
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('')
 
-    // Constant-time comparison
-    return constantTimeCompare(computedHex, signature)
+    // Constant-time comparison against every offered v1 signature.
+    return v1Signatures.some((sig) => constantTimeCompare(computedHex, sig))
   } catch {
     return false
   }
@@ -487,7 +501,7 @@ function constantTimeCompare(a: string, b: string): boolean {
  */
 async function handleCheckoutSessionCompleted(
   c: { env: Pick<Env, 'DB' | 'USERS_KV'> },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const session = event.data.object as Record<string, unknown>
   const customerId = typeof session.customer === 'string' ? session.customer : undefined
@@ -526,7 +540,7 @@ async function handleCheckoutSessionCompleted(
 
 async function handleSubscriptionCreated(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -562,7 +576,7 @@ async function handleSubscriptionCreated(
 
 async function handleSubscriptionUpdated(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -602,7 +616,7 @@ async function handleSubscriptionUpdated(
 
 async function handleSubscriptionDeleted(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -623,7 +637,7 @@ async function handleSubscriptionDeleted(
 
 async function handleSubscriptionTrialWillEnd(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -642,7 +656,7 @@ async function handleSubscriptionTrialWillEnd(
 
 async function handleInvoicePaymentFailed(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const invoice = event.data.object as Record<string, unknown>
   const customerId = invoice.customer as string | undefined

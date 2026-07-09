@@ -78,7 +78,7 @@ import { mountMarketingWebhookRoutes } from './routes/webhooks-marketing'
 import { mountMarketingTemplateRoutes } from './routes/templates-marketing'
 import { mountSeoRoutes } from './routes/seo-sitemap'
 import { mountOgImageRoutes } from './routes/og-image'
-import { authMiddleware, type AuthVariables } from './middleware/auth'
+import { authMiddleware, softAuthMiddleware, type AuthVariables } from './middleware/auth'
 import { csrfMiddleware } from './middleware/csrf'
 import type { PlanVariables } from './middleware/plan'
 import type { AdminVariables } from './middleware/admin'
@@ -182,6 +182,15 @@ export function createApp() {
   mountPlatformRoutes(app)
   mountDeveloperPortalRoutes(app)
   mountScimRoutes(app)
+
+  // Populate the authenticated principal BEFORE RBAC so the permission matrix
+  // can actually see it. `authMiddleware` runs inside the feature sub-apps
+  // mounted below (after this point), so without this non-rejecting pass RBAC
+  // executed before any auth and silently no-op'd (treating every request as an
+  // unauthenticated guest). This pass never rejects — the strict authMiddleware
+  // in each sub-app remains the control that enforces authentication — and is
+  // idempotent, so the JWT is verified once per request.
+  app.use('/api/*', softAuthMiddleware)
 
   // RBAC enforcement — role-based access control for all API routes (Phase 8).
   // Checks user roles against permission matrix; defaults to viewer if no explicit role.

@@ -19,6 +19,9 @@ import { readKvJson, writeKvJson } from '../lib/kv'
 import { recordAuditEvent } from '../lib/audit'
 import { validateBody } from '../lib/request-validation'
 import { safeLogContext } from '../lib/log'
+import { hasTeamPermission } from '../lib/authz'
+import { loadTeam } from './teams'
+import type { Context } from 'hono'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -27,6 +30,42 @@ const LdapSyncBodySchema = z.object({
   teamId: z.string().min(1).optional(),
   dryRun: z.boolean().optional(),
 })
+
+/**
+ * SEC — object-level authorization for LDAP configuration/sync routes.
+ *
+ * Every LDAP route acts on a caller-supplied `teamId`, so it MUST verify the
+ * caller actually administers THAT team — otherwise any authenticated user can
+ * tamper with another tenant's directory sync, group→role mapping, or filter
+ * (cross-tenant IDOR). `hasTeamPermission` returns false for non-members, so
+ * this fails closed for callers with no relationship to the team. `team:manage_auth`
+ * is held only by owner/admin. Also re-checks the Enterprise entitlement here so
+ * every LDAP surface is plan-gated, not just `sync`.
+ */
+async function requireLdapTeamAdmin(
+  c: Context<{ Bindings: Env; Variables: Vars }>,
+  teamId: string,
+): Promise<Response | null> {
+  if (!featureAllowed(c.get('planQuotas'), 'samlSso')) {
+    return errorResponse(c, 403, 'upgrade_required', 'LDAP configuration requires Enterprise plan')
+  }
+  const team = await loadTeam(c.env.TEAMS_KV, teamId)
+  if (!team) {
+    return errorResponse(c, 404, 'not_found', 'Team not found')
+  }
+  const user = c.get('user')
+  const allowed = await hasTeamPermission(c.env.DB, team, user.sub, 'team:manage_auth')
+  if (!allowed) {
+    await recordAuditEvent(c, {
+      action: 'team.permission_denied',
+      subject_type: 'team',
+      subject_id: teamId,
+      after_snapshot: { permission: 'team:manage_auth', surface: 'ldap' },
+    })
+    return errorResponse(c, 403, 'forbidden', 'LDAP configuration requires team auth-management permission')
+  }
+  return null
+}
 
 export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
@@ -61,6 +100,8 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>)
     if (!teamId) {
       return errorResponse(c, 400, 'validation', 'teamId required (body or LDAP_TEAM_ID)')
     }
+    const denied = await requireLdapTeamAdmin(c, teamId)
+    if (denied) return denied
 
     try {
       const entries = await fetchLdapDirectory(c.env)
@@ -105,6 +146,8 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>)
 
   app.put('/teams/:teamId/group-map', async (c) => {
     const teamId = c.req.param('teamId')
+    const denied = await requireLdapTeamAdmin(c, teamId)
+    if (denied) return denied
     const body = (await c.req.json().catch(() => null)) as LdapGroupMap | null
     if (!body || typeof body !== 'object') {
       return errorResponse(c, 400, 'validation', 'Invalid group map')
@@ -131,6 +174,8 @@ export function mountLdapRoutes(parent: Hono<{ Bindings: Env; Variables: any }>)
 
   app.put('/teams/:teamId/filter', async (c) => {
     const teamId = c.req.param('teamId')
+    const denied = await requireLdapTeamAdmin(c, teamId)
+    if (denied) return denied
     const body = (await c.req.json().catch(() => null)) as LdapSyncFilter | null
     if (!body) {
       return errorResponse(c, 400, 'validation', 'Invalid filter')

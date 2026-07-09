@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
-import { api } from '../api/client'
+import { useCallback } from 'react'
 import { API_BASE_URL } from '../config/api'
+import { useParallelApiQuery } from './useApiQuery'
 
 export type AnalyticsWindow = '7d' | '30d' | '90d'
 
@@ -23,30 +23,16 @@ export type RetentionCohort = { cohort_week: string; signups: number; activated:
 
 /** Module 5 — advanced analytics, consistent window across funnel/costs/retention. */
 export function useAdminAnalyticsAdvanced(window: AnalyticsWindow) {
-  const [funnel, setFunnel] = useState<FunnelStep[]>([])
-  const [costs, setCosts] = useState<CostData | null>(null)
-  const [cohorts, setCohorts] = useState<RetentionCohort[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    setLoading(true)
-    const q = `window=${window}`
-    const [f, c, r] = await Promise.all([
-      api<{ funnel: FunnelStep[] }>(`/api/admin/analytics/funnel?${q}`),
-      api<CostData>(`/api/admin/analytics/costs?${q}`),
-      api<{ cohorts: RetentionCohort[] }>(`/api/admin/analytics/retention?${q}`),
-    ])
-    if (f.ok) setFunnel(f.data.funnel)
-    else setError(f.error.message)
-    if (c.ok) setCosts(c.data)
-    if (r.ok) setCohorts(r.data.cohorts)
-    setLoading(false)
-  }, [window])
-
-  useEffect(() => {
-    void load()
-  }, [load])
+  const q = `window=${window}`
+  const { data, errors, loading, reload } = useParallelApiQuery<{
+    funnel: { funnel: FunnelStep[] }
+    costs: CostData
+    retention: { cohorts: RetentionCohort[] }
+  }>({
+    funnel: `/api/admin/analytics/funnel?${q}`,
+    costs: `/api/admin/analytics/costs?${q}`,
+    retention: `/api/admin/analytics/retention?${q}`,
+  })
 
   /** Open a CSV export in a new tab for any of the analytics datasets. */
   const exportCsv = useCallback(
@@ -56,5 +42,13 @@ export function useAdminAnalyticsAdvanced(window: AnalyticsWindow) {
     [window],
   )
 
-  return { funnel, costs, cohorts, loading, error, refresh: load, exportCsv }
+  return {
+    funnel: data.funnel?.funnel ?? [],
+    costs: data.costs,
+    cohorts: data.retention?.cohorts ?? [],
+    loading,
+    error: errors.funnel ? errors.funnel.error.message : null,
+    refresh: reload,
+    exportCsv,
+  }
 }

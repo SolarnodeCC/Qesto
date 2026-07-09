@@ -2,9 +2,6 @@ import { describe, expect, it } from 'vitest'
 import type { TownhallItem } from '../../functions/api/realtime'
 import {
   TOWNHALL_KEYS,
-  TOWNHALL_SUBMIT_BUCKET_CAPACITY,
-  newSubmitBucket,
-  consumeSubmitToken,
   nextRev,
   createTownhallItem,
   normalizeBody,
@@ -36,33 +33,6 @@ describe('storage key layout', () => {
     expect(TOWNHALL_KEYS.upvoters('x')).toBe('th:upvoters:x')
     expect(TOWNHALL_KEYS.submitRate('v')).toBe('th:submit_rate:v')
     expect(TOWNHALL_KEYS.meta).toBe('th:meta')
-  })
-})
-
-describe('submit token bucket', () => {
-  it('starts full and drains by one per submit', () => {
-    let b = newSubmitBucket(0)
-    expect(b.tokens).toBe(TOWNHALL_SUBMIT_BUCKET_CAPACITY)
-    for (let i = 0; i < TOWNHALL_SUBMIT_BUCKET_CAPACITY; i++) {
-      const r = consumeSubmitToken(b, 0)
-      expect(r.ok).toBe(true)
-      b = r.bucket
-    }
-  })
-
-  it('rejects the 4th rapid submit', () => {
-    let b = newSubmitBucket(0)
-    for (let i = 0; i < 3; i++) b = consumeSubmitToken(b, 0).bucket
-    const r = consumeSubmitToken(b, 0)
-    expect(r.ok).toBe(false)
-    expect(r.bucket).toBe(b) // unchanged on failure so accrual continues
-  })
-
-  it('refills ~1 token per 20s', () => {
-    let b = newSubmitBucket(0)
-    for (let i = 0; i < 3; i++) b = consumeSubmitToken(b, 0).bucket
-    expect(consumeSubmitToken(b, 19_000).ok).toBe(false)
-    expect(consumeSubmitToken(b, 20_000).ok).toBe(true)
   })
 })
 

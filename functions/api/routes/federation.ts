@@ -22,6 +22,7 @@ import { readKvJson, writeKvJson } from '../lib/kv'
 import { teamDocumentKey } from '../lib/kv-keys'
 import { recordAuditEvent } from '../lib/audit'
 import type { Team } from './teams'
+import { isTeamMember } from '../lib/authz-helpers'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -57,9 +58,6 @@ const ConnectRevokeSchema = z.object({
 const FEDERATION_MEMBERS_KEY = (sessionId: string) => `connect:session:${sessionId}:members`
 type StoredMember = { teamId: string; scope: 'participate' | 'co_host'; regionId: string; joinedAt: number }
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
-}
 
 export function mountFederationRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()

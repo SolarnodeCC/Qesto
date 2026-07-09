@@ -9,6 +9,9 @@
 
 import type { Env } from '../types'
 import type { LiveEnergizerState } from '../realtime'
+import { serverMsg, errorMessage } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
+import type { Attachment } from './session-room-types'
 import { writeEvent } from './observability'
 import { mirrorEnergizerToKv } from './session-room-cross-region'
 import { flagOff } from './flags'
@@ -37,34 +40,9 @@ type Meta = {
   leaderboardDisplay?: 'names' | 'aliases' | 'hidden'
 }
 
-type Attachment = {
-  role: 'presenter' | 'voter'
-  voterId: string
-  ipHash: string
-  permissions?: string[]
-}
-
-/** Minimal surface of DurableObjectState used by this handler. */
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-    put<T>(key: string, value: T): Promise<void>
-    delete(key: string): Promise<void>
-  }
-  getWebSockets(tag?: string): WebSocket[]
-}
-
-function errorMessage(code: string, message: string): string {
-  return JSON.stringify({ type: 'error', data: { code, message }, timestamp: Date.now() })
-}
-
-function serverMsg(msg: object): string {
-  return JSON.stringify({ v: 1, ...msg })
-}
-
 export class EnergizerHandler {
   constructor(
-    private readonly ctx: StorageContext,
+    private readonly ctx: DurableContextLike,
     private readonly env: Env,
     private readonly scheduleAlarm: (targetMs: number) => Promise<void>,
   ) {}

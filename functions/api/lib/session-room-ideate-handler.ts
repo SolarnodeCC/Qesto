@@ -2,8 +2,9 @@
  * IdeateHandler — live idea board with debounced AI clustering (IDEATE-CLUSTER-01).
  */
 import type { Env } from '../types'
-import type { ServerMessage } from '../realtime'
-import { LIVE_PROTOCOL_VERSION } from '../realtime'
+import { serverMsg, errorMessage } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
+import type { Attachment } from './session-room-types'
 import { runAI } from './ai/ai-gateway'
 import { sanitizeEmbedText } from './ai/prompt-sanitize'
 import { DECISIONS_EMBED_MODEL, DECISIONS_EMBED_DIM } from './insights-vectorize'
@@ -25,25 +26,6 @@ import {
 
 type CachedEmbedding = { body: string; vector: number[] }
 
-type Attachment = { role: 'presenter' | 'voter'; voterId: string }
-
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-    put<T>(key: string, value: T): Promise<void>
-    delete(key: string): Promise<void>
-  }
-  getWebSockets(): WebSocket[]
-}
-
-function errorMessage(code: string, message: string): string {
-  return JSON.stringify({ type: 'error', data: { code, message }, timestamp: Date.now() })
-}
-
-function serverMsg(msg: Omit<ServerMessage, 'v'> | object): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION, ...msg })
-}
-
 function firstVector(result: unknown): number[] | undefined {
   const validated = validateData(result, AiBatchEmbeddingResponseSchema)
   if (!validated) return undefined
@@ -55,7 +37,7 @@ function firstVector(result: unknown): number[] | undefined {
 
 export class IdeateHandler {
   constructor(
-    private readonly ctx: StorageContext,
+    private readonly ctx: DurableContextLike,
     private readonly env: Env,
     private readonly scheduleAlarm: (targetMs: number) => Promise<void>,
   ) {}

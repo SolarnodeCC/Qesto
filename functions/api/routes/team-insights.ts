@@ -29,6 +29,7 @@ import type { ParentApp } from './parent-app'
 import { buildInsightsExport, insightsExportToCsv } from '../lib/team-insights-export'
 import { teamDocumentKey } from '../lib/kv-keys'
 import type { Team } from './teams'
+import { isTeamMember } from '../lib/authz-helpers'
 import type { Env } from '../types'
 import { INSIGHTS_SHARED_CACHE_TTL_SECONDS } from '../lib/constants'
 
@@ -42,9 +43,6 @@ function trendsCacheKey(teamId: string, window: string): string {
   return namespacedKey(teamId, `insights:trends:${window}`)
 }
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
-}
 
 export function mountTeamInsightsRoutes(parent: ParentApp) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
