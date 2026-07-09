@@ -6,7 +6,7 @@ category: backlog
 status: active
 version: 1.0
 created: 2026-06-19
-updated: 2026-06-19
+updated: 2026-07-08
 tags:
   - backlog
   - release-train
@@ -98,6 +98,23 @@ ADR-0068/0069/0070.
 
 ---
 
+### RT-02 addendum — Platform audit findings (PLATFORM_AUDIT_2026-07-08)
+
+**Goal:** Backlog items from the four-dimension platform audit. These are foundational (ops, quality, marketing, KB) and unblock RT-03. Refs: [`PLATFORM_AUDIT_2026-07-08.md`](../audits/PLATFORM_AUDIT_2026-07-08.md).
+
+| ID | Pts | Pri | Owner agent | Status | Acceptance signal |
+|----|----:|-----|-------------|--------|-------------------|
+| `OPS-ALERTS-PAGING-01` | 5 | P0 | devops | Open | Operator paging channel wired: critical alerts from `checkAlert` → Resend email or webhook; runbook acknowledges pager receipt |
+| `OPS-PHASE2-OBS-01` | 8 | P1 | devops | Open | Phase-2 infrastructure dashboards: AI-gateway cache hit %, Queues DLQ depth, DO vote-buffer depth, R2 snapshot success rates; integrated into `RELEASE_HEALTH_DASHBOARD.md` |
+| `KB-RETRIEVAL-EVAL-01` | 5 | P1 | knowledge | Open | Retrieval-quality eval for `HELP_VECTORIZE` and `KB_VECTORIZE`: golden question→chunk fixture set; recall@k scoring in `tests/eval/`; gated by REV-10 |
+| `MKTG-LIFECYCLE-EMAIL-01` | 8 | P1 | marketing | Open | Lifecycle email campaigns on Resend: onboarding sequence + monthly digest; reuse eval-gated content pipeline from LinkedIn; segmentation by plan/engagement |
+| `ARCH-PROMPT-MANIFEST-01` | 5 | P1 | architect + backend | Open | Runtime prompt manifest (`functions/api/lib/ai/PROMPTS.md`): map prompt → module → model → eval fixture → version; enforce with `check-prompt-manifest.mjs` in `check:rc` |
+| `MKTG-DEMO-WIDGET-01` | 8 | P1 | frontend + marketing | Open | No-signup interactive demo from embed widget + templates library; packaged as landing-page CTA; reuse existing R2 embed assets |
+| `ANALYTICS-COHORT-01` | 5 | P1 | analytics | Open | Cohort retention/churn analytics on `sprint19_events`: query endpoints in `analytics-advanced.ts`; cohort-by-signup-date curves; weekly trend chart |
+| `KB-STALENESS-CRON-01` | 3 | P2 | knowledge | Open | Agent cron: flag docs with `updated:` >2 release trains old and `status: active`; auto-file for review or archive; removes from KB embed corpus |
+
+---
+
 ## RT-03 — v7.1 or XR GA (`RT-2026-08`) — **conditional**
 
 **Goal:** One net-new epic slice — **Path A (v7.1 platform)** or **Path B (XR GA)**. Does not open until RT-02 exits and EPIC-VALID gates pass.
@@ -176,6 +193,7 @@ See [`.claude/skills/HANDOFFS.md`](../../../.claude/skills/HANDOFFS.md) edges E3
 
 | Date | Change |
 |------|--------|
+| 2026-07-08 | RT-02 addendum: added 8 items from [`PLATFORM_AUDIT_2026-07-08.md`](../audits/PLATFORM_AUDIT_2026-07-08.md) — P0 operator paging, Phase-2 observability dashboards, KB retrieval eval, lifecycle email, prompt manifest CI check, no-signup demo widget, cohort analytics, KB staleness automation |
 | 2026-06-19 | Created RT-01 (stabilize) + RT-02 (UX value loop) post S99 audit; `OPS-GIT-HOOKS-01` marked done |
 | 2026-06-19 | OPS-S99 closeout: platform smoke in CI, AE runbook, deploy rollback, marketing draft; connect-scale test de-flaked |
 | 2026-06-19 | Agent-system aligned to release-train cadence — PO agent/skill, HANDOFFS (E3/E20), architect/cso/release-notes/ai-strategy/marketing/i18n skills, `.claude` hooks + settings + context-preservation now reference trains and point at this file (not the deprecated `SPRINT_PLAN_MASTER.md`) |
