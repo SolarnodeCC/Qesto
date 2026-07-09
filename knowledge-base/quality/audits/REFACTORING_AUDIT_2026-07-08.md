@@ -1,5 +1,14 @@
 # Refactoring Opportunities Audit — 2026-07-08
 
+> **Remediatie-status (2026-07-09):** alle 🟠 High- en 🟡 Medium-findings hieronder zijn
+> gefixt op deze branch (zie de commits die dit document vergezellen). Uitzonderingen,
+> bewust: `useInsights`/`useMarketingApi` blijven hand-rolled (fan-out/mutatie-clients,
+> geen one-shot queries) en de attempt-teller van de WS-reconnect reset bewust niet bij
+> een geslaagde verbinding (gedrag van alle vier de originele hooks behouden).
+> Ratchets na deze pass: AI-gateway 3 (scan nu incl. `worker/` + `workers/`), D1 313,
+> error-envelopes 325. **Nog open: de 🔴 Critical (KV-gate) en de 🟢 Low (naming)** —
+> buiten de scope van deze fix-opdracht.
+
 **Scope:** `functions/` (Hono API + Durable Objects), `worker/` + `workers/` (cron/queues), `src/` (React/Vite frontend), `scripts/` (quality gates).
 **Uitgesloten:** `node_modules`, gegenereerde bestanden, reeds gedraaide migrations, vendored code.
 **Methode:** systematische scan per categorie; elke finding is bevestigd met ≥ 2 concrete code-referenties. Style-nitpicks zijn weggelaten.
