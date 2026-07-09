@@ -21,6 +21,15 @@ import { teamDocumentKey } from './kv-keys'
 import { hasTeamPermission, type Permission } from './authz'
 import { errorResponse } from './error-handler'
 
+/**
+ * Plain membership check (owner counts as member). Single definition for the
+ * predicate that was previously re-declared per route file; for permission-level
+ * checks use {@link authorizeTeamPermission} instead.
+ */
+export function isTeamMember(team: Team, userId: string): boolean {
+  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
+}
+
 export async function authorizeTeamPermission<
   E extends { Bindings: Env; Variables: AuthVariables },
 >(

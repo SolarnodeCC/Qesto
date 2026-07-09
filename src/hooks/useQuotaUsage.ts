@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { api } from '../api/client'
+import { useApiQuery } from './useApiQuery'
 
 export interface QuotaUsage {
   plan: string
@@ -24,26 +23,9 @@ export interface QuotaUsage {
   reset_date: string
 }
 
-interface UsageResponse {
-  user_id: string
-  plan: string
-  quotas: QuotaUsage['quotas']
-  usage: QuotaUsage['usage']
-  reset_date: string
-}
-
 export function useQuotaUsage(userId: string | undefined) {
-  const [data, setData] = useState<QuotaUsage | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!userId) { setLoading(false); return }
-    setLoading(true)
-    api<UsageResponse>(`/api/plans/${encodeURIComponent(userId)}/usage`)
-      .then((res) => { if (res.ok) setData(res.data) })
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [userId])
-
+  const { data, loading } = useApiQuery<QuotaUsage>(
+    userId ? `/api/plans/${encodeURIComponent(userId)}/usage` : undefined,
+  )
   return { data, loading }
 }

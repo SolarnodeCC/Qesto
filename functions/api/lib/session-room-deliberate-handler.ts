@@ -18,7 +18,9 @@
  * choice attribution NEVER leave this handler in a broadcast.
  */
 import type { Env } from '../types'
-import { LIVE_PROTOCOL_VERSION } from '../realtime'
+import { serverMsg, errorMessage } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
+import type { Attachment } from './session-room-types'
 import { newSubmitBucket, consumeSubmitToken, type TokenBucket } from './board-submit-rate'
 import {
   appendBallot,
@@ -27,33 +29,15 @@ import {
   type BallotSession,
 } from './deliberate-ledger'
 
-type Attachment = { role: 'presenter' | 'voter'; voterId: string }
-
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-    put<T>(key: string, value: T): Promise<void>
-  }
-  getWebSockets(tag?: string): WebSocket[]
-}
-
 const DELIBERATE_KEYS = {
   submitRate: (voterId: string) => `deliberate:submitrate:${voterId}`,
-}
-
-function errorMessage(code: string, message: string): string {
-  return JSON.stringify({ type: 'error', data: { code, message }, timestamp: Date.now() })
-}
-
-function serverMsg(msg: object): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION, ...msg })
 }
 
 type Meta = { sessionId: string; sessionMode?: string }
 
 export class DeliberateHandler {
   constructor(
-    private readonly ctx: StorageContext,
+    private readonly ctx: DurableContextLike,
     private readonly env: Env,
   ) {}
 

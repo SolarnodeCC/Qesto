@@ -64,13 +64,23 @@ export const AI_GATEWAY_CONFIG = {
 // wrangler.toml `account_id` — overridable via env for staging/alt accounts.
 const DEFAULT_ACCOUNT_ID = '5546763229b35df670e33d9316d7f2e0'
 
+/**
+ * The only Env surface the gateway needs. Narrowed so standalone workers
+ * (worker/, workers/) with their own env interfaces can use {@link runAI}
+ * without depending on the full functions Env.
+ */
+export type AIGatewayEnv = Pick<
+  Env,
+  'AI' | 'CLOUDFLARE_ACCOUNT_ID' | 'CLOUDFLARE_AI_GATEWAY_ID' | 'CLOUDFLARE_AI_GATEWAY_TOKEN'
+>
+
 export type AIGatewayResolvedConfig = {
   gatewayId: string | null
   token: string | null
   accountId: string
 }
 
-function resolveGatewayConfig(env: Env): AIGatewayResolvedConfig {
+function resolveGatewayConfig(env: AIGatewayEnv): AIGatewayResolvedConfig {
   return {
     gatewayId: env.CLOUDFLARE_AI_GATEWAY_ID ?? null,
     token: env.CLOUDFLARE_AI_GATEWAY_TOKEN ?? null,
@@ -93,7 +103,7 @@ function resolveGatewayConfig(env: Env): AIGatewayResolvedConfig {
  * if (response.cached) console.log('cache hit, saved latency');
  */
 export async function runThroughAIGateway(
-  env: Env,
+  env: AIGatewayEnv,
   ctx: SessionAIContext,
   model: string,
   input: AIGatewayRequest,
@@ -166,8 +176,8 @@ export type RunAIOptions = {
 }
 
 /** Minimal Env shim when only the AI binding is available (tests, legacy `ai: Ai` params). */
-export function envWithAI(ai: Env['AI']): Env {
-  return { AI: ai } as Env
+export function envWithAI(ai: Env['AI']): AIGatewayEnv {
+  return { AI: ai } as AIGatewayEnv
 }
 
 /**
@@ -186,7 +196,7 @@ export function envWithAI(ai: Env['AI']): Env {
  *   const result = await runAI(env, SENTIMENT_MODEL, { text }, { plan })
  */
 export async function runAI(
-  env: Env,
+  env: AIGatewayEnv,
   model: string,
   input: AIGatewayRequest,
   opts: RunAIOptions = {},
@@ -237,7 +247,7 @@ function buildGatewayHeaders(config: AIGatewayResolvedConfig, plan: string): Rec
  * Fallback to direct env.AI.run() if Gateway is unavailable or misconfigured.
  */
 async function fallbackToDirect(
-  env: Env,
+  env: AIGatewayEnv,
   model: string,
   input: AIGatewayRequest,
   startMs: number,

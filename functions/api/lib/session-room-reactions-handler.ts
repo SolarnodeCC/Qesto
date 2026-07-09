@@ -4,8 +4,9 @@
  * Ephemeral high-throughput reaction sub-channel on the SessionRoom DO.
  * Aggregate-only broadcasts; separate from the vote token-bucket.
  */
-import { LIVE_PROTOCOL_VERSION_V3 } from '../realtime'
 import type { LiveQuestion } from '../realtime'
+import { serverMsgV3 } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
 import type { Anonymity } from '../types'
 import type { Attachment, Meta } from './session-room-types'
 import {
@@ -36,21 +37,9 @@ type VoterAbuseState = {
   consecutiveBlocks: number
 }
 
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-    put<T>(key: string, value: T): Promise<void>
-  }
-  getWebSockets(tag?: string): WebSocket[]
-}
-
-function serverMsg(msg: object): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION_V3, ...msg })
-}
-
 export class ReactionsHandler {
   constructor(
-    private readonly ctx: StorageContext,
+    private readonly ctx: DurableContextLike,
     private readonly env: Env,
   ) {}
 
@@ -194,7 +183,7 @@ export class ReactionsHandler {
   broadcast(counts: ReactionCounts, submittedAt: number): void {
     const total = Object.values(counts).reduce((a, b) => a + b, 0)
     const ts = Date.now()
-    const payload = serverMsg({
+    const payload = serverMsgV3({
       type: 'reaction_delta',
       data: { counts, total },
       timestamp: ts,
@@ -227,7 +216,7 @@ export class ReactionsHandler {
   }
 
   private err(code: string, message: string): string {
-    return serverMsg({ type: 'error', data: { code, message }, timestamp: Date.now() })
+    return serverMsgV3({ type: 'error', data: { code, message }, timestamp: Date.now() })
   }
 }
 

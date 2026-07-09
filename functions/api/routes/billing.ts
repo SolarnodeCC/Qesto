@@ -15,7 +15,7 @@ import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
 import { BillingSubscriptionSchema } from '../lib/domain-schemas'
-import { validateKvJson, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema, StripeWebhookEventSchema, StripeSubscriptionObjectSchema } from '../lib/protocol-schemas'
+import { validateKvJson, StripeCustomerRecordSchema, StripeSubscriptionRecordSchema, StripeWebhookEventSchema, StripeSubscriptionObjectSchema, type ValidStripeWebhookEvent } from '../lib/protocol-schemas'
 import { PLAN_QUOTAS, type Env, type PlanQuotas, type PlanTier } from '../types'
 import { makeStripeClient } from '../lib/stripe-client'
 import {
@@ -149,7 +149,7 @@ function catalogPricing(env: Env) {
 }
 
 // Mount Stripe webhook handler (no auth required — signature verification instead)
-export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: any }>) {
+export function mountStripeWebhookRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   // POST /api/billing/webhook/stripe — Handle inbound Stripe webhook events
   // Signature verification + idempotency + event routing
   parent.post('/api/billing/webhook/stripe', async (c) => {
@@ -501,7 +501,7 @@ function constantTimeCompare(a: string, b: string): boolean {
  */
 async function handleCheckoutSessionCompleted(
   c: { env: Pick<Env, 'DB' | 'USERS_KV'> },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const session = event.data.object as Record<string, unknown>
   const customerId = typeof session.customer === 'string' ? session.customer : undefined
@@ -540,7 +540,7 @@ async function handleCheckoutSessionCompleted(
 
 async function handleSubscriptionCreated(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -576,7 +576,7 @@ async function handleSubscriptionCreated(
 
 async function handleSubscriptionUpdated(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -616,7 +616,7 @@ async function handleSubscriptionUpdated(
 
 async function handleSubscriptionDeleted(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -637,7 +637,7 @@ async function handleSubscriptionDeleted(
 
 async function handleSubscriptionTrialWillEnd(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const subscription = StripeSubscriptionObjectSchema.safeParse(event.data.object)
   if (!subscription.success) return
@@ -656,7 +656,7 @@ async function handleSubscriptionTrialWillEnd(
 
 async function handleInvoicePaymentFailed(
   c: { env: Env },
-  event: any,
+  event: ValidStripeWebhookEvent,
 ): Promise<void> {
   const invoice = event.data.object as Record<string, unknown>
   const customerId = invoice.customer as string | undefined

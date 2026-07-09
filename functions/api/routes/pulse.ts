@@ -13,6 +13,7 @@ import { fetchTeamPulseSummary, PULSE_WINDOWS, fetchTeamLongitudinalTrends, appl
 import { buildPulseAuditRecord, recordPulseQueryAudit, fetchPulseQueryAudit, type PulseQueryType } from '../lib/pulse-audit'
 import type { ParentApp } from './parent-app'
 import type { Team } from './teams'
+import { isTeamMember } from '../lib/authz-helpers'
 import type { Env } from '../types'
 
 type Vars = AuthVariables & PlanVariables
@@ -21,9 +22,6 @@ const WindowQuerySchema = z.object({
   window: z.enum(PULSE_WINDOWS).default('30d'),
 })
 
-function isTeamMember(team: Team, userId: string): boolean {
-  return team.ownerId === userId || team.members.some((m) => m.userId === userId)
-}
 
 /**
  * PULSE-AUDIT-01 — log an aggregation read. Best-effort: a write failure must not

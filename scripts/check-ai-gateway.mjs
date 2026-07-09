@@ -14,7 +14,9 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { resolve, relative, join } from 'node:path'
 
 const ROOT = resolve(new URL('.', import.meta.url).pathname, '..')
-const SCAN_DIR = resolve(ROOT, 'functions')
+// worker/ and workers/ (cron/standalone entrypoints) are in scope too — their
+// unattended AI calls need the facade's timeout/retry most of all.
+const SCAN_DIRS = ['functions', 'worker', 'workers'].map((d) => resolve(ROOT, d))
 // The facade itself must call env.AI.run() (gateway-unavailable fallback path).
 const ALLOWED = new Set([resolve(ROOT, 'functions/api/lib/ai/ai-gateway.ts')])
 const PATTERN = /\.AI\.run\b|\bai\.run\(/g
@@ -48,7 +50,7 @@ function walk(dir) {
 }
 
 const violations = []
-for (const file of walk(SCAN_DIR)) {
+for (const file of SCAN_DIRS.flatMap((dir) => walk(dir))) {
   if (ALLOWED.has(file)) continue
   const lines = readFileSync(file, 'utf8').split('\n')
   lines.forEach((line, i) => {

@@ -16,6 +16,7 @@ import { getTeamRegionConfig, resolveWriteBinding } from '../lib/db-router'
 import {
   listSessionsForTeam,
   fetchSessionForTeam,
+  fetchSessionResultsData,
   createDraftSessionForTeam,
 } from '../repositories/sessionRepository'
 import type { AuthVariables } from '../middleware/auth'
@@ -85,19 +86,10 @@ export function mountPublicApiV3Routes(parent: Hono<{ Bindings: Env; Variables: 
     if (!session) {
       return errorResponse(c, 404, 'not_found', 'Session not found')
     }
-    const questions = await c.env.DB.prepare(
-      `SELECT id, kind, prompt FROM questions WHERE session_id = ?1 ORDER BY position`,
-    )
-      .bind(sessionId)
-      .all()
-    const votes = await c.env.DB.prepare(
-      `SELECT question_id, option_id, COUNT(*) as count FROM votes WHERE session_id = ?1 GROUP BY question_id, option_id`,
-    )
-      .bind(sessionId)
-      .all()
+    const { questions, voteCounts } = await fetchSessionResultsData(c.env.DB, sessionId)
     return c.json({
       ok: true,
-      data: { session, questions: questions.results ?? [], vote_counts: votes.results ?? [] },
+      data: { session, questions, vote_counts: voteCounts },
     })
   })
 
