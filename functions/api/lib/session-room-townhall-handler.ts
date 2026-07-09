@@ -8,7 +8,7 @@
  */
 
 import type { Env, TownhallModeration } from '../types'
-import type { ServerMessage, TownhallItem, TownhallBoardItem, TownhallModerateAction } from '../realtime'
+import type { TownhallItem, TownhallBoardItem, TownhallModerateAction } from '../realtime'
 import {
   TOWNHALL_KEYS,
   nextRev,
@@ -21,7 +21,9 @@ import {
   toBoardItem,
 } from './session-room-townhall'
 import { newSubmitBucket, consumeSubmitToken, type TokenBucket } from './board-submit-rate'
-import { LIVE_PROTOCOL_VERSION } from '../realtime'
+import { serverMsg, errorMessage } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
+import type { Attachment } from './session-room-types'
 
 type Meta = {
   sessionId: string
@@ -31,33 +33,9 @@ type Meta = {
   townhallModeration?: TownhallModeration
 }
 
-type Attachment = {
-  role: 'presenter' | 'voter'
-  voterId: string
-  ipHash?: string
-  permissions?: string[]
-}
-
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-    put<T>(key: string, value: T): Promise<void>
-    delete(key: string): Promise<void>
-  }
-  getWebSockets(tag?: string): WebSocket[]
-}
-
-function errorMessage(code: string, message: string): string {
-  return JSON.stringify({ type: 'error', data: { code, message }, timestamp: Date.now() })
-}
-
-function serverMsg(msg: Omit<ServerMessage, 'v'> | object): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION, ...msg })
-}
-
 export class TownhallHandler {
   constructor(
-    private readonly ctx: StorageContext,
+    private readonly ctx: DurableContextLike,
     private readonly env: Env,
   ) {}
 

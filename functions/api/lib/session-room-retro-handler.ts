@@ -1,8 +1,9 @@
 /**
  * RetroHandler — 3-column retro board (ADR-0048).
  */
-import type { ServerMessage } from '../realtime'
-import { LIVE_PROTOCOL_VERSION } from '../realtime'
+import { serverMsg, errorMessage } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
+import type { Attachment } from './session-room-types'
 import { consumeSubmitToken, newSubmitBucket } from './board-submit-rate'
 import {
   MAX_RETRO_ITEMS,
@@ -15,26 +16,8 @@ import {
   type RetroItem,
 } from './session-room-retro'
 
-type Attachment = { role: 'presenter' | 'voter'; voterId: string }
-
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-    put<T>(key: string, value: T): Promise<void>
-  }
-  getWebSockets(): WebSocket[]
-}
-
-function errorMessage(code: string, message: string): string {
-  return JSON.stringify({ type: 'error', data: { code, message }, timestamp: Date.now() })
-}
-
-function serverMsg(msg: Omit<ServerMessage, 'v'> | object): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION, ...msg })
-}
-
 export class RetroHandler {
-  constructor(private readonly ctx: StorageContext) {}
+  constructor(private readonly ctx: DurableContextLike) {}
 
   private async bumpRev(): Promise<number> {
     const rev = nextRetroRev((await this.ctx.storage.get<number>(RETRO_KEYS.rev)) ?? 0)
