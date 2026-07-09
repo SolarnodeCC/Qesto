@@ -15,7 +15,7 @@ class FakeWebSocket {
   readyState = 0
   url: string
   protocols: string[]
-  closedWith: { code?: number; reason?: string } | null = null
+  closedWith: { code: number | undefined; reason: string | undefined } | null = null
   private listeners = new Map<string, Listener[]>()
 
   constructor(url: string, protocols?: string[]) {

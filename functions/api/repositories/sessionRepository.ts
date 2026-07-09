@@ -132,6 +132,11 @@ export async function fetchSessionResultsData(
   return { questions: questions.results ?? [], voteCounts: votes.results ?? [] }
 }
 
+/** Persist the wizard-refine grounding hash for cache replays (WIZ-AI). */
+export async function updateSessionGroundingHash(db: D1Database, sessionId: string, hash: string): Promise<void> {
+  await db.prepare(`UPDATE sessions SET ai_grounding_hash = ?1 WHERE id = ?2`).bind(hash, sessionId).run()
+}
+
 export type SessionRowBasic = { id: string; team_id: string | null; title: string; status: string }
 
 /**
