@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 import {
   handlePresenterAdvance,
   handlePresenterBack,
-} from '../../functions/api/lib/session-room-vote-flow'
+} from '../../functions/api/lib/session-room-presenter-actions'
 import { createSessionRoomState } from '../../functions/api/lib/session-room-context'
 import {
   K_QUESTIONS,

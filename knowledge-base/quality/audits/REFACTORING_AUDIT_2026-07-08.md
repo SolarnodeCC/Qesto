@@ -6,8 +6,15 @@
 > geen one-shot queries) en de attempt-teller van de WS-reconnect reset bewust niet bij
 > een geslaagde verbinding (gedrag van alle vier de originele hooks behouden).
 > Ratchets na deze pass: AI-gateway 3 (scan nu incl. `worker/` + `workers/`), D1 313,
-> error-envelopes 325. **Nog open: de 🔴 Critical (KV-gate) en de 🟢 Low (naming)** —
-> buiten de scope van deze fix-opdracht.
+> error-envelopes 325.
+>
+> **Vervolg-pass (PR na #713):** de 🔴 Critical is gefixt — `check-kv-access` draait nu in
+> `quality-gates.sh` en de 15 violations zijn door `lib/kv.ts` geleid (baseline 0, groen).
+> De 🟢 Low naming-items zijn ook gefixt: `copilot-multiturn.ts` (typo-rename),
+> `advance-detail-leaderboard.ts` → `advance.ts`/`detail.ts`/`leaderboard.ts`, en
+> `session-room-vote-flow.ts` → `session-room-vote-admission.ts` +
+> `session-room-presenter-actions.ts`. Daarmee zijn **alle findings uit deze audit
+> afgehandeld.**
 
 **Scope:** `functions/` (Hono API + Durable Objects), `worker/` + `workers/` (cron/queues), `src/` (React/Vite frontend), `scripts/` (quality gates).
 **Uitgesloten:** `node_modules`, gegenereerde bestanden, reeds gedraaide migrations, vendored code.

@@ -8,7 +8,7 @@
  *   - NEVER active in zero_knowledge sessions — avatar presence is a presence
  *     signal incompatible with ZK unlinkability (ADR-0010), so it is dropped
  *     regardless of the flag. Guard ordering mirrors the vote-flow ZK precedent
- *     (lib/session-room-vote-flow.ts ~line 303): flag first, then ZK.
+ *     (lib/session-room-vote-admission.ts, handleVote): flag first, then ZK.
  *
  * Transient state only: avatar poses live in an in-memory Map keyed by the
  * socket. NOTHING is written to D1/KV or the session snapshot, and entries are
