@@ -216,12 +216,22 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const [activeEnergizer, setActiveEnergizer] = useState<AnyEnergizer | null>(null)
   const energizerPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  const [energizerPollBroken, setEnergizerPollBroken] = useState(false)
+  const energizerPollFailuresRef = useRef(0)
+
   const fetchActiveEnergizer = useCallback(async () => {
     const res = await api<{ energizer: AnyEnergizer | null }>(
       `/api/sessions/${encodeURIComponent(sessionId)}/energizers/active`,
     )
     if (res.ok) {
+      energizerPollFailuresRef.current = 0
+      setEnergizerPollBroken(false)
       setActiveEnergizer(res.data.energizer)
+    } else {
+      // Surface persistent failures instead of silently looking like "no
+      // energizer yet" — 3 consecutive errors ≈ 9 s of a broken plane.
+      energizerPollFailuresRef.current += 1
+      if (energizerPollFailuresRef.current >= 3) setEnergizerPollBroken(true)
     }
   }, [sessionId])
 
@@ -389,6 +399,14 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
             voterId={state.voterId}
             onAnswer={sendEnergizerAnswer}
           />
+        )}
+
+        {/* Energizer plane unreachable — tell the participant instead of
+            rendering the same "waiting" state a healthy idle session shows. */}
+        {!isEnded && energizerPollBroken && !state.energizer && activeEnergizer === null && (
+          <p role="status" className="text-sm text-amber-700 dark:text-amber-400">
+            {t('energizer_updates_unavailable')}
+          </p>
         )}
 
         {/* Active energizer — REST-polled (non-WS energizers) */}

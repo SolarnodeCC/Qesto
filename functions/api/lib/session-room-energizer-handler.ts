@@ -22,7 +22,9 @@ import {
   initialiseLiveEnergizer,
   withScoreArtifacts,
   rankQuickFingerAnswers,
+  redactEnergizerForViewer,
 } from './session-room-energizer'
+import { BROADCAST_DEBOUNCE_MS } from './session-room-types'
 
 const K_ACTIVE_ENERGIZER = 'active_energizer'
 const K_ENERGIZER_ACTIVATED_AT = 'energizer:activated_at'
@@ -71,11 +73,38 @@ export class EnergizerHandler {
     return (await this.ctx.storage.get<Meta>('meta')) ?? null
   }
 
+  // Answer bursts mark the broadcast dirty and let the debounced alarm fan the
+  // state out (mirrors the vote flow's resultsDirty pattern) instead of
+  // re-broadcasting the full room state once per answer.
+  private broadcastDirty = false
+
   private async broadcastEnergizer(energizer: LiveEnergizerState | null): Promise<void> {
-    const msg = serverMsg({ type: 'energizer_state', data: { energizer }, timestamp: Date.now() })
+    const timestamp = Date.now()
     for (const ws of this.ctx.getWebSockets()) {
+      let view = energizer
+      if (energizer) {
+        const att = ws.deserializeAttachment() as Attachment | null
+        view = redactEnergizerForViewer(energizer, {
+          role: att?.role === 'presenter' ? 'presenter' : 'voter',
+          voterId: att?.voterId ?? '',
+        })
+      }
+      const msg = serverMsg({ type: 'energizer_state', data: { energizer: view }, timestamp })
       try { ws.send(msg) } catch { /* ignore */ }
     }
+  }
+
+  private async scheduleAnswerBroadcast(): Promise<void> {
+    this.broadcastDirty = true
+    await this.scheduleAlarm(Date.now() + BROADCAST_DEBOUNCE_MS)
+  }
+
+  /** Called from the DO alarm: fan out the latest state if an answer marked it dirty. */
+  async flushPendingBroadcast(): Promise<void> {
+    if (!this.broadcastDirty) return
+    this.broadcastDirty = false
+    const active = (await this.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
+    if (active) await this.broadcastEnergizer(active)
   }
 
   canActivateEnergizer(att: Attachment): boolean {
@@ -237,7 +266,7 @@ export class EnergizerHandler {
     }
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
     if (meta?.sessionId) await mirrorEnergizerToKv(this.env.MULTI_REGION_STATE_KV, meta.sessionId, answered)
-    await this.broadcastEnergizer(answered)
+    await this.scheduleAnswerBroadcast()
     await this.emitMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
   }
 
@@ -278,7 +307,7 @@ export class EnergizerHandler {
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
     await this.emitMetric('ws.energizer_answered', answered.id, answered.answers?.length ?? 0)
     await this.recordAudit('ws.energizer_answered', att, answered, { answer_count: answered.answers?.length ?? 0 })
-    await this.broadcastEnergizer(answered)
+    await this.scheduleAnswerBroadcast()
   }
 
   private async handleTeamQuizAnswer(
@@ -314,7 +343,7 @@ export class EnergizerHandler {
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, answered)
     await this.emitMetric('ws.energizer_answered', answered.id, answered.submissions?.length ?? 0)
     await this.recordAudit('ws.energizer_answered', att, answered, { answer_count: answered.submissions?.length ?? 0 })
-    await this.broadcastEnergizer(answered)
+    await this.scheduleAnswerBroadcast()
   }
 
   // ── handleEnergizerAdvance ────────────────────────────────────────────────
@@ -378,10 +407,7 @@ export class EnergizerHandler {
     energizer.status = 'completed'
     await this.ctx.storage.put(K_ACTIVE_ENERGIZER, energizer)
     await this.ctx.storage.delete(K_ENERGIZER_ACTIVATED_AT)
-    const msg = serverMsg({ type: 'energizer_state', data: { energizer }, timestamp: nowMs })
-    for (const ws of this.ctx.getWebSockets()) {
-      try { ws.send(msg) } catch { /* ignore */ }
-    }
+    await this.broadcastEnergizer(energizer)
     writeEvent(this.env.METRICS_AE, {
       name: 'ws.energizer_timeout',
       sessionId: meta?.sessionId,

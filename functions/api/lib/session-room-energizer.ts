@@ -173,6 +173,60 @@ function withTeamQuizScoreArtifacts(
   }
 }
 
+// ── Viewer redaction ──────────────────────────────────────────────────────────
+
+// How many ranked answers voters may see (the quick-finger podium row).
+const VOTER_VISIBLE_RANKS = 3
+
+/**
+ * Project an energizer state down to what a given viewer is allowed to see.
+ * Presenters get the full state. Voters get a redacted view:
+ *  - answer keys (`correctIndex`, per-question `correctIndex`) are stripped
+ *    while the energizer is active (revealed once completed),
+ *  - `answers` keep only the viewer's own entry plus the top-3 podium
+ *    (other voters' raw answer values are blanked),
+ *  - `submissions`, `scores` and `badges` keep only the viewer's own rows,
+ *  - `leaderboard` passes through (already capped at 10 and display-mode aware).
+ * This both closes the answer-key leak and keeps voter payloads O(1) in the
+ * participant count instead of shipping every accumulated answer to everyone.
+ */
+export function redactEnergizerForViewer(
+  energizer: LiveEnergizerState,
+  viewer: { role: 'presenter' | 'voter'; voterId: string },
+): LiveEnergizerState {
+  if (viewer.role === 'presenter') return energizer
+
+  const revealAnswers = energizer.status === 'completed'
+  const view: LiveEnergizerState = { ...energizer }
+
+  if (!revealAnswers) {
+    delete view.correctIndex
+    if (view.questions) {
+      view.questions = view.questions.map((q) => {
+        const { correctIndex: _hidden, ...rest } = q
+        return rest as typeof q
+      })
+    }
+  }
+
+  if (view.answers) {
+    view.answers = view.answers
+      .filter((a) => a.voterId === viewer.voterId || (a.rank >= 1 && a.rank <= VOTER_VISIBLE_RANKS))
+      .map((a) => (a.voterId === viewer.voterId ? a : { ...a, value: '' }))
+  }
+  if (view.submissions) {
+    view.submissions = view.submissions.filter((s) => s.voterId === viewer.voterId)
+  }
+  if (view.scores) {
+    view.scores = view.scores.filter((s) => s.voterId === viewer.voterId)
+  }
+  if (view.badges) {
+    const own = view.badges[viewer.voterId]
+    view.badges = own ? { [viewer.voterId]: own } : {}
+  }
+  return view
+}
+
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 
 function addBadge(

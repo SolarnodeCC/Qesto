@@ -73,5 +73,6 @@
   "vote_unavailable_offline": "Verbindung verloren – Verbindung wird wiederhergestellt. Die Abstimmung wird automatisch fortgesetzt, sobald du wieder online bist.",
   "not_found_help": "Überprüfe den Code und versuche es erneut.",
   "try_again": "Erneut versuchen",
-  "code_length_hint": "Gib den 6-stelligen Code ein"
+  "code_length_hint": "Gib den 6-stelligen Code ein",
+  "energizer_updates_unavailable": "Energizer-Updates sind derzeit nicht verfügbar. Wir versuchen es automatisch weiter."
 }

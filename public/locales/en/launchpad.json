@@ -53,5 +53,8 @@
   "ai_generate_heading": "Generate questions with AI",
   "ai_topic_hint": "Topic or goal (default: \"{{title}}\")",
   "add_question_inline": "+ Add question",
-  "joinPanel.startQuestions": "Start Questions"
+  "joinPanel.startQuestions": "Start Questions",
+  "move_up": "Move up",
+  "move_down": "Move down",
+  "energizers_load_error": "Energizers could not be loaded. Refresh to try again."
 }

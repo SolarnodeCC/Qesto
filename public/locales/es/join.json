@@ -73,5 +73,6 @@
   "vote_unavailable_offline": "Conexión perdida: reconectando. La votación se reanudará automáticamente cuando vuelvas a estar en línea.",
   "not_found_help": "Comprueba el código e inténtalo de nuevo.",
   "try_again": "Intentar de nuevo",
-  "code_length_hint": "Introduce el código de 6 caracteres"
+  "code_length_hint": "Introduce el código de 6 caracteres",
+  "energizer_updates_unavailable": "Las actualizaciones del energizer no están disponibles en este momento. Seguimos reintentando automáticamente."
 }

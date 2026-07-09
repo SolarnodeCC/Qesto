@@ -34,6 +34,7 @@ import {
 import { type Meta, type Counts, type Attachment } from './session-room-types'
 import type { SessionRoomContext } from './session-room-context'
 import { planAllowsLiveReactions } from './session-room-reactions-handler'
+import { redactEnergizerForViewer } from './session-room-energizer'
 
 type PendingResponse = { id: string; voterId: string; text: string; submittedAt: number }
 
@@ -50,7 +51,12 @@ export async function sendInit(self: SessionRoomContext, ws: WebSocket, att: Att
   const doStatus = (await self.ctx.storage.get<string>(K_STATUS)) ?? 'live'
   // Phase 2.2: Prefer in-memory cache for eventual consistency during buffering
   const counts = self.state._counts ?? (await self.ctx.storage.get<Counts>(K_COUNTS)) ?? {}
-  const energizer = (await self.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
+  const rawEnergizer = (await self.ctx.storage.get<LiveEnergizerState>(K_ACTIVE_ENERGIZER)) ?? null
+  // Same per-viewer projection as live energizer_state broadcasts — the init
+  // snapshot must not hand voters the answer key or the full answer log.
+  const energizer = rawEnergizer
+    ? redactEnergizerForViewer(rawEnergizer, { role: att.role === 'presenter' ? 'presenter' : 'voter', voterId: att.voterId })
+    : null
   const sentiment =
     att.role === 'presenter'
       ? ((await self.ctx.storage.get<{ mood: 'positive' | 'neutral' | 'concerning'; sampleSize: number }>(

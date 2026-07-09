@@ -16,17 +16,22 @@ export function registerEnergizerVoteNextRoutes(app: EnergizerApp): void {
     try {
       const VoteSchema = z.object({
         value: z.string().min(1).max(200),
-        voter_id: z.string().min(1).max(120),
+        // Legacy field: older clients still send it, but the server ignores it —
+        // voter identity is bound to the authenticated session (see below).
+        voter_id: z.string().max(120).optional(),
       })
       const raw = await c.req.json().catch(() => null)
       const parsed = VoteSchema.safeParse(raw)
       if (!parsed.success) {
         return c.json(
-          { ok: false, error: { code: 'validation', message: 'value and voter_id required' }, trace_id },
+          { ok: false, error: { code: 'validation', message: 'value required' }, trace_id },
           400,
         )
       }
-      const body = parsed.data
+      // Bind the vote to the authenticated caller. A client-supplied voter_id
+      // would let any caller overwrite other participants' votes via the
+      // ON CONFLICT upsert.
+      const body = { value: parsed.data.value, voter_id: c.get('user').sub }
 
       const energizer = await c.env.DB.prepare(
         `SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2`,

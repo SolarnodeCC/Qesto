@@ -53,5 +53,8 @@
   "preflight_not_ready": "No listo",
   "status_ready": "Borrador · listo para iniciar",
   "status_draft": "Borrador",
-  "status_energizing": "Calentamiento"
+  "status_energizing": "Calentamiento",
+  "move_up": "Mover hacia arriba",
+  "move_down": "Mover hacia abajo",
+  "energizers_load_error": "No se pudieron cargar los energizers. Actualiza para volver a intentarlo."
 }
