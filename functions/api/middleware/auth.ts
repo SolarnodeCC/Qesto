@@ -115,3 +115,64 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthV
   if (impersonatorId) c.set('impersonator_id', impersonatorId)
   await next()
 }
+
+/**
+ * SEC — non-rejecting authentication pass.
+ *
+ * Populates `user`/`session_token` (and `impersonator_id`) whenever a valid,
+ * non-revoked session token is present, and otherwise falls through untouched.
+ * It NEVER returns 401.
+ *
+ * This exists to fix a middleware-ordering defect: `rbacMiddleware` is registered
+ * at the parent `/api/*` scope, but the strict `authMiddleware` only runs inside
+ * the feature sub-apps mounted afterwards. Without this pass, RBAC always executed
+ * before any auth ran, saw no `user`, and short-circuited to `canAccess: true` —
+ * silently disabling the permission matrix in production. Registering this pass
+ * immediately before `rbacMiddleware` lets RBAC see the authenticated principal
+ * and enforce roles. The strict `authMiddleware` mounted inside each sub-app
+ * remains the control that rejects unauthenticated access (this pass is additive,
+ * not a replacement). It is idempotent — a subsequent `authMiddleware` pass
+ * short-circuits once `user` is set, so the JWT is verified once per request.
+ */
+export const softAuthMiddleware: MiddlewareHandler<{ Bindings: Env; Variables: AuthVariables }> = async (c, next) => {
+  if (c.get('user')) {
+    await next()
+    return
+  }
+
+  let impersonatorId: string | null = null
+  let activeToken: string | null = null
+  const impCookie = getCookie(c, IMPERSONATION_COOKIE)
+  if (impCookie) {
+    const impClaims = await verifyJwtWithSecrets(impCookie, jwtVerificationSecrets(c.env))
+    if (impClaims && typeof impClaims.jti === 'string' && impClaims.jti.startsWith('imp:')) {
+      activeToken = impCookie
+      impersonatorId = impClaims.jti.split(':')[1] ?? null
+    }
+  }
+
+  const authHeader = c.req.header('authorization')
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const token = activeToken ?? getCookie(c, SESSION_COOKIE) ?? bearerToken
+  if (!token) {
+    await next()
+    return
+  }
+  const claims = await verifyJwtWithSecrets(token, jwtVerificationSecrets(c.env))
+  if (!claims) {
+    await next()
+    return
+  }
+  if (c.env.ACTIONS_KV) {
+    const tokenHash = await hashSessionToken(token)
+    const revoked = await readKvText(c.env.ACTIONS_KV, revokedSessionTokenKey(tokenHash))
+    if (revoked) {
+      await next()
+      return
+    }
+  }
+  c.set('user', claims)
+  c.set('session_token', token)
+  if (impersonatorId) c.set('impersonator_id', impersonatorId)
+  await next()
+}
