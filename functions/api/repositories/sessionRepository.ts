@@ -104,3 +104,23 @@ export async function createDraftSessionForTeam(
     .bind(params.id, params.title, params.code, params.teamId, params.ownerId, now)
     .run()
 }
+
+/** Batch-append questions to a session starting at `startPosition` (one D1 batch). */
+export async function insertQuestionsBatch(
+  db: D1Database,
+  sessionId: string,
+  startPosition: number,
+  questions: Array<{ id: string; kind: string; prompt: string; optionsJson: string }>,
+): Promise<void> {
+  const now = Date.now()
+  await db.batch(
+    questions.map((q, idx) =>
+      db
+        .prepare(
+          `INSERT INTO questions (id, session_id, position, kind, prompt, options_json, created_at)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
+        )
+        .bind(q.id, sessionId, startPosition + idx, q.kind, q.prompt, q.optionsJson, now),
+    ),
+  )
+}

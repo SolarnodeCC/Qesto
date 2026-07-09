@@ -23,12 +23,13 @@ import {
   FAST_MODEL,
   QUALITY_FALLBACK_MODEL,
 } from '../../lib/ai-wizard'
-import { sanitizeError } from '../../lib/error-handler'
+import { errorResponse, sanitizeError } from '../../lib/error-handler'
 import { requireFeature } from '../../middleware/feature-gate'
 import { validateKvJson, CachedQuestionsSchema } from '../../lib/protocol-schemas'
 import { hardDeleteSession } from '../../lib/session-delete'
 import { suggestDuplicateTitle } from '../../lib/session-title'
 import { requireFound, requireDraft, requireClosedOrArchivedForInsights } from '../../lib/session-lifecycle'
+import { insertQuestionsBatch } from '../../repositories/sessionRepository'
 import { ulid } from '../../lib/ulid'
 import { generateJoinCode } from '../../lib/code'
 import { incrementSessionQuota } from '../../lib/quota'
@@ -454,27 +455,18 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
 
     const batchLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
     if (!batchLoaded.ok) {
-      return c.json(
-        { ok: false, error: { code: batchLoaded.error.code, message: batchLoaded.error.message }, trace_id: c.get('trace_id') },
-        batchLoaded.error.status,
-      )
+      return errorResponse(c, batchLoaded.error.status, batchLoaded.error.code, batchLoaded.error.message)
     }
     const batchDraft = requireDraft(batchLoaded.session, 'add_question')
     if (!batchDraft.ok) {
-      return c.json(
-        { ok: false, error: { code: batchDraft.error.code, message: batchDraft.error.message }, trace_id: c.get('trace_id') },
-        batchDraft.error.status,
-      )
+      return errorResponse(c, batchDraft.error.status, batchDraft.error.code, batchDraft.error.message)
     }
     const session = batchDraft.session
 
     const body = await c.req.json().catch(() => null)
     const parsed = AddQuestionsBatchSchema.safeParse(body)
     if (!parsed.success) {
-      return c.json(
-        { ok: false, error: { code: 'validation', message: 'Invalid questions payload', details: parsed.error.flatten() }, trace_id: c.get('trace_id') },
-        400,
-      )
+      return errorResponse(c, 400, 'validation', 'Invalid questions payload')
     }
 
     // Plan-gate every kind before writing anything — the batch is all-or-nothing.
@@ -486,18 +478,12 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     }
 
     const existing = await fetchQuestions(c.env.DB, id)
-    const now = Date.now()
-    const inserts = parsed.data.questions.map((q, idx) => {
+    const rows = parsed.data.questions.map((q) => {
       const rawOptions = autoPopulateOptions(q.kind, q.options)
       const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
-      return c.env.DB
-        .prepare(
-          `INSERT INTO questions (id, session_id, position, kind, prompt, options_json, created_at)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
-        )
-        .bind(ulid(), id, existing.length + idx, q.kind, q.prompt, JSON.stringify(options), now)
+      return { id: ulid(), kind: q.kind, prompt: q.prompt, optionsJson: JSON.stringify(options) }
     })
-    await c.env.DB.batch(inserts)
+    await insertQuestionsBatch(c.env.DB, id, existing.length, rows)
 
     const questions = await fetchQuestions(c.env.DB, id)
     return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') }, 201)
@@ -659,17 +645,11 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     const id = c.req.param('id')
     const session = await fetchSession(c.env.DB, id, user.sub)
     if (!session) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const { deleted } = await hardDeleteSession(c.env.DB, id, user.sub)
     if (!deleted) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     return c.json({ ok: true, trace_id: c.get('trace_id') })
   })

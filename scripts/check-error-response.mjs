@@ -27,7 +27,8 @@ const PATTERN = /ok:\s*false/g
 // files codemodded (→347); batch-4: billing.ts migrated (→330).
 // files migrated to errorResponse() (→347; captcha + denyFeature data/details-bearing
 // envelopes preserved since errorResponse() carries only code+message).
-const BASELINE = 330
+// core-audit fixes: sessions/wizard.ts delete + batch routes migrated (→329).
+const BASELINE = 329
 
 function walk(dir) {
   const out = []
