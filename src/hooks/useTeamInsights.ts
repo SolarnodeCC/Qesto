@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
-import { api } from '../api/client'
+import { useParallelApiQuery } from './useApiQuery'
 
 export type InsightTrendWindow = '30d' | '90d' | '180d'
 
@@ -44,36 +43,23 @@ type ScorecardData = {
 }
 
 export function useTeamInsights(teamId: string | undefined, enabled: boolean, window: InsightTrendWindow = '30d') {
-  const [trends, setTrends] = useState<TrendsData | null>(null)
-  const [scorecard, setScorecard] = useState<ScorecardData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [planGated, setPlanGated] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const q = `?window=${window}`
+  const base = teamId && enabled ? `/api/teams/${teamId}/insights` : undefined
+  const { data, errors, loading, reload } = useParallelApiQuery<{
+    trends: TrendsData
+    scorecard: ScorecardData
+  }>({
+    trends: base ? `${base}/trends${q}` : undefined,
+    scorecard: base ? `${base}/scorecard${q}` : undefined,
+  })
 
-  const load = useCallback(async () => {
-    if (!teamId || !enabled) return
-    setLoading(true)
-    setError(null)
-    setPlanGated(false)
-    const q = `?window=${window}`
-    const [trendsRes, scoreRes] = await Promise.all([
-      api<TrendsData>(`/api/teams/${teamId}/insights/trends${q}`),
-      api<ScorecardData>(`/api/teams/${teamId}/insights/scorecard${q}`),
-    ])
-    if (!trendsRes.ok && trendsRes.status === 403) {
-      setPlanGated(true)
-      setLoading(false)
-      return
-    }
-    if (trendsRes.ok) setTrends(trendsRes.data)
-    else setError(trendsRes.error.message)
-    if (scoreRes.ok) setScorecard(scoreRes.data)
-    setLoading(false)
-  }, [teamId, enabled, window])
-
-  useEffect(() => {
-    void load()
-  }, [load])
-
-  return { trends, scorecard, loading, planGated, error, refresh: load }
+  const planGated = errors.trends?.status === 403
+  return {
+    trends: data.trends,
+    scorecard: data.scorecard,
+    loading,
+    planGated,
+    error: errors.trends && !planGated ? errors.trends.error.message : null,
+    refresh: reload,
+  }
 }
