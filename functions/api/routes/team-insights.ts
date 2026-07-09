@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { requireFeature } from '../middleware/feature-gate'
-import { readKvJson, writeKvJson } from '../lib/kv'
+import { readKvJson, writeKvJson, deleteKv } from '../lib/kv'
 import { namespacedKey } from '../lib/tenant-namespace'
 import { writeEvent } from '../lib/observability'
 import {
@@ -255,7 +255,7 @@ export function mountTeamInsightsRoutes(parent: ParentApp) {
     for (const window of INSIGHT_TREND_WINDOWS) {
       await recomputeTeamInsightRollups(env, c.env.DB, teamId, window)
       await recomputeFacilitatorScorecard(c.env.DB, teamId, window)
-      if (c.env.TEAMS_KV) await c.env.TEAMS_KV.delete(trendsCacheKey(teamId, window))
+      if (c.env.TEAMS_KV) await deleteKv(c.env.TEAMS_KV, trendsCacheKey(teamId, window))
     }
 
     return c.json({ ok: true, data: { refreshed: true, windows: [...INSIGHT_TREND_WINDOWS] }, trace_id: c.get('trace_id') })
