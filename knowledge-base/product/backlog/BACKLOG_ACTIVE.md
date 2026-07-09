@@ -98,6 +98,32 @@ ADR-0068/0069/0070.
 
 ---
 
+## Backlog queue (design-decision gated)
+
+**Source:** [`CORE_FEATURES_AUDIT_2026-07-09.md`](../audits/CORE_FEATURES_AUDIT_2026-07-09.md) — 2 CRITICAL findings requiring architectural decision before dev.
+
+### Design decision required: Energizer security boundary
+
+**Context:** The energizers feature splits across two planes (REST API + WebSocket/DO realtime). The audit uncovered critical leaks in the REST plane that require consolidation. **Fix direction is recommended but needs explicit approval** before coding.
+
+| ID | Pri | Finding | Recommended fix | Estimate | Blocks |
+|----|----|---------|-----------------|----------|--------|
+| `ARCH-ENERGIZER-E1-REST` | CRIT | `GET /api/sessions/:id/energizers/active` returns raw `correct_index` (answer keys visible pre-completion); team-quiz REST vote returns `correct` immediately with re-answer allowed | **Migrate REST voter vote to DO WebSocket** (`ClientMessage.energizer_submit_answer`); keep readonly `GET` on active energizer but strip answer keys for voters (same projection as WS redaction) | 5 | none (E-2 depends on this) |
+| `ARCH-ENERGIZER-E2-ISOLATION` | CRIT | REST energizer endpoints 401 for anonymous participants; no result reconciliation between REST/D1 vs WS/DO planes | **Consolidate energizer answers onto DO WebSocket only.** Anonymous sessions use WS auth (`sessionId` + `voterId`). Rationale: (a) avoids dual-write/reconciliation complexity, (b) aligns with session realtime model, (c) keeps anonymity boundary in DO crypto, not REST layer | 8 | `ARCH-ENERGIZER-E1-REST` |
+
+**Decision path:**
+1. Review findings + recs in audit + PR #715
+2. PO + architect approve consolidated design (or propose alternative)
+3. Sign off in this file + open implementation stories in RT-02 P2 or RT-03
+4. Move to `## RT-02 P2 — conditional` below once approved
+
+**Current status:** Implemented fixes landed in PR #715:
+- ✅ WS half (E-1 CRITICAL): Per-viewer redaction (answer keys hidden until completion), debounced broadcasts
+- ✅ E-3, E-4, E-5, E-6 (HIGH/MEDIUM): All closed with fixes in place
+- ⏳ E-1 REST half + E-2: Awaiting design approval above
+
+---
+
 ## RT-03 — v7.1 or XR GA (`RT-2026-08`) — **conditional**
 
 **Goal:** One net-new epic slice — **Path A (v7.1 platform)** or **Path B (XR GA)**. Does not open until RT-02 exits and EPIC-VALID gates pass.
