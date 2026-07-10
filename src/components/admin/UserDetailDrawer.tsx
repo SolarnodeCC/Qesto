@@ -56,7 +56,7 @@ export default function UserDetailDrawer({ userId, onClose }: { userId: string; 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40" role="dialog" aria-modal="true" onClick={onClose}>
       <div
-        className="bg-white dark:bg-[#1C2540] h-full w-full max-w-lg shadow-elevated overflow-y-auto p-6 space-y-5"
+        className="bg-white dark:bg-[#1C2540] h-full w-full max-w-lg shadow-elevated overflow-y-auto p-8 space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">

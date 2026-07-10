@@ -63,7 +63,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
 
   if (planGated) {
     return (
-      <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
+      <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-6 space-y-3">
         <h3 className="text-heading-s font-semibold text-violet-900 dark:text-violet-200">Recurring workspaces</h3>
         <p className="text-body-s text-violet-700 dark:text-violet-300">
           Run retros, ideation boards, and multi-session programs with Chorus plan.
@@ -79,7 +79,7 @@ export function WorkspacePanel({ teamId, enabled = true }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900/40 p-5 space-y-4">
+    <div className="rounded-lg border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900/40 p-6 space-y-4">
       <div>
         <h3 className="text-heading-s font-semibold text-pulse-900 dark:text-pulse-100">Recurring workspaces</h3>
         <p className="text-body-s text-pulse-500 dark:text-pulse-400 mt-1">

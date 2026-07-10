@@ -227,7 +227,7 @@ export function CopilotPanel({ sessionId, enabled, onAddQuestion }: Props) {
                           {t('copilot.draft_heading')}
                         </h3>
                         <p className="text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">{draft.draft.prompt}</p>
-                        <ul className="list-disc space-y-0.5 pl-5 text-sm text-pulse-700 dark:text-[#A8B3CC]">
+                        <ul className="list-disc space-y-0.5 pl-6 text-sm text-pulse-700 dark:text-[#A8B3CC]">
                           {draft.draft.options.map((o) => (
                             <li key={o.id}>{o.label}</li>
                           ))}

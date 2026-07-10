@@ -34,7 +34,7 @@ export default function PartnerSlaPage() {
         description={t('sla.seoDescription')}
         canonicalPath="/partner/sla"
       />
-      <div className="max-w-3xl mx-auto px-6 py-16">
+      <div className="max-w-3xl mx-auto px-8 py-16">
         <p className="text-sm font-medium text-teal-700 dark:text-teal-400 uppercase tracking-wide">
           {t('sla.eyebrow')}
         </p>
@@ -45,7 +45,7 @@ export default function PartnerSlaPage() {
 
         {sla ? (
           <>
-            <Reveal as="dl" className="mt-10 grid gap-4 sm:grid-cols-2">
+            <Reveal as="dl" className="mt-16 grid gap-4 sm:grid-cols-2">
               <div className="rounded-lg border border-pulse-200 p-4 dark:border-[#2A3858]">
                 <dt className="text-xs uppercase text-pulse-500">{t('sla.uptime')}</dt>
                 <dd className="text-2xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">{sla.uptimePct}%</dd>
@@ -70,12 +70,12 @@ export default function PartnerSlaPage() {
             )}
           </>
         ) : (
-          <p className="mt-8 text-sm text-pulse-500" role="status">
+          <p className="mt-12 text-sm text-pulse-500" role="status">
             {t('sla.loading')}
           </p>
         )}
 
-        <p className="mt-12 text-sm text-pulse-500 border-t border-pulse-200 pt-6 dark:border-[#2A3858]">
+        <p className="mt-24 text-sm text-pulse-500 border-t border-pulse-200 pt-8 dark:border-[#2A3858]">
           {t('sla.periodNote', { period: sla?.period ?? '30d' })}
         </p>
         <p className="mt-4 text-sm">

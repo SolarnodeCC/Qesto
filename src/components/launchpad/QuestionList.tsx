@@ -122,7 +122,7 @@ export default function QuestionList({
       className="rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] shadow-card overflow-hidden"
     >
       {/* Card header */}
-      <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
+      <div className="flex items-center justify-between gap-3 px-6 py-3.5 border-b border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45]">
         <span className="text-sm font-semibold text-[var(--text-primary,#0A0F1E)] dark:text-[#F0F2F8]">
           {t('questions_count', { count: orderedQuestions.length })}
         </span>
@@ -145,14 +145,14 @@ export default function QuestionList({
       </div>
 
       {reorderError && (
-        <p role="alert" className="px-5 py-2 text-sm text-red-600 dark:text-red-400 border-b border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20">
+        <p role="alert" className="px-6 py-2 text-sm text-red-600 dark:text-red-400 border-b border-red-100 dark:border-red-900/40 bg-red-50 dark:bg-red-900/20">
           {reorderError}
         </p>
       )}
 
       {/* Empty state + AI panel (no questions yet) */}
       {orderedQuestions.length === 0 && (
-        <div className="px-5 py-4 space-y-4">
+        <div className="px-6 py-4 space-y-4">
           <p className="text-sm text-[var(--text-muted,#737373)] dark:text-[#6B7A99]">{t('no_questions_hint')}</p>
           <div className="rounded-xl border border-violet-100 dark:border-violet-900/40 bg-violet-50/60 dark:bg-violet-900/10 p-4 space-y-3">
             <div className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function QuestionList({
               ].join(' ')}
             >
               {editingId === q.id ? (
-                <div className="px-5 py-4 space-y-3">
+                <div className="px-6 py-4 space-y-3">
                   <div className="space-y-1">
                     <label htmlFor={`edit-prompt-${q.id}`} className="text-xs font-medium text-[var(--text-muted,#737373)]">{t('edit_prompt_label')}</label>
                     <textarea id={`edit-prompt-${q.id}`} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} rows={2}
@@ -248,7 +248,7 @@ export default function QuestionList({
 
       {/* Inline add form */}
       {addingQuestion && (
-        <div className="px-5 py-4 border-t border-teal-100 dark:border-teal-900/40 bg-teal-50/30 dark:bg-teal-500/5 space-y-3">
+        <div className="px-6 py-4 border-t border-teal-100 dark:border-teal-900/40 bg-teal-50/30 dark:bg-teal-500/5 space-y-3">
           <div className="space-y-1">
             <label htmlFor="add-prompt" className="text-xs font-medium text-[var(--text-muted,#737373)]">{t('edit_prompt_label')}</label>
             <textarea id="add-prompt" value={addPrompt} onChange={(e) => setAddPrompt(e.target.value)} rows={2} autoFocus

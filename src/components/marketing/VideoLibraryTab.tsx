@@ -192,7 +192,7 @@ function VideoAssetCard({
         <button
           type="button"
           onClick={preview}
-          className="w-full rounded-md border border-pulse-300 dark:border-[#2A3858] py-6 text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-pulse-50 dark:hover:bg-[#0F1526]"
+          className="w-full rounded-md border border-pulse-300 dark:border-[#2A3858] py-8 text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-pulse-50 dark:hover:bg-[#0F1526]"
         >
           Load preview
         </button>

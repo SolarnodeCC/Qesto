@@ -270,7 +270,7 @@ export default function EmbedWidget() {
     return (
       <div className="flex items-center justify-center min-h-[160px]" role="status" aria-live="polite" aria-label={t('widgetLoading')}>
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-full border-2 border-teal-500 border-t-transparent animate-spin" aria-hidden="true" />
+          <div className="w-12 h-12 rounded-full border-2 border-teal-500 border-t-transparent animate-spin" aria-hidden="true" />
           <span className={`text-sm ${muted}`}>{t('widgetLoading')}</span>
         </div>
       </div>
@@ -287,8 +287,8 @@ export default function EmbedWidget() {
 
   function renderWaiting(title: string) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 py-10 px-4" aria-live="polite">
-        <div className="w-10 h-10 rounded-full border-2 border-teal-400 border-t-transparent animate-spin" aria-hidden="true" />
+      <div className="flex flex-col items-center justify-center gap-4 py-16 px-4" aria-live="polite">
+        <div className="w-16 h-16 rounded-full border-2 border-teal-400 border-t-transparent animate-spin" aria-hidden="true" />
         <div className="text-center">
           <p className="font-semibold text-base">{title}</p>
           <p className={`text-sm mt-1 ${muted}`}>{t('waitingForSession')}</p>
@@ -299,7 +299,7 @@ export default function EmbedWidget() {
 
   function renderClosed(title: string) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 py-10 px-4 text-center" role="status" aria-live="polite">
+      <div className="flex flex-col items-center justify-center gap-3 py-16 px-4 text-center" role="status" aria-live="polite">
         <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-teal-500">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
@@ -358,7 +358,7 @@ export default function EmbedWidget() {
             <p className={`mt-1 text-xs ${muted}`}>{t('aggregateNotice')}</p>
           </div>
         ) : (
-          <div className="px-4 py-8 text-center">
+          <div className="px-4 py-12 text-center">
             <p className={`text-sm ${muted}`}>{t('waitingForSession')}</p>
           </div>
         )}

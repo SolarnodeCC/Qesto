@@ -80,7 +80,7 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
       {/* Tag strip */}
       <div className="h-1 w-full" style={gradientBrand} />
 
-      <div className="p-5">
+      <div className="p-6">
         {/* Industry badge */}
         <span className="inline-block mb-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wide bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300">
           {INDUSTRY_LABELS[template.industry]}
@@ -195,7 +195,7 @@ export default function TemplateGallery() {
 
       {/* Hero */}
       <section className="py-14 md:py-20 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6 text-center">
+        <div className="max-w-6xl mx-auto px-8 text-center">
           <div
             className="inline-block text-xs font-bold tracking-widest uppercase mb-4 px-3 py-1 rounded-full text-white"
             style={gradientBrand}
@@ -217,7 +217,7 @@ export default function TemplateGallery() {
 
       {/* Filters */}
       <section className="border-y border-pulse-100 dark:border-white/10 bg-pulse-50 dark:bg-[#0D1424]">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex flex-wrap gap-3 items-center">
+        <div className="max-w-6xl mx-auto px-8 py-4 flex flex-wrap gap-3 items-center">
           <span className="text-sm font-medium text-pulse-700 dark:text-[#8893AD] mr-2">
             {t('templates.filterBy')}
           </span>
@@ -264,10 +264,10 @@ export default function TemplateGallery() {
       </section>
 
       {/* Grid */}
-      <section className="py-12 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+      <section className="py-24 bg-white dark:bg-[#0A0F1E]">
+        <div className="max-w-6xl mx-auto px-8">
           {loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-56 rounded-2xl bg-pulse-100 dark:bg-white/5 animate-pulse" />
               ))}
@@ -288,13 +288,13 @@ export default function TemplateGallery() {
 
           {!loading && !error && templates.length === 0 && (
             <div className="text-center py-20">
-              <BookOpen className="mx-auto h-12 w-12 text-pulse-500 dark:text-white/20 mb-4" />
+              <BookOpen className="mx-auto h-24 w-24 text-pulse-500 dark:text-white/20 mb-4" />
               <p className="text-pulse-600 dark:text-[#8893AD]">{t('templates.noTemplates')}</p>
             </div>
           )}
 
           {!loading && !error && templates.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {templates.map((tmpl) => (
                 <TemplateCard key={tmpl.id} template={tmpl} lang={lang} />
               ))}
@@ -305,19 +305,19 @@ export default function TemplateGallery() {
 
       {/* CTA section */}
       <section className="py-16 bg-pulse-50 dark:bg-[#0D1424]">
-        <div className="max-w-2xl mx-auto px-6 text-center">
+        <div className="max-w-2xl mx-auto px-8 text-center">
           <h2
             className="font-bold text-3xl text-pulse-900 dark:text-[#F0F2F8] mb-4"
             style={displayFont}
           >
             {t('templates.ctaHeading')}
           </h2>
-          <p className="text-pulse-600 dark:text-[#8893AD] mb-8">
+          <p className="text-pulse-600 dark:text-[#8893AD] mb-12">
             {t('templates.ctaSubheading')}
           </p>
           <Link
             to="/login"
-            className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+            className="inline-flex items-center justify-center px-12 py-3 rounded-xl font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
             style={gradientBrand}
           >
             {t('templates.ctaButton')}

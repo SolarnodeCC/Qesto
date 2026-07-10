@@ -71,7 +71,7 @@ function RankingPanel({ ranking, t }: { ranking: IdeateRankingEntry[]; t: TFn })
           <li key={entry.ideaId} className="flex items-start gap-3 text-sm">
             <span
               aria-label={`${t('board.rankLabel')} ${entry.rank}`}
-              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white"
             >
               {entry.rank}
             </span>
@@ -339,7 +339,7 @@ export function IdeateFacilitatorBoard({
   }
 
   return (
-    <div className="space-y-5" aria-live="polite">
+    <div className="space-y-6" aria-live="polite">
       {/* Dot vote meter */}
       <div className="rounded-lg border border-pulse-200 bg-white p-3 dark:border-pulse-700 dark:bg-pulse-900/40">
         <p className="mb-2 text-xs font-bold uppercase tracking-wide text-pulse-600 dark:text-pulse-400">

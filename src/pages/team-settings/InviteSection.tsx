@@ -23,7 +23,7 @@ export function InviteSection({
   onInvite,
 }: Props) {
   return (
-    <section aria-labelledby="section-invite" className="space-y-4 rounded-xl border border-pulse-200 p-6">
+    <section aria-labelledby="section-invite" className="space-y-4 rounded-xl border border-pulse-200 p-8">
       <h2 id="section-invite" className="text-lg font-semibold">{inviteMemberLabel}</h2>
       <form onSubmit={(e) => void onInvite(e)} className="flex flex-col gap-3">
         <div className="flex flex-col sm:flex-row gap-3">

@@ -97,7 +97,7 @@ function UserModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" role="dialog" aria-modal="true">
-      <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-elevated w-full max-w-md mx-4 p-6 space-y-4">
+      <div className="bg-white dark:bg-[#1C2540] rounded-xl shadow-elevated w-full max-w-md mx-4 p-8 space-y-4">
         <Heading level="s">{isEdit ? t('editUser') : t('createAccountTitle')}</Heading>
 
         {!isEdit && (
@@ -232,7 +232,7 @@ export default function AdminUsersTab() {
   const currentPage = Math.floor(offset / limit) + 1
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <Heading level="m" className="border-l-4 border-teal-500 pl-3">{t('users')}</Heading>
         <Button variant="primary" onClick={() => setModal({ type: 'create' })}>
@@ -280,7 +280,7 @@ export default function AdminUsersTab() {
               ))
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-pulse-500">
+                <td colSpan={7} className="px-4 py-12 text-center text-pulse-500">
                   No users found
                 </td>
               </tr>

@@ -95,7 +95,7 @@ export default function PlatformOverviewPanel({ onNavigate }: { onNavigate?: (ta
   const isEstimateWindow = revenueWindow !== 'window_24h_cents' && overview.business.is_estimate
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {overview.degraded_sources.length > 0 && (
         <Card className="border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
           <Body size="s" className="text-amber-700 dark:text-amber-400">

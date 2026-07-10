@@ -93,15 +93,15 @@ export default function Home() {
         {/* ── Hero ─────────────────────────────────────────────────────────────── */}
         <section
           aria-labelledby="hero-heading"
-          className="relative overflow-hidden py-24 px-6 before:absolute before:left-1/2 before:-top-[120px] before:-translate-x-1/2 before:w-[1200px] before:h-[600px] before:bg-[radial-gradient(circle,rgba(20,184,166,0.08)_0%,transparent_60%)] before:pointer-events-none"
+          className="relative overflow-hidden py-24 px-8 before:absolute before:left-1/2 before:-top-[120px] before:-translate-x-1/2 before:w-[1200px] before:h-[600px] before:bg-[radial-gradient(circle,rgba(20,184,166,0.08)_0%,transparent_60%)] before:pointer-events-none"
         >
-          <div className="max-w-[1120px] mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="max-w-[1120px] mx-auto grid lg:grid-cols-2 gap-24 lg:gap-16 items-center">
 
             {/* ── Hero copy ─────────────────────────────────────────────── */}
             <div>
 
             {/* AI pill */}
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-8">
               <AIBadge variant="assisted" label="AI-assisted" />
               <span className="text-sm text-pulse-500 dark:text-[#8A96B0]">{t('heroTagline')}</span>
             </div>
@@ -110,7 +110,7 @@ export default function Home() {
             <h1
               id="hero-heading"
               tabIndex={-1}
-              className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-5 max-w-[920px] focus:outline-none"
+              className="font-[family-name:var(--font-display)] font-bold text-5xl md:text-[60px] leading-[1.05] tracking-[-0.02em] [text-wrap:balance] text-pulse-900 dark:text-[#F0F2F8] mb-6 max-w-[920px] focus:outline-none"
             >
               Feel the pulse of the room,{' '}
               <span className="bg-[linear-gradient(to_bottom_right,#14b8a6,#8b5cf6)] bg-clip-text text-transparent">
@@ -119,23 +119,23 @@ export default function Home() {
             </h1>
 
             {/* Supporting line — evidence register, subordinate to the H1 */}
-            <p className="text-lg leading-[1.5] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-5">
+            <p className="text-lg leading-[1.5] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-6">
               …and the evidence to back it up — decisions you can defend long after the meeting ends.
             </p>
 
             {/* Sub-headline */}
-            <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-8">
+            <p className="text-xl leading-[1.55] text-pulse-600 dark:text-[#A8B3CC] max-w-[680px] mb-12">
               Make it easy for everyone to take part, share what they think, and stay with you
               start to finish. For teachers, trainers, facilitators, and team leaders.
             </p>
-            <p className="text-base leading-[1.6] text-pulse-600 dark:text-[#A8B3CC] max-w-[760px] mb-8">
+            <p className="text-base leading-[1.6] text-pulse-600 dark:text-[#A8B3CC] max-w-[760px] mb-12">
               Qesto helps teams and facilitators run live polls, rankings, and consent rounds during
               workshops, classrooms, and meetings. We use sign-in only to manage your account,
               sessions, and workspace access.
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-3 mb-12">
+            <div className="flex flex-wrap items-center gap-3 mb-24">
               {auth.status === 'authenticated' ? (
                 <>
                   <Link
@@ -171,7 +171,7 @@ export default function Home() {
               )}
               <span className="text-[13px] text-pulse-500 ml-2">No card required · 2-minute setup · No account required to participate</span>
             </div>
-            <div className="mb-12 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+            <div className="mb-24 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
               <Link
                 to="/privacy"
                 className="font-medium text-teal-700 dark:text-teal-400 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 rounded"
@@ -188,7 +188,7 @@ export default function Home() {
 
             {/* Feature strip */}
             <div
-              className="flex flex-wrap gap-7 pt-5 border-t border-pulse-200 dark:border-[#1E2A45]"
+              className="flex flex-wrap gap-7 pt-6 border-t border-pulse-200 dark:border-[#1E2A45]"
               aria-label="Key features"
             >
               {FEATURE_STRIP.map(({ icon: Icon, label }) => (
@@ -211,7 +211,7 @@ export default function Home() {
         <Reveal
           as="section"
           aria-labelledby="features-heading"
-          className="bg-pulse-50 dark:bg-[#0F1525] py-24 px-6"
+          className="bg-pulse-50 dark:bg-[#0F1525] py-24 px-8"
           id="features"
         >
           <div className="max-w-[1120px] mx-auto">
@@ -228,13 +228,13 @@ export default function Home() {
               Everything you need to run the room — and prove what it decided.
             </h2>
 
-            <p className="text-lg text-pulse-600 dark:text-[#A8B3CC] max-w-[620px] mb-12">
+            <p className="text-lg text-pulse-600 dark:text-[#A8B3CC] max-w-[620px] mb-24">
               Ask a question. See what your room is thinking. Give people a safe way to contribute
               honestly — and leave with a clear record of what was said.
             </p>
 
             {/* 3-col grid */}
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
               {FEATURE_CARDS.map((card, i) => {
                 const Icon = card.icon
                 return (

@@ -111,7 +111,7 @@ export function QuestionEditor({
         <div className="space-y-2">
           {question.options.map((opt, idx) => (
             <div key={opt.id} className="flex items-center gap-2">
-              <span className="text-caption text-pulse-500 w-5 text-right select-none">{idx + 1}.</span>
+              <span className="text-caption text-pulse-500 w-6 text-right select-none">{idx + 1}.</span>
               <input
                 type="text"
                 value={opt.label}

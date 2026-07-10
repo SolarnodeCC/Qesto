@@ -20,7 +20,7 @@ export function GeneralSection({
   onSave,
 }: Props) {
   return (
-    <section aria-labelledby="section-general" className="space-y-4 rounded-xl border border-pulse-200 p-6">
+    <section aria-labelledby="section-general" className="space-y-4 rounded-xl border border-pulse-200 p-8">
       <h2 id="section-general" className="text-lg font-semibold">General</h2>
       <form onSubmit={(e) => void onSave(e)} className="flex flex-col gap-3">
         <label htmlFor="team-name" className="text-sm font-medium">

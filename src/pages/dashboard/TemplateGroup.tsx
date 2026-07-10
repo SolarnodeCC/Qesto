@@ -47,9 +47,9 @@ export function TemplateGroup({
               <div className="flex h-full items-end justify-between gap-3" aria-hidden="true">
                 <BookOpen className="h-7 w-7 text-teal-700/60 dark:text-teal-300/70" />
                 <div className="flex gap-1">
-                  <span className="h-8 w-5 rounded bg-teal-500/25" />
-                  <span className="h-12 w-5 rounded bg-violet-500/25" />
-                  <span className="h-6 w-5 rounded bg-amber-500/25" />
+                  <span className="h-12 w-6 rounded bg-teal-500/25" />
+                  <span className="h-24 w-6 rounded bg-violet-500/25" />
+                  <span className="h-8 w-6 rounded bg-amber-500/25" />
                 </div>
               </div>
             </div>

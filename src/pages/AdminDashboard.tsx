@@ -205,7 +205,7 @@ export default function AdminDashboard() {
   if (auth.status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">
-        <div className="h-8 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
+        <div className="h-12 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
       </div>
     )
   }
@@ -244,7 +244,7 @@ export default function AdminDashboard() {
       onSectionChange={handleSectionChange}
       isSuperuser={isSuperuser}
     >
-      <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">
+      <div className="max-w-6xl mx-auto px-8 lg:px-16 py-16 animate-page-enter space-y-8">
         <header>
           <Heading level="l">{t('platformAdminTitle')}</Heading>
           <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-2">{t('realtimePlatformObservability')}</Body>
@@ -289,7 +289,7 @@ export default function AdminDashboard() {
         </div>
 
         {activeTab === 'dashboard' && (
-          <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-6">
+          <div role="tabpanel" id="tabpanel-dashboard" aria-labelledby="tab-dashboard" className="space-y-8">
             <PlatformHealthStrip ops={ops} t={t} onViewOps={() => setActiveTab('ops')} />
 
             <PlatformOverviewPanel onNavigate={(tab) => setActiveTab(tab)} />
@@ -445,14 +445,14 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'ops' && (
-          <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops" className="space-y-8">
+          <div role="tabpanel" id="tabpanel-ops" aria-labelledby="tab-ops" className="space-y-12">
             <AdminOpsTab />
             <OpsControlPanel />
           </div>
         )}
 
         {activeTab === 'analytics' && (
-          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" className="space-y-8">
+          <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" className="space-y-12">
             <AdminAnalyticsTab />
             <AnalyticsAdvancedPanel />
           </div>

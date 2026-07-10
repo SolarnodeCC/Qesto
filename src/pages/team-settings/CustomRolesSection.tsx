@@ -58,7 +58,7 @@ export function CustomRolesSection({
   onUnassignRole,
 }: Props) {
   return (
-    <section aria-labelledby="section-custom-roles" className="space-y-5 rounded-xl border border-pulse-200 p-6">
+    <section aria-labelledby="section-custom-roles" className="space-y-6 rounded-xl border border-pulse-200 p-8">
       <div className="space-y-1">
         <h2 id="section-custom-roles" className="text-lg font-semibold">{customRolesTitle}</h2>
         <p className="text-sm text-pulse-500">
@@ -138,7 +138,7 @@ export function CustomRolesSection({
       )}
 
       {canManageMembers ? (
-        <div className="space-y-5 border-t border-pulse-100 pt-5">
+        <div className="space-y-6 border-t border-pulse-100 pt-6">
           <form onSubmit={(e) => void onSaveRole(e)} className="space-y-4">
             <div className="flex flex-col gap-1">
               <label htmlFor="custom-role-name" className="text-sm font-medium">Role name</label>

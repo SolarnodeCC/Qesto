@@ -122,7 +122,7 @@ export default function AdminOpsTab() {
 
   if (loading && !ops) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
@@ -136,7 +136,7 @@ export default function AdminOpsTab() {
   const pct = (rate: number) => `${(rate * 100).toFixed(1)}%`
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <GlobalStatusBanner status={ops.status} updatedAt={ops.updated_at} />
 
       {/* SEV counters + impact */}
@@ -152,7 +152,7 @@ export default function AdminOpsTab() {
       </div>
 
       {/* Service health + Realtime reliability + KB sync */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card>
           <Heading level="s" className="mb-4 border-l-4 border-teal-500 pl-3">Service health</Heading>
           <ServiceRow name="D1 Database" status={ops.services.d1} />

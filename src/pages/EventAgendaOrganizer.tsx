@@ -158,8 +158,8 @@ export default function EventAgendaOrganizer() {
     await load()
   }
 
-  if (error) return <div className="p-8 text-center text-red-600">{error}</div>
-  if (!data) return <div className="p-8 text-center text-pulse-500">…</div>
+  if (error) return <div className="p-12 text-center text-red-600">{error}</div>
+  if (!data) return <div className="p-12 text-center text-pulse-500">…</div>
 
   return (
     <HostConsoleShell title={data.title} maxWidth="4xl">
@@ -283,7 +283,7 @@ export default function EventAgendaOrganizer() {
         </p>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-8">
         {tracks.map((track) => (
           <section key={track.id} className="rounded-xl border border-pulse-200 p-4 dark:border-pulse-700">
             <div className="mb-3 flex flex-wrap gap-3">

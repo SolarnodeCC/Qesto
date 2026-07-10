@@ -93,7 +93,7 @@ export default function OpsControlPanel() {
   const ops = useAdminOpsControl()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {ops.error && <Body size="s" className="text-red-600">{ops.error}</Body>}
 
       {/* Cron — missed runs first */}

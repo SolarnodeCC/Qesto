@@ -49,7 +49,7 @@ export default function Display() {
 function LoadingScreen() {
   return (
     <div className="fixed inset-0 bg-[#0f1117] flex items-center justify-center">
-      <svg aria-hidden="true" className="animate-spin w-8 h-8 text-teal-500" viewBox="0 0 24 24" fill="none">
+      <svg aria-hidden="true" className="animate-spin w-12 h-12 text-teal-500" viewBox="0 0 24 24" fill="none">
         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
       </svg>
@@ -61,7 +61,7 @@ function ErrorScreen({ message }: { message: string }) {
   const t = useT('present')
 
   return (
-    <div className="fixed inset-0 bg-[#0f1117] flex flex-col items-center justify-center gap-3 text-center p-8">
+    <div className="fixed inset-0 bg-[#0f1117] flex flex-col items-center justify-center gap-3 text-center p-12">
       <p className="text-xl font-semibold text-white">{t('sessionNotFound')}</p>
       <p className="text-sm text-white/50">{message}</p>
     </div>
@@ -121,7 +121,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
       <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'var(--gradient-brand)' }} />
 
       {/* Header */}
-      <div className="flex items-center justify-between px-8 pt-7 pb-2 shrink-0">
+      <div className="flex items-center justify-between px-12 pt-7 pb-2 shrink-0">
         <div
           className="flex items-center gap-2.5 font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-xl"
           style={{ color: 'var(--canvas-text)' }}
@@ -153,7 +153,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-8 pb-6 pt-4 flex flex-col overflow-hidden">
+      <div className="flex-1 px-12 pb-8 pt-4 flex flex-col overflow-hidden">
         {state.allDone && !isEnded ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
             <div className="text-7xl" aria-hidden="true">🎉</div>
@@ -183,7 +183,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col gap-8 overflow-hidden">
+          <div className="flex-1 flex flex-col gap-12 overflow-hidden">
             {/* Question prompt */}
             <div className="shrink-0">
               <p
@@ -224,7 +224,7 @@ function LiveDisplay({ sessionId, code }: { sessionId: string; code: string }) {
 
       {/* Footer */}
       <div
-        className="shrink-0 px-8 py-4 flex items-center justify-between text-xs border-t"
+        className="shrink-0 px-12 py-4 flex items-center justify-between text-xs border-t"
         style={{ borderColor: 'var(--canvas-border)', color: 'var(--canvas-text-muted)' }}
       >
         <span>qesto.cc/j/{state.session?.code ?? code}</span>

@@ -35,7 +35,7 @@ export default function ZoomSessionEmbedPage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[var(--color-bg)] p-6 text-pulse-800 dark:text-[#F0F2F8]">
+      <main className="min-h-screen bg-[var(--color-bg)] p-8 text-pulse-800 dark:text-[#F0F2F8]">
         <p role="alert">{error}</p>
         <Link to={`/sessions/${id}/launchpad`} className="mt-4 inline-block text-teal-600 dark:text-teal-400">
           Back to launchpad
@@ -46,14 +46,14 @@ export default function ZoomSessionEmbedPage() {
 
   if (!data) {
     return (
-      <main className="min-h-screen bg-[var(--color-bg)] p-6" aria-busy="true">
-        <div className="h-8 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" />
+      <main className="min-h-screen bg-[var(--color-bg)] p-8" aria-busy="true">
+        <div className="h-12 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" />
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[var(--color-bg)] p-4 md:p-6">
+    <main className="min-h-screen bg-[var(--color-bg)] p-4 md:p-8">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-bold text-pulse-900 dark:text-[#F0F2F8]">{data.title}</h1>
@@ -83,7 +83,7 @@ export default function ZoomSessionEmbedPage() {
         </section>
       ) : (
         <section
-          className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 min-h-[320px] flex flex-col items-center justify-center"
+          className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8 min-h-[320px] flex flex-col items-center justify-center"
           aria-label="Zoom meeting companion"
         >
           <p className="text-pulse-600 dark:text-[#9AA8C7] text-center max-w-md">

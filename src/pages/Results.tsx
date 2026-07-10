@@ -118,7 +118,7 @@ export default function Results() {
 
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-12 space-y-8">
         <ResultsSectionSkeleton bars={4} />
       </MainLayout>
     )
@@ -128,14 +128,14 @@ export default function Results() {
   if (state.status === 'loading') {
     return (
       /* LAYOUT-SKELETON-01: geometric skeleton prevents layout shift while data loads */
-      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-8 space-y-6">
+      <MainLayout mainClassName="min-h-screen max-w-3xl mx-auto p-12 space-y-8">
         <ResultsSectionSkeleton bars={4} />
       </MainLayout>
     )
   }
   if (state.status === 'error') {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12 space-y-4">
         <p role="alert" className="text-sm text-red-600">
           {state.error.message}
         </p>

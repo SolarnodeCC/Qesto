@@ -11,7 +11,7 @@ interface Props {
 
 export function BrandingSection({ team, teamId, brandingDescription, onTeamUpdate }: Props) {
   return (
-    <section aria-labelledby="section-branding" className="space-y-4 rounded-xl border border-pulse-200 p-6">
+    <section aria-labelledby="section-branding" className="space-y-4 rounded-xl border border-pulse-200 p-8">
       <h2 id="section-branding" className="text-lg font-semibold">Branding</h2>
       <p className="text-sm text-pulse-500">{brandingDescription}</p>
       <form

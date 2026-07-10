@@ -219,7 +219,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
   }
 
   return (
-    <section aria-labelledby="section-integrations" className="space-y-4 rounded-xl border border-pulse-200 p-6">
+    <section aria-labelledby="section-integrations" className="space-y-4 rounded-xl border border-pulse-200 p-8">
       <h2 id="section-integrations" className="text-lg font-semibold">{t('integrations')}</h2>
 
       {/* Slack card */}
@@ -250,7 +250,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
 
           {/* Loading state */}
           {slackLoading ? (
-            <div className="h-5 w-40 rounded bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
+            <div className="h-6 w-40 rounded bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
           ) : (
             <>
               {/* Connection status */}
@@ -350,7 +350,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
       <div className="flex items-start gap-4 rounded-lg border border-pulse-200 p-4">
         <div
           aria-hidden="true"
-          className="shrink-0 mt-0.5 flex h-8 w-8 items-center justify-center rounded bg-[#464EB8] text-xs font-bold text-white"
+          className="shrink-0 mt-0.5 flex h-12 w-12 items-center justify-center rounded bg-[#464EB8] text-xs font-bold text-white"
         >
           T
         </div>
@@ -360,7 +360,7 @@ export function TeamIntegrations({ teamId: id }: { teamId: string | undefined })
             <p className="text-sm text-pulse-500 mt-0.5">{tTeam('teams_description')}</p>
           </div>
           {teamsLoading ? (
-            <div className="h-5 w-40 rounded bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
+            <div className="h-6 w-40 rounded bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
           ) : (
             <>
               <p className="text-sm">

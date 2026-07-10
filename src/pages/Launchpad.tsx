@@ -182,7 +182,7 @@ export default function Launchpad() {
   // Auth / data guards
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-8 text-pulse-500">
+      <MainLayout mainClassName="min-h-screen flex items-center justify-center p-12 text-pulse-500">
         {t('loading')}
       </MainLayout>
     )
@@ -191,7 +191,7 @@ export default function Launchpad() {
 
   if (loading) {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12">
         <LaunchpadPreFlightSkeleton />
       </MainLayout>
     )
@@ -199,7 +199,7 @@ export default function Launchpad() {
 
   if (error || !data) {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8 space-y-4">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12 space-y-4">
         <p role="alert" className="text-red-600">
           {error?.message ?? t('session_not_found')}
         </p>
@@ -258,8 +258,8 @@ export default function Launchpad() {
   )
 
   return (
-    <MainLayout navSlot={navSlot} mainClassName="min-h-screen p-4 sm:p-8">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <MainLayout navSlot={navSlot} mainClassName="min-h-screen p-4 sm:p-12">
+      <div className="max-w-5xl mx-auto space-y-8">
         <header className="space-y-3">
           <SessionTitleField
             sessionId={id!}
@@ -283,7 +283,7 @@ export default function Launchpad() {
           error={preFlightError}
         />
 
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
           <JoinCodePanel
             session={{
               code: data.session.code,
@@ -298,7 +298,7 @@ export default function Launchpad() {
             onTransitionToLive={() => void handleTransitionToLive()}
           />
 
-          <div className="flex-1 min-w-0 space-y-6">
+          <div className="flex-1 min-w-0 space-y-8">
             {energizersError && (
               <p role="alert" className="text-sm text-red-600 dark:text-red-400">
                 {t('energizers_load_error')}

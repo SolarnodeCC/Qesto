@@ -54,8 +54,8 @@ export default function ParticipantShell({
   return (
     <>
       <SkipLink />
-      <div className={`mx-auto flex min-h-dvh flex-col ${MAX_WIDTH_CLASS[maxWidth]} px-5 py-8`}>
-        <header className="mb-6 flex items-start justify-between gap-3">
+      <div className={`mx-auto flex min-h-dvh flex-col ${MAX_WIDTH_CLASS[maxWidth]} px-6 py-12`}>
+        <header className="mb-8 flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
             <img src="/favicon.svg" alt="" width={18} height={18} className="shrink-0" />
             <div>
@@ -70,11 +70,11 @@ export default function ParticipantShell({
           )}
         </header>
 
-        <main id="main" tabIndex={-1} className="flex-1 space-y-6 focus:outline-none">
+        <main id="main" tabIndex={-1} className="flex-1 space-y-8 focus:outline-none">
           {children}
         </main>
 
-        <footer className="mt-8 border-t border-pulse-200 dark:border-[var(--color-border)] pt-4 text-xs text-pulse-500 dark:text-[var(--text-muted)]">
+        <footer className="mt-12 border-t border-pulse-200 dark:border-[var(--color-border)] pt-4 text-xs text-pulse-500 dark:text-[var(--text-muted)]">
           <nav aria-label="Legal" className="flex items-center justify-center gap-4">
             <Link
               to="/privacy"

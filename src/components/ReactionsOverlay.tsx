@@ -37,7 +37,7 @@ export function ReactionsOverlay({ particles, total, active }: ReactionsOverlayP
   if (prefersReducedMotion) {
     return (
       <div
-        className="pointer-events-none absolute bottom-6 right-6 z-20 rounded-full bg-black/70 px-3 py-1.5 text-sm text-white"
+        className="pointer-events-none absolute bottom-8 right-8 z-20 rounded-full bg-black/70 px-3 py-1.5 text-sm text-white"
         aria-hidden="true"
       >
         {total} reactions

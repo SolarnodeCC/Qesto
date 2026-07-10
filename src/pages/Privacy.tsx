@@ -29,13 +29,13 @@ export default function Privacy() {
       />
 
       {/* Legal hero */}
-      <div className="border-b border-pulse-200 pb-6 pt-14">
-        <div className="max-w-6xl mx-auto px-6">
+      <div className="border-b border-pulse-200 pb-8 pt-14">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Legal</div>
           <h1 className="font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-3" style={{ ...displayFont, fontSize: 44 }}>
             Privacy Policy
           </h1>
-          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
+          <div className="flex gap-6 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 2.2.0</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-06-01</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Previous:</strong> 2026-01-15</span>
@@ -44,8 +44,8 @@ export default function Privacy() {
       </div>
 
       {/* Legal layout */}
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid gap-16 py-12 pb-24" style={{ gridTemplateColumns: '200px 1fr' }}>
+      <div className="max-w-6xl mx-auto px-8">
+        <div className="grid gap-16 py-24 pb-24" style={{ gridTemplateColumns: '200px 1fr' }}>
 
           {/* TOC */}
           <aside className="hidden md:block" style={{ position: 'sticky', top: 80, height: 'fit-content' }}>
@@ -66,12 +66,12 @@ export default function Privacy() {
 
           {/* Prose */}
           <main className="prose-content min-w-0">
-            <p className="text-[17px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed mb-8">
+            <p className="text-[17px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed mb-12">
               Qesto is built on the premise that a room speaks honestly only when it knows the rules. This document
               tells you exactly what happens to your data — what we hold, who touches it, and when it disappears.
             </p>
 
-            <h2 id="s1" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s1" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               1. Who we are
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -84,17 +84,17 @@ export default function Privacy() {
               process on their instructions under the Data Processing Agreement you signed at account creation.
             </p>
 
-            <h2 id="s2" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s2" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               2. What we collect
             </h2>
-            <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-5 mb-2">Host responsibilities</h3>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-6 mb-2">Host responsibilities</h3>
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li>Account email, name, organization name, and OAuth identifier (if SSO).</li>
               <li>Billing address and payment metadata (card handled by Stripe, never by us).</li>
               <li>Session configuration — question text, option labels, retention settings.</li>
             </ul>
-            <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-5 mb-2">Participant responsibilities</h3>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-6 mb-2">Participant responsibilities</h3>
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li>Their consent choice for that session (identified, cohort-visible, or anonymous) with timestamp.</li>
               <li>Their votes and free-text responses.</li>
               <li>
@@ -102,7 +102,7 @@ export default function Privacy() {
               </li>
               <li>A short-lived, session-scoped session token. No cross-session tracking.</li>
             </ul>
-            <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-5 mb-2">Educational use &amp; minors</h3>
+            <h3 className="font-semibold text-[18px] text-pulse-900 dark:text-[#F0F2F8] mt-6 mb-2">Educational use &amp; minors</h3>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
               Qesto accounts require the account holder to be at least 16 years old. However, participants joining a
               session by code may include individuals under 16 — this is a designed use case for teachers,
@@ -121,7 +121,7 @@ export default function Privacy() {
               anonymous mode is recommended) and obtain the necessary consents before the session begins.
             </p>
 
-            <h2 id="s3" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s3" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               3. Consent posture
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -133,10 +133,10 @@ export default function Privacy() {
               later. Not for legal hold, not for support, not for us. The link does not exist.
             </p>
 
-            <h2 id="s4" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s4" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               4. How we use data
             </h2>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li><strong>To run your session.</strong> Deliver votes to the Durable Object, compute tallies, generate recaps.</li>
               <li><strong>To bill you.</strong> Count session-hours against your plan.</li>
               <li><strong>To support you.</strong> Respond to tickets. Support staff see only metadata, never raw responses, without your explicit request.</li>
@@ -147,11 +147,11 @@ export default function Privacy() {
               <strong>not</strong> train models on your content.
             </p>
 
-            <h2 id="s5" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s5" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               5. Sub-processors
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-3">The complete list:</p>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li><strong>Cloudflare, Inc.</strong> — Workers compute, Durable Objects, D1, KV storage, and Workers AI inference.</li>
               <li><strong>Stripe, Inc.</strong> — payment processing for paid plans. No session data ever touches Stripe.</li>
               <li><strong>Resend.</strong> — transactional email for login links and account messages.</li>
@@ -165,13 +165,13 @@ export default function Privacy() {
               That's the whole list. We publish changes 30 days in advance; existing customers can object in writing.
             </p>
 
-            <h2 id="s6" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s6" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               6. Retention
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-3">
               Retention is configured per workspace. Defaults:
             </p>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li><strong>Pulse plan:</strong> 30 days.</li>
               <li><strong>Signal plan:</strong> 365 days.</li>
               <li><strong>Chorus plan:</strong> custom, as low as 7 days or as high as 7 years.</li>
@@ -181,7 +181,7 @@ export default function Privacy() {
               reporting.
             </p>
 
-            <h2 id="s7" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s7" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               7. Your rights
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -211,7 +211,7 @@ export default function Privacy() {
               Authority.
             </p>
 
-            <h2 id="s8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               8. AI &amp; inference
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -223,17 +223,17 @@ export default function Privacy() {
               pipeline, no fine-tuning corpus, no retention past the session's own retention window.
             </p>
 
-            <h2 id="s9" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s9" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               9. Security
             </h2>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li>TLS 1.3 for every connection. HSTS with preload.</li>
               <li>Data at rest is encrypted by the managed Cloudflare services Qesto uses.</li>
               <li>Access to team data is controlled through JWT authentication, team membership, and plan-gated features.</li>
               <li>Formal compliance reports, customer-managed keys, and third-party penetration-test summaries are roadmap items for enterprise procurement.</li>
             </ul>
 
-            <h2 id="s10" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s10" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               10. Website analytics &amp; cookies
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -241,7 +241,7 @@ export default function Privacy() {
               interface — heatmaps and replays of clicks, scrolls, and page transitions — so we can fix confusing
               flows. This is the only third-party analytics we run.
             </p>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li>
                 It loads <strong>only after you accept analytics cookies</strong> in the banner. Decline, and Clarity
                 is never loaded and no analytics cookies are set.
@@ -273,7 +273,7 @@ export default function Privacy() {
               within a session.
             </p>
 
-            <h2 id="s11" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s11" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               11. Changes
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -281,7 +281,7 @@ export default function Privacy() {
               replacements within the same tier) get a version bump and a changelog entry — no email blast.
             </p>
 
-            <h2 id="s12" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="s12" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               12. Contact
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -292,7 +292,7 @@ export default function Privacy() {
               {' '}· General:{' '}
               <a href="mailto:privacy@qesto.cc" className="text-teal-600 hover:underline">privacy@qesto.cc</a>
             </p>
-            <p className="text-[13px] text-pulse-500 mt-8">
+            <p className="text-[13px] text-pulse-500 mt-12">
               — This policy replaces all prior privacy statements. Prior versions available on request.
             </p>
           </main>

@@ -226,7 +226,7 @@ export default function AuditLogViewer() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">{t('auditLog')}</h2>
 
@@ -339,11 +339,11 @@ export default function AuditLogViewer() {
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 rounded-md bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
+            <div key={i} className="h-24 rounded-md bg-pulse-100 skeleton-shimmer" aria-hidden="true" />
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="rounded-md border border-pulse-200 p-6 text-center text-sm text-pulse-500">
+        <div className="rounded-md border border-pulse-200 p-8 text-center text-sm text-pulse-500">
           No audit events found
         </div>
       ) : (

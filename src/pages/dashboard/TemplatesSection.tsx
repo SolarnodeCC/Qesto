@@ -25,7 +25,7 @@ export function TemplatesSection({
       <h2 id="inspiration-heading" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-2">
         {t('inspiration')}
       </h2>
-      <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] mb-6">{t('templateCatalogueIntro')}</p>
+      <p className="text-sm text-pulse-500 dark:text-[#A8B3CC] mb-8">{t('templateCatalogueIntro')}</p>
       {templatesLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {[1, 2, 3, 4].map((i) => (
@@ -35,7 +35,7 @@ export function TemplatesSection({
       ) : templates.length === 0 ? (
         <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]">{t('noTemplatesAvailable')}</p>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-12">
           {customerTemplates.length > 0 && (
             <TemplateGroup
               title={t('customerTemplates')}

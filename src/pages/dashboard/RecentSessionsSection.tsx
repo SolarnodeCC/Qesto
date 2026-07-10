@@ -38,7 +38,7 @@ function ListRowSkeleton({ isFirst }: { isFirst: boolean }) {
         <div className="h-4 w-3/5 rounded skeleton-shimmer bg-pulse-200 dark:bg-pulse-800" />
         <div className="h-3 w-1/3 rounded skeleton-shimmer bg-pulse-200 dark:bg-pulse-800" />
       </div>
-      <div className="h-5 w-14 rounded-full skeleton-shimmer bg-pulse-200 dark:bg-pulse-800 shrink-0" />
+      <div className="h-6 w-14 rounded-full skeleton-shimmer bg-pulse-200 dark:bg-pulse-800 shrink-0" />
     </div>
   )
 }
@@ -66,7 +66,7 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
         className="rounded-r-xl border border-l-0 border-pulse-200 dark:border-[#1E2A45] bg-violet-50/70 dark:bg-[#1A1036]/60"
         style={{ borderLeft: '3px solid #7C3AED' }}
       >
-        <div className="px-5 py-[18px]">
+        <div className="px-6 py-[18px]">
           {loading ? (
             <div className="space-y-3" aria-hidden="true">
               <div className="h-4 w-2/3 rounded skeleton-shimmer bg-violet-200 dark:bg-violet-800/40" />
@@ -78,7 +78,7 @@ function AIRecapPanel({ themes, loading, onViewInsights }: AIRecapPanelProps) {
           ) : !top ? (
             /* Empty state */
             <div className="flex flex-col items-center text-center py-4 gap-2">
-              <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-500">
+              <span className="flex items-center justify-center w-16 h-16 rounded-xl bg-violet-100 dark:bg-violet-900/30 text-violet-500">
                 <Sparkles size={20} aria-hidden="true" />
               </span>
               <p className="text-sm font-semibold text-pulse-700 dark:text-[#A8B3CC]">No AI recap yet</p>
@@ -189,7 +189,7 @@ export function RecentSessionsSection({
   return (
     <section aria-labelledby="recent-heading">
       {/* 2-column layout: recent sessions (1.5fr) | AI recap (1fr) */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 items-start">
         {/* ── Left: recent sessions list ── */}
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -217,11 +217,11 @@ export function RecentSessionsSection({
             {isLoading ? (
               [0, 1, 2, 3].map((i) => <ListRowSkeleton key={i} isFirst={i === 0} />)
             ) : state.status === 'error' ? (
-              <p role="alert" className="px-5 py-4 text-sm text-red-600 dark:text-red-400">
+              <p role="alert" className="px-6 py-4 text-sm text-red-600 dark:text-red-400">
                 {state.error.message}
               </p>
             ) : sessions.length === 0 ? (
-              <div className="flex flex-col items-center text-center py-10 px-6 gap-2">
+              <div className="flex flex-col items-center text-center py-16 px-8 gap-2">
                 <p className="text-sm font-medium text-pulse-700 dark:text-[#A8B3CC]">
                   {t('noSessionsYet')}
                 </p>

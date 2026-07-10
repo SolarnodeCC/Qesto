@@ -271,7 +271,7 @@ export default function TeamSwitcher() {
         >
           <div
             ref={modalRef}
-            className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl max-w-sm w-full p-6 animate-page-enter space-y-4"
+            className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl max-w-sm w-full p-8 animate-page-enter space-y-4"
           >
             <h2 id="create-team-modal-title" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8]">
               {teams.length === 0 ? 'Create your first team' : 'Create team'}

@@ -94,7 +94,7 @@ export default function HeroPollPreview() {
   return (
     <div
       aria-hidden="true"
-      className="relative w-full max-w-[520px] mx-auto rounded-3xl p-6 sm:p-7 text-white grid overflow-hidden"
+      className="relative w-full max-w-[520px] mx-auto rounded-3xl p-8 sm:p-7 text-white grid overflow-hidden"
       style={{
         background: '#0A0F1E',
         aspectRatio: '16 / 11',
@@ -144,7 +144,7 @@ export default function HeroPollPreview() {
                   style={{ width: `${widthPct}%`, ...gradientBrand }}
                 />
               </div>
-              <span className="w-10 text-right text-white/80 tabular-nums" style={monoFont}>
+              <span className="w-16 text-right text-white/80 tabular-nums" style={monoFont}>
                 {pct}%
               </span>
             </div>

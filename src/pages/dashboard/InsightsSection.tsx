@@ -34,10 +34,10 @@ export function InsightsSection({
   const t = useT('dashboard')
   return (
     <section id="section-insights" aria-labelledby="insights-heading">
-      <h2 id="insights-heading" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-6">
+      <h2 id="insights-heading" className="text-xl font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-8">
         {t('insights')}
       </h2>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <AINarrative />
         {closedSessions[0] && !planGated && (
           <>
@@ -61,7 +61,7 @@ export function InsightsSection({
         <div className="space-y-3">
           <h3 className="text-heading-s font-semibold dark:text-pulse-100">{t('topThemes')}</h3>
           {planGated ? (
-            <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-5 space-y-3">
+            <div className="rounded-lg border border-violet-200 bg-violet-50 dark:bg-violet-900/20 dark:border-violet-700 p-6 space-y-3">
               <p className="text-body-s text-violet-800 dark:text-violet-300 font-medium">{t('aiInsightsPlanRequired')}</p>
               <p className="text-body-s text-violet-700 dark:text-violet-400">{t('upgradeForInsights')}</p>
               <Link to="/pricing" className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 text-white px-4 py-2 text-sm font-medium hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2">

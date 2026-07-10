@@ -4,9 +4,9 @@ import MainLayout from '../../layouts/MainLayout'
 import PageSeo from '../../components/PageSeo'
 
 const btnPrimary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-8 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-8 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -36,17 +36,17 @@ export default function EventsPage() {
 
       {/* Hero */}
       <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
               <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Qesto for Events</div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-6 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 The room{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
                   answers back.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-12">
                 Turn any keynote, panel, or breakout into a two-way conversation. Live tallies project on the main
                 screen, AI surfaces the question a facilitator missed, and the speaker walks offstage with a recap
                 before the applause lands.
@@ -91,7 +91,7 @@ export default function EventsPage() {
                     <div className="flex-1 h-3.5 bg-white/10 rounded-full overflow-hidden">
                       <div className="h-full rounded-full" style={{ width: `${pct}%`, ...gradientBrand }} />
                     </div>
-                    <span className="w-8 text-right text-white/80" style={monoFont}>{n}</span>
+                    <span className="w-12 text-right text-white/80" style={monoFont}>{n}</span>
                   </div>
                 ))}
               </div>
@@ -102,17 +102,17 @@ export default function EventsPage() {
 
       {/* Formats */}
       <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Formats</div>
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             One stage. Three sessions. Same host console.
           </h2>
-          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-12 text-lg">
             Qesto adapts to the room. Projected tallies for 500. Breakout wizards for 20. Same session ID threads
             the whole day.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden bg-pulse-900 text-white">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-2xl p-12 min-h-[240px] flex flex-col justify-between relative overflow-hidden bg-pulse-900 text-white">
               <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>01</div>
               <div>
                 <h3 className="text-[22px] font-semibold mb-2.5">Keynote</h3>
@@ -123,7 +123,7 @@ export default function EventsPage() {
               </div>
             </div>
             <div
-              className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900"
+              className="rounded-2xl p-12 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900"
               style={{ background: 'linear-gradient(135deg, #F0FDFA 0%, #F5F3FF 100%)' }}
             >
               <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>02</div>
@@ -135,7 +135,7 @@ export default function EventsPage() {
                 </p>
               </div>
             </div>
-            <div className="rounded-2xl p-8 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900 dark:text-[#F0F2F8] bg-teal-50 dark:bg-teal-500/12">
+            <div className="rounded-2xl p-12 min-h-[240px] flex flex-col justify-between relative overflow-hidden text-pulse-900 dark:text-[#F0F2F8] bg-teal-50 dark:bg-teal-500/12">
               <div className="text-[48px] font-bold leading-none opacity-20" style={displayFont}>03</div>
               <div>
                 <h3 className="text-[22px] font-semibold mb-2.5">Workshop</h3>
@@ -151,19 +151,19 @@ export default function EventsPage() {
 
       {/* Timeline */}
       <section className="py-16 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">A day in the room</div>
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             From curtain-up to recap, one session ID.
           </h2>
-          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-12 text-lg">
             Here's how a 300-person half-day runs on Qesto. Every step is logged, every tally is exportable.
           </p>
           <div className="rounded-2xl overflow-hidden border border-pulse-200 dark:border-[#1E2A45] divide-y divide-pulse-200 dark:divide-[#1E2A45]">
             {timeline.map(({ time, msg, tag, live }) => (
               <div
                 key={time}
-                className="bg-white dark:bg-[#151C2E] px-6 py-4.5 grid items-center gap-5"
+                className="bg-white dark:bg-[#151C2E] px-8 py-4.5 grid items-center gap-6"
                 style={{ gridTemplateColumns: '80px 1fr auto' }}
               >
                 <span className="text-teal-700 dark:text-teal-400 font-semibold text-[13px]" style={monoFont}>{time}</span>
@@ -183,12 +183,12 @@ export default function EventsPage() {
 
       {/* Why switch */}
       <section className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Why event producers switch</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-12 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Because nobody installs a second app at your event.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
                 icon: <QrCode size={22} />,
@@ -211,7 +211,7 @@ export default function EventsPage() {
             ].map(({ icon, title, desc, ai }) => (
               <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+                  className={`w-24 h-24 rounded-xl flex items-center justify-center mb-4 ${
                     ai ? 'bg-violet-50 dark:bg-violet-500/12 text-violet-700 dark:text-violet-400' : 'bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400'
                   }`}
                 >
@@ -226,12 +226,12 @@ export default function EventsPage() {
       </section>
 
       {/* CTA band */}
-      <div className="py-10 px-6">
-        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+      <div className="py-16 px-8">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-12">
           <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
             Your next keynote should hear back.
           </h2>
-          <p className="text-slate-400 mb-8">
+          <p className="text-slate-400 mb-12">
             Spin up a room in 90 seconds. Free for audiences under 100; pay per-session above.
           </p>
           <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>

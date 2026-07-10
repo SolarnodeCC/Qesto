@@ -83,7 +83,7 @@ export default function DuplicateSessionModal({
     >
       <div
         ref={modalRef}
-        className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl max-w-md w-full p-6 animate-page-enter space-y-4 border border-pulse-200 dark:border-[#2A3858]"
+        className="bg-white dark:bg-[#1C2540] rounded-xl shadow-xl max-w-md w-full p-8 animate-page-enter space-y-4 border border-pulse-200 dark:border-[#2A3858]"
       >
         <h2 id="duplicate-session-modal-title" className="text-xl font-semibold dark:text-[#F0F2F8]">
           {t('duplicateTitleModal.title')}

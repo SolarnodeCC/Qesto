@@ -39,7 +39,7 @@ export default function EnergizerPanel({ energizers, sessionId, onEnergizerChang
           className="flex items-center gap-4 rounded-xl border border-[var(--surface-border,#E5E5E5)] dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] px-4 py-3.5 shadow-card"
         >
           {/* Violet icon well */}
-          <span className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400">
+          <span className="w-16 h-16 shrink-0 rounded-xl flex items-center justify-center bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-400">
             <Zap size={20} aria-hidden="true" />
           </span>
 

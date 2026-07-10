@@ -23,7 +23,7 @@ export function SessionWizardStep4({
 }: Step4Props) {
   const t = useT('wizard')
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium dark:text-[#F0F2F8]">{t('step4.anonymity.label')}</legend>
         <div className="flex gap-2 flex-wrap">
@@ -100,14 +100,14 @@ export function SessionWizardStep4({
           aria-checked={isPublic}
           onClick={() => onIsPublicChange(!isPublic)}
           className={[
-            'relative shrink-0 mt-0.5 w-10 h-6 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+            'relative shrink-0 mt-0.5 w-16 h-8 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
             isPublic ? 'bg-teal-500' : 'bg-pulse-300 dark:bg-white/20',
           ].join(' ')}
         >
           <span
             className={[
               'block w-4 h-4 rounded-full bg-white shadow transition-transform absolute top-1',
-              isPublic ? 'translate-x-5' : 'translate-x-1',
+              isPublic ? 'translate-x-6' : 'translate-x-1',
             ].join(' ')}
           />
         </button>

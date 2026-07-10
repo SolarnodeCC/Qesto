@@ -36,8 +36,8 @@ describe('Grid component (LAYOUT-GRID-01)', () => {
   })
 
   it('Grid applies custom gap classes', () => {
-    const grid = Grid({ children: 'Test', gap: 'gap-8' })
-    expect(grid?.props?.className).toContain('gap-8')
+    const grid = Grid({ children: 'Test', gap: 'gap-12' })
+    expect(grid?.props?.className).toContain('gap-12')
   })
 
   it('Grid applies custom className', () => {
@@ -52,8 +52,8 @@ describe('Grid component (LAYOUT-GRID-01)', () => {
 })
 
 describe('Grid baseline alignment (4px rule)', () => {
-  it('supports 4px-aligned gaps (gap-1, gap-2, gap-3, gap-4, gap-6)', () => {
-    const validGaps = ['gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-6']
+  it('supports 4px-aligned gaps (gap-1, gap-2, gap-3, gap-4, gap-8)', () => {
+    const validGaps = ['gap-1', 'gap-2', 'gap-3', 'gap-4', 'gap-8']
     validGaps.forEach((gapClass) => {
       const grid = Grid({ children: 'Test', gap: gapClass })
       expect(grid?.props?.className).toContain(gapClass)
@@ -63,7 +63,7 @@ describe('Grid baseline alignment (4px rule)', () => {
   it('enforces 4px grid baseline', () => {
     // grid-cols-* with gap-* ensures 4px alignment
     // gap-1 = 0.25rem = 4px, gap-2 = 0.5rem = 8px, etc.
-    expect(['gap-1', 'gap-2', 'gap-4', 'gap-6'].every((g) =>
+    expect(['gap-1', 'gap-2', 'gap-4', 'gap-8'].every((g) =>
       Number(g.replace('gap-', '')) * 4 % 4 === 0
     )).toBe(true)
   })
