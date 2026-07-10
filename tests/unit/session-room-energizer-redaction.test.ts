@@ -3,7 +3,7 @@
 // keep the full state.
 
 import { describe, expect, it } from 'vitest'
-import { redactEnergizerForViewer } from '../../functions/api/lib/session-room-energizer'
+import { redactEnergizerForViewer, tallyOptionCounts } from '../../functions/api/lib/session-room-energizer'
 import type { LiveEnergizerState } from '../../functions/api/realtime'
 
 const QUICK_FINGER: LiveEnergizerState = {
@@ -96,5 +96,40 @@ describe('redactEnergizerForViewer', () => {
   it('passes the leaderboard through untouched', () => {
     const view = redactEnergizerForViewer(QUICK_FINGER, { role: 'voter', voterId: 'v9' })
     expect(view.leaderboard).toEqual(QUICK_FINGER.leaderboard)
+  })
+
+  it('passes the aggregate optionCounts through untouched (emoji_poll / word_cloud read model)', () => {
+    const emojiPoll: LiveEnergizerState = {
+      id: 'eg_emoji',
+      kind: 'emoji_poll',
+      title: 'Vibe',
+      status: 'active',
+      options: ['🔥', '😴'],
+      answers: [
+        { voterId: 'v1', value: '🔥', correct: true, speedMs: 0, rank: 0 },
+        { voterId: 'v2', value: '🔥', correct: true, speedMs: 0, rank: 0 },
+      ],
+      optionCounts: { '🔥': 2 },
+    }
+    const view = redactEnergizerForViewer(emojiPoll, { role: 'voter', voterId: 'v2' })
+    expect(view.optionCounts).toEqual({ '🔥': 2 })
+    // Raw answers still collapse to the viewer's own.
+    expect(view.answers).toEqual([{ voterId: 'v2', value: '🔥', correct: true, speedMs: 0, rank: 0 }])
+  })
+})
+
+describe('tallyOptionCounts', () => {
+  it('aggregates answers into a value→count map', () => {
+    expect(
+      tallyOptionCounts([
+        { voterId: 'v1', value: 'focus', correct: true, speedMs: 0, rank: 0 },
+        { voterId: 'v2', value: 'focus', correct: true, speedMs: 0, rank: 0 },
+        { voterId: 'v3', value: 'energy', correct: true, speedMs: 0, rank: 0 },
+      ]),
+    ).toEqual({ focus: 2, energy: 1 })
+  })
+
+  it('returns an empty map for no answers', () => {
+    expect(tallyOptionCounts([])).toEqual({})
   })
 })

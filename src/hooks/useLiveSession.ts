@@ -79,6 +79,10 @@ export type LiveEnergizerState = {
       awardedAt: number
     }[]
   >
+  // Aggregate value→count tally (emoji_poll / word_cloud) — the only
+  // cross-voter result data participants receive; raw answers are redacted
+  // server-side to the viewer's own.
+  optionCounts?: Record<string, number>
 }
 
 /** Wire-level option row — same shape as REST `PollOption`. */

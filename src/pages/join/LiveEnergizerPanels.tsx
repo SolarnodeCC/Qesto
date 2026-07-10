@@ -217,6 +217,148 @@ export function LiveTeamQuizPanel({
   )
 }
 
+export function LiveEmojiPollPanel({
+  energizer,
+  voterId,
+  onAnswer,
+}: {
+  energizer: LiveEnergizerState
+  voterId: string | null
+  onAnswer: (energizerId: string, value: string) => void
+}) {
+  const t = useT('join')
+  const options = energizer.options ?? []
+  const counts = energizer.optionCounts ?? {}
+  const myAnswer = energizer.answers?.find((answer) => answer.voterId === voterId)
+  const completed = energizer.status === 'completed'
+
+  return (
+    <section className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 p-4 space-y-4" aria-labelledby="live-emoji-poll-heading">
+      <div className="flex items-center gap-2">
+        <Sparkles size={18} className="text-purple-600" aria-hidden="true" />
+        <h2 id="live-emoji-poll-heading" className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+          {energizer.title || t('emojiPoll.title')}
+        </h2>
+      </div>
+      {energizer.prompt && <p className="text-sm text-pulse-700 dark:text-[#A8B3CC]">{energizer.prompt}</p>}
+
+      <div className="flex flex-wrap gap-2" role="group" aria-label={t('emojiPoll.title')}>
+        {options.map((emoji) => {
+          const isMine = myAnswer?.value === emoji
+          const count = counts[emoji] ?? 0
+          return (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => onAnswer(energizer.id, emoji)}
+              disabled={completed}
+              aria-pressed={isMine}
+              aria-label={t('emojiPoll.option_aria', { emoji, count })}
+              className={[
+                'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 disabled:cursor-default',
+                isMine
+                  ? 'border-purple-500 bg-purple-100 dark:bg-purple-900/40'
+                  : 'border-purple-200 dark:border-purple-800 bg-white dark:bg-[#1C2540] hover:border-purple-400',
+              ].join(' ')}
+            >
+              <span aria-hidden="true">{emoji}</span>
+              <span className="text-xs font-semibold tabular-nums text-pulse-600 dark:text-[#A8B3CC]">{count}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {myAnswer && !completed && (
+        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]" role="status">
+          {t('emojiPoll.change_hint')}
+        </p>
+      )}
+    </section>
+  )
+}
+
+export function LiveWordCloudPanel({
+  energizer,
+  voterId,
+  onAnswer,
+}: {
+  energizer: LiveEnergizerState
+  voterId: string | null
+  onAnswer: (energizerId: string, value: string) => void
+}) {
+  const t = useT('join')
+  const [word, setWord] = useState('')
+  const counts = energizer.optionCounts ?? {}
+  const myAnswer = energizer.answers?.find((answer) => answer.voterId === voterId)
+  const completed = energizer.status === 'completed'
+  const trimmed = word.trim()
+  const invalid = /\s/.test(trimmed)
+  const topWords = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 12)
+
+  return (
+    <section className="rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50 dark:bg-sky-900/20 p-4 space-y-4" aria-labelledby="live-word-cloud-heading">
+      <div className="flex items-center gap-2">
+        <Sparkles size={18} className="text-sky-600" aria-hidden="true" />
+        <h2 id="live-word-cloud-heading" className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">
+          {energizer.title || t('wordCloud.title')}
+        </h2>
+      </div>
+      {energizer.prompt && <p className="text-sm text-pulse-700 dark:text-[#A8B3CC]">{energizer.prompt}</p>}
+
+      {!completed && (
+        <form
+          className="flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!trimmed || invalid) return
+            onAnswer(energizer.id, trimmed)
+            setWord('')
+          }}
+        >
+          <input
+            type="text"
+            value={word}
+            onChange={(e) => setWord(e.target.value)}
+            maxLength={60}
+            placeholder={t('wordCloud.placeholder')}
+            aria-label={t('wordCloud.placeholder')}
+            className="flex-1 min-w-0 rounded-lg border border-sky-300 dark:border-sky-700 dark:bg-[#1C2540] dark:text-[#F0F2F8] px-3 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+          />
+          <button
+            type="submit"
+            disabled={!trimmed || invalid}
+            className="rounded-lg bg-sky-600 text-white px-4 py-2 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+          >
+            {t('wordCloud.submit')}
+          </button>
+        </form>
+      )}
+      {invalid && <p className="text-xs text-red-600" role="alert">{t('wordCloud.single_word_hint')}</p>}
+      {myAnswer && !completed && (
+        <p className="text-sm text-pulse-500 dark:text-[#A8B3CC]" role="status">
+          {t('wordCloud.submitted', { word: myAnswer.value })}
+        </p>
+      )}
+
+      {topWords.length > 0 && (
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1" aria-label={t('wordCloud.top_words')}>
+          {topWords.map(([value, count], i) => (
+            <span
+              key={value}
+              className={[
+                'font-semibold text-sky-800 dark:text-sky-300',
+                i === 0 ? 'text-xl' : i < 4 ? 'text-base' : 'text-sm',
+              ].join(' ')}
+            >
+              {value} <span className="text-xs font-normal text-pulse-500 tabular-nums">{count}</span>
+            </span>
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
 function LiveLeaderboard({ energizer, voterId }: { energizer: LiveEnergizerState; voterId: string | null }) {
   const t = useT('join')
   const entries = energizer.leaderboard ?? []

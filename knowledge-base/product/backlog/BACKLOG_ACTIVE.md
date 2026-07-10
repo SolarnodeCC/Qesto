@@ -98,29 +98,16 @@ ADR-0068/0069/0070.
 
 ---
 
-## Backlog queue (design-decision gated)
+## Energizer security boundary — consolidated (audit E-1/E-2, closed)
 
-**Source:** [`CORE_FEATURES_AUDIT_2026-07-09.md`](../audits/CORE_FEATURES_AUDIT_2026-07-09.md) — 2 CRITICAL findings requiring architectural decision before dev.
+**Source:** [`CORE_FEATURES_AUDIT_2026-07-09.md`](../audits/CORE_FEATURES_AUDIT_2026-07-09.md) — 2 CRITICAL findings. Consolidation approved by PO 2026-07-10 ("fix these issues now"); implemented in PR #715.
 
-### Design decision required: Energizer security boundary
+| ID | Pri | Finding | Resolution | Status |
+|----|----|---------|------------|--------|
+| `ARCH-ENERGIZER-E1-REST` | CRIT | `GET /energizers/active` returned raw `correct_index` to any authenticated user (no access check); team-quiz REST vote echoed `correct` immediately with re-answer allowed | `GET /active` is now **host-only** (`requireSessionAccess requireOwner`); team-quiz vote stores correctness but never echoes it and rejects re-answers (409, mirrors the WS duplicate rule) | **Done (PR #715)** |
+| `ARCH-ENERGIZER-E2-ISOLATION` | CRIT | REST energizer plane 401'd for anonymous participants; REST/D1 vs WS/DO results never reconciled | **DO WebSocket is the single participant-facing plane.** Host REST lifecycle (PATCH activate, `/next`) syncs into the DO (`/energizer-sync`); DO gained emoji_poll/word_cloud answers with an aggregate `optionCounts` read model; JoinPage dropped REST polling for WS-only panels (all 4 lobby kinds); host monitoring reads live results from the DO (`/energizer-state`) with D1 fallback; DO completions mirror back to D1 | **Done (PR #715)** |
 
-**Context:** The energizers feature splits across two planes (REST API + WebSocket/DO realtime). The audit uncovered critical leaks in the REST plane that require consolidation. **Fix direction is recommended but needs explicit approval** before coding.
-
-| ID | Pri | Finding | Recommended fix | Estimate | Blocks |
-|----|----|---------|-----------------|----------|--------|
-| `ARCH-ENERGIZER-E1-REST` | CRIT | `GET /api/sessions/:id/energizers/active` returns raw `correct_index` (answer keys visible pre-completion); team-quiz REST vote returns `correct` immediately with re-answer allowed | **Migrate REST voter vote to DO WebSocket** (`ClientMessage.energizer_submit_answer`); keep readonly `GET` on active energizer but strip answer keys for voters (same projection as WS redaction) | 5 | none (E-2 depends on this) |
-| `ARCH-ENERGIZER-E2-ISOLATION` | CRIT | REST energizer endpoints 401 for anonymous participants; no result reconciliation between REST/D1 vs WS/DO planes | **Consolidate energizer answers onto DO WebSocket only.** Anonymous sessions use WS auth (`sessionId` + `voterId`). Rationale: (a) avoids dual-write/reconciliation complexity, (b) aligns with session realtime model, (c) keeps anonymity boundary in DO crypto, not REST layer | 8 | `ARCH-ENERGIZER-E1-REST` |
-
-**Decision path:**
-1. Review findings + recs in audit + PR #715
-2. PO + architect approve consolidated design (or propose alternative)
-3. Sign off in this file + open implementation stories in RT-02 P2 or RT-03
-4. Move to `## RT-02 P2 — conditional` below once approved
-
-**Current status:** Implemented fixes landed in PR #715:
-- ✅ WS half (E-1 CRITICAL): Per-viewer redaction (answer keys hidden until completion), debounced broadcasts
-- ✅ E-3, E-4, E-5, E-6 (HIGH/MEDIUM): All closed with fixes in place
-- ⏳ E-1 REST half + E-2: Awaiting design approval above
+**Architecture note:** the host lobby (Launchpad) stays on the authenticated REST plane for draft/edit/activate/monitor; participants — anonymous included — are WS-only. D1 remains config/lifecycle truth; the DO is the live-answer store.
 
 ---
 

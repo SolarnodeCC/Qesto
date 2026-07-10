@@ -74,5 +74,14 @@
   "not_found_help": "Überprüfe den Code und versuche es erneut.",
   "try_again": "Erneut versuchen",
   "code_length_hint": "Gib den 6-stelligen Code ein",
-  "energizer_updates_unavailable": "Energizer-Updates sind derzeit nicht verfügbar. Wir versuchen es automatisch weiter."
+  "energizer_updates_unavailable": "Energizer-Updates sind derzeit nicht verfügbar. Wir versuchen es automatisch weiter.",
+  "emojiPoll.title": "Emoji-Umfrage",
+  "emojiPoll.option_aria": "{emoji}: {count} Stimmen",
+  "emojiPoll.change_hint": "Tippe auf ein anderes Emoji, um deine Stimme zu ändern.",
+  "wordCloud.title": "Wortwolke",
+  "wordCloud.placeholder": "Ein Wort…",
+  "wordCloud.submit": "Senden",
+  "wordCloud.submitted": "Dein Wort: {word}. Sende ein anderes, um es zu ersetzen.",
+  "wordCloud.single_word_hint": "Nur einzelne Wörter — keine Leerzeichen.",
+  "wordCloud.top_words": "Top-Wörter"
 }

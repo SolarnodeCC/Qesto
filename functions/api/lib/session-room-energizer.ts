@@ -173,6 +173,21 @@ function withTeamQuizScoreArtifacts(
   }
 }
 
+// ── Aggregate tallies ─────────────────────────────────────────────────────────
+
+/**
+ * Aggregate answers into a value→count map (emoji_poll / word_cloud). This is
+ * the participant-safe read model: it carries no voter identity, so it can be
+ * broadcast to everyone while raw answers stay redacted to the viewer's own.
+ */
+export function tallyOptionCounts(
+  answers: NonNullable<LiveEnergizerState['answers']>,
+): Record<string, number> {
+  const counts: Record<string, number> = {}
+  for (const a of answers) counts[a.value] = (counts[a.value] ?? 0) + 1
+  return counts
+}
+
 // ── Viewer redaction ──────────────────────────────────────────────────────────
 
 // How many ranked answers voters may see (the quick-finger podium row).
@@ -186,7 +201,7 @@ const VOTER_VISIBLE_RANKS = 3
  *  - `answers` keep only the viewer's own entry plus the top-3 podium
  *    (other voters' raw answer values are blanked),
  *  - `submissions`, `scores` and `badges` keep only the viewer's own rows,
- *  - `leaderboard` passes through (already capped at 10 and display-mode aware).
+ *  - `leaderboard` and `optionCounts` pass through (aggregate, identity-free).
  * This both closes the answer-key leak and keeps voter payloads O(1) in the
  * participant count instead of shipping every accumulated answer to everyone.
  */
