@@ -82,8 +82,8 @@ export default function TownhallPresent() {
     return c
   }, [state.items])
 
-  if (loadError) return <div className="p-8 text-center text-red-600">{loadError}</div>
-  if (!config) return <div className="p-8 text-center text-pulse-500">…</div>
+  if (loadError) return <div className="p-12 text-center text-red-600">{loadError}</div>
+  if (!config) return <div className="p-12 text-center text-pulse-500">…</div>
 
   const visible = state.items.filter((i) => i.status === tab)
   const connectionLabel =
@@ -96,13 +96,13 @@ export default function TownhallPresent() {
   return (
     <HostConsoleShell title={config.title} subtitle={t('console.title')} connectionLabel={connectionLabel}>
       {!live && (
-        <section className="rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20">
+        <section className="rounded-lg border border-teal-200 bg-teal-50 p-6 dark:border-teal-800 dark:bg-teal-900/20">
           <p className="text-sm text-teal-800 dark:text-teal-200">{t('present.draftHint')}</p>
           <button
             type="button"
             onClick={() => void handleStart()}
             disabled={starting}
-            className="mt-3 rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
+            className="mt-3 rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-teal-700 disabled:opacity-50"
           >
             {starting ? t('present.starting') : t('present.start')}
           </button>
@@ -140,7 +140,7 @@ export default function TownhallPresent() {
 
           <section className="space-y-2" aria-live="polite">
             {visible.length === 0 ? (
-              <p className="py-8 text-center text-sm text-pulse-500">{t('console.empty')}</p>
+              <p className="py-12 text-center text-sm text-pulse-500">{t('console.empty')}</p>
             ) : (
               visible.map((item) => (
                 <TownhallQuestionCard key={item.id} item={item} variant="console" onModerate={moderate} t={t} />

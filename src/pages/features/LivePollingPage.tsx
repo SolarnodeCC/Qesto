@@ -5,9 +5,9 @@ import PageSeo from '../../components/PageSeo'
 import Reveal from '../../components/Reveal'
 
 const btnPrimary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-8 py-3 rounded-lg font-medium text-white text-sm transition-all duration-150 hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 const btnSecondary =
-  'inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
+  'inline-flex items-center justify-center px-8 py-3 rounded-lg font-medium text-pulse-900 dark:text-[#F0F2F8] text-sm border border-pulse-300 dark:border-[#2A3858] bg-white dark:bg-[#1C2540] hover:border-pulse-500 dark:hover:border-[#3A4870] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500'
 
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
@@ -55,17 +55,17 @@ export default function LivePollingPage() {
 
       {/* Hero */}
       <section className="py-16 md:py-20 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
             <div>
               <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Live Polling</div>
-              <h1 className="font-bold text-5xl tracking-tight mb-5 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+              <h1 className="font-bold text-5xl tracking-tight mb-6 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
                 Ask a question.{' '}
                 <span className="bg-gradient-to-br from-teal-400 to-violet-500 bg-clip-text text-transparent">
                   Hear from everyone.
                 </span>
               </h1>
-              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-8">
+              <p className="text-lg text-pulse-500 dark:text-[#8A96B0] leading-relaxed mb-12">
                 Responses show up in real time as people answer. Everyone in the room can see what the group
                 thinks — while the moment still matters. No app to install, no waiting for results.
               </p>
@@ -114,12 +114,12 @@ export default function LivePollingPage() {
 
       {/* Question types */}
       <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Question types</div>
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Eight primitives. Every session you'll ever need.
           </h2>
-          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-12 text-lg">
             Not a kitchen sink. These are the shapes a facilitator actually reaches for, sharpened.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -129,7 +129,7 @@ export default function LivePollingPage() {
                 className="bg-white dark:bg-[#151C2E] rounded-xl p-5.5 grid gap-4 items-start"
                 style={{ boxShadow: 'var(--shadow-card)', gridTemplateColumns: '48px 1fr' }}
               >
-                <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center flex-shrink-0">
+                <div className="w-24 h-24 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center flex-shrink-0">
                   {icon}
                 </div>
                 <div>
@@ -145,12 +145,12 @@ export default function LivePollingPage() {
 
       {/* Latency ladder */}
       <Reveal as="section" className="py-16 bg-white dark:bg-[#0A0F1E]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Latency</div>
           <h2 className="font-bold text-4xl tracking-tight mb-3 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             Because a tally that lags is a tally people don't trust.
           </h2>
-          <p className="text-pulse-500 dark:text-[#8A96B0] mb-8 text-lg">
+          <p className="text-pulse-500 dark:text-[#8A96B0] mb-12 text-lg">
             The bar moves when people tap. Results don't make the room wait — so you can keep the conversation
             going without breaking the flow.
           </p>
@@ -158,7 +158,7 @@ export default function LivePollingPage() {
             {latencyRows.map(({ hop, title, desc, lat, sub, highlight }) => (
               <div
                 key={hop}
-                className="bg-white dark:bg-[#151C2E] px-6 py-4.5 grid items-center gap-6 text-sm"
+                className="bg-white dark:bg-[#151C2E] px-8 py-4.5 grid items-center gap-8 text-sm"
                 style={{ gridTemplateColumns: '140px 1fr 120px' }}
               >
                 <span className="text-teal-700 dark:text-teal-400 font-semibold text-[12px]" style={monoFont}>{hop}</span>
@@ -181,15 +181,15 @@ export default function LivePollingPage() {
 
       {/* Host controls */}
       <Reveal as="section" className="py-16 bg-pulse-50 dark:bg-[#0F1525]">
-        <div className="max-w-6xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Host controls</div>
-          <h2 className="font-bold text-4xl tracking-tight mb-8 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
+          <h2 className="font-bold text-4xl tracking-tight mb-12 text-pulse-900 dark:text-[#F0F2F8]" style={displayFont}>
             The console a facilitator actually wants.
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {hostControls.map(({ icon, title, desc }) => (
               <div key={title} className="bg-white dark:bg-[#151C2E] rounded-2xl p-7" style={shadowCard}>
-                <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
+                <div className="w-24 h-24 rounded-xl bg-teal-50 dark:bg-teal-500/12 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-4">
                   {icon}
                 </div>
                 <h3 className="font-semibold text-[18px] mb-2 text-pulse-900 dark:text-[#F0F2F8]">{title}</h3>
@@ -201,12 +201,12 @@ export default function LivePollingPage() {
       </Reveal>
 
       {/* CTA band */}
-      <Reveal className="py-10 px-6">
-        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-8">
+      <Reveal className="py-16 px-8">
+        <div className="max-w-6xl mx-auto bg-pulse-900 rounded-[2rem] text-white text-center py-16 px-12">
           <h2 className="font-bold text-4xl tracking-tight mb-3" style={displayFont}>
             Ship the tally. Keep the room.
           </h2>
-          <p className="text-slate-400 mb-8">
+          <p className="text-slate-400 mb-12">
             Start a session free. Paid plans unlock recaps, exports, and longer retention.
           </p>
           <Link to="/login" className={btnPrimary + ' text-base px-7 py-3.5'} style={gradientBrand}>

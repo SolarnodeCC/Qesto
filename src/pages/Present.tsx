@@ -191,7 +191,7 @@ export default function Present() {
   }, [state.error])
 
   if (auth.status === 'loading') {
-    return <main className="min-h-screen flex items-center justify-center p-8 text-pulse-500">{t('loading')}</main>
+    return <main className="min-h-screen flex items-center justify-center p-12 text-pulse-500">{t('loading')}</main>
   }
   if (auth.status === 'anonymous') return <Navigate to="/login" replace />
 
@@ -394,14 +394,14 @@ function PresentInner({
           {/* All done overlay */}
           {state.allDone && (
             <div className="absolute inset-0 z-30 flex flex-col items-center justify-center" style={{ background: 'var(--gradient-brand)' }}>
-              <div className="text-[120px] mb-6" aria-hidden="true">🎉</div>
+              <div className="text-[120px] mb-8" aria-hidden="true">🎉</div>
               <h2 className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[80px] leading-[1.1] tracking-[-0.02em] text-white text-center [text-wrap:balance]">
                 {t('allDone.heading')}
               </h2>
-              <p className="mt-6 text-[32px] text-white/80 font-medium">
+              <p className="mt-8 text-[32px] text-white/80 font-medium">
                 {state.session?.title}
               </p>
-              <div className="mt-12 flex items-center gap-3 text-[26px] text-white/70 font-medium">
+              <div className="mt-24 flex items-center gap-3 text-[26px] text-white/70 font-medium">
                 <Users size={28} className="text-white/60" aria-hidden="true" />
                 {state.participants} {t('participant', { count: state.participants })} {t('connectedLabel')}
               </div>
@@ -411,7 +411,7 @@ function PresentInner({
           {/* Paused overlay */}
           {localPaused && !state.allDone && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-              <div className="flex items-center gap-4 rounded-2xl px-10 py-6 shadow-2xl" style={{ background: 'var(--canvas-surface)' }}>
+              <div className="flex items-center gap-4 rounded-2xl px-16 py-8 shadow-2xl" style={{ background: 'var(--canvas-surface)' }}>
                 <Pause size={36} className="text-amber-500" aria-hidden="true" />
                 <span className="font-bold text-[40px] tracking-tight" style={{ color: 'var(--canvas-text)' }}>{t('votingPaused')}</span>
               </div>
@@ -449,7 +449,7 @@ function PresentInner({
             </div>
             <div className="flex gap-7 items-center text-[20px] font-medium" style={{ color: 'var(--canvas-text-muted)' }}>
               {state.session && <span>{state.session.title}</span>}
-              <span className="w-px h-5" style={{ background: 'var(--canvas-border)' }} aria-hidden="true" />
+              <span className="w-px h-6" style={{ background: 'var(--canvas-border)' }} aria-hidden="true" />
               <span
                 className={`flex items-center gap-2.5 font-semibold ${state.connection === 'open' ? '' : 'opacity-60'}`}
                 style={{ color: 'var(--canvas-text)' }}
@@ -466,7 +466,7 @@ function PresentInner({
               </span>
               {showSentiment && state.sentiment && (
                 <>
-                  <span className="w-px h-5" style={{ background: 'var(--canvas-border)' }} aria-hidden="true" />
+                  <span className="w-px h-6" style={{ background: 'var(--canvas-border)' }} aria-hidden="true" />
                   <span
                     className="flex items-center gap-2 rounded-full px-4 py-1 text-[16px] font-semibold"
                     style={{
@@ -485,7 +485,7 @@ function PresentInner({
 
           {/* ── Question header ── */}
           <div className="absolute top-[144px] left-[64px] right-[600px] z-10">
-            <div className="text-[24px] font-bold tracking-[0.12em] uppercase mb-5" style={{ color: 'var(--canvas-accent)' }}>
+            <div className="text-[24px] font-bold tracking-[0.12em] uppercase mb-6" style={{ color: 'var(--canvas-accent)' }}>
               {state.question ? 'Question' : 'Waiting for question'}
             </div>
             <h1
@@ -494,7 +494,7 @@ function PresentInner({
             >
               {state.question?.prompt ?? t('connectingToRoom')}
             </h1>
-            <div className="mt-5 text-[26px] flex gap-9" style={{ color: 'var(--canvas-text-muted)' }}>
+            <div className="mt-6 text-[26px] flex gap-9" style={{ color: 'var(--canvas-text-muted)' }}>
               <span className="flex items-center gap-2">
                 <Users size={20} style={{ color: 'var(--canvas-accent)' }} aria-hidden="true" />
                 {state.results.total} {t('participant', { count: state.results.total })}
@@ -533,7 +533,7 @@ function PresentInner({
             )}
             {state.session && (
               <div
-                className="font-mono text-[52px] font-medium tracking-[0.12em] leading-none mb-5 bg-clip-text text-transparent"
+                className="font-mono text-[52px] font-medium tracking-[0.12em] leading-none mb-6 bg-clip-text text-transparent"
                 style={{ backgroundImage: 'var(--gradient-brand)' }}
               >
                 {state.session.code}
@@ -552,7 +552,7 @@ function PresentInner({
                 />
               </div>
             )}
-            <div className="mt-5 text-[18px] text-center" style={{ color: 'var(--canvas-text-muted)' }}>
+            <div className="mt-6 text-[18px] text-center" style={{ color: 'var(--canvas-text-muted)' }}>
               <span
                 className="font-[family-name:var(--canvas-font-display,var(--font-display))] font-bold text-[26px] tracking-[-0.01em]"
                 style={{ color: 'var(--canvas-text)' }}
@@ -609,7 +609,7 @@ function PresentInner({
 
           {/* ── Bottom chrome (display only — controls are in presenter panel) ── */}
           <div
-            className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center pt-6 z-10 text-[18px] pointer-events-none"
+            className="absolute bottom-[36px] left-[64px] right-[64px] flex justify-between items-center pt-8 z-10 text-[18px] pointer-events-none"
             style={{ borderTop: '1px solid var(--canvas-border)', color: 'var(--canvas-text-muted)' }}
           >
             <div

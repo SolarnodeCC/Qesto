@@ -3,7 +3,7 @@
  * Implements responsive 12/8/4-column grid with 4px baseline alignment
  *
  * Usage:
- *   <Grid cols={12} md={8} sm={4} gap="gap-6">
+ *   <Grid cols={12} md={8} sm={4} gap="gap-8">
  *     <GridItem colSpan={6}>Half width</GridItem>
  *     <GridItem colSpan={6}>Half width</GridItem>
  *   </Grid>
@@ -35,7 +35,7 @@ export function Grid({
   md = 8,
   lg = 12,
   xl = 12,
-  gap = 'gap-6',
+  gap = 'gap-8',
   className = '',
 }: GridProps) {
   const gridClasses = [
@@ -93,7 +93,7 @@ export function GridItem({
  */
 export function GridShowcase() {
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-12 p-8">
       <section>
         <h2 className="mb-4 text-lg font-semibold">12-column grid (lg+)</h2>
         <Grid cols={12} gap="gap-4">
@@ -109,15 +109,15 @@ export function GridShowcase() {
 
       <section>
         <h2 className="mb-4 text-lg font-semibold">Sidebar + main (6/6 split)</h2>
-        <Grid cols={12} gap="gap-6">
+        <Grid cols={12} gap="gap-8">
           <GridItem colSpan={4}>
-            <div className="bg-violet-100 p-6 rounded-lg">
+            <div className="bg-violet-100 p-8 rounded-lg">
               <h3 className="font-semibold mb-2">Sidebar</h3>
               <p className="text-sm text-pulse-600">4 column sidebar</p>
             </div>
           </GridItem>
           <GridItem colSpan={8}>
-            <div className="bg-teal-100 p-6 rounded-lg">
+            <div className="bg-teal-100 p-8 rounded-lg">
               <h3 className="font-semibold mb-2">Main Content</h3>
               <p className="text-sm text-pulse-600">8 column main area</p>
             </div>
@@ -129,7 +129,7 @@ export function GridShowcase() {
         <h2 className="mb-4 text-lg font-semibold">Full-width (12)</h2>
         <Grid cols={12} gap="gap-4">
           <GridItem colSpan={12}>
-            <div className="bg-pulse-100 p-6 rounded-lg">
+            <div className="bg-pulse-100 p-8 rounded-lg">
               <h3 className="font-semibold">Full-width banner</h3>
             </div>
           </GridItem>

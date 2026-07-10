@@ -182,7 +182,7 @@ function GrowthEngineSection() {
         <KpiCard value={webhook.total_received} label="Webhooks received" colour="text-green-600" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Webhook health */}
         <Card>
           <Heading level="s" className="mb-4">Webhook health</Heading>
@@ -233,7 +233,7 @@ export default function AdminAnalyticsTab() {
 
   if (loading && !analytics) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
@@ -275,7 +275,7 @@ export default function AdminAnalyticsTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Heading level="m" className="border-l-4 border-teal-500 pl-3">Analytics</Heading>
@@ -299,7 +299,7 @@ export default function AdminAnalyticsTab() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <Heading level="s" className="mb-1">Sessions per day</Heading>
           <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mb-3">Last 14 days</Body>
@@ -313,7 +313,7 @@ export default function AdminAnalyticsTab() {
       </div>
 
       {/* Decision quality + Session status + Engagement */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="flex flex-col items-center justify-center gap-4">
           <Heading level="s">Decision quality</Heading>
           <ConsentDonut rate={a.consent_rate} />
@@ -356,7 +356,7 @@ export default function AdminAnalyticsTab() {
       {/* Cost & usage */}
       <Card>
         <Heading level="s" className="mb-4">Cost &amp; usage</Heading>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
           <div>
             <Body size="s" className="text-pulse-500 dark:text-[#8A96B0]">Sessions created</Body>
             <p className="text-heading-s font-semibold text-pulse-900 dark:text-[#F0F2F8] mt-1">{a.total_sessions_created}</p>

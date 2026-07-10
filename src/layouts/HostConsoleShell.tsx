@@ -51,7 +51,7 @@ export default function HostConsoleShell({
   return (
     <>
       <SkipLink />
-      <div className={`mx-auto ${MAX_WIDTH_CLASS[maxWidth]} space-y-5 px-5 py-6`}>
+      <div className={`mx-auto ${MAX_WIDTH_CLASS[maxWidth]} space-y-6 px-6 py-8`}>
         <header className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Link
@@ -64,7 +64,7 @@ export default function HostConsoleShell({
                 Qesto
               </span>
             </Link>
-            <span className="h-5 w-px bg-pulse-200 dark:bg-[var(--color-border)]" aria-hidden="true" />
+            <span className="h-6 w-px bg-pulse-200 dark:bg-[var(--color-border)]" aria-hidden="true" />
             <div>
               <h1 className="text-lg font-bold text-pulse-900 dark:text-[var(--text-primary)]">{title}</h1>
               {subtitle && <p className="text-sm text-pulse-500 dark:text-[var(--text-muted)]">{subtitle}</p>}
@@ -77,7 +77,7 @@ export default function HostConsoleShell({
           )}
         </header>
 
-        <main id="main" tabIndex={-1} className="space-y-5 focus:outline-none">
+        <main id="main" tabIndex={-1} className="space-y-6 focus:outline-none">
           {children}
         </main>
       </div>

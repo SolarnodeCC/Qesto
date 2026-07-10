@@ -663,7 +663,7 @@ describe('v7.0 WCAG AAA — XR (immersive overlay)', () => {
           </button>
         </div>
 
-        <div class="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-6 overflow-y-auto">
+        <div class="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-8 overflow-y-auto">
           <div class="relative w-full aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden border border-teal-500/30 bg-black">
             <canvas
               role="img"

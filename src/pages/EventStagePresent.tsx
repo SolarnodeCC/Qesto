@@ -118,8 +118,8 @@ export default function EventStagePresent() {
     }
   }
 
-  if (error) return <div className="p-8 text-center text-red-600">{error}</div>
-  if (!data) return <div className="p-8 text-center text-pulse-500">…</div>
+  if (error) return <div className="p-12 text-center text-red-600">{error}</div>
+  if (!data) return <div className="p-12 text-center text-pulse-500">…</div>
 
   const activeId = data.presenter.activeSlotId ?? data.activeSlot?.slotId ?? null
   const showQa = data.activeSlot?.session?.sessionMode === 'townhall'
@@ -127,7 +127,7 @@ export default function EventStagePresent() {
 
   return (
     <div className="flex min-h-screen flex-col bg-pulse-50 dark:bg-pulse-950">
-      <header className="border-b border-pulse-200 bg-white px-5 py-4 dark:border-pulse-800 dark:bg-pulse-900">
+      <header className="border-b border-pulse-200 bg-white px-6 py-4 dark:border-pulse-800 dark:bg-pulse-900">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
           <div>
             <Link
@@ -193,7 +193,7 @@ export default function EventStagePresent() {
                 allowFullScreen
               />
             ) : (
-              <p className="rounded-lg border border-dashed border-pulse-300 px-4 py-12 text-center text-sm text-pulse-500 dark:border-pulse-600">
+              <p className="rounded-lg border border-dashed border-pulse-300 px-4 py-24 text-center text-sm text-pulse-500 dark:border-pulse-600">
                 {t('present.slidesEmpty')}
               </p>
             )}

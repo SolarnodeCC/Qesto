@@ -62,9 +62,9 @@ export function Skeleton({ width = 'w-full', height = 'h-4', rounded = 'rounded-
  */
 export function InsightsThemeCardSkeleton() {
   return (
-    <div className="rounded-xl border border-pulse-200 p-5 space-y-3 h-[148px]">
+    <div className="rounded-xl border border-pulse-200 p-6 space-y-3 h-[148px]">
       {/* Theme title chip */}
-      <Skeleton width="w-2/3" height="h-5" rounded="rounded-full" />
+      <Skeleton width="w-2/3" height="h-6" rounded="rounded-full" />
       {/* Body text — two lines */}
       <div className="space-y-2">
         <Skeleton width="w-full" height="h-3" />
@@ -72,7 +72,7 @@ export function InsightsThemeCardSkeleton() {
       </div>
       {/* Confidence chip */}
       <div className="flex items-center justify-between">
-        <Skeleton width="w-24" height="h-5" rounded="rounded-full" />
+        <Skeleton width="w-24" height="h-6" rounded="rounded-full" />
         <Skeleton width="w-16" height="h-4" />
       </div>
     </div>
@@ -89,7 +89,7 @@ export function InsightsTrendSparkSkeleton() {
       {/* Label */}
       <Skeleton width="w-32" height="h-3" />
       {/* Spark container — matches SVG 100%×40px */}
-      <Skeleton width="w-full" height="h-10" rounded="rounded-lg" />
+      <Skeleton width="w-full" height="h-16" rounded="rounded-lg" />
     </div>
   )
 }
@@ -107,7 +107,7 @@ export function InsightsTabSkeleton() {
       className="space-y-4"
     >
       {/* Section heading placeholder */}
-      <Skeleton width="w-40" height="h-6" rounded="rounded-lg" />
+      <Skeleton width="w-40" height="h-8" rounded="rounded-lg" />
 
       {/* Theme cards — 3 to match typical loaded state */}
       <div className="space-y-3">
@@ -146,7 +146,7 @@ export function WizardAIGenerationSkeleton({ questionCount = 4 }: WizardAIGenera
     >
       {/* AI generation header: sparkle icon area + status text */}
       <div className="flex items-center gap-3">
-        <Skeleton width="w-8" height="h-8" rounded="rounded-full" />
+        <Skeleton width="w-12" height="h-12" rounded="rounded-full" />
         <div className="space-y-1 flex-1">
           <Skeleton width="w-48" height="h-4" />
           <Skeleton width="w-32" height="h-3" />
@@ -158,22 +158,22 @@ export function WizardAIGenerationSkeleton({ questionCount = 4 }: WizardAIGenera
         // Delay class applied inline via style for stagger — CSS var driven
         <div
           key={i}
-          className="rounded-xl border border-pulse-200 p-5 space-y-3 h-[140px]"
+          className="rounded-xl border border-pulse-200 p-6 space-y-3 h-[140px]"
           style={{ animationDelay: `${i * 40}ms` }}
         >
           {/* Question type badge */}
           <div className="flex items-center justify-between">
-            <Skeleton width="w-20" height="h-5" rounded="rounded-full" />
-            <Skeleton width="w-8" height="h-8" rounded="rounded-full" />
+            <Skeleton width="w-20" height="h-6" rounded="rounded-full" />
+            <Skeleton width="w-12" height="h-12" rounded="rounded-full" />
           </div>
           {/* Prompt */}
           <Skeleton width="w-full" height="h-4" />
           <Skeleton width="w-3/4" height="h-4" />
           {/* Options row */}
           <div className="flex gap-2">
-            <Skeleton width="w-20" height="h-6" rounded="rounded-full" />
-            <Skeleton width="w-20" height="h-6" rounded="rounded-full" />
-            <Skeleton width="w-20" height="h-6" rounded="rounded-full" />
+            <Skeleton width="w-20" height="h-8" rounded="rounded-full" />
+            <Skeleton width="w-20" height="h-8" rounded="rounded-full" />
+            <Skeleton width="w-20" height="h-8" rounded="rounded-full" />
           </div>
         </div>
       ))}
@@ -194,11 +194,11 @@ export function LaunchpadPreFlightItemSkeleton() {
   return (
     <div className="flex items-center gap-3 h-11">
       {/* Check circle */}
-      <Skeleton width="w-5" height="h-5" rounded="rounded-full" />
+      <Skeleton width="w-6" height="h-6" rounded="rounded-full" />
       {/* Label */}
       <Skeleton width="w-48" height="h-4" />
       {/* Status badge (sometimes shown) */}
-      <Skeleton width="w-16" height="h-5" rounded="rounded-full" className="ml-auto" />
+      <Skeleton width="w-16" height="h-6" rounded="rounded-full" className="ml-auto" />
     </div>
   )
 }
@@ -213,10 +213,10 @@ export function LaunchpadPreFlightSkeleton() {
       role="status"
       aria-label="Loading pre-flight checklist…"
       aria-live="polite"
-      className="rounded-xl border border-pulse-200 p-5 space-y-4"
+      className="rounded-xl border border-pulse-200 p-6 space-y-4"
     >
       {/* Section title */}
-      <Skeleton width="w-36" height="h-5" rounded="rounded-lg" />
+      <Skeleton width="w-36" height="h-6" rounded="rounded-lg" />
 
       {/* Checklist items */}
       <div className="divide-y divide-pulse-100">
@@ -228,7 +228,7 @@ export function LaunchpadPreFlightSkeleton() {
 
       {/* CTA area */}
       <div className="pt-1">
-        <Skeleton width="w-32" height="h-10" rounded="rounded-lg" />
+        <Skeleton width="w-32" height="h-16" rounded="rounded-lg" />
       </div>
 
       <span className="sr-only">Loading session pre-flight checklist.</span>
@@ -252,7 +252,7 @@ export function SessionRowSkeleton() {
         <Skeleton width="w-1/2" height="h-3" />
       </div>
       {/* Status badge */}
-      <Skeleton width="w-14" height="h-5" rounded="rounded-full" />
+      <Skeleton width="w-14" height="h-6" rounded="rounded-full" />
     </li>
   )
 }
@@ -303,10 +303,10 @@ export function ResultsSectionSkeleton({ bars = 4 }: { bars?: number }) {
       role="status"
       aria-label="Loading results…"
       aria-live="polite"
-      className="rounded-xl border border-pulse-200 p-5 space-y-4"
+      className="rounded-xl border border-pulse-200 p-6 space-y-4"
     >
       {/* Question prompt */}
-      <Skeleton width="w-4/5" height="h-6" rounded="rounded-lg" />
+      <Skeleton width="w-4/5" height="h-8" rounded="rounded-lg" />
       <ul className="space-y-3">
         {Array.from({ length: bars }).map((_, i) => (
           <ResultBarSkeleton key={i} />

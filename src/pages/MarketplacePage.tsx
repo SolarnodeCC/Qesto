@@ -38,7 +38,7 @@ export default function MarketplacePage() {
         description={t('marketplace.seoDescription')}
         canonicalPath="/marketplace"
       />
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-4xl mx-auto px-8 py-16">
         <p className="text-sm font-medium text-teal-700 dark:text-teal-400 uppercase tracking-wide">
           {t('marketplace.eyebrow')}
         </p>
@@ -47,7 +47,7 @@ export default function MarketplacePage() {
         </h1>
         <p className="mt-4 text-lg text-pulse-600 dark:text-[#9AA8C7]">{t('marketplace.subtitle')}</p>
 
-        <label className="mt-8 block">
+        <label className="mt-12 block">
           <span className="sr-only">{t('marketplace.searchLabel')}</span>
           <input
             type="search"
@@ -62,15 +62,15 @@ export default function MarketplacePage() {
         </label>
 
         {loading ? (
-          <p className="mt-8 text-sm text-pulse-500" role="status">
+          <p className="mt-12 text-sm text-pulse-500" role="status">
             {t('marketplace.loading')}
           </p>
         ) : (
-          <Reveal as="ul" className="mt-8 grid gap-4 sm:grid-cols-2">
+          <Reveal as="ul" className="mt-12 grid gap-4 sm:grid-cols-2">
             {apps.map((app) => (
               <li
                 key={app.id}
-                className="rounded-xl border border-pulse-200 p-5 dark:border-[#2A3858] dark:bg-[#1C2540]"
+                className="rounded-xl border border-pulse-200 p-6 dark:border-[#2A3858] dark:bg-[#1C2540]"
               >
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="font-semibold text-pulse-900 dark:text-[#F0F2F8]">{app.name}</h2>
@@ -87,7 +87,7 @@ export default function MarketplacePage() {
           </Reveal>
         )}
 
-        <p className="mt-12 text-sm text-pulse-500">
+        <p className="mt-24 text-sm text-pulse-500">
           <Link to="/partner/sla" className="text-teal-600 hover:underline">
             {t('marketplace.slaLink')}
           </Link>

@@ -33,7 +33,7 @@ export default function MarketingDashboard() {
   if (auth.status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">
-        <div className="h-8 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
+        <div className="h-12 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
       </div>
     )
   }
@@ -43,7 +43,7 @@ export default function MarketingDashboard() {
 
   return (
     <AppShellLayout activeSection="home" onSectionChange={() => undefined} isSuperuser>
-      <div className="max-w-6xl mx-auto px-6 lg:px-10 py-10 animate-page-enter space-y-6">
+      <div className="max-w-6xl mx-auto px-8 lg:px-16 py-16 animate-page-enter space-y-8">
         <header>
           <Heading level="l">Marketing Review Dashboard</Heading>
           <Body size="s" className="text-pulse-500 dark:text-[#8A96B0] mt-2">

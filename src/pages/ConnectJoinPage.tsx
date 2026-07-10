@@ -47,7 +47,7 @@ export default function ConnectJoinPage() {
 
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8">
+      <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12">
         <div className="space-y-4">
           {[1, 2].map((i) => (
             <div key={i} className="h-16 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
@@ -85,17 +85,17 @@ export default function ConnectJoinPage() {
   }
 
   return (
-    <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-8">
+    <MainLayout mainClassName="min-h-screen max-w-2xl mx-auto p-12">
       <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
         {t('join.title')}
       </h1>
       <p className="mt-2 text-sm text-pulse-600 dark:text-[#9AA8C7]">{t('join.subtitle')}</p>
 
       {state.status === 'success' ? (
-        <div className="mt-6 rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20" aria-live="polite">
+        <div className="mt-8 rounded-lg border border-teal-200 bg-teal-50 p-6 dark:border-teal-800 dark:bg-teal-900/20" aria-live="polite">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-800" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 text-teal-600 dark:text-teal-300" aria-hidden="true">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-teal-100 dark:bg-teal-800" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6 text-teal-600 dark:text-teal-300" aria-hidden="true">
                 <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
@@ -124,13 +124,13 @@ export default function ConnectJoinPage() {
           <button
             type="button"
             onClick={handleReset}
-            className="mt-5 min-h-[44px] rounded-lg border border-teal-300 px-5 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 dark:border-teal-700 dark:text-teal-200 dark:hover:bg-teal-900/40"
+            className="mt-6 min-h-[44px] rounded-lg border border-teal-300 px-6 py-2.5 text-sm font-medium text-teal-700 hover:bg-teal-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 dark:border-teal-700 dark:text-teal-200 dark:hover:bg-teal-900/40"
           >
             {t('join.joinAnother')}
           </button>
         </div>
       ) : (
-        <form className="mt-6 space-y-5" onSubmit={(e) => void handleSubmit(e)}>
+        <form className="mt-8 space-y-6" onSubmit={(e) => void handleSubmit(e)}>
           <div>
             <label htmlFor="connect-token" className="block text-sm font-medium text-pulse-900 dark:text-[#F0F2F8]">
               {t('join.tokenLabel')}
@@ -170,7 +170,7 @@ export default function ConnectJoinPage() {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-6 py-3 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
+            className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-8 py-3 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {state.status === 'submitting' ? t('join.submitting') : t('join.submit')}
           </button>

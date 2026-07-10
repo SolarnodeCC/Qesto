@@ -137,7 +137,7 @@ export default function Dashboard() {
     return (
       <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">
         <div className="space-y-4 w-80">
-          <div className="h-8 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
+          <div className="h-12 w-48 rounded-lg bg-pulse-200 dark:bg-pulse-800 skeleton-shimmer" aria-hidden="true" />
           <SessionListSkeleton rows={3} />
         </div>
       </div>
@@ -309,7 +309,7 @@ export default function Dashboard() {
       onSectionChange={setActiveSection}
       isSuperuser={isSuperuser}
     >
-      <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-10 animate-page-enter density-stack-12">
+      <div className="max-w-[1200px] mx-auto px-8 lg:px-16 py-16 animate-page-enter density-stack-12">
         <HeroSection
           userName={userName}
           townhallFeatureEnabled={townhallFeatureEnabled}

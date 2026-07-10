@@ -154,7 +154,7 @@ export default function XrSessionOverlay({
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-6 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4 py-8 overflow-y-auto">
         <XrSpatialScene question={question} avatars={avatars} reducedMotion={reducedMotion} />
         <p className="text-xs text-white/60 text-center max-w-sm">{t('scene_placeholder_caption')}</p>
         {!isWebXrCapable && (

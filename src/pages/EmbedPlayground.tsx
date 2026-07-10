@@ -47,7 +47,7 @@ async function copyToClipboard(text: string): Promise<boolean> {
 function UpgradeGate({ t }: { t: (key: string) => string }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-6 py-20 px-6 text-center"
+      className="flex flex-col items-center justify-center gap-8 py-20 px-8 text-center"
       role="status"
       aria-label={t('playground.upgradeTitle')}
     >
@@ -62,7 +62,7 @@ function UpgradeGate({ t }: { t: (key: string) => string }) {
       </div>
       <Link
         to="/pricing"
-        className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
+        className="inline-flex items-center justify-center rounded-lg px-8 py-3 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
       >
         {t('playground.upgradeCta')}
       </Link>
@@ -307,7 +307,7 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
   return (
     <form
       onSubmit={(e) => void handleSubmit(e)}
-      className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-4"
+      className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 space-y-4"
       aria-label={t('playground.createWidget')}
     >
       <h2 className="text-base font-semibold text-pulse-900 dark:text-[#F0F2F8]">{t('playground.createWidget')}</h2>
@@ -364,7 +364,7 @@ function CreateWidgetForm({ sessions, sessionsLoading, onCreate, creating, creat
       <button
         type="submit"
         disabled={creating || !sessionId || !originsText.trim()}
-        className="inline-flex items-center justify-center rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-50 px-5 py-2.5 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
+        className="inline-flex items-center justify-center rounded-lg bg-teal-600 hover:bg-teal-700 disabled:opacity-50 px-6 py-2.5 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 transition-colors min-h-[44px]"
       >
         {creating ? t('playground.creating') : t('playground.create')}
       </button>
@@ -400,7 +400,7 @@ export default function EmbedPlayground() {
   if (auth.status === 'loading') {
     return (
       <div className="min-h-screen bg-[var(--color-bg)] flex items-center justify-center" aria-busy="true">
-        <div className="w-8 h-8 rounded-full border-2 border-teal-500 border-t-transparent animate-spin" aria-label="Loading" />
+        <div className="w-12 h-12 rounded-full border-2 border-teal-500 border-t-transparent animate-spin" aria-label="Loading" />
       </div>
     )
   }
@@ -411,7 +411,7 @@ export default function EmbedPlayground() {
 
   return (
     <MainLayout>
-      <main id="main" tabIndex={-1} className="focus:outline-none max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <main id="main" tabIndex={-1} className="focus:outline-none max-w-4xl mx-auto px-4 sm:px-8 py-12 space-y-12">
         {/* Page header */}
         <header className="space-y-1">
           <div className="flex items-center gap-3">

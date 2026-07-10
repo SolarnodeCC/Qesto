@@ -148,7 +148,7 @@ export default function WordCloudEnergizerView({
   const sortedWords = Object.entries(words).sort((a, b) => b[1] - a[1])
 
   return (
-    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 space-y-4">
+    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-6 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5">
@@ -246,7 +246,7 @@ export default function WordCloudEnergizerView({
             <button
               type="submit"
               disabled={submitting || !wordInput.trim()}
-              className="px-5 py-3 rounded-xl bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 transition-colors"
+              className="px-6 py-3 rounded-xl bg-pink-600 text-white font-semibold hover:bg-pink-700 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 transition-colors"
             >
               {submitting ? '…' : 'Send'}
             </button>

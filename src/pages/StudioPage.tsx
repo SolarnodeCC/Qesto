@@ -93,7 +93,7 @@ export default function StudioPage() {
 
   if (auth.status === 'loading') {
     return (
-      <MainLayout mainClassName="min-h-screen max-w-4xl mx-auto p-8">
+      <MainLayout mainClassName="min-h-screen max-w-4xl mx-auto p-12">
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-16 rounded-xl bg-pulse-200 skeleton-shimmer" aria-hidden="true" />
@@ -218,7 +218,7 @@ export default function StudioPage() {
   }
 
   return (
-    <MainLayout mainClassName="min-h-screen max-w-4xl mx-auto p-8">
+    <MainLayout mainClassName="min-h-screen max-w-4xl mx-auto p-12">
       <h1 tabIndex={-1} className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8] focus:outline-none">
         {t('page.title')}
       </h1>
@@ -244,7 +244,7 @@ export default function StudioPage() {
         </div>
       )}
 
-      <div className="mt-6">
+      <div className="mt-8">
         <PromptForm
           t={t}
           topic={topic}
@@ -262,12 +262,12 @@ export default function StudioPage() {
       </div>
 
       {suggestions.length > 0 && (
-        <div className="mt-6">
+        <div className="mt-8">
           <SuggestionChips t={t} suggestions={suggestions} onAccept={handleAcceptSuggestion} />
         </div>
       )}
 
-      <div className="mt-6">
+      <div className="mt-8">
         <DraftPreviewList
           t={t}
           drafts={drafts}
@@ -284,14 +284,14 @@ export default function StudioPage() {
       </div>
 
       {drafts.length > 0 && (
-        <div className="mt-6 rounded-lg border border-violet-200 bg-violet-50 p-5 dark:border-violet-800 dark:bg-violet-900/20">
+        <div className="mt-8 rounded-lg border border-violet-200 bg-violet-50 p-6 dark:border-violet-800 dark:bg-violet-900/20">
           {appliedSessionId ? (
             <div aria-live="polite">
               <p className="text-sm font-medium text-violet-800 dark:text-violet-200">{t('preview.applied')}</p>
               <button
                 type="button"
                 onClick={() => navigate(`/sessions/${encodeURIComponent(appliedSessionId)}/launchpad`)}
-                className="mt-3 min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-5 py-2.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                className="mt-3 min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
               >
                 {t('preview.openSession')}
               </button>
@@ -301,7 +301,7 @@ export default function StudioPage() {
               type="button"
               onClick={() => void handleApplyToSession()}
               disabled={applying}
-              className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-5 py-2.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-6 py-2.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {applying ? t('preview.applying') : t('preview.applyToSession')}
             </button>
@@ -309,7 +309,7 @@ export default function StudioPage() {
         </div>
       )}
 
-      <div className="mt-8">
+      <div className="mt-12">
         <LibraryPanel
           t={t}
           items={libraryItems}

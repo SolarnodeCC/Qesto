@@ -23,7 +23,7 @@ export function SamlSection({
   onSave,
 }: Props) {
   return (
-    <section aria-labelledby="section-saml" className="space-y-4 rounded-xl border border-pulse-200 p-6">
+    <section aria-labelledby="section-saml" className="space-y-4 rounded-xl border border-pulse-200 p-8">
       <h2 id="section-saml" className="text-lg font-semibold">{samlConfigLabel}</h2>
       <p className="text-sm text-pulse-500">
         Configure single sign-on via SAML 2.0. Contact your identity provider for these values.

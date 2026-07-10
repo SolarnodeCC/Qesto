@@ -13,7 +13,7 @@ export function SessionEndedCard({ ordered, maxCount, resultsTotal }: SessionEnd
   const t = useT('join')
 
   return (
-    <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] p-6 text-center space-y-2">
+    <div className="rounded-xl border border-pulse-200 dark:border-[#1E2A45] p-8 text-center space-y-2">
       <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-500 to-violet-500 flex items-center justify-center mx-auto shadow-teal" aria-hidden="true">
         <CheckCircle2 size={28} className="text-white" />
       </div>

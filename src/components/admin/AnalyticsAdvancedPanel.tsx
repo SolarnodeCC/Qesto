@@ -16,7 +16,7 @@ export default function AnalyticsAdvancedPanel() {
   const { funnel, costs, cohorts, loading, error, exportCsv } = useAdminAnalyticsAdvanced(window)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <Heading level="l">Business &amp; product analytics</Heading>
         <div role="group" aria-label="Time window" className="flex gap-1 rounded-lg bg-pulse-100 dark:bg-[#0F1526] p-1">

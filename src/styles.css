@@ -57,17 +57,12 @@
   --color-surface: #FFFFFF;
   --color-ink: var(--color-pulse-900);
 
-  /* Spacing scale — 4px baseline */
-  --spacing-0: 0;
-  --spacing-1: 4px;
-  --spacing-2: 8px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
-  --spacing-5: 24px;
-  --spacing-6: 32px;
-  --spacing-8: 48px;
-  --spacing-10: 64px;
-  --spacing-12: 96px;
+  /* Spacing — Tailwind's default 4px multiplier (--spacing: 0.25rem) owns every
+     numeric step. Do NOT re-add numeric --spacing-<n> overrides: a partial remap
+     makes the scale non-monotonic, because unmapped steps keep resolving through
+     the multiplier (the old 24/32/48/64/96px remap made p-7 < p-6 and h-11 < h-10;
+     see LAYOUT_RESPONSIVENESS_AUDIT_2026-07-10, LAYOUT-001). Call sites were
+     renumbered to the default-scale step with the same rendered px value. */
 
   /* Border radius */
   --radius-sm: 6px;

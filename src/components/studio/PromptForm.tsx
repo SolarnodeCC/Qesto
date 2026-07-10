@@ -33,7 +33,7 @@ export function PromptForm({
 }: Props) {
   return (
     <form
-      className="space-y-4 rounded-lg border border-pulse-200 bg-white p-5 dark:border-[#2A3858] dark:bg-pulse-900/40"
+      className="space-y-4 rounded-lg border border-pulse-200 bg-white p-6 dark:border-[#2A3858] dark:bg-pulse-900/40"
       onSubmit={(e) => {
         e.preventDefault()
         onSubmit()
@@ -122,7 +122,7 @@ export function PromptForm({
       <button
         type="submit"
         disabled={submitting || topic.trim().length === 0}
-        className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-6 py-3 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
+        className="min-h-[44px] rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 px-8 py-3 text-sm font-medium text-white hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
       >
         {submitting ? t('prompt.generating') : t('prompt.generate')}
       </button>

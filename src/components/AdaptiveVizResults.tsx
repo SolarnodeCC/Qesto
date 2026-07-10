@@ -143,7 +143,7 @@ function DonutViz({ options, total }: DonutVizProps) {
   })
 
   return (
-    <div className="flex flex-wrap items-center gap-8" aria-live="polite">
+    <div className="flex flex-wrap items-center gap-12" aria-live="polite">
       {/* SVG donut */}
       <svg
         width={120}
@@ -268,7 +268,7 @@ function HBarChart({ options, max, total }: HBarChartProps) {
             <div
               role="img"
               aria-label={t('viz.ariaBar', { label: o.label, pct: String(totalPct) })}
-              className="h-5 rounded-full overflow-hidden"
+              className="h-6 rounded-full overflow-hidden"
               style={{ background: 'color-mix(in srgb, var(--canvas-border) 60%, transparent)' }}
             >
               <div

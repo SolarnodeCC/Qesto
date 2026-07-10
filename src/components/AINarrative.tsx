@@ -12,7 +12,7 @@ export default function AINarrative({ className = '' }: AINarrativeProps) {
     <section
       aria-labelledby="ai-narrative-heading"
       className={[
-        'rounded-lg border border-violet-200 bg-violet-50 p-5 space-y-3',
+        'rounded-lg border border-violet-200 bg-violet-50 p-6 space-y-3',
         'shadow-card',
         'dark:bg-violet-900/20 dark:border-violet-700',
         className,

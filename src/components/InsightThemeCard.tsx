@@ -34,7 +34,7 @@ export default function InsightThemeCard({
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       className={[
-        'w-full text-left rounded-lg border border-pulse-200 bg-pulse-50 p-5 space-y-3',
+        'w-full text-left rounded-lg border border-pulse-200 bg-pulse-50 p-6 space-y-3',
         'shadow-card transition-all duration-150',
         'dark:bg-pulse-800 dark:border-pulse-700',
         onClick

@@ -49,13 +49,13 @@ export default function SolutionPageTemplate({
       {/* Hero */}
       {hero && (
         <section className="animate-page-enter bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0A0F1E] dark:to-[#0A0F1E] border-b border-pulse-200 dark:border-[#1E2A45]">
-          <div className="grid-container px-4 md:px-6 py-16 md:py-24">
+          <div className="grid-container px-4 md:px-8 py-16 md:py-24">
             <div
               className={`col-span-full max-w-[1120px] mx-auto ${
-                hero.imageUrl ? 'grid grid-cols-1 lg:grid-cols-2 gap-12 items-center' : 'max-w-[680px]'
+                hero.imageUrl ? 'grid grid-cols-1 lg:grid-cols-2 gap-24 items-center' : 'max-w-[680px]'
               }`}
             >
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {hero.badge && (
                   <span className="inline-flex items-center rounded-pill px-3 py-1 text-caption font-medium bg-teal-100 text-teal-700 border border-teal-200">
                     {hero.badge}
@@ -74,14 +74,14 @@ export default function SolutionPageTemplate({
                 <div className="flex flex-wrap gap-3">
                   <Link
                     to={hero.primaryCta.href}
-                    className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                    className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-8 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
                   >
                     {hero.primaryCta.label}
                   </Link>
                   {hero.secondaryCta && (
                     <Link
                       to={hero.secondaryCta.href}
-                      className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#F0F2F8] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[#1C2540]"
+                      className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#F0F2F8] px-8 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[#1C2540]"
                     >
                       {hero.secondaryCta.label}
                     </Link>
@@ -127,8 +127,8 @@ export default function SolutionPageTemplate({
       {/* Pain points */}
       {painPoints && (
         <Reveal as="section" aria-labelledby="pain-points-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-16">
               <h2
                 id="pain-points-heading"
                 className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
@@ -136,11 +136,11 @@ export default function SolutionPageTemplate({
               >
                 {painPoints.heading}
               </h2>
-              <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6" role="list">
+              <ul className="grid grid-cols-1 sm:grid-cols-3 gap-8" role="list">
                 {painPoints.items.map((item, i) => (
                   <li
                     key={item.title}
-                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 space-y-3 shadow-card"
+                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-8 space-y-3 shadow-card"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <span className="text-2xl" aria-hidden="true">{item.icon}</span>
@@ -161,8 +161,8 @@ export default function SolutionPageTemplate({
           aria-labelledby="features-heading"
           className="py-16 md:py-20 bg-gradient-to-br from-teal-50/50 to-violet-50/50 dark:from-[#0F1525] dark:to-[#0F1525] border-b border-pulse-200 dark:border-[#1E2A45]"
         >
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-16">
               <div className="text-center space-y-3">
                 <h2
                   id="features-heading"
@@ -175,11 +175,11 @@ export default function SolutionPageTemplate({
                   <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC] max-w-2xl mx-auto">{features.subheading}</p>
                 )}
               </div>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" role="list">
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" role="list">
                 {features.items.map((feat, i) => (
                   <li
                     key={feat.title}
-                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-3 shadow-card hover:shadow-elevated transition-shadow"
+                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 space-y-3 shadow-card hover:shadow-elevated transition-shadow"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <div className="flex items-center gap-2">
@@ -199,8 +199,8 @@ export default function SolutionPageTemplate({
       {/* Proof */}
       {proof && (
         <Reveal as="section" aria-labelledby="proof-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-12">
               <h2
                 id="proof-heading"
                 className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
@@ -210,11 +210,11 @@ export default function SolutionPageTemplate({
               </h2>
 
               {proof.metrics && proof.metrics.length > 0 && (
-                <ul className="grid grid-cols-1 sm:grid-cols-3 gap-5" role="list">
+                <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6" role="list">
                   {proof.metrics.map((metric, i) => (
                     <li
                       key={metric.label}
-                      className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-2 text-center shadow-card"
+                      className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 space-y-2 text-center shadow-card"
                       style={{ '--stagger-index': i } as React.CSSProperties}
                     >
                       <p className="text-heading-m font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent">
@@ -240,7 +240,7 @@ export default function SolutionPageTemplate({
               )}
 
               {proof.testimonial && (
-                <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-6 md:p-8 text-center space-y-3">
+                <blockquote className="max-w-[780px] mx-auto rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-8 md:p-12 text-center space-y-3">
                   <p className="text-body-l text-pulse-700 dark:text-[#A8B3CC] leading-relaxed">"{proof.testimonial.quote}"</p>
                   <footer className="text-caption text-pulse-600 dark:text-[#8A96B0]">
                     <strong className="dark:text-[#F0F2F8]">{proof.testimonial.author}</strong>
@@ -256,8 +256,8 @@ export default function SolutionPageTemplate({
       {/* Playbook */}
       {playbook && (
         <Reveal as="section" aria-labelledby="playbook-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-16">
               <div className="text-center max-w-3xl mx-auto space-y-3">
                 <h2
                   id="playbook-heading"
@@ -268,11 +268,11 @@ export default function SolutionPageTemplate({
                 </h2>
                 <p className="text-body-l text-pulse-600 dark:text-[#A8B3CC]">{playbook.intro}</p>
               </div>
-              <ol className="grid grid-cols-1 md:grid-cols-3 gap-6" role="list">
+              <ol className="grid grid-cols-1 md:grid-cols-3 gap-8" role="list">
                 {playbook.steps.map((step, i) => (
                   <li
                     key={step.title}
-                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-6 space-y-3"
+                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-8 space-y-3"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <p className="text-caption font-semibold text-teal-700 dark:text-teal-400">Step {i + 1}</p>
@@ -289,8 +289,8 @@ export default function SolutionPageTemplate({
       {/* Scenarios */}
       {scenarios && (
         <Reveal as="section" aria-labelledby="scenarios-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-10">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-16">
               <h2
                 id="scenarios-heading"
                 className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
@@ -298,11 +298,11 @@ export default function SolutionPageTemplate({
               >
                 {scenarios.heading}
               </h2>
-              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
+              <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="list">
                 {scenarios.items.map((s, i) => (
                   <li
                     key={s.title}
-                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-6 space-y-2"
+                    className="animate-list-item rounded-xl border border-teal-100 dark:border-[#1E2A45] bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] p-8 space-y-2"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{s.title}</h3>
@@ -318,8 +318,8 @@ export default function SolutionPageTemplate({
       {/* Related pages */}
       {related && (
         <Reveal as="section" aria-labelledby="related-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[1120px] mx-auto space-y-8">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[1120px] mx-auto space-y-12">
               <h2
                 id="related-heading"
                 className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
@@ -327,12 +327,12 @@ export default function SolutionPageTemplate({
               >
                 {related.heading}
               </h2>
-              <ul className="grid grid-cols-1 sm:grid-cols-3 gap-5" role="list">
+              <ul className="grid grid-cols-1 sm:grid-cols-3 gap-6" role="list">
                 {related.links.map((link, i) => (
                   <li key={link.href} className="animate-list-item" style={{ '--stagger-index': i } as React.CSSProperties}>
                     <Link
                       to={link.href}
-                      className="block rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                      className="block rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 space-y-2 shadow-card hover:shadow-elevated hover:border-teal-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
                     >
                       <p className="text-heading-s font-semibold text-teal-700 dark:text-teal-400">{link.label}</p>
                       <p className="text-caption text-pulse-500 dark:text-[#8A96B0]">{link.desc}</p>
@@ -348,8 +348,8 @@ export default function SolutionPageTemplate({
       {/* FAQ */}
       {faq && (
         <Reveal as="section" aria-labelledby="faq-heading" className="py-16 md:py-20 border-b border-pulse-200 dark:border-[#1E2A45]">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[900px] mx-auto space-y-8">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[900px] mx-auto space-y-12">
               <h2
                 id="faq-heading"
                 className="text-heading-l font-semibold text-center dark:text-[#F0F2F8]"
@@ -361,7 +361,7 @@ export default function SolutionPageTemplate({
                 {faq.items.map((item, i) => (
                   <li
                     key={item.question}
-                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-5 md:p-6 space-y-2 shadow-card"
+                    className="animate-list-item rounded-xl border border-pulse-200 dark:border-[#1E2A45] bg-white dark:bg-[#151C2E] p-6 md:p-8 space-y-2 shadow-card"
                     style={{ '--stagger-index': i } as React.CSSProperties}
                   >
                     <h3 className="text-heading-s font-semibold dark:text-[#F0F2F8]">{item.question}</h3>
@@ -382,8 +382,8 @@ export default function SolutionPageTemplate({
       {/* Bottom CTA */}
       {bottomCta && (
         <Reveal as="section" aria-labelledby="cta-heading" className="py-16 md:py-24">
-          <div className="grid-container px-4 md:px-6">
-            <div className="col-span-full max-w-[680px] mx-auto text-center space-y-6 py-12 px-8 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] border border-pulse-200 dark:border-[#1E2A45]">
+          <div className="grid-container px-4 md:px-8">
+            <div className="col-span-full max-w-[680px] mx-auto text-center space-y-8 py-24 px-12 rounded-2xl bg-gradient-to-br from-teal-50 to-violet-50 dark:from-[#0F1525] dark:to-[#0F1525] border border-pulse-200 dark:border-[#1E2A45]">
               <h2
                 id="cta-heading"
                 className="text-heading-l font-bold bg-gradient-to-br from-teal-500 to-violet-600 bg-clip-text text-transparent"
@@ -395,14 +395,14 @@ export default function SolutionPageTemplate({
               <div className="flex flex-wrap justify-center gap-3">
                 <Link
                   to={bottomCta.primaryCta.href}
-                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-6 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
+                  className="inline-flex items-center rounded-lg bg-gradient-to-br from-teal-500 to-violet-600 text-white px-8 py-3 font-semibold hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion shadow-teal"
                 >
                   {bottomCta.primaryCta.label}
                 </Link>
                 {bottomCta.secondaryCta && (
                   <Link
                     to={bottomCta.secondaryCta.href}
-                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#F0F2F8] px-6 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[#1C2540]"
+                    className="inline-flex items-center rounded-lg border border-pulse-300 dark:border-[#2A3858] text-pulse-700 dark:text-[#F0F2F8] px-8 py-3 font-medium hover:border-teal-400 hover:text-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 btn-motion dark:bg-[#1C2540]"
                   >
                     {bottomCta.secondaryCta.label}
                   </Link>

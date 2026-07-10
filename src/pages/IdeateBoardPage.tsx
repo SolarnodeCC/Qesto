@@ -68,8 +68,8 @@ export default function IdeateBoardPage() {
     await refreshConfig()
   }
 
-  if (loadError) return <div className="p-8 text-center text-red-600">{loadError}</div>
-  if (!config) return <div className="p-8 text-center text-pulse-500" aria-live="polite">…</div>
+  if (loadError) return <div className="p-12 text-center text-red-600">{loadError}</div>
+  if (!config) return <div className="p-12 text-center text-pulse-500" aria-live="polite">…</div>
 
   const connectionLabel =
     live && state.connection !== 'open'
@@ -84,7 +84,7 @@ export default function IdeateBoardPage() {
       {!live && (
         <section
           aria-labelledby="draft-cta-heading"
-          className="rounded-lg border border-teal-200 bg-teal-50 p-5 dark:border-teal-800 dark:bg-teal-900/20"
+          className="rounded-lg border border-teal-200 bg-teal-50 p-6 dark:border-teal-800 dark:bg-teal-900/20"
         >
           <h2
             id="draft-cta-heading"
@@ -96,7 +96,7 @@ export default function IdeateBoardPage() {
             type="button"
             onClick={() => void handleStart()}
             disabled={starting}
-            className="mt-3 min-h-[44px] rounded-lg bg-teal-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
+            className="mt-3 min-h-[44px] rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-teal-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {starting ? t('present.starting') : t('present.start')}
           </button>

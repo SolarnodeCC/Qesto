@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 
 export default function InsightEmptyState({ onCreateSession }: { onCreateSession: () => void }) {
   return (
-    <div className="space-y-6 py-8">
+    <div className="space-y-8 py-12">
       <div className="text-center space-y-4">
         {/* Icon */}
         <div className="flex justify-center">

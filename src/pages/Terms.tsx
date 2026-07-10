@@ -28,13 +28,13 @@ export default function Terms() {
       />
 
       {/* Legal hero */}
-      <div className="border-b border-pulse-200 pb-6 pt-14">
-        <div className="max-w-6xl mx-auto px-6">
+      <div className="border-b border-pulse-200 pb-8 pt-14">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Legal</div>
           <h1 className="font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-3" style={{ ...displayFont, fontSize: 44 }}>
             Terms of Service
           </h1>
-          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
+          <div className="flex gap-6 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Version:</strong> 3.0.0</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Effective:</strong> 2026-01-15</span>
             <span><strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>Governing law:</strong> Netherlands</span>
@@ -43,8 +43,8 @@ export default function Terms() {
       </div>
 
       {/* Legal layout */}
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid gap-16 py-12 pb-24" style={{ gridTemplateColumns: '200px 1fr' }}>
+      <div className="max-w-6xl mx-auto px-8">
+        <div className="grid gap-16 py-24 pb-24" style={{ gridTemplateColumns: '200px 1fr' }}>
 
           {/* TOC */}
           <aside className="hidden md:block" style={{ position: 'sticky', top: 80, height: 'fit-content' }}>
@@ -65,12 +65,12 @@ export default function Terms() {
 
           {/* Prose */}
           <main className="min-w-0">
-            <p className="text-[17px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed mb-8">
+            <p className="text-[17px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed mb-12">
               These terms govern your use of Qesto. They're short because our product is. If something here
               contradicts your master services agreement with us, the MSA wins.
             </p>
 
-            <h2 id="t1" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t1" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               1. The deal
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -78,7 +78,7 @@ export default function Terms() {
               sessions on it, and keep ownership of everything you put in. We keep ownership of the platform itself.
             </p>
 
-            <h2 id="t2" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t2" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               2. Your account
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -91,11 +91,11 @@ export default function Terms() {
               single seat.
             </p>
 
-            <h2 id="t3" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t3" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               3. Acceptable use
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-3">Don't use Qesto to:</p>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li>Run sessions that violate local law or published terms of a venue.</li>
               <li>Collect responses from children under 13 (or your jurisdiction's equivalent) without verified parental consent.</li>
               <li>Attempt to re-identify anonymous participants. Doing so terminates your account immediately.</li>
@@ -117,7 +117,7 @@ export default function Terms() {
               without waiting for a notice (Art. 18 DSA).
             </p>
 
-            <h2 id="t4" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t4" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               4. Your content
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -133,7 +133,7 @@ export default function Terms() {
               cancel, you have 30 days to pull your available data before we purge.
             </p>
 
-            <h2 id="t5" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t5" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               5. Payment &amp; plans
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -152,7 +152,7 @@ export default function Terms() {
               Price changes affect your next renewal, not the current term. We give 60 days' notice.
             </p>
 
-            <h2 id="t6" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t6" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               6. Service levels
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -163,7 +163,7 @@ export default function Terms() {
               Credits for downtime are capped at the prior month's fees, processed within the next invoice cycle.
             </p>
 
-            <h2 id="t7" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t7" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               7. Termination
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -185,7 +185,7 @@ export default function Terms() {
               within 14 days.
             </p>
 
-            <h2 id="t8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t8" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               8. Warranties
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -198,7 +198,7 @@ export default function Terms() {
               disclaimed to the extent the law allows.
             </p>
 
-            <h2 id="t9" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t9" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               9. Liability
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -210,7 +210,7 @@ export default function Terms() {
               This cap doesn't apply to gross negligence, willful misconduct, or liability the law says we can't cap.
             </p>
 
-            <h2 id="t10" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t10" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               10. Disputes
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-4">
@@ -223,7 +223,7 @@ export default function Terms() {
               EU consumers retain their local forum rights. Nothing here waives them.
             </p>
 
-            <h2 id="t11" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4" style={displayFont}>
+            <h2 id="t11" className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4" style={displayFont}>
               11. Misc
             </h2>
             <p className="text-[15px] leading-relaxed text-pulse-700 dark:text-[#A8B3CC] mb-2">
@@ -246,7 +246,7 @@ export default function Terms() {
               constitutes acceptance. If you do not accept a material change, you may cancel before the effective
               date and receive a pro-rata refund of any prepaid fees for the remaining period.
             </p>
-            <p className="text-[13px] text-pulse-500 mt-8">
+            <p className="text-[13px] text-pulse-500 mt-12">
               Questions?{' '}
               <a href="mailto:legal@qesto.cc" className="text-teal-600 hover:underline">legal@qesto.cc</a>
             </p>

@@ -90,7 +90,7 @@ export function PresenterControls({
     <div
       role="toolbar"
       aria-label={tp('ctrl.toolbar')}
-      className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white shrink-0"
+      className="bg-pulse-900 border-t border-pulse-700 px-4 py-2 flex flex-wrap items-center gap-x-8 gap-y-2 text-sm text-white shrink-0"
     >
 
       {/* Question navigation */}
@@ -129,7 +129,7 @@ export function PresenterControls({
         )}
       </div>
 
-      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
+      <span className="w-px h-6 bg-pulse-700" aria-hidden="true" />
 
       {/* Display options */}
       <div role="group" aria-label={tp('ctrl.group.display')} className="contents">
@@ -191,7 +191,7 @@ export function PresenterControls({
         </label>
       </div>
 
-      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
+      <span className="w-px h-6 bg-pulse-700" aria-hidden="true" />
 
       {/* Soft timer */}
       <div role="group" aria-label={tp('ctrl.group.timer')} className="flex items-center gap-2">
@@ -235,7 +235,7 @@ export function PresenterControls({
         )}
       </div>
 
-      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
+      <span className="w-px h-6 bg-pulse-700" aria-hidden="true" />
 
       {/* Share and export */}
       <div role="group" aria-label={tp('ctrl.group.export')} className="contents">
@@ -273,7 +273,7 @@ export function PresenterControls({
         )}
       </div>
 
-      <span className="w-px h-5 bg-pulse-700" aria-hidden="true" />
+      <span className="w-px h-6 bg-pulse-700" aria-hidden="true" />
 
       {/* Captions and language */}
       <div role="group" aria-label={tp('ctrl.group.captions')} className="contents">
@@ -310,7 +310,7 @@ export function PresenterControls({
         <CanvasThemePicker variant="bar" />
       </div>
 
-      <span className="w-px h-5 bg-pulse-700 ml-auto" aria-hidden="true" />
+      <span className="w-px h-6 bg-pulse-700 ml-auto" aria-hidden="true" />
 
       <Link
         to="/dashboard"

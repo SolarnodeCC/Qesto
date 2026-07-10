@@ -8,7 +8,7 @@ export default function PresenterRemotePage() {
   const { id } = useParams<{ id: string }>()
   return (
     <MainLayout>
-      <div className="max-w-md mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-md mx-auto px-4 py-12 space-y-8">
         <h1 className="text-2xl font-bold text-pulse-900 dark:text-[#F0F2F8]">Presenter remote</h1>
         <p className="text-sm text-pulse-600 dark:text-[#9AA8C7]">
           Control your live session from a second device. Session {id ?? '—'}.

@@ -183,7 +183,7 @@ export default function QuickFingerEnergizerView({
   }
 
   return (
-    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-5 space-y-4">
+    <div className="rounded-2xl border border-pulse-200 dark:border-pulse-700 bg-white dark:bg-pulse-900 p-6 space-y-4">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-0.5">
@@ -230,7 +230,7 @@ export default function QuickFingerEnergizerView({
                   onClick={() => setEditCorrect(idx)}
                   aria-label={`Mark option ${idx + 1} as correct`}
                   className={[
-                    'w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
+                    'w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500',
                     editCorrect === idx
                       ? 'border-teal-500 bg-teal-500'
                       : 'border-pulse-300 dark:border-pulse-600',
@@ -426,7 +426,7 @@ function LiveRankings({
               isMe ? 'bg-violet-50 dark:bg-violet-900/20 border border-violet-200 dark:border-violet-800' : 'bg-pulse-50 dark:bg-pulse-800',
             ].join(' ')}
           >
-            <span className="w-5 text-xs font-bold text-pulse-500 tabular-nums">{i + 1}.</span>
+            <span className="w-6 text-xs font-bold text-pulse-500 tabular-nums">{i + 1}.</span>
             <span
               className={[
                 'flex-1 truncate font-medium',

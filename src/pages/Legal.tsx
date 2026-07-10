@@ -25,8 +25,8 @@ export default function Legal() {
       />
 
       {/* Hero */}
-      <div className="border-b border-pulse-200 pb-6 pt-14">
-        <div className="max-w-6xl mx-auto px-6">
+      <div className="border-b border-pulse-200 pb-8 pt-14">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-xs font-bold tracking-widest uppercase text-teal-700 dark:text-teal-400 mb-3">Legal</div>
           <h1
             className="font-bold tracking-tight text-pulse-900 dark:text-[#F0F2F8] mb-3"
@@ -34,7 +34,7 @@ export default function Legal() {
           >
             Legal Information
           </h1>
-          <div className="flex gap-5 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
+          <div className="flex gap-6 text-[13px] text-pulse-500 dark:text-[#8A96B0]" style={monoFont}>
             <span>
               <strong className="text-pulse-600 dark:text-[#A8B3CC] font-semibold" style={{ fontFamily: 'var(--font-family-body)' }}>
                 Updated:
@@ -52,8 +52,8 @@ export default function Legal() {
       </div>
 
       {/* Layout */}
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid gap-16 py-12 pb-24" style={{ gridTemplateColumns: '200px 1fr' }}>
+      <div className="max-w-6xl mx-auto px-8">
+        <div className="grid gap-16 py-24 pb-24" style={{ gridTemplateColumns: '200px 1fr' }}>
           {/* TOC */}
           <aside className="hidden md:block" style={{ position: 'sticky', top: 80, height: 'fit-content' }}>
             <h5 className="text-[13px] font-bold text-pulse-900 dark:text-[#F0F2F8] mb-3">On this page</h5>
@@ -73,7 +73,7 @@ export default function Legal() {
 
           {/* Prose */}
           <main className="min-w-0">
-            <p className="text-[17px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed mb-8">
+            <p className="text-[17px] text-pulse-900 dark:text-[#F0F2F8] leading-relaxed mb-12">
               This page fulfils Qesto's disclosure obligations under Art. 11 and Art. 15 of the Digital Services Act
               (EU 2022/2065), Art. 5 of the eCommerce Directive (2000/31/EC), and related Dutch law.
             </p>
@@ -81,7 +81,7 @@ export default function Legal() {
             {/* 1. Company details */}
             <h2
               id="l1"
-              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4"
+              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4"
               style={displayFont}
             >
               1. Company details
@@ -107,7 +107,7 @@ export default function Legal() {
             {/* 2. Contact — authorities */}
             <h2
               id="l2"
-              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4"
+              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4"
               style={displayFont}
             >
               2. Contact for competent authorities
@@ -117,7 +117,7 @@ export default function Legal() {
               point is designated for direct communication with competent authorities including the ACM (Autoriteit
               Consument & Markt), law enforcement bodies, and the European Commission:
             </p>
-            <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4 mb-6">
+            <div className="bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4 mb-8">
               <p className="text-[15px] font-semibold text-pulse-900 dark:text-[#F0F2F8] mb-1">
                 DSA Authority Contact
               </p>
@@ -134,7 +134,7 @@ export default function Legal() {
             {/* 3. Contact — users */}
             <h2
               id="l3"
-              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4"
+              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4"
               style={displayFont}
             >
               3. Contact for users
@@ -143,7 +143,7 @@ export default function Legal() {
               In accordance with Art. 11(1)(b) DSA, the following contact point is available for service recipients
               (hosts and participants) who need to contact Qesto directly:
             </p>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-6">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-8">
               <li>
                 <strong>General support:</strong>{' '}
                 <a href="mailto:support@qesto.cc" className="text-teal-600 hover:underline">
@@ -173,7 +173,7 @@ export default function Legal() {
             {/* 4. Report illegal content */}
             <h2
               id="l4"
-              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4"
+              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4"
               style={displayFont}
             >
               4. Report illegal content
@@ -182,7 +182,7 @@ export default function Legal() {
               In accordance with Art. 16 DSA, any person or entity may notify Qesto of alleged illegal content
               hosted on our platform. We will review every notice and respond with our decision.
             </p>
-            <div className="flex gap-3 flex-wrap mb-6">
+            <div className="flex gap-3 flex-wrap mb-8">
               <Link
                 to="/legal/report"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-[14px] font-medium rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
@@ -204,7 +204,7 @@ export default function Legal() {
             {/* 5. Transparency statement */}
             <h2
               id="l5"
-              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4"
+              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4"
               style={displayFont}
             >
               5. Transparency statement
@@ -213,7 +213,7 @@ export default function Legal() {
               In accordance with Art. 15 DSA, Qesto publishes the following transparency information covering the
               period 1 January 2026 – 30 June 2026:
             </p>
-            <ul className="list-disc pl-5 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
+            <ul className="list-disc pl-6 space-y-2 text-[15px] text-pulse-700 dark:text-[#A8B3CC] mb-4">
               <li>
                 <strong>Government orders under Art. 9 DSA</strong> (orders to act against illegal content):{' '}
                 <strong>0 received</strong>
@@ -236,7 +236,7 @@ export default function Legal() {
             {/* 6. Monthly active recipients */}
             <h2
               id="l6"
-              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4"
+              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4"
               style={displayFont}
             >
               6. Monthly active recipients (EU)
@@ -258,7 +258,7 @@ export default function Legal() {
             {/* 7. Data Processing Agreement */}
             <h2
               id="l7"
-              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-10 mb-4"
+              className="font-bold text-[26px] tracking-tight text-pulse-900 dark:text-[#F0F2F8] mt-16 mb-4"
               style={displayFont}
             >
               7. Data Processing Agreement
@@ -277,7 +277,7 @@ export default function Legal() {
               . We aim to respond within 5 business days.
             </p>
 
-            <div className="border-t border-pulse-200 dark:border-white/10 mt-12 pt-8">
+            <div className="border-t border-pulse-200 dark:border-white/10 mt-24 pt-12">
               <p className="text-[13px] text-pulse-500 dark:text-[#8A96B0]">
                 Related documents:{' '}
                 <Link to="/privacy" className="text-teal-600 hover:underline">Privacy Policy</Link>
