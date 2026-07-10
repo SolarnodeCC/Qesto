@@ -18,7 +18,7 @@ export default function JoinBar() {
 
   return (
     <div className="border-b border-pulse-200 bg-teal-50 dark:bg-teal-950/30 dark:border-teal-900">
-      <div className="grid-container flex items-center justify-center gap-3 py-2 px-4 md:px-6">
+      <div className="grid-container flex items-center justify-center gap-3 py-2 px-4 md:px-8">
         <span className="text-sm text-pulse-600 dark:text-pulse-400 hidden sm:inline whitespace-nowrap">
           {t('bar_prompt')}
         </span>
@@ -40,7 +40,7 @@ export default function JoinBar() {
           <button
             type="submit"
             disabled={code.trim().length !== 6}
-            className="inline-flex items-center rounded-md bg-teal-600 text-white text-sm font-semibold px-3 py-1.5 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors"
+            className="inline-flex items-center min-h-11 sm:min-h-0 rounded-md bg-teal-600 text-white text-sm font-semibold px-3 py-1.5 hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1 transition-colors"
           >
             {t('bar_button')}
           </button>

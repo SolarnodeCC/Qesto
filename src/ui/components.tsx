@@ -110,10 +110,12 @@ export function Button({
 }) {
   const baseStyles = 'rounded-md font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2'
 
+  // min-h keeps every Button a ≥44px touch target on phone viewports (WCAG
+  // 2.5.5); sm relaxes to its compact desktop height from the sm breakpoint.
   const sizeStyles = {
-    sm: 'px-3 py-2 text-body-s',
-    md: 'px-4 py-2 text-body-m',
-    lg: 'px-5 py-3 text-body-m',
+    sm: 'px-3 py-2 text-body-s min-h-11 sm:min-h-9',
+    md: 'px-4 py-2 text-body-m min-h-11',
+    lg: 'px-6 py-3 text-body-m min-h-11',
   }
 
   const variantStyles = {
@@ -281,7 +283,7 @@ export function EmptyState({
   action?: ReactNode
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
+    <div className="flex flex-col items-center justify-center py-24 text-center">
       <Heading level="m" className="text-pulse-700 dark:text-[#A8B3CC]">
         {title}
       </Heading>

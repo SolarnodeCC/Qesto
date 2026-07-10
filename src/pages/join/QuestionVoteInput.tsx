@@ -84,7 +84,7 @@ export function QuestionVoteInput({
         <button
           type="submit"
           disabled={!canVote}
-          className="w-full rounded-xl bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+          className="w-full min-h-11 rounded-xl bg-teal-600 text-white py-2.5 text-sm font-medium hover:brightness-110 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
           {t('submit')}
         </button>
@@ -160,7 +160,7 @@ export function QuestionVoteInput({
                 <span className="flex items-center gap-3">
                   <span
                     className={concatClasses(
-                      'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
+                      'flex-shrink-0 w-6 h-6 rounded border-2 flex items-center justify-center transition-colors',
                       selected ? 'border-teal-500 bg-teal-500' : 'border-pulse-300',
                     )}
                     aria-hidden="true"
@@ -192,7 +192,9 @@ export function QuestionVoteInput({
                 disabled={upvoted || !canVote}
                 aria-label={t('upvote_aria', { label: o.label })}
                 className={concatClasses(
-                  'flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
+                  // WCAG 2.5.5: the upvote control is the only tap target for this
+                  // question kind, so it carries an explicit 44px floor.
+                  'flex items-center justify-center gap-1.5 min-h-11 min-w-11 rounded-md px-2.5 py-1.5 text-sm font-medium border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500',
                   upvoted
                     ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300'
                     : 'border-pulse-200 dark:border-[#1E2A45] text-pulse-600 dark:text-[#A8B3CC] hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20',
@@ -243,7 +245,7 @@ export function QuestionVoteInput({
               <span className="flex items-center gap-3">
                 <span
                   className={concatClasses(
-                    'flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors',
+                    'flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors',
                     voted ? 'border-teal-500 bg-teal-500' : 'border-pulse-300',
                   )}
                   aria-hidden="true"

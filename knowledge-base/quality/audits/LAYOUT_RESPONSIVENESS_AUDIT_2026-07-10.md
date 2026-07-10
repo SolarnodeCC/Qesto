@@ -5,6 +5,17 @@
 **Exclusions (per audit brief):** color contrast, interaction states, performance, SEO.
 **Related:** `DESIGN_SYSTEM_AUDIT_2026-07-01.md` (design-token conventions, ADR-0071).
 
+## Remediation status (2026-07-10, same PR)
+
+| Finding | Status | How |
+|---|---|---|
+| LAYOUT-001 | ✅ Fixed | Numeric `--spacing-N` remap deleted from `@theme`; 846 call sites across 128 files renumbered to the default-scale step with the identical px value (5→6, 6→8, 8→12, 10→16, 12→24). Verified by comparing compiled CSS before/after: every renamed class resolves to the same px, unmapped steps unchanged. Numeric utilities now mean standard Tailwind everywhere. |
+| LAYOUT-002 | ✅ Fixed | `MainLayout` marketing nav is `hidden md:flex`; below `md` a 44×44px hamburger (lucide `Menu`/`X`) toggles a stacked disclosure panel with grouped sections and ≥44px link rows; closes on route change. `nav.openMenu`/`nav.closeMenu` added to all 5 locales. |
+| LAYOUT-003 | ✅ Fixed | Pricing matrix wrapper `overflow-hidden` → `overflow-x-auto`; table `min-w-[640px]`; cell padding responsive (`px-3 md:px-8`). |
+| LAYOUT-004 | ✅ Fixed | All five sub-16px shared input classes in `input-field-class.ts` now `text-base sm:text-sm` (or `sm:text-body-s`) — no iOS zoom-on-focus below `sm`. |
+| LAYOUT-005 | ✅ Fixed | `min-h-11`/`min-w-11` floors on the upvote control, open-text Submit, JoinBar submit + code input (`sm:min-h-0` keeps the bar compact on desktop), and baked into the shared `Button` primitive (`sm` relaxes to `min-h-9` from the `sm` breakpoint). |
+| LAYOUT-006…011 | ⏳ Open | Not in scope of this remediation pass. Note: LAYOUT-008's broken density equivalence is **resolved as a side effect** of LAYOUT-001 — with the default scale restored, `density-stack-6` (24px) again equals `space-y-6` (24px) at default density. |
+
 ## Headline result
 
 The app's layout architecture is fundamentally healthy — `AppShellLayout` has a proper mobile drawer, `grid.css` is a clean mobile-first 4/8/12-column system, `Present.tsx`'s 1920×1080 letterboxed stage has a deliberate scale clamp, admin tables are wrapped in `overflow-x-auto`, and 72 call sites already enforce `min-h-[44px]` touch targets.

@@ -2,6 +2,8 @@
   "nav.solutions": "Solutions",
   "nav.features": "Features",
   "nav.useCases": "Use cases",
+  "nav.openMenu": "Open menu",
+  "nav.closeMenu": "Close menu",
   "navLinks.events": "Events",
   "navLinks.hr": "HR & People",
   "navLinks.nonprofit": "Nonprofits",
@@ -26,7 +28,6 @@
   "cta.viewPricing": "View pricing",
   "cta.tryItFree": "Try it free",
   "cta.talkToSales": "Talk to sales",
-
   "events.seo.title": "Qesto for Events | Live polling for conferences",
   "events.seo.description": "Run live polls, ranked Q&A, and sentiment checks across keynote and breakout, then deliver sponsor-ready engagement evidence by session.",
   "events.badge": "For Events & Conferences",
@@ -89,7 +90,6 @@
   "events.faq.q3.answer": "Yes. Per-session engagement and theme outputs export to CSV or JSON suitable for sponsor recap decks.",
   "events.bottomCta.heading": "Prove engagement instead of claiming it.",
   "events.bottomCta.subheading": "Launch in minutes and capture data from every room.",
-
   "hr.seo.title": "Qesto for HR | Anonymous pulse surveys with edge AI",
   "hr.seo.description": "Run trust-first pulse sessions with three anonymity modes, private AI theme detection, and consent logs your People team can audit.",
   "hr.badge": "For HR & People teams",
@@ -151,7 +151,6 @@
   "hr.faq.q3.answer": "No. Most teams begin without one and decide on integrations once the listening cadence is established.",
   "hr.bottomCta.heading": "Make employee listening a system, not a one-off.",
   "hr.bottomCta.subheading": "Review fit for your People and compliance workflows.",
-
   "nonprofit.seo.title": "Qesto for Nonprofits | Consent voting and audit logs",
   "nonprofit.seo.description": "Run inclusive board votes, member consultations, and program prioritization with consent voting, anonymity options, and verifiable decision evidence.",
   "nonprofit.badge": "For Nonprofits & Communities",
@@ -213,7 +212,6 @@
   "nonprofit.faq.q3.answer": "No. You choose the anonymity mode per session: full anonymity, cohort grouping, or identified.",
   "nonprofit.bottomCta.heading": "Give every member confidence the process is sound.",
   "nonprofit.bottomCta.subheading": "See how Qesto fits your governance and participation model.",
-
   "consulting.seo.title": "Qesto for Consulting | Workshops with same-day evidence",
   "consulting.seo.description": "Replace sticky notes and manual synthesis with workshop workflows that leave clients with same-day decision evidence and reusable templates.",
   "consulting.badge": "For Consultants & Facilitators",
@@ -275,7 +273,6 @@
   "consulting.faq.q3.answer": "Yes. Session outputs export to structured summaries you can share before participants leave the room.",
   "consulting.bottomCta.heading": "Deliver workshops clients can act on the same week.",
   "consulting.bottomCta.subheading": "Run your next facilitation flow in minutes.",
-
   "features.aiInsights.seo.title": "AI Insights | Question generation and theme detection",
   "features.aiInsights.seo.description": "Draft a session question set in under 90 seconds and cluster open responses into themes — without sending participant data to third-party LLMs.",
   "features.aiInsights.badge": "AI-assisted",
@@ -324,7 +321,6 @@
   "features.aiInsights.faq.q3.answer": "Yes. Theme groupings persist with the session record so recurring patterns surface across HR pulses, retros, and recurring workshops.",
   "features.aiInsights.bottomCta.heading": "Start with AI drafts, ship with your team's judgment.",
   "features.aiInsights.bottomCta.subheading": "Draft, run, and synthesize a session in one flow.",
-
   "features.livePolling.seo.title": "Live polling | Real-time polls, rankings, consent rounds",
   "features.livePolling.seo.description": "Run polls, rankings, consent checks, and open questions inside one session — with low latency for in-room and remote participants on any device.",
   "features.livePolling.badge": "Core platform",
@@ -370,7 +366,6 @@
   "features.livePolling.faq.q3.answer": "Yes. Hosts reveal, pause, and close each question based on room energy. Participants only see questions the host has opened.",
   "features.livePolling.bottomCta.heading": "Capture real input and move to decisions in one tool.",
   "features.livePolling.bottomCta.subheading": "No app, no waiting, no split workflows.",
-
   "features.privacy.seo.title": "Privacy by default | Edge AI, anonymity, consent logs",
   "features.privacy.seo.description": "Run sensitive sessions with edge AI inference, per-session anonymity modes, and time-stamped consent logs your DPO can audit.",
   "features.privacy.badge": "Privacy by default",
@@ -420,7 +415,6 @@
   "features.privacy.faq.q3.answer": "Per-participant decisions with UTC timestamps, the prompt text shown, and the mode in effect. Exportable as JSON or CSV for DSAR responses and governance review.",
   "features.privacy.bottomCta.heading": "Protect participant trust without slowing the room.",
   "features.privacy.bottomCta.subheading": "Review the controls your DPO will actually want to see.",
-
   "useCases.teamMeetings.seo.title": "Use case: Team meetings | Decisions with rationale",
   "useCases.teamMeetings.seo.description": "Improve retros, planning, and decision checkpoints with consent rounds, ranked agendas, and recap exports into Slack, Notion, and Linear.",
   "useCases.teamMeetings.badge": "Use case: Team meetings",
@@ -482,7 +476,6 @@
   "useCases.teamMeetings.faq.q3.answer": "Yes. Recaps export to Slack, Notion, and Linear with the decision and the rationale attached.",
   "useCases.teamMeetings.bottomCta.heading": "Make your next team meeting decision-ready.",
   "useCases.teamMeetings.bottomCta.subheading": "Capture input fast, align clearly, and ship the recap before the next meeting.",
-
   "useCases.workshops.seo.title": "Use case: Workshops | Hybrid facilitation craft",
   "useCases.workshops.seo.description": "Facilitate ideation and prioritization workshops with parallel idea capture, AI affinity clustering, and outputs that survive the handoff.",
   "useCases.workshops.badge": "Use case: Workshops & facilitation",
@@ -544,7 +537,6 @@
   "useCases.workshops.faq.q3.answer": "Yes. Structured outputs are available immediately and can be shared before participants leave the room.",
   "useCases.workshops.bottomCta.heading": "Facilitate with confidence and leave a structured trail.",
   "useCases.workshops.bottomCta.subheading": "Run your next workshop flow in minutes.",
-
   "useCases.training.seo.title": "Use case: Training | Live formative checks",
   "useCases.training.seo.description": "Run formative checks, confidence scales, and reflection prompts with real-time feedback — Kirkpatrick L1 and L2 evidence inside the session.",
   "useCases.training.badge": "Use case: Training & learning",
