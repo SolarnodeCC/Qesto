@@ -295,13 +295,16 @@ export default function SessionWizard({ open, onClose, onSessionCreated, initial
       return
     }
 
-    for (const q of activeQuestions) {
-      const filledOptions = q.options.filter((o) => o.label.trim())
-      const body: Record<string, unknown> = { kind: q.kind, prompt: q.prompt }
-      if (filledOptions.length >= 2) body.options = filledOptions
-      const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/questions`, {
+    if (activeQuestions.length > 0) {
+      const questionsBody = activeQuestions.map((q) => {
+        const filledOptions = q.options.filter((o) => o.label.trim())
+        const body: Record<string, unknown> = { kind: q.kind, prompt: q.prompt }
+        if (filledOptions.length >= 2) body.options = filledOptions
+        return body
+      })
+      const res = await api<unknown>(`/api/sessions/${encodeURIComponent(sessionId)}/questions/batch`, {
         method: 'POST',
-        body,
+        body: { questions: questionsBody },
       })
       if (!res.ok) {
         setLaunchError((res as { ok: false; error: { message: string } }).error.message)

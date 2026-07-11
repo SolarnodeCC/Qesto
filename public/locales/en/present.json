@@ -121,5 +121,8 @@
   "connection.connecting": "Connecting…",
   "connection.reconnecting": "Reconnecting…",
   "connection.closed": "Disconnected",
-  "connection.failed": "Connection lost"
+  "connection.failed": "Connection lost",
+  "anonymity_full": "Full anonymity",
+  "anonymity_partial": "Partial anonymity",
+  "anonymity_zero_knowledge": "Zero-knowledge anonymity"
 }

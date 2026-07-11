@@ -161,6 +161,12 @@ export const AddQuestionSchema = z.object({
     .optional(),
 })
 
+// LAUNCHPAD-02b: bulk append used by the wizard launch step — one request and
+// one D1 batch instead of a sequential POST per question.
+export const AddQuestionsBatchSchema = z.object({
+  questions: z.array(AddQuestionSchema).min(1).max(50),
+})
+
 /**
  * For kinds that ship with fixed option scales, synthesise the options when
  * the caller omits them (or sends an empty array). Other kinds are returned

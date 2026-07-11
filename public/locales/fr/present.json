@@ -121,5 +121,8 @@
   "connection.connecting": "Connexion…",
   "connection.reconnecting": "Reconnexion…",
   "connection.closed": "Déconnecté",
-  "connection.failed": "Connexion perdue"
+  "connection.failed": "Connexion perdue",
+  "anonymity_full": "Anonymat complet",
+  "anonymity_partial": "Anonymat partiel",
+  "anonymity_zero_knowledge": "Anonymat à divulgation nulle"
 }

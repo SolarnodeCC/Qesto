@@ -578,6 +578,8 @@ describe('Sprint 26/27 — LIVE Quick Finger answers', () => {
       data: { energizerId: 'eg_qf', value: 'B' },
       timestamp: 0,
     })
+    // Answers mark the broadcast dirty and the debounced alarm fans it out.
+    await room.alarm()
 
     const stateMsg = slow
       .messages<{ type: string; data: { energizer?: { answers?: { voterId: string; rank: number; speedMs: number }[] } } }>()
@@ -1023,5 +1025,79 @@ describe('#581 — inbound WS frame-size guard', () => {
     expect(ws.closed).toBe(false)
     const init1 = ws.messages<{ type: string }>().find((m) => m.type === 'init')
     expect(init1).toBeTruthy()
+  })
+})
+
+describe('Core-audit E-1/E-4 — energizer viewer redaction + debounced broadcast', () => {
+  const QUIZ = {
+    id: 'eg_redact',
+    kind: 'team_quiz' as const,
+    title: 'Quiz',
+    status: 'active' as const,
+    questions: [{ prompt: 'Q1?', options: ['A', 'B'], correctIndex: 1 }],
+  }
+
+  it('strips the answer key from voter broadcasts but keeps it for the presenter', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const voter = connectVoter(state, 'anon_redact_1', 'ip_red_1')
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: { energizer: QUIZ },
+      timestamp: 0,
+    })
+
+    type StateMsg = { type: string; data: { energizer?: { questions?: Array<{ correctIndex?: number }> } } }
+    const voterView = voter.messages<StateMsg>().filter((m) => m.type === 'energizer_state').at(-1)
+    expect(voterView?.data.energizer?.questions?.[0]?.correctIndex).toBeUndefined()
+
+    const presenterView = presenter.messages<StateMsg>().filter((m) => m.type === 'energizer_state').at(-1)
+    expect(presenterView?.data.energizer?.questions?.[0]?.correctIndex).toBe(1)
+  })
+
+  it('debounces answer broadcasts and shows voters only their own submissions', async () => {
+    const { room, state } = await buildLiveEnergizerRoom()
+    await init(room)
+    const presenter = connectPresenter(state)
+    const v1 = connectVoter(state, 'anon_redact_a', 'ip_red_a')
+    const v2 = connectVoter(state, 'anon_redact_b', 'ip_red_b')
+
+    await sendMessage(room, presenter, {
+      v: 1,
+      type: 'energizer_activate',
+      data: { energizer: { ...QUIZ, id: 'eg_redact_2' } },
+      timestamp: 0,
+    })
+    await sendMessage(room, v1, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_redact_2', value: 'B' },
+      timestamp: 0,
+    })
+    await sendMessage(room, v2, {
+      v: 1,
+      type: 'energizer_answer',
+      data: { energizerId: 'eg_redact_2', value: 'A' },
+      timestamp: 0,
+    })
+
+    type StateMsg = {
+      type: string
+      data: { energizer?: { submissions?: Array<{ voterId: string; correct?: boolean }> } }
+    }
+    // Before the alarm fires, only the activation broadcast has gone out.
+    expect(v1.messages<StateMsg>().filter((m) => m.type === 'energizer_state')).toHaveLength(1)
+
+    await room.alarm()
+
+    const v2View = v2.messages<StateMsg>().filter((m) => m.type === 'energizer_state').at(-1)
+    expect(v2View?.data.energizer?.submissions).toHaveLength(1)
+    expect(v2View?.data.energizer?.submissions?.[0]?.voterId).toBe('anon_redact_b')
+
+    const presenterView = presenter.messages<StateMsg>().filter((m) => m.type === 'energizer_state').at(-1)
+    expect(presenterView?.data.energizer?.submissions).toHaveLength(2)
   })
 })

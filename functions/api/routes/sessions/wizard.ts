@@ -10,17 +10,26 @@ import {
   RefineQuestionsSchema,
   ReorderQuestionsSchema,
   AddQuestionSchema,
+  AddQuestionsBatchSchema,
   autoPopulateOptions,
 } from '../../lib/domain-schemas'
 import { ensurePersonalTeam } from '../teams'
-import { WizardAIError, WizardValidationError, generateQuestions, streamQuestions } from '../../lib/ai-wizard'
+import {
+  WizardAIError,
+  WizardValidationError,
+  generateQuestions,
+  streamQuestions,
+  FAST_MODEL,
+  QUALITY_FALLBACK_MODEL,
+} from '../../lib/ai-wizard'
+import { errorResponse } from '../../lib/error-handler'
 import {
   enforceWizardAiRateLimit,
   loadDraftSessionForAi,
   recordWizardAiInference,
   wizardAiErrorPayload,
 } from './wizard-ai'
-import { updateSessionGroundingHash } from '../../repositories/sessionRepository'
+import { insertQuestionsBatch, updateSessionGroundingHash } from '../../repositories/sessionRepository'
 import { requireFeature } from '../../middleware/feature-gate'
 import { validateKvJson, CachedQuestionsSchema } from '../../lib/protocol-schemas'
 import { hardDeleteSession } from '../../lib/session-delete'
@@ -40,6 +49,26 @@ import {
   recordSprint19JourneyEvent,
 } from './shared'
 
+// WIZ-CACHE-01: repeated identical generations (same title/goal/focus/language)
+// are common while a host iterates on a draft — serve them from KV instead of
+// re-running two model batches. Key is per-user so one user's generations are
+// never replayed to another. Same 24 h TTL as the refine cache.
+async function generationCacheKey(
+  userId: string,
+  input: { sessionTitle: string; sessionGoal: string; focusArea?: string | undefined },
+  language: string,
+): Promise<string> {
+  const hash = await hashGrounding(
+    JSON.stringify({
+      sessionTitle: input.sessionTitle,
+      sessionGoal: input.sessionGoal,
+      focusArea: input.focusArea ?? null,
+      language,
+    }),
+  )
+  return `wizard:gen:${userId}:${hash}`
+}
+
 export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: SessionVars }>) {
   // ──────────────────────────────────────────────────────────────────────────
   // WIZ-AI-01/02: POST /api/sessions/:id/questions/generate
@@ -50,6 +79,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
   // Rate-limited per-user: 20 generations / hour.
   // ─────────────────────────────────────────────────────────────────────────-
   app.post('/:id/questions/generate', async (c) => {
+    const user = c.get('user')
     const id = c.req.param('id')
 
     const limited = await enforceWizardAiRateLimit(c, id, {
@@ -77,9 +107,27 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
 
     try {
       const language = c.req.header('accept-language') ?? 'en'
+      const cacheKey = await generationCacheKey(user.sub, parsed.data, language)
+      const cachedRaw = await readKvText(c.env.SESSIONS_KV, cacheKey)
+      if (cachedRaw) {
+        const cached = validateKvJson(cachedRaw, CachedQuestionsSchema)
+        if (cached) {
+          return c.json({
+            ok: true,
+            data: { questions: cached.questions, confidence: cached.confidence ?? 1, cached: true },
+            trace_id: c.get('trace_id'),
+          })
+        }
+      }
       const inferenceStart = Date.now()
       const result = await generateQuestions(c.env.AI, { ...parsed.data, language })
       recordWizardAiInference(c, id, result.questions.length, inferenceStart)
+      await writeKvJson(
+        c.env.SESSIONS_KV,
+        cacheKey,
+        { questions: result.questions, confidence: result.confidence },
+        { expirationTtl: WIZARD_DRAFT_TTL_SECONDS },
+      )
       return c.json({
         ok: true,
         data: { questions: result.questions, confidence: result.confidence },
@@ -100,6 +148,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
   // Workers AI generation completes.
   // ──────────────────────────────────────────────────────────────────────────
   app.post('/:id/ai/generate', async (c) => {
+    const user = c.get('user')
     const id = c.req.param('id')
 
     const limited = await enforceWizardAiRateLimit(c, id, {
@@ -134,6 +183,7 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
       language,
     })
     const groundingHash = await hashGrounding(grounding)
+    const cacheKey = `wizard:gen:${user.sub}:${groundingHash}`
     const traceId = c.get('trace_id')
 
     function sse(event: string, data: unknown): Uint8Array {
@@ -148,7 +198,10 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
           trace_id: traceId,
           groundingHash,
           ai: {
-            model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+            // The model that actually runs by default; the larger model is only
+            // invoked as a quality fallback when the primary fails.
+            model: FAST_MODEL,
+            fallbackModel: QUALITY_FALLBACK_MODEL,
             provider: 'Cloudflare Workers AI',
             dataRetention: 'none',
             inferenceRegion: 'EU-edge',
@@ -157,6 +210,20 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
           },
         }))
         try {
+          // WIZ-CACHE-01: identical grounding within the TTL replays the cached
+          // result without any model call.
+          const cachedRaw = await readKvText(c.env.SESSIONS_KV, cacheKey)
+          const cached = cachedRaw ? validateKvJson(cachedRaw, CachedQuestionsSchema) : null
+          if (cached) {
+            controller.enqueue(sse('questions', {
+              questions: cached.questions,
+              confidence: cached.confidence ?? 1,
+              groundingHash,
+              cached: true,
+            }))
+            controller.enqueue(sse('done', { ok: true }))
+            return
+          }
           const inferenceStart = Date.now()
           // Stream each question to the client as it finishes generating. If
           // token streaming fails outright, fall back to the buffered
@@ -175,6 +242,12 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
             }
           }
           recordWizardAiInference(c, id, result.questions.length, inferenceStart)
+          await writeKvJson(
+            c.env.SESSIONS_KV,
+            cacheKey,
+            { questions: result.questions, confidence: result.confidence },
+            { expirationTtl: WIZARD_DRAFT_TTL_SECONDS },
+          )
           // Final authoritative payload: reconciliation for incremental clients,
           // the full list for the fallback path, and backward-compat for old clients.
           controller.enqueue(sse('questions', {
@@ -261,6 +334,51 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
       )
       .bind(qid, id, nextPosition, parsed.data.kind, parsed.data.prompt, optionsJson, now)
       .run()
+
+    const questions = await fetchQuestions(c.env.DB, id)
+    return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') }, 201)
+  })
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // LAUNCHPAD-02b: POST /api/sessions/:id/questions/batch
+  // Appends multiple questions to a DRAFT session in a single D1 batch. Used by
+  // the wizard launch step instead of one sequential POST per question.
+  // ──────────────────────────────────────────────────────────────────────────
+  app.post('/:id/questions/batch', async (c) => {
+    const user = c.get('user')
+    const id = c.req.param('id')
+
+    const batchLoaded = requireFound(await fetchSession(c.env.DB, id, user.sub))
+    if (!batchLoaded.ok) {
+      return errorResponse(c, batchLoaded.error.status, batchLoaded.error.code, batchLoaded.error.message)
+    }
+    const batchDraft = requireDraft(batchLoaded.session, 'add_question')
+    if (!batchDraft.ok) {
+      return errorResponse(c, batchDraft.error.status, batchDraft.error.code, batchDraft.error.message)
+    }
+    const session = batchDraft.session
+
+    const body = await c.req.json().catch(() => null)
+    const parsed = AddQuestionsBatchSchema.safeParse(body)
+    if (!parsed.success) {
+      return errorResponse(c, 400, 'validation', 'Invalid questions payload')
+    }
+
+    // Plan-gate every kind before writing anything — the batch is all-or-nothing.
+    for (const q of parsed.data.questions) {
+      const denied = deniedQuestionFeature(c.get('plan'), c.get('planQuotas'), q.kind)
+      if (denied) {
+        return c.json({ ok: false, error: denied, trace_id: c.get('trace_id') }, 403)
+      }
+    }
+
+    const existing = await fetchQuestions(c.env.DB, id)
+    const rows = parsed.data.questions.map((q) => {
+      const rawOptions = autoPopulateOptions(q.kind, q.options)
+      const options = rawOptions.map((o) => ({ id: o.id ?? ulid(), label: o.label }))
+      return { id: ulid(), kind: q.kind, prompt: q.prompt, optionsJson: JSON.stringify(options) }
+    })
+    await insertQuestionsBatch(c.env.DB, id, existing.length, rows)
 
     const questions = await fetchQuestions(c.env.DB, id)
     return c.json({ ok: true, data: { session, questions }, trace_id: c.get('trace_id') }, 201)
@@ -422,17 +540,11 @@ export function mountSessionWizardRoutes(app: Hono<{ Bindings: Env; Variables: S
     const id = c.req.param('id')
     const session = await fetchSession(c.env.DB, id, user.sub)
     if (!session) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     const { deleted } = await hardDeleteSession(c.env.DB, id, user.sub)
     if (!deleted) {
-      return c.json(
-        { ok: false, error: { code: 'not_found', message: 'Session not found' }, trace_id: c.get('trace_id') },
-        404,
-      )
+      return errorResponse(c, 404, 'not_found', 'Session not found')
     }
     return c.json({ ok: true, trace_id: c.get('trace_id') })
   })

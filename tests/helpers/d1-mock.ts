@@ -240,6 +240,16 @@ export class D1Mock {
   >()
   readonly deliberateBallotCountOverrides: number[] = []
   readonly energizers = new Map<string, EnergizerRow>()
+  // Keyed `${energizer_id}:${voter_id}` — mirrors UNIQUE(energizer_id, voter_id).
+  readonly energizerVotes = new Map<
+    string,
+    { id: string; energizer_id: string; session_id: string; voter_id: string; value: string; created_at: number }
+  >()
+  // Keyed `${energizer_id}:${voter_id}:${question_index}` — mirrors the table's UNIQUE constraint.
+  readonly teamQuizResponses = new Map<
+    string,
+    { id: string; energizer_id: string; voter_id: string; question_index: number; value: string; correct: number; created_at: number }
+  >()
   readonly stripeWebhookEvents = new Map<
     string,
     { stripe_event_id: string; event_type: string; processed_at: number }
@@ -1319,6 +1329,50 @@ export class D1PreparedStatementMock {
       })
       return { meta: { changes: 1 } }
     }
+    if (this.sql.startsWith("UPDATE energizers SET state = 'completed'") && this.sql.includes("WHERE id = ?2 AND state = 'active'")) {
+      // DO→D1 mirror on energizer completion (audit E-2):
+      // UPDATE energizers SET state = 'completed', updated_at = ?1 WHERE id = ?2 AND state = 'active'
+      const [updated_at, id] = this.args as [number, string]
+      const row = this.db.energizers.get(id)
+      if (!row || row.state !== 'active') return { meta: { changes: 0 } }
+      row.state = 'completed'
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO team_quiz_responses')) {
+      // INSERT ... ON CONFLICT(energizer_id, voter_id, question_index) DO NOTHING (audit E-1: answers are final)
+      const [id, energizer_id, voter_id, question_index, value, correct, created_at] = this.args as [
+        string, string, string, number, string, number, number,
+      ]
+      const key = `${energizer_id}:${voter_id}:${question_index}`
+      if (this.db.teamQuizResponses.has(key)) return { meta: { changes: 0 } }
+      this.db.teamQuizResponses.set(key, { id, energizer_id, voter_id, question_index, value, correct, created_at })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('INSERT INTO energizer_votes')) {
+      // INSERT ... ON CONFLICT(energizer_id, voter_id) DO UPDATE SET value = excluded.value
+      const [id, energizer_id, session_id, voter_id, value, created_at] = this.args as [
+        string, string, string, string, string, number,
+      ]
+      const key = `${energizer_id}:${voter_id}`
+      const existing = this.db.energizerVotes.get(key)
+      if (existing) {
+        existing.value = value
+      } else {
+        this.db.energizerVotes.set(key, { id, energizer_id, session_id, voter_id, value, created_at })
+      }
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE energizers SET config_json = ?1, state = ?2, updated_at = ?3 WHERE id = ?4')) {
+      // Team-quiz /next: advance current_index (and possibly complete).
+      const [config_json, state, updated_at, id] = this.args as [string, string, number, string]
+      const row = this.db.energizers.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.config_json = config_json
+      row.state = state
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith("UPDATE energizers SET state = 'completed'")) {
       // UPDATE energizers SET state = 'completed', updated_at = ?1
       // WHERE session_id = ?2 AND state = 'active' AND id != ?3
@@ -1347,25 +1401,26 @@ export class D1PreparedStatementMock {
       let prompt: string | undefined
       let config_json: string | undefined
 
-      // Parse what's being set from the SQL
+      // Parse what's being set from the SQL. Placeholder numbers (?N) are
+      // 1-based while args are 0-based, hence the `- 1` on every read.
       if (this.sql.includes(`state = ?${paramIdx}`)) {
-        state = this.args[paramIdx] as string
+        state = this.args[paramIdx - 1] as string
         sets.push('state')
         paramIdx++
       }
       if (this.sql.includes(`prompt = ?${paramIdx}`)) {
-        prompt = this.args[paramIdx] as string
+        prompt = this.args[paramIdx - 1] as string
         sets.push('prompt')
         paramIdx++
       }
       if (this.sql.includes(`config_json = ?${paramIdx}`)) {
-        config_json = this.args[paramIdx] as string
+        config_json = this.args[paramIdx - 1] as string
         sets.push('config_json')
         paramIdx++
       }
 
-      const energizerId = this.args[paramIdx++] as string
-      const sessionId = this.args[paramIdx++] as string
+      const energizerId = this.args[paramIdx - 1] as string
+      const sessionId = this.args[paramIdx] as string
 
       const row = this.db.energizers.get(energizerId)
       if (!row || row.session_id !== sessionId) {
@@ -1889,6 +1944,27 @@ export class D1PreparedStatementMock {
       const [id, team_id] = this.args as [string, string]
       const row = this.db.studioLibraryItems.get(id)
       return (row && row.team_id === team_id ? (row as unknown as T) : null)
+    }
+    // GET /energizers/active — the active energizer row for a session.
+    if (this.sql.includes('FROM energizers') && this.sql.includes("state = 'active' LIMIT 1")) {
+      const [session_id] = this.args as [string]
+      const row = [...this.db.energizers.values()].find((e) => e.session_id === session_id && e.state === 'active')
+      return (row ?? null) as T | null
+    }
+    // Energizer vote route: SELECT kind, config_json, state FROM energizers WHERE id = ?1 AND session_id = ?2
+    // Repository: SELECT id, session_id, ... FROM energizers WHERE id = ?1 AND session_id = ?2
+    if (this.sql.includes('FROM energizers') && this.sql.includes('WHERE id = ?1 AND session_id = ?2')) {
+      const [id, session_id] = this.args as [string, string]
+      const row = this.db.energizers.get(id)
+      return (row && row.session_id === session_id ? (row as unknown as T) : null)
+    }
+    if (this.sql.startsWith('SELECT COUNT(*) as n FROM team_quiz_responses')) {
+      const [energizer_id, question_index] = this.args as [string, number]
+      let n = 0
+      for (const r of this.db.teamQuizResponses.values()) {
+        if (r.energizer_id === energizer_id && r.question_index === question_index) n++
+      }
+      return { n } as T
     }
     throw new Error(`d1-mock: unsupported first(): ${this.sql}`)
   }
@@ -2416,6 +2492,37 @@ export class D1PreparedStatementMock {
         .filter((r) => r.team_id === team_id)
         .sort((a, b) => b.created_at - a.created_at)
         .slice(offset, offset + limit)
+      return { results: rows as unknown as T[] }
+    }
+    // GET /energizers/active — legacy D1 vote aggregation fallbacks.
+    if (this.sql.startsWith('SELECT value, COUNT(*) as count FROM energizer_votes')) {
+      const [energizer_id] = this.args as [string]
+      const counts = new Map<string, number>()
+      for (const v of this.db.energizerVotes.values()) {
+        if (v.energizer_id === energizer_id) counts.set(v.value, (counts.get(v.value) ?? 0) + 1)
+      }
+      const rows = [...counts.entries()]
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => b.count - a.count)
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT voter_id, value, created_at FROM energizer_votes')) {
+      const [energizer_id] = this.args as [string]
+      const rows = [...this.db.energizerVotes.values()]
+        .filter((v) => v.energizer_id === energizer_id)
+        .sort((a, b) => a.created_at - b.created_at)
+        .map((v) => ({ voter_id: v.voter_id, value: v.value, created_at: v.created_at }))
+      return { results: rows as unknown as T[] }
+    }
+    if (this.sql.startsWith('SELECT voter_id, SUM(correct) as score FROM team_quiz_responses')) {
+      const [energizer_id] = this.args as [string]
+      const totals = new Map<string, number>()
+      for (const r of this.db.teamQuizResponses.values()) {
+        if (r.energizer_id === energizer_id) totals.set(r.voter_id, (totals.get(r.voter_id) ?? 0) + r.correct)
+      }
+      const rows = [...totals.entries()]
+        .map(([voter_id, score]) => ({ voter_id, score }))
+        .sort((a, b) => b.score - a.score)
       return { results: rows as unknown as T[] }
     }
     throw new Error(`d1-mock: unsupported all(): ${this.sql}`)

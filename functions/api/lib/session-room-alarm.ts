@@ -63,7 +63,9 @@ export async function runAlarm(self: SessionRoomContext): Promise<void> {
 
   await processSentimentRetry(self, nowMs)
 
-  // Energizer timeout: auto-complete — delegated to EnergizerHandler
+  // Energizer: flush any debounced answer broadcast, then timeout auto-complete
+  // — both delegated to EnergizerHandler.
+  await self.energizerHandler.flushPendingBroadcast()
   await self.energizerHandler.handleAlarmTimeout(nowMs)
 
   // Fun-mode: broadcast question_timeout when the countdown expires.

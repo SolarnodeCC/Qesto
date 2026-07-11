@@ -53,5 +53,8 @@
   "preflight_not_ready": "Niet klaar",
   "status_ready": "Concept · klaar om te starten",
   "status_draft": "Concept",
-  "status_energizing": "Opwarmen"
+  "status_energizing": "Opwarmen",
+  "move_up": "Omhoog verplaatsen",
+  "move_down": "Omlaag verplaatsen",
+  "energizers_load_error": "Energizers konden niet worden geladen. Vernieuw om het opnieuw te proberen."
 }
