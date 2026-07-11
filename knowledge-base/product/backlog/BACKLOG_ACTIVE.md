@@ -159,6 +159,19 @@ Evaluate **all** criteria at RT-03 kickoff. Path B requires **every** B-row to p
 
 ---
 
+## Security Follow-ups (Audit 2026-07-08)
+
+From the comprehensive security audit conducted 2026-07-08, all HIGH and MEDIUM findings were remediated and shipped. The following LOW/INFO items are documented for future prioritization. See [`knowledge-base/security/SECURITY_AUDIT_2026-07-08.md`](../../security/SECURITY_AUDIT_2026-07-08.md) for evidence and remediation details.
+
+| ID | Severity | Description | Remediation | Priority | Notes |
+|----|----|---|---|---|---|
+| `SEC-SAML-VERIFY-01` | LOW | SAML assertions are parsed by regex with no XML-DSig verification (currently feature-gated fail-closed) | Implement XML-DSig verification before SAML GA; currently disabled via `SAML_SIGNATURE_VERIFY_ENABLED` flag (both `SAML_SSO_ENABLED` and signature-verify default false in `wrangler.toml`) | P1 (SAML GA blocker) | Location: `functions/api/lib/saml.ts:19–29`; referenced in backlog as BACKLOG-SEC-SAML-01 / #529 |
+| `SEC-APIKEY-LIMITER-ATOMIC-01` | LOW | Per-key rate limiter (120 req/min) is a non-atomic read-then-write (TOCTOU); concurrent requests can bypass under burst | Acceptable as soft quota; if tighter enforcement needed, back with DO or CF's native rate-limiting binding | P2 | Location: `functions/api/middleware/public-api-auth.ts:52–67`; impact bounded to modest quota overage; not a security boundary |
+| `SEC-DISPLAY-FRAMING-01` | LOW | `/display/*` pages intentionally embeddable (CSP `frame-ancestors *`) but have mixed signals with `X-Frame-Options: SAMEORIGIN` | If interactive controls ever added to display pages, scope `frame-ancestors` to specific embedding origins rather than `*` | P2 (monitoring only) | Location: `public/_headers` (`/display/*` rule); currently safe (no state-changing controls on display pages) |
+| `CSRF-INFO-01` | INFO | CSRF validation is permissive when both Origin and Referer headers are absent (deliberate decision documented in code) | No action required; documented follow-up if server-to-server cookie callers are ever added | Monitoring | Location: `functions/api/middleware/csrf.ts:74–99`; residual risk (cookie-bearing non-browser client) is acceptable and documented |
+
+---
+
 ## Explicitly not in active scope
 
 | Item | Reason | Promote when |
