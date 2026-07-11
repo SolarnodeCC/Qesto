@@ -7,6 +7,7 @@
  * Everything here is aggregate-only — no per-voter identifiers ever appear.
  */
 import { z } from 'zod'
+import { readKvText, writeKvText, deleteKv } from './kv'
 
 /**
  * AI-462 (S87) — copilot ↔ embed handoff bridge.
@@ -55,7 +56,7 @@ export async function notifyEmbedOfCopilotChange(
   try {
     if (!env.SESSIONS_KV) return false
     if (!(await sessionHasActiveEmbedWidget(env.DB, sessionId))) return false
-    await env.SESSIONS_KV.put(embedNotifyKvKey(sessionId), '1', {
+    await writeKvText(env.SESSIONS_KV, embedNotifyKvKey(sessionId), '1', {
       expirationTtl: EMBED_NOTIFY_TTL_SECONDS,
     })
     return true
@@ -76,9 +77,9 @@ export async function consumeEmbedCopilotFlag(
   try {
     if (!env.SESSIONS_KV) return false
     const key = embedNotifyKvKey(sessionId)
-    const flag = await env.SESSIONS_KV.get(key)
+    const flag = await readKvText(env.SESSIONS_KV, key)
     if (!flag) return false
-    await env.SESSIONS_KV.delete(key)
+    await deleteKv(env.SESSIONS_KV, key)
     return true
   } catch {
     return false

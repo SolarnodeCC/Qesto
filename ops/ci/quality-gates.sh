@@ -32,10 +32,13 @@ node scripts/check-claude-config.mjs
 #   - check-ai-gateway: raw env.AI.run outside lib/ai/ai-gateway.ts (runAI facade)
 #   - check-d1-access:  inline env.DB.prepare in routes (belongs in repositories/)
 #   - check-error-response: inline `ok: false` envelopes (belongs in errorResponse())
-report_success "Architecture ratchets (AI gateway / D1 repo / error builder)"
+#   - check-kv-access:  direct env.*_KV calls outside lib/kv.ts (baseline 0 —
+#     its absence here let 15 violations creep in; see REFACTORING_AUDIT_2026-07-08.md)
+report_success "Architecture ratchets (AI gateway / D1 repo / error builder / KV)"
 node scripts/check-ai-gateway.mjs
 node scripts/check-d1-access.mjs
 node scripts/check-error-response.mjs
+node scripts/check-kv-access.mjs
 
 # Type checking (fast, no emit)
 report_success "Type checking (tsc --noEmit)"

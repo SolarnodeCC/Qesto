@@ -19,7 +19,7 @@ import {
   CopilotThreadSchema,
   type CopilotThread,
   type CopilotTurn,
-} from '../lib/copilot-multturn'
+} from '../lib/copilot-multiturn'
 import {
   draftPollFromIntent,
   DRAFT_POLL_INTENT_MAX,
@@ -639,7 +639,7 @@ export function mountCopilotContextRoutes(parent: ParentApp) {
       data: {
         mode: 'workers_ai_edge',
         inference: 'on-device-colo',
-        multturn: true,
+        multiturn: true,
         emotionSafe: true,
       },
       trace_id: c.get('trace_id'),

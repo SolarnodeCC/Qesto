@@ -46,12 +46,12 @@ import {
   handleCopilotSnapshot,
 } from './lib/session-room-rest'
 import { handleUpgrade } from './lib/session-room-ws-upgrade'
+import { handleVote } from './lib/session-room-vote-admission'
 import {
-  handleVote,
   handlePresenterAdvance,
   handlePresenterBack,
   handleAddQuestion,
-} from './lib/session-room-vote-flow'
+} from './lib/session-room-presenter-actions'
 import {
   handlePresenterPauseResume,
   handleApproveResponse,

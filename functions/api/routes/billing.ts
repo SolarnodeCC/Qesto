@@ -10,7 +10,7 @@
 import { Hono } from 'hono'
 import { errorResponse } from '../lib/error-handler'
 import { getQuotaUsage } from '../lib/quota'
-import { readKvText } from '../lib/kv'
+import { readKvText, writeKvJson, writeKvText, deleteKv } from '../lib/kv'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import { planMiddleware, type PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
@@ -68,10 +68,10 @@ async function setUserPlan(env: Pick<Env, 'DB'>, userId: string, plan: PlanTier)
 
 /** Persist the bidirectional Stripe customer ↔ user mapping (#585). */
 async function recordCustomerMapping(env: Pick<Env, 'USERS_KV' | 'DB'>, userId: string, customerId: string): Promise<void> {
-  await env.USERS_KV.put(stripeCustomerKey(userId), JSON.stringify({ customerId }), {
+  await writeKvJson(env.USERS_KV, stripeCustomerKey(userId), { customerId }, {
     expirationTtl: 86400 * 365,
   })
-  await env.USERS_KV.put(stripeCustomerReverseKey(customerId), userId, {
+  await writeKvText(env.USERS_KV, stripeCustomerReverseKey(customerId), userId, {
     expirationTtl: 86400 * 365,
   })
   try {
@@ -556,9 +556,10 @@ async function handleSubscriptionCreated(
   }
 
   // Store subscription record in KV
-  await c.env.USERS_KV.put(
+  await writeKvJson(
+    c.env.USERS_KV,
     stripeSubscriptionKey(userId),
-    JSON.stringify({ subscriptionId: sub.id }),
+    { subscriptionId: sub.id },
     { expirationTtl: 86400 * 365 },
   )
 
@@ -589,9 +590,10 @@ async function handleSubscriptionUpdated(
   if (!userId) return
 
   // Update subscription record (status may have changed)
-  await c.env.USERS_KV.put(
+  await writeKvJson(
+    c.env.USERS_KV,
     stripeSubscriptionKey(userId),
-    JSON.stringify({ subscriptionId: sub.id }),
+    { subscriptionId: sub.id },
     { expirationTtl: 86400 * 365 },
   )
 
@@ -629,7 +631,7 @@ async function handleSubscriptionDeleted(
   if (!userId) return
 
   // Remove subscription record from KV and downgrade to free.
-  await c.env.USERS_KV.delete(stripeSubscriptionKey(userId))
+  await deleteKv(c.env.USERS_KV, stripeSubscriptionKey(userId))
   await setUserPlan(c.env, userId, 'free')
 
   await writeBillingAudit(c.env, userId, 'billing.subscription_deleted', sub.id, { plan: 'free' })
@@ -689,6 +691,6 @@ async function findUserByCustomerId(env: Env, customerId: string): Promise<strin
     // Column may not exist in some environments; fall through to KV.
   }
 
-  const fromKv = await env.USERS_KV.get(stripeCustomerReverseKey(customerId))
+  const fromKv = await readKvText(env.USERS_KV, stripeCustomerReverseKey(customerId))
   return fromKv ?? null
 }

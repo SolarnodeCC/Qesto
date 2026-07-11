@@ -6,6 +6,7 @@ import { absent } from './absent'
 import type { LiveEnergizerState, LiveQuestion } from '../realtime'
 import type { Env } from '../types'
 import { logEvent } from './log'
+import { writeKvJson } from './kv'
 import { writeEvent } from './observability'
 import {
   K_META,
@@ -110,9 +111,10 @@ export async function flushVotesToD1AndKV(
     if (!env.SESSIONS_KV) {
       logEvent({ event: 'do.kv_unavailable', sessionId: meta.sessionId, detail: 'SESSIONS_KV' })
     } else if (state._voters) {
-      await env.SESSIONS_KV.put(
+      await writeKvJson(
+        env.SESSIONS_KV,
         `votes:${meta.sessionId}`,
-        JSON.stringify({ voters: state._voters, counts: state._counts, flushedAt: Date.now() }),
+        { voters: state._voters, counts: state._counts, flushedAt: Date.now() },
         { expirationTtl: 3600 },
       )
     }
