@@ -12,8 +12,9 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { resolve, relative, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = resolve(new URL('.', import.meta.url).pathname, '..')
+const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 // worker/ and workers/ (cron/standalone entrypoints) are in scope too — their
 // unattended AI calls need the facade's timeout/retry most of all.
 const SCAN_DIRS = ['functions', 'worker', 'workers'].map((d) => resolve(ROOT, d))
