@@ -112,6 +112,16 @@ ADR-0068/0069/0070.
 | `MKTG-DEMO-WIDGET-01` | 8 | P1 | frontend + marketing | Open | No-signup interactive demo from embed widget + templates library; packaged as landing-page CTA; reuse existing R2 embed assets |
 | `ANALYTICS-COHORT-01` | 5 | P1 | analytics | Open | Cohort retention/churn analytics on `sprint19_events`: query endpoints in `analytics-advanced.ts`; cohort-by-signup-date curves; weekly trend chart |
 | `KB-STALENESS-CRON-01` | 3 | P2 | knowledge | Open | Agent cron: flag docs with `updated:` >2 release trains old and `status: active`; auto-file for review or archive; removes from KB embed corpus |
+## Energizer security boundary — consolidated (audit E-1/E-2, closed)
+
+**Source:** [`CORE_FEATURES_AUDIT_2026-07-09.md`](../audits/CORE_FEATURES_AUDIT_2026-07-09.md) — 2 CRITICAL findings. Consolidation approved by PO 2026-07-10 ("fix these issues now"); implemented in PR #715.
+
+| ID | Pri | Finding | Resolution | Status |
+|----|----|---------|------------|--------|
+| `ARCH-ENERGIZER-E1-REST` | CRIT | `GET /energizers/active` returned raw `correct_index` to any authenticated user (no access check); team-quiz REST vote echoed `correct` immediately with re-answer allowed | `GET /active` is now **host-only** (`requireSessionAccess requireOwner`); team-quiz vote stores correctness but never echoes it and rejects re-answers (409, mirrors the WS duplicate rule) | **Done (PR #715)** |
+| `ARCH-ENERGIZER-E2-ISOLATION` | CRIT | REST energizer plane 401'd for anonymous participants; REST/D1 vs WS/DO results never reconciled | **DO WebSocket is the single participant-facing plane.** Host REST lifecycle (PATCH activate, `/next`) syncs into the DO (`/energizer-sync`); DO gained emoji_poll/word_cloud answers with an aggregate `optionCounts` read model; JoinPage dropped REST polling for WS-only panels (all 4 lobby kinds); host monitoring reads live results from the DO (`/energizer-state`) with D1 fallback; DO completions mirror back to D1 | **Done (PR #715)** |
+
+**Architecture note:** the host lobby (Launchpad) stays on the authenticated REST plane for draft/edit/activate/monitor; participants — anonymous included — are WS-only. D1 remains config/lifecycle truth; the DO is the live-answer store.
 
 ---
 

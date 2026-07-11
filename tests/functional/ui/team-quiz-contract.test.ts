@@ -18,7 +18,12 @@ describe('Sprint 28 Team Quiz contract', () => {
     expect(room).toContain('handleTeamQuizAnswer')
     expect(room).toContain('rankTeamQuizScores')
     expect(hook).toContain('sendEnergizerAdvance')
-    expect(present).toContain('handleStartTeamQuiz')
+    // Core-audit P-2: the unreachable Present.tsx launch stub (which hardcoded
+    // correctIndex: 0) was removed; the v1 activation surface lives in the hook
+    // until the presenter launch UI ships. The presenter canvas still renders
+    // live quiz state (leaderboard).
+    expect(hook).toContain('sendEnergizerActivate')
+    expect(present).toContain('state.energizer')
     expect(join).toContain('LiveTeamQuizPanel')
   })
 

@@ -248,18 +248,31 @@ export const rbacMiddleware: MiddlewareHandler<{
   if (routeKey) {
     const requiredRoles = PERMISSION_MATRIX[routeKey]
     if (!hasRequiredRole(userRoles, requiredRoles)) {
-      c.set('canAccess', false)
-      return c.json(
-        {
-          ok: false,
-          error: {
-            code: 'forbidden',
-            message: `Route requires role: ${Array.from(requiredRoles).join(' | ')}`,
+      // The matrix gates by the caller's GLOBAL built-in role. Team/tenant routes
+      // carry their own object-level authorization (`requireTeamPermission`), which
+      // is stronger and also honours custom roles and per-team membership — a coarse
+      // global-role check here would SHADOW those and produce false denials (e.g. a
+      // custom role granting member-management to a user whose global role is
+      // 'viewer'). So RBAC hard-enforces only the surface it uniquely owns: the
+      // platform-admin routes, where global platform authority is exactly the right
+      // check and no team-scoped grant can apply. For every other matrix entry it
+      // defers to the route's authoritative in-route check (which remains the real
+      // gate — see requireTeamPermission, adminMiddleware, and session owner checks).
+      const isPlatformAuthorityRoute = requiredRoles.has('platform_admin')
+      if (isPlatformAuthorityRoute) {
+        c.set('canAccess', false)
+        return c.json(
+          {
+            ok: false,
+            error: {
+              code: 'forbidden',
+              message: `Route requires role: ${Array.from(requiredRoles).join(' | ')}`,
+            },
+            trace_id,
           },
-          trace_id,
-        },
-        403,
-      )
+          403,
+        )
+      }
     }
   }
 

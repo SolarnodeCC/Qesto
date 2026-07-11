@@ -8,12 +8,13 @@ import type { SessionLookupByCode } from '@/types/session'
 import { applyBrandingCssVars, tryCacheJoinSession, readCachedJoinSession } from '../lib/branding'
 import { api } from '../api/client'
 import { useLiveSession } from '../hooks/useLiveSession'
-import { LiveQuickFingerPanel, LiveTeamQuizPanel } from './join/LiveEnergizerPanels'
+import {
+  LiveQuickFingerPanel,
+  LiveTeamQuizPanel,
+  LiveEmojiPollPanel,
+  LiveWordCloudPanel,
+} from './join/LiveEnergizerPanels'
 import { useT } from '../i18n'
-import EmojiPollEnergizerView, { type EmojiPollEnergizer } from '../components/EmojiPollEnergizer'
-import QuickFingerEnergizerView, { type QuickFingerEnergizer } from '../components/QuickFingerEnergizer'
-import TeamQuizEnergizerView, { type TeamQuizEnergizer } from '../components/TeamQuizEnergizer'
-import WordCloudEnergizerView, { type WordCloudEnergizer } from '../components/WordCloudEnergizer'
 import { WaitingScreen } from './join/WaitingScreen'
 import { JoinLanding } from './join/JoinLanding'
 import { SessionEndedCard } from './join/SessionEndedCard'
@@ -212,30 +213,9 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
   const isMultiVote = questionKind === 'multi_select' || questionKind === 'upvote'
   const hasVoted = !isMultiVote && myVotes.length > 0
 
-  type AnyEnergizer = EmojiPollEnergizer | QuickFingerEnergizer | TeamQuizEnergizer | WordCloudEnergizer
-  const [activeEnergizer, setActiveEnergizer] = useState<AnyEnergizer | null>(null)
-  const energizerPollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const fetchActiveEnergizer = useCallback(async () => {
-    const res = await api<{ energizer: AnyEnergizer | null }>(
-      `/api/sessions/${encodeURIComponent(sessionId)}/energizers/active`,
-    )
-    if (res.ok) {
-      setActiveEnergizer(res.data.energizer)
-    }
-  }, [sessionId])
-
-  useEffect(() => {
-    if (isEnded) {
-      if (energizerPollRef.current) clearInterval(energizerPollRef.current)
-      return
-    }
-    fetchActiveEnergizer()
-    energizerPollRef.current = setInterval(fetchActiveEnergizer, 3000)
-    return () => {
-      if (energizerPollRef.current) clearInterval(energizerPollRef.current)
-    }
-  }, [isEnded, fetchActiveEnergizer])
+  // Energizers arrive over the WebSocket only (`state.energizer`) — the REST
+  // polling plane was auth-gated and 401'd for anonymous participants
+  // (audit E-2); the DO is the single participant-facing energizer plane.
 
   const prevQuestionIdRef = useRef<string | null>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -391,19 +371,21 @@ function Voter({ sessionId, title }: { sessionId: string; title: string }) {
           />
         )}
 
-        {/* Active energizer — REST-polled (non-WS energizers) */}
-        {!isEnded && !state.energizer && activeEnergizer !== null && countdown === null && (() => {
-          const vid = state.voterId ?? 'anonymous'
-          if (activeEnergizer.kind === 'emoji_poll')
-            return <EmojiPollEnergizerView sessionId={sessionId} energizer={activeEnergizer as EmojiPollEnergizer} role="participant" voterId={vid} />
-          if (activeEnergizer.kind === 'quick_finger')
-            return <QuickFingerEnergizerView sessionId={sessionId} energizer={activeEnergizer as QuickFingerEnergizer} role="participant" voterId={vid} />
-          if (activeEnergizer.kind === 'team_quiz')
-            return <TeamQuizEnergizerView sessionId={sessionId} energizer={activeEnergizer as TeamQuizEnergizer} role="participant" voterId={vid} />
-          if (activeEnergizer.kind === 'word_cloud')
-            return <WordCloudEnergizerView sessionId={sessionId} energizer={activeEnergizer as WordCloudEnergizer} role="participant" voterId={vid} />
-          return null
-        })()}
+        {!isEnded && state.energizer?.kind === 'emoji_poll' && countdown === null && (
+          <LiveEmojiPollPanel
+            energizer={state.energizer}
+            voterId={state.voterId}
+            onAnswer={sendEnergizerAnswer}
+          />
+        )}
+
+        {!isEnded && state.energizer?.kind === 'word_cloud' && countdown === null && (
+          <LiveWordCloudPanel
+            energizer={state.energizer}
+            voterId={state.voterId}
+            onAnswer={sendEnergizerAnswer}
+          />
+        )}
 
         {/* Active question — hide during countdown */}
         {!isEnded && state.question && countdown === null && (

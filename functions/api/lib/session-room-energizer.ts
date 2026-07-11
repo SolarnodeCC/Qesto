@@ -173,6 +173,75 @@ function withTeamQuizScoreArtifacts(
   }
 }
 
+// ── Aggregate tallies ─────────────────────────────────────────────────────────
+
+/**
+ * Aggregate answers into a value→count map (emoji_poll / word_cloud). This is
+ * the participant-safe read model: it carries no voter identity, so it can be
+ * broadcast to everyone while raw answers stay redacted to the viewer's own.
+ */
+export function tallyOptionCounts(
+  answers: NonNullable<LiveEnergizerState['answers']>,
+): Record<string, number> {
+  const counts: Record<string, number> = {}
+  for (const a of answers) counts[a.value] = (counts[a.value] ?? 0) + 1
+  return counts
+}
+
+// ── Viewer redaction ──────────────────────────────────────────────────────────
+
+// How many ranked answers voters may see (the quick-finger podium row).
+const VOTER_VISIBLE_RANKS = 3
+
+/**
+ * Project an energizer state down to what a given viewer is allowed to see.
+ * Presenters get the full state. Voters get a redacted view:
+ *  - answer keys (`correctIndex`, per-question `correctIndex`) are stripped
+ *    while the energizer is active (revealed once completed),
+ *  - `answers` keep only the viewer's own entry plus the top-3 podium
+ *    (other voters' raw answer values are blanked),
+ *  - `submissions`, `scores` and `badges` keep only the viewer's own rows,
+ *  - `leaderboard` and `optionCounts` pass through (aggregate, identity-free).
+ * This both closes the answer-key leak and keeps voter payloads O(1) in the
+ * participant count instead of shipping every accumulated answer to everyone.
+ */
+export function redactEnergizerForViewer(
+  energizer: LiveEnergizerState,
+  viewer: { role: 'presenter' | 'voter'; voterId: string },
+): LiveEnergizerState {
+  if (viewer.role === 'presenter') return energizer
+
+  const revealAnswers = energizer.status === 'completed'
+  const view: LiveEnergizerState = { ...energizer }
+
+  if (!revealAnswers) {
+    delete view.correctIndex
+    if (view.questions) {
+      view.questions = view.questions.map((q) => {
+        const { correctIndex: _hidden, ...rest } = q
+        return rest as typeof q
+      })
+    }
+  }
+
+  if (view.answers) {
+    view.answers = view.answers
+      .filter((a) => a.voterId === viewer.voterId || (a.rank >= 1 && a.rank <= VOTER_VISIBLE_RANKS))
+      .map((a) => (a.voterId === viewer.voterId ? a : { ...a, value: '' }))
+  }
+  if (view.submissions) {
+    view.submissions = view.submissions.filter((s) => s.voterId === viewer.voterId)
+  }
+  if (view.scores) {
+    view.scores = view.scores.filter((s) => s.voterId === viewer.voterId)
+  }
+  if (view.badges) {
+    const own = view.badges[viewer.voterId]
+    view.badges = own ? { [viewer.voterId]: own } : {}
+  }
+  return view
+}
+
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 
 function addBadge(

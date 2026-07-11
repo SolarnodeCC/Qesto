@@ -136,6 +136,10 @@ export type LiveEnergizerState = {
   scores?: LiveTeamQuizScore[]
   leaderboard?: LiveLeaderboardEntry[]
   badges?: Record<string, LiveBadgeAward[]>
+  // Aggregate value→count tally for emoji_poll / word_cloud. Carries no voter
+  // identity or answer key, so viewer redaction passes it through untouched —
+  // it is what participants render instead of other voters' raw answers.
+  optionCounts?: Record<string, number>
 }
 
 // ── TOWNHALL board (ADR-0044) ────────────────────────────────────────────────

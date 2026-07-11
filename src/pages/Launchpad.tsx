@@ -45,6 +45,7 @@ export default function Launchpad() {
 
   const [energizers, setEnergizers] = useState<AnyEnergizer[]>([])
   const [energizerVersion, setEnergizerVersion] = useState(0)
+  const [energizersError, setEnergizersError] = useState<string | null>(null)
 
   // Fetch energizers
   useEffect(() => {
@@ -54,7 +55,15 @@ export default function Launchpad() {
       const res = await api<{ energizers: AnyEnergizer[] }>(
         `/api/sessions/${encodeURIComponent(id)}/energizers`,
       )
-      if (!cancelled && res.ok) setEnergizers(res.data.energizers)
+      if (cancelled) return
+      if (res.ok) {
+        setEnergizers(res.data.energizers)
+        setEnergizersError(null)
+      } else {
+        // Don't fail silently — a broken energizer plane must not look like
+        // "no energizers configured".
+        setEnergizersError(res.error.message)
+      }
     })()
     return () => { cancelled = true }
   }, [id, energizerVersion])
@@ -95,16 +104,11 @@ export default function Launchpad() {
     setDragOverIndex(index)
   }, [])
 
-  const handleDrop = useCallback(async (dropIndex: number) => {
-    if (dragIndex === null || dragIndex === dropIndex || !id) {
-      setDragIndex(null); setDragOverIndex(null); return
-    }
-    const next = [...orderedQuestions]
-    const [moved] = next.splice(dragIndex, 1)
-    next.splice(dropIndex, 0, moved)
+  // Optimistically apply `next`, persist via the reorder API, roll back on failure.
+  const applyReorder = useCallback(async (next: typeof orderedQuestions) => {
+    if (!id) return
     setOrderedQuestions(next)
-    setDragIndex(null); setDragOverIndex(null); setReorderError(null)
-
+    setReorderError(null)
     const res = await api<unknown>(`/api/sessions/${encodeURIComponent(id)}/questions/reorder`, {
       method: 'PUT',
       body: { questionIds: next.map((q) => q.id) },
@@ -114,7 +118,27 @@ export default function Launchpad() {
       setOrderedQuestions(data?.questions ?? next)
     }
     void refreshPreFlight()
-  }, [dragIndex, orderedQuestions, id, data?.questions, refreshPreFlight, t])
+  }, [id, data?.questions, refreshPreFlight, t])
+
+  const handleDrop = useCallback(async (dropIndex: number) => {
+    if (dragIndex === null || dragIndex === dropIndex || !id) {
+      setDragIndex(null); setDragOverIndex(null); return
+    }
+    const next = [...orderedQuestions]
+    const [moved] = next.splice(dragIndex, 1)
+    next.splice(dropIndex, 0, moved)
+    setDragIndex(null); setDragOverIndex(null)
+    await applyReorder(next)
+  }, [dragIndex, orderedQuestions, id, applyReorder])
+
+  // Keyboard/touch alternative to drag-and-drop (WCAG 2.1.1).
+  const handleMove = useCallback((index: number, direction: -1 | 1) => {
+    const target = index + direction
+    if (target < 0 || target >= orderedQuestions.length) return
+    const next = [...orderedQuestions]
+    ;[next[index], next[target]] = [next[target], next[index]]
+    void applyReorder(next)
+  }, [orderedQuestions, applyReorder])
 
   const handleDragEnd = useCallback(() => {
     setDragIndex(null); setDragOverIndex(null)
@@ -275,6 +299,11 @@ export default function Launchpad() {
           />
 
           <div className="flex-1 min-w-0 space-y-6">
+            {energizersError && (
+              <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+                {t('energizers_load_error')}
+              </p>
+            )}
             <EnergizerPanel
               energizers={energizers}
               sessionId={id!}
@@ -292,6 +321,7 @@ export default function Launchpad() {
               onDragOver={handleDragOver}
               onDrop={(i) => void handleDrop(i)}
               onDragEnd={handleDragEnd}
+              onMove={handleMove}
               onChanged={handleQuestionChanged}
             />
           </div>

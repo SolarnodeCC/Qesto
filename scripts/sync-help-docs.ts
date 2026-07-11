@@ -4,9 +4,8 @@
  *
  * SINGLE SOURCE OF TRUTH: functions/api/seed/help-documents.json, which is itself
  * generated from knowledge-base/help/*.md by scripts/generate-help-seed.mjs (one
- * chunk per H2). This script and the in-worker seeder (functions/api/lib/seed-help.ts)
- * therefore index the SAME chunked documents with the SAME stable ids — no more
- * "whole-file vs chunked" divergence in the qesto-help index.
+ * chunk per H2). This script indexes those chunked documents with stable ids — no
+ * more "whole-file vs chunked" divergence in the qesto-help index.
  *
  * For each chunk it:
  *   - embeds `title + excerpt + content` with bge-m3 (1024-dim)

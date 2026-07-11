@@ -22,7 +22,8 @@
  * The AE latency event (`xr.avatar_sync_latency`) carries aggregate timing +
  * batch count only — never avatarId / voterId / coordinates (R2, D6).
  */
-import { LIVE_PROTOCOL_VERSION_V3 } from '../realtime'
+import { serverMsgV3 } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
 import { flagOff } from './flags'
 import { writeEvent } from './observability'
 import { K_META } from './session-room-storage-keys'
@@ -41,17 +42,6 @@ type AvatarPose = {
   receivedAt: number
 }
 
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-  }
-  getWebSockets(tag?: string): WebSocket[]
-}
-
-function serverMsg(msg: object): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION_V3, ...msg })
-}
-
 export class XrAvatarHandler {
   /** Transient, in-DO-only pose state keyed by the socket. Never persisted. */
   private readonly poses = new Map<WebSocket, AvatarPose>()
@@ -62,7 +52,7 @@ export class XrAvatarHandler {
   private nextAvatarSeq = 0
 
   constructor(
-    private readonly ctx: StorageContext,
+    private readonly ctx: DurableContextLike,
     private readonly env: Env,
   ) {}
 
@@ -124,7 +114,7 @@ export class XrAvatarHandler {
     }
 
     this.rev += 1
-    const payload = serverMsg({
+    const payload = serverMsgV3({
       type: 'xr_avatar_sync',
       data: { avatars, rev: this.rev },
       timestamp: now,

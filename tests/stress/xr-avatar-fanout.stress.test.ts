@@ -53,6 +53,8 @@ class MockStorageContext {
       }
       return undefined
     },
+    put: async <T,>(_key: string, _value: T): Promise<void> => {},
+    delete: async (_key: string): Promise<void> => {},
   }
 
   constructor(_env: Env) {}

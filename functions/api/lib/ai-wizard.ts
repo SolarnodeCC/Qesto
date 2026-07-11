@@ -210,8 +210,10 @@ const MAX_TOKENS = 700
 const TARGET_QUESTION_COUNT = 8
 // Delays between retry attempts in milliseconds (exponential backoff).
 const RETRY_DELAYS_MS = [150, 300]
-const FAST_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8'
-const QUALITY_FALLBACK_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+// Exported so transparency/consent metadata reports the models that actually
+// run, instead of a hardcoded string that can drift.
+export const FAST_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8'
+export const QUALITY_FALLBACK_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 const PARALLEL_BATCH_FOCI = [
   'alignment, priorities, and decisions',
   'risks, concerns, trade-offs, and next steps',

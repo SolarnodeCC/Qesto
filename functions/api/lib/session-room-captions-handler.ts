@@ -15,7 +15,8 @@
  * small typed text segments to fan out.
  */
 import { z } from 'zod'
-import { LIVE_PROTOCOL_VERSION_V3 } from '../realtime'
+import { serverMsgV3 } from './session-room-messages'
+import type { DurableContextLike } from './session-room-context'
 import type { Attachment } from './session-room-types'
 import {
   CAPTION_LOCALES,
@@ -55,20 +56,8 @@ export const CaptionBroadcastPayloadSchema = z.object({
 
 export type CaptionBroadcastPayload = z.infer<typeof CaptionBroadcastPayloadSchema>
 
-interface StorageContext {
-  storage: {
-    get<T>(key: string): Promise<T | undefined>
-    put<T>(key: string, value: T): Promise<void>
-  }
-  getWebSockets(tag?: string): WebSocket[]
-}
-
-function serverMsg(msg: object): string {
-  return JSON.stringify({ v: LIVE_PROTOCOL_VERSION_V3, ...msg })
-}
-
 export class CaptionsHandler {
-  constructor(private readonly ctx: StorageContext) {}
+  constructor(private readonly ctx: DurableContextLike) {}
 
   async getState(): Promise<CaptionState | null> {
     return (await this.ctx.storage.get<CaptionState>(K_CAPTIONS)) ?? null
@@ -149,7 +138,7 @@ export class CaptionsHandler {
       const lang = variants[deliver] !== undefined && deliver !== sourceLocale ? deliver : sourceLocale
       try {
         ws.send(
-          serverMsg({
+          serverMsgV3({
             type: 'caption_segment',
             data: { id: payload.id, ts: payload.ts, lang, text, isFinal: payload.isFinal },
             timestamp: Date.now(),

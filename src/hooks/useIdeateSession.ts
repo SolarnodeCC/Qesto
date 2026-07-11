@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { parseServerEnvelope } from '../lib/live-session-protocol'
-import { buildLiveSessionWsUrl, sendWsJson } from './liveSessionWsTransport'
+import {
+  buildLiveSessionWsUrl,
+  buildLiveSessionSubprotocols,
+  createReconnectingWs,
+  sendWsJson,
+} from './liveSessionWsTransport'
 
 const LIVE_PROTOCOL_VERSION = 1
 
@@ -175,20 +180,11 @@ type Options = { fingerprint?: string; presenterToken?: string; enabled?: boolea
 export function useIdeateSession(sessionId: string | undefined, opts: Options = {}) {
   const [state, dispatch] = useReducer(ideateReducer, IDEATE_INITIAL)
   const wsRef = useRef<WebSocket | null>(null)
-  const attemptRef = useRef(0)
   const pendingUpvoteRef = useRef<string | null>(null)
   const { fingerprint, presenterToken, enabled = true } = opts
 
-  const connect = useCallback(() => {
-    if (!sessionId || !enabled) return
-    dispatch({ kind: 'connecting' })
-    const url = buildLiveSessionWsUrl(sessionId, fingerprint)
-    const subprotocols = presenterToken ? [`qesto.bearer.${presenterToken}`, 'qesto-v1'] : ['qesto-v1']
-    const ws = new WebSocket(url, subprotocols)
-    wsRef.current = ws
-
-    ws.addEventListener('open', () => dispatch({ kind: 'open' }))
-    ws.addEventListener('message', (ev) => {
+  const handleMessage = useCallback(
+    (ev: MessageEvent) => {
       try {
         const msg = parseServerEnvelope(JSON.parse(typeof ev.data === 'string' ? ev.data : String(ev.data)))
         if (!msg) return
@@ -276,30 +272,43 @@ export function useIdeateSession(sessionId: string | undefined, opts: Options = 
       } catch {
         /* ignore */
       }
-    })
-    ws.addEventListener('close', (ev) => {
-      if (ev.code === 1000) {
-        dispatch({ kind: 'closed' })
-        return
-      }
-      const attempt = attemptRef.current + 1
-      attemptRef.current = attempt
-      if (attempt > 5) {
-        dispatch({ kind: 'failed', error: 'Connection lost' })
-        return
-      }
-      dispatch({ kind: 'reconnecting' })
-      setTimeout(connect, Math.min(16000, 1000 * Math.pow(2, attempt - 1)))
-    })
-  }, [sessionId, enabled, fingerprint, presenterToken])
+    },
+    [],
+  )
 
   useEffect(() => {
-    connect()
+    if (!sessionId || !enabled) return
+    const handle = createReconnectingWs({
+      url: buildLiveSessionWsUrl(sessionId, fingerprint),
+      subprotocols: buildLiveSessionSubprotocols(presenterToken),
+      onSocket: (ws) => {
+        wsRef.current = ws
+      },
+      onMessage: handleMessage,
+      onStatus: (s) => {
+        switch (s.kind) {
+          case 'connecting':
+            dispatch({ kind: 'connecting' })
+            break
+          case 'open':
+            dispatch({ kind: 'open' })
+            break
+          case 'reconnecting':
+            dispatch({ kind: 'reconnecting' })
+            break
+          case 'closed':
+            dispatch({ kind: 'closed' })
+            break
+          case 'failed':
+            dispatch({ kind: 'failed', error: 'Connection lost' })
+            break
+        }
+      },
+    })
     return () => {
-      wsRef.current?.close(1000, 'unmount')
-      wsRef.current = null
+      handle.close()
     }
-  }, [connect])
+  }, [sessionId, enabled, fingerprint, presenterToken, handleMessage])
 
   const submit = useCallback((body: string) => {
     return sendWsJson(wsRef.current, {

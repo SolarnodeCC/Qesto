@@ -121,5 +121,8 @@
   "connection.connecting": "Verbinden…",
   "connection.reconnecting": "Opnieuw verbinden…",
   "connection.closed": "Verbinding verbroken",
-  "connection.failed": "Verbinding verloren"
+  "connection.failed": "Verbinding verloren",
+  "anonymity_full": "Volledige anonimiteit",
+  "anonymity_partial": "Gedeeltelijke anonimiteit",
+  "anonymity_zero_knowledge": "Zero-knowledge-anonimiteit"
 }

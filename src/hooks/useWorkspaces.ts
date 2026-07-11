@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { api } from '../api/client'
+import { useApiQuery } from './useApiQuery'
 
 export type WorkspaceKind = 'retro' | 'ideate' | 'event'
 
@@ -23,29 +24,11 @@ export type WorkspaceInstance = {
 }
 
 export function useWorkspaces(teamId: string | undefined, kind?: WorkspaceKind) {
-  const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([])
-  const [loading, setLoading] = useState(false)
-  const [planGated, setPlanGated] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const refresh = useCallback(async () => {
-    if (!teamId) return
-    setLoading(true)
-    setError(null)
-    const q = kind ? `?kind=${kind}` : ''
-    const res = await api<{ workspaces: WorkspaceSummary[] }>(`/api/teams/${teamId}/workspaces${q}`)
-    setLoading(false)
-    if (!res.ok) {
-      if (res.status === 403) setPlanGated(true)
-      else setError(res.error.message)
-      return
-    }
-    setWorkspaces(res.data.workspaces)
-  }, [teamId, kind])
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
+  const listPath = teamId ? `/api/teams/${teamId}/workspaces${kind ? `?kind=${kind}` : ''}` : undefined
+  const { data, error, status, loading, reload } = useApiQuery<{ workspaces: WorkspaceSummary[] }>(listPath)
+  // A 403 on a mutation also reveals the plan gate, independent of the list query.
+  const [mutationPlanGated, setMutationPlanGated] = useState(false)
+  const planGated = status === 403 || mutationPlanGated
 
   const createWorkspace = useCallback(
     async (payload: { kind: WorkspaceKind; title: string; cadence?: string }) => {
@@ -55,13 +38,13 @@ export function useWorkspaces(teamId: string | undefined, kind?: WorkspaceKind) 
         body: payload,
       })
       if (!res.ok) {
-        if (res.status === 403) setPlanGated(true)
+        if (res.status === 403) setMutationPlanGated(true)
         return { ok: false as const, message: res.error.message }
       }
-      await refresh()
+      await reload()
       return { ok: true as const, id: res.data.workspace.id }
     },
-    [teamId, refresh],
+    [teamId, reload],
   )
 
   const startInstance = useCallback(
@@ -89,11 +72,11 @@ export function useWorkspaces(teamId: string | undefined, kind?: WorkspaceKind) 
   )
 
   return {
-    workspaces,
+    workspaces: data?.workspaces ?? [],
     loading,
     planGated,
-    error,
-    refresh,
+    error: error && status !== 403 ? error.message : null,
+    refresh: reload,
     createWorkspace,
     startInstance,
     loadInstances,

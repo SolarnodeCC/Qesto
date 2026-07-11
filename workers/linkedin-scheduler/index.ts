@@ -13,6 +13,7 @@
  */
 
 import { ulid } from '../../functions/api/lib/ulid'
+import { runAI } from '../../functions/api/lib/ai/ai-gateway'
 import { createEncryptedTokenStore } from '../../functions/api/lib/integrations/token-store'
 import {
   buildPostPrompt,
@@ -127,7 +128,7 @@ export async function runScheduled(env: SchedulerEnv): Promise<void> {
   let text: string
   try {
     const { system, user } = buildPostPrompt(topic, language)
-    const result = (await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+    const result = (await runAI(env, '@cf/meta/llama-3.1-8b-instruct', {
       messages: [
         { role: 'system', content: system },
         { role: 'user', content: user },

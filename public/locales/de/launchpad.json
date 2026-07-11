@@ -53,5 +53,8 @@
   "preflight_not_ready": "Nicht bereit",
   "status_ready": "Entwurf · startbereit",
   "status_draft": "Entwurf",
-  "status_energizing": "Aufwärmphase"
+  "status_energizing": "Aufwärmphase",
+  "move_up": "Nach oben verschieben",
+  "move_down": "Nach unten verschieben",
+  "energizers_load_error": "Energizer konnten nicht geladen werden. Zum erneuten Versuch aktualisieren."
 }
