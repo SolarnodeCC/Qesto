@@ -20,6 +20,10 @@ jobs:
   help-sync:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # The secrets context is not allowed in step `if:` expressions — map the
+    # webhook into job env so the Slack step can gate on `env.*` instead.
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     permissions:
       contents: read
     steps:
@@ -61,7 +65,7 @@ jobs:
           retention-days: 30
 
       - name: Notify Slack (on failure)
-        if: ${{ failure() && secrets.SLACK_WEBHOOK_URL }}
+        if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
         uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3
         with:
           payload: |
