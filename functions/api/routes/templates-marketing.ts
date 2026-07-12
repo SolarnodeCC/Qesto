@@ -32,6 +32,13 @@ import { authEmailRequestSchema } from './auth/schemas'
 import { MAGIC_LINK_TTL_MS } from './auth/constants'
 import { ensurePersonalTeam } from './teams'
 import { pingIndexNowForTemplate } from '../lib/indexnow'
+import {
+  findUserIdByEmail,
+  insertFreeUser,
+  insertDraftSession,
+  insertSessionQuestion,
+  insertMagicLink,
+} from '../repositories/marketingTemplateRepository'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -176,19 +183,10 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
       const now = Date.now()
 
       // Find-or-create the user, mirroring the magic-link callback semantics.
-      const existingUser = await c.env.DB.prepare(`SELECT id FROM users WHERE email = ?1`)
-        .bind(email)
-        .first<{ id: string }>()
-      let userId: string
-      if (existingUser) {
-        userId = existingUser.id
-      } else {
+      let userId = await findUserIdByEmail(c.env.DB, email)
+      if (!userId) {
         userId = ulid()
-        await c.env.DB.prepare(
-          `INSERT INTO users (id, email, created_at, last_login_at, plan) VALUES (?1, ?2, ?3, ?4, 'free')`,
-        )
-          .bind(userId, email, now, now)
-          .run()
+        await insertFreeUser(c.env.DB, userId, email, now)
       }
       let teamId: string | null = null
       try {
@@ -203,14 +201,15 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
       const title = template.title[userLang] || template.title.en
       let inserted = false
       for (let attempt = 0; attempt < 3 && !inserted; attempt++) {
-        const code = generateJoinCode()
         try {
-          await c.env.DB.prepare(
-            `INSERT INTO sessions (id, owner_id, code, title, status, anonymity, vote_policy, session_mode, created_at, team_id)
-             VALUES (?1, ?2, ?3, ?4, 'draft', 'full', 'once', 'reflection', ?5, ?6)`,
-          )
-            .bind(sessionId, userId, code, title, now, teamId)
-            .run()
+          await insertDraftSession(c.env.DB, {
+            id: sessionId,
+            ownerId: userId,
+            code: generateJoinCode(),
+            title,
+            now,
+            teamId,
+          })
           inserted = true
         } catch (err) {
           if (attempt === 2 || !(err instanceof Error && err.message.includes('UNIQUE'))) throw err
@@ -223,20 +222,15 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
           id: opt.id,
           label: opt.label[userLang] || opt.label.en || '',
         }))
-        await c.env.DB.prepare(
-          `INSERT INTO questions (id, session_id, position, kind, prompt, options_json, created_at)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
-        )
-          .bind(
-            ulid(),
-            sessionId,
-            idx,
-            templateTypeToSessionKind(q.type),
-            q.text[userLang] || q.text.en,
-            JSON.stringify(options),
-            now,
-          )
-          .run()
+        await insertSessionQuestion(c.env.DB, {
+          id: ulid(),
+          sessionId,
+          position: idx,
+          kind: templateTypeToSessionKind(q.type),
+          prompt: q.text[userLang] || q.text.en,
+          optionsJson: JSON.stringify(options),
+          now,
+        })
       }
 
       // One-time sign-in link that lands on the new session (D1-backed, same
@@ -244,12 +238,7 @@ export function mountMarketingTemplateRoutes(parent: Hono<{ Bindings: Env; Varia
       // were never read by anything).
       const rawToken = generateMagicLinkToken()
       const tokenHash = await hashMagicLinkToken(rawToken)
-      await c.env.DB.prepare(
-        `INSERT INTO magic_links (token_hash, email, created_at, expires_at, requester_ip)
-         VALUES (?1, ?2, ?3, ?4, ?5)`,
-      )
-        .bind(tokenHash, email, now, now + MAGIC_LINK_TTL_MS, ip)
-        .run()
+      await insertMagicLink(c.env.DB, { tokenHash, email, now, expiresAt: now + MAGIC_LINK_TTL_MS, ip })
 
       const { subject, text, html } = templateSessionEmail(
         c.env.API_URL,
