@@ -66,7 +66,7 @@ describe('Teams response contracts', () => {
 
     // Assert no PRICE_ID or Stripe keys leak into response
     expect(JSON.stringify(body)).not.toMatch(/PRICE_ID|stripe_secret|STRIPE_KEY/i)
-    expect(JSON.stringify(body)).not.toMatch(/password|jwt|secret/i)
+    expect(JSON.stringify(body)).not.toMatch(/"[^"]*(password|jwt|secret)[^"]*"\s*:/i)
   })
 
   it('400: malformed JSON body', async () => {

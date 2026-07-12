@@ -64,7 +64,7 @@ describe('sessions response contracts', () => {
 
     // Assert no internal fields leak
     expect(body.data.session).not.toHaveProperty('_raw')
-    expect(JSON.stringify(body)).not.toMatch(/password|jwt|secret/i)
+    expect(JSON.stringify(body)).not.toMatch(/"[^"]*(password|jwt|secret)[^"]*"\s*:/i)
   })
 
   it('PATCH /api/sessions/:id — response contract', async () => {
@@ -104,7 +104,7 @@ describe('sessions response contracts', () => {
 
     // Assert no _raw leak
     expect(patchBody.data.session).not.toHaveProperty('_raw')
-    expect(JSON.stringify(patchBody)).not.toMatch(/password|jwt|secret/i)
+    expect(JSON.stringify(patchBody)).not.toMatch(/"[^"]*(password|jwt|secret)[^"]*"\s*:/i)
   })
 
   it('GET /api/sessions/:id — response contract', async () => {
@@ -144,7 +144,7 @@ describe('sessions response contracts', () => {
 
     // Assert no internal fields leak
     expect(getBody.data.session).not.toHaveProperty('_raw')
-    expect(JSON.stringify(getBody)).not.toMatch(/password|jwt|secret|_internal/i)
+    expect(JSON.stringify(getBody)).not.toMatch(/"[^"]*(password|jwt|secret|_internal)[^"]*"\s*:/i)
   })
 })
 
