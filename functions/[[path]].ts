@@ -105,7 +105,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   // non-JS crawlers see per-route content instead of the homepage shell.
   if (isValidSpaRoute(pathname)) {
     const response = await context.next()
-    return injectRouteSeo(response, pathname)
+    return injectRouteSeo(response, pathname, context.env)
   }
 
   // Return 404 for invalid routes

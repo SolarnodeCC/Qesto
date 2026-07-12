@@ -269,6 +269,20 @@ export const CreateTemplateSchema = z.object({
   description: z.string().max(400).optional(),
 })
 
+// Customer template metadata update (PATCH /api/templates/mine/:id).
+export const UpdateTemplateSchema = z
+  .object({
+    name: trimmed(1, 120).optional(),
+    description: z.string().max(400).optional(),
+    scope: z.enum(['personal', 'team', 'organization']).optional(),
+    ownedByTeamId: trimmed(1, 64).optional(),
+    // Optimistic concurrency: the version the client edited; 409 on mismatch.
+    expectedVersion: z.number().int().min(1).optional(),
+  })
+  .refine((v) => Object.values(v).some((field) => field !== undefined), {
+    message: 'At least one field required',
+  })
+
 // Admin metrics export date range.
 export const AdminMetricsExportSchema = z.object({
   start: z.string().datetime({ message: 'start must be ISO 8601' }),

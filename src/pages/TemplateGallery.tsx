@@ -45,6 +45,19 @@ interface TemplateRecord {
   createdAt: string
 }
 
+interface TemplateListResponse {
+  templates: TemplateRecord[]
+  total: number
+  limit: number
+  offset: number
+}
+
+const PAGE_SIZE = 24
+// The template pipeline only carries content for these languages; the app
+// supports more locales (e.g. 'es'), so clamp before sending `lang` or the
+// gallery would 400 for unsupported locales (MKTP-006).
+const PIPELINE_LANGS: Lang[] = ['nl', 'en', 'de', 'fr']
+
 const INDUSTRY_LABELS: Record<Industry, string> = {
   'hr-people': 'HR & People',
   'agile-software': 'Agile & Software',
@@ -127,33 +140,52 @@ function TemplateCard({ template, lang }: { template: TemplateRecord; lang: Lang
 export default function TemplateGallery() {
   const t = useT('common')
   const [templates, setTemplates] = useState<TemplateRecord[]>([])
+  const [total, setTotal] = useState(0)
+  const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [industry, setIndustry] = useState<Industry | ''>('')
   const [theme, setTheme] = useState<Theme | ''>('')
-  const lang: Lang = (document.documentElement.lang?.slice(0, 2) as Lang) || 'en'
+  const rawLang = (document.documentElement.lang?.slice(0, 2) as Lang) || 'en'
+  const lang: Lang = PIPELINE_LANGS.includes(rawLang) ? rawLang : 'en'
+
+  // Reset paging whenever the filters change so we fetch page 0 fresh.
+  useEffect(() => {
+    setOffset(0)
+  }, [industry, theme, lang])
 
   useEffect(() => {
     const controller = new AbortController()
-    setLoading(true)
+    const firstPage = offset === 0
+    if (firstPage) setLoading(true)
+    else setLoadingMore(true)
     setError(null)
 
     const params = new URLSearchParams()
     if (industry) params.set('industry', industry)
     if (theme) params.set('theme', theme)
-    params.set('lang', lang)
-    params.set('limit', '60')
+    if (PIPELINE_LANGS.includes(lang)) params.set('lang', lang)
+    params.set('limit', String(PAGE_SIZE))
+    params.set('offset', String(offset))
 
-    api<TemplateRecord[]>(`/api/gallery?${params}`, { signal: controller.signal })
+    api<TemplateListResponse>(`/api/gallery?${params}`, { signal: controller.signal })
       .then((result) => {
-        if (result.ok) setTemplates(result.data)
-        else setError(result.error.message)
+        if (result.ok) {
+          setTotal(result.data.total)
+          setTemplates((prev) => (firstPage ? result.data.templates : [...prev, ...result.data.templates]))
+        } else {
+          setError(result.error.message)
+        }
       })
       .catch(() => {})
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false)
+        setLoadingMore(false)
+      })
 
     return () => controller.abort()
-  }, [industry, theme, lang])
+  }, [industry, theme, lang, offset])
 
   // SEO: Collection page schema
   const collectionSchema = {
@@ -258,7 +290,7 @@ export default function TemplateGallery() {
           )}
 
           <span className="ml-auto text-sm text-pulse-500 dark:text-[#8893AD]">
-            {loading ? t('loading') : t('templates.templateCount', { count: templates.length })}
+            {loading ? t('loading') : t('templates.templateCount', { count: total })}
           </span>
         </div>
       </section>
@@ -294,11 +326,28 @@ export default function TemplateGallery() {
           )}
 
           {!loading && !error && templates.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {templates.map((tmpl) => (
-                <TemplateCard key={tmpl.id} template={tmpl} lang={lang} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {templates.map((tmpl) => (
+                  <TemplateCard key={tmpl.id} template={tmpl} lang={lang} />
+                ))}
+              </div>
+
+              {templates.length < total && (
+                <div className="mt-10 flex flex-col items-center gap-3">
+                  <span className="text-sm text-pulse-500 dark:text-[#8893AD]">
+                    {t('templates.showingCount', { shown: templates.length, total })}
+                  </span>
+                  <button
+                    onClick={() => setOffset(templates.length)}
+                    disabled={loadingMore}
+                    className="inline-flex items-center justify-center px-6 py-2.5 rounded-lg font-medium text-sm border border-pulse-200 dark:border-white/20 text-pulse-700 dark:text-[#F0F2F8] hover:border-teal-400 dark:hover:border-teal-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {loadingMore ? t('loading') : t('templates.loadMore')}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

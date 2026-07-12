@@ -35,16 +35,25 @@ function xmlResponse(xml: string, maxAgeSeconds = 86400): Response {
  */
 export async function getDynamicSitemap(c: Context<{ Bindings: Env }>) {
   try {
-    if (!c.env.MARKETING_KV) {
+    if (!c.env.MARKETING_KV || !c.env.DB) {
       return xmlResponse('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>')
     }
 
     const baseUrl = 'https://qesto.cc'
-    const templates = await listTemplates(c.env.MARKETING_KV)
+    // Registry query already filters to published, non-discarded templates.
+    // Page through the whole public catalog (cached 24h, so the fan-out is
+    // amortized); bounded so a pathological catalog can't run away.
+    const PAGE = 100
+    const MAX_URLS = 5000
+    const templates: Awaited<ReturnType<typeof listTemplates>>['templates'] = []
+    for (let offset = 0; offset < MAX_URLS; offset += PAGE) {
+      const page = await listTemplates(c.env.DB, c.env.MARKETING_KV, { limit: PAGE, offset })
+      templates.push(...page.templates)
+      if (page.templates.length < PAGE || templates.length >= page.total) break
+    }
 
     // Build sitemap XML
     const urls = templates
-      .filter((t) => !t.isDiscarded && t.isPublic)
       .map((t) => {
         const changefreq = t.usageCount > 10 ? 'weekly' : 'monthly'
         const priority = t.usageCount > 20 ? '0.8' : '0.7'

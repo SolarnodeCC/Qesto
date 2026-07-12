@@ -93,6 +93,14 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
     if (!raw || raw.length !== 64) {
       return c.redirect(`${c.env.PAGES_URL}/login?error=invalid`, 302)
     }
+    // Optional post-login landing path (template-gallery flow). Strictly a
+    // same-origin relative path — anything else falls back to the app root,
+    // so the parameter can never become an open redirect.
+    const redirectParam = c.req.query('redirect')
+    const safeRedirect =
+      redirectParam && /^\/[a-zA-Z0-9\-_/]*$/.test(redirectParam) && !redirectParam.startsWith('//')
+        ? redirectParam
+        : '/'
     try {
       const tokenHash = await hashMagicLinkToken(raw)
       const row = await c.env.DB.prepare(
@@ -154,7 +162,7 @@ export function registerMagicLinkRoutes(app: AuthApp): void {
         subject_id: userId,
         outcome: 'success',
       })
-      return c.redirect(`${c.env.PAGES_URL}/`, 302)
+      return c.redirect(`${c.env.PAGES_URL}${safeRedirect}`, 302)
     } catch (err) {
       return authRedirectLoginServerError(c, err, '[auth] magic-link callback')
     }

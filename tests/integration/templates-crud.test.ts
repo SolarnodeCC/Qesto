@@ -323,6 +323,147 @@ describe('Templates CRUD', () => {
     expect(listBody.data.templates).toHaveLength(0)
   })
 
+  async function createTemplateFor(app: ReturnType<typeof createApp>, env: Env, cookie: string, db: D1Mock, name: string) {
+    const sessionId = 'sess_01KPX33NP0NRKHTNYX83G8DBZQ'
+    if (!db.sessions.has(sessionId)) {
+      db.sessions.set(sessionId, {
+        id: sessionId,
+        owner_id: 'user_1',
+        code: 'ABCDEF',
+        title: 'Test Session',
+        status: 'closed',
+        anonymity: 'anonymous',
+        created_at: Date.now(),
+        started_at: Date.now(),
+        closed_at: Date.now(),
+        archived_at: null,
+      })
+    }
+    const res = await app.fetch(
+      new Request('http://local/api/templates/mine', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ sessionId, name, description: 'desc' }),
+      }),
+      env,
+    )
+    return (await res.json()) as any
+  }
+
+  it('snapshots the prior version on PATCH and bumps version (MKTP-003)', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+    const created = await createTemplateFor(app, env, cookie, db, 'Original name')
+    const templateId = created.data.template.id
+
+    const patchRes = await app.fetch(
+      new Request(`http://local/api/templates/mine/${templateId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ name: 'Renamed' }),
+      }),
+      env,
+    )
+    expect(patchRes.status).toBe(200)
+    const patched = (await patchRes.json()) as any
+    expect(patched.data.template.name).toBe('Renamed')
+    expect(patched.data.template.version).toBe(2)
+    // parentId references the prior version snapshot, not itself.
+    expect(patched.data.template.parentId).toBe(`${templateId}@v1`)
+    // The prior version was preserved (rollback-capable).
+    const snapshot = (env.TEMPLATES_KV as unknown as KVMock).getRaw(`customer_template_v:user_1:${templateId}:1`)
+    expect(snapshot).toBeTruthy()
+    expect(JSON.parse(snapshot!).name).toBe('Original name')
+  })
+
+  it('returns 409 on a stale expectedVersion (optimistic concurrency)', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+    const created = await createTemplateFor(app, env, cookie, db, 'Name')
+    const templateId = created.data.template.id
+
+    const res = await app.fetch(
+      new Request(`http://local/api/templates/mine/${templateId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({ name: 'X', expectedVersion: 99 }),
+      }),
+      env,
+    )
+    expect(res.status).toBe(409)
+  })
+
+  it('rejects an empty PATCH body (MKTP-019 validation)', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+    const created = await createTemplateFor(app, env, cookie, db, 'Name')
+    const templateId = created.data.template.id
+
+    const res = await app.fetch(
+      new Request(`http://local/api/templates/mine/${templateId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json', cookie, 'cf-connecting-ip': '127.0.0.1' },
+        body: JSON.stringify({}),
+      }),
+      env,
+    )
+    expect(res.status).toBe(400)
+  })
+
+  it('soft-deletes: record is preserved in KV but hidden from listing (MKTP-004)', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+    const created = await createTemplateFor(app, env, cookie, db, 'Name')
+    const templateId = created.data.template.id
+
+    await app.fetch(
+      new Request(`http://local/api/templates/mine/${templateId}`, {
+        method: 'DELETE',
+        headers: { cookie, 'cf-connecting-ip': '127.0.0.1' },
+      }),
+      env,
+    )
+
+    // Gone from the listing…
+    const listRes = await app.fetch(
+      new Request('http://local/api/templates/mine', { headers: { cookie, 'cf-connecting-ip': '127.0.0.1' } }),
+      env,
+    )
+    expect((await listRes.json() as any).data.templates).toHaveLength(0)
+    // …but the record itself is retained with archivedAt set (not hard-deleted).
+    const raw = (env.TEMPLATES_KV as unknown as KVMock).getRaw(`customer_template:user_1:${templateId}`)
+    expect(raw).toBeTruthy()
+    expect(JSON.parse(raw!).archivedAt).toBeGreaterThan(0)
+  })
+
+  it('does not set a TTL on customer template writes (MKTP-004)', async () => {
+    const db = new D1Mock()
+    const app = createApp()
+    const env = makeEnv(db)
+    const cookie = await cookieFor('user_1', 'user1@example.com')
+    const putSpy: Array<{ key: string; opts: { expirationTtl?: number } | undefined }> = []
+    const realKv = env.TEMPLATES_KV as unknown as KVMock
+    const origPut = realKv.put.bind(realKv)
+    ;(realKv as unknown as { put: KVMock['put'] }).put = (async (key: string, value: string, opts?: { expirationTtl?: number }) => {
+      putSpy.push({ key, opts })
+      return origPut(key, value, opts)
+    }) as KVMock['put']
+
+    await createTemplateFor(app, env, cookie, db, 'Name')
+
+    const templateWrites = putSpy.filter((w) => w.key.startsWith('customer_template'))
+    expect(templateWrites.length).toBeGreaterThan(0)
+    expect(templateWrites.every((w) => w.opts?.expirationTtl === undefined)).toBe(true)
+  })
+
   it('rejects invalid template creation (missing sessionId)', async () => {
     const db = new D1Mock()
     const app = createApp()

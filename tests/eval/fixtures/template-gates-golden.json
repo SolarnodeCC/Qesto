@@ -1,0 +1,23 @@
+{
+  "description": "Golden verdicts for the session→template anonymisation gates (MKTP-008). admits=true means the rewritten question is safe to publish. The invariant under test is fail-closed: any ambiguous or malformed verdict must NOT admit.",
+  "similarity": [
+    { "name": "clearly generic (low score) admits", "response": "{\"score\": 5, \"reason\": \"different context\"}", "admits": true },
+    { "name": "at threshold admits", "response": "{\"score\": 30}", "admits": true },
+    { "name": "just over threshold rejects", "response": "{\"score\": 31}", "admits": false },
+    { "name": "identical (high score) rejects", "response": "{\"score\": 95}", "admits": false },
+    { "name": "score wrapped in prose still parsed", "response": "Here is the rating: {\"score\": 10} done", "admits": true },
+    { "name": "malformed JSON rejects (fail-closed)", "response": "{score: 10", "admits": false },
+    { "name": "empty response rejects (fail-closed)", "response": "", "admits": false },
+    { "name": "non-numeric score rejects (fail-closed)", "response": "{\"score\": \"low\"}", "admits": false },
+    { "name": "missing score field rejects (fail-closed)", "response": "{\"reason\": \"looks fine\"}", "admits": false }
+  ],
+  "properNoun": [
+    { "name": "explicit no-nouns admits", "response": "{\"nouns\": [], \"hasAny\": false}", "admits": true },
+    { "name": "nouns found rejects", "response": "{\"nouns\": [\"Acme\"], \"hasAny\": true}", "admits": false },
+    { "name": "hasAny true with empty list still rejects", "response": "{\"nouns\": [], \"hasAny\": true}", "admits": false },
+    { "name": "malformed JSON rejects (fail-closed)", "response": "not json at all", "admits": false },
+    { "name": "empty response rejects (fail-closed)", "response": "", "admits": false },
+    { "name": "missing hasAny field rejects (fail-closed)", "response": "{\"nouns\": []}", "admits": false },
+    { "name": "hasAny as string rejects (fail-closed)", "response": "{\"hasAny\": \"false\"}", "admits": false }
+  ]
+}

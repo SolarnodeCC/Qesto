@@ -28,12 +28,21 @@ export type Theme = z.infer<typeof Theme>
 export const QuestionKind = z.enum(['open', 'scale', 'multiple_choice'])
 export type QuestionKind = z.infer<typeof QuestionKind>
 
+export const TemplateQuestionOption = z.object({
+  id: z.string(),
+  label: z.record(Lang, z.string()),
+})
+export type TemplateQuestionOption = z.infer<typeof TemplateQuestionOption>
+
 export const TemplateQuestion = z.object({
   id: z.string(),
   text: z.record(Lang, z.string()),
   originalHash: z.string(),
   topic: z.string(),
   type: QuestionKind,
+  // Answer options for multiple_choice questions (MKTP-007). Empty for
+  // open/scale. Defaulted so records stored before this field existed parse.
+  options: z.array(TemplateQuestionOption).default([]),
 })
 export type TemplateQuestion = z.infer<typeof TemplateQuestion>
 

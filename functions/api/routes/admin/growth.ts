@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import { authMiddleware, type AuthVariables } from '../../middleware/auth'
 import { adminMiddleware, type AdminVariables } from '../../middleware/admin'
 import type { Env } from '../../types'
-import { listTemplates } from '../../lib/templates-kv'
 
 export type GrowthStats = {
   templates: {
@@ -58,32 +57,40 @@ export function mountGrowthRoutes(app: Hono<{ Bindings: Env; Variables: AuthVari
       return c.json({ ok: true, data: empty, trace_id })
     }
 
-    const [indexRaw, activeTemplates, webhookStats] = await Promise.all([
-      kv.get<string[]>('templates:index', 'json'),
-      listTemplates(kv),
+    const [totals, industryRows, webhookStats] = await Promise.all([
+      c.env.DB
+        .prepare(
+          `SELECT COUNT(*) AS total,
+                  SUM(CASE WHEN is_discarded = 0 THEN 1 ELSE 0 END) AS active,
+                  SUM(CASE WHEN is_discarded = 1 THEN 1 ELSE 0 END) AS discarded,
+                  SUM(CASE WHEN is_discarded = 0 THEN usage_count ELSE 0 END) AS total_uses,
+                  MAX(CASE WHEN is_discarded = 0 THEN created_at ELSE NULL END) AS last_created_at
+             FROM marketing_templates`,
+        )
+        .first<{ total: number; active: number | null; discarded: number | null; total_uses: number | null; last_created_at: number | null }>(),
+      c.env.DB
+        .prepare(
+          `SELECT industry, COUNT(*) AS n FROM marketing_templates
+            WHERE is_discarded = 0 GROUP BY industry`,
+        )
+        .all<{ industry: string; n: number }>(),
       readWebhookStats(kv),
     ])
 
-    const totalIds = Array.isArray(indexRaw) ? indexRaw.length : 0
-    const active = activeTemplates.length
-    const discarded = Math.max(0, totalIds - active)
-
-    let total_uses = 0
-    let last_created_at: string | null = null
     const by_industry: Record<string, number> = {}
-
-    for (const t of activeTemplates) {
-      total_uses += t.usageCount ?? 0
-      if (t.createdAt && (!last_created_at || t.createdAt > last_created_at)) {
-        last_created_at = t.createdAt
-      }
-      if (t.industry) {
-        by_industry[t.industry] = (by_industry[t.industry] ?? 0) + 1
-      }
+    for (const row of industryRows.results ?? []) {
+      by_industry[row.industry] = row.n
     }
 
     const data: GrowthStats = {
-      templates: { total: totalIds, active, discarded, total_uses, last_created_at, by_industry },
+      templates: {
+        total: totals?.total ?? 0,
+        active: totals?.active ?? 0,
+        discarded: totals?.discarded ?? 0,
+        total_uses: totals?.total_uses ?? 0,
+        last_created_at: totals?.last_created_at ? new Date(totals.last_created_at).toISOString() : null,
+        by_industry,
+      },
       webhook: {
         last_received_at: webhookStats?.last_received_at ?? null,
         total_received: webhookStats?.total_received ?? 0,

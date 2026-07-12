@@ -10,14 +10,13 @@
 import { Hono } from 'hono'
 import { errorResponse } from '../lib/error-handler'
 import { ulid } from '../lib/ulid'
-import { readKvText, writeKvJson, deleteKv } from '../lib/kv'
+import { readKvText, writeKvJson } from '../lib/kv'
 import { authMiddleware, type AuthVariables } from '../middleware/auth'
 import type { PlanVariables } from '../middleware/plan'
 import { validateBody } from '../lib/request-validation'
-import { CreateTemplateSchema } from '../lib/domain-schemas'
+import { CreateTemplateSchema, UpdateTemplateSchema } from '../lib/domain-schemas'
 import { validateKvJson, TemplateIdArraySchema, CustomerTemplateSchema, PollOptionArraySchema } from '../lib/protocol-schemas'
 import type { Env, Question } from '../types'
-import { TEMPLATE_TTL_SECONDS } from '../lib/constants'
 
 type Vars = AuthVariables & PlanVariables
 
@@ -49,6 +48,9 @@ interface CustomerTemplate extends TemplateDefinition {
   version?: number
   parentId?: string
   updatedAt?: number
+  // Soft delete (MKTP-004): archived templates stay in KV for history but
+  // disappear from listings.
+  archivedAt?: number
 }
 
 // Lazy-initialized seed templates
@@ -389,26 +391,13 @@ const SEED_TEMPLATES: QuestoTemplate[] = [
   },
 ]
 
-/**
- * Lazy-initialize seed templates on first access
- */
-async function ensureSeedTemplates(kv: KVNamespace) {
-  const seeded = await kv.get('qesto_templates_seeded')
-  if (!seeded) {
-    for (const tmpl of SEED_TEMPLATES) {
-      await kv.put(`qesto_template:${tmpl.id}`, JSON.stringify(tmpl), { expirationTtl: TEMPLATE_TTL_SECONDS })
-    }
-    await kv.put('qesto_templates_seeded', 'true', { expirationTtl: TEMPLATE_TTL_SECONDS })
-  }
-}
-
 export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Vars }>) {
   const app = new Hono<{ Bindings: Env; Variables: Vars }>()
 
-  // GET /api/templates — list all Qesto templates (public, no auth)
+  // GET /api/templates — list all Qesto templates (public, no auth).
+  // Seed templates are served straight from the in-memory constant; the old
+  // ensureSeedTemplates() KV copies were written but never read (MKTP-018).
   app.get('/', async (c) => {
-    await ensureSeedTemplates(c.env.TEMPLATES_KV)
-
     const category = c.req.query('category')
     const templates: QuestoTemplate[] = []
 
@@ -442,9 +431,9 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       const key = `customer_template:${userId}:${templateId}`
       const raw = await readKvText(c.env.TEMPLATES_KV, key)
       if (raw) {
-        const template = validateKvJson(raw, CustomerTemplateSchema)
-        if (template) {
-          templates.push(template as CustomerTemplate)
+        const template = validateKvJson(raw, CustomerTemplateSchema) as CustomerTemplate | null
+        if (template && !template.archivedAt) {
+          templates.push(template)
         }
       }
     }
@@ -520,16 +509,17 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
       createdAt: Date.now(),
     }
 
-    // Store template
+    // Store template. User-authored content carries NO TTL — the previous
+    // 1-year expirationTtl silently deleted saved templates (MKTP-004).
     const key = `customer_template:${userId}:${templateId}`
-    await writeKvJson(c.env.TEMPLATES_KV, key, template, { expirationTtl: TEMPLATE_TTL_SECONDS })
+    await writeKvJson(c.env.TEMPLATES_KV, key, template)
 
     // Update list
     const listKey = `customer_templates_list:${userId}`
     const listRaw = await readKvText(c.env.TEMPLATES_KV, listKey)
     const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
     list.push(templateId)
-    await writeKvJson(c.env.TEMPLATES_KV, listKey, list, { expirationTtl: TEMPLATE_TTL_SECONDS })
+    await writeKvJson(c.env.TEMPLATES_KV, listKey, list)
 
     return c.json(
       {
@@ -542,40 +532,58 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
   })
 
   // PATCH /api/templates/mine/:id -- update name/description/scope (auth required).
-  // ENTERPRISE-POLISH s6a/s6b: bumps version, stores parentId, allows scope change.
+  // ENTERPRISE-POLISH s6a/s6b + pipeline audit MKTP-003: each update snapshots
+  // the prior version (rollback-capable), parentId references that snapshot,
+  // and an optional expectedVersion gives optimistic concurrency (409 when a
+  // concurrent edit won).
   app.patch('/mine/:id', authMiddleware, async (c) => {
     const user = c.get('user')
     const userId = user.sub
     const templateId = c.req.param('id')
-    const body = await c.req.json().catch(() => null) as Record<string, unknown> | null
-    if (!body) {
-      return errorResponse(c, 400, 'bad_request', 'Request body required')
-    }
+
+    const validated = await validateBody(c, UpdateTemplateSchema)
+    if ('error' in validated) return validated.error
+    const { name, description, scope, ownedByTeamId, expectedVersion } = validated.data
+
     const key = `customer_template:${userId}:${templateId}`
     const raw = await readKvText(c.env.TEMPLATES_KV, key)
     if (!raw) {
       return errorResponse(c, 404, 'not_found', 'Template not found')
     }
     const existing = validateKvJson(raw, CustomerTemplateSchema) as CustomerTemplate | null
-    if (!existing) {
-      return errorResponse(c, 500, 'invalid_state', 'Corrupted template record')
+    if (!existing || existing.archivedAt) {
+      return errorResponse(c, existing ? 404 : 500, existing ? 'not_found' : 'invalid_state',
+        existing ? 'Template not found' : 'Corrupted template record')
     }
+
+    const currentVersion = existing.version ?? 1
+    if (expectedVersion !== undefined && expectedVersion !== currentVersion) {
+      return errorResponse(c, 409, 'version_conflict',
+        `Template was modified by another request (current version ${currentVersion})`)
+    }
+
+    // Preserve the outgoing version before overwriting so edits never destroy
+    // user content. Snapshots carry no TTL, like the live record.
+    const snapshotKey = `customer_template_v:${userId}:${templateId}:${currentVersion}`
+    await writeKvJson(c.env.TEMPLATES_KV, snapshotKey, existing)
+
     const updated: CustomerTemplate = {
       ...existing,
-      ...(typeof body.name === 'string' ? { name: body.name.trim() } : {}),
-      ...(typeof body.description === 'string' ? { description: body.description.trim() } : {}),
-      ...(body.scope === 'team' || body.scope === 'organization' || body.scope === 'personal'
-          ? { scope: body.scope as 'personal' | 'team' | 'organization' } : {}),
-      ...(typeof body.ownedByTeamId === 'string' ? { ownedByTeamId: body.ownedByTeamId } : {}),
-      version: (existing.version ?? 1) + 1,
-      parentId: existing.id,
+      ...(name !== undefined ? { name } : {}),
+      ...(description !== undefined ? { description: description.trim() } : {}),
+      ...(scope !== undefined ? { scope } : {}),
+      ...(ownedByTeamId !== undefined ? { ownedByTeamId } : {}),
+      version: currentVersion + 1,
+      parentId: `${templateId}@v${currentVersion}`,
       updatedAt: Date.now(),
     }
-    await writeKvJson(c.env.TEMPLATES_KV, key, updated, { expirationTtl: TEMPLATE_TTL_SECONDS })
+    await writeKvJson(c.env.TEMPLATES_KV, key, updated)
     return c.json({ ok: true, data: { template: updated }, trace_id: c.get('trace_id') })
   })
 
-  // DELETE /api/templates/mine/:id -- delete own template (auth required)
+  // DELETE /api/templates/mine/:id -- archive own template (auth required).
+  // Soft delete (MKTP-004): the record is kept with archivedAt set and simply
+  // drops out of GET /mine, preserving history instead of hard-deleting.
   app.delete('/mine/:id', authMiddleware, async (c) => {
     const user = c.get('user')
     const userId = user.sub
@@ -587,19 +595,13 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
     if (!raw) {
       return errorResponse(c, 404, 'not_found', 'Template not found')
     }
-
-    // Delete template
-    await deleteKv(c.env.TEMPLATES_KV, key)
-
-    // Update list
-    const listKey = `customer_templates_list:${userId}`
-    const listRaw = await readKvText(c.env.TEMPLATES_KV, listKey)
-    const list = validateKvJson(listRaw, TemplateIdArraySchema) ?? []
-    const idx = list.indexOf(templateId)
-    if (idx >= 0) {
-      list.splice(idx, 1)
-      await writeKvJson(c.env.TEMPLATES_KV, listKey, list, { expirationTtl: TEMPLATE_TTL_SECONDS })
+    const existing = validateKvJson(raw, CustomerTemplateSchema) as CustomerTemplate | null
+    if (!existing || existing.archivedAt) {
+      return errorResponse(c, 404, 'not_found', 'Template not found')
     }
+
+    const archived: CustomerTemplate = { ...existing, archivedAt: Date.now() }
+    await writeKvJson(c.env.TEMPLATES_KV, key, archived)
 
     return c.json({
       ok: true,
@@ -611,8 +613,6 @@ export function mountTemplateRoutes(parent: Hono<{ Bindings: Env; Variables: Var
   // GET /api/templates/:id — fetch single Qesto template (public, no auth)
   // Must be registered after /mine to avoid matching "mine" as a template id.
   app.get('/:id', async (c) => {
-    await ensureSeedTemplates(c.env.TEMPLATES_KV)
-
     const id = c.req.param('id')
     const tmpl = SEED_TEMPLATES.find((t) => t.id === id)
 

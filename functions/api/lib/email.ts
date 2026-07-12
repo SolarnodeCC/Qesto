@@ -51,6 +51,32 @@ export async function sendEmail(apiKey: string | undefined, args: SendEmailArgs)
   )
 }
 
+/**
+ * Magic-link email for the template gallery's "use this template" flow
+ * (MKTP-002): signs the visitor in (creating the account on first click, same
+ * as the regular magic-link callback) and lands them on their new draft
+ * session. `redirect` must be a relative path — the callback re-validates it.
+ */
+export function templateSessionEmail(appUrl: string, token: string, sessionPath: string, templateTitle: string) {
+  const url = `${appUrl}/api/auth/callback?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(sessionPath)}`
+  const subject = `Your "${templateTitle}" session is ready`
+  const text = `We created a draft session from the "${templateTitle}" template.\n\nOpen it here (link valid 15 minutes; signing in creates your free Qesto account if you don't have one):\n\n${url}\n\nIf you didn't request this, ignore this email.`
+  const html = `<p>We created a draft session from the <strong>${escapeHtml(templateTitle)}</strong> template.</p>
+<p><a href="${url}" style="display:inline-block;padding:12px 20px;background:linear-gradient(135deg,#14B8A6,#8B5CF6);color:#fff;text-decoration:none;border-radius:8px;font-family:system-ui,sans-serif">Open your session</a></p>
+<p>The link is valid for 15 minutes. Signing in creates your free Qesto account if you don't have one.</p>
+<p>Or paste this URL into your browser: <br><code>${url}</code></p>
+<p style="color:#525252;font-size:12px">If you didn't request this, you can ignore this email.</p>`
+  return { url, subject, text, html }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 export function magicLinkEmail(appUrl: string, token: string) {
   const url = `${appUrl}/api/auth/callback?token=${encodeURIComponent(token)}`
   const subject = 'Sign in to Qesto'

@@ -385,6 +385,27 @@ export class D1Mock {
       refunded_at: number | null
     }
   >()
+  readonly marketingTemplates = new Map<
+    string,
+    {
+      id: string
+      source_session_id: string
+      content_hash: string
+      industry: string
+      theme: string
+      topic: string
+      title_en: string
+      question_count: number
+      estimated_minutes: number
+      confidence: number
+      langs: string
+      is_public: number
+      is_discarded: number
+      usage_count: number
+      created_at: number
+      updated_at: number
+    }
+  >()
 
   prepare(sql: string): D1PreparedStatementMock {
     return new D1PreparedStatementMock(this, sql.trim())
@@ -409,7 +430,75 @@ export class D1PreparedStatementMock {
     return this
   }
 
+  private marketingTemplateRows() {
+    return [...this.db.marketingTemplates.values()]
+  }
+
+  /** Apply the dynamic WHERE from listTemplates, consuming filter args in order. */
+  private filterMarketingTemplates(rows: ReturnType<D1PreparedStatementMock['marketingTemplateRows']>) {
+    let out = rows.filter((r) => r.is_discarded === 0)
+    let i = 0
+    if (this.sql.includes('is_public = 1')) out = out.filter((r) => r.is_public === 1)
+    if (this.sql.includes('industry = ?')) {
+      const v = this.args[i++] as string
+      out = out.filter((r) => r.industry === v)
+    }
+    if (this.sql.includes('theme = ?')) {
+      const v = this.args[i++] as string
+      out = out.filter((r) => r.theme === v)
+    }
+    if (this.sql.includes('instr(langs')) {
+      const v = this.args[i++] as string
+      out = out.filter((r) => r.langs.includes(v))
+    }
+    return out
+  }
+
   async run(): Promise<{ meta: { changes: number } }> {
+    if (this.sql.startsWith('INSERT INTO marketing_templates')) {
+      const [
+        id, source_session_id, content_hash, industry, theme, topic, title_en,
+        question_count, estimated_minutes, confidence, langs,
+        is_public, is_discarded, usage_count, created_at, updated_at,
+      ] = this.args as [
+        string, string, string, string, string, string, string,
+        number, number, number, string, number, number, number, number, number,
+      ]
+      // ON CONFLICT(content_hash) DO NOTHING — dedup gate.
+      for (const row of this.db.marketingTemplates.values()) {
+        if (row.content_hash === content_hash) return { meta: { changes: 0 } }
+      }
+      this.db.marketingTemplates.set(id, {
+        id, source_session_id, content_hash, industry, theme, topic, title_en,
+        question_count, estimated_minutes, confidence, langs,
+        is_public, is_discarded, usage_count, created_at, updated_at,
+      })
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE marketing_templates SET is_public')) {
+      const [is_public, updated_at, id] = this.args as [number, number, string]
+      const row = this.db.marketingTemplates.get(id)
+      if (!row || row.is_discarded === 1) return { meta: { changes: 0 } }
+      row.is_public = is_public
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE marketing_templates SET is_discarded')) {
+      const [updated_at, id] = this.args as [number, string]
+      const row = this.db.marketingTemplates.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.is_discarded = 1
+      row.is_public = 0
+      row.updated_at = updated_at
+      return { meta: { changes: 1 } }
+    }
+    if (this.sql.startsWith('UPDATE marketing_templates SET usage_count')) {
+      const [id] = this.args as [string]
+      const row = this.db.marketingTemplates.get(id)
+      if (!row) return { meta: { changes: 0 } }
+      row.usage_count += 1
+      return { meta: { changes: 1 } }
+    }
     if (this.sql.startsWith('INSERT INTO magic_links')) {
       const [token_hash, email, created_at, expires_at, requester_ip] = this.args as [
         string,
@@ -1578,6 +1667,33 @@ export class D1PreparedStatementMock {
   }
 
   async first<T = unknown>(): Promise<T | null> {
+    // marketing_templates registry (Growth Engine gallery).
+    if (this.sql.includes('FROM marketing_templates')) {
+      const rows = this.marketingTemplateRows()
+      if (this.sql.includes('SUM(CASE WHEN is_discarded')) {
+        // growth.ts aggregate.
+        const active = rows.filter((r) => r.is_discarded === 0)
+        const discarded = rows.filter((r) => r.is_discarded === 1)
+        return {
+          total: rows.length,
+          active: active.length,
+          discarded: discarded.length,
+          total_uses: active.reduce((s, r) => s + r.usage_count, 0),
+          last_created_at: active.length ? Math.max(...active.map((r) => r.created_at)) : null,
+        } as T
+      }
+      if (this.sql.startsWith('SELECT COUNT(*) AS n')) {
+        return { n: this.filterMarketingTemplates(rows).length } as T
+      }
+      if (this.sql.includes('WHERE id = ?1')) {
+        const [id] = this.args as [string]
+        const row = this.db.marketingTemplates.get(id)
+        return (row
+          ? { id: row.id, is_public: row.is_public, is_discarded: row.is_discarded, usage_count: row.usage_count }
+          : null) as T | null
+      }
+      return null
+    }
     if (this.sql.startsWith('SELECT email, expires_at, consumed_at FROM magic_links')) {
       const [token_hash] = this.args as [string]
       const row = this.db.magicLinks.get(token_hash)
@@ -1970,6 +2086,29 @@ export class D1PreparedStatementMock {
   }
 
   async all<T = unknown>(): Promise<{ results: T[] }> {
+    // marketing_templates registry (Growth Engine gallery).
+    if (this.sql.includes('FROM marketing_templates')) {
+      const rows = this.marketingTemplateRows()
+      if (this.sql.includes('GROUP BY industry')) {
+        const counts = new Map<string, number>()
+        for (const r of rows.filter((x) => x.is_discarded === 0)) {
+          counts.set(r.industry, (counts.get(r.industry) ?? 0) + 1)
+        }
+        return { results: [...counts.entries()].map(([industry, n]) => ({ industry, n })) as unknown as T[] }
+      }
+      const filtered = this.filterMarketingTemplates(rows).sort((a, b) => b.created_at - a.created_at)
+      const limit = this.args[this.args.length - 2] as number
+      const offset = this.args[this.args.length - 1] as number
+      const page = filtered.slice(offset, offset + limit)
+      return {
+        results: page.map((r) => ({
+          id: r.id,
+          is_public: r.is_public,
+          is_discarded: r.is_discarded,
+          usage_count: r.usage_count,
+        })) as unknown as T[],
+      }
+    }
     // GDPR-BADGE-01: enumerate a user's owned sessions for deletion cascade.
     if (this.sql.startsWith('SELECT id FROM sessions WHERE owner_id')) {
       const [owner_id] = this.args as [string]

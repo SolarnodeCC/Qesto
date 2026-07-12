@@ -15,6 +15,9 @@
 // the ENGLISH strings are inlined here from public/locales/en/{common,solutions}.json.
 // Keep them in sync; tests/unit/route-seo.test.ts guards sitemap coverage.
 
+import type { Env } from './api/types'
+import { getTemplate } from './api/lib/templates-kv'
+
 const CANONICAL_ORIGIN = 'https://qesto.cc' // mirrors PageSeo.tsx + sitemap/robots
 
 export interface RouteSeo {
@@ -26,6 +29,8 @@ export interface RouteSeo {
   h1: string
   /** No-JS body fallback lead copy (one or more paragraphs). */
   intro: string | string[]
+  /** Emit `<meta name="robots" content="noindex">` (missing/discarded detail pages). */
+  noindex?: boolean
 }
 
 // Cross-linking nav reused in every no-JS fallback so link equity flows between
@@ -272,6 +277,44 @@ export function resolveRouteSeo(pathname: string): RouteSeo | null {
   return null
 }
 
+/**
+ * Async enrichment for template detail pages (MKTP-014): fetch the real
+ * template so crawlers and social scrapers get per-page title/description/H1
+ * instead of the gallery boilerplate every detail URL used to share. Missing or
+ * discarded ids return a noindex variant so dead URLs de-index. Returns null
+ * when the path isn't a template detail page or the stores are unavailable
+ * (caller falls back to the sync resolver).
+ */
+export async function resolveTemplateDetailSeo(
+  pathname: string,
+  env: Env,
+): Promise<RouteSeo | null> {
+  const normalized = pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
+  const segments = normalized.split('/').filter(Boolean)
+  if (segments.length !== 2 || segments[0] !== 'templates') return null
+  if (!env.DB || !env.MARKETING_KV) return null
+
+  const gallery = ROUTE_SEO['/templates']
+  try {
+    const template = await getTemplate(env.DB, env.MARKETING_KV, segments[1])
+    if (!template || template.isDiscarded || !template.isPublic) {
+      return { ...gallery, canonicalPath: normalized, noindex: true }
+    }
+    const title = template.title.en || gallery.title
+    const purpose = template.purpose.en || gallery.description
+    return {
+      title: `${title} — Qesto Template`,
+      description: purpose,
+      canonicalPath: normalized,
+      h1: title,
+      intro: purpose,
+    }
+  } catch {
+    // On any store error, leave the gallery-default meta (better than 500ing the shell).
+    return { ...gallery, canonicalPath: normalized }
+  }
+}
+
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -360,6 +403,9 @@ class AppendExtraHead {
       tags.push(`<meta property="og:image" content="${escapeAttr(imageUrl)}" />`)
       tags.push(`<meta name="twitter:image" content="${escapeAttr(imageUrl)}" />`)
     }
+    if (this.seo.noindex) {
+      tags.push(`<meta name="robots" content="noindex" />`)
+    }
     element.append(tags.join('\n    '), { html: true })
   }
 }
@@ -371,11 +417,17 @@ class AppendExtraHead {
  * routes. HTMLRewriter.transform preserves status + headers, so the
  * public/_headers cache rules still apply.
  */
-export function injectRouteSeo(response: Response, pathname: string): Response {
+export async function injectRouteSeo(response: Response, pathname: string, env?: Env): Promise<Response> {
   const contentType = response.headers.get('content-type') ?? ''
   if (!contentType.includes('text/html')) return response
 
-  const seo = resolveRouteSeo(pathname)
+  // Template detail pages get real per-page metadata fetched from the registry
+  // (MKTP-014); everything else uses the static per-route table.
+  let seo = resolveRouteSeo(pathname)
+  if (env) {
+    const enriched = await resolveTemplateDetailSeo(pathname, env)
+    if (enriched) seo = enriched
+  }
   if (!seo) return response
 
   const canonicalUrl = `${CANONICAL_ORIGIN}${seo.canonicalPath}`

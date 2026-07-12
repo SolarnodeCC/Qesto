@@ -1,11 +1,31 @@
 // Cloudflare Workflow: Session → Template Pipeline
 // Triggered by session.closed webhook when session.is_public = true
-// Orchestrates: rewrite → similarity check → proper noun scan → classify → store
+// Orchestrates: rewrite → similarity check → proper noun scan → classify →
+//               translate → store (draft or auto-publish) → IndexNow on publish
+//
+// Safety posture (pipeline audit MKTP-008): the similarity and proper-noun
+// steps are privacy gates over real customer question text. They fail CLOSED —
+// an unparseable AI verdict discards the question, and a step-level error
+// aborts the run — because the alternative is publishing customer-identifying
+// content to public, search-indexed pages.
 
 import { WorkflowEntrypoint, WorkflowEvent } from 'cloudflare:workers'
 import type { Env } from '../functions/api/types'
 import { runAI, type AIGatewayEnv } from '../functions/api/lib/ai/ai-gateway'
-import { nanoid } from 'nanoid'
+import {
+  ClassificationOutput,
+  TemplateRecord,
+  type Lang,
+  type TemplateQuestion,
+} from '../functions/api/lib/template-schemas'
+import { createTemplateId, storeTemplate } from '../functions/api/lib/templates-kv'
+import { pingIndexNowForTemplate } from '../functions/api/lib/indexnow'
+import {
+  SIMILARITY_REJECT_THRESHOLD,
+  parseJsonLoose,
+  parseSimilarityScore,
+  properNounGateAdmits,
+} from '../functions/api/lib/template-gates'
 
 export interface SessionPipelinePayload {
   sessionId: string
@@ -15,44 +35,35 @@ export interface SessionPipelinePayload {
   durationMinutes: number
 }
 
-interface QuestionMetadata {
+interface SourceQuestion {
   id: string
   type: 'open' | 'scale' | 'multiple_choice'
-  topic?: string
+  prompt: string
+  options: Array<{ id: string; label: string }>
 }
 
-interface RewrittenQuestion {
-  id: string
-  type: 'open' | 'scale' | 'multiple_choice'
-  topic: string
-  text: Record<string, string> // lang → rewritten text
+interface GatedQuestion extends SourceQuestion {
+  rewritten: string
   originalHash: string
-}
-
-interface TemplateRecord {
-  id: string
-  sourceSessionId: string
-  title: Record<string, string>
-  purpose: Record<string, string>
-  bestUsedFor: Record<string, string[]>
-  estimatedMinutes: number
-  whatYoullLearn: Record<string, string[]>
-  questions: RewrittenQuestion[]
-  industry: string
-  theme: string
-  topic: string
-  confidence: number
-  isPublic: boolean
-  isDiscarded: boolean
-  discardReason?: string
-  usageCount: number
-  createdAt: string
-  updatedAt: string
 }
 
 const AI_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
 const RETRY_ATTEMPTS = 3
 const RETRY_DELAY_MS = [150, 300, 600] // exponential backoff: 150ms, 300ms, 600ms
+/** Classification confidence required to auto-publish; below this the template parks as draft. */
+const AUTO_PUBLISH_CONFIDENCE = 70
+
+/** Map D1 question kinds onto the template pipeline's coarse type set. */
+function mapKindToTemplateType(kind: string): SourceQuestion['type'] {
+  if (kind === 'likert' || kind === 'slider') return 'scale'
+  if (kind === 'open' || kind === 'word_cloud' || kind === 'upvote') return 'open'
+  return 'multiple_choice' // poll, multi_select, ranking, consent
+}
+
+async function sha256Hex(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('')
+}
 
 /**
  * Call Workers AI with exponential backoff retry on transient failures
@@ -72,18 +83,6 @@ async function invokeAI(
       return invokeAI(env, messages, attempt + 1)
     }
     throw new Error(`AI call failed after ${RETRY_ATTEMPTS} attempts: ${err instanceof Error ? err.message : String(err)}`)
-  }
-}
-
-/**
- * Update KV indices (thread-safe list operations)
- */
-async function addToIndex(kv: KVNamespace, indexKey: string, templateId: string): Promise<void> {
-  const raw = await kv.get(indexKey, 'json')
-  const list = (raw as string[]) || []
-  if (!list.includes(templateId)) {
-    list.push(templateId)
-    await kv.put(indexKey, JSON.stringify(list))
   }
 }
 
@@ -117,181 +116,154 @@ export class TemplateGenerationWorkflow extends WorkflowEntrypoint<Env, SessionP
     console.log(`[workflow] Starting template generation for session ${sessionId}`)
 
     // ──────────────────────────────────────────────────────────────────────
-    // Step 1: Fetch session metadata (questions list + types only)
+    // Step 1: Fetch source questions — id, kind, REAL prompt text, options.
+    // (MKTP-001: the previous query omitted `prompt`, so the whole pipeline
+    // operated on placeholder text and published AI-invented questions.)
     // ──────────────────────────────────────────────────────────────────────
-    const metadata = await steps.do('fetch-session-metadata', async () => {
-      try {
-        const questionsData = await env.DB.prepare(
-          `SELECT id, kind as type FROM questions WHERE session_id = ?1`,
-        )
-          .bind(sessionId)
-          .all<QuestionMetadata>()
+    const sourceQuestions: SourceQuestion[] = await steps.do('fetch-session-metadata', async () => {
+      const { results } = await env.DB.prepare(
+        `SELECT id, kind, prompt, options_json FROM questions WHERE session_id = ?1 ORDER BY position ASC`,
+      )
+        .bind(sessionId)
+        .all<{ id: string; kind: string; prompt: string; options_json: string | null }>()
 
-        const questions = (questionsData.results as QuestionMetadata[]) || []
-        console.log(`[workflow] Fetched ${questions.length} questions for session ${sessionId}`)
-
-        if (questions.length === 0) {
-          throw new Error('No questions found in session')
-        }
-
-        return questions
-      } catch (err) {
-        console.error('[workflow] Failed to fetch session metadata:', err)
-        throw err
+      const rows = results ?? []
+      console.log(`[workflow] Fetched ${rows.length} questions for session ${sessionId}`)
+      if (rows.length === 0) {
+        throw new Error('No questions found in session')
       }
+
+      return rows.map((row): SourceQuestion => {
+        let options: Array<{ id: string; label: string }> = []
+        try {
+          const parsed = JSON.parse(row.options_json ?? '[]')
+          if (Array.isArray(parsed)) {
+            options = parsed.filter(
+              (o): o is { id: string; label: string } =>
+                !!o && typeof o.id === 'string' && typeof o.label === 'string',
+            )
+          }
+        } catch {
+          options = []
+        }
+        return { id: row.id, type: mapKindToTemplateType(row.kind), prompt: row.prompt, options }
+      })
     })
 
     // ──────────────────────────────────────────────────────────────────────
-    // Step 2: Rewrite questions (Workers AI)
+    // Step 2: Rewrite the real questions into generic, reusable forms.
+    // An unparseable response is a hard step failure (Workflows retries the
+    // step) — never fabricate question text.
     // ──────────────────────────────────────────────────────────────────────
-    const rewritten = await steps.do('rewrite-questions', async () => {
-      try {
-        const questionTexts = metadata.map((q, i) => `Q${i + 1}: [${q.type}] Generic question about topic`).join('\n')
+    const rewritten: GatedQuestion[] = await steps.do('rewrite-questions', async () => {
+      const questionTexts = sourceQuestions
+        .map((q, i) => `Q${i + 1}: [${q.type}] ${q.prompt}`)
+        .join('\n')
 
-        const prompt = `You are a session template generator. Rewrite the following question metadata into generic, reusable forms. Remove all company-specific, location-specific, and person-specific references.
+      const prompt = `You are a session template generator. Rewrite the following questions into generic, reusable forms. Preserve each question's intent, but remove all company-specific, location-specific, and person-specific references.
 
 Questions:
 ${questionTexts}
 
-Output ONLY as JSON array of strings, one rewritten question per line. No markdown, no preamble.`
+Output ONLY a JSON array of ${sourceQuestions.length} rewritten question strings, in the same order. No markdown, no preamble.`
 
-        const response = await invokeAI(env, [{ role: 'user', content: prompt }])
-
-        // Parse response (best-effort; if fails, discard this step)
-        let rewrittenTexts: string[] = []
-        try {
-          const parsed = JSON.parse(response)
-          rewrittenTexts = Array.isArray(parsed) ? parsed : [response]
-        } catch {
-          // Fall back to treating response as single question
-          rewrittenTexts = [response]
-        }
-
-        // Map back to question objects with rewritten text
-        const result: RewrittenQuestion[] = metadata.map((q, i) => ({
-          id: q.id,
-          type: q.type,
-          topic: '', // will be filled in classify step
-          text: {
-            en: rewrittenTexts[i] || 'Question',
-            nl: rewrittenTexts[i] || 'Vraag',
-            de: rewrittenTexts[i] || 'Frage',
-            fr: rewrittenTexts[i] || 'Question',
-          },
-          originalHash: '', // will be set in similarity check
-        }))
-
-        console.log(`[workflow] Rewritten ${result.length} questions`)
-        return result
-      } catch (err) {
-        console.error('[workflow] Rewrite step failed:', err)
-        throw err
+      const response = await invokeAI(env, [{ role: 'user', content: prompt }])
+      const parsed = parseJsonLoose(response)
+      if (!Array.isArray(parsed) || parsed.length !== sourceQuestions.length || !parsed.every((t) => typeof t === 'string')) {
+        throw new Error(`Rewrite step returned unusable output (expected ${sourceQuestions.length} strings)`)
       }
+
+      const result: GatedQuestion[] = []
+      for (let i = 0; i < sourceQuestions.length; i++) {
+        result.push({
+          ...sourceQuestions[i],
+          rewritten: (parsed[i] as string).trim(),
+          originalHash: await sha256Hex(sourceQuestions[i].prompt),
+        })
+      }
+      console.log(`[workflow] Rewrote ${result.length} questions`)
+      return result
     })
 
     // ──────────────────────────────────────────────────────────────────────
-    // Step 3: Similarity check (filter out questions too similar to originals)
+    // Step 3: Similarity check — compare each rewrite against ITS OWN
+    // original prompt. Unparseable verdict = reject (fail-closed).
     // ──────────────────────────────────────────────────────────────────────
-    const similarityChecked = await steps.do('similarity-check', async () => {
-      try {
-        const valid: RewrittenQuestion[] = []
-        const discarded: string[] = []
+    const similarityChecked: GatedQuestion[] = await steps.do('similarity-check', async () => {
+      const valid: GatedQuestion[] = []
 
-        for (const q of rewritten) {
-          let attempts = 0
-          let currentText = q.text.en
-          let score = 100
+      for (const q of rewritten) {
+        let attempts = 0
+        let currentText = q.rewritten
+        let score = 100
 
-          // Retry loop: rewrite again if similarity > 30
-          while (attempts < 2 && score > 30) {
-            if (attempts > 0) {
-              const retryPrompt = `Rewrite this question to be even more generic and context-free:
+        while (attempts < 2 && score > SIMILARITY_REJECT_THRESHOLD) {
+          if (attempts > 0) {
+            const retryPrompt = `Rewrite this question to be even more generic and context-free:
 "${currentText}"
 
 Output ONLY the rewritten question. No explanation.`
-              currentText = await invokeAI(env, [{ role: 'user', content: retryPrompt }])
-            }
+            currentText = (await invokeAI(env, [{ role: 'user', content: retryPrompt }])).trim()
+          }
 
-            // Check similarity
-            const similarityPrompt = `Rate the contextual similarity between these two questions on a scale of 0-100. 0 = completely different context, 100 = identical context.
+          const similarityPrompt = `Rate the contextual similarity between these two questions on a scale of 0-100. 0 = completely different context, 100 = identical context.
 
-Original context: "How did your team handle [specific scenario]?"
+Original: "${q.prompt}"
 Rewritten: "${currentText}"
 
 Output ONLY a JSON object: { "score": number, "reason": string }`
 
-            const similarityResponse = await invokeAI(env, [{ role: 'user', content: similarityPrompt }])
-
-            try {
-              const parsed = JSON.parse(similarityResponse)
-              score = parsed.score || 0
-            } catch {
-              score = 0 // Default to accept if parse fails
-            }
-
-            attempts++
-          }
-
-          // Final decision
-          if (score > 30) {
-            discarded.push(q.id)
-            await logDiscard(env.MARKETING_KV, sessionId, `similarity_too_high:${score}`, q.id)
-            console.log(`[workflow] Discarded Q${q.id}: similarity score ${score}`)
-          } else {
-            valid.push({
-              ...q,
-              text: { ...q.text, en: currentText },
-            })
-          }
+          const similarityResponse = await invokeAI(env, [{ role: 'user', content: similarityPrompt }])
+          // Fail-closed: an unparseable verdict scores 100 (rejected).
+          score = parseSimilarityScore(similarityResponse)
+          attempts++
         }
 
-        console.log(`[workflow] Similarity check: ${valid.length} valid, ${discarded.length} discarded`)
-        return valid
-      } catch (err) {
-        console.error('[workflow] Similarity check failed:', err)
-        // Fail-open: return all questions rather than failing entire workflow
-        return rewritten
+        if (score > SIMILARITY_REJECT_THRESHOLD) {
+          await logDiscard(env.MARKETING_KV, sessionId, `similarity_too_high:${score}`, q.id)
+          console.log(`[workflow] Discarded Q${q.id}: similarity score ${score}`)
+        } else {
+          valid.push({ ...q, rewritten: currentText })
+        }
       }
+
+      console.log(`[workflow] Similarity check: ${valid.length} valid, ${rewritten.length - valid.length} discarded`)
+      return valid
     })
 
     // ──────────────────────────────────────────────────────────────────────
-    // Step 4: Proper noun scanner (NER — named entity recognition)
+    // Step 4: Proper noun scan over the rewritten prompt AND its option
+    // labels. Unparseable verdict = discard (fail-closed).
     // ──────────────────────────────────────────────────────────────────────
-    const properNounChecked = await steps.do('proper-noun-scan', async () => {
-      try {
-        const valid: RewrittenQuestion[] = []
-        const discarded: string[] = []
+    const properNounChecked: GatedQuestion[] = await steps.do('proper-noun-scan', async () => {
+      const valid: GatedQuestion[] = []
 
-        for (const q of similarityChecked) {
-          const nerPrompt = `Scan this question for proper nouns (names, locations, company names, product names, brand names). List any found.
+      for (const q of similarityChecked) {
+        const scanText = [q.rewritten, ...q.options.map((o) => o.label)].join('\n')
+        const nerPrompt = `Scan this text for proper nouns (names, locations, company names, product names, brand names). List any found.
 
-Question: "${q.text.en}"
+Text:
+"""
+${scanText}
+"""
 
 Output ONLY as JSON: { "nouns": ["name1", "name2"], "hasAny": boolean }`
 
-          const nerResponse = await invokeAI(env, [{ role: 'user', content: nerPrompt }])
+        const nerResponse = await invokeAI(env, [{ role: 'user', content: nerPrompt }])
 
-          try {
-            const parsed = JSON.parse(nerResponse)
-            if (parsed.hasAny) {
-              discarded.push(q.id)
-              await logDiscard(env.MARKETING_KV, sessionId, `proper_nouns_found:${parsed.nouns.join(',')}`, q.id)
-              console.log(`[workflow] Discarded Q${q.id}: proper nouns ${parsed.nouns.join(', ')}`)
-            } else {
-              valid.push(q)
-            }
-          } catch {
-            // If NER parsing fails, keep the question (fail-open)
-            valid.push(q)
-          }
+        // Fail-closed: only an explicit "no proper nouns" verdict admits.
+        if (properNounGateAdmits(nerResponse)) {
+          valid.push(q)
+        } else {
+          const verdict = parseJsonLoose(nerResponse) as { nouns?: unknown } | null
+          const nouns = Array.isArray(verdict?.nouns) ? (verdict.nouns as string[]).join(',') : 'unparseable_verdict'
+          await logDiscard(env.MARKETING_KV, sessionId, `proper_nouns_found:${nouns}`, q.id)
+          console.log(`[workflow] Discarded Q${q.id}: proper noun scan (${nouns})`)
         }
-
-        console.log(`[workflow] Proper noun scan: ${valid.length} valid, ${discarded.length} discarded`)
-        return valid
-      } catch (err) {
-        console.error('[workflow] Proper noun scan failed:', err)
-        return similarityChecked
       }
+
+      console.log(`[workflow] Proper noun scan: ${valid.length} valid, ${similarityChecked.length - valid.length} discarded`)
+      return valid
     })
 
     // ──────────────────────────────────────────────────────────────────────
@@ -313,10 +285,24 @@ Output ONLY as JSON: { "nouns": ["name1", "name2"], "hasAny": boolean }`
     // ──────────────────────────────────────────────────────────────────────
     // Step 6: Classification + multilingual content generation
     // ──────────────────────────────────────────────────────────────────────
-    const classified = await steps.do('classify-and-generate', async () => {
+    const classified: ClassificationOutput = await steps.do('classify-and-generate', async () => {
+      const defaults: ClassificationOutput = {
+        industry: 'general',
+        theme: 'team-wellbeing',
+        topic: 'Session feedback',
+        confidence: 0,
+        purpose_en: 'Gather feedback on team dynamics.',
+        purpose_nl: 'Verzamel feedback over teamdynamiek.',
+        purpose_de: 'Erfassen Sie Feedback zur Teamdynamik.',
+        purpose_fr: "Collectez des commentaires sur la dynamique de l'équipe.",
+        bestUsedFor: ['team', 'feedback', 'improvement'],
+        estimatedMinutes: 15,
+        whatYoullLearn: ['Team strengths', 'Growth areas', 'Next steps'],
+      }
+
       try {
         const questionSummary = properNounChecked
-          .map((q, i) => `Q${i + 1} [${q.type}]: ${q.text.en}`)
+          .map((q, i) => `Q${i + 1} [${q.type}]: ${q.rewritten}`)
           .join('\n')
 
         const classifyPrompt = `Classify these questions and generate session template metadata.
@@ -340,63 +326,95 @@ Output ONLY as JSON (no markdown, no preamble):
 }`
 
         const response = await invokeAI(env, [{ role: 'user', content: classifyPrompt }])
-
-        let classification = {
-          industry: 'general',
-          theme: 'team-wellbeing',
-          topic: 'Session feedback',
-          confidence: 50,
-          purpose_en: 'Gather feedback on team dynamics.',
-          purpose_nl: 'Verzamel feedback over teamdynamiek.',
-          purpose_de: 'Erfassen Sie Feedback zur Teamdynamik.',
-          purpose_fr: 'Collectez des commentaires sur la dynamique de l\'équipe.',
-          bestUsedFor: ['team', 'feedback', 'improvement'],
-          estimatedMinutes: 15,
-          whatYoullLearn: ['Team strengths', 'Growth areas', 'Next steps'],
+        // MKTP-005: validate against the shared schema instead of spreading raw
+        // model output — a hallucinated enum would store an unreadable record.
+        const parsed = ClassificationOutput.safeParse(parseJsonLoose(response))
+        if (!parsed.success) {
+          console.warn('[workflow] Classification failed validation, using defaults')
+          return defaults
         }
-
-        try {
-          const parsed = JSON.parse(response)
-          classification = { ...classification, ...parsed }
-        } catch {
-          console.warn('[workflow] Failed to parse classification, using defaults')
-        }
-
         console.log(
-          `[workflow] Classified as ${classification.industry}/${classification.theme} (confidence ${classification.confidence})`,
+          `[workflow] Classified as ${parsed.data.industry}/${parsed.data.theme} (confidence ${parsed.data.confidence})`,
         )
-        return classification
+        return parsed.data
       } catch (err) {
         console.error('[workflow] Classification failed:', err)
-        // Return sensible defaults instead of failing
-        return {
-          industry: 'general',
-          theme: 'team-wellbeing',
-          topic: 'Session feedback',
-          confidence: 0,
-          purpose_en: 'Session feedback template',
-          purpose_nl: 'Sjabloon voor sessiefeedback',
-          purpose_de: 'Sitzungs-Feedback-Vorlage',
-          purpose_fr: 'Modèle de rétroaction de session',
-          bestUsedFor: ['session', 'feedback'],
-          estimatedMinutes: 15,
-          whatYoullLearn: ['Team insights'],
-        }
+        return defaults
       }
     })
 
     // ──────────────────────────────────────────────────────────────────────
-    // Step 7: Store in MARKETING_KV
+    // Step 7: Translate accepted question texts (MKTP-013 — the old pipeline
+    // copied English into nl/de/fr and labeled it localized). One batched
+    // call; on failure fall back to English content under every key, which
+    // the schema requires and the frontend already renders.
     // ──────────────────────────────────────────────────────────────────────
-    const templateId = await steps.do('store-template', async () => {
+    const translations: Record<'nl' | 'de' | 'fr', string[]> = await steps.do('translate-questions', async () => {
+      const enTexts = properNounChecked.map((q) => q.rewritten)
+      const fallback = { nl: enTexts, de: enTexts, fr: enTexts }
       try {
-        const id = `tmpl_${nanoid()}`
+        const translatePrompt = `Translate each of these session questions from English into Dutch (nl), German (de), and French (fr). Keep the tone neutral and professional.
+
+Questions:
+${enTexts.map((t, i) => `${i + 1}. ${t}`).join('\n')}
+
+Output ONLY as JSON (no markdown, no preamble):
+{ "nl": ["...", ...], "de": ["...", ...], "fr": ["...", ...] }
+Each array must contain exactly ${enTexts.length} strings, in the same order.`
+
+        const response = await invokeAI(env, [{ role: 'user', content: translatePrompt }])
+        const parsed = parseJsonLoose(response) as Record<string, unknown> | null
+        const valid = (['nl', 'de', 'fr'] as const).every(
+          (lang) =>
+            Array.isArray(parsed?.[lang]) &&
+            (parsed![lang] as unknown[]).length === enTexts.length &&
+            (parsed![lang] as unknown[]).every((t) => typeof t === 'string'),
+        )
+        if (!parsed || !valid) {
+          console.warn('[workflow] Translation output unusable, falling back to English')
+          return fallback
+        }
+        return { nl: parsed.nl as string[], de: parsed.de as string[], fr: parsed.fr as string[] }
+      } catch (err) {
+        console.warn('[workflow] Translation failed, falling back to English:', err)
+        return fallback
+      }
+    })
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Step 8: Store. Registry insert is the atomic dedup gate; templates land
+    // as DRAFTS unless they clear the auto-publish confidence bar (MKTP-009).
+    // ──────────────────────────────────────────────────────────────────────
+    const stored: { templateId: string; published: boolean } | { duplicate: true } = await steps.do(
+      'store-template',
+      async () => {
+        const id = createTemplateId()
         const now = new Date().toISOString()
 
         // Confidence < 70 → force industry to "general"
-        const finalIndustry = classified.confidence < 70 ? 'general' : classified.industry
+        const finalIndustry = classified.confidence < AUTO_PUBLISH_CONFIDENCE ? 'general' : classified.industry
+        const autoPublish = classified.confidence >= AUTO_PUBLISH_CONFIDENCE
 
-        const record: TemplateRecord = {
+        const questions: TemplateQuestion[] = properNounChecked.map((q, i) => ({
+          id: q.id,
+          type: q.type,
+          topic: classified.topic,
+          text: {
+            en: q.rewritten,
+            nl: translations.nl[i],
+            de: translations.de[i],
+            fr: translations.fr[i],
+          },
+          originalHash: q.originalHash,
+          // Option labels passed the proper-noun gate; they are kept verbatim
+          // (English) under every key rather than machine-translated.
+          options: q.options.map((opt) => ({
+            id: opt.id,
+            label: { en: opt.label, nl: opt.label, de: opt.label, fr: opt.label },
+          })),
+        }))
+
+        const record: TemplateRecord = TemplateRecord.parse({
           id,
           sourceSessionId: sessionId,
           title: {
@@ -413,7 +431,7 @@ Output ONLY as JSON (no markdown, no preamble):
           },
           bestUsedFor: {
             en: classified.bestUsedFor,
-            nl: classified.bestUsedFor, // Would ideally translate, but AI cost
+            nl: classified.bestUsedFor,
             de: classified.bestUsedFor,
             fr: classified.bestUsedFor,
           },
@@ -424,78 +442,56 @@ Output ONLY as JSON (no markdown, no preamble):
             de: classified.whatYoullLearn,
             fr: classified.whatYoullLearn,
           },
-          questions: properNounChecked,
+          questions,
           industry: finalIndustry,
           theme: classified.theme,
           topic: classified.topic,
           confidence: classified.confidence,
-          isPublic: true,
+          isPublic: autoPublish,
           isDiscarded: false,
           usageCount: 0,
           createdAt: now,
           updatedAt: now,
-        }
-
-        // Store main template
-        await env.MARKETING_KV.put(`template:${id}`, JSON.stringify(record))
-
-        // Update indices
-        await addToIndex(env.MARKETING_KV, 'templates:index', id)
-        await addToIndex(env.MARKETING_KV, `templates:by-industry:${finalIndustry}`, id)
-        await addToIndex(env.MARKETING_KV, `templates:by-theme:${classified.theme}`, id)
-        await addToIndex(env.MARKETING_KV, `templates:by-lang:${payload.language}`, id)
-
-        console.log(`[workflow] Stored template ${id} in MARKETING_KV`)
-        return id
-      } catch (err) {
-        console.error('[workflow] Storage failed:', err)
-        throw err
-      }
-    })
-
-    // ──────────────────────────────────────────────────────────────────────
-    // Step 8: IndexNow ping (SEO — tell search engines about new page)
-    // Supports both Options:
-    // - Option 1: Key file at domain root with name matching key (e.g., /e8964e65.txt)
-    // - Option 2: Key file at standard location (/.well-known/indexnow or /indexnow.txt)
-    // ──────────────────────────────────────────────────────────────────────
-    await steps.do('index-now-ping', async () => {
-      try {
-        const indexNowKey = env.INDEXNOW_KEY
-        if (!indexNowKey) {
-          console.warn('[workflow] INDEXNOW_KEY not configured, skipping ping')
-          return
-        }
-
-        // Determine keyLocation based on INDEXNOW_KEY_FILE env var
-        let keyLocation = 'https://qesto.cc/indexnow.txt' // Default: Option 2
-        if (env.INDEXNOW_KEY_FILE) {
-          // Option 1: Use key filename (e.g., 'e8964e65...txt')
-          keyLocation = `https://qesto.cc/${env.INDEXNOW_KEY_FILE}`
-        }
-
-        const payload = {
-          host: 'qesto.cc',
-          key: indexNowKey,
-          keyLocation,
-          urlList: [`https://qesto.cc/templates/${templateId}`],
-        }
-
-        await fetch('https://api.indexnow.org/indexnow', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
         })
 
-        console.log(`[workflow] IndexNow ping sent for template ${templateId}`, {
-          keyLocation,
-        })
-      } catch (err) {
-        console.warn('[workflow] IndexNow ping failed (non-blocking):', err)
-      }
-    })
+        const result = await storeTemplate(env.DB, env.MARKETING_KV, record)
+        if (!result.stored) {
+          await logDiscard(env.MARKETING_KV, sessionId, 'duplicate_template')
+          console.log(`[workflow] Discarded template for session ${sessionId}: duplicate content hash`)
+          return { duplicate: true as const }
+        }
 
-    console.log(`[workflow] Template generation completed for session ${sessionId} → ${templateId}`)
-    return { status: 'success', templateId }
+        console.log(
+          `[workflow] Stored template ${id} (${autoPublish ? 'auto-published' : 'draft, pending review'})`,
+        )
+        return { templateId: id, published: autoPublish }
+      },
+    )
+
+    if ('duplicate' in stored) {
+      return { status: 'discarded', reason: 'duplicate_template' }
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Step 9: IndexNow ping — ONLY for auto-published templates. Drafts must
+    // not be announced to search engines (their URLs would 404).
+    // ──────────────────────────────────────────────────────────────────────
+    if (stored.published) {
+      await steps.do('index-now-ping', async () => {
+        try {
+          const pinged = await pingIndexNowForTemplate(env, stored.templateId)
+          if (pinged) {
+            console.log(`[workflow] IndexNow ping sent for template ${stored.templateId}`)
+          } else {
+            console.warn('[workflow] IndexNow ping skipped or rejected (non-blocking)')
+          }
+        } catch (err) {
+          console.warn('[workflow] IndexNow ping failed (non-blocking):', err)
+        }
+      })
+    }
+
+    console.log(`[workflow] Template generation completed for session ${sessionId} → ${stored.templateId}`)
+    return { status: 'success', templateId: stored.templateId, published: stored.published }
   }
 }

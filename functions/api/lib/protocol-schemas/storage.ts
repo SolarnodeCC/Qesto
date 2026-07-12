@@ -35,16 +35,31 @@ export const TemplateIdArraySchema = z.array(z.string())
 
 export type ValidTemplateIdArray = z.infer<typeof TemplateIdArraySchema>
 
+// Full customer-template shape. Zod strips unknown keys on parse, so this
+// schema MUST cover every persisted field — the previous minimal version
+// silently deleted description/category/version/options each time a record
+// was read back and re-written (pipeline audit MKTP-003 blast radius).
 export const CustomerTemplateSchema = z.object({
   id: z.string(),
+  type: z.literal('customer').default('customer'),
+  userId: z.string().optional(),
   name: z.string(),
+  description: z.string().default(''),
+  category: z.string().default('custom'),
+  topic: z.string().default('customer'),
+  previewAlt: z.string().default(''),
   questions: z.array(z.object({
-    id: z.string().optional(),
-    position: z.number().optional(),
     kind: z.string(),
     prompt: z.string(),
-    options_json: z.string().optional(),
+    options: z.array(z.object({ id: z.string(), label: z.string() })).default([]),
   })),
+  createdAt: z.number().optional(),
+  scope: z.enum(['personal', 'team', 'organization']).optional(),
+  ownedByTeamId: z.string().optional(),
+  version: z.number().optional(),
+  parentId: z.string().optional(),
+  updatedAt: z.number().optional(),
+  archivedAt: z.number().optional(),
 })
 
 export type ValidCustomerTemplate = z.infer<typeof CustomerTemplateSchema>

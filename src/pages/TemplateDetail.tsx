@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Clock, Users, BookOpen, ArrowLeft, Copy, Check, ExternalLink } from 'lucide-react'
+import { Clock, Users, BookOpen, ArrowLeft, Check, Mail } from 'lucide-react'
 import MainLayout from '../layouts/MainLayout'
 import PageSeo from '../components/PageSeo'
 import { api } from '../api/client'
@@ -10,9 +10,11 @@ import { generateOgImageUrl } from '../utils/og-image-generator'
 const gradientBrand = { background: 'linear-gradient(135deg, #14B8A6 0%, #8B5CF6 100%)' }
 const displayFont = { fontFamily: 'var(--font-family-display)' }
 const shadowCard = { boxShadow: 'var(--shadow-card)' }
-const shadowElevated = { boxShadow: 'var(--shadow-elevated)' }
 
 type Lang = 'nl' | 'en' | 'de' | 'fr'
+const PIPELINE_LANGS: Lang[] = ['nl', 'en', 'de', 'fr']
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 interface TemplateRecord {
   id: string
@@ -30,82 +32,119 @@ interface TemplateRecord {
   updatedAt: string
 }
 
-function MagicLinkPanel({ link, onClose }: { link: string; onClose: () => void }) {
-  const t = useT('common')
-  const [copied, setCopied] = useState(false)
+type UseState =
+  | { status: 'idle' | 'sending' }
+  | { status: 'sent'; email: string }
 
-  function copyLink() {
-    navigator.clipboard.writeText(link).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2500)
+/**
+ * Email-capture form for "use this template" (MKTP-002). Submitting emails the
+ * visitor a one-time link that creates a real session and signs them in.
+ */
+function UseTemplateForm({
+  templateId,
+  variant,
+}: {
+  templateId: string
+  variant: 'card' | 'inline'
+}) {
+  const t = useT('common')
+  const [email, setEmail] = useState('')
+  const [state, setState] = useState<UseState>({ status: 'idle' })
+  const [error, setError] = useState<string | null>(null)
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    const trimmed = email.trim()
+    if (!EMAIL_RE.test(trimmed)) {
+      setError(t('templates.emailInvalid'))
+      return
+    }
+    setError(null)
+    setState({ status: 'sending' })
+    const result = await api<{ sent: boolean }>(`/api/gallery/${templateId}/use`, {
+      method: 'POST',
+      body: { email: trimmed },
     })
+    if (result.ok) {
+      setState({ status: 'sent', email: trimmed })
+    } else {
+      setError(result.error.message)
+      setState({ status: 'idle' })
+    }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true">
-      <div
-        className="w-full max-w-md rounded-2xl bg-white dark:bg-[#111827] p-6"
-        style={shadowElevated}
-      >
-        <h2 className="font-bold text-xl text-pulse-900 dark:text-[#F0F2F8] mb-2" style={displayFont}>
-          {t('templates.magicLinkTitle')}
-        </h2>
-        <p className="text-sm text-pulse-600 dark:text-[#8893AD] mb-5">
-          {t('templates.magicLinkDescription')}
+  if (state.status === 'sent') {
+    return (
+      <div className={variant === 'card' ? 'text-center' : 'mx-auto max-w-md text-center'}>
+        <span
+          className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full"
+          style={gradientBrand}
+        >
+          <Mail className="h-5 w-5 text-white" />
+        </span>
+        <h3 className="font-semibold text-base text-pulse-900 dark:text-[#F0F2F8] mb-1">
+          {t('templates.checkEmailTitle')}
+        </h3>
+        <p className="text-sm text-pulse-600 dark:text-[#8893AD]">
+          {t('templates.checkEmailDescription', { email: state.email })}
         </p>
-
-        {/* Link display */}
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-pulse-50 dark:bg-white/5 border border-pulse-200 dark:border-white/10 mb-4">
-          <span className="flex-1 text-sm text-pulse-700 dark:text-[#8893AD] truncate font-mono">
-            {link}
-          </span>
-          <button
-            onClick={copyLink}
-            className="shrink-0 p-2 rounded-lg text-pulse-600 dark:text-[#8893AD] hover:bg-pulse-100 dark:hover:bg-white/10 transition-colors"
-            aria-label={copied ? t('copied') : t('copyLink')}
-          >
-            {copied ? <Check className="h-4 w-4 text-teal-500" /> : <Copy className="h-4 w-4" />}
-          </button>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3">
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.01]"
-            style={gradientBrand}
-          >
-            {t('templates.openSession')}
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-          <button
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl text-sm font-medium text-pulse-700 dark:text-[#8893AD] border border-pulse-200 dark:border-white/20 hover:bg-pulse-50 dark:hover:bg-white/5 transition-colors"
-          >
-            {t('close')}
-          </button>
-        </div>
-
-        <p className="mt-4 text-xs text-pulse-500 dark:text-white/30 text-center">
-          {t('templates.magicLinkExpiry')}
-        </p>
+        <button
+          onClick={() => { setState({ status: 'idle' }); setEmail('') }}
+          className="mt-3 text-sm text-teal-600 dark:text-teal-400 underline underline-offset-2"
+        >
+          {t('templates.checkEmailResend')}
+        </button>
       </div>
-    </div>
+    )
+  }
+
+  const sending = state.status === 'sending'
+  return (
+    <form onSubmit={submit} className={variant === 'inline' ? 'mx-auto flex max-w-md flex-col gap-3 sm:flex-row' : 'flex flex-col gap-3'}>
+      <div className="flex-1">
+        <label htmlFor={`use-email-${variant}`} className="sr-only">
+          {t('templates.emailLabel')}
+        </label>
+        <input
+          id={`use-email-${variant}`}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t('templates.emailPlaceholder')}
+          aria-invalid={!!error}
+          aria-describedby={error ? `use-email-err-${variant}` : undefined}
+          className="w-full rounded-lg border border-pulse-200 dark:border-white/20 bg-white dark:bg-[#0A0F1E] px-3 py-2.5 text-sm text-pulse-900 dark:text-[#F0F2F8] focus:outline-none focus:ring-2 focus:ring-teal-500"
+        />
+        {error && (
+          <p id={`use-email-err-${variant}`} className="mt-1.5 text-left text-xs text-red-500">
+            {error}
+          </p>
+        )}
+      </div>
+      <button
+        type="submit"
+        disabled={sending}
+        className="flex items-center justify-center px-6 py-2.5 rounded-lg font-medium text-white text-sm transition-all hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-60 disabled:cursor-not-allowed"
+        style={gradientBrand}
+      >
+        {sending ? t('templates.sending') : t('templates.sendSessionLink')}
+      </button>
+    </form>
   )
 }
 
 export default function TemplateDetail() {
   const { id } = useParams<{ id: string }>()
   const t = useT('common')
-  const lang: Lang = (document.documentElement.lang?.slice(0, 2) as Lang) || 'en'
+  const rawLang = (document.documentElement.lang?.slice(0, 2) as Lang) || 'en'
+  const lang: Lang = PIPELINE_LANGS.includes(rawLang) ? rawLang : 'en'
 
   const [template, setTemplate] = useState<TemplateRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [using, setUsing] = useState(false)
-  const [magicLink, setMagicLink] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -117,21 +156,6 @@ export default function TemplateDetail() {
       })
       .finally(() => setLoading(false))
   }, [id])
-
-  async function handleUseTemplate() {
-    if (!id) return
-    setUsing(true)
-    const result = await api<{ sessionId: string; magicLink: string; expiresIn: number }>(
-      `/api/gallery/${id}/use`,
-      { method: 'POST' }
-    )
-    if (result.ok) {
-      setMagicLink(result.data.magicLink)
-    } else {
-      setError(result.error.message)
-    }
-    setUsing(false)
-  }
 
   if (loading) {
     return (
@@ -220,10 +244,6 @@ export default function TemplateDetail() {
         ogImage={ogImage}
         jsonLd={[breadcrumb, creativeWork]}
       />
-
-      {magicLink && (
-        <MagicLinkPanel link={magicLink} onClose={() => setMagicLink(null)} />
-      )}
 
       {/* Back nav */}
       <div className="border-b border-pulse-100 dark:border-white/10 bg-white dark:bg-[#0A0F1E]">
@@ -325,14 +345,7 @@ export default function TemplateDetail() {
                   {t('templates.ctaCardDescription')}
                 </p>
 
-                <button
-                  onClick={handleUseTemplate}
-                  disabled={using}
-                  className="w-full flex items-center justify-center px-6 py-3 rounded-xl font-medium text-white text-sm transition-all hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={gradientBrand}
-                >
-                  {using ? t('templates.creating') : t('templates.useTemplate')}
-                </button>
+                <UseTemplateForm templateId={template.id} variant="card" />
 
                 <p className="mt-3 text-xs text-center text-pulse-500 dark:text-white/30">
                   {t('templates.noAccountNeeded')}
@@ -395,14 +408,7 @@ export default function TemplateDetail() {
           <p className="text-pulse-600 dark:text-[#8893AD] mb-6">
             {t('templates.readyToStartDescription')}
           </p>
-          <button
-            onClick={handleUseTemplate}
-            disabled={using}
-            className="inline-flex items-center justify-center px-8 py-3 rounded-xl font-medium text-white text-sm transition-all hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 disabled:opacity-60"
-            style={gradientBrand}
-          >
-            {using ? t('templates.creating') : t('templates.useTemplate')}
-          </button>
+          <UseTemplateForm templateId={template.id} variant="inline" />
         </div>
       </section>
     </MainLayout>

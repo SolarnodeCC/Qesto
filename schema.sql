@@ -638,3 +638,31 @@ CREATE TABLE IF NOT EXISTS team_quiz_responses (
 );
 CREATE INDEX IF NOT EXISTS idx_tqr_energizer ON team_quiz_responses(energizer_id);
 CREATE INDEX IF NOT EXISTS idx_tqr_voter ON team_quiz_responses(energizer_id, voter_id);
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- marketing_templates — Growth Engine public template gallery registry.
+-- Metadata/lifecycle/usage source of truth; full multilingual record blob
+-- lives in MARKETING_KV under template:{id}. (migration 0079)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS marketing_templates (
+  id                TEXT    PRIMARY KEY,
+  source_session_id TEXT    NOT NULL,
+  content_hash      TEXT    NOT NULL UNIQUE,
+  industry          TEXT    NOT NULL,
+  theme             TEXT    NOT NULL,
+  topic             TEXT    NOT NULL,
+  title_en          TEXT    NOT NULL,
+  question_count    INTEGER NOT NULL,
+  estimated_minutes INTEGER NOT NULL,
+  confidence        INTEGER NOT NULL,
+  langs             TEXT    NOT NULL DEFAULT 'en',
+  is_public         INTEGER NOT NULL DEFAULT 0 CHECK (is_public IN (0, 1)),
+  is_discarded      INTEGER NOT NULL DEFAULT 0 CHECK (is_discarded IN (0, 1)),
+  usage_count       INTEGER NOT NULL DEFAULT 0,
+  created_at        INTEGER NOT NULL,
+  updated_at        INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_mkt_templates_public
+  ON marketing_templates(is_public, is_discarded, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_mkt_templates_industry ON marketing_templates(industry);
+CREATE INDEX IF NOT EXISTS idx_mkt_templates_theme ON marketing_templates(theme);
